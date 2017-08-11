@@ -21,7 +21,7 @@ import android.content.SyncResult;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.os.MyAsyncTask;
-import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;

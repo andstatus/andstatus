@@ -23,7 +23,7 @@ import android.view.ViewGroup;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyUrlSpan;
-import org.andstatus.app.widget.MyBaseAdapter;
+import org.andstatus.app.view.MyBaseAdapter;
 
 import java.util.List;
 

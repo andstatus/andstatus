@@ -27,9 +27,7 @@ import android.view.SubMenu;
 import android.view.View;
 import android.view.accessibility.AccessibilityManager;
 
-import org.andstatus.app.ContextMenuHeader;
 import org.andstatus.app.IntentExtra;
-import org.andstatus.app.MyContextMenu;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.DownloadStatus;
@@ -38,10 +36,13 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.MyAsyncTask;
-import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.ContextMenuHeader;
+import org.andstatus.app.timeline.TimelineActivity;
+import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.view.MyContextMenu;
 
 import static android.content.Context.ACCESSIBILITY_SERVICE;
 
@@ -49,7 +50,7 @@ import static android.content.Context.ACCESSIBILITY_SERVICE;
  * Context menu and corresponding actions on messages from the list 
  * @author yvolk@yurivolkov.com
  */
-class MessageContextMenu extends MyContextMenu {
+public class MessageContextMenu extends MyContextMenu {
 
     private static class MessageContextMenuData {
         static final int MAX_SECONDS_TO_LOAD = 10;
@@ -140,7 +141,7 @@ class MessageContextMenu extends MyContextMenu {
     private MessageContextMenuData menuData = MessageContextMenuData.EMPTY;
     private String selectedMenuItemTitle = "";
 
-    MessageContextMenu(MessageListContextMenuContainer menuContainer) {
+    public MessageContextMenu(MessageListContextMenuContainer menuContainer) {
         super(menuContainer.getActivity());
         this.menuContainer = menuContainer;
     }
@@ -358,7 +359,7 @@ class MessageContextMenu extends MyContextMenu {
         return menuContainer.getMessageEditor().isVisible();
     }
 
-    void onContextItemSelected(MenuItem item) {
+    public void onContextItemSelected(MenuItem item) {
         if (item != null) {
             this.selectedMenuItemTitle = StringUtils.notNull(String.valueOf(item.getTitle()));
             onContextItemSelected(MessageListContextMenuItem.fromId(item.getItemId()), getMsgId());
@@ -379,7 +380,7 @@ class MessageContextMenu extends MyContextMenu {
         }
     }
 
-    void loadState(Bundle savedInstanceState) {
+    public void loadState(Bundle savedInstanceState) {
         if (savedInstanceState != null && savedInstanceState.containsKey(IntentExtra.ACCOUNT_NAME.key)) {
             setMyActor(menuContainer.getActivity().getMyContext().persistentAccounts().fromAccountName(
                     savedInstanceState.getString(IntentExtra.ACCOUNT_NAME.key,
@@ -387,7 +388,7 @@ class MessageContextMenu extends MyContextMenu {
         }
     }
 
-    void saveState(Bundle outState) {
+    public void saveState(Bundle outState) {
         outState.putString(IntentExtra.ACCOUNT_NAME.key, menuData.msg.getMyAccount().getAccountName());
     }
 

@@ -25,7 +25,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.util.MyUrlSpan;
-import org.andstatus.app.widget.MyBaseAdapter;
+import org.andstatus.app.view.MyBaseAdapter;
 
 import java.util.List;
 

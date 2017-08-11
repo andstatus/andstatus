@@ -31,7 +31,7 @@ import org.andstatus.app.net.social.ConnectionTheTwitter;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocial;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
-import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 

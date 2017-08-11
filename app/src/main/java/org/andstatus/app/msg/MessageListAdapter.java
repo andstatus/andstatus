@@ -32,7 +32,7 @@ import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.widget.MyBaseAdapter;
+import org.andstatus.app.view.MyBaseAdapter;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -29,18 +29,18 @@ import android.widget.CompoundButton;
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
-import org.andstatus.app.SyncLoader;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.service.QueueViewer;
-import org.andstatus.app.timeline.Timeline;
-import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.timeline.meta.Timeline;
+import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.TriState;
-import org.andstatus.app.widget.MyBaseAdapter;
+import org.andstatus.app.view.MyBaseAdapter;
 
 /**
  * One selected message and, optionally, the whole conversation

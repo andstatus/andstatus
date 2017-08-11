@@ -25,16 +25,16 @@ import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.SearchObjects;
-import org.andstatus.app.WhichPage;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.msg.MessageEditorListActivity;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.timeline.WhichPage;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
-import org.andstatus.app.widget.MyBaseAdapter;
+import org.andstatus.app.view.MyBaseAdapter;
 
 /**
  *  List of users for different contexts 

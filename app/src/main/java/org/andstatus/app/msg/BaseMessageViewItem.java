@@ -23,7 +23,6 @@ import android.support.v4.util.Pair;
 import android.text.TextUtils;
 
 import org.andstatus.app.R;
-import org.andstatus.app.ViewItem;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -31,11 +30,12 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.timeline.DuplicationLink;
+import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.widget.DuplicationLink;
 
 import java.util.ArrayList;
 import java.util.Collection;

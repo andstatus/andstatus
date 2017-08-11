@@ -31,8 +31,8 @@ import com.example.android.supportv7.app.AppCompatPreferenceActivity;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
-import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 

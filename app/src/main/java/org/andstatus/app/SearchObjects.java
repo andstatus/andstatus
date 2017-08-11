@@ -18,7 +18,7 @@ package org.andstatus.app;
 
 import android.widget.Spinner;
 
-import org.andstatus.app.msg.TimelineActivity;
+import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.user.UserList;
 
 public enum SearchObjects {

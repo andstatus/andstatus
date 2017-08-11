@@ -20,7 +20,7 @@ import android.net.Uri;
 
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.user.UserListType;
 import org.junit.Before;
 import org.junit.Test;

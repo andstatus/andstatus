@@ -17,7 +17,7 @@
 package org.andstatus.app.msg;
 
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.widget.DuplicationLink;
+import org.andstatus.app.timeline.DuplicationLink;
 import org.junit.Before;
 import org.junit.Test;
 

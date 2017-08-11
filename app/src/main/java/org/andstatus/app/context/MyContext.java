@@ -21,15 +21,15 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.IdentifiableInstance;
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionState;
-import org.andstatus.app.timeline.PersistentTimelines;
-import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.timeline.meta.PersistentTimelines;
+import org.andstatus.app.timeline.meta.TimelineType;
+import org.andstatus.app.util.IdentifiableInstance;
 
 import java.util.Locale;
 

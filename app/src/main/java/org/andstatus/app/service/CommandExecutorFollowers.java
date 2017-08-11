@@ -31,8 +31,7 @@ import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.MbUser;
-import org.andstatus.app.timeline.TimelineSyncTracker;
-import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 

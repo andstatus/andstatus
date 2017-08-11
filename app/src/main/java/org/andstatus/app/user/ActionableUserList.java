@@ -16,7 +16,7 @@
 
 package org.andstatus.app.user;
 
-import org.andstatus.app.LoadableListActivity;
+import org.andstatus.app.timeline.LoadableListActivity;
 
 public interface ActionableUserList {
     LoadableListActivity getActivity();

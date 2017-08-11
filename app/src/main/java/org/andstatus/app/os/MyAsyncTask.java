@@ -23,8 +23,8 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import org.andstatus.app.IdentifiableInstance;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.util.IdentifiableInstance;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;

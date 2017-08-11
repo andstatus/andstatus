@@ -30,7 +30,8 @@ import android.view.View;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyTheme;
-import org.andstatus.app.msg.TimelineActivity;
+import org.andstatus.app.timeline.TimelineActivity;
+import org.andstatus.app.util.IdentifiableInstance;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;

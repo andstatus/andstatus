@@ -24,7 +24,6 @@ import android.util.Log;
 
 import net.jcip.annotations.GuardedBy;
 
-import org.andstatus.app.IdentifiableInstance;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;

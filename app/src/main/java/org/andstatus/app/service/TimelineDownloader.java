@@ -18,12 +18,12 @@ package org.andstatus.app.service;
 
 import android.database.sqlite.SQLiteConstraintException;
 
-import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DataPruner;
+import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.notification.AddedMessagesNotifier;
-import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyLog;
 
 /**

@@ -31,7 +31,6 @@ import android.widget.TextView;
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.HelpActivity;
-import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.DemoData;
@@ -44,8 +43,11 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.timeline.Timeline;
-import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.timeline.ListActivityTestHelper;
+import org.andstatus.app.timeline.TimelineActivity;
+import org.andstatus.app.timeline.TimelineActivityTest;
+import org.andstatus.app.timeline.meta.Timeline;
+import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.junit.Test;
@@ -197,10 +199,10 @@ public class MessageEditorTest extends TimelineActivityTest {
         onView(withId(R.id.messageBodyEditText)).perform(new TypeTextAction(body));
         TestSuite.waitForIdleSync();
 
-        getActivity().selectorActivityMock = helper;
+        getActivity().setSelectorActivityMock(helper);
         helper.clickMenuItem(method + " clicker attach_menu_id", R.id.attach_menu_id);
         assertNotNull(helper.waitForSelectorStart(method, ActivityRequestCode.ATTACH.id));
-        getActivity().selectorActivityMock = null;
+        getActivity().setSelectorActivityMock(null);
 
         Instrumentation.ActivityMonitor activityMonitor = getInstrumentation()
                 .addMonitor(HelpActivity.class.getName(), null, false);

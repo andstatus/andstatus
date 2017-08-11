@@ -20,7 +20,6 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.MyActivity;
-import org.andstatus.app.ViewItem;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.MyQuery;
@@ -28,6 +27,7 @@ import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.timeline.ViewItem;
 
 import java.util.HashSet;
 import java.util.Set;

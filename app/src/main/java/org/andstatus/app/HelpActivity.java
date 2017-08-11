@@ -45,15 +45,15 @@ import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.data.MyDataChecker;
-import org.andstatus.app.msg.TimelineActivity;
-import org.andstatus.app.util.ActivitySwipeDetector;
+import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.Permissions;
-import org.andstatus.app.util.SwipeInterface;
 import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.util.Xslt;
+import org.andstatus.app.view.ActivitySwipeDetector;
+import org.andstatus.app.view.SwipeInterface;
 
 public class HelpActivity extends MyActivity implements SwipeInterface, ProgressLogger.ProgressCallback, DialogInterface.OnDismissListener {
     public static final String TAG = HelpActivity.class.getSimpleName();

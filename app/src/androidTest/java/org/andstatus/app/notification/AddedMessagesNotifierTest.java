@@ -4,7 +4,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.service.CommandResult;
-import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.junit.Before;
 import org.junit.Test;

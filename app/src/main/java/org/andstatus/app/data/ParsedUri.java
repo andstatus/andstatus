@@ -23,7 +23,7 @@ import android.support.annotation.NonNull;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.user.UserListType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2017 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,8 +16,8 @@
 
 package org.andstatus.app.msg;
 
-import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.timeline.LoadableListActivity;
 
 /**
  * @author yvolk@yurivolkov.com

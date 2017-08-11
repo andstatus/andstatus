@@ -28,7 +28,7 @@ import org.andstatus.app.data.MyDataChecker;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.timeline.TimelineSaver;
+import org.andstatus.app.timeline.meta.TimelineSaver;
 import org.andstatus.app.util.MyLog;
 
 public class DatabaseConverterController {

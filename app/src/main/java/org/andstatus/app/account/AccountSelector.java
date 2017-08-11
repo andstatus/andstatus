@@ -28,9 +28,9 @@ import android.widget.TextView;
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
-import org.andstatus.app.SelectorDialog;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.widget.MySimpleAdapter;
+import org.andstatus.app.view.MySimpleAdapter;
+import org.andstatus.app.view.SelectorDialog;
 
 import java.util.ArrayList;
 import java.util.HashMap;

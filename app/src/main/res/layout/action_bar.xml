@@ -11,4 +11,4 @@
     android:background="?attr/colorPrimary"
     android:theme="?attr/andStatusActionBarTheme"
     android:popupTheme="?attr/andStatusActionBarPopupTheme"
-    tools:context=".msg.TimelineActivity"/>
+    tools:context=".timeline.TimelineActivity"/>

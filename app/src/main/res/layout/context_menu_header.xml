@@ -9,7 +9,7 @@
               android:padding="4dp"
               android:theme="?attr/andStatusActionBarTheme"
               style="@style/RtlOverlay.Widget.AppCompat.ActionBar.TitleItem"
-              tools:context=".msg.TimelineActivity">
+              tools:context=".timeline.TimelineActivity">
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

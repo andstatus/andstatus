@@ -21,13 +21,13 @@ import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
 
-import org.andstatus.app.ContextMenuHeader;
-import org.andstatus.app.MyContextMenu;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.msg.MessageEditorContainer;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.timeline.ContextMenuHeader;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.view.MyContextMenu;
 
 public class UserListContextMenu extends MyContextMenu {
     public final MessageEditorContainer menuContainer;

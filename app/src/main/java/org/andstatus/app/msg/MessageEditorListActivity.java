@@ -22,8 +22,8 @@ import android.os.Bundle;
 import android.view.Menu;
 
 import org.andstatus.app.ActivityRequestCode;
-import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.service.CommandData;
+import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.util.UriUtils;
 
 /**

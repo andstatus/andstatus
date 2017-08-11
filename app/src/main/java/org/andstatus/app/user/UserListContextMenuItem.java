@@ -20,21 +20,21 @@ import android.net.Uri;
 import android.view.Menu;
 
 import org.andstatus.app.ActivityRequestCode;
-import org.andstatus.app.ContextMenuItem;
 import org.andstatus.app.MyAction;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MatchedUri;
+import org.andstatus.app.list.ContextMenuItem;
 import org.andstatus.app.msg.MessageEditorData;
-import org.andstatus.app.msg.TimelineActivity;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.timeline.Timeline;
-import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.timeline.TimelineActivity;
+import org.andstatus.app.timeline.meta.Timeline;
+import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 
 public enum UserListContextMenuItem implements ContextMenuItem {

@@ -20,7 +20,7 @@ import android.app.backup.BackupManager;
 import android.content.Context;
 
 import org.andstatus.app.R;
-import org.andstatus.app.msg.TapOnATimelineTitleBehaviour;
+import org.andstatus.app.timeline.TapOnATimelineTitleBehaviour;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
 /**

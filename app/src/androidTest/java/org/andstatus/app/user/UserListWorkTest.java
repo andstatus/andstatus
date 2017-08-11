@@ -18,18 +18,18 @@ package org.andstatus.app.user;
 
 import android.content.Intent;
 
-import org.andstatus.app.ListActivityTestHelper;
 import org.andstatus.app.MyAction;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.ActivityTest;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.timeline.ListActivityTestHelper;
 import org.andstatus.app.util.MyLog;
 import org.junit.Test;
 

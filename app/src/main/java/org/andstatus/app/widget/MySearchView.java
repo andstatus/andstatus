@@ -35,17 +35,18 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.andstatus.app.IntentExtra;
-import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.SearchObjects;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.LoadableListActivity;
+import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.user.UserListType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.view.SuggestionsAdapter;
 
 /**
  * @author yvolk@yurivolkov.com

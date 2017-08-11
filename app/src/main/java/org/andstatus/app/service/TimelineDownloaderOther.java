@@ -26,7 +26,6 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.TimelinePosition;
-import org.andstatus.app.timeline.TimelineSyncTracker;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 

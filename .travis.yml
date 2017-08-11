@@ -118,7 +118,7 @@ script:
   # Run only tests, marked with a special annotation:
   # See https://developer.android.com/reference/android/test/InstrumentationTestRunner.html
   # For testing one method only:
-  # - adb shell am instrument -w -r -e debug false -e class org.andstatus.app.msg.ActAsUserTest#testActAsUser org.andstatus.app.tests/android.support.test.runner.AndroidJUnitRunner
+  # - adb shell am instrument -w -r -e debug false -e class org.andstatus.app.timeline.ActAsUserTest#testActAsUser org.andstatus.app.tests/android.support.test.runner.AndroidJUnitRunner
   - |
     adb shell am instrument -w -r -e executionMode travisTest org.andstatus.app.tests/android.support.test.runner.AndroidJUnitRunner |& tee build/adb-test.log
     retval=$?

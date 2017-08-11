@@ -18,10 +18,10 @@ package org.andstatus.app.activity;
 
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.ViewItem;
 import org.andstatus.app.msg.MessageViewItem;
 import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbObjectType;
+import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.user.UserViewItem;
 
 /** View on ActivityStream

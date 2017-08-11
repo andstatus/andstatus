@@ -6,7 +6,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.social.Connection;
-import org.andstatus.app.timeline.Timeline;
+import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyLog;
 
 public class CommandExecutionContext {

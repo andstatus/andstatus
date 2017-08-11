@@ -47,9 +47,9 @@ import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.service.QueueViewer;
-import org.andstatus.app.timeline.Timeline;
-import org.andstatus.app.timeline.TimelineList;
-import org.andstatus.app.timeline.TimelineTitle;
+import org.andstatus.app.timeline.meta.Timeline;
+import org.andstatus.app.timeline.meta.TimelineList;
+import org.andstatus.app.timeline.meta.TimelineTitle;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 

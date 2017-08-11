@@ -1,12 +1,12 @@
 package org.andstatus.app.msg;
 
-import org.andstatus.app.LoadableListActivity.ProgressPublisher;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.context.DemoData;
+import org.andstatus.app.timeline.LoadableListActivity.ProgressPublisher;
 import org.andstatus.app.util.MyLog;
 import org.junit.Before;
 import org.junit.Test;

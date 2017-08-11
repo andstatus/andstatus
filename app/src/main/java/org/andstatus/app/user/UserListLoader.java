@@ -5,10 +5,7 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.LoadableListActivity;
-import org.andstatus.app.LoadableListActivity.ProgressPublisher;
 import org.andstatus.app.R;
-import org.andstatus.app.SyncLoader;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -19,11 +16,14 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.SqlWhere;
 import org.andstatus.app.data.UserListSql;
 import org.andstatus.app.database.UserTable;
+import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.timeline.LoadableListActivity;
+import org.andstatus.app.timeline.LoadableListActivity.ProgressPublisher;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 

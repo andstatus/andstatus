@@ -18,8 +18,6 @@ package org.andstatus.app.user;
 
 import android.content.Intent;
 
-import org.andstatus.app.ListActivityTestHelper;
-import org.andstatus.app.ViewItem;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
@@ -31,11 +29,13 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.msg.MessageListContextMenuItem;
-import org.andstatus.app.msg.TimelineActivity;
-import org.andstatus.app.msg.TimelineActivityTest;
 import org.andstatus.app.net.social.MbUser;
-import org.andstatus.app.timeline.Timeline;
-import org.andstatus.app.timeline.TimelineType;
+import org.andstatus.app.timeline.ListActivityTestHelper;
+import org.andstatus.app.timeline.TimelineActivity;
+import org.andstatus.app.timeline.TimelineActivityTest;
+import org.andstatus.app.timeline.ViewItem;
+import org.andstatus.app.timeline.meta.Timeline;
+import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.junit.Test;
 

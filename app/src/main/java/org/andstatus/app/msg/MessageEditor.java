@@ -38,7 +38,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.andstatus.app.ActivityRequestCode;
-import org.andstatus.app.LoadableListActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyPreferences;
@@ -51,6 +50,7 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.user.UserAutoCompleteAdapter;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +16,7 @@
 
 package org.andstatus.app;
 
-import org.andstatus.app.msg.TimelineActivity;
+import android.app.Activity;
 
 // Request codes for called activities
 public enum ActivityRequestCode {
@@ -37,7 +37,7 @@ public enum ActivityRequestCode {
     public final int id;
     
     ActivityRequestCode(int id) {
-        this.id = TimelineActivity.RESULT_FIRST_USER + id;
+        this.id = Activity.RESULT_FIRST_USER + id;
     }
     
     public static ActivityRequestCode fromId(int id) {
