@@ -30,7 +30,7 @@ public class TimelineData<T extends ViewItem> {
     private static final int MAX_PAGES_COUNT = 5;
     public final List<TimelinePage<T>> pages; // Contains at least onePage
     final long updatedAt = MyLog.uniqueCurrentTimeMS();
-    final TimelineListParameters params;
+    final TimelineParameters params;
     final boolean isSameTimeline;
     private final DuplicatesCollapser<T> duplicatesCollapser;
 

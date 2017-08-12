@@ -35,12 +35,12 @@ import java.util.ArrayList;
 * @author yvolk@yurivolkov.com
 */
 public class TimelineLoader<T extends ViewItem> extends SyncLoader<T> {
-    private final TimelineListParameters params;
+    private final TimelineParameters params;
     private final TimelinePage<T> page;
 
     private final long instanceId;
 
-    TimelineLoader(@NonNull TimelineListParameters params, long instanceId) {
+    TimelineLoader(@NonNull TimelineParameters params, long instanceId) {
         this.params = params;
         this.page = new TimelinePage<>(getParams(), new ArrayList<>());
         this.items = page.items;
@@ -126,7 +126,7 @@ public class TimelineLoader<T extends ViewItem> extends SyncLoader<T> {
         getParams().rowsLoaded = rowsCount;
     }
 
-    public TimelineListParameters getParams() {
+    public TimelineParameters getParams() {
         return params;
     }
 

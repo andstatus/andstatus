@@ -19,15 +19,18 @@ package org.andstatus.app.service;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.timeline.ViewItem;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-class QueueData implements Comparable<QueueData> {
+class QueueData extends ViewItem implements Comparable<QueueData> {
+    @NonNull
     final QueueType queueType;
+    @NonNull
     final CommandData commandData;
 
-    static QueueData getNew(QueueType queueType, CommandData commandData) {
+    static QueueData getNew(@NonNull QueueType queueType, @NonNull CommandData commandData) {
         return new QueueData(queueType, commandData);
     }
 
@@ -36,8 +39,14 @@ class QueueData implements Comparable<QueueData> {
         this.commandData = commandData;
     }
 
+    @Override
     public long getId() {
         return commandData.hashCode();
+    }
+
+    @Override
+    public long getDate() {
+        return commandData.getCreatedDate();
     }
 
     public String toSharedSubject() {
@@ -51,12 +60,12 @@ class QueueData implements Comparable<QueueData> {
     }
 
     @Override
-    public int compareTo(QueueData another) {
-        return -longCompare(commandData.getCreatedDate(), another.commandData.getCreatedDate());
+    public int compareTo(@NonNull QueueData another) {
+        return -longCompare(getDate(), another.getDate());
     }
 
     // TODO: Replace with Long.compare for API >= 19
-    public static int longCompare(long lhs, long rhs) {
+    private static int longCompare(long lhs, long rhs) {
         return lhs < rhs ? -1 : (lhs == rhs ? 0 : 1);
     }
 

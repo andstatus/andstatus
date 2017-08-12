@@ -24,19 +24,19 @@ import java.util.Comparator;
 /**
  * @author yvolk@yurivolkov.com
  */
-class TimelineListViewItemComparator implements Comparator<TimelineListViewItem> {
+class ManageTimelinesViewItemComparator implements Comparator<ManageTimelinesViewItem> {
     private final int sortByField;
     private final boolean sortDefault;
     private final boolean isTotal;
 
-    TimelineListViewItemComparator(int sortByField, boolean sortDefault, boolean isTotal) {
+    ManageTimelinesViewItemComparator(int sortByField, boolean sortDefault, boolean isTotal) {
         this.sortByField = sortByField;
         this.sortDefault = sortDefault;
         this.isTotal = isTotal;
     }
 
     @Override
-    public int compare(TimelineListViewItem lhs, TimelineListViewItem rhs) {
+    public int compare(ManageTimelinesViewItem lhs, ManageTimelinesViewItem rhs) {
         int result = 0;
         switch (sortByField) {
             case R.id.displayedInSelector:
@@ -121,7 +121,7 @@ class TimelineListViewItemComparator implements Comparator<TimelineListViewItem>
         return result == 0 ? 0 : sortDefault ? result : 0 - result;
     }
 
-    private int compareSynced(TimelineListViewItem lhs, TimelineListViewItem rhs) {
+    private int compareSynced(ManageTimelinesViewItem lhs, ManageTimelinesViewItem rhs) {
         int result = compareLongDescending(lhs.timeline.getLastSyncedDate(),
                 rhs.timeline.getLastSyncedDate());
         if (result == 0) {

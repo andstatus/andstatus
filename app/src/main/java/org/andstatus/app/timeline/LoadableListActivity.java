@@ -62,7 +62,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * 
  * @author yvolk@yurivolkov.com
  */
-public abstract class LoadableListActivity extends MyBaseListActivity implements MyServiceEventsListener {
+public abstract class LoadableListActivity<T extends ViewItem> extends MyBaseListActivity implements MyServiceEventsListener {
 
     protected boolean showSyncIndicatorSetting = true;
     protected View textualSyncIndicator = null;
@@ -134,7 +134,7 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     @NonNull
     public TimelineData<? extends ViewItem> getListData() {
         return new TimelineData<ViewItem>(null,
-                new TimelinePage<>(new TimelineListParameters(myContext), null)) {
+                new TimelinePage<>(new TimelineParameters(myContext), null)) {
             @Override
             public int size() {
                 return getListAdapter() == null ? 0 : getListAdapter().getCount();
@@ -405,8 +405,8 @@ public abstract class LoadableListActivity extends MyBaseListActivity implements
     protected abstract MyBaseAdapter newListAdapter();
 
     @Override
-    public MyBaseAdapter getListAdapter() {
-        return (MyBaseAdapter) super.getListAdapter();
+    public MyBaseAdapter<T> getListAdapter() {
+        return (MyBaseAdapter<T>) super.getListAdapter();
     }
 
     private void updateCompletedLoader() {

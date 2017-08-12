@@ -26,9 +26,9 @@ import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.view.MyContextMenu;
 
-public class TimelineListContextMenu extends MyContextMenu {
+public class ManageTimelinesContextMenu extends MyContextMenu {
 
-    public TimelineListContextMenu(LoadableListActivity listActivity) {
+    public ManageTimelinesContextMenu(LoadableListActivity listActivity) {
         super(listActivity);
     }
 
@@ -45,17 +45,17 @@ public class TimelineListContextMenu extends MyContextMenu {
             new ContextMenuHeader(getActivity(), menu)
                     .setTitle(getViewItem().timelineTitle.title)
                     .setSubtitle(getViewItem().timelineTitle.subTitle);
-            TimelineListContextMenuItem.SHOW_MESSAGES.addTo(menu, ++order, R.string.show_timeline_messages);
+            ManageTimelinesContextMenuItem.SHOW_MESSAGES.addTo(menu, ++order, R.string.show_timeline_messages);
             if (getViewItem().timeline.isSyncable()) {
-                TimelineListContextMenuItem.SYNC_NOW.addTo(menu, ++order, R.string.options_menu_sync);
+                ManageTimelinesContextMenuItem.SYNC_NOW.addTo(menu, ++order, R.string.options_menu_sync);
             }
             if (!getViewItem().timeline.isRequired()) {
-                TimelineListContextMenuItem.DELETE.addTo(menu, ++order, R.string.button_delete);
+                ManageTimelinesContextMenuItem.DELETE.addTo(menu, ++order, R.string.button_delete);
             }
             if (!getMyContext().persistentTimelines().getDefault().equals(getViewItem().timeline)) {
-                TimelineListContextMenuItem.MAKE_DEFAULT.addTo(menu, ++order, R.string.set_as_default_timeline);
+                ManageTimelinesContextMenuItem.MAKE_DEFAULT.addTo(menu, ++order, R.string.set_as_default_timeline);
             }
-            TimelineListContextMenuItem.FORGET_SYNC_EVENTS.addTo(menu, ++order, R.string.forget_sync_events);
+            ManageTimelinesContextMenuItem.FORGET_SYNC_EVENTS.addTo(menu, ++order, R.string.forget_sync_events);
         } catch (Exception e) {
             MyLog.e(this, method, e);
         }
@@ -63,17 +63,17 @@ public class TimelineListContextMenu extends MyContextMenu {
     }
 
     public boolean onContextItemSelected(MenuItem item) {
-        TimelineListContextMenuItem contextMenuItem = TimelineListContextMenuItem.fromId(item.getItemId());
+        ManageTimelinesContextMenuItem contextMenuItem = ManageTimelinesContextMenuItem.fromId(item.getItemId());
         MyLog.v(this, "onContextItemSelected: " + contextMenuItem +
                 "; timeline=" + getViewItem().timeline);
         return contextMenuItem.execute(this, getViewItem());
     }
 
-    public TimelineListViewItem getViewItem() {
+    public ManageTimelinesViewItem getViewItem() {
         if (mViewItem == null) {
-            return new TimelineListViewItem(listActivity.getMyContext(), Timeline.EMPTY);
+            return new ManageTimelinesViewItem(listActivity.getMyContext(), Timeline.EMPTY);
         }
-        return (TimelineListViewItem) mViewItem;
+        return (ManageTimelinesViewItem) mViewItem;
     }
 
 }

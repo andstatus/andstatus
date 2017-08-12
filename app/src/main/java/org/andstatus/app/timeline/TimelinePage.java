@@ -26,7 +26,7 @@ import java.util.List;
  */
 public class TimelinePage<T extends ViewItem> {
     @NonNull
-    final TimelineListParameters params;
+    final TimelineParameters params;
     @NonNull
     public final List<T> items;
 
@@ -34,7 +34,7 @@ public class TimelinePage<T extends ViewItem> {
         return  (T) ViewItem.getEmpty(params.getTimelineType());
     }
 
-    public TimelinePage(@NonNull TimelineListParameters params, List<T> items) {
+    public TimelinePage(@NonNull TimelineParameters params, List<T> items) {
         this.params = params;
         this.items = items == null ? Collections.EMPTY_LIST : items;
     }

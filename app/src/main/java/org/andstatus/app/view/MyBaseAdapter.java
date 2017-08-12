@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,11 +23,12 @@ import android.widget.TextView;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.util.MyLog;
 
-public abstract class MyBaseAdapter extends BaseAdapter  implements View.OnClickListener {
+public abstract class MyBaseAdapter<T extends ViewItem> extends BaseAdapter  implements View.OnClickListener {
 
-    protected final float displayDensity;
+    private final float displayDensity;
     private volatile boolean positionRestored = false;
     protected final MyContext myContext;
 
@@ -39,7 +40,10 @@ public abstract class MyBaseAdapter extends BaseAdapter  implements View.OnClick
         }
     }
 
-    public Object getItem(View view) {
+    @Override
+    public abstract T getItem(int i);
+
+    public T getItem(View view) {
         return getItem(getPosition(view));
     }
 

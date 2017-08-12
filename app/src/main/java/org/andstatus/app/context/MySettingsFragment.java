@@ -48,7 +48,7 @@ import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.timeline.meta.TimelineList;
+import org.andstatus.app.timeline.meta.ManageTimelines;
 import org.andstatus.app.timeline.meta.TimelineTitle;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -338,7 +338,7 @@ public class MySettingsFragment extends PreferenceFragment implements
                 startActivity(new Intent(getActivity(), PersistentOriginList.class));
                 break;
             case KEY_MANAGE_TIMELINES:
-                startActivity(new Intent(getActivity(), TimelineList.class));
+                startActivity(new Intent(getActivity(), ManageTimelines.class));
                 break;
             case KEY_ABOUT_APPLICATION:
                 HelpActivity.startMe(getActivity(), false, HelpActivity.PAGE_LOGO);

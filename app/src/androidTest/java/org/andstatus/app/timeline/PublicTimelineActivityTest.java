@@ -148,12 +148,12 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
     }
 
     private int oneAttempt(TimelineActivity timelineActivity, String publicMessageText) {
-        final ViewGroup list = (ViewGroup) timelineActivity.findViewById(android.R.id.list);
+        final ViewGroup list = timelineActivity.findViewById(android.R.id.list);
         int msgCount = 0;
         for (int index = 0; index < list.getChildCount(); index++) {
             View messageView = list.getChildAt(index);
-            TextView bodyView = (TextView) messageView.findViewById(R.id.message_body);
-            long id = timelineActivity.getListAdapter().getItem(messageView).getMsgId();
+            TextView bodyView = messageView.findViewById(R.id.message_body);
+            long id = timelineActivity.getListAdapter().getItem(messageView).getId();
             if (bodyView != null) {
                 assertTrue("Message #" + id + " '" + bodyView.getText() + "' contains '" + publicMessageText + "'",
                         String.valueOf(bodyView.getText()).contains(publicMessageText));

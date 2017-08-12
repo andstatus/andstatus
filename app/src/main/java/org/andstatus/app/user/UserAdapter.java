@@ -29,7 +29,7 @@ import org.andstatus.app.view.MyBaseAdapter;
 
 import java.util.List;
 
-class UserAdapter extends MyBaseAdapter {
+class UserAdapter extends MyBaseAdapter<UserViewItem> {
     private final UserListContextMenu contextMenu;
     private final int listItemLayoutId;
     private final List<UserViewItem> items;
@@ -53,7 +53,7 @@ class UserAdapter extends MyBaseAdapter {
     }
 
     @Override
-    public Object getItem(int position) {
+    public UserViewItem getItem(int position) {
         if (position >= 0 && position < getCount()) {
             return items.get(position);
         }

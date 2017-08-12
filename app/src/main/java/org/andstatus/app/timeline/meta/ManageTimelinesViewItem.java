@@ -23,11 +23,11 @@ import org.andstatus.app.timeline.ViewItem;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineListViewItem extends ViewItem {
+public class ManageTimelinesViewItem extends ViewItem {
     final Timeline timeline;
     final TimelineTitle timelineTitle;
 
-    public TimelineListViewItem(MyContext myContext, Timeline timeline) {
+    public ManageTimelinesViewItem(MyContext myContext, Timeline timeline) {
         this.timeline = timeline;
         this.timelineTitle = TimelineTitle.load(myContext, timeline, MyAccount.EMPTY);
     }

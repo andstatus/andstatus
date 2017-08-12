@@ -27,7 +27,7 @@ import org.andstatus.app.view.MyBaseAdapter;
 
 import java.util.List;
 
-class QueueViewerAdapter extends MyBaseAdapter {
+class QueueViewerAdapter extends MyBaseAdapter<QueueData> {
     private final QueueViewer contextMenu;
     private final List<QueueData> items;
 
@@ -43,7 +43,7 @@ class QueueViewerAdapter extends MyBaseAdapter {
     }
 
     @Override
-    public Object getItem(int position) {
+    public QueueData getItem(int position) {
         if (position >= 0 && position < getCount()) {
             return items.get(position);
         }

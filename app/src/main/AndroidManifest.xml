@@ -247,7 +247,7 @@
             android:exported="true"
             android:parentActivityName=".timeline.TimelineActivity">
         </activity>
-        <activity android:name=".timeline.meta.TimelineList"
+        <activity android:name=".timeline.meta.ManageTimelines"
             android:label="@string/manage_timelines"
             android:parentActivityName=".context.MySettingsActivity">
         </activity>

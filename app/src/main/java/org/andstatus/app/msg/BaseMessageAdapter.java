@@ -27,7 +27,6 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.graphics.AttachedImageView;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyUrlSpan;
@@ -40,7 +39,7 @@ import java.util.Set;
 /**
  * @author yvolk@yurivolkov.com
  */
-public abstract class BaseMessageAdapter<T extends BaseMessageViewItem> extends MyBaseAdapter {
+public abstract class BaseMessageAdapter<T extends BaseMessageViewItem> extends MyBaseAdapter<T> {
     protected final boolean showButtonsBelowMessages =
             SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SHOW_BUTTONS_BELOW_MESSAGE, true);
     protected final MessageContextMenu contextMenu;
@@ -125,19 +124,18 @@ public abstract class BaseMessageAdapter<T extends BaseMessageViewItem> extends 
     }
 
     protected void showMessageBody(View view, BaseMessageViewItem item) {
-        TextView body = (TextView) view.findViewById(R.id.message_body);
+        TextView body = view.findViewById(R.id.message_body);
         MyUrlSpan.showText(body, item.getBody(), true, true);
     }
 
     protected void showAvatar(View view, BaseMessageViewItem item) {
-        AvatarView avatarView = (AvatarView) view.findViewById(R.id.avatar_image);
+        AvatarView avatarView = view.findViewById(R.id.avatar_image);
         item.avatarFile.showImage(contextMenu.getActivity(), avatarView);
     }
 
     protected void showAttachedImage(View view, BaseMessageViewItem item) {
         preloadedImages.add(item.getMsgId());
-        item.getAttachedImageFile().showImage(contextMenu.getActivity(),
-                (AttachedImageView) view.findViewById(R.id.attached_image));
+        item.getAttachedImageFile().showImage(contextMenu.getActivity(), view.findViewById(R.id.attached_image));
     }
 
     protected void showMarkReplies(ViewGroup view, BaseMessageViewItem item) {
@@ -175,14 +173,11 @@ public abstract class BaseMessageAdapter<T extends BaseMessageViewItem> extends 
 
     private void setOnButtonClick(final View viewGroup, int buttonId, final MessageListContextMenuItem menuItem) {
         viewGroup.findViewById(buttonId).setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (menuItem.equals(MessageListContextMenuItem.UNKNOWN)) {
-                            viewGroup.showContextMenu();
-                        } else {
-                            onButtonClick(v, menuItem);
-                        }
+                v -> {
+                    if (menuItem.equals(MessageListContextMenuItem.UNKNOWN)) {
+                        viewGroup.showContextMenu();
+                    } else {
+                        onButtonClick(v, menuItem);
                     }
                 }
         );
@@ -197,7 +192,7 @@ public abstract class BaseMessageAdapter<T extends BaseMessageViewItem> extends 
     public abstract T getItem(int position);
 
     private void onButtonClick(View v, MessageListContextMenuItem contextMenuItemIn) {
-        BaseMessageViewItem item = (BaseMessageViewItem) getItem(v);
+        T item = getItem(v);
         if (item != null && item.msgStatus == DownloadStatus.LOADED) {
             // Currently selected account is the best candidate as an actor
             MyAccount ma = contextMenu.getActivity().getCurrentMyAccount();
@@ -221,8 +216,8 @@ public abstract class BaseMessageAdapter<T extends BaseMessageViewItem> extends 
     }
 
     private void tintIcon(View viewGroup, boolean colored, int viewId, int viewIdColored) {
-        ImageView imageView = (ImageView) viewGroup.findViewById(viewId);
-        ImageView imageViewTinted = (ImageView) viewGroup.findViewById(viewIdColored);
+        ImageView imageView = viewGroup.findViewById(viewId);
+        ImageView imageViewTinted = viewGroup.findViewById(viewIdColored);
         imageView.setVisibility(colored ? View.GONE : View.VISIBLE);
         imageViewTinted.setVisibility(colored ? View.VISIBLE : View.GONE);
     }

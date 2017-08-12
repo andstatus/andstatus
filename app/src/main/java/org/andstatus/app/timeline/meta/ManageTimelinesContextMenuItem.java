@@ -24,10 +24,10 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.timeline.WhichPage;
 
-public enum TimelineListContextMenuItem implements ContextMenuItem {
+public enum ManageTimelinesContextMenuItem implements ContextMenuItem {
     SHOW_MESSAGES() {
         @Override
-        public boolean execute(TimelineListContextMenu menu, TimelineListViewItem viewItem) {
+        public boolean execute(ManageTimelinesContextMenu menu, ManageTimelinesViewItem viewItem) {
             TimelineActivity.startForTimeline(menu.getActivity().getMyContext(), menu.getActivity(),
                     viewItem.timeline, null, false);
             return true;
@@ -35,7 +35,7 @@ public enum TimelineListContextMenuItem implements ContextMenuItem {
     },
     SYNC_NOW() {
         @Override
-        public boolean execute(TimelineListContextMenu menu, TimelineListViewItem viewItem) {
+        public boolean execute(ManageTimelinesContextMenu menu, ManageTimelinesViewItem viewItem) {
             MyServiceManager.sendManualForegroundCommand(
                     CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, viewItem.timeline));
             return true;
@@ -43,7 +43,7 @@ public enum TimelineListContextMenuItem implements ContextMenuItem {
     },
     DELETE() {
         @Override
-        public boolean execute(TimelineListContextMenu menu, TimelineListViewItem viewItem) {
+        public boolean execute(ManageTimelinesContextMenu menu, ManageTimelinesViewItem viewItem) {
             menu.getActivity().getMyContext().persistentTimelines().delete(viewItem.timeline);
             menu.getActivity().showList(WhichPage.CURRENT);
             return true;
@@ -51,7 +51,7 @@ public enum TimelineListContextMenuItem implements ContextMenuItem {
     },
     MAKE_DEFAULT() {
         @Override
-        public boolean execute(TimelineListContextMenu menu, TimelineListViewItem viewItem) {
+        public boolean execute(ManageTimelinesContextMenu menu, ManageTimelinesViewItem viewItem) {
             menu.getActivity().getMyContext().persistentTimelines().setDefault(viewItem.timeline);
             menu.getActivity().showList(WhichPage.CURRENT);
             return true;
@@ -59,7 +59,7 @@ public enum TimelineListContextMenuItem implements ContextMenuItem {
     },
     FORGET_SYNC_EVENTS() {
         @Override
-        public boolean execute(TimelineListContextMenu menu, TimelineListViewItem viewItem) {
+        public boolean execute(ManageTimelinesContextMenu menu, ManageTimelinesViewItem viewItem) {
             viewItem.timeline.forgetPositionsAndDates();
             viewItem.timeline.resetCounters(true);
             menu.getActivity().showList(WhichPage.CURRENT);
@@ -73,8 +73,8 @@ public enum TimelineListContextMenuItem implements ContextMenuItem {
         return Menu.FIRST + ordinal() + 1;
     }
 
-    public static TimelineListContextMenuItem fromId(int id) {
-        for (TimelineListContextMenuItem item : TimelineListContextMenuItem.values()) {
+    public static ManageTimelinesContextMenuItem fromId(int id) {
+        for (ManageTimelinesContextMenuItem item : ManageTimelinesContextMenuItem.values()) {
             if (item.getId() == id) {
                 return item;
             }
@@ -86,7 +86,7 @@ public enum TimelineListContextMenuItem implements ContextMenuItem {
         menu.add(Menu.NONE, this.getId(), order, titleRes);
     }
 
-    public boolean execute(TimelineListContextMenu menu, TimelineListViewItem viewItem) {
+    public boolean execute(ManageTimelinesContextMenu menu, ManageTimelinesViewItem viewItem) {
         return false;
     }
 }

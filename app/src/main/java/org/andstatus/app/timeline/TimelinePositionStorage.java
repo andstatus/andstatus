@@ -20,6 +20,7 @@ import android.widget.ListView;
 
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.view.MyBaseAdapter;
 
 /**
  * Determines where to save / retrieve position in the list
@@ -28,13 +29,12 @@ import org.andstatus.app.util.MyLog;
  * 2014-11-15 We are storing {@link MsgTable#SENT_DATE} for the last item to retrieve, not its ID as before
  * @author yvolk@yurivolkov.com
  */
-class TimelineListPositionStorage {
-    public static final String TAG = TimelineListPositionStorage.class.getSimpleName();
+class TimelinePositionStorage<T extends ViewItem> {
     private static final int NOT_STORED = -1;
 
-    private final MessageAdapter adapter;
+    private final MyBaseAdapter<T> adapter;
     private final ListView mListView;
-    private final TimelineListParameters mListParameters;
+    private final TimelineParameters mListParameters;
 
     static class TLPosition {
         long firstVisibleItemId = NOT_STORED;
@@ -42,7 +42,7 @@ class TimelineListPositionStorage {
         int y = NOT_STORED;
     }
 
-    TimelineListPositionStorage(MessageAdapter listAdapter, ListView listView, TimelineListParameters listParameters) {
+    TimelinePositionStorage(MyBaseAdapter<T> listAdapter, ListView listView, TimelineParameters listParameters) {
         this.adapter = listAdapter;
         this.mListView = listView;
         this.mListParameters = listParameters;
@@ -161,7 +161,7 @@ class TimelineListPositionStorage {
         adapter.setPositionRestored(true);
     }
 
-    public static void setPosition(ListView listView, int position) {
+    static void setPosition(ListView listView, int position) {
         if (listView == null) {
             return;
         }
@@ -170,7 +170,8 @@ class TimelineListPositionStorage {
         int y = position == 0 ? 0 : viewHeight - childHeight;
         int headerViewsCount = listView.getHeaderViewsCount();
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(TAG, "Set position of " + position + " item to " + y + " px, header views: " + headerViewsCount);
+            MyLog.v(TimelinePositionStorage.class, "Set position of " + position + " item to " + y + " px," +
+                    " header views: " + headerViewsCount);
         }
         listView.setSelectionFromTop(position  + headerViewsCount, y);
     }

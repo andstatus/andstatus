@@ -77,12 +77,12 @@ public class TimelineSelector extends SelectorDialog {
             return;
         }
 
-        final List<TimelineListViewItem> items = new ArrayList<>();
+        final List<ManageTimelinesViewItem> items = new ArrayList<>();
         for (Timeline timeline2 : timelines) {
-            TimelineListViewItem viewItem = new TimelineListViewItem(myContext, timeline2);
+            ManageTimelinesViewItem viewItem = new ManageTimelinesViewItem(myContext, timeline2);
             items.add(viewItem);
         }
-        Collections.sort(items, new TimelineListViewItemComparator(R.id.displayedInSelector, true, false));
+        Collections.sort(items, new ManageTimelinesViewItemComparator(R.id.displayedInSelector, true, false));
         removeDuplicates(items);
 
         setListAdapter(newListAdapter(items));
@@ -97,10 +97,10 @@ public class TimelineSelector extends SelectorDialog {
         });
     }
 
-    private void removeDuplicates(List<TimelineListViewItem> timelines) {
-        Map<String, TimelineListViewItem> unique = new HashMap<>();
+    private void removeDuplicates(List<ManageTimelinesViewItem> timelines) {
+        Map<String, ManageTimelinesViewItem> unique = new HashMap<>();
         boolean removeSomething = false;
-        for (TimelineListViewItem viewItem : timelines) {
+        for (ManageTimelinesViewItem viewItem : timelines) {
             String key = viewItem.timelineTitle.toString();
             if (unique.containsKey(key)) {
                 removeSomething =  true;
@@ -113,10 +113,10 @@ public class TimelineSelector extends SelectorDialog {
         }
     }
 
-    private MySimpleAdapter newListAdapter(List<TimelineListViewItem> listData) {
+    private MySimpleAdapter newListAdapter(List<ManageTimelinesViewItem> listData) {
         List<Map<String, String>> list = new ArrayList<>();
         final String syncText = getText(R.string.synced_abbreviated).toString();
-        for (TimelineListViewItem viewItem : listData) {
+        for (ManageTimelinesViewItem viewItem : listData) {
             Map<String, String> map = new HashMap<>();
             map.put(KEY_VISIBLE_NAME, viewItem.timelineTitle.toString());
             map.put(KEY_SYNC_AUTO, viewItem.timeline.isSyncedAutomatically() ? syncText : "");

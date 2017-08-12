@@ -24,12 +24,13 @@ import android.view.Menu;
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.timeline.LoadableListActivity;
+import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.util.UriUtils;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-abstract public class MessageEditorListActivity extends LoadableListActivity implements MessageEditorContainer {
+abstract public class MessageEditorListActivity<T extends ViewItem> extends LoadableListActivity<T> implements MessageEditorContainer {
     private MessageEditor messageEditor;
 
     @Override

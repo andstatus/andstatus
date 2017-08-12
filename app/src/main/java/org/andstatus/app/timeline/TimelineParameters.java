@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,7 +42,7 @@ import org.andstatus.app.util.SelectionAndArgs;
 
 import java.util.Date;
 
-public class TimelineListParameters {
+public class TimelineParameters {
     private final MyContext myContext;
 
     LoaderManager.LoaderCallbacks<Cursor> mLoaderCallbacks = null;
@@ -72,8 +72,8 @@ public class TimelineListParameters {
     volatile long minSentDateLoaded = 0;
     volatile long maxSentDateLoaded = 0;
 
-    public static TimelineListParameters clone(@NonNull TimelineListParameters prev, WhichPage whichPage) {
-        TimelineListParameters params = new TimelineListParameters(prev.myContext);
+    public static TimelineParameters clone(@NonNull TimelineParameters prev, WhichPage whichPage) {
+        TimelineParameters params = new TimelineParameters(prev.myContext);
         params.whichPage = whichPage == WhichPage.ANY ? prev.whichPage : whichPage;
         if (whichPage != WhichPage.EMPTY) {
             enrichNonEmptyParameters(params, prev);
@@ -81,7 +81,7 @@ public class TimelineListParameters {
         return params;
     }
 
-    private static void enrichNonEmptyParameters(TimelineListParameters params, TimelineListParameters prev) {
+    private static void enrichNonEmptyParameters(TimelineParameters params, TimelineParameters prev) {
         params.mLoaderCallbacks = prev.mLoaderCallbacks;
         params.timeline = prev.getTimeline();
 
@@ -104,7 +104,7 @@ public class TimelineListParameters {
             default:
                 break;
         }
-        MyLog.v(TimelineListParameters.class, msgLog);
+        MyLog.v(TimelineParameters.class, msgLog);
 
         params.mProjection = TimelineSql.getTimelineProjection();
     }
@@ -128,7 +128,7 @@ public class TimelineListParameters {
         return maxSentDate == 0 && minSentDate > 0;
     }
 
-    public TimelineListParameters(MyContext myContext) {
+    public TimelineParameters(MyContext myContext) {
         this.myContext = myContext;
     }
 
@@ -186,7 +186,7 @@ public class TimelineListParameters {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        TimelineListParameters that = (TimelineListParameters) o;
+        TimelineParameters that = (TimelineParameters) o;
 
         if (!timeline.equals(that.timeline)) return false;
         if (!whichPage.equals(WhichPage.CURRENT) && !that.whichPage.equals(WhichPage.CURRENT)) {
@@ -243,7 +243,7 @@ public class TimelineListParameters {
     private void prepareQueryParameters() {
         switch (whichPage) {
             case CURRENT:
-                minSentDate = (new TimelineListPositionStorage(null, null, this)).getTLPosition().minSentDate;
+                minSentDate = (new TimelinePositionStorage(null, null, this)).getTLPosition().minSentDate;
                 break;
             default:
                 break;
@@ -327,7 +327,7 @@ public class TimelineListParameters {
         return myContext;
     }
 
-    public boolean isSameTimeline(TimelineListParameters other) {
+    public boolean isSameTimeline(TimelineParameters other) {
         return other != null &&  getTimeline().equals(other.getTimeline());
     }
 }

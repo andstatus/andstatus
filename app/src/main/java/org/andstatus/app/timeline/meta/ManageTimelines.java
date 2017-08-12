@@ -52,13 +52,13 @@ import java.util.List;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineList extends LoadableListActivity {
+public class ManageTimelines extends LoadableListActivity {
     private int sortByField = R.id.synced;
     private int sortFieldPrev = 0;
     private boolean sortDefault = true;
     private ViewGroup columnHeadersParent = null;
-    private TimelineListContextMenu contextMenu = null;
-    private TimelineListViewItem selectedItem = null;
+    private ManageTimelinesContextMenu contextMenu = null;
+    private ManageTimelinesViewItem selectedItem = null;
     private boolean isTotal = false;
     private volatile long countersSince = 0;
 
@@ -123,7 +123,7 @@ public class TimelineList extends LoadableListActivity {
         mLayoutId = R.layout.timeline_list;
         super.onCreate(savedInstanceState);
 
-        contextMenu = new TimelineListContextMenu(this);
+        contextMenu = new ManageTimelinesContextMenu(this);
         LinearLayout linearLayout = (LinearLayout) findViewById(R.id.linear_list_wrapper);
         LayoutInflater inflater = getLayoutInflater();
         View listHeader = inflater.inflate(R.layout.timeline_list_header, linearLayout, false);
@@ -153,14 +153,14 @@ public class TimelineList extends LoadableListActivity {
 
     @Override
     protected SyncLoader newSyncLoader(Bundle args) {
-        return new SyncLoader<TimelineListViewItem>() {
+        return new SyncLoader<ManageTimelinesViewItem>() {
             @Override
             public void load(ProgressPublisher publisher) {
                 // TODO: Implement filter parameters in this activity
                 countersSince = 0;
                 for (Timeline timeline : myContext.persistentTimelines().
                         getFiltered(false, TriState.UNKNOWN, TimelineType.UNKNOWN, null, null)) {
-                    TimelineListViewItem viewItem = new TimelineListViewItem(myContext, timeline);
+                    ManageTimelinesViewItem viewItem = new ManageTimelinesViewItem(myContext, timeline);
                     if (viewItem.timeline.getCountSince() > 0 &&
                             (viewItem.timeline.getCountSince() < countersSince || countersSince == 0)) {
                         countersSince = viewItem.timeline.getCountSince();
@@ -168,7 +168,7 @@ public class TimelineList extends LoadableListActivity {
                     items.add(viewItem);
                 }
                 if (sortByField != 0) {
-                    Collections.sort(items, new TimelineListViewItemComparator(sortByField, sortDefault, isTotal));
+                    Collections.sort(items, new ManageTimelinesViewItemComparator(sortByField, sortDefault, isTotal));
                 }
             }
         };
@@ -177,12 +177,12 @@ public class TimelineList extends LoadableListActivity {
     @Override
     protected MyBaseAdapter newListAdapter() {
 
-        return new MyBaseAdapter(myContext) {
-            final List<TimelineListViewItem> mItems;
+        return new MyBaseAdapter<ManageTimelinesViewItem>(myContext) {
+            final List<ManageTimelinesViewItem> mItems;
             Timeline defaultTimeline = myContext.persistentTimelines().getDefault();
 
             {
-                mItems = (List<TimelineListViewItem>) getLoaded().getList();
+                mItems = (List<ManageTimelinesViewItem>) getLoaded().getList();
             }
 
             @Override
@@ -191,7 +191,7 @@ public class TimelineList extends LoadableListActivity {
             }
 
             @Override
-            public Object getItem(int position) {
+            public ManageTimelinesViewItem getItem(int position) {
                 if (position < 0 || position >= getCount()) {
                     return null;
                 }
@@ -212,7 +212,7 @@ public class TimelineList extends LoadableListActivity {
                 view.setOnCreateContextMenuListener(contextMenu);
                 view.setOnClickListener(this);
                 setPosition(view, position);
-                final TimelineListViewItem item = mItems.get(position);
+                final ManageTimelinesViewItem item = mItems.get(position);
                 MyUrlSpan.showText(view, R.id.title, item.timelineTitle.title, false, true);
                 MyAccount myAccount = item.timeline.getMyAccount();
                 MyUrlSpan.showText(view, R.id.account, myAccount.isValid() ?
@@ -237,18 +237,18 @@ public class TimelineList extends LoadableListActivity {
                 MyUrlSpan.showText(view, R.id.newItemsCount,
                         I18n.notZero(item.timeline.getNewItemsCount(isTotal)), false, true);
                 MyUrlSpan.showText(view, R.id.syncSucceededDate,
-                        RelativeTime.getDifference(TimelineList.this, item.timeline.getSyncSucceededDate()),
+                        RelativeTime.getDifference(ManageTimelines.this, item.timeline.getSyncSucceededDate()),
                         false, true);
                 MyUrlSpan.showText(view, R.id.syncFailedTimesCount,
                         I18n.notZero(item.timeline.getSyncFailedTimesCount(isTotal)), false, true);
                 MyUrlSpan.showText(view, R.id.syncFailedDate,
-                        RelativeTime.getDifference(TimelineList.this, item.timeline.getSyncFailedDate()),
+                        RelativeTime.getDifference(ManageTimelines.this, item.timeline.getSyncFailedDate()),
                         false, true);
                 MyUrlSpan.showText(view, R.id.errorMessage, item.timeline.getErrorMessage(), false, true);
                 return view;
             }
 
-            protected void showDisplayedInSelector(View parentView, final TimelineListViewItem item) {
+            protected void showDisplayedInSelector(View parentView, final ManageTimelinesViewItem item) {
                 CheckBox view = (CheckBox) parentView.findViewById(R.id.displayedInSelector);
                 MyCheckBox.set(parentView, R.id.displayedInSelector, item.timeline.isDisplayedInSelector() != DisplayedInSelector.NEVER,
                         new CompoundButton.OnCheckedChangeListener() {
@@ -258,7 +258,7 @@ public class TimelineList extends LoadableListActivity {
                                     selectedItem = item;
                                     EnumSelector.newInstance(
                                             ActivityRequestCode.SELECT_DISPLAYED_IN_SELECTOR,
-                                            DisplayedInSelector.class).show(TimelineList.this);
+                                            DisplayedInSelector.class).show(ManageTimelines.this);
                                 } else {
                                     item.timeline.setDisplayedInSelector(DisplayedInSelector.NEVER);
                                     buttonView.setText("");
@@ -271,7 +271,7 @@ public class TimelineList extends LoadableListActivity {
             }
 
             private View newView() {
-                return LayoutInflater.from(TimelineList.this).inflate(R.layout.timeline_list_item, null);
+                return LayoutInflater.from(ManageTimelines.this).inflate(R.layout.timeline_list_item, null);
             }
         };
     }

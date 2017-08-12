@@ -21,7 +21,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".timeline.meta.TimelineList">
+    tools:context=".timeline.meta.ManageTimelines">
 
     <include layout="@layout/action_bar" />
 

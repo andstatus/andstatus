@@ -27,11 +27,11 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineListTest extends ActivityTest<TimelineList> {
+public class ManageTimelinesTest extends ActivityTest<ManageTimelines> {
 
     @Override
-    protected Class<TimelineList> getActivityClass() {
-        return TimelineList.class;
+    protected Class<ManageTimelines> getActivityClass() {
+        return ManageTimelines.class;
     }
 
     @Before

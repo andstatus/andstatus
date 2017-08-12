@@ -44,6 +44,8 @@ import org.andstatus.app.MyAction;
 import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.activity.ActivityAdapter;
+import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -61,8 +63,8 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.test.SelectorActivityMock;
+import org.andstatus.app.timeline.meta.ManageTimelines;
 import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.timeline.meta.TimelineList;
 import org.andstatus.app.timeline.meta.TimelineSelector;
 import org.andstatus.app.timeline.meta.TimelineTitle;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -83,14 +85,14 @@ import java.util.Collections;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineActivity<T extends ViewItem> extends MessageEditorListActivity implements
+public class TimelineActivity<T extends ViewItem> extends MessageEditorListActivity<T> implements
         MessageListContextMenuContainer, AbsListView.OnScrollListener {
     public static final String HORIZONTAL_ELLIPSIS = "\u2026";
 
     /** Parameters for the next page request, not necessarily requested already */
-    private volatile TimelineListParameters paramsNew = null;
+    private volatile TimelineParameters paramsNew = null;
     /** Last parameters, requested to load. Thread safe. They are taken by a Loader at some time */
-    private volatile TimelineListParameters paramsToLoad;
+    private volatile TimelineParameters paramsToLoad;
     private volatile TimelineData<T> listData;
 
     private MessageContextMenu contextMenu;
@@ -190,13 +192,20 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
     }
 
     @Override
-    public MessageAdapter getListAdapter() {
-        return (MessageAdapter) super.getListAdapter();
+    public MyBaseAdapter<T> getListAdapter() {
+        return super.getListAdapter();
     }
 
     @Override
-    protected MyBaseAdapter newListAdapter() {
-        return new MessageAdapter(contextMenu, (TimelineData<MessageViewItem>) getListData());
+    protected MyBaseAdapter<T> newListAdapter() {
+        switch (getParamsNew().getTimelineType()) {
+            case NOTIFICATIONS:
+                return (MyBaseAdapter <T>) new ActivityAdapter(
+                        contextMenu, (TimelineData<ActivityViewItem>) getListData());
+            default:
+                return (MyBaseAdapter <T>) new MessageAdapter(
+                        contextMenu, (TimelineData<MessageViewItem>) getListData());
+        }
     }
 
     @Override
@@ -206,18 +215,17 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
     }
 
     private void initializeDrawer() {
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (mDrawerLayout != null) {
-            mDrawerToggle = new ActionBarDrawerToggle(
-                    this,
-                    mDrawerLayout,
-                    R.string.drawer_open,
-                    R.string.drawer_close
-            ) {
-            };
-            mDrawerLayout.addDrawerListener(mDrawerToggle);
-            mDrawerToggle.setHomeAsUpIndicator(MyPreferences.getActionBarTextHomeIconResourceId());
-        }
+        mDrawerLayout = findViewById(R.id.drawer_layout);
+        mDrawerToggle = new ActionBarDrawerToggle(
+                this,
+                mDrawerLayout,
+                R.string.drawer_open, 
+                R.string.drawer_close 
+                ) {
+        };
+
+        mDrawerLayout.addDrawerListener(mDrawerToggle);
+        mDrawerToggle.setHomeAsUpIndicator(MyPreferences.getActionBarTextHomeIconResourceId());
     }
 
     private void restoreActivityState(@NonNull Bundle savedInstanceState) {
@@ -270,7 +278,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
         if (getListData().mayHaveYoungerPage()) {
             showList(WhichPage.TOP);
         } else {
-            TimelineListPositionStorage.setPosition(getListView(), 0);
+            TimelinePositionStorage.setPosition(getListView(), 0);
         }
     }
 
@@ -372,7 +380,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
     protected void saveListPosition() {
         if (getParamsLoaded().isLoaded() && isPositionRestored()) {
             runOnUiThread(
-                () -> new TimelineListPositionStorage(getListAdapter(), getListView(), getParamsLoaded()).save()
+                () -> new TimelinePositionStorage<T>(getListAdapter(), getListView(), getParamsLoaded()).save()
             );
         }
     }
@@ -455,7 +463,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
                 syncWithInternet(getParamsLoaded().getTimeline(), true, true);
                 break;
             case R.id.refresh_menu_item:
-                if (getListData().mayHaveYoungerPage() || getListView().getLastVisiblePosition() > TimelineListParameters.PAGE_SIZE / 2) {
+                if (getListData().mayHaveYoungerPage() || getListView().getLastVisiblePosition() > TimelineParameters.PAGE_SIZE / 2) {
                     showList(WhichPage.CURRENT);
                 } else {
                     showList(WhichPage.YOUNGEST);
@@ -465,7 +473,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
                 startActivity(new Intent(getActivity(), QueueViewer.class));
                 break;
             case R.id.manage_timelines:
-                startActivity(new Intent(getActivity(), TimelineList.class));
+                startActivity(new Intent(getActivity(), ManageTimelines.class));
                 break;
             case R.id.preferences_menu_id:
                 startMyPreferenceActivity();
@@ -695,7 +703,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
 
     /** Parameters of currently shown Timeline */
     @NonNull
-    private TimelineListParameters getParamsLoaded() {
+    private TimelineParameters getParamsLoaded() {
         return getListData().params;
     }
 
@@ -711,7 +719,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
     private TimelineData<T> setAndGetListData(
             TimelinePage<T> pageLoaded) {
         listData = new TimelineData<T>(listData, pageLoaded);
-        MessageAdapter listAdapter = getListAdapter();
+        MyBaseAdapter<T> listAdapter = getListAdapter();
         if (listAdapter != null) {
             // Old value of listData is modified also
             listAdapter.notifyDataSetChanged();
@@ -725,12 +733,12 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
     }
 
     protected void showList(WhichPage whichPage, TriState chainedRequest) {
-        showList(TimelineListParameters.clone(getReferenceParametersFor(whichPage), whichPage),
+        showList(TimelineParameters.clone(getReferenceParametersFor(whichPage), whichPage),
                 chainedRequest);
     }
 
     @NonNull
-    private TimelineListParameters getReferenceParametersFor(WhichPage whichPage) {
+    private TimelineParameters getReferenceParametersFor(WhichPage whichPage) {
         switch (whichPage) {
             case OLDER:
                 if (getListData().size() > 0) {
@@ -743,7 +751,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
                 }
                 return getParamsLoaded();
             case EMPTY:
-                return new TimelineListParameters(myContext);
+                return new TimelineParameters(myContext);
             default:
                 return getParamsNew();
         }
@@ -755,7 +763,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
      * This is done asynchronously.
      * This method should be called from UI thread only.
      */
-    protected void showList(TimelineListParameters params, TriState chainedRequest) {
+    protected void showList(TimelineParameters params, TriState chainedRequest) {
         final String method = "showList";
         if (params.isEmpty()) {
             MyLog.v(this, method + "; ignored empty request");
@@ -790,9 +798,9 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
     protected SyncLoader newSyncLoader(Bundle args) {
         final String method = "newSyncLoader";
         WhichPage whichPage = WhichPage.load(args);
-        TimelineListParameters params = paramsToLoad == null
+        TimelineParameters params = paramsToLoad == null
                 || whichPage == WhichPage.EMPTY ?
-                new TimelineListParameters(myContext) : paramsToLoad;
+                new TimelineParameters(myContext) : paramsToLoad;
         if (params.whichPage != WhichPage.EMPTY) {
             MyLog.v(this, method + ": " + params);
             Intent intent = getIntent();
@@ -814,19 +822,18 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
         boolean keepCurrentPosition = keepCurrentPosition_in && getListData().isSameTimeline &&
                 isPositionRestored() && dataLoaded.params.whichPage != WhichPage.TOP;
         super.onLoadFinished(keepCurrentPosition);
-        MessageAdapter listAdapter = getListAdapter();
+        MyBaseAdapter<T> listAdapter = getListAdapter();
         if (dataLoaded.params.whichPage == WhichPage.TOP && listAdapter != null) {
-            TimelineListPositionStorage.setPosition(getListView(), 0);
+            TimelinePositionStorage.setPosition(getListView(), 0);
             listAdapter.setPositionRestored(true);
         }
         // TODO end: Move this inside superclass
 
         if (!isPositionRestored()) {
-            new TimelineListPositionStorage(getListAdapter(), getListView(), dataLoaded.params)
-                    .restore();
+            new TimelinePositionStorage<T>(getListAdapter(), getListView(), dataLoaded.params).restore();
         }
 
-        TimelineListParameters otherParams = paramsToLoad;
+        TimelineParameters otherParams = paramsToLoad;
         boolean isParamsChanged = otherParams != null && !dataLoaded.params.equals(otherParams);
         WhichPage otherPageToRequest = WhichPage.EMPTY;
         if (!isParamsChanged && getListData().size() < 10) {
@@ -1199,9 +1206,9 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
     }
 
     @NonNull
-    public TimelineListParameters getParamsNew() {
+    public TimelineParameters getParamsNew() {
         if (paramsNew == null) {
-            paramsNew = new TimelineListParameters(myContext);
+            paramsNew = new TimelineParameters(myContext);
         }
         return paramsNew;
     }
