@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,7 +32,7 @@ import org.andstatus.app.timeline.ViewItem;
 import java.util.HashSet;
 import java.util.Set;
 
-public class UserViewItem implements Comparable<UserViewItem>,ViewItem {
+public class UserViewItem extends ViewItem implements Comparable<UserViewItem> {
     public static final UserViewItem EMPTY = fromMbUser(MbUser.EMPTY);
     boolean populated = false;
     @NonNull

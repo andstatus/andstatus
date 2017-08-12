@@ -37,14 +37,11 @@ import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class BaseMessageViewItem implements ViewItem {
+public class BaseMessageViewItem extends ViewItem {
     private static final int MIN_LENGTH_TO_COMPARE = 5;
     private MyContext myContext = MyContextHolder.get();
     long updatedDate = 0;
@@ -81,8 +78,6 @@ public class BaseMessageViewItem implements ViewItem {
     private long linkedUserId = 0;
     private MyAccount linkedMyAccount = MyAccount.EMPTY;
 
-    private final List<ViewItem> children = new ArrayList<>();
-
     @NonNull
     public MyContext getMyContext() {
         return myContext;
@@ -108,11 +103,11 @@ public class BaseMessageViewItem implements ViewItem {
         this.originId = originId;
     }
 
-    public long getLinkedUserId() {
+    long getLinkedUserId() {
         return linkedUserId;
     }
 
-    public void setLinkedUserAndAccount(long linkedUserId) {
+    void setLinkedUserAndAccount(long linkedUserId) {
         this.linkedUserId = linkedUserId;
         linkedMyAccount = getMyContext().persistentAccounts().fromUserId(linkedUserId);
         if (!linkedMyAccount.isValid()) {
@@ -125,22 +120,18 @@ public class BaseMessageViewItem implements ViewItem {
         return linkedMyAccount;
     }
 
-    public boolean isLinkedToMyAccount() {
+    boolean isLinkedToMyAccount() {
         return linkedUserId != 0 && linkedMyAccount.getUserId() == linkedUserId;
     }
 
-    protected void setCollapsedStatus(Context context, StringBuilder messageDetails) {
+    private void setCollapsedStatus(StringBuilder messageDetails) {
         if (isCollapsed()) {
             I18n.appendWithSpace(messageDetails, "(+" + getChildren().size() + ")");
         }
     }
 
     @Override
-    public Collection<ViewItem> getChildren() {
-        return children;
-    }
-
-    @Override
+    @NonNull
     public DuplicationLink duplicates(ViewItem otherIn) {
 
         DuplicationLink link = DuplicationLink.NONE;
@@ -201,7 +192,7 @@ public class BaseMessageViewItem implements ViewItem {
         setRecipientName(context, builder);
         setMessageSource(context, builder);
         setMessageStatus(context, builder);
-        setCollapsedStatus(context, builder);
+        setCollapsedStatus(builder);
         if (MyPreferences.isShowDebuggingInfoInUi()) {
             I18n.appendWithSpace(builder, "(msgId=" + getMsgId() + ")");
         }

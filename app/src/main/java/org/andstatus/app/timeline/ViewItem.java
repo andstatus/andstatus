@@ -24,11 +24,15 @@ import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.msg.MessageViewItem;
 import org.andstatus.app.timeline.meta.TimelineType;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
-public interface ViewItem {
-    static ViewItem getEmpty(@NonNull TimelineType timelineType) {
+public class ViewItem {
+    private final List<ViewItem> children = new ArrayList<>();
+
+    @NonNull
+    public static ViewItem getEmpty(@NonNull TimelineType timelineType) {
         switch (timelineType) {
             case NOTIFICATIONS:
                 return ActivityViewItem.EMPTY;
@@ -39,29 +43,36 @@ public interface ViewItem {
         }
     }
 
-    long getId();
-    long getDate();
-
-    default Collection<ViewItem> getChildren() {
-        return Collections.emptyList();
+    public long getId() {
+        return 0;
     }
 
-    default DuplicationLink duplicates(ViewItem other) {
+    public long getDate() {
+        return 0;
+    }
+
+    @NonNull
+    public final Collection<ViewItem> getChildren() {
+        return children;
+    }
+
+    @NonNull
+    public DuplicationLink duplicates(ViewItem other) {
         return DuplicationLink.NONE;
     }
 
-    default boolean isCollapsed() {
+    public boolean isCollapsed() {
         return !getChildren().isEmpty();
     }
 
-    default void collapse(ViewItem child) {
+    void collapse(ViewItem child) {
         this.getChildren().addAll(child.getChildren());
         child.getChildren().clear();
         this.getChildren().add(child);
     }
 
     @NonNull
-    default Pair<ViewItem,Boolean> fromCursor(Cursor cursor, KeywordsFilter keywordsFilter,
+    public Pair<ViewItem,Boolean> fromCursor(Cursor cursor, KeywordsFilter keywordsFilter,
                                                    KeywordsFilter searchQuery, boolean hideRepliesNotToMeOrFriends) {
         return new Pair<>(getEmpty(TimelineType.UNKNOWN), true);
     }
