@@ -190,13 +190,13 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
     }
 
     @Override
-    public TimelineAdapter getListAdapter() {
-        return (TimelineAdapter) super.getListAdapter();
+    public MessageAdapter getListAdapter() {
+        return (MessageAdapter) super.getListAdapter();
     }
 
     @Override
     protected MyBaseAdapter newListAdapter() {
-        return new TimelineAdapter(contextMenu, (TimelineData<MessageViewItem>) getListData());
+        return new MessageAdapter(contextMenu, (TimelineData<MessageViewItem>) getListData());
     }
 
     @Override
@@ -711,7 +711,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
     private TimelineData<T> setAndGetListData(
             TimelinePage<T> pageLoaded) {
         listData = new TimelineData<T>(listData, pageLoaded);
-        TimelineAdapter listAdapter = getListAdapter();
+        MessageAdapter listAdapter = getListAdapter();
         if (listAdapter != null) {
             // Old value of listData is modified also
             listAdapter.notifyDataSetChanged();
@@ -814,7 +814,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
         boolean keepCurrentPosition = keepCurrentPosition_in && getListData().isSameTimeline &&
                 isPositionRestored() && dataLoaded.params.whichPage != WhichPage.TOP;
         super.onLoadFinished(keepCurrentPosition);
-        TimelineAdapter listAdapter = getListAdapter();
+        MessageAdapter listAdapter = getListAdapter();
         if (dataLoaded.params.whichPage == WhichPage.TOP && listAdapter != null) {
             TimelineListPositionStorage.setPosition(getListView(), 0);
             listAdapter.setPositionRestored(true);

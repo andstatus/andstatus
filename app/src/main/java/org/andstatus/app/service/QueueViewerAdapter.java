@@ -27,11 +27,11 @@ import org.andstatus.app.view.MyBaseAdapter;
 
 import java.util.List;
 
-class QueueViewerListAdapter extends MyBaseAdapter {
+class QueueViewerAdapter extends MyBaseAdapter {
     private final QueueViewer contextMenu;
     private final List<QueueData> items;
 
-    public QueueViewerListAdapter(QueueViewer contextMenu, List<QueueData> items) {
+    public QueueViewerAdapter(QueueViewer contextMenu, List<QueueData> items) {
         super(contextMenu.getMyContext());
         this.contextMenu = contextMenu;
         this.items = items;

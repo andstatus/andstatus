@@ -32,7 +32,7 @@ class TimelineListPositionStorage {
     public static final String TAG = TimelineListPositionStorage.class.getSimpleName();
     private static final int NOT_STORED = -1;
 
-    private final TimelineAdapter adapter;
+    private final MessageAdapter adapter;
     private final ListView mListView;
     private final TimelineListParameters mListParameters;
 
@@ -42,7 +42,7 @@ class TimelineListPositionStorage {
         int y = NOT_STORED;
     }
 
-    TimelineListPositionStorage(TimelineAdapter listAdapter, ListView listView, TimelineListParameters listParameters) {
+    TimelineListPositionStorage(MessageAdapter listAdapter, ListView listView, TimelineListParameters listParameters) {
         this.adapter = listAdapter;
         this.mListView = listView;
         this.mListParameters = listParameters;

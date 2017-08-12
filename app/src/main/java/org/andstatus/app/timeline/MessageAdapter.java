@@ -21,8 +21,8 @@ import android.view.ViewGroup;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.msg.BaseMessageAdapter;
 import org.andstatus.app.msg.MessageContextMenu;
-import org.andstatus.app.msg.MessageListAdapter;
 import org.andstatus.app.msg.MessageViewItem;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
@@ -30,13 +30,13 @@ import org.andstatus.app.util.MyUrlSpan;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineAdapter extends MessageListAdapter<MessageViewItem> {
+public class MessageAdapter extends BaseMessageAdapter<MessageViewItem> {
     private final TimelineData<MessageViewItem> listData;
     private int positionPrev = -1;
     private int messageNumberShownCounter = 0;
     private final String TOP_TEXT;
 
-    public TimelineAdapter(MessageContextMenu contextMenu, TimelineData<MessageViewItem> listData) {
+    public MessageAdapter(MessageContextMenu contextMenu, TimelineData<MessageViewItem> listData) {
         super(contextMenu);
         this.listData = listData;
         TOP_TEXT = myContext.context().getText(R.string.top).toString();

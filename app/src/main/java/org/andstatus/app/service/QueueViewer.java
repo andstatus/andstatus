@@ -62,7 +62,7 @@ public class QueueViewer extends LoadableListActivity {
 
     @Override
     protected MyBaseAdapter newListAdapter() {
-        return new QueueViewerListAdapter(this, getLoaded().getList());
+        return new QueueViewerAdapter(this, getLoaded().getList());
     }
 
     private QueueData queueData = null;

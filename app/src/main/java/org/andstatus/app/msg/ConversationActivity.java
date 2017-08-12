@@ -205,7 +205,7 @@ public class ConversationActivity extends MessageEditorListActivity implements M
 
     @Override
     protected MyBaseAdapter newListAdapter() {
-        return new ConversationViewAdapter(mContextMenu, centralItemId, getListLoader().getList(),
+        return new ConversationAdapter(mContextMenu, centralItemId, getListLoader().getList(),
                 showThreadsOfConversation, oldMessagesFirstInConversation);
     }
 

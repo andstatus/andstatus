@@ -29,7 +29,7 @@ import org.andstatus.app.view.MyBaseAdapter;
 
 import java.util.List;
 
-class UserListViewAdapter extends MyBaseAdapter {
+class UserAdapter extends MyBaseAdapter {
     private final UserListContextMenu contextMenu;
     private final int listItemLayoutId;
     private final List<UserViewItem> items;
@@ -38,8 +38,8 @@ class UserListViewAdapter extends MyBaseAdapter {
             MyPreferences.getUserInTimeline().equals(UserInTimeline.WEBFINGER_ID);
     private final boolean isCombined;
 
-    public UserListViewAdapter(UserListContextMenu contextMenu, int listItemLayoutId, List<UserViewItem> items,
-                               boolean isCombined) {
+    public UserAdapter(UserListContextMenu contextMenu, int listItemLayoutId, List<UserViewItem> items,
+                       boolean isCombined) {
         super(contextMenu.getActivity().getMyContext());
         this.contextMenu = contextMenu;
         this.listItemLayoutId = listItemLayoutId;

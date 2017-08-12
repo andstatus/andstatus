@@ -119,7 +119,7 @@ public class UserList extends MessageEditorListActivity {
 
     @Override
     protected MyBaseAdapter newListAdapter() {
-        return new UserListViewAdapter(contextMenu, R.layout.user, getListLoader().getList(),
+        return new UserAdapter(contextMenu, R.layout.user, getListLoader().getList(),
                 getParsedUri().getOriginId() == 0);
     }
 

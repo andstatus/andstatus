@@ -31,17 +31,17 @@ import org.andstatus.app.util.ViewUtils;
 import java.util.Collections;
 import java.util.List;
 
-public class ConversationViewAdapter extends MessageListAdapter<ConversationViewItem> {
+public class ConversationAdapter extends BaseMessageAdapter<ConversationViewItem> {
     private final MyActivity context;
     private final long selectedMessageId;
     private final List<ConversationViewItem> oMsgs;
     private final boolean showThreads;
 
-    public ConversationViewAdapter(MessageContextMenu contextMenu,
-                                   long selectedMessageId,
-                                   List<ConversationViewItem> oMsgs,
-                                   boolean showThreads,
-                                   boolean oldMessagesFirst) {
+    public ConversationAdapter(MessageContextMenu contextMenu,
+                               long selectedMessageId,
+                               List<ConversationViewItem> oMsgs,
+                               boolean showThreads,
+                               boolean oldMessagesFirst) {
         super(contextMenu);
         this.context = this.contextMenu.getActivity();
         this.selectedMessageId = selectedMessageId;

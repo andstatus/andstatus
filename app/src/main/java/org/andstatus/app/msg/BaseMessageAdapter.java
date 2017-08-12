@@ -40,7 +40,7 @@ import java.util.Set;
 /**
  * @author yvolk@yurivolkov.com
  */
-public abstract class MessageListAdapter<T extends BaseMessageViewItem> extends MyBaseAdapter {
+public abstract class BaseMessageAdapter<T extends BaseMessageViewItem> extends MyBaseAdapter {
     protected final boolean showButtonsBelowMessages =
             SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SHOW_BUTTONS_BELOW_MESSAGE, true);
     protected final MessageContextMenu contextMenu;
@@ -50,7 +50,7 @@ public abstract class MessageListAdapter<T extends BaseMessageViewItem> extends 
             MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, true);
     protected Set<Long> preloadedImages = new HashSet<>(100);
 
-    public MessageListAdapter(MessageContextMenu contextMenu) {
+    public BaseMessageAdapter(MessageContextMenu contextMenu) {
         super(contextMenu.getMyContext());
         this.contextMenu = contextMenu;
     }
