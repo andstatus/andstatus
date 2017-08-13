@@ -24,7 +24,9 @@ import org.andstatus.app.timeline.ViewItem;
 /**
  * @author yvolk@yurivolkov.com
  */
-class QueueData extends ViewItem implements Comparable<QueueData> {
+public class QueueData extends ViewItem implements Comparable<QueueData> {
+    public final static QueueData EMPTY = new QueueData(QueueType.UNKNOWN, CommandData.getEmpty());
+
     @NonNull
     final QueueType queueType;
     @NonNull
@@ -84,9 +86,5 @@ class QueueData extends ViewItem implements Comparable<QueueData> {
         int result = queueType.hashCode();
         result = 31 * result + (int) (commandData.getCreatedDate() ^ (commandData.getCreatedDate() >>> 32));
         return result;
-    }
-
-    public static QueueData getEmpty() {
-        return new QueueData(QueueType.UNKNOWN, CommandData.getEmpty());
     }
 }

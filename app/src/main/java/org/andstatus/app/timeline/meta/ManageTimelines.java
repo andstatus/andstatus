@@ -36,6 +36,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.LoadableListActivity;
+import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.WhichPage;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyCheckBox;
@@ -44,10 +45,8 @@ import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.view.EnumSelector;
-import org.andstatus.app.view.MyBaseAdapter;
 
 import java.util.Collections;
-import java.util.List;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -175,36 +174,12 @@ public class ManageTimelines extends LoadableListActivity {
     }
 
     @Override
-    protected MyBaseAdapter newListAdapter() {
+    protected BaseTimelineAdapter newListAdapter() {
 
-        return new MyBaseAdapter<ManageTimelinesViewItem>(myContext) {
-            final List<ManageTimelinesViewItem> mItems;
+        return new BaseTimelineAdapter<ManageTimelinesViewItem>(myContext,
+                Timeline.getTimeline(TimelineType.MANAGE_TIMELINES, MyAccount.EMPTY, 0, Origin.getEmpty()),
+                getLoaded().getList()) {
             Timeline defaultTimeline = myContext.persistentTimelines().getDefault();
-
-            {
-                mItems = (List<ManageTimelinesViewItem>) getLoaded().getList();
-            }
-
-            @Override
-            public int getCount() {
-                return mItems.size();
-            }
-
-            @Override
-            public ManageTimelinesViewItem getItem(int position) {
-                if (position < 0 || position >= getCount()) {
-                    return null;
-                }
-                return mItems.get(position);
-            }
-
-            @Override
-            public long getItemId(int position) {
-                if (position < 0 || position >= getCount()) {
-                    return 0;
-                }
-                return mItems.get(position).timeline.getId();
-            }
 
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
@@ -212,7 +187,7 @@ public class ManageTimelines extends LoadableListActivity {
                 view.setOnCreateContextMenuListener(contextMenu);
                 view.setOnClickListener(this);
                 setPosition(view, position);
-                final ManageTimelinesViewItem item = mItems.get(position);
+                final ManageTimelinesViewItem item = getItem(position);
                 MyUrlSpan.showText(view, R.id.title, item.timelineTitle.title, false, true);
                 MyAccount myAccount = item.timeline.getMyAccount();
                 MyUrlSpan.showText(view, R.id.account, myAccount.isValid() ?
@@ -223,13 +198,10 @@ public class ManageTimelines extends LoadableListActivity {
                 showDisplayedInSelector(view, item);
                 MyCheckBox.set(view, R.id.synced, item.timeline.isSyncedAutomatically(),
                         item.timeline.isSyncableAutomatically() ?
-                                new CompoundButton.OnCheckedChangeListener() {
-                                    @Override
-                                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                                        item.timeline.setSyncedAutomatically(isChecked);
-                                        MyLog.v("isSyncedAutomatically", (isChecked ? "+ " : "- ") + item.timeline);
-                                }
-                        } : null);
+                                (CompoundButton.OnCheckedChangeListener) (buttonView, isChecked) -> {
+                                    item.timeline.setSyncedAutomatically(isChecked);
+                                    MyLog.v("isSyncedAutomatically", (isChecked ? "+ " : "- ") + item.timeline);
+                            } : null);
                 MyUrlSpan.showText(view, R.id.syncedTimesCount,
                         I18n.notZero(item.timeline.getSyncedTimesCount(isTotal)), false, true);
                 MyUrlSpan.showText(view, R.id.downloadedItemsCount,
@@ -249,22 +221,21 @@ public class ManageTimelines extends LoadableListActivity {
             }
 
             protected void showDisplayedInSelector(View parentView, final ManageTimelinesViewItem item) {
-                CheckBox view = (CheckBox) parentView.findViewById(R.id.displayedInSelector);
-                MyCheckBox.set(parentView, R.id.displayedInSelector, item.timeline.isDisplayedInSelector() != DisplayedInSelector.NEVER,
-                        new CompoundButton.OnCheckedChangeListener() {
-                            @Override
-                            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                                if (isChecked) {
-                                    selectedItem = item;
-                                    EnumSelector.newInstance(
-                                            ActivityRequestCode.SELECT_DISPLAYED_IN_SELECTOR,
-                                            DisplayedInSelector.class).show(ManageTimelines.this);
-                                } else {
-                                    item.timeline.setDisplayedInSelector(DisplayedInSelector.NEVER);
-                                    buttonView.setText("");
-                                }
-                                MyLog.v("isDisplayedInSelector", (isChecked ? "+ " : "- ") + item.timeline);
+                CheckBox view = parentView.findViewById(R.id.displayedInSelector);
+                MyCheckBox.set(parentView,
+                        R.id.displayedInSelector,
+                        item.timeline.isDisplayedInSelector() != DisplayedInSelector.NEVER,
+                        (buttonView, isChecked) -> {
+                            if (isChecked) {
+                                selectedItem = item;
+                                EnumSelector.newInstance(
+                                        ActivityRequestCode.SELECT_DISPLAYED_IN_SELECTOR,
+                                        DisplayedInSelector.class).show(ManageTimelines.this);
+                            } else {
+                                item.timeline.setDisplayedInSelector(DisplayedInSelector.NEVER);
+                                buttonView.setText("");
                             }
+                            MyLog.v("isDisplayedInSelector", (isChecked ? "+ " : "- ") + item.timeline);
                         });
                 view.setText(item.timeline.equals(defaultTimeline) ? "D" :
                         (item.timeline.isDisplayedInSelector() == DisplayedInSelector.ALWAYS ? "*" : ""));

@@ -14,42 +14,28 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.timeline;
+package org.andstatus.app.msg;
 
 import android.view.View;
 import android.view.ViewGroup;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.msg.BaseMessageAdapter;
-import org.andstatus.app.msg.MessageContextMenu;
-import org.andstatus.app.msg.MessageViewItem;
-import org.andstatus.app.util.MyLog;
+import org.andstatus.app.timeline.TimelineActivity;
+import org.andstatus.app.timeline.TimelineData;
 import org.andstatus.app.util.MyUrlSpan;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 public class MessageAdapter extends BaseMessageAdapter<MessageViewItem> {
-    private final TimelineData<MessageViewItem> listData;
     private int positionPrev = -1;
     private int messageNumberShownCounter = 0;
     private final String TOP_TEXT;
 
     public MessageAdapter(MessageContextMenu contextMenu, TimelineData<MessageViewItem> listData) {
-        super(contextMenu);
-        this.listData = listData;
+        super(contextMenu, listData);
         TOP_TEXT = myContext.context().getText(R.string.top).toString();
-    }
-
-    @Override
-    public int getCount() {
-        return listData.size();
-    }
-
-    @Override
-    public MessageViewItem getItem(int position) {
-        return listData.getItem(position);
     }
 
     @Override
@@ -71,7 +57,7 @@ public class MessageAdapter extends BaseMessageAdapter<MessageViewItem> {
         Integer positionToPreload = position;
         for (int i = 0; i < 5; i++) {
             positionToPreload = positionToPreload + (position > positionPrev ? 1 : -1);
-            if (positionToPreload < 0 || positionToPreload >= listData.size()) {
+            if (positionToPreload < 0 || positionToPreload >= getCount()) {
                 break;
             }
             MessageViewItem item = getItem(positionToPreload);
@@ -89,7 +75,7 @@ public class MessageAdapter extends BaseMessageAdapter<MessageViewItem> {
         String text;
         switch (position) {
             case 0:
-                text = listData.mayHaveYoungerPage() ? "1" : TOP_TEXT;
+                text = mayHaveYoungerPage() ? "1" : TOP_TEXT;
                 break;
             case 1:
             case 2:
@@ -105,11 +91,6 @@ public class MessageAdapter extends BaseMessageAdapter<MessageViewItem> {
     }
 
     @Override
-    public String toString() {
-        return MyLog.formatKeyValue(this, listData);
-    }
-
-    @Override
     public void onClick(View v) {
         boolean handled = false;
         if (MyPreferences.isLongPressToOpenContextMenu()) {
@@ -122,23 +103,5 @@ public class MessageAdapter extends BaseMessageAdapter<MessageViewItem> {
         if (!handled) {
             super.onClick(v);
         }
-    }
-
-    @Override
-    public int getPositionById(long itemId) {
-        int position = super.getPositionById(itemId);
-        if (position < 0 && listData.isCollapseDuplicates()) {
-            for (int position2 = 0; position2 < getCount(); position2++) {
-                MessageViewItem item = getItem(position2);
-                if (item.isCollapsed()) {
-                    for (ViewItem child : item.getChildren()) {
-                        if (child.getId() == itemId) {
-                            return position2;
-                        }
-                    }
-                }
-            }
-        }
-        return position;
     }
 }

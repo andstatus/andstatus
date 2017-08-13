@@ -51,7 +51,6 @@ import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
-import org.andstatus.app.view.MyBaseAdapter;
 import org.andstatus.app.widget.MySearchView;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -340,7 +339,7 @@ public abstract class LoadableListActivity<T extends ViewItem> extends MyBaseLis
 
     public void updateList(TriState collapseDuplicates, long itemId, boolean newAdapter) {
         final String method = "updateList";
-        MyBaseAdapter adapter = getListAdapter();
+        BaseTimelineAdapter adapter = getListAdapter();
         ListView list = getListView();
         // For a finer position restore see http://stackoverflow.com/questions/3014089/maintain-save-restore-scroll-position-when-returning-to-a-listview?rq=1
         long itemIdOfListPosition = centralItemId;
@@ -389,9 +388,9 @@ public abstract class LoadableListActivity<T extends ViewItem> extends MyBaseLis
         }
     }
 
-    public static int getYOfPosition(ListView list, MyBaseAdapter myBaseAdapter, int position) {
+    public static int getYOfPosition(ListView list, BaseTimelineAdapter adapter, int position) {
         int y = 0;
-        int zeroChildPosition = myBaseAdapter.getPosition(list.getChildAt(list.getHeaderViewsCount()));
+        int zeroChildPosition = adapter.getPosition(list.getChildAt(list.getHeaderViewsCount()));
         if (position - zeroChildPosition != 0) {
             MyLog.v("getYOfPosition", "pos:" + position + ", zeroChildPos:" + zeroChildPosition);
         }
@@ -402,11 +401,11 @@ public abstract class LoadableListActivity<T extends ViewItem> extends MyBaseLis
         return y;
     }
 
-    protected abstract MyBaseAdapter newListAdapter();
+    protected abstract BaseTimelineAdapter newListAdapter();
 
     @Override
-    public MyBaseAdapter<T> getListAdapter() {
-        return (MyBaseAdapter<T>) super.getListAdapter();
+    public BaseTimelineAdapter<T> getListAdapter() {
+        return (BaseTimelineAdapter<T>) super.getListAdapter();
     }
 
     private void updateCompletedLoader() {

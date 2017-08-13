@@ -20,9 +20,12 @@ import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
 
 import org.andstatus.app.activity.ActivityViewItem;
+import org.andstatus.app.msg.ConversationViewItem;
 import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.msg.MessageViewItem;
+import org.andstatus.app.service.QueueData;
 import org.andstatus.app.timeline.meta.TimelineType;
+import org.andstatus.app.user.UserViewItem;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,6 +39,12 @@ public class ViewItem {
         switch (timelineType) {
             case NOTIFICATIONS:
                 return ActivityViewItem.EMPTY;
+            case USERS:
+                return UserViewItem.EMPTY;
+            case CONVERSATION:
+                return ConversationViewItem.EMPTY;
+            case COMMANDS_QUEUE:
+                return QueueData.EMPTY;
             case UNKNOWN:
                 return EmptyViewItem.EMPTY;
             default:

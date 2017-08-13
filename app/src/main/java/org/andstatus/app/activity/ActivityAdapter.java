@@ -20,16 +20,16 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.andstatus.app.msg.MessageContextMenu;
+import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.TimelineData;
-import org.andstatus.app.view.MyBaseAdapter;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class ActivityAdapter extends MyBaseAdapter<ActivityViewItem> {
+public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
 
     public ActivityAdapter(MessageContextMenu contextMenu, TimelineData<ActivityViewItem> listData) {
-        super(contextMenu.getMyContext());
+        super(contextMenu.getMyContext(), listData);
     }
 
     @Override

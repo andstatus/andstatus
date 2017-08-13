@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2015-2017 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.view;
+package org.andstatus.app.timeline;
 
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
@@ -23,17 +24,32 @@ import android.widget.TextView;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.timeline.ViewItem;
+import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyLog;
 
-public abstract class MyBaseAdapter<T extends ViewItem> extends BaseAdapter  implements View.OnClickListener {
+import java.util.List;
 
+public abstract class BaseTimelineAdapter<T extends ViewItem> extends BaseAdapter  implements View.OnClickListener {
+    @NonNull
+    protected final MyContext myContext;
+    @NonNull
+    private final TimelineData<T> listData;
     private final float displayDensity;
     private volatile boolean positionRestored = false;
-    protected final MyContext myContext;
 
-    public MyBaseAdapter(MyContext myContext) {
+    /** Single page data */
+    public BaseTimelineAdapter(@NonNull MyContext myContext, @NonNull Timeline timeline, @NonNull List<T> items) {
+        this(myContext,
+                new TimelineData<T>(
+                        null,
+                        new TimelinePage<T>(new TimelineParameters(myContext).setTimeline(timeline), items)
+                )
+        );
+    }
+
+    public BaseTimelineAdapter(@NonNull MyContext myContext, @NonNull TimelineData<T> listData) {
         this.myContext = myContext;
+        this.listData = listData;
         displayDensity = myContext.context().getResources().getDisplayMetrics().density;
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this,"density=" + displayDensity);
@@ -41,7 +57,19 @@ public abstract class MyBaseAdapter<T extends ViewItem> extends BaseAdapter  imp
     }
 
     @Override
-    public abstract T getItem(int i);
+    public int getCount() {
+        return listData.size();
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return getItem(position).getId();
+    }
+
+    @Override
+    public T getItem(int position) {
+        return listData.getItem(position);
+    }
 
     public T getItem(View view) {
         return getItem(getPosition(view));
@@ -83,14 +111,7 @@ public abstract class MyBaseAdapter<T extends ViewItem> extends BaseAdapter  imp
     }
 
     public int getPositionById(long itemId) {
-        if (itemId != 0) {
-            for (int position = 0; position < getCount(); position++) {
-                if (getItemId(position) == itemId) {
-                    return position;
-                }
-            }
-        }
-        return -1;
+        return listData.getPositionById(itemId);
     }
 
     public void setPositionRestored(boolean positionRestored) {
@@ -99,6 +120,14 @@ public abstract class MyBaseAdapter<T extends ViewItem> extends BaseAdapter  imp
 
     public boolean isPositionRestored() {
         return positionRestored;
+    }
+
+    protected boolean mayHaveYoungerPage() {
+        return listData.mayHaveYoungerPage();
+    }
+
+    protected boolean isCombined() {
+        return listData.params.isTimelineCombined();
     }
 
     @Override
@@ -111,5 +140,10 @@ public abstract class MyBaseAdapter<T extends ViewItem> extends BaseAdapter  imp
     // See  http://stackoverflow.com/questions/2238883/what-is-the-correct-way-to-specify-dimensions-in-dip-from-java-code
     protected int dpToPixes(int dp) {
         return (int) (dp * displayDensity);
+    }
+
+    @Override
+    public String toString() {
+        return MyLog.formatKeyValue(this, listData);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 201 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2017 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ public class TimelinePage<T extends ViewItem> {
     @NonNull
     public final List<T> items;
 
+    @NonNull
     public T getEmptyItem() {
         return  (T) ViewItem.getEmpty(params.getTimelineType());
     }

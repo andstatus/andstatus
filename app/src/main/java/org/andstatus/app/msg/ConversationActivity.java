@@ -34,13 +34,13 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.service.QueueViewer;
+import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.TriState;
-import org.andstatus.app.view.MyBaseAdapter;
 
 /**
  * One selected message and, optionally, the whole conversation
@@ -204,7 +204,7 @@ public class ConversationActivity extends MessageEditorListActivity implements M
     }
 
     @Override
-    protected MyBaseAdapter newListAdapter() {
+    protected BaseTimelineAdapter newListAdapter() {
         return new ConversationAdapter(mContextMenu, centralItemId, getListLoader().getList(),
                 showThreadsOfConversation, oldMessagesFirstInConversation);
     }

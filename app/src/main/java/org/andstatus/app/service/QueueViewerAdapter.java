@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,46 +22,31 @@ import android.view.ViewGroup;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.timeline.BaseTimelineAdapter;
+import org.andstatus.app.timeline.meta.Timeline;
+import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyUrlSpan;
-import org.andstatus.app.view.MyBaseAdapter;
 
 import java.util.List;
 
-class QueueViewerAdapter extends MyBaseAdapter<QueueData> {
-    private final QueueViewer contextMenu;
-    private final List<QueueData> items;
+class QueueViewerAdapter extends BaseTimelineAdapter<QueueData> {
+    private final QueueViewer container;
 
-    public QueueViewerAdapter(QueueViewer contextMenu, List<QueueData> items) {
-        super(contextMenu.getMyContext());
-        this.contextMenu = contextMenu;
-        this.items = items;
-    }
-
-    @Override
-    public int getCount() {
-        return items.size();
-    }
-
-    @Override
-    public QueueData getItem(int position) {
-        if (position >= 0 && position < getCount()) {
-            return items.get(position);
-        }
-        return QueueData.getEmpty();
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return items.get(position).getId();
+    QueueViewerAdapter(QueueViewer container, List<QueueData> items) {
+        super(container.getMyContext(),
+                Timeline.getTimeline(TimelineType.COMMANDS_QUEUE, container.getCurrentMyAccount(), 0,
+                        container.getCurrentMyAccount().getOrigin()),
+                items);
+        this.container = container;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = convertView == null ? newView() : convertView;
-        view.setOnCreateContextMenuListener(contextMenu);
+        view.setOnCreateContextMenuListener(container);
         view.setOnClickListener(this);
         setPosition(view, position);
-        QueueData item = items.get(position);
+        QueueData item = getItem(position);
         MyUrlSpan.showText(view, R.id.queue_type, item.queueType.getAcronym(), false, false);
         MyUrlSpan.showText(view, R.id.command_summary, item.commandData.toCommandSummary(MyContextHolder.get())
                 + "\t "
@@ -71,6 +56,6 @@ class QueueViewerAdapter extends MyBaseAdapter<QueueData> {
     }
 
     private View newView() {
-        return LayoutInflater.from(contextMenu).inflate(R.layout.queue_item, null);
+        return LayoutInflater.from(container).inflate(R.layout.queue_item, null);
     }
 }

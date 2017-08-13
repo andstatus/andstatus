@@ -52,6 +52,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.list.SyncLoader;
+import org.andstatus.app.msg.MessageAdapter;
 import org.andstatus.app.msg.MessageContextMenu;
 import org.andstatus.app.msg.MessageEditorListActivity;
 import org.andstatus.app.msg.MessageListContextMenuContainer;
@@ -77,7 +78,6 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.ViewUtils;
-import org.andstatus.app.view.MyBaseAdapter;
 import org.andstatus.app.widget.MySearchView;
 
 import java.util.Collections;
@@ -192,18 +192,18 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
     }
 
     @Override
-    public MyBaseAdapter<T> getListAdapter() {
+    public BaseTimelineAdapter<T> getListAdapter() {
         return super.getListAdapter();
     }
 
     @Override
-    protected MyBaseAdapter<T> newListAdapter() {
+    protected BaseTimelineAdapter<T> newListAdapter() {
         switch (getParamsNew().getTimelineType()) {
             case NOTIFICATIONS:
-                return (MyBaseAdapter <T>) new ActivityAdapter(
+                return (BaseTimelineAdapter<T>) new ActivityAdapter(
                         contextMenu, (TimelineData<ActivityViewItem>) getListData());
             default:
-                return (MyBaseAdapter <T>) new MessageAdapter(
+                return (BaseTimelineAdapter<T>) new MessageAdapter(
                         contextMenu, (TimelineData<MessageViewItem>) getListData());
         }
     }
@@ -719,7 +719,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
     private TimelineData<T> setAndGetListData(
             TimelinePage<T> pageLoaded) {
         listData = new TimelineData<T>(listData, pageLoaded);
-        MyBaseAdapter<T> listAdapter = getListAdapter();
+        BaseTimelineAdapter<T> listAdapter = getListAdapter();
         if (listAdapter != null) {
             // Old value of listData is modified also
             listAdapter.notifyDataSetChanged();
@@ -822,7 +822,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
         boolean keepCurrentPosition = keepCurrentPosition_in && getListData().isSameTimeline &&
                 isPositionRestored() && dataLoaded.params.whichPage != WhichPage.TOP;
         super.onLoadFinished(keepCurrentPosition);
-        MyBaseAdapter<T> listAdapter = getListAdapter();
+        BaseTimelineAdapter<T> listAdapter = getListAdapter();
         if (dataLoaded.params.whichPage == WhichPage.TOP && listAdapter != null) {
             TimelinePositionStorage.setPosition(getListView(), 0);
             listAdapter.setPositionRestored(true);

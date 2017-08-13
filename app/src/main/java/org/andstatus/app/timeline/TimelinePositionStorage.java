@@ -20,7 +20,6 @@ import android.widget.ListView;
 
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.view.MyBaseAdapter;
 
 /**
  * Determines where to save / retrieve position in the list
@@ -32,7 +31,7 @@ import org.andstatus.app.view.MyBaseAdapter;
 class TimelinePositionStorage<T extends ViewItem> {
     private static final int NOT_STORED = -1;
 
-    private final MyBaseAdapter<T> adapter;
+    private final BaseTimelineAdapter<T> adapter;
     private final ListView mListView;
     private final TimelineParameters mListParameters;
 
@@ -42,7 +41,7 @@ class TimelinePositionStorage<T extends ViewItem> {
         int y = NOT_STORED;
     }
 
-    TimelinePositionStorage(MyBaseAdapter<T> listAdapter, ListView listView, TimelineParameters listParameters) {
+    TimelinePositionStorage(BaseTimelineAdapter<T> listAdapter, ListView listView, TimelineParameters listParameters) {
         this.adapter = listAdapter;
         this.mListView = listView;
         this.mListParameters = listParameters;

@@ -161,8 +161,9 @@ public class TimelineParameters {
         return timeline;
     }
 
-    public void setTimeline(Timeline timeline) {
+    public TimelineParameters setTimeline(Timeline timeline) {
         this.timeline = timeline;
+        return this;
     }
 
     public TimelineType getTimelineType() {

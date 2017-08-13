@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,45 +24,24 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.graphics.AvatarView;
+import org.andstatus.app.timeline.BaseTimelineAdapter;
+import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyUrlSpan;
-import org.andstatus.app.view.MyBaseAdapter;
 
 import java.util.List;
 
-class UserAdapter extends MyBaseAdapter<UserViewItem> {
+class UserAdapter extends BaseTimelineAdapter<UserViewItem> {
     private final UserListContextMenu contextMenu;
     private final int listItemLayoutId;
-    private final List<UserViewItem> items;
     private final boolean showAvatars = MyPreferences.getShowAvatars();
     private final boolean showWebFingerId =
             MyPreferences.getUserInTimeline().equals(UserInTimeline.WEBFINGER_ID);
-    private final boolean isCombined;
 
     public UserAdapter(UserListContextMenu contextMenu, int listItemLayoutId, List<UserViewItem> items,
-                       boolean isCombined) {
-        super(contextMenu.getActivity().getMyContext());
+                       Timeline timeline) {
+        super(contextMenu.getActivity().getMyContext(), timeline, items);
         this.contextMenu = contextMenu;
         this.listItemLayoutId = listItemLayoutId;
-        this.items = items;
-        this.isCombined = isCombined;
-    }
-
-    @Override
-    public int getCount() {
-        return items.size();
-    }
-
-    @Override
-    public UserViewItem getItem(int position) {
-        if (position >= 0 && position < getCount()) {
-            return items.get(position);
-        }
-        return UserViewItem.getEmpty("");
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return items.get(position).getUserId();
     }
 
     @Override
@@ -71,9 +50,9 @@ class UserAdapter extends MyBaseAdapter<UserViewItem> {
         view.setOnCreateContextMenuListener(contextMenu);
         view.setOnClickListener(this);
         setPosition(view, position);
-        UserViewItem item = items.get(position);
+        UserViewItem item = getItem(position);
         MyUrlSpan.showText(view, R.id.username,
-                item.mbUser.toUserTitle(showWebFingerId) + (isCombined ?
+                item.mbUser.toUserTitle(showWebFingerId) + ( isCombined() ?
                         " / " + contextMenu.getActivity().getMyContext().persistentOrigins()
                                 .fromId(item.mbUser.originId).getName() : ""),
                 false, false);

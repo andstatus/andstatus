@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2014-2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,6 +26,11 @@ import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.graphics.ImageCaches;
+import org.andstatus.app.timeline.TimelineData;
+import org.andstatus.app.timeline.TimelinePage;
+import org.andstatus.app.timeline.TimelineParameters;
+import org.andstatus.app.timeline.meta.Timeline;
+import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.ViewUtils;
 
 import java.util.Collections;
@@ -34,27 +39,36 @@ import java.util.List;
 public class ConversationAdapter extends BaseMessageAdapter<ConversationViewItem> {
     private final MyActivity context;
     private final long selectedMessageId;
-    private final List<ConversationViewItem> oMsgs;
     private final boolean showThreads;
 
-    public ConversationAdapter(MessageContextMenu contextMenu,
+    ConversationAdapter(MessageContextMenu contextMenu,
                                long selectedMessageId,
                                List<ConversationViewItem> oMsgs,
                                boolean showThreads,
                                boolean oldMessagesFirst) {
-        super(contextMenu);
+        super(contextMenu,
+                new TimelineData<>(
+                        null,
+                        new TimelinePage<>(
+                                new TimelineParameters(contextMenu.getMyContext()).setTimeline(
+                                        Timeline.getTimeline(TimelineType.CONVERSATION,
+                                                contextMenu.getActivity().getCurrentMyAccount(), 0, null )
+                                ),
+                                oMsgs
+                        )
+                )
+        );
         this.context = this.contextMenu.getActivity();
         this.selectedMessageId = selectedMessageId;
-        this.oMsgs = oMsgs;
         this.showThreads = showThreads;
         for (ConversationItem oMsg : oMsgs) {
             oMsg.setReversedListOrder(oldMessagesFirst);
-            setInReplyToViewItem(oMsg);
+            setInReplyToViewItem(oMsgs, oMsg);
         }
-        Collections.sort(this.oMsgs);
+        Collections.sort(oMsgs);
     }
 
-    private void setInReplyToViewItem(ConversationItem viewItem) {
+    private void setInReplyToViewItem(List<ConversationViewItem> oMsgs, ConversationItem viewItem) {
         if (viewItem.inReplyToMsgId == 0) {
             return;
         }
@@ -64,16 +78,6 @@ public class ConversationAdapter extends BaseMessageAdapter<ConversationViewItem
                 break;
             }
         }
-    }
-
-    @Override
-    public int getCount() {
-        return oMsgs.size();
-    }
-
-    @Override
-    public ConversationViewItem getItem(int position) {
-        return oMsgs.get(position);
     }
 
     public void showAvatarEtc(ViewGroup view, ConversationViewItem item) {
@@ -93,7 +97,7 @@ public class ConversationAdapter extends BaseMessageAdapter<ConversationViewItem
     }
 
     private void showCentralItem(View view, ConversationViewItem item) {
-        if (item.getMsgId() == selectedMessageId  && oMsgs.size() > 1) {
+        if (item.getMsgId() == selectedMessageId  && getCount() > 1) {
             view.findViewById(R.id.message_indented).setBackground(
                     ImageCaches.getStyledImage(
                             R.drawable.current_message_background_light,
@@ -104,7 +108,7 @@ public class ConversationAdapter extends BaseMessageAdapter<ConversationViewItem
     private void showIndentImage(View view, int indentPixels) {
         View referencedView = view.findViewById(R.id.message_indented);
         ViewGroup parentView = ((ViewGroup) referencedView.getParent());
-        ImageView oldView = (ImageView) parentView.findViewById(R.id.indent_image);
+        ImageView oldView = parentView.findViewById(R.id.indent_image);
         if (oldView != null) {
             parentView.removeView(oldView);
         }
@@ -124,7 +128,7 @@ public class ConversationAdapter extends BaseMessageAdapter<ConversationViewItem
     }
 
     private int showAvatar(View view, BaseMessageViewItem item, int indentPixels) {
-        AvatarView avatarView = (AvatarView) view.findViewById(R.id.avatar_image);
+        AvatarView avatarView = view.findViewById(R.id.avatar_image);
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) avatarView.getLayoutParams();
         layoutParams.leftMargin = dpToPixes(indentPixels == 0 ? 2 : 1) + indentPixels;
         avatarView.setLayoutParams(layoutParams);
@@ -141,14 +145,14 @@ public class ConversationAdapter extends BaseMessageAdapter<ConversationViewItem
     }
 
     private void indentMessage(View view, int indentPixels) {
-        View messageIndented = view.findViewById(R.id.message_indented);
-        messageIndented.setPadding(indentPixels + 6, messageIndented.getPaddingTop(), messageIndented.getPaddingRight(),
-                messageIndented.getPaddingBottom());
+        View msgView = view.findViewById(R.id.message_indented);
+        msgView.setPadding(indentPixels + 6, msgView.getPaddingTop(), msgView.getPaddingRight(),
+                msgView.getPaddingBottom());
     }
 
     @Override
     protected void showMessageNumberEtc(ViewGroup view, ConversationViewItem item, int position) {
-        TextView number = (TextView) view.findViewById(R.id.message_number);
+        TextView number = view.findViewById(R.id.message_number);
         number.setText(Integer.toString(item.historyOrder));
     }
 }

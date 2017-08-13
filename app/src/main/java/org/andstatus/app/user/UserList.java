@@ -29,12 +29,13 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.msg.MessageEditorListActivity;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.WhichPage;
+import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
-import org.andstatus.app.view.MyBaseAdapter;
 
 /**
  *  List of users for different contexts 
@@ -118,9 +119,9 @@ public class UserList extends MessageEditorListActivity {
     }
 
     @Override
-    protected MyBaseAdapter newListAdapter() {
+    protected BaseTimelineAdapter newListAdapter() {
         return new UserAdapter(contextMenu, R.layout.user, getListLoader().getList(),
-                getParsedUri().getOriginId() == 0);
+                Timeline.fromParsedUri(myContext, getParsedUri(), ""));
     }
 
     @SuppressWarnings("unchecked")

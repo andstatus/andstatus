@@ -54,7 +54,7 @@ public class UserViewItem extends ViewItem implements Comparable<UserViewItem> {
         return mbUser.hashCode();
     }
 
-    private UserViewItem(MbUser mbUser) {
+    private UserViewItem(@NonNull MbUser mbUser) {
         this.mbUser = mbUser;
     }
 

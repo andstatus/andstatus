@@ -25,11 +25,10 @@ import org.andstatus.app.lang.SelectableEnum;
 import org.andstatus.app.net.social.Connection;
 
 public enum TimelineType implements SelectableEnum {
-    /** The type is unknown */
     UNKNOWN("unknown", R.string.timeline_title_unknown, Connection.ApiRoutineEnum.DUMMY),
     /** The Home timeline and other information (replies...). */
     HOME("home", R.string.timeline_title_home, Connection.ApiRoutineEnum.HOME_TIMELINE),
-    /** Favorites (favorited messages) */
+    NOTIFICATIONS("notifications", R.string.category_title_preference_notifications, Connection.ApiRoutineEnum.MENTIONS_TIMELINE),
     PUBLIC("public", R.string.timeline_title_public, Connection.ApiRoutineEnum.PUBLIC_TIMELINE),
     EVERYTHING("everything", R.string.timeline_title_everything, Connection.ApiRoutineEnum.DUMMY),
     SEARCH("search", R.string.options_menu_search, Connection.ApiRoutineEnum.SEARCH_MESSAGES),
@@ -59,7 +58,11 @@ public enum TimelineType implements SelectableEnum {
      * of the link between the message and the User. So the User may "Act" on this message. */
     MESSAGES_TO_ACT("messages_to_act", R.string.timeline_title_home, Connection.ApiRoutineEnum.HOME_TIMELINE),
     REPLIES("replies", R.string.timeline_title_replies, Connection.ApiRoutineEnum.DUMMY),
-    NOTIFICATIONS("notifications", R.string.category_title_preference_notifications, Connection.ApiRoutineEnum.MENTIONS_TIMELINE);
+    USERS("users", R.string.user_list, Connection.ApiRoutineEnum.DUMMY),
+    CONVERSATION("conversation", R.string.label_conversation, Connection.ApiRoutineEnum.DUMMY),
+    COMMANDS_QUEUE("commands_queue", R.string.title_preference_notifications_queue, Connection.ApiRoutineEnum.DUMMY),
+    MANAGE_TIMELINES("manages_timelines", R.string.manage_timelines, Connection.ApiRoutineEnum.DUMMY)
+    ;
 
     /** Code - identifier of the type */
     private final String code;
@@ -135,7 +138,7 @@ public enum TimelineType implements SelectableEnum {
     public boolean isSyncedAutomaticallyByDefault() {
         switch (this) {
             case HOME:
-            case MENTIONS:
+            case NOTIFICATIONS:
             case DIRECT:
             case SENT:
             case FAVORITES:
@@ -153,6 +156,10 @@ public enum TimelineType implements SelectableEnum {
             case FRIENDS:
             case FOLLOWERS:
             case REPLIES:
+            case USERS:
+            case CONVERSATION:
+            case COMMANDS_QUEUE:
+            case MANAGE_TIMELINES:
                 return false;
             default:
                 return true;
@@ -162,6 +169,7 @@ public enum TimelineType implements SelectableEnum {
     private static final TimelineType[] defaultMyAccountTimelineTypes = {
             HOME,
             FAVORITES,
+            NOTIFICATIONS,
             MENTIONS,
             DIRECT,
             SENT,
@@ -179,12 +187,14 @@ public enum TimelineType implements SelectableEnum {
     public boolean isAtOrigin() {
         switch (this) {
             case USER:
+            case USERS:
             case FRIENDS:
             case FOLLOWERS:
             case PUBLIC:
             case SEARCH:
             case EVERYTHING:
             case MESSAGES_TO_ACT:
+            case CONVERSATION:
                 return true;
             default:
                 return false;
@@ -197,6 +207,8 @@ public enum TimelineType implements SelectableEnum {
             case PUBLIC:
             case EVERYTHING:
             case SEARCH:
+            case CONVERSATION:
+            case COMMANDS_QUEUE:
                 return false;
             default:
                 return true;
@@ -227,6 +239,7 @@ public enum TimelineType implements SelectableEnum {
         switch (this) {
             case HOME:
             case FAVORITES:
+            case NOTIFICATIONS:
             case MENTIONS:
             case DIRECT:
             case SENT:
@@ -238,6 +251,19 @@ public enum TimelineType implements SelectableEnum {
                 return true;
             default:
                 return false;
+        }
+    }
+
+    public boolean isPersistable() {
+        switch (this) {
+            case UNKNOWN:
+            case USERS:
+            case CONVERSATION:
+            case COMMANDS_QUEUE:
+            case MANAGE_TIMELINES:
+                return false;
+            default:
+                return true;
         }
     }
 

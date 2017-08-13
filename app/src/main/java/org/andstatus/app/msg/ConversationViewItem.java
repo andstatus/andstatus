@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ConversationViewItem extends ConversationItem {
+    public static final ConversationViewItem EMPTY = new ConversationViewItem();
 
     @Override
     String[] getProjection() {

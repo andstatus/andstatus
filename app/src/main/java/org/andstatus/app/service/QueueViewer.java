@@ -26,10 +26,10 @@ import android.view.View;
 
 import org.andstatus.app.R;
 import org.andstatus.app.list.SyncLoader;
+import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.timeline.WhichPage;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.view.MyBaseAdapter;
 
 import java.util.Collections;
 import java.util.Queue;
@@ -61,7 +61,7 @@ public class QueueViewer extends LoadableListActivity {
     }
 
     @Override
-    protected MyBaseAdapter newListAdapter() {
+    protected BaseTimelineAdapter newListAdapter() {
         return new QueueViewerAdapter(this, getLoaded().getList());
     }
 

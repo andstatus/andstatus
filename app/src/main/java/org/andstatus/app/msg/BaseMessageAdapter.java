@@ -28,10 +28,11 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.graphics.AvatarView;
+import org.andstatus.app.timeline.BaseTimelineAdapter;
+import org.andstatus.app.timeline.TimelineData;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.view.MyBaseAdapter;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -39,7 +40,7 @@ import java.util.Set;
 /**
  * @author yvolk@yurivolkov.com
  */
-public abstract class BaseMessageAdapter<T extends BaseMessageViewItem> extends MyBaseAdapter<T> {
+public abstract class BaseMessageAdapter<T extends BaseMessageViewItem> extends BaseTimelineAdapter<T> {
     protected final boolean showButtonsBelowMessages =
             SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SHOW_BUTTONS_BELOW_MESSAGE, true);
     protected final MessageContextMenu contextMenu;
@@ -49,8 +50,8 @@ public abstract class BaseMessageAdapter<T extends BaseMessageViewItem> extends 
             MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, true);
     protected Set<Long> preloadedImages = new HashSet<>(100);
 
-    public BaseMessageAdapter(MessageContextMenu contextMenu) {
-        super(contextMenu.getMyContext());
+    public BaseMessageAdapter(MessageContextMenu contextMenu, TimelineData<T> listData) {
+        super(contextMenu.getMyContext(), listData);
         this.contextMenu = contextMenu;
     }
 
@@ -182,14 +183,6 @@ public abstract class BaseMessageAdapter<T extends BaseMessageViewItem> extends 
                 }
         );
     }
-
-    @Override
-    public T getItem(View view) {
-        return (T) super.getItem(view);
-    }
-
-    @Override
-    public abstract T getItem(int position);
 
     private void onButtonClick(View v, MessageListContextMenuItem contextMenuItemIn) {
         T item = getItem(v);

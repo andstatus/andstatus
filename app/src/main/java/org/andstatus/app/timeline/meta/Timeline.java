@@ -593,7 +593,7 @@ public class Timeline implements Comparable<Timeline> {
         if (needToLoadUserInTimeline()) {
             changed = true;
         }
-        if (isValid() && (id == 0 || changed) && myContext.isReady()) {
+        if (timelineType.isPersistable() && (id == 0 || changed) && myContext.isReady()) {
             boolean isNew = id == 0;
             if (isNew) {
                 long duplicatedId = findDuplicateInDatabase(myContext);

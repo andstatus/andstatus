@@ -211,14 +211,37 @@ public class TimelineData<T extends ViewItem> {
 
     @NonNull
     public T getById(long itemId) {
-        for (TimelinePage<T> page : pages) {
-            for (T item : page.items) {
-                if (item.getId() == itemId) {
-                    return item;
+        if (itemId != 0) {
+            for (TimelinePage<T> page : pages) {
+                for (T item : page.items) {
+                    if (item.getId() == itemId) {
+                        return item;
+                    }
                 }
             }
         }
         return pages.get(0).getEmptyItem();
+    }
+
+    public int getPositionById(long itemId) {
+        int position = -1;
+        if (itemId != 0) {
+            for (TimelinePage<T> page : pages) {
+                for (T item : page.items) {
+                    position++;
+                    if (item.getId() == itemId) {
+                        return position;
+                    } else if (item.isCollapsed()) {
+                        for (ViewItem child : item.getChildren()) {
+                            if (child.getId() == itemId) {
+                                return position;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return -1;
     }
 
     public boolean mayHaveYoungerPage() {
