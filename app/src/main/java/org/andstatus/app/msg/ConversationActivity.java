@@ -59,6 +59,9 @@ public class ConversationActivity extends MessageEditorListActivity implements M
     protected void onCreate(Bundle savedInstanceState) {
         mLayoutId = R.layout.conversation;
         super.onCreate(savedInstanceState);
+        if (isFinishing()) {
+            return;
+        }
 
         mContextMenu = new MessageContextMenu(this);
 
@@ -77,15 +80,16 @@ public class ConversationActivity extends MessageEditorListActivity implements M
 
     private void initializeDrawer() {
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerToggle = new ActionBarDrawerToggle(
-                this,
-                mDrawerLayout,
-                R.string.drawer_open,
-                R.string.drawer_close
-        ) {
-        };
-
-        mDrawerLayout.addDrawerListener(mDrawerToggle);
+        if (mDrawerLayout != null) {
+            mDrawerToggle = new ActionBarDrawerToggle(
+                    this,
+                    mDrawerLayout,
+                    R.string.drawer_open,
+                    R.string.drawer_close
+            ) {
+            };
+            mDrawerLayout.addDrawerListener(mDrawerToggle);
+        }
     }
 
     @Override

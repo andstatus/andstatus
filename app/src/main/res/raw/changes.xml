@@ -27,11 +27,11 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="35.05" android:versionCode="231"
-             versionDate="2017-08-06"
-             versionTitle="Translations updated. Bug fixes">
+    <release android:versionName="35.06" android:versionCode="232"
+             versionDate="2017-08-13"
+             versionTitle="Bug fixes">
         <changes>
-            <change>Fixed several points, which could potentially cause "Application not responding" messages.</change>
+            <change>Fixed potential crash on Conversation restart.</change>
         </changes>
     </release>
     <release android:versionName="35.03" android:versionCode="229"

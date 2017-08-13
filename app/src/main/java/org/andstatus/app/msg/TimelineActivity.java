@@ -216,16 +216,17 @@ public class TimelineActivity extends MessageEditorListActivity implements
 
     private void initializeDrawer() {
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerToggle = new ActionBarDrawerToggle(
-                this,
-                mDrawerLayout,
-                R.string.drawer_open, 
-                R.string.drawer_close 
-                ) {
-        };
-
-        mDrawerLayout.addDrawerListener(mDrawerToggle);
-        mDrawerToggle.setHomeAsUpIndicator(MyPreferences.getActionBarTextHomeIconResourceId());
+        if (mDrawerLayout != null) {
+            mDrawerToggle = new ActionBarDrawerToggle(
+                    this,
+                    mDrawerLayout,
+                    R.string.drawer_open,
+                    R.string.drawer_close
+            ) {
+            };
+            mDrawerLayout.addDrawerListener(mDrawerToggle);
+            mDrawerToggle.setHomeAsUpIndicator(MyPreferences.getActionBarTextHomeIconResourceId());
+        }
     }
 
     private void restoreActivityState(@NonNull Bundle savedInstanceState) {
