@@ -216,16 +216,17 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
 
     private void initializeDrawer() {
         mDrawerLayout = findViewById(R.id.drawer_layout);
-        mDrawerToggle = new ActionBarDrawerToggle(
-                this,
-                mDrawerLayout,
-                R.string.drawer_open, 
-                R.string.drawer_close 
-                ) {
-        };
-
-        mDrawerLayout.addDrawerListener(mDrawerToggle);
-        mDrawerToggle.setHomeAsUpIndicator(MyPreferences.getActionBarTextHomeIconResourceId());
+        if (mDrawerLayout != null) {
+            mDrawerToggle = new ActionBarDrawerToggle(
+                    this,
+                    mDrawerLayout,
+                    R.string.drawer_open,
+                    R.string.drawer_close
+            ) {
+            };
+            mDrawerLayout.addDrawerListener(mDrawerToggle);
+            mDrawerToggle.setHomeAsUpIndicator(MyPreferences.getActionBarTextHomeIconResourceId());
+        }
     }
 
     private void restoreActivityState(@NonNull Bundle savedInstanceState) {
