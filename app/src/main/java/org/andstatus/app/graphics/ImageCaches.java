@@ -16,11 +16,9 @@
 
 package org.andstatus.app.graphics;
 
-import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Point;
-import android.os.Build;
 import android.support.annotation.NonNull;
 import android.view.Display;
 import android.view.WindowManager;
@@ -194,13 +192,8 @@ public class ImageCaches {
         return size;
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public static CachedImage getImageCompat(Context context, int resourceId) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)  {
-            return new CachedImage(resourceId, context.getTheme().getDrawable(resourceId));
-        } else {
-            return new CachedImage(resourceId, context.getResources().getDrawable(resourceId));
-        }
+        return new CachedImage(resourceId, context.getTheme().getDrawable(resourceId));
     }
 
     private static final Map<Integer, CachedImage[]> styledImages = new ConcurrentHashMap<>();

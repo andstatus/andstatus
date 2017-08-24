@@ -28,7 +28,6 @@ import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
-import android.os.Build;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
@@ -73,14 +72,6 @@ public class ImageCache extends LruCache<String, CachedImage> {
         this.name = name;
         displayMetrics = context.getResources().getDisplayMetrics();
         int maxBitmapHeightWidth = maxBitmapHeightWidthIn;
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            if (maxBitmapHeightWidth > displayMetrics.heightPixels) {
-                maxBitmapHeightWidth = displayMetrics.heightPixels;
-            }
-            if (maxBitmapHeightWidth > displayMetrics.widthPixels) {
-                maxBitmapHeightWidth = displayMetrics.widthPixels;
-            }
-        }
         this.setMaxBounds(maxBitmapHeightWidth, maxBitmapHeightWidth);
         this.requestedCacheSize = requestedCacheSizeIn;
         this.currentCacheSize = this.requestedCacheSize;
@@ -95,23 +86,13 @@ public class ImageCache extends LruCache<String, CachedImage> {
             if (currentCacheSize < 0) {
                 currentCacheSize = 0;
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                super.resize(currentCacheSize);
-            }
+            super.resize(currentCacheSize);
         }
     }
 
     private Bitmap newBlankBitmap() {
-        Bitmap bitmap;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            bitmap = Bitmap.createBitmap(displayMetrics, maxBitmapWidth,
-                    maxBitmapHeight, CachedImage.BITMAP_CONFIG);
-        } else {
-            bitmap = Bitmap.createBitmap(maxBitmapWidth,
-                    maxBitmapHeight, CachedImage.BITMAP_CONFIG);
-            bitmap.setDensity(displayMetrics.densityDpi);
-        }
-        return bitmap;
+        return Bitmap.createBitmap(displayMetrics, maxBitmapWidth,
+                maxBitmapHeight, CachedImage.BITMAP_CONFIG);
     }
 
     @Nullable

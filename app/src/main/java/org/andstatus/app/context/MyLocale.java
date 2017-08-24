@@ -16,10 +16,8 @@
 
 package org.andstatus.app.context;
 
-import android.annotation.TargetApi;
 import android.content.ContextWrapper;
 import android.content.res.Configuration;
-import android.os.Build;
 
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -84,12 +82,7 @@ public class MyLocale {
         return configCustom;
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     private static void setLocale(Configuration configCustom, Locale locale) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            configCustom.setLocale(locale);
-        } else {
-            configCustom.locale = locale;
-        }
+        configCustom.setLocale(locale);
     }
 }

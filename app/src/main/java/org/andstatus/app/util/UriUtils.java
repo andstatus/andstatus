@@ -16,11 +16,9 @@
 
 package org.andstatus.app.util;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -78,21 +76,14 @@ public class UriUtils {
     }
     
     /** See http://developer.android.com/guide/topics/providers/document-provider.html */
-    @TargetApi(Build.VERSION_CODES.KITKAT)
-    public static int flagsToTakePersistableUriPermission() {
+   public static int flagsToTakePersistableUriPermission() {
         int flags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            flags = flags | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION;
-        }
+        flags = flags | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION;
         return flags;
     }
     
     /** See http://stackoverflow.com/questions/25999886/android-content-provider-uri-doesnt-work-after-reboot */
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     public static void takePersistableUriPermission(Context context, Uri uri, int takeFlagsIn) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            return;
-        }
         if ((takeFlagsIn & Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION) != 0) {
             final int takeFlags = takeFlagsIn & (Intent.FLAG_GRANT_READ_URI_PERMISSION
                             | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);

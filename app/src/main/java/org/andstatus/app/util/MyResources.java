@@ -17,7 +17,6 @@
 package org.andstatus.app.util;
 
 import android.content.res.Resources;
-import android.os.Build;
 import android.support.annotation.AttrRes;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
@@ -42,14 +41,5 @@ public class MyResources {
                             +  " type #0x" + Integer.toHexString(value.type));
         }
         return value.data;
-    }
-
-    @AttrRes
-    public static int getColorAccent() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            return android.R.attr.colorAccent;
-        } else {
-            return android.R.attr.colorBackground;
-        }
     }
 }

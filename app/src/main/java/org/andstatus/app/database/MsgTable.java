@@ -17,13 +17,10 @@
 package org.andstatus.app.database;
 
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Build;
 import android.provider.BaseColumns;
 
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
-
-import static org.andstatus.app.database.DatabaseConverter.PARTIAL_INDEX_SUPPORTED;
 
 /**
  * Table for both public and direct messages
@@ -159,12 +156,10 @@ public final class MsgTable implements BaseColumns {
         // Index not null rows only, see https://www.sqlite.org/partialindex.html
         DbUtils.execSQL(db, "CREATE INDEX idx_msg_in_reply_to_msg_id ON " + MsgTable.TABLE_NAME + " ("
                 + MsgTable.IN_REPLY_TO_MSG_ID + ")"
-                + (Build.VERSION.SDK_INT >= PARTIAL_INDEX_SUPPORTED ?
-                        " WHERE " + MsgTable.IN_REPLY_TO_MSG_ID + " IS NOT NULL" : ""));
+                + " WHERE " + MsgTable.IN_REPLY_TO_MSG_ID + " IS NOT NULL");
 
         DbUtils.execSQL(db, "CREATE INDEX idx_msg_conversation_id ON " + MsgTable.TABLE_NAME + " ("
                 + MsgTable.CONVERSATION_ID + ")"
-                + (Build.VERSION.SDK_INT >= PARTIAL_INDEX_SUPPORTED ?
-                        " WHERE " + MsgTable.CONVERSATION_ID + " IS NOT NULL" : ""));
+                + " WHERE " + MsgTable.CONVERSATION_ID + " IS NOT NULL");
     }
 }

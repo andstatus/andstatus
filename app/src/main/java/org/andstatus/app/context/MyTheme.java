@@ -19,7 +19,6 @@ package org.andstatus.app.context;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
-import android.os.Build;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.TypedValue;
@@ -122,9 +121,6 @@ public class MyTheme {
 
     public static void setContentView(Activity activity, int layoutId) {
         activity.setContentView(layoutId);
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP && !isThemeLight()) {
-            setBackgroundColor(activity);
-        }
     }
 
     /** See http://stackoverflow.com/questions/7896615/android-how-to-get-value-of-an-attribute-in-code

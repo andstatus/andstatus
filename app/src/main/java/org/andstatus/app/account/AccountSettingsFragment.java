@@ -59,7 +59,7 @@ public class AccountSettingsFragment extends Fragment {
                 if (state.getAccount().getAccountName().equals(account.name)) {
                     MyLog.i(this, "Removing account: " + account.name);
                     android.accounts.AccountManager am = AccountManager.get(getActivity());
-                    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
+                    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
                         am.removeAccount(account, getActivity(), null, null);
                     } else {
                         am.removeAccount(account, null, null);

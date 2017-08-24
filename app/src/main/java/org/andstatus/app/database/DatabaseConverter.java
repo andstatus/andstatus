@@ -33,7 +33,6 @@ import org.andstatus.app.util.MyLog;
 import java.io.File;
 
 class DatabaseConverter {
-    public static final int PARTIAL_INDEX_SUPPORTED = Build.VERSION_CODES.LOLLIPOP;
     long startTime = java.lang.System.currentTimeMillis();
     ProgressLogger progressLogger;
 
@@ -393,13 +392,11 @@ class DatabaseConverter {
             DbUtils.execSQL(db, sql);
             sql = "ALTER TABLE msg ADD COLUMN body_to_search TEXT";
             DbUtils.execSQL(db, sql);
-            sql = "CREATE INDEX idx_msg_in_reply_to_msg_id ON msg (" + "in_reply_to_msg_id" + ")" +
-                    (Build.VERSION.SDK_INT >= PARTIAL_INDEX_SUPPORTED ?
-                            " WHERE " + "in_reply_to_msg_id" + " IS NOT NULL" : "");
+            sql = "CREATE INDEX idx_msg_in_reply_to_msg_id ON msg (" + "in_reply_to_msg_id" + ")"
+                    + " WHERE " + "in_reply_to_msg_id" + " IS NOT NULL";
             DbUtils.execSQL(db, sql);
-            sql = "CREATE INDEX idx_msg_conversation_id ON msg (" + "conversation_id" + ")" +
-                    (Build.VERSION.SDK_INT >= PARTIAL_INDEX_SUPPORTED ?
-                            " WHERE " + "conversation_id" + " IS NOT NULL" : "");
+            sql = "CREATE INDEX idx_msg_conversation_id ON msg (" + "conversation_id" + ")"
+                    + " WHERE " + "conversation_id" + " IS NOT NULL";
             DbUtils.execSQL(db, sql);
 
             String sql = "SELECT _id, body FROM msg";

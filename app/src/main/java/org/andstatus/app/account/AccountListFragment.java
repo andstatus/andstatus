@@ -110,7 +110,7 @@ public class AccountListFragment extends Fragment {
             ((TextView) dragView.findViewById(R.id.visible_name)).setText(text);
             dragView.setBackgroundColor(
                     MyResources.getColorByAttribute(
-                            R.attr.actionBarColorAccent, MyResources.getColorAccent(), dragView.getContext().getTheme()));
+                            R.attr.actionBarColorAccent, android.R.attr.colorAccent, dragView.getContext().getTheme()));
         }
 
     }

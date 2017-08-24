@@ -9,18 +9,10 @@
  ******************************************************************************/
 package org.andstatus.app.net.http;
 
-import android.annotation.TargetApi;
 import android.net.SSLCertificateSocketFactory;
-import android.os.Build;
 
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
-import cz.msebera.android.httpclient.HttpHost;
-import cz.msebera.android.httpclient.conn.socket.ConnectionSocketFactory;
-import cz.msebera.android.httpclient.conn.socket.LayeredConnectionSocketFactory;
-import cz.msebera.android.httpclient.conn.ssl.AllowAllHostnameVerifier;
-import cz.msebera.android.httpclient.conn.ssl.BrowserCompatHostnameVerifier;
-import cz.msebera.android.httpclient.protocol.HttpContext;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -31,6 +23,13 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
+
+import cz.msebera.android.httpclient.HttpHost;
+import cz.msebera.android.httpclient.conn.socket.ConnectionSocketFactory;
+import cz.msebera.android.httpclient.conn.socket.LayeredConnectionSocketFactory;
+import cz.msebera.android.httpclient.conn.ssl.AllowAllHostnameVerifier;
+import cz.msebera.android.httpclient.conn.ssl.BrowserCompatHostnameVerifier;
+import cz.msebera.android.httpclient.protocol.HttpContext;
 
 public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
 
@@ -113,27 +112,14 @@ public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
         return ssl;
     }
     
-    
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     private void connectWithSNI(SSLSocket ssl, String host) throws SSLPeerUnverifiedException {
         // set reasonable SSL/TLS settings before the handshake:
-        // - enable all supported protocols (enables TLSv1.1 and TLSv1.2 on Android <4.4.3, if available)
+        // - enable all supported protocols
         ssl.setEnabledProtocols(ssl.getSupportedProtocols());
         
-        // - set SNI host name
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            MyLog.d(this, "Using documented SNI with host name " + host);
-            sslSocketFactory.setHostname(ssl, host);
-        } else {
-            MyLog.d(this, "No documented SNI support on Android <4.2, trying with reflection");
-            try {
-                java.lang.reflect.Method setHostnameMethod = ssl.getClass().getMethod("setHostname", String.class);
-                setHostnameMethod.invoke(ssl, host);
-            } catch (Exception e) {
-                MyLog.i(this, "SNI not useable", e);
-            }
-        }
-        
+        MyLog.d(this, "Using documented SNI with host name " + host);
+        sslSocketFactory.setHostname(ssl, host);
+
         // verify hostname and certificate
         SSLSession session = ssl.getSession();
         if (!session.isValid()) {

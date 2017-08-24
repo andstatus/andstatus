@@ -17,12 +17,9 @@
 package org.andstatus.app.database;
 
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Build;
 import android.provider.BaseColumns;
 
 import org.andstatus.app.data.DbUtils;
-
-import static org.andstatus.app.database.DatabaseConverter.PARTIAL_INDEX_SUPPORTED;
 
 /** The table holds {@link org.andstatus.app.net.social.MbActivity} */
 public final class ActivityTable implements BaseColumns {
@@ -90,19 +87,19 @@ public final class ActivityTable implements BaseColumns {
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_message ON " + TABLE_NAME + " ("
                     + MSG_ID
                 + ")"
-                + (Build.VERSION.SDK_INT >= PARTIAL_INDEX_SUPPORTED ? " WHERE " + MSG_ID + " IS NOT NULL" : "")
+                + " WHERE " + MSG_ID + " IS NOT NULL"
         );
 
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_user ON " + TABLE_NAME + " ("
                 + USER_ID
                 + ")"
-                + (Build.VERSION.SDK_INT >= PARTIAL_INDEX_SUPPORTED ? " WHERE " + USER_ID + " IS NOT NULL" : "")
+                + " WHERE " + USER_ID + " IS NOT NULL"
         );
 
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_activity ON " + TABLE_NAME + " ("
                 + OBJ_ACTIVITY_ID
                 + ")"
-                + (Build.VERSION.SDK_INT >= PARTIAL_INDEX_SUPPORTED ? " WHERE " + OBJ_ACTIVITY_ID + " IS NOT NULL" : "")
+                + " WHERE " + OBJ_ACTIVITY_ID + " IS NOT NULL"
         );
 
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_ins_date ON " + TABLE_NAME + " ("
