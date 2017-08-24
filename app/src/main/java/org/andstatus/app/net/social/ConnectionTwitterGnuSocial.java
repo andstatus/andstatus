@@ -178,12 +178,13 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
 
     @Override
     @NonNull
-    MbMessage messageFromJson2(JSONObject jso) throws ConnectionException {
+    MbActivity activityFromJson2(JSONObject jso) throws ConnectionException {
         if (jso == null) {
-            return MbMessage.EMPTY;
+            return MbActivity.EMPTY;
         }
         final String method = "messageFromJson";
-        MbMessage message = super.messageFromJson2(jso);
+        MbActivity activity = super.activityFromJson2(jso);
+        MbMessage message = activity.getMessage();
         message.url = jso.optString("external_url");
         message.setConversationOid(jso.optString(CONVERSATION_ID_FIELD_NAME));
         if (!jso.isNull(ATTACHMENTS_FIELD_NAME)) {
@@ -206,7 +207,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
                 MyLog.d(this, method, e);
             }
         }
-        return message;
+        return activity;
     }
 
     @Override
@@ -221,7 +222,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     @Override
     public List<MbOrigin> getOpenInstances() throws ConnectionException {
         JSONObject result = http.getUnauthenticatedRequest(getApiPath(ApiRoutineEnum.GET_OPEN_INSTANCES));
-        List<MbOrigin> origins = new ArrayList<MbOrigin>();
+        List<MbOrigin> origins = new ArrayList<>();
         StringBuilder logMessage = new StringBuilder(ApiRoutineEnum.GET_OPEN_INSTANCES.toString());
         boolean error = false;
         if (result == null) {

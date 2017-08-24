@@ -46,12 +46,12 @@ public class MessageEditorDataTest {
         Uri uri = Uri.parse("http://example.com/" + DemoData.TESTRUN_UID + "/some.png");
         MessageEditorData data = MessageEditorData.newEmpty(ma)
                 .setInReplyToId(inReplyToMsgId)
-                .setRecipientId(recipientId)
+                .addRecipientId(recipientId)
                 .setReplyToConversationParticipants(replyAll)
                 .setBody("Some text here " + DemoData.TESTRUN_UID);
         assertFalse(data.toString(), data.body.contains("@"));
         data.addMentionsToText();
-        assertEquals(recipientId, data.recipientId);
+        assertEquals(recipientId, data.recipients);
         assertMentionedUser(data, inReplyToUserId, true);
         assertMentionedUser(data, memberUserId, replyAll);
         assertEquals(data.toString(), Uri.EMPTY, data.getMediaUri());

@@ -15,8 +15,8 @@ import org.andstatus.app.backup.MyBackupDataOutput;
 import org.andstatus.app.backup.MyBackupDescriptor;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.FriendshipTable;
+import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.I18n;
@@ -166,10 +166,22 @@ public class PersistentAccounts {
     }
 
     @NonNull
-    public MyAccount fromOriginAndOid(long originId, String myUserOid) {
+    public MyAccount fromUser(@NonNull MbUser user) {
         for (MyAccount persistentAccount : mAccounts) {
-            if (persistentAccount.getOriginId() == originId && persistentAccount.getUserOid().equals(myUserOid)) {
-                return persistentAccount;
+            if (persistentAccount.getOriginId() == user.originId) {
+                if (TextUtils.isEmpty(user.oid)) {
+                    if (persistentAccount.getUserOid().equals(user.oid)) {
+                        return persistentAccount;
+                    }
+                } else if (user.userId != 0) {
+                    if (persistentAccount.getUserId() == user.userId) {
+                        return persistentAccount;
+                    }
+                } else if (user.isWebFingerIdValid()) {
+                    if (persistentAccount.getWebFingerId().equals(user.getWebFingerId())) {
+                        return persistentAccount;
+                    }
+                }
             }
         }
         return MyAccount.EMPTY;
@@ -226,23 +238,44 @@ public class PersistentAccounts {
         return fromUserId(userId).isValid();
     }
 
-    /**
-     * Get MyAccount by the UserId. 
-     * Please note that a valid User may not have an Account (in AndStatus)
-     * @return Invalid account if was not found
-     */
     @NonNull
-    public MyAccount fromUserId(long userId) {
-        MyAccount ma = MyAccount.EMPTY;
-        if (userId != 0) {
+    public MyAccount fromMbUser(@NonNull MbUser user) {
+        MyAccount ma = fromUserId(user.userId);
+        if (!ma.isValid() && user.isWebFingerIdValid()) {
             for (MyAccount persistentAccount : mAccounts) {
-                if (persistentAccount.getUserId() == userId) {
-                    ma = persistentAccount;
-                    break;
+                if (persistentAccount.getWebFingerId().equals(user.getWebFingerId())) {
+                    return persistentAccount;
                 }
             }
         }
         return ma;
+    }
+
+    /**
+     * Get MyAccount by the UserId. 
+     * Please note that a valid User may not have an Account (in AndStatus)
+     * @return EMPTY account if was not found
+     */
+    @NonNull
+    public MyAccount fromUserId(long userId) {
+        return fromUserId(userId, MyAccount.EMPTY);
+    }
+
+    /**
+     * Get MyAccount by the UserId.
+     * Please note that a valid User may not have an Account (in AndStatus)
+     * @return defaultMe if was not found
+     */
+    @NonNull
+    public MyAccount fromUserId(long userId, @NonNull MyAccount defaultMe) {
+        if (userId != 0) {
+            for (MyAccount persistentAccount : mAccounts) {
+                if (persistentAccount.getUserId() == userId) {
+                    return  persistentAccount;
+                }
+            }
+        }
+        return defaultMe;
     }
 
     @NonNull
@@ -487,16 +520,15 @@ public class PersistentAccounts {
         String sql = "SELECT DISTINCT " + FriendshipTable.FRIEND_ID + " FROM " + FriendshipTable.TABLE_NAME
                 + " WHERE " + FriendshipTable.FOLLOWED + "=1";
         SQLiteDatabase db = myContext.getDatabase();
-        Cursor cursor = null;
-        try {
-            cursor = db.rawQuery(sql, null);
+        if (db == null) {
+            return;
+        }
+        try (Cursor cursor = db.rawQuery(sql, null)) {
             while (cursor.moveToNext()) {
                 friends.add(cursor.getLong(0));
             }
         } catch (Exception e) {
             MyLog.i(this, "SQL:'" + sql + "'", e);
-        } finally {
-            DbUtils.closeSilently(cursor);
         }
         myFriends = friends;
     }

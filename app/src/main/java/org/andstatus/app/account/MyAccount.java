@@ -121,7 +121,13 @@ public final class MyAccount implements Comparable<MyAccount> {
     public MbUser toPartialUser() {
         MbUser mbUser = MbUser.fromOriginAndUserOid(getOriginId(), getUserOid());
         mbUser.userId = getUserId();
+        mbUser.setWebFingerId(getWebFingerId());
         return mbUser;
+    }
+
+    public String getWebFingerId() {
+        // TODO: implement
+        return getUserOid();
     }
 
     /** Companion class used to load/create/change/delete {@link MyAccount}'s data */
@@ -767,7 +773,7 @@ public final class MyAccount implements Comparable<MyAccount> {
      * The name is permanent and cannot be changed. This is why it may be used as Id 
      */
     public String getAccountName() {
-        return oAccountName.toString();
+        return oAccountName.getName();
     }
 
     /**
@@ -879,7 +885,7 @@ public final class MyAccount implements Comparable<MyAccount> {
             return MyLog.formatKeyValue(TAG, "EMPTY");
         }
 
-        String members = (isValid() ? "" : "(invalid) ") + "accountName:" + getAccountName() + ",";
+        String members = (isValid() ? "" : "(invalid) ") + "accountName:" + oAccountName + ",";
         try {
             if (userId != 0) {
                 members += "id:" + userId + ",";

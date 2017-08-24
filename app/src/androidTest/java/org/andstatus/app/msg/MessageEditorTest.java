@@ -95,7 +95,7 @@ public class MessageEditorTest extends TimelineActivityTest {
                 .setInReplyToId(MyQuery.oidToId(OidEnum.MSG_OID, MyContextHolder.get()
                                 .persistentOrigins().fromName(DemoData.CONVERSATION_ORIGIN_NAME).getId(),
                         DemoData.CONVERSATION_ENTRY_MESSAGE_OID))
-                .setRecipientId(MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
+                .addRecipientId(MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
                         DemoData.CONVERSATION_MEMBER_USER_OID))
                 .addMentionsToText()
                 .setBody("Some static text " + DemoData.TESTRUN_UID);

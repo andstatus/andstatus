@@ -29,11 +29,8 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.data.ProjectionMap;
-import org.andstatus.app.data.SelectedUserIds;
 import org.andstatus.app.data.TimelineSql;
-import org.andstatus.app.database.MsgOfUserTable;
-import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.database.UserTable;
+import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineTitle;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -41,6 +38,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
 
 import java.util.Date;
+import java.util.Set;
 
 public class TimelineParameters {
     private final MyContext myContext;
@@ -55,7 +53,7 @@ public class TimelineParameters {
     Timeline timeline = Timeline.EMPTY;
 
     WhichPage whichPage = WhichPage.EMPTY;
-    String[] mProjection;
+    private Set<String> mProjection;
 
     long maxSentDate = 0;
 
@@ -106,7 +104,10 @@ public class TimelineParameters {
         }
         MyLog.v(TimelineParameters.class, msgLog);
 
-        params.mProjection = TimelineSql.getTimelineProjection();
+        params.mProjection = ViewItemType.fromTimelineType(params.timeline.getTimelineType())
+                .equals(ViewItemType.ACTIVITY)
+                ? TimelineSql.getActivityProjection()
+                : TimelineSql.getTimelineProjection();
     }
 
     public boolean isLoaded() {
@@ -244,7 +245,7 @@ public class TimelineParameters {
     private void prepareQueryParameters() {
         switch (whichPage) {
             case CURRENT:
-                minSentDate = (new TimelinePositionStorage(null, null, this)).getTLPosition().minSentDate;
+                minSentDate = (new TimelinePositionStorage<>( null, null, this)).getTLPosition().minSentDate;
                 break;
             default:
                 break;
@@ -254,61 +255,24 @@ public class TimelineParameters {
     }
 
     private String buildSortOrderAndLimit() {
-        return (isSortOrderAscending() ? MsgTable.ASC_SORT_ORDER : MsgTable.DESC_SORT_ORDER)
+        return  ActivityTable.getTimeSortOrder(sortForNotifications(), isSortOrderAscending())
                 + (minSentDate > 0 && maxSentDate > 0 ? "" : " LIMIT " + PAGE_SIZE);
+    }
+
+    private boolean sortForNotifications() {
+        return getTimelineType().equals(TimelineType.NOTIFICATIONS);
     }
 
     private SelectionAndArgs buildSelectionAndArgs() {
         SelectionAndArgs sa = new SelectionAndArgs();
-
-        // TODO: Move these selections to the {@link MyProvider} ?!
-        switch (getTimelineType()) {
-            case HOME:
-                // In the Home of the combined timeline we see ALL loaded
-                // messages, even those that we downloaded
-                // not as Home timeline of any Account
-                if (!isTimelineCombined()) {
-                    sa.addSelection(MsgOfUserTable.SUBSCRIBED + " = ?", "1");
-        }
-                break;
-            case MENTIONS:
-                sa.addSelection(MsgOfUserTable.MENTIONED + " = ?", "1");
-                /*
-                 * We already figured this out and set {@link MyDatabase.MsgOfUser.MENTIONED}:
-                 * sa.addSelection(MyDatabase.Msg.BODY + " LIKE ?" ...
-                 */
-                break;
-            case FAVORITES:
-                sa.addSelection(MsgOfUserTable.FAVORITED + " = ?", "1");
-                break;
-            case DIRECT:
-                sa.addSelection(MsgOfUserTable.DIRECTED + " = ?", "1");
-                break;
-            case USER:
-            case SENT:
-                SelectedUserIds userIds = new SelectedUserIds(timeline);
-                // Reblogs are included also
-                sa.addSelection(MsgTable.AUTHOR_ID + " " + userIds.getSql()
-                                + " OR "
-                                + MsgTable.ACTOR_ID + " " + userIds.getSql()
-                                + " OR "
-                                + "("
-                                + UserTable.LINKED_USER_ID + " " + userIds.getSql()
-                                + " AND "
-                                + MsgOfUserTable.REBLOGGED + " = 1"
-                                + ")");
-                break;
-            default:
-                break;
-        }
-
-        sa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.SENT_DATE
-                        + " >= ?",
+        sa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "."
+                        + ActivityTable.getTimeSortField(sortForNotifications()) + " >= ?",
                 new String[]{
                         String.valueOf(minSentDate > 0 ? minSentDate : 1)
                 });
         if (maxSentDate > 0) {
-            sa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.SENT_DATE + " <= ?",
+            sa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "."
+                            + ActivityTable.getTimeSortField(sortForNotifications()) + " <= ?",
                     String.valueOf(maxSentDate));
         }
         return sa;
@@ -316,7 +280,7 @@ public class TimelineParameters {
 
     Cursor queryDatabase() {
         prepareQueryParameters();
-        return myContext.context().getContentResolver().query(getContentUri(), mProjection,
+        return myContext.context().getContentResolver().query(getContentUri(), mProjection.toArray(new String[]{}),
                 selectionAndArgs.selection, selectionAndArgs.selectionArgs, sortOrderAndLimit);
     }
 

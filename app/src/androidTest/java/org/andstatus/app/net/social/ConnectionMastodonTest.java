@@ -117,7 +117,7 @@ public class ConnectionMastodonTest {
         MbMessage mbMessage = activity.getMessage();
         assertEquals("Favorited " + mbMessage, TriState.UNKNOWN, mbMessage.getFavoritedByMe());
         assertEquals("Not reblogged " + mbMessage, true, mbMessage.isReblogged());
-        assertEquals("Author's username", "AndStatus", mbMessage.getAuthor().getUserName());
+        assertEquals("Author's username", "AndStatus", activity.getAuthor().getUserName());
         MbUser actor = activity.getActor();
         assertEquals("Actor's Oid", "15451", actor.oid);
         assertEquals("Username", "Chaosphere", actor.getUserName());
@@ -132,7 +132,7 @@ public class ConnectionMastodonTest {
         assertEquals("Favorited " + mbMessage, TriState.TRUE, mbMessage.getFavorited());
         assertEquals("Favorited by me " + mbMessage, TriState.UNKNOWN, mbMessage.getFavoritedByMe());
         assertEquals("Reblogged " + mbMessage, false, mbMessage.isReblogged());
-        assertEquals("Author's username", "AndStatus", mbMessage.getAuthor().getUserName());
+        assertEquals("Author's username", "AndStatus", activity.getAuthor().getUserName());
         actor = activity.getActor();
         assertEquals("Actor's Oid", "48790", actor.oid);
         assertEquals("Username", "vfrmedia", actor.getUserName());
@@ -147,7 +147,7 @@ public class ConnectionMastodonTest {
         assertEquals("Actor's Oid", "24853", actor.oid);
         assertEquals("Username", "resir014", actor.getUserName());
         assertEquals("WebfingerId", "resir014@icosahedron.website", actor.getWebFingerId());
-        assertEquals("Not followed", TriState.TRUE, user.followedByActor);
+        assertEquals("Not followed", TriState.TRUE, user.followedByMe);
 
         ind = 19;
         assertEquals("Is not a message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());

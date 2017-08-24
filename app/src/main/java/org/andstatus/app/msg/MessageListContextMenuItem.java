@@ -33,6 +33,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.list.ContextMenuItem;
 import org.andstatus.app.os.AsyncTaskLauncher;
@@ -76,7 +77,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         MessageEditorData executeAsync(MessageContextMenu menu) {
             MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(
-                    MyQuery.msgIdToLongColumnValue(MsgTable.ACTOR_ID, menu.getMsgId()));
+                    MyQuery.msgIdToLongColumnValue(ActivityTable.ACTOR_ID, menu.getMsgId()));
             CommandData commandData = CommandData.newUpdateStatus(ma, menu.getMsgId());
             MyServiceManager.sendManualForegroundCommand(commandData);
             return null;
@@ -112,12 +113,12 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         MessageEditorData executeAsync(MessageContextMenu menu) {
             return MessageEditorData.newEmpty(menu.getMyActor())
-                    .setRecipientId(MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, menu.getMsgId()));
+                    .addRecipientId(MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, menu.getMsgId()));
         }
 
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            if (editorData.recipientId != 0) {
+            if (editorData.recipients.nonEmpty()) {
                 menu.menuContainer.getMessageEditor().startEditingMessage(editorData);
             }
         }
@@ -191,15 +192,15 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     SENDER_MESSAGES(true) {
         @Override
         MessageEditorData executeAsync(MessageContextMenu menu) {
-            return fillUserId(menu.getMyActor(), menu.getMsgId(), MsgTable.ACTOR_ID);
+            return fillUserId(menu.getMyActor(), menu.getMsgId(), ActivityTable.ACTOR_ID);
         }
 
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            if (editorData.recipientId != 0) {
+            if (editorData.recipients.nonEmpty()) {
                 menu.switchTimelineActivityView(
                         Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER,
-                        null, editorData.recipientId, menu.getOrigin(), ""));
+                        null, editorData.recipients.getFirst().userId, menu.getOrigin(), ""));
             }
         }
     },
@@ -211,17 +212,17 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
 
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            if (editorData.recipientId != 0) {
+            if (editorData.recipients.nonEmpty()) {
                 menu.switchTimelineActivityView(
                         Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER,
-                        null, editorData.recipientId, menu.getOrigin(), ""));
+                        null, editorData.recipients.getFirst().userId, menu.getOrigin(), ""));
             }
         }
     },
     FOLLOW_SENDER(true) {
         @Override
         MessageEditorData executeAsync(MessageContextMenu menu) {
-            return fillUserId(menu.getMyActor(), menu.getMsgId(), MsgTable.ACTOR_ID);
+            return fillUserId(menu.getMyActor(), menu.getMsgId(), ActivityTable.ACTOR_ID);
         }
 
         @Override
@@ -232,7 +233,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     STOP_FOLLOWING_SENDER(true) {
         @Override
         MessageEditorData executeAsync(MessageContextMenu menu) {
-            return fillUserId(menu.getMyActor(), menu.getMsgId(), MsgTable.ACTOR_ID);
+            return fillUserId(menu.getMyActor(), menu.getMsgId(), ActivityTable.ACTOR_ID);
         }
 
         @Override
@@ -446,7 +447,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
 
     MessageEditorData fillUserId(MyAccount ma, long msgId, String msgUserIdColumnName) {
         return MessageEditorData.newEmpty(ma)
-                .setRecipientId(MyQuery.msgIdToUserId(msgUserIdColumnName, msgId));
+                .addRecipientId(MyQuery.msgIdToUserId(msgUserIdColumnName, msgId));
     }
 
     void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
@@ -455,7 +456,8 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     
     void sendUserCommand(CommandEnum command, MessageEditorData editorData) {
         MyServiceManager.sendManualForegroundCommand(
-                CommandData.newUserCommand(command, null, editorData.ma.getOrigin(), editorData.recipientId, ""));
+                CommandData.newUserCommand(command, null, editorData.ma.getOrigin(),
+                        editorData.recipients.getFirst().userId, ""));
     }
     
     void sendMsgCommand(CommandEnum command, MessageEditorData editorData) {

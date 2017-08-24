@@ -27,7 +27,6 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.DownloadTable;
 import org.andstatus.app.database.FriendshipTable;
 import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
@@ -73,14 +72,10 @@ public class DataPruner {
         SharedPreferences sp = SharedPreferencesUtil
                 .getDefaultSharedPreferences();
 
-        // Don't delete messages, which are favorited by any user
-        String sqlNotFavoritedMessage = "NOT EXISTS ("
-                + "SELECT * FROM " + MsgOfUserTable.TABLE_NAME + " AS gnf WHERE "
-                + MsgTable.TABLE_NAME + "." + MsgTable._ID + "=gnf." + MsgOfUserTable.MSG_ID
-                + " AND gnf." + MsgOfUserTable.FAVORITED + "=1"
-                + ")";
+        // Don't delete messages, which were favorited by any my account
+        String sqlNotFavoritedOrRebloggedMessage = MsgTable.FAVORITED + "=0 AND " + MsgTable.REBLOGGED + "=0";
         String sqlNotLatestMessageByFollowedUser = MsgTable.TABLE_NAME + "." + MsgTable._ID + " NOT IN("
-                + "SELECT " + UserTable.USER_MSG_ID
+                + "SELECT " + UserTable.USER_ACTIVITY_ID
                 + " FROM " + UserTable.TABLE_NAME + " AS userf"
                 + " INNER JOIN " + FriendshipTable.TABLE_NAME
                 + " ON" 
@@ -103,7 +98,7 @@ public class DataPruner {
                 SelectionAndArgs sa = new SelectionAndArgs();
                 sa.addSelection(MsgTable.TABLE_NAME + "." + MsgTable.INS_DATE + " <  ?",
                         String.valueOf(latestTimestamp));
-                sa.addSelection(sqlNotFavoritedMessage);
+                sa.addSelection(sqlNotFavoritedOrRebloggedMessage);
                 sa.addSelection(sqlNotLatestMessageByFollowedUser);
                 nDeletedTime = mContentResolver.delete(MatchedUri.MSG_CONTENT_URI, sa.selection, sa.selectionArgs);
             }
@@ -130,7 +125,7 @@ public class DataPruner {
                         SelectionAndArgs sa = new SelectionAndArgs();
                         sa.addSelection(MsgTable.TABLE_NAME + "." + MsgTable.INS_DATE + " <=  ?",
                                 String.valueOf(latestTimestampSize));
-                        sa.addSelection(sqlNotFavoritedMessage);
+                        sa.addSelection(sqlNotFavoritedOrRebloggedMessage);
                         sa.addSelection(sqlNotLatestMessageByFollowedUser);
                         nDeletedSize = mContentResolver.delete(MatchedUri.MSG_CONTENT_URI, sa.selection,
                                 sa.selectionArgs);

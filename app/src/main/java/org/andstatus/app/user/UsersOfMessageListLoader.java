@@ -19,6 +19,7 @@ package org.andstatus.app.user;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
@@ -61,11 +62,10 @@ public class UsersOfMessageListLoader extends UserListLoader {
         } else {
             MbUser author = addUserIdToList(originOfSelectedMessage, authorId).mbUser;
             addUserIdToList(originOfSelectedMessage,
-                    MyQuery.msgIdToLongColumnValue(MsgTable.ACTOR_ID, selectedMessageId));
+                    MyQuery.msgIdToLongColumnValue(ActivityTable.ACTOR_ID, selectedMessageId));
             addUserIdToList(originOfSelectedMessage,
                     MyQuery.msgIdToLongColumnValue(MsgTable.IN_REPLY_TO_USER_ID, selectedMessageId));
-            addUserIdToList(originOfSelectedMessage,
-                    MyQuery.msgIdToLongColumnValue(MsgTable.RECIPIENT_ID, selectedMessageId));
+            // TODO: Add recipients
             addUsersFromMessageBody(author);
             addRebloggers();
         }
@@ -79,8 +79,9 @@ public class UsersOfMessageListLoader extends UserListLoader {
     }
 
     private void addRebloggers() {
-        for (long rebloggerId : MyQuery.getRebloggers(selectedMessageId)) {
-            addUserIdToList(originOfSelectedMessage, rebloggerId);
+        for (MbUser reblogger : MyQuery.getRebloggers(
+                MyContextHolder.get().getDatabase(), origin.getId(), selectedMessageId)) {
+            addUserIdToList(originOfSelectedMessage, reblogger.userId);
         }
     }
 

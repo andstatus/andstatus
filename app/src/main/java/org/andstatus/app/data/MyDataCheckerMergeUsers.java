@@ -21,9 +21,10 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.database.ActivityTable;
+import org.andstatus.app.database.AudienceTable;
 import org.andstatus.app.database.DownloadTable;
 import org.andstatus.app.database.FriendshipTable;
-import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.social.MbActivity;
@@ -128,13 +129,15 @@ public class MyDataCheckerMergeUsers {
         MbUser user = activity.getUser();
         String logMsg = "Merging " + user + " with " + activity.getActor();
         logger.logProgress(logMsg);
-        updateColumn(logMsg, activity, MsgTable.TABLE_NAME, MsgTable.ACTOR_ID, false);
+        // TODO: clean the code!
+        updateColumn(logMsg, activity, ActivityTable.TABLE_NAME, ActivityTable.ACTOR_ID, false);
+        updateColumn(logMsg, activity, ActivityTable.TABLE_NAME, ActivityTable.USER_ID, false);
+
         updateColumn(logMsg, activity, MsgTable.TABLE_NAME, MsgTable.AUTHOR_ID, false);
-        updateColumn(logMsg, activity, MsgTable.TABLE_NAME, MsgTable.RECIPIENT_ID, false);
         updateColumn(logMsg, activity, MsgTable.TABLE_NAME, MsgTable.IN_REPLY_TO_USER_ID, false);
 
-        updateColumn(logMsg, activity, MsgOfUserTable.TABLE_NAME, MsgOfUserTable.USER_ID, true);
-        deleteRows(logMsg, user, MsgOfUserTable.TABLE_NAME, MsgOfUserTable.USER_ID);
+        updateColumn(logMsg, activity, AudienceTable.TABLE_NAME, AudienceTable.USER_ID, true);
+        deleteRows(logMsg, user, AudienceTable.TABLE_NAME, AudienceTable.USER_ID);
 
         deleteRows(logMsg, user, FriendshipTable.TABLE_NAME, FriendshipTable.USER_ID);
         deleteRows(logMsg, user, FriendshipTable.TABLE_NAME, FriendshipTable.FRIEND_ID);

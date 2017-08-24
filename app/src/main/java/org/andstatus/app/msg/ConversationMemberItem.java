@@ -19,6 +19,7 @@ package org.andstatus.app.msg;
 import android.database.Cursor;
 
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.util.MyHtml;
 

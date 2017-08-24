@@ -5,11 +5,14 @@ import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbActivityType;
-import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.andstatus.app.util.TriState.FALSE;
+import static org.andstatus.app.util.TriState.TRUE;
+import static org.andstatus.app.util.TriState.UNKNOWN;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -26,64 +29,63 @@ public class MessageForAccountTest {
         assertTrue(ma.isValid());
         DemoMessageInserter mi = new DemoMessageInserter(ma);
         MbUser accountUser = ma.toPartialUser();
-        MbMessage msg1 = mi.buildMessage(accountUser, "My testing message", null, null, DownloadStatus.LOADED);
-        long mgs1Id = mi.onActivity(msg1.update(accountUser));
+        MbActivity msg1 = mi.buildActivity(accountUser, "My testing message", null, null, DownloadStatus.LOADED);
+        mi.onActivity(msg1);
         
-        MessageForAccount mfa = new MessageForAccount(mgs1Id, ma.getOriginId(), ma);
+        MessageForAccount mfa = new MessageForAccount(msg1.getMessage().msgId, ma.getOriginId(), ma);
         assertTrue(mfa.isAuthor);
         assertTrue(mfa.isSender);
         assertTrue(mfa.isSubscribed);
-        assertFalse(mfa.isDirect());
-        assertFalse(mfa.mayBePrivate);
+        assertEquals(UNKNOWN, mfa.isPrivate);
         assertTrue(mfa.isTiedToThisAccount());
         assertTrue(mfa.hasPrivateAccess());
         
         MbUser author2 = mi.buildUserFromOid("acct:a2." + DemoData.TESTRUN_UID + "@pump.example.com");
-        MbMessage replyTo1 = mi.buildMessage(author2, "@" + accountUser.getUserName()
+        final MbActivity replyTo1 = mi.buildActivity(author2, "@" + accountUser.getUserName()
                 + " Replying to you", msg1, null, DownloadStatus.LOADED);
-        replyTo1.setPublic(true);
-        long replyTo1Id = mi.onActivity(replyTo1.update(accountUser));
+        replyTo1.getMessage().setPrivate(FALSE);
+        mi.onActivity(replyTo1);
         
-        mfa = new MessageForAccount(replyTo1Id, ma.getOriginId(), ma);
+        mfa = new MessageForAccount(replyTo1.getMessage().msgId, ma.getOriginId(), ma);
         assertFalse(mfa.isAuthor);
         assertFalse(mfa.isSender);
         assertFalse(mfa.isSubscribed);
-        assertFalse(mfa.isDirect());
-        assertTrue(mfa.mayBePrivate);
+        assertFalse(mfa.isPrivate());
+        assertEquals(FALSE, mfa.isPrivate);
         assertTrue(mfa.isTiedToThisAccount());
         assertTrue(mfa.hasPrivateAccess());
 
         MbUser author3 = mi.buildUserFromOid("acct:b3." + DemoData.TESTRUN_UID + "@pumpity.example.com");
-        MbMessage replyTo2 = mi.buildMessage(author3, "@" + author2.getUserName()
+        MbActivity replyTo2 = mi.buildActivity(author3, "@" + author2.getUserName()
                 + " Replying to the second author", replyTo1, null, DownloadStatus.LOADED);
-        replyTo2.setPublic(true);
-        long replyTo2Id = mi.onActivity(replyTo2.update(accountUser));
+        replyTo2.getMessage().setPrivate(FALSE);
+        mi.onActivity(replyTo2);
         
-        mfa = new MessageForAccount(replyTo2Id, ma.getOriginId(), ma);
+        mfa = new MessageForAccount(replyTo2.getMessage().msgId, ma.getOriginId(), ma);
         assertFalse(mfa.isAuthor);
         assertFalse(mfa.isSender);
         assertFalse(mfa.isSubscribed);
-        assertFalse(mfa.isDirect());
-        assertTrue(mfa.mayBePrivate);
+        assertFalse(mfa.isPrivate());
+        assertEquals(FALSE, mfa.isPrivate);
         assertFalse(mfa.isTiedToThisAccount());
         assertFalse(mfa.hasPrivateAccess());
         assertFalse(mfa.reblogged);
 
-        MbMessage reblogged1 = mi.buildMessage(author3, "@" + author2.getUserName()
+        MbActivity reblogged1 = mi.buildActivity(author3, "@" + author2.getUserName()
                 + " This reply is reblogged by anotherMan", replyTo1, null, DownloadStatus.LOADED);
         MbUser anotherMan = mi.buildUserFromOid("acct:c4." + DemoData.TESTRUN_UID + "@pump.example.com");
         anotherMan.setUserName("anotherMan" + DemoData.TESTRUN_UID);
         MbActivity activity = MbActivity.from(accountUser, MbActivityType.ANNOUNCE);
         activity.setActor(anotherMan);
-        activity.setMessage(reblogged1);
-        long reblogged1Id = mi.onActivity(activity);
+        activity.setActivity(reblogged1);
+        mi.onActivity(activity);
 
-        mfa = new MessageForAccount(reblogged1Id, ma.getOriginId(), ma);
+        mfa = new MessageForAccount(reblogged1.getMessage().msgId, ma.getOriginId(), ma);
         assertFalse(mfa.isAuthor);
         assertFalse(mfa.isSender);
         assertTrue(mfa.isSubscribed);
-        assertFalse(mfa.isDirect());
-        assertTrue(mfa.mayBePrivate);
+        assertFalse(mfa.isPrivate());
+        assertEquals(UNKNOWN, mfa.isPrivate);
         assertFalse(mfa.isTiedToThisAccount());
         assertFalse(mfa.hasPrivateAccess());
         assertFalse(mfa.reblogged);

@@ -30,8 +30,8 @@ import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyDataCheckerConversations;
 import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
+import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbAttachment;
-import org.andstatus.app.net.social.MbMessage;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -60,17 +60,18 @@ public class LargeImageTest {
         String body = "Large image attachment";
         MyAccount ma = DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         DemoMessageInserter mi = new DemoMessageInserter(ma);
-        MbMessage message = mi.buildMessage(mi.buildUser(), body, null, null, DownloadStatus.LOADED);
-        message.attachments
+        MbActivity activity = mi.buildActivity(mi.buildUser(), body, null, null, DownloadStatus.LOADED);
+        activity.getMessage().attachments
                 .add(MbAttachment
                         .fromUrlAndContentType(
                                 new URL(
                                         "http://www.example.com/pictures/large_image.png"),
                                 MyContentType.IMAGE));
-        long msgId = mi.onActivity(message.update(ma.toPartialUser()));
+        mi.onActivity(activity);
         
-        DownloadData dd = DownloadData.getSingleForMessage(msgId, message.attachments.get(0).contentType, null);
-        assertEquals("Image URI stored", message.attachments.get(0).getUri(), dd.getUri());
+        DownloadData dd = DownloadData.getSingleForMessage(activity.getMessage().msgId,
+                activity.getMessage().attachments.get(0).contentType, null);
+        assertEquals("Image URI stored", activity.getMessage().attachments.get(0).getUri(), dd.getUri());
 
         CommandData commandData = CommandData.newCommand(CommandEnum.FETCH_AVATAR);
         AttachmentDownloader loader = new AttachmentDownloader(dd);

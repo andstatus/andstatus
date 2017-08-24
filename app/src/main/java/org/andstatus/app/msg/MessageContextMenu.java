@@ -238,7 +238,7 @@ public class MessageContextMenu extends MyContextMenu {
                 }
             }
 
-            if (msg.isLoaded() && (!msg.isDirect() ||
+            if (msg.isLoaded() && (!msg.isPrivate() ||
                     msg.origin.getOriginType().isDirectMessageAllowsReply()) && !isEditorVisible()) {
                 MessageListContextMenuItem.REPLY.addTo(menu, order++, R.string.menu_item_reply);
                 MessageListContextMenuItem.REPLY_TO_CONVERSATION_PARTICIPANTS.addTo(menu, order++,
@@ -257,7 +257,7 @@ public class MessageContextMenu extends MyContextMenu {
                         R.string.menu_item_direct_message);
             }
 
-            if (msg.isLoaded() && !msg.isDirect()) {
+            if (msg.isLoaded() && !msg.isPrivate()) {
                 if (msg.favorited) {
                     MessageListContextMenuItem.DESTROY_FAVORITE.addTo(menu, order++,
                             R.string.menu_item_destroy_favorite);
@@ -283,7 +283,7 @@ public class MessageContextMenu extends MyContextMenu {
 
             if (msg.isSenderMySucceededAccount()) {
                 if (msg.isLoaded()) {
-                    if (msg.isDirect()) {
+                    if (msg.isPrivate()) {
                         // This is a Direct Message
                         // TODO: Delete Direct message
                     } else if (!msg.reblogged && msg.getMyAccount().getConnection()

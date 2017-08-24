@@ -35,7 +35,7 @@ public enum MbActivityType {
     UNDO_LIKE(9),
     EMPTY(10);
 
-    final long id;
+    public final long id;
 
     MbActivityType(long id) {
         this.id = id;

@@ -27,7 +27,9 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.ProjectionMap;
-import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.data.SelectedUserIds;
+import org.andstatus.app.database.ActivityTable;
+import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 
@@ -42,10 +44,10 @@ public class DirectMessagesConversationLoader<T extends ConversationItem> extend
 
     @Override
     protected void load2(T oMsg) {
-        long senderId = MyQuery.msgIdToLongColumnValue(MsgTable.ACTOR_ID, oMsg.getMsgId());
-        long recipientId = MyQuery.msgIdToLongColumnValue(MsgTable.RECIPIENT_ID, oMsg.getMsgId());
-        String selection = getSelectionForSenderAndRecipient(senderId, recipientId) + " OR "
-                + getSelectionForSenderAndRecipient(recipientId, senderId);
+        long actorId = MyQuery.msgIdToLongColumnValue(ActivityTable.ACTOR_ID, oMsg.getMsgId());
+        Audience recipients = Audience.fromMsgId(ma.getOriginId(), oMsg.getMsgId());
+        String selection = getSelectionForActorAndRecipient("=" + Long.toString(actorId),
+                new SelectedUserIds(recipients).getSql());
         Uri uri = MatchedUri.getTimelineUri(
                 Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null));
         Cursor cursor = null;
@@ -65,10 +67,14 @@ public class DirectMessagesConversationLoader<T extends ConversationItem> extend
     }
 
     @NonNull
-    private String getSelectionForSenderAndRecipient(long senderId, long recipientId) {
-        return "(" + ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.ACTOR_ID + "=" +
-                Long.toString(senderId)
-                + " AND " + ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.RECIPIENT_ID + "=" +
-                Long.toString(recipientId) + ")";
+    private String getSelectionForActorAndRecipient(String actor, String recipients) {
+        return getOneSelection(actor, recipients) + " OR " + getOneSelection(recipients, actor);
     }
+
+    @NonNull
+    private String getOneSelection(String actor, String recipients) {
+        return "(" + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.ACTOR_ID + actor
+                + " AND " + ActivityTable.TABLE_NAME + "." + ActivityTable.RECIPIENT_ID + recipients + ")";
+    }
+
 }

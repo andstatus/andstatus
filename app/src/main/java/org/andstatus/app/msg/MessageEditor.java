@@ -43,6 +43,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.os.AsyncTaskLauncher;
@@ -296,7 +297,7 @@ public class MessageEditor {
         if (item != null) {
             boolean enableAttach = isVisible()
                     && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ATTACH_IMAGES_TO_MY_MESSAGES, true)
-                    && (editorData.recipientId == 0 || editorData.getMyAccount().getOrigin().getOriginType()
+                    && (editorData.recipients.isEmpty() || editorData.getMyAccount().getOrigin().getOriginType()
                     .allowAttachmentForDirectMessage());
             item.setEnabled(enableAttach);
             item.setVisible(enableAttach);
@@ -463,8 +464,8 @@ public class MessageEditor {
             messageDetails += " " + String.format(
                     getActivity().getText(R.string.message_source_in_reply_to).toString(), replyToName);
         }
-        if (editorData.recipientId != 0) {
-            String recipientName = MyQuery.userIdToWebfingerId(editorData.recipientId);
+        if (editorData.recipients.nonEmpty()) {
+            String recipientName = editorData.recipients.getUserNames();
             if (!TextUtils.isEmpty(recipientName)) {
                 messageDetails += " " + String.format(
                         getActivity().getText(R.string.message_source_to).toString(), recipientName);

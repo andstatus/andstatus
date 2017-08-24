@@ -27,6 +27,15 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="36.00" android:versionCode="XXX"
+             versionDate="2017-09-XX"
+             versionTitle="Notifications enhancements">
+        <changes>
+            <change>Dropped support for Android v.4.x devices. Minimal supported
+                <a href="https://en.wikipedia.org/wiki/Android_version_history" target="_blank">Android version</a>
+                is 5.0 now.</change>
+        </changes>
+    </release>
     <release android:versionName="35.06" android:versionCode="232"
              versionDate="2017-08-13"
              versionTitle="Bug fixes">

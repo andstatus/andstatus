@@ -67,21 +67,6 @@ public final class MsgTable implements BaseColumns {
      */
     public static final String URL = "url";
     /**
-     * Author of the message = User._ID
-     * If message was "Reblogged" ("Retweeted", "Repeated", ...) this is Original author (whose message was reblogged)
-     */
-    public static final String AUTHOR_ID = "author_id";
-    /**
-     * Actor/sender of the message = User._ID
-     */
-    public static final String ACTOR_ID = "sender_id";  // TODO: rename to "actor_id"
-    /**
-     * Recipient of the message = User._ID
-     * null for public messages
-     * not null for direct messages
-     */
-    public static final String RECIPIENT_ID = "recipient_id";
-    /**
      * Text of the message ("TEXT" may be reserved word so it was renamed here)
      */
     public static final String BODY = "body";
@@ -100,43 +85,44 @@ public final class MsgTable implements BaseColumns {
      */
     public static final String IN_REPLY_TO_MSG_ID = "in_reply_to_msg_id";
     /**
+     * Date and time when the message was created or updated in the originating system.
+     * We store it as long milliseconds.
+     */
+    public static final String UPDATED_DATE = "msg_updated_date";
+    /** Date and time the row was inserted into this database */
+    public static final String INS_DATE = "msg_ins_date";
+    /** The Msg is definitely private (e.g. "Direct message")
+     *  Absence of this flag means that we don't know for sure, if the message is private */
+    public static final String PRIVATE = "private";
+    /** Some of my accounts subscribed to this message or was a "Secondary target audience" */
+    public static final String SUBSCRIBED = "subscribed";
+    /** Some of my accounts favorited this message */
+    public static final String FAVORITED = "favorited";
+    /** The Msg is reblogged by some of my accounts
+     * In some sense REBLOGGED is like FAVORITED.
+     * Main difference: visibility. REBLOGGED are shown for all followers in their Home timelines.
+     */
+    public static final String REBLOGGED = "reblogged";
+    /** Some of my accounts is mentioned in this message, is a recipient (in TO or CC)
+     *     or this is a reply to my account */
+    public static final String MENTIONED = "mentioned";
+
+    public static final String FAVORITE_COUNT = "favorite_count";
+    public static final String REBLOG_COUNT = "reblog_count";
+    public static final String REPLY_COUNT = "reply_count";  // To be calculated locally?!
+
+    // Columns, which duplicate other existing info. Here to speed up data retrieval
+    public static final String AUTHOR_ID = "msg_author_id";
+    /**
      * If not null: to which Sender this message is a reply = User._ID
      * This field is not necessary but speeds up IN_REPLY_TO_NAME calculation
      */
     public static final String IN_REPLY_TO_USER_ID = "in_reply_to_user_id";
-    /**
-     * Date and time when the message was updated in the originating system.
-     * We store it as long milliseconds.
-     */
-    public static final String UPDATED_DATE = "msg_created_date";  // TODO: Rename to "msg_updated_date"
-    /**
-     * Date and time when the message was sent,
-     * it's not equal to {@link MsgTable#UPDATED_DATE} for reblogged messages
-     * We change the value if we reblog the message in the application
-     * or if we receive new reblog of the message
-     * This value is set for unsent messages also. So it is updated after successful retrieval
-     * of this sent message from a Social Network.
-     */
-    public static final String SENT_DATE = "msg_sent_date";
-    /**
-     * Date and time the row was inserted into this database
-     */
-    public static final String INS_DATE = "msg_ins_date";
-    /**
-     * The Msg is public
-     */
-    public static final String PUBLIC = "public";
 
-    /*
-     * Derived columns (they are not stored in this table but are result of joins and aliasing)
-     */
-    /**
-     * Alias for the primary key
-     */
+    // Derived columns (they are not stored in this table but are result of joins and aliasing)
+
+    /** Alias for the primary key */
     public static final String MSG_ID =  "msg_id";
-
-    public static final String DESC_SORT_ORDER = SENT_DATE + " DESC";
-    public static final String ASC_SORT_ORDER = SENT_DATE + " ASC";
 
     public static void create(SQLiteDatabase db) {
         DbUtils.execSQL(db, "CREATE TABLE " + MsgTable.TABLE_NAME + " ("
@@ -146,19 +132,23 @@ public final class MsgTable implements BaseColumns {
                 + MsgTable.MSG_STATUS + " INTEGER NOT NULL DEFAULT 0,"
                 + MsgTable.CONVERSATION_ID + " INTEGER,"
                 + MsgTable.CONVERSATION_OID + " TEXT,"
-                + MsgTable.AUTHOR_ID + " INTEGER,"
-                + MsgTable.ACTOR_ID + " INTEGER,"
-                + MsgTable.RECIPIENT_ID + " INTEGER,"
+                + MsgTable.URL + " TEXT,"
                 + MsgTable.BODY + " TEXT,"
                 + MsgTable.BODY_TO_SEARCH + " TEXT,"
                 + MsgTable.VIA + " TEXT,"
-                + MsgTable.URL + " TEXT,"
                 + MsgTable.IN_REPLY_TO_MSG_ID + " INTEGER,"
-                + MsgTable.IN_REPLY_TO_USER_ID + " INTEGER,"
                 + MsgTable.UPDATED_DATE + " INTEGER,"
-                + MsgTable.SENT_DATE + " INTEGER,"
                 + MsgTable.INS_DATE + " INTEGER NOT NULL,"
-                + MsgTable.PUBLIC + " BOOLEAN DEFAULT 0 NOT NULL"
+                + MsgTable.PRIVATE + " BOOLEAN DEFAULT 0 NOT NULL,"
+                + MsgTable.SUBSCRIBED + " BOOLEAN DEFAULT 0 NOT NULL,"
+                + MsgTable.FAVORITED + " BOOLEAN DEFAULT 0 NOT NULL,"
+                + MsgTable.REBLOGGED + " BOOLEAN DEFAULT 0 NOT NULL,"
+                + MsgTable.MENTIONED + " BOOLEAN DEFAULT 0 NOT NULL,"
+                + MsgTable.FAVORITE_COUNT + " INTEGER NOT NULL DEFAULT 0,"
+                + MsgTable.REBLOG_COUNT + " INTEGER NOT NULL DEFAULT 0,"
+                + MsgTable.REPLY_COUNT + " INTEGER NOT NULL DEFAULT 0,"
+                + MsgTable.AUTHOR_ID + " INTEGER,"
+                + MsgTable.IN_REPLY_TO_USER_ID + " INTEGER"
                 + ")");
 
         DbUtils.execSQL(db, "CREATE UNIQUE INDEX idx_msg_origin ON " + MsgTable.TABLE_NAME + " ("
@@ -166,19 +156,15 @@ public final class MsgTable implements BaseColumns {
                 + MsgTable.MSG_OID
                 + ")");
 
-        DbUtils.execSQL(db, "CREATE INDEX idx_msg_sent_date ON " + MsgTable.TABLE_NAME + " ("
-                + MsgTable.SENT_DATE
-                + ")");
-
         // Index not null rows only, see https://www.sqlite.org/partialindex.html
         DbUtils.execSQL(db, "CREATE INDEX idx_msg_in_reply_to_msg_id ON " + MsgTable.TABLE_NAME + " ("
-                + MsgTable.IN_REPLY_TO_MSG_ID + ")" +
-                (Build.VERSION.SDK_INT >= PARTIAL_INDEX_SUPPORTED ?
+                + MsgTable.IN_REPLY_TO_MSG_ID + ")"
+                + (Build.VERSION.SDK_INT >= PARTIAL_INDEX_SUPPORTED ?
                         " WHERE " + MsgTable.IN_REPLY_TO_MSG_ID + " IS NOT NULL" : ""));
 
         DbUtils.execSQL(db, "CREATE INDEX idx_msg_conversation_id ON " + MsgTable.TABLE_NAME + " ("
-                + MsgTable.CONVERSATION_ID + ")" +
-                (Build.VERSION.SDK_INT >= PARTIAL_INDEX_SUPPORTED ?
+                + MsgTable.CONVERSATION_ID + ")"
+                + (Build.VERSION.SDK_INT >= PARTIAL_INDEX_SUPPORTED ?
                         " WHERE " + MsgTable.CONVERSATION_ID + " IS NOT NULL" : ""));
     }
 }

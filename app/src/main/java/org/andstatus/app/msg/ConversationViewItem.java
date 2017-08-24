@@ -22,6 +22,8 @@ import android.provider.BaseColumns;
 import android.text.Html;
 import android.text.TextUtils;
 
+import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.AvatarFile;
@@ -29,11 +31,13 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineSql;
-import org.andstatus.app.database.MsgOfUserTable;
+import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
+import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
+import org.andstatus.app.util.TriState;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -57,11 +61,9 @@ public class ConversationViewItem extends ConversationItem {
 
     @Override
     void load(Cursor cursor) {
-        /**
-         * IDs of all known senders of this message except for the Author
+        /* IDs of all known senders of this message except for the Author
          * These "senders" reblogged the message
          */
-        Set<Long> rebloggerIds = new HashSet<>();
         int ind=0;
         do {
             long msgId = DbUtils.getLong(cursor, BaseColumns._ID);
@@ -71,61 +73,37 @@ public class ConversationViewItem extends ConversationItem {
                 }
                 break;
             }
-            long senderId = DbUtils.getLong(cursor, MsgTable.ACTOR_ID);
+
             authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
-            long linkedUserId = DbUtils.getLong(cursor, UserTable.LINKED_USER_ID);
-    
-            if (ind == 0) {
-                // This is the same for all retrieved rows
-                super.load(cursor);
-                msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
-                authorName = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.AUTHOR_NAME, false);
-                setBody(MyHtml.prepareForView(DbUtils.getString(cursor, MsgTable.BODY)));
-                String via = DbUtils.getString(cursor, MsgTable.VIA);
-                if (!TextUtils.isEmpty(via)) {
-                    messageSource = Html.fromHtml(via).toString().trim();
-                }
-                avatarFile = AvatarFile.fromCursor(authorId, cursor);
-                if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
-                    attachedImageFile = AttachedImageFile.fromCursor(cursor);
-                }
-                inReplyToMsgId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_MSG_ID);
-                inReplyToUserId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_USER_ID);
-                inReplyToName = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.IN_REPLY_TO_NAME, false);
-                recipientName = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.RECIPIENT_NAME, false);
+            super.load(cursor);
+            msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
+            authorName = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.AUTHOR_NAME, false);
+            setBody(MyHtml.prepareForView(DbUtils.getString(cursor, MsgTable.BODY)));
+            String via = DbUtils.getString(cursor, MsgTable.VIA);
+            if (!TextUtils.isEmpty(via)) {
+                messageSource = Html.fromHtml(via).toString().trim();
             }
-    
-            if (senderId != authorId) {
-                rebloggerIds.add(senderId);
+            avatarFile = AvatarFile.fromCursor(authorId, cursor);
+            if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
+                attachedImageFile = AttachedImageFile.fromCursor(cursor);
             }
-            if (linkedUserId != 0) {
-                if (getLinkedUserId() == 0 || !getLinkedMyAccount().isValid()) {
-                    setLinkedUserAndAccount(linkedUserId);
-                }
-                if (DbUtils.getInt(cursor, MsgOfUserTable.REBLOGGED) == 1) {
-                    if (linkedUserId != authorId) {
-                        rebloggerIds.add(linkedUserId);
-                    }
-                    if (getLinkedMyAccount().getUserId() == linkedUserId) {
-                        reblogged = true;
-                    }
-                }
-                if (getLinkedMyAccount().getUserId() == linkedUserId & DbUtils.getInt(cursor, MsgOfUserTable.FAVORITED) == 1) {
-                    favorited = true;
-                }
+            inReplyToMsgId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_MSG_ID);
+            inReplyToUserId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_USER_ID);
+            inReplyToName = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.IN_REPLY_TO_NAME, false);
+            //TODO:  recipientName = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.RECIPIENT_NAME, false);
+
+            if (DbUtils.getTriState(cursor, MsgTable.REBLOGGED) == TriState.TRUE) {
+                reblogged = true;
             }
-            
+            if (DbUtils.getTriState(cursor, MsgTable.FAVORITED) == TriState.TRUE) {
+                favorited = true;
+            }
+
             ind++;
         } while (cursor.moveToNext());
 
-        for (long rebloggerId : MyQuery.getRebloggers(getMsgId())) {
-            if (!rebloggerIds.contains(rebloggerId)) {
-                rebloggerIds.add(rebloggerId);
-            }
-        }
-
-        for (long rebloggerId : rebloggerIds) {
-            rebloggers.put(rebloggerId, MyQuery.userIdToWebfingerId(rebloggerId));
+        for (MbUser user : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOriginId(), getMsgId())) {
+            rebloggers.put(user.userId, user.getWebFingerId());
         }
     }
 }

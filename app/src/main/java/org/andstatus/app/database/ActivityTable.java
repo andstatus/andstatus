@@ -17,16 +17,18 @@
 package org.andstatus.app.database;
 
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 import android.provider.BaseColumns;
 
 import org.andstatus.app.data.DbUtils;
+
+import static org.andstatus.app.database.DatabaseConverter.PARTIAL_INDEX_SUPPORTED;
 
 /** The table holds {@link org.andstatus.app.net.social.MbActivity} */
 public final class ActivityTable implements BaseColumns {
     public static final String TABLE_NAME = "activity";
 
-    public static final String ACTIVITY_ID = "activity_id";
-    public static final String ORIGIN_ID =  OriginTable.ORIGIN_ID;
+    public static final String ORIGIN_ID =  "activity_" + OriginTable.ORIGIN_ID;
     /** id in a Social Network {@link OriginTable} */
     public static final String ACTIVITY_OID = "activity_oid";
     public static final String ACCOUNT_ID = "account_id";
@@ -35,10 +37,10 @@ public final class ActivityTable implements BaseColumns {
     public static final String ACTOR_ID = "actor_id";
 
     /** Message as Object */
-    public static final String MSG_ID =  MsgTable.MSG_ID;
+    public static final String MSG_ID = "activity_" + MsgTable.MSG_ID;
     /** Us as Object */
-    public static final String USER_ID = UserTable.USER_ID;
-    /** Activity as Object */
+    public static final String USER_ID = "activity_" + UserTable.USER_ID;
+    /** Inner Activity as Object */
     public static final String OBJ_ACTIVITY_ID = "obj_activity_id";
 
     public static final String UPDATED_DATE = "activity_updated_date";
@@ -46,7 +48,20 @@ public final class ActivityTable implements BaseColumns {
      * Date and time the row was inserted into this database
      */
     public static final String INS_DATE = "activity_ins_date";
-    
+
+    // Aliases
+    public static final String ACTIVITY_ID = "activity_id";
+    public static final String AUTHOR_ID = "author_id";
+    public static final String RECIPIENT_ID = "recipient_id";
+
+    public static String getTimeSortOrder(boolean forNotifications, boolean ascending) {
+        return getTimeSortField(forNotifications) + (ascending ? " ASC" : " DESC");
+    }
+
+    public static String getTimeSortField(boolean forNotifications) {
+        return forNotifications ? INS_DATE : MsgTable.UPDATED_DATE;
+    }
+
     private ActivityTable() {
         // Empty
     }
@@ -55,7 +70,7 @@ public final class ActivityTable implements BaseColumns {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + ORIGIN_ID + " INTEGER NOT NULL,"
-                + ACTIVITY_OID + " TEXT,"
+                + ACTIVITY_OID + " TEXT NOT NULL,"
                 + ACCOUNT_ID + " INTEGER NOT NULL,"
                 + ACTIVITY_TYPE + " INTEGER NOT NULL,"
                 + ACTOR_ID + " INTEGER,"
@@ -67,12 +82,32 @@ public final class ActivityTable implements BaseColumns {
                 + ")");
 
         DbUtils.execSQL(db, "CREATE UNIQUE INDEX idx_activity_origin ON " + TABLE_NAME + " ("
-                + ORIGIN_ID + ", "
-                + ACTIVITY_OID
-                + ")");
+                    + ORIGIN_ID + ", "
+                    + ACTIVITY_OID
+                + ")"
+        );
+
+        DbUtils.execSQL(db, "CREATE INDEX idx_activity_message ON " + TABLE_NAME + " ("
+                    + MSG_ID
+                + ")"
+                + (Build.VERSION.SDK_INT >= PARTIAL_INDEX_SUPPORTED ? " WHERE " + MSG_ID + " IS NOT NULL" : "")
+        );
+
+        DbUtils.execSQL(db, "CREATE INDEX idx_activity_user ON " + TABLE_NAME + " ("
+                + USER_ID
+                + ")"
+                + (Build.VERSION.SDK_INT >= PARTIAL_INDEX_SUPPORTED ? " WHERE " + USER_ID + " IS NOT NULL" : "")
+        );
+
+        DbUtils.execSQL(db, "CREATE INDEX idx_activity_activity ON " + TABLE_NAME + " ("
+                + OBJ_ACTIVITY_ID
+                + ")"
+                + (Build.VERSION.SDK_INT >= PARTIAL_INDEX_SUPPORTED ? " WHERE " + OBJ_ACTIVITY_ID + " IS NOT NULL" : "")
+        );
 
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_ins_date ON " + TABLE_NAME + " ("
                 + INS_DATE
-                + ")");
+                + ")"
+        );
     }
 }

@@ -20,15 +20,16 @@ import android.content.Intent;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.backup.ProgressLogger;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DemoMessageInserter;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.HtmlContentInserter;
-import org.andstatus.app.data.DemoMessageInserter;
 import org.andstatus.app.data.MyDataCheckerConversations;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.context.DemoData;
+import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyHtml;
 import org.junit.Before;
@@ -71,9 +72,9 @@ public class MessageShareTest {
     public void testSharePlainText() {
         String body = "Posting as a plain Text " + DemoData.TESTRUN_UID;
         final MyAccount myAccount = DemoData.getMyAccount(DemoData.TWITTER_TEST_ACCOUNT_NAME);
-        long msgId = DemoMessageInserter.addMessageForAccount(myAccount, body,
+        MbActivity activity = DemoMessageInserter.addMessageForAccount(myAccount, body,
                 DemoData.PLAIN_TEXT_MESSAGE_OID, DownloadStatus.LOADED);
-        MessageShare messageShare = new MessageShare(myAccount.getOrigin(), msgId, null);
+        MessageShare messageShare = new MessageShare(myAccount.getOrigin(), activity.getMessage().msgId, null);
         Intent intent = messageShare.intentToViewAndShare(true);
         assertTrue(intent.getExtras().containsKey(Intent.EXTRA_TEXT));
         assertTrue(

@@ -128,7 +128,7 @@ public class DemoAccountInserter {
             fail(e.getMessage());
         }
 
-        assertTrue("Account is persistent", builder.isPersistent());
+        assertTrue("Account is persistent " + builder.getAccount(), builder.isPersistent());
         MyAccount ma = builder.getAccount();
         assertEquals("Credentials of " + mbUser.getUserName() + " successfully verified",
                 CredentialsVerificationStatus.SUCCEEDED, ma.getCredentialsVerified());

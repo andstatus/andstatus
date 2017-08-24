@@ -101,7 +101,7 @@ public class ConnectionTwitterTest {
         MbMessage message = timeline.get(ind).getMessage();
         assertEquals("MyAccount", connectionData.getAccountUserOid(), activity.accountUser.oid);
         assertEquals("Favorited by me", TriState.TRUE, message.getFavoritedByMe());
-        MbUser author = message.getAuthor();
+        MbUser author = activity.getAuthor();
         assertEquals("Oid", "221452291", author.oid);
         assertEquals("Username", "Know", author.getUserName());
         assertEquals("WebFinger ID", "Know@" + hostName, author.getWebFingerId());
@@ -122,25 +122,27 @@ public class ConnectionTwitterTest {
         assertEquals("Favorited by actor", TriState.UNKNOWN, message.getFavorited());
 
         ind++;
-        message = timeline.get(ind).getMessage();
+        activity = timeline.get(ind);
+        message = activity.getMessage();
         assertTrue("Message is loaded", message.getStatus() == DownloadStatus.LOADED);
-        assertTrue("Does not have a recipient", message.getRecipient().isEmpty());
+        assertTrue("Does not have a recipient", message.recipients().isEmpty());
         assertTrue("Is a reblog", !message.isReblogged());
         assertTrue("Is a reply", message.getInReplyTo().nonEmpty());
-        assertEquals("Reply to the message id", "17176774678", message.getInReplyTo().oid);
+        assertEquals("Reply to the message id", "17176774678", message.getInReplyTo().getMessage().oid);
         assertEquals("Reply to the message by userOid", DemoData.TWITTER_TEST_ACCOUNT_USER_OID, message.getInReplyTo().getAuthor().oid);
-        assertTrue("Reply status is unknown", message.getInReplyTo().getStatus() == DownloadStatus.UNKNOWN);
+        assertTrue("Reply status is unknown", message.getInReplyTo().getMessage().getStatus() == DownloadStatus.UNKNOWN);
         assertTrue("Is not Favorited", !message.getFavoritedByMe().toBoolean(true));
         String startsWith = "@t131t";
         assertEquals("Body of this message starts with", startsWith, message.getBody().substring(0, startsWith.length()));
 
         ind++;
-        message = timeline.get(ind).getMessage();
-        assertTrue("Does not have a recipient", message.getRecipient().isEmpty());
+        activity = timeline.get(ind);
+        message = activity.getMessage();
+        assertTrue("Does not have a recipient", message.recipients().isEmpty());
         assertTrue("Is not a reblog", message.isReblogged());
         assertTrue("Is not a reply", message.getInReplyTo().isEmpty());
         assertEquals("Reblog of the message id", "315088751183409153", message.oid);
-        assertEquals("Reblog of the message by userOid", "442756884", message.getAuthor().oid);
+        assertEquals("Reblog of the message by userOid", "442756884", activity.getAuthor().oid);
         assertTrue("Is not Favorited", !message.getFavoritedByMe().toBoolean(true));
         startsWith = "This AndStatus application";
         assertEquals("Body of reblogged message starts with", startsWith, message.getBody().substring(0, startsWith.length()));
@@ -152,12 +154,13 @@ public class ConnectionTwitterTest {
                 TestSuite.utcTime(message.getUpdatedDate()));
 
         ind++;
-        message = timeline.get(ind).getMessage();
-        assertTrue("Does not have a recipient", message.getRecipient().isEmpty());
+        activity = timeline.get(ind);
+        message = activity.getMessage();
+        assertTrue("Does not have a recipient", message.recipients().isEmpty());
         assertTrue("Is a reblog", !message.isReblogged());
         assertTrue("Is not a reply", message.getInReplyTo().isEmpty());
         assertTrue("Is not Favorited", !message.getFavoritedByMe().toBoolean(true));
-        assertEquals("Author's oid is user oid of this account", connectionData.getAccountUserOid(), message.getAuthor().oid);
+        assertEquals("Author's oid is user oid of this account", connectionData.getAccountUserOid(), activity.getAuthor().oid);
         startsWith = "And this is";
         assertEquals("Body of this message starts with", startsWith, message.getBody().substring(0, startsWith.length()));
     }

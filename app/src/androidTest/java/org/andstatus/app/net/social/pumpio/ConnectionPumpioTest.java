@@ -198,7 +198,7 @@ public class ConnectionPumpioTest {
         assertEquals("Created at", 0, actor.getCreatedDate());
         assertEquals("Updated at", TestSuite.utcTime(2013, Calendar.SEPTEMBER, 12, 17, 10, 44),
                 TestSuite.utcTime(actor.getUpdatedDate()));
-        assertEquals("Actor is an Author", actor, mbMessage.getAuthor());
+        assertEquals("Actor is an Author", actor, activity.getAuthor());
         assertFalse("Reblogged", mbMessage.isReblogged());
         assertEquals("Favorited by actor", TriState.UNKNOWN, mbMessage.getFavorited());
         assertEquals("Favorited by me (" + activity.accountUser + ")", TriState.UNKNOWN, mbMessage.getFavoritedByMe());
@@ -210,7 +210,7 @@ public class ConnectionPumpioTest {
         MbUser mbUser = activity.getUser();
         assertEquals("User followed", "acct:atalsta@microca.st", mbUser.oid);
         assertEquals("WebFinger ID", "atalsta@microca.st", mbUser.getWebFingerId());
-        assertEquals("Followed", TriState.TRUE, mbUser.followedByActor);
+        assertEquals("Followed", TriState.TRUE, mbUser.followedByMe);
 
         ind++;
         activity = timeline.get(ind);
@@ -218,7 +218,7 @@ public class ConnectionPumpioTest {
         mbUser = activity.getUser();
         assertEquals("Url of the actor", "https://identi.ca/t131t", activity.getActor().getProfileUrl());
         assertEquals("WebFinger ID", "t131t@identi.ca", activity.getActor().getWebFingerId());
-        assertEquals("Following", TriState.TRUE, mbUser.followedByActor);
+        assertEquals("Following", TriState.TRUE, mbUser.followedByMe);
         assertEquals("Url of the user", "https://fmrl.me/grdryn", mbUser.getProfileUrl());
 
         ind++;
@@ -226,20 +226,20 @@ public class ConnectionPumpioTest {
         assertEquals("Favorited by me", TriState.UNKNOWN, mbMessage.getFavoritedByMe());
         assertEquals("Not favorited by someone else", TriState.TRUE, mbMessage.getFavorited());
         assertEquals("Actor -someone else", "acct:jpope@io.jpope.org" , actor.oid);
-        assertTrue("Does not have a recipient", mbMessage.getRecipient().isEmpty());
+        assertTrue("Does not have a recipient", mbMessage.recipients().isEmpty());
         assertEquals("Url of the message", "https://fmrl.me/lostson/note/Dp-njbPQSiOfdclSOuAuFw", mbMessage.url);
 
         ind++;
         mbMessage = timeline.get(ind).getMessage();
-        assertTrue("Have a recipient", mbMessage.getRecipient().nonEmpty());
-        assertEquals("Directed to yvolk", "acct:yvolk@identi.ca" , mbMessage.getRecipient().oid);
+        assertTrue("Have a recipient", mbMessage.recipients().nonEmpty());
+        assertEquals("Directed to yvolk", "acct:yvolk@identi.ca" , mbMessage.recipients().getFirst().oid);
 
         ind++;
         mbMessage = timeline.get(ind).getMessage();
         assertEquals(mbMessage.isSubscribedByMe(), TriState.UNKNOWN);
         assertTrue("Is a reply", mbMessage.getInReplyTo().nonEmpty());
         assertEquals("Is a reply to this user", mbMessage.getInReplyTo().getAuthor().getUserName(), "jankusanagi@identi.ca");
-        assertEquals(mbMessage.getInReplyTo().isSubscribedByMe(), TriState.FALSE);
+        assertEquals(mbMessage.getInReplyTo().getMessage().isSubscribedByMe(), TriState.FALSE);
     }
 
     @Test
@@ -320,7 +320,7 @@ public class ConnectionPumpioTest {
         assertTrue("User is present", !user.isEmpty());
         assertEquals("Our account acted", connection.getData().getAccountUserOid(), activity.getActor().oid);
         assertEquals("Object of action", userOid, user.oid);
-        assertEquals("Unfollowed", TriState.FALSE, user.followedByActor);
+        assertEquals("Unfollowed", TriState.FALSE, user.followedByMe);
     }
 
     @Test
@@ -355,7 +355,7 @@ public class ConnectionPumpioTest {
         
         connection.getData().setAccountUserOid("acct:mymediatester@" + originUrl.getHost());
         MbActivity activity = connection.updateStatus("Test post message with media", "", "", DemoData.LOCAL_IMAGE_TEST_URI);
-        activity.getMessage().setPublic(true);
+        activity.getMessage().setPrivate(TriState.FALSE);
         assertEquals("Message returned", privateGetMessageWithAttachment(
                 InstrumentationRegistry.getInstrumentation().getContext(), false), activity.getMessage());
     }
@@ -396,6 +396,6 @@ public class ConnectionPumpioTest {
         assertEquals("Number of replies", 2, msg.replies.size());
         MbMessage reply = msg.replies.get(0);
         assertEquals("Reply oid", "https://identi.ca/api/comment/cJdi4cGWQT-Z9Rn3mjr5Bw", reply.oid);
-        assertEquals("Is a Reply to", msgOid, reply.getInReplyTo().oid);
+        assertEquals("Is a Reply to", msgOid, reply.getInReplyTo().getMessage().oid);
     }
 }

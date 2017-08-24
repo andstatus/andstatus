@@ -21,7 +21,7 @@ import android.text.TextUtils;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.database.MsgOfUserTable;
+import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbActivityType;
@@ -102,55 +102,56 @@ public class DemoMessageInserter {
         return mbUser;
     }
 
-    public MbMessage buildMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn, DownloadStatus messageStatus) {
+    public MbActivity buildActivity(MbUser author, String body, MbActivity inReplyToActivity, String messageOidIn,
+                                    DownloadStatus messageStatus) {
         final String method = "buildMessage";
         String messageOid = messageOidIn;
         if (TextUtils.isEmpty(messageOid) && messageStatus != DownloadStatus.SENDING) {
             if (origin.getOriginType() == OriginType.PUMPIO) {
                 messageOid =  (author.isPartiallyDefined() ? "http://pumpiotest" + origin.getId()
                         + ".example.com/user/" + author.oid : author.getProfileUrl())
-                        + "/" + (inReplyToMessage == null ? "note" : "comment")
+                        + "/" + (inReplyToActivity == null ? "note" : "comment")
                         + "/thisisfakeuri" + System.nanoTime();
             } else {
                 messageOid = String.valueOf(System.nanoTime());
             }
         }
+        MbActivity activity = MbActivity.from(accountUser, MbActivityType.CREATE);
+        activity.setTimelinePosition(messageOid);
+        activity.setActor(author);
+        activity.setUpdatedDate(System.currentTimeMillis());
         MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), messageOid, messageStatus);
+        activity.setMessage(message);
+        message.setUpdatedDate(activity.getUpdatedDate());
         message.setBody(body);
-        message.setUpdatedDate(System.currentTimeMillis());
         message.via = "AndStatus";
-        message.setAuthor(author);
-        message.setInReplyTo(inReplyToMessage);
+        message.setInReplyTo(inReplyToActivity);
         if (origin.getOriginType() == OriginType.PUMPIO) {
             message.url = message.oid;
         }
         DbUtils.waitMs(method, 10);
-        return message;
+        return activity;
     }
 
-    static long addMessage(MbUser accountUser, MbMessage message) {
-        return onActivityS(message.act(accountUser, accountUser, MbActivityType.CREATE));
+    static void onActivityS(MbActivity activity) {
+        new DemoMessageInserter(activity.accountUser).onActivity(activity);
     }
 
-    static long onActivityS(MbActivity activity) {
-        return new DemoMessageInserter(activity.accountUser).onActivity(activity);
-    }
-
-    public long onActivity(final MbActivity activity) {
+    public void onActivity(final MbActivity activity) {
         MbMessage message = activity.getMessage();
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(accountUser.userId);
         assertTrue("Persistent account exists for " + accountUser, ma.isValid());
         DataUpdater di = new DataUpdater(new CommandExecutionContext(
                         CommandData.newTimelineCommand(CommandEnum.EMPTY, ma,
-                                message.isPublic() ? TimelineType.PUBLIC : TimelineType.HOME)));
+                                message.isPrivate() ? TimelineType.DIRECT : TimelineType.HOME)));
         long messageId = di.onActivity(activity).getMessage().msgId;
-        assertTrue( "Message oid='" + message.oid + "' was not added", messageId != 0);
+        assertTrue( "Message was not added: " + message, messageId != 0);
 
         String permalink = origin.messagePermalink(messageId);
         URL urlPermalink = UrlUtils.fromString(permalink); 
         assertNotNull("Message permalink is a valid URL '" + permalink + "',\n" + message.toString()
                 + "\n origin: " + origin
-                + "\n author: " + message.getAuthor().toString(), urlPermalink);
+                + "\n author: " + activity.getAuthor().toString(), urlPermalink);
         if (origin.getUrl() != null && origin.getOriginType() != OriginType.TWITTER) {
             assertEquals("Message permalink has the same host as origin, " + message.toString(),
                     origin.getUrl().getHost(), urlPermalink.getHost());
@@ -160,21 +161,17 @@ public class DemoMessageInserter {
         }
         
         if (message.getFavoritedByMe() == TriState.TRUE) {
-            long msgIdFromMsgOfUser = MyQuery.conditionToLongColumnValue(MsgOfUserTable.TABLE_NAME,
-                    MsgOfUserTable.MSG_ID, "t." + MsgOfUserTable.MSG_ID + "=" + messageId);
-            assertEquals("msgOfUser found for " + message, messageId, msgIdFromMsgOfUser);
-            
-            long userIdFromMsgOfUser = MyQuery.conditionToLongColumnValue(MsgOfUserTable.TABLE_NAME, MsgOfUserTable
-                            .USER_ID, "t." + MsgOfUserTable.USER_ID + "=" + accountUser.userId);
-            assertEquals("userId found for " + message, accountUser.userId, userIdFromMsgOfUser);
+            long favoritedUser = MyQuery.conditionToLongColumnValue(ActivityTable.TABLE_NAME,
+                    ActivityTable.ACTOR_ID, "t." + ActivityTable.ACTIVITY_TYPE
+                            + "=" + MbActivityType.LIKE.id +" AND t." + ActivityTable.MSG_ID + "=" + messageId);
+            assertEquals("User, who favorited " + message, accountUser.userId, favoritedUser);
         }
 
         if (message.isReblogged()) {
-            long rebloggerId = MyQuery.conditionToLongColumnValue(MsgOfUserTable.TABLE_NAME,
-                    MsgOfUserTable.USER_ID,
-                    "t." + MsgOfUserTable.MSG_ID + "=" + messageId
-            + " AND t." + MsgOfUserTable.REBLOGGED + "=1" );
-            assertTrue("Reblogger found for msgId=" + messageId, rebloggerId != 0);
+            long rebloggerId = MyQuery.conditionToLongColumnValue(ActivityTable.TABLE_NAME,
+                    ActivityTable.ACTOR_ID, "t." + ActivityTable.ACTIVITY_TYPE
+                            + "=" + MbActivityType.ANNOUNCE.id +" AND t." + ActivityTable.MSG_ID + "=" + messageId);
+            assertTrue("Reblogger found for " + message, rebloggerId != 0);
         }
 
         if (!message.replies.isEmpty()) {
@@ -185,8 +182,6 @@ public class DemoMessageInserter {
                 assertEquals("Inserting reply:<" + reply.getBody() + ">", messageId, inReplyToMsgId);
             }
         }
-
-        return messageId;
     }
 
     static void deleteOldMessage(long originId, String messageOid) {
@@ -198,11 +193,12 @@ public class DemoMessageInserter {
         }
     }
     
-    public static long addMessageForAccount(MyAccount ma, String body, String messageOid, DownloadStatus messageStatus) {
+    public static MbActivity addMessageForAccount(MyAccount ma, String body, String messageOid, DownloadStatus messageStatus) {
         assertTrue("Is not valid: " + ma, ma.isValid());
         MbUser accountUser = ma.toPartialUser();
         DemoMessageInserter mi = new DemoMessageInserter(accountUser);
-        MbMessage message = mi.buildMessage(accountUser, body, null, messageOid, messageStatus);
-        return mi.onActivity(message.update(accountUser));
+        MbActivity activity = mi.buildActivity(accountUser, body, null, messageOid, messageStatus);
+        mi.onActivity(activity);
+        return activity;
     }
 }

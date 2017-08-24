@@ -25,7 +25,7 @@ import org.andstatus.app.util.MyLog;
  * Determines where to save / retrieve position in the list
  * Information on two rows is stored for each "position" hence two keys. 
  * Plus Query string is being stored for the search results.
- * 2014-11-15 We are storing {@link MsgTable#SENT_DATE} for the last item to retrieve, not its ID as before
+ * 2014-11-15 We are storing {@link ViewItem#getDate()} for the last item to retrieve, not its ID as before
  * @author yvolk@yurivolkov.com
  */
 class TimelinePositionStorage<T extends ViewItem> {
@@ -60,7 +60,7 @@ class TimelinePositionStorage<T extends ViewItem> {
         }
         long firstVisibleItemId = 0;
         int lastPosition = -1;
-        long minSentDate = 0;
+        long minDate = 0;
         int y = 0;
         if (firstVisiblePosition >= 0) {
             firstVisibleItemId = adapter.getItemId(firstVisiblePosition);
@@ -71,19 +71,19 @@ class TimelinePositionStorage<T extends ViewItem> {
             if (lastPosition >= itemCount) {
                 lastPosition = itemCount - 1;
             }
-            minSentDate = adapter.getItem(lastPosition).getDate();
+            minDate = adapter.getItem(lastPosition).getDate();
         }
 
         if (firstVisibleItemId <= 0) {
             clear();
         } else {
-            saveTLPosition(firstVisibleItemId, minSentDate, y);
+            saveTLPosition(firstVisibleItemId, minDate, y);
         }
         if (MyLog.isVerboseEnabled()) {
             String msgLog = "id:" + firstVisibleItemId
                     + ", y:" + y
                     + " at pos=" + firstVisiblePosition
-                    + ", minDate=" + minSentDate
+                    + ", minDate=" + minDate
                     + " at pos=" + lastPosition + " of " + itemCount
                     + " " + mListParameters.getTimeline();
             if (firstVisibleItemId <= 0) {
@@ -96,9 +96,9 @@ class TimelinePositionStorage<T extends ViewItem> {
 
     }
     
-    private void saveTLPosition(long firstVisibleItemId, long minSentDate, int y) {
+    private void saveTLPosition(long firstVisibleItemId, long minDate, int y) {
         mListParameters.getTimeline().setVisibleItemId(firstVisibleItemId);
-        mListParameters.getTimeline().setVisibleOldestDate(minSentDate);
+        mListParameters.getTimeline().setVisibleOldestDate(minDate);
         mListParameters.getTimeline().setVisibleY(y);
     }
 

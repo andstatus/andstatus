@@ -70,7 +70,7 @@ public class DatabaseCreator {
     public DatabaseCreator create() {
         MyLog.i(this, "Creating tables");
         MsgTable.create(db);
-        MsgOfUserTable.create(db);
+        AudienceTable.create(db);
         UserTable.create(db);
         FriendshipTable.create(db);
         DownloadTable.create(db);

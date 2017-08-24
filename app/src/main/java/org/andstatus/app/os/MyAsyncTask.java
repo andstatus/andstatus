@@ -267,7 +267,7 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
         if (!TextUtils.isEmpty(firstError) || tr == null) {
             return;
         }
-        firstError = tr.toString();
+        firstError = MyLog.getStackTrace(tr);
     }
 
     // See http://stackoverflow.com/questions/11411022/how-to-check-if-current-thread-is-not-main-thread

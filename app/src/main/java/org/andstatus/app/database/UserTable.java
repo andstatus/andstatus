@@ -87,11 +87,11 @@ public final class UserTable implements BaseColumns {
     /**
      * Id of the latest message where this User was a Sender or an Author
      */
-    public static final String USER_MSG_ID = "user_msg_id";
+    public static final String USER_ACTIVITY_ID = "user_msg_id";  // TODO: Rename as constant
     /**
      * Date of the latest message where this User was a Sender or an Author
      */
-    public static final String USER_MSG_DATE = "user_msg_date";
+    public static final String USER_ACTIVITY_DATE = "user_msg_date";   // TODO: Rename as constant
 
     /*
      * Derived columns (they are not stored in this table but are result of joins)
@@ -103,12 +103,14 @@ public final class UserTable implements BaseColumns {
     /** Alias used in a timeline to distinguish messages for different users */
     public static final String LINKED_USER_ID = "linked_user_id";
     /**
-     * Derived from {@link MsgTable#ACTOR_ID}
+     * Derived from {@link ActivityTable#ACTOR_ID}
      * TODO: Whether this (and other similar...) is {@link #USERNAME} or {@link #REAL_NAME}, depends on settings
      */
     public static final String SENDER_NAME = "sender_name";  // TODO: Rename to "actor_name"
     /** Derived from {@link MsgTable#AUTHOR_ID} */
     public static final String AUTHOR_NAME = "author_name";
+    /** Derived from {@link ActivityTable#ACTOR_ID} */
+    public static final String ACTOR_NAME = "actor_name";
     /** Derived from {@link MsgTable#IN_REPLY_TO_USER_ID} */
     public static final String IN_REPLY_TO_NAME = "in_reply_to_name";
     /** Derived from {@link MsgTable#RECIPIENT_ID} */
@@ -137,8 +139,8 @@ public final class UserTable implements BaseColumns {
                 + UserTable.CREATED_DATE + " INTEGER DEFAULT 0 NOT NULL,"
                 + UserTable.UPDATED_DATE + " INTEGER DEFAULT 0 NOT NULL,"
                 + UserTable.INS_DATE + " INTEGER NOT NULL,"
-                + UserTable.USER_MSG_ID + " INTEGER DEFAULT 0 NOT NULL,"
-                + UserTable.USER_MSG_DATE + " INTEGER DEFAULT 0 NOT NULL"
+                + UserTable.USER_ACTIVITY_ID + " INTEGER DEFAULT 0 NOT NULL,"
+                + UserTable.USER_ACTIVITY_DATE + " INTEGER DEFAULT 0 NOT NULL"
                 + ")");
 
         DbUtils.execSQL(db, "CREATE UNIQUE INDEX idx_user_origin ON " + UserTable.TABLE_NAME + " ("

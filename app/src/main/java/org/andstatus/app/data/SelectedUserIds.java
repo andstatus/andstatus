@@ -16,57 +16,70 @@
 
 package org.andstatus.app.data;
 
+import android.support.annotation.NonNull;
+
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.net.social.Audience;
+import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Helper class to construct sql WHERE clause selecting by UserIds
  * @author yvolk@yurivolkov.com
  */
 public class SelectedUserIds {
-    private int mSize = 0;
-    private String sqlUserIds = "";
+    private final Set<Long> ids = new HashSet<>();
 
     public SelectedUserIds(Timeline timeline) {
         if (timeline.getTimelineType() == TimelineType.USER) {
             if ( timeline.getUserId() != 0) {
-                mSize = 1;
-                sqlUserIds = Long.toString(timeline.getUserId());
+                ids.add(timeline.getUserId());
             }
         } else if (timeline.isCombined() || timeline.getTimelineType().isAtOrigin()) {
             StringBuilder sb = new StringBuilder();
             for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
                 if (!timeline.getOrigin().isValid() || timeline.getOrigin().equals(ma.getOrigin())) {
-                    if (sb.length() > 0) {
-                        sb.append(", ");
-                    }
-                    mSize += 1;
-                    sb.append(Long.toString(ma.getUserId()));
+                    ids.add(ma.getUserId());
                 }
             }
-            sqlUserIds = sb.toString();
         } else if (timeline.getMyAccount().isValid()) {
-            mSize = 1;
-            sqlUserIds = Long.toString(timeline.getMyAccount().getUserId());
+            ids.add(timeline.getMyAccount().getUserId());
+        }
+    }
+
+    public SelectedUserIds(@NonNull Audience audience) {
+        for (MbUser user : audience.getRecipients()) {
+            ids.add(user.userId);
         }
     }
 
     public int size() {
-        return mSize;
+        return ids.size();
     }
 
     public String getList() {
-        return sqlUserIds;
+        StringBuilder sb = new StringBuilder();
+        for (long id : ids) {
+            if (sb.length() > 0) {
+                sb.append(", ");
+            }
+            sb.append(Long.toString(id));
+        }
+        return sb.toString();
     }
 
     public String getSql() {
-        if (mSize == 1) {
-            return "=" + sqlUserIds;
-        } else if (mSize > 1) {
-            return " IN (" + sqlUserIds + ")";
+        if (size() == 0) {
+            return "";
+        } else if (size() == 1) {
+            return "=" + ids.iterator().next();
+        } else {
+            return " IN (" + getList() + ")";
         }
-        return "";
     }
 }

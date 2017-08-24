@@ -10,12 +10,14 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.http.SslModeEnum;
+import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbConfig;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class OriginTest {
@@ -125,10 +127,11 @@ public class OriginTest {
         assertEquals(origin.getOriginType(), OriginType.TWITTER);
         String body = "Posting to Twitter " + DemoData.TESTRUN_UID;
         String messageOid = "2578909845023" + DemoData.TESTRUN_UID;
-        long msgId = DemoMessageInserter.addMessageForAccount(
+        MbActivity activity = DemoMessageInserter.addMessageForAccount(
                 DemoData.getMyAccount(DemoData.TWITTER_TEST_ACCOUNT_NAME),
                 body, messageOid, DownloadStatus.LOADED);
-        assertTrue(msgId != 0);
+        final long msgId = activity.getMessage().msgId;
+        assertNotEquals(0, msgId);
         String userName = MyQuery.msgIdToUsername(MsgTable.AUTHOR_ID, msgId,
                 UserInTimeline.USERNAME);
         String permalink = origin.messagePermalink(msgId);

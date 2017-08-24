@@ -17,20 +17,22 @@
 package org.andstatus.app.data;
 
 import android.content.ContentValues;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.v4.util.Pair;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.FriendshipTable;
-import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.MbActivity;
+import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
@@ -40,6 +42,7 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.timeline.meta.TimelineType;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
@@ -105,42 +108,22 @@ public class DataUpdater {
         lum.save();
     }
 
-    private long updateMessage(@NonNull MbActivity activity, boolean updateUsers) {
-        final String funcName = "updateMessage";
+    private void updateMessage(@NonNull MbActivity activity, boolean updateUsers) {
+        final String method = "updateMessage";
         final MbMessage message = activity.getMessage();
         try {
-            MyAccount me = execContext.getMyContext().persistentAccounts().
-                    fromOriginAndOid(activity.accountUser.originId, activity.accountUser.oid);
+            MyAccount me = execContext.getMyContext().persistentAccounts().fromUser(activity.accountUser);
             if (!me.isValid()) {
-                MyLog.w(this, funcName +"; my account is invalid, skipping: " + activity.toString());
-                return 0;
+                MyLog.w(this, method +"; my account is invalid, skipping: " + activity.toString());
+                return;
             }
-
             if (updateUsers) {
                 if (activity.isAuthorActor()) {
-                    message.setAuthor(activity.getActor());
+                    activity.setAuthor(activity.getActor());
                 } else {
-                    updateUser(message.getAuthor().update(activity.accountUser, activity.getActor()));
+                    updateUser(activity.getAuthor().update(activity.accountUser, activity.getActor()));
                 }
             }
-
-            ContentValues values = new ContentValues();
-            if (message.isReblogged() && activity.getActor().userId != 0) {
-                if (!activity.isActorMe()) {
-                    values.put(MsgOfUserTable.USER_ID + MsgOfUserTable.SUFFIX_FOR_OTHER_USER, activity.getActor().userId);
-                }
-                values.put(MsgOfUserTable.REBLOGGED +
-                        (activity.isActorMe() ? "" : MsgOfUserTable.SUFFIX_FOR_OTHER_USER), 1);
-                // Remember original id of the reblog message
-                // We will need it to "undo reblog" for our reblog
-                values.put(MsgOfUserTable.REBLOG_OID +
-                        (activity.isActorMe() ? "" : MsgOfUserTable.SUFFIX_FOR_OTHER_USER), message.getReblogOid());
-            }
-
-            if (message.getAuthor().userId != 0) {
-                values.put(MsgTable.AUTHOR_ID, message.getAuthor().userId);
-            }
-
             if (message.msgId == 0) {
                 message.msgId = MyQuery.oidToId(OidEnum.MSG_OID, message.originId, message.oid);
             }
@@ -156,26 +139,24 @@ public class DataUpdater {
                     && (message.getStatus() == DownloadStatus.SENDING || message.getStatus() == DownloadStatus.DRAFT);
 
             long updatedDateStored = 0;
-            long sentDateStored = 0;
             if (message.msgId != 0) {
                 DownloadStatus statusStored = DownloadStatus.load(
                         MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, message.msgId));
-                sentDateStored = MyQuery.msgIdToLongColumnValue(MsgTable.SENT_DATE, message.msgId);
                 updatedDateStored = MyQuery.msgIdToLongColumnValue(MsgTable.UPDATED_DATE, message.msgId);
                 if (isFirstTimeLoaded) {
                     isFirstTimeLoaded = statusStored != DownloadStatus.LOADED;
                 }
             }
 
+            // TODO: move as toContentValues() into MbMessage
+            ContentValues values = new ContentValues();
             boolean isNewerThanInDatabase = message.getUpdatedDate() > updatedDateStored;
             if (isFirstTimeLoaded || isDraftUpdated || isNewerThanInDatabase) {
                 values.put(MsgTable.MSG_STATUS, message.getStatus().save());
                 values.put(MsgTable.UPDATED_DATE, message.getUpdatedDate());
 
-                if (activity.getActor().userId != 0) {
-                    // Store the Sender only for the first retrieved message.
-                    // Don't overwrite the original sender (especially the first reblogger) 
-                    values.put(MsgTable.ACTOR_ID, activity.getActor().userId);
+                if (activity.getAuthor().userId != 0) {
+                    values.put(MsgTable.AUTHOR_ID, activity.getAuthor().userId);
                 }
                 if (!TextUtils.isEmpty(message.oid)) {
                     values.put(MsgTable.MSG_OID, message.oid);
@@ -188,30 +169,24 @@ public class DataUpdater {
                 values.put(MsgTable.BODY_TO_SEARCH, message.getBodyToSearch());
             }
 
-            if (message.sentDate > sentDateStored) {
-                // Remember the latest sent date in order to see the reblogged message 
-                // at the top of the sorted list 
-                values.put(MsgTable.SENT_DATE, message.sentDate);
+            activity.getMessage().addRecipientsFromBodyText(activity.getActor());
+            updateInReplyTo(activity, values);
+            for ( MbUser mbUser : message.recipients().getRecipients()) {
+                updateUser(mbUser.update(activity.accountUser, activity.getActor()));
+            }
+            if (activity.getMessage().recipients().hasMyAccount(execContext.getMyContext())) {
+                activity.getMessage().setMentioned(TriState.TRUE);
+                values.put(MsgTable.MENTIONED, activity.getMessage().getMentioned().id);
             }
 
-            boolean isDirectMessage = false;
-            if (message.getRecipient().nonEmpty()) {
-                long recipientId = updateUser(message.getRecipient().update(activity.accountUser, activity.getActor()));
-                values.put(MsgTable.RECIPIENT_ID, recipientId);
-                if (recipientId == me.getUserId() || activity.isAuthorMe()) {
-                    isDirectMessage = true;
-                    values.put(MsgOfUserTable.DIRECTED, 1);
-                    MyLog.v(this, "Message '" + message.oid + "' is Direct for " + me.getAccountName() );
-                }
-            }
             if (!message.isSubscribedByMe().equals(TriState.FALSE) && message.getUpdatedDate() > 0) {
                 if (execContext.getTimeline().getTimelineType() == TimelineType.HOME
-                        || (!isDirectMessage && activity.isAuthorMe())) {
+                        || (message.nonPrivate() && activity.isAuthorMe())) {
                     message.setSubscribedByMe(TriState.TRUE);
                 }
             }
             if (message.isSubscribedByMe().equals(TriState.TRUE)) {
-                values.put(MsgOfUserTable.SUBSCRIBED, 1);
+                values.put(MsgTable.SUBSCRIBED, message.isSubscribedByMe().id);
             }
             if (!TextUtils.isEmpty(message.via)) {
                 values.put(MsgTable.VIA, message.via);
@@ -219,18 +194,9 @@ public class DataUpdater {
             if (!TextUtils.isEmpty(message.url)) {
                 values.put(MsgTable.URL, message.url);
             }
-            if (message.isPublic()) {
-                values.put(MsgTable.PUBLIC, 1);
+            if (message.getPrivate().known()) {
+                values.put(MsgTable.PRIVATE, message.getPrivate().id);
             }
-
-            if (message.getFavoritedByMe() != TriState.UNKNOWN) {
-                values.put(MsgOfUserTable.FAVORITED, message.getFavoritedByMe().toBoolean(false));
-                MyLog.v(this, "Message '" + message.oid + "' "
-                        + (message.getFavoritedByMe().toBoolean(false) ? "favorited" : "unfavorited")
-                        + " by " + me.getAccountName());
-            }
-
-            boolean mentioned = isMentionedAndPutInReplyToMessage(activity, me, values);
 
             if (message.lookupConversationId() != 0) {
                 values.put(MsgTable.CONVERSATION_ID, message.getConversationId());
@@ -263,6 +229,22 @@ public class DataUpdater {
                 execContext.getContext().getContentResolver().update(msgUri, values, null, null);
             }
 
+            TriState favoritedByActor = activity.type.equals(MbActivityType.LIKE) ? TriState.TRUE :
+                    activity.type.equals(MbActivityType.UNDO_LIKE) ? TriState.FALSE : TriState.UNKNOWN;
+            if (message.getFavoritedByMe().known() && favoritedByActor.unknown() ) {
+                updateFavoritedByMeAction(activity, message.getFavoritedByMe());
+            }
+            if (favoritedByActor.known()) {
+                final MyAccount myActorAccount = execContext.getMyContext().persistentAccounts()
+                        .fromUser(activity.getActor());
+                if (myActorAccount.isValid()) {
+                    MyLog.v(this, myActorAccount
+                            + (favoritedByActor.toBoolean(false) ? " favorited" : " unfavorited")
+                            + " '" + message.oid + "' " + I18n.trimTextAt(message.getBody(), 80));
+                    MyProvider.updateMessageFavorited(execContext.getMyContext(), message.originId, message.msgId);
+                }
+            }
+
             if (isFirstTimeLoaded || isDraftUpdated) {
                 saveAttachments(message);
             }
@@ -273,18 +255,18 @@ public class DataUpdater {
                 }
                 if (isNewerThanInDatabase) {
                     execContext.getResult().incrementMessagesCount();
-                    if (mentioned) {
+                    if (activity.getMessage().isMentioned()) {
                         execContext.getResult().incrementMentionsCount();
                     }
-                    if (isDirectMessage) {
+                    if (activity.getMessage().isPrivate()) {
                         execContext.getResult().incrementDirectCount();
                     }
                 }
             }
             // Remember all messages that we added or updated
-            lum.onNewUserMsg(new UserMsg(activity.getActor().userId, message.msgId, message.sentDate));
+            lum.onNewUserMsg(new UserMsg(activity.getActor().userId, activity.getId(), activity.getUpdatedDate()));
             if ( !activity.isAuthorActor()) {
-                lum.onNewUserMsg(new UserMsg(message.getAuthor().userId, message.msgId, message.getUpdatedDate()));
+                lum.onNewUserMsg(new UserMsg(activity.getAuthor().userId, activity.getId(), activity.getUpdatedDate()));
             }
 
             for (MbMessage reply : message.replies) {
@@ -292,70 +274,59 @@ public class DataUpdater {
                 di.updateMessage(reply.update(activity.accountUser), true);
             }
         } catch (Exception e) {
-            MyLog.e(this, funcName, e);
+            MyLog.e(this, method, e);
         }
-        return message.msgId;
     }
 
-    private boolean isMentionedAndPutInReplyToMessage(MbActivity activity, MyAccount me, ContentValues values) {
-        MbMessage message = activity.getMessage();
-        Long inReplyToUserId = 0L;
-        final MbMessage inReplyToMessage = message.getInReplyTo();
-        if (inReplyToMessage.nonEmpty()) {
-            if (TextUtils.isEmpty(inReplyToMessage.conversationOid)) {
-                inReplyToMessage.setConversationOid(message.conversationOid);
+    private void updateInReplyTo(MbActivity activity, ContentValues values) {
+        final MbActivity inReply = activity.getMessage().getInReplyTo();
+        if (inReply.getMessage().nonEmpty()) {
+            if (TextUtils.isEmpty(inReply.getMessage().conversationOid)) {
+                inReply.getMessage().setConversationOid(activity.getMessage().conversationOid);
             }
-            inReplyToMessage.setSubscribedByMe(TriState.FALSE);
+            inReply.getMessage().setSubscribedByMe(TriState.FALSE);
             // Type of the timeline is ALL meaning that message does not belong to this timeline
             DataUpdater di = new DataUpdater(execContext);
             // If the Msg is a Reply to another message
-            Long inReplyToMessageId = di.updateMessage(inReplyToMessage.update(activity.accountUser), true);
-            if (inReplyToMessage.getAuthor().nonEmpty()) {
-                inReplyToUserId = MyQuery.oidToId(OidEnum.USER_OID, message.originId, inReplyToMessage.getAuthor().oid);
-            } else if (inReplyToMessageId != 0) {
-                inReplyToUserId = MyQuery.msgIdToLongColumnValue(MsgTable.ACTOR_ID, inReplyToMessageId);
+            di.updateMessage(inReply, true);
+            if (inReply.getMessage().msgId != 0) {
+                activity.getMessage().addRecipient(inReply.getAuthor());
+                values.put(MsgTable.IN_REPLY_TO_MSG_ID, inReply.getMessage().msgId);
+                if (inReply.getAuthor().userId != 0) {
+                    values.put(MsgTable.IN_REPLY_TO_USER_ID, inReply.getAuthor().userId);
+                }
             }
-            if (inReplyToMessageId != 0) {
-                values.put(MsgTable.IN_REPLY_TO_MSG_ID, inReplyToMessageId);
-            }
+        }
+    }
+
+    private void updateFavoritedByMeAction(@NonNull MbActivity activity, @NonNull TriState favoritedByMe) {
+        final String method = "updateFavoritedByMeAction";
+        SQLiteDatabase db = execContext.getMyContext().getDatabase();
+        if (db == null) {
+            MyLog.v(MyProvider.TAG, method + "; Database is null");
+            return;
+        }
+        final MbMessage message = activity.getMessage();
+        final Pair<Long, MbActivityType> favAndType = MyQuery.msgIdToLastFavoriting(db, message.msgId,
+                activity.accountUser.userId);
+        if ((favAndType.second.equals(MbActivityType.LIKE) && favoritedByMe.equals(TriState.TRUE))
+                || (favAndType.second.equals(MbActivityType.UNDO_LIKE) && favoritedByMe.equals(TriState.FALSE))
+                ) {
+            return; // Nothing to do
+        }
+        if (favAndType.second.equals(MbActivityType.EMPTY)) {
+            MbActivity favoriting = MbActivity.from(activity.accountUser,
+                    favoritedByMe.equals(TriState.TRUE) ? MbActivityType.LIKE : MbActivityType.UNDO_LIKE );
+            favoriting.setTempOid();
+            favoriting.setUpdatedDate(message.getUpdatedDate());
+            favoriting.setActor(activity.accountUser);
+            favoriting.setMessage(message);
+            new DataUpdater(execContext).onActivity(favoriting);
         } else {
-            inReplyToUserId = getReplyToUserIdInBody(activity);
+            MyProvider.deleteActivity(execContext.getMyContext(), favAndType.first, message.msgId, false);
         }
-        boolean mentioned = false;
-        if (inReplyToUserId != 0) {
-            values.put(MsgTable.IN_REPLY_TO_USER_ID, inReplyToUserId);
-
-            if (me.getUserId() == inReplyToUserId) {
-                values.put(MsgOfUserTable.REPLIED, 1);
-                // We count replies as Mentions
-                mentioned = true;
-            }
-        }
-
-        // Check if current user was mentioned in the text of the message
-        if (message.getBody().length() > 0 
-                && !mentioned 
-                && message.getBody().contains("@" + me.getUsername())) {
-            mentioned = true;
-        }
-        if (mentioned) {
-            values.put(MsgOfUserTable.MENTIONED, 1);
-        }
-        return mentioned;
     }
 
-    private long getReplyToUserIdInBody(MbActivity activity) {
-        long userId = 0;
-        List<MbUser> users = activity.getMessage().getAuthor().extractUsersFromBodyText(
-                activity.getMessage().getBody(), true);
-        if (users.size() > 0) {
-            userId = users.get(0).userId;
-            if (userId == 0) {
-                userId = updateUser(users.get(0).update(activity.accountUser, activity.getActor()));
-            }
-        }
-        return userId;
-    }
 
     private void saveAttachments(MbMessage message) {
         List<Long> downloadIds = new ArrayList<>();
@@ -381,23 +352,38 @@ public class DataUpdater {
         DownloadData.deleteOtherOfThisMsg(message.msgId, downloadIds);
     }
 
-    /**
-     * @return userId
-     */
-    private long updateUser(MbActivity activity) {
+    private void updateUser(MbActivity activity) {
         MbUser mbUser = activity.getUser();
         final String method = "updateUser";
         if (mbUser.isEmpty()) {
             MyLog.v(this, method + "; mbUser is empty");
-            return 0;
+            return;
         }
-        
+        MyAccount me = execContext.getMyContext().persistentAccounts().fromUser(activity.accountUser);
+        if (!me.isValid()) {
+            if (activity.accountUser.equals(mbUser)) {
+                MyLog.d(this, method +"; adding my account " + activity.accountUser);
+            } else {
+                MyLog.w(this, method +"; my account is invalid, skipping: " + activity.toString());
+                return;
+            }
+        }
+
+        TriState followedByMe;
+        TriState followedByActor = activity.type.equals(MbActivityType.FOLLOW) ? TriState.TRUE :
+                activity.type.equals(MbActivityType.UNDO_FOLLOW) ? TriState.FALSE : TriState.UNKNOWN;
+        if (activity.getActor().userId == me.getUserId()) {
+            followedByMe = followedByActor;
+        } else {
+            followedByMe = mbUser.followedByMe;
+        }
+
         long userId = mbUser.lookupUserId();
-        if (userId != 0 && mbUser.isPartiallyDefined() && mbUser.followedByActor.equals(TriState.UNKNOWN)) {
+        if (userId != 0 && mbUser.isPartiallyDefined() && followedByMe.equals(TriState.UNKNOWN)) {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, method + "; Skipping partially defined: " + mbUser.toString());
             }
-            return userId;
+            return;
         }
 
         String userOid = (userId == 0 && !mbUser.isOidReal()) ? mbUser.getTempOid() : mbUser.oid;
@@ -464,22 +450,15 @@ public class DataUpdater {
                 values.put(UserTable.UPDATED_DATE, mbUser.getUpdatedDate());
             }
 
-            MyAccount myActor = execContext.getMyContext().persistentAccounts().fromUserId(activity.getActor().userId);
-            if (!myActor.isValid()) {
-                myActor = execContext.getMyAccount();
-            }
-            if (mbUser.followedByActor != TriState.UNKNOWN
-                    && activity.getActor().userId == myActor.getUserId()) {
-                values.put(FriendshipTable.FOLLOWED,
-                        mbUser.followedByActor.toBoolean(false));
-                MyLog.v(this,
-                        "User '" + mbUser.getUserName() + "' is "
-                                + (mbUser.followedByActor.toBoolean(false) ? "" : "not ")
-                                + "followed by " + myActor.getAccountName());
+            if (followedByMe != TriState.UNKNOWN) {
+                values.put(FriendshipTable.FOLLOWED, followedByMe.toBoolean(false));
+                MyLog.v(this, "User '" + me.getAccountName() + "' "
+                                + (followedByMe.toBoolean(false) ? "follows" : "stop following ")
+                                + mbUser.getUserName());
             }
             
             // Construct the Uri to the User
-            Uri userUri = MatchedUri.getUserUri(myActor.getUserId(), userId);
+            Uri userUri = MatchedUri.getUserUri(me.getUserId(), userId);
             if (userId == 0) {
                 // There was no such row so add new one
                 values.put(UserTable.ORIGIN_ID, mbUser.originId);
@@ -491,13 +470,13 @@ public class DataUpdater {
             }
             mbUser.userId = userId;
             if (mbUser.hasLatestMessage()) {
-                updateMessage(mbUser.getLatestMessage().update(activity.accountUser), false);
+                updateMessage(mbUser.getLatestActivity(), false);
             }
         } catch (Exception e) {
             MyLog.e(this, method + "; userId=" + userId + "; oid=" + userOid, e);
         }
         MyLog.v(this, method + "; userId=" + userId + "; oid=" + userOid);
-        return userId;
+        return;
     }
 
     public void downloadOneMessageBy(String userOid) throws ConnectionException {

@@ -97,7 +97,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
                 }
                 for (MbActivity activity : activities) {
                     toDownload--;
-                    syncTracker.onNewMsg(activity.getTimelinePosition(), activity.getTimelineDate());
+                    syncTracker.onNewMsg(activity.getTimelinePosition(), activity.getUpdatedDate());
                     di.onActivity(activity, false);
                 }
                 if (toDownload <= 0 || activities.isEmpty() || previousPosition.equals(syncTracker.getPreviousPosition())) {

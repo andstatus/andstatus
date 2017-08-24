@@ -193,12 +193,12 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     private static final String ATTACHMENTS_FIELD_NAME = "media";
     @Override
     @NonNull
-    MbMessage messageFromJson2(JSONObject jso) throws ConnectionException {
+    MbActivity activityFromJson2(JSONObject jso) throws ConnectionException {
         if (jso == null) {
-            return MbMessage.EMPTY;
+            return MbActivity.EMPTY;
         }
-        final String method = "messageFromJson";
-        MbMessage message = super.messageFromJson2(jso);
+        final String method = "activityFromJson2";
+        MbActivity activity = super.activityFromJson2(jso);
         // See https://dev.twitter.com/docs/entities
         JSONObject entities = jso.optJSONObject("entities");
         if (entities != null && entities.has(ATTACHMENTS_FIELD_NAME)) {
@@ -209,7 +209,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
                     Uri uri = UriUtils.fromAlternativeTags(attachment, "media_url_https", "media_url_http");
                     MbAttachment mbAttachment =  MbAttachment.fromUriAndContentType(uri, MyContentType.IMAGE);
                     if (mbAttachment.isValid()) {
-                        message.attachments.add(mbAttachment);
+                        activity.getMessage().attachments.add(mbAttachment);
                     } else {
                         MyLog.d(this, method + "; invalid attachment #" + ind + "; " + jArr.toString());
                     }
@@ -218,7 +218,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
                 MyLog.d(this, method, e);
             }
         }
-        return message;
+        return activity;
     }
 
     @Override

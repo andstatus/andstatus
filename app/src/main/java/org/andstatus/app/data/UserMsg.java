@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.util.MyLog;
 
@@ -34,20 +34,17 @@ import java.util.Date;
 public final class UserMsg {
     private static final String TAG = UserMsg.class.getSimpleName();
 
-    /**
-     * The User
-     */
     private long userId = 0;
     
     /**
      * The id of the latest downloaded Message by this User
      * 0 - none were downloaded
      */
-    private long lastMsgId = 0;
+    private long lastActivityId = 0;
     /**
      * 0 - none were downloaded
      */
-    private long lastMsgDate = 0;
+    private long lastActivityDate = 0;
     
     /**
      * We will update only what really changed
@@ -62,8 +59,8 @@ public final class UserMsg {
         if (userId == 0) {
             throw new IllegalArgumentException(TAG + ": userId==0");
         }
-        lastMsgId = MyQuery.userIdToLongColumnValue(UserTable.USER_MSG_ID, userId);
-        lastMsgDate = MyQuery.userIdToLongColumnValue(UserTable.USER_MSG_DATE, userId);
+        lastActivityId = MyQuery.userIdToLongColumnValue(UserTable.USER_ACTIVITY_ID, userId);
+        lastActivityDate = MyQuery.userIdToLongColumnValue(UserTable.USER_ACTIVITY_DATE, userId);
     }
 
     /**
@@ -72,7 +69,7 @@ public final class UserMsg {
     public UserMsg(long userIdIn, long msgId, long msgDate) {
         if (userIdIn != 0 && msgId != 0) {
             userId = userIdIn;
-            onNewMsg(msgId, msgDate);
+            onNewActivity(msgId, msgDate);
         }
     }
     
@@ -83,31 +80,32 @@ public final class UserMsg {
     /**
      * @return Id of the last downloaded message by this User
      */
-    public long getLastMsgId() {
-        return lastMsgId;
+    public long getLastActivityId() {
+        return lastActivityId;
     }
 
     /**
      * @return Sent Date of the last downloaded message by this User
      */
-    public long getLastMsgDate() {
-        return lastMsgDate;
+    public long getLastActivityDate() {
+        return lastActivityDate;
     }
 
     /** If this message is newer than any we got earlier, remember it
-     * @param msgDateIn may be 0 (will be retrieved here)
+     * @param updatedDateIn may be 0 (will be retrieved here)
      */
-    public void onNewMsg(long msgId, long msgDateIn) {
-        if (userId == 0 || msgId == 0) {
+    public void onNewActivity(long activityId, long updatedDateIn) {
+        if (userId == 0 || activityId == 0) {
             return; 
         }
-        long msgDate = msgDateIn;
-        if (msgDate == 0) {
-            msgDate = MyQuery.msgIdToLongColumnValue(MsgTable.SENT_DATE, msgId);
+        long activityDate = updatedDateIn;
+        if (activityDate == 0) {
+            activityDate = MyQuery.idToLongColumnValue(null, ActivityTable.TABLE_NAME,
+                    ActivityTable.UPDATED_DATE, activityId);
         }
-        if (msgDate > lastMsgDate) {
-            lastMsgDate = msgDate;
-            lastMsgId = msgId;
+        if (activityDate > lastActivityDate) {
+            lastActivityDate = activityDate;
+            lastActivityId = activityId;
             changed = true;
         }
     }
@@ -120,7 +118,7 @@ public final class UserMsg {
         boolean ok = true;
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, "User=" + MyQuery.userIdToWebfingerId(userId) 
-                    + " Latest msg at " + (new Date(getLastMsgDate()).toString())
+                    + " Latest msg update at " + (new Date(getLastActivityDate()).toString())
                     + (changed ? "" : " not changed")                    
                     );
         }
@@ -129,20 +127,20 @@ public final class UserMsg {
         }
 
         // As a precaution compare with stored values ones again
-        long msgDate = MyQuery.userIdToLongColumnValue(UserTable.USER_MSG_DATE, userId);
-        if (msgDate > lastMsgDate) {
-            lastMsgDate = msgDate;
-            lastMsgId = MyQuery.userIdToLongColumnValue(UserTable.USER_MSG_ID, userId);
+        long msgDate = MyQuery.userIdToLongColumnValue(UserTable.USER_ACTIVITY_DATE, userId);
+        if (msgDate > lastActivityDate) {
+            lastActivityDate = msgDate;
+            lastActivityId = MyQuery.userIdToLongColumnValue(UserTable.USER_ACTIVITY_ID, userId);
             MyLog.v(this, "There is newer information in the database. User=" + MyQuery.userIdToWebfingerId(userId) 
-                    + " Latest msg at " + (new Date(getLastMsgDate()).toString()));
+                    + " Latest msg update at " + (new Date(getLastActivityDate()).toString()));
             changed = false;
             return ok;
         }
 
         String sql = "";
         try {
-            sql += UserTable.USER_MSG_ID + "=" + lastMsgId;
-            sql += ", " + UserTable.USER_MSG_DATE + "=" + lastMsgDate;
+            sql += UserTable.USER_ACTIVITY_ID + "=" + lastActivityId;
+            sql += ", " + UserTable.USER_ACTIVITY_DATE + "=" + lastActivityDate;
 
             sql = "UPDATE " + UserTable.TABLE_NAME + " SET " + sql
                     + " WHERE " + BaseColumns._ID + "=" + userId;

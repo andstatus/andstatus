@@ -1,4 +1,3 @@
-package org.andstatus.app.timeline;
 /*
  * Copyright (c) 2017 yvolk (Yuri Volkov), http://yurivolkov.com
  *
@@ -15,17 +14,14 @@ package org.andstatus.app.timeline;
  * limitations under the License.
  */
 
+package org.andstatus.app.timeline;
+
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
 
-import org.andstatus.app.activity.ActivityViewItem;
-import org.andstatus.app.msg.ConversationViewItem;
 import org.andstatus.app.msg.KeywordsFilter;
-import org.andstatus.app.msg.MessageViewItem;
-import org.andstatus.app.service.QueueData;
 import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.user.UserViewItem;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,20 +32,7 @@ public class ViewItem {
 
     @NonNull
     public static ViewItem getEmpty(@NonNull TimelineType timelineType) {
-        switch (timelineType) {
-            case NOTIFICATIONS:
-                return ActivityViewItem.EMPTY;
-            case USERS:
-                return UserViewItem.EMPTY;
-            case CONVERSATION:
-                return ConversationViewItem.EMPTY;
-            case COMMANDS_QUEUE:
-                return QueueData.EMPTY;
-            case UNKNOWN:
-                return EmptyViewItem.EMPTY;
-            default:
-                return MessageViewItem.EMPTY;
-        }
+        return ViewItemType.fromTimelineType(timelineType).emptyViewItem;
     }
 
     public long getId() {
@@ -80,6 +63,7 @@ public class ViewItem {
         this.getChildren().add(child);
     }
 
+    /** @return 1. The item and 2. if it should be skipped (filtered out) */
     @NonNull
     public Pair<ViewItem,Boolean> fromCursor(Cursor cursor, KeywordsFilter keywordsFilter,
                                                    KeywordsFilter searchQuery, boolean hideRepliesNotToMeOrFriends) {

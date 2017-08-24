@@ -4,6 +4,7 @@ apply plugin: "org.sonarqube"
 android {
     compileSdkVersion 26
     buildToolsVersion '26.0.1'
+    project.ext.supportVersion = '26.0.1'
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -12,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId "org.andstatus.app"
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 25
         versionName "35.06"
         versionCode 232
@@ -21,8 +22,8 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         // To test arguments:
         // testInstrumentationRunnerArgument "executionMode", "travisTest"
-        project.ext.set("archivesBaseName", "AndStatus-$versionName".toString());
-        project.ext.set("versionName", "$versionName".toString());
+        project.ext.archivesBaseName = "AndStatus-$versionName".toString()
+        project.ext.versionName = "$versionName".toString()
     }
 
     buildTypes {
@@ -66,8 +67,8 @@ sonarqube {
 dependencies {
     compile 'com.github.stephenc.jcip:jcip-annotations:1.0-1'
     // http://stephenc.github.io/jcip-annotations/dependency-info.html
-    compile 'com.android.support:appcompat-v7:26.0.0'
-    compile 'com.android.support:design:26.0.0'
+    compile "com.android.support:appcompat-v7:$supportVersion"
+    compile "com.android.support:design:$supportVersion"
     compile 'ch.acra:acra:4.9.2'
     // https://github.com/ACRA/acra/wiki/AdvancedUsage
     compile 'cz.msebera.android:httpclient:4.4.1.2'
@@ -89,5 +90,5 @@ dependencies {
     androidTestCompile 'com.android.support.test:runner:1.0.0'
     androidTestCompile 'com.android.support.test:rules:1.0.0'
     androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.0'
-    androidTestCompile 'com.android.support:support-annotations:26.0.0'
+    androidTestCompile "com.android.support:support-annotations:$supportVersion"
 }

@@ -24,8 +24,6 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.MbActivity;
-import org.andstatus.app.net.social.MbMessage;
-import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio.ConnectionAndUrl;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
@@ -165,10 +163,7 @@ class ActivitySender {
         activity.put("generator", generator);
 
         addMainRecipient(activity, activityType);
-        if (activityType.addFollowers) {
-            addRecipient(activity, "cc", getFollowersCollectionId());
-        }
-        
+
         JSONObject author = new JSONObject();
         author.put("id", connection.getData().getAccountUserOid());
         author.put("objectType", "person");
@@ -185,7 +180,7 @@ class ActivitySender {
 
     private void addMainRecipient(JSONObject activity, ActivityType activityType) throws JSONException {
         String id = recipientId;
-        if (TextUtils.isEmpty(id) && TextUtils.isEmpty(inReplyToId) && activityType.addPublic) {
+        if (TextUtils.isEmpty(id) && TextUtils.isEmpty(inReplyToId) && activityType.equals(ActivityType.POST)) {
             id = PUBLIC_COLLECTION_ID;
         }
         addRecipient(activity, "to", id);

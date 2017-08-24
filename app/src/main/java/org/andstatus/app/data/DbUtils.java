@@ -28,6 +28,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -194,6 +195,10 @@ public final class DbUtils {
             }
         }
         return value;
+    }
+
+    public static TriState getTriState(Cursor cursor, String columnName) {
+        return TriState.fromId(getInt(cursor, columnName));
     }
 
     public static boolean getBoolean(Cursor cursor, String columnName) {

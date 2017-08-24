@@ -7,7 +7,7 @@ It supports different Social networks, including
 AndStatus can combine your feeds from all networks into one Timeline,
 and it allows you to read and post even when you are offline.
 
-For Android OS version 4.1 or higher.
+For Android OS version 5.0 or higher.
 Under Free/Libre and Open Source License.
 
 [![Build status](https://api.travis-ci.org/andstatus/andstatus.svg?branch=master)](https://travis-ci.org/andstatus/andstatus) 

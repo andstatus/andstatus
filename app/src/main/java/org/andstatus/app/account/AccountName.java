@@ -119,10 +119,15 @@ public class AccountName {
     
     private AccountName() {
     }
-    
+
+    public String getName() {
+        return username + ORIGIN_SEPARATOR + origin.getName();
+    }
+
     @Override
     public String toString() {
-        return username + ORIGIN_SEPARATOR + origin.getName();
+        return (isValid() ? ""
+                : "(invalid " + (origin.isUsernameValid(username) ? "" : "username " + origin + " ") + ")") + getName();
     }
 
     public Origin getOrigin() {

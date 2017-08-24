@@ -19,18 +19,18 @@ package org.andstatus.app.service;
 import android.net.Uri;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DemoMessageInserter;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.FileProvider;
-import org.andstatus.app.data.DemoMessageInserter;
 import org.andstatus.app.data.MyContentType;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
+import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbAttachment;
-import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.util.MyLog;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,14 +58,15 @@ public class AttachmentDownloaderTest {
     public void testImageAttachmentLoad() throws IOException {
         String body = "A message with an image attachment";
         DemoMessageInserter mi = new DemoMessageInserter(ma);
-        MbMessage message = mi.buildMessage(mi.buildUser(), body, null, null, DownloadStatus.LOADED);
-        message.attachments.add(MbAttachment.fromUrlAndContentType(
+        MbActivity activity = mi.buildActivity(mi.buildUser(), body, null, null, DownloadStatus.LOADED);
+        activity.getMessage().attachments.add(MbAttachment.fromUrlAndContentType(
                 new URL("http://www.publicdomainpictures.net/pictures/60000/nahled/landscape-1376582205Yno.jpg"),
                 MyContentType.IMAGE));
-        long msgId = mi.onActivity(message.update(ma.toPartialUser()));
+        mi.onActivity(activity);
         
-        DownloadData dd = DownloadData.getSingleForMessage(msgId, message.attachments.get(0).contentType, null);
-        assertEquals("Image URI stored", message.attachments.get(0).getUri(), dd.getUri());
+        DownloadData dd = DownloadData.getSingleForMessage(activity.getMessage().msgId,
+                activity.getMessage().attachments.get(0).contentType, null);
+        assertEquals("Image URI stored", activity.getMessage().attachments.get(0).getUri(), dd.getUri());
         
         loadAndAssertStatusForRow(dd.getDownloadId(), DownloadStatus.ABSENT, true);
 

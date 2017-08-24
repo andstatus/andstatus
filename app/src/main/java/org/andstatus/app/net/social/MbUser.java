@@ -43,7 +43,7 @@ public class MbUser implements Comparable<MbUser> {
     public static final MbUser EMPTY = new MbUser(0L);
     // RegEx from http://www.mkyong.com/regular-expressions/how-to-validate-email-address-with-regular-expression/
     public static final String WEBFINGER_ID_REGEX = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
-    private static final String TEMP_OID_PREFIX = "andstatustemp:";
+    public static final String TEMP_OID_PREFIX = "andstatustemp:";
     public String oid = "";
     private String userName = "";
     private String webFingerId = "";
@@ -64,9 +64,10 @@ public class MbUser implements Comparable<MbUser> {
     private long createdDate = 0;
     private long updatedDate = 0;
 
-    private MbMessage latestMessage = null;
+    private MbActivity latestActivity = null;
 
-    public TriState followedByActor = TriState.UNKNOWN;
+    // Hack for Twitter like origins...
+    public TriState followedByMe = TriState.UNKNOWN;
 
     // In our system
     public final long originId;
@@ -304,7 +305,7 @@ public class MbUser implements Comparable<MbUser> {
     }
 
     public boolean hasLatestMessage() {
-        return latestMessage != null && !latestMessage.isEmpty() ;
+        return latestActivity != null && !latestActivity.isEmpty() ;
     }
 
     public String getTempOid() {
@@ -450,14 +451,14 @@ public class MbUser implements Comparable<MbUser> {
         return oid.compareTo(another.oid);
     }
 
-    public MbMessage getLatestMessage() {
-        return latestMessage;
+    public MbActivity getLatestActivity() {
+        return latestActivity;
     }
 
-    public void setLatestMessage(MbMessage latestMessage) {
-        this.latestMessage = latestMessage;
-        if (this.latestMessage.getAuthor().isEmpty()) {
-            this.latestMessage.setAuthor(this);
+    public void setLatestActivity(@NonNull MbActivity latestActivity) {
+        this.latestActivity = latestActivity;
+        if (this.latestActivity.getAuthor().isEmpty()) {
+            this.latestActivity.setAuthor(this);
         }
     }
 
@@ -472,5 +473,9 @@ public class MbUser implements Comparable<MbUser> {
             I18n.appendWithSpace(builder, "(" + getRealName() + ")");
         }
         return builder.toString();
+    }
+
+    public String getTimelineUserName() {
+        return MyQuery.userIdToWebfingerId(userId);
     }
 }

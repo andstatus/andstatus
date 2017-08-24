@@ -20,7 +20,6 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.net.http.ConnectionException;
@@ -135,10 +134,10 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         if (isNotification(timelineItem)) {
             MbActivity activity = MbActivity.from(data.getPartialAccountUser(), getType(timelineItem));
             activity.setTimelinePosition(timelineItem.optString("id"));
-            activity.setTimelineDate(dateFromJson(timelineItem, "created_at"));
+            activity.setUpdatedDate(dateFromJson(timelineItem, "created_at"));
             activity.setActor(userFromJson(timelineItem.optJSONObject("account")));
-            activity.setMessage(messageFromJson2(timelineItem.optJSONObject("status")));
-            activity.getMessage().sentDate = activity.getTimelineDate();
+            MbActivity partialMessageActivity = activityFromJson2(timelineItem.optJSONObject("status"));
+            activity.setMessage(partialMessageActivity.getMessage());
 
             switch (activity.type) {
                 case LIKE:
@@ -149,7 +148,6 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                     break;
                 case FOLLOW:
                     activity.setUser(data.getPartialAccountUser());
-                    activity.getUser().followedByActor = TriState.TRUE;
                     break;
                 default:
                     break;
@@ -320,27 +318,28 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     @Override
     @NonNull
-    MbMessage messageFromJson2(JSONObject jso) throws ConnectionException {
+    MbActivity activityFromJson2(JSONObject jso) throws ConnectionException {
         if (jso == null) {
-            return MbMessage.EMPTY;
+            return MbActivity.EMPTY;
         }
         final String method = "messageFromJson";
         String oid = jso.optString("id");
-        MbMessage message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid, DownloadStatus.LOADED);
+        MbActivity activity = newLoadedUpdateActivity(oid);
         try {
-            message.setUpdatedDate(dateFromJson(jso, "created_at"));
+            activity.setUpdatedDate(dateFromJson(jso, "created_at"));
 
             JSONObject actor;
             if (jso.has("account")) {
                 actor = jso.getJSONObject("account");
-                message.setAuthor(userFromJson(actor));
+                activity.setActor(userFromJson(actor));
             }
 
+            MbMessage message =  activity.getMessage();
             message.setBody(jso.optString("content"));
             message.url = jso.optString("url");
             if (jso.has("recipient")) {
                 JSONObject recipient = jso.getJSONObject("recipient");
-                message.setRecipient(userFromJson(recipient));
+                message.addRecipient(userFromJson(recipient));
             }
             if (!jso.isNull("application")) {
                 JSONObject application = jso.getJSONObject("application");
@@ -366,10 +365,10 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 }
                 if (!SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
                     // Construct Related message from available info
-                    MbMessage inReplyToMessage = MbMessage.fromOriginAndOid(data.getOriginId(),
-                            inReplyToMessageOid, DownloadStatus.UNKNOWN);
-                    inReplyToMessage.setAuthor(MbUser.fromOriginAndUserOid(data.getOriginId(), inReplyToUserOid));
-                    message.setInReplyTo(inReplyToMessage);
+                    MbActivity inReplyTo = MbActivity.newPartialMessage(data.getPartialAccountUser(),
+                            inReplyToMessageOid);
+                    inReplyTo.setActor(MbUser.fromOriginAndUserOid(data.getOriginId(), inReplyToUserOid));
+                    message.setInReplyTo(inReplyTo);
                 }
             }
 
@@ -399,14 +398,14 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             throw ConnectionException.loggedJsonException(this, "Parsing message", e, jso);
         } catch (Exception e) {
             MyLog.e(this, "messageFromJson", e);
-            return MbMessage.EMPTY;
+            return MbActivity.EMPTY;
         }
-        return message;
+        return activity;
     }
 
     @Override
-    MbMessage rebloggedMessageFromJson(JSONObject jso) throws ConnectionException {
-        return  messageFromJson2(jso.optJSONObject("reblog"));
+    MbActivity rebloggedMessageFromJson(JSONObject jso) throws ConnectionException {
+        return  activityFromJson2(jso.optJSONObject("reblog"));
     }
 
     @Override

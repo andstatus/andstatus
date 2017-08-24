@@ -30,28 +30,43 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
 
 /** Activity in a sense of Activity Streams https://www.w3.org/TR/activitystreams-core/ */
-public class MbActivity {
+public class MbActivity extends AObject {
     public static final MbActivity EMPTY = from(MbUser.EMPTY, MbActivityType.EMPTY);
     private TimelinePosition timelinePosition = TimelinePosition.EMPTY;
-    private long timelineDate = 0;
+    private long updatedDate = 0;
     private long id = 0;
     private long insDate = 0;
 
     @NonNull
     public final MbUser accountUser;
-    private MbUser actor = MbUser.EMPTY;
     @NonNull
     public final MbActivityType type;
+    private MbUser actor = MbUser.EMPTY;
 
     // Objects of the Activity may be of several types...
     @NonNull
     private MbMessage mbMessage = MbMessage.EMPTY;
     @NonNull
     private MbUser mbUser = MbUser.EMPTY;
-    private MbActivity mbActivity = null;
+    private MbActivity mbActivity = MbActivity.EMPTY;
 
-    public static MbActivity from(MbUser accountUser, MbActivityType type) {
+    public static MbActivity from(@NonNull MbUser accountUser, @NonNull MbActivityType type) {
         return new MbActivity(accountUser, type);
+    }
+
+    @NonNull
+    public static MbActivity newPartialMessage(@NonNull MbUser accountUser, String msgOid) {
+        return newPartialMessage(accountUser, msgOid, DownloadStatus.UNKNOWN);
+    }
+
+    @NonNull
+    public static MbActivity newPartialMessage(@NonNull MbUser accountUser, String msgOid, DownloadStatus status) {
+        MbActivity activity = from(accountUser, MbActivityType.UPDATE);
+        activity.setMessage(
+                MbMessage.fromOriginAndOid(activity.accountUser.originId, msgOid, status)
+        );
+        activity.setUpdatedDate(System.currentTimeMillis());
+        return activity;
     }
 
     private MbActivity(MbUser accountUser, MbActivityType type) {
@@ -68,7 +83,7 @@ public class MbActivity {
             case USER:
                 return mbUser;
             case MESSAGE:
-                return getMessage().getAuthor();
+                return getAuthor();
             default:
                 return MbUser.EMPTY;
         }
@@ -79,7 +94,29 @@ public class MbActivity {
     }
 
     public boolean isAuthorActor() {
-        return getActor().oid.equals(getMessage().getAuthor().oid);
+        return getActor().oid.equals(getAuthor().oid);
+    }
+
+    @NonNull
+    public MbUser getAuthor() {
+        if (isEmpty()) {
+            return MbUser.EMPTY;
+        }
+        if (getObjectType().equals(MbObjectType.MESSAGE)) {
+            switch (type) {
+                case CREATE:
+                case UPDATE:
+                case DELETE:
+                    return actor;
+                default:
+                    return MbUser.EMPTY;
+            }
+        }
+        return getActivity().getAuthor();
+    }
+
+    public void setAuthor(MbUser author) {
+        getActivity().setActor(author);
     }
 
     public boolean isActorMe() {
@@ -87,16 +124,16 @@ public class MbActivity {
     }
 
     public boolean isAuthorMe() {
-        return getMessage().getAuthor().oid.equals(accountUser.oid);
+        return getAuthor().oid.equals(accountUser.oid);
     }
 
     @NonNull
     public MbObjectType getObjectType() {
-        if (!mbMessage.isEmpty()) {
+        if (mbMessage.nonEmpty()) {
             return MbObjectType.MESSAGE;
-        } else if (!mbUser.isEmpty()) {
+        } else if (mbUser.nonEmpty()) {
             return MbObjectType.USER;
-        } else if (mbActivity!= null && !mbActivity.isEmpty()) {
+        } else if (mbActivity.nonEmpty()) {
             return MbObjectType.ACTIVITY;
         } else {
             return MbObjectType.EMPTY;
@@ -115,17 +152,34 @@ public class MbActivity {
         this.timelinePosition = new TimelinePosition(strPosition);
     }
 
-    public long getTimelineDate() {
-        return timelineDate;
+    public long getUpdatedDate() {
+        return updatedDate;
     }
 
-    public void setTimelineDate(long timelineDate) {
-        this.timelineDate = timelineDate;
+    public void setUpdatedDate(long updatedDate) {
+        this.updatedDate = updatedDate;
     }
 
     @NonNull
     public MbMessage getMessage() {
-        return mbMessage;
+        if (mbMessage.nonEmpty()) {
+            return mbMessage;
+        }
+        /* Referring to the nested message allows to implement an activity, which has both Actor and Author.
+            Author is Actor of the nested message.
+            In a database we will have 2 activities: one for each actor! */
+        switch (type) {
+            case ANNOUNCE:
+            case CREATE:
+            case DELETE:
+            case LIKE:
+            case UPDATE:
+            case UNDO_ANNOUNCE:
+            case UNDO_LIKE:
+                return getActivity().getMessage();
+            default:
+                return MbMessage.EMPTY;
+        }
     }
 
     public void setMessage(MbMessage mbMessage) {
@@ -147,9 +201,17 @@ public class MbActivity {
         }
     }
 
+    public Audience recipients() {
+        return getActivity().recipients();
+    }
+
     @NonNull
     public MbActivity getActivity() {
-        return mbActivity == null ? EMPTY : mbActivity;
+        return mbActivity;
+    }
+
+    public void setActivity(MbActivity activity) {
+        this.mbActivity = activity;
     }
 
     @Override
@@ -157,14 +219,14 @@ public class MbActivity {
         return "MbActivity{" +
                 (isEmpty() ? "(empty), " : "") +
                 type +
-                (id == 0 ? "" : ", id=" + id) +
-                ", oid=" + timelinePosition +
-                (timelineDate == 0 ? "" : ", timelineDate=" + timelineDate) +
-                (accountUser.isEmpty() ? "" : ", me=" + accountUser.getUserName()) +
-                (actor.isEmpty() ? "" : ", actor=" + actor) +
-                (mbMessage.isEmpty() ? "" : ", message=" + mbMessage) +
-                (getActivity().isEmpty() ? "" : ", activity=" + getActivity()) +
-                (mbUser.isEmpty() ? "" : ", user=" + mbUser) +
+                (id == 0 ? "" : ", id:" + id) +
+                ", oid:" + timelinePosition +
+                (updatedDate == 0 ? "" : ", updated:" + updatedDate) +
+                (accountUser.isEmpty() ? "" : ", me:" + accountUser.getUserName()) +
+                (actor.isEmpty() ? "" : ", actor:" + actor) +
+                (mbMessage.isEmpty() ? "" : ", message:" + mbMessage) +
+                (getActivity().isEmpty() ? "" : ", activity:" + getActivity()) +
+                (mbUser.isEmpty() ? "" : ", user:" + mbUser) +
                 '}';
     }
 
@@ -186,7 +248,7 @@ public class MbActivity {
                 DbUtils.getLong(cursor, ActivityTable.USER_ID));
         activity.mbActivity = MbActivity.from(activity.accountUser, MbActivityType.EMPTY);
         activity.mbActivity.id =  DbUtils.getLong(cursor, ActivityTable.OBJ_ACTIVITY_ID);
-        activity.timelineDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
+        activity.updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
         activity.insDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
         return activity;
     }
@@ -227,10 +289,15 @@ public class MbActivity {
         values.put(ActivityTable.MSG_ID, getMessage().msgId);
         values.put(ActivityTable.USER_ID, getUser().userId);
         values.put(ActivityTable.OBJ_ACTIVITY_ID, getActivity().id);
-        values.put(ActivityTable.UPDATED_DATE, timelineDate);
+        values.put(ActivityTable.UPDATED_DATE, updatedDate);
         if (getId() == 0) {
             insDate = MyLog.uniqueCurrentTimeMS();
             values.put(ActivityTable.INS_DATE, insDate);
         }
+    }
+
+    public void setTempOid() {
+        setTimelinePosition(MbUser.TEMP_OID_PREFIX + accountUser.oid + "-" + type.name() + "-" + getMessage().oid
+            + "_" + updatedDate);
     }
 }

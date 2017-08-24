@@ -21,11 +21,9 @@ import android.text.TextUtils;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.net.social.ConnectionTwitterLike;
 import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbAttachment;
-import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
@@ -82,83 +80,90 @@ public class DemoConversationInserter {
 
         MbUser author4 = buildUserFromOid("acct:fourthWithoutAvatar@pump.example.com");
         
-        MbMessage minus1 = buildMessage(author2, "Older one message", null, null);
-        MbMessage selected = buildMessage(getAuthor1(), "Selected message from Home timeline", minus1,
+        MbActivity minus1 = buildActivity(author2, "Older one message", null, null);
+        MbActivity selected = buildActivity(getAuthor1(), "Selected message from Home timeline", minus1,
                 iteration == 1 ? DemoData.CONVERSATION_ENTRY_MESSAGE_OID : null);
-        selected.setSubscribedByMe(TriState.TRUE);
-        MbMessage reply1 = buildMessage(author3, "Reply 1 to selected", selected, null);
-        author3.followedByActor = TriState.TRUE;
+        selected.getMessage().setSubscribedByMe(TriState.TRUE);
+        MbActivity reply1 = buildActivity(author3, "Reply 1 to selected", selected, null);
+        author3.followedByMe = TriState.TRUE;
 
-        MbMessage reply1Copy = MbMessage.fromOriginAndOid(reply1.originId, reply1.oid, DownloadStatus.UNKNOWN);
-        MbMessage reply12 = buildMessage(author2, "Reply 12 to 1 in Replies", reply1Copy, null);
-        reply1.replies.add(reply12);
+        MbActivity reply1Copy = buildActivity(accountUser, MbUser.EMPTY, "", MbActivity.EMPTY,
+                reply1.getMessage().oid, DownloadStatus.UNKNOWN);
+        MbActivity reply12 = buildActivity(author2, "Reply 12 to 1 in Replies", reply1Copy, null);
+        reply1.getMessage().replies.add(reply12.getMessage());
 
-        MbMessage reply2 = buildMessage(author2, "Reply 2 to selected is public", selected, null);
-        addPublicMessage(reply2, true);
-        MbMessage reply3 = buildMessage(getAuthor1(), "Reply 3 to selected by the same author", selected, null);
-        reply3.attachments
-        .add(MbAttachment
-                .fromUrlAndContentType(UrlUtils.fromString(
-                        "http://www.publicdomainpictures.net/pictures/100000/nahled/broadcasting-tower-14081029181fC.jpg"),
-                        MyContentType.IMAGE));
-        addMessage(selected);
-        addMessage(reply3);
-        addMessage(reply1);
-        addMessage(reply2);
-        MbMessage reply4 = buildMessage(author4, "Reply 4 to Reply 1 other author", reply1, null);
-        addMessage(reply4);
-        addPublicMessage(reply4, false);
+        MbActivity reply2 = buildActivity(author2, "Reply 2 to selected is private", selected, null);
+        addPrivateMessage(reply2, TriState.TRUE);
+        MbActivity reply3 = buildActivity(getAuthor1(), "Reply 3 to selected by the same author", selected, null);
+        reply3.getMessage().attachments.add(MbAttachment
+            .fromUrlAndContentType(UrlUtils.fromString(
+                    "http://www.publicdomainpictures.net/pictures/100000/nahled/broadcasting-tower-14081029181fC.jpg"),
+                    MyContentType.IMAGE));
+        addActivity(selected);
+        addActivity(reply3);
+        addActivity(reply1);
+        addActivity(reply2);
+        MbActivity reply4 = buildActivity(author4, "Reply 4 to Reply 1 other author", reply1, null);
+        addActivity(reply4);
+        addPrivateMessage(reply4, TriState.FALSE);
 
         DemoConversationInserter.assertIfUserIsMyFriend(author3, true, ma);
 
         final String BODY_OF_MENTIONS_MESSAGE = "@fourthWithoutAvatar@pump.example.com Reply 5 to Reply 4\n"
                 + "@" + DemoData.CONVERSATION_MEMBER_USERNAME
                 + " @unknownUser@example.com";
-        MbMessage reply5 = buildMessage(author2, BODY_OF_MENTIONS_MESSAGE, reply4,
+        MbActivity reply5 = buildActivity(author2, BODY_OF_MENTIONS_MESSAGE, reply4,
                 iteration == 1 ? DemoData.CONVERSATION_MENTIONS_MESSAGE_OID : null);
-        addMessage(reply5);
+        addActivity(reply5);
 
         MbUser reblogger1 = buildUserFromOid("acct:reblogger@identi.ca");
         reblogger1.avatarUrl = "http://www.avatarsdb.com/avatars/cow_face.jpg";
-        MbMessage reblog1 = buildMessage(reblogger1, BODY_OF_MENTIONS_MESSAGE, null, null);
-        DemoMessageInserter.onActivityS(ConnectionTwitterLike.makeReblog(accountUser, reblog1, reply5));
+        MbActivity reblog1 =  MbActivity.from(accountUser, MbActivityType.ANNOUNCE) ;
+        reblog1.setActor(reblogger1);
+        reblog1.setMessage(reply5.getMessage());
+        DemoMessageInserter.onActivityS(reblog1);
 
-        addMessage(buildMessage(author3, "Reply 6 to Reply 4 - the second", reply4, null).
-                setFavoritedByMe(TriState.TRUE));
+        final MbActivity reply6 = buildActivity(author3, "Reply 6 to Reply 4 - the second", reply4, null);
+        reply6.getMessage().setFavoritedByMe(TriState.TRUE);
+        addActivity(reply6);
 
-        MbMessage reply7 = buildMessage(getAuthor1(), "Reply 7 to Reply 2 is about " 
+        MbActivity reply7 = buildActivity(getAuthor1(), "Reply 7 to Reply 2 is about "
         + DemoData.PUBLIC_MESSAGE_TEXT + " and something else", reply2, null);
-        addPublicMessage(reply7, true);
+        addPrivateMessage(reply7, TriState.FALSE);
         
-        MbMessage reply8 = buildMessage(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
+        MbActivity reply8 = buildActivity(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
 
-        MbMessage reblog2 = buildMessage(accountUser, reply8.getBody(), null, null);
-        DemoMessageInserter.onActivityS(ConnectionTwitterLike.makeReblog(accountUser, reblog2, reply8));
+        MbActivity reblog2 =  MbActivity.from(accountUser, MbActivityType.ANNOUNCE) ;
+        reblog2.setActor(author3);
+        reblog2.setMessage(reply8.getMessage());
+        DemoMessageInserter.onActivityS(reblog2);
 
-        MbMessage reply9 = buildMessage(author2, "Reply 9 to Reply 7", reply7, null);
-        reply9.attachments
+        MbActivity reply9 = buildActivity(author2, "Reply 9 to Reply 7", reply7, null);
+        reply9.getMessage().attachments
                 .add(MbAttachment
                         .fromUrlAndContentType( UrlUtils.fromString(
                                 "http://www.publicdomainpictures.net/pictures/100000/nahled/autumn-tree-in-a-park.jpg"),
                                 MyContentType.IMAGE));
-        addMessage(reply9);
-        addMessage(buildMessage(author4, "A duplicate of " + reply9.getBody(), null, null));
+        addActivity(reply9);
+        addActivity(buildActivity(author4, "A duplicate of " + reply9.getMessage().getBody(),
+                null, null));
 
         // Message downloaded by another account
         MbUser acc2 = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT2_NAME).toPartialUser();
-        author3.followedByActor = TriState.TRUE;
-        MbMessage reply10 = buildMessage(acc2, author3, "Reply 10 to Reply 8", reply8, null);
-        MbActivity activity10 = reply10.act(acc2, acc2, MbActivityType.UPDATE);
+        author3.followedByMe = TriState.TRUE;
+        MbActivity reply10 = buildActivity(acc2, author3, "Reply 10 to Reply 8", reply8, null, DownloadStatus.LOADED);
+        MbActivity activity10 = reply10.getMessage().act(acc2, acc2, MbActivityType.UPDATE);
         assertEquals("Another account as a message actor", activity10.getActor().oid, DemoData.CONVERSATION_ACCOUNT2_USER_OID);
         DemoMessageInserter.onActivityS(activity10);
-        author3.followedByActor = TriState.UNKNOWN;
+        author3.followedByMe = TriState.UNKNOWN;
 
-        MbMessage reply11 = buildMessage(author2, "Reply 11 to Reply 7, " + DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT + " text", reply7, null);
-        addPublicMessage(reply11, true);
+        MbActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7, " + DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT
+                + " text", reply7, null);
+        addPrivateMessage(reply11, TriState.FALSE);
 
-        MbMessage reply13 = buildMessage(accountUser, "My reply to Reply 2", reply2, null);
-        MbMessage reply14 = buildMessage(author3, "Reply to my message 13", reply13, null);
-        addMessage(reply14);
+        MbActivity reply13 = buildActivity(accountUser, "My reply to Reply 2", reply2, null);
+        MbActivity reply14 = buildActivity(author3, "Reply to my message 13", reply13, null);
+        addActivity(reply14);
     }
 
     private MbUser getAuthor1() {
@@ -167,30 +172,33 @@ public class DemoConversationInserter {
         return author1;
     }
     
-    private void addPublicMessage(MbMessage message, boolean isPublic) {
-        message.setPublic(isPublic);
-        long id = addMessage(message);
-        long storedPublic = MyQuery.msgIdToLongColumnValue(MsgTable.PUBLIC, id);
-        assertTrue("Message is " + (isPublic ? "public" : "private") + ": " + message.getBody(),
-                (isPublic == (storedPublic != 0)));
+    private void addPrivateMessage(MbActivity activity, TriState isPrivate) {
+        activity.getMessage().setPrivate(isPrivate);
+        addActivity(activity);
+        TriState storedPrivate = TriState.fromId(
+                MyQuery.msgIdToLongColumnValue(MsgTable.PRIVATE, activity.getMessage().msgId));
+        assertEquals("Message is " + (isPrivate.equals(TriState.TRUE) ? "private" :
+                        isPrivate.equals(TriState.FALSE) ? "non private" : "") + ": " + activity.getMessage().getBody(),
+                isPrivate, storedPrivate);
     }
 
     private MbUser buildUserFromOid(String userOid) {
         return new DemoMessageInserter(accountUser).buildUserFromOid(userOid);
     }
     
-    private MbMessage buildMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
-        return buildMessage(accountUser, author, body, inReplyToMessage, messageOidIn);
+    private MbActivity buildActivity(MbUser author, String body, MbActivity inReplyTo, String messageOidIn) {
+        return buildActivity(accountUser, author, body, inReplyTo, messageOidIn, DownloadStatus.LOADED);
     }
 
-    private MbMessage buildMessage(MbUser accountUser, MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
-        return new DemoMessageInserter(accountUser).buildMessage(author, body
-                        + (inReplyToMessage != null ? " it" + iteration : "") + bodySuffix,
-                inReplyToMessage, messageOidIn, DownloadStatus.LOADED);
+    private MbActivity buildActivity(MbUser accountUser, MbUser author, String body, MbActivity inReplyTo,
+                                     String messageOidIn, DownloadStatus status) {
+        return new DemoMessageInserter(accountUser).buildActivity(author, body
+                        + (inReplyTo != null ? " it" + iteration : "") + bodySuffix,
+                inReplyTo, messageOidIn, status);
     }
 
-    private long addMessage(MbMessage message) {
-        return DemoMessageInserter.addMessage(accountUser, message);
+    private void addActivity(MbActivity activity) {
+        DemoMessageInserter.onActivityS(activity);
     }
 
     public static void assertIfUserIsMyFriend(MbUser user, boolean isFriend, MyAccount ma) {

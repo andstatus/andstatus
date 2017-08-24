@@ -36,7 +36,7 @@ import java.util.List;
  * Message of a Social Network
  * @author yvolk@yurivolkov.com
  */
-public class MbMessage {
+public class MbMessage extends AObject {
     public static final MbMessage EMPTY = new MbMessage(0);
 
     private boolean isEmpty = false;
@@ -44,18 +44,14 @@ public class MbMessage {
     
     public String oid="";
     private long updatedDate = 0;
-    @NonNull
-    private MbUser author = MbUser.EMPTY;
-    // TODO: Multiple recipients needed?!
-    private MbUser recipient = MbUser.EMPTY;
+    private Audience recipients = new Audience();
     private String body = "";
 
-    private MbMessage inReplyTo = null;
+    private MbActivity inReplyTo = MbActivity.EMPTY;
     public final List<MbMessage> replies = new ArrayList<>();
     public String conversationOid="";
     public String via = "";
     public String url="";
-    private boolean isPublic = false;
 
     public final List<MbAttachment> attachments = new ArrayList<>();
 
@@ -66,7 +62,9 @@ public class MbMessage {
     /** Some additional attributes may appear from "My account's" (authenticated User's) point of view */
     private TriState subscribedByMe = TriState.UNKNOWN;
     private TriState favoritedByMe = TriState.UNKNOWN;
-    
+    private TriState mentioned = TriState.UNKNOWN;
+    private TriState isPrivate = TriState.UNKNOWN;
+
     // In our system
     public final long originId;
     public long msgId = 0L;
@@ -97,14 +95,6 @@ public class MbMessage {
         mbActivity.setActor(actor);
         mbActivity.setMessage(this);
         return mbActivity;
-    }
-
-    public boolean isPublic() {
-        return isPublic;
-    }
-
-    public void setPublic(boolean isPublic) {
-        this.isPublic = isPublic;
     }
 
     public String getBody() {
@@ -145,8 +135,9 @@ public class MbMessage {
             conversationId = MyQuery.conversationOidToId(originId, conversationOid);
         }
         if (conversationId == 0 && getInReplyTo().nonEmpty()) {
-            if (getInReplyTo().msgId != 0) {
-                conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, getInReplyTo().msgId);
+            if (getInReplyTo().getMessage().msgId != 0) {
+                conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID,
+                        getInReplyTo().getMessage().msgId);
             }
         }
         return setConversationIdFromMsgId();
@@ -165,10 +156,6 @@ public class MbMessage {
 
     public DownloadStatus getStatus() {
         return status;
-    }
-
-    public boolean nonEmpty() {
-        return !isEmpty();
     }
 
     public boolean isEmpty() {
@@ -198,6 +185,9 @@ public class MbMessage {
 
     @Override
     public String toString() {
+        if (this == EMPTY) {
+            return MyLog.formatKeyValue(this, "EMPTY");
+        }
         StringBuilder builder = new StringBuilder();
         if(msgId != 0) {
             builder.append("msgId:" + msgId + ",");
@@ -209,8 +199,8 @@ public class MbMessage {
         if(getInReplyTo().nonEmpty()) {
             builder.append("inReplyTo:" + getInReplyTo() + ",");
         }
-        if(recipient != null && !recipient.isEmpty()) {
-            builder.append("recipient:" + recipient + ",");
+        if(!recipients.isEmpty()) {
+            builder.append("recipients:" + recipients + ",");
         }
         if (!attachments.isEmpty()) {
             builder.append("attachments:" + attachments + ",");
@@ -218,8 +208,10 @@ public class MbMessage {
         if(isEmpty) {
             builder.append("isEmpty,");
         }
-        if(isPublic) {
-            builder.append("isPublic,");
+        if(isPrivate()) {
+            builder.append("private,");
+        } else if(nonPrivate()) {
+            builder.append("nonprivate,");
         }
         if(!TextUtils.isEmpty(oid)) {
             builder.append("oid:'" + oid + "',");
@@ -230,7 +222,6 @@ public class MbMessage {
         if(!TextUtils.isEmpty(via)) {
             builder.append("via:'" + via + "',");
         }
-        builder.append("author:" + author + ",");
         builder.append("updated" + new Date(updatedDate) + ",");
         if (sentDate != updatedDate) {
             builder.append("sent" + new Date(sentDate) + ",");
@@ -267,18 +258,14 @@ public class MbMessage {
         this.reblogOid = reblogOid;
     }
 
-    public String getReblogOid() {
-        return reblogOid;
-    }
-
     @NonNull
-    public MbMessage getInReplyTo() {
-        return inReplyTo == null ? EMPTY : inReplyTo;
+    public MbActivity getInReplyTo() {
+        return inReplyTo;
     }
 
-    public void setInReplyTo(MbMessage message) {
-        if (message != null && message.nonEmpty()) {
-            this.inReplyTo = message;
+    public void setInReplyTo(MbActivity activity) {
+        if (activity != null && activity.nonEmpty()) {
+            inReplyTo = activity;
         }
     }
 
@@ -299,15 +286,34 @@ public class MbMessage {
         return this;
     }
 
-    @NonNull
-    public MbUser getAuthor() {
-        return author;
+    public TriState getMentioned() {
+        return mentioned;
     }
 
-    public void setAuthor(MbUser author) {
-        if (author != null && author.nonEmpty()) {
-            this.author = author;
-        }
+    public boolean isMentioned() {
+        return mentioned == TriState.TRUE;
+    }
+
+    public MbMessage setMentioned(TriState mentioned) {
+        this.mentioned = mentioned;
+        return this;
+    }
+
+    public TriState getPrivate() {
+        return isPrivate;
+    }
+
+    public boolean isPrivate() {
+        return isPrivate == TriState.TRUE;
+    }
+
+    public boolean nonPrivate() {
+        return !isPrivate();
+    }
+
+    public MbMessage setPrivate(TriState isPrivate) {
+        this.isPrivate = isPrivate;
+        return this;
     }
 
     public long getUpdatedDate() {
@@ -322,13 +328,23 @@ public class MbMessage {
     }
 
     @NonNull
-    public MbUser getRecipient() {
-        return recipient;
+    public Audience recipients() {
+        return recipients;
     }
 
-    public void setRecipient(MbUser recipient) {
-        if (recipient != null) {
-            this.recipient = recipient;
+    public void addRecipients(@NonNull Audience audience) {
+        recipients.addAll(audience);
+    }
+
+    public void addRecipient(MbUser recipient) {
+        if (recipient != null && recipient.nonEmpty()) {
+            recipients.add(recipient);
+        }
+    }
+
+    public void addRecipientsFromBodyText(MbUser author) {
+        for (MbUser user : author.extractUsersFromBodyText(getBody(), true)) {
+            addRecipient(user);
         }
     }
 }

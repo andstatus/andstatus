@@ -26,13 +26,14 @@ import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.TimelineSql;
+import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.database.DownloadTable;
-import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -54,14 +55,15 @@ public class MessageViewItem extends BaseMessageViewItem {
         item.inReplyToUserId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_USER_ID);
         item.inReplyToName = DbUtils.getString(cursor, UserTable.IN_REPLY_TO_NAME);
         item.recipientName = DbUtils.getString(cursor, UserTable.RECIPIENT_NAME);
-        item.favorited = item.isLinkedToMyAccount() && DbUtils.getLong(cursor, MsgOfUserTable.FAVORITED) == 1;
-        item.sentDate = DbUtils.getLong(cursor, MsgTable.SENT_DATE);
+        item.favorited = item.isLinkedToMyAccount()
+                && DbUtils.getTriState(cursor, MsgTable.FAVORITED) == TriState.TRUE;
+        item.activityInsDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
         item.updatedDate = DbUtils.getLong(cursor, MsgTable.UPDATED_DATE);
         item.msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
 
         item.authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
 
-        long senderId = DbUtils.getLong(cursor, MsgTable.ACTOR_ID);
+        long senderId = DbUtils.getLong(cursor, ActivityTable.ACTOR_ID);
         if (senderId != item.authorId) {
             String senderName = DbUtils.getString(cursor, UserTable.SENDER_NAME);
             if (TextUtils.isEmpty(senderName)) {
@@ -71,7 +73,7 @@ public class MessageViewItem extends BaseMessageViewItem {
         }
 
         if (item.isLinkedToMyAccount()) {
-            if (DbUtils.getInt(cursor, MsgOfUserTable.REBLOGGED) == 1) {
+            if (DbUtils.getTriState(cursor, MsgTable.REBLOGGED) == TriState.TRUE) {
                 item.addReblogger(item.getLinkedMyAccount().getUserId(), item.getLinkedMyAccount().getAccountName());
                 item.reblogged = true;
             }

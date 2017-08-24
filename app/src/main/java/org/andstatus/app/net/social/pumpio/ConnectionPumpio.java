@@ -373,7 +373,7 @@ public class ConnectionPumpio extends Connection {
                     return MbActivity.EMPTY;
                 }
                 activity.setTimelinePosition(oid);
-                activity.setTimelineDate(dateFromJson(jsoActivity, "updated"));
+                activity.setUpdatedDate(dateFromJson(jsoActivity, "updated"));
                 if (jsoActivity.has("actor")) {
                     activity.setActor(userFromJson(jsoActivity.getJSONObject("actor")));
                 }
@@ -391,7 +391,7 @@ public class ConnectionPumpio extends Connection {
                     if (jsoActivity.has("to")) {
                         JSONObject to = jsoActivity.optJSONObject("to");
                         if ( to != null) {
-                            activity.getMessage().setRecipient(userFromJson(to));
+                            activity.getMessage().addRecipient(userFromJson(to));
                         } else {
                             JSONArray arrayOfTo = jsoActivity.optJSONArray("to");
                             if (arrayOfTo != null && arrayOfTo.length() > 0) {
@@ -399,14 +399,14 @@ public class ConnectionPumpio extends Connection {
                                 to = arrayOfTo.optJSONObject(0);
                                 MbUser recipient = userFromJson(to);
                                 if (!recipient.isEmpty()) {
-                                    activity.getMessage().setRecipient(recipient);
+                                    activity.getMessage().addRecipient(recipient);
                                 }
                             }
                         }
                     }
                     setVia(activity.getMessage(), jsoActivity);
-                    if(activity.getMessage().getAuthor().isEmpty()) {
-                        activity.getMessage().setAuthor(activity.getActor());
+                    if(activity.getAuthor().isEmpty()) {
+                        activity.setAuthor(activity.getActor());
                     }
                 }
             } else {
@@ -421,29 +421,17 @@ public class ConnectionPumpio extends Connection {
     private void parseObjectOfActivity(MbActivity activity, JSONObject objectOfActivity) throws ConnectionException {
         if (ObjectType.PERSON.isTypeOf(objectOfActivity)) {
             activity.setUser(userFromJson(objectOfActivity));
-            switch (activity.type) {
-                case FOLLOW:
-                    activity.getUser().followedByActor = TriState.TRUE;
-                    break;
-                case UNDO_FOLLOW:
-                    activity.getUser().followedByActor = TriState.FALSE;
-                    break;
-                default:
-                    break;
-            }
         } else if (ObjectType.compatibleWith(objectOfActivity) == ObjectType.COMMENT) {
-            MbMessage message = messageFromJsonComment(objectOfActivity);
-            activity.setMessage(message);
-            message.sentDate = activity.getTimelineDate();
+            messageFromJsonComment(activity, objectOfActivity);
             switch (activity.type) {
                 case LIKE:
-                    message.setFavorited(TriState.TRUE);
+                    activity.getMessage().setFavorited(TriState.TRUE);
                     break;
                 case UNDO_LIKE:
-                    message.setFavorited(TriState.FALSE);
+                    activity.getMessage().setFavorited(TriState.FALSE);
                     break;
                 case ANNOUNCE:
-                    message.setReblogOid(activity.getTimelinePosition().getPosition());
+                    activity.getMessage().setReblogOid(activity.getTimelinePosition().getPosition());
                     break;
                 default:
                     break;
@@ -468,17 +456,17 @@ public class ConnectionPumpio extends Connection {
         return null;
     }
     
-    private MbMessage messageFromJsonComment(JSONObject jso) throws ConnectionException {
-        MbMessage message;
+    private void messageFromJsonComment(MbActivity activity, JSONObject jso) throws ConnectionException {
         try {
             String oid = jso.optString("id");
             if (TextUtils.isEmpty(oid)) {
                 MyLog.d(TAG, "Pumpio object has no id:" + jso.toString(2));
-                return MbMessage.EMPTY;
+                return;
             } 
-            message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid, DownloadStatus.LOADED);
+            MbMessage message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid, DownloadStatus.LOADED);
+            activity.setMessage(message);
             if (jso.has("author")) {
-                message.setAuthor(userFromJson(jso.getJSONObject("author")));
+                activity.setActor(userFromJson(jso.getJSONObject("author")));
             }
             if (jso.has("content")) {
                 message.setBody(jso.getString("content"));
@@ -506,8 +494,8 @@ public class ConnectionPumpio extends Connection {
 
             // If the Msg is a Reply to other message
             if (jso.has("inReplyTo")) {
-                message.setInReplyTo(activityFromJson(jso.getJSONObject("inReplyTo")).getMessage());
-                message.getInReplyTo().setSubscribedByMe(TriState.FALSE);
+                message.setInReplyTo(activityFromJson(jso.getJSONObject("inReplyTo")));
+                message.getInReplyTo().getMessage().setSubscribedByMe(TriState.FALSE);
             }
 
             if (jso.has("replies")) {
@@ -529,7 +517,6 @@ public class ConnectionPumpio extends Connection {
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Parsing comment", e, jso);
         }
-        return message;
     }
     
     /**

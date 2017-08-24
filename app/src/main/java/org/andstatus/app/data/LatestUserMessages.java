@@ -16,7 +16,6 @@
 
 package org.andstatus.app.data;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,15 +24,8 @@ import java.util.Map;
  * @author yvolk@yurivolkov.com
  */
 public class LatestUserMessages {
-    private Map<Long, UserMsg> messages;
-    public LatestUserMessages() {
-        messages = new HashMap<Long, UserMsg>();
-    }
-    
-    public Collection<UserMsg> getUserMessages() {
-        return messages.values();
-    }
-    
+    private final Map<Long, UserMsg> messages = new HashMap<>();
+
     /**
      * Add information about new/updated message by the User
      */
@@ -44,7 +36,7 @@ public class LatestUserMessages {
         if (um == null) {
             um = umIn;
         } else {
-            um.onNewMsg(umIn.getLastMsgId(), umIn.getLastMsgDate() );
+            um.onNewActivity(umIn.getLastActivityId(), umIn.getLastActivityDate() );
         }
         messages.put(um.getUserId(), um);
     }

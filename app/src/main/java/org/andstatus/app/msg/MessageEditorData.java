@@ -31,8 +31,11 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.graphics.CachedImage;
+import org.andstatus.app.net.social.Audience;
+import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
@@ -66,7 +69,7 @@ public class MessageEditorData {
     String inReplyToBody = "";
     private boolean replyToConversationParticipants = false;
     private boolean replyToMentionedUsers = false;
-    public long recipientId = 0;
+    public Audience recipients = new Audience();
     public MyAccount ma = MyAccount.EMPTY;
 
     private MessageEditorData(MyAccount myAccount) {
@@ -84,7 +87,7 @@ public class MessageEditorData {
         result = prime * result + ((ma == null) ? 0 : ma.hashCode());
         result = prime * result + getMediaUri().hashCode();
         result = prime * result + body.hashCode();
-        result = prime * result + (int) (recipientId ^ (recipientId >>> 32));
+        result = prime * result + (int) (recipients.hashCode() ^ (recipients.hashCode() >>> 32));
         result = prime * result + (int) (inReplyToId ^ (inReplyToId >>> 32));
         return result;
     }
@@ -105,7 +108,7 @@ public class MessageEditorData {
             return false;
         if (!body.equals(other.body))
             return false;
-        if (recipientId != other.recipientId)
+        if (!recipients.equals(other.recipients))
             return false;
         return inReplyToId == other.inReplyToId;
     }
@@ -129,8 +132,8 @@ public class MessageEditorData {
         if(replyToConversationParticipants) {
             builder.append("ReplyAll,");
         }
-        if(recipientId != 0) {
-            builder.append("recipientId:" + recipientId + ",");
+        if(recipients.nonEmpty()) {
+            builder.append("recipients:" + recipients + ",");
         }
         builder.append("ma:" + ma.getAccountName() + ",");
         return MyLog.formatKeyValue(this, builder.toString());
@@ -140,7 +143,7 @@ public class MessageEditorData {
         MessageEditorData data;
         if (msgId != 0) {
             MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(
-                    MyQuery.msgIdToLongColumnValue(MsgTable.ACTOR_ID, msgId));
+                    MyQuery.msgIdToLongColumnValue(ActivityTable.ACTOR_ID, msgId));
             data = new MessageEditorData(ma);
             data.msgId = msgId;
             data.setBody(MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId));
@@ -152,7 +155,7 @@ public class MessageEditorData {
             }
             data.inReplyToId = MyQuery.msgIdToLongColumnValue(MsgTable.IN_REPLY_TO_MSG_ID, msgId);
             data.inReplyToBody = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, data.inReplyToId);
-            data.recipientId = MyQuery.msgIdToLongColumnValue(MsgTable.RECIPIENT_ID, msgId);
+            data.recipients = Audience.fromMsgId(ma.getOriginId(), msgId);
             MyLog.v(TAG, "Loaded " + data);
         } else {
             data = new MessageEditorData(MyContextHolder.get().persistentAccounts().getCurrentAccount());
@@ -172,7 +175,7 @@ public class MessageEditorData {
             data.inReplyToId = inReplyToId;
             data.inReplyToBody = inReplyToBody;
             data.replyToConversationParticipants = replyToConversationParticipants;
-            data.recipientId = recipientId;
+            data.recipients = recipients;
             return data;
         } else {
             return INVALID;
@@ -180,19 +183,15 @@ public class MessageEditorData {
     }
 
     public void save(Uri imageUriToSave) {
-        MbMessage message = MbMessage.fromOriginAndOid(getMyAccount().getOriginId(), "", status);
+        MbActivity activity = MbActivity.newPartialMessage(getMyAccount().toPartialUser(), "", status);
+        MbMessage message = activity.getMessage();
         message.msgId = getMsgId();
-        message.setAuthor(getMyAccount().toPartialUser());
-        message.setUpdatedDate(System.currentTimeMillis());
         message.setBody(body);
-        if (recipientId != 0) {
-            message.setRecipient(MbUser.fromOriginAndUserOid(getMyAccount().getOriginId(),
-                    MyQuery.idToOid(OidEnum.USER_OID, recipientId, 0)));
-        }
+        message.addRecipients(recipients);
         if (inReplyToId != 0) {
-            message.setInReplyTo(MbMessage.fromOriginAndOid(getMyAccount().getOriginId(),
-                    MyQuery.idToOid(OidEnum.MSG_OID, inReplyToId, 0),
-                    DownloadStatus.UNKNOWN));
+            message.setInReplyTo(
+                    MbActivity.newPartialMessage(getMyAccount().toPartialUser(),
+                            MyQuery.idToOid(OidEnum.MSG_OID, inReplyToId, 0)) );
         }
         Uri mediaUri = imageUriToSave.equals(Uri.EMPTY) ? downloadData.getUri() : imageUriToSave;
         if (!mediaUri.equals(Uri.EMPTY)) {
@@ -335,8 +334,8 @@ public class MessageEditorData {
                 : UserInTimeline.USERNAME;
     }
 
-    public MessageEditorData setRecipientId(long userId) {
-        recipientId = userId;
+    public MessageEditorData addRecipientId(long userId) {
+        recipients.add(MbUser.fromOriginAndUserId(getMyAccount().getOriginId(), userId));
         return this;
     }
 }

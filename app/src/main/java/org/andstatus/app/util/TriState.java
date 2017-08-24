@@ -110,4 +110,12 @@ public enum TriState {
     public boolean isBoolean(boolean value) {
         return this.toBoolean(value) == value;
     }
+
+    public boolean known() {
+        return !unknown();
+    }
+
+    public boolean unknown() {
+        return this.equals(UNKNOWN);
+    }
 }

@@ -16,9 +16,9 @@
 
 package org.andstatus.app.service;
 
-import android.content.ContentValues;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.v4.util.Pair;
 import android.text.TextUtils;
 
 import org.andstatus.app.appwidget.AppWidgets;
@@ -27,12 +27,13 @@ import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyContentType;
+import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.database.MsgOfUserTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
+import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbMessage;
@@ -187,7 +188,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         }
         if (noErrors()) {
             if (!activity.type.equals(create ? MbActivityType.LIKE : MbActivityType.UNDO_LIKE)) {
-                /**
+                /*
                  * yvolk: 2011-09-27 Twitter docs state that
                  * this may happen due to asynchronous nature of
                  * the process, see
@@ -323,27 +324,31 @@ class CommandExecutorOther extends CommandExecutorStrategy{
      */
     private void destroyReblog(long msgId) {
         final String method = "destroyReblog";
-        String oid = MyQuery.idToOid(OidEnum.REBLOG_OID, msgId, execContext.getMyAccount().getUserId());
+        final long actorId = execContext.getMyAccount().getUserId();
+        final Pair<Long, MbActivityType> reblogAndType = MyQuery.msgIdToLastReblogging(
+                execContext.getMyContext().getDatabase(), msgId, actorId);
+        if (reblogAndType.second != MbActivityType.ANNOUNCE) {
+            logExecutionError(true, "No local Reblog of "
+                    + MyQuery.msgInfoForLog(msgId) + " by " + execContext.getMyAccount() );
+            return;
+        }
+        String reblogOid = MyQuery.idToOid(OidEnum.REBLOG_OID, msgId, actorId);
         try {
-            if (!execContext.getMyAccount().getConnection().destroyReblog(oid)) {
-                logExecutionError(false, "Connection returned 'false' " + method + MyQuery.msgInfoForLog(msgId));
+            if (!execContext.getMyAccount().getConnection().destroyReblog(reblogOid)) {
+                logExecutionError(false, "Connection returned 'false' " + method
+                        + MyQuery.msgInfoForLog(msgId));
             }
         } catch (ConnectionException e) {
-            if (e.getStatusCode() == StatusCode.NOT_FOUND) {
-                // This means that there is no such "Status", so we may
-                // assume that it's Ok!
-            } else {
-                logConnectionException(e, method + "; " + oid + MyQuery.msgInfoForLog(msgId));
+            // "Not found" means that there is no such "Status", so we may
+            // assume that it's Ok!
+            if (e.getStatusCode() != StatusCode.NOT_FOUND) {
+                logConnectionException(e, method + "; reblogOid:" + reblogOid + ", " + MyQuery.msgInfoForLog(msgId));
             }
         }
         if (noErrors()) {
-            // And delete the status from the local storage
             try {
-                ContentValues values = new ContentValues();
-                values.put(MsgOfUserTable.REBLOGGED, 0);
-                values.putNull(MsgOfUserTable.REBLOG_OID);
-                Uri msgUri = MatchedUri.getMsgUri(execContext.getMyAccount().getUserId(), msgId);
-                execContext.getContext().getContentResolver().update(msgUri, values, null, null);
+                // And delete the reblog from local storage
+                MyProvider.deleteActivity(execContext.getMyContext(), reblogAndType.first, msgId, false);
             } catch (Exception e) {
                 MyLog.e(this, "Error destroying reblog locally", e);
             }
@@ -384,7 +389,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         MbActivity activity = null;
         String status = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId);
         String oid = getMsgOid(method, msgId, false);
-        long recipientUserId = MyQuery.msgIdToLongColumnValue(MsgTable.RECIPIENT_ID, msgId);
+        Audience recipients = Audience.fromMsgId(execContext.getMyAccount().getOriginId(), msgId);
         Uri mediaUri = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY).
                 mediaUriToBePosted();
         String msgLog = "text:'" + MyLog.trimmedString(status, 40) + "'"
@@ -399,14 +404,14 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 throw ConnectionException.hardConnectionException(
                         "Wrong message status: " + statusStored, null);
             }
-            if (recipientUserId == 0) {
+            if (recipients.isEmpty()) {
                 long replyToMsgId = MyQuery.msgIdToLongColumnValue(
                         MsgTable.IN_REPLY_TO_MSG_ID, msgId);
                 String replyToMsgOid = getMsgOid(method, replyToMsgId, false);
                 activity = execContext.getMyAccount().getConnection()
                         .updateStatus(status.trim(), oid, replyToMsgOid, mediaUri);
             } else {
-                String recipientOid = MyQuery.idToOid(OidEnum.USER_OID, recipientUserId, 0);
+                String recipientOid = MyQuery.idToOid(OidEnum.USER_OID, recipients.getFirst().userId, 0);
                 // Currently we don't use Screen Name, I guess id is enough.
                 activity = execContext.getMyAccount().getConnection()
                         .postDirectMessage(status.trim(), oid, recipientOid, mediaUri);
@@ -431,14 +436,14 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         }
     }
 
-    private void reblog(long rebloggedId) {
+    private void reblog(long rebloggedMessageId) {
         final String method = "Reblog";
-        String oid = getMsgOid(method, rebloggedId, true);
+        String oid = getMsgOid(method, rebloggedMessageId, true);
         MbActivity activity = MbActivity.EMPTY;
         if (noErrors()) {
             try {
                 activity = execContext.getMyAccount().getConnection().postReblog(oid);
-                logIfEmptyMessage(method, rebloggedId, activity.getMessage());
+                logIfEmptyMessage(method, rebloggedMessageId, activity.getMessage());
             } catch (ConnectionException e) {
                 logConnectionException(e, "Reblog " + oid);
             }
@@ -447,6 +452,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             // The tweet was sent successfully
             // Reblog should be put into the user's Home timeline!
             new DataUpdater(execContext).onActivity(activity);
+            MyProvider.updateMessageReblogged(execContext.getMyContext(), rebloggedMessageId);
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }

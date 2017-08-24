@@ -61,8 +61,8 @@ public abstract class Connection {
     public enum ApiRoutineEnum {
         ACCOUNT_RATE_LIMIT_STATUS,
         ACCOUNT_VERIFY_CREDENTIALS,
-        /** Returns most recent direct messages sent to the authenticating user */
-        DIRECT_MESSAGES,
+        /** Returns most recent direct messages privately sent to the authenticating user */
+        DIRECT_MESSAGES(true),
         CREATE_FAVORITE,
         DESTROY_FAVORITE,
         FOLLOW_USER,
@@ -99,12 +99,12 @@ public abstract class Connection {
          * Get the User timeline for the user with the selectedUserId. We use credentials of Account which may be
          * not the same user. 
          */
-        USER_TIMELINE(true),
-        PUBLIC_TIMELINE(true),
-        TAG_TIMELINE(true),
+        USER_TIMELINE,
+        PUBLIC_TIMELINE,
+        TAG_TIMELINE,
         FAVORITES_TIMELINE,
-        SEARCH_MESSAGES(true),
-        SEARCH_USERS(true),
+        SEARCH_MESSAGES,
+        SEARCH_USERS,
 
         GET_MESSAGE,
         STOP_FOLLOWING_USER,
@@ -124,18 +124,18 @@ public abstract class Connection {
          */
         DUMMY;
         
-        private final boolean msgPublic;
+        private final boolean msgPrivate;
 
-        private ApiRoutineEnum() {
+        ApiRoutineEnum() {
             this(false);
         }
         
-        private ApiRoutineEnum(boolean msgPublic) {
-            this.msgPublic = msgPublic;
+        ApiRoutineEnum(boolean msgPrivate) {
+            this.msgPrivate = msgPrivate;
         }
 
-        public boolean isMsgPublic() {
-            return msgPublic;
+        public boolean isMsgPrivate() {
+            return msgPrivate;
         }
     }
 
@@ -288,9 +288,7 @@ public abstract class Connection {
      */
     @NonNull
     public final MbActivity getMessage(String statusId) throws ConnectionException {
-        MbActivity activity = getMessage1(statusId);
-        activity.getMessage().setPublic(true);
-        return activity;
+        return getMessage1(statusId);
     }
 
     /** See {@link #getMessage(String)} */
@@ -529,22 +527,6 @@ public abstract class Connection {
             }
         }
         return unixDate;
-    }
-
-    protected void setMessagesPublic(List<MbActivity> timeline) {
-        for (MbActivity item : timeline) {
-            if (item.getObjectType() == MbObjectType.MESSAGE) {
-                item.getMessage().setPublic(true);
-            }
-        }
-    }
-
-    protected void setUserMessagesPublic(List<MbUser> users) {
-        for (MbUser item : users) {
-            if (item.getLatestMessage() != null) {
-                item.getLatestMessage().setPublic(true);
-            }
-        }
     }
 
     public JSONArray getRequestArrayInObject(String path, String arrayName) throws ConnectionException {

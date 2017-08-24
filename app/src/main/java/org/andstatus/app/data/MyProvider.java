@@ -27,13 +27,17 @@ import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.database.MsgOfUserTable;
+import org.andstatus.app.database.ActivityTable;
+import org.andstatus.app.database.AudienceTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.OriginTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.msg.KeywordsFilter;
+import org.andstatus.app.net.social.MbActivityType;
+import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 
@@ -85,12 +89,11 @@ public class MyProvider extends ContentProvider {
         ParsedUri uriParser = ParsedUri.fromUri(uri);
         switch (uriParser.matched()) {
             case MSG:
-                count = deleteMessages(db, selection, selectionArgs);
+                count = deleteMessages(db, selection, selectionArgs, false);
                 break;
 
             case MSG_ITEM:
-                DownloadData.deleteAllOfThisMsg(db, uriParser.getMessageId());
-                count = deleteMessages(db, BaseColumns._ID + "=" + uriParser.getMessageId(), null);
+                count = deleteMessage(db, uriParser.getMessageId(), false);
                 break;
                 
             case USER:
@@ -107,29 +110,55 @@ public class MyProvider extends ContentProvider {
         return count;
     }
 
-    private int deleteMessages(SQLiteDatabase db, String selection, String[] selectionArgs) {
+    private static int deleteMessage(SQLiteDatabase db, long msgId, boolean inTransaction) {
+        int count;
+        DownloadData.deleteAllOfThisMsg(db, msgId);
+        count = deleteMessages(db, BaseColumns._ID + "=" + msgId, null, inTransaction);
+        return count;
+    }
+
+    private static int deleteMessages(SQLiteDatabase db, String selection, String[] selectionArgs, boolean inTransaction) {
         int count = 0;
         String sqlDesc = "";
-        db.beginTransaction();
+        if (!inTransaction) {
+            db.beginTransaction();
+        }
         try {
-            // Delete all related records from MyDatabase.MsgOfUser for these messages
+            String descSuffix = "; args=" + Arrays.toString(selectionArgs);
+            // Delete all related records
+
+            // Audience
             String selectionG = " EXISTS ("
                     + "SELECT * FROM " + MsgTable.TABLE_NAME + " WHERE ("
-                    + MsgTable.TABLE_NAME + "." + BaseColumns._ID + "=" + MsgOfUserTable.TABLE_NAME + "." + MsgOfUserTable.MSG_ID
+                    + MsgTable.TABLE_NAME + "." + BaseColumns._ID + "=" + AudienceTable.TABLE_NAME + "." + AudienceTable.MSG_ID
                     + ") AND ("
                     + selection
                     + "))";
-            String descSuffix = "; args=" + Arrays.toString(selectionArgs);
             sqlDesc = selectionG + descSuffix;
-            count = db.delete(MsgOfUserTable.TABLE_NAME, selectionG, selectionArgs);
+            count = db.delete(AudienceTable.TABLE_NAME, selectionG, selectionArgs);
+
+            // Activities
+            selectionG = " EXISTS ("
+                    + "SELECT * FROM " + MsgTable.TABLE_NAME + " WHERE ("
+                    + MsgTable.TABLE_NAME + "." + BaseColumns._ID + "=" + ActivityTable.TABLE_NAME + "." + ActivityTable.MSG_ID
+                    + ") AND ("
+                    + selection
+                    + "))";
+            sqlDesc = selectionG + descSuffix;
+            count = db.delete(ActivityTable.TABLE_NAME, selectionG, selectionArgs);
+
             // Now delete messages themselves
             sqlDesc = selection + descSuffix;
             count = db.delete(MsgTable.TABLE_NAME, selection, selectionArgs);
-            db.setTransactionSuccessful();
+            if (!inTransaction) {
+                db.setTransactionSuccessful();
+            }
         } catch(Exception e) {
             MyLog.d(TAG, "; SQL='" + sqlDesc + "'", e);
         } finally {
-            db.endTransaction();
+            if (!inTransaction) {
+                db.endTransaction();
+            }
         }
         return count;
     }
@@ -139,6 +168,55 @@ public class MyProvider extends ContentProvider {
         // TODO: Delete related records also... 
         count = db.delete(UserTable.TABLE_NAME, selection, selectionArgs);
         return count;
+    }
+
+    public static int deleteActivity(MyContext myContext, long activityId, long msgId, boolean inTransaction) {
+        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        if (db == null) {
+            MyLog.v(MyProvider.TAG, "deleteReblog; Database is null");
+            return 0;
+        }
+        int count = db.delete(ActivityTable.TABLE_NAME, BaseColumns._ID + "=" + activityId, null);
+        if (count > 0) {
+            // Was this the last activity?
+            long activitiId = MyQuery.conditionToLongColumnValue(db, null, ActivityTable.TABLE_NAME,
+                    BaseColumns._ID, ActivityTable.MSG_ID + "=" + msgId);
+            if (activitiId == 0) {
+                // Delete message if no more its activities left
+                deleteMessage(db, msgId, inTransaction);
+            } else {
+                updateMessageReblogged(myContext, msgId);
+            }
+        }
+        return count;
+    }
+
+    public static void updateMessageReblogged(MyContext myContext, long msgId) {
+        final String method = "updateMessageReblogged-" + msgId;
+        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        if (db == null) {
+            MyLog.v(MyProvider.TAG, method + "; Database is null");
+            return;
+        }
+        // TODO: Implement
+    }
+
+    public static void updateMessageFavorited(MyContext myContext, long originId, long msgId) {
+        final String method = "updateMessageFavorited-" + msgId;
+        SQLiteDatabase db = myContext.getDatabase();
+        if (db == null) {
+            MyLog.v(MyProvider.TAG, method + "; Database is null");
+            return;
+        }
+        int favorited = MyQuery.msgIdToActors(db, originId, msgId, MbActivityType.LIKE, MbActivityType.UNDO_LIKE)
+                .isEmpty() ? 0 : 1;
+        String sql = "UPDATE " + MsgTable.TABLE_NAME + " SET " + MsgTable.FAVORITED + "=" + favorited
+                + " WHERE " + MsgTable._ID + "=" + msgId;
+        try {
+            db.execSQL(sql);
+        } catch (Exception e) {
+            MyLog.w(TAG, method + "; SQL:'" + sql + "'", e);
+        }
     }
 
     /**
@@ -151,8 +229,6 @@ public class MyProvider extends ContentProvider {
     public Uri insert(@NonNull Uri uri, ContentValues initialValues) {
 
         ContentValues values;
-        MsgOfUserValues msgOfUserValues = new MsgOfUserValues(0);
-        MsgOfUserValues otherUserValues = new MsgOfUserValues(0);
         FriendshipValues friendshipValues = null;
         long accountUserId = 0;
         
@@ -179,12 +255,6 @@ public class MyProvider extends ContentProvider {
                     accountUserId = uriParser.getAccountUserId();
                     
                     table = MsgTable.TABLE_NAME;
-                    /**
-                     * Add default values for missed required fields
-                     */
-                    if (!values.containsKey(MsgTable.AUTHOR_ID) && values.containsKey(MsgTable.ACTOR_ID)) {
-                        values.put(MsgTable.AUTHOR_ID, values.get(MsgTable.ACTOR_ID).toString());
-                    }
                     if (!values.containsKey(MsgTable.BODY)) {
                         values.put(MsgTable.BODY, "");
                     }
@@ -193,8 +263,6 @@ public class MyProvider extends ContentProvider {
                     }
                     values.put(MsgTable.INS_DATE, MyLog.uniqueCurrentTimeMS());
                     
-                    msgOfUserValues = MsgOfUserValues.valueOf(accountUserId, values);
-                    otherUserValues = MsgOfUserValues.valuesOfOtherUser(values);
                     break;
                     
                 case ORIGIN_ITEM:
@@ -220,11 +288,6 @@ public class MyProvider extends ContentProvider {
                 optionallyLoadAvatar(rowId, values);
             }
             
-            msgOfUserValues.setMsgId(rowId);
-            msgOfUserValues.insert(db);
-            otherUserValues.setMsgId(rowId);
-            otherUserValues.insert(db);
-
             if (friendshipValues != null) {
                 friendshipValues.friendId =  rowId;
                 friendshipValues.update(db);
@@ -358,7 +421,8 @@ public class MyProvider extends ContentProvider {
                 case TIMELINE:
                 case TIMELINE_ITEM:
                 case TIMELINE_SEARCH:
-                    orderBy = MsgTable.DESC_SORT_ORDER;
+                    orderBy = ActivityTable.getTimeSortOrder(
+                            uriParser.getTimelineType().equals(TimelineType.NOTIFICATIONS), false);
                     break;
 
                 case MSG_COUNT:
@@ -442,17 +506,11 @@ public class MyProvider extends ContentProvider {
             case MSG_ITEM:
                 accountUserId = uriParser.getAccountUserId();
                 long rowId = uriParser.getMessageId();
-                MsgOfUserValues msgOfUserValues = MsgOfUserValues.valueOf(accountUserId, values);
-                msgOfUserValues.setMsgId(rowId);
-                MsgOfUserValues otherUserValues = MsgOfUserValues.valuesOfOtherUser(values);
-                otherUserValues.setMsgId(rowId);
                 if (values.size() > 0) {
                     count = db.update(MsgTable.TABLE_NAME, values, BaseColumns._ID + "=" + rowId
                             + (StringUtils.nonEmpty(selection) ? " AND (" + selection + ')' : ""),
                             selectionArgs);
                 }
-                count += msgOfUserValues.update(db);
-                otherUserValues.update(db);
                 break;
 
             case USER:

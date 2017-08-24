@@ -25,26 +25,22 @@ import org.andstatus.app.net.social.MbActivityType;
  * @see <a href="https://www.w3.org/TR/activitystreams-vocabulary/#activity-types">Activity Types</a>
  */
 enum ActivityType {
-    DELETE(MbActivityType.DELETE, "delete", false, false),
-    FAVORITE(MbActivityType.LIKE, "favorite", false, false),
-    FOLLOW(MbActivityType.FOLLOW, "follow", false, false),
-    POST(MbActivityType.CREATE, "post", true, false),
-    SHARE(MbActivityType.ANNOUNCE, "share", false, false),
-    STOP_FOLLOWING(MbActivityType.UNDO_FOLLOW, "stop-following", false, false),
-    UNFAVORITE(MbActivityType.UNDO_LIKE, "unfavorite", false, false),
-    UNKNOWN(MbActivityType.EMPTY, "unknown", false, false),
-    UPDATE(MbActivityType.UPDATE, "update", false, false);
+    DELETE(MbActivityType.DELETE, "delete"),
+    FAVORITE(MbActivityType.LIKE, "favorite"),
+    FOLLOW(MbActivityType.FOLLOW, "follow"),
+    POST(MbActivityType.CREATE, "post"),
+    SHARE(MbActivityType.ANNOUNCE, "share"),
+    STOP_FOLLOWING(MbActivityType.UNDO_FOLLOW, "stop-following"),
+    UNFAVORITE(MbActivityType.UNDO_LIKE, "unfavorite"),
+    UNKNOWN(MbActivityType.EMPTY, "unknown"),
+    UPDATE(MbActivityType.UPDATE, "update");
 
     final MbActivityType mbActivityType;
     final String code;
-    final boolean addPublic;
-    final boolean addFollowers;
 
-    ActivityType(MbActivityType mbActivityType, String code, boolean addPublic, boolean addFollowers) {
+    ActivityType(MbActivityType mbActivityType, String code) {
         this.mbActivityType = mbActivityType;
         this.code = code;
-        this.addPublic = addPublic;
-        this.addFollowers = addFollowers;
     }
 
     /** Returns the enum or UNKNOWN */

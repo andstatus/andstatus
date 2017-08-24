@@ -157,7 +157,7 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
             if (bodyView != null) {
                 assertTrue("Message #" + id + " '" + bodyView.getText() + "' contains '" + publicMessageText + "'",
                         String.valueOf(bodyView.getText()).contains(publicMessageText));
-                long storedPublic = MyQuery.msgIdToLongColumnValue(MsgTable.PUBLIC, id);
+                long storedPublic = MyQuery.msgIdToLongColumnValue(MsgTable.PRIVATE, id);
                 assertTrue("Message #" + id + " '" + bodyView.getText() + "' is public", storedPublic != 0);
                 msgCount++;
             }

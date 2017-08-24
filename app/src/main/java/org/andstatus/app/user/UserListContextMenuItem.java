@@ -54,8 +54,8 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
             MessageEditorData editorData = MessageEditorData.newEmpty(menu.getMyActor())
-                    .setRecipientId(menu.getViewItem().getUserId());
-            if (editorData.recipientId != 0) {
+                    .addRecipientId(menu.getViewItem().getUserId());
+            if (editorData.recipients.nonEmpty()) {
                 menu.menuContainer.getMessageEditor().startEditingMessage(editorData);
             }
         }

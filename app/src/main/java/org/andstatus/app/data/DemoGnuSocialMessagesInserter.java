@@ -23,13 +23,13 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbActivityType;
-import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -67,47 +67,50 @@ public class DemoGnuSocialMessagesInserter {
                 "http://www.large-icons.com/stock-icons/free-large-android/48x48/happy-robot.gif");
         MbUser author4 = userFromOidAndAvatar("4", "");
 
-        MbMessage minus1 = buildMessage(author2, "Older one message", null, null);
-        MbMessage selected = buildMessage(author1, "Selected message", minus1,
+        MbActivity minus1 = buildActivity(author2, "Older one message", null, null);
+        MbActivity selected = buildActivity(author1, "Selected message", minus1,
                 iteration == 1 ? DemoData.CONVERSATION_ENTRY_MESSAGE_OID : null);
-        MbMessage reply1 = buildMessage(author3, "Reply 1 to selected", selected, null);
-        MbMessage reply2 = buildMessage(author2, "Reply 2 to selected is public", selected, null);
-        addPublicMessage(reply2, true);
-        MbMessage reply3 = buildMessage(author1, "Reply 3 to selected by the same author", selected, null);
-        addMessage(selected);
-        addMessage(reply3);
-        addMessage(reply1);
-        addMessage(reply2);
-        MbMessage reply4 = buildMessage(author4, "Reply 4 to Reply 1, " + DemoData.PUBLIC_MESSAGE_TEXT + " other author", reply1, null);
-        addMessage(reply4);
-        addPublicMessage(reply4, false);
-        addMessage(buildMessage(author2, "Reply 5 to Reply 4", reply4, null));
-        addMessage(buildMessage(author3, "Reply 6 to Reply 4 - the second", reply4, null));
+        MbActivity reply1 = buildActivity(author3, "Reply 1 to selected", selected, null);
+        MbActivity reply2 = buildActivity(author2, "Reply 2 to selected is non-private", selected, null);
+        addPrivateMessage(reply2, TriState.FALSE);
+        MbActivity reply3 = buildActivity(author1, "Reply 3 to selected by the same author", selected, null);
+        addActivity(selected);
+        addActivity(reply3);
+        addActivity(reply1);
+        addActivity(reply2);
+        MbActivity reply4 = buildActivity(author4, "Reply 4 to Reply 1, " + DemoData.PUBLIC_MESSAGE_TEXT + " other author", reply1, null);
+        addActivity(reply4);
+        addPrivateMessage(reply4, TriState.TRUE);
+        addActivity(buildActivity(author2, "Reply 5 to Reply 4", reply4, null));
+        addActivity(buildActivity(author3, "Reply 6 to Reply 4 - the second", reply4, null));
 
-        MbMessage reply7 = buildMessage(author1, "Reply 7 to Reply 2 is about " 
+        MbActivity reply7 = buildActivity(author1, "Reply 7 to Reply 2 is about "
         + DemoData.PUBLIC_MESSAGE_TEXT + " and something else", reply2, null);
-        addPublicMessage(reply7, true);
+        addPrivateMessage(reply7, TriState.FALSE);
         
-        MbMessage reply8 = buildMessage(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
-        MbMessage reply9 = buildMessage(author2, "Reply 9 to Reply 7", reply7, null);
-        addMessage(reply9);
-        MbMessage reply10 = buildMessage(author3, "Reply 10 to Reply 8", reply8, null);
-        addMessage(reply10);
-        MbMessage reply11 = buildMessage(author2, "Reply 11 to Reply 7 with " + DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT + " text", reply7, null);
-        addPublicMessage(reply11, true);
+        MbActivity reply8 = buildActivity(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
+        MbActivity reply9 = buildActivity(author2, "Reply 9 to Reply 7", reply7, null);
+        addActivity(reply9);
+        MbActivity reply10 = buildActivity(author3, "Reply 10 to Reply 8", reply8, null);
+        addActivity(reply10);
+        MbActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7 with " + DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT + " text", reply7, null);
+        addPrivateMessage(reply11, TriState.FALSE);
 
-        MbMessage reply12 = buildMessage(author2, "Reply 12 to Reply 7 reblogged by author1", reply7, null);
+        MbActivity reply12 = buildActivity(author2, "Reply 12 to Reply 7 reblogged by author1", reply7, null);
         MbActivity activity = MbActivity.from(accountUser, MbActivityType.ANNOUNCE);
         activity.setActor(author1);
-        activity.setMessage(reply12);
+        activity.setMessage(reply12.getMessage());
         DemoMessageInserter.onActivityS(activity);
     }
-    
-    private void addPublicMessage(MbMessage message, boolean isPublic) {
-        message.setPublic(isPublic);
-        long id = addMessage(message);
-        long storedPublic = MyQuery.msgIdToLongColumnValue(MsgTable.PUBLIC, id);
-        assertTrue("Message is " + (isPublic ? "public" : "private" )+ ": " + message.getBody(), (isPublic == ( storedPublic != 0)));
+
+    private void addPrivateMessage(MbActivity activity, TriState isPrivate) {
+        activity.getMessage().setPrivate(isPrivate);
+        addActivity(activity);
+        TriState storedPrivate = TriState.fromId(MyQuery.msgIdToLongColumnValue(MsgTable.PRIVATE,
+                activity.getMessage().msgId));
+        assertEquals("Message is " + (isPrivate.equals(TriState.TRUE) ? "private" :
+                        isPrivate.equals(TriState.FALSE) ? "non private" : "") + ": " + activity.getMessage().getBody(),
+                isPrivate, storedPrivate);
     }
 
     private MbUser userFromOidAndAvatar(String userOid, @Nullable String avatarUrl) {
@@ -121,19 +124,20 @@ public class DemoGnuSocialMessagesInserter {
         return mbUser;
     }
     
-    private MbMessage buildMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
-        return new DemoMessageInserter(accountUser).buildMessage(author, body
+    private MbActivity buildActivity(MbUser author, String body, MbActivity inReplyToMessage, String messageOidIn) {
+        final MbActivity activity = new DemoMessageInserter(accountUser).buildActivity(author, body
                         + (inReplyToMessage != null ? " it" + iteration : ""),
-                inReplyToMessage, messageOidIn, DownloadStatus.LOADED)
-                .setConversationOid(conversationOid);
+                inReplyToMessage, messageOidIn, DownloadStatus.LOADED);
+        activity.getMessage().setConversationOid(conversationOid);
+        return activity;
     }
     
-    private long addMessage(MbMessage message) {
+    private void addActivity(MbActivity message) {
         DataUpdater di = new DataUpdater(new CommandExecutionContext(
                 CommandData.newOriginCommand(CommandEnum.EMPTY, origin)));
-        di.onActivity(message.update(accountUser));
-        assertTrue( "Message added " + message.oid, message.msgId != 0);
-        assertEquals("Conversation Oid", conversationOid, MyQuery.msgIdToConversationOid(message.msgId));
-        return message.msgId;
+        di.onActivity(message);
+        assertTrue( "Message added " + message, message.getMessage().msgId != 0);
+        assertEquals("Conversation Oid", conversationOid,
+                MyQuery.msgIdToConversationOid(message.getMessage().msgId));
     }
 }

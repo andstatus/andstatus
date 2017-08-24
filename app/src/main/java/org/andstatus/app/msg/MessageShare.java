@@ -27,6 +27,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
