@@ -322,11 +322,11 @@ public class ConnectionPumpio extends Connection {
         ConnectionAndUrl conu = getConnectionAndUrl(apiRoutine, userId);
         Uri sUri = Uri.parse(conu.url);
         Uri.Builder builder = sUri.buildUpon();
-        if (youngestPosition.isPresent()) {
+        if (youngestPosition.nonEmpty()) {
             // The "since" should point to the "Activity" on the timeline, not to the message
             // Otherwise we will always get "not found"
             builder.appendQueryParameter("since", youngestPosition.getPosition());
-        } else if (oldestPosition.isPresent()) {
+        } else if (oldestPosition.nonEmpty()) {
             builder.appendQueryParameter("before", oldestPosition.getPosition());
         }
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));

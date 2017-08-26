@@ -55,7 +55,7 @@ public class TimelineSyncTracker {
     /** A new Timeline Item was downloaded   */
     public void onNewMsg(TimelinePosition timelineItemPosition, long timelineItemDate) {
         if (timelineItemPosition != null 
-                && timelineItemPosition.isPresent()
+                && timelineItemPosition.nonEmpty()
                 && (timelineItemDate > 0)) {
             timeline.onNewMsg(timelineItemDate, timelineItemPosition.getPosition());
         }

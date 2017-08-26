@@ -47,7 +47,7 @@ public class DirectMessagesConversationLoader<T extends ConversationItem> extend
         long actorId = MyQuery.msgIdToLongColumnValue(ActivityTable.ACTOR_ID, oMsg.getMsgId());
         Audience recipients = Audience.fromMsgId(ma.getOriginId(), oMsg.getMsgId());
         String selection = getSelectionForActorAndRecipient("=" + Long.toString(actorId),
-                new SelectedUserIds(recipients).getSql());
+                new SelectedUserIds(recipients.getRecipients()).getSql());
         Uri uri = MatchedUri.getTimelineUri(
                 Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null));
         Cursor cursor = null;

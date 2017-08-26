@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId "org.andstatus.app"
-        minSdkVersion 21
+        minSdkVersion 18
         targetSdkVersion 25
         versionName "35.06"
         versionCode 232

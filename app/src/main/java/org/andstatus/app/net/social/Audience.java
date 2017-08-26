@@ -16,12 +16,17 @@
 
 package org.andstatus.app.net.social;
 
+import android.content.ContentValues;
+import android.database.SQLException;
+import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.SelectedUserIds;
 import org.andstatus.app.database.AudienceTable;
+import org.andstatus.app.util.MyLog;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -113,5 +118,46 @@ public class Audience {
             }
         }
         return false;
+    }
+
+    public void save(@NonNull MyContext myContext, long originId, long msgId) {
+        SQLiteDatabase db = myContext.getDatabase();
+        if (db == null || originId == 0 || msgId == 0) {
+            return;
+        }
+        Audience prevAudience = Audience.fromMsgId(originId, msgId);
+        Set<MbUser> toDelete = new HashSet<>();
+        Set<MbUser> toAdd = new HashSet<>();
+        for (MbUser user : prevAudience.getRecipients()) {
+            if (!getRecipients().contains(user)) {
+                toDelete.add(user);
+            }
+        }
+        for (MbUser user : getRecipients()) {
+            if (!prevAudience.getRecipients().contains(user)) {
+                if (user.userId == 0) {
+                    MyLog.w(this, "No userId for " + user);
+                } else {
+                    toAdd.add(user);
+                }
+            }
+        }
+        try {
+            if (!toDelete.isEmpty()) {
+                db.delete(AudienceTable.TABLE_NAME, AudienceTable.MSG_ID + "=" + msgId
+                        + " AND " + AudienceTable.USER_ID + new SelectedUserIds(toDelete).getSql(), null);
+            }
+            for (MbUser user : toAdd) {
+                ContentValues values = new ContentValues();
+                values.put(AudienceTable.MSG_ID, msgId);
+                values.put(AudienceTable.USER_ID, user.userId);
+                long rowId = db.insert(AudienceTable.TABLE_NAME, null, values);
+                if (rowId == -1) {
+                    throw new SQLException("Failed to insert " + user);
+                }
+            }
+        } catch (Exception e) {
+            MyLog.e(this, "save, msgId:" + msgId + "; " + recipients, e);
+        }
     }
 }

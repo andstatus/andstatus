@@ -288,6 +288,10 @@ public class MyQuery {
         return new Pair<>(0L, MbActivityType.EMPTY);
     }
 
+    public static List<MbUser> getStargazers(SQLiteDatabase db, long originId, long msgId) {
+        return msgIdToActors(db, originId, msgId, MbActivityType.LIKE, MbActivityType.UNDO_LIKE);
+    }
+
     public static List<MbUser> getRebloggers(SQLiteDatabase db, long originId, long msgId) {
         return msgIdToActors(db, originId, msgId, MbActivityType.ANNOUNCE, MbActivityType.UNDO_ANNOUNCE);
     }
@@ -509,6 +513,7 @@ public class MyQuery {
     public static long msgIdToLongColumnValue(String columnName, long systemId) {
         switch (columnName) {
             case ActivityTable.ACTOR_ID:
+            case ActivityTable.AUTHOR_ID:
             case ActivityTable.UPDATED_DATE:
                 return msgIdToLongActivityColumnValue(null, columnName, systemId);
             default:
@@ -542,7 +547,7 @@ public class MyQuery {
             default:
                 throw new IllegalArgumentException( method + "; Illegal column '" + columnNameIn + "'");
         }
-        return MyQuery.conditionToLongColumnValue(databaseIn, method, columnName, ActivityTable.TABLE_NAME,
+        return MyQuery.conditionToLongColumnValue(databaseIn, method, ActivityTable.TABLE_NAME, columnName,
                 ActivityTable.MSG_ID + "=" + msgId +  " AND " + condition
                         + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC LIMIT 1");
     }

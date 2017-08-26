@@ -26,10 +26,10 @@ import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -189,17 +189,20 @@ public class MbMessage extends AObject {
             return MyLog.formatKeyValue(this, "EMPTY");
         }
         StringBuilder builder = new StringBuilder();
+        if (isEmpty()) {
+            builder.append("empty,");
+        }
         if(msgId != 0) {
-            builder.append("msgId:" + msgId + ",");
+            builder.append("id:" + msgId + ",");
         }
         builder.append("status:" + status + ",");
-        if(!TextUtils.isEmpty(body)) {
+        if(StringUtils.nonEmpty(body)) {
             builder.append("body:'" + body + "',");
         }
         if(getInReplyTo().nonEmpty()) {
             builder.append("inReplyTo:" + getInReplyTo() + ",");
         }
-        if(!recipients.isEmpty()) {
+        if(recipients.nonEmpty()) {
             builder.append("recipients:" + recipients + ",");
         }
         if (!attachments.isEmpty()) {
@@ -222,21 +225,21 @@ public class MbMessage extends AObject {
         if(!TextUtils.isEmpty(via)) {
             builder.append("via:'" + via + "',");
         }
-        builder.append("updated" + new Date(updatedDate) + ",");
+        builder.append("updated:" + MyLog.debugFormatOfDate(updatedDate) + ",");
         if (sentDate != updatedDate) {
-            builder.append("sent" + new Date(sentDate) + ",");
+            builder.append("sent:" + MyLog.debugFormatOfDate(sentDate) + ",");
         }
-        if(favorited != TriState.UNKNOWN) {
-            builder.append("favorited:" + favorited + ",");
+        if(favorited.known()) {
+            builder.append("favorited:" + favorited.toBoolean(false) + ",");
         }
         if(isReblogged()) {
             builder.append("reblogged,");
         }
-        if(subscribedByMe != TriState.UNKNOWN) {
-            builder.append("subscribedByMe:" + subscribedByMe + ",");
+        if(subscribedByMe.known()) {
+            builder.append("subscribedByMe:" + subscribedByMe.toBoolean(false) + ",");
         }
-        if(favoritedByMe != TriState.UNKNOWN) {
-            builder.append("favoritedByMe:" + favoritedByMe + ",");
+        if(favoritedByMe.known()) {
+            builder.append("favoritedByMe:" + favoritedByMe.toBoolean(false) + ",");
         }
         builder.append("originId:" + originId + ",");
         return MyLog.formatKeyValue(this, builder.toString());
@@ -328,7 +331,7 @@ public class MbMessage extends AObject {
     }
 
     @NonNull
-    public Audience recipients() {
+    public Audience audience() {
         return recipients;
     }
 

@@ -45,6 +45,7 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 
@@ -77,9 +78,6 @@ public class DataUpdater {
         return onActivity(mbActivity, true);
     }
 
-    /**
-     * TODO: parse Actor, ActivityType etc...
-     */
     public MbActivity onActivity(MbActivity activity, boolean saveLum) {
         if (activity == null || activity.isEmpty()) {
             return activity;
@@ -97,10 +95,10 @@ public class DataUpdater {
             default:
                 throw new IllegalArgumentException("Unexpected activity: " + activity);
         }
+        activity.save(execContext.getMyContext());
         if (saveLum) {
             saveLum();
         }
-        activity.save(execContext.getMyContext());
         return activity;
     }
 
@@ -171,10 +169,10 @@ public class DataUpdater {
 
             activity.getMessage().addRecipientsFromBodyText(activity.getActor());
             updateInReplyTo(activity, values);
-            for ( MbUser mbUser : message.recipients().getRecipients()) {
+            for ( MbUser mbUser : message.audience().getRecipients()) {
                 updateUser(mbUser.update(activity.accountUser, activity.getActor()));
             }
-            if (activity.getMessage().recipients().hasMyAccount(execContext.getMyContext())) {
+            if (activity.getMessage().audience().hasMyAccount(execContext.getMyContext())) {
                 activity.getMessage().setMentioned(TriState.TRUE);
                 values.put(MsgTable.MENTIONED, activity.getMessage().getMentioned().id);
             }
@@ -228,6 +226,7 @@ public class DataUpdater {
                 Uri msgUri = MatchedUri.getMsgUri(me.getUserId(), message.msgId);
                 execContext.getContext().getContentResolver().update(msgUri, values, null, null);
             }
+            message.audience().save(execContext.getMyContext(), message.originId, message.msgId);
 
             TriState favoritedByActor = activity.type.equals(MbActivityType.LIKE) ? TriState.TRUE :
                     activity.type.equals(MbActivityType.UNDO_LIKE) ? TriState.FALSE : TriState.UNKNOWN;
@@ -280,15 +279,12 @@ public class DataUpdater {
 
     private void updateInReplyTo(MbActivity activity, ContentValues values) {
         final MbActivity inReply = activity.getMessage().getInReplyTo();
-        if (inReply.getMessage().nonEmpty()) {
+        if (StringUtils.nonEmpty(inReply.getMessage().oid)) {
             if (TextUtils.isEmpty(inReply.getMessage().conversationOid)) {
                 inReply.getMessage().setConversationOid(activity.getMessage().conversationOid);
             }
-            inReply.getMessage().setSubscribedByMe(TriState.FALSE);
-            // Type of the timeline is ALL meaning that message does not belong to this timeline
-            DataUpdater di = new DataUpdater(execContext);
-            // If the Msg is a Reply to another message
-            di.updateMessage(inReply, true);
+            inReply.getMessage().setSubscribedByMe(TriState.UNKNOWN);
+            new DataUpdater(execContext).onActivity(inReply);
             if (inReply.getMessage().msgId != 0) {
                 activity.getMessage().addRecipient(inReply.getAuthor());
                 values.put(MsgTable.IN_REPLY_TO_MSG_ID, inReply.getMessage().msgId);
@@ -317,10 +313,10 @@ public class DataUpdater {
         if (favAndType.second.equals(MbActivityType.EMPTY)) {
             MbActivity favoriting = MbActivity.from(activity.accountUser,
                     favoritedByMe.equals(TriState.TRUE) ? MbActivityType.LIKE : MbActivityType.UNDO_LIKE );
-            favoriting.setTempOid();
-            favoriting.setUpdatedDate(message.getUpdatedDate());
             favoriting.setActor(activity.accountUser);
             favoriting.setMessage(message);
+            favoriting.setUpdatedDate(message.getUpdatedDate());
+            favoriting.setTempTimelinePosition();
             new DataUpdater(execContext).onActivity(favoriting);
         } else {
             MyProvider.deleteActivity(execContext.getMyContext(), favAndType.first, message.msgId, false);
@@ -369,17 +365,17 @@ public class DataUpdater {
             }
         }
 
-        TriState followedByMe;
+        TriState followedByMe = TriState.UNKNOWN;
         TriState followedByActor = activity.type.equals(MbActivityType.FOLLOW) ? TriState.TRUE :
                 activity.type.equals(MbActivityType.UNDO_FOLLOW) ? TriState.FALSE : TriState.UNKNOWN;
-        if (activity.getActor().userId == me.getUserId()) {
-            followedByMe = followedByActor;
-        } else {
+        if (mbUser.followedByMe.known()) {
             followedByMe = mbUser.followedByMe;
+        } else if (activity.getActor().userId == me.getUserId()) {
+            followedByMe = followedByActor;
         }
 
         long userId = mbUser.lookupUserId();
-        if (userId != 0 && mbUser.isPartiallyDefined() && followedByMe.equals(TriState.UNKNOWN)) {
+        if (userId != 0 && mbUser.isPartiallyDefined() && followedByMe.unknown()) {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, method + "; Skipping partially defined: " + mbUser.toString());
             }
@@ -450,7 +446,7 @@ public class DataUpdater {
                 values.put(UserTable.UPDATED_DATE, mbUser.getUpdatedDate());
             }
 
-            if (followedByMe != TriState.UNKNOWN) {
+            if (followedByMe.known()) {
                 values.put(FriendshipTable.FOLLOWED, followedByMe.toBoolean(false));
                 MyLog.v(this, "User '" + me.getAccountName() + "' "
                                 + (followedByMe.toBoolean(false) ? "follows" : "stop following ")

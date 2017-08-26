@@ -682,4 +682,9 @@ public class MyLog {
             }
         }
     }
+
+    @NonNull
+    public static String debugFormatOfDate(long date) {
+        return date == 0 ? "EMPTY" : new Date(date).toString();
+    }
 }

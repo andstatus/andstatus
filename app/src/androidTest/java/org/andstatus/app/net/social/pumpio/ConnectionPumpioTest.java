@@ -226,13 +226,13 @@ public class ConnectionPumpioTest {
         assertEquals("Favorited by me", TriState.UNKNOWN, mbMessage.getFavoritedByMe());
         assertEquals("Not favorited by someone else", TriState.TRUE, mbMessage.getFavorited());
         assertEquals("Actor -someone else", "acct:jpope@io.jpope.org" , actor.oid);
-        assertTrue("Does not have a recipient", mbMessage.recipients().isEmpty());
+        assertTrue("Does not have a recipient", mbMessage.audience().isEmpty());
         assertEquals("Url of the message", "https://fmrl.me/lostson/note/Dp-njbPQSiOfdclSOuAuFw", mbMessage.url);
 
         ind++;
         mbMessage = timeline.get(ind).getMessage();
-        assertTrue("Have a recipient", mbMessage.recipients().nonEmpty());
-        assertEquals("Directed to yvolk", "acct:yvolk@identi.ca" , mbMessage.recipients().getFirst().oid);
+        assertTrue("Have a recipient", mbMessage.audience().nonEmpty());
+        assertEquals("Directed to yvolk", "acct:yvolk@identi.ca" , mbMessage.audience().getFirst().oid);
 
         ind++;
         mbMessage = timeline.get(ind).getMessage();

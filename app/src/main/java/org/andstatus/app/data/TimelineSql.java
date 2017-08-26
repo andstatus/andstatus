@@ -153,7 +153,6 @@ public class TimelineSql {
                 break;
             case NOTIFICATIONS:
                 msgIsRequired = false;
-                linkedUserField = ActivityTable.ACCOUNT_ID;
                 break;
             default:
                 break;
@@ -163,7 +162,7 @@ public class TimelineSql {
             if (timeline.getTimelineType().isAtOrigin() && !timeline.isCombined()) {
                 msgWhere.append(MsgTable.ORIGIN_ID + "=" + timeline.getOrigin().getId());
             }
-            String activityTable = "SELECT " + BaseColumns._ID + " AS " + ActivityTable.ACTIVITY_ID + ", "
+            String activityTable = "(SELECT " + BaseColumns._ID + ", "
                     + ActivityTable.INS_DATE + ", "
                     + (tables.contains(UserTable.LINKED_USER_ID) ? ""
                         : linkedUserField + " AS " + UserTable.LINKED_USER_ID + ", ")
@@ -176,7 +175,7 @@ public class TimelineSql {
                     + "(SELECT * FROM (" + MsgTable.TABLE_NAME + ")" + msgWhere.getWhere() + ")"
                         + " AS " + ProjectionMap.MSG_TABLE_ALIAS
                     + " ON (" + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID + "="
-                        + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.MSG_ID;
+                        + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.MSG_ID + ")";
             tables = tables.replace(msgTablePlaceholder, msgTable);
         }
 

@@ -83,10 +83,6 @@ public class MessageForAccount {
         return ma;
     }
 
-    public String getBodyTrimmed() {
-        return I18n.trimTextAt(MyHtml.fromHtml(body), 80).toString();
-    }
-
     private void getData() {
         // Get a database row for the currently selected item
         Uri uri = MatchedUri.getTimelineItemUri(
@@ -113,13 +109,14 @@ public class MessageForAccount {
                 status = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
                 authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
                 isAuthor = (userId == authorId);
+                imageFilename = DbUtils.getString(cursor, DownloadTable.IMAGE_FILE_NAME);
+                body = DbUtils.getString(cursor, MsgTable.BODY);
+                isPrivate = DbUtils.getTriState(cursor, MsgTable.PRIVATE);
+
                 senderId = DbUtils.getLong(cursor, ActivityTable.ACTOR_ID);
                 isSender = (userId == senderId);
                 isSenderMySucceededAccount = MyContextHolder.get().persistentAccounts().fromUserId(senderId).isValidAndSucceeded();
                 recipients = Audience.fromMsgId(origin.getId(), msgId);
-                imageFilename = DbUtils.getString(cursor, DownloadTable.IMAGE_FILE_NAME);
-                body = DbUtils.getString(cursor, MsgTable.BODY);
-                isPrivate = DbUtils.getTriState(cursor, MsgTable.PRIVATE);
                 isRecipient = recipients.has(userId);
                 long linkedUserId = DbUtils.getLong(cursor, UserTable.LINKED_USER_ID);
                 if (userId == linkedUserId) {
@@ -159,5 +156,9 @@ public class MessageForAccount {
 
     public boolean isSenderMySucceededAccount() {
         return isSenderMySucceededAccount;
+    }
+
+    public String getBodyTrimmed() {
+        return I18n.trimTextAt(MyHtml.fromHtml(body), 80).toString();
     }
 }

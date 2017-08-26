@@ -183,7 +183,8 @@ public class MessageEditorData {
     }
 
     public void save(Uri imageUriToSave) {
-        MbActivity activity = MbActivity.newPartialMessage(getMyAccount().toPartialUser(), "", status);
+        MbActivity activity = MbActivity.newPartialMessage(getMyAccount().toPartialUser(), "",
+                System.currentTimeMillis(), status);
         MbMessage message = activity.getMessage();
         message.msgId = getMsgId();
         message.setBody(body);

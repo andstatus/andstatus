@@ -324,10 +324,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         }
         final String method = "messageFromJson";
         String oid = jso.optString("id");
-        MbActivity activity = newLoadedUpdateActivity(oid);
+        MbActivity activity = newLoadedUpdateActivity(oid, dateFromJson(jso, "created_at"));
         try {
-            activity.setUpdatedDate(dateFromJson(jso, "created_at"));
-
             JSONObject actor;
             if (jso.has("account")) {
                 actor = jso.getJSONObject("account");

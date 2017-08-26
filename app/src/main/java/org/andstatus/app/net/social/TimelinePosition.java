@@ -44,11 +44,15 @@ public class TimelinePosition {
         return position;
     }
 
+    public boolean isTemp() {
+        return nonEmpty() && position.startsWith(MbUser.TEMP_OID_PREFIX);
+    }
+
     public boolean isEmpty() {
         return TextUtils.isEmpty(position);
     }
 
-    public boolean isPresent() {
+    public boolean nonEmpty() {
         return !isEmpty();
     }
 

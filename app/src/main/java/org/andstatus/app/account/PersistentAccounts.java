@@ -22,6 +22,7 @@ import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.Permissions;
+import org.andstatus.app.util.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -169,7 +170,7 @@ public class PersistentAccounts {
     public MyAccount fromUser(@NonNull MbUser user) {
         for (MyAccount persistentAccount : mAccounts) {
             if (persistentAccount.getOriginId() == user.originId) {
-                if (TextUtils.isEmpty(user.oid)) {
+                if (StringUtils.nonEmpty(user.oid)) {
                     if (persistentAccount.getUserOid().equals(user.oid)) {
                         return persistentAccount;
                     }

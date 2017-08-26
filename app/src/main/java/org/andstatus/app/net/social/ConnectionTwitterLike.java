@@ -267,12 +267,9 @@ public abstract class ConnectionTwitterLike extends Connection {
     }
 
     @NonNull
-    protected MbActivity newLoadedUpdateActivity(String oid) throws ConnectionException {
-        MbActivity activity = MbActivity.from(data.getPartialAccountUser(), MbActivityType.UPDATE );
-        activity.setTimelinePosition(oid);
-        MbMessage message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid, DownloadStatus.LOADED);
-        activity.setMessage(message);
-        return activity;
+    protected MbActivity newLoadedUpdateActivity(String oid, long updatedDate) throws ConnectionException {
+        return MbActivity.newPartialMessage(data.getPartialAccountUser(), oid, updatedDate,
+                DownloadStatus.LOADED );
     }
 
     MbActivity rebloggedMessageFromJson(JSONObject jso) throws ConnectionException {
@@ -291,8 +288,7 @@ public abstract class ConnectionTwitterLike extends Connection {
                 // This is for the Status.net
                 oid = jso.optString("id");
             }
-            activity = newLoadedUpdateActivity(oid);
-            activity.setUpdatedDate(dateFromJson(jso, "created_at"));
+            activity = newLoadedUpdateActivity(oid, dateFromJson(jso, "created_at"));
 
             MbUser author = MbUser.EMPTY;
             if (jso.has("sender")) {
@@ -346,7 +342,7 @@ public abstract class ConnectionTwitterLike extends Connection {
                 if (!SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
                     // Construct Related message from available info
                     MbActivity inReplyTo = MbActivity.newPartialMessage(data.getPartialAccountUser(),
-                            inReplyToMessageOid);
+                            inReplyToMessageOid, message.getUpdatedDate() - 60, DownloadStatus.UNKNOWN);
                     MbUser inReplyToUser = MbUser.fromOriginAndUserOid(data.getOriginId(), inReplyToUserOid);
                     if (jso.has("in_reply_to_screen_name")) {
                         inReplyToUser.setUserName(jso.getString("in_reply_to_screen_name"));
@@ -445,9 +441,9 @@ public abstract class ConnectionTwitterLike extends Connection {
     }
 
     protected void appendPositionParameters(Uri.Builder builder, TimelinePosition youngest, TimelinePosition oldest) {
-        if (youngest.isPresent()) {
+        if (youngest.nonEmpty()) {
             builder.appendQueryParameter("since_id", youngest.getPosition());
-        } else if (oldest.isPresent()) {
+        } else if (oldest.nonEmpty()) {
             String maxIdString = oldest.getPosition();
             try {
                 // Subtract 1, as advised at https://dev.twitter.com/rest/public/timelines

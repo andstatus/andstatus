@@ -201,8 +201,8 @@ public class DemoConversationInserter {
         DemoMessageInserter.onActivityS(activity);
     }
 
-    public static void assertIfUserIsMyFriend(MbUser user, boolean isFriend, MyAccount ma) {
+    public static void assertIfUserIsMyFriend(MbUser user, boolean isFriendOf, MyAccount ma) {
         Set<Long> friendsIds = MyQuery.getFriendsIds(ma.getUserId());
-        assertEquals("User " + user + " is a friend of " + ma, isFriend, friendsIds.contains(user.userId));
+        assertEquals("User " + user + " is a friend of " + ma, isFriendOf, friendsIds.contains(user.userId));
     }
 }

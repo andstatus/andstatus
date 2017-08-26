@@ -20,11 +20,11 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -52,8 +52,8 @@ public class SelectedUserIds {
         }
     }
 
-    public SelectedUserIds(@NonNull Audience audience) {
-        for (MbUser user : audience.getRecipients()) {
+    public SelectedUserIds(@NonNull Collection<MbUser> users) {
+        for (MbUser user : users) {
             ids.add(user.userId);
         }
     }
