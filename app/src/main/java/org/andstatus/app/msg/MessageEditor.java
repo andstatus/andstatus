@@ -43,7 +43,6 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.os.AsyncTaskLauncher;
@@ -77,16 +76,16 @@ public class MessageEditor {
     public MessageEditor(MessageEditorContainer editorContainer) {
         this.editorContainer = editorContainer;
         editorView = getEditorView();
-        mCharsLeftText = (TextView) editorView.findViewById(R.id.messageEditCharsLeftTextView);
+        mCharsLeftText = editorView.findViewById(R.id.messageEditCharsLeftTextView);
         setupEditText();
         setupFullscreenToggle();
         hide();
     }
 
     private ViewGroup getEditorView() {
-        ViewGroup editorView = (ViewGroup) getActivity().findViewById(R.id.message_editor);
+        ViewGroup editorView = getActivity().findViewById(R.id.message_editor);
         if (editorView == null) {
-            ViewGroup layoutParent = (ViewGroup) getActivity().findViewById(R.id.relative_list_parent);
+            ViewGroup layoutParent = getActivity().findViewById(R.id.relative_list_parent);
             LayoutInflater inflater = LayoutInflater.from(getActivity());
             editorView = (ViewGroup) inflater.inflate(R.layout.message_editor, null);
 
@@ -100,7 +99,7 @@ public class MessageEditor {
     }
 
     private void setupEditText() {
-        bodyView = (MessageEditorBodyView) editorView.findViewById(R.id.messageBodyEditText);
+        bodyView = editorView.findViewById(R.id.messageBodyEditText);
         bodyView.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {

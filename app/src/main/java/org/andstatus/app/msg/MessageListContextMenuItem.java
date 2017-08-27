@@ -189,7 +189,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
             copyMessageText(editorData);
         }
     },
-    SENDER_MESSAGES(true) {
+    ACTOR_MESSAGES(true) {
         @Override
         MessageEditorData executeAsync(MessageContextMenu menu) {
             return fillUserId(menu.getMyActor(), menu.getMsgId(), ActivityTable.ACTOR_ID);
@@ -219,7 +219,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
             }
         }
     },
-    FOLLOW_SENDER(true) {
+    FOLLOW_ACTOR(true) {
         @Override
         MessageEditorData executeAsync(MessageContextMenu menu) {
             return fillUserId(menu.getMyActor(), menu.getMsgId(), ActivityTable.ACTOR_ID);
@@ -230,7 +230,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
             sendUserCommand(CommandEnum.FOLLOW_USER, editorData);
         }
     },
-    STOP_FOLLOWING_SENDER(true) {
+    STOP_FOLLOWING_ACTOR(true) {
         @Override
         MessageEditorData executeAsync(MessageContextMenu menu) {
             return fillUserId(menu.getMyActor(), menu.getMsgId(), ActivityTable.ACTOR_ID);

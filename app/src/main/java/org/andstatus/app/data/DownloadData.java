@@ -108,9 +108,7 @@ public class DownloadData {
             softError = true;
             return;
         }
-        Cursor cursor = null;
-        try {
-            cursor = db.rawQuery(sql, null);
+        try (Cursor cursor = db.rawQuery(sql, null)) {
             status = DownloadStatus.ABSENT;
             if (cursor.moveToNext()) {
                 status = DownloadStatus.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_STATUS));
@@ -134,8 +132,6 @@ public class DownloadData {
                     uri = UriUtils.fromString(DbUtils.getString(cursor, DownloadTable.URI));
                 }
             }
-        } finally {
-            DbUtils.closeSilently(cursor);
         }
     }
 

@@ -254,7 +254,7 @@ public class AccountSettingsActivity extends MyActivity {
     }
 
     private void onOriginSelected(int resultCode, Intent data) {
-        Origin origin = Origin.getEmpty();
+        Origin origin = Origin.EMPTY;
         if (resultCode == RESULT_OK) {
             origin = MyContextHolder.get().persistentOrigins()
                     .fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key));

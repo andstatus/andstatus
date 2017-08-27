@@ -51,7 +51,7 @@ public class MessageEditorDataTest {
                 .setBody("Some text here " + DemoData.TESTRUN_UID);
         assertFalse(data.toString(), data.body.contains("@"));
         data.addMentionsToText();
-        assertEquals(recipientId, data.recipients);
+        assertEquals(recipientId, data.recipients.getFirst().userId);
         assertMentionedUser(data, inReplyToUserId, true);
         assertMentionedUser(data, memberUserId, replyAll);
         assertEquals(data.toString(), Uri.EMPTY, data.getMediaUri());

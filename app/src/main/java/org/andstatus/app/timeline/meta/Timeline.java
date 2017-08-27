@@ -354,14 +354,14 @@ public class Timeline implements Comparable<Timeline> {
 
     @NonNull
     private Origin fixedOrigin(MyContext myContext, TimelineType timelineType, MyAccount myAccountIn, long userId, Origin origin) {
-        Origin fixedOrigin = origin == null ? Origin.getEmpty() : origin;
+        Origin fixedOrigin = origin == null ? Origin.EMPTY : origin;
         MyAccount ma = myContext.persistentAccounts().fromUserId(userId);
         if (!ma.isValid() && myAccountIn != null) {
             ma = myAccountIn;
         }
         if (ma.isValid()) {
             if (fixedOrigin.isValid() && fixedOrigin != ma.getOrigin()) {
-                fixedOrigin = Origin.getEmpty();
+                fixedOrigin = Origin.EMPTY;
             }
             if (timelineType.isAtOrigin() || !fixedOrigin.isValid()) {
                 fixedOrigin = ma.getOrigin();
@@ -505,7 +505,7 @@ public class Timeline implements Comparable<Timeline> {
         Origin origin;
         MyAccount myAccount;
         if (isCombined) {
-            origin = Origin.getEmpty();
+            origin = Origin.EMPTY;
             myAccount = MyAccount.EMPTY;
         } else {
             origin = myContext.persistentAccounts().getCurrentAccount().getOrigin();
@@ -525,7 +525,7 @@ public class Timeline implements Comparable<Timeline> {
             userId = 0;
         }
         if (!this.myAccount.getOrigin().equals(myAccount.getOrigin())) {
-            origin = Origin.getEmpty();
+            origin = Origin.EMPTY;
         }
         return getTimeline(myContext, 0, getTimelineType(), myAccount, userId, origin, searchQuery);
     }

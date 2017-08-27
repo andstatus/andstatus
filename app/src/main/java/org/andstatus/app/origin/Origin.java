@@ -53,6 +53,7 @@ import java.net.URL;
  */
 public class Origin {
     public static final int TEXT_LIMIT_FOR_WEBFINGER_ID = 200;
+    public static Origin EMPTY = newEmpty(OriginType.UNKNOWN);
 
     private static final String TAG = Origin.class.getSimpleName();
 
@@ -322,11 +323,7 @@ public class Origin {
         return count != 0;
     }
 
-    public static Origin getEmpty() {
-        return getEmpty(OriginType.UNKNOWN);
-    }
-
-    private static Origin getEmpty(OriginType originType) {
+    private static Origin newEmpty(OriginType originType) {
         Origin origin;
         try {
             origin = originType.getOriginClass().newInstance();
@@ -348,6 +345,9 @@ public class Origin {
 
     @Override
     public String toString() {
+        if (this ==  EMPTY) {
+            return "Origin:EMPTY";
+        }
         return "Origin:{" + (isValid() ? "" : "(invalid) ") + "name:" + getName()
                 + ", type:" + originType
                 + (getUrl() != null ? ", url:" + getUrl() : "" )
@@ -397,7 +397,7 @@ public class Origin {
         }
 
         public Builder(OriginType originType) {
-            origin = getEmpty(originType);
+            origin = newEmpty(originType);
         }
 
         /**
@@ -406,7 +406,7 @@ public class Origin {
         public Builder(Cursor cursor) {
             OriginType originType1 = OriginType.fromId(
                     DbUtils.getLong(cursor, OriginTable.ORIGIN_TYPE_ID));
-            origin = getEmpty(originType1);
+            origin = newEmpty(originType1);
             origin.id = DbUtils.getLong(cursor, OriginTable._ID);
             origin.name = DbUtils.getString(cursor, OriginTable.ORIGIN_NAME);
             setHostOrUrl(DbUtils.getString(cursor, OriginTable.ORIGIN_URL));
@@ -439,7 +439,7 @@ public class Origin {
         }
         
         public Builder(Origin original) {
-            origin = getEmpty(original.originType);
+            origin = newEmpty(original.originType);
             origin.id = original.id;
             origin.name = original.name;
             setUrl(original.url);

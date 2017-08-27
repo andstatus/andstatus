@@ -143,7 +143,7 @@ public class MessageEditorData {
         MessageEditorData data;
         if (msgId != 0) {
             MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(
-                    MyQuery.msgIdToLongColumnValue(ActivityTable.ACTOR_ID, msgId));
+                    MyQuery.msgIdToLongColumnValue(MsgTable.AUTHOR_ID, msgId));
             data = new MessageEditorData(ma);
             data.msgId = msgId;
             data.setBody(MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId));

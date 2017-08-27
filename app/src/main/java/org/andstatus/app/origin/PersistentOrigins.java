@@ -70,7 +70,7 @@ public class PersistentOrigins {
     }
 
     /**
-     * @return Origin of UNKNOWN type if not found
+     * @return EMPTY Origin if not found
      */
     @NonNull
     public Origin fromId(long originId) {
@@ -79,7 +79,7 @@ public class PersistentOrigins {
                 return origin;
             }
         }
-        return Origin.getEmpty();
+        return Origin.EMPTY;
     }
     
     /**
@@ -91,7 +91,7 @@ public class PersistentOrigins {
             origin = mOrigins.get(originName);
         }
         if (origin == null) {
-            origin = Origin.getEmpty();
+            origin = Origin.EMPTY;
         }
         return origin;
     }
@@ -105,7 +105,7 @@ public class PersistentOrigins {
                 return origin;
             }
         }
-        return Origin.getEmpty();
+        return Origin.EMPTY;
     }
 
     public Collection<Origin> collection() {

@@ -17,23 +17,20 @@
 package org.andstatus.app.data;
 
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
+import android.support.v4.util.Pair;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.ActivityTable;
-import org.andstatus.app.database.DownloadTable;
-import org.andstatus.app.database.FriendshipTable;
 import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
 /**
@@ -41,33 +38,34 @@ import org.andstatus.app.util.TriState;
  * @author yvolk@yurivolkov.com
  */
 public class MessageForAccount {
-    public static final MessageForAccount EMPTY = new MessageForAccount(0, 0, MyAccount.EMPTY);
-    public final long msgId;
+    public static final MessageForAccount EMPTY = new MessageForAccount(0, 0, 0, MyAccount.EMPTY);
     @NonNull
     public final Origin origin;
+    private final long activityId;
+    public final long msgId;
     public DownloadStatus status = DownloadStatus.UNKNOWN;
     private String body = "";
     public long authorId = 0;
-    public long senderId = 0;
-    private boolean isSenderMySucceededAccount = false;
-    Audience recipients = new Audience();
-    public TriState isPrivate = TriState.UNKNOWN;
+    public long actorId = 0;
+    private boolean isAuthorMySucceededMyAccount = false;
+    TriState isPrivate = TriState.UNKNOWN;
     public String imageFilename = null;
     @NonNull
     private final MyAccount myAccount;
     private final long userId;
     public boolean isSubscribed = false;
     public boolean isAuthor = false;
-    public boolean isSender = false;
-    public boolean isRecipient = false;
+    public boolean isActor = false;
+    private boolean isRecipient = false;
     public boolean favorited = false;
     public boolean reblogged = false;
-    public boolean senderFollowed = false;
+    public boolean actorFollowed = false;
     public boolean authorFollowed = false;
 
-    public MessageForAccount(long msgId, long originId, MyAccount myAccount) {
-        this.msgId = msgId;
+    public MessageForAccount(long originId, long activityId, long msgId, MyAccount myAccount) {
         this.origin = MyContextHolder.get().persistentOrigins().fromId(originId);
+        this.activityId = activityId;
+        this.msgId = msgId;
         this.myAccount = calculateMyAccount(origin, myAccount);
         this.userId = this.myAccount.getUserId();
         if (this.myAccount.isValid()) {
@@ -77,59 +75,54 @@ public class MessageForAccount {
 
     @NonNull
     private MyAccount calculateMyAccount(Origin origin, MyAccount ma) {
-        if (ma == null || !ma.getOrigin().equals(origin) || !ma.isValid()) {
-            return MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(origin);
+        if (ma == null || !origin.isValid() || !ma.getOrigin().equals(origin) || !ma.isValid()) {
+            return MyAccount.EMPTY;
         }
         return ma;
     }
 
     private void getData() {
-        // Get a database row for the currently selected item
-        Uri uri = MatchedUri.getTimelineItemUri(
-                Timeline.getTimeline(TimelineType.MESSAGES_TO_ACT, myAccount, 0, null), msgId);
-        Cursor cursor = null;
-        try {
-            cursor = MyContextHolder.get().context().getContentResolver().query(uri, new String[]{
-                    BaseColumns._ID,
-                    MsgTable.MSG_STATUS,
-                    MsgTable.BODY,
-                    ActivityTable.ACTOR_ID,
-                    MsgTable.AUTHOR_ID,
-                    MsgTable.IN_REPLY_TO_USER_ID,
-                    UserTable.LINKED_USER_ID,
-                    MsgTable.SUBSCRIBED,
-                    MsgTable.FAVORITED,
-                    MsgTable.REBLOGGED,
-                    MsgTable.PRIVATE,
-                    FriendshipTable.SENDER_FOLLOWED,
-                    FriendshipTable.AUTHOR_FOLLOWED,
-                    DownloadTable.IMAGE_FILE_NAME
-            }, null, null, null);
-            while (cursor != null && cursor.moveToNext()) {
+        final String method = "getData";
+        String sql = "SELECT " + MsgTable.MSG_STATUS + ", "
+                + MsgTable.BODY + ", "
+                + MsgTable.AUTHOR_ID + ","
+                + MsgTable.PRIVATE + ","
+                + MsgTable.SUBSCRIBED
+                + " FROM " + MsgTable.TABLE_NAME
+                + " WHERE " + MsgTable._ID + "=" + msgId;
+        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        if (db == null) {
+            MyLog.v(this, method + "; Database is null");
+            return;
+        }
+        try (Cursor cursor = db.rawQuery(sql, null)) {
+            if (cursor.moveToNext()) {
                 status = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
+                body = DbUtils.getString(cursor, MsgTable.BODY);
                 authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
                 isAuthor = (userId == authorId);
-                imageFilename = DbUtils.getString(cursor, DownloadTable.IMAGE_FILE_NAME);
-                body = DbUtils.getString(cursor, MsgTable.BODY);
+                isAuthorMySucceededMyAccount = isAuthor && myAccount.isValidAndSucceeded();
                 isPrivate = DbUtils.getTriState(cursor, MsgTable.PRIVATE);
-
-                senderId = DbUtils.getLong(cursor, ActivityTable.ACTOR_ID);
-                isSender = (userId == senderId);
-                isSenderMySucceededAccount = MyContextHolder.get().persistentAccounts().fromUserId(senderId).isValidAndSucceeded();
-                recipients = Audience.fromMsgId(origin.getId(), msgId);
-                isRecipient = recipients.has(userId);
-                long linkedUserId = DbUtils.getLong(cursor, UserTable.LINKED_USER_ID);
-                if (userId == linkedUserId) {
-                    isSubscribed = DbUtils.getTriState(cursor, MsgTable.SUBSCRIBED).toBoolean(false);
-                    favorited = DbUtils.getTriState(cursor, MsgTable.FAVORITED).toBoolean(false);
-                    reblogged = DbUtils.getTriState(cursor, MsgTable.REBLOGGED).toBoolean(false);
-                    senderFollowed = DbUtils.getBoolean(cursor, FriendshipTable.SENDER_FOLLOWED);
-                    authorFollowed = DbUtils.getBoolean(cursor, FriendshipTable.AUTHOR_FOLLOWED);
-                }
+                isSubscribed = DbUtils.getTriState(cursor, MsgTable.SUBSCRIBED).toBoolean(false);
             }
-        } finally {
-            DbUtils.closeSilently(cursor);
+        } catch (Exception e) {
+            MyLog.i(this, method + "; SQL:'" + sql + "'", e);
         }
+        Audience recipients = Audience.fromMsgId(origin.getId(), msgId);
+        isRecipient = recipients.has(userId);
+        DownloadData downloadData = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY);
+        imageFilename = downloadData.getStatus() == DownloadStatus.LOADED ? downloadData.getFilename() : "";
+        Pair<Boolean, Boolean> favoritedAndReblogged = MyQuery.favoritedAndReblogged(db, msgId, userId);
+        favorited = favoritedAndReblogged.first;
+        reblogged = favoritedAndReblogged.second;
+        authorFollowed = MyQuery.isFollowing(userId, authorId);
+        if (activityId == 0) {
+            actorId = authorId;
+        } else {
+            actorId = MyQuery.idToLongColumnValue(db, ActivityTable.TABLE_NAME, ActivityTable.ACTOR_ID, activityId);
+        }
+        isActor = actorId == userId;
+        actorFollowed = !isActor && (actorId == authorId ? authorFollowed : MyQuery.isFollowing(userId, actorId));
     }
 
     @NonNull
@@ -142,20 +135,20 @@ public class MessageForAccount {
     }
 
     public boolean isTiedToThisAccount() {
-        return isRecipient || favorited || reblogged || isSender
-                || senderFollowed || authorFollowed;
+        return isRecipient || favorited || reblogged || isAuthor
+                || actorFollowed || authorFollowed;
     }
 
     public boolean hasPrivateAccess() {
-        return isRecipient || isSender;
+        return isRecipient || isAuthor;
     }
 
     public boolean isLoaded() {
         return status == DownloadStatus.LOADED;
     }
 
-    public boolean isSenderMySucceededAccount() {
-        return isSenderMySucceededAccount;
+    public boolean isAuthorSucceededMyAccount() {
+        return isAuthorMySucceededMyAccount;
     }
 
     public String getBodyTrimmed() {

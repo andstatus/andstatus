@@ -334,6 +334,50 @@ public class MyQuery {
         return users;
     }
 
+    @NonNull
+    public static Pair<Boolean, Boolean> favoritedAndReblogged(
+            SQLiteDatabase db, long msgId, long userId) {
+        String method = "favoritedAndReblogged";
+        boolean favoriteFound = false;
+        boolean reblogFound = false;
+        boolean favorited = false;
+        boolean reblogged = false;
+        if (db == null || msgId == 0 || userId == 0) {
+            return new Pair<>(false, false);
+        }
+        String sql = "SELECT " + ActivityTable.ACTIVITY_TYPE
+                + " FROM " + ActivityTable.TABLE_NAME + " INNER JOIN " + UserTable.TABLE_NAME
+                + " ON " + ActivityTable.ACTOR_ID + "=" + UserTable.TABLE_NAME + "." + UserTable._ID
+                + " WHERE " + ActivityTable.MSG_ID + "=" + msgId + " AND "
+                + ActivityTable.ACTOR_ID + "=" + userId
+                + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC";
+        try (Cursor cursor = db.rawQuery(sql, null)) {
+            while(cursor.moveToNext()) {
+                MbActivityType activityType = MbActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
+                switch (activityType) {
+                    case LIKE:
+                    case UNDO_LIKE:
+                        if (!favoriteFound) {
+                            favoriteFound = true;
+                            favorited = activityType == MbActivityType.LIKE;
+                        }
+                        break;
+                    case ANNOUNCE:
+                    case UNDO_ANNOUNCE:
+                        if (!reblogFound) {
+                            reblogFound = true;
+                            reblogged = activityType == MbActivityType.ANNOUNCE;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        } catch (Exception e) {
+            MyLog.w(TAG, method + "; SQL:'" + sql + "'", e);
+        }
+        return new Pair<>(favorited, reblogged);
+    }
 
     public static String msgIdToUsername(String userIdColumnName, long messageId, UserInTimeline userInTimeline) {
         final String method = "msgIdToUsername";
@@ -449,35 +493,34 @@ public class MyQuery {
      */
     @NonNull
     private static String idToStringColumnValue(String tableName, String columnName, long systemId) {
-        String method = "idToStringColumnValue";
+        return conditionToStringColumnValue(tableName, columnName, "_id=" + systemId);
+    }
+
+    @NonNull
+    public static String conditionToStringColumnValue(String tableName, String columnName, String condition) {
+        String method = "cond2str";
+        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        if (db == null) {
+            MyLog.v(TAG, method + "; Database is null");
+            return "";
+        }
+        String sql = "SELECT " + columnName + " FROM " + tableName + " WHERE " + condition;
         String columnValue = "";
         if (TextUtils.isEmpty(tableName) || TextUtils.isEmpty(columnName)) {
             throw new IllegalArgumentException(method + " tableName or columnName are empty");
-        } else if (systemId != 0) {
-            SQLiteStatement prog = null;
-            String sql = "";
-            try {
-                sql = "SELECT " + columnName
-                        + " FROM " + tableName
-                        + " WHERE _id=" + systemId;
-                SQLiteDatabase db = MyContextHolder.get().getDatabase();
-                if (db == null) {
-                    MyLog.v(TAG, method + "; Database is null");
-                    return "";
-                }
-                prog = db.compileStatement(sql);
+        } else if (TextUtils.isEmpty(columnName)) {
+            throw new IllegalArgumentException("columnName is empty: " + sql);
+        } else {
+            try (SQLiteStatement prog = db.compileStatement(sql)) {
                 columnValue = prog.simpleQueryForString();
             } catch (SQLiteDoneException e) {
                 MyLog.ignored(TAG, e);
             } catch (Exception e) {
-                MyLog.e(TAG, method + " table='" + tableName
-                        + "', column='" + columnName + "'", e);
+                MyLog.e(TAG, method + " table='" + tableName + "', column='" + columnName + "'", e);
                 return "";
-            } finally {
-                DbUtils.closeSilently(prog);
             }
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(TAG, method + " table=" + tableName + ", column=" + columnName + ", id=" + systemId + " -> " + columnValue );
+                MyLog.v(TAG, method + "; '" + sql + "' -> " + columnValue );
             }
         }
         return TextUtils.isEmpty(columnValue) ? "" : columnValue;
@@ -621,20 +664,19 @@ public class MyQuery {
 
     @NonNull
     public static Set<Long> getLongs(String sql) {
+        final String method = "getLongs";
         Set<Long> ids = new HashSet<>();
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
-            MyLog.v(TAG, "getLongs; Database is null");
+            MyLog.v(TAG, method + "; Database is null");
             return ids;
         }
-        Cursor c = null;
-        try {
-            c = db.rawQuery(sql, null);
+        try (Cursor c = db.rawQuery(sql, null)) {
             while (c.moveToNext()) {
                 ids.add(c.getLong(0));
             }
-        } finally {
-            DbUtils.closeSilently(c);
+        } catch (Exception e) {
+            MyLog.i(TAG, method + "; SQL:'" + sql + "'", e);
         }
         return ids;
     }
@@ -654,6 +696,17 @@ public class MyQuery {
                 + " WHERE " + where;
 
         return getLongs(sql);
+    }
+
+    public static boolean isFollowing(long followerId, long friendId) {
+        String where = FriendshipTable.USER_ID + "=" + followerId
+                + " AND " + FriendshipTable.FRIEND_ID + "=" + friendId
+                + " AND " + FriendshipTable.FOLLOWED + "=1";
+        String sql = "SELECT " + FriendshipTable.USER_ID
+                + " FROM " + FriendshipTable.TABLE_NAME
+                + " WHERE " + where;
+
+        return !getLongs(sql).isEmpty();
     }
 
     public static String msgInfoForLog(long msgId) {

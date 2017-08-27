@@ -84,7 +84,7 @@ public class AccountName {
 
     protected static AccountName getEmpty() {
         AccountName accountName = new AccountName();
-        accountName.origin = Origin.getEmpty();
+        accountName.origin = Origin.EMPTY;
         accountName.username = "";
         return accountName;
     }

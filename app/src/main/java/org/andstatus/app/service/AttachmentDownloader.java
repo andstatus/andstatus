@@ -37,7 +37,7 @@ public class AttachmentDownloader extends FileDownloader {
                 getFirstSucceededForOriginId(originId);
         for( MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
             if(ma.getOriginId() == originId && ma.isValidAndSucceeded()) {
-                MessageForAccount msg = new MessageForAccount(data.msgId, originId, ma);
+                MessageForAccount msg = new MessageForAccount(originId, 0, data.msgId, ma);
                 if(msg.hasPrivateAccess()) {
                     bestAccount = ma;
                     break;

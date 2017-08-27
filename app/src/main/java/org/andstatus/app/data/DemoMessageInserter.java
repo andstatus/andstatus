@@ -41,6 +41,7 @@ import org.andstatus.app.util.UrlUtils;
 import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -145,7 +146,8 @@ public class DemoMessageInserter {
                         CommandData.newTimelineCommand(CommandEnum.EMPTY, ma,
                                 message.isPrivate() ? TimelineType.DIRECT : TimelineType.HOME)));
         long messageId = di.onActivity(activity).getMessage().msgId;
-        assertTrue( "Message was not added: " + message, messageId != 0);
+        assertNotEquals( "Message was not added: " + message, 0, messageId);
+        assertNotEquals( "Activity was not added: " + activity, 0, activity.getId());
 
         String permalink = origin.messagePermalink(messageId);
         URL urlPermalink = UrlUtils.fromString(permalink); 

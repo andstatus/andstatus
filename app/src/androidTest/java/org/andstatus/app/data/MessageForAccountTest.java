@@ -6,11 +6,11 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.util.MyLog;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.andstatus.app.util.TriState.FALSE;
-import static org.andstatus.app.util.TriState.TRUE;
 import static org.andstatus.app.util.TriState.UNKNOWN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -29,12 +29,13 @@ public class MessageForAccountTest {
         assertTrue(ma.isValid());
         DemoMessageInserter mi = new DemoMessageInserter(ma);
         MbUser accountUser = ma.toPartialUser();
-        MbActivity msg1 = mi.buildActivity(accountUser, "My testing message", null, null, DownloadStatus.LOADED);
-        mi.onActivity(msg1);
+        MbActivity activity1 = mi.buildActivity(accountUser, "My testing message", null,
+                null, DownloadStatus.LOADED);
+        mi.onActivity(activity1);
         
-        MessageForAccount mfa = new MessageForAccount(msg1.getMessage().msgId, ma.getOriginId(), ma);
+        MessageForAccount mfa = new MessageForAccount(ma.getOriginId(), activity1.getId(), activity1.getMessage().msgId, ma);
         assertTrue(mfa.isAuthor);
-        assertTrue(mfa.isSender);
+        assertTrue(mfa.isActor);
         assertTrue(mfa.isSubscribed);
         assertEquals(UNKNOWN, mfa.isPrivate);
         assertTrue(mfa.isTiedToThisAccount());
@@ -42,14 +43,13 @@ public class MessageForAccountTest {
         
         MbUser author2 = mi.buildUserFromOid("acct:a2." + DemoData.TESTRUN_UID + "@pump.example.com");
         final MbActivity replyTo1 = mi.buildActivity(author2, "@" + accountUser.getUserName()
-                + " Replying to you", msg1, null, DownloadStatus.LOADED);
+                + " Replying to you", activity1, null, DownloadStatus.LOADED);
         replyTo1.getMessage().setPrivate(FALSE);
         mi.onActivity(replyTo1);
         
-        mfa = new MessageForAccount(replyTo1.getMessage().msgId, ma.getOriginId(), ma);
+        mfa = new MessageForAccount(ma.getOriginId(), replyTo1.getId(), replyTo1.getMessage().msgId, ma);
         assertFalse(mfa.isAuthor);
-        assertFalse(mfa.isSender);
-        assertFalse(mfa.isSubscribed);
+        assertFalse(mfa.isActor);
         assertFalse(mfa.isPrivate());
         assertEquals(FALSE, mfa.isPrivate);
         assertTrue(mfa.isTiedToThisAccount());
@@ -61,10 +61,9 @@ public class MessageForAccountTest {
         replyTo2.getMessage().setPrivate(FALSE);
         mi.onActivity(replyTo2);
         
-        mfa = new MessageForAccount(replyTo2.getMessage().msgId, ma.getOriginId(), ma);
+        mfa = new MessageForAccount(ma.getOriginId(), 0, replyTo2.getMessage().msgId, ma);
         assertFalse(mfa.isAuthor);
-        assertFalse(mfa.isSender);
-        assertFalse(mfa.isSubscribed);
+        assertFalse(mfa.isActor);
         assertFalse(mfa.isPrivate());
         assertEquals(FALSE, mfa.isPrivate);
         assertFalse(mfa.isTiedToThisAccount());
@@ -75,14 +74,16 @@ public class MessageForAccountTest {
                 + " This reply is reblogged by anotherMan", replyTo1, null, DownloadStatus.LOADED);
         MbUser anotherMan = mi.buildUserFromOid("acct:c4." + DemoData.TESTRUN_UID + "@pump.example.com");
         anotherMan.setUserName("anotherMan" + DemoData.TESTRUN_UID);
-        MbActivity activity = MbActivity.from(accountUser, MbActivityType.ANNOUNCE);
-        activity.setActor(anotherMan);
-        activity.setActivity(reblogged1);
-        mi.onActivity(activity);
+        MbActivity activity4 = MbActivity.from(accountUser, MbActivityType.ANNOUNCE);
+        activity4.setActor(anotherMan);
+        activity4.setActivity(reblogged1);
+        activity4.setTimelinePosition(MyLog.uniqueDateTimeFormatted());
+        activity4.setUpdatedDate(System.currentTimeMillis());
+        mi.onActivity(activity4);
 
-        mfa = new MessageForAccount(reblogged1.getMessage().msgId, ma.getOriginId(), ma);
+        mfa = new MessageForAccount(ma.getOriginId(), 0, reblogged1.getMessage().msgId, ma);
         assertFalse(mfa.isAuthor);
-        assertFalse(mfa.isSender);
+        assertFalse(mfa.isActor);
         assertTrue(mfa.isSubscribed);
         assertFalse(mfa.isPrivate());
         assertEquals(UNKNOWN, mfa.isPrivate);

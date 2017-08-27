@@ -86,13 +86,13 @@ public class MessageContextMenu extends MyContextMenu {
                         long originId = MyQuery.msgIdToOriginId(msgId);
                         MyAccount ma1 = menuContainer.getActivity().getMyContext().persistentAccounts()
                                 .getAccountForThisMessage(originId, myActor, viewItem.getLinkedMyAccount(), false);
-                        MessageForAccount msgNew = new MessageForAccount(msgId, originId, ma1);
+                        MessageForAccount msgNew = new MessageForAccount(originId, 0, msgId, ma1);
                         boolean changedToCurrent = !ma1.equals(currentMyAccount) && !myActor.isValid() && ma1.isValid()
                                 && !msgNew.isTiedToThisAccount()
                                 && !menuContainer.getTimeline().getTimelineType().isForUser()
                                 && currentMyAccount.isValid() && ma1.getOriginId() == currentMyAccount.getOriginId();
                         if (changedToCurrent){
-                            msgNew = new MessageForAccount(msgId, originId, currentMyAccount);
+                            msgNew = new MessageForAccount(originId, 0, msgId, currentMyAccount);
                         }
                         if (MyLog.isVerboseEnabled()) {
                             MyLog.v(messageContextMenu, "actor:" + msgNew.getMyAccount()
@@ -182,7 +182,7 @@ public class MessageContextMenu extends MyContextMenu {
             }
             MessageListContextMenuItem.USERS_OF_MESSAGE.addTo(menu, order++, R.string.users_of_message);
 
-            if (msg.isSenderMySucceededAccount() &&
+            if (msg.isAuthorSucceededMyAccount() &&
                     (msg.status != DownloadStatus.LOADED ||
                             getOrigin().getOriginType().allowEditing())) {
                 MessageListContextMenuItem.EDIT.addTo(menu, order++, R.string.menu_item_edit);
@@ -196,28 +196,29 @@ public class MessageContextMenu extends MyContextMenu {
                 MessageListContextMenuItem.COPY_AUTHOR.addTo(menu, order++, R.string.menu_item_copy_author);
             }
 
-            if (menuContainer.getTimeline().getUserId() != msg.senderId) {
+            // "Actor" is about an Activity, not about a Message
+            if (menuContainer.getTimeline().getUserId() != msg.actorId) {
                 // Messages by a Sender of this message ("User timeline" of that user)
-                MessageListContextMenuItem.SENDER_MESSAGES.addTo(menu, order++,
+                MessageListContextMenuItem.ACTOR_MESSAGES.addTo(menu, order++,
                         String.format(
                                 getActivity().getText(R.string.menu_item_user_messages).toString(),
-                                MyQuery.userIdToWebfingerId(msg.senderId)));
-                if (!msg.isSender) {
-                    if (msg.senderFollowed) {
-                        MessageListContextMenuItem.STOP_FOLLOWING_SENDER.addTo(menu, order++,
+                                MyQuery.userIdToWebfingerId(msg.actorId)));
+                if (!msg.isActor) {
+                    if (msg.actorFollowed) {
+                        MessageListContextMenuItem.STOP_FOLLOWING_ACTOR.addTo(menu, order++,
                                 String.format(
                                         getActivity().getText(R.string.menu_item_stop_following_user).toString(),
-                                        MyQuery.userIdToWebfingerId(msg.senderId)));
+                                        MyQuery.userIdToWebfingerId(msg.actorId)));
                     } else {
-                        MessageListContextMenuItem.FOLLOW_SENDER.addTo(menu, order++,
+                        MessageListContextMenuItem.FOLLOW_ACTOR.addTo(menu, order++,
                                 String.format(
                                         getActivity().getText(R.string.menu_item_follow_user).toString(),
-                                        MyQuery.userIdToWebfingerId(msg.senderId)));
+                                        MyQuery.userIdToWebfingerId(msg.actorId)));
                     }
                 }
             }
 
-            if (menuContainer.getTimeline().getUserId() != msg.authorId && msg.senderId != msg.authorId) {
+            if (menuContainer.getTimeline().getUserId() != msg.authorId && msg.actorId != msg.authorId) {
                 // Messages by an Author of this message ("User timeline" of that user)
                 MessageListContextMenuItem.AUTHOR_MESSAGES.addTo(menu, order++,
                         String.format(
@@ -270,7 +271,7 @@ public class MessageContextMenu extends MyContextMenu {
                             msg.getMyAccount().alternativeTermForResourceId(R.string.menu_item_destroy_reblog));
                 } else {
                     // Don't allow a User to reblog himself
-                    if (getMyActor().getUserId() != msg.senderId) {
+                    if (getMyActor().getUserId() != msg.actorId) {
                         MessageListContextMenuItem.REBLOG.addTo(menu, order++,
                                 msg.getMyAccount().alternativeTermForResourceId(R.string.menu_item_reblog));
                     }
@@ -281,7 +282,7 @@ public class MessageContextMenu extends MyContextMenu {
                 MessageListContextMenuItem.OPEN_MESSAGE_PERMALINK.addTo(menu, order++, R.string.menu_item_open_message_permalink);
             }
 
-            if (msg.isSenderMySucceededAccount()) {
+            if (msg.isAuthorSucceededMyAccount()) {
                 if (msg.isLoaded()) {
                     if (msg.isPrivate()) {
                         // This is a Direct Message
