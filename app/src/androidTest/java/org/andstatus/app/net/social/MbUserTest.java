@@ -16,9 +16,9 @@
 
 package org.andstatus.app.net.social;
 
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.origin.Origin;
 import org.junit.Before;
 import org.junit.Test;
@@ -92,5 +92,21 @@ public class MbUserTest {
     private void checkWebFingerId(String userName, boolean valid) {
         assertEquals("Username '" + userName + "' " + (valid ? "is valid" : "invalid"), valid,
                 MbUser.isWebFingerIdValid(userName));
+    }
+
+    @Test
+    public void testEquals() {
+        MbUser user1 = MbUser.fromOriginAndUserId(18, 11);
+        user1.oid = "acct:fourthWithoutAvatar@pump.example.com";
+        user1.setUserName("fourthWithoutAvatar@pump.example.com");
+        user1.setRealName("Real fourthWithoutAvatar@pump.example.com");
+        user1.setProfileUrl("http://pump.example.com/fourthWithoutAvatar");
+
+        MbUser user2 = MbUser.fromOriginAndUserId(18, 11);
+        user2.setUserName("fourthWithoutAvatar@pump.example.com");
+
+        assertEquals(user1, user2);
+        assertEquals(user1.toString() + " vs " + user2, user1.hashCode(), user2.hashCode());
+
     }
 }

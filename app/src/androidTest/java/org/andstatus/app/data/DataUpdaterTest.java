@@ -284,14 +284,15 @@ public class DataUpdaterTest {
         author.setUserName(authorUserName);
 
         MbActivity activity = MbActivity.newPartialMessage(accountUser,
-                "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123", 13312795000L, DownloadStatus.LOADED);
+                "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123" + DemoData.TESTRUN_UID,
+                13312795000L, DownloadStatus.LOADED);
         activity.setActor(author);
         MbMessage message = activity.getMessage();
         message.setBody("The test message by Example from the http://pumpity.net");
         message.via = "UnknownClient";
         message.setFavoritedByMe(TriState.TRUE);
 
-        String inReplyToOid = "https://identi.ca/api/comment/dfjklzdfSf28skdkfgloxWB";
+        String inReplyToOid = "https://identi.ca/api/comment/dfjklzdfSf28skdkfgloxWB"  + DemoData.TESTRUN_UID;
         MbActivity inReplyTo = MbActivity.newPartialMessage(accountUser, inReplyToOid,
                 0, DownloadStatus.UNKNOWN);
         inReplyTo.setActor(MbUser.fromOriginAndUserOid(accountUser.originId,
@@ -316,7 +317,7 @@ public class DataUpdaterTest {
                 fail("Message is favorited by unexpected user " + user + " - " + message);
             }
         }
-        assertEquals("Message is not favorited by " + accountUser + ": " + stargazers,
+        assertEquals("Message " + message.msgId + " is not favorited by " + accountUser + ": " + stargazers,
                 true, favoritedByMe);
         assertEquals("Message is favorited (by some my account)", 0,
                 MyQuery.msgIdToLongColumnValue(MsgTable.FAVORITED, messageId));

@@ -35,6 +35,7 @@ import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.InstanceId;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
@@ -114,11 +115,11 @@ public class DemoMessageInserter {
                         + "/" + (inReplyToActivity == null ? "note" : "comment")
                         + "/thisisfakeuri" + System.nanoTime();
             } else {
-                messageOid = String.valueOf(System.nanoTime());
+                messageOid = MyLog.uniqueDateTimeFormatted();
             }
         }
         MbActivity activity = MbActivity.from(accountUser, MbActivityType.CREATE);
-        activity.setTimelinePosition(messageOid);
+        activity.setTimelinePosition(messageOid + "-" + activity.type.name().toLowerCase());
         activity.setActor(author);
         activity.setUpdatedDate(System.currentTimeMillis());
         MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), messageOid, messageStatus);
@@ -161,7 +162,11 @@ public class DemoMessageInserter {
         if (!TextUtils.isEmpty(message.url)) {
             assertEquals("Message permalink", message.url, origin.messagePermalink(messageId));
         }
-        
+
+        MbUser author = activity.getAuthor();
+        assertNotEquals( "Author id for " + author + " not set in message " + message + " in activity " + activity, 0,
+                MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, message.msgId));
+
         if (message.getFavoritedByMe() == TriState.TRUE) {
             long favoritedUser = MyQuery.conditionToLongColumnValue(ActivityTable.TABLE_NAME,
                     ActivityTable.ACTOR_ID, "t." + ActivityTable.ACTIVITY_TYPE

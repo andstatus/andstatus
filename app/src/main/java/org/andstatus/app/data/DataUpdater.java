@@ -86,6 +86,7 @@ public class DataUpdater {
         switch (activity.getObjectType()) {
             case ACTIVITY:
                 onActivity(activity.getActivity(), false);
+                break;
             case MESSAGE:
                 updateMessage(activity, true);
                 break;
@@ -146,26 +147,29 @@ public class DataUpdater {
                 }
             }
 
+            boolean isNewerThanInDatabase = message.getUpdatedDate() > updatedDateStored;
+            if (!isFirstTimeLoaded && !isDraftUpdated && isNewerThanInDatabase) {
+                MyLog.v("MbMessage", "Skipped as not younger " + message);
+                return;
+            }
+
             // TODO: move as toContentValues() into MbMessage
             ContentValues values = new ContentValues();
-            boolean isNewerThanInDatabase = message.getUpdatedDate() > updatedDateStored;
-            if (isFirstTimeLoaded || isDraftUpdated || isNewerThanInDatabase) {
-                values.put(MsgTable.MSG_STATUS, message.getStatus().save());
-                values.put(MsgTable.UPDATED_DATE, message.getUpdatedDate());
+            values.put(MsgTable.MSG_STATUS, message.getStatus().save());
+            values.put(MsgTable.UPDATED_DATE, message.getUpdatedDate());
 
-                if (activity.getAuthor().userId != 0) {
-                    values.put(MsgTable.AUTHOR_ID, activity.getAuthor().userId);
-                }
-                if (!TextUtils.isEmpty(message.oid)) {
-                    values.put(MsgTable.MSG_OID, message.oid);
-                }
-                values.put(MsgTable.ORIGIN_ID, message.originId);
-                if (!TextUtils.isEmpty(message.conversationOid)) {
-                    values.put(MsgTable.CONVERSATION_OID, message.conversationOid);
-                }
-                values.put(MsgTable.BODY, message.getBody());
-                values.put(MsgTable.BODY_TO_SEARCH, message.getBodyToSearch());
+            if (activity.getAuthor().userId != 0) {
+                values.put(MsgTable.AUTHOR_ID, activity.getAuthor().userId);
             }
+            if (!TextUtils.isEmpty(message.oid)) {
+                values.put(MsgTable.MSG_OID, message.oid);
+            }
+            values.put(MsgTable.ORIGIN_ID, message.originId);
+            if (!TextUtils.isEmpty(message.conversationOid)) {
+                values.put(MsgTable.CONVERSATION_OID, message.conversationOid);
+            }
+            values.put(MsgTable.BODY, message.getBody());
+            values.put(MsgTable.BODY_TO_SEARCH, message.getBodyToSearch());
 
             activity.getMessage().addRecipientsFromBodyText(activity.getActor());
             updateInReplyTo(activity, values);
@@ -208,7 +212,7 @@ public class DataUpdater {
                         + (isNewerThanInDatabase ? " newer, updated at " + new Date(message.getUpdatedDate()) + ";"
                         : "") );
             }
-            
+
             if (MyContextHolder.get().isTestRun()) {
                 MyContextHolder.get().put(new AssertionData(MSG_ASSERTION_KEY, values));
             }
@@ -222,9 +226,11 @@ public class DataUpdater {
                     values2.put(MsgTable.CONVERSATION_ID, message.setConversationIdFromMsgId());
                     execContext.getContext().getContentResolver().update(msgUri, values2, null, null);
                 }
+                MyLog.v("MbMessage", "Added " + message);
             } else {
                 Uri msgUri = MatchedUri.getMsgUri(me.getUserId(), message.msgId);
                 execContext.getContext().getContentResolver().update(msgUri, values, null, null);
+                MyLog.v("MbMessage", "Updated " + message);
             }
             message.audience().save(execContext.getMyContext(), message.originId, message.msgId);
 
@@ -314,10 +320,12 @@ public class DataUpdater {
             MbActivity favoriting = MbActivity.from(activity.accountUser,
                     favoritedByMe.equals(TriState.TRUE) ? MbActivityType.LIKE : MbActivityType.UNDO_LIKE );
             favoriting.setActor(activity.accountUser);
-            favoriting.setMessage(message);
+            favoriting.setMessage(message.shallowCopy());
             favoriting.setUpdatedDate(message.getUpdatedDate());
-            favoriting.setTempTimelinePosition();
             new DataUpdater(execContext).onActivity(favoriting);
+            if (favoriting.getId() == 0) {
+                throw new IllegalStateException("Favoriting action was not added:" + favoriting);
+            }
         } else {
             MyProvider.deleteActivity(execContext.getMyContext(), favAndType.first, message.msgId, false);
         }

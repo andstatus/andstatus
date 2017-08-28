@@ -83,6 +83,14 @@ public class Audience {
     }
 
     public void add(@NonNull MbUser user) {
+        if (!recipients.contains(user)) {
+            recipients.add(user);
+            return;
+        }
+        if (user.isPartiallyDefined()) {
+            return;
+        }
+        recipients.remove(user);
         recipients.add(user);
     }
 

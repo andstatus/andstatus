@@ -136,6 +136,9 @@ public class MbUser implements Comparable<MbUser> {
 
     @Override
     public String toString() {
+        if (this == EMPTY) {
+            return "MbUser:EMPTY";
+        }
         String str = MbUser.class.getSimpleName();
         String members = "oid=" + oid + "; originId=" + originId;
         if (userId != 0) {
@@ -204,20 +207,17 @@ public class MbUser implements Comparable<MbUser> {
 
     @Override
     public int hashCode() {
-        int result = oid.hashCode();
-        result = 31 * result + (int) (originId ^ (originId >>> 32));
-        result = 31 * result + (int) (userId ^ (userId >>> 32));
-        if (userId == 0) {
-            if (isOidReal(oid)) {
-                result = 31 * result + oid.hashCode();
-            } else {
-                result = 31 * result + getWebFingerId().hashCode();
-                if (TextUtils.isEmpty(getWebFingerId())) {
-                    result = 31 * result + getUserName().hashCode();
-                }
-            }
+        int result = (int) (originId ^ (originId >>> 32));
+        if (userId != 0) {
+            return 31 * result + (int) (userId ^ (userId >>> 32));
         }
-        return result;
+        if (isOidReal(oid)) {
+            return 31 * result + oid.hashCode();
+        }
+        if (!TextUtils.isEmpty(getWebFingerId())) {
+            return 31 * result + getWebFingerId().hashCode();
+        }
+        return 31 * result + getUserName().hashCode();
     }
 
     private void fixWebFingerId() {

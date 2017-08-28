@@ -115,15 +115,14 @@ public final class UserMsg {
      * @return true if succeeded
      */
     public boolean save() {
-        boolean ok = true;
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "User=" + MyQuery.userIdToWebfingerId(userId) 
+            MyLog.v(this, "User " + userId + ": " + MyQuery.userIdToWebfingerId(userId)
                     + " Latest msg update at " + (new Date(getLastActivityDate()).toString())
                     + (changed ? "" : " not changed")                    
                     );
         }
         if (!changed) {
-            return ok;
+            return true;
         }
 
         // As a precaution compare with stored values ones again
@@ -131,10 +130,13 @@ public final class UserMsg {
         if (msgDate > lastActivityDate) {
             lastActivityDate = msgDate;
             lastActivityId = MyQuery.userIdToLongColumnValue(UserTable.USER_ACTIVITY_ID, userId);
-            MyLog.v(this, "There is newer information in the database. User=" + MyQuery.userIdToWebfingerId(userId) 
-                    + " Latest msg update at " + (new Date(getLastActivityDate()).toString()));
+            if (MyLog.isVerboseEnabled()) {
+                MyLog.v(this, "There is newer information in the database. User " + userId + ": "
+                        + MyQuery.userIdToWebfingerId(userId)
+                        + " Latest msg update at " + (new Date(getLastActivityDate()).toString()));
+            }
             changed = false;
-            return ok;
+            return true;
         }
 
         String sql = "";
@@ -154,9 +156,9 @@ public final class UserMsg {
             
             changed = false;
         } catch (Exception e) {
-            ok = false;
             MyLog.e(this, "save: sql='" + sql + "'", e);
+            return false;
         }
-        return ok;
+        return true;
     }
 }

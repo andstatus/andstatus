@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -50,6 +50,7 @@ import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -60,6 +61,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -92,7 +94,7 @@ public class MessageEditorTest extends TimelineActivityTest {
 
     private MessageEditorData getStaticData(MyAccount ma) {
         return MessageEditorData.newEmpty(ma)
-                .setInReplyToId(MyQuery.oidToId(OidEnum.MSG_OID, MyContextHolder.get()
+                .setInReplyToMsgId(MyQuery.oidToId(OidEnum.MSG_OID, MyContextHolder.get()
                                 .persistentOrigins().fromName(DemoData.CONVERSATION_ORIGIN_NAME).getId(),
                         DemoData.CONVERSATION_ENTRY_MESSAGE_OID))
                 .addRecipientId(MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
@@ -271,6 +273,7 @@ public class MessageEditorTest extends TimelineActivityTest {
 
         helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.COPY_AUTHOR);
         String text = getClipboardText(method);
+        assertThat(text, CoreMatchers.startsWith("@"));
         assertTrue(logMsg + "; Text: '" + text + "'", text.startsWith("@") && text.lastIndexOf("@") > 1);
     }
 

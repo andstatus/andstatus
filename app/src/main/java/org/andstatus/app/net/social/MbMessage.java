@@ -350,4 +350,11 @@ public class MbMessage extends AObject {
             addRecipient(user);
         }
     }
+
+    public MbMessage shallowCopy() {
+        MbMessage message = fromOriginAndOid(originId, oid, status);
+        message.msgId = msgId;
+        message.setUpdatedDate(updatedDate);
+        return message;
+    }
 }

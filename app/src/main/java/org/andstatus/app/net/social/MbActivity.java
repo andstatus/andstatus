@@ -29,6 +29,7 @@ import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 
 /** Activity in a sense of Activity Streams https://www.w3.org/TR/activitystreams-core/ */
 public class MbActivity extends AObject {
@@ -58,7 +59,6 @@ public class MbActivity extends AObject {
         activity.setActor(actor);
         activity.setActivity(innerActivity);
         activity.setUpdatedDate(innerActivity.getUpdatedDate() + 60);
-        activity.setTempTimelinePosition();
         return activity;
     }
 
@@ -73,13 +73,13 @@ public class MbActivity extends AObject {
     }
 
     @NonNull
-    public static MbActivity newPartialMessage(@NonNull MbUser accountUser, String msgOid, long updatedDate, DownloadStatus status) {
+    public static MbActivity newPartialMessage(@NonNull MbUser accountUser, String msgOid,
+                                               long updatedDate, DownloadStatus status) {
         MbActivity activity = from(accountUser, MbActivityType.UPDATE);
         final MbMessage message = MbMessage.fromOriginAndOid(activity.accountUser.originId, msgOid, status);
         activity.setMessage(message);
         message.setUpdatedDate(updatedDate);
         activity.setUpdatedDate(updatedDate);
-        activity.setTimelinePosition(msgOid);
         return activity;
     }
 
@@ -172,9 +172,9 @@ public class MbActivity extends AObject {
 
     @NonNull
     private String getTempPositionString() {
-        return MbUser.TEMP_OID_PREFIX + actor.oid + "-" + type.name() + "-"
-                + (TextUtils.isEmpty(getMessage().oid) ? MyLog.uniqueCurrentTimeMS() : getMessage().oid)
-                + "_" + updatedDate;
+        return MbUser.TEMP_OID_PREFIX + actor.oid + "-" + type.name().toLowerCase()
+                + "-" + (StringUtils.nonEmpty(getMessage().oid)
+                ? getMessage().oid + "-" + MyLog.formatDateTime(updatedDate) : MyLog.uniqueDateTimeFormatted());
     }
 
     public long getUpdatedDate() {
@@ -209,9 +209,6 @@ public class MbActivity extends AObject {
 
     public void setMessage(MbMessage mbMessage) {
         this.mbMessage = mbMessage == null ? MbMessage.EMPTY : mbMessage;
-        if (timelinePosition.isEmpty() && !this.mbMessage.isEmpty()) {
-            timelinePosition = new TimelinePosition(this.mbMessage.oid);
-        }
     }
 
     @NonNull
@@ -221,9 +218,6 @@ public class MbActivity extends AObject {
 
     public void setUser(MbUser mbUser) {
         this.mbUser = mbUser == null ? MbUser.EMPTY : mbUser;
-        if (timelinePosition.isEmpty() && !this.mbUser.isEmpty()) {
-            timelinePosition = new TimelinePosition(this.mbUser.oid);
-        }
     }
 
     public Audience recipients() {
@@ -236,7 +230,9 @@ public class MbActivity extends AObject {
     }
 
     public void setActivity(MbActivity activity) {
-        this.mbActivity = activity;
+        if (activity != null) {
+            this.mbActivity = activity;
+        }
     }
 
     @Override
@@ -280,7 +276,8 @@ public class MbActivity extends AObject {
     
     public long save(MyContext myContext) {
         if (wontSave()) {
-            return -1;
+            MyLog.v(this, "Won't save " + this);
+            return id;
         }
         if (MyAsyncTask.isUiThread()) {
             throw new IllegalStateException("Saving activity on the Main thread " + toString());
@@ -289,6 +286,18 @@ public class MbActivity extends AObject {
             id = MyQuery.oidToId(myContext.getDatabase(), OidEnum.ACTIVITY_OID, accountUser.originId,
                     timelinePosition.getPosition());
         }
+        if (id != 0) {
+            long storedUpdatedDate = MyQuery.idToLongColumnValue(
+                    myContext.getDatabase(), ActivityTable.TABLE_NAME, ActivityTable.UPDATED_DATE, id);
+            if (updatedDate <= storedUpdatedDate) {
+                MyLog.v(this, "Skipped as not younger " + this);
+                return id;
+            }
+            if (timelinePosition.isTemp()) {
+                MyLog.v(this, "Skipped as temp oid " + this);
+                return id;
+            }
+        }
         ContentValues contentValues = new ContentValues();
         toContentValues(contentValues);
         if (getId() == 0) {
@@ -296,28 +305,31 @@ public class MbActivity extends AObject {
             MyLog.v(this, "Added " + this);
         } else {
             DbUtils.updateRowWithRetry(myContext, ActivityTable.TABLE_NAME, getId(), contentValues, 3);
+            MyLog.v(this, "Updated " + this);
         }
         return id;
     }
 
     private boolean wontSave() {
-        return isEmpty() || timelinePosition.isEmpty()
-                || (type.equals(MbActivityType.UPDATE) && getObjectType().equals(MbObjectType.USER));
+        return isEmpty() || (type.equals(MbActivityType.UPDATE) && getObjectType().equals(MbObjectType.USER));
     }
 
     private void toContentValues(ContentValues values) {
         values.put(ActivityTable.ORIGIN_ID, accountUser.originId);
-        values.put(ActivityTable.ACTIVITY_OID, timelinePosition.getPosition());
         values.put(ActivityTable.ACCOUNT_ID, accountUser.userId);
-        values.put(ActivityTable.ACTIVITY_TYPE, type.id);
         values.put(ActivityTable.ACTOR_ID, getActor().userId);
         values.put(ActivityTable.MSG_ID, getMessage().msgId);
         values.put(ActivityTable.USER_ID, getUser().userId);
         values.put(ActivityTable.OBJ_ACTIVITY_ID, getActivity().id);
         values.put(ActivityTable.UPDATED_DATE, updatedDate);
         if (getId() == 0) {
+            values.put(ActivityTable.ACTIVITY_TYPE, type.id);
+            if (timelinePosition.isEmpty()) {
+                setTempTimelinePosition();
+            }
             insDate = MyLog.uniqueCurrentTimeMS();
             values.put(ActivityTable.INS_DATE, insDate);
         }
+        values.put(ActivityTable.ACTIVITY_OID, timelinePosition.getPosition());
     }
 }

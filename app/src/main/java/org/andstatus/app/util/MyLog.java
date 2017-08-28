@@ -652,7 +652,10 @@ public class MyLog {
     }
     
     public static String uniqueDateTimeFormatted() {
-        long time = uniqueCurrentTimeMS();
+        return formatDateTime(uniqueCurrentTimeMS());
+    }
+
+    public static String formatDateTime(long time) {
         for (int ind = 0; ind < 2; ind++) {
             // see http://stackoverflow.com/questions/16763968/android-text-format-dateformat-hh-is-not-recognized-like-with-java-text-simple
             String formatString = ind==0 ? "yyyy-MM-dd-HH-mm-ss-SSS" : "yyyy-MM-dd-kk-mm-ss-SSS";
@@ -666,7 +669,7 @@ public class MyLog {
         }
         return Long.toString(time); // Fallback for a case above doesn't work
     }
-    
+
     // see http://stackoverflow.com/a/9191383/297710
     private static final AtomicLong LAST_TIME_MS = new AtomicLong();
 

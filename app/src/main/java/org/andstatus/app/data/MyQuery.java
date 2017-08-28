@@ -462,7 +462,7 @@ public class MyQuery {
                                                   String tableName, String columnName, String condition) {
         String sql = "SELECT t." + columnName +
                 " FROM " + tableName + " AS t" +
-                (TextUtils.isEmpty(condition) ? "" : " WHERE " + condition + ";");
+                (TextUtils.isEmpty(condition) ? "" : " WHERE " + condition);
         long columnValue = 0;
         if (TextUtils.isEmpty(tableName)) {
             throw new IllegalArgumentException("tableName is empty: " + sql);

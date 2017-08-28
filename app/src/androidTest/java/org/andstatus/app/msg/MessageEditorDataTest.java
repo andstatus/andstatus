@@ -45,7 +45,7 @@ public class MessageEditorDataTest {
             long memberUserId, boolean replyAll) {
         Uri uri = Uri.parse("http://example.com/" + DemoData.TESTRUN_UID + "/some.png");
         MessageEditorData data = MessageEditorData.newEmpty(ma)
-                .setInReplyToId(inReplyToMsgId)
+                .setInReplyToMsgId(inReplyToMsgId)
                 .addRecipientId(recipientId)
                 .setReplyToConversationParticipants(replyAll)
                 .setBody("Some text here " + DemoData.TESTRUN_UID);

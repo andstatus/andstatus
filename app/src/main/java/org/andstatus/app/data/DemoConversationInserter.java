@@ -132,6 +132,7 @@ public class DemoConversationInserter {
         addPrivateMessage(reply7, TriState.FALSE);
         
         MbActivity reply8 = buildActivity(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
+        DemoMessageInserter.onActivityS(reply8);
 
         MbActivity reblog2 =  MbActivity.from(accountUser, MbActivityType.ANNOUNCE) ;
         reblog2.setActor(author3);

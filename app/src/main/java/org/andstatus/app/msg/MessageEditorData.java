@@ -31,7 +31,6 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.net.social.Audience;
@@ -65,7 +64,8 @@ public class MessageEditorData {
      *  0 - This message is not a Reply.
      * -1 - is non-existent id.
      */
-    public long inReplyToId = 0;
+    public long inReplyToMsgId = 0;
+    private long inReplyToUserId = 0;
     String inReplyToBody = "";
     private boolean replyToConversationParticipants = false;
     private boolean replyToMentionedUsers = false;
@@ -88,7 +88,7 @@ public class MessageEditorData {
         result = prime * result + getMediaUri().hashCode();
         result = prime * result + body.hashCode();
         result = prime * result + (int) (recipients.hashCode() ^ (recipients.hashCode() >>> 32));
-        result = prime * result + (int) (inReplyToId ^ (inReplyToId >>> 32));
+        result = prime * result + (int) (inReplyToMsgId ^ (inReplyToMsgId >>> 32));
         return result;
     }
 
@@ -110,14 +110,14 @@ public class MessageEditorData {
             return false;
         if (!recipients.equals(other.recipients))
             return false;
-        return inReplyToId == other.inReplyToId;
+        return inReplyToMsgId == other.inReplyToMsgId;
     }
 
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         if(msgId != 0) {
-            builder.append("msgId:" + msgId + ",");
+            builder.append("id:" + msgId + ",");
         }
         builder.append("status:" + status + ",");
         if(!TextUtils.isEmpty(body)) {
@@ -126,8 +126,8 @@ public class MessageEditorData {
         if(!UriUtils.isEmpty(downloadData.getUri())) {
             builder.append("downloadData:" + downloadData + ",");
         }
-        if(inReplyToId != 0) {
-            builder.append("inReplyToId:" + inReplyToId + ",");
+        if(inReplyToMsgId != 0) {
+            builder.append("inReplyTo:" + inReplyToMsgId + "by " + inReplyToUserId + ",");
         }
         if(replyToConversationParticipants) {
             builder.append("ReplyAll,");
@@ -153,8 +153,9 @@ public class MessageEditorData {
                         data.downloadData.getFilename());
                 data.image = imageFile.loadAndGetImage();
             }
-            data.inReplyToId = MyQuery.msgIdToLongColumnValue(MsgTable.IN_REPLY_TO_MSG_ID, msgId);
-            data.inReplyToBody = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, data.inReplyToId);
+            data.inReplyToMsgId = MyQuery.msgIdToLongColumnValue(MsgTable.IN_REPLY_TO_MSG_ID, msgId);
+            data.inReplyToUserId = MyQuery.msgIdToLongColumnValue(MsgTable.IN_REPLY_TO_USER_ID, msgId);
+            data.inReplyToBody = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, data.inReplyToMsgId);
             data.recipients = Audience.fromMsgId(ma.getOriginId(), msgId);
             MyLog.v(TAG, "Loaded " + data);
         } else {
@@ -172,7 +173,8 @@ public class MessageEditorData {
             data.setBody(body);
             data.downloadData = downloadData;
             data.image = image;
-            data.inReplyToId = inReplyToId;
+            data.inReplyToMsgId = inReplyToMsgId;
+            data.inReplyToUserId = inReplyToUserId;
             data.inReplyToBody = inReplyToBody;
             data.replyToConversationParticipants = replyToConversationParticipants;
             data.recipients = recipients;
@@ -185,14 +187,16 @@ public class MessageEditorData {
     public void save(Uri imageUriToSave) {
         MbActivity activity = MbActivity.newPartialMessage(getMyAccount().toPartialUser(), "",
                 System.currentTimeMillis(), status);
+        activity.setActor(activity.accountUser);
         MbMessage message = activity.getMessage();
         message.msgId = getMsgId();
         message.setBody(body);
         message.addRecipients(recipients);
-        if (inReplyToId != 0) {
-            message.setInReplyTo(
-                    MbActivity.newPartialMessage(getMyAccount().toPartialUser(),
-                            MyQuery.idToOid(OidEnum.MSG_OID, inReplyToId, 0)) );
+        if (inReplyToMsgId != 0) {
+            final MbActivity inReplyTo = MbActivity.newPartialMessage(getMyAccount().toPartialUser(),
+                    MyQuery.idToOid(OidEnum.MSG_OID, inReplyToMsgId, 0));
+            inReplyTo.setActor(MbUser.fromOriginAndUserId(message.originId, inReplyToUserId));
+            message.setInReplyTo(inReplyTo);
         }
         Uri mediaUri = imageUriToSave.equals(Uri.EMPTY) ? downloadData.getUri() : imageUriToSave;
         if (!mediaUri.equals(Uri.EMPTY)) {
@@ -200,7 +204,7 @@ public class MessageEditorData {
                     MbAttachment.fromUriAndContentType(mediaUri, MyContentType.IMAGE));
         }
         DataUpdater di = new DataUpdater(getMyAccount());
-        setMsgId(di.onActivity(message.update(getMyAccount().toPartialUser())).getMessage().msgId);
+        setMsgId(di.onActivity(activity).getMessage().msgId);
     }
 
     MyAccount getMyAccount() {
@@ -241,8 +245,8 @@ public class MessageEditorData {
         return msgId;
     }
 
-    public MessageEditorData setInReplyToId(long msgId) {
-        inReplyToId = msgId;
+    public MessageEditorData setInReplyToMsgId(long msgId) {
+        inReplyToMsgId = msgId;
         return this;
     }
     
@@ -257,7 +261,7 @@ public class MessageEditorData {
     }
 
     public MessageEditorData addMentionsToText() {
-        if (ma.isValid() && inReplyToId != 0) {
+        if (ma.isValid() && inReplyToMsgId != 0) {
             if (replyToConversationParticipants) {
                 addConversationParticipantsBeforeText();
             } else if (replyToMentionedUsers) {
@@ -273,7 +277,7 @@ public class MessageEditorData {
         ConversationLoader<ConversationMemberItem> loader =
                 new ConversationLoaderFactory<ConversationMemberItem>().getLoader(
                 ConversationMemberItem.class,
-                MyContextHolder.get(), ma, inReplyToId, false);
+                MyContextHolder.get(), ma, inReplyToMsgId, false);
         loader.load(null);
         List<Long> toMention = new ArrayList<>();
         for(ConversationMemberItem item : loader.getList()) {
@@ -285,7 +289,7 @@ public class MessageEditorData {
     }
 
     private void addMentionedUsersBeforeText() {
-        UsersOfMessageListLoader loader = new UsersOfMessageListLoader(UserListType.USERS_OF_MESSAGE, ma, inReplyToId
+        UsersOfMessageListLoader loader = new UsersOfMessageListLoader(UserListType.USERS_OF_MESSAGE, ma, inReplyToMsgId
                 , "").setMentionedOnly(true);
         loader.load(null);
         List<Long> toMention = new ArrayList<>();
@@ -296,7 +300,7 @@ public class MessageEditorData {
     }
 
     private void addUsersBeforeText(List<Long> toMention) {
-        toMention.add(0, MyQuery.msgIdToLongColumnValue(MsgTable.AUTHOR_ID, inReplyToId));
+        toMention.add(0, MyQuery.msgIdToLongColumnValue(MsgTable.AUTHOR_ID, inReplyToMsgId));
         List<Long> mentioned = new ArrayList<>();
         mentioned.add(ma.getUserId());  // Don't mention an author of this message
         String mentions = "";

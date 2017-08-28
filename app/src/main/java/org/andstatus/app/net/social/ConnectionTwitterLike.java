@@ -341,12 +341,12 @@ public abstract class ConnectionTwitterLike extends Connection {
                 }
                 if (!SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
                     // Construct Related message from available info
-                    MbActivity inReplyTo = MbActivity.newPartialMessage(data.getPartialAccountUser(),
-                            inReplyToMessageOid, message.getUpdatedDate() - 60, DownloadStatus.UNKNOWN);
                     MbUser inReplyToUser = MbUser.fromOriginAndUserOid(data.getOriginId(), inReplyToUserOid);
                     if (jso.has("in_reply_to_screen_name")) {
                         inReplyToUser.setUserName(jso.getString("in_reply_to_screen_name"));
                     }
+                    MbActivity inReplyTo = MbActivity.newPartialMessage(data.getPartialAccountUser(),
+                            inReplyToMessageOid, message.getUpdatedDate() - 60, DownloadStatus.UNKNOWN);
                     inReplyTo.setActor(inReplyToUser);
                     message.setInReplyTo(inReplyTo);
                 }

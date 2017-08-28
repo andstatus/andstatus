@@ -34,7 +34,7 @@ android {
             }
         }
         debug {
-            testCoverageEnabled true
+            // testCoverageEnabled true
         }
     }
 

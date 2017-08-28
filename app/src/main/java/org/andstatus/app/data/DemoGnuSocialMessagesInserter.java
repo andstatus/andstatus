@@ -97,6 +97,8 @@ public class DemoGnuSocialMessagesInserter {
         addPrivateMessage(reply11, TriState.FALSE);
 
         MbActivity reply12 = buildActivity(author2, "Reply 12 to Reply 7 reblogged by author1", reply7, null);
+        DemoMessageInserter.onActivityS(reply12);
+
         MbActivity activity = MbActivity.from(accountUser, MbActivityType.ANNOUNCE);
         activity.setActor(author1);
         activity.setMessage(reply12.getMessage());

@@ -54,7 +54,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         MessageEditorData executeAsync(MessageContextMenu menu) {
             return MessageEditorData.newEmpty(menu.getMyActor()).
-                    setInReplyToId(menu.getMsgId()).addMentionsToText();
+                    setInReplyToMsgId(menu.getMsgId()).addMentionsToText();
         }
 
         @Override
@@ -87,7 +87,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         MessageEditorData executeAsync(MessageContextMenu menu) {
             return MessageEditorData.newEmpty(menu.getMyActor()).
-                    setInReplyToId(menu.getMsgId()).setReplyToConversationParticipants(true).
+                    setInReplyToMsgId(menu.getMsgId()).setReplyToConversationParticipants(true).
                     addMentionsToText();
         }
 
@@ -100,7 +100,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         MessageEditorData executeAsync(MessageContextMenu menu) {
             return MessageEditorData.newEmpty(menu.getMyActor()).
-                    setInReplyToId(menu.getMsgId()).setReplyToMentionedUsers(true).
+                    setInReplyToMsgId(menu.getMsgId()).setReplyToMentionedUsers(true).
                     addMentionsToText();
         }
 
@@ -179,9 +179,9 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     COPY_AUTHOR(true) {
         @Override
         MessageEditorData executeAsync(MessageContextMenu menu) {
-            return MessageEditorData.newEmpty(menu.getMyActor()).
-                    appendMentionedUserToText(
-                    MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, menu.getMsgId()));
+            final long authorId = MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, menu.getMsgId());
+            MyLog.v(this, "msgId:" + menu.getMsgId() + " -> authorId:" + authorId);
+            return MessageEditorData.newEmpty(menu.getMyActor()).appendMentionedUserToText(authorId);
         }
 
         @Override

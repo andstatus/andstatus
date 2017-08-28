@@ -457,8 +457,8 @@ public class MessageEditor {
 
     private void showMessageDetails() {
         String messageDetails = "";
-        if (editorData.inReplyToId != 0) {
-            String replyToName = MyQuery.msgIdToUsername(MsgTable.AUTHOR_ID, editorData.inReplyToId,
+        if (editorData.inReplyToMsgId != 0) {
+            String replyToName = MyQuery.msgIdToUsername(MsgTable.AUTHOR_ID, editorData.inReplyToMsgId,
                     MyPreferences.getUserInTimeline());
             messageDetails += " " + String.format(
                     getActivity().getText(R.string.message_source_in_reply_to).toString(), replyToName);
