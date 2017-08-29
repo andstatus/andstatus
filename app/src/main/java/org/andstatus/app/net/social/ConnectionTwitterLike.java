@@ -234,10 +234,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     }
 
     protected MbActivity activityFromTwitterLikeJson(JSONObject jso) throws ConnectionException {
-        MbActivity activity = activityFromJson(jso);
-        activity.setUpdatedDate(activity.getMessage().sentDate);
-        activity.setTimelinePosition(activity.getMessage().oid);
-        return activity;
+        return activityFromJson(jso);
     }
 
     @NonNull

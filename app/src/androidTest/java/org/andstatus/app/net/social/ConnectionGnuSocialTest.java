@@ -35,6 +35,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -92,7 +93,7 @@ public class ConnectionGnuSocialTest {
         activity = timeline.get(ind);
         assertEquals("conversationOid", "2218650", activity.getMessage().conversationOid);
         assertTrue("Does not have a recipient", activity.recipients().isEmpty());
-        assertTrue("Is a reblog", !activity.getMessage().isReblogged());
+        assertNotEquals("Is a reblog", MbActivityType.ANNOUNCE,  activity.type);
         assertTrue("Is a reply", activity.getMessage().getInReplyTo().nonEmpty());
         assertEquals("Reply to the message id", "2663833", activity.getMessage().getInReplyTo().getMessage().oid);
         assertEquals("Reply to the message by userOid", "114973", activity.getMessage().getInReplyTo().getActor().oid);

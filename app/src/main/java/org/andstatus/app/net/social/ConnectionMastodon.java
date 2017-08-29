@@ -143,9 +143,6 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 case LIKE:
                     activity.getMessage().setFavorited(TriState.TRUE);
                     break;
-                case ANNOUNCE:
-                    activity.getMessage().setReblogOid(timelineItem.optString("id"));
-                    break;
                 case FOLLOW:
                     activity.setUser(data.getPartialAccountUser());
                     break;

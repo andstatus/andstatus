@@ -34,6 +34,7 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
@@ -116,7 +117,7 @@ public class ConnectionMastodonTest {
         assertEquals(MbActivityType.ANNOUNCE, activity.type);
         MbMessage mbMessage = activity.getMessage();
         assertEquals("Favorited " + mbMessage, TriState.UNKNOWN, mbMessage.getFavoritedByMe());
-        assertEquals("Not reblogged " + mbMessage, true, mbMessage.isReblogged());
+        assertEquals("Is not a Reblog " + activity, MbActivityType.ANNOUNCE, activity.type);
         assertEquals("Author's username", "AndStatus", activity.getAuthor().getUserName());
         MbUser actor = activity.getActor();
         assertEquals("Actor's Oid", "15451", actor.oid);
@@ -131,7 +132,7 @@ public class ConnectionMastodonTest {
         assertThat(mbMessage.getBody(), is("<p>IT infrastructure of modern church</p>"));
         assertEquals("Favorited " + mbMessage, TriState.TRUE, mbMessage.getFavorited());
         assertEquals("Favorited by me " + mbMessage, TriState.UNKNOWN, mbMessage.getFavoritedByMe());
-        assertEquals("Reblogged " + mbMessage, false, mbMessage.isReblogged());
+        assertNotEquals("Is a Reblog " + activity, MbActivityType.ANNOUNCE, activity.type);
         assertEquals("Author's username", "AndStatus", activity.getAuthor().getUserName());
         actor = activity.getActor();
         assertEquals("Actor's Oid", "48790", actor.oid);

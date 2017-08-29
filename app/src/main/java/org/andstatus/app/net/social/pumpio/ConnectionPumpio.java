@@ -430,9 +430,6 @@ public class ConnectionPumpio extends Connection {
                 case UNDO_LIKE:
                     activity.getMessage().setFavorited(TriState.FALSE);
                     break;
-                case ANNOUNCE:
-                    activity.getMessage().setReblogOid(activity.getTimelinePosition().getPosition());
-                    break;
                 default:
                     break;
             }

@@ -163,6 +163,9 @@ public class DemoMessageInserter {
             assertEquals("Message permalink", message.url, origin.messagePermalink(messageId));
         }
 
+        MbUser actor = activity.getActor();
+        assertNotEquals( "Actor id not set for " + actor + " in activity " + activity, 0, actor.userId);
+
         MbUser author = activity.getAuthor();
         assertNotEquals( "Author id for " + author + " not set in message " + message + " in activity " + activity, 0,
                 MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, message.msgId));
@@ -174,11 +177,11 @@ public class DemoMessageInserter {
             assertEquals("User, who favorited " + message, accountUser.userId, favoritedUser);
         }
 
-        if (message.isReblogged()) {
+        if (activity.type == MbActivityType.ANNOUNCE) {
             long rebloggerId = MyQuery.conditionToLongColumnValue(ActivityTable.TABLE_NAME,
                     ActivityTable.ACTOR_ID, "t." + ActivityTable.ACTIVITY_TYPE
                             + "=" + MbActivityType.ANNOUNCE.id +" AND t." + ActivityTable.MSG_ID + "=" + messageId);
-            assertTrue("Reblogger found for " + message, rebloggerId != 0);
+            assertEquals("Reblogger found for " + message, actor.userId, rebloggerId);
         }
 
         if (!message.replies.isEmpty()) {

@@ -57,7 +57,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -178,9 +178,9 @@ public class ConnectionPumpioTest {
         MbActivity activity = timeline.get(ind);
         MbMessage mbMessage = activity.getMessage();
         assertTrue("Message body: '" + mbMessage.getBody() + "'", mbMessage.getBody().contains("Fantastic wheel stand"));
-        assertEquals("Message sent date: " + TestSuite.utcTime(mbMessage.sentDate),
+        assertEquals("Message sent date: " + TestSuite.utcTime(activity.getUpdatedDate()),
                 TestSuite.utcTime(2013, Calendar.SEPTEMBER, 13, 1, 8, 38),
-                TestSuite.utcTime(mbMessage.sentDate));
+                TestSuite.utcTime(activity.getUpdatedDate()));
         MbUser actor = activity.getActor();
         assertEquals("Sender's oid", "acct:jpope@io.jpope.org", actor.oid);
         assertEquals("Sender's username", "jpope@io.jpope.org", actor.getUserName());
@@ -199,7 +199,7 @@ public class ConnectionPumpioTest {
         assertEquals("Updated at", TestSuite.utcTime(2013, Calendar.SEPTEMBER, 12, 17, 10, 44),
                 TestSuite.utcTime(actor.getUpdatedDate()));
         assertEquals("Actor is an Author", actor, activity.getAuthor());
-        assertFalse("Reblogged", mbMessage.isReblogged());
+        assertNotEquals("Is a Reblog " + activity, MbActivityType.ANNOUNCE, activity.type);
         assertEquals("Favorited by actor", TriState.UNKNOWN, mbMessage.getFavorited());
         assertEquals("Favorited by me (" + activity.accountUser + ")", TriState.UNKNOWN, mbMessage.getFavoritedByMe());
 

@@ -25,7 +25,6 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
@@ -55,13 +54,12 @@ public class MbMessage extends AObject {
 
     public final List<MbAttachment> attachments = new ArrayList<>();
 
-    public long sentDate = 0;
     private TriState favorited = TriState.UNKNOWN;
-    private String reblogOid = "";
 
     /** Some additional attributes may appear from "My account's" (authenticated User's) point of view */
     private TriState subscribedByMe = TriState.UNKNOWN;
     private TriState favoritedByMe = TriState.UNKNOWN;
+
     private TriState mentioned = TriState.UNKNOWN;
     private TriState isPrivate = TriState.UNKNOWN;
 
@@ -226,14 +224,8 @@ public class MbMessage extends AObject {
             builder.append("via:'" + via + "',");
         }
         builder.append("updated:" + MyLog.debugFormatOfDate(updatedDate) + ",");
-        if (sentDate != updatedDate) {
-            builder.append("sent:" + MyLog.debugFormatOfDate(sentDate) + ",");
-        }
         if(favorited.known()) {
             builder.append("favorited:" + favorited.toBoolean(false) + ",");
-        }
-        if(isReblogged()) {
-            builder.append("reblogged,");
         }
         if(subscribedByMe.known()) {
             builder.append("subscribedByMe:" + subscribedByMe.toBoolean(false) + ",");
@@ -251,14 +243,6 @@ public class MbMessage extends AObject {
 
     public void setFavorited(TriState favorited) {
         this.favorited = favorited;
-    }
-
-    public boolean isReblogged() {
-        return !SharedPreferencesUtil.isEmpty(reblogOid);
-    }
-
-    public void setReblogOid(String reblogOid) {
-        this.reblogOid = reblogOid;
     }
 
     @NonNull
@@ -325,9 +309,6 @@ public class MbMessage extends AObject {
 
     public void setUpdatedDate(long updatedDate) {
         this.updatedDate = updatedDate;
-        if (sentDate < updatedDate) {
-            sentDate = updatedDate;
-        }
     }
 
     @NonNull

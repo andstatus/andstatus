@@ -126,7 +126,7 @@ public class ConnectionTwitterTest {
         message = activity.getMessage();
         assertTrue("Message is loaded", message.getStatus() == DownloadStatus.LOADED);
         assertTrue("Does not have a recipient", message.audience().isEmpty());
-        assertTrue("Is a reblog", !message.isReblogged());
+        assertNotEquals("Is a Reblog " + activity, MbActivityType.ANNOUNCE, activity.type);
         assertTrue("Is a reply", message.getInReplyTo().nonEmpty());
         assertEquals("Reply to the message id", "17176774678", message.getInReplyTo().getMessage().oid);
         assertEquals("Reply to the message by userOid", DemoData.TWITTER_TEST_ACCOUNT_USER_OID, message.getInReplyTo().getAuthor().oid);
@@ -139,25 +139,28 @@ public class ConnectionTwitterTest {
         activity = timeline.get(ind);
         message = activity.getMessage();
         assertTrue("Does not have a recipient", message.audience().isEmpty());
-        assertTrue("Is not a reblog", message.isReblogged());
+        assertEquals("Is not a Reblog " + activity, MbActivityType.ANNOUNCE, activity.type);
         assertTrue("Is not a reply", message.getInReplyTo().isEmpty());
         assertEquals("Reblog of the message id", "315088751183409153", message.oid);
-        assertEquals("Reblog of the message by userOid", "442756884", activity.getAuthor().oid);
-        assertTrue("Is not Favorited", !message.getFavoritedByMe().toBoolean(true));
+        assertEquals("Author of reblogged message oid", "442756884", activity.getAuthor().oid);
+        assertEquals("Reblog id", "383295679507869696", activity.getTimelinePosition().getPosition());
+        assertEquals("Reblogger oid", "111911542", activity.getActor().oid);
+        assertTrue("Is not Favorited by me", !message.getFavoritedByMe().toBoolean(true));
         startsWith = "This AndStatus application";
-        assertEquals("Body of reblogged message starts with", startsWith, message.getBody().substring(0, startsWith.length()));
+        assertEquals("Body of reblogged message starts with", startsWith,
+                message.getBody().substring(0, startsWith.length()));
         Date date = TestSuite.utcTime(2013, Calendar.SEPTEMBER, 26, 18, 23, 5);
-        assertEquals("Reblogged at Thu Sep 26 18:23:05 +0000 2013 (" + date + ")", date,
-                TestSuite.utcTime(message.sentDate));
+        assertEquals("Reblogged at Thu Sep 26 18:23:05 +0000 2013 (" + date + ") " + activity, date,
+                TestSuite.utcTime(activity.getUpdatedDate()));
         date = TestSuite.utcTime(2013, Calendar.MARCH, 22, 13, 13, 7);
-        assertEquals("Reblogged message created at Fri Mar 22 13:13:07 +0000 2013 (" + date + ")", date,
-                TestSuite.utcTime(message.getUpdatedDate()));
+        assertEquals("Reblogged message created at Fri Mar 22 13:13:07 +0000 2013 (" + date + ")" + message,
+                date, TestSuite.utcTime(message.getUpdatedDate()));
 
         ind++;
         activity = timeline.get(ind);
         message = activity.getMessage();
         assertTrue("Does not have a recipient", message.audience().isEmpty());
-        assertTrue("Is a reblog", !message.isReblogged());
+        assertNotEquals("Is a Reblog " + activity, MbActivityType.ANNOUNCE, activity.type);
         assertTrue("Is not a reply", message.getInReplyTo().isEmpty());
         assertTrue("Is not Favorited", !message.getFavoritedByMe().toBoolean(true));
         assertEquals("Author's oid is user oid of this account", connectionData.getAccountUserOid(), activity.getAuthor().oid);
