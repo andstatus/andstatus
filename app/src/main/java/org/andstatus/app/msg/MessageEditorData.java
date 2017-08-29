@@ -29,8 +29,10 @@ import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
+import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.net.social.Audience;
@@ -47,11 +49,14 @@ import org.andstatus.app.util.UriUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.andstatus.app.data.DownloadStatus.LOADED;
+
 public class MessageEditorData {
     public static final String TAG = MessageEditorData.class.getSimpleName();
     static final MessageEditorData INVALID = MessageEditorData.newEmpty(null);
 
     private long msgId = 0;
+    private long activityId = 0;
     public DownloadStatus status = DownloadStatus.DRAFT;
     @NonNull
     public volatile String body = "";
@@ -146,9 +151,11 @@ public class MessageEditorData {
                     MyQuery.msgIdToLongColumnValue(MsgTable.AUTHOR_ID, msgId));
             data = new MessageEditorData(ma);
             data.msgId = msgId;
+            data.activityId = MyQuery.msgIdToLongColumnValue(ActivityTable.LAST_UPDATE_ID, msgId);
+            data.status = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, msgId));
             data.setBody(MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId));
             data.downloadData = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY);
-            if (data.downloadData.getStatus() == DownloadStatus.LOADED) {
+            if (data.downloadData.getStatus() == LOADED) {
                 AttachedImageFile imageFile = new AttachedImageFile(data.downloadData.getDownloadId(),
                         data.downloadData.getFilename());
                 data.image = imageFile.loadAndGetImage();
@@ -177,7 +184,7 @@ public class MessageEditorData {
             data.inReplyToUserId = inReplyToUserId;
             data.inReplyToBody = inReplyToBody;
             data.replyToConversationParticipants = replyToConversationParticipants;
-            data.recipients = recipients;
+            data.recipients.addAll(recipients);
             return data;
         } else {
             return INVALID;
@@ -205,6 +212,12 @@ public class MessageEditorData {
         }
         DataUpdater di = new DataUpdater(getMyAccount());
         setMsgId(di.onActivity(activity).getMessage().msgId);
+        if (activity.getId() != 0 && activityId != activity.getId()) {
+            if (activityId != 0 && status != LOADED) {
+                MyProvider.deleteActivity(MyContextHolder.get(), activityId, msgId, false);
+            }
+            activityId = activity.getId();
+        }
     }
 
     MyAccount getMyAccount() {

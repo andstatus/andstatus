@@ -176,11 +176,11 @@ public class MyProvider extends ContentProvider {
             return 0;
         }
         int count = db.delete(ActivityTable.TABLE_NAME, BaseColumns._ID + "=" + activityId, null);
-        if (count > 0) {
-            // Was this the last activity?
-            long activitiId = MyQuery.conditionToLongColumnValue(db, null, ActivityTable.TABLE_NAME,
+        if (count > 0 && msgId != 0) {
+            // Was this the last activity for this message?
+            long activityId2 = MyQuery.conditionToLongColumnValue(db, null, ActivityTable.TABLE_NAME,
                     BaseColumns._ID, ActivityTable.MSG_ID + "=" + msgId);
-            if (activitiId == 0) {
+            if (activityId2 == 0) {
                 // Delete message if no more its activities left
                 deleteMessage(db, msgId, inTransaction);
             } else {

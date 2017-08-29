@@ -50,6 +50,7 @@ public final class ActivityTable implements BaseColumns {
     public static final String ACTIVITY_ID = "activity_id";
     public static final String AUTHOR_ID = "author_id";
     public static final String RECIPIENT_ID = "recipient_id";
+    public static final String LAST_UPDATE_ID = "last_update_id";
 
     public static String getTimeSortOrder(boolean forNotifications, boolean ascending) {
         return getTimeSortField(forNotifications) + (ascending ? " ASC" : " DESC");

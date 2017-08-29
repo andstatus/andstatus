@@ -493,6 +493,9 @@ public class MyQuery {
      */
     @NonNull
     private static String idToStringColumnValue(String tableName, String columnName, long systemId) {
+        if (systemId == 0) {
+            return "";
+        }
         return conditionToStringColumnValue(tableName, columnName, "_id=" + systemId);
     }
 
@@ -558,6 +561,7 @@ public class MyQuery {
             case ActivityTable.ACTOR_ID:
             case ActivityTable.AUTHOR_ID:
             case ActivityTable.UPDATED_DATE:
+            case ActivityTable.LAST_UPDATE_ID:
                 return msgIdToLongActivityColumnValue(null, columnName, systemId);
             default:
                 return idToLongColumnValue(null, MsgTable.TABLE_NAME, columnName, systemId);
@@ -572,7 +576,7 @@ public class MyQuery {
         switch (columnNameIn) {
             case ActivityTable._ID:
             case ActivityTable.ACTOR_ID:
-                columnName = ActivityTable.ACTOR_ID;
+                columnName = columnNameIn;
                 condition = ActivityTable.ACTIVITY_TYPE + " IN("
                         + MbActivityType.CREATE.id + ","
                         + MbActivityType.UPDATE.id + ","
@@ -580,8 +584,14 @@ public class MyQuery {
                         + MbActivityType.LIKE.id + ")";
                 break;
             case ActivityTable.AUTHOR_ID:
-            case ActivityTable.UPDATED_DATE:
                 columnName = ActivityTable.ACTOR_ID;
+                condition = ActivityTable.ACTIVITY_TYPE + " IN("
+                        + MbActivityType.CREATE.id + ","
+                        + MbActivityType.UPDATE.id + ")";
+                break;
+            case ActivityTable.LAST_UPDATE_ID:
+            case ActivityTable.UPDATED_DATE:
+                columnName = columnNameIn.equals(ActivityTable.LAST_UPDATE_ID) ? ActivityTable._ID : columnNameIn;
                 condition = ActivityTable.ACTIVITY_TYPE + " IN("
                         + MbActivityType.CREATE.id + ","
                         + MbActivityType.UPDATE.id + ","
