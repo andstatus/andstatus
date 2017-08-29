@@ -150,7 +150,7 @@ public class ConnectionGnuSocialTest {
         MbActivity activity = connection.updateStatus("Test post message with media", "", "", DemoData.LOCAL_IMAGE_TEST_URI);
         activity.getMessage().setPrivate(TriState.FALSE);
         assertEquals("Message returned", privateGetMessageWithAttachment(
-                InstrumentationRegistry.getInstrumentation().getContext(), false), activity.getMessage());
+                InstrumentationRegistry.getInstrumentation().getContext(), false).getMessage(), activity.getMessage());
     }
 
     @Test
@@ -189,7 +189,7 @@ public class ConnectionGnuSocialTest {
         MbActivity activity = connection.postReblog(MESSAGE_OID);
         assertEquals(MbActivityType.ANNOUNCE, activity.type);
         MbMessage message = activity.getMessage();
-        assertEquals(message.toString(), MESSAGE_OID, message.oid);
+        assertEquals("Message oid" + message, MESSAGE_OID, message.oid);
         assertEquals("conversationOid", "9118253", message.conversationOid);
         assertEquals(1, connection.getHttpMock().getRequestsCounter());
         HttpReadResult result = connection.getHttpMock().getResults().get(0);

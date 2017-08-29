@@ -182,7 +182,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
         if (jso == null) {
             return MbActivity.EMPTY;
         }
-        final String method = "messageFromJson";
+        final String method = "activityFromJson2";
         MbActivity activity = super.activityFromJson2(jso);
         MbMessage message = activity.getMessage();
         message.url = jso.optString("external_url");

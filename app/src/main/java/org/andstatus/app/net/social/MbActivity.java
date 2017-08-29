@@ -172,8 +172,9 @@ public class MbActivity extends AObject {
 
     @NonNull
     private String getTempPositionString() {
-        return MbUser.TEMP_OID_PREFIX + actor.oid + "-" + type.name().toLowerCase()
-                + "-" + (StringUtils.nonEmpty(getMessage().oid)
+        return MbUser.TEMP_OID_PREFIX
+                + (StringUtils.nonEmpty(actor.oid) ?  actor.oid + "-" : "")
+                + type.name().toLowerCase() + "-" + (StringUtils.nonEmpty(getMessage().oid)
                 ? getMessage().oid + "-" + MyLog.formatDateTime(updatedDate) : MyLog.uniqueDateTimeFormatted());
     }
 

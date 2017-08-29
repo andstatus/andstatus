@@ -132,12 +132,10 @@ public class DemoConversationInserter {
         addPrivateMessage(reply7, TriState.FALSE);
         
         MbActivity reply8 = buildActivity(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
-        DemoMessageInserter.onActivityS(reply8);
-
-        MbActivity reblog2 =  MbActivity.from(accountUser, MbActivityType.ANNOUNCE) ;
-        reblog2.setActor(author3);
-        reblog2.setMessage(reply8.getMessage());
-        DemoMessageInserter.onActivityS(reblog2);
+        MbActivity reblogOfNewActivity =  MbActivity.from(accountUser, MbActivityType.ANNOUNCE) ;
+        reblogOfNewActivity.setActor(author3);
+        reblogOfNewActivity.setActivity(reply8);
+        DemoMessageInserter.onActivityS(reblogOfNewActivity);
 
         MbActivity reply9 = buildActivity(author2, "Reply 9 to Reply 7", reply7, null);
         reply9.getMessage().attachments

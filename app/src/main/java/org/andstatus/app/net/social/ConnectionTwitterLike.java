@@ -246,24 +246,23 @@ public abstract class ConnectionTwitterLike extends Connection {
             return MbActivity.EMPTY;
         }
         final MbActivity mainActivity = activityFromJson2(jso);
-        final MbActivity partialRebloggedActivity = rebloggedMessageFromJson(jso);
-        if (partialRebloggedActivity.isEmpty()) {
+        final MbActivity rebloggedActivity = rebloggedMessageFromJson(jso);
+        if (rebloggedActivity.isEmpty()) {
             return mainActivity;
         } else {
-            return makeReblog(data.getPartialAccountUser(), mainActivity, partialRebloggedActivity);
+            return makeReblog(data.getPartialAccountUser(), mainActivity, rebloggedActivity);
         }
     }
 
     @NonNull
     private MbActivity makeReblog(MbUser accountUser, @NonNull MbActivity mainActivity,
-                                  MbActivity partialRebloggedActivity) {
-        MbActivity activity = MbActivity.from(accountUser, MbActivityType.ANNOUNCE);
-        activity.setMessage(partialRebloggedActivity.getMessage());
-        activity.setTimelinePosition(mainActivity.getTimelinePosition().getPosition());
-        activity.setUpdatedDate(mainActivity.getUpdatedDate());
-        activity.setActor(mainActivity.getActor());
-        activity.getMessage().setFavoritedByMe(mainActivity.getMessage().getFavoritedByMe());
-        return activity;
+                                  MbActivity rebloggedActivity) {
+        MbActivity reblog = MbActivity.from(accountUser, MbActivityType.ANNOUNCE);
+        reblog.setTimelinePosition(mainActivity.getMessage().oid);
+        reblog.setUpdatedDate(mainActivity.getUpdatedDate());
+        reblog.setActor(mainActivity.getActor());
+        reblog.setActivity(rebloggedActivity);
+        return reblog;
     }
 
     @NonNull
