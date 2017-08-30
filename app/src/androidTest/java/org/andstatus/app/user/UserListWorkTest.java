@@ -70,7 +70,7 @@ public class UserListWorkTest extends ActivityTest<UserList> {
         ListActivityTestHelper<UserList> helper = new ListActivityTestHelper<>(getActivity(), FollowersList.class);
 
         List<UserViewItem> listItems = getActivity().getListLoader().getList();
-        assertEquals(listItems.toString(), 6, listItems.size());
+        assertEquals(listItems.toString(), 5, listItems.size());
 
         MbUser userA = UserListTest.getByUserOid(listItems, DemoData.CONVERSATION_MEMBER_USER_OID);
 

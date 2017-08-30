@@ -148,13 +148,15 @@ public class DemoConversationInserter {
                 null, null));
 
         // Message downloaded by another account
-        MbUser acc2 = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT2_NAME).toPartialUser();
+        final MyAccount ma2 = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT2_NAME);
+        MbUser accountUser2 = ma2.toPartialUser();
         author3.followedByMe = TriState.TRUE;
-        MbActivity reply10 = buildActivity(acc2, author3, "Reply 10 to Reply 8", reply8, null, DownloadStatus.LOADED);
-        MbActivity activity10 = reply10.getMessage().act(acc2, acc2, MbActivityType.UPDATE);
-        assertEquals("Another account as a message actor", activity10.getActor().oid, DemoData.CONVERSATION_ACCOUNT2_USER_OID);
-        DemoMessageInserter.onActivityS(activity10);
+        MbActivity reply10 = buildActivity(accountUser2, author3, "Reply 10 to Reply 8", reply8, null, DownloadStatus.LOADED);
+        assertEquals("The third is a message Author", author3,  reply10.getAuthor());
+        DemoMessageInserter.onActivityS(reply10);
         author3.followedByMe = TriState.UNKNOWN;
+
+        DemoConversationInserter.assertIfUserIsMyFriend(author3, true, ma2);
 
         MbActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7, " + DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT
                 + " text", reply7, null);
