@@ -410,7 +410,9 @@ public abstract class ConnectionTwitterLike extends Connection {
         }
         if (!jso.isNull("status")) {
             try {
-                user.setLatestActivity(activityFromJson(jso.getJSONObject("status")));
+                final MbActivity activity = activityFromJson(jso.getJSONObject("status"));
+                activity.setActor(user);
+                user.setLatestActivity(activity);
             } catch (JSONException e) {
                 throw ConnectionException.loggedJsonException(this, "getting status from user", e, jso);
             }
