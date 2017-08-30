@@ -29,6 +29,7 @@ import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.MbActivity;
+import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbObjectType;
@@ -139,6 +140,10 @@ public class ConnectionPumpio extends Connection {
         user.setHomepage(jso.optString("url"));
         user.setProfileUrl(jso.optString("url"));
         user.setUpdatedDate(dateFromJson(jso, "updated"));
+        JSONObject pumpIo = jso.optJSONObject("pump_io");
+        if (pumpIo != null && !pumpIo.isNull("followed")) {
+            user.followedByMe = TriState.fromBoolean(pumpIo.optBoolean("followed"));
+        }
         return user;
     }
 
@@ -363,8 +368,9 @@ public class ConnectionPumpio extends Connection {
         if (jsoActivity == null) {
             return MbActivity.EMPTY;
         }
+        final ActivityType verb = ActivityType.load(jsoActivity.optString("verb"));
         MbActivity activity = MbActivity.from(data.getPartialAccountUser(),
-                ActivityType.load(jsoActivity.optString("verb")).mbActivityType);
+                verb == ActivityType.UNKNOWN ? MbActivityType.UPDATE : verb.mbActivityType);
         try {
             if (ObjectType.ACTIVITY.isTypeOf(jsoActivity)) {
                 String oid = jsoActivity.optString("id");

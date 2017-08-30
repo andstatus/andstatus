@@ -197,15 +197,6 @@ public class MbMessage extends AObject {
         if(StringUtils.nonEmpty(body)) {
             builder.append("body:'" + body + "',");
         }
-        if(getInReplyTo().nonEmpty()) {
-            builder.append("inReplyTo:" + getInReplyTo() + ",");
-        }
-        if(recipients.nonEmpty()) {
-            builder.append("recipients:" + recipients + ",");
-        }
-        if (!attachments.isEmpty()) {
-            builder.append("attachments:" + attachments + ",");
-        }
         if(isEmpty) {
             builder.append("isEmpty,");
         }
@@ -234,6 +225,18 @@ public class MbMessage extends AObject {
             builder.append("favoritedByMe:" + favoritedByMe.toBoolean(false) + ",");
         }
         builder.append("originId:" + originId + ",");
+        if(recipients.nonEmpty()) {
+            builder.append("recipients:" + recipients + ",");
+        }
+        if (!attachments.isEmpty()) {
+            builder.append("attachments:" + attachments + ",");
+        }
+        if(getInReplyTo().nonEmpty()) {
+            builder.append("inReplyTo:" + getInReplyTo() + ",");
+        }
+        if(replies.size() > 0) {
+            builder.append("Replies:" + replies + ",");
+        }
         return MyLog.formatKeyValue(this, builder.toString());
     }
 

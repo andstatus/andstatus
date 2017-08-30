@@ -206,11 +206,13 @@ public class ConnectionPumpioTest {
         ind++;
         activity = timeline.get(ind);
         assertEquals(MbActivityType.FOLLOW, activity.type);
+        assertEquals("Actor", "acct:jpope@io.jpope.org", activity.getActor().oid);
+        assertEquals("Actor not followed by me", TriState.TRUE, activity.getActor().followedByMe);
         assertEquals("Activity Object", MbObjectType.USER, activity.getObjectType());
         MbUser mbUser = activity.getUser();
         assertEquals("User followed", "acct:atalsta@microca.st", mbUser.oid);
         assertEquals("WebFinger ID", "atalsta@microca.st", mbUser.getWebFingerId());
-        assertEquals("Followed", TriState.TRUE, mbUser.followedByMe);
+        assertEquals("User followed by me", TriState.FALSE, mbUser.followedByMe);
 
         ind++;
         activity = timeline.get(ind);
@@ -316,11 +318,11 @@ public class ConnectionPumpioTest {
         connection.getData().setAccountUserOid("acct:t131t@" + originUrl.getHost());
         String userOid = "acct:evan@e14n.com";
         MbActivity activity = connection.followUser(userOid, false);
+        assertEquals("Not unfollow action", MbActivityType.UNDO_FOLLOW, activity.type);
         MbUser user = activity.getUser();
         assertTrue("User is present", !user.isEmpty());
-        assertEquals("Our account acted", connection.getData().getAccountUserOid(), activity.getActor().oid);
+        assertEquals("Actor is not me", connection.getData().getAccountUserOid(), activity.getActor().oid);
         assertEquals("Object of action", userOid, user.oid);
-        assertEquals("Unfollowed", TriState.FALSE, user.followedByMe);
     }
 
     @Test
@@ -390,12 +392,13 @@ public class ConnectionPumpioTest {
         httpConnectionMock.setResponse(jso);
 
         final String msgOid = "https://identi.ca/api/note/Z-x96Q8rTHSxTthYYULRHA";
-        MbMessage msg = connection.getMessage(msgOid).getMessage();
-        assertNotNull("message returned", msg);
-        assertEquals("Message oid", msgOid, msg.oid);
-        assertEquals("Number of replies", 2, msg.replies.size());
-        MbMessage reply = msg.replies.get(0);
+        final MbActivity activity = connection.getMessage(msgOid);
+        MbMessage message = activity.getMessage();
+        assertNotNull("message returned", message);
+        assertEquals("Message oid", msgOid, message.oid);
+        assertEquals("Number of replies", 2, message.replies.size());
+        MbMessage reply = message.replies.get(0);
         assertEquals("Reply oid", "https://identi.ca/api/comment/cJdi4cGWQT-Z9Rn3mjr5Bw", reply.oid);
-        assertEquals("Is a Reply to", msgOid, reply.getInReplyTo().getMessage().oid);
+        assertEquals("Is not a Reply " + activity, msgOid, reply.getInReplyTo().getMessage().oid);
     }
 }
