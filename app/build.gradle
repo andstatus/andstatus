@@ -15,7 +15,7 @@ android {
         applicationId "org.andstatus.app"
         minSdkVersion 18
         targetSdkVersion 25
-        versionName "35.06"
+        versionName "36.00"
         versionCode 232
 
         testApplicationId "org.andstatus.app.tests"
