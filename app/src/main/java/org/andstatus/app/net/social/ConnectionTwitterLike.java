@@ -268,8 +268,8 @@ public abstract class ConnectionTwitterLike extends Connection {
                 DownloadStatus.LOADED );
     }
 
-    MbActivity rebloggedMessageFromJson(JSONObject jso) throws ConnectionException {
-        return jso == null ? MbActivity.EMPTY : activityFromJson2(jso.optJSONObject("retweeted_status"));
+    MbActivity rebloggedMessageFromJson(@NonNull JSONObject jso) throws ConnectionException {
+        return activityFromJson2(jso.optJSONObject("retweeted_status"));
     }
 
     @NonNull

@@ -136,17 +136,21 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             activity.setTimelinePosition(timelineItem.optString("id"));
             activity.setUpdatedDate(dateFromJson(timelineItem, "created_at"));
             activity.setActor(userFromJson(timelineItem.optJSONObject("account")));
-            MbActivity partialMessageActivity = activityFromJson2(timelineItem.optJSONObject("status"));
-            activity.setMessage(partialMessageActivity.getMessage());
+            MbActivity messageActivity = activityFromJson2(timelineItem.optJSONObject("status"));
 
             switch (activity.type) {
                 case LIKE:
-                    activity.getMessage().setFavorited(TriState.TRUE);
+                case UNDO_LIKE:
+                case ANNOUNCE:
+                case UNDO_ANNOUNCE:
+                    activity.setActivity(messageActivity);
                     break;
                 case FOLLOW:
+                case UNDO_FOLLOW:
                     activity.setUser(data.getPartialAccountUser());
                     break;
                 default:
+                    activity.setMessage(messageActivity.getMessage());
                     break;
             }
             return activity;
@@ -319,7 +323,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         if (jso == null) {
             return MbActivity.EMPTY;
         }
-        final String method = "messageFromJson";
+        final String method = "activityFromJson2";
         String oid = jso.optString("id");
         MbActivity activity = newLoadedUpdateActivity(oid, dateFromJson(jso, "created_at"));
         try {
@@ -399,7 +403,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     }
 
     @Override
-    MbActivity rebloggedMessageFromJson(JSONObject jso) throws ConnectionException {
+    MbActivity rebloggedMessageFromJson(@NonNull JSONObject jso) throws ConnectionException {
         return  activityFromJson2(jso.optJSONObject("reblog"));
     }
 
