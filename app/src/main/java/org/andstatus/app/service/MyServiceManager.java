@@ -1,6 +1,5 @@
 /* 
  * Copyright (c) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
- * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

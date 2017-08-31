@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2011-2014 yvolk (Yuri Volkov), http://yurivolkov.com
- * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +49,7 @@ import java.util.Locale;
  * Authenticated User info (User account in the Microblogging system) and connection properties 
  * are provided in the constructor.
  * 
- * @author yvolk@yurivolkov.com, torgny.bjers
+ * @author yvolk@yurivolkov.com
  */
 public abstract class Connection {
     public static final String KEY_PASSWORD = "password";
