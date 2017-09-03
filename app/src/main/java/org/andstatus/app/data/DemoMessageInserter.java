@@ -185,11 +185,15 @@ public class DemoMessageInserter {
         }
 
         if (!message.replies.isEmpty()) {
-            for (MbMessage reply : message.replies) {
-                long inReplyToMsgId = MyQuery.conditionToLongColumnValue(MsgTable.TABLE_NAME,
-                        MsgTable.IN_REPLY_TO_MSG_ID,
-                        "t." + MsgTable.MSG_OID + "='" + reply.oid + "'" );
-                assertEquals("Inserting reply:<" + reply.getBody() + ">", messageId, inReplyToMsgId);
+            for (MbActivity replyActivity : message.replies) {
+                // TODO: Do we need this?
+                MbMessage reply = replyActivity.getMessage();
+                if (reply.nonEmpty()) {
+                    long inReplyToMsgId = MyQuery.conditionToLongColumnValue(MsgTable.TABLE_NAME,
+                            MsgTable.IN_REPLY_TO_MSG_ID,
+                            "t." + MsgTable.MSG_OID + "='" + reply.oid + "'" );
+                    assertEquals("Inserting reply:<" + reply.getBody() + ">", messageId, inReplyToMsgId);
+                }
             }
         }
     }

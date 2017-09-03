@@ -39,6 +39,8 @@ import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbRateLimitStatus;
 import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.support.java.util.function.Supplier;
+import org.andstatus.app.support.java.util.function.SupplierWithException;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 
@@ -129,18 +131,21 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         if (TextUtils.isEmpty(conversationOid)) {
             logExecutionError(true, method + " empty conversationId " + MyQuery.msgInfoForLog(msgId));
         } else {
-            try {
-                List<MbActivity> activities = execContext.getMyAccount().getConnection().getConversation(conversationOid);
-                DataUpdater di = new DataUpdater(execContext);
-                for (MbActivity mbActivity : activities) {
-                    di.onActivity(mbActivity);
-                }
-            } catch (ConnectionException e) {
-                if (e.getStatusCode() == StatusCode.NOT_FOUND) {
-                    execContext.getResult().incrementParseExceptions();
-                }
-                logConnectionException(e, method + " " + MyQuery.msgInfoForLog(msgId));
+            onActivities(method, () -> execContext.getMyAccount().getConnection().getConversation(conversationOid),
+                    () -> MyQuery.msgInfoForLog(msgId));
+        }
+    }
+
+    private void onActivities(String method, SupplierWithException<List<MbActivity>, ConnectionException> supplier,
+                              Supplier<String> contextInfoSupplier) {
+        try {
+            List<MbActivity> activities = supplier.get();
+            DataUpdater.onActivities(execContext, activities);
+        } catch (ConnectionException e) {
+            if (e.getStatusCode() == StatusCode.NOT_FOUND) {
+                execContext.getResult().incrementParseExceptions();
             }
+            logConnectionException(e, method + "; " + contextInfoSupplier.get());
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }

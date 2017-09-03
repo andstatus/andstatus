@@ -56,9 +56,11 @@ import java.net.URL;
 import java.util.Calendar;
 import java.util.List;
 
+import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class ConnectionPumpioTest {
@@ -177,8 +179,8 @@ public class ConnectionPumpioTest {
         assertEquals("Posting image", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
         MbActivity activity = timeline.get(ind);
         MbMessage mbMessage = activity.getMessage();
-        assertTrue("Message body: '" + mbMessage.getBody() + "'", mbMessage.getBody().contains("Fantastic wheel stand"));
-        assertEquals("Message sent date: " + TestSuite.utcTime(activity.getUpdatedDate()),
+        assertThat("Message body " + mbMessage, mbMessage.getBody(), startsWith("Wow! Fantastic wheel stand at #DragWeek2013 today."));
+        assertEquals("Message updated at " + TestSuite.utcTime(activity.getUpdatedDate()),
                 TestSuite.utcTime(2013, Calendar.SEPTEMBER, 13, 1, 8, 38),
                 TestSuite.utcTime(activity.getUpdatedDate()));
         MbUser actor = activity.getActor();
@@ -205,7 +207,7 @@ public class ConnectionPumpioTest {
 
         ind++;
         activity = timeline.get(ind);
-        assertEquals(MbActivityType.FOLLOW, activity.type);
+        assertEquals("Is not FOLLOW " + activity, MbActivityType.FOLLOW, activity.type);
         assertEquals("Actor", "acct:jpope@io.jpope.org", activity.getActor().oid);
         assertEquals("Actor not followed by me", TriState.TRUE, activity.getActor().followedByMe);
         assertEquals("Activity Object", MbObjectType.USER, activity.getObjectType());
@@ -216,6 +218,7 @@ public class ConnectionPumpioTest {
 
         ind++;
         activity = timeline.get(ind);
+        assertEquals("Is not FOLLOW " + activity, MbActivityType.FOLLOW, activity.type);
         assertEquals("User", MbObjectType.USER, activity.getObjectType());
         mbUser = activity.getUser();
         assertEquals("Url of the actor", "https://identi.ca/t131t", activity.getActor().getProfileUrl());
@@ -224,12 +227,21 @@ public class ConnectionPumpioTest {
         assertEquals("Url of the user", "https://fmrl.me/grdryn", mbUser.getProfileUrl());
 
         ind++;
-        mbMessage = timeline.get(ind).getMessage();
-        assertEquals("Favorited by me", TriState.UNKNOWN, mbMessage.getFavoritedByMe());
-        assertEquals("Not favorited by someone else", TriState.TRUE, mbMessage.getFavorited());
-        assertEquals("Actor -someone else", "acct:jpope@io.jpope.org" , actor.oid);
+        activity = timeline.get(ind);
+        assertEquals("Is not LIKE " + activity, MbActivityType.LIKE, activity.type);
+        assertEquals("Actor " + activity, "acct:jpope@io.jpope.org", activity.getActor().oid);
+        assertEquals("Activity updated " + activity,
+                TestSuite.utcTime(2013, Calendar.SEPTEMBER, 20, 22, 20, 25),
+                TestSuite.utcTime(activity.getUpdatedDate()));
+        mbMessage = activity.getMessage();
+        assertEquals("Author " + activity, "acct:lostson@fmrl.me", activity.getAuthor().oid);
         assertTrue("Does not have a recipient", mbMessage.audience().isEmpty());
-        assertEquals("Url of the message", "https://fmrl.me/lostson/note/Dp-njbPQSiOfdclSOuAuFw", mbMessage.url);
+        assertEquals("Message oid " + mbMessage, "https://fmrl.me/api/note/Dp-njbPQSiOfdclSOuAuFw", mbMessage.oid);
+        assertEquals("Url of the message " + mbMessage, "https://fmrl.me/lostson/note/Dp-njbPQSiOfdclSOuAuFw", mbMessage.url);
+        assertThat("Message body " + mbMessage, mbMessage.getBody(), startsWith("My new <b>Firefox</b> OS phone arrived today"));
+        assertEquals("Message updated " + mbMessage,
+                TestSuite.utcTime(2013, Calendar.SEPTEMBER, 20, 20, 4, 22),
+                TestSuite.utcTime(mbMessage.getUpdatedDate()));
 
         ind++;
         mbMessage = timeline.get(ind).getMessage();
@@ -397,7 +409,7 @@ public class ConnectionPumpioTest {
         assertNotNull("message returned", message);
         assertEquals("Message oid", msgOid, message.oid);
         assertEquals("Number of replies", 2, message.replies.size());
-        MbMessage reply = message.replies.get(0);
+        MbMessage reply = message.replies.get(0).getMessage();
         assertEquals("Reply oid", "https://identi.ca/api/comment/cJdi4cGWQT-Z9Rn3mjr5Bw", reply.oid);
         assertEquals("Is not a Reply " + activity, msgOid, reply.getInReplyTo().getMessage().oid);
     }

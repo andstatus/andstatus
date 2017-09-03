@@ -47,7 +47,7 @@ public class MbMessage extends AObject {
     private String body = "";
 
     private MbActivity inReplyTo = MbActivity.EMPTY;
-    public final List<MbMessage> replies = new ArrayList<>();
+    public final List<MbActivity> replies = new ArrayList<>();
     public String conversationOid="";
     public String via = "";
     public String url="";

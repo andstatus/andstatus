@@ -66,6 +66,13 @@ public class DataUpdater {
     private KeywordsFilter keywordsFilter = new KeywordsFilter(
             SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
 
+    public static void onActivities(CommandExecutionContext execContext, List<MbActivity> activities) {
+        DataUpdater dataUpdater = new DataUpdater(execContext);
+        for (MbActivity mbActivity : activities) {
+            dataUpdater.onActivity(mbActivity);
+        }
+    }
+
     public DataUpdater(MyAccount ma) {
         this(new CommandExecutionContext(CommandData.newAccountCommand(CommandEnum.EMPTY, ma)));
     }
@@ -274,10 +281,7 @@ public class DataUpdater {
                 lum.onNewUserMsg(new UserMsg(activity.getAuthor().userId, activity.getId(), activity.getUpdatedDate()));
             }
 
-            for (MbMessage reply : message.replies) {
-                DataUpdater di = new DataUpdater(execContext);
-                di.updateMessage(reply.update(activity.accountUser), true);
-            }
+            DataUpdater.onActivities(execContext, message.replies);
         } catch (Exception e) {
             MyLog.e(this, method, e);
         }

@@ -429,16 +429,6 @@ public class ConnectionPumpio extends Connection {
             activity.setUser(userFromJson(objectOfActivity));
         } else if (ObjectType.compatibleWith(objectOfActivity) == ObjectType.COMMENT) {
             messageFromJsonComment(activity, objectOfActivity);
-            switch (activity.type) {
-                case LIKE:
-                    activity.getMessage().setFavorited(TriState.TRUE);
-                    break;
-                case UNDO_LIKE:
-                    activity.getMessage().setFavorited(TriState.FALSE);
-                    break;
-                default:
-                    break;
-            }
         }
     }
 
@@ -459,24 +449,44 @@ public class ConnectionPumpio extends Connection {
         return null;
     }
     
-    private void messageFromJsonComment(MbActivity activity, JSONObject jso) throws ConnectionException {
+    private void messageFromJsonComment(MbActivity parentActivity, JSONObject jso) throws ConnectionException {
         try {
             String oid = jso.optString("id");
             if (TextUtils.isEmpty(oid)) {
                 MyLog.d(TAG, "Pumpio object has no id:" + jso.toString(2));
                 return;
-            } 
-            MbMessage message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid, DownloadStatus.LOADED);
-            activity.setMessage(message);
-            if (jso.has("author")) {
-                activity.setActor(userFromJson(jso.getJSONObject("author")));
             }
+            long updatedDate = dateFromJson(jso, "updated");
+            if (updatedDate == 0) {
+                updatedDate = dateFromJson(jso, "published");
+            }
+            final MbActivity messageActivity = MbActivity.newPartialMessage(data.getPartialAccountUser(), oid,
+                    updatedDate, DownloadStatus.LOADED);
+            if (jso.has("author")) {
+                messageActivity.setActor(userFromJson(jso.getJSONObject("author")));
+            }
+
+            final MbActivity activity;
+            switch (parentActivity.type) {
+                case UPDATE:
+                case CREATE:
+                case DELETE:
+                    activity = parentActivity;
+                    activity.setMessage(messageActivity.getMessage());
+                    if (activity.getActor().isEmpty()) {
+                        MyLog.d(this, "No Actor in outer activity " + activity);
+                        activity.setActor(messageActivity.getActor());
+                    }
+                    break;
+                default:
+                    activity = messageActivity;
+                    parentActivity.setActivity(messageActivity);
+                    break;
+            }
+
+            MbMessage message =  activity.getMessage();
             if (jso.has("content")) {
                 message.setBody(jso.getString("content"));
-            }
-            message.setUpdatedDate(dateFromJson(jso, "updated"));
-            if (message.getUpdatedDate() == 0) {
-                message.setUpdatedDate(dateFromJson(jso, "published"));
             }
 
             setVia(message, jso);
@@ -507,8 +517,8 @@ public class ConnectionPumpio extends Connection {
                     JSONArray jArr = replies.getJSONArray("items");
                     for (int index = 0; index < jArr.length(); index++) {
                         try {
-                            MbMessage item = activityFromJson(jArr.getJSONObject(index)).getMessage();
-                            item.setSubscribedByMe(TriState.FALSE);
+                            MbActivity item = activityFromJson(jArr.getJSONObject(index));
+                            item.getMessage().setSubscribedByMe(TriState.UNKNOWN);
                             message.replies.add(item);
                         } catch (JSONException e) {
                             throw ConnectionException.loggedJsonException(this,

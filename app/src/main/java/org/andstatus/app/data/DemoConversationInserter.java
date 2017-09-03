@@ -90,7 +90,7 @@ public class DemoConversationInserter {
         MbActivity reply1Copy = buildActivity(accountUser, MbUser.EMPTY, "", MbActivity.EMPTY,
                 reply1.getMessage().oid, DownloadStatus.UNKNOWN);
         MbActivity reply12 = buildActivity(author2, "Reply 12 to 1 in Replies", reply1Copy, null);
-        reply1.getMessage().replies.add(reply12.getMessage());
+        reply1.getMessage().replies.add(reply12);
 
         MbActivity reply2 = buildActivity(author2, "Reply 2 to selected is private", selected, null);
         addPrivateMessage(reply2, TriState.TRUE);
@@ -202,7 +202,7 @@ public class DemoConversationInserter {
         DemoMessageInserter.onActivityS(activity);
     }
 
-    public static void assertIfUserIsMyFriend(MbUser user, boolean isFriendOf, MyAccount ma) {
+    static void assertIfUserIsMyFriend(MbUser user, boolean isFriendOf, MyAccount ma) {
         Set<Long> friendsIds = MyQuery.getFriendsIds(ma.getUserId());
         assertEquals("User " + user + " is a friend of " + ma, isFriendOf, friendsIds.contains(user.userId));
     }

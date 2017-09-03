@@ -36,8 +36,7 @@ import org.json.JSONObject;
  * @author yvolk@yurivolkov.com
  */
 class ActivitySender {
-    private static final String TAG = ActivitySender.class.getSimpleName();
-    public static final String PUBLIC_COLLECTION_ID = "http://activityschema.org/collection/public";
+    static final String PUBLIC_COLLECTION_ID = "http://activityschema.org/collection/public";
     ConnectionPumpio connection;
     String objectId = "";
     String inReplyToId = "";

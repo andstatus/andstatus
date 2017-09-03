@@ -169,8 +169,7 @@ public abstract class Connection {
     
     /**
      * Use this method to check the connection's (Account's) capability before attempting to use it
-     * and even before presenting corresponding action to the User. 
-     * @param routine
+     * and even before presenting corresponding action to the User.
      * @return true if supported
      */
     public boolean isApiSupported(ApiRoutineEnum routine) {
@@ -282,8 +281,8 @@ public abstract class Connection {
     }
 
     /**
-     * Returns a single status, specified by the id parameter below.
-     * The status's author will be returned inline.
+     * Requests a single message (status), specified by the id parameter.
+     * More than one activity may be returned (as replies) to reflect Favoriting and Reblogging of the "status"
      */
     @NonNull
     public final MbActivity getMessage(String statusId) throws ConnectionException {
@@ -319,13 +318,9 @@ public abstract class Connection {
      * Post Direct Message
      * @see <a
      *      href="https://dev.twitter.com/docs/api/1/post/direct_messages/new">POST direct_messages/new</a>
-     * 
-     * @param message
-     * @param statusId
+     *
      * @param userId {@link UserTable#USER_OID} - The ID of the user who should receive the direct message
-     * @param mediaUri
      * @return The sent message if successful (empty message if not)
-     * @throws ConnectionException
      */
     public abstract MbActivity postDirectMessage(String message, String statusId, String userId, Uri mediaUri)
             throws ConnectionException;
@@ -336,7 +331,6 @@ public abstract class Connection {
      *      href="https://dev.twitter.com/docs/api/1/post/statuses/retweet/%3Aid">POST statuses/retweet/:id</a>
      * 
      * @param rebloggedId id of the Reblogged message
-     * @throws ConnectionException
      */
     public abstract MbActivity postReblog(String rebloggedId)
             throws ConnectionException;
@@ -364,19 +358,13 @@ public abstract class Connection {
     /**
      * Allows this User to follow the user specified in the userId parameter
      * Allows this User to stop following the user specified in the userId parameter
-     * @param userId
      * @param follow true - Follow, false - Stop following
      * @return User object with 'following' flag set/reset
-     * @throws ConnectionException
      */
     public abstract MbActivity followUser(String userId, Boolean follow) throws ConnectionException;
 
     /**
      * Get information about the specified User
-     * @param userId
-     * @param userName
-     * @return User object
-     * @throws ConnectionException
      */
     public abstract MbUser getUser(String userId, String userName) throws ConnectionException;
     
@@ -396,7 +384,6 @@ public abstract class Connection {
 
     /**
      * Restrict the limit to 1 - 400
-     * @param apiRoutine 
      */
     public int fixedDownloadLimit(int limit, ApiRoutineEnum apiRoutine) {
         int out = 400;
@@ -528,7 +515,7 @@ public abstract class Connection {
         return unixDate;
     }
 
-    public JSONArray getRequestArrayInObject(String path, String arrayName) throws ConnectionException {
+    JSONArray getRequestArrayInObject(String path, String arrayName) throws ConnectionException {
         String method = "getRequestArrayInObject";
         JSONArray jArr = null;
         JSONObject jso = http.getRequest(path);

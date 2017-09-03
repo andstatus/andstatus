@@ -43,7 +43,6 @@ public abstract class ConnectionTwitterLike extends Connection {
 
     /**
      * URL of the API. Not logged
-     * @param routine
      * @return URL or an empty string in a case the API routine is not supported
      */
     @Override
@@ -150,9 +149,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     /**
      * Returns an array of numeric IDs for every user the specified user is following.
      * Current implementation is restricted to 5000 IDs (no paged cursors are used...)
-     * @see <a
-     *      href="https://dev.twitter.com/docs/api/1.1/get/friends/ids">GET friends/ids</a>
-     * @throws ConnectionException
+     * @see <a href="https://dev.twitter.com/docs/api/1.1/get/friends/ids">GET friends/ids</a>
      */
     @Override
     public List<String> getFriendsIds(String userId) throws ConnectionException {
@@ -177,6 +174,7 @@ public abstract class ConnectionTwitterLike extends Connection {
      * @see <a
      *      href="https://dev.twitter.com/rest/reference/get/followers/ids">GET followers/ids</a>
      */
+    @NonNull
     @Override
     public List<String> getFollowersIds(String userId) throws ConnectionException {
         String method = "getFollowersIds";
@@ -201,8 +199,6 @@ public abstract class ConnectionTwitterLike extends Connection {
      * @see <a
      *      href="https://dev.twitter.com/docs/api/1/get/statuses/show/%3Aid">Twitter
      *      REST API Method: statuses/destroy</a>
-     * 
-     * @throws ConnectionException
      */
     @Override
     public MbActivity getMessage1(String messageId) throws ConnectionException {
@@ -263,7 +259,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     }
 
     @NonNull
-    protected MbActivity newLoadedUpdateActivity(String oid, long updatedDate) throws ConnectionException {
+    MbActivity newLoadedUpdateActivity(String oid, long updatedDate) throws ConnectionException {
         return MbActivity.newPartialMessage(data.getPartialAccountUser(), oid, updatedDate,
                 DownloadStatus.LOADED );
     }
@@ -438,7 +434,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         return jArrToTimeline(jArr, apiRoutine, url);
     }
 
-    protected void appendPositionParameters(Uri.Builder builder, TimelinePosition youngest, TimelinePosition oldest) {
+    void appendPositionParameters(Uri.Builder builder, TimelinePosition youngest, TimelinePosition oldest) {
         if (youngest.nonEmpty()) {
             builder.appendQueryParameter("since_id", youngest.getPosition());
         } else if (oldest.nonEmpty()) {
@@ -474,7 +470,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         return timeline;
     }
 
-    protected void setMessagesPrivate(List<MbActivity> timeline) {
+    void setMessagesPrivate(List<MbActivity> timeline) {
         for (MbActivity item : timeline) {
             if (item.getObjectType() == MbObjectType.MESSAGE) {
                 item.getMessage().setPrivate(TriState.TRUE);
@@ -607,11 +603,11 @@ public abstract class ConnectionTwitterLike extends Connection {
         return postRequest(getApiPath(apiRoutine), formParams);
     }
 
-    protected String getApiPathWithMessageId(ApiRoutineEnum routineEnum, String userId) throws ConnectionException {
+    String getApiPathWithMessageId(ApiRoutineEnum routineEnum, String userId) throws ConnectionException {
         return getApiPath(routineEnum).replace("%messageId%", userId);
     }
 
-    protected String getApiPathWithUserId(ApiRoutineEnum routineEnum, String userId) throws ConnectionException {
+    String getApiPathWithUserId(ApiRoutineEnum routineEnum, String userId) throws ConnectionException {
         return getApiPath(routineEnum).replace("%userId%", userId);
     }
 
