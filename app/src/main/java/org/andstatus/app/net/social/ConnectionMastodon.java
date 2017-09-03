@@ -345,8 +345,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 message.via = application.optString("name");
             }
             if (!jso.isNull("favourited")) {
-                message.setFavoritedByMe(TriState.fromBoolean(SharedPreferencesUtil.isTrue(
-                        jso.getString("favourited"))));
+                message.addFavoriteBy(data.getPartialAccountUser(),
+                        TriState.fromBoolean(SharedPreferencesUtil.isTrue(jso.getString("favourited"))));
             }
 
             // If the Msg is a Reply to other message

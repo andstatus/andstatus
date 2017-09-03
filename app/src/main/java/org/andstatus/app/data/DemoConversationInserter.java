@@ -105,6 +105,8 @@ public class DemoConversationInserter {
         addActivity(reply2);
         MbActivity reply4 = buildActivity(author4, "Reply 4 to Reply 1 other author", reply1, null);
         addActivity(reply4);
+
+        DemoMessageInserter.increadeUpdateDate(reply4);
         addPrivateMessage(reply4, TriState.FALSE);
 
         DemoConversationInserter.assertIfUserIsMyFriend(author3, true, ma);
@@ -124,7 +126,7 @@ public class DemoConversationInserter {
         DemoMessageInserter.onActivityS(reblog1);
 
         final MbActivity reply6 = buildActivity(author3, "Reply 6 to Reply 4 - the second", reply4, null);
-        reply6.getMessage().setFavoritedByMe(TriState.TRUE);
+        reply6.getMessage().addFavoriteBy(accountUser, TriState.TRUE);
         addActivity(reply6);
 
         MbActivity reply7 = buildActivity(getAuthor1(), "Reply 7 to Reply 2 is about "

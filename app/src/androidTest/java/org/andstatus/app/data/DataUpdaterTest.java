@@ -290,7 +290,7 @@ public class DataUpdaterTest {
         MbMessage message = activity.getMessage();
         message.setBody("The test message by Example from the http://pumpity.net");
         message.via = "UnknownClient";
-        message.setFavoritedByMe(TriState.TRUE);
+        message.addFavoriteBy(accountUser, TriState.TRUE);
 
         String inReplyToOid = "https://identi.ca/api/comment/dfjklzdfSf28skdkfgloxWB"  + DemoData.TESTRUN_UID;
         MbActivity inReplyTo = MbActivity.newPartialMessage(accountUser, inReplyToOid,

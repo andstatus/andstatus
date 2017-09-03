@@ -64,7 +64,7 @@ public class ConnectionMastodonTest {
         MbMessage message = activity.getMessage();
         assertEquals("Is not a message " + activity, MbObjectType.MESSAGE, activity.getObjectType());
         assertEquals("Activity Oid " + activity, "", activity.getTimelinePosition().getPosition());
-        assertEquals("Favorited" + activity, TriState.UNKNOWN, message.getFavoritedByMe());
+        assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountUser));
         MbUser actor = activity.getActor();
 
         String stringDate = "2017-04-16T11:13:12.133Z";
@@ -119,16 +119,14 @@ public class ConnectionMastodonTest {
         assertEquals("Actor's username", "Chaosphere", actor.getUserName());
         assertEquals("WebfingerId", "Chaosphere@mastodon.social", actor.getWebFingerId());
         assertEquals("Author's username" + activity, "AndStatus", activity.getAuthor().getUserName());
-        MbMessage message = activity.getMessage();
-        assertEquals("Favorited " + message, TriState.UNKNOWN, message.getFavoritedByMe());
+        assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountUser));
 
         ind = 2;
         activity = timeline.get(ind);
         assertEquals("Is not an activity " + activity, MbObjectType.ACTIVITY, activity.getObjectType());
         assertEquals("Is not LIKE " + activity, MbActivityType.LIKE, activity.type);
-        message = activity.getMessage();
-        assertThat(message.getBody(), is("<p>IT infrastructure of modern church</p>"));
-        assertEquals("Favorited by me " + message, TriState.UNKNOWN, message.getFavoritedByMe());
+        assertThat(activity.getMessage().getBody(), is("<p>IT infrastructure of modern church</p>"));
+        assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountUser));
         assertEquals("Author's username", "AndStatus", activity.getAuthor().getUserName());
         actor = activity.getActor();
         assertEquals("Actor's Oid", "48790", actor.oid);
@@ -150,8 +148,7 @@ public class ConnectionMastodonTest {
         activity = timeline.get(ind);
         assertEquals("Is not UPDATE " + activity, MbActivityType.UPDATE, activity.type);
         assertEquals("Is not a message", MbObjectType.MESSAGE, activity.getObjectType());
-        message = activity.getMessage();
-        assertThat(message.getBody(), containsString("universe of Mastodon"));
+        assertThat(activity.getMessage().getBody(), containsString("universe of Mastodon"));
         actor = activity.getActor();
         assertEquals("Actor's Oid", "119218", actor.oid);
         assertEquals("Username", "izwx6502", actor.getUserName());

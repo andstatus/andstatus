@@ -17,10 +17,8 @@
 package org.andstatus.app.data;
 
 import android.content.ContentValues;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.support.v4.util.Pair;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
@@ -155,7 +153,7 @@ public class DataUpdater {
             }
 
             boolean isNewerThanInDatabase = message.getUpdatedDate() > updatedDateStored;
-            if (!isFirstTimeLoaded && !isDraftUpdated && isNewerThanInDatabase) {
+            if (!isFirstTimeLoaded && !isDraftUpdated && !isNewerThanInDatabase) {
                 MyLog.v("MbMessage", "Skipped as not younger " + message);
                 return;
             }
@@ -184,8 +182,7 @@ public class DataUpdater {
                 updateUser(mbUser.update(activity.accountUser, activity.getActor()));
             }
             if (activity.getMessage().audience().hasMyAccount(execContext.getMyContext())) {
-                activity.getMessage().setMentioned(TriState.TRUE);
-                values.put(MsgTable.MENTIONED, activity.getMessage().getMentioned().id);
+                values.put(MsgTable.MENTIONED, TriState.TRUE.id);
             }
 
             if (!message.isSubscribedByMe().equals(TriState.FALSE) && message.getUpdatedDate() > 0) {
@@ -243,9 +240,6 @@ public class DataUpdater {
 
             TriState favoritedByActor = activity.type.equals(MbActivityType.LIKE) ? TriState.TRUE :
                     activity.type.equals(MbActivityType.UNDO_LIKE) ? TriState.FALSE : TriState.UNKNOWN;
-            if (message.getFavoritedByMe().known() && favoritedByActor.unknown() ) {
-                updateFavoritedByMeAction(activity, message.getFavoritedByMe());
-            }
             if (favoritedByActor.known()) {
                 final MyAccount myActorAccount = execContext.getMyContext().persistentAccounts()
                         .fromUser(activity.getActor());
@@ -262,12 +256,10 @@ public class DataUpdater {
             }
 
             if (!keywordsFilter.matchedAny(message.getBodyToSearch())) {
-                if (message.getUpdatedDate() > 0) {
+                if (message.getStatus() == DownloadStatus.LOADED) {
                     execContext.getResult().incrementDownloadedCount();
-                }
-                if (isNewerThanInDatabase) {
                     execContext.getResult().incrementMessagesCount();
-                    if (activity.getMessage().isMentioned()) {
+                    if (activity.getMessage().audience().hasMyAccount(execContext.getMyContext())) {
                         execContext.getResult().incrementMentionsCount();
                     }
                     if (activity.getMessage().isPrivate()) {
@@ -304,37 +296,6 @@ public class DataUpdater {
             }
         }
     }
-
-    private void updateFavoritedByMeAction(@NonNull MbActivity activity, @NonNull TriState favoritedByMe) {
-        final String method = "updateFavoritedByMeAction";
-        SQLiteDatabase db = execContext.getMyContext().getDatabase();
-        if (db == null) {
-            MyLog.v(MyProvider.TAG, method + "; Database is null");
-            return;
-        }
-        final MbMessage message = activity.getMessage();
-        final Pair<Long, MbActivityType> favAndType = MyQuery.msgIdToLastFavoriting(db, message.msgId,
-                activity.accountUser.userId);
-        if ((favAndType.second.equals(MbActivityType.LIKE) && favoritedByMe.equals(TriState.TRUE))
-                || (favAndType.second.equals(MbActivityType.UNDO_LIKE) && favoritedByMe.equals(TriState.FALSE))
-                ) {
-            return; // Nothing to do
-        }
-        if (favAndType.second.equals(MbActivityType.EMPTY)) {
-            MbActivity favoriting = MbActivity.from(activity.accountUser,
-                    favoritedByMe.equals(TriState.TRUE) ? MbActivityType.LIKE : MbActivityType.UNDO_LIKE );
-            favoriting.setActor(activity.accountUser);
-            favoriting.setMessage(message.shallowCopy());
-            favoriting.setUpdatedDate(message.getUpdatedDate());
-            new DataUpdater(execContext).onActivity(favoriting);
-            if (favoriting.getId() == 0) {
-                throw new IllegalStateException("Favoriting action was not added:" + favoriting);
-            }
-        } else {
-            MyProvider.deleteActivity(execContext.getMyContext(), favAndType.first, message.msgId, false);
-        }
-    }
-
 
     private void saveAttachments(MbMessage message) {
         List<Long> downloadIds = new ArrayList<>();

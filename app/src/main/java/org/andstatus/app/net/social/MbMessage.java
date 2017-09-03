@@ -17,6 +17,7 @@
 package org.andstatus.app.net.social;
 
 import android.support.annotation.NonNull;
+import android.support.v4.util.Pair;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
@@ -54,13 +55,9 @@ public class MbMessage extends AObject {
 
     public final List<MbAttachment> attachments = new ArrayList<>();
 
-    private TriState favorited = TriState.UNKNOWN;
-
     /** Some additional attributes may appear from "My account's" (authenticated User's) point of view */
     private TriState subscribedByMe = TriState.UNKNOWN;
-    private TriState favoritedByMe = TriState.UNKNOWN;
 
-    private TriState mentioned = TriState.UNKNOWN;
     private TriState isPrivate = TriState.UNKNOWN;
 
     // In our system
@@ -215,14 +212,8 @@ public class MbMessage extends AObject {
             builder.append("via:'" + via + "',");
         }
         builder.append("updated:" + MyLog.debugFormatOfDate(updatedDate) + ",");
-        if(favorited.known()) {
-            builder.append("favorited:" + favorited.toBoolean(false) + ",");
-        }
         if(subscribedByMe.known()) {
             builder.append("subscribedByMe:" + subscribedByMe.toBoolean(false) + ",");
-        }
-        if(favoritedByMe.known()) {
-            builder.append("favoritedByMe:" + favoritedByMe.toBoolean(false) + ",");
         }
         builder.append("originId:" + originId + ",");
         if(recipients.nonEmpty()) {
@@ -238,14 +229,6 @@ public class MbMessage extends AObject {
             builder.append("Replies:" + replies + ",");
         }
         return MyLog.formatKeyValue(this, builder.toString());
-    }
-
-    public TriState getFavorited() {
-        return favorited;
-    }
-
-    public void setFavorited(TriState favorited) {
-        this.favorited = favorited;
     }
 
     @NonNull
@@ -265,28 +248,6 @@ public class MbMessage extends AObject {
 
     public void setSubscribedByMe(TriState isSubscribed) {
         this.subscribedByMe = isSubscribed;
-    }
-
-    public TriState getFavoritedByMe() {
-        return favoritedByMe;
-    }
-
-    public MbMessage setFavoritedByMe(TriState favoritedByMe) {
-        this.favoritedByMe = favoritedByMe;
-        return this;
-    }
-
-    public TriState getMentioned() {
-        return mentioned;
-    }
-
-    public boolean isMentioned() {
-        return mentioned == TriState.TRUE;
-    }
-
-    public MbMessage setMentioned(TriState mentioned) {
-        this.mentioned = mentioned;
-        return this;
     }
 
     public TriState getPrivate() {
@@ -340,5 +301,40 @@ public class MbMessage extends AObject {
         message.msgId = msgId;
         message.setUpdatedDate(updatedDate);
         return message;
+    }
+
+    public void addFavoriteBy(@NonNull MbUser accountUser, @NonNull TriState favoritedByMe) {
+        if (favoritedByMe != TriState.TRUE) {
+            return;
+        }
+        MbActivity favorite = MbActivity.from(accountUser, MbActivityType.LIKE);
+        favorite.setActor(accountUser);
+        favorite.setUpdatedDate(getUpdatedDate());
+        favorite.setMessage(shallowCopy());
+        replies.add(favorite);
+    }
+
+    @NonNull
+    public TriState getFavoritedBy(MbUser accountUser) {
+        if (msgId == 0) {
+            for (MbActivity reply : replies) {
+                if (reply.type == MbActivityType.LIKE && reply.getActor().equals(accountUser)
+                        && reply.getMessage().oid.equals(oid) ) {
+                    return TriState.TRUE;
+                }
+            }
+            return TriState.UNKNOWN;
+        } else {
+            final Pair<Long, MbActivityType> favAndType = MyQuery.msgIdToLastFavoriting(MyContextHolder.get().getDatabase(),
+                    msgId, accountUser.userId);
+            switch (favAndType.second) {
+                case LIKE:
+                    return TriState.TRUE;
+                case UNDO_LIKE:
+                    return TriState.FALSE;
+                default:
+                    return TriState.UNKNOWN;
+            }
+        }
     }
 }

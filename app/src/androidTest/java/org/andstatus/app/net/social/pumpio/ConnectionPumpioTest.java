@@ -202,8 +202,7 @@ public class ConnectionPumpioTest {
                 TestSuite.utcTime(actor.getUpdatedDate()));
         assertEquals("Actor is an Author", actor, activity.getAuthor());
         assertNotEquals("Is a Reblog " + activity, MbActivityType.ANNOUNCE, activity.type);
-        assertEquals("Favorited by actor", TriState.UNKNOWN, mbMessage.getFavorited());
-        assertEquals("Favorited by me (" + activity.accountUser + ")", TriState.UNKNOWN, mbMessage.getFavoritedByMe());
+        assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountUser));
 
         ind++;
         activity = timeline.get(ind);

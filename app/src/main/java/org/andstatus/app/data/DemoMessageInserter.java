@@ -36,7 +36,6 @@ import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
 import java.net.URL;
@@ -139,6 +138,12 @@ public class DemoMessageInserter {
         new DemoMessageInserter(activity.accountUser).onActivity(activity);
     }
 
+    static void increadeUpdateDate(MbActivity activity) {
+        // In order for message not to be ignored
+        activity.setUpdatedDate(activity.getUpdatedDate() + 1);
+        activity.getMessage().setUpdatedDate(activity.getMessage().getUpdatedDate() + 1);
+    }
+
     public void onActivity(final MbActivity activity) {
         MbMessage message = activity.getMessage();
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(accountUser.userId);
@@ -170,11 +175,11 @@ public class DemoMessageInserter {
         assertNotEquals( "Author id for " + author + " not set in message " + message + " in activity " + activity, 0,
                 MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, message.msgId));
 
-        if (message.getFavoritedByMe() == TriState.TRUE) {
+        if (activity.type == MbActivityType.LIKE) {
             long favoritedUser = MyQuery.conditionToLongColumnValue(ActivityTable.TABLE_NAME,
                     ActivityTable.ACTOR_ID, "t." + ActivityTable.ACTIVITY_TYPE
                             + "=" + MbActivityType.LIKE.id +" AND t." + ActivityTable.MSG_ID + "=" + messageId);
-            assertEquals("User, who favorited " + message, accountUser.userId, favoritedUser);
+            assertEquals("User, who favorited " + message, actor.userId, favoritedUser);
         }
 
         if (activity.type == MbActivityType.ANNOUNCE) {
@@ -186,13 +191,9 @@ public class DemoMessageInserter {
 
         if (!message.replies.isEmpty()) {
             for (MbActivity replyActivity : message.replies) {
-                // TODO: Do we need this?
                 MbMessage reply = replyActivity.getMessage();
                 if (reply.nonEmpty()) {
-                    long inReplyToMsgId = MyQuery.conditionToLongColumnValue(MsgTable.TABLE_NAME,
-                            MsgTable.IN_REPLY_TO_MSG_ID,
-                            "t." + MsgTable.MSG_OID + "='" + reply.oid + "'" );
-                    assertEquals("Inserting reply:<" + reply.getBody() + ">", messageId, inReplyToMsgId);
+                    assertNotEquals("Message added " + replyActivity, 0, reply.msgId);
                 }
             }
         }

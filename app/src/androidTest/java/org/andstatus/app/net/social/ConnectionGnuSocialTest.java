@@ -34,7 +34,6 @@ import java.net.URL;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -71,7 +70,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("Posting message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
         MbActivity activity = timeline.get(ind);
         assertEquals("conversationOid", "2218650", activity.getMessage().conversationOid);
-        assertTrue("Favorited", activity.getMessage().getFavoritedByMe().toBoolean(false));
+        assertEquals("Favorited " + activity, TriState.TRUE, activity.getMessage().getFavoritedBy(activity.accountUser));
         assertEquals("Oid", "116387", activity.getAuthor().oid);
         assertEquals("Username", "aru", activity.getAuthor().getUserName());
         assertEquals("WebFinger ID", "aru@status.vinilox.eu", activity.getAuthor().getWebFingerId());
@@ -97,7 +96,7 @@ public class ConnectionGnuSocialTest {
         assertTrue("Is a reply", activity.getMessage().getInReplyTo().nonEmpty());
         assertEquals("Reply to the message id", "2663833", activity.getMessage().getInReplyTo().getMessage().oid);
         assertEquals("Reply to the message by userOid", "114973", activity.getMessage().getInReplyTo().getActor().oid);
-        assertFalse("Is not Favorited", activity.getMessage().getFavoritedByMe().toBoolean(true));
+        assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountUser));
         String startsWith = "@<span class=\"vcard\">";
         assertEquals("Body of this message starts with", startsWith, activity.getMessage().getBody().substring(0, startsWith.length()));
         assertEquals("Username", "andstatus", activity.getAuthor().getUserName());
@@ -108,7 +107,7 @@ public class ConnectionGnuSocialTest {
         activity = timeline.get(ind);
         assertEquals("conversationOid", "2218650", activity.getMessage().conversationOid);
         assertEquals("Message not private", TriState.UNKNOWN, activity.getMessage().getPrivate());
-        assertFalse("Not Favorited", activity.getMessage().getFavoritedByMe().toBoolean(false));
+        assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountUser));
         assertEquals("MyAccount", accountUserOid, activity.accountUser.oid);
         assertEquals("Actor", activity.getAuthor().oid, activity.getActor().oid);
         assertEquals("Oid", "114973", activity.getAuthor().oid);

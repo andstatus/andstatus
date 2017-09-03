@@ -345,7 +345,8 @@ public abstract class ConnectionTwitterLike extends Connection {
             }
 
             if (!jso.isNull("favorited")) {
-                message.setFavoritedByMe(TriState.fromBoolean(SharedPreferencesUtil.isTrue(jso.getString("favorited"))));
+                message.addFavoriteBy(data.getPartialAccountUser(),
+                        TriState.fromBoolean(SharedPreferencesUtil.isTrue(jso.getString("favorited"))));
             }
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Parsing message", e, jso);

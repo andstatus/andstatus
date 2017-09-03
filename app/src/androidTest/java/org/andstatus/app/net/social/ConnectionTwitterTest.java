@@ -98,9 +98,8 @@ public class ConnectionTwitterTest {
         MbActivity activity = timeline.get(ind);
         String hostName = DemoData.getTestOriginHost(DemoData.TWITTER_TEST_ORIGIN_NAME).replace("api.", "");
         assertEquals("Posting message", MbObjectType.MESSAGE, activity.getObjectType());
-        MbMessage message = timeline.get(ind).getMessage();
         assertEquals("MyAccount", connectionData.getAccountUserOid(), activity.accountUser.oid);
-        assertEquals("Favorited by me", TriState.TRUE, message.getFavoritedByMe());
+        assertEquals("Favorited " + activity, TriState.TRUE, activity.getMessage().getFavoritedBy(activity.accountUser));
         MbUser author = activity.getAuthor();
         assertEquals("Oid", "221452291", author.oid);
         assertEquals("Username", "Know", author.getUserName());
@@ -119,11 +118,10 @@ public class ConnectionTwitterTest {
         assertEquals("Created at", connection.parseDate("Tue Nov 30 18:17:25 +0000 2010"), author.getCreatedDate());
         assertEquals("Updated at", 0, author.getUpdatedDate());
         assertEquals("Actor is author", author.oid, activity.getActor().oid);
-        assertEquals("Favorited by actor", TriState.UNKNOWN, message.getFavorited());
 
         ind++;
         activity = timeline.get(ind);
-        message = activity.getMessage();
+        MbMessage message = activity.getMessage();
         assertTrue("Message is loaded", message.getStatus() == DownloadStatus.LOADED);
         assertTrue("Does not have a recipient", message.audience().isEmpty());
         assertNotEquals("Is a Reblog " + activity, MbActivityType.ANNOUNCE, activity.type);
@@ -131,7 +129,7 @@ public class ConnectionTwitterTest {
         assertEquals("Reply to the message id", "17176774678", message.getInReplyTo().getMessage().oid);
         assertEquals("Reply to the message by userOid", DemoData.TWITTER_TEST_ACCOUNT_USER_OID, message.getInReplyTo().getAuthor().oid);
         assertTrue("Reply status is unknown", message.getInReplyTo().getMessage().getStatus() == DownloadStatus.UNKNOWN);
-        assertTrue("Is not Favorited", !message.getFavoritedByMe().toBoolean(true));
+        assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountUser));
         String startsWith = "@t131t";
         assertEquals("Body of this message starts with", startsWith, message.getBody().substring(0, startsWith.length()));
 
@@ -145,7 +143,7 @@ public class ConnectionTwitterTest {
         assertEquals("Author of reblogged message oid", "442756884", activity.getAuthor().oid);
         assertEquals("Reblog id", "383295679507869696", activity.getTimelinePosition().getPosition());
         assertEquals("Reblogger oid", "111911542", activity.getActor().oid);
-        assertTrue("Is not Favorited by me", !message.getFavoritedByMe().toBoolean(true));
+        assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountUser));
         startsWith = "This AndStatus application";
         assertEquals("Body of reblogged message starts with", startsWith,
                 message.getBody().substring(0, startsWith.length()));
@@ -162,7 +160,7 @@ public class ConnectionTwitterTest {
         assertTrue("Does not have a recipient", message.audience().isEmpty());
         assertNotEquals("Is a Reblog " + activity, MbActivityType.ANNOUNCE, activity.type);
         assertTrue("Is not a reply", message.getInReplyTo().isEmpty());
-        assertTrue("Is not Favorited", !message.getFavoritedByMe().toBoolean(true));
+        assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountUser));
         assertEquals("Author's oid is user oid of this account", connectionData.getAccountUserOid(), activity.getAuthor().oid);
         startsWith = "And this is";
         assertEquals("Body of this message starts with", startsWith, message.getBody().substring(0, startsWith.length()));

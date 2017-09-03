@@ -19,6 +19,7 @@ package org.andstatus.app.net.social;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
+import android.support.v4.util.Pair;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContext;
@@ -293,6 +294,32 @@ public class MbActivity extends AObject {
             if (updatedDate <= storedUpdatedDate) {
                 MyLog.v(this, "Skipped as not younger " + this);
                 return id;
+            }
+            switch (type) {
+                case LIKE:
+                case UNDO_LIKE:
+                    final Pair<Long, MbActivityType> favAndType = MyQuery.msgIdToLastFavoriting(myContext.getDatabase(),
+                            getMessage().msgId, accountUser.userId);
+                    if ((favAndType.second.equals(MbActivityType.LIKE) && type == MbActivityType.LIKE)
+                            || (favAndType.second.equals(MbActivityType.UNDO_LIKE) &&  type == MbActivityType.UNDO_LIKE)
+                            ) {
+                        MyLog.v(this, "Skipped as already " + type.name() + " " + this);
+                        return id;
+                    }
+                    break;
+                case ANNOUNCE:
+                case UNDO_ANNOUNCE:
+                    final Pair<Long, MbActivityType> reblAndType = MyQuery.msgIdToLastReblogging(myContext.getDatabase(),
+                            getMessage().msgId, accountUser.userId);
+                    if ((reblAndType.second.equals(MbActivityType.ANNOUNCE) && type == MbActivityType.ANNOUNCE)
+                            || (reblAndType.second.equals(MbActivityType.UNDO_ANNOUNCE) &&  type == MbActivityType.UNDO_ANNOUNCE)
+                            ) {
+                        MyLog.v(this, "Skipped as already " + type.name() + " " + this);
+                        return id;
+                    }
+                    break;
+                default:
+                    break;
             }
             if (timelinePosition.isTemp()) {
                 MyLog.v(this, "Skipped as temp oid " + this);
