@@ -16,7 +16,10 @@
 
 package org.andstatus.app.net.social;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
+
+import org.andstatus.app.R;
 
 /**
  * Activity type in a sense of
@@ -24,21 +27,23 @@ import android.support.annotation.NonNull;
  * and ActivityPub, see https://www.w3.org/TR/activitypub/#announce-activity-inbox
  */
 public enum MbActivityType {
-    ANNOUNCE(1),  // known also as Repost, Retweet, Boost...
-    CREATE(2),
-    DELETE(3),
-    FOLLOW(4),
-    LIKE(5),
-    UPDATE(6),
-    UNDO_ANNOUNCE(7),
-    UNDO_FOLLOW(8),
-    UNDO_LIKE(9),
-    EMPTY(10);
+    ANNOUNCE(1, R.string.reblogged),  // known also as Repost, Retweet, Boost...
+    CREATE(2, R.string.created),
+    DELETE(3, R.string.deleted),
+    FOLLOW(4, R.string.followed),
+    LIKE(5, R.string.liked),
+    UPDATE(6, R.string.updated),
+    UNDO_ANNOUNCE(7, R.string.undid_reblog),
+    UNDO_FOLLOW(8, R.string.undid_follow),
+    UNDO_LIKE(9, R.string.undid_like),
+    EMPTY(10, R.string.empty_in_parenthesis);
 
     public final long id;
+    public final int actedResourceId;
 
-    MbActivityType(long id) {
+    MbActivityType(long id, int actedResourceId) {
         this.id = id;
+        this.actedResourceId = actedResourceId;
     }
 
     public static MbActivityType undo(MbActivityType type) {
@@ -64,4 +69,13 @@ public enum MbActivityType {
         }
         return EMPTY;
     }
+
+    public CharSequence getActedTitle(Context context) {
+        if (actedResourceId == 0 || context == null) {
+            return this.name();
+        } else {
+            return context.getText(actedResourceId);
+        }
+    }
+
 }

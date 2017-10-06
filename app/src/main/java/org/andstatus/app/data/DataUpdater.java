@@ -238,19 +238,6 @@ public class DataUpdater {
             }
             message.audience().save(execContext.getMyContext(), message.originId, message.msgId);
 
-            TriState favoritedByActor = activity.type.equals(MbActivityType.LIKE) ? TriState.TRUE :
-                    activity.type.equals(MbActivityType.UNDO_LIKE) ? TriState.FALSE : TriState.UNKNOWN;
-            if (favoritedByActor.known()) {
-                final MyAccount myActorAccount = execContext.getMyContext().persistentAccounts()
-                        .fromUser(activity.getActor());
-                if (myActorAccount.isValid()) {
-                    MyLog.v(this, myActorAccount
-                            + (favoritedByActor.toBoolean(false) ? " favorited" : " unfavorited")
-                            + " '" + message.oid + "' " + I18n.trimTextAt(message.getBody(), 80));
-                    MyProvider.updateMessageFavorited(execContext.getMyContext(), message.originId, message.msgId);
-                }
-            }
-
             if (isFirstTimeLoaded || isDraftUpdated) {
                 saveAttachments(message);
             }

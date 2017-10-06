@@ -28,9 +28,9 @@ import java.util.List;
  */
 public class TimelineData<T extends ViewItem> {
     private static final int MAX_PAGES_COUNT = 5;
-    public final List<TimelinePage<T>> pages; // Contains at least onePage
+    final List<TimelinePage<T>> pages; // Contains at least onePage
     final long updatedAt = MyLog.uniqueCurrentTimeMS();
-    final TimelineParameters params;
+    public final TimelineParameters params;
     final boolean isSameTimeline;
     private final DuplicatesCollapser<T> duplicatesCollapser;
 
@@ -63,7 +63,9 @@ public class TimelineData<T extends ViewItem> {
                     pages.add(page);
                 } else {
                     removeDuplicatesWithOlder(page, 1);
-                    pages.remove(0);
+                    if (!pages.isEmpty()) {
+                        pages.remove(0);
+                    }
                     pages.add(0, page);
                 }
                 break;

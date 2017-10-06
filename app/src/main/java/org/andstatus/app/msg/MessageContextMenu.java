@@ -30,6 +30,7 @@ import android.view.accessibility.AccessibilityManager;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MessageForAccount;
 import org.andstatus.app.data.MyQuery;
@@ -150,7 +151,14 @@ public class MessageContextMenu extends MyContextMenu {
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
         final String method = "onCreateContextMenu";
         super.onCreateContextMenu(menu, v, menuInfo);
-        BaseMessageViewItem viewItem = (BaseMessageViewItem) mViewItem;
+        BaseMessageViewItem viewItem;
+        if (BaseMessageViewItem.class.isAssignableFrom(mViewItem.getClass())) {
+            viewItem = (BaseMessageViewItem) mViewItem;
+        } else if (ActivityViewItem.class.isAssignableFrom(mViewItem.getClass())){
+            viewItem = ((ActivityViewItem) mViewItem).message;
+        } else {
+            return;
+        }
 
         switch (menuData.getStateFor(viewItem)) {
             case READY:

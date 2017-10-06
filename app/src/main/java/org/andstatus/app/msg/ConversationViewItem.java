@@ -22,7 +22,6 @@ import android.provider.BaseColumns;
 import android.text.Html;
 import android.text.TextUtils;
 
-import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
@@ -31,16 +30,13 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineSql;
-import org.andstatus.app.database.ActivityTable;
+import org.andstatus.app.database.DownloadTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.TriState;
-
-import java.util.HashSet;
-import java.util.Set;
 
 public class ConversationViewItem extends ConversationItem {
     public static final ConversationViewItem EMPTY = new ConversationViewItem();
@@ -83,7 +79,7 @@ public class ConversationViewItem extends ConversationItem {
             if (!TextUtils.isEmpty(via)) {
                 messageSource = Html.fromHtml(via).toString().trim();
             }
-            avatarFile = AvatarFile.fromCursor(authorId, cursor);
+            avatarFile = AvatarFile.fromCursor(authorId, cursor, DownloadTable.AVATAR_FILE_NAME);
             if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
                 attachedImageFile = AttachedImageFile.fromCursor(cursor);
             }

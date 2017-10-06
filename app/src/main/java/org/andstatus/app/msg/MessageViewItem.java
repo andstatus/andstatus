@@ -20,16 +20,19 @@ import android.text.Html;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.database.DownloadTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
+import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
@@ -55,28 +58,18 @@ public class MessageViewItem extends BaseMessageViewItem {
         item.inReplyToUserId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_USER_ID);
         item.inReplyToName = DbUtils.getString(cursor, UserTable.IN_REPLY_TO_NAME);
         item.recipientName = DbUtils.getString(cursor, UserTable.RECIPIENT_NAME);
-        item.favorited = item.isLinkedToMyAccount()
-                && DbUtils.getTriState(cursor, MsgTable.FAVORITED) == TriState.TRUE;
         item.activityInsDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
         item.updatedDate = DbUtils.getLong(cursor, MsgTable.UPDATED_DATE);
         item.msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
 
         item.authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
 
-        long senderId = DbUtils.getLong(cursor, ActivityTable.ACTOR_ID);
-        if (senderId != item.authorId) {
-            String senderName = DbUtils.getString(cursor, UserTable.SENDER_NAME);
-            if (TextUtils.isEmpty(senderName)) {
-                senderName = "(id" + senderId + ")";
-            }
-            item.addReblogger(senderId, senderName);
-        }
+        item.favorited = DbUtils.getTriState(cursor, MsgTable.FAVORITED) == TriState.TRUE;
+        item.reblogged = DbUtils.getTriState(cursor, MsgTable.REBLOGGED) == TriState.TRUE;
 
-        if (item.isLinkedToMyAccount()) {
-            if (DbUtils.getTriState(cursor, MsgTable.REBLOGGED) == TriState.TRUE) {
-                item.addReblogger(item.getLinkedMyAccount().getUserId(), item.getLinkedMyAccount().getAccountName());
-                item.reblogged = true;
-            }
+        for (MbUser user : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), item.getOriginId(),
+                item.getMsgId())) {
+            item.rebloggers.put(user.userId, user.getWebFingerId());
         }
 
         String via = DbUtils.getString(cursor, MsgTable.VIA);
@@ -84,7 +77,7 @@ public class MessageViewItem extends BaseMessageViewItem {
             item.messageSource = Html.fromHtml(via).toString().trim();
         }
 
-        item.avatarFile = AvatarFile.fromCursor(item.authorId, cursor);
+        item.avatarFile = AvatarFile.fromCursor(item.authorId, cursor, DownloadTable.AVATAR_FILE_NAME);
         if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
             item.attachedImageFile = new AttachedImageFile(
                     DbUtils.getLong(cursor, DownloadTable.IMAGE_ID),

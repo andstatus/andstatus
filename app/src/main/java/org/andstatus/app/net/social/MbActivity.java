@@ -22,13 +22,16 @@ import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
 import android.text.TextUtils;
 
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.os.MyAsyncTask;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 
@@ -246,9 +249,9 @@ public class MbActivity extends AObject {
                 + ", oid:" + timelinePosition
                 + ", updated:" + MyLog.debugFormatOfDate(updatedDate)
                 + ", me:" + (accountUser.isEmpty() ? "EMPTY" : accountUser.oid)
-                + (actor.isEmpty() ? "" : ", actor:" + actor)
-                + (mbMessage.isEmpty() ? "" : ", message:" + mbMessage)
-                + (getActivity().isEmpty() ? "" : ", activity:" + getActivity())
+                + (actor.isEmpty() ? "" : ", \nactor:" + actor)
+                + (mbMessage.isEmpty() ? "" : ", \nmessage:" + mbMessage)
+                + (getActivity().isEmpty() ? "" : ", \nactivity:" + getActivity())
                 + (mbUser.isEmpty() ? "" : ", user:" + mbUser)
                 + '}';
     }
@@ -305,6 +308,12 @@ public class MbActivity extends AObject {
                             ) {
                         MyLog.v(this, "Skipped as already " + type.name() + " " + this);
                         return id;
+                    }
+                    final MyAccount myActorAccount = myContext.persistentAccounts().fromUser(actor);
+                    if (myActorAccount.isValid()) {
+                        MyLog.v(this, myActorAccount + " " + type
+                                + " '" + getMessage().oid + "' " + I18n.trimTextAt(getMessage().getBody(), 80));
+                        MyProvider.updateMessageFavorited(myContext, accountUser.originId, getMessage().msgId);
                     }
                     break;
                 case ANNOUNCE:

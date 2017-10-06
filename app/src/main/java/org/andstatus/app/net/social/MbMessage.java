@@ -217,16 +217,16 @@ public class MbMessage extends AObject {
         }
         builder.append("originId:" + originId + ",");
         if(recipients.nonEmpty()) {
-            builder.append("recipients:" + recipients + ",");
+            builder.append("\nrecipients:" + recipients + ",");
         }
         if (!attachments.isEmpty()) {
-            builder.append("attachments:" + attachments + ",");
+            builder.append("\nattachments:" + attachments + ",");
         }
         if(getInReplyTo().nonEmpty()) {
-            builder.append("inReplyTo:" + getInReplyTo() + ",");
+            builder.append("\ninReplyTo:" + getInReplyTo() + ",");
         }
         if(replies.size() > 0) {
-            builder.append("Replies:" + replies + ",");
+            builder.append("\nReplies:" + replies + ",");
         }
         return MyLog.formatKeyValue(this, builder.toString());
     }

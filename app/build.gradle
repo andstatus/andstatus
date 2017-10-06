@@ -3,8 +3,8 @@ apply plugin: "org.sonarqube"
 
 android {
     compileSdkVersion 26
-    buildToolsVersion '26.0.1'
-    project.ext.supportVersion = '26.0.1'
+    buildToolsVersion '26.0.2'
+    project.ext.supportVersion = '26.1.0'
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -81,14 +81,11 @@ dependencies {
     compile files('libs/signpost-httpclient-android-1.2.1.2.jar')
     compile files('libs/signpost-core-1.2.1.2.jar')
     compile 'org.apache.commons:commons-lang3:3.5'
-    /* Included in this project as a module now:
-            compile 'com.github.woxthebox:draglistview:1.4.7' // https://github.com/woxblom/DragListView
-     */
     compile project(':draglistview')
     compile 'com.github.scribejava:scribejava-core:4.1.0'
     compile 'junit:junit:4.12'
-    androidTestCompile 'com.android.support.test:runner:1.0.0'
-    androidTestCompile 'com.android.support.test:rules:1.0.0'
-    androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.0'
+    androidTestCompile 'com.android.support.test:runner:1.0.1'
+    androidTestCompile 'com.android.support.test:rules:1.0.1'
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.1'
     androidTestCompile "com.android.support:support-annotations:$supportVersion"
 }

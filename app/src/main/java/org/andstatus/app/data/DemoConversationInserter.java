@@ -106,7 +106,7 @@ public class DemoConversationInserter {
         MbActivity reply4 = buildActivity(author4, "Reply 4 to Reply 1 other author", reply1, null);
         addActivity(reply4);
 
-        DemoMessageInserter.increadeUpdateDate(reply4);
+        DemoMessageInserter.increaseUpdateDate(reply4);
         addPrivateMessage(reply4, TriState.FALSE);
 
         DemoConversationInserter.assertIfUserIsMyFriend(author3, true, ma);
@@ -120,24 +120,29 @@ public class DemoConversationInserter {
 
         MbUser reblogger1 = buildUserFromOid("acct:reblogger@identi.ca");
         reblogger1.avatarUrl = "http://www.avatarsdb.com/avatars/cow_face.jpg";
-        MbActivity reblog1 =  MbActivity.from(accountUser, MbActivityType.ANNOUNCE) ;
-        reblog1.setActor(reblogger1);
-        reblog1.setMessage(reply5.getMessage());
-        DemoMessageInserter.onActivityS(reblog1);
+        MbActivity reblogOf5 =  MbActivity.from(accountUser, MbActivityType.ANNOUNCE) ;
+        reblogOf5.setActor(reblogger1);
+        reblogOf5.setMessage(reply5.getMessage().shallowCopy());
+        addActivity(reblogOf5);
 
         final MbActivity reply6 = buildActivity(author3, "Reply 6 to Reply 4 - the second", reply4, null);
         reply6.getMessage().addFavoriteBy(accountUser, TriState.TRUE);
         addActivity(reply6);
+
+        MbActivity likeOf6 =  MbActivity.from(accountUser, MbActivityType.LIKE) ;
+        likeOf6.setActor(author2);
+        likeOf6.setMessage(reply6.getMessage().shallowCopy());
+        addActivity(likeOf6);
 
         MbActivity reply7 = buildActivity(getAuthor1(), "Reply 7 to Reply 2 is about "
         + DemoData.PUBLIC_MESSAGE_TEXT + " and something else", reply2, null);
         addPrivateMessage(reply7, TriState.FALSE);
         
         MbActivity reply8 = buildActivity(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
-        MbActivity reblogOfNewActivity =  MbActivity.from(accountUser, MbActivityType.ANNOUNCE) ;
-        reblogOfNewActivity.setActor(author3);
-        reblogOfNewActivity.setActivity(reply8);
-        DemoMessageInserter.onActivityS(reblogOfNewActivity);
+        MbActivity reblogOfNewActivity8 =  MbActivity.from(accountUser, MbActivityType.ANNOUNCE) ;
+        reblogOfNewActivity8.setActor(author3);
+        reblogOfNewActivity8.setActivity(reply8);
+        addActivity(reblogOfNewActivity8);
 
         MbActivity reply9 = buildActivity(author2, "Reply 9 to Reply 7", reply7, null);
         reply9.getMessage().attachments
@@ -149,13 +154,18 @@ public class DemoConversationInserter {
         addActivity(buildActivity(author4, "A duplicate of " + reply9.getMessage().getBody(),
                 null, null));
 
+        MbActivity myLikeOf9 =  MbActivity.from(accountUser, MbActivityType.LIKE) ;
+        myLikeOf9.setActor(accountUser);
+        myLikeOf9.setMessage(reply9.getMessage().shallowCopy());
+        addActivity(myLikeOf9);
+
         // Message downloaded by another account
         final MyAccount ma2 = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT2_NAME);
         MbUser accountUser2 = ma2.toPartialUser();
         author3.followedByMe = TriState.TRUE;
         MbActivity reply10 = buildActivity(accountUser2, author3, "Reply 10 to Reply 8", reply8, null, DownloadStatus.LOADED);
         assertEquals("The third is a message Author", author3,  reply10.getAuthor());
-        DemoMessageInserter.onActivityS(reply10);
+        addActivity(reply10);
         author3.followedByMe = TriState.UNKNOWN;
 
         DemoConversationInserter.assertIfUserIsMyFriend(author3, true, ma2);
@@ -167,6 +177,12 @@ public class DemoConversationInserter {
         MbActivity reply13 = buildActivity(accountUser, "My reply to Reply 2", reply2, null);
         MbActivity reply14 = buildActivity(author3, "Reply to my message 13", reply13, null);
         addActivity(reply14);
+
+        MbActivity reblogOf14 =  MbActivity.from(accountUser, MbActivityType.ANNOUNCE) ;
+        reblogOf14.setActor(author2);
+        reblogOf14.setMessage(reply14.getMessage().shallowCopy());
+        addActivity(reblogOf14);
+
     }
 
     private MbUser getAuthor1() {

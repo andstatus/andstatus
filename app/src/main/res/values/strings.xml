@@ -92,10 +92,12 @@
   <string name="command_stop_following_user">Stop following</string>
   <string name="crash_dialog_text">AndStatus application crashed. You can help to fix the problem. Please press Ok button to send the Crash Report to developers via email.</string>
   <string name="crash_dialog_comment_prompt">Please provide below your comments about the problem. It would be very helpful for a fix to know: when it occurred and maybe even how it could be reproduced.</string>
+  <string name="created">created</string>
   <string name="created_label">Created</string>
   <string name="custom_locale_title">Application language</string>
   <string name="set_as_default_timeline">Set as Default Timeline</string>
   <string name="default_timeline_summary">Timeline that will be opened by a Launcher: \"%s\"</string>
+  <string name="deleted">deleted</string>
   <string name="device_default">Device default</string>
   <string name="dialog_summary_acquiring_an_access_token">Please wait while AndStatus is exchanging an OAuth Request token for Access token</string>
   <string name="dialog_summary_acquiring_a_request_token">Please wait while AndStatus is acquiring a request token for OAuth</string>
@@ -168,6 +170,7 @@
   <string name="fetch_frequency_entries_1_day">day</string>
   <string name="filters_title">Filters</string>
   <string name="filters_summary">Global filters to be applied to all messages</string>
+  <string name="followed">followed</string>
   <string name="followed_by">Followed by</string>
   <string name="followers">Followers</string>
   <string name="followers_of">Followers of \"%1s\"</string>
@@ -208,6 +211,9 @@
   <string name="history_time_entries_1month">1 month</string>
   <string name="history_time_entries_1year">1 year</string>
   <string name="history_time_entries_10years">10 years</string>
+  <string name="host_hint">E.g. gnusocial.net, social.10one.net</string>
+  <string name="host_hint_mastodon">The address or domain of any instance, e.g. mastodon.social, icosahedron.website,
+    social.tchncs.de</string>
   <string name="id_of_this_message_was_not_specified">Id of this message was not specified</string>
   <string name="in_combined_global_search_label">Include in \"Search in Internet\" while in Combined Timeline</string>
   <string name="in_combined_public_reload_label">Include in \"Syncing\" while in Combined Public Timeline</string>
@@ -220,9 +226,6 @@
   <string name="label_conversation">Conversation</string>
   <string name="label_host">Host</string>
   <string name="label_host_mastodon">Mastodon instance</string>
-  <string name="host_hint">E.g. gnusocial.net, social.10one.net</string>
-  <string name="host_hint_mastodon">The address or domain of any instance, e.g. mastodon.social, icosahedron.website,
-    social.tchncs.de</string>
   <string name="label_manage_origin_systems">Manage social networks</string>
   <string name="label_origin_list">Social networks</string>
   <string name="label_origin_name">Name of the Social network</string>
@@ -234,6 +237,7 @@
   <string name="label_with_media">with media</string>
   <string name="last_synced">Last time successfully synced</string>
   <string name="latest_error_label">Latest error</string>
+  <string name="liked">favorited</string>
   <string name="loading">Loading</string>
   <string name="long_press_to_open_context_menu">Long press to open Context Menu</string>
   <string name="long_press_to_open_context_menu_on">Long press an item to open its Context Menu</string>
@@ -348,6 +352,7 @@
   <string name="preference_notification_icon_alternative_on">Icon as a circle</string>
   <string name="preference_true_black_title">True black background</string>
   <string name="preference_use_kitkat_media_chooser_title">Modern interface to select an attachment</string>
+  <string name="reblogged">reposted</string>
   <string name="reblogged_by">reposted by %1$s</string>
   <string name="reblogged_by_pumpio">shared by %1$s</string>
   <string name="reblogged_by_twitter">retweeted by %1$s</string>
@@ -541,8 +546,12 @@
   <string name="top">Top</string>
   <string name="total_counters">Total counters</string>
   <string name="translator_credits">Translator credits</string>
+  <string name="undid_reblog">undid reblog</string>
+  <string name="undid_follow">stopped following</string>
+  <string name="undid_like">undid like</string>
   <string name="unimplemented">Not implemented.</string>
   <string name="unknown_userlist">(Unknown user list)</string>
+  <string name="updated">updated</string>
   <string name="use_legacy_http_protocol_title">Use legacy HTTP protocol</string>
   <string name="user_in_timeline_entries_username">username</string>
   <string name="user_in_timeline_entries_at_username">"@username"</string>

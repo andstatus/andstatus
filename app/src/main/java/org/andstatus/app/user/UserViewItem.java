@@ -16,14 +16,18 @@
 
 package org.andstatus.app.user;
 
+import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.AvatarFile;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.database.DownloadTable;
+import org.andstatus.app.database.UserTable;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
@@ -125,4 +129,41 @@ public class UserViewItem extends ViewItem implements Comparable<UserViewItem> {
             avatarFile.showImage(myActivity, imageView);
         }
     }
+
+    public void populateFromCursor(Cursor cursor) {
+        MbUser user = mbUser;
+        user.oid = DbUtils.getString(cursor, UserTable.USER_OID);
+        user.setUserName(DbUtils.getString(cursor, UserTable.USERNAME));
+        user.setWebFingerId(DbUtils.getString(cursor, UserTable.WEBFINGER_ID));
+        user.setRealName(DbUtils.getString(cursor, UserTable.REAL_NAME));
+        user.setDescription(DbUtils.getString(cursor, UserTable.DESCRIPTION));
+        user.location = DbUtils.getString(cursor, UserTable.LOCATION);
+
+        user.setProfileUrl(DbUtils.getString(cursor, UserTable.PROFILE_URL));
+        user.setHomepage(DbUtils.getString(cursor, UserTable.HOMEPAGE));
+
+        user.msgCount = DbUtils.getLong(cursor, UserTable.MSG_COUNT);
+        user.favoritesCount = DbUtils.getLong(cursor, UserTable.FAVORITES_COUNT);
+        user.followingCount = DbUtils.getLong(cursor, UserTable.FOLLOWING_COUNT);
+        user.followersCount = DbUtils.getLong(cursor, UserTable.FOLLOWERS_COUNT);
+
+        user.setCreatedDate(DbUtils.getLong(cursor, UserTable.CREATED_DATE));
+        user.setUpdatedDate(DbUtils.getLong(cursor, UserTable.UPDATED_DATE));
+
+        myFollowers = MyQuery.getMyFollowersOf(getUserId());
+        AvatarFile avatarFile = AvatarFile.fromCursor(getUserId(), cursor, DownloadTable.AVATAR_FILE_NAME);
+        setAvatarFile(avatarFile);
+
+        populated = true;
+    }
+
+    public void populateActorFromCursor(Cursor cursor) {
+        MbUser user = mbUser;
+        user.setRealName(DbUtils.getString(cursor, UserTable.SENDER_NAME));
+        AvatarFile avatarFile = AvatarFile.fromCursor(getUserId(), cursor, DownloadTable.ACTOR_AVATAR_FILE_NAME);
+        setAvatarFile(avatarFile);
+
+        populated = true;
+    }
+
 }

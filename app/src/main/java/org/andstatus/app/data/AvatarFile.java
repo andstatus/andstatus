@@ -36,8 +36,8 @@ public class AvatarFile extends ImageFile {
     }
 
     @NonNull
-    public static AvatarFile fromCursor(long userId, Cursor cursor) {
-        String avatarFilename = DbUtils.getString(cursor, DownloadTable.AVATAR_FILE_NAME);
+    public static AvatarFile fromCursor(long userId, Cursor cursor, String avatarColumnName) {
+        String avatarFilename = DbUtils.getString(cursor, avatarColumnName);
         return new AvatarFile(userId, avatarFilename);
     }
 

@@ -31,8 +31,8 @@ public class ProjectionMap {
     public static final String ACTIVITY_TABLE_ALIAS = "act1";
     public static final String MSG_TABLE_ALIAS = "msg1";
     public static final String ATTACHMENT_IMAGE_TABLE_ALIAS = "img";
+    public static final String ACTOR_AVATAR_IMAGE_TABLE_ALIAS = "acav";
     public static final String AVATAR_IMAGE_TABLE_ALIAS = "av";
- 
     /**
      * Projection map used by SQLiteQueryBuilder
      * Projection map for a Timeline
@@ -61,6 +61,8 @@ public class ProjectionMap {
         MSG.put(DownloadTable.FILE_NAME, DownloadTable.FILE_NAME);
         MSG.put(DownloadTable.AVATAR_FILE_NAME, AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.FILE_NAME
                 + " AS " + DownloadTable.AVATAR_FILE_NAME);
+        MSG.put(DownloadTable.ACTOR_AVATAR_FILE_NAME, ACTOR_AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.FILE_NAME
+                + " AS " + DownloadTable.ACTOR_AVATAR_FILE_NAME);
         MSG.put(DownloadTable.IMAGE_FILE_NAME, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.FILE_NAME
                 + " AS " + DownloadTable.IMAGE_FILE_NAME);
         MSG.put(DownloadTable.IMAGE_ID, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable._ID

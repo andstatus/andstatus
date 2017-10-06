@@ -36,6 +36,7 @@ import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.OriginTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.msg.KeywordsFilter;
+import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
@@ -207,7 +208,13 @@ public class MyProvider extends ContentProvider {
             MyLog.v(MyProvider.TAG, method + "; Database is null");
             return;
         }
-        int favorited = MyQuery.getStargazers(db, originId, msgId).isEmpty() ? 0 : 1;
+        int favorited = 0;
+        for (MbUser stargazer : MyQuery.getStargazers(db, originId, msgId)) {
+            if (myContext.persistentAccounts().fromUser(stargazer).isValid()) {
+                favorited = 1;
+                break;
+            }
+        }
         String sql = "UPDATE " + MsgTable.TABLE_NAME + " SET " + MsgTable.FAVORITED + "=" + favorited
                 + " WHERE " + MsgTable._ID + "=" + msgId;
         try {

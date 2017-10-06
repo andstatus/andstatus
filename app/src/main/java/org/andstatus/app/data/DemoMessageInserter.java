@@ -39,6 +39,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UrlUtils;
 
 import java.net.URL;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -138,8 +139,8 @@ public class DemoMessageInserter {
         new DemoMessageInserter(activity.accountUser).onActivity(activity);
     }
 
-    static void increadeUpdateDate(MbActivity activity) {
-        // In order for message not to be ignored
+    static void increaseUpdateDate(MbActivity activity) {
+        // In order for a message not to be ignored
         activity.setUpdatedDate(activity.getUpdatedDate() + 1);
         activity.getMessage().setUpdatedDate(activity.getMessage().getUpdatedDate() + 1);
     }
@@ -176,17 +177,28 @@ public class DemoMessageInserter {
                 MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, message.msgId));
 
         if (activity.type == MbActivityType.LIKE) {
-            long favoritedUser = MyQuery.conditionToLongColumnValue(ActivityTable.TABLE_NAME,
-                    ActivityTable.ACTOR_ID, "t." + ActivityTable.ACTIVITY_TYPE
-                            + "=" + MbActivityType.LIKE.id +" AND t." + ActivityTable.MSG_ID + "=" + messageId);
-            assertEquals("User, who favorited " + message, actor.userId, favoritedUser);
+            List<MbUser> stargazers = MyQuery.getStargazers(MyContextHolder.get().getDatabase(), accountUser.originId, message.msgId);
+            boolean found = false;
+            for (MbUser stargazer : stargazers) {
+                if (stargazer.userId == actor.userId) {
+                    found = true;
+                    break;
+                }
+            }
+            assertTrue("User, who favorited, is not found among stargazers: " + activity
+                    + "\nstargazers: " + stargazers, found);
         }
 
         if (activity.type == MbActivityType.ANNOUNCE) {
             long rebloggerId = MyQuery.conditionToLongColumnValue(ActivityTable.TABLE_NAME,
                     ActivityTable.ACTOR_ID, "t." + ActivityTable.ACTIVITY_TYPE
                             + "=" + MbActivityType.ANNOUNCE.id +" AND t." + ActivityTable.MSG_ID + "=" + messageId);
-            assertEquals("Reblogger found for " + message, actor.userId, rebloggerId);
+            assertEquals("Reblogger found for " + activity, actor.userId, rebloggerId);
+
+            if (MyContextHolder.get().persistentAccounts().fromUser(actor).isValid()) {
+                assertEquals( "Message is not reblogged by my actor " + activity, 1,
+                        MyQuery.msgIdToLongColumnValue(MsgTable.REBLOGGED, message.msgId));
+            }
         }
 
         if (!message.replies.isEmpty()) {

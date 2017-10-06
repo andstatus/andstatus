@@ -16,11 +16,19 @@
 
 package org.andstatus.app.activity;
 
+import android.database.Cursor;
 import android.support.annotation.NonNull;
+import android.support.v4.util.Pair;
 
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.database.ActivityTable;
+import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.msg.MessageViewItem;
 import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbObjectType;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.user.UserViewItem;
 
@@ -29,12 +37,19 @@ import org.andstatus.app.user.UserViewItem;
  */
 public class ActivityViewItem extends ViewItem implements Comparable<ActivityViewItem> {
     public static final ActivityViewItem EMPTY = new ActivityViewItem();
-    private long insDate = 0;
     private long id = 0;
+    private Origin origin = Origin.EMPTY;
+    private long insDate = 0;
+    private long updatedDate = 0;
     MbActivityType activityType = MbActivityType.EMPTY;
+
+    private long messageId;
+    private long userId;
+    private long objActivityId;
+
     MbObjectType objectType = MbObjectType.EMPTY;
     UserViewItem actor = UserViewItem.EMPTY;
-    MessageViewItem message = MessageViewItem.EMPTY;
+    public MessageViewItem message = MessageViewItem.EMPTY;
     UserViewItem user = UserViewItem.EMPTY;
 
     @Override
@@ -52,4 +67,38 @@ public class ActivityViewItem extends ViewItem implements Comparable<ActivityVie
         // TODO: replace with Long#compare
         return insDate < o.insDate ? -1 : (insDate == o.insDate ? 0 : 1);
     }
+
+    @NonNull
+    @Override
+    public Pair<ViewItem, Boolean> fromCursor(Cursor cursor, KeywordsFilter keywordsFilter, KeywordsFilter searchQuery,
+                                              boolean hideRepliesNotToMeOrFriends) {
+        ActivityViewItem item = new ActivityViewItem().loadCursor(cursor);
+        boolean skip = false;
+        // TODO
+        return new Pair<>(item, skip);
+    }
+
+    private ActivityViewItem loadCursor(Cursor cursor) {
+        id = DbUtils.getLong(cursor, ActivityTable.ACTIVITY_ID);
+        activityType = MbActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
+        insDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
+        updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
+        origin = MyContextHolder.get().persistentOrigins().fromId(DbUtils.getLong(cursor, MsgTable.ORIGIN_ID));
+
+        actor = UserViewItem.fromUserId(origin, DbUtils.getLong(cursor, ActivityTable.ACTOR_ID));
+        actor.populateActorFromCursor(cursor);
+
+        messageId = DbUtils.getLong(cursor, ActivityTable.MSG_ID);
+        userId = DbUtils.getLong(cursor, ActivityTable.USER_ID);
+        objActivityId = DbUtils.getLong(cursor, ActivityTable.OBJ_ACTIVITY_ID);
+
+        if (messageId != 0) {
+            message = MessageViewItem.fromCursorRow(MyContextHolder.get(), cursor);
+        } else if (userId != 0) {
+            user = UserViewItem.fromUserId(origin, userId);
+            user.populateFromCursor(cursor);
+        }
+        return this;
+    }
+
 }

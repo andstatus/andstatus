@@ -9,15 +9,12 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.SqlWhere;
 import org.andstatus.app.data.UserListSql;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.list.SyncLoader;
-import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -125,37 +122,14 @@ public class UserListLoader extends SyncLoader<UserViewItem> {
     }
 
     private void populateItem(Cursor cursor) {
-        long userId = DbUtils.getLong(cursor, BaseColumns._ID);
-        UserViewItem item = getById(userId);
+        UserViewItem item = getById(DbUtils.getLong(cursor, BaseColumns._ID));
         if (item == null) {
+            long userId = DbUtils.getLong(cursor, BaseColumns._ID);
             Origin origin = MyContextHolder.get().persistentOrigins().fromId(
                     DbUtils.getLong(cursor, UserTable.ORIGIN_ID));
             item = addUserIdToList(origin, userId);
         }
-        MbUser user = item.mbUser;
-        user.oid = DbUtils.getString(cursor, UserTable.USER_OID);
-        user.setUserName(DbUtils.getString(cursor, UserTable.USERNAME));
-        user.setWebFingerId(DbUtils.getString(cursor, UserTable.WEBFINGER_ID));
-        user.setRealName(DbUtils.getString(cursor, UserTable.REAL_NAME));
-        user.setDescription(DbUtils.getString(cursor, UserTable.DESCRIPTION));
-        user.location = DbUtils.getString(cursor, UserTable.LOCATION);
-
-        user.setProfileUrl(DbUtils.getString(cursor, UserTable.PROFILE_URL));
-        user.setHomepage(DbUtils.getString(cursor, UserTable.HOMEPAGE));
-
-        user.msgCount = DbUtils.getLong(cursor, UserTable.MSG_COUNT);
-        user.favoritesCount = DbUtils.getLong(cursor, UserTable.FAVORITES_COUNT);
-        user.followingCount = DbUtils.getLong(cursor, UserTable.FOLLOWING_COUNT);
-        user.followersCount = DbUtils.getLong(cursor, UserTable.FOLLOWERS_COUNT);
-
-        user.setCreatedDate(DbUtils.getLong(cursor, UserTable.CREATED_DATE));
-        user.setUpdatedDate(DbUtils.getLong(cursor, UserTable.UPDATED_DATE));
-
-        item.myFollowers = MyQuery.getMyFollowersOf(userId);
-        AvatarFile avatarFile = AvatarFile.fromCursor(item.getUserId(), cursor);
-        item.setAvatarFile(avatarFile);
-
-        item.populated = true;
+        item.populateFromCursor(cursor);
     }
 
     private UserViewItem getById(long userId) {

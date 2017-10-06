@@ -31,7 +31,6 @@ import org.andstatus.app.database.DownloadTable;
 import org.andstatus.app.database.FriendshipTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
-import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -140,16 +139,9 @@ public class TimelineSql {
             case USER:
             case SENT:
                 SelectedUserIds userIds = new SelectedUserIds(timeline);
-                // Reblogs are included also
-                msgWhere.append(MsgTable.AUTHOR_ID + " " + userIds.getSql()
-                        + " OR "
-                        + ActivityTable.ACTOR_ID + " " + userIds.getSql()
-                        + " OR "
-                        + "("
-                        + UserTable.LINKED_USER_ID + " " + userIds.getSql()
-                        + " AND "
-                        + ActivityTable.ACTIVITY_TYPE + "=" + MbActivityType.ANNOUNCE.id
-                        + ")");
+                // All actions by this User(s)
+                activityWhere.append(ActivityTable.ACTOR_ID + " " + userIds.getSql());
+                msgIsRequired = false;
                 break;
             case NOTIFICATIONS:
                 msgIsRequired = false;
@@ -169,8 +161,11 @@ public class TimelineSql {
                     + ActivityTable.ACTIVITY_TYPE + ", "
                     + ActivityTable.ACTOR_ID + ", "
                     + ActivityTable.MSG_ID + ", "
-                    + ActivityTable.USER_ID
-                    + " FROM " + ActivityTable.TABLE_NAME + ") AS " + ProjectionMap.ACTIVITY_TABLE_ALIAS;
+                    + ActivityTable.USER_ID + ", "
+                    + ActivityTable.OBJ_ACTIVITY_ID + ", "
+                    + ActivityTable.UPDATED_DATE
+                    + " FROM " + ActivityTable.TABLE_NAME + activityWhere.getWhere()
+                    + ") AS " + ProjectionMap.ACTIVITY_TABLE_ALIAS;
             String msgTable = activityTable + (msgIsRequired ? " INNER" : " LEFT") + " JOIN "
                     + "(SELECT * FROM (" + MsgTable.TABLE_NAME + ")" + msgWhere.getWhere() + ")"
                         + " AS " + ProjectionMap.MSG_TABLE_ALIAS
@@ -221,6 +216,19 @@ public class TimelineSql {
                     + " FROM " + UserTable.TABLE_NAME + ") AS sender ON "
                     + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.ACTOR_ID + "=sender."
                     + BaseColumns._ID;
+
+            if (columns.contains(DownloadTable.ACTOR_AVATAR_FILE_NAME)) {
+                tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
+                        + DownloadTable.USER_ID + ", "
+                        + DownloadTable.DOWNLOAD_STATUS + ", "
+                        + DownloadTable.FILE_NAME
+                        + " FROM " + DownloadTable.TABLE_NAME + ") AS " + ProjectionMap.ACTOR_AVATAR_IMAGE_TABLE_ALIAS
+                        + " ON "
+                        + ProjectionMap.ACTOR_AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_STATUS
+                        + "=" + DownloadStatus.LOADED.save() + " AND "
+                        + ProjectionMap.ACTOR_AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.USER_ID
+                        + "=" + ActivityTable.ACTOR_ID;
+            }
         }
         if (columns.contains(UserTable.IN_REPLY_TO_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
@@ -266,6 +274,9 @@ public class TimelineSql {
         columnNames.add(ActivityTable.INS_DATE);
         columnNames.add(ActivityTable.ACTIVITY_TYPE);
         columnNames.add(ActivityTable.ACTOR_ID);
+        if (MyPreferences.getShowAvatars()) {
+            columnNames.add(DownloadTable.ACTOR_AVATAR_FILE_NAME);
+        }
         columnNames.add(ActivityTable.MSG_ID);
         columnNames.add(ActivityTable.USER_ID);
         return columnNames;

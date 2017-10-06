@@ -44,10 +44,6 @@ public abstract class BaseMessageAdapter<T extends BaseMessageViewItem> extends 
     protected final boolean showButtonsBelowMessages =
             SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SHOW_BUTTONS_BELOW_MESSAGE, true);
     protected final MessageContextMenu contextMenu;
-    protected final boolean showAvatars = MyPreferences.getShowAvatars();
-    protected final boolean showAttachedImages = MyPreferences.getDownloadAndDisplayAttachedImages();
-    protected final boolean markReplies = SharedPreferencesUtil.getBoolean(
-            MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, true);
     protected Set<Long> preloadedImages = new HashSet<>(100);
 
     public BaseMessageAdapter(MessageContextMenu contextMenu, TimelineData<T> listData) {
@@ -62,6 +58,11 @@ public abstract class BaseMessageAdapter<T extends BaseMessageViewItem> extends 
         view.setOnClickListener(this);
         setPosition(view, position);
         T item = getItem(position);
+        populateView(view, item, position);
+        return view;
+    }
+
+    public void populateView(ViewGroup view, T item, int position) {
         showRebloggers(view, item);
         MyUrlSpan.showText(view, R.id.message_author, item.authorName, false, false);
         showMessageBody(view, item);
@@ -80,9 +81,7 @@ public abstract class BaseMessageAdapter<T extends BaseMessageViewItem> extends 
         } else {
             showFavorited(view, item);
         }
-
         showMessageNumberEtc(view, item, position);
-        return view;
     }
 
     protected abstract void showAvatarEtc(ViewGroup view, T item);

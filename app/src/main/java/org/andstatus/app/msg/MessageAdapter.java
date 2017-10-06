@@ -30,7 +30,7 @@ import org.andstatus.app.util.MyUrlSpan;
  */
 public class MessageAdapter extends BaseMessageAdapter<MessageViewItem> {
     private int positionPrev = -1;
-    private int messageNumberShownCounter = 0;
+    private int itemNumberShownCounter = 0;
     private final String TOP_TEXT;
 
     public MessageAdapter(MessageContextMenu contextMenu, TimelineData<MessageViewItem> listData) {
@@ -82,11 +82,11 @@ public class MessageAdapter extends BaseMessageAdapter<MessageViewItem> {
                 text = Integer.toString(position + 1);
                 break;
             default:
-                text = messageNumberShownCounter < 3 ? Integer.toString(position + 1) : "";
+                text = itemNumberShownCounter < 3 ? Integer.toString(position + 1) : "";
                 break;
         }
         MyUrlSpan.showText(view, R.id.message_number, text, false, false);
-        messageNumberShownCounter++;
+        itemNumberShownCounter++;
         positionPrev = position;
     }
 

@@ -200,6 +200,8 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
     protected BaseTimelineAdapter<T> newListAdapter() {
         switch (getParamsNew().getTimelineType()) {
             case NOTIFICATIONS:
+            case USER:
+            case SENT:
                 return (BaseTimelineAdapter<T>) new ActivityAdapter(
                         contextMenu, (TimelineData<ActivityViewItem>) getListData());
             default:

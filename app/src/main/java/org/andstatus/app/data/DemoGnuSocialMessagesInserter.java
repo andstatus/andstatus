@@ -81,7 +81,7 @@ public class DemoGnuSocialMessagesInserter {
 
         MbActivity reply4 = buildActivity(author4, "Reply 4 to Reply 1, " + DemoData.PUBLIC_MESSAGE_TEXT + " other author", reply1, null);
         addActivity(reply4);
-        DemoMessageInserter.increadeUpdateDate(reply4);
+        DemoMessageInserter.increaseUpdateDate(reply4);
         addPrivateMessage(reply4, TriState.TRUE);
 
         addActivity(buildActivity(author2, "Reply 5 to Reply 4", reply4, null));
