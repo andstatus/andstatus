@@ -40,7 +40,7 @@ public class ConversationViewLoaderTest implements ProgressPublisher {
         progressCounter = 0;
         loader.load(this);
         List<ConversationViewItem> list = loader.getList();
-        assertTrue("List is not empty", !list.isEmpty());
+        assertTrue("List is empty", !list.isEmpty());
         boolean indentFound = false;
         boolean orderFound = false;
         for( ConversationViewItem oMsg : list) {
@@ -51,8 +51,8 @@ public class ConversationViewLoaderTest implements ProgressPublisher {
                 orderFound = true;
             }
         }
-        assertTrue("Indented message found", indentFound);
-        assertTrue("Ordered message found", orderFound);
+        assertTrue("Indented message found in " + list, indentFound);
+        assertTrue("Ordered message found in " + list, orderFound);
         assertTrue(progressCounter > 0);
     }
 

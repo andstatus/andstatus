@@ -23,6 +23,7 @@ import android.view.View;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.msg.MessageEditorContainer;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.ContextMenuHeader;
@@ -118,6 +119,9 @@ public class UserListContextMenu extends MyContextMenu {
     public UserViewItem getViewItem() {
         if (mViewItem == null) {
             return UserViewItem.getEmpty("");
+        }
+        if (ActivityViewItem.class.isAssignableFrom(mViewItem.getClass())) {
+            return ((ActivityViewItem) mViewItem).user;
         }
         return (UserViewItem) mViewItem;
     }

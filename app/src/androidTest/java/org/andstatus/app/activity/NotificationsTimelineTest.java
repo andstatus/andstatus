@@ -14,28 +14,24 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.timeline;
+package org.andstatus.app.activity;
 
 import android.content.Intent;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.net.social.MbActivityType;
+import org.andstatus.app.timeline.TimelineActivityTest;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.junit.Test;
 
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
-public class UserTimelineTest extends TimelineActivityTest {
+public class NotificationsTimelineTest extends TimelineActivityTest {
 
     @Override
     protected Intent getActivityIntent() {
@@ -45,28 +41,15 @@ public class UserTimelineTest extends TimelineActivityTest {
         final MyAccount ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
-        long userId = MyQuery.oidToId(OidEnum.USER_OID, ma.getOriginId(), DemoData.CONVERSATION_AUTHOR_SECOND_USER_OID);
 
         MyLog.i(this, "setUp ended");
-        final Timeline timeline = Timeline.getTimeline(TimelineType.USER, ma, userId, ma.getOrigin());
-        timeline.forgetPositionsAndDates();
-        return new Intent(Intent.ACTION_VIEW, MatchedUri.getTimelineUri(timeline));
+        return new Intent(Intent.ACTION_VIEW,
+                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.NOTIFICATIONS, ma, 0, ma.getOrigin())));
     }
 
     @Test
-    public void openSecondAuthorTimeline() throws InterruptedException {
-        final String method = "openSecondAuthorTimeline";
-        TestSuite.waitForListLoaded(getActivity(), 10);
-        TimelineData<ActivityViewItem> timelineData = getActivity().getListData();
-        ActivityViewItem followItem = ActivityViewItem.EMPTY;
-        for (int position = 0; position < timelineData.size(); position++) {
-            ActivityViewItem item = timelineData.getItem(position);
-            if (item.activityType == MbActivityType.FOLLOW) {
-                followItem = item;
-            }
-        }
-        assertNotEquals("No follow action by " + DemoData.CONVERSATION_AUTHOR_SECOND_USER_OID
-                + " in " + timelineData,
-                ActivityViewItem.EMPTY, followItem);
+    public void openNotifications() throws InterruptedException {
+        final String method = "openNotifications";
+        TestSuite.waitForListLoaded(getActivity(), 4);
     }
 }

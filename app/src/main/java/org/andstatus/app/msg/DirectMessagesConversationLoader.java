@@ -29,6 +29,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.ProjectionMap;
 import org.andstatus.app.data.SelectedUserIds;
 import org.andstatus.app.database.ActivityTable;
+import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -67,14 +68,11 @@ public class DirectMessagesConversationLoader<T extends ConversationItem> extend
     }
 
     @NonNull
+    // TODO: Actually this is not exactly what we need, because we don't check recipients
     private String getSelectionForActorAndRecipient(String actor, String recipients) {
-        return getOneSelection(actor, recipients) + " OR " + getOneSelection(recipients, actor);
-    }
-
-    @NonNull
-    private String getOneSelection(String actor, String recipients) {
-        return "(" + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.ACTOR_ID + actor
-                + " AND " + ActivityTable.TABLE_NAME + "." + ActivityTable.RECIPIENT_ID + recipients + ")";
+        return "(" + MsgTable.PRIVATE + "=1" +
+                " AND (" + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.ACTOR_ID + actor
+                + " OR " + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.ACTOR_ID + recipients + "))";
     }
 
 }

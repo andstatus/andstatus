@@ -69,7 +69,6 @@ public class TimelineSql {
         String linkedUserField = ActivityTable.ACCOUNT_ID;
         boolean authorNameDefined = false;
         String authorTableName = "";
-        boolean msgIsRequired = true;
         switch (timeline.getTimelineType()) {
             case FOLLOWERS:
             case MY_FOLLOWERS:
@@ -141,10 +140,6 @@ public class TimelineSql {
                 SelectedUserIds userIds = new SelectedUserIds(timeline);
                 // All actions by this User(s)
                 activityWhere.append(ActivityTable.ACTOR_ID + " " + userIds.getSql());
-                msgIsRequired = false;
-                break;
-            case NOTIFICATIONS:
-                msgIsRequired = false;
                 break;
             default:
                 break;
@@ -154,7 +149,8 @@ public class TimelineSql {
             if (timeline.getTimelineType().isAtOrigin() && !timeline.isCombined()) {
                 msgWhere.append(MsgTable.ORIGIN_ID + "=" + timeline.getOrigin().getId());
             }
-            String activityTable = "(SELECT " + BaseColumns._ID + ", "
+            String activityTable = "(SELECT "
+                    + ActivityTable._ID + ", "
                     + ActivityTable.INS_DATE + ", "
                     + (tables.contains(UserTable.LINKED_USER_ID) ? ""
                         : linkedUserField + " AS " + UserTable.LINKED_USER_ID + ", ")
@@ -166,7 +162,8 @@ public class TimelineSql {
                     + ActivityTable.UPDATED_DATE
                     + " FROM " + ActivityTable.TABLE_NAME + activityWhere.getWhere()
                     + ") AS " + ProjectionMap.ACTIVITY_TABLE_ALIAS;
-            String msgTable = activityTable + (msgIsRequired ? " INNER" : " LEFT") + " JOIN "
+            String msgTable = activityTable
+                    + (timeline.getTimelineType().showsActivities() ? " LEFT" : " INNER") + " JOIN "
                     + "(SELECT * FROM (" + MsgTable.TABLE_NAME + ")" + msgWhere.getWhere() + ")"
                         + " AS " + ProjectionMap.MSG_TABLE_ALIAS
                     + " ON (" + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID + "="
@@ -287,6 +284,7 @@ public class TimelineSql {
      */
     public static Set<String> getTimelineProjection() {
         Set<String> columnNames = getBaseProjection();
+        columnNames.add(ActivityTable.ACTIVITY_ID);
         if (!columnNames.contains(MsgTable.AUTHOR_ID)) {
             columnNames.add(MsgTable.AUTHOR_ID);
         }
@@ -299,7 +297,7 @@ public class TimelineSql {
 
     private static Set<String> getBaseProjection() {
         Set<String> columnNames = new HashSet<>();
-        columnNames.add(MsgTable._ID);
+        columnNames.add(ActivityTable.MSG_ID);
         columnNames.add(MsgTable.ORIGIN_ID);
         columnNames.add(UserTable.AUTHOR_NAME);
         columnNames.add(MsgTable.BODY);

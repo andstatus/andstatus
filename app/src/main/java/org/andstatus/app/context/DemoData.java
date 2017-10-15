@@ -53,7 +53,8 @@ public final class DemoData {
 
     private static final String TEST_ORIGIN_PARENT_HOST = "example.com";
     public static final String PUMPIO_ORIGIN_NAME = "PumpioTest";
-    private static final String PUMPIO_TEST_ACCOUNT_USERNAME = "t131t@identi.ca";
+    public static final String PUMPIO_MAIN_HOST = "pump1." + TEST_ORIGIN_PARENT_HOST;
+    private static final String PUMPIO_TEST_ACCOUNT_USERNAME = "t131t@" + PUMPIO_MAIN_HOST;
     public static final String PUMPIO_TEST_ACCOUNT_NAME = PUMPIO_TEST_ACCOUNT_USERNAME + "/" + PUMPIO_ORIGIN_NAME;
     public static final String PUMPIO_TEST_ACCOUNT_USER_OID = "acct:" + PUMPIO_TEST_ACCOUNT_USERNAME;
 
@@ -78,17 +79,20 @@ public final class DemoData {
 
     public static final OriginType CONVERSATION_ORIGIN_TYPE = OriginType.PUMPIO;
     public static final String CONVERSATION_ORIGIN_NAME = PUMPIO_ORIGIN_NAME;
-    private static final String CONVERSATION_ACCOUNT_USERNAME = "testerofandstatus@identi.ca";
+    private static final String CONVERSATION_ACCOUNT_USERNAME = "testerofandstatus@" + PUMPIO_MAIN_HOST;
     public static final String CONVERSATION_ACCOUNT_NAME = CONVERSATION_ACCOUNT_USERNAME + "/" + CONVERSATION_ORIGIN_NAME;
     public static final String CONVERSATION_ACCOUNT_USER_OID = "acct:" + CONVERSATION_ACCOUNT_USERNAME;
     public static final String CONVERSATION_ACCOUNT_AVATAR_URL = "http://andstatus.org/images/andstatus-logo.png";
-    public static final String CONVERSATION_ENTRY_MESSAGE_OID = "http://identi.ca/testerofandstatus/comment/thisisfakeuri" + TESTRUN_UID;
-    public static final String CONVERSATION_ENTRY_USER_OID = "acct:first@example.net";
-    public static final String CONVERSATION_MEMBER_USERNAME = "third@pump.example.com";
-    public static final String CONVERSATION_MEMBER_USER_OID = "acct:" + CONVERSATION_MEMBER_USERNAME;
-    public static final String CONVERSATION_MENTIONS_MESSAGE_OID = "http://identi.ca/second/comment/replywithmentions" + TESTRUN_UID;
-    public static final String HTML_MESSAGE_OID = "http://identi.ca/testerofandstatus/comment/htmlfakeuri" + TESTRUN_UID;
-    private static final String CONVERSATION_ACCOUNT2_USERNAME = "tester2ofandstatus@identi.ca";
+    public static final String CONVERSATION_ENTRY_MESSAGE_OID = "http://" + PUMPIO_MAIN_HOST + "/testerofandstatus/comment/thisisfakeuri" + TESTRUN_UID;
+    public static final String CONVERSATION_ENTRY_USER_OID = "acct:first@pumpentry.example.com";
+    public static final String CONVERSATION_AUTHOR_SECOND_USERNAME = "second@" + PUMPIO_MAIN_HOST;
+    public static final String CONVERSATION_AUTHOR_SECOND_USER_OID = "acct:" + CONVERSATION_AUTHOR_SECOND_USERNAME;
+    public static final String CONVERSATION_AUTHOR_THIRD_USERNAME = "third@pump3.example.com";
+    public static final String CONVERSATION_AUTHOR_THIRD_USER_OID = "acct:" + CONVERSATION_AUTHOR_THIRD_USERNAME;
+    public static final String CONVERSATION_MENTIONS_MESSAGE_OID = "http://" + PUMPIO_MAIN_HOST + "/second/comment/replywithmentions" + TESTRUN_UID;
+    public static final String CONVERSATION_MENTION_OF_AUTHOR3_OID = "http://" + PUMPIO_MAIN_HOST + "/second/comment/mention3" + TESTRUN_UID;
+    public static final String HTML_MESSAGE_OID = "http://" + PUMPIO_MAIN_HOST + "/testerofandstatus/comment/htmlfakeuri" + TESTRUN_UID;
+    private static final String CONVERSATION_ACCOUNT2_USERNAME = "tester2ofandstatus@" + PUMPIO_MAIN_HOST;
     public static final String CONVERSATION_ACCOUNT2_NAME = CONVERSATION_ACCOUNT2_USERNAME + "/" + CONVERSATION_ORIGIN_NAME;
     public static final String CONVERSATION_ACCOUNT2_USER_OID = "acct:" + CONVERSATION_ACCOUNT2_USERNAME;
 
@@ -182,8 +186,6 @@ public final class DemoData {
                     progressCallback.onProgressMessage("Demo messages added...");
                     DbUtils.waitMs(TAG, 1000);
                 }
-                assertEquals("Conversations need fixes", 0, new MyDataCheckerConversations(MyContextHolder.get(),
-                        ProgressLogger.getEmpty()).countChanges());
                 if (MyContextHolder.get().persistentAccounts().size() == 0) {
                     fail("No persistent accounts");
                 }
@@ -195,6 +197,7 @@ public final class DemoData {
                 MyContextHolder.get().persistentTimelines().setDefault(defaultTimeline);
                 MyLog.v(TAG + "Async", "Before initialize 3");
                 MyContextHolder.initialize(myContext.context(), method);
+                assertConversations();
                 MyLog.v(TAG + "Async", "After initialize 3");
                 if (progressCallback != null) {
                     progressCallback.onProgressMessage("Demo data is ready");
@@ -213,6 +216,11 @@ public final class DemoData {
         };
         AsyncTaskLauncher.execute(method, true, asyncTask);
         return asyncTask;
+    }
+
+    public static void assertConversations() {
+        assertEquals("Conversations need fixes", 0, new MyDataCheckerConversations(MyContextHolder.get(),
+                ProgressLogger.getEmpty()).countChanges());
     }
 
     private static void setSuccessfulAccountAsCurrent() {

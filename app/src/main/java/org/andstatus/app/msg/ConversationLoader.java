@@ -23,7 +23,6 @@ import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.list.SyncLoader;
@@ -130,16 +129,13 @@ public abstract class ConversationLoader<T extends ConversationItem> extends Syn
         }
         Uri uri = MatchedUri.getTimelineItemUri(
                 Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null), oMsg.getMsgId());
-        Cursor cursor = null;
         boolean loaded = false;
-        try {
-            cursor = myContext.context().getContentResolver().query(uri, oMsg.getProjection(), null, null, null);
+        try (Cursor cursor = myContext.context().getContentResolver()
+                .query(uri, oMsg.getProjection(), null, null, null)) {
             if (cursor != null && cursor.moveToFirst()) {
                 oMsg.load(cursor);
                 loaded = true;
             }
-        } finally {
-            DbUtils.closeSilently(cursor);
         }
         MyLog.v(this, (loaded ? "Loaded (" + oMsg.isLoaded() + ")"  : "Couldn't load") + " from a database msgId=" + oMsg.getMsgId());
     }

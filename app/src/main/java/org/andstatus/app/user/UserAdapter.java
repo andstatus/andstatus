@@ -16,6 +16,7 @@
 
 package org.andstatus.app.user;
 
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,20 +26,27 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
+import org.andstatus.app.timeline.TimelineData;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyUrlSpan;
 
 import java.util.List;
 
-class UserAdapter extends BaseTimelineAdapter<UserViewItem> {
+public class UserAdapter extends BaseTimelineAdapter<UserViewItem> {
     private final UserListContextMenu contextMenu;
     private final int listItemLayoutId;
     private final boolean showAvatars = MyPreferences.getShowAvatars();
     private final boolean showWebFingerId =
             MyPreferences.getUserInTimeline().equals(UserInTimeline.WEBFINGER_ID);
 
-    public UserAdapter(UserListContextMenu contextMenu, int listItemLayoutId, List<UserViewItem> items,
-                       Timeline timeline) {
+    public UserAdapter(@NonNull UserListContextMenu contextMenu, TimelineData<UserViewItem> listData) {
+        super(contextMenu.getActivity().getMyContext(), listData);
+        this.contextMenu = contextMenu;
+        this.listItemLayoutId = R.id.user_wrapper;
+    }
+
+    UserAdapter(@NonNull UserListContextMenu contextMenu, int listItemLayoutId, List<UserViewItem> items,
+                Timeline timeline) {
         super(contextMenu.getActivity().getMyContext(), timeline, items);
         this.contextMenu = contextMenu;
         this.listItemLayoutId = listItemLayoutId;
@@ -51,9 +59,14 @@ class UserAdapter extends BaseTimelineAdapter<UserViewItem> {
         view.setOnClickListener(this);
         setPosition(view, position);
         UserViewItem item = getItem(position);
+        populateView(view, item, position);
+        return view;
+    }
+
+    public void populateView(View view, UserViewItem item, int position) {
         MyUrlSpan.showText(view, R.id.username,
                 item.mbUser.toUserTitle(showWebFingerId) + ( isCombined() ?
-                        " / " + contextMenu.getActivity().getMyContext().persistentOrigins()
+                        " / " + myContext.persistentOrigins()
                                 .fromId(item.mbUser.originId).getName() : ""),
                 false, false);
         if (showAvatars) {
@@ -71,10 +84,9 @@ class UserAdapter extends BaseTimelineAdapter<UserViewItem> {
 
         MyUrlSpan.showText(view, R.id.location, item.mbUser.location, false, false);
         showMyFollowers(view, item);
-        return view;
     }
 
-    public static void showCounter(View parentView, int viewId, long counter) {
+    private static void showCounter(View parentView, int viewId, long counter) {
         MyUrlSpan.showText(parentView, viewId, counter <= 0 ? "-" : String.valueOf(counter) , false, false);
     }
 

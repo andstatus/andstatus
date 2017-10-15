@@ -28,7 +28,6 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.ParsedUri;
-import org.andstatus.app.data.ProjectionMap;
 import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -255,24 +254,18 @@ public class TimelineParameters {
     }
 
     private String buildSortOrderAndLimit() {
-        return  ActivityTable.getTimeSortOrder(sortForNotifications(), isSortOrderAscending())
+        return  ActivityTable.getTimeSortOrder(getTimelineType(), isSortOrderAscending())
                 + (minSentDate > 0 && maxSentDate > 0 ? "" : " LIMIT " + PAGE_SIZE);
-    }
-
-    private boolean sortForNotifications() {
-        return getTimelineType().equals(TimelineType.NOTIFICATIONS);
     }
 
     private SelectionAndArgs buildSelectionAndArgs() {
         SelectionAndArgs sa = new SelectionAndArgs();
-        sa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "."
-                        + ActivityTable.getTimeSortField(sortForNotifications()) + " >= ?",
+        sa.addSelection(ActivityTable.getTimeSortField(getTimelineType()) + " >= ?",
                 new String[]{
                         String.valueOf(minSentDate > 0 ? minSentDate : 1)
                 });
         if (maxSentDate > 0) {
-            sa.addSelection(ProjectionMap.MSG_TABLE_ALIAS + "."
-                            + ActivityTable.getTimeSortField(sortForNotifications()) + " <= ?",
+            sa.addSelection(ActivityTable.getTimeSortField(getTimelineType()) + " <= ?",
                     String.valueOf(maxSentDate));
         }
         return sa;

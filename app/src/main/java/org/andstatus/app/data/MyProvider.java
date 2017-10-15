@@ -37,7 +37,6 @@ import org.andstatus.app.database.OriginTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.net.social.MbUser;
-import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 
@@ -352,7 +351,8 @@ public class MyProvider extends ContentProvider {
             case TIMELINE_ITEM:
                 qb.setTables(TimelineSql.tablesForTimeline(uri, projection));
                 qb.setProjectionMap(ProjectionMap.MSG);
-                qb.appendWhere(ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID + "=" + uriParser.getMessageId());
+                qb.appendWhere(ProjectionMap.ACTIVITY_TABLE_ALIAS + "."
+                        + ActivityTable.MSG_ID + "=" + uriParser.getMessageId());
                 break;
 
             case TIMELINE_SEARCH:
@@ -426,8 +426,7 @@ public class MyProvider extends ContentProvider {
                 case TIMELINE:
                 case TIMELINE_ITEM:
                 case TIMELINE_SEARCH:
-                    orderBy = ActivityTable.getTimeSortOrder(
-                            uriParser.getTimelineType().equals(TimelineType.NOTIFICATIONS), false);
+                    orderBy = ActivityTable.getTimeSortOrder(uriParser.getTimelineType(), false);
                     break;
 
                 case MSG_COUNT:

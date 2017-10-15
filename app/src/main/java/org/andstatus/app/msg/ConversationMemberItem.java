@@ -32,7 +32,7 @@ public class ConversationMemberItem extends ConversationItem {
     @Override
     String[] getProjection() {
         List<String> columnNames = new ArrayList<>();
-        columnNames.add(MsgTable._ID);
+        columnNames.add(ActivityTable.MSG_ID);
         columnNames.add(MsgTable.UPDATED_DATE);
         columnNames.add(MsgTable.IN_REPLY_TO_MSG_ID);
         columnNames.add(MsgTable.AUTHOR_ID);

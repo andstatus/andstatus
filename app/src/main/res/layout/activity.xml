@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
+    Copyright (c) 2017 yvolk (Yuri Volkov), http://yurivolkov.com
     
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 tools:context=".timeline.TimelineActivity"
                 tools:theme="@style/Theme.AndStatus.FullyDefined" >
 
@@ -30,120 +29,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <RelativeLayout
-            android:id="@+id/actor_wrapper"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <LinearLayout
-                android:id="@+id/action_indented"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_marginTop="4dp"
-                android:orientation="vertical"
-                android:paddingBottom="2dp"
-                android:paddingLeft="54dp"
-                android:paddingRight="6dp" >
-
-                <TextView
-                    android:id="@+id/action_details"
-                    style="@style/messageUsernameAppearance"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    tools:text="someuser@somedomain.com acted..."/>
-            </LinearLayout>
-
-            <org.andstatus.app.graphics.AvatarView
-                android:id="@+id/actor_avatar_image"
-                android:layout_marginTop="8dp"
-                android:layout_marginLeft="2dp"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:scaleType="fitCenter"
-                tools:src="@drawable/icon"/>
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/message_wrapper"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <LinearLayout
-                android:id="@+id/message_indented"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_marginTop="4dp"
-                android:orientation="vertical"
-                android:paddingBottom="2dp"
-                android:paddingLeft="54dp"
-                android:paddingRight="6dp" >
-
-                <include layout="@layout/author_and_rebloggers"/>
-
-                <TextView
-                    android:id="@+id/message_body"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    style="@style/messageBodyAppearance"
-                    tools:text="This is a sample message body, which is long enough to fill more than one line on a phone. It looks like I need it a bit longer.\nThis should be at least the second line"/>
-
-                <org.andstatus.app.graphics.AttachedImageView
-                    android:id="@+id/attached_image"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone"
-                    tools:visibility="visible"
-                    tools:src="@drawable/splash_logo"/>
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:orientation="horizontal" >
-
-                    <TextView
-                        android:id="@+id/message_details"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentLeft="true"
-                        style="@style/messageDetailsAppearance"
-                        tools:text="sent 5 minutes ago from AndStatus"/>
-
-                    <ImageView
-                        android:id="@+id/message_favorited"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_alignParentRight="true"
-                        android:layout_centerVertical="true"
-                        android:visibility="gone"
-                        tools:visibility="visible"
-                        android:src="?attr/favoriteIcon" />
-                </RelativeLayout>
-
-                <include layout="@layout/message_buttons"/>
-
-                <TextView
-                    android:id="@+id/position"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone" />
-            </LinearLayout>
-
-            <org.andstatus.app.graphics.AvatarView
-                android:id="@+id/avatar_image"
-                android:layout_marginTop="8dp"
-                android:layout_marginLeft="2dp"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:scaleType="fitCenter"
-                tools:src="@drawable/icon"/>
-        </RelativeLayout>
+        <include layout="@layout/action_wrapper"/>
+        <include layout="@layout/message_wrapper"/>
+        <include layout="@layout/user_wrapper"/>
     </LinearLayout>
 
     <TextView
@@ -156,5 +44,11 @@
         android:layout_alignParentEnd="true"
         style="@style/messageUsernameAppearance"
         tools:text="Top"/>
+
+    <TextView
+        android:id="@+id/position"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
 
 </RelativeLayout>

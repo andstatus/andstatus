@@ -86,6 +86,7 @@ public class OriginConnectionData {
         this.originUrl = urlIn;
     }
 
+    @NonNull
     public Connection newConnection() throws ConnectionException {
         Connection connection;
         try {

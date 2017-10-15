@@ -16,6 +16,7 @@
 
 package org.andstatus.app.msg;
 
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,7 +47,7 @@ public abstract class BaseMessageAdapter<T extends BaseMessageViewItem> extends 
     protected final MessageContextMenu contextMenu;
     protected Set<Long> preloadedImages = new HashSet<>(100);
 
-    public BaseMessageAdapter(MessageContextMenu contextMenu, TimelineData<T> listData) {
+    public BaseMessageAdapter(@NonNull MessageContextMenu contextMenu, TimelineData<T> listData) {
         super(contextMenu.getMyContext(), listData);
         this.contextMenu = contextMenu;
     }

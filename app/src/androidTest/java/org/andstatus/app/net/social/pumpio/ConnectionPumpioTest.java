@@ -65,7 +65,7 @@ import static org.junit.Assert.assertTrue;
 
 public class ConnectionPumpioTest {
     private ConnectionPumpio connection;
-    private URL originUrl = UrlUtils.fromString("https://identi.ca");
+    private URL originUrl = UrlUtils.fromString("https://" + DemoData.PUMPIO_MAIN_HOST);
     private HttpConnectionMock httpConnectionMock;
 
     private String keyStored;
@@ -148,12 +148,11 @@ public class ConnectionPumpioTest {
 
     @Test
     public void testGetConnectionAndUrl() throws ConnectionException {
-        String userOids[] = {"acct:t131t@identi.ca", 
-                "somebody@identi.ca"};
+        String userOids[] = {"acct:t131t@" + DemoData.PUMPIO_MAIN_HOST,
+                "somebody@" + DemoData.PUMPIO_MAIN_HOST};
         String urls[] = {"api/user/t131t/profile", 
                 "api/user/somebody/profile"};
-        String hosts[] = {"identi.ca", 
-                "identi.ca"};
+        String hosts[] = {DemoData.PUMPIO_MAIN_HOST, DemoData.PUMPIO_MAIN_HOST};
         for (int ind=0; ind < userOids.length; ind++) {
             ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.GET_USER, userOids[ind]);
             assertEquals("Expecting '" + urls[ind] + "'", urls[ind], conu.url);
@@ -348,7 +347,8 @@ public class ConnectionPumpioTest {
                 org.andstatus.app.tests.R.raw.pumpio_delete_comment_response);
         httpConnectionMock.setResponse(jso);
         connection.getData().setAccountUserOid(DemoData.CONVERSATION_ACCOUNT_USER_OID);
-        assertTrue("Success", connection.destroyStatus("https://identi.ca.example.com/api/comment/xf0WjLeEQSlyi8jwHJ0ttre"));
+        assertTrue("Success", connection.destroyStatus("https://" + DemoData.PUMPIO_MAIN_HOST
+                + "/api/comment/xf0WjLeEQSlyi8jwHJ0ttre"));
 
         boolean thrown = false;
         try {

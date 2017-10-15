@@ -18,6 +18,7 @@ package org.andstatus.app.user;
 
 import android.content.Intent;
 
+import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
@@ -85,7 +86,8 @@ public class UserListTest extends TimelineActivityTest {
             MyLog.i(method, logMsg1);
         }
 
-        assertTrue("Invoked Context menu for " + logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.USERS_OF_MESSAGE));
+        assertTrue("Invoked Context menu for " + logMsg, helper.invokeContextMenuAction4ListItemId(method,
+                msgId, MessageListContextMenuItem.USERS_OF_MESSAGE, 0));
 
         UserList userList = (UserList) helper.waitForNextActivity(method, 15000);
         TestSuite.waitForListLoaded(userList, 1);
@@ -95,10 +97,10 @@ public class UserListTest extends TimelineActivityTest {
         if (messageWasFound) {
             assertEquals(listItems.toString(), 5, listItems.size());
 
-            MbUser userE = DemoConversationInserter.getUsers().get(DemoData.CONVERSATION_MEMBER_USER_OID);
-            assertTrue("Found " + DemoData.CONVERSATION_MEMBER_USER_OID + " cached ", userE != null);
-            MbUser userA = getByUserOid(listItems, DemoData.CONVERSATION_MEMBER_USER_OID);
-            assertTrue("Found " + DemoData.CONVERSATION_MEMBER_USER_OID + ", " + logMsg, userA != null);
+            MbUser userE = DemoConversationInserter.getUsers().get(DemoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
+            assertTrue("Found " + DemoData.CONVERSATION_AUTHOR_THIRD_USER_OID + " cached ", userE != null);
+            MbUser userA = getByUserOid(listItems, DemoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
+            assertTrue("Found " + DemoData.CONVERSATION_AUTHOR_THIRD_USER_OID + ", " + logMsg, userA != null);
             compareAttributes(userE, userA, true);
         }
 

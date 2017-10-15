@@ -16,6 +16,7 @@
 
 package org.andstatus.app.net.http;
 
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.util.MyLog;
@@ -50,6 +51,7 @@ public class OAuthClientKeys {
     private OAuthClientKeys() {
     }
 
+    @NonNull
     public static OAuthClientKeys fromConnectionData(HttpConnectionData connectionData) {
         OAuthClientKeys keys = new OAuthClientKeys();
         if (!noSecretClass) {

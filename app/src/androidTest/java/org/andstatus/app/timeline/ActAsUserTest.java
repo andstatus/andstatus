@@ -19,6 +19,7 @@ package org.andstatus.app.timeline;
 import android.content.Intent;
 
 import org.andstatus.app.ActivityTestHelper;
+import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
@@ -53,8 +54,9 @@ public class ActAsUserTest extends TimelineActivityTest {
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
         MyLog.i(this, "setUp ended");
-        return new Intent(Intent.ACTION_VIEW,
-                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null)));
+        final Timeline timeline = Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null);
+        timeline.forgetPositionsAndDates();
+        return new Intent(Intent.ACTION_VIEW, MatchedUri.getTimelineUri(timeline));
     }
 
     @Test
@@ -68,7 +70,7 @@ public class ActAsUserTest extends TimelineActivityTest {
         assertEquals("Default actor", MyAccount.EMPTY, getActivity().getContextMenu().getMyActor());
 
         boolean invoked = helper.invokeContextMenuAction4ListItemId(method, msgId,
-                MessageListContextMenuItem.ACT_AS_FIRST_OTHER_USER);
+                MessageListContextMenuItem.ACT_AS_FIRST_OTHER_USER, R.id.message_wrapper);
         MyAccount actor1 = getActivity().getContextMenu().getMyActor();
         logMsg += ";" + (invoked ? "" : " failed to invoke context menu 1," ) + " actor1=" + actor1;
         assertTrue(logMsg, actor1.isValid());
@@ -81,7 +83,7 @@ public class ActAsUserTest extends TimelineActivityTest {
         assertNotEquals(logMsg, actor1, firstOtherActor);
 
         boolean invoked2 = helper.invokeContextMenuAction4ListItemId(method, msgId,
-                MessageListContextMenuItem.ACT_AS_FIRST_OTHER_USER);
+                MessageListContextMenuItem.ACT_AS_FIRST_OTHER_USER, R.id.message_wrapper);
         MyAccount actor2 = getActivity().getContextMenu().getMyActor();
         logMsg += ";" + (invoked2 ? "" : " failed to invoke context menu 2," ) + " actor2=" + actor2;
         assertNotEquals(logMsg, actor1, actor2);

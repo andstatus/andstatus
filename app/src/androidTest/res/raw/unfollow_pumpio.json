@@ -1,6 +1,6 @@
 {
-    "content":"<a href='https:\/\/identi.ca\/t131t'>Some tester 131<\/a> unfollowed <a href='https:\/\/e14n.com\/evan'>Evan Prodromou<\/a>",
-    "id":"https:\/\/identi.ca\/api\/activity\/1tBOAR8ESHuDsL93HhP-vg",
+    "content":"<a href='https:\/\/pump1.example.com\/t131t'>Some tester 131<\/a> unfollowed <a href='https:\/\/e14n.com\/evan'>Evan Prodromou<\/a>",
+    "id":"https:\/\/pump1.example.com\/api\/activity\/1tBOAR8ESHuDsL93HhP-vg",
     "to":[
         {
             "id":"http:\/\/activityschema.org\/collection\/public",
@@ -31,18 +31,18 @@
     "generator":{
         "id":"urn:uuid:e072f699-c984-5a79-a327-ca8f5e5132ca",
         "shares":{
-            "url":"https:\/\/identi.ca\/api\/application\/TJgwalEoSwih8fnPHGNcAA\/shares"
+            "url":"https:\/\/pump1.example.com\/api\/application\/TJgwalEoSwih8fnPHGNcAA\/shares"
         },
         "updated":"2013-09-28T18:14:24Z",
         "replies":{
-            "url":"https:\/\/identi.ca\/api\/application\/TJgwalEoSwih8fnPHGNcAA\/replies"
+            "url":"https:\/\/pump1.example.com\/api\/application\/TJgwalEoSwih8fnPHGNcAA\/replies"
         },
         "likes":{
-            "url":"https:\/\/identi.ca\/api\/application\/TJgwalEoSwih8fnPHGNcAA\/likes"
+            "url":"https:\/\/pump1.example.com\/api\/application\/TJgwalEoSwih8fnPHGNcAA\/likes"
         },
         "links":{
             "self":{
-                "href":"https:\/\/identi.ca\/api\/application\/TJgwalEoSwih8fnPHGNcAA"
+                "href":"https:\/\/pump1.example.com\/api\/application\/TJgwalEoSwih8fnPHGNcAA"
             }
         },
         "published":"2013-09-28T18:14:24Z",
@@ -51,7 +51,7 @@
     },
     "links":{
         "self":{
-            "href":"https:\/\/identi.ca\/api\/activity\/1tBOAR8ESHuDsL93HhP-vg"
+            "href":"https:\/\/pump1.example.com\/api\/activity\/1tBOAR8ESHuDsL93HhP-vg"
         }
     },
     "actor":{
@@ -64,23 +64,23 @@
         },
         "links":{
             "activity-outbox":{
-                "href":"https:\/\/identi.ca\/api\/user\/t131t\/feed"
+                "href":"https:\/\/pump1.example.com\/api\/user\/t131t\/feed"
             },
             "activity-inbox":{
-                "href":"https:\/\/identi.ca\/api\/user\/t131t\/inbox"
+                "href":"https:\/\/pump1.example.com\/api\/user\/t131t\/inbox"
             },
             "self":{
-                "href":"https:\/\/identi.ca\/api\/user\/t131t\/profile"
+                "href":"https:\/\/pump1.example.com\/api\/user\/t131t\/profile"
             }
         },
         "favorites":{
             "totalItems":5,
-            "url":"https:\/\/identi.ca\/api\/user\/t131t\/favorites"
+            "url":"https:\/\/pump1.example.com\/api\/user\/t131t\/favorites"
         },
-        "url":"https:\/\/identi.ca\/t131t",
-        "id":"acct:t131t@identi.ca",
+        "url":"https:\/\/pump1.example.com\/t131t",
+        "id":"acct:t131t@pump1.example.com",
         "upstreamDuplicates":[
-            "http:\/\/identi.ca\/user\/929605"
+            "http:\/\/pump1.example.com\/user\/929605"
         ],
         "status_net":{
             "profile_info":{
@@ -109,11 +109,11 @@
         },
         "following":{
             "totalItems":6,
-            "url":"https:\/\/identi.ca\/api\/user\/t131t\/following"
+            "url":"https:\/\/pump1.example.com\/api\/user\/t131t\/following"
         },
         "followers":{
             "totalItems":1,
-            "url":"https:\/\/identi.ca\/api\/user\/t131t\/followers"
+            "url":"https:\/\/pump1.example.com\/api\/user\/t131t\/followers"
         },
         "updated":"2013-08-05T21:47:28Z",
         "portablecontacts_net":{
@@ -126,7 +126,7 @@
         "objectType":"person",
         "lists":{
             "totalItems":4,
-            "url":"https:\/\/identi.ca\/api\/user\/t131t\/lists\/person"
+            "url":"https:\/\/pump1.example.com\/api\/user\/t131t\/lists\/person"
         }
     },
     "object":{
@@ -250,5 +250,5 @@
     },
     "published":"2013-10-06T14:41:34Z",
     "objectType":"activity",
-    "url":"https:\/\/identi.ca\/undefined\/activity\/1tBOAR8ESHuDsL93HhP-vg"
+    "url":"https:\/\/pump1.example.com\/undefined\/activity\/1tBOAR8ESHuDsL93HhP-vg"
 }

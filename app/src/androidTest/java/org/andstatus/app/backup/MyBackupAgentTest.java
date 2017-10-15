@@ -43,6 +43,7 @@ public class MyBackupAgentTest {
     public void testBackupRestore() throws IOException, JSONException, NameNotFoundException, InterruptedException {
         TestSuite.forget();
         TestSuite.initialize(this);
+        DemoData.assertConversations();
         
         PersistentAccounts accountsBefore = PersistentAccounts.newEmpty(MyContextHolder.get());
         accountsBefore.initialize();
@@ -61,6 +62,8 @@ public class MyBackupAgentTest {
         
         assertEquals("Persistent accounts", accountsBefore, MyContextHolder.get().persistentAccounts());
         compareOneAccount(accountsBefore, MyContextHolder.get().persistentAccounts(), DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        DemoData.assertConversations();
+        TestSuite.initializeWithData(this);
 
         deleteBackup(dataFolder);
     }

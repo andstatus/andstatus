@@ -105,7 +105,7 @@ public final class DemoOriginInserter {
         final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
         final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());
         if (connectionData.originUrl == null) {
-            connectionData.originUrl = UrlUtils.fromString("https://identi.ca");
+            connectionData.originUrl = UrlUtils.fromString("https://" + DemoData.PUMPIO_MAIN_HOST);
         }
         OAuthClientKeys keys1 = OAuthClientKeys.fromConnectionData(connectionData);
         if (!keys1.areKeysPresent()) {

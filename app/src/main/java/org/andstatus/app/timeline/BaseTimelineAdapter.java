@@ -93,7 +93,7 @@ public abstract class BaseTimelineAdapter<T extends ViewItem> extends BaseAdapte
         if (view != null) {
             View parentView = view;
             for (int i = 0; i < 10; i++) {
-                TextView positionView = (TextView) parentView.findViewById(R.id.position);
+                TextView positionView = parentView.findViewById(R.id.position);
                 if (positionView != null) {
                     return positionView;
                 }

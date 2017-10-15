@@ -18,7 +18,6 @@ package org.andstatus.app.msg;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.provider.BaseColumns;
 import android.text.Html;
 import android.text.TextUtils;
 
@@ -30,6 +29,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineSql;
+import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.database.DownloadTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.database.UserTable;
@@ -62,7 +62,7 @@ public class ConversationViewItem extends ConversationItem {
          */
         int ind=0;
         do {
-            long msgId = DbUtils.getLong(cursor, BaseColumns._ID);
+            long msgId = DbUtils.getLong(cursor, ActivityTable.MSG_ID);
             if (msgId != getMsgId()) {
                 if (ind > 0) {
                     cursor.moveToPrevious();

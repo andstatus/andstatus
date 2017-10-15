@@ -18,8 +18,10 @@ package org.andstatus.app.database;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
+import android.support.annotation.NonNull;
 
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.timeline.meta.TimelineType;
 
 /** The table holds {@link org.andstatus.app.net.social.MbActivity} */
 public final class ActivityTable implements BaseColumns {
@@ -49,15 +51,14 @@ public final class ActivityTable implements BaseColumns {
     // Aliases
     public static final String ACTIVITY_ID = "activity_id";
     public static final String AUTHOR_ID = "author_id";
-    public static final String RECIPIENT_ID = "recipient_id";
     public static final String LAST_UPDATE_ID = "last_update_id";
 
-    public static String getTimeSortOrder(boolean forNotifications, boolean ascending) {
-        return getTimeSortField(forNotifications) + (ascending ? " ASC" : " DESC");
+    public static String getTimeSortOrder(TimelineType timelineType, boolean ascending) {
+        return getTimeSortField(timelineType) + (ascending ? " ASC" : " DESC");
     }
 
-    public static String getTimeSortField(boolean forNotifications) {
-        return forNotifications ? INS_DATE : MsgTable.UPDATED_DATE;
+    public static String getTimeSortField(@NonNull TimelineType timelineType) {
+        return timelineType.showsActivities() ? INS_DATE : MsgTable.UPDATED_DATE;
     }
 
     private ActivityTable() {

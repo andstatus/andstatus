@@ -131,7 +131,7 @@ public class DataUpdaterTest {
         Uri contentUri = MatchedUri.getTimelineUri(
                 Timeline.getTimeline(TimelineType.MY_FRIENDS, ma, 0, null));
         SelectionAndArgs sa = new SelectionAndArgs();
-        String sortOrder = ActivityTable.getTimeSortOrder(false, false);
+        String sortOrder = ActivityTable.getTimeSortOrder(TimelineType.MY_FRIENDS, false);
         sa.addSelection("fUserId = ?", Long.toString(somebody.userId));
         String[] PROJECTION = new String[] {
                 MsgTable._ID
@@ -247,7 +247,7 @@ public class DataUpdaterTest {
         Uri contentUri = MatchedUri.getTimelineUri(
                 Timeline.getTimeline(TimelineType.EVERYTHING, null, 0, ma.getOrigin()));
         SelectionAndArgs sa = new SelectionAndArgs();
-        String sortOrder = ActivityTable.getTimeSortOrder(false, false);
+        String sortOrder = ActivityTable.getTimeSortOrder(TimelineType.EVERYTHING, false);
         sa.addSelection(MsgTable.MSG_ID + " = ?", Long.toString(messageId));
         String[] PROJECTION = new String[] {
                 ActivityTable.ACTIVITY_ID,
@@ -518,7 +518,7 @@ public class DataUpdaterTest {
         body = "<a href=\"http://example.com/a\">@" + buddyUserName + "</a>, this is an HTML <i>formatted</i> message";
         addOneMessage4testReplyInBody(buddyUserName, body, true);
 
-        buddyUserName = DemoData.CONVERSATION_MEMBER_USERNAME;
+        buddyUserName = DemoData.CONVERSATION_AUTHOR_THIRD_USERNAME;
         body = "@" + buddyUserName + " I know you are already in our cache";
         addOneMessage4testReplyInBody(buddyUserName, body, true);
     }

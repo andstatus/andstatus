@@ -88,8 +88,7 @@ public class LargeImageTest {
         assertFalse("Loaded " + data.getUri(), commandData.getResult().hasError());
         assertTrue("File exists " + data.getUri(), data.getFile().exists());
 
-        assertEquals("Conversations need fixes", 0, new MyDataCheckerConversations(MyContextHolder.get(),
-                ProgressLogger.getEmpty()).countChanges());
+        DemoData.assertConversations();
         return data;
     }
 

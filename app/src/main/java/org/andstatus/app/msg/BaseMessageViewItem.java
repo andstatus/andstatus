@@ -42,12 +42,13 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class BaseMessageViewItem extends ViewItem {
+    public final static BaseMessageViewItem EMPTY = new BaseMessageViewItem();
     private static final int MIN_LENGTH_TO_COMPARE = 5;
     private MyContext myContext = MyContextHolder.get();
     long updatedDate = 0;
     long activityInsDate = 0;
 
-    DownloadStatus msgStatus = DownloadStatus.UNKNOWN;
+    public DownloadStatus msgStatus = DownloadStatus.UNKNOWN;
 
     private long mMsgId;
     private long originId;
@@ -57,7 +58,7 @@ public class BaseMessageViewItem extends ViewItem {
 
     String recipientName = "";
 
-    long inReplyToMsgId = 0;
+    public long inReplyToMsgId = 0;
     long inReplyToUserId = 0;
     String inReplyToName = "";
 

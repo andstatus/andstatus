@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.andstatus.app.data.DownloadStatus.LOADED;
+import static org.andstatus.app.data.DownloadStatus.UNKNOWN;
 
 public class MessageEditorData {
     public static final String TAG = MessageEditorData.class.getSimpleName();
@@ -121,9 +122,7 @@ public class MessageEditorData {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        if(msgId != 0) {
-            builder.append("id:" + msgId + ",");
-        }
+        builder.append("id:" + msgId + ",");
         builder.append("status:" + status + ",");
         if(!TextUtils.isEmpty(body)) {
             builder.append("text:'" + body + "',");
@@ -132,7 +131,7 @@ public class MessageEditorData {
             builder.append("downloadData:" + downloadData + ",");
         }
         if(inReplyToMsgId != 0) {
-            builder.append("inReplyTo:" + inReplyToMsgId + "by " + inReplyToUserId + ",");
+            builder.append("inReplyTo:" + inReplyToMsgId + " by " + inReplyToUserId + ",");
         }
         if(replyToConversationParticipants) {
             builder.append("ReplyAll,");
@@ -201,7 +200,7 @@ public class MessageEditorData {
         message.addRecipients(recipients);
         if (inReplyToMsgId != 0) {
             final MbActivity inReplyTo = MbActivity.newPartialMessage(getMyAccount().toPartialUser(),
-                    MyQuery.idToOid(OidEnum.MSG_OID, inReplyToMsgId, 0));
+                    MyQuery.idToOid(OidEnum.MSG_OID, inReplyToMsgId, 0), 0, UNKNOWN);
             inReplyTo.setActor(MbUser.fromOriginAndUserId(message.originId, inReplyToUserId));
             message.setInReplyTo(inReplyTo);
         }

@@ -141,7 +141,7 @@ public class CommandDataTest {
         MyAccount ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         long userId = MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
-                DemoData.CONVERSATION_MEMBER_USER_OID);
+                DemoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
         CommandData data = CommandData.newUserCommand(
                 command, null, DemoData.getConversationMyAccount().getOrigin(), userId, "");
         String summary = data.toCommandSummary(MyContextHolder.get());

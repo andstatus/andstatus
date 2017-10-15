@@ -18,7 +18,6 @@ package org.andstatus.app.msg;
 
 import android.database.Cursor;
 import android.net.Uri;
-import android.provider.BaseColumns;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
@@ -26,6 +25,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.ProjectionMap;
+import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -48,24 +48,21 @@ public class RecursiveConversationLoader<T extends ConversationItem> extends Con
 
     private void cacheConversation(T oMsg) {
         long conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, oMsg.getMsgId());
-        String selection = ProjectionMap.MSG_TABLE_ALIAS + "." +
-                (conversationId == 0 ? MsgTable._ID + "=" + oMsg.getMsgId() :
-                        MsgTable.CONVERSATION_ID + "=" + conversationId);
+        String selection = (conversationId == 0
+                ? ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.MSG_ID + "=" + oMsg.getMsgId()
+                : ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.CONVERSATION_ID + "=" + conversationId);
         Uri uri = MatchedUri.getTimelineUri(
                 Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null));
-        Cursor cursor = null;
-        try {
-            cursor = myContext.context().getContentResolver().query(uri, oMsg.getProjection(),
-                    selection, null, null);
+
+        try (Cursor cursor = myContext.context().getContentResolver().query(uri, oMsg.getProjection(),
+                selection, null, null)) {
             if (cursor != null) {
                 while (cursor.moveToNext()) {
-                    T oMsg2 = newOMsg(DbUtils.getLong(cursor, BaseColumns._ID));
+                    T oMsg2 = newOMsg(DbUtils.getLong(cursor, ActivityTable.MSG_ID));
                     oMsg2.load(cursor);
                     cachedMessages.put(oMsg2.getMsgId(), oMsg2);
                 }
             }
-        } finally {
-            DbUtils.closeSilently(cursor);
         }
     }
 

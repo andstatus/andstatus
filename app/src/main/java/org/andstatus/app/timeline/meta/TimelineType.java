@@ -267,6 +267,18 @@ public enum TimelineType implements SelectableEnum {
         }
     }
 
+    public boolean showsActivities() {
+        switch (this) {
+            case EVERYTHING:
+            case NOTIFICATIONS:
+            case SENT:
+            case USER:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     @Override
     public int getDialogTitleResId() {
         return R.string.dialog_title_select_timeline;

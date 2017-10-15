@@ -98,7 +98,7 @@ public class MessageEditorTest extends TimelineActivityTest {
                                 .persistentOrigins().fromName(DemoData.CONVERSATION_ORIGIN_NAME).getId(),
                         DemoData.CONVERSATION_ENTRY_MESSAGE_OID))
                 .addRecipientId(MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
-                        DemoData.CONVERSATION_MEMBER_USER_OID))
+                        DemoData.CONVERSATION_AUTHOR_THIRD_USER_OID))
                 .addMentionsToText()
                 .setBody("Some static text " + DemoData.TESTRUN_UID);
     }
@@ -268,10 +268,10 @@ public class MessageEditorTest extends TimelineActivityTest {
         String logMsg = "msgId=" + msgId;
 
         String body = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId);
-        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.COPY_TEXT);
+        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.COPY_TEXT, R.id.message_wrapper);
         assertEquals(logMsg, body, getClipboardText(method));
 
-        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.COPY_AUTHOR);
+        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.COPY_AUTHOR, R.id.message_wrapper);
         String text = getClipboardText(method);
         assertThat(text, CoreMatchers.startsWith("@"));
         assertTrue(logMsg + "; Text: '" + text + "'", text.startsWith("@") && text.lastIndexOf("@") > 1);

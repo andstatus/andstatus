@@ -109,7 +109,7 @@ public class MessageContextMenu extends MyContextMenu {
                     @Override
                     protected void onFinish(MessageForAccount messageForAccount, boolean success) {
                         msg = messageForAccount == null ? MessageForAccount.EMPTY : messageForAccount;
-                        if (msg.msgId != 0 && viewItem.equals(messageContextMenu.mViewItem)) {
+                        if (msg.msgId != 0 && viewItem.equals(messageContextMenu.getViewItem())) {
                             messageContextMenu.showContextMenu();
                         }
                     }
@@ -138,7 +138,7 @@ public class MessageContextMenu extends MyContextMenu {
         }
     }
 
-    final MessageListContextMenuContainer menuContainer;
+    public final MessageListContextMenuContainer menuContainer;
     private MessageContextMenuData menuData = MessageContextMenuData.EMPTY;
     private String selectedMenuItemTitle = "";
 
@@ -151,14 +151,7 @@ public class MessageContextMenu extends MyContextMenu {
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
         final String method = "onCreateContextMenu";
         super.onCreateContextMenu(menu, v, menuInfo);
-        BaseMessageViewItem viewItem;
-        if (BaseMessageViewItem.class.isAssignableFrom(mViewItem.getClass())) {
-            viewItem = (BaseMessageViewItem) mViewItem;
-        } else if (ActivityViewItem.class.isAssignableFrom(mViewItem.getClass())){
-            viewItem = ((ActivityViewItem) mViewItem).message;
-        } else {
-            return;
-        }
+        BaseMessageViewItem viewItem = getViewItem();
 
         switch (menuData.getStateFor(viewItem)) {
             case READY:
@@ -325,6 +318,19 @@ public class MessageContextMenu extends MyContextMenu {
         } catch (Exception e) {
             MyLog.e(this, method, e);
         }
+    }
+
+    @NonNull
+    private BaseMessageViewItem getViewItem() {
+        if (mViewItem == null) {
+            return new BaseMessageViewItem();
+        }
+        if (BaseMessageViewItem.class.isAssignableFrom(mViewItem.getClass())) {
+            return (BaseMessageViewItem) mViewItem;
+        } else if (ActivityViewItem.class.isAssignableFrom(mViewItem.getClass())){
+            return ((ActivityViewItem) mViewItem).message;
+        }
+        return new BaseMessageViewItem();
     }
 
     private void addMessageLinksSubmenu(ContextMenu menu, View v, int order) {

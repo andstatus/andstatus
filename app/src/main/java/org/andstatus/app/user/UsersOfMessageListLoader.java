@@ -52,7 +52,9 @@ public class UsersOfMessageListLoader extends UserListLoader {
     @Override
     protected void loadInternal() {
         addFromMessageRow();
-        super.loadInternal();
+        if (!mentionedOnly) {
+            super.loadInternal();
+        }
     }
 
     private void addFromMessageRow() {

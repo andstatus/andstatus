@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/action_wrapper"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:showIn="@layout/activity">
+
+    <LinearLayout
+        android:id="@+id/action_indented"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="4dp"
+        android:orientation="vertical"
+        android:paddingBottom="2dp"
+        android:paddingLeft="54dp"
+        android:paddingRight="6dp">
+
+        <TextView
+            android:id="@+id/action_details"
+            style="@style/messageUsernameAppearance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="someuser@somedomain.com acted..."/>
+    </LinearLayout>
+
+    <org.andstatus.app.graphics.AvatarView
+        android:id="@+id/actor_avatar_image"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="2dp"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:scaleType="fitCenter"
+        tools:src="@drawable/icon"/>
+</RelativeLayout>

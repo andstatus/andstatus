@@ -41,7 +41,7 @@ public class ActivityViewItem extends ViewItem implements Comparable<ActivityVie
     private Origin origin = Origin.EMPTY;
     private long insDate = 0;
     private long updatedDate = 0;
-    MbActivityType activityType = MbActivityType.EMPTY;
+    public MbActivityType activityType = MbActivityType.EMPTY;
 
     private long messageId;
     private long userId;
@@ -50,7 +50,7 @@ public class ActivityViewItem extends ViewItem implements Comparable<ActivityVie
     MbObjectType objectType = MbObjectType.EMPTY;
     UserViewItem actor = UserViewItem.EMPTY;
     public MessageViewItem message = MessageViewItem.EMPTY;
-    UserViewItem user = UserViewItem.EMPTY;
+    public UserViewItem user = UserViewItem.EMPTY;
 
     @Override
     public long getId() {
@@ -101,4 +101,14 @@ public class ActivityViewItem extends ViewItem implements Comparable<ActivityVie
         return this;
     }
 
+    @Override
+    public String toString() {
+        if (this == EMPTY) {
+            return "EMPTY";
+        }
+        return actor.getWebFingerIdOrUserName() + " " + activityType + " " + (messageId == 0
+                ? user
+                : message
+        );
+    }
 }

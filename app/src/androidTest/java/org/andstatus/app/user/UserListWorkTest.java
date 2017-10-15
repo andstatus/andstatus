@@ -72,10 +72,10 @@ public class UserListWorkTest extends ActivityTest<UserList> {
         List<UserViewItem> listItems = getActivity().getListLoader().getList();
         assertEquals(listItems.toString(), 5, listItems.size());
 
-        MbUser userA = UserListTest.getByUserOid(listItems, DemoData.CONVERSATION_MEMBER_USER_OID);
+        MbUser userA = UserListTest.getByUserOid(listItems, DemoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
 
         assertTrue("Invoked Context menu for " + userA, helper.invokeContextMenuAction4ListItemId(
-                method, userA.userId, UserListContextMenuItem.FOLLOWERS));
+                method, userA.userId, UserListContextMenuItem.FOLLOWERS, 0));
 
         FollowersList userList = (FollowersList) helper.waitForNextActivity(method, 15000);
         TestSuite.waitForListLoaded(userList, 1);

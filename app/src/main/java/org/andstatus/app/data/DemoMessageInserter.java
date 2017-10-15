@@ -152,29 +152,33 @@ public class DemoMessageInserter {
         DataUpdater di = new DataUpdater(new CommandExecutionContext(
                         CommandData.newTimelineCommand(CommandEnum.EMPTY, ma,
                                 message.isPrivate() ? TimelineType.DIRECT : TimelineType.HOME)));
-        long messageId = di.onActivity(activity).getMessage().msgId;
-        assertNotEquals( "Message was not added: " + message, 0, messageId);
-        assertNotEquals( "Activity was not added: " + activity, 0, activity.getId());
 
-        String permalink = origin.messagePermalink(messageId);
-        URL urlPermalink = UrlUtils.fromString(permalink); 
-        assertNotNull("Message permalink is a valid URL '" + permalink + "',\n" + message.toString()
-                + "\n origin: " + origin
-                + "\n author: " + activity.getAuthor().toString(), urlPermalink);
-        if (origin.getUrl() != null && origin.getOriginType() != OriginType.TWITTER) {
-            assertEquals("Message permalink has the same host as origin, " + message.toString(),
-                    origin.getUrl().getHost(), urlPermalink.getHost());
-        }
-        if (!TextUtils.isEmpty(message.url)) {
-            assertEquals("Message permalink", message.url, origin.messagePermalink(messageId));
-        }
+        di.onActivity(activity);
+        assertNotEquals( "Activity was not added: " + activity, 0, activity.getId());
 
         MbUser actor = activity.getActor();
         assertNotEquals( "Actor id not set for " + actor + " in activity " + activity, 0, actor.userId);
 
-        MbUser author = activity.getAuthor();
-        assertNotEquals( "Author id for " + author + " not set in message " + message + " in activity " + activity, 0,
-                MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, message.msgId));
+        if (message.nonEmpty()) {
+            assertNotEquals( "Message was not added: " + message, 0, message.msgId);
+
+            String permalink = origin.messagePermalink(message.msgId);
+            URL urlPermalink = UrlUtils.fromString(permalink);
+            assertNotNull("Message permalink is a valid URL '" + permalink + "',\n" + message.toString()
+                    + "\n origin: " + origin
+                    + "\n author: " + activity.getAuthor().toString(), urlPermalink);
+            if (origin.getUrl() != null && origin.getOriginType() != OriginType.TWITTER) {
+                assertEquals("Message permalink has the same host as origin, " + message.toString(),
+                        origin.getUrl().getHost(), urlPermalink.getHost());
+            }
+            if (!TextUtils.isEmpty(message.url)) {
+                assertEquals("Message permalink", message.url, origin.messagePermalink(message.msgId));
+            }
+
+            MbUser author = activity.getAuthor();
+            assertNotEquals( "Author id for " + author + " not set in message " + message + " in activity " + activity, 0,
+                    MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, message.msgId));
+        }
 
         if (activity.type == MbActivityType.LIKE) {
             List<MbUser> stargazers = MyQuery.getStargazers(MyContextHolder.get().getDatabase(), accountUser.originId, message.msgId);
@@ -192,7 +196,7 @@ public class DemoMessageInserter {
         if (activity.type == MbActivityType.ANNOUNCE) {
             long rebloggerId = MyQuery.conditionToLongColumnValue(ActivityTable.TABLE_NAME,
                     ActivityTable.ACTOR_ID, "t." + ActivityTable.ACTIVITY_TYPE
-                            + "=" + MbActivityType.ANNOUNCE.id +" AND t." + ActivityTable.MSG_ID + "=" + messageId);
+                            + "=" + MbActivityType.ANNOUNCE.id +" AND t." + ActivityTable.MSG_ID + "=" + message.msgId);
             assertEquals("Reblogger found for " + activity, actor.userId, rebloggerId);
 
             if (MyContextHolder.get().persistentAccounts().fromUser(actor).isValid()) {
@@ -208,6 +212,10 @@ public class DemoMessageInserter {
                     assertNotEquals("Message added " + replyActivity, 0, reply.msgId);
                 }
             }
+        }
+
+        if (activity.getUser().nonEmpty()) {
+            assertNotEquals( "User was not added: " + activity.getUser(), 0, activity.getUser().userId);
         }
     }
 

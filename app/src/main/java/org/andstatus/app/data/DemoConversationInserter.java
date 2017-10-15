@@ -67,11 +67,12 @@ public class DemoConversationInserter {
     private void insertAndTestConversation() {
         assertEquals("Only PumpIo supported in this test", OriginType.PUMPIO, DemoData.CONVERSATION_ORIGIN_TYPE  );
 
-        MbUser author2 = buildUserFromOid("acct:second@identi.ca");
+        MbUser author2 = buildUserFromOid(DemoData.CONVERSATION_AUTHOR_SECOND_USER_OID);
         author2.avatarUrl = "http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png";
 
-        MbUser author3 = buildUserFromOid(DemoData.CONVERSATION_MEMBER_USER_OID);
+        MbUser author3 = buildUserFromOid(DemoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
         author3.setRealName("John Smith");
+        author3.setUserName(DemoData.CONVERSATION_AUTHOR_THIRD_USERNAME);
         author3.setHomepage("http://johnsmith.com/welcome");
         author3.setCreatedDate(new GregorianCalendar(2011,5,12).getTimeInMillis());
         author3.setDescription("I am an ordinary guy, interested in computer science");
@@ -112,13 +113,13 @@ public class DemoConversationInserter {
         DemoConversationInserter.assertIfUserIsMyFriend(author3, true, ma);
 
         final String BODY_OF_MENTIONS_MESSAGE = "@fourthWithoutAvatar@pump.example.com Reply 5 to Reply 4\n"
-                + "@" + DemoData.CONVERSATION_MEMBER_USERNAME
+                + "@" + author3.getUserName()
                 + " @unknownUser@example.com";
         MbActivity reply5 = buildActivity(author2, BODY_OF_MENTIONS_MESSAGE, reply4,
                 iteration == 1 ? DemoData.CONVERSATION_MENTIONS_MESSAGE_OID : null);
         addActivity(reply5);
 
-        MbUser reblogger1 = buildUserFromOid("acct:reblogger@identi.ca");
+        MbUser reblogger1 = buildUserFromOid("acct:reblogger@" + DemoData.PUMPIO_MAIN_HOST);
         reblogger1.avatarUrl = "http://www.avatarsdb.com/avatars/cow_face.jpg";
         MbActivity reblogOf5 =  MbActivity.from(accountUser, MbActivityType.ANNOUNCE) ;
         reblogOf5.setActor(reblogger1);
@@ -183,6 +184,14 @@ public class DemoConversationInserter {
         reblogOf14.setMessage(reply14.getMessage().shallowCopy());
         addActivity(reblogOf14);
 
+        MbActivity mentionOfAuthor3 = buildActivity(reblogger1, "@" + author3.getUserName() + " mention in reply to 4",
+                reply4, DemoData.CONVERSATION_MENTION_OF_AUTHOR3_OID);
+        addActivity(mentionOfAuthor3);
+
+        MbActivity followOf3 =  MbActivity.from(accountUser, MbActivityType.FOLLOW) ;
+        followOf3.setActor(author2);
+        followOf3.setUser(author3);
+        addActivity(followOf3);
     }
 
     private MbUser getAuthor1() {

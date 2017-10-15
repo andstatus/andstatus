@@ -40,11 +40,10 @@ public enum ViewItemType {
     }
 
     static ViewItemType fromTimelineType(@NonNull TimelineType timelineType) {
+        if (timelineType.showsActivities()) {
+            return ACTIVITY;
+        }
         switch (timelineType) {
-            case NOTIFICATIONS:
-            case USER:
-            case SENT:
-                return ACTIVITY;
             case USERS:
                 return USER;
             case CONVERSATION:

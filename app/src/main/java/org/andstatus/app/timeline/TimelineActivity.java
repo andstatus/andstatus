@@ -45,6 +45,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityAdapter;
+import org.andstatus.app.activity.ActivityContextMenu;
 import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -95,7 +96,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
     private volatile TimelineParameters paramsToLoad;
     private volatile TimelineData<T> listData;
 
-    private MessageContextMenu contextMenu;
+    private ActivityContextMenu contextMenu;
 
     private String mTextToShareViaThisApp = "";
     private Uri mMediaToShareViaThisApp = Uri.EMPTY;
@@ -162,7 +163,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
         }
 
         getParamsNew().setTimeline(myContext.persistentTimelines().getDefault());
-        contextMenu = new MessageContextMenu(this);
+        contextMenu = new ActivityContextMenu(this);
 
         initializeDrawer();
         getListView().setOnScrollListener(this);
@@ -198,16 +199,12 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
 
     @Override
     protected BaseTimelineAdapter<T> newListAdapter() {
-        switch (getParamsNew().getTimelineType()) {
-            case NOTIFICATIONS:
-            case USER:
-            case SENT:
-                return (BaseTimelineAdapter<T>) new ActivityAdapter(
-                        contextMenu, (TimelineData<ActivityViewItem>) getListData());
-            default:
-                return (BaseTimelineAdapter<T>) new MessageAdapter(
-                        contextMenu, (TimelineData<MessageViewItem>) getListData());
+        if (getParamsNew().getTimelineType().showsActivities()) {
+            return (BaseTimelineAdapter<T>) new ActivityAdapter(contextMenu,
+                    (TimelineData<ActivityViewItem>) getListData());
         }
+        return (BaseTimelineAdapter<T>) new MessageAdapter(
+                contextMenu.message, (TimelineData<MessageViewItem>) getListData());
     }
 
     @Override
@@ -233,7 +230,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
 
     private void restoreActivityState(@NonNull Bundle savedInstanceState) {
             if (getParamsNew().restoreState(savedInstanceState)) {
-                contextMenu.loadState(savedInstanceState);
+                contextMenu.message.loadState(savedInstanceState);
             }
             getListData().collapseDuplicates(savedInstanceState.getBoolean(
                     IntentExtra.COLLAPSE_DUPLICATES.key, MyPreferences.isCollapseDuplicates()), 0);
@@ -701,7 +698,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
     }
 
     MessageContextMenu getContextMenu() {
-        return contextMenu;
+        return contextMenu.message;
     }
 
     /** Parameters of currently shown Timeline */
@@ -1078,7 +1075,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
                 data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
         if (ma.isValid()) {
             contextMenu.setMyActor(ma);
-            contextMenu.showContextMenu();
+            contextMenu.message.showContextMenu();
         }
     }
 

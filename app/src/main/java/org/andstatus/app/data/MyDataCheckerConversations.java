@@ -85,8 +85,8 @@ public class MyDataCheckerConversations {
         this.logger = logger;
     }
 
-    public void fixData() {
-        fixInternal(false);
+    public int fixData() {
+        return fixInternal(false);
     }
 
     public int countChanges() {
@@ -218,13 +218,14 @@ public class MyDataCheckerConversations {
             if (item.isChanged()) {
                 String sql = "";
                 try {
-                    if (changedCount < 5) {
+                    if (changedCount < 5 && MyLog.isVerboseEnabled()) {
                         MyLog.v(this, "msgId=" + item.id + "; "
                             + (item.isInReplyToIdChanged() ? "inReplyToId changed from "
                                 + item.inReplyToId_initial + " to " + item.inReplyToId : "")
                             + (item.isInReplyToIdChanged() && item.isConversationIdChanged() ? " and " : "")
                             + (item.isConversationIdChanged() ? "conversationId changed from "
-                                + item.conversationId_initial + " to " + item.conversationId : ""));
+                                + item.conversationId_initial + " to " + item.conversationId : "")
+                            + ", Body:'" + MyQuery.msgIdToStringColumnValue(MsgTable.BODY, item.id) + "'");
                     }
                     if (!countOnly) {
                         sql = "UPDATE " + MsgTable.TABLE_NAME

@@ -18,34 +18,32 @@ package org.andstatus.app.activity;
 
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.msg.MessageViewItem;
 import org.andstatus.app.timeline.TimelineData;
-import org.andstatus.app.timeline.TimelinePage;
 import org.andstatus.app.timeline.ViewItem;
+import org.andstatus.app.user.UserViewItem;
 
-class TimelineDataMessageWrapper extends TimelineDataWrapper<MessageViewItem> {
+class TimelineDataUserWrapper extends TimelineDataWrapper<UserViewItem> {
 
-    TimelineDataMessageWrapper(TimelineData<ActivityViewItem> listData) {
+    TimelineDataUserWrapper(TimelineData<ActivityViewItem> listData) {
         super(listData);
     }
 
     @NonNull
     @Override
-    public MessageViewItem getItem(int position) {
-        return listData.getItem(position).message;
+    public UserViewItem getItem(int position) {
+        return listData.getItem(position).user;
     }
 
     @Override
     public int getPositionById(long itemId) {
-        int position = -1;
         if (itemId != 0) {
-            for (int ind=0; ind < listData.size(); ind++) {
-                ActivityViewItem item = listData.getItem(ind);
-                if (item.message.getId() == itemId) {
+            for (int position=0; position < listData.size(); position++) {
+                ActivityViewItem item = listData.getItem(position);
+                if (item.user.getId() == itemId) {
                     return position;
                 } else if (item.isCollapsed()) {
                     for (ViewItem child : item.getChildren()) {
-                        if ( ((ActivityViewItem) child).message.getId() == itemId) {
+                        if ( ((ActivityViewItem) child).user.getId() == itemId) {
                             return position;
                         }
                     }

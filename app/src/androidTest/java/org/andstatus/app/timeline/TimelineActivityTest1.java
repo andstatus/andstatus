@@ -83,7 +83,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
                 ConversationActivity.class);
         long msgId = helper.getListItemIdOfLoadedReply();
         helper.selectListPosition(method, helper.getPositionOfListItemId(msgId));
-        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.OPEN_CONVERSATION);
+        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.OPEN_CONVERSATION, R.id.message_wrapper);
         Activity nextActivity = helper.waitForNextActivity(method, 40000);
         DbUtils.waitMs(method, 500);
         nextActivity.finish();
@@ -220,14 +220,15 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
         long msgId = helper.getListItemIdOfLoadedReply();
         String logMsg = "msgId:" + msgId
                 + "; text:'" + MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId) + "'";
-        assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.ACT_AS_FIRST_OTHER_USER));
+        assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId,
+                MessageListContextMenuItem.ACT_AS_FIRST_OTHER_USER, R.id.message_wrapper));
         MyAccount actor1 = getActivity().getContextMenu().getMyActor();
         logMsg += "; actor1:" + actor1;
         assertTrue(logMsg, actor1.isValid());
 
         ActivityTestHelper.closeContextMenu(getActivity());
 
-        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.ACT_AS);
+        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.ACT_AS, R.id.message_wrapper);
 
         MyAccount actor2 = actor1.firstOtherAccountOfThisOrigin();
         logMsg += ", actor2:" + actor2.getAccountName();

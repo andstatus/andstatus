@@ -23,16 +23,17 @@ import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
+import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.list.ContextMenuItem;
 import org.andstatus.app.list.MyBaseListActivity;
+import org.andstatus.app.msg.BaseMessageViewItem;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.view.SelectorDialog;
 
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -63,7 +64,8 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
     /**
      * @return success
      */
-    public boolean invokeContextMenuAction4ListItemId(String methodExt, long listItemId, ContextMenuItem menuItem) throws InterruptedException {
+    public boolean invokeContextMenuAction4ListItemId(String methodExt, long listItemId, ContextMenuItem menuItem,
+                                                      int childViewId) throws InterruptedException {
         final String method = "invokeContextMenuAction4ListItemId";
         boolean success = false;
         String msg = "";
@@ -74,7 +76,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
             MyLog.v(this, msg);
             if (position >= 0 && getListItemIdAtPosition(position) == listItemId ) {
                 selectListPosition(methodExt, position);
-                if (invokeContextMenuAction(methodExt, mActivity, position, menuItem.getId())) {
+                if (invokeContextMenuAction(methodExt, mActivity, position, menuItem.getId(), childViewId)) {
                     long id2 = getListItemIdAtPosition(position);
                     if (id2 == listItemId) {
                         success = true;
@@ -123,14 +125,14 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
      * See https://github.com/google/google-authenticator-android/blob/master/tests/src/com/google/android/apps/authenticator/TestUtilities.java
      */
     private boolean invokeContextMenuAction(final String methodExt, final MyBaseListActivity activity,
-                   int position, final int menuItemId) throws InterruptedException {
+                                            int position, final int menuItemId, int childViewId) throws InterruptedException {
         final String method = "invokeContextMenuAction";
         MyLog.v(methodExt, method + " started on menuItemId=" + menuItemId + " at position=" + position);
         boolean success = false;
         int position1 = position;
         for (long attempt = 1; attempt < 4; attempt++) {
             goToPosition(methodExt, position);
-            if (!longClickListAtPosition(methodExt, position1)) {
+            if (!longClickListAtPosition(methodExt, position1, childViewId)) {
                 break;
             }
             if (mActivity.getPositionOfContextMenu() == position) {
@@ -156,16 +158,27 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
         return success;
     }
 
-    private boolean longClickListAtPosition(final String methodExt, final int position) throws InterruptedException {
-        final View viewToClick = getViewByPosition(position);
-        if (viewToClick == null) {
-            MyLog.i(methodExt, "View at list position " + position + " doesn't exist");
+    private boolean longClickListAtPosition(final String methodExt, final int position, int childViewId) throws InterruptedException {
+        final View parentView = getViewByPosition(position);
+        if (parentView == null) {
+            MyLog.i(methodExt, "Parent view at list position " + position + " doesn't exist");
             return false;
         }
+        View childView = null;
+        if (childViewId != 0) {
+            childView = parentView.findViewById(childViewId);
+            if (childView == null) {
+                MyLog.i(methodExt, "Child view " + childViewId + " at list position " + position + " doesn't exist");
+                return false;
+            }
+        }
+        final View viewToClick = childViewId == 0 ? parentView : childView;
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                final String msg = "performLongClick on " + viewToClick + " at position " + position;
+                final String msg = "performLongClick on "
+                        + (childViewId == 0 ? "" : "child " + childViewId + " ")
+                        + viewToClick + " at position " + position;
                 MyLog.v(methodExt, msg);
                 try {
                     viewToClick.performLongClick();
@@ -228,16 +241,21 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
     public long getListItemIdOfLoadedReply() {
         long idOut = 0;
         for (int ind = 0; ind < getListAdapter().getCount(); ind++) {
-            long itemId = getListAdapter().getItemId(ind);
-            if (MyQuery.msgIdToLongColumnValue(MsgTable.IN_REPLY_TO_MSG_ID, itemId) != 0) {
-                if (DownloadStatus.load(MyQuery.msgIdToStringColumnValue(MsgTable.MSG_STATUS,
-                        itemId)) == DownloadStatus.LOADED) {
-                    idOut = itemId;
+            Object objItem = getListAdapter().getItem(ind);
+            BaseMessageViewItem item = BaseMessageViewItem.EMPTY;
+            if (ActivityViewItem.class.isAssignableFrom(objItem.getClass())) {
+                item = ((ActivityViewItem) objItem).message;
+            } else if (BaseMessageViewItem.class.isAssignableFrom(objItem.getClass())) {
+                item = ((BaseMessageViewItem) objItem);
+            }
+            if (item != BaseMessageViewItem.EMPTY) {
+                if (item.inReplyToMsgId != 0 && item.msgStatus == DownloadStatus.LOADED) {
+                    idOut = getListAdapter().getItemId(ind);
                     break;
                 }
             }
         }
-        assertTrue("getListItemIdOfReply in " + getListAdapter(), idOut > 0);
+        assertNotEquals("getListItemIdOfReply in " + getListAdapter(), 0, idOut);
         return idOut;
     }
 

@@ -19,14 +19,12 @@ package org.andstatus.app.msg;
 import android.content.Intent;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DemoMessageInserter;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.HtmlContentInserter;
-import org.andstatus.app.data.MyDataCheckerConversations;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.social.MbActivity;
@@ -35,7 +33,6 @@ import org.andstatus.app.util.MyHtml;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -81,7 +78,6 @@ public class MessageShareTest {
                 intent.getStringExtra(Intent.EXTRA_TEXT),
                 intent.getStringExtra(Intent.EXTRA_TEXT).contains(body));
         assertFalse(intent.getExtras().containsKey(Intent.EXTRA_HTML_TEXT));
-        assertEquals("Conversations need fixes", 0, new MyDataCheckerConversations(MyContextHolder.get(),
-                ProgressLogger.getEmpty()).countChanges());
+        DemoData.assertConversations();
     }
 }

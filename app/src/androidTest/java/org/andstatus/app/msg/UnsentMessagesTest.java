@@ -15,6 +15,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.service.MyServiceTestHelper;
@@ -105,10 +106,12 @@ public class UnsentMessagesTest extends TimelineActivityTest {
         MyLog.v(this, method + " started");
         TestSuite.waitForListLoaded(getActivity(), 1);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity());
-        long msgId = helper.getListItemIdOfLoadedReply();
+        long itemId = helper.getListItemIdOfLoadedReply();
+        long msgId = MyQuery.idToLongColumnValue(null, ActivityTable.TABLE_NAME, ActivityTable.MSG_ID, itemId);
         String msgOid = MyQuery.idToOid(OidEnum.MSG_OID, msgId, 0);
         String logMsg = MyQuery.msgInfoForLog(msgId);
-        assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.REBLOG));
+        assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, itemId, MessageListContextMenuItem.REBLOG,
+                R.id.message_wrapper));
         mService.serviceStopped = false;
         TestSuite.waitForIdleSync();
         mService.waitForServiceStopped(false);

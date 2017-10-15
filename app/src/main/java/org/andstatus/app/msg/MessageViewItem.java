@@ -47,7 +47,7 @@ public class MessageViewItem extends BaseMessageViewItem {
     public static MessageViewItem fromCursorRow(MyContext myContext, Cursor cursor) {
         MessageViewItem item = new MessageViewItem();
         item.setMyContext(myContext);
-        item.setMsgId(DbUtils.getLong(cursor, MsgTable._ID));
+        item.setMsgId(DbUtils.getLong(cursor, ActivityTable.MSG_ID));
         item.setOriginId(DbUtils.getLong(cursor, MsgTable.ORIGIN_ID));
         item.setLinkedUserAndAccount(DbUtils.getLong(cursor, UserTable.LINKED_USER_ID));
 

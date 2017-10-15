@@ -10,6 +10,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.context.DemoData;
+import org.andstatus.app.origin.Origin;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -27,14 +28,14 @@ public class MessageEditorDataTest {
     @Test
     public void testMessageEditorDataConversation() {
         MyAccount ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
-        long entryMsgId = MyQuery.oidToId(OidEnum.MSG_OID, MyContextHolder.get()
-                .persistentOrigins()
-                .fromName(DemoData.CONVERSATION_ORIGIN_NAME).getId(),
+        final Origin origin = MyContextHolder.get().persistentOrigins().fromName(DemoData.CONVERSATION_ORIGIN_NAME);
+        assertEquals(origin, ma.getOrigin());
+        long entryMsgId = MyQuery.oidToId(OidEnum.MSG_OID, origin.getId(),
                 DemoData.CONVERSATION_ENTRY_MESSAGE_OID);
-        long entryUserId = MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
+        long entryUserId = MyQuery.oidToId(OidEnum.USER_OID, origin.getId(),
                 DemoData.CONVERSATION_ENTRY_USER_OID);
-        long memberUserId = MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
-                DemoData.CONVERSATION_MEMBER_USER_OID);
+        long memberUserId = MyQuery.oidToId(OidEnum.USER_OID, origin.getId(),
+                DemoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
         assertData(ma, entryMsgId, entryUserId, 0, memberUserId, false);
         assertData(ma, entryMsgId, entryUserId, 0, memberUserId, true);
         assertData(ma,          0,           0, memberUserId, 0, false);

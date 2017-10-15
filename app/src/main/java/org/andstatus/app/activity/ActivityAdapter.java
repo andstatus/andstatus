@@ -23,57 +23,58 @@ import android.view.ViewGroup;
 import org.andstatus.app.R;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.msg.MessageAdapter;
-import org.andstatus.app.msg.MessageContextMenu;
 import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.TimelineData;
+import org.andstatus.app.user.UserAdapter;
 import org.andstatus.app.util.MyUrlSpan;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
-    private MessageContextMenu contextMenu; // TODO: Create ContextMenu for activities
+    private ActivityContextMenu contextMenu;
     private final MessageAdapter messageAdapter;
+    private final UserAdapter userAdapter;
 
-    public ActivityAdapter(MessageContextMenu contextMenu, TimelineData<ActivityViewItem> listData) {
-        super(contextMenu.getMyContext(), listData);
+    public ActivityAdapter(ActivityContextMenu contextMenu, TimelineData<ActivityViewItem> listData) {
+        super(contextMenu.message.getMyContext(), listData);
         this.contextMenu = contextMenu;
-        messageAdapter = new MessageAdapter(contextMenu, new TimelineDataMessageWrapper(listData));
+        messageAdapter = new MessageAdapter(contextMenu.message, new TimelineDataMessageWrapper(listData));
+        userAdapter = new UserAdapter(contextMenu.user, new TimelineDataUserWrapper(listData));
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup viewGroup) {
         ViewGroup view = getEmptyView(convertView);
-        view.setOnCreateContextMenuListener(contextMenu);
         view.setOnClickListener(this);
         setPosition(view, position);
         ActivityViewItem item = getItem(position);
-        final ViewGroup actorView = view.findViewById(R.id.actor_wrapper);
-        if (item.activityType == MbActivityType.CREATE || item.activityType == MbActivityType.UPDATE) {
-            actorView.setVisibility(View.GONE);
-        } else {
-            if (showAvatars) {
-                AvatarView avatarView = view.findViewById(R.id.actor_avatar_image);
-                item.actor.showAvatar(contextMenu.getActivity(), avatarView);
-            }
-            MyUrlSpan.showText(view, R.id.action_details, item.actor.getWebFingerIdOrUserName()
-                    + " " + item.activityType.getActedTitle(contextMenu.getActivity()), false, false);
-            actorView.setVisibility(View.VISIBLE);
-        }
+        showActor(view, item);
         final ViewGroup messageView = view.findViewById(R.id.message_wrapper);
         if (item.message.getId() == 0) {
             messageView.setVisibility(View.GONE);
         } else {
             messageAdapter.populateView(messageView, item.message, position);
+            messageView.setOnCreateContextMenuListener(contextMenu.message);
+            messageView.setOnClickListener(messageAdapter);
             messageView.setVisibility(View.VISIBLE);
+        }
+        final ViewGroup userView = view.findViewById(R.id.user_wrapper);
+        if (item.user.getId() == 0) {
+            userView.setVisibility(View.GONE);
+        } else {
+            userAdapter.populateView(userView, item.user, position);
+            userView.setOnCreateContextMenuListener(contextMenu.user);
+            userView.setOnClickListener(userAdapter);
+            userView.setVisibility(View.VISIBLE);
         }
         return view;
     }
 
-    protected ViewGroup getEmptyView(View convertView) {
+    private ViewGroup getEmptyView(View convertView) {
         if (convertView == null) {
-            return (ViewGroup) LayoutInflater.from(contextMenu.getActivity()).inflate(R.layout.activity, null);
+            return (ViewGroup) LayoutInflater.from(contextMenu.message.getActivity()).inflate(R.layout.activity, null);
         }
         convertView.setBackgroundResource(0);
         View messageIndented = convertView.findViewById(R.id.message_indented);
@@ -83,6 +84,21 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
             convertView.findViewById(R.id.avatar_image).setVisibility(View.GONE);
         }
         return (ViewGroup) convertView;
+    }
+
+    private void showActor(ViewGroup view, ActivityViewItem item) {
+        final ViewGroup actorView = view.findViewById(R.id.action_wrapper);
+        if (item.activityType == MbActivityType.CREATE || item.activityType == MbActivityType.UPDATE) {
+            actorView.setVisibility(View.GONE);
+        } else {
+            if (showAvatars) {
+                AvatarView avatarView = view.findViewById(R.id.actor_avatar_image);
+                item.actor.showAvatar(contextMenu.user.getActivity(), avatarView);
+            }
+            MyUrlSpan.showText(view, R.id.action_details, item.actor.getWebFingerIdOrUserName()
+                    + " " + item.activityType.getActedTitle(contextMenu.user.getActivity()), false, false);
+            actorView.setVisibility(View.VISIBLE);
+        }
     }
 
 }
