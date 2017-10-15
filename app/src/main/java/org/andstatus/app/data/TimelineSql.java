@@ -109,12 +109,8 @@ public class TimelineSql {
                 }
                 break;
             case HOME:
-                // In the Home of the combined timeline we see ALL loaded
-                // messages, even those that we downloaded
-                // not as Home timeline of any Account
-                if (!timeline.isCombined()) {
-                    msgWhere.append(MsgTable.SUBSCRIBED + "=" + TriState.TRUE.id);
-                }
+                msgWhere.append(MsgTable.SUBSCRIBED + "=" + TriState.TRUE.id);
+                activityWhere.append(ActivityTable.ACCOUNT_ID + " " + selectedAccounts.getSql());
                 break;
             case DIRECT:
                 msgWhere.append(MsgTable.PRIVATE + "=" + TriState.TRUE.id);
