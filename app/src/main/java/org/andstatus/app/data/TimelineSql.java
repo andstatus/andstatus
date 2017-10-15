@@ -201,7 +201,7 @@ public class TimelineSql {
                     + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.CONTENT_TYPE
                     + "=" + MyContentType.IMAGE.save() + " AND " 
                     + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.MSG_ID
-                    + "=" + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID;
+                    + "=" + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.MSG_ID;
         }
         if (columns.contains(UserTable.SENDER_NAME)) {  // TODO: Rename SENDER to ACTOR
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
