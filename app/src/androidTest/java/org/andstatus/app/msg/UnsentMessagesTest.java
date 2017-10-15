@@ -37,13 +37,15 @@ import static org.junit.Assert.assertTrue;
 
 public class UnsentMessagesTest extends TimelineActivityTest {
     private final MyServiceTestHelper mService = new MyServiceTestHelper();
+    DemoData demoData;
 
     @Override
     protected Intent getActivityIntent() {
         TestSuite.initializeWithData(this);
+        demoData = DemoData.instance;
 
         mService.setUp(null);
-        MyAccount ma = DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        MyAccount ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
@@ -66,7 +68,7 @@ public class UnsentMessagesTest extends TimelineActivityTest {
         helper.clickMenuItem(method + "; " + step, R.id.createMessageButton);
         ActivityTestHelper.waitViewVisible(method + "; " + step, editorView);
 
-        String body = "Test unsent message, which we will try to edit " + DemoData.TESTRUN_UID;
+        String body = "Test unsent message, which we will try to edit " + demoData.TESTRUN_UID;
         TestSuite.waitForIdleSync();
         onView(withId(R.id.messageBodyEditText)).perform(new TypeTextAction(body));
         TestSuite.waitForIdleSync();

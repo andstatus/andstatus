@@ -52,14 +52,16 @@ import static org.junit.Assert.assertTrue;
  */
 public class PublicTimelineActivityTest extends TimelineActivityTest {
     private MyAccount ma;
+    private DemoData demoData;
 
     @Override
     protected Intent getActivityIntent() {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
+        demoData = DemoData.instance;
 
         ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(
-                MyContextHolder.get().persistentOrigins().fromName(DemoData.GNUSOCIAL_TEST_ORIGIN_NAME));
+                MyContextHolder.get().persistentOrigins().fromName(demoData.GNUSOCIAL_TEST_ORIGIN_NAME));
         assertTrue(ma.isValidAndSucceeded());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
@@ -72,12 +74,12 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
 
     @Test
     public void testGlobalSearchInOptionsMenu() throws InterruptedException {
-        oneSearchTest("testGlobalSearchInOptionsMenu", DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT, true);
+        oneSearchTest("testGlobalSearchInOptionsMenu", demoData.GLOBAL_PUBLIC_MESSAGE_TEXT, true);
     }
 
     @Test
     public void testSearch() throws InterruptedException {
-        oneSearchTest("testSearch", DemoData.PUBLIC_MESSAGE_TEXT, false);
+        oneSearchTest("testSearch", demoData.PUBLIC_MESSAGE_TEXT, false);
     }
 
     private void oneSearchTest(String method, String messageText, boolean internetSearch) throws InterruptedException {

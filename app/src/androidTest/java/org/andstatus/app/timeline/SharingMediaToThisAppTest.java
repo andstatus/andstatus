@@ -32,6 +32,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class SharingMediaToThisAppTest extends TimelineActivityTest {
+    private DemoData demoData;
     private MyServiceTestHelper mService;
     private MyAccount ma;
 
@@ -39,16 +40,17 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest {
     protected Intent getActivityIntent() {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
+        demoData = DemoData.instance;
 
         mService = new MyServiceTestHelper();
-        mService.setUp(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
-        ma = DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        mService.setUp(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("image/png");
-        Uri mediaUri = DemoData.LOCAL_IMAGE_TEST_URI2;
+        Uri mediaUri = demoData.LOCAL_IMAGE_TEST_URI2;
         assertTrue(mediaUri != null);
         MyLog.i(this, "setUp ended");
         intent.putExtra(Intent.EXTRA_STREAM, mediaUri);
@@ -73,7 +75,7 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest {
         String textToFind = MyContextHolder.get().context().getText(R.string.label_with_media).toString();
         ActivityTestHelper.waitTextInAView(method, details, textToFind);
 
-        String body = "Test message with a shared image " + DemoData.TESTRUN_UID;
+        String body = "Test message with a shared image " + demoData.TESTRUN_UID;
         TestSuite.waitForIdleSync();
         onView(withId(R.id.messageBodyEditText)).perform(new TypeTextAction(body));
         TestSuite.waitForIdleSync();
@@ -100,7 +102,7 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest {
         DownloadData dd = DownloadData.getSingleForMessage(unsentMsgId,
                 MyContentType.IMAGE, null);
         MyLog.v(this, method + "; " + dd);
-        assertEquals("Image URI stored", DemoData.LOCAL_IMAGE_TEST_URI2, dd.getUri());
+        assertEquals("Image URI stored", demoData.LOCAL_IMAGE_TEST_URI2, dd.getUri());
         assertEquals("Loaded '" + dd.getUri() + "'; " + dd, DownloadStatus.LOADED, dd.getStatus());
     }
 }

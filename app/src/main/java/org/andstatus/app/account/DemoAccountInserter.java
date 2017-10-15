@@ -42,33 +42,34 @@ import static org.junit.Assert.fail;
 public class DemoAccountInserter {
     private MyContext myContext;
     private String firstAccountUserOid = null;
+    private final DemoData demoData = DemoData.instance;
 
     public DemoAccountInserter(MyContext myContext) {
         this.myContext = myContext;
     }
 
     public void insert() {
-        addAccount(DemoData.PUMPIO_TEST_ACCOUNT_USER_OID, DemoData.PUMPIO_TEST_ACCOUNT_NAME,
+        addAccount(demoData.PUMPIO_TEST_ACCOUNT_USER_OID, demoData.PUMPIO_TEST_ACCOUNT_NAME,
                 "", OriginType.PUMPIO);
-        addAccount(DemoData.TWITTER_TEST_ACCOUNT_USER_OID, DemoData.TWITTER_TEST_ACCOUNT_NAME,
+        addAccount(demoData.TWITTER_TEST_ACCOUNT_USER_OID, demoData.TWITTER_TEST_ACCOUNT_NAME,
                 "", OriginType.TWITTER);
-        addAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_USER_OID, DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME,
-                DemoData.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL, OriginType.GNUSOCIAL);
-        addAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT2_USER_OID, DemoData.GNUSOCIAL_TEST_ACCOUNT2_NAME,
+        addAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_USER_OID, demoData.GNUSOCIAL_TEST_ACCOUNT_NAME,
+                demoData.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL, OriginType.GNUSOCIAL);
+        addAccount(demoData.GNUSOCIAL_TEST_ACCOUNT2_USER_OID, demoData.GNUSOCIAL_TEST_ACCOUNT2_NAME,
                 "", OriginType.GNUSOCIAL);
-        addAccount(DemoData.MASTODON_TEST_ACCOUNT_USER_OID, DemoData.MASTODON_TEST_ACCOUNT_NAME,
-                DemoData.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL, OriginType.MASTODON);
-        addAccount(DemoData.CONVERSATION_ACCOUNT_USER_OID, DemoData.CONVERSATION_ACCOUNT_NAME,
-                DemoData.CONVERSATION_ACCOUNT_AVATAR_URL, DemoData.CONVERSATION_ORIGIN_TYPE);
-        addAccount(DemoData.CONVERSATION_ACCOUNT2_USER_OID, DemoData.CONVERSATION_ACCOUNT2_NAME,
-                "", DemoData.CONVERSATION_ORIGIN_TYPE);
+        addAccount(demoData.MASTODON_TEST_ACCOUNT_USER_OID, demoData.MASTODON_TEST_ACCOUNT_NAME,
+                demoData.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL, OriginType.MASTODON);
+        addAccount(demoData.CONVERSATION_ACCOUNT_USER_OID, demoData.CONVERSATION_ACCOUNT_NAME,
+                demoData.CONVERSATION_ACCOUNT_AVATAR_URL, demoData.CONVERSATION_ORIGIN_TYPE);
+        addAccount(demoData.CONVERSATION_ACCOUNT2_USER_OID, demoData.CONVERSATION_ACCOUNT2_NAME,
+                "", demoData.CONVERSATION_ORIGIN_TYPE);
     }
 
     private MyAccount addAccount(String userOid, String accountNameString, String avatarUrl, OriginType originType) {
         if (firstAccountUserOid == null) {
             firstAccountUserOid = userOid;
         }
-        DemoData.checkDataPath();
+        demoData.checkDataPath();
         AccountName accountName = AccountName.fromAccountName(myContext, accountNameString);
         MyLog.v(this, "Adding account " + accountName);
         assertTrue("Name '" + accountNameString + "' is valid for " + originType, accountName.isValid());
@@ -150,7 +151,7 @@ public class DemoAccountInserter {
         return ma;
     }
 
-    public static void checkDefaultTimelinesForAccounts() {
+    public void checkDefaultTimelinesForAccounts() {
         for (MyAccount myAccount : MyContextHolder.get().persistentAccounts().list()) {
             for (TimelineType timelineType : TimelineType.getDefaultMyAccountTimelineTypes()) {
                 long count = 0;

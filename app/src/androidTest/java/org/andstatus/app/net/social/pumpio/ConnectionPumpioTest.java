@@ -64,8 +64,9 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class ConnectionPumpioTest {
+    private DemoData demoData;
     private ConnectionPumpio connection;
-    private URL originUrl = UrlUtils.fromString("https://" + DemoData.PUMPIO_MAIN_HOST);
+    private URL originUrl;
     private HttpConnectionMock httpConnectionMock;
 
     private String keyStored;
@@ -74,12 +75,14 @@ public class ConnectionPumpioTest {
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
+        demoData = DemoData.instance;
+        originUrl = UrlUtils.fromString("https://" + demoData.PUMPIO_MAIN_HOST);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
         OriginConnectionData connectionData = OriginConnectionData.fromAccountName(AccountName.fromOriginAndUserName(
-                MyContextHolder.get().persistentOrigins().fromName(DemoData.PUMPIO_ORIGIN_NAME), ""),
+                MyContextHolder.get().persistentOrigins().fromName(demoData.PUMPIO_ORIGIN_NAME), ""),
                 TriState.UNKNOWN);
-        connectionData.setAccountUserOid(DemoData.PUMPIO_TEST_ACCOUNT_USER_OID);
+        connectionData.setAccountUserOid(demoData.PUMPIO_TEST_ACCOUNT_USER_OID);
         connectionData.setDataReader(new AccountDataReaderEmpty());
         connection = (ConnectionPumpio) connectionData.newConnection();
         httpConnectionMock = connection.getHttpMock();
@@ -148,11 +151,11 @@ public class ConnectionPumpioTest {
 
     @Test
     public void testGetConnectionAndUrl() throws ConnectionException {
-        String userOids[] = {"acct:t131t@" + DemoData.PUMPIO_MAIN_HOST,
-                "somebody@" + DemoData.PUMPIO_MAIN_HOST};
+        String userOids[] = {"acct:t131t@" + demoData.PUMPIO_MAIN_HOST,
+                "somebody@" + demoData.PUMPIO_MAIN_HOST};
         String urls[] = {"api/user/t131t/profile", 
                 "api/user/somebody/profile"};
-        String hosts[] = {DemoData.PUMPIO_MAIN_HOST, DemoData.PUMPIO_MAIN_HOST};
+        String hosts[] = {demoData.PUMPIO_MAIN_HOST, demoData.PUMPIO_MAIN_HOST};
         for (int ind=0; ind < userOids.length; ind++) {
             ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.GET_USER, userOids[ind]);
             assertEquals("Expecting '" + urls[ind] + "'", urls[ind], conu.url);
@@ -346,8 +349,8 @@ public class ConnectionPumpioTest {
         String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.pumpio_delete_comment_response);
         httpConnectionMock.setResponse(jso);
-        connection.getData().setAccountUserOid(DemoData.CONVERSATION_ACCOUNT_USER_OID);
-        assertTrue("Success", connection.destroyStatus("https://" + DemoData.PUMPIO_MAIN_HOST
+        connection.getData().setAccountUserOid(demoData.CONVERSATION_ACCOUNT_USER_OID);
+        assertTrue("Success", connection.destroyStatus("https://" + demoData.PUMPIO_MAIN_HOST
                 + "/api/comment/xf0WjLeEQSlyi8jwHJ0ttre"));
 
         boolean thrown = false;
@@ -367,7 +370,7 @@ public class ConnectionPumpioTest {
         httpConnectionMock.setResponse(jso);
         
         connection.getData().setAccountUserOid("acct:mymediatester@" + originUrl.getHost());
-        MbActivity activity = connection.updateStatus("Test post message with media", "", "", DemoData.LOCAL_IMAGE_TEST_URI);
+        MbActivity activity = connection.updateStatus("Test post message with media", "", "", demoData.LOCAL_IMAGE_TEST_URI);
         activity.getMessage().setPrivate(TriState.FALSE);
         assertEquals("Message returned", privateGetMessageWithAttachment(
                 InstrumentationRegistry.getInstrumentation().getContext(), false), activity.getMessage());
@@ -380,7 +383,7 @@ public class ConnectionPumpioTest {
 
         MbMessage msg = connection.getMessage("w9wME-JVQw2GQe6POK7FSQ").getMessage();
         if (uniqueUid) {
-            msg.oid += "_" + DemoData.TESTRUN_UID;
+            msg.oid += "_" + demoData.TESTRUN_UID;
         }
         assertNotNull("message returned", msg);
         assertEquals("has attachment", msg.attachments.size(), 1);

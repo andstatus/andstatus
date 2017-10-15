@@ -239,6 +239,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
     }
 
     public long getListItemIdOfLoadedReply() {
+        final String method = "getListItemIdOfLoadedReply";
         long idOut = 0;
         for (int ind = 0; ind < getListAdapter().getCount(); ind++) {
             Object objItem = getListAdapter().getItem(ind);
@@ -251,11 +252,12 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
             if (item != BaseMessageViewItem.EMPTY) {
                 if (item.inReplyToMsgId != 0 && item.msgStatus == DownloadStatus.LOADED) {
                     idOut = getListAdapter().getItemId(ind);
+                    MyLog.v(this, method + ": found " + item);
                     break;
                 }
             }
         }
-        assertNotEquals("getListItemIdOfReply in " + getListAdapter(), 0, idOut);
+        assertNotEquals( method + " in " + getListAdapter(), 0, idOut);
         return idOut;
     }
 

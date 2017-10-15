@@ -48,6 +48,7 @@ import static org.junit.Assert.assertTrue;
 
 public class DemoMessageInserter {
     public final MbUser accountUser;
+    private final DemoData demoData = DemoData.instance;
     private final Origin origin;
 
     public DemoMessageInserter(MyAccount ma) {
@@ -63,9 +64,9 @@ public class DemoMessageInserter {
 
     public MbUser buildUser() {
         if (origin.getOriginType() == OriginType.PUMPIO) {
-            return buildUserFromOid("acct:userOf" + origin.getName() + DemoData.TESTRUN_UID);
+            return buildUserFromOid("acct:userOf" + origin.getName() + demoData.TESTRUN_UID);
         }
-        return buildUserFromOid(DemoData.TESTRUN_UID);
+        return buildUserFromOid(demoData.TESTRUN_UID);
     }
 
     public MbUser buildUserFromOidAndAvatar(String userOid, String avatarUrlString) {
@@ -85,7 +86,7 @@ public class DemoMessageInserter {
                     + connection.usernameToNickname(username);
         } else {
             username = "userOf" + origin.getName() + userOid;
-            profileUrl = "https://" + DemoData.GNUSOCIAL_TEST_ORIGIN_NAME
+            profileUrl = "https://" + demoData.GNUSOCIAL_TEST_ORIGIN_NAME
                     + ".example.com/profiles/" + username;
         }
         mbUser.setUserName(username);
@@ -93,7 +94,7 @@ public class DemoMessageInserter {
         mbUser.setRealName("Real " + username);
         mbUser.setDescription("This is about " + username);
         mbUser.setHomepage("https://example.com/home/" + username + "/start/");
-        mbUser.location = "Faraway place #" + DemoData.TESTRUN_UID;
+        mbUser.location = "Faraway place #" + demoData.TESTRUN_UID;
         mbUser.avatarUrl = mbUser.getHomepage() + "avatar.jpg";
         mbUser.bannerUrl = mbUser.getHomepage() + "banner.png";
         long rand = InstanceId.next();

@@ -42,14 +42,16 @@ import static org.junit.Assert.assertTrue;
  * @author yvolk@yurivolkov.com
  */
 public class ActAsUserTest extends TimelineActivityTest {
+    private DemoData demoData;
 
     @Override
     protected Intent getActivityIntent() {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
+        demoData = demoData.instance;
 
         final MyAccount ma = MyContextHolder.get().persistentAccounts()
-                .fromAccountName(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+                .fromAccountName(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 

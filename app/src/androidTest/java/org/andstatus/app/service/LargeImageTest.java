@@ -44,10 +44,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class LargeImageTest {
-    
+    private DemoData demoData;
+
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
+        demoData = DemoData.instance;
     }
 
     @Test
@@ -58,7 +60,7 @@ public class LargeImageTest {
 
     private DownloadData insertMessage() throws IOException {
         String body = "Large image attachment";
-        MyAccount ma = DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        MyAccount ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         DemoMessageInserter mi = new DemoMessageInserter(ma);
         MbActivity activity = mi.buildActivity(mi.buildUser(), body, null, null, DownloadStatus.LOADED);
         activity.getMessage().attachments
@@ -88,7 +90,7 @@ public class LargeImageTest {
         assertFalse("Loaded " + data.getUri(), commandData.getResult().hasError());
         assertTrue("File exists " + data.getUri(), data.getFile().exists());
 
-        DemoData.assertConversations();
+        demoData.assertConversations();
         return data;
     }
 

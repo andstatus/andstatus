@@ -19,6 +19,7 @@ package org.andstatus.app.timeline.meta;
 import org.andstatus.app.account.DemoAccountInserter;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.DemoData;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.origin.DemoOriginInserter;
@@ -37,57 +38,59 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class PersistentTimelinesTest {
+    MyContext myContext;
 
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
+        myContext = MyContextHolder.get();
     }
 
     @Test
     public void testList() throws Exception {
-        Collection<Timeline> timelines = MyContextHolder.get().persistentTimelines().values();
+        Collection<Timeline> timelines = myContext.persistentTimelines().values();
         assertTrue(timelines.size() > 0);
     }
 
     @Test
     public void testFilteredList() throws Exception {
-        Collection<Timeline> timelines = MyContextHolder.get().persistentTimelines().values();
-        List<Timeline> filtered = MyContextHolder.get().persistentTimelines().getFiltered(
+        Collection<Timeline> timelines = myContext.persistentTimelines().values();
+        List<Timeline> filtered = myContext.persistentTimelines().getFiltered(
                 false, TriState.UNKNOWN, TimelineType.UNKNOWN, null, null);
         assertEquals(timelines.size(), filtered.size());
 
-        filtered = MyContextHolder.get().persistentTimelines().getFiltered(
+        filtered = myContext.persistentTimelines().getFiltered(
                 true, TriState.FALSE, TimelineType.UNKNOWN, null, null);
         assertTrue(timelines.size() > filtered.size());
 
-        filtered = MyContextHolder.get().persistentTimelines().getFiltered(
+        filtered = myContext.persistentTimelines().getFiltered(
                 true, TriState.TRUE, TimelineType.UNKNOWN, null, null);
         assertTrue(!filtered.isEmpty());
         assertTrue(timelines.size() > filtered.size());
 
         ensureAtLeastOneNotDisplayedTimeline();
-        List<Timeline> filtered2 = MyContextHolder.get().persistentTimelines().getFiltered(
+        List<Timeline> filtered2 = myContext.persistentTimelines().getFiltered(
                 true, TriState.UNKNOWN, TimelineType.UNKNOWN, null, null);
         assertTrue(timelines.size() > filtered2.size());
         assertTrue(filtered2.size() > filtered.size());
 
-        MyAccount myAccount = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
-        filtered = MyContextHolder.get().persistentTimelines().getFiltered(
+        MyAccount myAccount = DemoData.instance.getMyAccount(DemoData.instance.CONVERSATION_ACCOUNT_NAME);
+        filtered = myContext.persistentTimelines().getFiltered(
                 true, TriState.FALSE, TimelineType.UNKNOWN, myAccount, null);
         assertTrue(!filtered.isEmpty());
 
-        filtered = MyContextHolder.get().persistentTimelines().getFiltered(
+        filtered = myContext.persistentTimelines().getFiltered(
                 true, TriState.FALSE, TimelineType.UNKNOWN, null, myAccount.getOrigin());
         assertTrue(!filtered.isEmpty());
 
-        filtered = MyContextHolder.get().persistentTimelines().getFiltered(true, TriState.FALSE,
+        filtered = myContext.persistentTimelines().getFiltered(true, TriState.FALSE,
                 TimelineType.EVERYTHING, null, myAccount.getOrigin());
         assertTrue(!filtered.isEmpty());
         assertThat(filtered.get(0).getTimelineType(), is(TimelineType.EVERYTHING));
     }
 
     private void ensureAtLeastOneNotDisplayedTimeline() {
-        Collection<Timeline> timelines = MyContextHolder.get().persistentTimelines().values();
+        Collection<Timeline> timelines = myContext.persistentTimelines().values();
         boolean found = false;
         Timeline timeline1 = null;
         for (Timeline timeline : timelines) {
@@ -101,40 +104,40 @@ public class PersistentTimelinesTest {
         }
         if (!found && timeline1 != null) {
             timeline1.setDisplayedInSelector(DisplayedInSelector.NEVER);
-            MyContextHolder.get().persistentTimelines().saveChanged();
+            myContext.persistentTimelines().saveChanged();
         }
     }
 
     @Test
     public void testDefaultTimelinesForAccounts() {
-        DemoAccountInserter.checkDefaultTimelinesForAccounts();
+        new DemoAccountInserter(myContext).checkDefaultTimelinesForAccounts();
     }
 
     @Test
     public void testDefaultTimelinesForOrigins() {
-        DemoOriginInserter.checkDefaultTimelinesForOrigins();
+        new DemoOriginInserter(myContext).checkDefaultTimelinesForOrigins();
     }
 
     @Test
     public void testDefaultTimeline() {
-        Timeline defaultStored = MyContextHolder.get().persistentTimelines().getDefault();
+        Timeline defaultStored = myContext.persistentTimelines().getDefault();
 
-        MyContextHolder.get().persistentTimelines().resetDefaultSelectorOrder();
-        Timeline timeline = MyContextHolder.get().persistentTimelines().getDefault();
+        myContext.persistentTimelines().resetDefaultSelectorOrder();
+        Timeline timeline = myContext.persistentTimelines().getDefault();
         assertTrue(timeline.toString(), timeline.isValid());
         assertEquals(timeline.toString(), TimelineType.HOME, timeline.getTimelineType());
         assertFalse(timeline.toString(), timeline.isCombined());
 
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(DemoData.GNUSOCIAL_TEST_ORIGIN_NAME);
-        MyAccount myAccount = MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(origin);
+        Origin origin = myContext.persistentOrigins().fromName(DemoData.instance.GNUSOCIAL_TEST_ORIGIN_NAME);
+        MyAccount myAccount = myContext.persistentAccounts().getFirstSucceededForOrigin(origin);
         assertTrue(myAccount.isValid());
-        timeline = MyContextHolder.get().persistentTimelines().
+        timeline = myContext.persistentTimelines().
                 getFiltered(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount, null).get(2);
-        MyContextHolder.get().persistentTimelines().setDefault(timeline);
+        myContext.persistentTimelines().setDefault(timeline);
 
-        Timeline timeline2 = MyContextHolder.get().persistentTimelines().getDefault();
+        Timeline timeline2 = myContext.persistentTimelines().getDefault();
         assertEquals(timeline, timeline2);
 
-        MyContextHolder.get().persistentTimelines().setDefault(defaultStored);
+        myContext.persistentTimelines().setDefault(defaultStored);
     }
 }

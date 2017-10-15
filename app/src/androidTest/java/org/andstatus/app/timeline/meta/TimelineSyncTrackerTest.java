@@ -18,22 +18,23 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class TimelineSyncTrackerTest {
-
     private static final int LATEST_ITEM_MILLIS_AGO = 10000;
+    private DemoData demoData;
 
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
+        demoData = DemoData.instance;
     }
 
     @Test
     public void testGnuSocialTimeline() {
-        testTimelineForAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        testTimelineForAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
     }
 
     @Test
     public void testTwitterTimeline() {
-        testTimelineForAccount(DemoData.TWITTER_TEST_ACCOUNT_NAME);
+        testTimelineForAccount(demoData.TWITTER_TEST_ACCOUNT_NAME);
     }
 
     private void testTimelineForAccount(String accountName) {
@@ -44,7 +45,7 @@ public class TimelineSyncTrackerTest {
 
     private void oneTimelineType(TimelineType timelineType, String accountName) {
         MyContext myContext = MyContextHolder.get();
-        MyAccount ma = DemoData.getMyAccount(accountName);
+        MyAccount ma = demoData.getMyAccount(accountName);
         assertTrue(ma.isValid());
         assertEquals("Account was found", ma.getAccountName(), accountName);
         Timeline timeline = getTimeline(myContext, timelineType, ma);

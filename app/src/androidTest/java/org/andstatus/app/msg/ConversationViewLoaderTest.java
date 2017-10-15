@@ -24,9 +24,10 @@ public class ConversationViewLoaderTest implements ProgressPublisher {
     public void setUp() throws Exception {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
-        ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
+        DemoData demoData = DemoData.instance;
+        ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
-        selectedMessageId = MyQuery.oidToId(OidEnum.MSG_OID, ma.getOriginId(), DemoData.CONVERSATION_ENTRY_MESSAGE_OID);
+        selectedMessageId = MyQuery.oidToId(OidEnum.MSG_OID, ma.getOriginId(), demoData.CONVERSATION_ENTRY_MESSAGE_OID);
         assertTrue("Selected message exists", selectedMessageId != 0);
         MyLog.i(this, "setUp ended");
     }

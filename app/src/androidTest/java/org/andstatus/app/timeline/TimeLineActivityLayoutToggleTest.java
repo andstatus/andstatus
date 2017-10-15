@@ -42,10 +42,12 @@ public class TimeLineActivityLayoutToggleTest extends TimelineActivityTest {
     private boolean showAttachedImages = false;
     private  static final boolean showAvatarsOld = MyPreferences.getShowAvatars();
     private boolean showAvatars = false;
+    private DemoData demoData;
 
     @Override
     protected Intent getActivityIntent() {
         TestSuite.initializeWithData(this);
+        demoData = DemoData.instance;
         switch (iteration.incrementAndGet()) {
             case 2:
                 showAttachedImages = showAttachedImagesOld;
@@ -68,7 +70,7 @@ public class TimeLineActivityLayoutToggleTest extends TimelineActivityTest {
         setPreferences();
         logStartStop("setUp started");
 
-        MyAccount ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
+        MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 

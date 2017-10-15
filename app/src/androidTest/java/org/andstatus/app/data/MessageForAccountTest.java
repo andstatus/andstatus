@@ -17,15 +17,17 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class MessageForAccountTest {
+    private DemoData demoData;
 
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
+        demoData = DemoData.instance;
     }
 
     @Test
     public void testAReply() {
-        MyAccount ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
+        MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         DemoMessageInserter mi = new DemoMessageInserter(ma);
         MbUser accountUser = ma.toPartialUser();
@@ -41,7 +43,7 @@ public class MessageForAccountTest {
         assertTrue(mfa.isTiedToThisAccount());
         assertTrue(mfa.hasPrivateAccess());
         
-        MbUser author2 = mi.buildUserFromOid("acct:a2." + DemoData.TESTRUN_UID + "@pump.example.com");
+        MbUser author2 = mi.buildUserFromOid("acct:a2." + demoData.TESTRUN_UID + "@pump.example.com");
         final MbActivity replyTo1 = mi.buildActivity(author2, "@" + accountUser.getUserName()
                 + " Replying to you", activity1, null, DownloadStatus.LOADED);
         replyTo1.getMessage().setPrivate(FALSE);
@@ -55,7 +57,7 @@ public class MessageForAccountTest {
         assertTrue(mfa.isTiedToThisAccount());
         assertTrue(mfa.hasPrivateAccess());
 
-        MbUser author3 = mi.buildUserFromOid("acct:b3." + DemoData.TESTRUN_UID + "@pumpity.example.com");
+        MbUser author3 = mi.buildUserFromOid("acct:b3." + demoData.TESTRUN_UID + "@pumpity.example.com");
         MbActivity replyTo2 = mi.buildActivity(author3, "@" + author2.getUserName()
                 + " Replying to the second author", replyTo1, null, DownloadStatus.LOADED);
         replyTo2.getMessage().setPrivate(FALSE);
@@ -72,8 +74,8 @@ public class MessageForAccountTest {
 
         MbActivity reblogged1 = mi.buildActivity(author3, "@" + author2.getUserName()
                 + " This reply is reblogged by anotherMan", replyTo1, null, DownloadStatus.LOADED);
-        MbUser anotherMan = mi.buildUserFromOid("acct:c4." + DemoData.TESTRUN_UID + "@pump.example.com");
-        anotherMan.setUserName("anotherMan" + DemoData.TESTRUN_UID);
+        MbUser anotherMan = mi.buildUserFromOid("acct:c4." + demoData.TESTRUN_UID + "@pump.example.com");
+        anotherMan.setUserName("anotherMan" + demoData.TESTRUN_UID);
         MbActivity activity4 = MbActivity.from(accountUser, MbActivityType.ANNOUNCE);
         activity4.setActor(anotherMan);
         activity4.setActivity(reblogged1);

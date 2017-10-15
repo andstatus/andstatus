@@ -24,12 +24,12 @@ public class ConnectionTwitterGnuSocialMock extends ConnectionTwitterGnuSocial {
 
     public ConnectionTwitterGnuSocialMock() {
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(DemoData.GNUSOCIAL_TEST_ORIGIN_NAME);
+        Origin origin = MyContextHolder.get().persistentOrigins().fromName(DemoData.instance.GNUSOCIAL_TEST_ORIGIN_NAME);
 
         OriginConnectionData connectionData = OriginConnectionData.fromAccountName(
-                AccountName.fromOriginAndUserName(origin, DemoData.GNUSOCIAL_TEST_ACCOUNT_USERNAME),
+                AccountName.fromOriginAndUserName(origin, DemoData.instance.GNUSOCIAL_TEST_ACCOUNT_USERNAME),
                 TriState.UNKNOWN);
-        connectionData.setAccountUserOid(DemoData.GNUSOCIAL_TEST_ACCOUNT_USER_OID);
+        connectionData.setAccountUserOid(DemoData.instance.GNUSOCIAL_TEST_ACCOUNT_USER_OID);
         connectionData.setDataReader(new AccountDataReaderEmpty());
         enrichConnectionData(connectionData);
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromUser(connectionData.getPartialAccountUser());

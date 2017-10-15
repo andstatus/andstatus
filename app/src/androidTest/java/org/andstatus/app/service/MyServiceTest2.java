@@ -23,6 +23,7 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Queue;
@@ -39,7 +40,7 @@ public class MyServiceTest2 extends MyServiceTest {
         MyLog.i(this, method + " started");
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, false);
         CommandData cd1 = CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
-                DemoData.getMyAccount(DemoData.TWITTER_TEST_ACCOUNT_NAME),
+                demoData.getMyAccount(demoData.TWITTER_TEST_ACCOUNT_NAME),
                 TimelineType.DIRECT);
         mService.setListenedCommand(cd1);
 
@@ -56,7 +57,7 @@ public class MyServiceTest2 extends MyServiceTest {
         MyLog.i(this, method + "; we are in a foreground");
 
         CommandData cd2 = CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
-                DemoData.getMyAccount(DemoData.TWITTER_TEST_ACCOUNT_NAME),
+                demoData.getMyAccount(demoData.TWITTER_TEST_ACCOUNT_NAME),
                 TimelineType.MENTIONS);
         mService.setListenedCommand(cd2);
 
@@ -76,7 +77,7 @@ public class MyServiceTest2 extends MyServiceTest {
         assertTrue("The second command is not in the main queue", queue.contains(cd2));
 
         CommandData cd3 = CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
-                DemoData.getMyAccount(DemoData.TWITTER_TEST_ACCOUNT_NAME),
+                demoData.getMyAccount(demoData.TWITTER_TEST_ACCOUNT_NAME),
                 TimelineType.HOME)
                 .setInForeground(true);
         mService.setListenedCommand(cd3);

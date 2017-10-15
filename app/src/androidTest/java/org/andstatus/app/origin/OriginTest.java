@@ -21,10 +21,12 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class OriginTest {
+    private DemoData demoData;
 
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
+        demoData = DemoData.instance;
     }
 
     @Test
@@ -103,32 +105,32 @@ public class OriginTest {
         boolean allowHtml = true;
         boolean inCombinedGlobalSearch = true;
         boolean inCombinedPublicReload = true;
-        
-        DemoOriginInserter.createOneOrigin(originType, originName, hostOrUrl, isSsl, SslModeEnum.SECURE, allowHtml,
+
+        DemoOriginInserter originInserter = new DemoOriginInserter(MyContextHolder.get());
+        originInserter.createOneOrigin(originType, originName, hostOrUrl, isSsl, SslModeEnum.SECURE, allowHtml,
                 inCombinedGlobalSearch, inCombinedPublicReload);
-        DemoOriginInserter.createOneOrigin(originType, originName, "https://" + hostOrUrl
+        originInserter.createOneOrigin(originType, originName, "https://" + hostOrUrl
                 + "/somepath", isSsl, SslModeEnum.INSECURE, allowHtml, 
                 inCombinedGlobalSearch, false);
-        DemoOriginInserter.createOneOrigin(originType, originName, "https://" + hostOrUrl
+        originInserter.createOneOrigin(originType, originName, "https://" + hostOrUrl
                 + "/pathwithslash/", isSsl, SslModeEnum.MISCONFIGURED, allowHtml,
                 false, inCombinedPublicReload);
         isSsl = false;
-        Origin.Builder builder2 = DemoOriginInserter.createOneOrigin(originType, originName,
+        Origin origin = originInserter.createOneOrigin(originType, originName,
                 hostOrUrl, isSsl, SslModeEnum.SECURE, allowHtml, 
                 inCombinedGlobalSearch, inCombinedPublicReload);
-        Origin origin = builder2.build();
         assertEquals("New origin has no children", false, origin.hasChildren());
-        assertEquals("Origin deleted", true, builder2.delete());
+        assertEquals("Origin deleted", true, new Origin.Builder(origin).delete());
     }
 
     @Test
     public void testPermalink() {
         Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
         assertEquals(origin.getOriginType(), OriginType.TWITTER);
-        String body = "Posting to Twitter " + DemoData.TESTRUN_UID;
-        String messageOid = "2578909845023" + DemoData.TESTRUN_UID;
+        String body = "Posting to Twitter " + demoData.TESTRUN_UID;
+        String messageOid = "2578909845023" + demoData.TESTRUN_UID;
         MbActivity activity = DemoMessageInserter.addMessageForAccount(
-                DemoData.getMyAccount(DemoData.TWITTER_TEST_ACCOUNT_NAME),
+                demoData.getMyAccount(demoData.TWITTER_TEST_ACCOUNT_NAME),
                 body, messageOid, DownloadStatus.LOADED);
         final long msgId = activity.getMessage().msgId;
         assertNotEquals(0, msgId);
@@ -166,7 +168,7 @@ public class OriginTest {
 
     @Test
     public void testUsernameIsValid() {
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(DemoData.GNUSOCIAL_TEST_ORIGIN_NAME);
+        Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.GNUSOCIAL_TEST_ORIGIN_NAME);
         checkUsernameIsValid(origin, "", false);
         checkUsernameIsValid(origin, "someUser.", false);
         checkUsernameIsValid(origin, "someUser ", false);
@@ -175,7 +177,7 @@ public class OriginTest {
         checkUsernameIsValid(origin, "some.user/GnuSocial", false);
         checkUsernameIsValid(origin, "some@user", false);
 
-        origin = MyContextHolder.get().persistentOrigins().fromName(DemoData.PUMPIO_ORIGIN_NAME);
+        origin = MyContextHolder.get().persistentOrigins().fromName(demoData.PUMPIO_ORIGIN_NAME);
         checkUsernameIsValid(origin, "", false);
         checkUsernameIsValid(origin, "someUser.", false);
         checkUsernameIsValid(origin, "someUser ", false);

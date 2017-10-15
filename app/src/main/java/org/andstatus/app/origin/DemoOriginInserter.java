@@ -17,6 +17,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public final class DemoOriginInserter {
+    private final DemoData demoData = DemoData.instance;
     private MyContext myContext;
 
     public DemoOriginInserter(MyContext myContext) {
@@ -24,28 +25,28 @@ public final class DemoOriginInserter {
     }
 
     public void insert() {
-        DemoData.checkDataPath();
-        createOneOrigin(OriginType.TWITTER, DemoData.TWITTER_TEST_ORIGIN_NAME,
-                DemoData.getTestOriginHost(DemoData.TWITTER_TEST_ORIGIN_NAME),
+        demoData.checkDataPath();
+        createOneOrigin(OriginType.TWITTER, demoData.TWITTER_TEST_ORIGIN_NAME,
+                demoData.getTestOriginHost(demoData.TWITTER_TEST_ORIGIN_NAME),
                 true, SslModeEnum.SECURE, false, true, true);
         createOneOrigin(OriginType.PUMPIO,
-                DemoData.PUMPIO_ORIGIN_NAME,
-                DemoData.getTestOriginHost(DemoData.PUMPIO_ORIGIN_NAME),
+                demoData.PUMPIO_ORIGIN_NAME,
+                demoData.getTestOriginHost(demoData.PUMPIO_ORIGIN_NAME),
                 true, SslModeEnum.SECURE, true, true, true);
-        createOneOrigin(OriginType.GNUSOCIAL, DemoData.GNUSOCIAL_TEST_ORIGIN_NAME,
-                DemoData.getTestOriginHost(DemoData.GNUSOCIAL_TEST_ORIGIN_NAME),
+        createOneOrigin(OriginType.GNUSOCIAL, demoData.GNUSOCIAL_TEST_ORIGIN_NAME,
+                demoData.getTestOriginHost(demoData.GNUSOCIAL_TEST_ORIGIN_NAME),
                 true, SslModeEnum.SECURE, true, true, true);
-        String additionalOriginName = DemoData.GNUSOCIAL_TEST_ORIGIN_NAME + "ins";
+        String additionalOriginName = demoData.GNUSOCIAL_TEST_ORIGIN_NAME + "ins";
         createOneOrigin(OriginType.GNUSOCIAL, additionalOriginName,
-                DemoData.getTestOriginHost(additionalOriginName),
+                demoData.getTestOriginHost(additionalOriginName),
                 true, SslModeEnum.INSECURE, true, false, true);
-        createOneOrigin(OriginType.MASTODON, DemoData.MASTODON_TEST_ORIGIN_NAME,
-                DemoData.getTestOriginHost(DemoData.MASTODON_TEST_ORIGIN_NAME),
+        createOneOrigin(OriginType.MASTODON, demoData.MASTODON_TEST_ORIGIN_NAME,
+                demoData.getTestOriginHost(demoData.MASTODON_TEST_ORIGIN_NAME),
                 true, SslModeEnum.SECURE, true, true, true);
         myContext.persistentOrigins().initialize();
     }
 
-    public static Origin.Builder createOneOrigin(OriginType originType,
+    Origin createOneOrigin(OriginType originType,
                                                  String originName, String hostOrUrl, boolean isSsl,
                                                  SslModeEnum sslMode, boolean allowHtml,
                                                  boolean inCombinedGlobalSearch, boolean inCombinedPublicReload) {
@@ -69,11 +70,10 @@ public final class DemoOriginInserter {
                 .fromId(origin.getId());
         checkAttributes(origin2, originName, hostOrUrl, isSsl, sslMode, allowHtml,
                 inCombinedGlobalSearch, inCombinedPublicReload);
-
-        return builder;
+        return origin;
     }
 
-    private static void checkAttributes(Origin origin, String originName, String hostOrUrl,
+    private void checkAttributes(Origin origin, String originName, String hostOrUrl,
                                         boolean isSsl, SslModeEnum sslMode, boolean allowHtml, boolean inCombinedGlobalSearch, boolean inCombinedPublicReload) {
         assertTrue("Origin " + originName + " added", origin.isPersistent());
         assertEquals(originName, origin.getName());
@@ -97,7 +97,7 @@ public final class DemoOriginInserter {
     }
 
 
-    public static void insertTestKeys(Origin origin) {
+    private void insertTestKeys(Origin origin) {
         HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(
                 OriginConnectionData.fromAccountName(
                         AccountName.fromOriginAndUserName(origin, ""), TriState.UNKNOWN)
@@ -105,7 +105,7 @@ public final class DemoOriginInserter {
         final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
         final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());
         if (connectionData.originUrl == null) {
-            connectionData.originUrl = UrlUtils.fromString("https://" + DemoData.PUMPIO_MAIN_HOST);
+            connectionData.originUrl = UrlUtils.fromString("https://" + demoData.PUMPIO_MAIN_HOST);
         }
         OAuthClientKeys keys1 = OAuthClientKeys.fromConnectionData(connectionData);
         if (!keys1.areKeysPresent()) {
@@ -118,7 +118,7 @@ public final class DemoOriginInserter {
         }
     }
 
-    public static void checkDefaultTimelinesForOrigins() {
+    public void checkDefaultTimelinesForOrigins() {
         for (Origin origin : MyContextHolder.get().persistentOrigins().collection()) {
             MyAccount myAccount = MyContextHolder.get().persistentAccounts().
                     getFirstSucceededForOrigin(origin);

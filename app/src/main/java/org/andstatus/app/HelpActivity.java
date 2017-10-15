@@ -110,7 +110,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
                 MyContextHolder.getExecutionMode() == ExecutionMode.ROBO_TEST) {
             if (!generatingDemoData) {
                 generatingDemoData = true;
-                DemoData.addAsync("GenerateDemoData", MyContextHolder.get(), HelpActivity.this);
+                DemoData.instance.addAsync("GenerateDemoData", MyContextHolder.get(), HelpActivity.this);
             }
         }
 

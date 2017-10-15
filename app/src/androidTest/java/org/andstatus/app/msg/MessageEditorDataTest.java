@@ -19,23 +19,25 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class MessageEditorDataTest {
+    private DemoData demoData;
 
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
+        demoData = DemoData.instance;
     }
 
     @Test
     public void testMessageEditorDataConversation() {
-        MyAccount ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
-        final Origin origin = MyContextHolder.get().persistentOrigins().fromName(DemoData.CONVERSATION_ORIGIN_NAME);
+        MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
+        final Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.CONVERSATION_ORIGIN_NAME);
         assertEquals(origin, ma.getOrigin());
         long entryMsgId = MyQuery.oidToId(OidEnum.MSG_OID, origin.getId(),
-                DemoData.CONVERSATION_ENTRY_MESSAGE_OID);
+                demoData.CONVERSATION_ENTRY_MESSAGE_OID);
         long entryUserId = MyQuery.oidToId(OidEnum.USER_OID, origin.getId(),
-                DemoData.CONVERSATION_ENTRY_USER_OID);
+                demoData.CONVERSATION_ENTRY_USER_OID);
         long memberUserId = MyQuery.oidToId(OidEnum.USER_OID, origin.getId(),
-                DemoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
+                demoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
         assertData(ma, entryMsgId, entryUserId, 0, memberUserId, false);
         assertData(ma, entryMsgId, entryUserId, 0, memberUserId, true);
         assertData(ma,          0,           0, memberUserId, 0, false);
@@ -44,12 +46,12 @@ public class MessageEditorDataTest {
 
     private void assertData(MyAccount ma, long inReplyToMsgId, long inReplyToUserId, long recipientId,
             long memberUserId, boolean replyAll) {
-        Uri uri = Uri.parse("http://example.com/" + DemoData.TESTRUN_UID + "/some.png");
+        Uri uri = Uri.parse("http://example.com/" + demoData.TESTRUN_UID + "/some.png");
         MessageEditorData data = MessageEditorData.newEmpty(ma)
                 .setInReplyToMsgId(inReplyToMsgId)
                 .addRecipientId(recipientId)
                 .setReplyToConversationParticipants(replyAll)
-                .setBody("Some text here " + DemoData.TESTRUN_UID);
+                .setBody("Some text here " + demoData.TESTRUN_UID);
         assertFalse(data.toString(), data.body.contains("@"));
         data.addMentionsToText();
         assertEquals(recipientId, data.recipients.getFirst().userId);

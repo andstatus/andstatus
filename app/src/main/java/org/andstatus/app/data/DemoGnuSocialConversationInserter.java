@@ -36,15 +36,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class DemoGnuSocialMessagesInserter {
+public class DemoGnuSocialConversationInserter {
     private static AtomicInteger iterationCounter = new AtomicInteger(0);
+    private final DemoData demoData = DemoData.instance;
     private int iteration = 0;
     private String conversationOid = "";
 
     private MbUser accountUser;
     private Origin origin;
 
-    public void insertData() {
+    public void insertConversation() {
         mySetup();
         addConversation();
     }
@@ -52,9 +53,9 @@ public class DemoGnuSocialMessagesInserter {
     private void mySetup() {
         iteration = iterationCounter.incrementAndGet();
         conversationOid = Long.toString(MyLog.uniqueCurrentTimeMS());
-        origin = MyContextHolder.get().persistentOrigins().fromName(DemoData.GNUSOCIAL_TEST_ORIGIN_NAME);
-        assertTrue(DemoData.GNUSOCIAL_TEST_ORIGIN_NAME + " exists", origin.isValid());
-        accountUser = MyContextHolder.get().persistentAccounts().fromAccountName(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME)
+        origin = MyContextHolder.get().persistentOrigins().fromName(demoData.GNUSOCIAL_TEST_ORIGIN_NAME);
+        assertTrue(demoData.GNUSOCIAL_TEST_ORIGIN_NAME + " exists", origin.isValid());
+        accountUser = MyContextHolder.get().persistentAccounts().fromAccountName(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME)
                 .toPartialUser();
     }
     
@@ -78,7 +79,7 @@ public class DemoGnuSocialMessagesInserter {
         addActivity(reply1);
         addActivity(reply2);
 
-        MbActivity reply4 = buildActivity(author4, "Reply 4 to Reply 1, " + DemoData.PUBLIC_MESSAGE_TEXT + " other author", reply1, null);
+        MbActivity reply4 = buildActivity(author4, "Reply 4 to Reply 1, " + demoData.PUBLIC_MESSAGE_TEXT + " other author", reply1, null);
         addActivity(reply4);
         DemoMessageInserter.increaseUpdateDate(reply4);
         addPrivateMessage(reply4, TriState.TRUE);
@@ -87,7 +88,7 @@ public class DemoGnuSocialMessagesInserter {
         addActivity(buildActivity(author3, "Reply 6 to Reply 4 - the second", reply4, null));
 
         MbActivity reply7 = buildActivity(author1, "Reply 7 to Reply 2 is about "
-        + DemoData.PUBLIC_MESSAGE_TEXT + " and something else", reply2, null);
+        + demoData.PUBLIC_MESSAGE_TEXT + " and something else", reply2, null);
         addPrivateMessage(reply7, TriState.FALSE);
         
         MbActivity reply8 = buildActivity(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
@@ -95,7 +96,7 @@ public class DemoGnuSocialMessagesInserter {
         addActivity(reply9);
         MbActivity reply10 = buildActivity(author3, "Reply 10 to Reply 8", reply8, null);
         addActivity(reply10);
-        MbActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7 with " + DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT + " text", reply7, null);
+        MbActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7 with " + demoData.GLOBAL_PUBLIC_MESSAGE_TEXT + " text", reply7, null);
         addPrivateMessage(reply11, TriState.FALSE);
 
         MbActivity reply12 = buildActivity(author2, "Reply 12 to Reply 7 reblogged by author1", reply7, null);
@@ -136,12 +137,7 @@ public class DemoGnuSocialMessagesInserter {
         return activity;
     }
     
-    private void addActivity(MbActivity message) {
-        DataUpdater di = new DataUpdater(new CommandExecutionContext(
-                CommandData.newOriginCommand(CommandEnum.EMPTY, origin)));
-        di.onActivity(message);
-        assertTrue( "Message added " + message, message.getMessage().msgId != 0);
-        assertEquals("Conversation Oid", conversationOid,
-                MyQuery.msgIdToConversationOid(message.getMessage().msgId));
+    private void addActivity(MbActivity activity) {
+        DemoMessageInserter.onActivityS(activity);
     }
 }

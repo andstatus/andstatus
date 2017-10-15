@@ -53,7 +53,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
                 assertEquals("Context should be ready", true, myContext.isReady());
             }
             if (!isSingleMockedInstance) {
-                MyAccount ma = DemoData.getMyAccount(accountName);
+                MyAccount ma = DemoData.instance.getMyAccount(accountName);
                 httpConnectionMock = ma.getConnection().getHttpMock();
             }
             connectionInstanceId = httpConnectionMock.getInstanceId();

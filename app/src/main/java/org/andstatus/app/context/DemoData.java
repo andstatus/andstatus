@@ -25,7 +25,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DemoConversationInserter;
-import org.andstatus.app.data.DemoGnuSocialMessagesInserter;
+import org.andstatus.app.data.DemoGnuSocialConversationInserter;
 import org.andstatus.app.data.MyDataCheckerConversations;
 import org.andstatus.app.origin.DemoOriginInserter;
 import org.andstatus.app.origin.Origin;
@@ -47,70 +47,75 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public final class DemoData {
+    public static volatile DemoData instance = new DemoData();
     private static final String TAG = DemoData.class.getSimpleName();
 
-    public static final String TESTRUN_UID = String.valueOf(System.currentTimeMillis());
+    public final String TESTRUN_UID = String.valueOf(System.currentTimeMillis());
 
-    private static final String TEST_ORIGIN_PARENT_HOST = "example.com";
-    public static final String PUMPIO_ORIGIN_NAME = "PumpioTest";
-    public static final String PUMPIO_MAIN_HOST = "pump1." + TEST_ORIGIN_PARENT_HOST;
-    private static final String PUMPIO_TEST_ACCOUNT_USERNAME = "t131t@" + PUMPIO_MAIN_HOST;
-    public static final String PUMPIO_TEST_ACCOUNT_NAME = PUMPIO_TEST_ACCOUNT_USERNAME + "/" + PUMPIO_ORIGIN_NAME;
-    public static final String PUMPIO_TEST_ACCOUNT_USER_OID = "acct:" + PUMPIO_TEST_ACCOUNT_USERNAME;
+    private final String TEST_ORIGIN_PARENT_HOST = "example.com";
+    public final String PUMPIO_ORIGIN_NAME = "PumpioTest";
+    public final String PUMPIO_MAIN_HOST = "pump1." + TEST_ORIGIN_PARENT_HOST;
+    private final String PUMPIO_TEST_ACCOUNT_USERNAME = "t131t@" + PUMPIO_MAIN_HOST;
+    public final String PUMPIO_TEST_ACCOUNT_NAME = PUMPIO_TEST_ACCOUNT_USERNAME + "/" + PUMPIO_ORIGIN_NAME;
+    public final String PUMPIO_TEST_ACCOUNT_USER_OID = "acct:" + PUMPIO_TEST_ACCOUNT_USERNAME;
 
-    public static final String GNUSOCIAL_TEST_ORIGIN_NAME = "GNUsocialTest";
-    public static final String GNUSOCIAL_TEST_ACCOUNT_USERNAME = "t131t";
-    public static final String GNUSOCIAL_TEST_ACCOUNT_NAME = GNUSOCIAL_TEST_ACCOUNT_USERNAME + "/" + GNUSOCIAL_TEST_ORIGIN_NAME;
-    public static final String GNUSOCIAL_TEST_ACCOUNT_USER_OID = "115391";
-    public static final String GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL = "https://quitter.se/avatar/115686-48-20150106084830.jpeg";
-    public static final String GNUSOCIAL_TEST_ACCOUNT2_USERNAME = "gtester2";
-    public static final String GNUSOCIAL_TEST_ACCOUNT2_NAME = GNUSOCIAL_TEST_ACCOUNT2_USERNAME + "/" + GNUSOCIAL_TEST_ORIGIN_NAME;
-    public static final String GNUSOCIAL_TEST_ACCOUNT2_USER_OID = "8902454";
+    public final String GNUSOCIAL_TEST_ORIGIN_NAME = "GNUsocialTest";
+    public final String GNUSOCIAL_TEST_ACCOUNT_USERNAME = "t131t";
+    public final String GNUSOCIAL_TEST_ACCOUNT_NAME = GNUSOCIAL_TEST_ACCOUNT_USERNAME + "/" + GNUSOCIAL_TEST_ORIGIN_NAME;
+    public final String GNUSOCIAL_TEST_ACCOUNT_USER_OID = "115391";
+    public final String GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL = "https://quitter.se/avatar/115686-48-20150106084830.jpeg";
+    public final String GNUSOCIAL_TEST_ACCOUNT2_USERNAME = "gtester2";
+    public final String GNUSOCIAL_TEST_ACCOUNT2_NAME = GNUSOCIAL_TEST_ACCOUNT2_USERNAME + "/" + GNUSOCIAL_TEST_ORIGIN_NAME;
+    public final String GNUSOCIAL_TEST_ACCOUNT2_USER_OID = "8902454";
 
-    public static final String TWITTER_TEST_ORIGIN_NAME = "TwitterTest";
-    public static final String TWITTER_TEST_ACCOUNT_USERNAME = "t131t";
-    public static final String TWITTER_TEST_ACCOUNT_USER_OID = "144771645";
-    public static final String TWITTER_TEST_ACCOUNT_NAME = TWITTER_TEST_ACCOUNT_USERNAME + "/" + TWITTER_TEST_ORIGIN_NAME;
+    public final String TWITTER_TEST_ORIGIN_NAME = "TwitterTest";
+    public final String TWITTER_TEST_ACCOUNT_USERNAME = "t131t";
+    public final String TWITTER_TEST_ACCOUNT_USER_OID = "144771645";
+    public final String TWITTER_TEST_ACCOUNT_NAME = TWITTER_TEST_ACCOUNT_USERNAME + "/" + TWITTER_TEST_ORIGIN_NAME;
 
-    public static final String MASTODON_TEST_ORIGIN_NAME = "MastodonTest";
-    public static final String MASTODON_TEST_ACCOUNT_USERNAME = "t131t1";
-    public static final String MASTODON_TEST_ACCOUNT_NAME = MASTODON_TEST_ACCOUNT_USERNAME + "/" + MASTODON_TEST_ORIGIN_NAME;
-    public static final String MASTODON_TEST_ACCOUNT_USER_OID = "37";
+    public final String MASTODON_TEST_ORIGIN_NAME = "MastodonTest";
+    public final String MASTODON_TEST_ACCOUNT_USERNAME = "t131t1";
+    public final String MASTODON_TEST_ACCOUNT_NAME = MASTODON_TEST_ACCOUNT_USERNAME + "/" + MASTODON_TEST_ORIGIN_NAME;
+    public final String MASTODON_TEST_ACCOUNT_USER_OID = "37";
 
-    public static final OriginType CONVERSATION_ORIGIN_TYPE = OriginType.PUMPIO;
-    public static final String CONVERSATION_ORIGIN_NAME = PUMPIO_ORIGIN_NAME;
-    private static final String CONVERSATION_ACCOUNT_USERNAME = "testerofandstatus@" + PUMPIO_MAIN_HOST;
-    public static final String CONVERSATION_ACCOUNT_NAME = CONVERSATION_ACCOUNT_USERNAME + "/" + CONVERSATION_ORIGIN_NAME;
-    public static final String CONVERSATION_ACCOUNT_USER_OID = "acct:" + CONVERSATION_ACCOUNT_USERNAME;
-    public static final String CONVERSATION_ACCOUNT_AVATAR_URL = "http://andstatus.org/images/andstatus-logo.png";
-    public static final String CONVERSATION_ENTRY_MESSAGE_OID = "http://" + PUMPIO_MAIN_HOST + "/testerofandstatus/comment/thisisfakeuri" + TESTRUN_UID;
-    public static final String CONVERSATION_ENTRY_USER_OID = "acct:first@pumpentry.example.com";
-    public static final String CONVERSATION_AUTHOR_SECOND_USERNAME = "second@" + PUMPIO_MAIN_HOST;
-    public static final String CONVERSATION_AUTHOR_SECOND_USER_OID = "acct:" + CONVERSATION_AUTHOR_SECOND_USERNAME;
-    public static final String CONVERSATION_AUTHOR_THIRD_USERNAME = "third@pump3.example.com";
-    public static final String CONVERSATION_AUTHOR_THIRD_USER_OID = "acct:" + CONVERSATION_AUTHOR_THIRD_USERNAME;
-    public static final String CONVERSATION_MENTIONS_MESSAGE_OID = "http://" + PUMPIO_MAIN_HOST + "/second/comment/replywithmentions" + TESTRUN_UID;
-    public static final String CONVERSATION_MENTION_OF_AUTHOR3_OID = "http://" + PUMPIO_MAIN_HOST + "/second/comment/mention3" + TESTRUN_UID;
-    public static final String HTML_MESSAGE_OID = "http://" + PUMPIO_MAIN_HOST + "/testerofandstatus/comment/htmlfakeuri" + TESTRUN_UID;
-    private static final String CONVERSATION_ACCOUNT2_USERNAME = "tester2ofandstatus@" + PUMPIO_MAIN_HOST;
-    public static final String CONVERSATION_ACCOUNT2_NAME = CONVERSATION_ACCOUNT2_USERNAME + "/" + CONVERSATION_ORIGIN_NAME;
-    public static final String CONVERSATION_ACCOUNT2_USER_OID = "acct:" + CONVERSATION_ACCOUNT2_USERNAME;
+    public final OriginType CONVERSATION_ORIGIN_TYPE = OriginType.PUMPIO;
+    public final String CONVERSATION_ORIGIN_NAME = PUMPIO_ORIGIN_NAME;
+    private final String CONVERSATION_ACCOUNT_USERNAME = "testerofandstatus@" + PUMPIO_MAIN_HOST;
+    public final String CONVERSATION_ACCOUNT_NAME = CONVERSATION_ACCOUNT_USERNAME + "/" + CONVERSATION_ORIGIN_NAME;
+    public final String CONVERSATION_ACCOUNT_USER_OID = "acct:" + CONVERSATION_ACCOUNT_USERNAME;
+    public final String CONVERSATION_ACCOUNT_AVATAR_URL = "http://andstatus.org/images/andstatus-logo.png";
+    public final String CONVERSATION_ENTRY_MESSAGE_OID = "http://" + PUMPIO_MAIN_HOST + "/testerofandstatus/comment/thisisfakeuri" + TESTRUN_UID;
+    public final String CONVERSATION_ENTRY_USER_OID = "acct:first@pumpentry.example.com";
+    public final String CONVERSATION_AUTHOR_SECOND_USERNAME = "second@" + PUMPIO_MAIN_HOST;
+    public final String CONVERSATION_AUTHOR_SECOND_USER_OID = "acct:" + CONVERSATION_AUTHOR_SECOND_USERNAME;
+    public final String CONVERSATION_AUTHOR_THIRD_USERNAME = "third@pump3.example.com";
+    public final String CONVERSATION_AUTHOR_THIRD_USER_OID = "acct:" + CONVERSATION_AUTHOR_THIRD_USERNAME;
+    public final String CONVERSATION_MENTIONS_MESSAGE_OID = "http://" + PUMPIO_MAIN_HOST + "/second/comment/replywithmentions" + TESTRUN_UID;
+    public final String CONVERSATION_MENTION_OF_AUTHOR3_OID = "http://" + PUMPIO_MAIN_HOST + "/second/comment/mention3" + TESTRUN_UID;
+    public final String HTML_MESSAGE_OID = "http://" + PUMPIO_MAIN_HOST + "/testerofandstatus/comment/htmlfakeuri" + TESTRUN_UID;
+    private final String CONVERSATION_ACCOUNT2_USERNAME = "tester2ofandstatus@" + PUMPIO_MAIN_HOST;
+    public final String CONVERSATION_ACCOUNT2_NAME = CONVERSATION_ACCOUNT2_USERNAME + "/" + CONVERSATION_ORIGIN_NAME;
+    public final String CONVERSATION_ACCOUNT2_USER_OID = "acct:" + CONVERSATION_ACCOUNT2_USERNAME;
 
-    public static final String PLAIN_TEXT_MESSAGE_OID = "2167283" + TESTRUN_UID;
-    public static final String PUBLIC_MESSAGE_TEXT = "UniqueText" + TESTRUN_UID;
-    public static final String GLOBAL_PUBLIC_MESSAGE_TEXT = "Public_in_AndStatus_" + TESTRUN_UID;
+    public final String PLAIN_TEXT_MESSAGE_OID = "2167283" + TESTRUN_UID;
+    public final String PUBLIC_MESSAGE_TEXT = "UniqueText" + TESTRUN_UID;
+    public final String GLOBAL_PUBLIC_MESSAGE_TEXT = "Public_in_AndStatus_" + TESTRUN_UID;
     /** See http://stackoverflow.com/questions/6602417/get-the-uri-of-an-image-stored-in-drawable */
-    public static final Uri LOCAL_IMAGE_TEST_URI = Uri.parse("android.resource://org.andstatus.app.tests/drawable/icon");
-    public static final Uri LOCAL_IMAGE_TEST_URI2 = Uri.parse("android.resource://org.andstatus.app/drawable/splash_logo");
-    public static final Uri IMAGE1_URL = Uri.parse("https://raw.githubusercontent.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png");
+    public final Uri LOCAL_IMAGE_TEST_URI = Uri.parse("android.resource://org.andstatus.app.tests/drawable/icon");
+    public final Uri LOCAL_IMAGE_TEST_URI2 = Uri.parse("android.resource://org.andstatus.app/drawable/splash_logo");
+    public final Uri IMAGE1_URL = Uri.parse("https://raw.githubusercontent.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png");
 
-    private static volatile String dataPath = "";
+    private volatile String dataPath = "";
 
     private DemoData() {
         // Empty
     }
 
-    public static String getTestOriginHost(String testOriginName) {
+    public void createNewInstance() {
+        instance = new DemoData();
+    }
+
+    public String getTestOriginHost(String testOriginName) {
         String host = testOriginName.toLowerCase(Locale.US) + "." + TEST_ORIGIN_PARENT_HOST;
         if (testOriginName.equalsIgnoreCase(TWITTER_TEST_ORIGIN_NAME)) {
             host = "api." + host;
@@ -118,7 +123,7 @@ public final class DemoData {
         return host;
     }
 
-    public static void add(final MyContext myContext, String dataPathIn) {
+    public void add(final MyContext myContext, String dataPathIn) {
         final String method = "add";
         dataPath = dataPathIn;
         MyLog.v(TAG, method + ": started");
@@ -143,7 +148,7 @@ public final class DemoData {
     }
 
     @NonNull
-    public static MyAsyncTask<Void, Void, Void> addAsync(final String method, final MyContext myContext,
+    public MyAsyncTask<Void, Void, Void> addAsync(final String method, final MyContext myContext,
                                                           final ProgressLogger.ProgressCallback progressCallback) {
         final MyAsyncTask<Void, Void, Void> asyncTask
                 = new MyAsyncTask<Void, Void, Void>(method, MyAsyncTask.PoolEnum.QUICK_UI) {
@@ -159,8 +164,10 @@ public final class DemoData {
                 MyContextHolder.initialize(myContext.context(), method);
                 MyLog.v(TAG + "Async", "After initialize 1");
                 MyServiceManager.setServiceUnavailable();
-                new DemoOriginInserter(myContext).insert();
-                new DemoAccountInserter(myContext).insert();
+                DemoOriginInserter originInserter = new DemoOriginInserter(myContext);
+                originInserter.insert();
+                final DemoAccountInserter accountInserter = new DemoAccountInserter(myContext);
+                accountInserter.insert();
                 myContext.persistentTimelines().saveChanged();
 
                 MyPreferences.onPreferencesChanged();
@@ -177,11 +184,11 @@ public final class DemoData {
                 checkDataPath();
                 int size = MyContextHolder.get().persistentAccounts().size();
                 assertTrue("Only " + size + " accounts added: " + MyContextHolder.get().persistentAccounts(), size > 5);
-                DemoOriginInserter.checkDefaultTimelinesForOrigins();
-                DemoAccountInserter.checkDefaultTimelinesForAccounts();
+                originInserter.checkDefaultTimelinesForOrigins();
+                accountInserter.checkDefaultTimelinesForAccounts();
 
                 new DemoConversationInserter().insertConversation("");
-                new DemoGnuSocialMessagesInserter().insertData();
+                new DemoGnuSocialConversationInserter().insertConversation();
                 if (progressCallback != null) {
                     progressCallback.onProgressMessage("Demo messages added...");
                     DbUtils.waitMs(TAG, 1000);
@@ -218,12 +225,12 @@ public final class DemoData {
         return asyncTask;
     }
 
-    public static void assertConversations() {
+    public void assertConversations() {
         assertEquals("Conversations need fixes", 0, new MyDataCheckerConversations(MyContextHolder.get(),
                 ProgressLogger.getEmpty()).countChanges());
     }
 
-    private static void setSuccessfulAccountAsCurrent() {
+    private void setSuccessfulAccountAsCurrent() {
         MyLog.i(TAG, "Persistent accounts: " + MyContextHolder.get().persistentAccounts().size());
         boolean found = (MyContextHolder.get().persistentAccounts().getCurrentAccount().getCredentialsVerified()
                 == MyAccount.CredentialsVerificationStatus.SUCCEEDED);
@@ -244,19 +251,19 @@ public final class DemoData {
                 == MyAccount.CredentialsVerificationStatus.SUCCEEDED);
     }
 
-    public static void checkDataPath() {
+    public void checkDataPath() {
         if (!TextUtils.isEmpty(dataPath)) {
             assertEquals("Data path. " + MyContextHolder.get(), dataPath,
                     MyContextHolder.get().context().getDatabasePath("andstatus").getPath());
         }
     }
 
-    public static MyAccount getConversationMyAccount() {
+    public MyAccount getConversationMyAccount() {
         return getMyAccount(CONVERSATION_ACCOUNT_NAME);
     }
 
     @NonNull
-    public static MyAccount getMyAccount(String accountName) {
+    public MyAccount getMyAccount(String accountName) {
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
         assertTrue(accountName + " exists", ma.isValid());
         Origin origin = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
@@ -264,7 +271,7 @@ public final class DemoData {
         return ma;
     }
 
-    public static long getConversationOriginId() {
+    public long getConversationOriginId() {
         return getConversationMyAccount().getOriginId();
     }
 }

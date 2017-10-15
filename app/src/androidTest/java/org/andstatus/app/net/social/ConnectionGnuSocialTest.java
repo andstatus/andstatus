@@ -40,16 +40,18 @@ import static org.junit.Assert.assertTrue;
 
 public class ConnectionGnuSocialTest {
     private ConnectionTwitterGnuSocialMock connection;
+    private DemoData demoData;
 
     public static MbActivity getMessageWithAttachment(Context context) throws Exception {
         ConnectionGnuSocialTest test = new ConnectionGnuSocialTest();
         test.setUp();
         return test.privateGetMessageWithAttachment(context, true);
     }
-    
+
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
+        demoData = DemoData.instance;
         connection = new ConnectionTwitterGnuSocialMock();
     }
 
@@ -59,7 +61,7 @@ public class ConnectionGnuSocialTest {
                 org.andstatus.app.tests.R.raw.quitter_home);
         connection.getHttpMock().setResponse(jso);
 
-        String accountUserOid = DemoData.GNUSOCIAL_TEST_ACCOUNT_USER_OID;
+        String accountUserOid = demoData.GNUSOCIAL_TEST_ACCOUNT_USER_OID;
         List<MbActivity> timeline = connection.getTimeline(ApiRoutineEnum.PUBLIC_TIMELINE,
                 new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountUserOid);
         assertNotNull("timeline returned", timeline);
@@ -135,7 +137,7 @@ public class ConnectionGnuSocialTest {
         connection.getHttpMock().setResponse(jso);
         
         List<MbActivity> timeline = connection.searchMessages(new TimelinePosition(""), TimelinePosition.EMPTY, 20,
-                DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT);
+                demoData.GLOBAL_PUBLIC_MESSAGE_TEXT);
         assertNotNull("timeline returned", timeline);
         int size = 4;
         assertEquals("Number of items in the Timeline", size, timeline.size());
@@ -147,7 +149,7 @@ public class ConnectionGnuSocialTest {
                 org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
         connection.getHttpMock().setResponse(jso);
         
-        MbActivity activity = connection.updateStatus("Test post message with media", "", "", DemoData.LOCAL_IMAGE_TEST_URI);
+        MbActivity activity = connection.updateStatus("Test post message with media", "", "", demoData.LOCAL_IMAGE_TEST_URI);
         activity.getMessage().setPrivate(TriState.FALSE);
         assertEquals("Message returned", privateGetMessageWithAttachment(
                 InstrumentationRegistry.getInstrumentation().getContext(), false).getMessage(), activity.getMessage());
@@ -165,7 +167,7 @@ public class ConnectionGnuSocialTest {
         connection.getHttpMock().setResponse(jso);
         MbActivity activity = connection.getMessage(MESSAGE_OID);
         if (uniqueUid) {
-            activity.getMessage().oid += "_" + DemoData.TESTRUN_UID;
+            activity.getMessage().oid += "_" + demoData.TESTRUN_UID;
         }
         assertNotNull("message returned", activity);
         assertEquals("conversationOid", "1956322", activity.getMessage().conversationOid);

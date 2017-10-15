@@ -41,6 +41,7 @@ import static org.junit.Assert.assertTrue;
 public class DemoConversationInserter {
     private static AtomicInteger iterationCounter = new AtomicInteger(0);
     private static final Map<String, MbUser> users = new ConcurrentHashMap<>();
+    private final DemoData demoData = DemoData.instance;
 
     private int iteration = 0;
     private MyAccount ma;
@@ -58,21 +59,21 @@ public class DemoConversationInserter {
             bodySuffix = " " + bodySuffixIn;
         }
         iteration = iterationCounter.incrementAndGet();
-        ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
-        assertTrue(DemoData.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
+        ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
+        assertTrue(demoData.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
         accountUser = ma.toPartialUser();
         insertAndTestConversation();
     }
 
     private void insertAndTestConversation() {
-        assertEquals("Only PumpIo supported in this test", OriginType.PUMPIO, DemoData.CONVERSATION_ORIGIN_TYPE  );
+        assertEquals("Only PumpIo supported in this test", OriginType.PUMPIO, demoData.CONVERSATION_ORIGIN_TYPE  );
 
-        MbUser author2 = buildUserFromOid(DemoData.CONVERSATION_AUTHOR_SECOND_USER_OID);
+        MbUser author2 = buildUserFromOid(demoData.CONVERSATION_AUTHOR_SECOND_USER_OID);
         author2.avatarUrl = "http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png";
 
-        MbUser author3 = buildUserFromOid(DemoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
+        MbUser author3 = buildUserFromOid(demoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
         author3.setRealName("John Smith");
-        author3.setUserName(DemoData.CONVERSATION_AUTHOR_THIRD_USERNAME);
+        author3.setUserName(demoData.CONVERSATION_AUTHOR_THIRD_USERNAME);
         author3.setHomepage("http://johnsmith.com/welcome");
         author3.setCreatedDate(new GregorianCalendar(2011,5,12).getTimeInMillis());
         author3.setDescription("I am an ordinary guy, interested in computer science");
@@ -83,7 +84,7 @@ public class DemoConversationInserter {
         
         MbActivity minus1 = buildActivity(author2, "Older one message", null, null);
         MbActivity selected = buildActivity(getAuthor1(), "Selected message from Home timeline", minus1,
-                iteration == 1 ? DemoData.CONVERSATION_ENTRY_MESSAGE_OID : null);
+                demoData.CONVERSATION_ENTRY_MESSAGE_OID);
         selected.getMessage().setSubscribedByMe(TriState.TRUE);
         MbActivity reply1 = buildActivity(author3, "Reply 1 to selected", selected, null);
         author3.followedByMe = TriState.TRUE;
@@ -116,10 +117,10 @@ public class DemoConversationInserter {
                 + "@" + author3.getUserName()
                 + " @unknownUser@example.com";
         MbActivity reply5 = buildActivity(author2, BODY_OF_MENTIONS_MESSAGE, reply4,
-                iteration == 1 ? DemoData.CONVERSATION_MENTIONS_MESSAGE_OID : null);
+                demoData.CONVERSATION_MENTIONS_MESSAGE_OID);
         addActivity(reply5);
 
-        MbUser reblogger1 = buildUserFromOid("acct:reblogger@" + DemoData.PUMPIO_MAIN_HOST);
+        MbUser reblogger1 = buildUserFromOid("acct:reblogger@" + demoData.PUMPIO_MAIN_HOST);
         reblogger1.avatarUrl = "http://www.avatarsdb.com/avatars/cow_face.jpg";
         MbActivity reblogOf5 =  MbActivity.from(accountUser, MbActivityType.ANNOUNCE) ;
         reblogOf5.setActor(reblogger1);
@@ -136,7 +137,7 @@ public class DemoConversationInserter {
         addActivity(likeOf6);
 
         MbActivity reply7 = buildActivity(getAuthor1(), "Reply 7 to Reply 2 is about "
-        + DemoData.PUBLIC_MESSAGE_TEXT + " and something else", reply2, null);
+        + demoData.PUBLIC_MESSAGE_TEXT + " and something else", reply2, null);
         addPrivateMessage(reply7, TriState.FALSE);
         
         MbActivity reply8 = buildActivity(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
@@ -161,7 +162,7 @@ public class DemoConversationInserter {
         addActivity(myLikeOf9);
 
         // Message downloaded by another account
-        final MyAccount ma2 = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT2_NAME);
+        final MyAccount ma2 = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT2_NAME);
         MbUser accountUser2 = ma2.toPartialUser();
         author3.followedByMe = TriState.TRUE;
         MbActivity reply10 = buildActivity(accountUser2, author3, "Reply 10 to Reply 8", reply8, null, DownloadStatus.LOADED);
@@ -171,7 +172,7 @@ public class DemoConversationInserter {
 
         DemoConversationInserter.assertIfUserIsMyFriend(author3, true, ma2);
 
-        MbActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7, " + DemoData.GLOBAL_PUBLIC_MESSAGE_TEXT
+        MbActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7, " + demoData.GLOBAL_PUBLIC_MESSAGE_TEXT
                 + " text", reply7, null);
         addPrivateMessage(reply11, TriState.FALSE);
 
@@ -185,7 +186,7 @@ public class DemoConversationInserter {
         addActivity(reblogOf14);
 
         MbActivity mentionOfAuthor3 = buildActivity(reblogger1, "@" + author3.getUserName() + " mention in reply to 4",
-                reply4, DemoData.CONVERSATION_MENTION_OF_AUTHOR3_OID);
+                reply4, demoData.CONVERSATION_MENTION_OF_AUTHOR3_OID);
         addActivity(mentionOfAuthor3);
 
         MbActivity followOf3 =  MbActivity.from(accountUser, MbActivityType.FOLLOW) ;
@@ -195,7 +196,7 @@ public class DemoConversationInserter {
     }
 
     private MbUser getAuthor1() {
-        MbUser author1 = buildUserFromOid(DemoData.CONVERSATION_ENTRY_USER_OID);
+        MbUser author1 = buildUserFromOid(demoData.CONVERSATION_ENTRY_USER_OID);
         author1.avatarUrl = "https://raw.github.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png";
         return author1;
     }

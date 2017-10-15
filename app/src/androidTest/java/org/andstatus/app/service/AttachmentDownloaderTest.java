@@ -44,14 +44,16 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class AttachmentDownloaderTest {
+    private DemoData demoData;
     private MyAccount ma;
     
     @Before
     public void setUp() throws Exception {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
-        ma = DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
-        assertTrue(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
+        demoData = DemoData.instance;
+        ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        assertTrue(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
     }
 
     @Test

@@ -39,7 +39,7 @@ import static org.junit.Assert.assertThat;
 
 public class ConnectionMastodonTest {
     private ConnectionMastodonMock connection;
-    private String accountUserOid = DemoData.MASTODON_TEST_ACCOUNT_USER_OID;
+    private String accountUserOid = DemoData.instance.MASTODON_TEST_ACCOUNT_USER_OID;
 
     @Before
     public void setUp() throws Exception {

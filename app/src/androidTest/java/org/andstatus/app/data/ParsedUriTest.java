@@ -36,7 +36,7 @@ public class ParsedUriTest {
 
     @Test
     public void testUserList() {
-        assertOneUserList(DemoData.getConversationOriginId());
+        assertOneUserList(DemoData.instance.getConversationOriginId());
         assertOneUserList(0);
     }
 

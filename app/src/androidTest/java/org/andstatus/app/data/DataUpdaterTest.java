@@ -58,20 +58,22 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class DataUpdaterTest {
+    private DemoData demoData;
     private MyContext myContext;
     private Context context;
 
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
+        demoData = DemoData.instance;
         myContext = TestSuite.getMyContextForTest();
         context = myContext.context();
-        DemoData.checkDataPath();
+        demoData.checkDataPath();
     }
 
     @Test
     public void testFriends() throws ConnectionException {
-        MyAccount ma = DemoData.getConversationMyAccount();
+        MyAccount ma = demoData.getConversationMyAccount();
         MbUser accountUser = ma.toPartialUser();
         String messageOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB";
         DemoMessageInserter.deleteOldMessage(accountUser.originId, messageOid);
@@ -79,7 +81,7 @@ public class DataUpdaterTest {
         CommandExecutionContext counters = new CommandExecutionContext(
                 CommandData.newAccountCommand(CommandEnum.EMPTY, ma));
         DataUpdater di = new DataUpdater(counters);
-        String username = "somebody" + DemoData.TESTRUN_UID + "@identi.ca";
+        String username = "somebody" + demoData.TESTRUN_UID + "@identi.ca";
         String userOid = "acct:" + username;
         MbUser somebody = MbUser.fromOriginAndUserOid(accountUser.originId, userOid);
         somebody.setUserName(username);
@@ -160,10 +162,10 @@ public class DataUpdaterTest {
 
     @Test
     public void testPrivateMessageToMyAccount() throws ConnectionException {
-        MyAccount ma = DemoData.getConversationMyAccount();
+        MyAccount ma = demoData.getConversationMyAccount();
         MbUser accountUser = ma.toPartialUser();
 
-        String messageOid = "https://pumpity.net/api/comment/sa23wdi78dhgjerdfddajDSQ-" + DemoData.TESTRUN_UID;
+        String messageOid = "https://pumpity.net/api/comment/sa23wdi78dhgjerdfddajDSQ-" + demoData.TESTRUN_UID;
 
         String username = "t131t@pumpity.net";
         MbUser author = MbUser.fromOriginAndUserOid(accountUser.originId, "acct:"
@@ -194,7 +196,7 @@ public class DataUpdaterTest {
 
     @Test
     public void testMessageFavoritedByOtherUser() throws ConnectionException {
-        MyAccount ma = DemoData.getConversationMyAccount();
+        MyAccount ma = demoData.getConversationMyAccount();
         MbUser accountUser = ma.toPartialUser();
 
         String authorUserName = "anybody@pumpity.net";
@@ -203,7 +205,7 @@ public class DataUpdaterTest {
         author.setUserName(authorUserName);
 
         MbActivity activity = MbActivity.newPartialMessage(accountUser,
-                "https://pumpity.net/api/comment/sdajklsdkiewwpdsldkfsdasdjWED" +  DemoData.TESTRUN_UID,
+                "https://pumpity.net/api/comment/sdajklsdkiewwpdsldkfsdasdjWED" +  demoData.TESTRUN_UID,
                 13312697000L, DownloadStatus.LOADED);
         activity.setActor(author);
         MbMessage message = activity.getMessage();
@@ -276,7 +278,7 @@ public class DataUpdaterTest {
 
     @Test
     public void testReplyMessageFavoritedByAccountUser() throws ConnectionException {
-        MyAccount ma = DemoData.getConversationMyAccount();
+        MyAccount ma = demoData.getConversationMyAccount();
         MbUser accountUser = ma.toPartialUser();
 
         String authorUserName = "example@pumpity.net";
@@ -284,7 +286,7 @@ public class DataUpdaterTest {
         author.setUserName(authorUserName);
 
         MbActivity activity = MbActivity.newPartialMessage(accountUser,
-                "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123" + DemoData.TESTRUN_UID,
+                "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123" + demoData.TESTRUN_UID,
                 13312795000L, DownloadStatus.LOADED);
         activity.setActor(author);
         MbMessage message = activity.getMessage();
@@ -292,11 +294,11 @@ public class DataUpdaterTest {
         message.via = "UnknownClient";
         message.addFavoriteBy(accountUser, TriState.TRUE);
 
-        String inReplyToOid = "https://identi.ca/api/comment/dfjklzdfSf28skdkfgloxWB"  + DemoData.TESTRUN_UID;
+        String inReplyToOid = "https://identi.ca/api/comment/dfjklzdfSf28skdkfgloxWB"  + demoData.TESTRUN_UID;
         MbActivity inReplyTo = MbActivity.newPartialMessage(accountUser, inReplyToOid,
                 0, DownloadStatus.UNKNOWN);
         inReplyTo.setActor(MbUser.fromOriginAndUserOid(accountUser.originId,
-                "irtUser" + DemoData.TESTRUN_UID).setUserName("irt" + authorUserName));
+                "irtUser" + demoData.TESTRUN_UID).setUserName("irt" + authorUserName));
         message.setInReplyTo(inReplyTo);
 
         DataUpdater di = new DataUpdater(ma);
@@ -360,8 +362,8 @@ public class DataUpdaterTest {
         MbActivity activity = MbActivity.newPartialMessage(accountUser, "", System.currentTimeMillis(), DownloadStatus.SENDING);
         activity.setActor(accountUser);
         MbMessage message = activity.getMessage();
-        message.setBody("Unsent message with an attachment " + DemoData.TESTRUN_UID);
-        message.attachments.add(MbAttachment.fromUriAndContentType(DemoData.LOCAL_IMAGE_TEST_URI,
+        message.setBody("Unsent message with an attachment " + demoData.TESTRUN_UID);
+        message.attachments.add(MbAttachment.fromUriAndContentType(demoData.LOCAL_IMAGE_TEST_URI,
                 MyContentType.IMAGE));
         new DataUpdater(ma).onActivity(activity);
         assertNotEquals("Message added " + activity.getMessage(), 0, message.msgId);
@@ -377,12 +379,12 @@ public class DataUpdaterTest {
         DbUtils.waitMs(method, 1000);
 
         // Emulate receiving of message
-        final String oid = "sentMsgOid" + DemoData.TESTRUN_UID;
+        final String oid = "sentMsgOid" + demoData.TESTRUN_UID;
         MbActivity activity2 = MbActivity.newPartialMessage(accountUser, oid, System.currentTimeMillis(), DownloadStatus.LOADED);
         activity2.setActor(activity.getAuthor());
         MbMessage message2 = activity2.getMessage();
         message2.setBody("Just sent: " + message.getBody());
-        message2.attachments.add(MbAttachment.fromUriAndContentType(DemoData.IMAGE1_URL, MyContentType.IMAGE));
+        message2.attachments.add(MbAttachment.fromUriAndContentType(demoData.IMAGE1_URL, MyContentType.IMAGE));
         message2.msgId = message.msgId;
         new DataUpdater(ma).onActivity(activity2);
 
@@ -402,12 +404,12 @@ public class DataUpdaterTest {
 
     @Test
     public void testUserNameChanged() {
-        MyAccount ma = TestSuite.getMyContextForTest().persistentAccounts().fromAccountName(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        MyAccount ma = TestSuite.getMyContextForTest().persistentAccounts().fromAccountName(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         MbUser accountUser = ma.toPartialUser();
-        String username = "peter" + DemoData.TESTRUN_UID;
-        MbUser user1 = new DemoMessageInserter(ma).buildUserFromOid("34804" + DemoData.TESTRUN_UID);
+        String username = "peter" + demoData.TESTRUN_UID;
+        MbUser user1 = new DemoMessageInserter(ma).buildUserFromOid("34804" + demoData.TESTRUN_UID);
         user1.setUserName(username);
-        user1.setProfileUrl("https://" + DemoData.GNUSOCIAL_TEST_ORIGIN_NAME + ".example.com/");
+        user1.setProfileUrl("https://" + demoData.GNUSOCIAL_TEST_ORIGIN_NAME + ".example.com/");
         
         DataUpdater di = new DataUpdater(ma);
         long userId1 = di.onActivity(user1.update(accountUser)).getUser().userId;
@@ -433,7 +435,7 @@ public class DataUpdaterTest {
                 MyQuery.userIdToStringColumnValue(UserTable.USERNAME, userId1));
 
         MbUser user2SameOldUserName = new DemoMessageInserter(ma).buildUserFromOid("34805"
-                + DemoData.TESTRUN_UID);
+                + demoData.TESTRUN_UID);
         user2SameOldUserName.setUserName(username);
         long userId2 = di.onActivity(user2SameOldUserName.update(accountUser)).getUser().userId;
         assertTrue("Other user with the same user name as old name of user", userId1 != userId2);
@@ -441,9 +443,9 @@ public class DataUpdaterTest {
                 MyQuery.userIdToStringColumnValue(UserTable.USERNAME, userId2));
 
         MbUser user3SameNewUserName = new DemoMessageInserter(ma).buildUserFromOid("34806"
-                + DemoData.TESTRUN_UID);
+                + demoData.TESTRUN_UID);
         user3SameNewUserName.setUserName(user1.getUserName());
-        user3SameNewUserName.setProfileUrl("https://" + DemoData.GNUSOCIAL_TEST_ORIGIN_NAME + ".other.example.com/");
+        user3SameNewUserName.setProfileUrl("https://" + demoData.GNUSOCIAL_TEST_ORIGIN_NAME + ".other.example.com/");
         long userId3 = di.onActivity(user3SameNewUserName.update(accountUser)).getUser().userId;
         assertTrue("User added " + user3SameNewUserName, userId3 != 0);
         assertTrue("Other user with the same user name as the new name of user1, but different WebFingerId", userId1 != userId3);
@@ -453,8 +455,8 @@ public class DataUpdaterTest {
 
     @Test
     public void testInsertUser() {
-        MyAccount ma = DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
-        MbUser user = new DemoMessageInserter(ma).buildUserFromOid("34807" + DemoData.TESTRUN_UID);
+        MyAccount ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        MbUser user = new DemoMessageInserter(ma).buildUserFromOid("34807" + demoData.TESTRUN_UID);
         MbUser accountUser = ma.toPartialUser();
 
         DataUpdater di = new DataUpdater(ma);
@@ -496,8 +498,8 @@ public class DataUpdaterTest {
 
     @Test
     public void testReplyInBody() {
-        MyAccount ma = DemoData.getConversationMyAccount();
-        String buddyUserName = "buddy" +  DemoData.TESTRUN_UID + "@example.com";
+        MyAccount ma = demoData.getConversationMyAccount();
+        String buddyUserName = "buddy" +  demoData.TESTRUN_UID + "@example.com";
         String body = "@" + buddyUserName + " I'm replying to you in a message body."
                 + " Hope you will see this as a real reply!";
         addOneMessage4testReplyInBody(buddyUserName, body, true);
@@ -518,17 +520,17 @@ public class DataUpdaterTest {
         body = "<a href=\"http://example.com/a\">@" + buddyUserName + "</a>, this is an HTML <i>formatted</i> message";
         addOneMessage4testReplyInBody(buddyUserName, body, true);
 
-        buddyUserName = DemoData.CONVERSATION_AUTHOR_THIRD_USERNAME;
+        buddyUserName = demoData.CONVERSATION_AUTHOR_THIRD_USERNAME;
         body = "@" + buddyUserName + " I know you are already in our cache";
         addOneMessage4testReplyInBody(buddyUserName, body, true);
     }
 
     private void addOneMessage4testReplyInBody(String buddyUserName, String body, boolean isReply) {
-        MyAccount ma = DemoData.getConversationMyAccount();
+        MyAccount ma = demoData.getConversationMyAccount();
         MbUser accountUser = ma.toPartialUser();
 
         DataUpdater di = new DataUpdater(ma);
-        String username = "somebody" + DemoData.TESTRUN_UID + "@somewhere.net";
+        String username = "somebody" + demoData.TESTRUN_UID + "@somewhere.net";
         String userOid = "acct:" + username;
         MbUser somebody = MbUser.fromOriginAndUserOid(accountUser.originId, userOid);
         somebody.setUserName(username);
@@ -562,11 +564,11 @@ public class DataUpdaterTest {
 
     @Test
     public void testMention() {
-        MyAccount ma = DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        MyAccount ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         MbUser accountUser = ma.toPartialUser();
-        MyAccount myMentionedAccount = DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT2_NAME);
+        MyAccount myMentionedAccount = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT2_NAME);
         MbUser myMentionedUser = myMentionedAccount.toPartialUser().setUserName(myMentionedAccount.getUsername());
-        MbUser author1 = MbUser.fromOriginAndUserOid(accountUser.originId, "sam" + DemoData.TESTRUN_UID);
+        MbUser author1 = MbUser.fromOriginAndUserOid(accountUser.originId, "sam" + demoData.TESTRUN_UID);
         author1.setUserName("samBrook");
 
         MbActivity activity1 = MbActivity.newPartialMessage(accountUser, String.valueOf(System.nanoTime()),

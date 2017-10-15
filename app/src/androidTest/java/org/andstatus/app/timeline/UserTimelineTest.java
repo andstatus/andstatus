@@ -36,16 +36,18 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class UserTimelineTest extends TimelineActivityTest {
+    private DemoData demoData;
 
     @Override
     protected Intent getActivityIntent() {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
+        demoData = DemoData.instance;
 
-        final MyAccount ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
+        final MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
-        long userId = MyQuery.oidToId(OidEnum.USER_OID, ma.getOriginId(), DemoData.CONVERSATION_AUTHOR_SECOND_USER_OID);
+        long userId = MyQuery.oidToId(OidEnum.USER_OID, ma.getOriginId(), demoData.CONVERSATION_AUTHOR_SECOND_USER_OID);
 
         MyLog.i(this, "setUp ended");
         final Timeline timeline = Timeline.getTimeline(TimelineType.USER, ma, userId, ma.getOrigin());
@@ -65,7 +67,7 @@ public class UserTimelineTest extends TimelineActivityTest {
                 followItem = item;
             }
         }
-        assertNotEquals("No follow action by " + DemoData.CONVERSATION_AUTHOR_SECOND_USER_OID
+        assertNotEquals("No follow action by " + demoData.CONVERSATION_AUTHOR_SECOND_USER_OID
                 + " in " + timelineData,
                 ActivityViewItem.EMPTY, followItem);
     }

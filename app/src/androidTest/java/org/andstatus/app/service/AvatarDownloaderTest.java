@@ -45,26 +45,28 @@ import static org.junit.Assert.assertTrue;
 
 public class AvatarDownloaderTest {
     private MyAccount ma = MyAccount.EMPTY;
+    private DemoData demoData;
 
     @Before
     public void setUp() throws Exception {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
+        demoData = DemoData.instance;
         MyLog.i(this, "setUp ended");
     }
 
     @Test
     public void testLoadPumpio() throws IOException {
-        ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
-        assertTrue(DemoData.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
-        loadForOneMyAccount(DemoData.CONVERSATION_ACCOUNT_AVATAR_URL);
+        ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
+        assertTrue(demoData.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
+        loadForOneMyAccount(demoData.CONVERSATION_ACCOUNT_AVATAR_URL);
     }
 
     @Test
     public void testLoadBasicAuth() throws IOException {
-        ma = DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
-        assertTrue(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
-        loadForOneMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL);
+        ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        assertTrue(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
+        loadForOneMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL);
     }
     
     private void loadForOneMyAccount(String urlStringInitial) throws IOException {
@@ -114,11 +116,11 @@ public class AvatarDownloaderTest {
 
     @Test
     public void testDeletedFile() throws IOException {
-        ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
+        ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         
-        changeMaAvatarUrl(DemoData.CONVERSATION_ACCOUNT_AVATAR_URL);
+        changeMaAvatarUrl(demoData.CONVERSATION_ACCOUNT_AVATAR_URL);
         String urlString = MyQuery.userIdToStringColumnValue(UserTable.AVATAR_URL, ma.getUserId());
-        assertEquals(DemoData.CONVERSATION_ACCOUNT_AVATAR_URL, urlString);
+        assertEquals(demoData.CONVERSATION_ACCOUNT_AVATAR_URL, urlString);
         
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
         DownloadData data = AvatarData.getForUser(ma.getUserId());

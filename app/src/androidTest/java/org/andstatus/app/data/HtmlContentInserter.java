@@ -35,18 +35,21 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class HtmlContentInserter {
+    private DemoData demoData;
     private MyAccount ma;
     private Origin origin;
     public static final String HTML_BODY_IMG_STRING = "A message with <b>HTML</b> <i>img</i> tag: " 
             + "<img src='http://static.fsf.org/dbd/hollyweb.jpeg' alt='Stop DRM in HTML5' />"
             + ", <a href='http://www.fsf.org/'>the link in 'a' tag</a> <br/>" 
             + "and a plain text link to the issue 60: https://github.com/andstatus/andstatus/issues/60";
-    
+
     private void mySetup() {
-        origin = MyContextHolder.get().persistentOrigins().fromName(DemoData.CONVERSATION_ORIGIN_NAME);
-        assertTrue(DemoData.CONVERSATION_ORIGIN_NAME + " exists", origin.getOriginType() != OriginType.UNKNOWN);
-        ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
-        assertTrue(DemoData.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
+        TestSuite.initializeWithData(this);
+        demoData = DemoData.instance;
+        origin = MyContextHolder.get().persistentOrigins().fromName(demoData.CONVERSATION_ORIGIN_NAME);
+        assertTrue(demoData.CONVERSATION_ORIGIN_NAME + " exists", origin.getOriginType() != OriginType.UNKNOWN);
+        ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
+        assertTrue(demoData.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
     }
     
     @Before
@@ -76,7 +79,7 @@ public class HtmlContentInserter {
         assertFalse("HTML removed", MyHtml.fromHtml(bodyString).contains("<"));
         assertHtmlMessage(author1, bodyString, null);
 
-        assertHtmlMessage(author1, HTML_BODY_IMG_STRING, DemoData.HTML_MESSAGE_OID);
+        assertHtmlMessage(author1, HTML_BODY_IMG_STRING, demoData.HTML_MESSAGE_OID);
         
         setHtmlContentAllowed(isHtmlContentAllowedStored);
     }

@@ -53,7 +53,12 @@ public class TestSuite {
     private static volatile boolean initialized = false;
     private static volatile Context context;
     private static volatile String dataPath;
-    
+    private static volatile boolean dataAdded = false;
+
+    public static boolean isInitializedWithData() {
+        return initialized && dataAdded;
+    }
+
     public static Context initializeWithData(Object testCase) {
         initialize(testCase);
         ensureDataAdded();
@@ -179,7 +184,6 @@ public class TestSuite {
         getMyContextForTest().setHttpConnectionMockInstance(httpConnectionMockInstance);
     }
 
-    private static volatile boolean dataAdded = false;
     public static void onDataDeleted() {
         dataAdded = false;
     }
@@ -189,7 +193,8 @@ public class TestSuite {
         MyLog.v(method, method + ": started");
         if (!dataAdded) {
             dataAdded = true;
-            DemoData.add(getMyContextForTest(), dataPath);
+            DemoData.instance.createNewInstance();
+            DemoData.instance.add(getMyContextForTest(), dataPath);
         }
         MyLog.v(method, method + ": ended");
     }

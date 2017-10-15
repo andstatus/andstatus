@@ -39,6 +39,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class UserListWorkTest extends ActivityTest<UserList> {
+    private DemoData demoData;
 
     @Override
     protected Class<UserList> getActivityClass() {
@@ -49,13 +50,14 @@ public class UserListWorkTest extends ActivityTest<UserList> {
     protected Intent getActivityIntent() {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
+        demoData = DemoData.instance;
 
-        MyAccount ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
+        MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
-        long msgId = MyQuery.oidToId(OidEnum.MSG_OID, DemoData.getConversationOriginId(),
-                DemoData.CONVERSATION_MENTIONS_MESSAGE_OID);
+        long msgId = MyQuery.oidToId(OidEnum.MSG_OID, demoData.getConversationOriginId(),
+                demoData.CONVERSATION_MENTIONS_MESSAGE_OID);
         assertTrue(msgId > 0);
         MyLog.i(this, "setUp ended");
 
@@ -72,7 +74,7 @@ public class UserListWorkTest extends ActivityTest<UserList> {
         List<UserViewItem> listItems = getActivity().getListLoader().getList();
         assertEquals(listItems.toString(), 5, listItems.size());
 
-        MbUser userA = UserListTest.getByUserOid(listItems, DemoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
+        MbUser userA = UserListTest.getByUserOid(listItems, demoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
 
         assertTrue("Invoked Context menu for " + userA, helper.invokeContextMenuAction4ListItemId(
                 method, userA.userId, UserListContextMenuItem.FOLLOWERS, 0));

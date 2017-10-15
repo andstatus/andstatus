@@ -36,21 +36,23 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class CommandDataTest {
+    private DemoData demoData;
 
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
+        demoData = DemoData.instance;
     }
 
     @Test
     public void testQueue() throws InterruptedException {
         long time0 = System.currentTimeMillis(); 
-        CommandData commandData = CommandData.newUpdateStatus(DemoData.getConversationMyAccount(), 1);
+        CommandData commandData = CommandData.newUpdateStatus(demoData.getConversationMyAccount(), 1);
         testQueueOneCommandData(commandData, time0);
 
         long msgId = MyQuery.oidToId(OidEnum.MSG_OID, MyContextHolder.get().persistentOrigins()
-                .fromName(DemoData.CONVERSATION_ORIGIN_NAME).getId(),
-                DemoData.CONVERSATION_ENTRY_MESSAGE_OID);
+                .fromName(demoData.CONVERSATION_ORIGIN_NAME).getId(),
+                demoData.CONVERSATION_ENTRY_MESSAGE_OID);
         long downloadDataRowId = 23;
         commandData = CommandData.newFetchAttachment(msgId, downloadDataRowId);
         testQueueOneCommandData(commandData, time0);
@@ -118,7 +120,7 @@ public class CommandDataTest {
     public void testPriority() {
         Queue<CommandData> queue = new PriorityBlockingQueue<>(100);
         queue.add(CommandData.newSearch(SearchObjects.MESSAGES,
-                MyContextHolder.get(), DemoData.getMyAccount(DemoData.GNUSOCIAL_TEST_ACCOUNT_NAME).getOrigin(), "q1"));
+                MyContextHolder.get(), demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME).getOrigin(), "q1"));
         queue.add(CommandData.newUpdateStatus(null, 2));
         queue.add(CommandData.newCommand(CommandEnum.GET_TIMELINE));
         queue.add(CommandData.newUpdateStatus(null, 3));
@@ -138,12 +140,12 @@ public class CommandDataTest {
     }
 
     private void followUnfollowSummary(CommandEnum command) {
-        MyAccount ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
+        MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         long userId = MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
-                DemoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
+                demoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
         CommandData data = CommandData.newUserCommand(
-                command, null, DemoData.getConversationMyAccount().getOrigin(), userId, "");
+                command, null, demoData.getConversationMyAccount().getOrigin(), userId, "");
         String summary = data.toCommandSummary(MyContextHolder.get());
         String msgLog = command.name() + "; Summary:'" + summary + "'";
         MyLog.v(this, msgLog);

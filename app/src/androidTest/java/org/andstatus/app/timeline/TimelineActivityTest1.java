@@ -36,6 +36,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.msg.ConversationActivity;
 import org.andstatus.app.msg.MessageListContextMenuItem;
+import org.andstatus.app.msg.MessageViewItem;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceEvent;
@@ -59,13 +60,16 @@ import static org.junit.Assert.assertTrue;
  * @author yvolk@yurivolkov.com
  */
 public class TimelineActivityTest1 extends TimelineActivityTest {
+    private DemoData demoData;
+    private MyAccount ma = MyAccount.EMPTY;
 
     @Override
     protected Intent getActivityIntent() {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
+        demoData = DemoData.instance;
 
-        final MyAccount ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
+        ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
@@ -116,6 +120,12 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
             }
         });
         TestSuite.waitForListLoaded(getActivity(), position0 + 2);
+
+        TimelineData<MessageViewItem> timelineData = getActivity().getListData();
+        for (int ind = 0; ind < timelineData.size(); ind++) {
+            MessageViewItem item = timelineData.getItem(ind);
+            assertEquals("OriginId of the Item " + ind + " " + item.toString(), ma.getOriginId(), item.getOriginId());
+        }
 
         boolean collapseDuplicates = MyPreferences.isCollapseDuplicates();
         assertEquals(collapseDuplicates, ((CheckBox) getActivity().findViewById(R.id.collapseDuplicatesToggle)).isChecked());
@@ -193,7 +203,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
 
     private void broadcastCommandExecuted() {
         CommandData commandData = CommandData.newAccountCommand(CommandEnum.CREATE_FAVORITE,
-                DemoData.getConversationMyAccount());
+                demoData.getConversationMyAccount());
         MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND)
                 .broadcast();

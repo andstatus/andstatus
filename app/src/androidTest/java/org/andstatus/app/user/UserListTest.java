@@ -46,13 +46,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class UserListTest extends TimelineActivityTest {
+    private DemoData demoData;
 
     @Override
     protected Intent getActivityIntent() {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
+        demoData = DemoData.instance;
 
-        final MyAccount ma = DemoData.getMyAccount(DemoData.CONVERSATION_ACCOUNT_NAME);
+        final MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
@@ -66,12 +68,12 @@ public class UserListTest extends TimelineActivityTest {
         final String method = "testUsersOfMessage";
         TestSuite.waitForListLoaded(getActivity(), 2);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(), UserList.class);
-        long msgId = MyQuery.oidToId(OidEnum.MSG_OID, DemoData.getConversationOriginId(),
-                DemoData.CONVERSATION_MENTIONS_MESSAGE_OID);
+        long msgId = MyQuery.oidToId(OidEnum.MSG_OID, demoData.getConversationOriginId(),
+                demoData.CONVERSATION_MENTIONS_MESSAGE_OID);
         String body = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId);
         String logMsg = MyQuery.msgInfoForLog(msgId);
 
-        List<MbUser> users = MbUser.fromOriginAndUserOid(DemoData.getConversationMyAccount().getOriginId(), "").extractUsersFromBodyText(body, false);
+        List<MbUser> users = MbUser.fromOriginAndUserOid(demoData.getConversationMyAccount().getOriginId(), "").extractUsersFromBodyText(body, false);
         assertEquals(logMsg, 3, users.size());
         assertEquals(logMsg, "unknownUser@example.com", users.get(2).getUserName());
 
@@ -97,10 +99,10 @@ public class UserListTest extends TimelineActivityTest {
         if (messageWasFound) {
             assertEquals(listItems.toString(), 5, listItems.size());
 
-            MbUser userE = DemoConversationInserter.getUsers().get(DemoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
-            assertTrue("Found " + DemoData.CONVERSATION_AUTHOR_THIRD_USER_OID + " cached ", userE != null);
-            MbUser userA = getByUserOid(listItems, DemoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
-            assertTrue("Found " + DemoData.CONVERSATION_AUTHOR_THIRD_USER_OID + ", " + logMsg, userA != null);
+            MbUser userE = DemoConversationInserter.getUsers().get(demoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
+            assertTrue("Found " + demoData.CONVERSATION_AUTHOR_THIRD_USER_OID + " cached ", userE != null);
+            MbUser userA = getByUserOid(listItems, demoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
+            assertTrue("Found " + demoData.CONVERSATION_AUTHOR_THIRD_USER_OID + ", " + logMsg, userA != null);
             compareAttributes(userE, userA, true);
         }
 
