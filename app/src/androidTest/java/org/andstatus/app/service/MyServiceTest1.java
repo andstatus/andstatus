@@ -20,21 +20,19 @@ import android.content.SyncResult;
 import android.database.sqlite.SQLiteDiskIOException;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.os.ExceptionsCounter;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.net.MalformedURLException;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

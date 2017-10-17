@@ -16,10 +16,8 @@
 
 package org.andstatus.app.data;
 
-import android.app.Activity;
 import android.content.ContentProvider;
 import android.content.ContentValues;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;

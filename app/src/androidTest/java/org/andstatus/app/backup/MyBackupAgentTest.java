@@ -9,7 +9,6 @@ import android.content.pm.PackageManager.NameNotFoundException;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.PersistentAccounts;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.context.TestSuite;
@@ -29,6 +28,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -43,12 +43,12 @@ public class MyBackupAgentTest {
     public void testBackupRestore() throws IOException, JSONException, NameNotFoundException, InterruptedException {
         TestSuite.forget();
         TestSuite.initialize(this);
-        DemoData.instance.assertConversations();
+        demoData.assertConversations();
         
         PersistentAccounts accountsBefore = PersistentAccounts.newEmpty(MyContextHolder.get());
         accountsBefore.initialize();
         assertEquals("Compare Persistent accounts with copy", MyContextHolder.get().persistentAccounts(), accountsBefore);
-        compareOneAccount(MyContextHolder.get().persistentAccounts(), accountsBefore, DemoData.instance.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        compareOneAccount(MyContextHolder.get().persistentAccounts(), accountsBefore, demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         
         File outputFolder = MyContextHolder.get().context().getCacheDir();
         File dataFolder = testBackup(outputFolder);
@@ -61,8 +61,8 @@ public class MyBackupAgentTest {
         assertEquals("Number of persistent accounts", accountsBefore.size(), MyContextHolder.get().persistentAccounts().size());
         
         assertEquals("Persistent accounts", accountsBefore, MyContextHolder.get().persistentAccounts());
-        compareOneAccount(accountsBefore, MyContextHolder.get().persistentAccounts(), DemoData.instance.GNUSOCIAL_TEST_ACCOUNT_NAME);
-        DemoData.instance.assertConversations();
+        compareOneAccount(accountsBefore, MyContextHolder.get().persistentAccounts(), demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        demoData.assertConversations();
         TestSuite.initializeWithData(this);
 
         deleteBackup(dataFolder);

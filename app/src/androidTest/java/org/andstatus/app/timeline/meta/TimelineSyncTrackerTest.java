@@ -3,7 +3,6 @@ package org.andstatus.app.timeline.meta;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -14,17 +13,16 @@ import org.junit.Test;
 
 import java.util.Arrays;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class TimelineSyncTrackerTest {
     private static final int LATEST_ITEM_MILLIS_AGO = 10000;
-    private DemoData demoData;
 
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
-        demoData = DemoData.instance;
     }
 
     @Test

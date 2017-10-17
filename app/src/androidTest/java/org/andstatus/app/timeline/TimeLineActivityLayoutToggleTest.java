@@ -19,7 +19,6 @@ package org.andstatus.app.timeline;
 import android.content.Intent;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
@@ -34,6 +33,7 @@ import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertTrue;
 
 public class TimeLineActivityLayoutToggleTest extends TimelineActivityTest {
@@ -42,12 +42,10 @@ public class TimeLineActivityLayoutToggleTest extends TimelineActivityTest {
     private boolean showAttachedImages = false;
     private  static final boolean showAvatarsOld = MyPreferences.getShowAvatars();
     private boolean showAvatars = false;
-    private DemoData demoData;
 
     @Override
     protected Intent getActivityIntent() {
         TestSuite.initializeWithData(this);
-        demoData = DemoData.instance;
         switch (iteration.incrementAndGet()) {
             case 2:
                 showAttachedImages = showAttachedImagesOld;

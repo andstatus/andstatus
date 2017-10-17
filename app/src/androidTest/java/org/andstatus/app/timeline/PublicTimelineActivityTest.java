@@ -25,7 +25,6 @@ import android.widget.TextView;
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
@@ -42,6 +41,7 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.pressImeActionButton;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withResourceName;
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.util.EspressoUtils.setChecked;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -52,13 +52,11 @@ import static org.junit.Assert.assertTrue;
  */
 public class PublicTimelineActivityTest extends TimelineActivityTest {
     private MyAccount ma;
-    private DemoData demoData;
 
     @Override
     protected Intent getActivityIntent() {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
-        demoData = DemoData.instance;
 
         ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(
                 MyContextHolder.get().persistentOrigins().fromName(demoData.GNUSOCIAL_TEST_ORIGIN_NAME));

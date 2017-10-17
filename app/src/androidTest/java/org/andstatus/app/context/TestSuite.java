@@ -41,6 +41,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -193,8 +194,8 @@ public class TestSuite {
         MyLog.v(method, method + ": started");
         if (!dataAdded) {
             dataAdded = true;
-            DemoData.instance.createNewInstance();
-            DemoData.instance.add(getMyContextForTest(), dataPath);
+            demoData.createNewInstance();
+            demoData.add(getMyContextForTest(), dataPath);
         }
         MyLog.v(method, method + ": ended");
     }

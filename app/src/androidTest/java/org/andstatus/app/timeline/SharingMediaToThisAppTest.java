@@ -11,7 +11,6 @@ import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DownloadData;
@@ -28,11 +27,11 @@ import java.util.Arrays;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class SharingMediaToThisAppTest extends TimelineActivityTest {
-    private DemoData demoData;
     private MyServiceTestHelper mService;
     private MyAccount ma;
 
@@ -40,7 +39,6 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest {
     protected Intent getActivityIntent() {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
-        demoData = DemoData.instance;
 
         mService = new MyServiceTestHelper();
         mService.setUp(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);

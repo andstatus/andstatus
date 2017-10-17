@@ -20,7 +20,6 @@ import android.support.test.InstrumentationRegistry;
 
 import org.andstatus.app.SearchObjects;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DemoMessageInserter;
@@ -40,19 +39,18 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Arrays;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class CommandExecutorStrategyTest {
-    private DemoData demoData;
     private HttpConnectionMock httpConnectionMock;
     private MyAccount ma;
 
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
-        demoData = DemoData.instance;
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
         // In order for the the mocked connection to have effect:

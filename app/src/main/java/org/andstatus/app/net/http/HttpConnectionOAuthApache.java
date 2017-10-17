@@ -17,13 +17,13 @@
 package org.andstatus.app.net.http;
 
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
+
+import java.io.IOException;
+
 import cz.msebera.android.httpclient.HttpResponse;
 import cz.msebera.android.httpclient.client.methods.HttpGet;
 import cz.msebera.android.httpclient.client.methods.HttpPost;
 import cz.msebera.android.httpclient.impl.client.BasicResponseHandler;
-
-import java.io.IOException;
-
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;

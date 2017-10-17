@@ -19,7 +19,6 @@ package org.andstatus.app.net.social;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.HttpReadResult;
@@ -33,6 +32,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -40,7 +40,6 @@ import static org.junit.Assert.assertTrue;
 
 public class ConnectionGnuSocialTest {
     private ConnectionTwitterGnuSocialMock connection;
-    private DemoData demoData;
 
     public static MbActivity getMessageWithAttachment(Context context) throws Exception {
         ConnectionGnuSocialTest test = new ConnectionGnuSocialTest();
@@ -51,7 +50,6 @@ public class ConnectionGnuSocialTest {
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
-        demoData = DemoData.instance;
         connection = new ConnectionTwitterGnuSocialMock();
     }
 

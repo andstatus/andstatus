@@ -17,6 +17,7 @@
 package org.andstatus.app.net.http;
 
 import org.andstatus.app.context.MyPreferences;
+
 import cz.msebera.android.httpclient.HttpVersion;
 import cz.msebera.android.httpclient.client.HttpClient;
 import cz.msebera.android.httpclient.conn.ClientConnectionManager;

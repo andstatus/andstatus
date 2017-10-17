@@ -18,7 +18,6 @@ package org.andstatus.app.database;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Build;
 
 import org.andstatus.app.account.MyAccountConverter;
 import org.andstatus.app.backup.ProgressLogger;

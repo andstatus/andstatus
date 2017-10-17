@@ -25,7 +25,6 @@ import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
@@ -51,6 +50,7 @@ import org.junit.Test;
 
 import java.net.MalformedURLException;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
@@ -60,14 +60,12 @@ import static org.junit.Assert.assertTrue;
  * @author yvolk@yurivolkov.com
  */
 public class TimelineActivityTest1 extends TimelineActivityTest {
-    private DemoData demoData;
     private MyAccount ma = MyAccount.EMPTY;
 
     @Override
     protected Intent getActivityIntent() {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
-        demoData = DemoData.instance;
 
         ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());

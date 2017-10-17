@@ -1,10 +1,10 @@
 package org.andstatus.app.data;
 
-import org.andstatus.app.context.DemoData;
 import org.junit.Test;
 
 import cz.msebera.android.httpclient.entity.ContentType;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 
 public class ContentTypeTest {
@@ -20,7 +20,7 @@ public class ContentTypeTest {
 
     @Test
     public void testMyContentType() {
-        assertEquals("image/png", MyContentType.uri2MimeType(DemoData.instance.IMAGE1_URL, null));
+        assertEquals("image/png", MyContentType.uri2MimeType(demoData.IMAGE1_URL, null));
         assertEquals("image/jpeg", MyContentType.filename2MimeType("http://www.publicdomainpictures.net/pictures/100000/nahled/autumn-tree-in-a-park.jpg", null));
     }
 }

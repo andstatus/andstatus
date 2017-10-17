@@ -66,11 +66,7 @@ public class Xslt {
             StreamResult result = new StreamResult(sr);            
             trans.transform(xmlSource, result);
             output = result.getWriter().toString();
-        } catch (TransformerConfigurationException e) {
-            MyLog.e(TAG, e);
-        } catch (TransformerFactoryConfigurationError e) {
-            MyLog.e(TAG, e);
-        } catch (TransformerException e) {
+        } catch (TransformerFactoryConfigurationError | TransformerException e) {
             MyLog.e(TAG, e);
         }
         return output;

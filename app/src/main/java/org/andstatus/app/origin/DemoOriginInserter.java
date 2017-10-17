@@ -2,7 +2,6 @@ package org.andstatus.app.origin;
 
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.HttpConnectionData;
@@ -13,11 +12,11 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public final class DemoOriginInserter {
-    private final DemoData demoData = DemoData.instance;
     private MyContext myContext;
 
     public DemoOriginInserter(MyContext myContext) {

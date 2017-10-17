@@ -22,7 +22,6 @@ import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -51,6 +50,7 @@ import org.junit.Test;
 import java.util.List;
 import java.util.Set;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -58,14 +58,12 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class DataUpdaterTest {
-    private DemoData demoData;
     private MyContext myContext;
     private Context context;
 
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
-        demoData = DemoData.instance;
         myContext = TestSuite.getMyContextForTest();
         context = myContext.context();
         demoData.checkDataPath();

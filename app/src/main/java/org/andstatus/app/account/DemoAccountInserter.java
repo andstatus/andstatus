@@ -19,7 +19,6 @@ package org.andstatus.app.account;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DemoConversationInserter;
@@ -35,6 +34,7 @@ import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -42,7 +42,6 @@ import static org.junit.Assert.fail;
 public class DemoAccountInserter {
     private MyContext myContext;
     private String firstAccountUserOid = null;
-    private final DemoData demoData = DemoData.instance;
 
     public DemoAccountInserter(MyContext myContext) {
         this.myContext = myContext;

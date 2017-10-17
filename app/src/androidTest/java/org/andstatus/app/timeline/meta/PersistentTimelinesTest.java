@@ -18,7 +18,6 @@ package org.andstatus.app.timeline.meta;
 
 import org.andstatus.app.account.DemoAccountInserter;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -31,6 +30,7 @@ import org.junit.Test;
 import java.util.Collection;
 import java.util.List;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -74,7 +74,7 @@ public class PersistentTimelinesTest {
         assertTrue(timelines.size() > filtered2.size());
         assertTrue(filtered2.size() > filtered.size());
 
-        MyAccount myAccount = DemoData.instance.getMyAccount(DemoData.instance.CONVERSATION_ACCOUNT_NAME);
+        MyAccount myAccount = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         filtered = myContext.persistentTimelines().getFiltered(
                 true, TriState.FALSE, TimelineType.UNKNOWN, myAccount, null);
         assertTrue(!filtered.isEmpty());
@@ -128,7 +128,7 @@ public class PersistentTimelinesTest {
         assertEquals(timeline.toString(), TimelineType.HOME, timeline.getTimelineType());
         assertFalse(timeline.toString(), timeline.isCombined());
 
-        Origin origin = myContext.persistentOrigins().fromName(DemoData.instance.GNUSOCIAL_TEST_ORIGIN_NAME);
+        Origin origin = myContext.persistentOrigins().fromName(demoData.GNUSOCIAL_TEST_ORIGIN_NAME);
         MyAccount myAccount = myContext.persistentAccounts().getFirstSucceededForOrigin(origin);
         assertTrue(myAccount.isValid());
         timeline = myContext.persistentTimelines().

@@ -20,7 +20,6 @@ import android.database.Cursor;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.R;
-import org.andstatus.app.database.DownloadTable;
 import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.graphics.ImageCaches;

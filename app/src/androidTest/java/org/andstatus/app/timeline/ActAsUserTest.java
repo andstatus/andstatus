@@ -21,7 +21,6 @@ import android.content.Intent;
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MatchedUri;
@@ -34,6 +33,7 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.junit.Test;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -42,13 +42,11 @@ import static org.junit.Assert.assertTrue;
  * @author yvolk@yurivolkov.com
  */
 public class ActAsUserTest extends TimelineActivityTest {
-    private DemoData demoData;
 
     @Override
     protected Intent getActivityIntent() {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
-        demoData = demoData.instance;
 
         final MyAccount ma = MyContextHolder.get().persistentAccounts()
                 .fromAccountName(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);

@@ -38,7 +38,6 @@ import android.widget.ViewFlipper;
 import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.backup.RestoreActivity;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.ExecutionMode;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyContextState;
@@ -54,6 +53,8 @@ import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.util.Xslt;
 import org.andstatus.app.view.ActivitySwipeDetector;
 import org.andstatus.app.view.SwipeInterface;
+
+import static org.andstatus.app.context.DemoData.demoData;
 
 public class HelpActivity extends MyActivity implements SwipeInterface, ProgressLogger.ProgressCallback, DialogInterface.OnDismissListener {
     public static final String TAG = HelpActivity.class.getSimpleName();
@@ -110,7 +111,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
                 MyContextHolder.getExecutionMode() == ExecutionMode.ROBO_TEST) {
             if (!generatingDemoData) {
                 generatingDemoData = true;
-                DemoData.instance.addAsync("GenerateDemoData", MyContextHolder.get(), HelpActivity.this);
+                demoData.addAsync("GenerateDemoData", MyContextHolder.get(), HelpActivity.this);
             }
         }
 

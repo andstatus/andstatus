@@ -19,7 +19,6 @@ package org.andstatus.app.service;
 import android.net.Uri;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DemoMessageInserter;
@@ -39,19 +38,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class AttachmentDownloaderTest {
-    private DemoData demoData;
     private MyAccount ma;
     
     @Before
     public void setUp() throws Exception {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
-        demoData = DemoData.instance;
         ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         assertTrue(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
     }

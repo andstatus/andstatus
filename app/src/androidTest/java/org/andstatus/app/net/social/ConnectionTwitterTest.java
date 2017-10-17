@@ -21,7 +21,6 @@ import android.support.test.InstrumentationRegistry;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DataUpdater;
@@ -47,6 +46,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -57,12 +57,10 @@ public class ConnectionTwitterTest {
     private Connection connection;
     private HttpConnectionMock httpConnection;
     private OriginConnectionData connectionData;
-    private DemoData demoData;
 
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
-        demoData = DemoData.instance;
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.TWITTER_TEST_ORIGIN_NAME);

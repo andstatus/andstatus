@@ -20,7 +20,6 @@ import android.content.Intent;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MatchedUri;
@@ -32,17 +31,16 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.junit.Test;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class UserTimelineTest extends TimelineActivityTest {
-    private DemoData demoData;
 
     @Override
     protected Intent getActivityIntent() {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
-        demoData = DemoData.instance;
 
         final MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());

@@ -19,7 +19,6 @@ package org.andstatus.app.activity;
 import android.content.Intent;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MatchedUri;
@@ -29,6 +28,7 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.junit.Test;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertTrue;
 
 public class NotificationsTimelineTest extends TimelineActivityTest {
@@ -38,7 +38,7 @@ public class NotificationsTimelineTest extends TimelineActivityTest {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        final MyAccount ma = DemoData.instance.getMyAccount(DemoData.instance.CONVERSATION_ACCOUNT_NAME);
+        final MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 

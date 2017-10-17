@@ -19,7 +19,6 @@ package org.andstatus.app.data;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbActivityType;
@@ -35,13 +34,13 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class DemoConversationInserter {
     private static AtomicInteger iterationCounter = new AtomicInteger(0);
     private static final Map<String, MbUser> users = new ConcurrentHashMap<>();
-    private final DemoData demoData = DemoData.instance;
 
     private int iteration = 0;
     private MyAccount ma;

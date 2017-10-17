@@ -4,7 +4,6 @@ import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccountTest;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -15,6 +14,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -53,7 +53,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
                 assertEquals("Context should be ready", true, myContext.isReady());
             }
             if (!isSingleMockedInstance) {
-                MyAccount ma = DemoData.instance.getMyAccount(accountName);
+                MyAccount ma = demoData.getMyAccount(accountName);
                 httpConnectionMock = ma.getConnection().getHttpMock();
             }
             connectionInstanceId = httpConnectionMock.getInstanceId();

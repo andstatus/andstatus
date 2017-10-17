@@ -1,7 +1,6 @@
 package org.andstatus.app.data;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbActivityType;
@@ -10,6 +9,7 @@ import org.andstatus.app.util.MyLog;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.util.TriState.FALSE;
 import static org.andstatus.app.util.TriState.UNKNOWN;
 import static org.junit.Assert.assertEquals;
@@ -17,12 +17,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class MessageForAccountTest {
-    private DemoData demoData;
 
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
-        demoData = DemoData.instance;
     }
 
     @Test

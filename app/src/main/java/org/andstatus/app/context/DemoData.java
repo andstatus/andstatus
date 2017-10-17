@@ -47,7 +47,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public final class DemoData {
-    public static volatile DemoData instance = new DemoData();
+    public static volatile DemoData demoData = new DemoData();
     private static final String TAG = DemoData.class.getSimpleName();
 
     public final String TESTRUN_UID = String.valueOf(System.currentTimeMillis());
@@ -112,7 +112,7 @@ public final class DemoData {
     }
 
     public void createNewInstance() {
-        instance = new DemoData();
+        demoData = new DemoData();
     }
 
     public String getTestOriginHost(String testOriginName) {

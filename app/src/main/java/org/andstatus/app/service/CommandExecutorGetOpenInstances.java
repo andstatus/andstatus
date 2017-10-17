@@ -16,7 +16,6 @@
 
 package org.andstatus.app.service;
 
-import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.MbOrigin;

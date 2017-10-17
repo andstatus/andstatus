@@ -18,7 +18,6 @@ package org.andstatus.app.net.social;
 
 import android.support.test.InstrumentationRegistry;
 
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.RawResourceUtils;
@@ -31,6 +30,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
@@ -39,11 +39,12 @@ import static org.junit.Assert.assertThat;
 
 public class ConnectionMastodonTest {
     private ConnectionMastodonMock connection;
-    private String accountUserOid = DemoData.instance.MASTODON_TEST_ACCOUNT_USER_OID;
+    private String accountUserOid;
 
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
+        accountUserOid = demoData.MASTODON_TEST_ACCOUNT_USER_OID;
         connection = new ConnectionMastodonMock();
     }
 

@@ -21,16 +21,17 @@ import android.util.Base64;
 
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.net.social.Connection;
-import cz.msebera.android.httpclient.HttpResponse;
-import cz.msebera.android.httpclient.StatusLine;
-import cz.msebera.android.httpclient.client.HttpClient;
-import cz.msebera.android.httpclient.client.methods.HttpGet;
-import cz.msebera.android.httpclient.client.methods.HttpPost;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+
+import cz.msebera.android.httpclient.HttpResponse;
+import cz.msebera.android.httpclient.StatusLine;
+import cz.msebera.android.httpclient.client.HttpClient;
+import cz.msebera.android.httpclient.client.methods.HttpGet;
+import cz.msebera.android.httpclient.client.methods.HttpPost;
 
 public class HttpConnectionBasic extends HttpConnection implements HttpConnectionApacheSpecific  {
     protected String mPassword = "";

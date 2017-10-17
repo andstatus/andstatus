@@ -18,27 +18,23 @@ package org.andstatus.app.data;
 
 import android.support.annotation.Nullable;
 
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.service.CommandData;
-import org.andstatus.app.service.CommandEnum;
-import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class DemoGnuSocialConversationInserter {
     private static AtomicInteger iterationCounter = new AtomicInteger(0);
-    private final DemoData demoData = DemoData.instance;
     private int iteration = 0;
     private String conversationOid = "";
 

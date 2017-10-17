@@ -19,7 +19,6 @@ package org.andstatus.app.data;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.database.MsgTable;
@@ -30,12 +29,12 @@ import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyHtml;
 import org.junit.Before;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class HtmlContentInserter {
-    private DemoData demoData;
     private MyAccount ma;
     private Origin origin;
     public static final String HTML_BODY_IMG_STRING = "A message with <b>HTML</b> <i>img</i> tag: " 
@@ -45,7 +44,6 @@ public class HtmlContentInserter {
 
     private void mySetup() {
         TestSuite.initializeWithData(this);
-        demoData = DemoData.instance;
         origin = MyContextHolder.get().persistentOrigins().fromName(demoData.CONVERSATION_ORIGIN_NAME);
         assertTrue(demoData.CONVERSATION_ORIGIN_NAME + " exists", origin.getOriginType() != OriginType.UNKNOWN);
         ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);

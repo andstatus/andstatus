@@ -19,7 +19,6 @@ package org.andstatus.app.data;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.database.MsgTable;
@@ -41,6 +40,7 @@ import org.andstatus.app.util.UrlUtils;
 import java.net.URL;
 import java.util.List;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -48,7 +48,6 @@ import static org.junit.Assert.assertTrue;
 
 public class DemoMessageInserter {
     public final MbUser accountUser;
-    private final DemoData demoData = DemoData.instance;
     private final Origin origin;
 
     public DemoMessageInserter(MyAccount ma) {

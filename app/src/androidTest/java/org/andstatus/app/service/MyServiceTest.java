@@ -17,7 +17,6 @@
 package org.andstatus.app.service;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.util.MyLog;
@@ -27,7 +26,6 @@ import org.junit.Before;
 import static org.junit.Assert.assertTrue;
 
 class MyServiceTest {
-    DemoData demoData;
     MyServiceTestHelper mService;
     protected volatile MyAccount ma;
 
@@ -40,7 +38,6 @@ class MyServiceTest {
         }
         try {
             TestSuite.initializeWithData(this);
-            demoData = DemoData.instance;
             mService = new MyServiceTestHelper();
             mService.setUp(null);
             ma = MyContextHolder.get().persistentAccounts().getFirstSucceeded();

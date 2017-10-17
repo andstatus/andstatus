@@ -18,13 +18,13 @@ package org.andstatus.app.data;
 
 import android.net.Uri;
 
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.user.UserListType;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 
 public class ParsedUriTest {
@@ -36,7 +36,7 @@ public class ParsedUriTest {
 
     @Test
     public void testUserList() {
-        assertOneUserList(DemoData.instance.getConversationOriginId());
+        assertOneUserList(demoData.getConversationOriginId());
         assertOneUserList(0);
     }
 

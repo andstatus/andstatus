@@ -18,7 +18,6 @@ package org.andstatus.app.timeline;
 
 import android.widget.ListView;
 
-import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.util.MyLog;
 
 /**

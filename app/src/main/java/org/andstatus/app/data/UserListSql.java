@@ -23,7 +23,6 @@ import android.provider.BaseColumns;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.DownloadTable;
 import org.andstatus.app.database.UserTable;
-import org.andstatus.app.user.UserListType;
 
 import java.util.ArrayList;
 import java.util.Arrays;

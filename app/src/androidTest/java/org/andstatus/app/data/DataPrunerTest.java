@@ -1,7 +1,6 @@
 package org.andstatus.app.data;
 
 import android.net.Uri;
-import android.os.Build;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -19,7 +18,6 @@ import java.util.Date;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 public class DataPrunerTest {
 

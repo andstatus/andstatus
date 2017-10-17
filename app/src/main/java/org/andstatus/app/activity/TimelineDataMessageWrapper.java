@@ -20,7 +20,6 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.msg.MessageViewItem;
 import org.andstatus.app.timeline.TimelineData;
-import org.andstatus.app.timeline.TimelinePage;
 import org.andstatus.app.timeline.ViewItem;
 
 class TimelineDataMessageWrapper extends TimelineDataWrapper<MessageViewItem> {

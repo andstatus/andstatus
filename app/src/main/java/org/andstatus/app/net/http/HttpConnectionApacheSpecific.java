@@ -16,11 +16,11 @@
 
 package org.andstatus.app.net.http;
 
+import java.io.IOException;
+
 import cz.msebera.android.httpclient.HttpResponse;
 import cz.msebera.android.httpclient.client.methods.HttpGet;
 import cz.msebera.android.httpclient.client.methods.HttpPost;
-
-import java.io.IOException;
 
 /**
  * Implementation, specific to Basic or OAuth 

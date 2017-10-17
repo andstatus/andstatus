@@ -1,7 +1,6 @@
 package org.andstatus.app.msg;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
@@ -13,6 +12,7 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertTrue;
 
 public class ConversationViewLoaderTest implements ProgressPublisher {
@@ -24,7 +24,6 @@ public class ConversationViewLoaderTest implements ProgressPublisher {
     public void setUp() throws Exception {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
-        DemoData demoData = DemoData.instance;
         ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         selectedMessageId = MyQuery.oidToId(OidEnum.MSG_OID, ma.getOriginId(), demoData.CONVERSATION_ENTRY_MESSAGE_OID);

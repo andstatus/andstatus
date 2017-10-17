@@ -16,7 +16,6 @@
 
 package org.andstatus.app.net.social;
 
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.origin.Origin;
@@ -25,16 +24,15 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 public class MbUserTest {
-    private DemoData demoData;
 
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
-        demoData = DemoData.instance;
     }
 
     @Test

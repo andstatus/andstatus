@@ -4,13 +4,14 @@ import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
+
+import static org.andstatus.app.context.DemoData.demoData;
 
 public class ConnectionMastodonMock extends ConnectionMastodon {
 
@@ -21,12 +22,12 @@ public class ConnectionMastodonMock extends ConnectionMastodon {
 
     public ConnectionMastodonMock() {
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(DemoData.instance.MASTODON_TEST_ORIGIN_NAME);
+        Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.MASTODON_TEST_ORIGIN_NAME);
 
         OriginConnectionData connectionData = OriginConnectionData.fromAccountName(
-                AccountName.fromOriginAndUserName(origin, DemoData.instance.MASTODON_TEST_ACCOUNT_USERNAME),
+                AccountName.fromOriginAndUserName(origin, demoData.MASTODON_TEST_ACCOUNT_USERNAME),
                 TriState.UNKNOWN);
-        connectionData.setAccountUserOid(DemoData.instance.MASTODON_TEST_ACCOUNT_USER_OID);
+        connectionData.setAccountUserOid(demoData.MASTODON_TEST_ACCOUNT_USER_OID);
         connectionData.setDataReader(new AccountDataReaderEmpty());
         enrichConnectionData(connectionData);
         try {

@@ -22,7 +22,6 @@ import android.text.TextUtils;
 
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.AccountName;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyContentType;
@@ -56,6 +55,7 @@ import java.net.URL;
 import java.util.Calendar;
 import java.util.List;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -64,7 +64,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class ConnectionPumpioTest {
-    private DemoData demoData;
     private ConnectionPumpio connection;
     private URL originUrl;
     private HttpConnectionMock httpConnectionMock;
@@ -75,7 +74,6 @@ public class ConnectionPumpioTest {
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
-        demoData = DemoData.instance;
         originUrl = UrlUtils.fromString("https://" + demoData.PUMPIO_MAIN_HOST);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);

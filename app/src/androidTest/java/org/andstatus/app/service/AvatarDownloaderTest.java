@@ -28,7 +28,6 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.DownloadTable;
 import org.andstatus.app.database.UserTable;
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
 import org.andstatus.app.util.MyLog;
@@ -39,19 +38,18 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class AvatarDownloaderTest {
     private MyAccount ma = MyAccount.EMPTY;
-    private DemoData demoData;
 
     @Before
     public void setUp() throws Exception {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
-        demoData = DemoData.instance;
         MyLog.i(this, "setUp ended");
     }
 
