@@ -143,7 +143,7 @@ public class TimelineSql {
 
         if (tables.contains(msgTablePlaceholder)) {
             if (timeline.getTimelineType().isAtOrigin() && !timeline.isCombined()) {
-                msgWhere.append(MsgTable.ORIGIN_ID + "=" + timeline.getOrigin().getId());
+                activityWhere.append(ActivityTable.ORIGIN_ID + "=" + timeline.getOrigin().getId());
             }
             String activityTable = "(SELECT "
                     + ActivityTable._ID + ", "

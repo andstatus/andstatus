@@ -53,6 +53,8 @@ public class DemoGnuSocialConversationInserter {
         assertTrue(demoData.GNUSOCIAL_TEST_ORIGIN_NAME + " exists", origin.isValid());
         accountUser = MyContextHolder.get().persistentAccounts().fromAccountName(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME)
                 .toPartialUser();
+        assertTrue( "Account user is not defined " + accountUser, accountUser.isPartiallyDefined());
+        assertEquals( "Inconsistent origin for " + accountUser + "\n and " + origin, accountUser.originId, origin.getId());
     }
     
     private void addConversation() {

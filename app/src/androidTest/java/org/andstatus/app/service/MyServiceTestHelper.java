@@ -136,6 +136,9 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
             if (DbUtils.waitMs(method, 10)) {
                 return false;
             }
+            if (pass % 500 == 0 && MyServiceManager.getServiceState() == MyServiceState.STOPPED) {
+                return true;
+            }
         }
         return false;
     }
