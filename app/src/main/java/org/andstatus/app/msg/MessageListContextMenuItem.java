@@ -48,6 +48,7 @@ import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.view.MyContextMenu;
 
 public enum MessageListContextMenuItem implements ContextMenuItem {
     REPLY(true) {
@@ -404,11 +405,11 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     }
 
     public void addTo(Menu menu, int order, int titleRes) {
-        menu.add(Menu.NONE, this.getId(), order, titleRes);
+        menu.add(MyContextMenu.MENU_GROUP_MESSAGE, this.getId(), order, titleRes);
     }
 
     public void addTo(Menu menu, int order, CharSequence title) {
-        menu.add(Menu.NONE, this.getId(), order, title);
+        menu.add(MyContextMenu.MENU_GROUP_MESSAGE, this.getId(), order, title);
     }
     
     public boolean execute(MessageContextMenu menu) {

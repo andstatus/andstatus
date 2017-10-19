@@ -57,6 +57,7 @@ public enum MatchedUri {
      */
     USERLIST(5),
     USERLIST_SEARCH(12),
+    USERLIST_ITEM(13),
     /**
      * Operations on {@link UserTable} itself
      */
@@ -125,6 +126,7 @@ public enum MatchedUri {
         URI_MATCHER.addURI(AUTHORITY, OriginTable.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", ORIGIN_ITEM.code);
         URI_MATCHER.addURI(AUTHORITY, OriginTable.TABLE_NAME + "/" + CONTENT_SEGMENT, ORIGIN.code);
 
+        URI_MATCHER.addURI(AUTHORITY, UserTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CONTENT_ITEM_SEGMENT + "/#", USERLIST_ITEM.code);
         URI_MATCHER.addURI(AUTHORITY, UserTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CENTRAL_ITEM_SEGMENT + "/#/" + SEARCH_SEGMENT + "/*", USERLIST_SEARCH.code);
         URI_MATCHER.addURI(AUTHORITY, UserTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CENTRAL_ITEM_SEGMENT + "/#", USERLIST.code);
         URI_MATCHER.addURI(AUTHORITY, UserTable.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", USER_ITEM.code);
@@ -211,6 +213,15 @@ public enum MatchedUri {
             uri = Uri.withAppendedPath(uri, SEARCH_SEGMENT);
             uri = Uri.withAppendedPath(uri, Uri.encode(searchQuery));
         }
+        return uri;
+    }
+
+    public static Uri getUserListItemUri(long accountUserId, UserListType userListType, long originId, long userId) {
+        Uri uri = getBaseAccountUri(accountUserId, UserTable.TABLE_NAME);
+        uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + userListType.save());
+        uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + originId);
+        uri = Uri.withAppendedPath(uri, CONTENT_ITEM_SEGMENT);
+        uri = ContentUris.withAppendedId(uri, userId);
         return uri;
     }
 

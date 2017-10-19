@@ -83,7 +83,7 @@ public class ActivityViewItem extends ViewItem implements Comparable<ActivityVie
         activityType = MbActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
         insDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
         updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
-        origin = MyContextHolder.get().persistentOrigins().fromId(DbUtils.getLong(cursor, MsgTable.ORIGIN_ID));
+        origin = MyContextHolder.get().persistentOrigins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID));
 
         actor = UserViewItem.fromUserId(origin, DbUtils.getLong(cursor, ActivityTable.ACTOR_ID));
         actor.populateActorFromCursor(cursor);
@@ -96,7 +96,7 @@ public class ActivityViewItem extends ViewItem implements Comparable<ActivityVie
             message = MessageViewItem.fromCursorRow(MyContextHolder.get(), cursor);
         } else if (userId != 0) {
             user = UserViewItem.fromUserId(origin, userId);
-            user.populateFromCursor(cursor);
+            user.populateFromDatabase();
         }
         return this;
     }

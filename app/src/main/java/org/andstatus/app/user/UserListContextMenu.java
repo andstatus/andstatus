@@ -42,7 +42,7 @@ public class UserListContextMenu extends MyContextMenu {
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         final String method = "onCreateContextMenu";
         super.onCreateContextMenu(menu, v, menuInfo);
-        if (getViewItem() == null) {
+        if (getViewItem().isEmpty()) {
             return;
         }
         MyAccount myActor = getMyActor();

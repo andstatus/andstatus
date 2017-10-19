@@ -23,6 +23,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.msg.MessageContextMenu;
 import org.andstatus.app.msg.MessageListContextMenuContainer;
 import org.andstatus.app.user.UserListContextMenu;
+import org.andstatus.app.view.MyContextMenu;
 
 public class ActivityContextMenu {
     public final MessageContextMenu message;
@@ -34,7 +35,16 @@ public class ActivityContextMenu {
     }
 
     public void onContextItemSelected(MenuItem item) {
-        message.onContextItemSelected(item);
+        switch (item.getGroupId()) {
+            case MyContextMenu.MENU_GROUP_MESSAGE:
+                message.onContextItemSelected(item);
+                break;
+            case MyContextMenu.MENU_GROUP_USER:
+                user.onContextItemSelected(item);
+                break;
+            default:
+                break;
+        }
     }
 
     public void setMyActor(MyAccount myActor) {

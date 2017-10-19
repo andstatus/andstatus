@@ -96,15 +96,11 @@ public class UserListLoader extends SyncLoader<UserViewItem> {
         // TODO: Why only MyAccount's ID ??
         Uri mContentUri = MatchedUri.getUserListUri(ma.getUserId(), mUserListType, ma.getOriginId(), mCentralItemId,
                 searchQuery);
-        Cursor c = null;
-        try {
-            c = MyContextHolder.get().context().getContentResolver()
-                    .query(mContentUri, UserListSql.getListProjection(), getSelection(), null, null);
+        try (Cursor c = MyContextHolder.get().context().getContentResolver()
+                    .query(mContentUri, UserListSql.getListProjection(), getSelection(), null, null)) {
             while ( c != null && c.moveToNext()) {
                 populateItem(c);
             }
-        } finally {
-            DbUtils.closeSilently(c);
         }
     }
 

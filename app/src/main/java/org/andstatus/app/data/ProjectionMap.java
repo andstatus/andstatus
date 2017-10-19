@@ -42,6 +42,7 @@ public class ProjectionMap {
     static {
         MSG.put(ActivityTable.ACTIVITY_ID, ACTIVITY_TABLE_ALIAS + "." + BaseColumns._ID
                 + " AS " + ActivityTable.ACTIVITY_ID);
+        MSG.put(ActivityTable.ORIGIN_ID, ActivityTable.ORIGIN_ID);
         MSG.put(ActivityTable.ACCOUNT_ID, ActivityTable.ACCOUNT_ID);
         MSG.put(ActivityTable.ACTIVITY_TYPE, ActivityTable.ACTIVITY_TYPE);
         MSG.put(ActivityTable.ACTOR_ID, ActivityTable.ACTOR_ID);

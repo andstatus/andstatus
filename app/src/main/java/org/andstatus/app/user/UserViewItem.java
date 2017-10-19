@@ -17,15 +17,19 @@
 package org.andstatus.app.user;
 
 import android.database.Cursor;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.data.UserListSql;
 import org.andstatus.app.database.DownloadTable;
 import org.andstatus.app.database.UserTable;
 import org.andstatus.app.graphics.AvatarView;
@@ -130,7 +134,17 @@ public class UserViewItem extends ViewItem implements Comparable<UserViewItem> {
         }
     }
 
-    public void populateFromCursor(Cursor cursor) {
+    public void populateFromDatabase() {
+        Uri mContentUri = MatchedUri.getUserListItemUri(0, UserListType.USERS, mbUser.originId , getId());
+        try (Cursor c = MyContextHolder.get().context().getContentResolver()
+                .query(mContentUri, UserListSql.getListProjection(), null, null, null)) {
+            while ( c != null && c.moveToNext()) {
+                populateFromCursor(c);
+            }
+        }
+    }
+
+    void populateFromCursor(Cursor cursor) {
         MbUser user = mbUser;
         user.oid = DbUtils.getString(cursor, UserTable.USER_OID);
         user.setUserName(DbUtils.getString(cursor, UserTable.USERNAME));

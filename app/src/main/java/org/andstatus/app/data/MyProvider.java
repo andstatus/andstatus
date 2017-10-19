@@ -409,6 +409,12 @@ public class MyProvider extends ContentProvider {
                 limit =  String.valueOf(PAGE_SIZE);
                 break;
 
+            case USERLIST_ITEM:
+                qb.setTables(UserListSql.tablesForList(uri, projection));
+                qb.setProjectionMap(ProjectionMap.USER);
+                qb.appendWhere(BaseColumns._ID + "=" + uriParser.getUserId());
+                break;
+
             case USER_ITEM:
                 qb.setTables(UserTable.TABLE_NAME);
                 qb.setProjectionMap(ProjectionMap.USER);
@@ -435,6 +441,7 @@ public class MyProvider extends ContentProvider {
 
                 case USER:
                 case USERLIST:
+                case USERLIST_ITEM:
                 case USERLIST_SEARCH:
                 case USER_ITEM:
                     orderBy = UserTable.DEFAULT_SORT_ORDER;

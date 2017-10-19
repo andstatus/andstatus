@@ -105,6 +105,9 @@ public class ParsedUri {
                         userId = getItemId();
                     }
                     break;
+                case USERLIST_ITEM:
+                    userId = getItemId();
+                    break;
                 default:
                     break;
             }
@@ -136,6 +139,7 @@ public class ParsedUri {
         try {
             switch (matchedUri) {
                 case USERLIST:
+                case USERLIST_ITEM:
                 case USERLIST_SEARCH:
                     return UserListType.load(uri.getPathSegments().get(3));
                 default:

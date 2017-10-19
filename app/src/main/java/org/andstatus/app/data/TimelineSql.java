@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+/*
+ * Copyright (C) 2014-2017 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,6 +147,7 @@ public class TimelineSql {
             }
             String activityTable = "(SELECT "
                     + ActivityTable._ID + ", "
+                    + ActivityTable.ORIGIN_ID + ", "
                     + ActivityTable.INS_DATE + ", "
                     + (tables.contains(UserTable.LINKED_USER_ID) ? ""
                         : linkedUserField + " AS " + UserTable.LINKED_USER_ID + ", ")
@@ -294,7 +295,7 @@ public class TimelineSql {
     private static Set<String> getBaseProjection() {
         Set<String> columnNames = new HashSet<>();
         columnNames.add(ActivityTable.MSG_ID);
-        columnNames.add(MsgTable.ORIGIN_ID);
+        columnNames.add(ActivityTable.ORIGIN_ID);
         columnNames.add(UserTable.AUTHOR_NAME);
         columnNames.add(MsgTable.BODY);
         columnNames.add(MsgTable.IN_REPLY_TO_MSG_ID);
@@ -344,7 +345,7 @@ public class TimelineSql {
             }
         }
         if (showOrigin) {
-            long originId = DbUtils.getLong(cursor, MsgTable.ORIGIN_ID);
+            long originId = DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID);
             if (originId != 0) {
                 Origin origin = MyContextHolder.get().persistentOrigins().fromId(originId);
                 userName += " / " + origin.getName();

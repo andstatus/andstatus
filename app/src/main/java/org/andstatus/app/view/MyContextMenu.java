@@ -18,6 +18,7 @@ package org.andstatus.app.view;
 
 import android.support.annotation.NonNull;
 import android.view.ContextMenu;
+import android.view.Menu;
 import android.view.View;
 
 import org.andstatus.app.account.MyAccount;
@@ -30,6 +31,9 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public class MyContextMenu implements View.OnCreateContextMenuListener {
+    public static final int MENU_GROUP_MESSAGE = Menu.FIRST;
+    public static final int MENU_GROUP_USER = Menu.FIRST + 1;
+
     @NonNull
     protected final LoadableListActivity listActivity;
     private View viewOfTheContext = null;

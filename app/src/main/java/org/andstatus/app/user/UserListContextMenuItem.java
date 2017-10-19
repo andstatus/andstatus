@@ -36,6 +36,7 @@ import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.view.MyContextMenu;
 
 public enum UserListContextMenuItem implements ContextMenuItem {
     GET_USER() {
@@ -162,11 +163,11 @@ public enum UserListContextMenuItem implements ContextMenuItem {
     }
 
     public void addTo(Menu menu, int order, int titleRes) {
-        menu.add(Menu.NONE, this.getId(), order, titleRes);
+        menu.add(MyContextMenu.MENU_GROUP_USER, this.getId(), order, titleRes);
     }
 
     public void addTo(Menu menu, int order, CharSequence title) {
-        menu.add(Menu.NONE, this.getId(), order, title);
+        menu.add(MyContextMenu.MENU_GROUP_USER, this.getId(), order, title);
     }
     
     public boolean execute(UserListContextMenu menu, MyAccount ma) {
