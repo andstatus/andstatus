@@ -508,7 +508,7 @@ public class ConnectionPumpio extends Connection {
             // If the Msg is a Reply to other message
             if (jso.has("inReplyTo")) {
                 message.setInReplyTo(activityFromJson(jso.getJSONObject("inReplyTo")));
-                message.getInReplyTo().getMessage().setSubscribedByMe(TriState.FALSE);
+                message.getInReplyTo().setSubscribedByMe(TriState.FALSE);
             }
 
             if (jso.has("replies")) {
@@ -518,7 +518,7 @@ public class ConnectionPumpio extends Connection {
                     for (int index = 0; index < jArr.length(); index++) {
                         try {
                             MbActivity item = activityFromJson(jArr.getJSONObject(index));
-                            item.getMessage().setSubscribedByMe(TriState.UNKNOWN);
+                            item.setSubscribedByMe(TriState.UNKNOWN);
                             message.replies.add(item);
                         } catch (JSONException e) {
                             throw ConnectionException.loggedJsonException(this,

@@ -34,6 +34,7 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.TriState;
 
 /** Activity in a sense of Activity Streams https://www.w3.org/TR/activitystreams-core/ */
 public class MbActivity extends AObject {
@@ -55,6 +56,9 @@ public class MbActivity extends AObject {
     @NonNull
     private MbUser mbUser = MbUser.EMPTY;
     private MbActivity mbActivity = MbActivity.EMPTY;
+
+    /** Some additional attributes may appear from "My account's" (authenticated User's) point of view */
+    private TriState subscribedByMe = TriState.UNKNOWN;
 
     @NonNull
     public static MbActivity fromInner(@NonNull MbUser actor, @NonNull MbActivityType type,
@@ -249,6 +253,7 @@ public class MbActivity extends AObject {
                 + ", oid:" + timelinePosition
                 + ", updated:" + MyLog.debugFormatOfDate(updatedDate)
                 + ", me:" + (accountUser.isEmpty() ? "EMPTY" : accountUser.oid)
+                + (subscribedByMe.known() ? (subscribedByMe == TriState.TRUE ? ", subscribed" : ", NOT subscribed") : "" )
                 + (actor.isEmpty() ? "" : ", \nactor:" + actor)
                 + (mbMessage.isEmpty() ? "" : ", \nmessage:" + mbMessage)
                 + (getActivity().isEmpty() ? "" : ", \nactivity:" + getActivity())
@@ -258,6 +263,14 @@ public class MbActivity extends AObject {
 
     public long getId() {
         return id;
+    }
+
+    public TriState isSubscribedByMe() {
+        return subscribedByMe;
+    }
+
+    public void setSubscribedByMe(TriState isSubscribed) {
+        this.subscribedByMe = isSubscribed;
     }
 
     public static MbActivity fromCursor(MyContext myContext, Cursor cursor) {
@@ -274,6 +287,7 @@ public class MbActivity extends AObject {
                 DbUtils.getLong(cursor, ActivityTable.USER_ID));
         activity.mbActivity = MbActivity.from(activity.accountUser, MbActivityType.EMPTY);
         activity.mbActivity.id =  DbUtils.getLong(cursor, ActivityTable.OBJ_ACTIVITY_ID);
+        activity.subscribedByMe = TriState.fromId(DbUtils.getLong(cursor, ActivityTable.SUBSCRIBED));
         activity.updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
         activity.insDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
         return activity;
@@ -358,6 +372,7 @@ public class MbActivity extends AObject {
         values.put(ActivityTable.MSG_ID, getMessage().msgId);
         values.put(ActivityTable.USER_ID, getUser().userId);
         values.put(ActivityTable.OBJ_ACTIVITY_ID, getActivity().id);
+        values.put(ActivityTable.SUBSCRIBED, subscribedByMe.id);
         values.put(ActivityTable.UPDATED_DATE, updatedDate);
         if (getId() == 0) {
             values.put(ActivityTable.ACTIVITY_TYPE, type.id);

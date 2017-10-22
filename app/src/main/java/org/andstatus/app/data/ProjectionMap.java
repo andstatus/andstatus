@@ -49,6 +49,7 @@ public class ProjectionMap {
         MSG.put(ActivityTable.AUTHOR_ID, ActivityTable.AUTHOR_ID);
         MSG.put(ActivityTable.MSG_ID, ActivityTable.MSG_ID);
         MSG.put(ActivityTable.USER_ID, ActivityTable.USER_ID);
+        MSG.put(ActivityTable.SUBSCRIBED, ActivityTable.SUBSCRIBED);
         MSG.put(ActivityTable.INS_DATE, ActivityTable.INS_DATE);
         MSG.put(ActivityTable.UPDATED_DATE, ActivityTable.UPDATED_DATE);
 
@@ -81,7 +82,6 @@ public class ProjectionMap {
         MSG.put(MsgTable.PRIVATE, MsgTable.PRIVATE);
         MSG.put(MsgTable.FAVORITED, MsgTable.FAVORITED);
         MSG.put(MsgTable.REBLOGGED, MsgTable.REBLOGGED);
-        MSG.put(MsgTable.SUBSCRIBED, MsgTable.SUBSCRIBED);
         MSG.put(MsgTable.UPDATED_DATE, MsgTable.UPDATED_DATE);
         MSG.put(MsgTable.MSG_STATUS, MsgTable.MSG_STATUS);
         MSG.put(MsgTable.INS_DATE, MsgTable.INS_DATE);

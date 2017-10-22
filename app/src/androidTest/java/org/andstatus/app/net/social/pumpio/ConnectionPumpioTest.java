@@ -248,11 +248,12 @@ public class ConnectionPumpioTest {
         assertEquals("Directed to yvolk", "acct:yvolk@identi.ca" , mbMessage.audience().getFirst().oid);
 
         ind++;
-        mbMessage = timeline.get(ind).getMessage();
-        assertEquals(mbMessage.isSubscribedByMe(), TriState.UNKNOWN);
+        activity = timeline.get(ind);
+        mbMessage = activity.getMessage();
+        assertEquals(activity.isSubscribedByMe(), TriState.UNKNOWN);
         assertTrue("Is a reply", mbMessage.getInReplyTo().nonEmpty());
         assertEquals("Is a reply to this user", mbMessage.getInReplyTo().getAuthor().getUserName(), "jankusanagi@identi.ca");
-        assertEquals(mbMessage.getInReplyTo().getMessage().isSubscribedByMe(), TriState.FALSE);
+        assertEquals(mbMessage.getInReplyTo().isSubscribedByMe(), TriState.FALSE);
     }
 
     @Test

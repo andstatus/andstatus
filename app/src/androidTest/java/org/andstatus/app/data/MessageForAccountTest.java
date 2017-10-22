@@ -84,7 +84,7 @@ public class MessageForAccountTest {
         mfa = new MessageForAccount(ma.getOriginId(), 0, reblogged1.getMessage().msgId, ma);
         assertFalse(mfa.isAuthor);
         assertFalse(mfa.isActor);
-        assertTrue(mfa.isSubscribed);
+        assertFalse(mfa.isSubscribed);
         assertFalse(mfa.isPrivate());
         assertEquals(UNKNOWN, mfa.isPrivate);
         assertFalse(mfa.isTiedToThisAccount());

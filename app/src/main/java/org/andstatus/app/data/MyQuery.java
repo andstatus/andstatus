@@ -39,6 +39,7 @@ import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -335,17 +336,16 @@ public class MyQuery {
     }
 
     @NonNull
-    public static Pair<Boolean, Boolean> favoritedAndReblogged(
+    public static ActorToMessage favoritedAndReblogged(
             SQLiteDatabase db, long msgId, long userId) {
         String method = "favoritedAndReblogged";
         boolean favoriteFound = false;
         boolean reblogFound = false;
-        boolean favorited = false;
-        boolean reblogged = false;
+        ActorToMessage actorToMessage = new ActorToMessage();
         if (db == null || msgId == 0 || userId == 0) {
-            return new Pair<>(false, false);
+            return actorToMessage;
         }
-        String sql = "SELECT " + ActivityTable.ACTIVITY_TYPE
+        String sql = "SELECT " + ActivityTable.ACTIVITY_TYPE + ", " + ActivityTable.SUBSCRIBED
                 + " FROM " + ActivityTable.TABLE_NAME + " INNER JOIN " + UserTable.TABLE_NAME
                 + " ON " + ActivityTable.ACTOR_ID + "=" + UserTable.TABLE_NAME + "." + UserTable._ID
                 + " WHERE " + ActivityTable.MSG_ID + "=" + msgId + " AND "
@@ -353,20 +353,23 @@ public class MyQuery {
                 + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC";
         try (Cursor cursor = db.rawQuery(sql, null)) {
             while(cursor.moveToNext()) {
+                if (TriState.fromId(DbUtils.getLong(cursor, ActivityTable.SUBSCRIBED)) == TriState.TRUE) {
+                    actorToMessage.subscribed = true;
+                }
                 MbActivityType activityType = MbActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
                 switch (activityType) {
                     case LIKE:
                     case UNDO_LIKE:
                         if (!favoriteFound) {
                             favoriteFound = true;
-                            favorited = activityType == MbActivityType.LIKE;
+                            actorToMessage.favorited = activityType == MbActivityType.LIKE;
                         }
                         break;
                     case ANNOUNCE:
                     case UNDO_ANNOUNCE:
                         if (!reblogFound) {
                             reblogFound = true;
-                            reblogged = activityType == MbActivityType.ANNOUNCE;
+                            actorToMessage.reblogged = activityType == MbActivityType.ANNOUNCE;
                         }
                         break;
                     default:
@@ -376,7 +379,7 @@ public class MyQuery {
         } catch (Exception e) {
             MyLog.w(TAG, method + "; SQL:'" + sql + "'", e);
         }
-        return new Pair<>(favorited, reblogged);
+        return actorToMessage;
     }
 
     public static String msgIdToUsername(String userIdColumnName, long messageId, UserInTimeline userInTimeline) {

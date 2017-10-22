@@ -70,6 +70,9 @@ public class TimelineSql {
         String linkedUserField = ActivityTable.ACCOUNT_ID;
         boolean authorNameDefined = false;
         String authorTableName = "";
+        if (timeline.getTimelineType().isSubscribedByMe()) {
+            activityWhere.append(ActivityTable.SUBSCRIBED + "=" + TriState.TRUE.id);
+        }
         switch (timeline.getTimelineType()) {
             case FOLLOWERS:
             case MY_FOLLOWERS:
@@ -110,7 +113,6 @@ public class TimelineSql {
                 }
                 break;
             case HOME:
-                msgWhere.append(MsgTable.SUBSCRIBED + "=" + TriState.TRUE.id);
                 activityWhere.append(ActivityTable.ACCOUNT_ID + " " + selectedAccounts.getSql());
                 break;
             case DIRECT:
@@ -157,6 +159,7 @@ public class TimelineSql {
                     + ActivityTable.MSG_ID + ", "
                     + ActivityTable.USER_ID + ", "
                     + ActivityTable.OBJ_ACTIVITY_ID + ", "
+                    + ActivityTable.SUBSCRIBED + ", "
                     + ActivityTable.UPDATED_DATE
                     + " FROM " + ActivityTable.TABLE_NAME + activityWhere.getWhere()
                     + ") AS " + ProjectionMap.ACTIVITY_TABLE_ALIAS;

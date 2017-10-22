@@ -238,8 +238,9 @@ public class DataUpdaterTest {
                 true, favoritedByOtherUser);
         assertEquals("Message is favorited (by some my account)", 0,
                 MyQuery.msgIdToLongColumnValue(MsgTable.FAVORITED, messageId));
-        assertEquals("Message is subscribed", 0,
-                MyQuery.msgIdToLongColumnValue(MsgTable.SUBSCRIBED, messageId));
+        assertEquals("Activity is subscribed " + likeActivity, TriState.UNKNOWN,
+                TriState.fromId(MyQuery.idToLongColumnValue(myContext.getDatabase(), ActivityTable.TABLE_NAME,
+                        ActivityTable.SUBSCRIBED, likeActivity.getId())));
         assertEquals("Message is reblogged", 0,
                 MyQuery.msgIdToLongColumnValue(MsgTable.REBLOGGED, messageId));
 
@@ -252,9 +253,9 @@ public class DataUpdaterTest {
         String[] PROJECTION = new String[] {
                 ActivityTable.ACTIVITY_ID,
                 ActivityTable.ACTOR_ID,
+                ActivityTable.SUBSCRIBED,
                 ActivityTable.INS_DATE,
                 MsgTable.MSG_ID,
-                MsgTable.SUBSCRIBED,
                 MsgTable.FAVORITED,
                 MsgTable.UPDATED_DATE,
                 UserTable.LINKED_USER_ID,
@@ -267,7 +268,8 @@ public class DataUpdaterTest {
             assertEquals("Message with other id returned", messageId, DbUtils.getLong(cursor, MsgTable.MSG_ID));
             messageFound = true;
             assertEquals("Message is favorited", 0, DbUtils.getLong(cursor, MsgTable.FAVORITED));
-            assertEquals("Message is subscribed", 0, DbUtils.getLong(cursor, MsgTable.SUBSCRIBED));
+            assertEquals("Activity is subscribed", TriState.UNKNOWN,
+                    TriState.fromId(DbUtils.getLong(cursor, ActivityTable.SUBSCRIBED)));
         }
         cursor.close();
         assertTrue("Message is not in Everything timeline, msgId=" + messageId, messageFound);
@@ -321,8 +323,9 @@ public class DataUpdaterTest {
                 true, favoritedByMe);
         assertEquals("Message is favorited (by some my account)", 0,
                 MyQuery.msgIdToLongColumnValue(MsgTable.FAVORITED, messageId));
-        assertEquals("Message is subscribed", 0,
-                MyQuery.msgIdToLongColumnValue(MsgTable.SUBSCRIBED, messageId));
+        assertEquals("Activity is subscribed", TriState.UNKNOWN,
+                TriState.fromId(MyQuery.idToLongColumnValue(
+                        myContext.getDatabase(), ActivityTable.TABLE_NAME, ActivityTable.SUBSCRIBED, activity.getId())));
         assertEquals("Message is reblogged", 0,
                 MyQuery.msgIdToLongColumnValue(MsgTable.REBLOGGED, messageId));
         assertEquals("Message stored as loaded", DownloadStatus.LOADED, DownloadStatus.load(

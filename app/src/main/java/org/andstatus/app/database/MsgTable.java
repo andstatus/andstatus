@@ -91,8 +91,6 @@ public final class MsgTable implements BaseColumns {
     /** The Msg is definitely private (e.g. "Direct message")
      *  Absence of this flag means that we don't know for sure, if the message is private */
     public static final String PRIVATE = "private";
-    /** Some of my accounts subscribed to this message or was a "Secondary target audience" */
-    public static final String SUBSCRIBED = "subscribed";
     /** Some of my accounts favorited this message */
     public static final String FAVORITED = "favorited";
     /** The Msg is reblogged by some of my accounts
@@ -137,7 +135,6 @@ public final class MsgTable implements BaseColumns {
                 + MsgTable.UPDATED_DATE + " INTEGER,"
                 + MsgTable.INS_DATE + " INTEGER NOT NULL,"
                 + MsgTable.PRIVATE + " BOOLEAN DEFAULT 0 NOT NULL,"
-                + MsgTable.SUBSCRIBED + " BOOLEAN DEFAULT 0 NOT NULL,"
                 + MsgTable.FAVORITED + " BOOLEAN DEFAULT 0 NOT NULL,"
                 + MsgTable.REBLOGGED + " BOOLEAN DEFAULT 0 NOT NULL,"
                 + MsgTable.MENTIONED + " BOOLEAN DEFAULT 0 NOT NULL,"

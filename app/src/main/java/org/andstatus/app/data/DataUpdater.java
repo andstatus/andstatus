@@ -184,14 +184,11 @@ public class DataUpdater {
                 values.put(MsgTable.MENTIONED, TriState.TRUE.id);
             }
 
-            if (!message.isSubscribedByMe().equals(TriState.FALSE) && message.getUpdatedDate() > 0) {
+            if (!activity.isSubscribedByMe().equals(TriState.FALSE) && message.getUpdatedDate() > 0) {
                 if (execContext.getTimeline().getTimelineType().isSubscribedByMe()
                         || (message.nonPrivate() && activity.isAuthorMe())) {
-                    message.setSubscribedByMe(TriState.TRUE);
+                    activity.setSubscribedByMe(TriState.TRUE);
                 }
-            }
-            if (message.isSubscribedByMe().equals(TriState.TRUE)) {
-                values.put(MsgTable.SUBSCRIBED, message.isSubscribedByMe().id);
             }
             if (!TextUtils.isEmpty(message.via)) {
                 values.put(MsgTable.VIA, message.via);
@@ -271,7 +268,7 @@ public class DataUpdater {
             if (TextUtils.isEmpty(inReply.getMessage().conversationOid)) {
                 inReply.getMessage().setConversationOid(activity.getMessage().conversationOid);
             }
-            inReply.getMessage().setSubscribedByMe(TriState.UNKNOWN);
+            inReply.setSubscribedByMe(TriState.UNKNOWN);
             new DataUpdater(execContext).onActivity(inReply);
             if (inReply.getMessage().msgId != 0) {
                 activity.getMessage().addRecipient(inReply.getAuthor());

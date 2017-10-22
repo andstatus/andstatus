@@ -90,7 +90,7 @@ public class DemoConversationInserter {
         MbActivity minus1 = buildActivity(author2, "Older one message", null, null);
         MbActivity selected = buildActivity(getAuthor1(), "Selected message from Home timeline", minus1,
                 iteration == 1 ? demoData.CONVERSATION_ENTRY_MESSAGE_OID : null);
-        selected.getMessage().setSubscribedByMe(TriState.TRUE);
+        selected.setSubscribedByMe(TriState.TRUE);
         MbActivity reply1 = buildActivity(author3, "Reply 1 to selected", selected, null);
         author3.followedByMe = TriState.TRUE;
 
@@ -129,6 +129,7 @@ public class DemoConversationInserter {
         reblogger1.avatarUrl = "http://www.avatarsdb.com/avatars/cow_face.jpg";
         MbActivity reblogOf5 = buildActivity(reblogger1, MbActivityType.ANNOUNCE);
         reblogOf5.setMessage(reply5.getMessage().shallowCopy());
+        reblogOf5.setSubscribedByMe(TriState.TRUE);
         addActivity(reblogOf5);
 
         final MbActivity reply6 = buildActivity(author3, "Reply 6 to Reply 4 - the second", reply4, null);

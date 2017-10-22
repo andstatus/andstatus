@@ -86,8 +86,7 @@ public class MessageForAccount {
         String sql = "SELECT " + MsgTable.MSG_STATUS + ", "
                 + MsgTable.BODY + ", "
                 + MsgTable.AUTHOR_ID + ","
-                + MsgTable.PRIVATE + ","
-                + MsgTable.SUBSCRIBED
+                + MsgTable.PRIVATE
                 + " FROM " + MsgTable.TABLE_NAME
                 + " WHERE " + MsgTable._ID + "=" + msgId;
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
@@ -103,7 +102,6 @@ public class MessageForAccount {
                 isAuthor = (userId == authorId);
                 isAuthorMySucceededMyAccount = isAuthor && myAccount.isValidAndSucceeded();
                 isPrivate = DbUtils.getTriState(cursor, MsgTable.PRIVATE);
-                isSubscribed = DbUtils.getTriState(cursor, MsgTable.SUBSCRIBED).toBoolean(false);
             }
         } catch (Exception e) {
             MyLog.i(this, method + "; SQL:'" + sql + "'", e);
@@ -112,9 +110,10 @@ public class MessageForAccount {
         isRecipient = recipients.has(userId);
         DownloadData downloadData = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY);
         imageFilename = downloadData.getStatus() == DownloadStatus.LOADED ? downloadData.getFilename() : "";
-        Pair<Boolean, Boolean> favoritedAndReblogged = MyQuery.favoritedAndReblogged(db, msgId, userId);
-        favorited = favoritedAndReblogged.first;
-        reblogged = favoritedAndReblogged.second;
+        ActorToMessage actorToMessage = MyQuery.favoritedAndReblogged(db, msgId, userId);
+        favorited = actorToMessage.favorited;
+        reblogged = actorToMessage.reblogged;
+        isSubscribed = actorToMessage.subscribed;
         authorFollowed = MyQuery.isFollowing(userId, authorId);
         if (activityId == 0) {
             actorId = authorId;

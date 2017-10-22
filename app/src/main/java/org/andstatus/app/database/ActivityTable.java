@@ -34,13 +34,15 @@ public final class ActivityTable implements BaseColumns {
     /** ID of {@link org.andstatus.app.net.social.MbActivityType} */
     public static final String ACTIVITY_TYPE = "activity_type";
     public static final String ACTOR_ID = "actor_id";
-
     /** Message as Object */
     public static final String MSG_ID = "activity_" + MsgTable.MSG_ID;
     /** Us as Object */
     public static final String USER_ID = "activity_" + UserTable.USER_ID;
     /** Inner Activity as Object */
     public static final String OBJ_ACTIVITY_ID = "obj_activity_id";
+
+    /** {@link #ACCOUNT_ID} subscribed to this message or was a "Secondary target audience" */
+    public static final String SUBSCRIBED = "subscribed";
 
     public static final String UPDATED_DATE = "activity_updated_date";
     /**
@@ -76,6 +78,7 @@ public final class ActivityTable implements BaseColumns {
                 + MSG_ID + " INTEGER,"
                 + USER_ID + " INTEGER,"
                 + OBJ_ACTIVITY_ID + " INTEGER,"
+                + SUBSCRIBED + " INTEGER DEFAULT 0 NOT NULL,"
                 + UPDATED_DATE + " INTEGER,"
                 + INS_DATE + " INTEGER NOT NULL"
                 + ")");

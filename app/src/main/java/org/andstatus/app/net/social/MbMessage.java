@@ -56,8 +56,6 @@ public class MbMessage extends AObject {
     public final List<MbAttachment> attachments = new ArrayList<>();
 
     /** Some additional attributes may appear from "My account's" (authenticated User's) point of view */
-    private TriState subscribedByMe = TriState.UNKNOWN;
-
     private TriState isPrivate = TriState.UNKNOWN;
 
     // In our system
@@ -212,9 +210,6 @@ public class MbMessage extends AObject {
             builder.append("via:'" + via + "',");
         }
         builder.append("updated:" + MyLog.debugFormatOfDate(updatedDate) + ",");
-        if(subscribedByMe.known()) {
-            builder.append("subscribedByMe:" + subscribedByMe.toBoolean(false) + ",");
-        }
         builder.append("originId:" + originId + ",");
         if(recipients.nonEmpty()) {
             builder.append("\nrecipients:" + recipients + ",");
@@ -240,14 +235,6 @@ public class MbMessage extends AObject {
         if (activity != null && activity.nonEmpty()) {
             inReplyTo = activity;
         }
-    }
-
-    public TriState isSubscribedByMe() {
-        return subscribedByMe;
-    }
-
-    public void setSubscribedByMe(TriState isSubscribed) {
-        this.subscribedByMe = isSubscribed;
     }
 
     public TriState getPrivate() {
