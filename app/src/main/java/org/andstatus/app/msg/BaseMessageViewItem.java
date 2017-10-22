@@ -278,4 +278,8 @@ public class BaseMessageViewItem extends ViewItem {
     public String toString() {
         return "Message " + body;
     }
+
+    public void hideActor(long userId) {
+        rebloggers.remove(userId);
+    }
 }

@@ -91,6 +91,8 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
         if (item.activityType == MbActivityType.CREATE || item.activityType == MbActivityType.UPDATE) {
             actorView.setVisibility(View.GONE);
         } else {
+            item.message.hideActor(item.actor.getUserId());
+            item.user.hideActor(item.actor.getUserId());
             if (showAvatars) {
                 AvatarView avatarView = view.findViewById(R.id.actor_avatar_image);
                 item.actor.showAvatar(contextMenu.user.getActivity(), avatarView);

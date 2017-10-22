@@ -180,4 +180,7 @@ public class UserViewItem extends ViewItem implements Comparable<UserViewItem> {
         populated = true;
     }
 
+    public void hideActor(long userId) {
+        myFollowers.remove(userId);
+    }
 }
