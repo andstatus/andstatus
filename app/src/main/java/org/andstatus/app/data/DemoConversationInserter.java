@@ -25,6 +25,7 @@ import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.OriginType;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
@@ -46,6 +47,11 @@ public class DemoConversationInserter {
     private MyAccount ma;
     private MbUser accountUser = MbUser.EMPTY;
     private String bodySuffix = "";
+
+    public static void onNewDemoData() {
+        iterationCounter.set(0);
+        users.clear();
+    }
 
     public static Map<String, MbUser> getUsers() {
         return users;
@@ -83,7 +89,7 @@ public class DemoConversationInserter {
         
         MbActivity minus1 = buildActivity(author2, "Older one message", null, null);
         MbActivity selected = buildActivity(getAuthor1(), "Selected message from Home timeline", minus1,
-                demoData.CONVERSATION_ENTRY_MESSAGE_OID);
+                iteration == 1 ? demoData.CONVERSATION_ENTRY_MESSAGE_OID : null);
         selected.getMessage().setSubscribedByMe(TriState.TRUE);
         MbActivity reply1 = buildActivity(author3, "Reply 1 to selected", selected, null);
         author3.followedByMe = TriState.TRUE;
@@ -116,13 +122,12 @@ public class DemoConversationInserter {
                 + "@" + author3.getUserName()
                 + " @unknownUser@example.com";
         MbActivity reply5 = buildActivity(author2, BODY_OF_MENTIONS_MESSAGE, reply4,
-                demoData.CONVERSATION_MENTIONS_MESSAGE_OID);
+                iteration == 1 ? demoData.CONVERSATION_MENTIONS_MESSAGE_OID : null);
         addActivity(reply5);
 
         MbUser reblogger1 = buildUserFromOid("acct:reblogger@" + demoData.PUMPIO_MAIN_HOST);
         reblogger1.avatarUrl = "http://www.avatarsdb.com/avatars/cow_face.jpg";
-        MbActivity reblogOf5 =  MbActivity.from(accountUser, MbActivityType.ANNOUNCE) ;
-        reblogOf5.setActor(reblogger1);
+        MbActivity reblogOf5 = buildActivity(reblogger1, MbActivityType.ANNOUNCE);
         reblogOf5.setMessage(reply5.getMessage().shallowCopy());
         addActivity(reblogOf5);
 
@@ -130,8 +135,7 @@ public class DemoConversationInserter {
         reply6.getMessage().addFavoriteBy(accountUser, TriState.TRUE);
         addActivity(reply6);
 
-        MbActivity likeOf6 =  MbActivity.from(accountUser, MbActivityType.LIKE) ;
-        likeOf6.setActor(author2);
+        MbActivity likeOf6 = buildActivity(author2, MbActivityType.LIKE);
         likeOf6.setMessage(reply6.getMessage().shallowCopy());
         addActivity(likeOf6);
 
@@ -140,8 +144,7 @@ public class DemoConversationInserter {
         addPrivateMessage(reply7, TriState.FALSE);
         
         MbActivity reply8 = buildActivity(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
-        MbActivity reblogOfNewActivity8 =  MbActivity.from(accountUser, MbActivityType.ANNOUNCE) ;
-        reblogOfNewActivity8.setActor(author3);
+        MbActivity reblogOfNewActivity8 = buildActivity(author3, MbActivityType.ANNOUNCE);
         reblogOfNewActivity8.setActivity(reply8);
         addActivity(reblogOfNewActivity8);
 
@@ -179,19 +182,24 @@ public class DemoConversationInserter {
         MbActivity reply14 = buildActivity(author3, "Reply to my message 13", reply13, null);
         addActivity(reply14);
 
-        MbActivity reblogOf14 =  MbActivity.from(accountUser, MbActivityType.ANNOUNCE) ;
-        reblogOf14.setActor(author2);
+        MbActivity reblogOf14 = buildActivity(author2, MbActivityType.ANNOUNCE);
         reblogOf14.setMessage(reply14.getMessage().shallowCopy());
         addActivity(reblogOf14);
 
         MbActivity mentionOfAuthor3 = buildActivity(reblogger1, "@" + author3.getUserName() + " mention in reply to 4",
-                reply4, demoData.CONVERSATION_MENTION_OF_AUTHOR3_OID);
+                reply4, iteration == 1 ? demoData.CONVERSATION_MENTION_OF_AUTHOR3_OID : null);
         addActivity(mentionOfAuthor3);
 
-        MbActivity followOf3 =  MbActivity.from(accountUser, MbActivityType.FOLLOW) ;
-        followOf3.setActor(author2);
+        MbActivity followOf3 = buildActivity(author2, MbActivityType.FOLLOW);
         followOf3.setUser(author3);
         addActivity(followOf3);
+
+        MbActivity notLoaded1 = MbActivity.newPartialMessage(accountUser, MyLog.uniqueDateTimeFormatted());
+        MbUser notLoadedUser = MbUser.fromOriginAndUserOid(accountUser.originId, "acct:notloaded@someother.host"
+        + demoData.TEST_ORIGIN_PARENT_HOST);
+        notLoaded1.setActor(notLoadedUser);
+        MbActivity reply15 = buildActivity(author4, "Reply to not loaded 1", notLoaded1, null);
+        addActivity(reply15);
     }
 
     private MbUser getAuthor1() {
@@ -213,7 +221,11 @@ public class DemoConversationInserter {
     private MbUser buildUserFromOid(String userOid) {
         return new DemoMessageInserter(accountUser).buildUserFromOid(userOid);
     }
-    
+
+    private MbActivity buildActivity(MbUser actor, MbActivityType type) {
+        return new DemoMessageInserter(accountUser).buildActivity(actor, type, "");
+    }
+
     private MbActivity buildActivity(MbUser author, String body, MbActivity inReplyTo, String messageOidIn) {
         return buildActivity(accountUser, author, body, inReplyTo, messageOidIn, DownloadStatus.LOADED);
     }

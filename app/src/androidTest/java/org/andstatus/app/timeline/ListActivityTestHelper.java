@@ -27,6 +27,8 @@ import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.list.ContextMenuItem;
 import org.andstatus.app.list.MyBaseListActivity;
 import org.andstatus.app.msg.BaseMessageViewItem;
@@ -251,9 +253,14 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
             }
             if (item != BaseMessageViewItem.EMPTY) {
                 if (item.inReplyToMsgId != 0 && item.msgStatus == DownloadStatus.LOADED) {
-                    idOut = getListAdapter().getItemId(ind);
-                    MyLog.v(this, method + ": found " + item);
-                    break;
+                    DownloadStatus statusOfReplied = DownloadStatus.load(
+                            MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, item.inReplyToMsgId));
+                    if (statusOfReplied == DownloadStatus.LOADED) {
+                        MyLog.v(this, method + ": found " + item);
+                        idOut = getListAdapter().getItemId(ind);
+                        break;
+                    }
+                    MyLog.v(this, method + ": found reply to not loaded message: " + item);
                 }
             }
         }

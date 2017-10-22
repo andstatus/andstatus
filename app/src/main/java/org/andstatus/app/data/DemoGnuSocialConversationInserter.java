@@ -100,8 +100,7 @@ public class DemoGnuSocialConversationInserter {
         MbActivity reply12 = buildActivity(author2, "Reply 12 to Reply 7 reblogged by author1", reply7, null);
         DemoMessageInserter.onActivityS(reply12);
 
-        MbActivity activity = MbActivity.from(accountUser, MbActivityType.ANNOUNCE);
-        activity.setActor(author1);
+        MbActivity activity = new DemoMessageInserter(accountUser).buildActivity(author1, MbActivityType.ANNOUNCE, "");
         activity.setMessage(reply12.getMessage());
         DemoMessageInserter.onActivityS(activity);
     }

@@ -185,7 +185,7 @@ public class DataUpdater {
             }
 
             if (!message.isSubscribedByMe().equals(TriState.FALSE) && message.getUpdatedDate() > 0) {
-                if (execContext.getTimeline().getTimelineType() == TimelineType.HOME
+                if (execContext.getTimeline().getTimelineType().isSubscribedByMe()
                         || (message.nonPrivate() && activity.isAuthorMe())) {
                     message.setSubscribedByMe(TriState.TRUE);
                 }

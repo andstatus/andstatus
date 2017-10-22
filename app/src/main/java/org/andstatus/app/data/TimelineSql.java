@@ -64,6 +64,7 @@ public class TimelineSql {
         final String msgTablePlaceholder = "$msgTable";
         String tables = msgTablePlaceholder;
         SqlWhere activityWhere = new SqlWhere();
+        activityWhere.append(ActivityTable.UPDATED_DATE + ">0");
         SqlWhere msgWhere = new SqlWhere();
 
         String linkedUserField = ActivityTable.ACCOUNT_ID;

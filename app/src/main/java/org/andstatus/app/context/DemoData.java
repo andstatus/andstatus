@@ -52,7 +52,7 @@ public final class DemoData {
 
     public final String TESTRUN_UID = String.valueOf(System.currentTimeMillis());
 
-    private final String TEST_ORIGIN_PARENT_HOST = "example.com";
+    public final String TEST_ORIGIN_PARENT_HOST = "example.com";
     public final String PUMPIO_ORIGIN_NAME = "PumpioTest";
     public final String PUMPIO_MAIN_HOST = "pump1." + TEST_ORIGIN_PARENT_HOST;
     private final String PUMPIO_TEST_ACCOUNT_USERNAME = "t131t@" + PUMPIO_MAIN_HOST;
@@ -108,7 +108,7 @@ public final class DemoData {
     private volatile String dataPath = "";
 
     private DemoData() {
-        // Empty
+        DemoConversationInserter.onNewDemoData();
     }
 
     public void createNewInstance() {

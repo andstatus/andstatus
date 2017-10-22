@@ -279,6 +279,19 @@ public enum TimelineType implements SelectableEnum {
         }
     }
 
+    public boolean isSubscribedByMe() {
+        switch (this) {
+            case NOTIFICATIONS:
+            case FAVORITES:
+            case HOME:
+            case MY_FRIENDS:
+            case MENTIONS:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     @Override
     public int getDialogTitleResId() {
         return R.string.dialog_title_select_timeline;

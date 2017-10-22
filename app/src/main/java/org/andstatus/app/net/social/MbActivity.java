@@ -39,7 +39,7 @@ import org.andstatus.app.util.StringUtils;
 public class MbActivity extends AObject {
     public static final MbActivity EMPTY = from(MbUser.EMPTY, MbActivityType.EMPTY);
     private TimelinePosition timelinePosition = TimelinePosition.EMPTY;
-    private long updatedDate = System.currentTimeMillis();
+    private long updatedDate = 0;
     private long id = 0;
     private long insDate = 0;
 
@@ -73,7 +73,7 @@ public class MbActivity extends AObject {
 
     @NonNull
     public static MbActivity newPartialMessage(@NonNull MbUser accountUser, String msgOid) {
-        return newPartialMessage(accountUser, msgOid, System.currentTimeMillis(), DownloadStatus.UNKNOWN);
+        return newPartialMessage(accountUser, msgOid, 0, DownloadStatus.UNKNOWN);
     }
 
     @NonNull

@@ -16,6 +16,7 @@
 
 package org.andstatus.app.data;
 
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
@@ -106,7 +107,7 @@ public class DemoMessageInserter {
 
     public MbActivity buildActivity(MbUser author, String body, MbActivity inReplyToActivity, String messageOidIn,
                                     DownloadStatus messageStatus) {
-        final String method = "buildMessage";
+        final String method = "buildActivity";
         String messageOid = messageOidIn;
         if (TextUtils.isEmpty(messageOid) && messageStatus != DownloadStatus.SENDING) {
             if (origin.getOriginType() == OriginType.PUMPIO) {
@@ -118,9 +119,7 @@ public class DemoMessageInserter {
                 messageOid = MyLog.uniqueDateTimeFormatted();
             }
         }
-        MbActivity activity = MbActivity.from(accountUser, MbActivityType.CREATE);
-        activity.setTimelinePosition(messageOid + "-" + activity.type.name().toLowerCase());
-        activity.setActor(author);
+        MbActivity activity = buildActivity(author, MbActivityType.UPDATE, messageOid);
         MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), messageOid, messageStatus);
         activity.setMessage(message);
         message.setUpdatedDate(activity.getUpdatedDate());
@@ -131,6 +130,16 @@ public class DemoMessageInserter {
             message.url = message.oid;
         }
         DbUtils.waitMs(method, 10);
+        return activity;
+    }
+
+    public MbActivity buildActivity(@NonNull MbUser actor, @NonNull MbActivityType type, String messageOid) {
+        MbActivity activity = MbActivity.from(accountUser, type);
+        activity.setTimelinePosition(
+                (TextUtils.isEmpty(messageOid) ?  MyLog.uniqueDateTimeFormatted() : messageOid)
+                + "-" + activity.type.name().toLowerCase());
+        activity.setActor(actor);
+        activity.setUpdatedDate(System.currentTimeMillis());
         return activity;
     }
 
@@ -148,9 +157,9 @@ public class DemoMessageInserter {
         MbMessage message = activity.getMessage();
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(accountUser.userId);
         assertTrue("Persistent account exists for " + accountUser, ma.isValid());
+        final TimelineType timelineType = message.isPrivate() ? TimelineType.DIRECT : TimelineType.HOME;
         DataUpdater di = new DataUpdater(new CommandExecutionContext(
-                        CommandData.newTimelineCommand(CommandEnum.EMPTY, ma,
-                                message.isPrivate() ? TimelineType.DIRECT : TimelineType.HOME)));
+                        CommandData.newTimelineCommand(CommandEnum.EMPTY, ma, timelineType)));
 
         di.onActivity(activity);
         assertNotEquals( "Activity was not added: " + activity, 0, activity.getId());
