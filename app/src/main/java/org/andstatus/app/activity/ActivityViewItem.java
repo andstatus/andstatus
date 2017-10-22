@@ -16,6 +16,7 @@
 
 package org.andstatus.app.activity;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
@@ -23,7 +24,6 @@ import android.support.v4.util.Pair;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.ActivityTable;
-import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.msg.MessageViewItem;
 import org.andstatus.app.net.social.MbActivityType;
@@ -31,6 +31,7 @@ import org.andstatus.app.net.social.MbObjectType;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.user.UserViewItem;
+import org.andstatus.app.util.RelativeTime;
 
 /** View on ActivityStream
  * @author yvolk@yurivolkov.com
@@ -99,6 +100,10 @@ public class ActivityViewItem extends ViewItem implements Comparable<ActivityVie
             user.populateFromDatabase();
         }
         return this;
+    }
+
+    public String getDetails(Context context) {
+        return RelativeTime.getDifference(context, updatedDate);
     }
 
     @Override

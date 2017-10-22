@@ -95,8 +95,9 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
                 AvatarView avatarView = view.findViewById(R.id.actor_avatar_image);
                 item.actor.showAvatar(contextMenu.user.getActivity(), avatarView);
             }
-            MyUrlSpan.showText(view, R.id.action_details, item.actor.getWebFingerIdOrUserName()
+            MyUrlSpan.showText(view, R.id.action_title, item.actor.getWebFingerIdOrUserName()
                     + " " + item.activityType.getActedTitle(contextMenu.user.getActivity()), false, false);
+            MyUrlSpan.showText(view, R.id.action_details, item.getDetails(contextMenu.user.getActivity()), false, false);
             actorView.setVisibility(View.VISIBLE);
         }
     }

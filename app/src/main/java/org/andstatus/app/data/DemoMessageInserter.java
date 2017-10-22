@@ -121,7 +121,6 @@ public class DemoMessageInserter {
         MbActivity activity = MbActivity.from(accountUser, MbActivityType.CREATE);
         activity.setTimelinePosition(messageOid + "-" + activity.type.name().toLowerCase());
         activity.setActor(author);
-        activity.setUpdatedDate(System.currentTimeMillis());
         MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), messageOid, messageStatus);
         activity.setMessage(message);
         message.setUpdatedDate(activity.getUpdatedDate());

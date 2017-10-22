@@ -266,6 +266,7 @@ public class TimelineSql {
     public static Set<String> getActivityProjection() {
         Set<String> columnNames = getTimelineProjection();
         columnNames.add(ActivityTable.INS_DATE);
+        columnNames.add(ActivityTable.UPDATED_DATE);
         columnNames.add(ActivityTable.ACTIVITY_TYPE);
         columnNames.add(ActivityTable.ACTOR_ID);
         if (MyPreferences.getShowAvatars()) {
@@ -282,9 +283,7 @@ public class TimelineSql {
     public static Set<String> getTimelineProjection() {
         Set<String> columnNames = getBaseProjection();
         columnNames.add(ActivityTable.ACTIVITY_ID);
-        if (!columnNames.contains(MsgTable.AUTHOR_ID)) {
-            columnNames.add(MsgTable.AUTHOR_ID);
-        }
+        columnNames.add(MsgTable.AUTHOR_ID);
         columnNames.add(ActivityTable.ACTOR_ID);
         columnNames.add(UserTable.SENDER_NAME);
         columnNames.add(MsgTable.VIA);

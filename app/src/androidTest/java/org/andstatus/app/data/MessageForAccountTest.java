@@ -78,7 +78,6 @@ public class MessageForAccountTest {
         activity4.setActor(anotherMan);
         activity4.setActivity(reblogged1);
         activity4.setTimelinePosition(MyLog.uniqueDateTimeFormatted());
-        activity4.setUpdatedDate(System.currentTimeMillis());
         mi.onActivity(activity4);
 
         mfa = new MessageForAccount(ma.getOriginId(), 0, reblogged1.getMessage().msgId, ma);

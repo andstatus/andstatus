@@ -19,11 +19,18 @@
         android:paddingRight="6dp">
 
         <TextView
-            android:id="@+id/action_details"
+            android:id="@+id/action_title"
             style="@style/messageUsernameAppearance"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             tools:text="someuser@somedomain.com acted..."/>
+
+        <TextView
+            android:id="@+id/action_details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/messageDetailsAppearance"
+            tools:text="5 minutes ago"/>
     </LinearLayout>
 
     <org.andstatus.app.graphics.AvatarView

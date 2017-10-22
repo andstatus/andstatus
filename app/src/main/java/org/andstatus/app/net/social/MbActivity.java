@@ -39,7 +39,7 @@ import org.andstatus.app.util.StringUtils;
 public class MbActivity extends AObject {
     public static final MbActivity EMPTY = from(MbUser.EMPTY, MbActivityType.EMPTY);
     private TimelinePosition timelinePosition = TimelinePosition.EMPTY;
-    private long updatedDate = 0;
+    private long updatedDate = System.currentTimeMillis();
     private long id = 0;
     private long insDate = 0;
 
