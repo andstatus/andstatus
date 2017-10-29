@@ -18,6 +18,8 @@ package org.andstatus.app.msg;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.MsgTable;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -29,6 +31,9 @@ public class ConversationLoaderFactory<T extends ConversationItem> {
             long messageId, boolean sync) {
         // TODO: to clarify...
         boolean recursiveLoader = ma.getOrigin().getOriginType().isDirectMessageAllowsReply();
+        if (!recursiveLoader) {
+            recursiveLoader = MyQuery.msgIdToLongColumnValue(MsgTable.PRIVATE, messageId) == 0;
+        }
         if (recursiveLoader) {
             return new RecursiveConversationLoader<>(tClass, myContext, ma, messageId, sync);
         }  else {
