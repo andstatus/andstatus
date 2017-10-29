@@ -125,7 +125,7 @@ class ActivitySender {
             activity.put("object", obj);
 
             ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.POST_MESSAGE,
-                    connection.getData().getAccountUserOid());
+                    connection.getData().getAccountUser().oid);
             jso = connection.postRequest(conu.url, activity);
             if (jso == null) {
                 throw ConnectionException.hardConnectionException(msgLog + " returned no data", null);
@@ -164,7 +164,7 @@ class ActivitySender {
         addMainRecipient(activity, activityType);
 
         JSONObject author = new JSONObject();
-        author.put("id", connection.getData().getAccountUserOid());
+        author.put("id", connection.getData().getAccountUser().oid);
         author.put("objectType", "person");
 
         activity.put("actor", author);
@@ -173,7 +173,7 @@ class ActivitySender {
 
     private String getFollowersCollectionId() throws ConnectionException {
         ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.GET_FOLLOWERS,
-                connection.getData().getAccountUserOid());
+                connection.getData().getAccountUser().oid);
         return conu.httpConnection.pathToUrlString(conu.url);
     }
 
@@ -209,7 +209,7 @@ class ActivitySender {
             JSONObject formParams = new JSONObject();
             formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mMediaUri.toString());
             ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.POST_WITH_MEDIA,
-                    connection.getData().getAccountUserOid());
+                    connection.getData().getAccountUser().oid);
             obj1 = connection.postRequest(conu.url, formParams);
             if (obj1 == null) {
                 throw new ConnectionException("Error uploading '" + mMediaUri.toString() + "': null response returned");

@@ -33,7 +33,7 @@ public class MessageEditorDataTest {
         long entryMsgId = MyQuery.oidToId(OidEnum.MSG_OID, origin.getId(),
                 demoData.CONVERSATION_ENTRY_MESSAGE_OID);
         long entryUserId = MyQuery.oidToId(OidEnum.USER_OID, origin.getId(),
-                demoData.CONVERSATION_ENTRY_USER_OID);
+                demoData.CONVERSATION_ENTRY_AUTHOR_OID);
         long memberUserId = MyQuery.oidToId(OidEnum.USER_OID, origin.getId(),
                 demoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
         assertData(ma, entryMsgId, entryUserId, 0, memberUserId, false);

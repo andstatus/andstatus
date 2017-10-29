@@ -18,6 +18,7 @@ package org.andstatus.app.net.social;
 
 import android.support.test.InstrumentationRegistry;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.RawResourceUtils;
@@ -62,6 +63,7 @@ public class ConnectionMastodonTest {
 
         int ind = 0;
         MbActivity activity = timeline.get(ind);
+        assertEquals("Account unknown " + activity, true, MyContextHolder.get().persistentAccounts().fromUser(activity.accountUser).isValid());
         MbMessage message = activity.getMessage();
         assertEquals("Is not a message " + activity, MbObjectType.MESSAGE, activity.getObjectType());
         assertEquals("Activity Oid " + activity, "", activity.getTimelinePosition().getPosition());

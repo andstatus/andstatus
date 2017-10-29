@@ -27,6 +27,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DemoConversationInserter;
 import org.andstatus.app.data.DemoGnuSocialConversationInserter;
 import org.andstatus.app.data.MyDataCheckerConversations;
+import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.DemoOriginInserter;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
@@ -85,7 +86,7 @@ public final class DemoData {
     public final String CONVERSATION_ACCOUNT_USER_OID = "acct:" + CONVERSATION_ACCOUNT_USERNAME;
     public final String CONVERSATION_ACCOUNT_AVATAR_URL = "http://andstatus.org/images/andstatus-logo.png";
     public final String CONVERSATION_ENTRY_MESSAGE_OID = "http://" + PUMPIO_MAIN_HOST + "/testerofandstatus/comment/thisisfakeuri" + TESTRUN_UID;
-    public final String CONVERSATION_ENTRY_USER_OID = "acct:first@pumpentry.example.com";
+    public final String CONVERSATION_ENTRY_AUTHOR_OID = "acct:first@pumpentry.example.com";
     public final String CONVERSATION_AUTHOR_SECOND_USERNAME = "second@" + PUMPIO_MAIN_HOST;
     public final String CONVERSATION_AUTHOR_SECOND_USER_OID = "acct:" + CONVERSATION_AUTHOR_SECOND_USERNAME;
     public final String CONVERSATION_AUTHOR_THIRD_USERNAME = "third@pump3.example.com";
@@ -269,6 +270,16 @@ public final class DemoData {
         Origin origin = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
         assertTrue("Origin for " + accountName + " doesn't exist", origin.isValid());
         return ma;
+    }
+
+    @NonNull
+    public MbUser getAccountUserByOid(String userOid) {
+        for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
+            if (ma.getUserOid().equals(userOid)) {
+                return ma.toPartialUser();
+            }
+        }
+        return MbUser.EMPTY;
     }
 
     public long getConversationOriginId() {

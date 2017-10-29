@@ -246,6 +246,9 @@ public class MbActivity extends AObject {
 
     @Override
     public String toString() {
+        if (this == EMPTY) {
+            return "EMPTY";
+        }
         return "MbActivity{"
                 + (isEmpty() ? "(empty), " : "")
                 + type
@@ -301,7 +304,16 @@ public class MbActivity extends AObject {
         if (MyAsyncTask.isUiThread()) {
             throw new IllegalStateException("Saving activity on the Main thread " + toString());
         }
+        if (accountUser.userId == 0) {
+            throw new IllegalStateException("Account is unknown " + toString());
+        }
+        if (actor.userId == 0) {
+            throw new IllegalStateException("Actor is unknown " + toString());
+        }
         if (getId() == 0) {
+            if (timelinePosition.isEmpty()) {
+                setTempTimelinePosition();
+            }
             id = MyQuery.oidToId(myContext.getDatabase(), OidEnum.ACTIVITY_OID, accountUser.originId,
                     timelinePosition.getPosition());
         }
@@ -362,7 +374,8 @@ public class MbActivity extends AObject {
     }
 
     private boolean wontSave() {
-        return isEmpty() || (type.equals(MbActivityType.UPDATE) && getObjectType().equals(MbObjectType.USER));
+        return isEmpty() || (type.equals(MbActivityType.UPDATE) && getObjectType().equals(MbObjectType.USER))
+                || (timelinePosition.isEmpty() && getId() != 0);
     }
 
     private void toContentValues(ContentValues values) {
@@ -372,7 +385,9 @@ public class MbActivity extends AObject {
         values.put(ActivityTable.MSG_ID, getMessage().msgId);
         values.put(ActivityTable.USER_ID, getUser().userId);
         values.put(ActivityTable.OBJ_ACTIVITY_ID, getActivity().id);
-        values.put(ActivityTable.SUBSCRIBED, subscribedByMe.id);
+        if (subscribedByMe.known()) {
+            values.put(ActivityTable.SUBSCRIBED, subscribedByMe.id);
+        }
         values.put(ActivityTable.UPDATED_DATE, updatedDate);
         if (getId() == 0) {
             values.put(ActivityTable.ACTIVITY_TYPE, type.id);

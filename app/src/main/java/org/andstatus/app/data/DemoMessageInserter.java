@@ -154,21 +154,30 @@ public class DemoMessageInserter {
     }
 
     public void onActivity(final MbActivity activity) {
-        MbMessage message = activity.getMessage();
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(accountUser.userId);
-        assertTrue("Persistent account exists for " + accountUser, ma.isValid());
-        final TimelineType timelineType = message.isPrivate() ? TimelineType.DIRECT : TimelineType.HOME;
+        assertTrue("Persistent account exists for " + accountUser + " " + activity, ma.isValid());
+        final TimelineType timelineType = activity.getMessage().isPrivate() ? TimelineType.DIRECT : TimelineType.HOME;
         DataUpdater di = new DataUpdater(new CommandExecutionContext(
                         CommandData.newTimelineCommand(CommandEnum.EMPTY, ma, timelineType)));
-
         di.onActivity(activity);
-        assertNotEquals( "Activity was not added: " + activity, 0, activity.getId());
+        checkActivityRecursively(activity, 1);
+    }
+
+    private void checkActivityRecursively(MbActivity activity, int level) {
+        if (level == 1) {
+            assertNotEquals( "Activity was not added: " + activity, 0, activity.getId());
+        }
+        if (level > 10 || activity.getId() == 0) {
+            return;
+        }
+        assertNotEquals( "Account is unknown: " + activity, 0, activity.accountUser.userId);
 
         MbUser actor = activity.getActor();
         assertNotEquals( "Actor id not set for " + actor + " in activity " + activity, 0, actor.userId);
 
+        MbMessage message = activity.getMessage();
         if (message.nonEmpty()) {
-            assertNotEquals( "Message was not added: " + message, 0, message.msgId);
+            assertNotEquals( "Message was not added at level " + level + " " + activity, 0, message.msgId);
 
             String permalink = origin.messagePermalink(message.msgId);
             URL urlPermalink = UrlUtils.fromString(permalink);
@@ -215,15 +224,18 @@ public class DemoMessageInserter {
 
         if (!message.replies.isEmpty()) {
             for (MbActivity replyActivity : message.replies) {
-                MbMessage reply = replyActivity.getMessage();
-                if (reply.nonEmpty()) {
-                    assertNotEquals("Message added " + replyActivity, 0, reply.msgId);
+                if (replyActivity.nonEmpty()) {
+                    assertNotEquals("Reply added at level " + level + " " + replyActivity, 0, replyActivity.getId());
+                    checkActivityRecursively(replyActivity, level + 1);
                 }
             }
         }
 
         if (activity.getUser().nonEmpty()) {
             assertNotEquals( "User was not added: " + activity.getUser(), 0, activity.getUser().userId);
+        }
+        if (activity.getActivity().nonEmpty()) {
+            checkActivityRecursively(activity.getActivity(), level + 1);
         }
     }
 

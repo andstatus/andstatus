@@ -142,7 +142,7 @@ public abstract class ConnectionTwitterLike extends Connection {
             MyLog.e(this, e);
         }
         JSONObject user = postRequest(follow ? ApiRoutineEnum.FOLLOW_USER : ApiRoutineEnum.STOP_FOLLOWING_USER, out);
-        return userFromJson(user).act(MbUser.EMPTY, data.getPartialAccountUser(),
+        return userFromJson(user).act(MbUser.EMPTY, data.getAccountUser(),
                 follow ? MbActivityType.FOLLOW : MbActivityType.UNDO_FOLLOW);
     } 
 
@@ -243,7 +243,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         if (rebloggedActivity.isEmpty()) {
             return mainActivity;
         } else {
-            return makeReblog(data.getPartialAccountUser(), mainActivity, rebloggedActivity);
+            return makeReblog(data.getAccountUser(), mainActivity, rebloggedActivity);
         }
     }
 
@@ -260,7 +260,7 @@ public abstract class ConnectionTwitterLike extends Connection {
 
     @NonNull
     MbActivity newLoadedUpdateActivity(String oid, long updatedDate) throws ConnectionException {
-        return MbActivity.newPartialMessage(data.getPartialAccountUser(), oid, updatedDate,
+        return MbActivity.newPartialMessage(data.getAccountUser(), oid, updatedDate,
                 DownloadStatus.LOADED );
     }
 
@@ -337,7 +337,7 @@ public abstract class ConnectionTwitterLike extends Connection {
                     if (jso.has("in_reply_to_screen_name")) {
                         inReplyToUser.setUserName(jso.getString("in_reply_to_screen_name"));
                     }
-                    MbActivity inReplyTo = MbActivity.newPartialMessage(data.getPartialAccountUser(),
+                    MbActivity inReplyTo = MbActivity.newPartialMessage(data.getAccountUser(),
                             inReplyToMessageOid, message.getUpdatedDate() - 60, DownloadStatus.UNKNOWN);
                     inReplyTo.setActor(inReplyToUser);
                     message.setInReplyTo(inReplyTo);
@@ -345,7 +345,7 @@ public abstract class ConnectionTwitterLike extends Connection {
             }
 
             if (!jso.isNull("favorited")) {
-                message.addFavoriteBy(data.getPartialAccountUser(),
+                message.addFavoriteBy(data.getAccountUser(),
                         TriState.fromBoolean(SharedPreferencesUtil.isTrue(jso.getString("favorited"))));
             }
         } catch (JSONException e) {

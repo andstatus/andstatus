@@ -107,7 +107,7 @@ public class UnsentMessagesTest extends TimelineActivityTest {
         TestSuite.waitForListLoaded(getActivity(), 1);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity());
         long itemId = helper.getListItemIdOfLoadedReply();
-        long msgId = MyQuery.idToLongColumnValue(null, ActivityTable.TABLE_NAME, ActivityTable.MSG_ID, itemId);
+        long msgId = MyQuery.activityIdToLongColumnValue(ActivityTable.MSG_ID, itemId);
         String msgOid = MyQuery.idToOid(OidEnum.MSG_OID, msgId, 0);
         String logMsg = MyQuery.msgInfoForLog(msgId);
         assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, itemId, MessageListContextMenuItem.REBLOG,

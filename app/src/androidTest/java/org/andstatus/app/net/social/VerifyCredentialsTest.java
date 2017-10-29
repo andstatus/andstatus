@@ -62,7 +62,7 @@ public class VerifyCredentialsTest {
                 MyContextHolder.get().persistentOrigins().fromName(demoData.TWITTER_TEST_ORIGIN_NAME),
                 demoData.TWITTER_TEST_ACCOUNT_USERNAME),
                 TriState.UNKNOWN);
-        connectionData.setAccountUserOid(demoData.TWITTER_TEST_ACCOUNT_USER_OID);
+        connectionData.setAccountUser(demoData.getAccountUserByOid(demoData.TWITTER_TEST_ACCOUNT_USER_OID));
         connectionData.setDataReader(new AccountDataReaderEmpty());
         connection = connectionData.newConnection();
         httpConnection = (HttpConnectionMock) connection.http;

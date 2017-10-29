@@ -239,8 +239,7 @@ public class DataUpdaterTest {
         assertEquals("Message is favorited (by some my account)", 0,
                 MyQuery.msgIdToLongColumnValue(MsgTable.FAVORITED, messageId));
         assertEquals("Activity is subscribed " + likeActivity, TriState.UNKNOWN,
-                TriState.fromId(MyQuery.idToLongColumnValue(myContext.getDatabase(), ActivityTable.TABLE_NAME,
-                        ActivityTable.SUBSCRIBED, likeActivity.getId())));
+                TriState.fromId(MyQuery.activityIdToLongColumnValue(ActivityTable.SUBSCRIBED, likeActivity.getId())));
         assertEquals("Message is reblogged", 0,
                 MyQuery.msgIdToLongColumnValue(MsgTable.REBLOGGED, messageId));
 
@@ -324,8 +323,7 @@ public class DataUpdaterTest {
         assertEquals("Message is favorited (by some my account)", 0,
                 MyQuery.msgIdToLongColumnValue(MsgTable.FAVORITED, messageId));
         assertEquals("Activity is subscribed", TriState.UNKNOWN,
-                TriState.fromId(MyQuery.idToLongColumnValue(
-                        myContext.getDatabase(), ActivityTable.TABLE_NAME, ActivityTable.SUBSCRIBED, activity.getId())));
+                TriState.fromId(MyQuery.activityIdToLongColumnValue(ActivityTable.SUBSCRIBED, activity.getId())));
         assertEquals("Message is reblogged", 0,
                 MyQuery.msgIdToLongColumnValue(MsgTable.REBLOGGED, messageId));
         assertEquals("Message stored as loaded", DownloadStatus.LOADED, DownloadStatus.load(

@@ -80,7 +80,7 @@ public class ConnectionPumpioTest {
         OriginConnectionData connectionData = OriginConnectionData.fromAccountName(AccountName.fromOriginAndUserName(
                 MyContextHolder.get().persistentOrigins().fromName(demoData.PUMPIO_ORIGIN_NAME), ""),
                 TriState.UNKNOWN);
-        connectionData.setAccountUserOid(demoData.PUMPIO_TEST_ACCOUNT_USER_OID);
+        connectionData.setAccountUser(demoData.getAccountUserByOid(demoData.PUMPIO_TEST_ACCOUNT_USER_OID));
         connectionData.setDataReader(new AccountDataReaderEmpty());
         connection = (ConnectionPumpio) connectionData.newConnection();
         httpConnectionMock = connection.getHttpMock();
@@ -281,7 +281,7 @@ public class ConnectionPumpioTest {
         String body = "@peter Do you think it's true?";
         String inReplyToId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
         httpConnectionMock.setResponse("");
-        connection.getData().setAccountUserOid("acct:mytester@" + originUrl.getHost());
+        connection.getData().setAccountUser(demoData.getAccountUserByOid(demoData.CONVERSATION_ACCOUNT_USER_OID));
         connection.updateStatus(body, "", inReplyToId, null);
         JSONObject activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
@@ -312,7 +312,7 @@ public class ConnectionPumpioTest {
     public void testReblog() throws ConnectionException, JSONException {
         String rebloggedId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
         httpConnectionMock.setResponse("");
-        connection.getData().setAccountUserOid("acct:mytester@" + originUrl.getHost());
+        connection.getData().setAccountUser(demoData.getAccountUserByOid(demoData.CONVERSATION_ACCOUNT_USER_OID));
         connection.postReblog(rebloggedId);
         JSONObject activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
@@ -327,13 +327,13 @@ public class ConnectionPumpioTest {
         String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.unfollow_pumpio);
         httpConnectionMock.setResponse(jso);
-        connection.getData().setAccountUserOid("acct:t131t@" + originUrl.getHost());
+        connection.getData().setAccountUser(demoData.getAccountUserByOid(demoData.CONVERSATION_ACCOUNT_USER_OID));
         String userOid = "acct:evan@e14n.com";
         MbActivity activity = connection.followUser(userOid, false);
         assertEquals("Not unfollow action", MbActivityType.UNDO_FOLLOW, activity.type);
         MbUser user = activity.getUser();
         assertTrue("User is present", !user.isEmpty());
-        assertEquals("Actor is not me", connection.getData().getAccountUserOid(), activity.getActor().oid);
+        assertEquals("Actor", "acct:t131t@pump1.example.com", activity.getActor().oid);
         assertEquals("Object of action", userOid, user.oid);
     }
 
@@ -348,7 +348,7 @@ public class ConnectionPumpioTest {
         String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.pumpio_delete_comment_response);
         httpConnectionMock.setResponse(jso);
-        connection.getData().setAccountUserOid(demoData.CONVERSATION_ACCOUNT_USER_OID);
+        connection.getData().setAccountUser(demoData.getAccountUserByOid(demoData.CONVERSATION_ACCOUNT_USER_OID));
         assertTrue("Success", connection.destroyStatus("https://" + demoData.PUMPIO_MAIN_HOST
                 + "/api/comment/xf0WjLeEQSlyi8jwHJ0ttre"));
 
@@ -368,7 +368,7 @@ public class ConnectionPumpioTest {
                 org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
         httpConnectionMock.setResponse(jso);
         
-        connection.getData().setAccountUserOid("acct:mymediatester@" + originUrl.getHost());
+        connection.getData().setAccountUser(demoData.getAccountUserByOid(demoData.CONVERSATION_ACCOUNT_USER_OID));
         MbActivity activity = connection.updateStatus("Test post message with media", "", "", demoData.LOCAL_IMAGE_TEST_URI);
         activity.getMessage().setPrivate(TriState.FALSE);
         assertEquals("Message returned", privateGetMessageWithAttachment(

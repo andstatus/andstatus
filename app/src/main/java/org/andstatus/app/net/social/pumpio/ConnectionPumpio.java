@@ -369,7 +369,7 @@ public class ConnectionPumpio extends Connection {
             return MbActivity.EMPTY;
         }
         final ActivityType verb = ActivityType.load(jsoActivity.optString("verb"));
-        MbActivity activity = MbActivity.from(data.getPartialAccountUser(),
+        MbActivity activity = MbActivity.from(data.getAccountUser(),
                 verb == ActivityType.UNKNOWN ? MbActivityType.UPDATE : verb.mbActivityType);
         try {
             if (ObjectType.ACTIVITY.isTypeOf(jsoActivity)) {
@@ -460,7 +460,7 @@ public class ConnectionPumpio extends Connection {
             if (updatedDate == 0) {
                 updatedDate = dateFromJson(jso, "published");
             }
-            final MbActivity messageActivity = MbActivity.newPartialMessage(data.getPartialAccountUser(), oid,
+            final MbActivity messageActivity = MbActivity.newPartialMessage(data.getAccountUser(), oid,
                     updatedDate, DownloadStatus.LOADED);
             if (jso.has("author")) {
                 messageActivity.setActor(userFromJson(jso.getJSONObject("author")));

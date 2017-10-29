@@ -24,6 +24,7 @@ import android.text.TextUtils;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
@@ -36,6 +37,7 @@ import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.ViewItem;
+import org.andstatus.app.util.I18n;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -88,6 +90,14 @@ public class UserViewItem extends ViewItem implements Comparable<UserViewItem> {
 
     public long getUserId() {
         return mbUser.userId;
+    }
+
+    public String getDescription() {
+        StringBuilder builder = new StringBuilder(mbUser.getDescription());
+        if (MyPreferences.isShowDebuggingInfoInUi()) {
+            I18n.appendWithSpace(builder, "(id=" + getUserId() + ")");
+        }
+        return builder.toString();
     }
 
     @Override

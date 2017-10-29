@@ -132,7 +132,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     @Override
     protected MbActivity activityFromTwitterLikeJson(JSONObject timelineItem) throws ConnectionException {
         if (isNotification(timelineItem)) {
-            MbActivity activity = MbActivity.from(data.getPartialAccountUser(), getType(timelineItem));
+            MbActivity activity = MbActivity.from(data.getAccountUser(), getType(timelineItem));
             activity.setTimelinePosition(timelineItem.optString("id"));
             activity.setUpdatedDate(dateFromJson(timelineItem, "created_at"));
             activity.setActor(userFromJson(timelineItem.optJSONObject("account")));
@@ -147,7 +147,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                     break;
                 case FOLLOW:
                 case UNDO_FOLLOW:
-                    activity.setUser(data.getPartialAccountUser());
+                    activity.setUser(data.getAccountUser());
                     break;
                 default:
                     activity.setMessage(messageActivity.getMessage());
@@ -345,7 +345,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 message.via = application.optString("name");
             }
             if (!jso.isNull("favourited")) {
-                message.addFavoriteBy(data.getPartialAccountUser(),
+                message.addFavoriteBy(data.getAccountUser(),
                         TriState.fromBoolean(SharedPreferencesUtil.isTrue(jso.getString("favourited"))));
             }
 
@@ -364,7 +364,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 }
                 if (!SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
                     // Construct Related message from available info
-                    MbActivity inReplyTo = MbActivity.newPartialMessage(data.getPartialAccountUser(),
+                    MbActivity inReplyTo = MbActivity.newPartialMessage(data.getAccountUser(),
                             inReplyToMessageOid);
                     inReplyTo.setActor(MbUser.fromOriginAndUserOid(data.getOriginId(), inReplyToUserOid));
                     message.setInReplyTo(inReplyTo);
@@ -429,7 +429,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             return MbActivity.EMPTY;
         }
         TriState following = TriState.fromBoolean(relationship.optBoolean("following"));
-        return user.act(MbUser.EMPTY, data.getPartialAccountUser(), following.toBoolean(!follow) == follow
+        return user.act(MbUser.EMPTY, data.getAccountUser(), following.toBoolean(!follow) == follow
                 ? (follow ? MbActivityType.FOLLOW : MbActivityType.UNDO_FOLLOW)
                 : MbActivityType.UPDATE );
     }

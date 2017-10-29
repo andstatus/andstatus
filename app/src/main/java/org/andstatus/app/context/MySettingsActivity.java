@@ -47,7 +47,7 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
     public static final String ANDROID_FRAGMENT_ARGUMENTS_KEY = ":android:show_fragment_args";
     public static final String PREFERENCES_GROUPS_KEY = "preferencesGroup";
     public static final String ANDROID_NO_HEADERS_KEY = ":android:no_headers";
-    private boolean startTimelineActivity = false;
+    private boolean restartApp = false;
     private long mPreferencesChangedAt = MyPreferences.getPreferencesChangeTime();
     private long mInstanceId = 0;
     private boolean resumedOnce = false;
@@ -168,7 +168,7 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 if (isRootScreen()) {
-                    closeAndGoBack();
+                    closeAndRestartApp();
                 } else {
                     finish();
                 }
@@ -178,9 +178,9 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
         }
     }
 
-    private void closeAndGoBack() {
-        logEvent("closeAndGoBack", "");
-        startTimelineActivity = true;
+    private void closeAndRestartApp() {
+        logEvent("closeAndRestartApp", "");
+        restartApp = true;
         finish();
     }
 
@@ -188,9 +188,8 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (isRootScreen()
                 && keyCode == KeyEvent.KEYCODE_BACK
-                && event.getRepeatCount() == 0
-                && !MyContextHolder.get().persistentAccounts().isEmpty()) {
-            closeAndGoBack();
+                && event.getRepeatCount() == 0) {
+            closeAndRestartApp();
             return true;
         }
         return super.onKeyDown(keyCode, event);
@@ -207,11 +206,11 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
 
     @Override
     public void finish() {
-        logEvent("finish", startTimelineActivity ? " and return" : "");
+        logEvent("finish", restartApp ? " and return" : "");
         super.finish();
         if (resumedOnce) {
             MyContextHolder.setExpiredIfConfigChanged();
-            if (startTimelineActivity) {
+            if (restartApp) {
                 TimelineActivity.goHome(this);
             }
         }

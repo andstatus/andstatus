@@ -167,15 +167,11 @@ public class MyActivity extends AppCompatActivity implements IdentifiableInstanc
         if (fullscreenNew) {
             uiOptionsNew |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
             uiOptionsNew |= View.SYSTEM_UI_FLAG_FULLSCREEN;
-            if (Build.VERSION.SDK_INT >= 19) {
-                uiOptionsNew |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-            }
+            uiOptionsNew |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
         } else {
             uiOptionsNew &= ~View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
             uiOptionsNew &= ~View.SYSTEM_UI_FLAG_FULLSCREEN;
-            if (Build.VERSION.SDK_INT >= 19) {
-                uiOptionsNew &= ~View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-            }
+            uiOptionsNew &= ~View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
         }
         getWindow().getDecorView().setSystemUiVisibility(uiOptionsNew);
     }

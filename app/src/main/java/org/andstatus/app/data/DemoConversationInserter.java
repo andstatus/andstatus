@@ -19,6 +19,7 @@ package org.andstatus.app.data;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.database.MsgTable;
 import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbActivityType;
@@ -94,19 +95,30 @@ public class DemoConversationInserter {
         MbActivity reply1 = buildActivity(author3, "Reply 1 to selected", selected, null);
         author3.followedByMe = TriState.TRUE;
 
-        MbActivity reply1Copy = buildActivity(accountUser, MbUser.EMPTY, "", MbActivity.EMPTY,
+        MbActivity reply1Copy = buildActivity(accountUser,
+                MbUser.fromOriginAndUserOid(reply1.accountUser.originId, reply1.getAuthor().oid),
+                "", MbActivity.EMPTY,
                 reply1.getMessage().oid, DownloadStatus.UNKNOWN);
         MbActivity reply12 = buildActivity(author2, "Reply 12 to 1 in Replies", reply1Copy, null);
         reply1.getMessage().replies.add(reply12);
 
         MbActivity reply2 = buildActivity(author2, "Reply 2 to selected is private", selected, null);
         addPrivateMessage(reply2, TriState.TRUE);
+        if (iteration == 1) {
+            assertEquals("Should not be subscribed as it's in inReplyTo " + selected, TriState.UNKNOWN,
+                    TriState.fromId(MyQuery.activityIdToLongColumnValue(ActivityTable.SUBSCRIBED, selected.getId())));
+            selected.setSubscribedByMe(TriState.TRUE);
+            DemoMessageInserter.increaseUpdateDate(selected);
+            addActivity(selected);
+            assertEquals("Should be subscribed " + selected, TriState.TRUE,
+                    TriState.fromId(MyQuery.activityIdToLongColumnValue(ActivityTable.SUBSCRIBED, selected.getId())));
+        }
+
         MbActivity reply3 = buildActivity(getAuthor1(), "Reply 3 to selected by the same author", selected, null);
         reply3.getMessage().attachments.add(MbAttachment
             .fromUrlAndContentType(UrlUtils.fromString(
                     "http://www.publicdomainpictures.net/pictures/100000/nahled/broadcasting-tower-14081029181fC.jpg"),
                     MyContentType.IMAGE));
-        addActivity(selected);
         addActivity(reply3);
         addActivity(reply1);
         addActivity(reply2);
@@ -204,7 +216,7 @@ public class DemoConversationInserter {
     }
 
     private MbUser getAuthor1() {
-        MbUser author1 = buildUserFromOid(demoData.CONVERSATION_ENTRY_USER_OID);
+        MbUser author1 = buildUserFromOid(demoData.CONVERSATION_ENTRY_AUTHOR_OID);
         author1.avatarUrl = "https://raw.github.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png";
         return author1;
     }

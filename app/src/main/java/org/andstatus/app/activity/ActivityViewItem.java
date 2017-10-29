@@ -102,7 +102,7 @@ public class ActivityViewItem extends ViewItem implements Comparable<ActivityVie
         return this;
     }
 
-    public String getDetails(Context context) {
+    String getDetails(Context context) {
         return RelativeTime.getDifference(context, updatedDate);
     }
 

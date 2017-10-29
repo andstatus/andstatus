@@ -73,7 +73,7 @@ public class UserAdapter extends BaseTimelineAdapter<UserViewItem> {
             showAvatar(item, view);
         }
         MyUrlSpan.showText(view, R.id.homepage, item.mbUser.getHomepage(), true, false);
-        MyUrlSpan.showText(view, R.id.description, item.mbUser.getDescription(), false, false);
+        MyUrlSpan.showText(view, R.id.description, item.getDescription(), false, false);
         MyUrlSpan.showText(view, R.id.location, item.mbUser.location, false, false);
         MyUrlSpan.showText(view, R.id.profile_url, item.mbUser.getProfileUrl(), true, false);
 

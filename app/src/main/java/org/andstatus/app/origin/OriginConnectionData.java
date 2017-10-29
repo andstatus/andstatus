@@ -36,7 +36,7 @@ public class OriginConnectionData {
     private boolean isOAuth = true;
     private URL originUrl = null;
 
-    private String accountUserOid = "";
+    private MbUser accountUser = MbUser.EMPTY;
     private AccountDataReader dataReader = null;
     
     private Class<? extends org.andstatus.app.net.http.HttpConnection> httpConnectionClass = HttpConnectionEmpty.class;
@@ -54,8 +54,8 @@ public class OriginConnectionData {
     }
 
     @NonNull
-    public MbUser getPartialAccountUser() {
-        return MbUser.fromOriginAndUserOid(getOriginId(), getAccountUserOid());
+    public MbUser getAccountUser() {
+        return accountUser;
     }
 
     public AccountName getAccountName() {
@@ -93,21 +93,16 @@ public class OriginConnectionData {
             connection = accountName.getOrigin().getOriginType().getConnectionClass().newInstance();
             connection.enrichConnectionData(this);
             connection.setAccountData(this);
-            // TODO: Since API19 we will use ReflectiveOperationException as a common superclass of these two exceptions: InstantiationException and IllegalAccessException
-        } catch (InstantiationException e) {
-            throw new ConnectionException(accountName.getOrigin().toString(), e);
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             throw new ConnectionException(accountName.getOrigin().toString(), e);
         }
         return connection;
     }
 
-    public String getAccountUserOid() {
-        return accountUserOid;
-    }
-
-    public void setAccountUserOid(String accountUserOid) {
-        this.accountUserOid = accountUserOid;
+    public void setAccountUser(MbUser accountUser) {
+        if (accountUser != null) {
+            this.accountUser = accountUser;
+        }
     }
 
     public AccountDataReader getDataReader() {
@@ -123,10 +118,7 @@ public class OriginConnectionData {
         if (http == null) {
             try {
                 http = httpConnectionClass.newInstance();
-                // TODO: Since API19 we will use ReflectiveOperationException as a common superclass of these two exceptions: InstantiationException and IllegalAccessException
-            } catch (InstantiationException e) {
-                throw new ConnectionException(logMsg, e);
-            } catch (IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException e) {
                 throw new ConnectionException(logMsg, e);
             }
         }

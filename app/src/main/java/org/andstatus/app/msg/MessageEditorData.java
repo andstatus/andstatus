@@ -201,6 +201,9 @@ public class MessageEditorData {
         if (inReplyToMsgId != 0) {
             final MbActivity inReplyTo = MbActivity.newPartialMessage(getMyAccount().toPartialUser(),
                     MyQuery.idToOid(OidEnum.MSG_OID, inReplyToMsgId, 0), 0, UNKNOWN);
+            if (inReplyToUserId == 0) {
+                inReplyToUserId = MyQuery.msgIdToLongColumnValue(MsgTable.AUTHOR_ID, inReplyToMsgId);
+            }
             inReplyTo.setActor(MbUser.fromOriginAndUserId(message.originId, inReplyToUserId));
             message.setInReplyTo(inReplyTo);
         }

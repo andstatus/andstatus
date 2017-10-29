@@ -20,7 +20,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.support.v4.util.Pair;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -118,7 +117,7 @@ public class MessageForAccount {
         if (activityId == 0) {
             actorId = authorId;
         } else {
-            actorId = MyQuery.idToLongColumnValue(db, ActivityTable.TABLE_NAME, ActivityTable.ACTOR_ID, activityId);
+            actorId = MyQuery.activityIdToLongColumnValue(ActivityTable.ACTOR_ID, activityId);
         }
         isActor = actorId == userId;
         actorFollowed = !isActor && (actorId == authorId ? authorFollowed : MyQuery.isFollowing(userId, actorId));

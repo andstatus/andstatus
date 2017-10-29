@@ -100,8 +100,7 @@ public final class UserMsg {
         }
         long activityDate = updatedDateIn;
         if (activityDate == 0) {
-            activityDate = MyQuery.idToLongColumnValue(null, ActivityTable.TABLE_NAME,
-                    ActivityTable.UPDATED_DATE, activityId);
+            activityDate = MyQuery.activityIdToLongColumnValue(ActivityTable.UPDATED_DATE, activityId);
         }
         if (activityDate > lastActivityDate) {
             lastActivityDate = activityDate;

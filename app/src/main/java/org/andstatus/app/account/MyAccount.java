@@ -199,7 +199,7 @@ public final class MyAccount implements Comparable<MyAccount> {
         private void setConnection() {
             OriginConnectionData connectionData = OriginConnectionData.fromAccountName(
                     myAccount.oAccountName, TriState.fromBoolean(myAccount.isOAuth));
-            connectionData.setAccountUserOid(myAccount.userOid);
+            connectionData.setAccountUser(myAccount.toPartialUser());
             connectionData.setDataReader(myAccount.accountData);
             try {
                 myAccount.connection = connectionData.newConnection();

@@ -94,11 +94,10 @@ public class MessageEditorTest extends TimelineActivityTest {
 
     private MessageEditorData getStaticData(MyAccount ma) {
         return MessageEditorData.newEmpty(ma)
-                .setInReplyToMsgId(MyQuery.oidToId(OidEnum.MSG_OID, MyContextHolder.get()
-                                .persistentOrigins().fromName(demoData.CONVERSATION_ORIGIN_NAME).getId(),
+                .setInReplyToMsgId(MyQuery.oidToId(OidEnum.MSG_OID, ma.getOrigin().getId(),
                         demoData.CONVERSATION_ENTRY_MESSAGE_OID))
                 .addRecipientId(MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
-                        demoData.CONVERSATION_AUTHOR_THIRD_USER_OID))
+                        demoData.CONVERSATION_ENTRY_AUTHOR_OID))
                 .addMentionsToText()
                 .setBody("Some static text " + demoData.TESTRUN_UID);
     }
@@ -153,13 +152,7 @@ public class MessageEditorTest extends TimelineActivityTest {
         ActivityTestHelper.waitViewInvisible(method, editorView);
 
         final MessageEditor editor = getActivity().getMessageEditor();
-        Runnable startEditing = new Runnable() {
-            @Override
-            public void run() {
-                editor.startEditingMessage(data);
-            }
-        };
-        getInstrumentation().runOnMainSync(startEditing);
+        getInstrumentation().runOnMainSync(() -> editor.startEditingMessage(data));
         TestSuite.waitForIdleSync();
 
         ActivityTestHelper.waitViewVisible(method, editorView);

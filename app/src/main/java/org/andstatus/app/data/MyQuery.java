@@ -554,6 +554,16 @@ public class MyQuery {
     }
 
     /**
+     * Convenience method to get column value from {@link ActivityTable} table
+     * @param columnName without table name
+     * @param systemId  MyDatabase.MSG_TABLE_NAME + "." + Msg._ID
+     * @return 0 in case not found or error
+     */
+    public static long activityIdToLongColumnValue(String columnName, long systemId) {
+        return idToLongColumnValue(null, ActivityTable.TABLE_NAME, columnName, systemId);
+    }
+
+    /**
      * Convenience method to get column value from {@link MsgTable} table
      * @param columnName without table name
      * @param systemId  MyDatabase.MSG_TABLE_NAME + "." + Msg._ID
