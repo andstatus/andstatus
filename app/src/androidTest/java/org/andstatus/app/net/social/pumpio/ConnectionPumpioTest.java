@@ -252,8 +252,8 @@ public class ConnectionPumpioTest {
         mbMessage = activity.getMessage();
         assertEquals(activity.isSubscribedByMe(), TriState.UNKNOWN);
         assertTrue("Is a reply", mbMessage.getInReplyTo().nonEmpty());
-        assertEquals("Is a reply to this user", mbMessage.getInReplyTo().getAuthor().getUserName(), "jankusanagi@identi.ca");
-        assertEquals(mbMessage.getInReplyTo().isSubscribedByMe(), TriState.FALSE);
+        assertEquals("Is a reply to this user", "jankusanagi@identi.ca", mbMessage.getInReplyTo().getAuthor().getUserName());
+        assertEquals(TriState.UNKNOWN, mbMessage.getInReplyTo().isSubscribedByMe());
     }
 
     @Test

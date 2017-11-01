@@ -100,11 +100,21 @@ public class DataUpdater {
             default:
                 throw new IllegalArgumentException("Unexpected activity: " + activity);
         }
-        activity.save(execContext.getMyContext());
+        updateActivity(activity);
         if (saveLum) {
             saveLum();
         }
         return activity;
+    }
+
+    private void updateActivity(MbActivity activity) {
+        if (!activity.isSubscribedByMe().equals(TriState.FALSE)
+            && activity.getUpdatedDate() > 0
+            && (activity.isAuthorMe() || activity.isActorMe()
+                || activity.getMessage().audience().hasMyAccount(execContext.getMyContext()))) {
+            activity.setSubscribedByMe(TriState.TRUE);
+        }
+        activity.save(execContext.getMyContext());
     }
 
     public void saveLum() {
@@ -184,12 +194,6 @@ public class DataUpdater {
                 values.put(MsgTable.MENTIONED, TriState.TRUE.id);
             }
 
-            if (!activity.isSubscribedByMe().equals(TriState.FALSE) && message.getUpdatedDate() > 0) {
-                if (execContext.getTimeline().getTimelineType().isSubscribedByMe()
-                        || (message.nonPrivate() && activity.isAuthorMe())) {
-                    activity.setSubscribedByMe(TriState.TRUE);
-                }
-            }
             if (!TextUtils.isEmpty(message.via)) {
                 values.put(MsgTable.VIA, message.via);
             }
@@ -268,7 +272,6 @@ public class DataUpdater {
             if (TextUtils.isEmpty(inReply.getMessage().conversationOid)) {
                 inReply.getMessage().setConversationOid(activity.getMessage().conversationOid);
             }
-            inReply.setSubscribedByMe(TriState.UNKNOWN);
             new DataUpdater(execContext).onActivity(inReply);
             if (inReply.getMessage().msgId != 0) {
                 activity.getMessage().addRecipient(inReply.getAuthor());

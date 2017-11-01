@@ -70,9 +70,6 @@ public class TimelineSql {
         String linkedUserField = ActivityTable.ACCOUNT_ID;
         boolean authorNameDefined = false;
         String authorTableName = "";
-        if (timeline.getTimelineType().isSubscribedByMe()) {
-            activityWhere.append(ActivityTable.SUBSCRIBED + "=" + TriState.TRUE.id);
-        }
         switch (timeline.getTimelineType()) {
             case FOLLOWERS:
             case MY_FOLLOWERS:
@@ -113,7 +110,8 @@ public class TimelineSql {
                 }
                 break;
             case HOME:
-                activityWhere.append(ActivityTable.ACCOUNT_ID + " " + selectedAccounts.getSql());
+                activityWhere.append(ActivityTable.SUBSCRIBED + "=" + TriState.TRUE.id);
+                msgWhere.append(MsgTable.PRIVATE + "!=" + TriState.TRUE.id);
                 break;
             case DIRECT:
                 msgWhere.append(MsgTable.PRIVATE + "=" + TriState.TRUE.id);
@@ -123,10 +121,6 @@ public class TimelineSql {
                 break;
             case MENTIONS:
                 msgWhere.append(MsgTable.MENTIONED + "=" + TriState.TRUE.id);
-                /*
-                 * We already figured this out and set {@link MyDatabase.MsgOfUser.MENTIONED}:
-                 *  add MyDatabase.Msg.BODY + " LIKE ?" ...
-                 */
                 break;
             case DRAFTS:
                 msgWhere.append(MsgTable.MSG_STATUS + "=" + DownloadStatus.DRAFT.save());
@@ -147,6 +141,9 @@ public class TimelineSql {
         if (tables.contains(msgTablePlaceholder)) {
             if (timeline.getTimelineType().isAtOrigin() && !timeline.isCombined()) {
                 activityWhere.append(ActivityTable.ORIGIN_ID + "=" + timeline.getOrigin().getId());
+            }
+            if (timeline.getTimelineType().isForUser() && !timeline.isCombined()) {
+                activityWhere.append(ActivityTable.ACCOUNT_ID + "=" + timeline.getMyAccount().getUserId());
             }
             String activityTable = "(SELECT "
                     + ActivityTable._ID + ", "

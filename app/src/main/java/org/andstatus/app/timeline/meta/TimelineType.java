@@ -281,9 +281,11 @@ public enum TimelineType implements SelectableEnum {
 
     public boolean isSubscribedByMe() {
         switch (this) {
-            case NOTIFICATIONS:
-            case FAVORITES:
             case HOME:
+            case NOTIFICATIONS:
+            case DIRECT:
+            case SENT:
+            case FAVORITES:
             case MY_FRIENDS:
             case MENTIONS:
                 return true;

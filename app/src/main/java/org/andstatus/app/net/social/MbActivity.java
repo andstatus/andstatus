@@ -170,7 +170,7 @@ public class MbActivity extends AObject {
         return timelinePosition;
     }
 
-    public void setTempTimelinePosition() {
+    private void setTempTimelinePosition() {
         setTimelinePosition("");
     }
 
@@ -311,18 +311,14 @@ public class MbActivity extends AObject {
             throw new IllegalStateException("Actor is unknown " + toString());
         }
         if (getId() == 0) {
-            if (timelinePosition.isEmpty()) {
-                setTempTimelinePosition();
-            }
-            id = MyQuery.oidToId(myContext.getDatabase(), OidEnum.ACTIVITY_OID, accountUser.originId,
-                    timelinePosition.getPosition());
+            findExisting(myContext);
         }
-        if (id != 0) {
+        if (getId() != 0) {
             long storedUpdatedDate = MyQuery.idToLongColumnValue(
                     myContext.getDatabase(), ActivityTable.TABLE_NAME, ActivityTable.UPDATED_DATE, id);
             if (updatedDate <= storedUpdatedDate) {
                 MyLog.v(this, "Skipped as not younger " + this);
-                return id;
+                return getId();
             }
             switch (type) {
                 case LIKE:
@@ -371,6 +367,21 @@ public class MbActivity extends AObject {
             MyLog.v(this, "Updated " + this);
         }
         return id;
+    }
+
+    private void findExisting(MyContext myContext) {
+        if (!timelinePosition.isEmpty()) {
+            id = MyQuery.oidToId(myContext.getDatabase(), OidEnum.ACTIVITY_OID, accountUser.originId,
+                    timelinePosition.getPosition());
+        }
+        if (id != 0) {
+            return;
+        }
+        if (getMessage().msgId != 0 && (type == MbActivityType.UPDATE || type == MbActivityType.CREATE)) {
+            id = MyQuery.conditionToLongColumnValue(myContext.getDatabase(),"", ActivityTable.TABLE_NAME,
+                    ActivityTable._ID, ActivityTable.MSG_ID + "=" + getMessage().msgId + " AND "
+            + ActivityTable.ACTIVITY_TYPE + "=" + type.id);
+        }
     }
 
     private boolean wontSave() {

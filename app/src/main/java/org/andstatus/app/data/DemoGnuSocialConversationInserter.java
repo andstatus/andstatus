@@ -68,6 +68,7 @@ public class DemoGnuSocialConversationInserter {
 
         MbActivity minus1 = buildActivity(author2, "Older one message", null, null);
         MbActivity selected = buildActivity(author1, "Selected message", minus1,null);
+        selected.setSubscribedByMe(TriState.TRUE);
         MbActivity reply1 = buildActivity(author3, "Reply 1 to selected", selected, null);
         MbActivity reply2 = buildActivity(author2, "Reply 2 to selected is non-private", selected, null);
         addPrivateMessage(reply2, TriState.FALSE);

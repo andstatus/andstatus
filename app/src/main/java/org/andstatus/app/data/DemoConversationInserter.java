@@ -105,11 +105,6 @@ public class DemoConversationInserter {
         MbActivity reply2 = buildActivity(author2, "Reply 2 to selected is private", selected, null);
         addPrivateMessage(reply2, TriState.TRUE);
         if (iteration == 1) {
-            assertEquals("Should not be subscribed as it's in inReplyTo " + selected, TriState.UNKNOWN,
-                    TriState.fromId(MyQuery.activityIdToLongColumnValue(ActivityTable.SUBSCRIBED, selected.getId())));
-            selected.setSubscribedByMe(TriState.TRUE);
-            DemoMessageInserter.increaseUpdateDate(selected);
-            addActivity(selected);
             assertEquals("Should be subscribed " + selected, TriState.TRUE,
                     TriState.fromId(MyQuery.activityIdToLongColumnValue(ActivityTable.SUBSCRIBED, selected.getId())));
         }

@@ -364,8 +364,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 }
                 if (!SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
                     // Construct Related message from available info
-                    MbActivity inReplyTo = MbActivity.newPartialMessage(data.getAccountUser(),
-                            inReplyToMessageOid);
+                    MbActivity inReplyTo = MbActivity.newPartialMessage(data.getAccountUser(), inReplyToMessageOid);
                     inReplyTo.setActor(MbUser.fromOriginAndUserOid(data.getOriginId(), inReplyToUserOid));
                     message.setInReplyTo(inReplyTo);
                 }
@@ -392,7 +391,6 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                     MyLog.d(this, method, e);
                 }
             }
-
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Parsing message", e, jso);
         } catch (Exception e) {

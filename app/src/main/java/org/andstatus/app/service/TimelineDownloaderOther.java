@@ -28,6 +28,7 @@ import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.TriState;
 
 import java.util.Date;
 import java.util.List;
@@ -98,6 +99,11 @@ class TimelineDownloaderOther extends TimelineDownloader {
                 for (MbActivity activity : activities) {
                     toDownload--;
                     syncTracker.onNewMsg(activity.getTimelinePosition(), activity.getUpdatedDate());
+                    if (!activity.isSubscribedByMe().equals(TriState.FALSE)
+                        && activity.getUpdatedDate() > 0
+                        && execContext.getTimeline().getTimelineType().isSubscribedByMe()) {
+                        activity.setSubscribedByMe(TriState.TRUE);
+                    }
                     di.onActivity(activity, false);
                 }
                 if (toDownload <= 0 || activities.isEmpty() || previousPosition.equals(syncTracker.getPreviousPosition())) {

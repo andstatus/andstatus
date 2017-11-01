@@ -60,7 +60,7 @@ public final class ActivityTable implements BaseColumns {
     }
 
     public static String getTimeSortField(@NonNull TimelineType timelineType) {
-        return timelineType.showsActivities() ? INS_DATE : MsgTable.UPDATED_DATE;
+        return timelineType.showsActivities() ? UPDATED_DATE : MsgTable.UPDATED_DATE;
     }
 
     private ActivityTable() {

@@ -337,8 +337,7 @@ public abstract class ConnectionTwitterLike extends Connection {
                     if (jso.has("in_reply_to_screen_name")) {
                         inReplyToUser.setUserName(jso.getString("in_reply_to_screen_name"));
                     }
-                    MbActivity inReplyTo = MbActivity.newPartialMessage(data.getAccountUser(),
-                            inReplyToMessageOid, message.getUpdatedDate() - 60, DownloadStatus.UNKNOWN);
+                    MbActivity inReplyTo = MbActivity.newPartialMessage(data.getAccountUser(), inReplyToMessageOid);
                     inReplyTo.setActor(inReplyToUser);
                     message.setInReplyTo(inReplyTo);
                 }

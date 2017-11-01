@@ -93,9 +93,14 @@ public class ConnectionGnuSocialTest {
         assertEquals("conversationOid", "2218650", activity.getMessage().conversationOid);
         assertTrue("Does not have a recipient", activity.recipients().isEmpty());
         assertNotEquals("Is a reblog", MbActivityType.ANNOUNCE,  activity.type);
-        assertTrue("Is a reply", activity.getMessage().getInReplyTo().nonEmpty());
-        assertEquals("Reply to the message id", "2663833", activity.getMessage().getInReplyTo().getMessage().oid);
-        assertEquals("Reply to the message by userOid", "114973", activity.getMessage().getInReplyTo().getActor().oid);
+
+        final MbActivity inReplyTo = activity.getMessage().getInReplyTo();
+        assertTrue("Is a reply", inReplyTo.nonEmpty());
+        assertEquals("Reply to the message id", "2663833", inReplyTo.getMessage().oid);
+        assertEquals("Reply to the message by userOid", "114973", inReplyTo.getActor().oid);
+        assertEquals("Updated date should be 0 for inReplyTo message", 0, inReplyTo.getMessage().getUpdatedDate());
+        assertEquals("Updated date should be 0 for inReplyTo activity", 0, inReplyTo.getUpdatedDate());
+
         assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountUser));
         String startsWith = "@<span class=\"vcard\">";
         assertEquals("Body of this message starts with", startsWith, activity.getMessage().getBody().substring(0, startsWith.length()));
