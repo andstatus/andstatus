@@ -220,6 +220,20 @@ public class MbUser implements Comparable<MbUser> {
         return 31 * result + getUserName().hashCode();
     }
 
+    public boolean isSameUser(MbUser that) {
+        if (this == that) return true;
+        if (that == null) return false;
+        if (userId != 0 && that.userId != 0) {
+            if (userId == that.userId) return true;
+        }
+        if (originId == that.originId) {
+            if (isOidReal(oid) && isOidReal(that.oid)) {
+                return oid.equals(that.oid);
+            }
+        }
+        return isWebFingerIdValid() && that.isWebFingerIdValid() && getWebFingerId().equals(that.getWebFingerId());
+    }
+
     private void fixWebFingerId() {
         if (TextUtils.isEmpty(userName)) {
             // Do nothing

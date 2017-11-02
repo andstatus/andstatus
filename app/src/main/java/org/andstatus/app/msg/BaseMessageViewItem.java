@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2017 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,10 +104,6 @@ public class BaseMessageViewItem extends ViewItem {
         this.originId = originId;
     }
 
-    long getLinkedUserId() {
-        return linkedUserId;
-    }
-
     void setLinkedUserAndAccount(long linkedUserId) {
         this.linkedUserId = linkedUserId;
         linkedMyAccount = getMyContext().persistentAccounts().fromUserId(linkedUserId);
@@ -119,10 +115,6 @@ public class BaseMessageViewItem extends ViewItem {
     @NonNull
     public MyAccount getLinkedMyAccount() {
         return linkedMyAccount;
-    }
-
-    boolean isLinkedToMyAccount() {
-        return linkedUserId != 0 && linkedMyAccount.getUserId() == linkedUserId;
     }
 
     private void setCollapsedStatus(StringBuilder messageDetails) {

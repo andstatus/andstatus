@@ -424,10 +424,8 @@ public class Origin {
                     OriginTable.IN_COMBINED_GLOBAL_SEARCH));
             origin.setInCombinedPublicReload(DbUtils.getBoolean(cursor,
                     OriginTable.IN_COMBINED_PUBLIC_RELOAD));
-            setMentionAsWebFingerId(TriState.fromId(DbUtils.getLong(cursor,
-                    OriginTable.MENTION_AS_WEBFINGER_ID)));
-            setUseLegacyHttpProtocol(TriState.fromId(DbUtils.getLong(cursor,
-                    OriginTable.USE_LEGACY_HTTP)));
+            setMentionAsWebFingerId(DbUtils.getTriState(cursor, OriginTable.MENTION_AS_WEBFINGER_ID));
+            setUseLegacyHttpProtocol(DbUtils.getTriState(cursor, OriginTable.USE_LEGACY_HTTP));
         }
 
         protected void setTextLimit(int textLimit) {

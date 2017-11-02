@@ -117,7 +117,7 @@ public class UnsentMessagesTest extends TimelineActivityTest {
         mService.waitForServiceStopped(false);
 
         List<HttpReadResult> results = mService.getHttp().getResults();
-        assertTrue("No results in " + mService.getHttp().toString(), !results.isEmpty());
+        assertTrue("No results in " + mService.getHttp().toString() + "\n" + logMsg, !results.isEmpty());
         String urlFound = "";
         for (HttpReadResult result : results) {
             if (result.getUrl().contains("retweet")) {

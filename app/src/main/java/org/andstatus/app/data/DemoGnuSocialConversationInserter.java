@@ -101,9 +101,25 @@ public class DemoGnuSocialConversationInserter {
         MbActivity reply12 = buildActivity(author2, "Reply 12 to Reply 7 reblogged by author1", reply7, null);
         DemoMessageInserter.onActivityS(reply12);
 
-        MbActivity activity = new DemoMessageInserter(accountUser).buildActivity(author1, MbActivityType.ANNOUNCE, "");
-        activity.setMessage(reply12.getMessage());
-        DemoMessageInserter.onActivityS(activity);
+        MbActivity myReblogOf12 = new DemoMessageInserter(accountUser).buildActivity(accountUser, MbActivityType.ANNOUNCE, "");
+        myReblogOf12.setActivity(reply12);
+        DemoMessageInserter.onActivityS(myReblogOf12);
+
+        MbActivity myReplyTo12 = buildActivity(accountUser, "My reply to 12 after my reblog", reply12, null);
+        DemoMessageInserter.onActivityS(myReplyTo12);
+
+        MbActivity likeOfMyReply = new DemoMessageInserter(accountUser).buildActivity(author1, MbActivityType.LIKE, "");
+        likeOfMyReply.setActivity(myReplyTo12);
+        addActivity(likeOfMyReply);
+        DemoMessageInserter.assertNotified(likeOfMyReply, TriState.TRUE);
+
+        MbActivity followOfMe = new DemoMessageInserter(accountUser).buildActivity(author2, MbActivityType.FOLLOW, "");
+        followOfMe.setUser(accountUser);
+        DemoMessageInserter.onActivityS(followOfMe);
+        DemoMessageInserter.assertNotified(followOfMe, TriState.TRUE);
+
+        MbActivity reply13 = buildActivity(author2, "Reply 13 to MyReply12", myReplyTo12, null);
+        addActivity(reply13);
     }
 
     private void addPrivateMessage(MbActivity activity, TriState isPrivate) {

@@ -134,6 +134,9 @@ public class TimelineSql {
                 // All actions by this User(s)
                 activityWhere.append(ActivityTable.ACTOR_ID + " " + userIds.getSql());
                 break;
+            case NOTIFICATIONS:
+                activityWhere.append(ActivityTable.NOTIFIED + "=" + TriState.TRUE.id);
+                break;
             default:
                 break;
         }

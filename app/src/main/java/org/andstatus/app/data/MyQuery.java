@@ -353,7 +353,7 @@ public class MyQuery {
                 + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC";
         try (Cursor cursor = db.rawQuery(sql, null)) {
             while(cursor.moveToNext()) {
-                if (TriState.fromId(DbUtils.getLong(cursor, ActivityTable.SUBSCRIBED)) == TriState.TRUE) {
+                if (DbUtils.getTriState(cursor, ActivityTable.SUBSCRIBED) == TriState.TRUE) {
                     actorToMessage.subscribed = true;
                 }
                 MbActivityType activityType = MbActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));

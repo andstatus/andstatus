@@ -86,10 +86,6 @@ public class MessageViewItem extends BaseMessageViewItem {
         return item;
     }
 
-    private void addReblogger(long userId, String userName) {
-        rebloggers.put(userId, userName);
-    }
-
     @Override
     public String toString() {
         return MyLog.formatKeyValue(this, I18n.trimTextAt(MyHtml.fromHtml(getBody()), 40) + ","

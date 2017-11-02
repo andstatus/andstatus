@@ -59,6 +59,7 @@ public class MbActivity extends AObject {
 
     /** Some additional attributes may appear from "My account's" (authenticated User's) point of view */
     private TriState subscribedByMe = TriState.UNKNOWN;
+    private TriState notified = TriState.UNKNOWN;
 
     @NonNull
     public static MbActivity fromInner(@NonNull MbUser actor, @NonNull MbActivityType type,
@@ -116,7 +117,7 @@ public class MbActivity extends AObject {
     }
 
     public boolean isAuthorActor() {
-        return getActor().oid.equals(getAuthor().oid);
+        return getActor().isSameUser(getAuthor());
     }
 
     @NonNull
@@ -142,11 +143,11 @@ public class MbActivity extends AObject {
     }
 
     public boolean isActorMe() {
-        return getActor().oid.equals(accountUser.oid);
+        return getActor().isSameUser(accountUser);
     }
 
     public boolean isAuthorMe() {
-        return getAuthor().oid.equals(accountUser.oid);
+        return getAuthor().isSameUser(accountUser);
     }
 
     @NonNull
@@ -257,6 +258,7 @@ public class MbActivity extends AObject {
                 + ", updated:" + MyLog.debugFormatOfDate(updatedDate)
                 + ", me:" + (accountUser.isEmpty() ? "EMPTY" : accountUser.oid)
                 + (subscribedByMe.known() ? (subscribedByMe == TriState.TRUE ? ", subscribed" : ", NOT subscribed") : "" )
+                + (notified.known() ? (notified == TriState.TRUE ? ", notified" : ", NOT notified") : "" )
                 + (actor.isEmpty() ? "" : ", \nactor:" + actor)
                 + (mbMessage.isEmpty() ? "" : ", \nmessage:" + mbMessage)
                 + (getActivity().isEmpty() ? "" : ", \nactivity:" + getActivity())
@@ -273,7 +275,15 @@ public class MbActivity extends AObject {
     }
 
     public void setSubscribedByMe(TriState isSubscribed) {
-        this.subscribedByMe = isSubscribed;
+        if (isSubscribed != null) this.subscribedByMe = isSubscribed;
+    }
+
+    public TriState isNotified() {
+        return notified;
+    }
+
+    public void setNotified(TriState notified) {
+        if (notified != null) this.notified = notified;
     }
 
     public static MbActivity fromCursor(MyContext myContext, Cursor cursor) {
@@ -290,7 +300,8 @@ public class MbActivity extends AObject {
                 DbUtils.getLong(cursor, ActivityTable.USER_ID));
         activity.mbActivity = MbActivity.from(activity.accountUser, MbActivityType.EMPTY);
         activity.mbActivity.id =  DbUtils.getLong(cursor, ActivityTable.OBJ_ACTIVITY_ID);
-        activity.subscribedByMe = TriState.fromId(DbUtils.getLong(cursor, ActivityTable.SUBSCRIBED));
+        activity.subscribedByMe = DbUtils.getTriState(cursor, ActivityTable.SUBSCRIBED);
+        activity.notified = DbUtils.getTriState(cursor, ActivityTable.NOTIFIED);
         activity.updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
         activity.insDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
         return activity;
@@ -357,6 +368,7 @@ public class MbActivity extends AObject {
                 return id;
             }
         }
+        calculateIsNotified(myContext);
         ContentValues contentValues = new ContentValues();
         toContentValues(contentValues);
         if (getId() == 0) {
@@ -367,6 +379,16 @@ public class MbActivity extends AObject {
             MyLog.v(this, "Updated " + this);
         }
         return id;
+    }
+
+    private void calculateIsNotified(MyContext myContext) {
+        if (isNotified().known() || getUpdatedDate() < 1 || isActorMe()) return;
+        if ( isAuthorMe()
+                || getMessage().audience().hasMyAccount(myContext)
+                || getUser().isSameUser(accountUser)
+                || getActivity().isActorMe() ) {
+            setNotified(TriState.TRUE);
+        }
     }
 
     private void findExisting(MyContext myContext) {
@@ -398,6 +420,9 @@ public class MbActivity extends AObject {
         values.put(ActivityTable.OBJ_ACTIVITY_ID, getActivity().id);
         if (subscribedByMe.known()) {
             values.put(ActivityTable.SUBSCRIBED, subscribedByMe.id);
+        }
+        if (notified.known()) {
+            values.put(ActivityTable.NOTIFIED, notified.id);
         }
         values.put(ActivityTable.UPDATED_DATE, updatedDate);
         if (getId() == 0) {

@@ -50,6 +50,7 @@ public class ProjectionMap {
         MSG.put(ActivityTable.MSG_ID, ActivityTable.MSG_ID);
         MSG.put(ActivityTable.USER_ID, ActivityTable.USER_ID);
         MSG.put(ActivityTable.SUBSCRIBED, ActivityTable.SUBSCRIBED);
+        MSG.put(ActivityTable.NOTIFIED, ActivityTable.NOTIFIED);
         MSG.put(ActivityTable.INS_DATE, ActivityTable.INS_DATE);
         MSG.put(ActivityTable.UPDATED_DATE, ActivityTable.UPDATED_DATE);
 

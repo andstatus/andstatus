@@ -36,6 +36,7 @@ import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
 import java.net.URL;
@@ -211,15 +212,16 @@ public class DemoMessageInserter {
         }
 
         if (activity.type == MbActivityType.ANNOUNCE) {
-            long rebloggerId = MyQuery.conditionToLongColumnValue(ActivityTable.TABLE_NAME,
-                    ActivityTable.ACTOR_ID, "t." + ActivityTable.ACTIVITY_TYPE
-                            + "=" + MbActivityType.ANNOUNCE.id +" AND t." + ActivityTable.MSG_ID + "=" + message.msgId);
-            assertEquals("Reblogger found for " + activity, actor.userId, rebloggerId);
-
-            if (MyContextHolder.get().persistentAccounts().fromUser(actor).isValid()) {
-                assertEquals( "Message is not reblogged by my actor " + activity, 1,
-                        MyQuery.msgIdToLongColumnValue(MsgTable.REBLOGGED, message.msgId));
+            List<MbUser> rebloggers = MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), accountUser.originId, message.msgId);
+            boolean found = false;
+            for (MbUser stargazer : rebloggers) {
+                if (stargazer.userId == actor.userId) {
+                    found = true;
+                    break;
+                }
             }
+            assertTrue("Reblogger is not found among rebloggers: " + activity
+                    + "\nrebloggers: " + rebloggers, found);
         }
 
         if (!message.replies.isEmpty()) {
@@ -255,5 +257,11 @@ public class DemoMessageInserter {
         MbActivity activity = mi.buildActivity(accountUser, body, null, messageOid, messageStatus);
         mi.onActivity(activity);
         return activity;
+    }
+
+    public static void assertNotified(MbActivity activity, TriState notified) {
+        assertEquals("Should" + (notified == TriState.FALSE ? " not" : "")
+                        + " be notified " + activity, notified,
+                TriState.fromId(MyQuery.activityIdToLongColumnValue(ActivityTable.NOTIFIED, activity.getId())));
     }
 }

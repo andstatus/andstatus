@@ -41,8 +41,10 @@ public final class ActivityTable implements BaseColumns {
     /** Inner Activity as Object */
     public static final String OBJ_ACTIVITY_ID = "obj_activity_id";
 
-    /** {@link #ACCOUNT_ID} subscribed to this message or was a "Secondary target audience" */
+    /** {@link #ACCOUNT_ID} is subscribed to this action or was a "Secondary target audience" */
     public static final String SUBSCRIBED = "subscribed";
+    /** {@link #ACCOUNT_ID} should be notified of this action */
+    public static final String NOTIFIED = "notified";
 
     public static final String UPDATED_DATE = "activity_updated_date";
     /**
@@ -79,6 +81,7 @@ public final class ActivityTable implements BaseColumns {
                 + USER_ID + " INTEGER,"
                 + OBJ_ACTIVITY_ID + " INTEGER,"
                 + SUBSCRIBED + " INTEGER DEFAULT 0 NOT NULL,"
+                + NOTIFIED + " INTEGER DEFAULT 0 NOT NULL,"
                 + UPDATED_DATE + " INTEGER,"
                 + INS_DATE + " INTEGER NOT NULL"
                 + ")");

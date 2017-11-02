@@ -188,14 +188,21 @@ public class DemoConversationInserter {
         MbActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7, " + demoData.GLOBAL_PUBLIC_MESSAGE_TEXT
                 + " text", reply7, null);
         addPrivateMessage(reply11, TriState.FALSE);
+        DemoMessageInserter.assertNotified(reply11, TriState.UNKNOWN);
 
-        MbActivity reply13 = buildActivity(accountUser, "My reply to Reply 2", reply2, null);
-        MbActivity reply14 = buildActivity(author3, "Reply to my message 13", reply13, null);
+        MbActivity myReply13 = buildActivity(accountUser, "My reply to Reply 2", reply2, null);
+        MbActivity reply14 = buildActivity(author3, "Reply to my message 13", myReply13, null);
         addActivity(reply14);
 
         MbActivity reblogOf14 = buildActivity(author2, MbActivityType.ANNOUNCE);
-        reblogOf14.setMessage(reply14.getMessage().shallowCopy());
+        reblogOf14.setActivity(reply14);
         addActivity(reblogOf14);
+        DemoMessageInserter.assertNotified(reblogOf14, TriState.TRUE);
+
+        MbActivity reblogOfMy13 = buildActivity(author3, MbActivityType.ANNOUNCE);
+        reblogOfMy13.setActivity(myReply13);
+        addActivity(reblogOfMy13);
+        DemoMessageInserter.assertNotified(reblogOfMy13, TriState.TRUE);
 
         MbActivity mentionOfAuthor3 = buildActivity(reblogger1, "@" + author3.getUserName() + " mention in reply to 4",
                 reply4, iteration == 1 ? demoData.CONVERSATION_MENTION_OF_AUTHOR3_OID : null);
@@ -209,8 +216,11 @@ public class DemoConversationInserter {
         MbUser notLoadedUser = MbUser.fromOriginAndUserOid(accountUser.originId, "acct:notloaded@someother.host"
         + demoData.TEST_ORIGIN_PARENT_HOST);
         notLoaded1.setActor(notLoadedUser);
-        MbActivity reply15 = buildActivity(author4, "Reply to not loaded 1", notLoaded1, null);
+        MbActivity reply15 = buildActivity(author4, "Reply 15 to not loaded 1", notLoaded1, null);
         addActivity(reply15);
+
+        MbActivity reply16 = buildActivity(author2, "Reply 16 to Reply 15", reply15, null);
+        addActivity(reply16);
     }
 
     private MbUser getAuthor1() {

@@ -184,6 +184,7 @@ public class DataUpdaterTest {
 
         assertEquals("Message should be private", TriState.TRUE,
                 TriState.fromId(MyQuery.msgIdToLongColumnValue(MsgTable.PRIVATE, messageId)));
+        DemoMessageInserter.assertNotified(activity, TriState.TRUE);
 
         Audience audience = Audience.fromMsgId(accountUser.originId, messageId);
         assertNotEquals("No recipients for " + activity, 0, audience.getRecipients().size());
@@ -240,6 +241,7 @@ public class DataUpdaterTest {
                 MyQuery.msgIdToLongColumnValue(MsgTable.FAVORITED, messageId));
         assertEquals("Activity is subscribed " + likeActivity, TriState.UNKNOWN,
                 TriState.fromId(MyQuery.activityIdToLongColumnValue(ActivityTable.SUBSCRIBED, likeActivity.getId())));
+        DemoMessageInserter.assertNotified(likeActivity, TriState.UNKNOWN);
         assertEquals("Message is reblogged", 0,
                 MyQuery.msgIdToLongColumnValue(MsgTable.REBLOGGED, messageId));
 
@@ -268,7 +270,7 @@ public class DataUpdaterTest {
             messageFound = true;
             assertEquals("Message is favorited", 0, DbUtils.getLong(cursor, MsgTable.FAVORITED));
             assertEquals("Activity is subscribed", TriState.UNKNOWN,
-                    TriState.fromId(DbUtils.getLong(cursor, ActivityTable.SUBSCRIBED)));
+                    DbUtils.getTriState(cursor, ActivityTable.SUBSCRIBED));
         }
         cursor.close();
         assertTrue("Message is not in Everything timeline, msgId=" + messageId, messageFound);
@@ -324,6 +326,7 @@ public class DataUpdaterTest {
                 MyQuery.msgIdToLongColumnValue(MsgTable.FAVORITED, messageId));
         assertEquals("Activity is subscribed", TriState.UNKNOWN,
                 TriState.fromId(MyQuery.activityIdToLongColumnValue(ActivityTable.SUBSCRIBED, activity.getId())));
+        DemoMessageInserter.assertNotified(activity, TriState.UNKNOWN);
         assertEquals("Message is reblogged", 0,
                 MyQuery.msgIdToLongColumnValue(MsgTable.REBLOGGED, messageId));
         assertEquals("Message stored as loaded", DownloadStatus.LOADED, DownloadStatus.load(
