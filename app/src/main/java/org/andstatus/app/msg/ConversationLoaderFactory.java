@@ -20,6 +20,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.util.TriState;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -32,7 +33,7 @@ public class ConversationLoaderFactory<T extends ConversationItem> {
         // TODO: to clarify...
         boolean recursiveLoader = ma.getOrigin().getOriginType().isDirectMessageAllowsReply();
         if (!recursiveLoader) {
-            recursiveLoader = MyQuery.msgIdToLongColumnValue(MsgTable.PRIVATE, messageId) == 0;
+            recursiveLoader = TriState.fromId(MyQuery.msgIdToLongColumnValue(MsgTable.PRIVATE, messageId)) != TriState.TRUE;
         }
         if (recursiveLoader) {
             return new RecursiveConversationLoader<>(tClass, myContext, ma, messageId, sync);

@@ -43,6 +43,7 @@ import org.andstatus.app.support.java.util.function.Supplier;
 import org.andstatus.app.support.java.util.function.SupplierWithException;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.TriState;
 
 import java.util.List;
 
@@ -394,6 +395,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         MbActivity activity = null;
         String status = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId);
         String oid = getMsgOid(method, msgId, false);
+        TriState isPrivate = TriState.fromId(MyQuery.msgIdToLongColumnValue(MsgTable.PRIVATE, msgId));
         Audience recipients = Audience.fromMsgId(execContext.getMyAccount().getOriginId(), msgId);
         Uri mediaUri = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY).
                 mediaUriToBePosted();
@@ -409,7 +411,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 throw ConnectionException.hardConnectionException(
                         "Wrong message status: " + statusStored, null);
             }
-            if (recipients.isEmpty()) {
+            if (recipients.isEmpty() || isPrivate != TriState.TRUE) {   // TODO: Direct message means 'private'
                 long replyToMsgId = MyQuery.msgIdToLongColumnValue(
                         MsgTable.IN_REPLY_TO_MSG_ID, msgId);
                 String replyToMsgOid = getMsgOid(method, replyToMsgId, false);
