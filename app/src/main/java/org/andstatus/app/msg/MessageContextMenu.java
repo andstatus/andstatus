@@ -90,7 +90,7 @@ public class MessageContextMenu extends MyContextMenu {
                         MessageForAccount msgNew = new MessageForAccount(originId, 0, msgId, ma1);
                         boolean changedToCurrent = !ma1.equals(currentMyAccount) && !myActor.isValid() && ma1.isValid()
                                 && !msgNew.isTiedToThisAccount()
-                                && !menuContainer.getTimeline().getTimelineType().isForUser()
+                                && !menuContainer.getTimeline().getTimelineType().isForAccount()
                                 && currentMyAccount.isValid() && ma1.getOriginId() == currentMyAccount.getOriginId();
                         if (changedToCurrent){
                             msgNew = new MessageForAccount(originId, 0, msgId, currentMyAccount);

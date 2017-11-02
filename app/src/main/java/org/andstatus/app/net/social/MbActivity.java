@@ -408,6 +408,8 @@ public class MbActivity extends AObject {
             insDate = MyLog.uniqueCurrentTimeMS();
             values.put(ActivityTable.INS_DATE, insDate);
         }
-        values.put(ActivityTable.ACTIVITY_OID, timelinePosition.getPosition());
+        if (!timelinePosition.isEmpty()) {
+            values.put(ActivityTable.ACTIVITY_OID, timelinePosition.getPosition());
+        }
     }
 }

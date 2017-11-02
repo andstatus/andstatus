@@ -157,14 +157,17 @@ public class DemoConversationInserter {
         addActivity(reblogOfNewActivity8);
 
         MbActivity reply9 = buildActivity(author2, "Reply 9 to Reply 7", reply7, null);
+        reply9.setSubscribedByMe(TriState.TRUE);
         reply9.getMessage().attachments
                 .add(MbAttachment
                         .fromUrlAndContentType( UrlUtils.fromString(
                                 "http://www.publicdomainpictures.net/pictures/100000/nahled/autumn-tree-in-a-park.jpg"),
                                 MyContentType.IMAGE));
         addActivity(reply9);
-        addActivity(buildActivity(author4, "A duplicate of " + reply9.getMessage().getBody(),
-                null, null));
+        final MbActivity duplicateOfReply9 = buildActivity(author4, "A duplicate of " + reply9.getMessage().getBody(),
+                null, null);
+        duplicateOfReply9.setSubscribedByMe(TriState.TRUE);
+        addActivity(duplicateOfReply9);
 
         MbActivity myLikeOf9 =  MbActivity.from(accountUser, MbActivityType.LIKE) ;
         myLikeOf9.setActor(accountUser);

@@ -201,17 +201,21 @@ public enum TimelineType implements SelectableEnum {
         }
     }
 
+    public boolean isForAccount() {
+        return !isAtOrigin();
+    }
+
     public boolean isForUser() {
         switch (this) {
-            case UNKNOWN:
-            case PUBLIC:
-            case EVERYTHING:
-            case SEARCH:
-            case CONVERSATION:
-            case COMMANDS_QUEUE:
-                return false;
-            default:
+            case USER:
+            case FRIENDS:
+            case FOLLOWERS:
+            case SENT:
+            case MY_FRIENDS:
+            case MY_FOLLOWERS:
                 return true;
+            default:
+                return false;
         }
     }
 

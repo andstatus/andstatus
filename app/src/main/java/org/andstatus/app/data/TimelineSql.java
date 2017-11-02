@@ -142,7 +142,7 @@ public class TimelineSql {
             if (timeline.getTimelineType().isAtOrigin() && !timeline.isCombined()) {
                 activityWhere.append(ActivityTable.ORIGIN_ID + "=" + timeline.getOrigin().getId());
             }
-            if (timeline.getTimelineType().isForUser() && !timeline.isCombined()) {
+            if (timeline.getTimelineType().isForAccount() && !timeline.isCombined()) {
                 activityWhere.append(ActivityTable.ACCOUNT_ID + "=" + timeline.getMyAccount().getUserId());
             }
             String activityTable = "(SELECT "
