@@ -342,12 +342,12 @@ public abstract class LoadableListActivity<T extends ViewItem> extends MyBaseLis
         BaseTimelineAdapter adapter = getListAdapter();
         ListView list = getListView();
         // For a finer position restore see http://stackoverflow.com/questions/3014089/maintain-save-restore-scroll-position-when-returning-to-a-listview?rq=1
-        long itemIdOfListPosition = centralItemId;
+        long itemIdOfAdapterPosition = centralItemId;
         int y = 0;
-        if (list.getChildCount() > 0 && adapter != null) {
-            int firstVisiblePosition = list.getFirstVisiblePosition() + list.getHeaderViewsCount();
-            itemIdOfListPosition = adapter.getItemId(firstVisiblePosition);
-            y = getYOfPosition(list, adapter, firstVisiblePosition);
+        if (list.getChildCount() > list.getHeaderViewsCount() + list.getFooterViewsCount() && adapter != null) {
+            int firstVisibleAdapterPosition = list.getFirstVisiblePosition() - list.getHeaderViewsCount();
+            itemIdOfAdapterPosition = adapter.getItemId(firstVisibleAdapterPosition);
+            y = getYOfPosition(list, adapter, firstVisibleAdapterPosition);
         }
 
         if (!TriState.UNKNOWN.equals(collapseDuplicates)) {
@@ -356,7 +356,7 @@ public abstract class LoadableListActivity<T extends ViewItem> extends MyBaseLis
 
         if (newAdapter) {
             adapter = newListAdapter();
-            verboseListPositionLog(method, "Before setting new adapter");
+            verboseListPositionLog(method, "Before setting new adapter", itemIdOfAdapterPosition);
             setListAdapter(adapter);
         } else if (adapter != null) {
             adapter.notifyDataSetChanged();
@@ -364,26 +364,32 @@ public abstract class LoadableListActivity<T extends ViewItem> extends MyBaseLis
 
         if (adapter != null) {
             boolean positionRestored = false;
-            if (itemIdOfListPosition >= 0) {
-                int firstListPosition = adapter.getPositionById(itemIdOfListPosition);
-                if (firstListPosition >= 0) {
-                    list.setSelectionFromTop(firstListPosition + list.getHeaderViewsCount(), y);
+            if (itemIdOfAdapterPosition >= 0) {
+                int firstVisibleAdapterPosition = adapter.getPositionById(itemIdOfAdapterPosition);
+                if (firstVisibleAdapterPosition >= 0) {
+                    list.setSelectionFromTop(firstVisibleAdapterPosition + list.getHeaderViewsCount(), y);
                     positionRestored = true;
-                    verboseListPositionLog(method, "After setting position:" + firstListPosition);
+                    verboseListPositionLog(method, "After setting position: " + firstVisibleAdapterPosition,
+                            itemIdOfAdapterPosition);
                 }
             }
             adapter.setPositionRestored(positionRestored);
         }
     }
 
-    protected void verboseListPositionLog(String method, String description) {
+    protected void verboseListPositionLog(String method, String description, long itemId) {
         if (MyLog.isVerboseEnabled()) {
-            int firstVisiblePosition = getListView().getFirstVisiblePosition();
-            MyLog.d(this, method + "; " + description +
-                    ", adapter count:" + (getListAdapter() == null ? "(no adapter)" : getListAdapter().getCount()) +
-                    ", items:" + getListView().getChildCount() +
-                    ", first position:" + firstVisiblePosition +
-                    ", itemId:" + (getListAdapter() == null ? "(no adapter)" : getListAdapter().getItemId(firstVisiblePosition))
+            int firstVisibleAdapterPosition = getListView().getFirstVisiblePosition() - getListView().getHeaderViewsCount();
+            MyLog.d(this, method + "; " + description
+                    + ", adapter count:" + (getListAdapter() == null ? "(no adapter)" : getListAdapter().getCount())
+                    + ", list items:" + getListView().getChildCount()
+                    + (itemId != 0 ? ", itemId:" + itemId
+                        + " -> first position:" + (getListAdapter() == null ? "(no adapter)"
+                            : getListAdapter().getPositionById(itemId))
+                        : ", first position:" + firstVisibleAdapterPosition
+                        + " -> itemId:" + (getListAdapter() == null ? "(no adapter)"
+                            : getListAdapter().getItemId(firstVisibleAdapterPosition))
+                    )
             );
         }
     }

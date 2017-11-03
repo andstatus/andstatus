@@ -44,6 +44,7 @@ import java.io.Writer;
 import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -83,7 +84,8 @@ public class MyLog {
     public static final int WARN = Log.WARN;
     public static final int INFO = Log.INFO;
     private static final int IGNORED = VERBOSE - 1;
-    
+    private static final SimpleDateFormat logDateFormat = new SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.US);
+
     private static Object lock = new Object();
     @GuardedBy("lock")
     private static volatile boolean initialized = false;
@@ -93,7 +95,7 @@ public class MyLog {
      */
     private static volatile int minLogLevel = VERBOSE;
 
-    private static Object logFileLock = new Object();
+    private final static Object logFileLock = new Object();
     @GuardedBy("logFileLock")
     private static String logFileName = null;
 
@@ -516,7 +518,7 @@ public class MyLog {
             return;
         }
         StringBuilder builder = new StringBuilder();
-        builder.append(currentDateTimeFormatted());
+        builder.append(currentDateTimeForLogLine());
         builder.append(" ");
         builder.append(logLevelToString(logLevel));
         builder.append("/");
@@ -574,14 +576,13 @@ public class MyLog {
                 return Integer.toString(logLevel);
         }
     }
-    
+
+    private static String currentDateTimeForLogLine() {
+        return logDateFormat.format(new Date(System.currentTimeMillis()));
+    }
+
     public static String currentDateTimeFormatted() {
-        String strTime = DateFormat.format("yyyy-MM-dd-HH-mm-ss", new Date(System.currentTimeMillis())).toString();
-        if (strTime.contains("HH")) {
-            // see http://stackoverflow.com/questions/16763968/android-text-format-dateformat-hh-is-not-recognized-like-with-java-text-simple
-            strTime = DateFormat.format("yyyy-MM-dd-kk-mm-ss", new Date(System.currentTimeMillis())).toString();
-        }
-        return strTime;
+        return DateFormat.format("yyyy-MM-dd-HH-mm-ss", new Date(System.currentTimeMillis())).toString();
     }
 
     public static String trimmedString(String input, int maxLength) {

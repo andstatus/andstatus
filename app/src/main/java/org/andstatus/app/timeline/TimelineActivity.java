@@ -814,7 +814,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
     @Override
     public void onLoadFinished(boolean keepCurrentPosition_in) {
         final String method = "onLoadFinished";
-        verboseListPositionLog(method, "started");
+        verboseListPositionLog(method, "started", 0);
         TimelineData<T> dataLoaded = setAndGetListData(((TimelineLoader<T>) getLoaded()).getPage());
         MyLog.v(this, method + "; " + dataLoaded.params.toSummary());
 
@@ -944,18 +944,8 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
         if (!timeline.isSyncable() || !timeline.isTimeToAutoSync() || !ma.isValidAndSucceeded()) {
             return;
         }
-        boolean isFirstAccountSync = timeline.getTimelineType().equals(TimelineType.HOME)
-                && timeline.getOldestSyncedDate() == 0;
         timeline.setSyncSucceededDate(System.currentTimeMillis()); // To avoid repetition
         syncWithInternet(timeline, true, false);
-        if (isFirstAccountSync) {
-            MyLog.i(this, "First time sync for " + ma.getAccountName());
-            ma.requestSync();
-            for (CommandEnum command : new CommandEnum[]{CommandEnum.GET_FRIENDS, CommandEnum.GET_FOLLOWERS}) {
-                MyServiceManager.sendCommand(
-                        CommandData.newUserCommand(command, ma, ma.getOrigin(), ma.getUserId(), ma.getUsername()));
-            }
-        }
     }
 
     protected void syncWithInternet(Timeline timelineToSync, boolean syncYounger, boolean manuallyLaunched) {

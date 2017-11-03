@@ -23,6 +23,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.junit.Before;
 import org.junit.Test;
@@ -117,18 +118,36 @@ public class CommandDataTest {
     @Test
     public void testPriority() {
         Queue<CommandData> queue = new PriorityBlockingQueue<>(100);
-        queue.add(CommandData.newSearch(SearchObjects.MESSAGES,
-                MyContextHolder.get(), demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME).getOrigin(), "q1"));
+        final MyAccount ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        queue.add(CommandData.newCommand(CommandEnum.GET_FRIENDS));
+        queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.USER, ma.getUserId(), ma.getOrigin()));
+        queue.add(CommandData.newSearch(SearchObjects.MESSAGES, MyContextHolder.get(), ma.getOrigin(), "q1"));
         queue.add(CommandData.newUpdateStatus(null, 2));
-        queue.add(CommandData.newCommand(CommandEnum.GET_TIMELINE));
+        queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.MENTIONS));
         queue.add(CommandData.newUpdateStatus(null, 3));
+        queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME).setInForeground(true));
         queue.add(CommandData.newCommand(CommandEnum.GET_STATUS));
-        
-        assertEquals(CommandEnum.UPDATE_STATUS, queue.poll().getCommand());
-        assertEquals(CommandEnum.UPDATE_STATUS, queue.poll().getCommand());
-        assertEquals(CommandEnum.GET_STATUS, queue.poll().getCommand());
-        assertEquals(CommandEnum.GET_TIMELINE, queue.poll().getCommand());
-        assertEquals(CommandEnum.GET_TIMELINE, queue.poll().getCommand());
+
+        assertCommand(queue, CommandEnum.GET_TIMELINE, TimelineType.HOME);
+        assertCommand(queue, CommandEnum.UPDATE_STATUS);
+        assertCommand(queue, CommandEnum.UPDATE_STATUS);
+        assertCommand(queue, CommandEnum.GET_FRIENDS);
+        assertCommand(queue, CommandEnum.GET_STATUS);
+        assertCommand(queue, CommandEnum.GET_TIMELINE, TimelineType.SENT);
+        assertCommand(queue, CommandEnum.GET_TIMELINE, TimelineType.SEARCH);
+        assertCommand(queue, CommandEnum.GET_TIMELINE, TimelineType.MENTIONS);
+    }
+
+    private void assertCommand(Queue<CommandData> queue, CommandEnum commandEnum) {
+        assertCommand(queue, commandEnum, TimelineType.UNKNOWN);
+    }
+
+    private void assertCommand(Queue<CommandData> queue, CommandEnum commandEnum, TimelineType timelineType) {
+        final CommandData commandData = queue.poll();
+        assertEquals(commandData.toString(), commandEnum, commandData.getCommand());
+        if (timelineType != TimelineType.UNKNOWN) {
+            assertEquals(commandData.toString(), timelineType, commandData.getTimelineType());
+        }
     }
 
     @Test

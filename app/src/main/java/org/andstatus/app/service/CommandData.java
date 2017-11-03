@@ -334,16 +334,16 @@ public class CommandData implements Comparable<CommandData> {
 
     @Override
     public int compareTo(@NonNull CommandData another) {
-        if (another == null) {
-            return 0;
-        }
         int greater;
-        if (this.commandId == another.commandId) {
+        if (isInForeground() != another.isInForeground()) {
+            return isInForeground() ? -1 : 1;
+        }
+        if (commandId == another.commandId) {
             return 0;
-        } else if (another.command.getPriority() == this.command.getPriority()) {
-            greater = this.commandId > another.commandId ? 1 : -1;
+        } else if (command.getPriority() == another.command.getPriority()) {
+            greater = commandId > another.commandId ? 1 : -1;
         } else {
-            greater = this.command.getPriority() > another.command.getPriority() ? 1 : -1;
+            greater = command.getPriority() > another.command.getPriority() ? 1 : -1;
         }
         return greater;
     }

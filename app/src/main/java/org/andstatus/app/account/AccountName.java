@@ -147,7 +147,7 @@ public class AccountName {
     }
 
     public String getLogName() {
-        return toString().replace("@", "-").replace(ORIGIN_SEPARATOR, "-");
+        return getName().replace("@", "-").replace(ORIGIN_SEPARATOR, "-");
     }
 
     @Override
