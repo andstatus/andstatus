@@ -33,7 +33,7 @@ public class ConversationLoaderFactory<T extends ConversationItem> {
         // TODO: to clarify...
         boolean recursiveLoader = ma.getOrigin().getOriginType().isDirectMessageAllowsReply();
         if (!recursiveLoader) {
-            recursiveLoader = TriState.fromId(MyQuery.msgIdToLongColumnValue(MsgTable.PRIVATE, messageId)) != TriState.TRUE;
+            recursiveLoader = MyQuery.msgIdToTriState(MsgTable.PRIVATE, messageId) != TriState.TRUE;
         }
         if (recursiveLoader) {
             return new RecursiveConversationLoader<>(tClass, myContext, ma, messageId, sync);

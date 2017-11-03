@@ -395,7 +395,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         MbActivity activity = null;
         String status = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId);
         String oid = getMsgOid(method, msgId, false);
-        TriState isPrivate = TriState.fromId(MyQuery.msgIdToLongColumnValue(MsgTable.PRIVATE, msgId));
+        TriState isPrivate = MyQuery.msgIdToTriState(MsgTable.PRIVATE, msgId);
         Audience recipients = Audience.fromMsgId(execContext.getMyAccount().getOriginId(), msgId);
         Uri mediaUri = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY).
                 mediaUriToBePosted();

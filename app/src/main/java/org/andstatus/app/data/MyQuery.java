@@ -553,6 +553,10 @@ public class MyQuery {
         return msgIdToLongColumnValue(MsgTable.ORIGIN_ID, systemId);
     }
 
+    public static TriState activityIdToTriState(String columnName, long systemId) {
+        return TriState.fromId(activityIdToLongColumnValue(columnName, systemId));
+    }
+
     /**
      * Convenience method to get column value from {@link ActivityTable} table
      * @param columnName without table name
@@ -561,6 +565,10 @@ public class MyQuery {
      */
     public static long activityIdToLongColumnValue(String columnName, long systemId) {
         return idToLongColumnValue(null, ActivityTable.TABLE_NAME, columnName, systemId);
+    }
+
+    public static TriState msgIdToTriState(String columnName, long systemId) {
+        return TriState.fromId(msgIdToLongColumnValue(columnName, systemId));
     }
 
     /**

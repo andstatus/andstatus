@@ -183,7 +183,7 @@ public class DataUpdaterTest {
         assertNotEquals("Activity added", 0, activity.getId());
 
         assertEquals("Message should be private", TriState.TRUE,
-                TriState.fromId(MyQuery.msgIdToLongColumnValue(MsgTable.PRIVATE, messageId)));
+                MyQuery.msgIdToTriState(MsgTable.PRIVATE, messageId));
         DemoMessageInserter.assertNotified(activity, TriState.TRUE);
 
         Audience audience = Audience.fromMsgId(accountUser.originId, messageId);
@@ -238,12 +238,12 @@ public class DataUpdaterTest {
         assertEquals("Message is not favorited by " + otherUser + ": " + stargazers,
                 true, favoritedByOtherUser);
         assertNotEquals("Message is favorited (by some my account)", TriState.TRUE,
-                TriState.fromId(MyQuery.msgIdToLongColumnValue(MsgTable.FAVORITED, messageId)));
+                MyQuery.msgIdToTriState(MsgTable.FAVORITED, messageId));
         assertEquals("Activity is subscribed " + likeActivity, TriState.UNKNOWN,
-                TriState.fromId(MyQuery.activityIdToLongColumnValue(ActivityTable.SUBSCRIBED, likeActivity.getId())));
+                MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, likeActivity.getId()));
         DemoMessageInserter.assertNotified(likeActivity, TriState.UNKNOWN);
         assertEquals("Message is reblogged", TriState.UNKNOWN,
-                TriState.fromId(MyQuery.msgIdToLongColumnValue(MsgTable.REBLOGGED, messageId)));
+                MyQuery.msgIdToTriState(MsgTable.REBLOGGED, messageId));
 
         // TODO: Below is actually a timeline query test, so maybe expand / move...
         Uri contentUri = MatchedUri.getTimelineUri(
@@ -333,13 +333,13 @@ public class DataUpdaterTest {
                             + stargazers + "\n" + activity,
                     true, favoritedByMe);
             assertEquals("Message should be favorited (by some my account) " + activity, TriState.TRUE,
-                    TriState.fromId(MyQuery.msgIdToLongColumnValue(MsgTable.FAVORITED, messageId)));
+                    MyQuery.msgIdToTriState(MsgTable.FAVORITED, messageId));
         }
         assertEquals("Activity is subscribed", TriState.UNKNOWN,
-                TriState.fromId(MyQuery.activityIdToLongColumnValue(ActivityTable.SUBSCRIBED, activity.getId())));
+                MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, activity.getId()));
         DemoMessageInserter.assertNotified(activity, TriState.UNKNOWN);
         assertEquals("Message is reblogged", TriState.UNKNOWN,
-                TriState.fromId(MyQuery.msgIdToLongColumnValue(MsgTable.REBLOGGED, messageId)));
+                MyQuery.msgIdToTriState(MsgTable.REBLOGGED, messageId));
         assertEquals("Message stored as loaded", DownloadStatus.LOADED, DownloadStatus.load(
                 MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, messageId)));
 

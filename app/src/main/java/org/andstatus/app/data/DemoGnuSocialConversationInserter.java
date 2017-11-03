@@ -125,11 +125,9 @@ public class DemoGnuSocialConversationInserter {
     private void addPrivateMessage(MbActivity activity, TriState isPrivate) {
         activity.getMessage().setPrivate(isPrivate);
         addActivity(activity);
-        TriState storedPrivate = TriState.fromId(MyQuery.msgIdToLongColumnValue(MsgTable.PRIVATE,
-                activity.getMessage().msgId));
         assertEquals("Message is " + (isPrivate.equals(TriState.TRUE) ? "private" :
                         isPrivate.equals(TriState.FALSE) ? "non private" : "") + ": " + activity.getMessage().getBody(),
-                isPrivate, storedPrivate);
+                isPrivate, MyQuery.msgIdToTriState(MsgTable.PRIVATE, activity.getMessage().msgId));
     }
 
     private MbUser userFromOidAndAvatar(String userOid, @Nullable String avatarUrl) {

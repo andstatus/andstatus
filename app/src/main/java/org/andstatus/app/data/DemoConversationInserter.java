@@ -106,7 +106,7 @@ public class DemoConversationInserter {
         addPrivateMessage(reply2, TriState.TRUE);
         if (iteration == 1) {
             assertEquals("Should be subscribed " + selected, TriState.TRUE,
-                    TriState.fromId(MyQuery.activityIdToLongColumnValue(ActivityTable.SUBSCRIBED, selected.getId())));
+                    MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, selected.getId()));
         }
 
         MbActivity reply3 = buildActivity(getAuthor1(), "Reply 3 to selected by the same author", selected, null);
@@ -232,8 +232,7 @@ public class DemoConversationInserter {
     private void addPrivateMessage(MbActivity activity, TriState isPrivate) {
         activity.getMessage().setPrivate(isPrivate);
         addActivity(activity);
-        TriState storedPrivate = TriState.fromId(
-                MyQuery.msgIdToLongColumnValue(MsgTable.PRIVATE, activity.getMessage().msgId));
+        TriState storedPrivate = MyQuery.msgIdToTriState(MsgTable.PRIVATE, activity.getMessage().msgId);
         assertEquals("Message is " + (isPrivate.equals(TriState.TRUE) ? "private" :
                         isPrivate.equals(TriState.FALSE) ? "non private" : "") + ": " + activity.getMessage().getBody(),
                 isPrivate, storedPrivate);

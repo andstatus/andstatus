@@ -260,8 +260,8 @@ public class DemoMessageInserter {
     }
 
     public static void assertNotified(MbActivity activity, TriState notified) {
-        assertEquals("Should" + (notified == TriState.FALSE ? " not" : "")
-                        + " be notified " + activity, notified,
-                TriState.fromId(MyQuery.activityIdToLongColumnValue(ActivityTable.NOTIFIED, activity.getId())));
+        assertEquals("Should" + (notified == TriState.FALSE ? " not" : "") + " be notified " + activity,
+                notified,
+                MyQuery.activityIdToTriState(ActivityTable.NOTIFIED, activity.getId()));
     }
 }

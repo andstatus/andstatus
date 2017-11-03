@@ -162,9 +162,9 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
                 assertTrue("Message #" + viewItem.getId() + " '" + viewItem.getBody()
                                 + "' contains '" + publicMessageText + "'\n" + viewItem,
                         String.valueOf(viewItem.getBody()).contains(publicMessageText));
-                TriState storedPrivate = TriState.fromId(MyQuery.msgIdToLongColumnValue(MsgTable.PRIVATE, viewItem.getId()));
                 assertNotEquals("Message #" + viewItem.getId() + " '" + viewItem.getBody()
-                        + "' is private" + "\n" + viewItem, TriState.TRUE, storedPrivate);
+                        + "' is private" + "\n" + viewItem, TriState.TRUE,
+                        MyQuery.msgIdToTriState(MsgTable.PRIVATE, viewItem.getId()));
                 msgCount++;
             }
         }
