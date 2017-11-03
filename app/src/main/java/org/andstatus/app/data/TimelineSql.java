@@ -122,6 +122,9 @@ public class TimelineSql {
             case MENTIONS:
                 msgWhere.append(MsgTable.MENTIONED + "=" + TriState.TRUE.id);
                 break;
+            case PUBLIC:
+                msgWhere.append(MsgTable.PRIVATE + "!=" + TriState.TRUE.id);
+                break;
             case DRAFTS:
                 msgWhere.append(MsgTable.MSG_STATUS + "=" + DownloadStatus.DRAFT.save());
                 break;

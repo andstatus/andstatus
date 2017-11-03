@@ -220,7 +220,7 @@ public class MbUser implements Comparable<MbUser> {
         return 31 * result + getUserName().hashCode();
     }
 
-    public boolean isSameUser(MbUser that) {
+    public boolean isSameActor(MbUser that) {
         if (this == that) return true;
         if (that == null) return false;
         if (userId != 0 && that.userId != 0) {

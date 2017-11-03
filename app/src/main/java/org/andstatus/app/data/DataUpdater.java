@@ -122,6 +122,11 @@ public class DataUpdater {
     }
 
     private void updateMessage(@NonNull MbActivity activity, boolean updateUsers) {
+        updateMessage1(activity, updateUsers);
+        DataUpdater.onActivities(execContext, activity.getMessage().replies);
+    }
+
+    private void updateMessage1(@NonNull MbActivity activity, boolean updateUsers) {
         final String method = "updateMessage";
         final MbMessage message = activity.getMessage();
         try {
@@ -259,8 +264,6 @@ public class DataUpdater {
             if ( !activity.isAuthorActor()) {
                 lum.onNewUserMsg(new UserMsg(activity.getAuthor().userId, activity.getId(), activity.getUpdatedDate()));
             }
-
-            DataUpdater.onActivities(execContext, message.replies);
         } catch (Exception e) {
             MyLog.e(this, method, e);
         }

@@ -237,13 +237,13 @@ public class DataUpdaterTest {
         }
         assertEquals("Message is not favorited by " + otherUser + ": " + stargazers,
                 true, favoritedByOtherUser);
-        assertEquals("Message is favorited (by some my account)", 0,
-                MyQuery.msgIdToLongColumnValue(MsgTable.FAVORITED, messageId));
+        assertNotEquals("Message is favorited (by some my account)", TriState.TRUE,
+                TriState.fromId(MyQuery.msgIdToLongColumnValue(MsgTable.FAVORITED, messageId)));
         assertEquals("Activity is subscribed " + likeActivity, TriState.UNKNOWN,
                 TriState.fromId(MyQuery.activityIdToLongColumnValue(ActivityTable.SUBSCRIBED, likeActivity.getId())));
         DemoMessageInserter.assertNotified(likeActivity, TriState.UNKNOWN);
-        assertEquals("Message is reblogged", 0,
-                MyQuery.msgIdToLongColumnValue(MsgTable.REBLOGGED, messageId));
+        assertEquals("Message is reblogged", TriState.UNKNOWN,
+                TriState.fromId(MyQuery.msgIdToLongColumnValue(MsgTable.REBLOGGED, messageId)));
 
         // TODO: Below is actually a timeline query test, so maybe expand / move...
         Uri contentUri = MatchedUri.getTimelineUri(
@@ -268,8 +268,8 @@ public class DataUpdaterTest {
         while (cursor.moveToNext()) {
             assertEquals("Message with other id returned", messageId, DbUtils.getLong(cursor, MsgTable.MSG_ID));
             messageFound = true;
-            assertEquals("Message is favorited", 0, DbUtils.getLong(cursor, MsgTable.FAVORITED));
-            assertEquals("Activity is subscribed", TriState.UNKNOWN,
+            assertNotEquals("Message is favorited", TriState.TRUE, DbUtils.getTriState(cursor, MsgTable.FAVORITED));
+            assertNotEquals("Activity is subscribed", TriState.TRUE,
                     DbUtils.getTriState(cursor, ActivityTable.SUBSCRIBED));
         }
         cursor.close();
@@ -278,7 +278,13 @@ public class DataUpdaterTest {
     }
 
     @Test
-    public void testReplyMessageFavoritedByAccountUser() throws ConnectionException {
+    public void testReplyMessageFavoritedByMyActor() throws ConnectionException {
+        oneReplyMessageFavoritedByMyActor("_it1", true);
+        oneReplyMessageFavoritedByMyActor("_it2", false);
+        oneReplyMessageFavoritedByMyActor("_it2", true);
+    }
+
+    private void oneReplyMessageFavoritedByMyActor(String iterationId, boolean favorited) {
         MyAccount ma = demoData.getConversationMyAccount();
         MbUser accountUser = ma.toPartialUser();
 
@@ -287,27 +293,29 @@ public class DataUpdaterTest {
         author.setUserName(authorUserName);
 
         MbActivity activity = MbActivity.newPartialMessage(accountUser,
-                "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123" + demoData.TESTRUN_UID,
+                "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123" + iterationId + demoData.TESTRUN_UID,
                 13312795000L, DownloadStatus.LOADED);
         activity.setActor(author);
         MbMessage message = activity.getMessage();
-        message.setBody("The test message by Example from the http://pumpity.net");
+        message.setBody("The test message by Example from the http://pumpity.net " +  iterationId);
         message.via = "UnknownClient";
-        message.addFavoriteBy(accountUser, TriState.TRUE);
+        if (favorited) message.addFavoriteBy(accountUser, TriState.TRUE);
 
-        String inReplyToOid = "https://identi.ca/api/comment/dfjklzdfSf28skdkfgloxWB"  + demoData.TESTRUN_UID;
+        String inReplyToOid = "https://identi.ca/api/comment/dfjklzdfSf28skdkfgloxWB" + iterationId  + demoData.TESTRUN_UID;
         MbActivity inReplyTo = MbActivity.newPartialMessage(accountUser, inReplyToOid,
                 0, DownloadStatus.UNKNOWN);
         inReplyTo.setActor(MbUser.fromOriginAndUserOid(accountUser.originId,
-                "irtUser" + demoData.TESTRUN_UID).setUserName("irt" + authorUserName));
+                "irtUser" +  iterationId + demoData.TESTRUN_UID).setUserName("irt" + authorUserName +  iterationId));
         message.setInReplyTo(inReplyTo);
 
         DataUpdater di = new DataUpdater(ma);
         long messageId = di.onActivity(activity).getMessage().msgId;
         assertNotEquals("Message added " + activity.getMessage(), 0, messageId);
         assertNotEquals("Activity added " + accountUser, 0, activity.getId());
-        assertNotEquals("In reply to message added " + inReplyTo.getMessage(), 0, inReplyTo.getMessage().msgId);
-        assertNotEquals("In reply to activity added " + inReplyTo, 0, inReplyTo.getId());
+        if (!favorited) {
+            assertNotEquals("In reply to message added " + inReplyTo.getMessage(), 0, inReplyTo.getMessage().msgId);
+            assertNotEquals("In reply to activity added " + inReplyTo, 0, inReplyTo.getId());
+        }
 
         List<MbUser> stargazers = MyQuery.getStargazers(myContext.getDatabase(), accountUser.originId, message.msgId);
         boolean favoritedByMe = false;
@@ -320,15 +328,18 @@ public class DataUpdaterTest {
                 fail("Message is favorited by unexpected user " + user + " - " + message);
             }
         }
-        assertEquals("Message " + message.msgId + " is not favorited by " + accountUser + ": " + stargazers,
-                true, favoritedByMe);
-        assertEquals("Message is favorited (by some my account)", 0,
-                MyQuery.msgIdToLongColumnValue(MsgTable.FAVORITED, messageId));
+        if (favorited) {
+            assertEquals("Message " + message.msgId + " is not favorited by " + accountUser + ": "
+                            + stargazers + "\n" + activity,
+                    true, favoritedByMe);
+            assertEquals("Message should be favorited (by some my account) " + activity, TriState.TRUE,
+                    TriState.fromId(MyQuery.msgIdToLongColumnValue(MsgTable.FAVORITED, messageId)));
+        }
         assertEquals("Activity is subscribed", TriState.UNKNOWN,
                 TriState.fromId(MyQuery.activityIdToLongColumnValue(ActivityTable.SUBSCRIBED, activity.getId())));
         DemoMessageInserter.assertNotified(activity, TriState.UNKNOWN);
-        assertEquals("Message is reblogged", 0,
-                MyQuery.msgIdToLongColumnValue(MsgTable.REBLOGGED, messageId));
+        assertEquals("Message is reblogged", TriState.UNKNOWN,
+                TriState.fromId(MyQuery.msgIdToLongColumnValue(MsgTable.REBLOGGED, messageId)));
         assertEquals("Message stored as loaded", DownloadStatus.LOADED, DownloadStatus.load(
                 MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, messageId)));
 

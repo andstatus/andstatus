@@ -80,8 +80,8 @@ public final class ActivityTable implements BaseColumns {
                 + MSG_ID + " INTEGER,"
                 + USER_ID + " INTEGER,"
                 + OBJ_ACTIVITY_ID + " INTEGER,"
-                + SUBSCRIBED + " INTEGER DEFAULT 0 NOT NULL,"
-                + NOTIFIED + " INTEGER DEFAULT 0 NOT NULL,"
+                + SUBSCRIBED + " INTEGER NOT NULL DEFAULT 0,"
+                + NOTIFIED + " INTEGER NOT NULL DEFAULT 0,"
                 + UPDATED_DATE + " INTEGER,"
                 + INS_DATE + " INTEGER NOT NULL"
                 + ")");

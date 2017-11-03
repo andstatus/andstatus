@@ -32,6 +32,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.TriState;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -73,7 +74,8 @@ public class DataPruner {
                 .getDefaultSharedPreferences();
 
         // Don't delete messages, which were favorited by any my account
-        String sqlNotFavoritedOrRebloggedMessage = MsgTable.FAVORITED + "=0 AND " + MsgTable.REBLOGGED + "=0";
+        String sqlNotFavoritedOrRebloggedMessage = MsgTable.FAVORITED + "!=" + TriState.TRUE.id
+                + " AND " + MsgTable.REBLOGGED + "!=" + TriState.TRUE.id;
         String sqlNotLatestMessageByFollowedUser = MsgTable.TABLE_NAME + "." + MsgTable._ID + " NOT IN("
                 + "SELECT " + UserTable.USER_ACTIVITY_ID
                 + " FROM " + UserTable.TABLE_NAME + " AS userf"

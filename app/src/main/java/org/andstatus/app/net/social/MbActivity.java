@@ -117,7 +117,7 @@ public class MbActivity extends AObject {
     }
 
     public boolean isAuthorActor() {
-        return getActor().isSameUser(getAuthor());
+        return getActor().isSameActor(getAuthor());
     }
 
     @NonNull
@@ -143,11 +143,11 @@ public class MbActivity extends AObject {
     }
 
     public boolean isActorMe() {
-        return getActor().isSameUser(accountUser);
+        return getActor().isSameActor(accountUser);
     }
 
     public boolean isAuthorMe() {
-        return getAuthor().isSameUser(accountUser);
+        return getAuthor().isSameActor(accountUser);
     }
 
     @NonNull
@@ -183,8 +183,9 @@ public class MbActivity extends AObject {
     private String getTempPositionString() {
         return MbUser.TEMP_OID_PREFIX
                 + (StringUtils.nonEmpty(actor.oid) ?  actor.oid + "-" : "")
-                + type.name().toLowerCase() + "-" + (StringUtils.nonEmpty(getMessage().oid)
-                ? getMessage().oid + "-" + MyLog.formatDateTime(updatedDate) : MyLog.uniqueDateTimeFormatted());
+                + type.name().toLowerCase() + "-"
+                + (StringUtils.nonEmpty(getMessage().oid) ? getMessage().oid + "-" : "")
+                + MyLog.uniqueDateTimeFormatted();
     }
 
     public long getUpdatedDate() {
@@ -201,7 +202,7 @@ public class MbActivity extends AObject {
             return mbMessage;
         }
         /* Referring to the nested message allows to implement an activity, which has both Actor and Author.
-            Author is Actor of the nested message.
+            Actor of the nested message is an Author.
             In a database we will have 2 activities: one for each actor! */
         switch (type) {
             case ANNOUNCE:
@@ -308,10 +309,26 @@ public class MbActivity extends AObject {
     }
     
     public long save(MyContext myContext) {
-        if (wontSave()) {
-            MyLog.v(this, "Won't save " + this);
-            return id;
+        if (wontSave(myContext)) return id;
+        calculateIsNotified(myContext);
+        if (getId() == 0) {
+            id = DbUtils.addRowWithRetry(myContext, ActivityTable.TABLE_NAME, toContentValues(), 3);
+            MyLog.v(this, "Added " + this);
+        } else {
+            DbUtils.updateRowWithRetry(myContext, ActivityTable.TABLE_NAME, getId(), toContentValues(), 3);
+            MyLog.v(this, "Updated " + this);
         }
+        afterSave(myContext);
+        return id;
+    }
+
+    private boolean wontSave(MyContext myContext) {
+        if (isEmpty() || (type.equals(MbActivityType.UPDATE) && getObjectType().equals(MbObjectType.USER))
+                || (timelinePosition.isEmpty() && getId() != 0)) {
+            MyLog.v(this, "Won't save " + this);
+            return true;
+        }
+
         if (MyAsyncTask.isUiThread()) {
             throw new IllegalStateException("Saving activity on the Main thread " + toString());
         }
@@ -329,7 +346,7 @@ public class MbActivity extends AObject {
                     myContext.getDatabase(), ActivityTable.TABLE_NAME, ActivityTable.UPDATED_DATE, id);
             if (updatedDate <= storedUpdatedDate) {
                 MyLog.v(this, "Skipped as not younger " + this);
-                return getId();
+                return true;
             }
             switch (type) {
                 case LIKE:
@@ -337,16 +354,10 @@ public class MbActivity extends AObject {
                     final Pair<Long, MbActivityType> favAndType = MyQuery.msgIdToLastFavoriting(myContext.getDatabase(),
                             getMessage().msgId, accountUser.userId);
                     if ((favAndType.second.equals(MbActivityType.LIKE) && type == MbActivityType.LIKE)
-                            || (favAndType.second.equals(MbActivityType.UNDO_LIKE) &&  type == MbActivityType.UNDO_LIKE)
+                            || (favAndType.second.equals(MbActivityType.UNDO_LIKE) && type == MbActivityType.UNDO_LIKE)
                             ) {
                         MyLog.v(this, "Skipped as already " + type.name() + " " + this);
-                        return id;
-                    }
-                    final MyAccount myActorAccount = myContext.persistentAccounts().fromUser(actor);
-                    if (myActorAccount.isValid()) {
-                        MyLog.v(this, myActorAccount + " " + type
-                                + " '" + getMessage().oid + "' " + I18n.trimTextAt(getMessage().getBody(), 80));
-                        MyProvider.updateMessageFavorited(myContext, accountUser.originId, getMessage().msgId);
+                        return true;
                     }
                     break;
                 case ANNOUNCE:
@@ -354,10 +365,10 @@ public class MbActivity extends AObject {
                     final Pair<Long, MbActivityType> reblAndType = MyQuery.msgIdToLastReblogging(myContext.getDatabase(),
                             getMessage().msgId, accountUser.userId);
                     if ((reblAndType.second.equals(MbActivityType.ANNOUNCE) && type == MbActivityType.ANNOUNCE)
-                            || (reblAndType.second.equals(MbActivityType.UNDO_ANNOUNCE) &&  type == MbActivityType.UNDO_ANNOUNCE)
+                            || (reblAndType.second.equals(MbActivityType.UNDO_ANNOUNCE) && type == MbActivityType.UNDO_ANNOUNCE)
                             ) {
                         MyLog.v(this, "Skipped as already " + type.name() + " " + this);
-                        return id;
+                        return true;
                     }
                     break;
                 default:
@@ -365,30 +376,10 @@ public class MbActivity extends AObject {
             }
             if (timelinePosition.isTemp()) {
                 MyLog.v(this, "Skipped as temp oid " + this);
-                return id;
+                return true;
             }
         }
-        calculateIsNotified(myContext);
-        ContentValues contentValues = new ContentValues();
-        toContentValues(contentValues);
-        if (getId() == 0) {
-            id = DbUtils.addRowWithRetry(myContext, ActivityTable.TABLE_NAME, contentValues, 3);
-            MyLog.v(this, "Added " + this);
-        } else {
-            DbUtils.updateRowWithRetry(myContext, ActivityTable.TABLE_NAME, getId(), contentValues, 3);
-            MyLog.v(this, "Updated " + this);
-        }
-        return id;
-    }
-
-    private void calculateIsNotified(MyContext myContext) {
-        if (isNotified().known() || getUpdatedDate() < 1 || isActorMe()) return;
-        if ( isAuthorMe()
-                || getMessage().audience().hasMyAccount(myContext)
-                || getUser().isSameUser(accountUser)
-                || getActivity().isActorMe() ) {
-            setNotified(TriState.TRUE);
-        }
+        return false;
     }
 
     private void findExisting(MyContext myContext) {
@@ -406,12 +397,18 @@ public class MbActivity extends AObject {
         }
     }
 
-    private boolean wontSave() {
-        return isEmpty() || (type.equals(MbActivityType.UPDATE) && getObjectType().equals(MbObjectType.USER))
-                || (timelinePosition.isEmpty() && getId() != 0);
+    private void calculateIsNotified(MyContext myContext) {
+        if (isNotified().known() || getUpdatedDate() < 1 || isActorMe()) return;
+        if ( isAuthorMe()
+                || getMessage().audience().hasMyAccount(myContext)
+                || getUser().isSameActor(accountUser)
+                || getActivity().isActorMe() ) {
+            setNotified(TriState.TRUE);
+        }
     }
 
-    private void toContentValues(ContentValues values) {
+    private ContentValues toContentValues() {
+        ContentValues values = new ContentValues();
         values.put(ActivityTable.ORIGIN_ID, accountUser.originId);
         values.put(ActivityTable.ACCOUNT_ID, accountUser.userId);
         values.put(ActivityTable.ACTOR_ID, getActor().userId);
@@ -435,6 +432,23 @@ public class MbActivity extends AObject {
         }
         if (!timelinePosition.isEmpty()) {
             values.put(ActivityTable.ACTIVITY_OID, timelinePosition.getPosition());
+        }
+        return values;
+    }
+
+    private void afterSave(MyContext myContext) {
+        switch (type) {
+            case LIKE:
+            case UNDO_LIKE:
+                final MyAccount myActorAccount = myContext.persistentAccounts().fromUser(actor);
+                if (myActorAccount.isValid()) {
+                    MyLog.v(this, myActorAccount + " " + type
+                            + " '" + getMessage().oid + "' " + I18n.trimTextAt(getMessage().getBody(), 80));
+                    MyProvider.updateMessageFavorited(myContext, accountUser.originId, getMessage().msgId);
+                }
+                break;
+            default:
+                break;
         }
     }
 }

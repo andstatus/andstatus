@@ -18,6 +18,7 @@ package org.andstatus.app.timeline;
 
 import android.app.Activity;
 import android.app.Instrumentation.ActivityMonitor;
+import android.support.annotation.NonNull;
 import android.support.test.InstrumentationRegistry;
 import android.view.View;
 import android.widget.ListAdapter;
@@ -244,13 +245,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
         final String method = "getListItemIdOfLoadedReply";
         long idOut = 0;
         for (int ind = 0; ind < getListAdapter().getCount(); ind++) {
-            Object objItem = getListAdapter().getItem(ind);
-            BaseMessageViewItem item = BaseMessageViewItem.EMPTY;
-            if (ActivityViewItem.class.isAssignableFrom(objItem.getClass())) {
-                item = ((ActivityViewItem) objItem).message;
-            } else if (BaseMessageViewItem.class.isAssignableFrom(objItem.getClass())) {
-                item = ((BaseMessageViewItem) objItem);
-            }
+            BaseMessageViewItem item = toBaseMessageViewItem(getListAdapter().getItem(ind));
             if (item != BaseMessageViewItem.EMPTY) {
                 if (item.inReplyToMsgId != 0 && item.msgStatus == DownloadStatus.LOADED) {
                     DownloadStatus statusOfReplied = DownloadStatus.load(
@@ -266,6 +261,17 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
         }
         assertNotEquals( method + " in " + getListAdapter(), 0, idOut);
         return idOut;
+    }
+
+    @NonNull
+    public static BaseMessageViewItem toBaseMessageViewItem(Object objItem) {
+        BaseMessageViewItem item = BaseMessageViewItem.EMPTY;
+        if (ActivityViewItem.class.isAssignableFrom(objItem.getClass())) {
+            item = ((ActivityViewItem) objItem).message;
+        } else if (BaseMessageViewItem.class.isAssignableFrom(objItem.getClass())) {
+            item = ((BaseMessageViewItem) objItem);
+        }
+        return item;
     }
 
     public int getPositionOfListItemId(long itemId) {

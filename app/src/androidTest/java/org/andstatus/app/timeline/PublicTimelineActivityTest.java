@@ -31,10 +31,12 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.msg.BaseMessageViewItem;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 import org.junit.Test;
 
 import static android.support.test.espresso.Espresso.onView;
@@ -45,6 +47,7 @@ import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.util.EspressoUtils.setChecked;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -153,12 +156,15 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
         for (int index = 0; index < list.getChildCount(); index++) {
             View messageView = list.getChildAt(index);
             TextView bodyView = messageView.findViewById(R.id.message_body);
-            long id = timelineActivity.getListAdapter().getItem(messageView).getId();
+            final BaseMessageViewItem viewItem = ListActivityTestHelper.toBaseMessageViewItem(
+                    timelineActivity.getListAdapter().getItem(messageView));
             if (bodyView != null) {
-                assertTrue("Message #" + id + " '" + bodyView.getText() + "' contains '" + publicMessageText + "'",
-                        String.valueOf(bodyView.getText()).contains(publicMessageText));
-                long storedPublic = MyQuery.msgIdToLongColumnValue(MsgTable.PRIVATE, id);
-                assertTrue("Message #" + id + " '" + bodyView.getText() + "' is public", storedPublic != 0);
+                assertTrue("Message #" + viewItem.getId() + " '" + viewItem.getBody()
+                                + "' contains '" + publicMessageText + "'\n" + viewItem,
+                        String.valueOf(viewItem.getBody()).contains(publicMessageText));
+                TriState storedPrivate = TriState.fromId(MyQuery.msgIdToLongColumnValue(MsgTable.PRIVATE, viewItem.getId()));
+                assertNotEquals("Message #" + viewItem.getId() + " '" + viewItem.getBody()
+                        + "' is private" + "\n" + viewItem, TriState.TRUE, storedPrivate);
                 msgCount++;
             }
         }

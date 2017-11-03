@@ -39,6 +39,7 @@ import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.TriState;
 
 import java.util.Arrays;
 
@@ -207,14 +208,14 @@ public class MyProvider extends ContentProvider {
             MyLog.v(MyProvider.TAG, method + "; Database is null");
             return;
         }
-        int favorited = 0;
+        TriState favorited = TriState.FALSE;
         for (MbUser stargazer : MyQuery.getStargazers(db, originId, msgId)) {
             if (myContext.persistentAccounts().fromUser(stargazer).isValid()) {
-                favorited = 1;
+                favorited = TriState.TRUE;
                 break;
             }
         }
-        String sql = "UPDATE " + MsgTable.TABLE_NAME + " SET " + MsgTable.FAVORITED + "=" + favorited
+        String sql = "UPDATE " + MsgTable.TABLE_NAME + " SET " + MsgTable.FAVORITED + "=" + favorited.id
                 + " WHERE " + MsgTable._ID + "=" + msgId;
         try {
             db.execSQL(sql);
