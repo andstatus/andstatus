@@ -126,7 +126,7 @@ public class UserViewItem extends ViewItem implements Comparable<UserViewItem> {
     }
 
     public String getWebFingerIdOrUserName() {
-        return TextUtils.isEmpty(mbUser.getWebFingerId()) ? mbUser.getUserName() : mbUser.getWebFingerId();
+        return mbUser.getNamePreferablyWebFingerId();
     }
 
     @Override

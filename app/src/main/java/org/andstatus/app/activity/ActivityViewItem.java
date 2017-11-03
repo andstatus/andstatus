@@ -22,6 +22,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
 
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.ActivityTable;
 import org.andstatus.app.msg.KeywordsFilter;
@@ -31,6 +32,7 @@ import org.andstatus.app.net.social.MbObjectType;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.user.UserViewItem;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.RelativeTime;
 
 /** View on ActivityStream
@@ -103,7 +105,11 @@ public class ActivityViewItem extends ViewItem implements Comparable<ActivityVie
     }
 
     String getDetails(Context context) {
-        return RelativeTime.getDifference(context, updatedDate);
+        StringBuilder builder = new StringBuilder(RelativeTime.getDifference(context, updatedDate));
+        if (MyPreferences.isShowDebuggingInfoInUi()) {
+            I18n.appendWithSpace(builder, "(actId=" + id + ")");
+        }
+        return builder.toString();
     }
 
     @Override
