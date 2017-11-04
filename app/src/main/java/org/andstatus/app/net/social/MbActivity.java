@@ -29,7 +29,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.database.ActivityTable;
+import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;

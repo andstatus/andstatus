@@ -1,4 +1,4 @@
-package org.andstatus.app.database;
+package org.andstatus.app.database.table;
 
 import android.database.sqlite.SQLiteDatabase;
 

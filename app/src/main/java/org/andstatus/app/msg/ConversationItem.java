@@ -20,7 +20,7 @@ import android.content.Context;
 import android.database.Cursor;
 
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.util.I18n;
 
 public abstract class ConversationItem extends BaseMessageViewItem implements Comparable<ConversationItem> {

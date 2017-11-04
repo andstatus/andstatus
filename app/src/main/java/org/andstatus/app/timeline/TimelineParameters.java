@@ -29,7 +29,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.data.TimelineSql;
-import org.andstatus.app.database.ActivityTable;
+import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineTitle;
 import org.andstatus.app.timeline.meta.TimelineType;

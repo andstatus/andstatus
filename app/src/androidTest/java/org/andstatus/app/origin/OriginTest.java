@@ -7,7 +7,7 @@ import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.data.DemoMessageInserter;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbConfig;

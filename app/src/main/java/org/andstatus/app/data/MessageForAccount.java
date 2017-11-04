@@ -23,8 +23,8 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.database.ActivityTable;
-import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;

@@ -19,8 +19,8 @@ package org.andstatus.app.msg;
 import android.database.Cursor;
 
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.database.ActivityTable;
-import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.util.MyHtml;
 
 import java.util.ArrayList;

@@ -17,7 +17,7 @@ import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.service.MyServiceTestHelper;
 import org.andstatus.app.util.MyLog;
 import org.junit.After;

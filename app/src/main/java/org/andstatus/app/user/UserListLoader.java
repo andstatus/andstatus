@@ -13,7 +13,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.SqlWhere;
 import org.andstatus.app.data.UserListSql;
-import org.andstatus.app.database.UserTable;
+import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;

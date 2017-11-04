@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.database;
+package org.andstatus.app.database.converter;
 
 import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;
@@ -206,7 +206,7 @@ public class DatabaseConverterController {
         return true;
     }
     
-    void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)  {
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)  {
         if (!shouldTriggerDatabaseUpgrade) {
             MyLog.v(this,"onUpgrade - Trigger not set yet");
             throw new IllegalStateException("onUpgrade - Trigger not set yet");

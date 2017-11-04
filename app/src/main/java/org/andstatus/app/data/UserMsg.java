@@ -20,8 +20,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.database.ActivityTable;
-import org.andstatus.app.database.UserTable;
+import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Date;

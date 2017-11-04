@@ -22,7 +22,7 @@ import android.support.annotation.StringRes;
 import org.andstatus.app.R;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;

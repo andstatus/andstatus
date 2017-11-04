@@ -24,7 +24,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.database.CommandTable;
+import org.andstatus.app.database.table.CommandTable;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 

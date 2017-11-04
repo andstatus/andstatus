@@ -22,7 +22,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.database.UserTable;
+import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnection;

@@ -20,6 +20,15 @@ import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.database.table.AudienceTable;
+import org.andstatus.app.database.table.CommandTable;
+import org.andstatus.app.database.table.DownloadTable;
+import org.andstatus.app.database.table.FriendshipTable;
+import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.OriginTable;
+import org.andstatus.app.database.table.TimelineTable;
+import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -30,7 +39,8 @@ public class DatabaseCreator {
      * Current database scheme version, defined by AndStatus developers.
      * This is used to check (and upgrade if necessary) existing database after application update.
      *
-     * v.27 2017-08-01 app.v.36 ActivityTable added
+     * v.27 2017-11-04 app.v.36 Moving to ActivityStreams data model.
+     *                 ActivityTable and AudienceTable added, MsOfUserTable dropped. Others refactored.
      * v.26 2016-11-27 app.v.31 Conversation ID added to MsgTable, see https://github.com/andstatus/andstatus/issues/361
      * v.25 2016-06-07 app.v.27 TimelineTable and CommandTable added
      * v.24 2016-02-27 app.v.23 several attributes added to User, https://github.com/andstatus/andstatus/issues/320

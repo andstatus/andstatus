@@ -21,12 +21,12 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.database.ActivityTable;
-import org.andstatus.app.database.AudienceTable;
-import org.andstatus.app.database.DownloadTable;
-import org.andstatus.app.database.FriendshipTable;
-import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.database.UserTable;
+import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.database.table.AudienceTable;
+import org.andstatus.app.database.table.DownloadTable;
+import org.andstatus.app.database.table.FriendshipTable;
+import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbUser;

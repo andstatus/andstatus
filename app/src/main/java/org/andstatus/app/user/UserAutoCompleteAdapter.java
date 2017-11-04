@@ -29,7 +29,7 @@ import android.widget.Filterable;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.database.UserTable;
+import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.CollectionsUtil;

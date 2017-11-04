@@ -25,7 +25,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.msg.ConversationActivity;
 import org.andstatus.app.msg.MessageListContextMenuItem;
 import org.andstatus.app.timeline.meta.Timeline;

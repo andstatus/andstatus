@@ -24,9 +24,9 @@ import android.text.TextUtils;
 import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.database.DatabaseHolder;
-import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.database.OriginTable;
-import org.andstatus.app.database.UserTable;
+import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.OriginTable;
+import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.user.UserListType;
 

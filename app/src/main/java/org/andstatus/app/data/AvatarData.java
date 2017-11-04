@@ -18,7 +18,7 @@ package org.andstatus.app.data;
 
 import android.net.Uri;
 
-import org.andstatus.app.database.UserTable;
+import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.UriUtils;

@@ -25,7 +25,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.SelectedUserIds;
-import org.andstatus.app.database.AudienceTable;
+import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.util.MyLog;
 
 import java.util.HashSet;

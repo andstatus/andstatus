@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.database;
+package org.andstatus.app.database.converter;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -73,13 +73,13 @@ class DatabaseConverter {
         MyLog.i(this, "Upgrading database from version " + oldVersion + " to version " + newVersion);
         boolean converterNotFound = false;
         String lastError = "?";
-        OneStep oneStep;
+        ConvertOneStep oneStep;
         do {
             oneStep = null;
             try {
                 int prevVersion = currentVersion;
                 Class clazz = Class.forName(this.getClass().getName() + "$Convert" + Integer.toString(currentVersion));
-                oneStep = (OneStep) clazz.newInstance();
+                oneStep = (ConvertOneStep) clazz.newInstance();
                 currentVersion = oneStep.execute(db, currentVersion, progressLogger);
                 if (currentVersion == prevVersion) {
                     lastError = oneStep.getLastError();
@@ -121,7 +121,7 @@ class DatabaseConverter {
         }
     }
 
-    private static abstract class OneStep {
+    static abstract class ConvertOneStep {
         SQLiteDatabase db;
         int oldVersion;
         ProgressLogger progressLogger;
@@ -163,7 +163,7 @@ class DatabaseConverter {
         }
     }
 
-    static class Convert14 extends OneStep {
+    static class Convert14 extends ConvertOneStep {
         @Override
         protected void execute2() {
             versionTo = 15;
@@ -174,7 +174,7 @@ class DatabaseConverter {
         }
     }
 
-    static class Convert15 extends OneStep {
+    static class Convert15 extends ConvertOneStep {
         @Override
         protected void execute2() {
             versionTo = 16;
@@ -186,7 +186,7 @@ class DatabaseConverter {
         }
     }
 
-    static class Convert16 extends OneStep {
+    static class Convert16 extends ConvertOneStep {
         @Override
         protected void execute2() {
             versionTo = 17;
@@ -224,7 +224,7 @@ class DatabaseConverter {
         }
     }
 
-    static class Convert17 extends OneStep {
+    static class Convert17 extends ConvertOneStep {
         @Override
         protected void execute2() {
             versionTo = 18 ;
@@ -242,7 +242,7 @@ class DatabaseConverter {
         }
     }
 
-    static class Convert18 extends OneStep {
+    static class Convert18 extends ConvertOneStep {
         @Override
         protected void execute2() {
             versionTo = 19;
@@ -252,7 +252,7 @@ class DatabaseConverter {
         }
     }
 
-    static class Convert19 extends OneStep {
+    static class Convert19 extends ConvertOneStep {
         @Override
         protected void execute2() {
             versionTo = 20;
@@ -270,7 +270,7 @@ class DatabaseConverter {
         }
     }
 
-    static class Convert20 extends OneStep {
+    static class Convert20 extends ConvertOneStep {
         @Override
         protected void execute2() {
             versionTo = 21;
@@ -284,7 +284,7 @@ class DatabaseConverter {
         }
     }
 
-    static class Convert21 extends OneStep {
+    static class Convert21 extends ConvertOneStep {
         @Override
         protected void execute2() {
             versionTo = 22;
@@ -296,7 +296,7 @@ class DatabaseConverter {
         }
     }
 
-    static class Convert22 extends OneStep {
+    static class Convert22 extends ConvertOneStep {
         @Override
         protected void execute2() {
             versionTo = 23;
@@ -312,7 +312,7 @@ class DatabaseConverter {
         }
     }
 
-    static class Convert23 extends OneStep {
+    static class Convert23 extends ConvertOneStep {
         @Override
         protected void execute2() {
             versionTo = 24;
@@ -362,7 +362,7 @@ class DatabaseConverter {
         }
     }
 
-    static class Convert24 extends OneStep {
+    static class Convert24 extends ConvertOneStep {
         @Override
         protected void execute2() {
             versionTo = 25;
@@ -375,7 +375,7 @@ class DatabaseConverter {
         }
     }
 
-    static class Convert25 extends OneStep {
+    static class Convert25 extends ConvertOneStep {
         Convert25() {
             versionTo = 26;
         }

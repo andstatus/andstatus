@@ -24,7 +24,7 @@ import android.support.annotation.NonNull;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.database.TimelineTable;
+import org.andstatus.app.database.table.TimelineTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;

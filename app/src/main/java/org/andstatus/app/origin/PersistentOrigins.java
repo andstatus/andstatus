@@ -26,7 +26,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextImpl;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.database.OriginTable;
+import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;

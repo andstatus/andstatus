@@ -22,6 +22,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.context.MyStorage;
+import org.andstatus.app.database.converter.DatabaseConverterController;
 import org.andstatus.app.util.MyLog;
 
 import java.io.File;

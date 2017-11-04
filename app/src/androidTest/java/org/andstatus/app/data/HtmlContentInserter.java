@@ -21,7 +21,7 @@ import android.text.TextUtils;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;

@@ -19,8 +19,8 @@ package org.andstatus.app.user;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.ActivityTable;
-import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 

@@ -19,7 +19,7 @@ package org.andstatus.app.data;
 import android.support.annotation.Nullable;
 
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbUser;

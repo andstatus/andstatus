@@ -18,7 +18,7 @@ package org.andstatus.app.data;
 
 import android.database.Cursor;
 
-import org.andstatus.app.database.DownloadTable;
+import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.graphics.CachedImage;
 

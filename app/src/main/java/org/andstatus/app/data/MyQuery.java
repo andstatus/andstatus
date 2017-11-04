@@ -27,10 +27,10 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.UserInTimeline;
-import org.andstatus.app.database.ActivityTable;
-import org.andstatus.app.database.FriendshipTable;
-import org.andstatus.app.database.MsgTable;
-import org.andstatus.app.database.UserTable;
+import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.database.table.FriendshipTable;
+import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;

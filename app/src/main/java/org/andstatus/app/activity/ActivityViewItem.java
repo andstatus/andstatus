@@ -24,7 +24,7 @@ import android.support.v4.util.Pair;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.database.ActivityTable;
+import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.msg.MessageViewItem;
 import org.andstatus.app.net.social.MbActivityType;

@@ -21,7 +21,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.AvatarData;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.UserTable;
+import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.util.MyLog;
 
 public class AvatarDownloader extends FileDownloader {

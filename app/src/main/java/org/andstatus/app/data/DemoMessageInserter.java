@@ -21,8 +21,8 @@ import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.database.ActivityTable;
-import org.andstatus.app.database.MsgTable;
+import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbMessage;

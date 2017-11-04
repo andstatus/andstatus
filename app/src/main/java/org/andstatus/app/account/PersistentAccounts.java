@@ -15,7 +15,7 @@ import org.andstatus.app.backup.MyBackupDataOutput;
 import org.andstatus.app.backup.MyBackupDescriptor;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.database.FriendshipTable;
+import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.CollectionsUtil;

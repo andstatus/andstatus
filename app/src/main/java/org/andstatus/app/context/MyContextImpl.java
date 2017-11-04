@@ -31,7 +31,7 @@ import net.jcip.annotations.ThreadSafe;
 import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
-import org.andstatus.app.database.DatabaseConverterController;
+import org.andstatus.app.database.converter.DatabaseConverterController;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.net.http.HttpConnection;

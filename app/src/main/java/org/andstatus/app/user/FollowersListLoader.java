@@ -18,7 +18,7 @@ package org.andstatus.app.user;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.FriendshipTable;
+import org.andstatus.app.database.table.FriendshipTable;
 
 /**
  * @author yvolk@yurivolkov.com
