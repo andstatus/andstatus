@@ -183,7 +183,7 @@ public class UserViewItem extends ViewItem implements Comparable<UserViewItem> {
 
     public void populateActorFromCursor(Cursor cursor) {
         MbUser user = mbUser;
-        user.setRealName(DbUtils.getString(cursor, UserTable.SENDER_NAME));
+        user.setRealName(DbUtils.getString(cursor, UserTable.ACTOR_NAME));
         AvatarFile avatarFile = AvatarFile.fromCursor(getUserId(), cursor, DownloadTable.ACTOR_AVATAR_FILE_NAME);
         setAvatarFile(avatarFile);
 

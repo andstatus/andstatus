@@ -211,9 +211,9 @@ public class TimelineSql {
                     + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.MSG_ID
                     + "=" + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.MSG_ID;
         }
-        if (columns.contains(UserTable.SENDER_NAME)) {  // TODO: Rename SENDER to ACTOR
+        if (columns.contains(UserTable.ACTOR_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
-                    + TimelineSql.userNameField() + " AS " + UserTable.SENDER_NAME
+                    + TimelineSql.userNameField() + " AS " + UserTable.ACTOR_NAME
                     + " FROM " + UserTable.TABLE_NAME + ") AS sender ON "
                     + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.ACTOR_ID + "=sender."
                     + BaseColumns._ID;
@@ -251,12 +251,12 @@ public class TimelineSql {
                     + "=followingAuthor." + FriendshipTable.FRIEND_ID
                     + ")";
         }
-        if (columns.contains(FriendshipTable.SENDER_FOLLOWED)) {
+        if (columns.contains(FriendshipTable.ACTOR_FOLLOWED)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
                     + FriendshipTable.USER_ID + ", "
                     + FriendshipTable.FRIEND_ID + ", "
                     + FriendshipTable.FOLLOWED + " AS "
-                    + FriendshipTable.SENDER_FOLLOWED
+                    + FriendshipTable.ACTOR_FOLLOWED
                     + " FROM " + FriendshipTable.TABLE_NAME + ") AS followingSender ON ("
                     + "followingSender." + FriendshipTable.USER_ID + "=" + UserTable.LINKED_USER_ID
                     + " AND "
@@ -292,7 +292,7 @@ public class TimelineSql {
         columnNames.add(ActivityTable.ACTIVITY_ID);
         columnNames.add(MsgTable.AUTHOR_ID);
         columnNames.add(ActivityTable.ACTOR_ID);
-        columnNames.add(UserTable.SENDER_NAME);
+        columnNames.add(UserTable.ACTOR_NAME);
         columnNames.add(MsgTable.VIA);
         columnNames.add(MsgTable.REBLOGGED);
         return columnNames;

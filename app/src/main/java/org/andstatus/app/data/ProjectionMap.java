@@ -72,7 +72,7 @@ public class ProjectionMap {
                 + " AS " + DownloadTable.IMAGE_ID);
         MSG.put(DownloadTable.IMAGE_URL, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.URI
                 + " AS " + DownloadTable.IMAGE_URL);
-        MSG.put(UserTable.SENDER_NAME, UserTable.SENDER_NAME);
+        MSG.put(UserTable.ACTOR_NAME, UserTable.ACTOR_NAME);
         MSG.put(MsgTable.BODY, MsgTable.BODY);
         MSG.put(MsgTable.VIA, MsgTable.VIA);
         MSG.put(MsgTable.URL, MsgTable.URL);
@@ -87,7 +87,7 @@ public class ProjectionMap {
         MSG.put(MsgTable.MSG_STATUS, MsgTable.MSG_STATUS);
         MSG.put(MsgTable.INS_DATE, MsgTable.INS_DATE);
         MSG.put(FriendshipTable.AUTHOR_FOLLOWED, FriendshipTable.AUTHOR_FOLLOWED);
-        MSG.put(FriendshipTable.SENDER_FOLLOWED, FriendshipTable.SENDER_FOLLOWED);
+        MSG.put(FriendshipTable.ACTOR_FOLLOWED, FriendshipTable.ACTOR_FOLLOWED);
     }
 
     /**

@@ -147,7 +147,7 @@ public class MyBackupAgent extends BackupAgent {
     }
     
     private long backupFile(MyBackupDataOutput data, String key, File dataFile) throws IOException {
-        final int chunkSize = 10000;
+        final int chunkSize = 50000;
         long backedUpCount = 0;
         if (dataFile.exists()) {
             long fileLength = dataFile.length();
@@ -328,7 +328,7 @@ public class MyBackupAgent extends BackupAgent {
         }
         final String method = "restoreFile";
         MyLog.i(this, method + " started, " + fileWritten(data.getKey(), dataFile, data.getDataSize()));
-        final int chunkSize = 10000;
+        final int chunkSize = 100000;
         int bytesToWrite = data.getDataSize();
         int bytesWritten = 0;
         FileOutputStream output = new FileOutputStream(dataFile, false);

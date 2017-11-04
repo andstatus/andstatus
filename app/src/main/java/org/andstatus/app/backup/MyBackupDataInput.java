@@ -208,7 +208,7 @@ public class MyBackupDataInput {
     }
 
     private int readEntityData2(byte[] data, int offset, int size) throws IOException {
-        final long chunkSize = 50000;
+        final long chunkSize = 200000;
         int bytesRead = 0;
         if (size > chunkSize) {
             throw new FileNotFoundException("Size to read is too large: " + size);

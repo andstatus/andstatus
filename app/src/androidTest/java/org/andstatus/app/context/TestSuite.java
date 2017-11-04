@@ -71,6 +71,7 @@ public class TestSuite {
         if (initialized) {
             return context;
         }
+        MyLog.setMinLogLevel(MyLog.VERBOSE);
         for (int iter=1; iter<6; iter++) {
             MyLog.d(TAG, "Initializing Test Suite, iteration=" + iter);
             if (testCase == null) {

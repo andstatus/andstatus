@@ -23,10 +23,9 @@ import org.andstatus.app.data.DbUtils;
 /**
  * IDs of Users the specified (by {@link FriendshipTable#USER_ID}) user is following
  * (otherwise known as their "friends").
- * TODO: Rename table and fields in a database
  */
 public final class FriendshipTable {
-    public static final String TABLE_NAME = "followinguser";
+    public static final String TABLE_NAME = "friendship";
     private FriendshipTable() {
     }
 
@@ -37,12 +36,12 @@ public final class FriendshipTable {
     /**
      * Friend by {@link #USER_ID} (is followed by {@link #USER_ID})
      */
-    public static final String FRIEND_ID = "following_user_id";
+    public static final String FRIEND_ID = "friend_id";
     /**
      * boolean ( 1 / 0 ) flag showing
      * if {@link FriendshipTable#FRIEND_ID} is followed by {@link FriendshipTable#USER_ID}
      */
-    public static final String FOLLOWED = "user_followed";
+    public static final String FOLLOWED = "followed";
 
     /**
      * Derived column: if the Author of the message is followed by the User
@@ -51,7 +50,7 @@ public final class FriendshipTable {
     /**
      * Derived column: if the Sender of the message is followed by the User
      */
-    public static final String SENDER_FOLLOWED = "sender_followed";
+    public static final String ACTOR_FOLLOWED = "actor_followed";
 
     public static void create(SQLiteDatabase db) {
         DbUtils.execSQL(db, "CREATE TABLE " + FriendshipTable.TABLE_NAME + " ("
@@ -59,7 +58,7 @@ public final class FriendshipTable {
                 + FriendshipTable.FRIEND_ID + " INTEGER NOT NULL,"
                 + FriendshipTable.FOLLOWED + " BOOLEAN DEFAULT 1 NOT NULL,"
 
-                + " CONSTRAINT pk_followinguser PRIMARY KEY ("
+                + " CONSTRAINT pk_friendship PRIMARY KEY ("
                 + FriendshipTable.USER_ID + " ASC, "
                 + FriendshipTable.FRIEND_ID + " ASC)"
                 + ")");
