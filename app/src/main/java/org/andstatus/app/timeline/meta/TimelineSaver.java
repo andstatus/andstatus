@@ -132,9 +132,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
             long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
                     TimelineTable._ID,
                     TimelineTable.ACCOUNT_ID + "=0 AND " + TimelineTable.ORIGIN_ID + "=0");
-            if (timelineId == 0) {
-                addDefaultCombined(myContext);
-            }
+            if (timelineId == 0) addDefaultCombined();
         }
     }
 
@@ -147,9 +145,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
                     TimelineTable._ID,
                     TimelineTable.ORIGIN_ID + "=" + origin.getId() + " AND " +
                             TimelineTable.TIMELINE_TYPE + "='" + TimelineType.EVERYTHING.save() + "'");
-            if (timelineId == 0) {
-                addDefaultForOrigin(myContext, origin);
-            }
+            if (timelineId == 0) addDefaultForOrigin(myContext, origin);
         }
     }
 
@@ -172,11 +168,18 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
         return timelines;
     }
 
-    private List<Timeline> addDefaultCombined(MyContext myContext) {
+    /**
+     * @return Newly added timelines
+     */
+    public List<Timeline> addDefaultCombined() {
         List<Timeline> timelines = new ArrayList<>();
         for (TimelineType timelineType : TimelineType.values()) {
             if (timelineType.isSelectable()) {
-                saveNewDefaultTimeline(Timeline.getTimeline(myContext, 0, timelineType, null, 0, null, ""));
+                final Timeline timeline = Timeline.getTimeline(myContext, 0, timelineType, null, 0, null, "");
+                if (timeline.getId() == 0) {
+                    saveNewDefaultTimeline(timeline);
+                    timelines.add(timeline);
+                }
             }
         }
         return timelines;

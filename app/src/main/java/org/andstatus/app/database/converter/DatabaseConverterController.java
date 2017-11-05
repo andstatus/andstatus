@@ -167,7 +167,7 @@ public class DatabaseConverterController {
             if (MyContextHolder.get().isReady()) {
                 MyServiceManager.stopService();
                 new TimelineSaver(MyContextHolder.get()).setAddDefaults(true).executeNotOnUiThread();
-                new MyDataChecker(MyContextHolder.get(), progressLogger).fixData();
+                new MyDataChecker(MyContextHolder.get(), progressLogger).fixData(true);
             }
         }
     }

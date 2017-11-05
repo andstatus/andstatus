@@ -64,6 +64,7 @@ public class MyDataChecker {
     public void fixData(boolean includeLong) {
         new MyDataCheckerMergeUsers(myContext, logger).fixData();
         new MyDataCheckerConversations(myContext, logger).fixData();
+        new MyDataCheckerTimelines(myContext, logger).fixData();
         if (includeLong) new MyDataCheckerSearchIndex(myContext, logger).fixData();
     }
 }

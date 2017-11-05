@@ -47,11 +47,9 @@ public class MyDataCheckerSearchIndex {
                 + ", " + MsgTable.BODY_TO_SEARCH
                 + " FROM " + MsgTable.TABLE_NAME
                 ;
-        Cursor c = null;
         long rowsCount = 0;
         long changedCount = 0;
-        try {
-            c = myContext.getDatabase().rawQuery(sql, null);
+        try (Cursor c = myContext.getDatabase().rawQuery(sql, null)) {
             while (c.moveToNext()) {
                 rowsCount++;
                 long id = c.getLong(0);
@@ -79,8 +77,6 @@ public class MyDataCheckerSearchIndex {
             String logMsg = "Error: " + e.getMessage() + ", SQL:" + sql;
             logger.logProgress(logMsg);
             MyLog.e(this, logMsg, e);
-        } finally {
-            DbUtils.closeSilently(c);
         }
         logger.logProgress(changedCount == 0
                 ? "No changes to search index were needed. " + rowsCount + " messages"
