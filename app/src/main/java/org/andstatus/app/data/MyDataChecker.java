@@ -34,7 +34,7 @@ public class MyDataChecker {
         this.logger = logger;
     }
 
-    public static void fixDataAsync(ProgressLogger.ProgressCallback progressCallback) {
+    public static void fixDataAsync(ProgressLogger.ProgressCallback progressCallback, final boolean includeLong) {
         final ProgressLogger logger = new ProgressLogger(progressCallback);
         AsyncTaskLauncher.execute(
                 progressCallback,
@@ -44,7 +44,7 @@ public class MyDataChecker {
 
                     @Override
                     protected Void doInBackground2(Void... params) {
-                        new MyDataChecker(MyContextHolder.get(), logger).fixData();
+                        new MyDataChecker(MyContextHolder.get(), logger).fixData(includeLong);
                         DbUtils.waitMs(MyDataChecker.class, 3000);
                         return null;
                     }
@@ -61,9 +61,9 @@ public class MyDataChecker {
                 });
     }
 
-    public void fixData() {
+    public void fixData(boolean includeLong) {
         new MyDataCheckerMergeUsers(myContext, logger).fixData();
         new MyDataCheckerConversations(myContext, logger).fixData();
-        new MyDataCheckerSearchIndex(myContext, logger).fixData();
+        if (includeLong) new MyDataCheckerSearchIndex(myContext, logger).fixData();
     }
 }
