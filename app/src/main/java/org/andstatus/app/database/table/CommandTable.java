@@ -76,7 +76,7 @@ public final class CommandTable implements BaseColumns {
                 + CommandTable.MANUALLY_LAUNCHED + " BOOLEAN DEFAULT 0 NOT NULL,"
 
                 + CommandTable.TIMELINE_ID + " INTEGER,"
-                + CommandTable.TIMELINE_TYPE + " STRING,"
+                + CommandTable.TIMELINE_TYPE + " TEXT NOT NULL,"
                 + CommandTable.ACCOUNT_ID + " INTEGER,"
                 + CommandTable.USER_ID + " INTEGER,"
                 + CommandTable.ORIGIN_ID + " INTEGER,"

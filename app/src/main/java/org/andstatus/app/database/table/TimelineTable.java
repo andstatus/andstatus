@@ -95,7 +95,7 @@ public class TimelineTable implements BaseColumns {
     public static void create(SQLiteDatabase db) {
         DbUtils.execSQL(db, "CREATE TABLE " + TimelineTable.TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + TimelineTable.TIMELINE_TYPE + " STRING NOT NULL,"
+                + TimelineTable.TIMELINE_TYPE + " TEXT NOT NULL,"
                 + TimelineTable.ACCOUNT_ID + " INTEGER,"
                 + TimelineTable.USER_ID + " INTEGER,"
                 + TimelineTable.USER_IN_TIMELINE + " TEXT,"

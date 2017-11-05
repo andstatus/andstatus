@@ -42,8 +42,8 @@ class Convert26 extends ConvertOneStep {
         sql = "CREATE INDEX idx_download_msg ON download (msg_id, content_type, download_status)";
         sql = "CREATE TABLE origin (_id INTEGER PRIMARY KEY AUTOINCREMENT,origin_type_id INTEGER NOT NULL,origin_name TEXT NOT NULL,origin_url TEXT NOT NULL,ssl BOOLEAN DEFAULT 1 NOT NULL,ssl_mode INTEGER DEFAULT 1 NOT NULL,allow_html BOOLEAN DEFAULT 1 NOT NULL,text_limit INTEGER NOT NULL,short_url_length INTEGER NOT NULL DEFAULT 0,mention_as_webfinger_id INTEGER DEFAULT 3 NOT NULL,use_legacy_http INTEGER DEFAULT 3 NOT NULL,in_combined_global_search BOOLEAN DEFAULT 1 NOT NULL,in_combined_public_reload BOOLEAN DEFAULT 1 NOT NULL)";
         sql = "CREATE UNIQUE INDEX idx_origin_name ON origin (origin_name)";
-        sql = "CREATE TABLE timeline (_id INTEGER PRIMARY KEY AUTOINCREMENT,timeline_type STRING NOT NULL,account_id INTEGER,user_id INTEGER,user_in_timeline TEXT,origin_id INTEGER,search_query TEXT,is_synced_automatically BOOLEAN DEFAULT 0 NOT NULL,displayed_in_selector INTEGER DEFAULT 0 NOT NULL,selector_order INTEGER DEFAULT 0 NOT NULL,sync_succeeded_date INTEGER,sync_failed_date INTEGER,error_message TEXT,synced_times_count INTEGER DEFAULT 0 NOT NULL,sync_failed_times_count INTEGER DEFAULT 0 NOT NULL,downloaded_items_count INTEGER DEFAULT 0 NOT NULL,new_items_count INTEGER DEFAULT 0 NOT NULL,count_since INTEGER,synced_times_count_total INTEGER DEFAULT 0 NOT NULL,sync_failed_times_count_total INTEGER DEFAULT 0 NOT NULL,downloaded_items_count_total INTEGER DEFAULT 0 NOT NULL,new_items_count_total INTEGER DEFAULT 0 NOT NULL,youngest_position TEXT,youngest_item_date INTEGER,youngest_synced_date INTEGER,oldest_position TEXT,oldest_item_date INTEGER,oldest_synced_date INTEGER,visible_item_id INTEGER,visible_y INTEGER,visible_oldest_date INTEGER)";
-        sql = "CREATE TABLE command (_id INTEGER PRIMARY KEY NOT NULL,queue_type TEXT NOT NULL,command_code TEXT NOT NULL,command_created_date INTEGER NOT NULL,command_description TEXT,in_foreground BOOLEAN DEFAULT 0 NOT NULL,manually_launched BOOLEAN DEFAULT 0 NOT NULL,timeline_id INTEGER,timeline_type STRING,account_id INTEGER,user_id INTEGER,origin_id INTEGER,search_query TEXT,item_id INTEGER,username TEXT,last_executed_date INTEGER,execution_count INTEGER DEFAULT 0 NOT NULL,retries_left INTEGER DEFAULT 0 NOT NULL,num_auth_exceptions INTEGER DEFAULT 0 NOT NULL,num_io_exceptions INTEGER DEFAULT 0 NOT NULL,num_parse_exceptions INTEGER DEFAULT 0 NOT NULL,error_message TEXT,downloaded_count INTEGER DEFAULT 0 NOT NULL,progress_text TEXT)";
+        sql = "CREATE TABLE timeline (_id INTEGER PRIMARY KEY AUTOINCREMENT,timeline_type TEXT NOT NULL,account_id INTEGER,user_id INTEGER,user_in_timeline TEXT,origin_id INTEGER,search_query TEXT,is_synced_automatically BOOLEAN DEFAULT 0 NOT NULL,displayed_in_selector INTEGER DEFAULT 0 NOT NULL,selector_order INTEGER DEFAULT 0 NOT NULL,sync_succeeded_date INTEGER,sync_failed_date INTEGER,error_message TEXT,synced_times_count INTEGER DEFAULT 0 NOT NULL,sync_failed_times_count INTEGER DEFAULT 0 NOT NULL,downloaded_items_count INTEGER DEFAULT 0 NOT NULL,new_items_count INTEGER DEFAULT 0 NOT NULL,count_since INTEGER,synced_times_count_total INTEGER DEFAULT 0 NOT NULL,sync_failed_times_count_total INTEGER DEFAULT 0 NOT NULL,downloaded_items_count_total INTEGER DEFAULT 0 NOT NULL,new_items_count_total INTEGER DEFAULT 0 NOT NULL,youngest_position TEXT,youngest_item_date INTEGER,youngest_synced_date INTEGER,oldest_position TEXT,oldest_item_date INTEGER,oldest_synced_date INTEGER,visible_item_id INTEGER,visible_y INTEGER,visible_oldest_date INTEGER)";
+        sql = "CREATE TABLE command (_id INTEGER PRIMARY KEY NOT NULL,queue_type TEXT NOT NULL,command_code TEXT NOT NULL,command_created_date INTEGER NOT NULL,command_description TEXT,in_foreground BOOLEAN DEFAULT 0 NOT NULL,manually_launched BOOLEAN DEFAULT 0 NOT NULL,timeline_id INTEGER,timeline_type TEXT NOT NULL,account_id INTEGER,user_id INTEGER,origin_id INTEGER,search_query TEXT,item_id INTEGER,username TEXT,last_executed_date INTEGER,execution_count INTEGER DEFAULT 0 NOT NULL,retries_left INTEGER DEFAULT 0 NOT NULL,num_auth_exceptions INTEGER DEFAULT 0 NOT NULL,num_io_exceptions INTEGER DEFAULT 0 NOT NULL,num_parse_exceptions INTEGER DEFAULT 0 NOT NULL,error_message TEXT,downloaded_count INTEGER DEFAULT 0 NOT NULL,progress_text TEXT)";
         sql = "CREATE TABLE activity (_id INTEGER PRIMARY KEY AUTOINCREMENT,activity_origin_id INTEGER NOT NULL,activity_oid TEXT NOT NULL,account_id INTEGER NOT NULL,activity_type INTEGER NOT NULL,actor_id INTEGER NOT NULL,activity_msg_id INTEGER,activity_user_id INTEGER,obj_activity_id INTEGER,subscribed INTEGER NOT NULL DEFAULT 0,notified INTEGER NOT NULL DEFAULT 0,activity_ins_date INTEGER NOT NULL,activity_updated_date INTEGER NOT NULL DEFAULT 0)";
         sql = "CREATE UNIQUE INDEX idx_activity_origin ON activity (activity_origin_id, activity_oid)";
         sql = "CREATE INDEX idx_activity_message ON activity (activity_msg_id) WHERE activity_msg_id IS NOT NULL";
@@ -92,7 +92,7 @@ class Convert26 extends ConvertOneStep {
                 " _id, origin_id, msg_oid, msg_status, conversation_id, conversation_oid, url,  body, body_to_search, via, in_reply_to_msg_id," +
                 " msg_created_date, msg_ins_date, CASE public WHEN 1 THEN 1 ELSE 0 END, " +
                 " author_id, in_reply_to_user_id" +
-                " FROM oldmsg";
+                " FROM oldmsg WHERE author_id !=0";
         DbUtils.execSQL(db, sql);
 
         progressLogger.logProgress(stepTitle + ": Creating activities");
@@ -116,7 +116,7 @@ class Convert26 extends ConvertOneStep {
             ") SELECT" +
             " _id, origin_id, author_id || '-update-' || msg_oid, 0, 6,        author_id, _id," +
             " msg_created_date,      msg_ins_date" +
-            " FROM oldmsg";
+            " FROM oldmsg WHERE author_id !=0";
         DbUtils.execSQL(db, sql);
 
         progressLogger.logProgress(stepTitle + ": Adding Announce activities, linked to Update activities");
@@ -126,10 +126,10 @@ class Convert26 extends ConvertOneStep {
             ") SELECT" +
             " origin_id,          reblog_oid,   0,          1,             actor_id, _id,             _id," +
             " msg_sent_date,          msg_sent_date" +
-            " FROM oldmsg" +
+            " FROM (SELECT * FROM oldmsg WHERE author_id !=0) AS oldmsg" +
             " INNER JOIN" +
             " (SELECT user_id AS actor_id, reblog_oid, msg_id FROM msgofuser " +
-                "WHERE reblogged=1 AND reblog_oid IS NOT NULL AND actor_id IS NOT NULL) ON msg_id=oldmsg._id";
+                "WHERE reblogged=1 AND reblog_oid IS NOT NULL AND actor_id IS NOT NULL AND actor_id != 0) ON msg_id=oldmsg._id";
         DbUtils.execSQL(db, sql);
 
         progressLogger.logProgress(stepTitle + ": Adding Favourite activities, linked to Update activities");
@@ -139,9 +139,9 @@ class Convert26 extends ConvertOneStep {
                 ") SELECT" +
                 " origin_id, actor_id || '-like-' || msg_oid, 0, 5,            actor_id, _id,             _id," +
                 " msg_sent_date,          msg_sent_date" +
-                " FROM oldmsg" +
+                " FROM (SELECT * FROM oldmsg WHERE author_id !=0) AS oldmsg" +
                 " INNER JOIN" +
-                " (SELECT user_id AS actor_id, msg_id FROM msgofuser WHERE favorited=1 AND actor_id IS NOT NULL) ON msg_id=oldmsg._id";
+                " (SELECT user_id AS actor_id, msg_id FROM msgofuser WHERE favorited=1 AND actor_id IS NOT NULL AND actor_id != 0) ON msg_id=oldmsg._id";
         DbUtils.execSQL(db, sql);
 
         progressLogger.logProgress(stepTitle + ": Setting Subscribed for Update activities");
@@ -199,7 +199,7 @@ class Convert26 extends ConvertOneStep {
                 "user_id, friend_id, followed" +
                 ") SELECT" +
                 " user_id, following_user_id, user_followed" +
-                " FROM followinguser";
+                " FROM followinguser WHERE user_id NOT NULL AND following_user_id NOT NULL AND user_id != 0 AND following_user_id !=0";
         DbUtils.execSQL(db, sql);
 
         progressLogger.logProgress(stepTitle + ": Converting User");
@@ -227,6 +227,52 @@ class Convert26 extends ConvertOneStep {
                 " homepage, avatar_url, banner_url, msg_count, favorited_count, following_count, followers_count," +
                 " user_created_date, user_updated_date, user_ins_date, user_msg_id, user_msg_date" +
                 " FROM olduser";
+        DbUtils.execSQL(db, sql);
+
+        progressLogger.logProgress(stepTitle + ": Converting Timeline");
+        sql = "ALTER TABLE timeline RENAME TO oldtimeline";
+        DbUtils.execSQL(db, sql);
+        sql = "CREATE TABLE timeline (_id INTEGER PRIMARY KEY AUTOINCREMENT,timeline_type TEXT NOT NULL,account_id INTEGER,user_id INTEGER,user_in_timeline TEXT,origin_id INTEGER,search_query TEXT,is_synced_automatically BOOLEAN DEFAULT 0 NOT NULL,displayed_in_selector INTEGER DEFAULT 0 NOT NULL,selector_order INTEGER DEFAULT 0 NOT NULL,sync_succeeded_date INTEGER,sync_failed_date INTEGER,error_message TEXT,synced_times_count INTEGER DEFAULT 0 NOT NULL,sync_failed_times_count INTEGER DEFAULT 0 NOT NULL,downloaded_items_count INTEGER DEFAULT 0 NOT NULL,new_items_count INTEGER DEFAULT 0 NOT NULL,count_since INTEGER,synced_times_count_total INTEGER DEFAULT 0 NOT NULL,sync_failed_times_count_total INTEGER DEFAULT 0 NOT NULL,downloaded_items_count_total INTEGER DEFAULT 0 NOT NULL,new_items_count_total INTEGER DEFAULT 0 NOT NULL,youngest_position TEXT,youngest_item_date INTEGER,youngest_synced_date INTEGER,oldest_position TEXT,oldest_item_date INTEGER,oldest_synced_date INTEGER,visible_item_id INTEGER,visible_y INTEGER,visible_oldest_date INTEGER)";
+        DbUtils.execSQL(db, sql);
+        sql = "INSERT INTO timeline (" +
+                " _id, timeline_type, account_id, user_id, user_in_timeline, origin_id, search_query, " +
+                " is_synced_automatically, displayed_in_selector, selector_order, sync_succeeded_date, " +
+                " sync_failed_date, error_message, synced_times_count, sync_failed_times_count, downloaded_items_count," +
+                " new_items_count, count_since, synced_times_count_total, sync_failed_times_count_total," +
+                " downloaded_items_count_total, new_items_count_total, youngest_position, youngest_item_date," +
+                " youngest_synced_date, oldest_position, oldest_item_date, oldest_synced_date," +
+                " visible_item_id, visible_y, visible_oldest_date" +
+                ") SELECT" +
+                " _id, timeline_type, account_id, user_id, user_in_timeline, origin_id, search_query, " +
+                " is_synced_automatically, displayed_in_selector, selector_order, sync_succeeded_date, " +
+                " sync_failed_date, error_message, synced_times_count, sync_failed_times_count, downloaded_items_count," +
+                " new_items_count, count_since, synced_times_count_total, sync_failed_times_count_total," +
+                " downloaded_items_count_total, new_items_count_total, youngest_position, youngest_item_date," +
+                " youngest_synced_date, oldest_position, oldest_item_date, oldest_synced_date," +
+                " visible_item_id, visible_y, visible_oldest_date" +
+                " FROM oldtimeline";
+        DbUtils.execSQL(db, sql);
+        sql = "DROP TABLE oldtimeline";
+        DbUtils.execSQL(db, sql);
+
+        progressLogger.logProgress(stepTitle + ": Converting Command");
+        sql = "ALTER TABLE command RENAME TO oldcommand";
+        DbUtils.execSQL(db, sql);
+        sql = "CREATE TABLE command (_id INTEGER PRIMARY KEY NOT NULL,queue_type TEXT NOT NULL,command_code TEXT NOT NULL,command_created_date INTEGER NOT NULL,command_description TEXT,in_foreground BOOLEAN DEFAULT 0 NOT NULL,manually_launched BOOLEAN DEFAULT 0 NOT NULL,timeline_id INTEGER,timeline_type TEXT NOT NULL,account_id INTEGER,user_id INTEGER,origin_id INTEGER,search_query TEXT,item_id INTEGER,username TEXT,last_executed_date INTEGER,execution_count INTEGER DEFAULT 0 NOT NULL,retries_left INTEGER DEFAULT 0 NOT NULL,num_auth_exceptions INTEGER DEFAULT 0 NOT NULL,num_io_exceptions INTEGER DEFAULT 0 NOT NULL,num_parse_exceptions INTEGER DEFAULT 0 NOT NULL,error_message TEXT,downloaded_count INTEGER DEFAULT 0 NOT NULL,progress_text TEXT)";
+        DbUtils.execSQL(db, sql);
+        sql = "INSERT INTO command (" +
+                " _id, queue_type, command_code, command_created_date, command_description, in_foreground," +
+                " manually_launched, timeline_id, timeline_type, account_id, user_id, origin_id, search_query," +
+                " item_id, username, last_executed_date, execution_count, retries_left, num_auth_exceptions," +
+                " num_io_exceptions, num_parse_exceptions, error_message, downloaded_count, progress_text" +
+                ") SELECT" +
+                " _id, queue_type, command_code, command_created_date, command_description, in_foreground," +
+                " manually_launched, timeline_id, timeline_type, account_id, user_id, origin_id, search_query," +
+                " item_id, username, last_executed_date, execution_count, retries_left, num_auth_exceptions," +
+                " num_io_exceptions, num_parse_exceptions, error_message, downloaded_count, progress_text" +
+                " FROM oldcommand";
+        DbUtils.execSQL(db, sql);
+        sql = "DROP TABLE oldcommand";
         DbUtils.execSQL(db, sql);
 
         progressLogger.logProgress(stepTitle + ": Dropping old tables and indices");
