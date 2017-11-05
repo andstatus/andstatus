@@ -120,43 +120,49 @@ public final class MsgTable implements BaseColumns {
     public static final String MSG_ID =  "msg_id";
 
     public static void create(SQLiteDatabase db) {
-        DbUtils.execSQL(db, "CREATE TABLE " + MsgTable.TABLE_NAME + " ("
+        DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + MsgTable.ORIGIN_ID + " INTEGER NOT NULL,"
-                + MsgTable.MSG_OID + " TEXT,"
-                + MsgTable.MSG_STATUS + " INTEGER NOT NULL DEFAULT 0,"
-                + MsgTable.CONVERSATION_ID + " INTEGER,"
-                + MsgTable.CONVERSATION_OID + " TEXT,"
-                + MsgTable.URL + " TEXT,"
-                + MsgTable.BODY + " TEXT,"
-                + MsgTable.BODY_TO_SEARCH + " TEXT,"
-                + MsgTable.VIA + " TEXT,"
-                + MsgTable.IN_REPLY_TO_MSG_ID + " INTEGER,"
-                + MsgTable.UPDATED_DATE + " INTEGER,"
-                + MsgTable.INS_DATE + " INTEGER NOT NULL,"
-                + MsgTable.PRIVATE + " INTEGER NOT NULL DEFAULT 0,"
-                + MsgTable.FAVORITED + " INTEGER NOT NULL DEFAULT 0,"
-                + MsgTable.REBLOGGED + " INTEGER NOT NULL DEFAULT 0,"
-                + MsgTable.MENTIONED + " INTEGER NOT NULL DEFAULT 0,"
-                + MsgTable.FAVORITE_COUNT + " INTEGER NOT NULL DEFAULT 0,"
-                + MsgTable.REBLOG_COUNT + " INTEGER NOT NULL DEFAULT 0,"
-                + MsgTable.REPLY_COUNT + " INTEGER NOT NULL DEFAULT 0,"
-                + MsgTable.AUTHOR_ID + " INTEGER,"
-                + MsgTable.IN_REPLY_TO_USER_ID + " INTEGER"
+                + ORIGIN_ID + " INTEGER NOT NULL,"
+                + MSG_OID + " TEXT,"
+                + MSG_STATUS + " INTEGER NOT NULL DEFAULT 0,"
+                + CONVERSATION_ID + " INTEGER,"
+                + CONVERSATION_OID + " TEXT,"
+                + URL + " TEXT,"
+                + BODY + " TEXT,"
+                + BODY_TO_SEARCH + " TEXT,"
+                + VIA + " TEXT,"
+                + AUTHOR_ID + " INTEGER NOT NULL,"
+                + IN_REPLY_TO_MSG_ID + " INTEGER,"
+                + IN_REPLY_TO_USER_ID + " INTEGER,"
+                + PRIVATE + " INTEGER NOT NULL DEFAULT 0,"
+                + FAVORITED + " INTEGER NOT NULL DEFAULT 0,"
+                + REBLOGGED + " INTEGER NOT NULL DEFAULT 0,"
+                + MENTIONED + " INTEGER NOT NULL DEFAULT 0,"
+                + FAVORITE_COUNT + " INTEGER NOT NULL DEFAULT 0,"
+                + REBLOG_COUNT + " INTEGER NOT NULL DEFAULT 0,"
+                + REPLY_COUNT + " INTEGER NOT NULL DEFAULT 0,"
+                + INS_DATE + " INTEGER NOT NULL,"
+                + UPDATED_DATE + " INTEGER NOT NULL DEFAULT 0"
                 + ")");
 
-        DbUtils.execSQL(db, "CREATE UNIQUE INDEX idx_msg_origin ON " + MsgTable.TABLE_NAME + " ("
-                + MsgTable.ORIGIN_ID + ", "
-                + MsgTable.MSG_OID
+        DbUtils.execSQL(db, "CREATE UNIQUE INDEX idx_msg_origin ON " + TABLE_NAME + " ("
+                + ORIGIN_ID + ", "
+                + MSG_OID
                 + ")");
 
         // Index not null rows only, see https://www.sqlite.org/partialindex.html
-        DbUtils.execSQL(db, "CREATE INDEX idx_msg_in_reply_to_msg_id ON " + MsgTable.TABLE_NAME + " ("
-                + MsgTable.IN_REPLY_TO_MSG_ID + ")"
-                + " WHERE " + MsgTable.IN_REPLY_TO_MSG_ID + " IS NOT NULL");
+        DbUtils.execSQL(db, "CREATE INDEX idx_msg_in_reply_to_msg_id ON " + TABLE_NAME + " ("
+                + IN_REPLY_TO_MSG_ID + ")"
+                + " WHERE " + IN_REPLY_TO_MSG_ID + " IS NOT NULL");
 
-        DbUtils.execSQL(db, "CREATE INDEX idx_msg_conversation_id ON " + MsgTable.TABLE_NAME + " ("
-                + MsgTable.CONVERSATION_ID + ")"
-                + " WHERE " + MsgTable.CONVERSATION_ID + " IS NOT NULL");
+        DbUtils.execSQL(db, "CREATE INDEX idx_msg_conversation_id ON " + TABLE_NAME + " ("
+                + CONVERSATION_ID + ")"
+                + " WHERE " + CONVERSATION_ID + " IS NOT NULL");
+
+        DbUtils.execSQL(db, "CREATE INDEX idx_msg_updated_date ON " + TABLE_NAME + " ("
+                + UPDATED_DATE
+                + ")"
+        );
+
     }
 }

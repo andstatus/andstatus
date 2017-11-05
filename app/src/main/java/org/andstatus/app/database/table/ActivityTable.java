@@ -76,14 +76,14 @@ public final class ActivityTable implements BaseColumns {
                 + ACTIVITY_OID + " TEXT NOT NULL,"
                 + ACCOUNT_ID + " INTEGER NOT NULL,"
                 + ACTIVITY_TYPE + " INTEGER NOT NULL,"
-                + ACTOR_ID + " INTEGER,"
+                + ACTOR_ID + " INTEGER NOT NULL,"
                 + MSG_ID + " INTEGER,"
                 + USER_ID + " INTEGER,"
                 + OBJ_ACTIVITY_ID + " INTEGER,"
                 + SUBSCRIBED + " INTEGER NOT NULL DEFAULT 0,"
                 + NOTIFIED + " INTEGER NOT NULL DEFAULT 0,"
-                + UPDATED_DATE + " INTEGER,"
-                + INS_DATE + " INTEGER NOT NULL"
+                + INS_DATE + " INTEGER NOT NULL,"
+                + UPDATED_DATE + " INTEGER NOT NULL DEFAULT 0"
                 + ")");
 
         DbUtils.execSQL(db, "CREATE UNIQUE INDEX idx_activity_origin ON " + TABLE_NAME + " ("
@@ -110,8 +110,8 @@ public final class ActivityTable implements BaseColumns {
                 + " WHERE " + OBJ_ACTIVITY_ID + " IS NOT NULL"
         );
 
-        DbUtils.execSQL(db, "CREATE INDEX idx_activity_ins_date ON " + TABLE_NAME + " ("
-                + INS_DATE
+        DbUtils.execSQL(db, "CREATE INDEX idx_activity_updated_date ON " + TABLE_NAME + " ("
+                + UPDATED_DATE
                 + ")"
         );
     }
