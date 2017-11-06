@@ -156,7 +156,7 @@ public class MbActivity extends AObject {
             return MbObjectType.MESSAGE;
         } else if (mbUser.nonEmpty()) {
             return MbObjectType.USER;
-        } else if (mbActivity.nonEmpty()) {
+        } else if (getActivity().nonEmpty()) {
             return MbObjectType.ACTIVITY;
         } else {
             return MbObjectType.EMPTY;
@@ -164,7 +164,8 @@ public class MbActivity extends AObject {
     }
 
     public boolean isEmpty() {
-        return type == MbActivityType.EMPTY || getObjectType() == MbObjectType.EMPTY || accountUser.isEmpty();
+        return this == MbActivity.EMPTY ||  type == MbActivityType.EMPTY || getObjectType() == MbObjectType.EMPTY
+                || accountUser.isEmpty();
     }
 
     public TimelinePosition getTimelinePosition() {
@@ -237,7 +238,7 @@ public class MbActivity extends AObject {
 
     @NonNull
     public MbActivity getActivity() {
-        return mbActivity;
+        return (mbActivity == null) ? MbActivity.EMPTY : mbActivity;
     }
 
     public void setActivity(MbActivity activity) {
