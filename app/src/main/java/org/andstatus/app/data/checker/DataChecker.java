@@ -14,38 +14,44 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.data;
+package org.andstatus.app.data.checker;
 
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class MyDataChecker {
-    private final MyContext myContext;
-    private final ProgressLogger logger;
+public abstract class DataChecker {
+    static final int PROGRESS_REPORT_PERIOD_SECONDS = 20;
+    MyContext myContext;
+    ProgressLogger logger;
 
-    public MyDataChecker(MyContext myContext, ProgressLogger logger) {
+    public DataChecker setMyContext(MyContext myContext) {
         this.myContext = myContext;
-        this.logger = logger;
+        return this;
     }
 
-    public static void fixDataAsync(ProgressLogger.ProgressCallback progressCallback, final boolean includeLong) {
-        final ProgressLogger logger = new ProgressLogger(progressCallback);
+    public DataChecker setLogger(ProgressLogger logger) {
+        this.logger = logger;
+        return this;
+    }
+
+    public static void fixDataAsync(final ProgressLogger logger, final boolean includeLong) {
         AsyncTaskLauncher.execute(
-                progressCallback,
+                logger.callback,
                 false,
-                new MyAsyncTask<Void, Void, Void>(MyDataChecker.class.getSimpleName(),
+                new MyAsyncTask<Void, Void, Void>(DataChecker.class.getSimpleName(),
                 MyAsyncTask.PoolEnum.LONG_UI) {
 
                     @Override
                     protected Void doInBackground2(Void... params) {
-                        new MyDataChecker(MyContextHolder.get(), logger).fixData(includeLong);
-                        DbUtils.waitMs(MyDataChecker.class, 3000);
+                        fixData(logger, includeLong);
+                        DbUtils.waitMs(DataChecker.class, 3000);
                         return null;
                     }
 
@@ -61,10 +67,33 @@ public class MyDataChecker {
                 });
     }
 
-    public void fixData(boolean includeLong) {
-        new MyDataCheckerMergeUsers(myContext, logger).fixData();
-        new MyDataCheckerConversations(myContext, logger).fixData();
-        new MyDataCheckerTimelines(myContext, logger).fixData();
-        if (includeLong) new MyDataCheckerSearchIndex(myContext, logger).fixData();
+    public static void fixData(final ProgressLogger logger, final boolean includeLong) {
+        MyContext myContext = MyContextHolder.get();
+        if (!myContext.isReady()) {
+            return;
+        }
+        for(DataChecker checker : new DataChecker[]{new DataCheckerMergeUsers(),
+                new DataCheckerConversations(), new DataCheckerTimelines(), new DataCheckerSearchIndex()}) {
+            if (includeLong || checker.notLong()) checker.setMyContext(myContext).setLogger(logger).fix();
+        }
     }
+
+    boolean notLong() {
+        return true;
+    }
+
+    public long fix() {
+        return fix(false);
+    }
+
+
+    public long countChanges() {
+        return fix(true);
+    }
+
+    /**
+     * @return number of changed items (or needed to change)
+     * @param countOnly
+     */
+    abstract long fix(boolean countOnly);
 }

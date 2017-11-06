@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.data;
+package org.andstatus.app.data.checker;
 
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.backup.ProgressLogger;
-import org.andstatus.app.context.MyContext;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.database.table.DownloadTable;
@@ -38,16 +37,10 @@ import java.util.concurrent.ConcurrentSkipListSet;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class MyDataCheckerMergeUsers {
-    private final MyContext myContext;
-    private final ProgressLogger logger;
+class DataCheckerMergeUsers extends DataChecker {
 
-    public MyDataCheckerMergeUsers(MyContext myContext, ProgressLogger logger) {
-        this.myContext = myContext;
-        this.logger = logger;
-    }
-
-    public void fixData() {
+    @Override
+    long fix(boolean countOnly) {
         final String method = "checkUsers";
         logger.logProgress(method + " started");
 
@@ -59,6 +52,7 @@ public class MyDataCheckerMergeUsers {
         logger.logProgress(method + " ended, "
                 + (changedCount > 0 ?  changedCount + " users merged" : " no changes were needed"));
         DbUtils.waitMs(method, changedCount == 0 ? 1000 : 3000);
+        return changedCount;
     }
 
     private Set<MbActivity> getUsersToMerge() {

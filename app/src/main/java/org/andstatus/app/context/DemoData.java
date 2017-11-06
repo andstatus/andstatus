@@ -26,7 +26,7 @@ import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DemoConversationInserter;
 import org.andstatus.app.data.DemoGnuSocialConversationInserter;
-import org.andstatus.app.data.MyDataCheckerConversations;
+import org.andstatus.app.data.checker.DataCheckerConversations;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.DemoOriginInserter;
 import org.andstatus.app.origin.Origin;
@@ -227,8 +227,8 @@ public final class DemoData {
     }
 
     public void assertConversations() {
-        assertEquals("Conversations need fixes", 0, new MyDataCheckerConversations(MyContextHolder.get(),
-                ProgressLogger.getEmpty()).countChanges());
+        assertEquals("Conversations need fixes", 0, new DataCheckerConversations()
+                        .setMyContext(MyContextHolder.get()).setLogger(ProgressLogger.getEmpty()).countChanges());
     }
 
     private void setSuccessfulAccountAsCurrent() {

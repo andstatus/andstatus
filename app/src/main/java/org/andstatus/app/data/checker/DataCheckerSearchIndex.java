@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.data;
+package org.andstatus.app.data.checker;
 
 import android.database.Cursor;
 
-import org.andstatus.app.backup.ProgressLogger;
-import org.andstatus.app.context.MyContext;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyHtml;
@@ -30,17 +29,15 @@ import static org.andstatus.app.data.MyQuery.quoteIfNotQuoted;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class MyDataCheckerSearchIndex {
-    private static final int PROGRESS_REPORT_PERIOD_SECONDS = 20;
-    private final MyContext myContext;
-    private final ProgressLogger logger;
+public class DataCheckerSearchIndex extends DataChecker {
 
-    public MyDataCheckerSearchIndex(MyContext myContext, ProgressLogger logger) {
-        this.myContext = myContext;
-        this.logger = logger;
+    @Override
+    boolean notLong() {
+        return false;
     }
 
-    public void fixData() {
+    @Override
+    public long fix(boolean countOnly) {
         logger.logProgress("Search index update started");
         String sql = "SELECT " + MsgTable._ID
                 + ", " + MsgTable.BODY
@@ -82,6 +79,7 @@ public class MyDataCheckerSearchIndex {
                 ? "No changes to search index were needed. " + rowsCount + " messages"
                 : "Changed search index for " + changedCount + " of " + rowsCount + " messages");
         DbUtils.waitMs(this, changedCount == 0 ? 1000 : 3000);
+        return changedCount;
     }
 
 }

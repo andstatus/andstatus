@@ -43,7 +43,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
-import org.andstatus.app.data.MyDataChecker;
+import org.andstatus.app.data.checker.DataChecker;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
@@ -122,7 +122,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
         setupHelpFlipper();
 
         if (getIntent().hasExtra(EXTRA_CHECK_DATA) && savedInstanceState == null) {
-            MyDataChecker.fixDataAsync(this, true);
+            DataChecker.fixDataAsync(new ProgressLogger(this), true);
         }
     }
 

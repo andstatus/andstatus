@@ -14,26 +14,18 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.data;
+package org.andstatus.app.data.checker;
 
-import org.andstatus.app.backup.ProgressLogger;
-import org.andstatus.app.context.MyContext;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.timeline.meta.TimelineSaver;
 import org.andstatus.app.util.MyLog;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class MyDataCheckerTimelines {
-    private final MyContext myContext;
-    private final ProgressLogger logger;
+class DataCheckerTimelines extends DataChecker {
 
-    public MyDataCheckerTimelines(MyContext myContext, ProgressLogger logger) {
-        this.myContext = myContext;
-        this.logger = logger;
-    }
-
-    public void fixData() {
+    public long fix(boolean countOnly) {
         logger.logProgress("Checking if all default timelines are present");
         long rowsCount = 0;
         long changedCount = 0;
@@ -49,6 +41,6 @@ public class MyDataCheckerTimelines {
                 ? "No changes to timelines were needed. " + rowsCount + " timelines"
                 : "Changed " + changedCount + " of " + myContext.persistentTimelines().values().size() + " timelines");
         DbUtils.waitMs(this, changedCount == 0 ? 1000 : 3000);
+        return changedCount;
     }
-
 }

@@ -41,10 +41,10 @@ public class ProgressLogger {
         };
     }
 
-    private final ProgressCallback progressCallback;
+    public final ProgressCallback callback;
 
-    public ProgressLogger(ProgressCallback progressCallback) {
-        this.progressCallback = progressCallback;
+    public ProgressLogger(ProgressCallback callback) {
+        this.callback = callback;
     }
 
     public void logSuccess() {
@@ -57,9 +57,7 @@ public class ProgressLogger {
 
     public void onComplete(boolean success) {
         logProgress(success ?"Completed successfully" : "Failed");
-        if (progressCallback != null) {
-            progressCallback.onComplete(success);
-        }
+        if (callback != null) callback.onComplete(success);
     }
 
     public boolean loggedMoreSecondsAgoThan(long secondsAgo) {
@@ -69,9 +67,7 @@ public class ProgressLogger {
     public void logProgress(CharSequence message) {
         updateLastLoggedTime();
         MyLog.d(this, "Progress: " + message);
-        if (progressCallback != null) {
-            progressCallback.onProgressMessage(message);
-        }
+        if (callback != null) callback.onProgressMessage(message);
     }
 
     public void updateLastLoggedTime() {

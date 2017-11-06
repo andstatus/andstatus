@@ -30,7 +30,7 @@ import org.andstatus.app.context.MyPreferencesGroupsEnum;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MyDataChecker;
+import org.andstatus.app.data.checker.DataChecker;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
@@ -223,7 +223,7 @@ public class MyBackupAgent extends BackupAgent {
                     } else {
                         ensureNoDataIsPresent();
                         doRestore(data);
-                        new MyDataChecker(MyContextHolder.get(), backupDescriptor.getLogger()).fixData(false);
+                        DataChecker.fixData(backupDescriptor.getLogger(),false);
                         success = true;
                     }
                     break;

@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.data;
+package org.andstatus.app.data.checker;
 
 import android.database.Cursor;
 import android.text.TextUtils;
 
-import org.andstatus.app.backup.ProgressLogger;
-import org.andstatus.app.context.MyContext;
+import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
@@ -34,13 +34,9 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class MyDataCheckerConversations {
-    private static final int PROGRESS_REPORT_PERIOD_SECONDS = 20;
-    private final MyContext myContext;
-    private final ProgressLogger logger;
-
-    Map<Long, MsgItem> items = new TreeMap<>();
-    Map<Long, List<MsgItem>> replies = new TreeMap<>();
+public class DataCheckerConversations extends DataChecker {
+    private Map<Long, MsgItem> items = new TreeMap<>();
+    private Map<Long, List<MsgItem>> replies = new TreeMap<>();
 
     private class MsgItem {
         long id = 0;
@@ -51,7 +47,7 @@ public class MyDataCheckerConversations {
         long conversationId = 0;
         String conversationOid = "";
 
-        public boolean fixConversationId(long conversationId) {
+        boolean fixConversationId(long conversationId) {
             final boolean different = this.conversationId != conversationId;
             if (different) {
                 this.conversationId = conversationId;
@@ -59,7 +55,7 @@ public class MyDataCheckerConversations {
             return different;
         }
 
-        public boolean fixInReplyToId(int inReplyToId) {
+        boolean fixInReplyToId(int inReplyToId) {
             final boolean different = this.inReplyToId != inReplyToId;
             if (different) {
                 this.inReplyToId = inReplyToId;
@@ -71,29 +67,17 @@ public class MyDataCheckerConversations {
             return isConversationIdChanged() || isInReplyToIdChanged();
         }
 
-        public boolean isConversationIdChanged() {
+        boolean isConversationIdChanged() {
             return conversationId != conversationId_initial;
         }
 
-        public boolean isInReplyToIdChanged() {
+        boolean isInReplyToIdChanged() {
             return inReplyToId != inReplyToId_initial;
         }
     }
 
-    public MyDataCheckerConversations(MyContext myContext, ProgressLogger logger) {
-        this.myContext = myContext;
-        this.logger = logger;
-    }
-
-    public int fixData() {
-        return fixInternal(false);
-    }
-
-    public int countChanges() {
-        return fixInternal(true);
-    }
-
-    public int fixInternal(boolean countOnly) {
+    @Override
+    public long fix(boolean countOnly) {
         final String method = "checkConversations";
         logger.logProgress(method + " started");
         loadMessages();

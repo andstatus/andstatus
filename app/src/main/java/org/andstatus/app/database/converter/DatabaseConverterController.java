@@ -24,7 +24,7 @@ import net.jcip.annotations.GuardedBy;
 import org.andstatus.app.R;
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.MyDataChecker;
+import org.andstatus.app.data.checker.DataChecker;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.MyServiceManager;
@@ -167,7 +167,7 @@ public class DatabaseConverterController {
             if (MyContextHolder.get().isReady()) {
                 MyServiceManager.stopService();
                 new TimelineSaver(MyContextHolder.get()).setAddDefaults(true).executeNotOnUiThread();
-                new MyDataChecker(MyContextHolder.get(), progressLogger).fixData(true);
+                DataChecker.fixData(progressLogger,false);
             }
         }
     }
