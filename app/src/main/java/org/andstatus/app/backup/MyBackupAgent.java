@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -56,8 +56,6 @@ public class MyBackupAgent extends BackupAgent {
     long accountsRestored = 0;
     private long databasesBackedUp = 0;
     long databasesRestored = 0;
-    private long suggestionsBackedUp = 0;
-    long suggestionsRestored = 0;
     private long sharedPreferencesBackedUp = 0;
     long sharedPreferencesRestored = 0;
 
@@ -258,8 +256,7 @@ public class MyBackupAgent extends BackupAgent {
     private void doRestore(MyBackupDataInput data) throws IOException {
         restoreSharedPreferences(data);
         assertNextHeader(data, DATABASE_KEY + "_" + DatabaseHolder.DATABASE_NAME);
-        databasesRestored += restoreFile(data,
-                    MyStorage.getDatabasePath(DatabaseHolder.DATABASE_NAME));
+        databasesRestored += restoreFile(data, MyStorage.getDatabasePath(DatabaseHolder.DATABASE_NAME));
         MyContextHolder.release();
         MyContextHolder.setOnRestore(true);
         MyContextHolder.initialize(this, this);
@@ -368,9 +365,5 @@ public class MyBackupAgent extends BackupAgent {
 
     long getSharedPreferencesBackedUp() {
         return sharedPreferencesBackedUp;
-    }
-
-    long getSuggestionsBackedUp() {
-        return suggestionsBackedUp;
     }
 }
