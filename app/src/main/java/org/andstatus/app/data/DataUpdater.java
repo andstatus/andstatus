@@ -50,6 +50,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static org.andstatus.app.util.UriUtils.nonEmptyOid;
+import static org.andstatus.app.util.UriUtils.nonRealOid;
+
 /**
  * Stores (updates) messages and users
  *  from a Social network into a database.
@@ -180,11 +183,9 @@ public class DataUpdater {
             if (activity.getAuthor().userId != 0) {
                 values.put(MsgTable.AUTHOR_ID, activity.getAuthor().userId);
             }
-            if (!TextUtils.isEmpty(message.oid)) {
-                values.put(MsgTable.MSG_OID, message.oid);
-            }
+            values.put(MsgTable.MSG_OID, message.oid);
             values.put(MsgTable.ORIGIN_ID, message.originId);
-            if (!TextUtils.isEmpty(message.conversationOid)) {
+            if (nonEmptyOid(message.conversationOid)) {
                 values.put(MsgTable.CONVERSATION_OID, message.conversationOid);
             }
             values.put(MsgTable.BODY, message.getBody());
@@ -272,7 +273,7 @@ public class DataUpdater {
     private void updateInReplyTo(MbActivity activity, ContentValues values) {
         final MbActivity inReply = activity.getMessage().getInReplyTo();
         if (StringUtils.nonEmpty(inReply.getMessage().oid)) {
-            if (TextUtils.isEmpty(inReply.getMessage().conversationOid)) {
+            if (nonRealOid(inReply.getMessage().conversationOid)) {
                 inReply.getMessage().setConversationOid(activity.getMessage().conversationOid);
             }
             new DataUpdater(execContext).onActivity(inReply);
@@ -332,7 +333,7 @@ public class DataUpdater {
                 activity.type.equals(MbActivityType.UNDO_FOLLOW) ? TriState.FALSE : TriState.UNKNOWN;
         if (mbUser.followedByMe.known()) {
             followedByMe = mbUser.followedByMe;
-        } else if (activity.getActor().userId == me.getUserId()) {
+        } else if (activity.getActor().userId == me.getUserId() && me.getUserId() != 0) {
             followedByMe = followedByActor;
         }
 

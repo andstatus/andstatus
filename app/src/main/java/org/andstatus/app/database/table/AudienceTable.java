@@ -20,13 +20,14 @@ public class AudienceTable {
     public static final String MSG_ID =  MsgTable.MSG_ID;
 
     public static void create(SQLiteDatabase db) {
-        DbUtils.execSQL(db, "CREATE TABLE " + AudienceTable.TABLE_NAME + " ("
+        DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + USER_ID + " INTEGER NOT NULL,"
                 + MSG_ID + " INTEGER NOT NULL,"
                 + " CONSTRAINT pk_audience PRIMARY KEY (" + MSG_ID + " ASC, " + USER_ID + " ASC)"
                 + ")");
 
         DbUtils.execSQL(db, "CREATE INDEX idx_audience_user ON " + TABLE_NAME + " (" + USER_ID + ")");
+        DbUtils.execSQL(db, "CREATE INDEX idx_audience_msg ON " + TABLE_NAME + " (" + MSG_ID + ")");
     }
 
 }

@@ -69,28 +69,28 @@ public final class DownloadTable implements BaseColumns {
     public static final String IMAGE_URL = "image_url";
 
     public static void create(SQLiteDatabase db) {
-        DbUtils.execSQL(db, "CREATE TABLE " + DownloadTable.TABLE_NAME + " ("
+        DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + DownloadTable.DOWNLOAD_TYPE + " INTEGER NOT NULL,"
-                + DownloadTable.USER_ID + " INTEGER,"
-                + DownloadTable.MSG_ID + " INTEGER,"
-                + DownloadTable.CONTENT_TYPE + " INTEGER NOT NULL,"
-                + DownloadTable.VALID_FROM + " INTEGER NOT NULL,"
-                + DownloadTable.URI + " TEXT NOT NULL,"
-                + DownloadTable.LOADED_DATE + " INTEGER,"
-                + DownloadTable.DOWNLOAD_STATUS + " INTEGER NOT NULL DEFAULT 0,"
-                + DownloadTable.FILE_NAME + " TEXT"
+                + DOWNLOAD_TYPE + " INTEGER NOT NULL,"
+                + USER_ID + " INTEGER NOT NULL DEFAULT 0,"
+                + MSG_ID + " INTEGER NOT NULL DEFAULT 0,"
+                + CONTENT_TYPE + " INTEGER NOT NULL,"
+                + VALID_FROM + " INTEGER NOT NULL,"
+                + URI + " TEXT NOT NULL,"
+                + LOADED_DATE + " INTEGER NOT NULL DEFAULT 0,"
+                + DOWNLOAD_STATUS + " INTEGER NOT NULL DEFAULT 0,"
+                + FILE_NAME + " TEXT"
                 + ")");
 
-        DbUtils.execSQL(db, "CREATE INDEX idx_download_user ON " + DownloadTable.TABLE_NAME + " ("
-                + DownloadTable.USER_ID + ", "
-                + DownloadTable.DOWNLOAD_STATUS
-                + ")");
+        DbUtils.execSQL(db, "CREATE INDEX idx_download_user ON " + TABLE_NAME + " ("
+                + USER_ID + ", "
+                + DOWNLOAD_STATUS
+                + ") WHERE " + USER_ID + " != 0");
 
-        DbUtils.execSQL(db, "CREATE INDEX idx_download_msg ON " + DownloadTable.TABLE_NAME + " ("
-                + DownloadTable.MSG_ID + ", "
-                + DownloadTable.CONTENT_TYPE  + ", "
-                + DownloadTable.DOWNLOAD_STATUS
-                + ")");
+        DbUtils.execSQL(db, "CREATE INDEX idx_download_msg ON " + TABLE_NAME + " ("
+                + MSG_ID + ", "
+                + CONTENT_TYPE  + ", "
+                + DOWNLOAD_STATUS
+                + ") WHERE " + MSG_ID + " != 0");
     }
 }

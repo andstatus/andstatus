@@ -44,6 +44,7 @@ import org.andstatus.app.support.java.util.function.SupplierWithException;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UriUtils;
 
 import java.util.List;
 
@@ -156,7 +157,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         String oid = getUserOid(method, userId, false);
         String msgLog = method + "; userName='" + userName + "'";
         MbUser user = null;
-        if (MbUser.isOidReal(oid) || !TextUtils.isEmpty(userName)) {
+        if (UriUtils.isOidReal(oid) || !TextUtils.isEmpty(userName)) {
             try {
                 user = execContext.getMyAccount().getConnection().getUser(oid, userName);
                 logIfUserIsEmpty(msgLog, userId, user);

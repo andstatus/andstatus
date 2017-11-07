@@ -379,7 +379,7 @@ public class DataUpdaterTest {
         message.attachments.add(MbAttachment.fromUriAndContentType(demoData.LOCAL_IMAGE_TEST_URI,
                 MyContentType.IMAGE));
         new DataUpdater(ma).onActivity(activity);
-        assertNotEquals("Message added " + activity.getMessage(), 0, message.msgId);
+        assertNotEquals("Message added " + activity, 0, message.msgId);
         assertNotEquals("Activity added " + activity, 0, activity.getId());
         assertEquals("Status of unsent message", DownloadStatus.SENDING, DownloadStatus.load(
                 MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, message.msgId)));

@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+/*
+ * Copyright (C) 2014-2017 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,8 @@ import org.json.JSONObject;
 import java.net.URL;
 
 public class UriUtils {
-    
+    public static final String TEMP_OID_PREFIX = "andstatustemp:";
+
     private UriUtils() {
         // Empty
     }
@@ -113,4 +114,23 @@ public class UriUtils {
         return false;
     }
 
+    public static boolean isOidReal(String oid) {
+        return !nonRealOid(oid);
+    }
+
+    public static boolean nonRealOid(String oid) {
+        return isEmptyOid(oid) || isTempOid(oid);
+    }
+
+    public static boolean isTempOid(String oid) {
+        return nonEmptyOid(oid) && oid.startsWith(TEMP_OID_PREFIX);
+    }
+
+    public static boolean nonEmptyOid(String oid) {
+        return !isEmptyOid(oid);
+    }
+
+    public static boolean isEmptyOid(String oid) {
+        return SharedPreferencesUtil.isEmpty(oid);
+    }
 }

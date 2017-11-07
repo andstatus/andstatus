@@ -105,8 +105,8 @@ public final class UserTable implements BaseColumns {
     /**
      * Derived from {@link ActivityTable#ACTOR_ID}
      * Whether this (and other similar...) is {@link #USERNAME} or {@link #REAL_NAME}, depends on settings
-     */
-    /** Derived from {@link ActivityTable#ACTOR_ID} */
+     *
+     * Derived from {@link ActivityTable#ACTOR_ID} */
     public static final String ACTOR_NAME = "actor_name";
     /** Derived from {@link MsgTable#AUTHOR_ID} */
     public static final String AUTHOR_NAME = "author_name";
@@ -118,33 +118,33 @@ public final class UserTable implements BaseColumns {
     public static final String DEFAULT_SORT_ORDER = USERNAME + " ASC";
 
     public static void create(SQLiteDatabase db) {
-        DbUtils.execSQL(db, "CREATE TABLE " + UserTable.TABLE_NAME + " ("
+        DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + UserTable.ORIGIN_ID + " INTEGER NOT NULL,"
-                + UserTable.USER_OID + " TEXT,"
-                + UserTable.USERNAME + " TEXT NOT NULL,"
-                + UserTable.WEBFINGER_ID + " TEXT NOT NULL,"
-                + UserTable.REAL_NAME + " TEXT,"
-                + UserTable.DESCRIPTION + " TEXT,"
-                + UserTable.LOCATION + " TEXT,"
-                + UserTable.PROFILE_URL + " TEXT,"
-                + UserTable.HOMEPAGE + " TEXT,"
-                + UserTable.AVATAR_URL + " TEXT,"
-                + UserTable.BANNER_URL + " TEXT,"
-                + UserTable.MSG_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
-                + UserTable.FAVORITES_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
-                + UserTable.FOLLOWING_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
-                + UserTable.FOLLOWERS_COUNT + " INTEGER DEFAULT 0 NOT NULL,"
-                + UserTable.CREATED_DATE + " INTEGER DEFAULT 0 NOT NULL,"
-                + UserTable.UPDATED_DATE + " INTEGER DEFAULT 0 NOT NULL,"
-                + UserTable.INS_DATE + " INTEGER NOT NULL,"
-                + UserTable.USER_ACTIVITY_ID + " INTEGER DEFAULT 0 NOT NULL,"
-                + UserTable.USER_ACTIVITY_DATE + " INTEGER DEFAULT 0 NOT NULL"
+                + ORIGIN_ID + " INTEGER NOT NULL,"
+                + USER_OID + " TEXT NOT NULL,"
+                + USERNAME + " TEXT NOT NULL,"
+                + WEBFINGER_ID + " TEXT NOT NULL,"
+                + REAL_NAME + " TEXT,"
+                + DESCRIPTION + " TEXT,"
+                + LOCATION + " TEXT,"
+                + PROFILE_URL + " TEXT,"
+                + HOMEPAGE + " TEXT,"
+                + AVATAR_URL + " TEXT,"
+                + BANNER_URL + " TEXT,"
+                + MSG_COUNT + " INTEGER NOT NULL DEFAULT 0,"
+                + FAVORITES_COUNT + " INTEGER NOT NULL DEFAULT 0,"
+                + FOLLOWING_COUNT + " INTEGER NOT NULL DEFAULT 0,"
+                + FOLLOWERS_COUNT + " INTEGER NOT NULL DEFAULT 0,"
+                + CREATED_DATE + " INTEGER NOT NULL DEFAULT 0,"
+                + UPDATED_DATE + " INTEGER NOT NULL DEFAULT 0,"
+                + INS_DATE + " INTEGER NOT NULL,"
+                + USER_ACTIVITY_ID + " INTEGER NOT NULL DEFAULT 0,"
+                + USER_ACTIVITY_DATE + " INTEGER NOT NULL DEFAULT 0"
                 + ")");
 
-        DbUtils.execSQL(db, "CREATE UNIQUE INDEX idx_user_origin ON " + UserTable.TABLE_NAME + " ("
-                + UserTable.ORIGIN_ID + ", "
-                + UserTable.USER_OID
+        DbUtils.execSQL(db, "CREATE UNIQUE INDEX idx_user_origin ON " + TABLE_NAME + " ("
+                + ORIGIN_ID + ", "
+                + USER_OID
                 + ")");
     }
 }

@@ -430,7 +430,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                     myAccount.userId = myAccount.accountData.getDataLong(KEY_USER_ID, myAccount.userId);
                 } else {
                     DataUpdater di = new DataUpdater(myAccount);
-                    myAccount.userId = di.onActivity(user.update(myAccount.toPartialUser())).getUser().userId;
+                    myAccount.userId = di.onActivity(user.update(user)).getUser().userId;
                 }
             }
             if (ok && !isPersistent()) {

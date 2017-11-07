@@ -32,6 +32,11 @@ import org.andstatus.app.util.TriState;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.andstatus.app.util.UriUtils.TEMP_OID_PREFIX;
+import static org.andstatus.app.util.UriUtils.isEmptyOid;
+import static org.andstatus.app.util.UriUtils.isOidReal;
+import static org.andstatus.app.util.UriUtils.nonRealOid;
+
 /**
  * Message of a Social Network
  * @author yvolk@yurivolkov.com
@@ -65,12 +70,16 @@ public class MbMessage extends AObject {
 
     public static MbMessage fromOriginAndOid(long originId, String oid, DownloadStatus status) {
         MbMessage message = new MbMessage(originId);
-        message.oid = oid;
+        message.oid = isEmptyOid(oid) ? getTempOid() : oid;
         message.status = status;
         if (TextUtils.isEmpty(oid) && status == DownloadStatus.LOADED) {
             message.status = DownloadStatus.UNKNOWN;
         }
         return message;
+    }
+
+    private static String getTempOid() {
+        return TEMP_OID_PREFIX + "msg:" + MyLog.uniqueCurrentTimeMS() ;
     }
 
     private MbMessage(long originId) {
@@ -124,7 +133,7 @@ public class MbMessage extends AObject {
         if (conversationId == 0 && msgId != 0) {
             conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, msgId);
         }
-        if (conversationId == 0 && !TextUtils.isEmpty(conversationOid)) {
+        if (conversationId == 0  && !TextUtils.isEmpty(conversationOid)) {
             conversationId = MyQuery.conversationOidToId(originId, conversationOid);
         }
         if (conversationId == 0 && getInReplyTo().nonEmpty()) {
@@ -154,7 +163,7 @@ public class MbMessage extends AObject {
     public boolean isEmpty() {
         return this.isEmpty
                 || originId == 0
-                || (TextUtils.isEmpty(oid)
+                || (nonRealOid(oid)
                     && ((status != DownloadStatus.SENDING && status != DownloadStatus.DRAFT)
                         || (TextUtils.isEmpty(body) && attachments.isEmpty())));
     }
@@ -200,7 +209,7 @@ public class MbMessage extends AObject {
         } else if(nonPrivate()) {
             builder.append("nonprivate,");
         }
-        if(!TextUtils.isEmpty(oid)) {
+        if(isOidReal(oid)) {
             builder.append("oid:'" + oid + "',");
         }
         if(!TextUtils.isEmpty(url)) {

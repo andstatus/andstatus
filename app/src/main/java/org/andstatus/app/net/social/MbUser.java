@@ -43,7 +43,6 @@ public class MbUser implements Comparable<MbUser> {
     public static final MbUser EMPTY = new MbUser(0L);
     // RegEx from http://www.mkyong.com/regular-expressions/how-to-validate-email-address-with-regular-expression/
     public static final String WEBFINGER_ID_REGEX = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
-    public static final String TEMP_OID_PREFIX = "andstatustemp:";
     public String oid = "";
     private String userName = "";
     private String webFingerId = "";
@@ -92,7 +91,7 @@ public class MbUser implements Comparable<MbUser> {
 
     @NonNull
     public MbActivity update(MbUser accountUser) {
-        return update(accountUser, MbUser.EMPTY);
+        return update(accountUser, accountUser);
     }
 
     @NonNull
@@ -102,6 +101,9 @@ public class MbUser implements Comparable<MbUser> {
 
     @NonNull
     public MbActivity act(MbUser accountUser, @NonNull MbUser actor, @NonNull MbActivityType activityType) {
+        if (this == EMPTY || accountUser == EMPTY || actor == EMPTY) {
+            return MbActivity.EMPTY;
+        }
         MbActivity mbActivity = MbActivity.from(accountUser, activityType);
         mbActivity.setActor(actor);
         mbActivity.setUser(this);
@@ -113,12 +115,12 @@ public class MbUser implements Comparable<MbUser> {
     }
 
     public boolean isEmpty() {
-        return originId==0 || (userId == 0 && !isOidReal(oid)
+        return this == EMPTY || originId==0 || (userId == 0 && !UriUtils.isOidReal(oid)
                 && TextUtils.isEmpty(webFingerId) && TextUtils.isEmpty(userName));
     }
 
     public boolean isPartiallyDefined() {
-        return originId==0 || !isOidReal(oid) || TextUtils.isEmpty(webFingerId)
+        return originId==0 || !UriUtils.isOidReal(oid) || TextUtils.isEmpty(webFingerId)
                 || TextUtils.isEmpty(userName);
     }
 
@@ -127,11 +129,7 @@ public class MbUser implements Comparable<MbUser> {
     }
 
     public boolean isOidReal() {
-        return isOidReal(oid);
-    }
-
-    public static boolean isOidReal(String oid) {
-        return !SharedPreferencesUtil.isEmpty(oid) && !oid.startsWith(TEMP_OID_PREFIX);
+        return UriUtils.isOidReal(oid);
     }
 
     @Override
@@ -167,6 +165,9 @@ public class MbUser implements Comparable<MbUser> {
     }
 
     public MbUser setUserName(String userName) {
+        if (this == EMPTY) {
+            throw new IllegalStateException("Cannot set username of EMPTY MbUser");
+        }
         this.userName = SharedPreferencesUtil.isEmpty(userName) ? "" : userName.trim();
         fixWebFingerId();
         return this;
@@ -196,7 +197,7 @@ public class MbUser implements Comparable<MbUser> {
         if (userId != 0 || that.userId != 0) {
             return userId == that.userId;
         }
-        if (isOidReal(oid) || isOidReal(that.oid)) {
+        if (UriUtils.isOidReal(oid) || UriUtils.isOidReal(that.oid)) {
             return oid.equals(that.oid);
         }
         if (!TextUtils.isEmpty(getWebFingerId()) || !TextUtils.isEmpty(that.getWebFingerId())) {
@@ -211,7 +212,7 @@ public class MbUser implements Comparable<MbUser> {
         if (userId != 0) {
             return 31 * result + (int) (userId ^ (userId >>> 32));
         }
-        if (isOidReal(oid)) {
+        if (UriUtils.isOidReal(oid)) {
             return 31 * result + oid.hashCode();
         }
         if (!TextUtils.isEmpty(getWebFingerId())) {
@@ -227,7 +228,7 @@ public class MbUser implements Comparable<MbUser> {
             if (userId == that.userId) return true;
         }
         if (originId == that.originId) {
-            if (isOidReal(oid) && isOidReal(that.oid)) {
+            if (UriUtils.isOidReal(oid) && UriUtils.isOidReal(that.oid)) {
                 return oid.equals(that.oid);
             }
         }
@@ -332,7 +333,7 @@ public class MbUser implements Comparable<MbUser> {
 
     public static String getTempOid(String webFingerId, String validUserName) {
         String oid = isWebFingerIdValid(webFingerId) ? webFingerId : validUserName;
-        return TEMP_OID_PREFIX + oid;
+        return UriUtils.TEMP_OID_PREFIX + oid;
     }
 
     public List<MbUser> extractUsersFromBodyText(String textIn, boolean replyOnly) {

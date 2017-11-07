@@ -123,9 +123,9 @@ public final class MsgTable implements BaseColumns {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + ORIGIN_ID + " INTEGER NOT NULL,"
-                + MSG_OID + " TEXT,"
+                + MSG_OID + " TEXT NOT NULL,"
                 + MSG_STATUS + " INTEGER NOT NULL DEFAULT 0,"
-                + CONVERSATION_ID + " INTEGER,"
+                + CONVERSATION_ID + " INTEGER NOT NULL DEFAULT 0" + ","
                 + CONVERSATION_OID + " TEXT,"
                 + URL + " TEXT,"
                 + BODY + " TEXT,"
@@ -153,16 +153,10 @@ public final class MsgTable implements BaseColumns {
         // Index not null rows only, see https://www.sqlite.org/partialindex.html
         DbUtils.execSQL(db, "CREATE INDEX idx_msg_in_reply_to_msg_id ON " + TABLE_NAME + " ("
                 + IN_REPLY_TO_MSG_ID + ")"
-                + " WHERE " + IN_REPLY_TO_MSG_ID + " IS NOT NULL");
+                + " WHERE " + IN_REPLY_TO_MSG_ID + "!=0");
 
         DbUtils.execSQL(db, "CREATE INDEX idx_msg_conversation_id ON " + TABLE_NAME + " ("
-                + CONVERSATION_ID + ")"
-                + " WHERE " + CONVERSATION_ID + " IS NOT NULL");
-
-        DbUtils.execSQL(db, "CREATE INDEX idx_msg_updated_date ON " + TABLE_NAME + " ("
-                + UPDATED_DATE
-                + ")"
-        );
+                + CONVERSATION_ID + ")");
 
     }
 }

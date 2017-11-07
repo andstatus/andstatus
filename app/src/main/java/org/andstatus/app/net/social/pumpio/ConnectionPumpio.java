@@ -41,6 +41,7 @@ import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -588,7 +589,7 @@ public class ConnectionPumpio extends Connection {
     @Override
     public MbUser getUser(String userId, String userName) throws ConnectionException {
         ConnectionAndUrl conu = getConnectionAndUrlForUsername(ApiRoutineEnum.GET_USER,
-                MbUser.isOidReal(userId) ? userOidToUsername(userId) : userName);
+                UriUtils.isOidReal(userId) ? userOidToUsername(userId) : userName);
         JSONObject jso = conu.httpConnection.getRequest(conu.url);
         MbUser mbUser = userFromJson(jso);
         MyLog.v(this, "getUser oid='" + userId + "', userName='" + userName + "' -> " + mbUser.getRealName());

@@ -62,7 +62,7 @@ public final class ActivityTable implements BaseColumns {
     }
 
     public static String getTimeSortField(@NonNull TimelineType timelineType) {
-        return timelineType.showsActivities() ? UPDATED_DATE : MsgTable.UPDATED_DATE;
+        return UPDATED_DATE;
     }
 
     private ActivityTable() {
@@ -77,9 +77,9 @@ public final class ActivityTable implements BaseColumns {
                 + ACCOUNT_ID + " INTEGER NOT NULL,"
                 + ACTIVITY_TYPE + " INTEGER NOT NULL,"
                 + ACTOR_ID + " INTEGER NOT NULL,"
-                + MSG_ID + " INTEGER,"
-                + USER_ID + " INTEGER,"
-                + OBJ_ACTIVITY_ID + " INTEGER,"
+                + MSG_ID + " INTEGER NOT NULL,"
+                + USER_ID + " INTEGER NOT NULL,"
+                + OBJ_ACTIVITY_ID + " INTEGER NOT NULL,"
                 + SUBSCRIBED + " INTEGER NOT NULL DEFAULT 0,"
                 + NOTIFIED + " INTEGER NOT NULL DEFAULT 0,"
                 + INS_DATE + " INTEGER NOT NULL,"
@@ -93,26 +93,44 @@ public final class ActivityTable implements BaseColumns {
         );
 
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_message ON " + TABLE_NAME + " ("
-                    + MSG_ID
+                + MSG_ID
                 + ")"
-                + " WHERE " + MSG_ID + " IS NOT NULL"
+                + " WHERE " + MSG_ID + " != 0"
         );
 
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_user ON " + TABLE_NAME + " ("
                 + USER_ID
                 + ")"
-                + " WHERE " + USER_ID + " IS NOT NULL"
+                + " WHERE " + USER_ID + " != 0"
         );
 
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_activity ON " + TABLE_NAME + " ("
                 + OBJ_ACTIVITY_ID
                 + ")"
-                + " WHERE " + OBJ_ACTIVITY_ID + " IS NOT NULL"
+                + " WHERE " + OBJ_ACTIVITY_ID + " != 0"
         );
 
-        DbUtils.execSQL(db, "CREATE INDEX idx_activity_updated_date ON " + TABLE_NAME + " ("
+        DbUtils.execSQL(db, "CREATE INDEX idx_activity_timeline ON " + TABLE_NAME + " ("
                 + UPDATED_DATE
                 + ")"
+        );
+
+        DbUtils.execSQL(db, "CREATE INDEX idx_activity_actor_timeline ON " + TABLE_NAME + " ("
+                + ACTOR_ID + ", "
+                + UPDATED_DATE
+                + ")"
+        );
+
+        DbUtils.execSQL(db, "CREATE INDEX idx_activity_subscribed_timeline ON " + TABLE_NAME + " ("
+                + UPDATED_DATE
+                + ")"
+                + " WHERE " + SUBSCRIBED + "=2 AND " + MSG_ID + "!=0"
+        );
+
+        DbUtils.execSQL(db, "CREATE INDEX idx_activity_notified_timeline ON " + TABLE_NAME + " ("
+                + UPDATED_DATE
+                + ")"
+                + " WHERE " + NOTIFIED + "=2"
         );
     }
 }

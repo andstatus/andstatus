@@ -53,14 +53,20 @@ public final class FriendshipTable {
     public static final String ACTOR_FOLLOWED = "actor_followed";
 
     public static void create(SQLiteDatabase db) {
-        DbUtils.execSQL(db, "CREATE TABLE " + FriendshipTable.TABLE_NAME + " ("
-                + FriendshipTable.USER_ID + " INTEGER NOT NULL,"
-                + FriendshipTable.FRIEND_ID + " INTEGER NOT NULL,"
-                + FriendshipTable.FOLLOWED + " BOOLEAN DEFAULT 1 NOT NULL,"
+        DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
+                + USER_ID + " INTEGER NOT NULL,"
+                + FRIEND_ID + " INTEGER NOT NULL,"
+                + FOLLOWED + " BOOLEAN NOT NULL,"
 
                 + " CONSTRAINT pk_friendship PRIMARY KEY ("
-                + FriendshipTable.USER_ID + " ASC, "
-                + FriendshipTable.FRIEND_ID + " ASC)"
+                + USER_ID + ", "
+                + FRIEND_ID + ")"
                 + ")");
+
+        DbUtils.execSQL(db, "CREATE INDEX idx_followers ON " + TABLE_NAME + " ("
+                + FRIEND_ID + ", "
+                + USER_ID
+                + ")"
+        );
     }
 }

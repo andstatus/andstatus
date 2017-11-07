@@ -502,7 +502,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     public MbUser getUser(String userId, String userName) throws ConnectionException {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_USER));
         Uri.Builder builder = sUri.buildUpon();
-        if (MbUser.isOidReal(userId)) {
+        if (UriUtils.isOidReal(userId)) {
             builder.appendQueryParameter("user_id", userId);
         } else {
             builder.appendQueryParameter("screen_name", userName);

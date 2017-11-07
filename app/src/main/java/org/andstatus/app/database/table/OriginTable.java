@@ -63,20 +63,15 @@ public final class OriginTable implements BaseColumns {
                 + ORIGIN_TYPE_ID + " INTEGER NOT NULL,"
                 + ORIGIN_NAME + " TEXT NOT NULL,"
                 + ORIGIN_URL + " TEXT NOT NULL,"
-                + SSL + " BOOLEAN DEFAULT 1 NOT NULL,"
-                + SSL_MODE + " INTEGER DEFAULT " + SslModeEnum.SECURE.id + " NOT NULL,"
-                + ALLOW_HTML + " BOOLEAN DEFAULT 1 NOT NULL,"
+                + SSL + " BOOLEAN NOT NULL DEFAULT 1,"
+                + SSL_MODE + " INTEGER NOT NULL DEFAULT " + SslModeEnum.SECURE.id +","
+                + ALLOW_HTML + " BOOLEAN NOT NULL DEFAULT 1,"
                 + TEXT_LIMIT + " INTEGER NOT NULL,"
                 + SHORT_URL_LENGTH + " INTEGER NOT NULL DEFAULT 0,"
-                + MENTION_AS_WEBFINGER_ID + " INTEGER DEFAULT " + TriState.UNKNOWN.id + " NOT NULL,"
-                + USE_LEGACY_HTTP + " INTEGER DEFAULT " + TriState.UNKNOWN.id + " NOT NULL,"
-                + IN_COMBINED_GLOBAL_SEARCH + " BOOLEAN DEFAULT 1 NOT NULL,"
-                + IN_COMBINED_PUBLIC_RELOAD + " BOOLEAN DEFAULT 1 NOT NULL"
+                + MENTION_AS_WEBFINGER_ID + " INTEGER NOT NULL DEFAULT " + TriState.UNKNOWN.id + ","
+                + USE_LEGACY_HTTP + " INTEGER NOT NULL DEFAULT " + TriState.UNKNOWN.id + ","
+                + IN_COMBINED_GLOBAL_SEARCH + " BOOLEAN NOT NULL DEFAULT 1,"
+                + IN_COMBINED_PUBLIC_RELOAD + " BOOLEAN NOT NULL DEFAULT 1"
                 + ")");
-
-        DbUtils.execSQL(db, "CREATE UNIQUE INDEX idx_origin_name ON " + TABLE_NAME + " ("
-                + ORIGIN_NAME
-                + ")");
-
     }
 }

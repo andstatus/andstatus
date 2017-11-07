@@ -18,6 +18,8 @@ package org.andstatus.app.net.social;
 
 import android.text.TextUtils;
 
+import org.andstatus.app.util.UriUtils;
+
 /**
  * Since introducing support for Pump.Io it appeared that 
  * Position in the Timeline and Id of the Message may be different things.
@@ -45,7 +47,7 @@ public class TimelinePosition {
     }
 
     public boolean isTemp() {
-        return nonEmpty() && position.startsWith(MbUser.TEMP_OID_PREFIX);
+        return nonEmpty() && position.startsWith(UriUtils.TEMP_OID_PREFIX);
     }
 
     public boolean isEmpty() {

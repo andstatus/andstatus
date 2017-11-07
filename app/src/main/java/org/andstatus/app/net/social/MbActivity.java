@@ -35,6 +35,7 @@ import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UriUtils;
 
 /** Activity in a sense of Activity Streams https://www.w3.org/TR/activitystreams-core/ */
 public class MbActivity extends AObject {
@@ -113,6 +114,9 @@ public class MbActivity extends AObject {
     }
 
     public void setActor(MbUser actor) {
+        if (this == EMPTY && MbUser.EMPTY != actor) {
+            throw new IllegalStateException("Cannot set Actor of EMPTY Activity");
+        }
         this.actor = actor == null ? MbUser.EMPTY : actor;
     }
 
@@ -139,15 +143,15 @@ public class MbActivity extends AObject {
     }
 
     public void setAuthor(MbUser author) {
-        getActivity().setActor(author);
+        if (getActivity() != EMPTY) getActivity().setActor(author);
     }
 
     public boolean isActorMe() {
-        return getActor().isSameActor(accountUser);
+        return accountUser.nonEmpty() && getActor().isSameActor(accountUser);
     }
 
     public boolean isAuthorMe() {
-        return getAuthor().isSameActor(accountUser);
+        return accountUser.nonEmpty() && getAuthor().isSameActor(accountUser);
     }
 
     @NonNull
@@ -182,7 +186,7 @@ public class MbActivity extends AObject {
 
     @NonNull
     private String getTempPositionString() {
-        return MbUser.TEMP_OID_PREFIX
+        return UriUtils.TEMP_OID_PREFIX
                 + (StringUtils.nonEmpty(actor.oid) ?  actor.oid + "-" : "")
                 + type.name().toLowerCase() + "-"
                 + (StringUtils.nonEmpty(getMessage().oid) ? getMessage().oid + "-" : "")
@@ -220,6 +224,9 @@ public class MbActivity extends AObject {
     }
 
     public void setMessage(MbMessage mbMessage) {
+        if (this == EMPTY && MbMessage.EMPTY != mbMessage) {
+            throw new IllegalStateException("Cannot set Message of EMPTY Activity");
+        }
         this.mbMessage = mbMessage == null ? MbMessage.EMPTY : mbMessage;
     }
 
@@ -229,6 +236,9 @@ public class MbActivity extends AObject {
     }
 
     public void setUser(MbUser mbUser) {
+        if (this == EMPTY && MbUser.EMPTY != mbUser) {
+            throw new IllegalStateException("Cannot set User of EMPTY Activity");
+        }
         this.mbUser = mbUser == null ? MbUser.EMPTY : mbUser;
     }
 
@@ -242,6 +252,9 @@ public class MbActivity extends AObject {
     }
 
     public void setActivity(MbActivity activity) {
+        if (this == EMPTY && MbActivity.EMPTY != activity) {
+            throw new IllegalStateException("Cannot set Activity of EMPTY Activity");
+        }
         if (activity != null) {
             this.mbActivity = activity;
         }
@@ -402,7 +415,7 @@ public class MbActivity extends AObject {
         if (isNotified().known() || getUpdatedDate() < 1 || isActorMe()) return;
         if ( isAuthorMe()
                 || getMessage().audience().hasMyAccount(myContext)
-                || getUser().isSameActor(accountUser)
+                || (getUser().isSameActor(accountUser) && accountUser.nonEmpty())
                 || getActivity().isActorMe() ) {
             setNotified(TriState.TRUE);
         }
