@@ -31,8 +31,8 @@ import net.jcip.annotations.ThreadSafe;
 import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
-import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.data.converter.DatabaseConverterController;
+import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
@@ -154,6 +154,16 @@ public final class MyContextImpl implements MyContext {
         }
         if (state() == MyContextState.DATABASE_READY) {
             mDb = newDb;
+
+          /* For testing:
+            final SQLiteDatabase db = mDb.getWritableDatabase();
+            String sql = "DROP INDEX IF EXISTS idx_activity_message";
+            DbUtils.execSQL(db, sql);
+            //sql = "CREATE INDEX idx_activity_message ON activity (activity_msg_id) WHERE activity_msg_id != 0";
+            sql = "CREATE INDEX idx_activity_message ON activity (activity_msg_id)";
+            DbUtils.execSQL(db, sql);
+          **/
+
         }
     }
 

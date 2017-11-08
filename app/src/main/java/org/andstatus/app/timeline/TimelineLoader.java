@@ -69,6 +69,7 @@ public class TimelineLoader<T extends ViewItem> extends SyncLoader<T> {
 
     private Cursor queryDatabase() {
         final String method = "queryDatabase";
+        logV(method, "started");
         Cursor cursor = null;
         for (int attempt = 0; attempt < 3 && !getParams().cancelled; attempt++) {
             try {
@@ -82,6 +83,7 @@ public class TimelineLoader<T extends ViewItem> extends SyncLoader<T> {
                 }
             }
         }
+        logV(method, "cursor loaded");
         return cursor;
     }
 
@@ -100,6 +102,7 @@ public class TimelineLoader<T extends ViewItem> extends SyncLoader<T> {
                 if (cursor.moveToFirst()) {
                     boolean reversedOrder = getParams().isSortOrderAscending();
                     do {
+                        long rowStartTime = System.currentTimeMillis();
                         rowsCount++;
                         Pair<T, Boolean> itemAndSkip = (Pair<T, Boolean>) page.getEmptyItem().
                                 fromCursor(cursor, keywordsFilter, searchQuery, hideRepliesNotToMeOrFriends);
@@ -114,6 +117,9 @@ public class TimelineLoader<T extends ViewItem> extends SyncLoader<T> {
                             page.items.add(0, itemAndSkip.first);
                         } else {
                             page.items.add(itemAndSkip.first);
+                        }
+                        if (MyLog.isVerboseEnabled()) {
+                            MyLog.v(this, "row " + rowsCount + ", id:" + itemAndSkip.first.getId() + ": " + (System.currentTimeMillis() - rowStartTime) + "ms");
                         }
                     } while (cursor.moveToNext());
                 }

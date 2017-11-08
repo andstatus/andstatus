@@ -95,19 +95,16 @@ public final class ActivityTable implements BaseColumns {
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_message ON " + TABLE_NAME + " ("
                 + MSG_ID
                 + ")"
-                + " WHERE " + MSG_ID + " != 0"
         );
 
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_user ON " + TABLE_NAME + " ("
                 + USER_ID
                 + ")"
-                + " WHERE " + USER_ID + " != 0"
         );
 
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_activity ON " + TABLE_NAME + " ("
                 + OBJ_ACTIVITY_ID
                 + ")"
-                + " WHERE " + OBJ_ACTIVITY_ID + " != 0"
         );
 
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_timeline ON " + TABLE_NAME + " ("
@@ -122,15 +119,15 @@ public final class ActivityTable implements BaseColumns {
         );
 
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_subscribed_timeline ON " + TABLE_NAME + " ("
+                + SUBSCRIBED + ", "
                 + UPDATED_DATE
                 + ")"
-                + " WHERE " + SUBSCRIBED + "=2 AND " + MSG_ID + "!=0"
         );
 
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_notified_timeline ON " + TABLE_NAME + " ("
+                + NOTIFIED + ", "
                 + UPDATED_DATE
                 + ")"
-                + " WHERE " + NOTIFIED + "=2"
         );
     }
 }

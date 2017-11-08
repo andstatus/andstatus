@@ -29,7 +29,7 @@ class Convert26 extends ConvertOneStep {
         // Table creation statements for v.27
         sql = "CREATE TABLE msg (_id INTEGER PRIMARY KEY AUTOINCREMENT,origin_id INTEGER NOT NULL,msg_oid TEXT NOT NULL,msg_status INTEGER NOT NULL DEFAULT 0,conversation_id INTEGER NOT NULL DEFAULT 0,conversation_oid TEXT,url TEXT,body TEXT,body_to_search TEXT,via TEXT,msg_author_id INTEGER NOT NULL,in_reply_to_msg_id INTEGER,in_reply_to_user_id INTEGER,private INTEGER NOT NULL DEFAULT 0,favorited INTEGER NOT NULL DEFAULT 0,reblogged INTEGER NOT NULL DEFAULT 0,mentioned INTEGER NOT NULL DEFAULT 0,favorite_count INTEGER NOT NULL DEFAULT 0,reblog_count INTEGER NOT NULL DEFAULT 0,reply_count INTEGER NOT NULL DEFAULT 0,msg_ins_date INTEGER NOT NULL,msg_updated_date INTEGER NOT NULL DEFAULT 0)";
         sql = "CREATE UNIQUE INDEX idx_msg_origin ON msg (origin_id, msg_oid)";
-        sql = "CREATE INDEX idx_msg_in_reply_to_msg_id ON msg (in_reply_to_msg_id) WHERE in_reply_to_msg_id!=0";
+        sql = "CREATE INDEX idx_msg_in_reply_to_msg_id ON msg (in_reply_to_msg_id)";
         sql = "CREATE INDEX idx_msg_conversation_id ON msg (conversation_id)";
         sql = "CREATE TABLE audience (user_id INTEGER NOT NULL,msg_id INTEGER NOT NULL, CONSTRAINT pk_audience PRIMARY KEY (msg_id ASC, user_id ASC))";
         sql = "CREATE INDEX idx_audience_user ON audience (user_id)";
@@ -39,20 +39,20 @@ class Convert26 extends ConvertOneStep {
         sql = "CREATE TABLE friendship (user_id INTEGER NOT NULL,friend_id INTEGER NOT NULL,followed BOOLEAN NOT NULL, CONSTRAINT pk_friendship PRIMARY KEY (user_id, friend_id))";
         sql = "CREATE INDEX idx_followers ON friendship (friend_id, user_id)";
         sql = "CREATE TABLE download (_id INTEGER PRIMARY KEY AUTOINCREMENT,download_type INTEGER NOT NULL,user_id INTEGER NOT NULL DEFAULT 0,msg_id INTEGER NOT NULL DEFAULT 0,content_type INTEGER NOT NULL,valid_from INTEGER NOT NULL,url TEXT NOT NULL,loaded_date INTEGER NOT NULL DEFAULT 0,download_status INTEGER NOT NULL DEFAULT 0,file_name TEXT)";
-        sql = "CREATE INDEX idx_download_user ON download (user_id, download_status) WHERE user_id != 0";
-        sql = "CREATE INDEX idx_download_msg ON download (msg_id, content_type, download_status) WHERE msg_id != 0";
+        sql = "CREATE INDEX idx_download_user ON download (user_id, download_status)";
+        sql = "CREATE INDEX idx_download_msg ON download (msg_id, content_type, download_status)";
         sql = "CREATE TABLE origin (_id INTEGER PRIMARY KEY AUTOINCREMENT,origin_type_id INTEGER NOT NULL,origin_name TEXT NOT NULL,origin_url TEXT NOT NULL,ssl BOOLEAN NOT NULL DEFAULT 1,ssl_mode INTEGER NOT NULL DEFAULT 1,allow_html BOOLEAN NOT NULL DEFAULT 1,text_limit INTEGER NOT NULL,short_url_length INTEGER NOT NULL DEFAULT 0,mention_as_webfinger_id INTEGER NOT NULL DEFAULT 3,use_legacy_http INTEGER NOT NULL DEFAULT 3,in_combined_global_search BOOLEAN NOT NULL DEFAULT 1,in_combined_public_reload BOOLEAN NOT NULL DEFAULT 1)";
         sql = "CREATE TABLE timeline (_id INTEGER PRIMARY KEY AUTOINCREMENT,timeline_type TEXT NOT NULL,account_id INTEGER NOT NULL DEFAULT 0,user_id INTEGER NOT NULL DEFAULT 0,user_in_timeline TEXT,origin_id INTEGER NOT NULL DEFAULT 0,search_query TEXT,is_synced_automatically BOOLEAN NOT NULL DEFAULT 0,displayed_in_selector INTEGER NOT NULL DEFAULT 0,selector_order INTEGER NOT NULL DEFAULT 0,sync_succeeded_date INTEGER NOT NULL DEFAULT 0,sync_failed_date INTEGER NOT NULL DEFAULT 0,error_message TEXT,synced_times_count INTEGER NOT NULL DEFAULT 0,sync_failed_times_count INTEGER NOT NULL DEFAULT 0,downloaded_items_count INTEGER NOT NULL DEFAULT 0,new_items_count INTEGER NOT NULL DEFAULT 0,count_since INTEGER NOT NULL DEFAULT 0,synced_times_count_total INTEGER NOT NULL DEFAULT 0,sync_failed_times_count_total INTEGER NOT NULL DEFAULT 0,downloaded_items_count_total INTEGER NOT NULL DEFAULT 0,new_items_count_total INTEGER NOT NULL DEFAULT 0,youngest_position TEXT,youngest_item_date INTEGER NOT NULL DEFAULT 0,youngest_synced_date INTEGER NOT NULL DEFAULT 0,oldest_position TEXT,oldest_item_date INTEGER NOT NULL DEFAULT 0,oldest_synced_date INTEGER NOT NULL DEFAULT 0,visible_item_id INTEGER NOT NULL DEFAULT 0,visible_y INTEGER NOT NULL DEFAULT 0,visible_oldest_date INTEGER NOT NULL DEFAULT 0)";
         sql = "CREATE TABLE command (_id INTEGER PRIMARY KEY NOT NULL,queue_type TEXT NOT NULL,command_code TEXT NOT NULL,command_created_date INTEGER NOT NULL,command_description TEXT,in_foreground BOOLEAN NOT NULL DEFAULT 0,manually_launched BOOLEAN NOT NULL DEFAULT 0,timeline_id INTEGER NOT NULL DEFAULT 0,timeline_type TEXT NOT NULL,account_id INTEGER NOT NULL DEFAULT 0,user_id INTEGER NOT NULL DEFAULT 0,origin_id INTEGER NOT NULL DEFAULT 0,search_query TEXT,item_id INTEGER NOT NULL DEFAULT 0,username TEXT,last_executed_date INTEGER NOT NULL DEFAULT 0,execution_count INTEGER NOT NULL DEFAULT 0,retries_left INTEGER NOT NULL DEFAULT 0,num_auth_exceptions INTEGER NOT NULL DEFAULT 0,num_io_exceptions INTEGER NOT NULL DEFAULT 0,num_parse_exceptions INTEGER NOT NULL DEFAULT 0,error_message TEXT,downloaded_count INTEGER NOT NULL DEFAULT 0,progress_text TEXT)";
         sql = "CREATE TABLE activity (_id INTEGER PRIMARY KEY AUTOINCREMENT,activity_origin_id INTEGER NOT NULL,activity_oid TEXT NOT NULL,account_id INTEGER NOT NULL,activity_type INTEGER NOT NULL,actor_id INTEGER NOT NULL,activity_msg_id INTEGER NOT NULL,activity_user_id INTEGER NOT NULL,obj_activity_id INTEGER NOT NULL,subscribed INTEGER NOT NULL DEFAULT 0,notified INTEGER NOT NULL DEFAULT 0,activity_ins_date INTEGER NOT NULL,activity_updated_date INTEGER NOT NULL DEFAULT 0)";
         sql = "CREATE UNIQUE INDEX idx_activity_origin ON activity (activity_origin_id, activity_oid)";
-        sql = "CREATE INDEX idx_activity_message ON activity (activity_msg_id) WHERE activity_msg_id != 0";
-        sql = "CREATE INDEX idx_activity_user ON activity (activity_user_id) WHERE activity_user_id != 0";
-        sql = "CREATE INDEX idx_activity_activity ON activity (obj_activity_id) WHERE obj_activity_id != 0";
+        sql = "CREATE INDEX idx_activity_message ON activity (activity_msg_id)";
+        sql = "CREATE INDEX idx_activity_user ON activity (activity_user_id)";
+        sql = "CREATE INDEX idx_activity_activity ON activity (obj_activity_id)";
         sql = "CREATE INDEX idx_activity_timeline ON activity (activity_updated_date)";
         sql = "CREATE INDEX idx_activity_actor_timeline ON activity (actor_id, activity_updated_date)";
-        sql = "CREATE INDEX idx_activity_subscribed_timeline ON activity (activity_updated_date) WHERE subscribed=2 AND activity_msg_id!=0";
-        sql = "CREATE INDEX idx_activity_notified_timeline ON activity (activity_updated_date) WHERE notified=2";
+        sql = "CREATE INDEX idx_activity_subscribed_timeline ON activity (subscribed, activity_updated_date)";
+        sql = "CREATE INDEX idx_activity_notified_timeline ON activity (notified, activity_updated_date)";
 
         progressLogger.logProgress(stepTitle + ": Preparing to convert messages");
         sql = "UPDATE msg SET msg_oid='andstatustemp:convert26-' || _id WHERE msg_oid IS NULL";
@@ -81,7 +81,7 @@ class Convert26 extends ConvertOneStep {
         DbUtils.execSQL(db, sql);
         sql = "CREATE UNIQUE INDEX idx_msg_origin ON msg (origin_id, msg_oid)";
         DbUtils.execSQL(db, sql);
-        sql = "CREATE INDEX idx_msg_in_reply_to_msg_id ON msg (in_reply_to_msg_id) WHERE in_reply_to_msg_id!=0";
+        sql = "CREATE INDEX idx_msg_in_reply_to_msg_id ON msg (in_reply_to_msg_id)";
         DbUtils.execSQL(db, sql);
         sql = "CREATE INDEX idx_msg_conversation_id ON msg (conversation_id)";
         DbUtils.execSQL(db, sql);
@@ -103,19 +103,19 @@ class Convert26 extends ConvertOneStep {
         DbUtils.execSQL(db, sql);
         sql = "CREATE UNIQUE INDEX idx_activity_origin ON activity (activity_origin_id, activity_oid)";
         DbUtils.execSQL(db, sql);
-        sql = "CREATE INDEX idx_activity_message ON activity (activity_msg_id) WHERE activity_msg_id != 0";
+        sql = "CREATE INDEX idx_activity_message ON activity (activity_msg_id)";
         DbUtils.execSQL(db, sql);
-        sql = "CREATE INDEX idx_activity_user ON activity (activity_user_id) WHERE activity_user_id != 0";
+        sql = "CREATE INDEX idx_activity_user ON activity (activity_user_id)";
         DbUtils.execSQL(db, sql);
-        sql = "CREATE INDEX idx_activity_activity ON activity (obj_activity_id) WHERE obj_activity_id != 0";
+        sql = "CREATE INDEX idx_activity_activity ON activity (obj_activity_id)";
         DbUtils.execSQL(db, sql);
         sql = "CREATE INDEX idx_activity_timeline ON activity (activity_updated_date)";
         DbUtils.execSQL(db, sql);
         sql = "CREATE INDEX idx_activity_actor_timeline ON activity (actor_id, activity_updated_date)";
         DbUtils.execSQL(db, sql);
-        sql = "CREATE INDEX idx_activity_subscribed_timeline ON activity (activity_updated_date) WHERE subscribed=2 AND activity_msg_id!=0";
+        sql = "CREATE INDEX idx_activity_subscribed_timeline ON activity (subscribed, activity_updated_date)";
         DbUtils.execSQL(db, sql);
-        sql = "CREATE INDEX idx_activity_notified_timeline ON activity (activity_updated_date) WHERE notified=2";
+        sql = "CREATE INDEX idx_activity_notified_timeline ON activity (notified, activity_updated_date)";
         DbUtils.execSQL(db, sql);
 
         progressLogger.logProgress(stepTitle + ": Adding Update activities for each message");
@@ -248,9 +248,9 @@ class Convert26 extends ConvertOneStep {
 
         sql = "CREATE TABLE download (_id INTEGER PRIMARY KEY AUTOINCREMENT,download_type INTEGER NOT NULL,user_id INTEGER NOT NULL DEFAULT 0,msg_id INTEGER NOT NULL DEFAULT 0,content_type INTEGER NOT NULL,valid_from INTEGER NOT NULL,url TEXT NOT NULL,loaded_date INTEGER NOT NULL DEFAULT 0,download_status INTEGER NOT NULL DEFAULT 0,file_name TEXT)";
         DbUtils.execSQL(db, sql);
-        sql = "CREATE INDEX idx_download_user ON download (user_id, download_status) WHERE user_id != 0";
+        sql = "CREATE INDEX idx_download_user ON download (user_id, download_status)";
         DbUtils.execSQL(db, sql);
-        sql = "CREATE INDEX idx_download_msg ON download (msg_id, content_type, download_status) WHERE msg_id != 0";
+        sql = "CREATE INDEX idx_download_msg ON download (msg_id, content_type, download_status)";
         DbUtils.execSQL(db, sql);
 
         sql = "INSERT INTO download (" +

@@ -85,12 +85,12 @@ public final class DownloadTable implements BaseColumns {
         DbUtils.execSQL(db, "CREATE INDEX idx_download_user ON " + TABLE_NAME + " ("
                 + USER_ID + ", "
                 + DOWNLOAD_STATUS
-                + ") WHERE " + USER_ID + " != 0");
+                + ")");
 
         DbUtils.execSQL(db, "CREATE INDEX idx_download_msg ON " + TABLE_NAME + " ("
                 + MSG_ID + ", "
                 + CONTENT_TYPE  + ", "
                 + DOWNLOAD_STATUS
-                + ") WHERE " + MSG_ID + " != 0");
+                + ")");
     }
 }

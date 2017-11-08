@@ -148,15 +148,19 @@ public final class MsgTable implements BaseColumns {
         DbUtils.execSQL(db, "CREATE UNIQUE INDEX idx_msg_origin ON " + TABLE_NAME + " ("
                 + ORIGIN_ID + ", "
                 + MSG_OID
-                + ")");
+                + ")"
+        );
 
         // Index not null rows only, see https://www.sqlite.org/partialindex.html
         DbUtils.execSQL(db, "CREATE INDEX idx_msg_in_reply_to_msg_id ON " + TABLE_NAME + " ("
-                + IN_REPLY_TO_MSG_ID + ")"
-                + " WHERE " + IN_REPLY_TO_MSG_ID + "!=0");
+                + IN_REPLY_TO_MSG_ID
+                + ")"
+        );
 
         DbUtils.execSQL(db, "CREATE INDEX idx_msg_conversation_id ON " + TABLE_NAME + " ("
-                + CONVERSATION_ID + ")");
+                + CONVERSATION_ID
+                + ")"
+        );
 
     }
 }

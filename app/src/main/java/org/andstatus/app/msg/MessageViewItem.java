@@ -45,6 +45,7 @@ public class MessageViewItem extends BaseMessageViewItem {
     public final static MessageViewItem EMPTY = new MessageViewItem();
 
     public static MessageViewItem fromCursorRow(MyContext myContext, Cursor cursor) {
+        long startTime = System.currentTimeMillis();
         MessageViewItem item = new MessageViewItem();
         item.setMyContext(myContext);
         item.setMsgId(DbUtils.getLong(cursor, ActivityTable.MSG_ID));
@@ -67,11 +68,6 @@ public class MessageViewItem extends BaseMessageViewItem {
         item.favorited = DbUtils.getTriState(cursor, MsgTable.FAVORITED) == TriState.TRUE;
         item.reblogged = DbUtils.getTriState(cursor, MsgTable.REBLOGGED) == TriState.TRUE;
 
-        for (MbUser user : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), item.getOriginId(),
-                item.getMsgId())) {
-            item.rebloggers.put(user.userId, user.getWebFingerId());
-        }
-
         String via = DbUtils.getString(cursor, MsgTable.VIA);
         if (!TextUtils.isEmpty(via)) {
             item.messageSource = Html.fromHtml(via).toString().trim();
@@ -82,6 +78,16 @@ public class MessageViewItem extends BaseMessageViewItem {
             item.attachedImageFile = new AttachedImageFile(
                     DbUtils.getLong(cursor, DownloadTable.IMAGE_ID),
                     DbUtils.getString(cursor, DownloadTable.IMAGE_FILE_NAME));
+        }
+
+        long beforeRebloggers = System.currentTimeMillis();
+        for (MbUser user : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), item.getOriginId(),
+                item.getMsgId())) {
+            item.rebloggers.put(user.userId, user.getWebFingerId());
+        }
+        if (MyLog.isVerboseEnabled()) {
+            MyLog.v(item, ": " + (System.currentTimeMillis() - startTime) + "ms, "
+                    + item.rebloggers.size() + " rebloggers: " + (System.currentTimeMillis() - beforeRebloggers) + "ms");
         }
         return item;
     }
