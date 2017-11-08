@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.database.converter;
+package org.andstatus.app.data.converter;
 
 import org.andstatus.app.data.DbUtils;
 

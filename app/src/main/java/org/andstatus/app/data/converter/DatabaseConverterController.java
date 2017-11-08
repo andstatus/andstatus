@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.database.converter;
+package org.andstatus.app.data.converter;
 
 import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;
@@ -216,14 +216,14 @@ public class DatabaseConverterController {
             stillUpgrading();
         }
         MyContextHolder.get().setInForeground(true);
-        boolean success = new DatabaseConverter().execute(new UpgradeParams(mProgressLogger, db,
-                oldVersion, newVersion));
+        final DatabaseConverter databaseConverter = new DatabaseConverter();
+        boolean success = databaseConverter.execute(new UpgradeParams(mProgressLogger, db, oldVersion, newVersion));
         synchronized(UPGRADE_LOCK) {
             upgradeEnded = true;
             upgradeEndedSuccessfully = success;
         }
         if (!success) {
-            throw new IllegalStateException("Upgrade failed");
+            throw new ApplicationUpgradeException(databaseConverter.converterError);
         }
     }
 

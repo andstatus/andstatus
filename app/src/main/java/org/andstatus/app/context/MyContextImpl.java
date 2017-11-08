@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,8 +31,8 @@ import net.jcip.annotations.ThreadSafe;
 import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
-import org.andstatus.app.database.converter.DatabaseConverterController;
 import org.andstatus.app.database.DatabaseHolder;
+import org.andstatus.app.data.converter.DatabaseConverterController;
 import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
@@ -71,7 +71,10 @@ public final class MyContextImpl implements MyContext {
      * When preferences, loaded into this class, were changed
      */
     private volatile long mPreferencesChangeTime = 0;
+
     private volatile DatabaseHolder mDb = null;
+    private volatile String lastDatabaseError = "";
+
     private final PersistentAccounts mPersistentAccounts = PersistentAccounts.newEmpty(this);
     private final PersistentOrigins mPersistentOrigins = PersistentOrigins.newEmpty(this);
     private final PersistentTimelines persistentTimelines = PersistentTimelines.newEmpty(this);
@@ -143,8 +146,8 @@ public final class MyContextImpl implements MyContext {
                     && MyStorage.isApplicationDataCreated() != TriState.TRUE) {
                 mState = MyContextState.ERROR;
             }
-        } catch (SQLiteException e) {
-            MyLog.e(this, method + " Error", e);
+        } catch (SQLiteException | IllegalStateException e) {
+            logDatabaseError(method, e);
             mState = MyContextState.ERROR;
             newDb.close();
             mDb = null;
@@ -152,6 +155,16 @@ public final class MyContextImpl implements MyContext {
         if (state() == MyContextState.DATABASE_READY) {
             mDb = newDb;
         }
+    }
+
+    private void logDatabaseError(String method, Exception e) {
+        MyLog.e(this, method + " Error", e);
+        lastDatabaseError = e.getMessage();
+    }
+
+    @Override
+    public String getLastDatabaseError() {
+        return lastDatabaseError;
     }
 
     private void tryToSetExternalStorageOnDataCreation() {
@@ -176,6 +189,7 @@ public final class MyContextImpl implements MyContext {
 
     private MyContextImpl newNotInitialized(Context context, Object initializer) {
         MyContextImpl newMyContext = newEmpty(initializer);
+        newMyContext.lastDatabaseError = getLastDatabaseError();
         if (context != null) {
             Context contextToUse = context.getApplicationContext();
         

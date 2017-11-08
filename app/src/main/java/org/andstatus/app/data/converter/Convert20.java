@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +14,20 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.data;
+package org.andstatus.app.data.converter;
 
-public class ApplicationUpgradeException extends Exception {
-    private static final long serialVersionUID = 1L;
-    
-    public ApplicationUpgradeException(String detailMessage) {
-        super(detailMessage);
+import org.andstatus.app.data.DbUtils;
+
+class Convert20 extends ConvertOneStep {
+    @Override
+    protected void execute2() {
+        versionTo = 21;
+
+        sql = "ALTER TABLE origin ADD COLUMN mention_as_webfinger_id INTEGER DEFAULT 3";
+        DbUtils.execSQL(db, sql);
+        sql = "UPDATE origin SET mention_as_webfinger_id=3";
+        DbUtils.execSQL(db, sql);
+        sql = "CREATE INDEX idx_msg_in_reply_to_msg_id ON msg (in_reply_to_msg_id)";
+        DbUtils.execSQL(db, sql);
     }
 }

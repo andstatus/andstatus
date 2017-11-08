@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.database.converter;
+package org.andstatus.app.data.converter;
 
 import android.database.sqlite.SQLiteDatabase;
 
 import org.andstatus.app.backup.ProgressLogger;
-import org.andstatus.app.data.ApplicationUpgradeException;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.util.MyLog;
 
 class DatabaseConverter {
     long startTime = java.lang.System.currentTimeMillis();
     ProgressLogger progressLogger;
+    String converterError = "";
 
     protected boolean execute(DatabaseConverterController.UpgradeParams params) {
         boolean success = false;
@@ -40,6 +40,7 @@ class DatabaseConverter {
             endTime = java.lang.System.currentTimeMillis();
             msgLog = e.getMessage();
             progressLogger.logProgress(msgLog);
+            converterError = msgLog;
             MyLog.ignored(this, e);
             DbUtils.waitMs("ApplicationUpgradeException", 30000);
         } finally {
@@ -60,7 +61,7 @@ class DatabaseConverter {
         return success;
     }
 
-    private void convertAll(SQLiteDatabase db, int oldVersion, int newVersion) throws ApplicationUpgradeException {
+    private void convertAll(SQLiteDatabase db, int oldVersion, int newVersion) {
         int currentVersion = oldVersion;
         MyLog.i(this, "Upgrading database from version " + oldVersion + " to version " + newVersion);
         boolean converterNotFound = false;

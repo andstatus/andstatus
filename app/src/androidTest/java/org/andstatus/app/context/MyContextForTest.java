@@ -129,6 +129,11 @@ public class MyContextForTest implements MyContext {
     }
 
     @Override
+    public String getLastDatabaseError() {
+        return myContext.getLastDatabaseError();
+    }
+
+    @Override
     public SQLiteDatabase getDatabase() {
         return myContext.getDatabase();
     }

@@ -14,19 +14,24 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.database.converter;
+package org.andstatus.app.data.converter;
 
-import org.andstatus.app.account.MyAccountConverter;
 import org.andstatus.app.data.DbUtils;
 
-class Convert15 extends ConvertOneStep {
+class Convert19 extends ConvertOneStep {
     @Override
     protected void execute2() {
-        versionTo = 16;
-        boolean ok = MyAccountConverter.convert14to16(db, oldVersion) == versionTo;
-        if (ok) {
-            sql = "DELETE FROM Origin WHERE _ID IN(6, 7)";
-            DbUtils.execSQL(db, sql);
-        }
+        versionTo = 20;
+
+        sql = "ALTER TABLE origin ADD COLUMN ssl_mode INTEGER DEFAULT 1";
+        DbUtils.execSQL(db, sql);
+        sql = "ALTER TABLE origin ADD COLUMN in_combined_global_search BOOLEAN DEFAULT 1";
+        DbUtils.execSQL(db, sql);
+        sql = "ALTER TABLE origin ADD COLUMN in_combined_public_reload BOOLEAN DEFAULT 1";
+        DbUtils.execSQL(db, sql);
+        sql = "UPDATE origin SET ssl_mode=1, in_combined_global_search=1, in_combined_public_reload=1";
+        DbUtils.execSQL(db, sql);
+        sql = "UPDATE origin SET ssl_mode=2 WHERE origin_url LIKE '%quitter.zone%'";
+        DbUtils.execSQL(db, sql);
     }
 }

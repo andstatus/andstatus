@@ -14,18 +14,22 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.database.converter;
+package org.andstatus.app.data.converter;
 
 import org.andstatus.app.data.DbUtils;
 
-class Convert21 extends ConvertOneStep {
+class Convert22 extends ConvertOneStep {
     @Override
     protected void execute2() {
-        versionTo = 22;
+        versionTo = 23;
 
-        sql = "ALTER TABLE origin ADD COLUMN use_legacy_http INTEGER DEFAULT 3";
+        sql = "ALTER TABLE msg ADD COLUMN msg_status INTEGER NOT NULL DEFAULT 0";
         DbUtils.execSQL(db, sql);
-        sql = "UPDATE origin SET use_legacy_http=3";
+        sql = "UPDATE msg SET msg_status=0";
         DbUtils.execSQL(db, sql);
+        sql = "UPDATE msg SET msg_status=2 WHERE msg_created_date IS NOT NULL";
+        DbUtils.execSQL(db, sql);
+
+
     }
 }

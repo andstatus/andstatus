@@ -22,7 +22,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.context.MyStorage;
-import org.andstatus.app.database.converter.DatabaseConverterController;
+import org.andstatus.app.data.converter.ApplicationUpgradeException;
+import org.andstatus.app.data.converter.DatabaseConverterController;
 import org.andstatus.app.util.MyLog;
 
 import java.io.File;
@@ -63,6 +64,8 @@ public final class DatabaseHolder extends SQLiteOpenHelper  {
                     }
                 }
             }
+        } catch (ApplicationUpgradeException e) {
+            throw e;
         } catch (IllegalStateException e) {
             MyLog.v(this, e);
             if (onUpgradeTriggered.get()) {

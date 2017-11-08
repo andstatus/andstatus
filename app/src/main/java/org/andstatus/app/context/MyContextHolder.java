@@ -28,7 +28,7 @@ import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
 import org.andstatus.app.FirstActivity;
-import org.andstatus.app.database.converter.DatabaseConverterController;
+import org.andstatus.app.data.converter.DatabaseConverterController;
 import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.util.I18n;

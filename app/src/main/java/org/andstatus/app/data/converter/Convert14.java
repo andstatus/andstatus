@@ -14,24 +14,17 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.database.converter;
+package org.andstatus.app.data.converter;
 
 import org.andstatus.app.data.DbUtils;
 
-class Convert17 extends ConvertOneStep {
+class Convert14 extends ConvertOneStep {
     @Override
     protected void execute2() {
-        versionTo = 18;
-
-        sql = "DROP INDEX IF EXISTS idx_username";
+        versionTo = 15;
+        sql = "ALTER TABLE msg ADD COLUMN public BOOLEAN DEFAULT 0 NOT NULL";
         DbUtils.execSQL(db, sql);
-
-        sql = "CREATE INDEX idx_user_origin ON user (origin_id, user_oid)";
-        DbUtils.execSQL(db, sql);
-
-        sql = "ALTER TABLE user ADD COLUMN webfinger_id TEXT";
-        DbUtils.execSQL(db, sql);
-        sql = "UPDATE user SET webfinger_id=username";
+        sql = "UPDATE msg SET public=0";
         DbUtils.execSQL(db, sql);
     }
 }

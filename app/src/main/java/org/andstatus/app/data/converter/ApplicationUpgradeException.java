@@ -1,4 +1,4 @@
-/*
+/* 
  * Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.database.converter;
+package org.andstatus.app.data.converter;
 
-import org.andstatus.app.data.DbUtils;
-
-class Convert18 extends ConvertOneStep {
-    @Override
-    protected void execute2() {
-        versionTo = 19;
-
-        sql = "CREATE INDEX idx_msg_sent_date ON msg (msg_sent_date)";
-        DbUtils.execSQL(db, sql);
+public class ApplicationUpgradeException extends IllegalStateException {
+    private static final long serialVersionUID = 1L;
+    
+    public ApplicationUpgradeException(String detailMessage) {
+        super(detailMessage);
     }
 }

@@ -36,7 +36,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.converter.DatabaseConverterController;
+import org.andstatus.app.data.converter.DatabaseConverterController;
 import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.net.http.ConnectionException;

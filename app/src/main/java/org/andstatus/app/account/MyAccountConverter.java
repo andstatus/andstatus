@@ -23,7 +23,7 @@ import org.andstatus.app.account.MyAccount.Builder;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.database.converter.DatabaseConverterController;
+import org.andstatus.app.data.converter.DatabaseConverterController;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 

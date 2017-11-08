@@ -44,6 +44,7 @@ public interface MyContext extends IdentifiableInstance {
     String initializedBy();
     long preferencesChangeTime();
     DatabaseHolder getMyDatabase();
+    String getLastDatabaseError();
     SQLiteDatabase getDatabase();
     @NonNull
     PersistentAccounts persistentAccounts();

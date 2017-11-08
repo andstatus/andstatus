@@ -14,24 +14,18 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.database.converter;
+package org.andstatus.app.data.converter;
 
 import org.andstatus.app.data.DbUtils;
 
-class Convert19 extends ConvertOneStep {
+class Convert21 extends ConvertOneStep {
     @Override
     protected void execute2() {
-        versionTo = 20;
+        versionTo = 22;
 
-        sql = "ALTER TABLE origin ADD COLUMN ssl_mode INTEGER DEFAULT 1";
+        sql = "ALTER TABLE origin ADD COLUMN use_legacy_http INTEGER DEFAULT 3";
         DbUtils.execSQL(db, sql);
-        sql = "ALTER TABLE origin ADD COLUMN in_combined_global_search BOOLEAN DEFAULT 1";
-        DbUtils.execSQL(db, sql);
-        sql = "ALTER TABLE origin ADD COLUMN in_combined_public_reload BOOLEAN DEFAULT 1";
-        DbUtils.execSQL(db, sql);
-        sql = "UPDATE origin SET ssl_mode=1, in_combined_global_search=1, in_combined_public_reload=1";
-        DbUtils.execSQL(db, sql);
-        sql = "UPDATE origin SET ssl_mode=2 WHERE origin_url LIKE '%quitter.zone%'";
+        sql = "UPDATE origin SET use_legacy_http=3";
         DbUtils.execSQL(db, sql);
     }
 }

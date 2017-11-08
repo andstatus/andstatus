@@ -148,15 +148,13 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
         String text = MyContextHolder.getVersionText(this);
         if (!MyContextHolder.get().isReady()) {
             text += "\n" + MyContextHolder.get().state();
+            text += "\n" + MyContextHolder.get().getLastDatabaseError();
         }
         versionText.setText(text);
-        versionText.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse("http://andstatus.org"));
-                startActivity(intent);
-            }
+        versionText.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse("http://andstatus.org"));
+            startActivity(intent);
         });
     }
 

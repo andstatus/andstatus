@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.database.converter;
+package org.andstatus.app.data.converter;
 
 import org.andstatus.app.data.DbUtils;
 
-class Convert14 extends ConvertOneStep {
+class Convert18 extends ConvertOneStep {
     @Override
     protected void execute2() {
-        versionTo = 15;
-        sql = "ALTER TABLE msg ADD COLUMN public BOOLEAN DEFAULT 0 NOT NULL";
-        DbUtils.execSQL(db, sql);
-        sql = "UPDATE msg SET public=0";
+        versionTo = 19;
+
+        sql = "CREATE INDEX idx_msg_sent_date ON msg (msg_sent_date)";
         DbUtils.execSQL(db, sql);
     }
 }

@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.database.converter;
+package org.andstatus.app.data.converter;
 
+import org.andstatus.app.account.MyAccountConverter;
 import org.andstatus.app.data.DbUtils;
 
-class Convert20 extends ConvertOneStep {
+class Convert15 extends ConvertOneStep {
     @Override
     protected void execute2() {
-        versionTo = 21;
-
-        sql = "ALTER TABLE origin ADD COLUMN mention_as_webfinger_id INTEGER DEFAULT 3";
-        DbUtils.execSQL(db, sql);
-        sql = "UPDATE origin SET mention_as_webfinger_id=3";
-        DbUtils.execSQL(db, sql);
-        sql = "CREATE INDEX idx_msg_in_reply_to_msg_id ON msg (in_reply_to_msg_id)";
-        DbUtils.execSQL(db, sql);
+        versionTo = 16;
+        boolean ok = MyAccountConverter.convert14to16(db, oldVersion) == versionTo;
+        if (ok) {
+            sql = "DELETE FROM Origin WHERE _ID IN(6, 7)";
+            DbUtils.execSQL(db, sql);
+        }
     }
 }
