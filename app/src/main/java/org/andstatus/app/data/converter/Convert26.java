@@ -121,7 +121,7 @@ class Convert26 extends ConvertOneStep {
         sql = "CREATE INDEX idx_activity_notified_timeline ON activity (notified, activity_updated_date)";
         DbUtils.execSQL(db, sql);
 
-        progressLogger.logProgress(stepTitle + ": Adding Update activities for each message");
+        progressLogger.logProgress(stepTitle + ": Adding Update activity for each message");
         sql = "INSERT INTO activity (" +
             "_id, activity_origin_id, activity_oid, account_id, activity_type, actor_id, activity_msg_id," +
             " activity_user_id, obj_activity_id, activity_updated_date, activity_ins_date" +

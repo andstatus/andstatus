@@ -29,10 +29,12 @@ import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.msg.MessageViewItem;
 import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbObjectType;
+import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.user.UserViewItem;
 import org.andstatus.app.util.I18n;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
 /** View on ActivityStream
@@ -82,23 +84,28 @@ public class ActivityViewItem extends ViewItem implements Comparable<ActivityVie
     }
 
     private ActivityViewItem loadCursor(Cursor cursor) {
+        long startTime = System.currentTimeMillis();
         id = DbUtils.getLong(cursor, ActivityTable.ACTIVITY_ID);
         activityType = MbActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
         insDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
         updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
         origin = MyContextHolder.get().persistentOrigins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID));
 
-        actor = UserViewItem.fromUserId(origin, DbUtils.getLong(cursor, ActivityTable.ACTOR_ID));
+        actor = UserViewItem.fromMbUser(MbUser.fromOriginAndUserId(origin.getId(),
+                DbUtils.getLong(cursor, ActivityTable.ACTOR_ID)));
         actor.populateActorFromCursor(cursor);
 
         messageId = DbUtils.getLong(cursor, ActivityTable.MSG_ID);
         userId = DbUtils.getLong(cursor, ActivityTable.USER_ID);
         objActivityId = DbUtils.getLong(cursor, ActivityTable.OBJ_ACTIVITY_ID);
 
+        if (MyLog.isVerboseEnabled()) {
+            MyLog.v(this, ": " + (System.currentTimeMillis() - startTime) + "ms");
+        }
         if (messageId != 0) {
             message = MessageViewItem.fromCursorRow(MyContextHolder.get(), cursor);
         } else if (userId != 0) {
-            user = UserViewItem.fromUserId(origin, userId);
+            user = UserViewItem.fromMbUser(MbUser.fromOriginAndUserId(origin.getId(), userId));
             user.populateFromDatabase();
         }
         return this;
