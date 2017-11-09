@@ -16,11 +16,13 @@
 
 package org.andstatus.app.backup;
 
+import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
 public class ProgressLogger {
     private volatile long lastLoggedAt = 0L;
+    private volatile boolean makeServiceUnavalable = false;
 
     public interface ProgressCallback {
         void onProgressMessage(CharSequence message);
@@ -64,9 +66,15 @@ public class ProgressLogger {
         return RelativeTime.moreSecondsAgoThan(lastLoggedAt, secondsAgo);
     }
 
+    public ProgressLogger makeServiceUnavalable() {
+        this.makeServiceUnavalable = true;
+        return this;
+    }
+
     public void logProgress(CharSequence message) {
         updateLastLoggedTime();
         MyLog.d(this, "Progress: " + message);
+        if (makeServiceUnavalable) MyServiceManager.setServiceUnavailable();
         if (callback != null) callback.onProgressMessage(message);
     }
 

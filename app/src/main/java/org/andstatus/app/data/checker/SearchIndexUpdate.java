@@ -18,7 +18,6 @@ package org.andstatus.app.data.checker;
 
 import android.database.Cursor;
 
-import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyHtml;
@@ -29,7 +28,7 @@ import static org.andstatus.app.data.MyQuery.quoteIfNotQuoted;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class DataCheckerSearchIndex extends DataChecker {
+class SearchIndexUpdate extends DataChecker {
 
     @Override
     boolean notLong() {
@@ -37,8 +36,7 @@ public class DataCheckerSearchIndex extends DataChecker {
     }
 
     @Override
-    public long fix(boolean countOnly) {
-        logger.logProgress("Search index update started");
+    long fixInternal(boolean countOnly) {
         String sql = "SELECT " + MsgTable._ID
                 + ", " + MsgTable.BODY
                 + ", " + MsgTable.BODY_TO_SEARCH
@@ -78,7 +76,6 @@ public class DataCheckerSearchIndex extends DataChecker {
         logger.logProgress(changedCount == 0
                 ? "No changes to search index were needed. " + rowsCount + " messages"
                 : "Changed search index for " + changedCount + " of " + rowsCount + " messages");
-        DbUtils.waitMs(this, changedCount == 0 ? 1000 : 3000);
         return changedCount;
     }
 

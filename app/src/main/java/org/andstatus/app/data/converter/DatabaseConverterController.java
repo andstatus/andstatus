@@ -152,7 +152,7 @@ public class DatabaseConverterController {
                 MyLog.v(TAG, "Upgrade didn't start");
             }
             if (success) {
-                MyLog.v(TAG, "success " + MyContextHolder.get().state());
+                MyLog.i(TAG, "success " + MyContextHolder.get().state());
                 onUpgradeSucceeded();
             }
             return success;
@@ -165,9 +165,12 @@ public class DatabaseConverterController {
                 MyContextHolder.initialize(upgradeRequestor, upgradeRequestor);
             }
             if (MyContextHolder.get().isReady()) {
+                MyServiceManager.setServiceUnavailable();
                 MyServiceManager.stopService();
-                new TimelineSaver(MyContextHolder.get()).setAddDefaults(true).executeNotOnUiThread();
                 DataChecker.fixData(progressLogger,false);
+                MyContextHolder.release();
+                MyContextHolder.initialize(upgradeRequestor, upgradeRequestor);
+                MyServiceManager.setServiceAvailable();
             }
         }
     }

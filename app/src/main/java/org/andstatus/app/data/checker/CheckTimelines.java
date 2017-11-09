@@ -23,9 +23,9 @@ import org.andstatus.app.util.MyLog;
 /**
  * @author yvolk@yurivolkov.com
  */
-class DataCheckerTimelines extends DataChecker {
+class CheckTimelines extends DataChecker {
 
-    public long fix(boolean countOnly) {
+    long fixInternal(boolean countOnly) {
         logger.logProgress("Checking if all default timelines are present");
         long rowsCount = 0;
         long changedCount = 0;

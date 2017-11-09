@@ -22,6 +22,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
+import org.andstatus.app.util.MyLog;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -37,7 +38,7 @@ public abstract class DataChecker {
     }
 
     public DataChecker setLogger(ProgressLogger logger) {
-        this.logger = logger;
+        this.logger = logger.makeServiceUnavalable();
         return this;
     }
 
@@ -72,21 +73,31 @@ public abstract class DataChecker {
         if (!myContext.isReady()) {
             return;
         }
-        for(DataChecker checker : new DataChecker[]{new DataCheckerMergeUsers(),
-                new DataCheckerConversations(), new DataCheckerTimelines(), new DataCheckerSearchIndex()}) {
+        MyLog.i(DataChecker.class, "fixData started" + (includeLong ? ", including long tasks" : ""));
+        for(DataChecker checker : new DataChecker[]{new MergeUsers(),
+                new CheckConversations(), new CheckTimelines(), new SearchIndexUpdate()}) {
             if (includeLong || checker.notLong()) checker.setMyContext(myContext).setLogger(logger).fix();
         }
+    }
+
+    String checkerName() {
+        return this.getClass().getSimpleName();
     }
 
     boolean notLong() {
         return true;
     }
 
+    /**
+     * @return number of changed items
+     */
     public long fix() {
         return fix(false);
     }
 
-
+    /**
+     * @return number of items that need to be changed
+     */
     public long countChanges() {
         return fix(true);
     }
@@ -95,5 +106,14 @@ public abstract class DataChecker {
      * @return number of changed items (or needed to change)
      * @param countOnly
      */
-    abstract long fix(boolean countOnly);
+    private long fix(boolean countOnly) {
+        logger.logProgress(checkerName() + " checker started");
+        long changedCount = fixInternal(countOnly);
+        logger.logProgress(checkerName() + " checker ended, " + (changedCount > 0 ?  "changed " + changedCount
+                + " items" : " no changes were needed"));
+        DbUtils.waitMs(checkerName(), changedCount == 0 ? 1000 : 3000);
+        return changedCount;
+    }
+
+    abstract long fixInternal(boolean countOnly);
 }

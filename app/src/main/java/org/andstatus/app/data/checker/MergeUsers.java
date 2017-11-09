@@ -37,21 +37,15 @@ import java.util.concurrent.ConcurrentSkipListSet;
 /**
  * @author yvolk@yurivolkov.com
  */
-class DataCheckerMergeUsers extends DataChecker {
+class MergeUsers extends DataChecker {
 
     @Override
-    long fix(boolean countOnly) {
-        final String method = "checkUsers";
-        logger.logProgress(method + " started");
-
+    long fixInternal(boolean countOnly) {
         int changedCount = 0;
         for (MbActivity activity : getUsersToMerge()) {
             mergeUser(activity);
             changedCount++;
         }
-        logger.logProgress(method + " ended, "
-                + (changedCount > 0 ?  changedCount + " users merged" : " no changes were needed"));
-        DbUtils.waitMs(method, changedCount == 0 ? 1000 : 3000);
         return changedCount;
     }
 

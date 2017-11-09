@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class DataCheckerConversations extends DataChecker {
+public class CheckConversations extends DataChecker {
     private Map<Long, MsgItem> items = new TreeMap<>();
     private Map<Long, List<MsgItem>> replies = new TreeMap<>();
 
@@ -77,17 +77,11 @@ public class DataCheckerConversations extends DataChecker {
     }
 
     @Override
-    public long fix(boolean countOnly) {
-        final String method = "checkConversations";
-        logger.logProgress(method + " started");
+    long fixInternal(boolean countOnly) {
         loadMessages();
         fixConversationsUsingReplies();
         fixConversationsUsingConversationOid();
-        int changedCount = saveChanges(countOnly);
-        logger.logProgress(method + " ended, " + (changedCount > 0 ?  "changed " + changedCount
-                + " messages" : " no changes were needed"));
-        DbUtils.waitMs(method, changedCount == 0 ? 1000 : 3000);
-        return changedCount;
+        return saveChanges(countOnly);
     }
 
     private void loadMessages() {
