@@ -130,11 +130,11 @@ public class MbMessage extends AObject {
     }
 
     public long lookupConversationId() {
-        if (conversationId == 0 && msgId != 0) {
-            conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, msgId);
-        }
         if (conversationId == 0  && !TextUtils.isEmpty(conversationOid)) {
             conversationId = MyQuery.conversationOidToId(originId, conversationOid);
+        }
+        if (conversationId == 0 && msgId != 0) {
+            conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, msgId);
         }
         if (conversationId == 0 && getInReplyTo().nonEmpty()) {
             if (getInReplyTo().getMessage().msgId != 0) {
@@ -197,6 +197,9 @@ public class MbMessage extends AObject {
         if(msgId != 0) {
             builder.append("id:" + msgId + ",");
         }
+        if(conversationId != msgId) {
+            builder.append("conversation_id:" + conversationId + ",");
+        }
         builder.append("status:" + status + ",");
         if(StringUtils.nonEmpty(body)) {
             builder.append("body:'" + body + "',");
@@ -211,6 +214,9 @@ public class MbMessage extends AObject {
         }
         if(isOidReal(oid)) {
             builder.append("oid:'" + oid + "',");
+        }
+        if(isOidReal(conversationOid)) {
+            builder.append("conversation_oid:'" + conversationOid + "',");
         }
         if(!TextUtils.isEmpty(url)) {
             builder.append("url:'" + url + "',");

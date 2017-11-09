@@ -74,6 +74,19 @@ public class CheckConversations extends DataChecker {
         boolean isInReplyToIdChanged() {
             return inReplyToId != inReplyToId_initial;
         }
+
+        @Override
+        public String toString() {
+            return "MsgItem{" +
+                    "id=" + id +
+                    ", originId=" + originId +
+                    ", inReplyToId_initial=" + inReplyToId_initial +
+                    ", inReplyToId=" + inReplyToId +
+                    ", conversationId_initial=" + conversationId_initial +
+                    ", conversationId=" + conversationId +
+                    ", conversationOid='" + conversationOid + '\'' +
+                    '}';
+        }
     }
 
     @Override

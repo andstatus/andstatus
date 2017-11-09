@@ -31,6 +31,7 @@ class Convert26 extends ConvertOneStep {
         sql = "CREATE UNIQUE INDEX idx_msg_origin ON msg (origin_id, msg_oid)";
         sql = "CREATE INDEX idx_msg_in_reply_to_msg_id ON msg (in_reply_to_msg_id)";
         sql = "CREATE INDEX idx_msg_conversation_id ON msg (conversation_id)";
+        sql = "CREATE INDEX idx_conversation_oid ON msg (origin_id, conversation_oid)";
         sql = "CREATE TABLE audience (user_id INTEGER NOT NULL,msg_id INTEGER NOT NULL, CONSTRAINT pk_audience PRIMARY KEY (msg_id ASC, user_id ASC))";
         sql = "CREATE INDEX idx_audience_user ON audience (user_id)";
         sql = "CREATE INDEX idx_audience_msg ON audience (msg_id)";
@@ -84,6 +85,8 @@ class Convert26 extends ConvertOneStep {
         sql = "CREATE INDEX idx_msg_in_reply_to_msg_id ON msg (in_reply_to_msg_id)";
         DbUtils.execSQL(db, sql);
         sql = "CREATE INDEX idx_msg_conversation_id ON msg (conversation_id)";
+        DbUtils.execSQL(db, sql);
+        sql = "CREATE INDEX idx_conversation_oid ON msg (origin_id, conversation_oid)";
         DbUtils.execSQL(db, sql);
 
         progressLogger.logProgress(stepTitle + ": Converting messages");

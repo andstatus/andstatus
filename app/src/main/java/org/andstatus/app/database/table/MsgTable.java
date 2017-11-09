@@ -162,5 +162,11 @@ public final class MsgTable implements BaseColumns {
                 + ")"
         );
 
+        DbUtils.execSQL(db, "CREATE INDEX idx_conversation_oid ON " + TABLE_NAME + " ("
+                + ORIGIN_ID + ", "
+                + CONVERSATION_OID
+                + ")"
+        );
+
     }
 }

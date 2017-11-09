@@ -86,11 +86,24 @@ public abstract class ConversationLoader<T extends ConversationItem> extends Syn
             requestConversationSync(selectedMessageId);
         }
         load2(newOMsg(selectedMessageId));
+        addMissedFromCache();
         Collections.sort(msgList, replyLevelComparator);
         enumerateMessages();
     }
 
     protected abstract void load2(T oMsg);
+
+    private void addMissedFromCache() {
+        if (cachedMessages.isEmpty()) return;
+        for (ConversationItem oMsg : msgList) {
+            cachedMessages.remove(oMsg.getId());
+            if (cachedMessages.isEmpty()) return;
+        }
+        MyLog.v(this, cachedMessages.size() + " cached messages are not connected to selected");
+        for (T oMsg : cachedMessages.values()) {
+            addMessageToList(oMsg);
+        }
+    }
 
     /** Returns true if message was added
      *          false in a case the message existed already 
