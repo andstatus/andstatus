@@ -198,13 +198,16 @@ public class TimelineSql {
                     + "=" + authorTableName + "." + BaseColumns._ID;
         }
         if (columns.contains(DownloadTable.IMAGE_FILE_NAME)) {
-            tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
+            tables = "(" + tables + ") LEFT OUTER JOIN (" +
+                    "SELECT "
                     + DownloadTable._ID + ", "
                     + DownloadTable.MSG_ID + ", "
                     + DownloadTable.CONTENT_TYPE + ", "
                     + (columns.contains(DownloadTable.IMAGE_URL) ? DownloadTable.URI + ", " : "")
                     + DownloadTable.FILE_NAME
-                    + " FROM " + DownloadTable.TABLE_NAME + ") AS " + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS
+                    + " FROM " + DownloadTable.TABLE_NAME
+                    + " WHERE " + DownloadTable.MSG_ID + "!=0"
+                    + ") AS " + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS
                     +  " ON "
                     + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.CONTENT_TYPE
                     + "=" + MyContentType.IMAGE.save() + " AND " 

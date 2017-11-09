@@ -106,6 +106,7 @@ public class TimelineLoader<T extends ViewItem> extends SyncLoader<T> {
                         rowsCount++;
                         Pair<T, Boolean> itemAndSkip = (Pair<T, Boolean>) page.getEmptyItem().
                                 fromCursor(cursor, keywordsFilter, searchQuery, hideRepliesNotToMeOrFriends);
+                        long afterFromCursor = System.currentTimeMillis();
                         getParams().rememberSentDateLoaded(itemAndSkip.first.getDate());
                         if (itemAndSkip.second) {
                             filteredOutCount++;
@@ -119,7 +120,9 @@ public class TimelineLoader<T extends ViewItem> extends SyncLoader<T> {
                             page.items.add(itemAndSkip.first);
                         }
                         if (MyLog.isVerboseEnabled()) {
-                            MyLog.v(this, "row " + rowsCount + ", id:" + itemAndSkip.first.getId() + ": " + (System.currentTimeMillis() - rowStartTime) + "ms");
+                            MyLog.v(this, "row " + rowsCount + ", id:" + itemAndSkip.first.getId()
+                                    + ": " + (System.currentTimeMillis() - rowStartTime) + "ms, fromCursor: "
+                            + (afterFromCursor - rowStartTime) + "ms");
                         }
                     } while (cursor.moveToNext());
                 }
