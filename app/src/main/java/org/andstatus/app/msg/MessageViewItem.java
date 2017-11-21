@@ -16,6 +16,7 @@
 package org.andstatus.app.msg;
 
 import android.database.Cursor;
+import android.support.annotation.NonNull;
 import android.text.Html;
 import android.text.TextUtils;
 
@@ -43,6 +44,12 @@ import org.andstatus.app.util.TriState;
  */
 public class MessageViewItem extends BaseMessageViewItem {
     public final static MessageViewItem EMPTY = new MessageViewItem();
+
+    @Override
+    @NonNull
+    public MessageViewItem fromCursor(Cursor cursor) {
+        return MessageViewItem.fromCursorRow(getMyContext(), cursor);
+    }
 
     public static MessageViewItem fromCursorRow(MyContext myContext, Cursor cursor) {
         long startTime = System.currentTimeMillis();
@@ -97,5 +104,4 @@ public class MessageViewItem extends BaseMessageViewItem {
         return MyLog.formatKeyValue(this, I18n.trimTextAt(MyHtml.fromHtml(getBody()), 40) + ","
                 + getDetails(getMyContext().context()));
     }
-
 }

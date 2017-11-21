@@ -18,7 +18,6 @@ package org.andstatus.app.timeline;
 
 import android.database.Cursor;
 import android.support.annotation.NonNull;
-import android.support.v4.util.Pair;
 
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
@@ -104,23 +103,22 @@ public class TimelineLoader<T extends ViewItem> extends SyncLoader<T> {
                     do {
                         long rowStartTime = System.currentTimeMillis();
                         rowsCount++;
-                        Pair<T, Boolean> itemAndSkip = (Pair<T, Boolean>) page.getEmptyItem().
-                                fromCursor(cursor, keywordsFilter, searchQuery, hideRepliesNotToMeOrFriends);
+                        T item = (T) page.getEmptyItem().fromCursor(cursor);
                         long afterFromCursor = System.currentTimeMillis();
-                        getParams().rememberSentDateLoaded(itemAndSkip.first.getDate());
-                        if (itemAndSkip.second) {
+                        getParams().rememberSentDateLoaded(item.getDate());
+                        if (item.isFilteredOut(keywordsFilter, searchQuery, hideRepliesNotToMeOrFriends)) {
                             filteredOutCount++;
                             if (MyLog.isVerboseEnabled()) {
                                 MyLog.v(this, filteredOutCount + " Filtered out: "
-                                        + I18n.trimTextAt(itemAndSkip.first.toString(), 100));
+                                        + I18n.trimTextAt(item.toString(), 100));
                             }
                         } else if (reversedOrder) {
-                            page.items.add(0, itemAndSkip.first);
+                            page.items.add(0, item);
                         } else {
-                            page.items.add(itemAndSkip.first);
+                            page.items.add(item);
                         }
                         if (MyLog.isVerboseEnabled()) {
-                            MyLog.v(this, "row " + rowsCount + ", id:" + itemAndSkip.first.getId()
+                            MyLog.v(this, "row " + rowsCount + ", id:" + item.getId()
                                     + ": " + (System.currentTimeMillis() - rowStartTime) + "ms, fromCursor: "
                             + (afterFromCursor - rowStartTime) + "ms");
                         }

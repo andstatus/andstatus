@@ -17,9 +17,7 @@
 package org.andstatus.app.msg;
 
 import android.content.Context;
-import android.database.Cursor;
 import android.support.annotation.NonNull;
-import android.support.v4.util.Pair;
 import android.text.TextUtils;
 
 import org.andstatus.app.R;
@@ -250,20 +248,18 @@ public class BaseMessageViewItem extends ViewItem {
         return updatedDate;
     }
 
-
-    @NonNull
-    public Pair<ViewItem, Boolean> fromCursor(Cursor cursor, KeywordsFilter keywordsFilter,
-                                                   KeywordsFilter searchQuery, boolean hideRepliesNotToMeOrFriends) {
-        MessageViewItem item = MessageViewItem.fromCursorRow(getMyContext(), cursor);
-        String body = MyHtml.getBodyToSearch(item.getBody());
+    @Override
+    public boolean isFilteredOut(KeywordsFilter keywordsFilter,
+                                 KeywordsFilter searchQuery, boolean hideRepliesNotToMeOrFriends) {
+        String body = MyHtml.getBodyToSearch(getBody());
         boolean skip = keywordsFilter.matchedAny(body);
         if (!skip && !searchQuery.isEmpty()) {
             skip = !searchQuery.matchedAll(body);
         }
-        if (!skip && hideRepliesNotToMeOrFriends && item.inReplyToUserId != 0) {
-            skip = !MyContextHolder.get().persistentAccounts().isMeOrMyFriend(item.inReplyToUserId);
+        if (!skip && hideRepliesNotToMeOrFriends && inReplyToUserId != 0) {
+            skip = !MyContextHolder.get().persistentAccounts().isMeOrMyFriend(inReplyToUserId);
         }
-        return new Pair(item, skip);
+        return skip;
     }
 
     @Override

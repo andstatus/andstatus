@@ -19,7 +19,6 @@ package org.andstatus.app.activity;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
-import android.support.v4.util.Pair;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -75,12 +74,8 @@ public class ActivityViewItem extends ViewItem implements Comparable<ActivityVie
 
     @NonNull
     @Override
-    public Pair<ViewItem, Boolean> fromCursor(Cursor cursor, KeywordsFilter keywordsFilter, KeywordsFilter searchQuery,
-                                              boolean hideRepliesNotToMeOrFriends) {
-        ActivityViewItem item = new ActivityViewItem().loadCursor(cursor);
-        boolean skip = false;
-        // TODO
-        return new Pair<>(item, skip);
+    public ActivityViewItem fromCursor(Cursor cursor) {
+        return new ActivityViewItem().loadCursor(cursor);
     }
 
     private ActivityViewItem loadCursor(Cursor cursor) {
@@ -109,6 +104,14 @@ public class ActivityViewItem extends ViewItem implements Comparable<ActivityVie
             user.populateFromDatabase();
         }
         return this;
+    }
+
+    @Override
+    public boolean isFilteredOut(KeywordsFilter keywordsFilter, KeywordsFilter searchQuery, boolean hideRepliesNotToMeOrFriends) {
+        if (messageId !=0) {
+            return message.isFilteredOut(keywordsFilter, searchQuery, hideRepliesNotToMeOrFriends);
+        }
+        return false; // TODO
     }
 
     String getDetails(Context context) {
