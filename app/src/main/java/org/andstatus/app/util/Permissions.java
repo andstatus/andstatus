@@ -24,6 +24,8 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
+import org.andstatus.app.context.MyContextHolder;
+
 /**
  * @author yvolk@yurivolkov.com
  * See http://developer.android.com/training/permissions/index.html
@@ -63,10 +65,14 @@ public class Permissions {
             throw new IllegalArgumentException("The activity " + activity.getClass().getName() +
                     " should implement OnRequestPermissionsResultCallback");
         }
-        MyLog.d(activity, "Requesting permission: " + permissionType);
-        ActivityCompat.requestPermissions(activity,
-                new String[]{permissionType.manifestPermission},
-                permissionType.ordinal());
+        if (MyContextHolder.get().isTestRun()) {
+            MyLog.i(activity, "Skipped requesting permission during a Test run: " + permissionType);
+        } else {
+            MyLog.i(activity, "Requesting permission: " + permissionType);
+            ActivityCompat.requestPermissions(activity,
+                    new String[]{permissionType.manifestPermission},
+                    permissionType.ordinal());
+        }
     }
 
     /**

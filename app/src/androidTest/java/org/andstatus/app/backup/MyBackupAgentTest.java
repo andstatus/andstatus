@@ -1,11 +1,13 @@
 package org.andstatus.app.backup;
 
+import android.Manifest;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.content.Context;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.support.test.rule.GrantPermissionRule;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.PersistentAccounts;
@@ -21,6 +23,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.File;
@@ -33,6 +36,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class MyBackupAgentTest {
+
+    @Rule
+    public GrantPermissionRule mRuntimePermissionRule = GrantPermissionRule.grant(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
     @Before
     public void setUp() throws Exception {
