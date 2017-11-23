@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class DuplicatesCollapser<T extends ViewItem> {
+public class DuplicatesCollapser<T extends ViewItem<T>> {
     // Parameters, which may be changed during presentation of the timeline
     protected volatile boolean collapseDuplicates = MyPreferences.isCollapseDuplicates();
     private final Set<Long> individualCollapsedStateIds = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());

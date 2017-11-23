@@ -26,12 +26,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class ViewItem {
-    private final List<ViewItem> children = new ArrayList<>();
+public class ViewItem<T extends ViewItem<T>> {
+    private final List<T> children = new ArrayList<>();
 
     @NonNull
-    public static ViewItem getEmpty(@NonNull TimelineType timelineType) {
-        return ViewItemType.fromTimelineType(timelineType).emptyViewItem;
+    public T getEmpty(@NonNull TimelineType timelineType) {
+        return (T) ViewItemType.fromTimelineType(timelineType).emptyViewItem;
     }
 
     public long getId() {
@@ -43,7 +43,7 @@ public class ViewItem {
     }
 
     @NonNull
-    public final Collection<ViewItem> getChildren() {
+    public final Collection<T> getChildren() {
         return children;
     }
 
@@ -56,7 +56,7 @@ public class ViewItem {
         return !getChildren().isEmpty();
     }
 
-    void collapse(ViewItem child) {
+    void collapse(T child) {
         this.getChildren().addAll(child.getChildren());
         child.getChildren().clear();
         this.getChildren().add(child);
@@ -64,12 +64,11 @@ public class ViewItem {
 
     /** @return 1. The item and 2. if it should be skipped (filtered out) */
     @NonNull
-    public ViewItem fromCursor(Cursor cursor) {
+    public T fromCursor(Cursor cursor) {
         return getEmpty(TimelineType.UNKNOWN);
     }
 
-    public boolean isFilteredOut(KeywordsFilter keywordsFilter,
-                                 KeywordsFilter searchQuery, boolean hideRepliesNotToMeOrFriends) {
-        return false;
+    public boolean matches(TimelineFilter filter) {
+        return true;
     }
 }

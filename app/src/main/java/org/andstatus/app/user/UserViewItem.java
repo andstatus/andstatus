@@ -42,7 +42,7 @@ import org.andstatus.app.util.I18n;
 import java.util.HashSet;
 import java.util.Set;
 
-public class UserViewItem extends ViewItem implements Comparable<UserViewItem> {
+public class UserViewItem extends ViewItem<UserViewItem> implements Comparable<UserViewItem> {
     public static final UserViewItem EMPTY = fromMbUser(MbUser.EMPTY);
     boolean populated = false;
     @NonNull

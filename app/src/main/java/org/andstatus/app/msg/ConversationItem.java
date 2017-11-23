@@ -23,7 +23,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.util.I18n;
 
-public abstract class ConversationItem extends BaseMessageViewItem implements Comparable<ConversationItem> {
+public abstract class ConversationItem<T extends ConversationItem<T>> extends BaseMessageViewItem<T> implements Comparable<ConversationItem> {
     ConversationItem inReplyToViewItem = null;
 
     boolean reversedListOrder = false;

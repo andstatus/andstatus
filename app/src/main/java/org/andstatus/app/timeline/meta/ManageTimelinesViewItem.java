@@ -23,7 +23,7 @@ import org.andstatus.app.timeline.ViewItem;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class ManageTimelinesViewItem extends ViewItem {
+public class ManageTimelinesViewItem extends ViewItem<ManageTimelinesViewItem> {
     final Timeline timeline;
     final TimelineTitle timelineTitle;
 

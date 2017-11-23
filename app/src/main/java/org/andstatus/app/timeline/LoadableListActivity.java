@@ -61,7 +61,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * 
  * @author yvolk@yurivolkov.com
  */
-public abstract class LoadableListActivity<T extends ViewItem> extends MyBaseListActivity implements MyServiceEventsListener {
+public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBaseListActivity implements MyServiceEventsListener {
 
     protected boolean showSyncIndicatorSetting = true;
     protected View textualSyncIndicator = null;
@@ -131,8 +131,8 @@ public abstract class LoadableListActivity<T extends ViewItem> extends MyBaseLis
     }
 
     @NonNull
-    public TimelineData<? extends ViewItem> getListData() {
-        return new TimelineData<ViewItem>(null,
+    public TimelineData<T> getListData() {
+        return new TimelineData<T>(null,
                 new TimelinePage<>(new TimelineParameters(myContext), null)) {
             @Override
             public int size() {
@@ -248,7 +248,7 @@ public abstract class LoadableListActivity<T extends ViewItem> extends MyBaseLis
     }
 
     /** Called not in UI thread */
-    protected abstract SyncLoader newSyncLoader(Bundle args);
+    protected abstract SyncLoader<T> newSyncLoader(Bundle args);
     
     private class AsyncLoader extends MyAsyncTask<Bundle, String, SyncLoader> implements LoadableListActivity.ProgressPublisher {
         private SyncLoader mSyncLoader = null;

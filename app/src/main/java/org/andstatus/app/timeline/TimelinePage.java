@@ -24,19 +24,21 @@ import java.util.List;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelinePage<T extends ViewItem> {
+public class TimelinePage<T extends ViewItem<T>> {
     @NonNull
     final TimelineParameters params;
+    private final T emptyItem;
     @NonNull
     public final List<T> items;
 
     @NonNull
     public T getEmptyItem() {
-        return  (T) ViewItem.getEmpty(params.getTimelineType());
+        return emptyItem;
     }
 
     public TimelinePage(@NonNull TimelineParameters params, List<T> items) {
         this.params = params;
+        emptyItem = new ViewItem<T>().getEmpty(params.getTimelineType());
         this.items = items == null ? Collections.EMPTY_LIST : items;
     }
 }

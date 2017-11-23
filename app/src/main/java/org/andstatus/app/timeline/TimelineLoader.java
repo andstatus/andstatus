@@ -19,21 +19,17 @@ package org.andstatus.app.timeline;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.list.SyncLoader;
-import org.andstatus.app.msg.KeywordsFilter;
-import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.ArrayList;
 
 /**
 * @author yvolk@yurivolkov.com
 */
-public class TimelineLoader<T extends ViewItem> extends SyncLoader<T> {
+public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
     private final TimelineParameters params;
     private final TimelinePage<T> page;
 
@@ -41,7 +37,7 @@ public class TimelineLoader<T extends ViewItem> extends SyncLoader<T> {
 
     TimelineLoader(@NonNull TimelineParameters params, long instanceId) {
         this.params = params;
-        this.page = new TimelinePage<>(getParams(), new ArrayList<>());
+        this.page = new TimelinePage<T>(getParams(), new ArrayList<>());
         this.items = page.items;
         this.instanceId = instanceId;
     }
@@ -87,13 +83,8 @@ public class TimelineLoader<T extends ViewItem> extends SyncLoader<T> {
     }
 
     private void loadFromCursor(Cursor cursor) {
-        KeywordsFilter keywordsFilter = new KeywordsFilter(
-                SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
-        boolean hideRepliesNotToMeOrFriends = getParams().getTimelineType() == TimelineType.HOME
-                && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS, false);
-        KeywordsFilter searchQuery = new KeywordsFilter(getParams().getTimeline().getSearchQuery());
-
         long startTime = System.currentTimeMillis();
+        TimelineFilter filter = new TimelineFilter(getParams().getTimeline());
         int rowsCount = 0;
         int filteredOutCount = 0;
         if (cursor != null && !cursor.isClosed()) {
@@ -106,16 +97,18 @@ public class TimelineLoader<T extends ViewItem> extends SyncLoader<T> {
                         T item = (T) page.getEmptyItem().fromCursor(cursor);
                         long afterFromCursor = System.currentTimeMillis();
                         getParams().rememberSentDateLoaded(item.getDate());
-                        if (item.isFilteredOut(keywordsFilter, searchQuery, hideRepliesNotToMeOrFriends)) {
+                        if (item.matches(filter)) {
+                            if (reversedOrder) {
+                                page.items.add(0, item);
+                            } else {
+                                page.items.add(item);
+                            }
+                        } else {
                             filteredOutCount++;
                             if (MyLog.isVerboseEnabled()) {
                                 MyLog.v(this, filteredOutCount + " Filtered out: "
                                         + I18n.trimTextAt(item.toString(), 100));
                             }
-                        } else if (reversedOrder) {
-                            page.items.add(0, item);
-                        } else {
-                            page.items.add(item);
                         }
                         if (MyLog.isVerboseEnabled()) {
                             MyLog.v(this, "row " + rowsCount + ", id:" + item.getId()

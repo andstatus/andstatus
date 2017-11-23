@@ -86,7 +86,7 @@ import java.util.Collections;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineActivity<T extends ViewItem> extends MessageEditorListActivity<T> implements
+public class TimelineActivity<T extends ViewItem<T>> extends MessageEditorListActivity<T> implements
         MessageListContextMenuContainer, AbsListView.OnScrollListener {
     public static final String HORIZONTAL_ELLIPSIS = "\u2026";
 
@@ -293,7 +293,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
     }
 
     private void closeDrawer() {
-        ViewGroup mDrawerList = (ViewGroup) findViewById(R.id.navigation_drawer);
+        ViewGroup mDrawerList = findViewById(R.id.navigation_drawer);
         mDrawerLayout.closeDrawer(mDrawerList);
     }
 
@@ -380,7 +380,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
     protected void saveListPosition() {
         if (getParamsLoaded().isLoaded() && isPositionRestored()) {
             runOnUiThread(
-                () -> new TimelinePositionStorage<T>(getListAdapter(), getListView(), getParamsLoaded()).save()
+                () -> new TimelinePositionStorage<>(getListAdapter(), getListView(), getParamsLoaded()).save()
             );
         }
     }
@@ -711,7 +711,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
     @NonNull
     public TimelineData<T> getListData() {
         if (listData == null) {
-            listData = new TimelineData<>(null, new TimelinePage<>(getParamsNew(), Collections.emptyList()));
+            listData = new TimelineData<>(null, new TimelinePage<T>(getParamsNew(), Collections.emptyList()));
         }
         return listData;
     }
@@ -795,7 +795,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
     }
 
     @Override
-    protected SyncLoader newSyncLoader(Bundle args) {
+    protected SyncLoader<T> newSyncLoader(Bundle args) {
         final String method = "newSyncLoader";
         WhichPage whichPage = WhichPage.load(args);
         TimelineParameters params = paramsToLoad == null
@@ -808,7 +808,7 @@ public class TimelineActivity<T extends ViewItem> extends MessageEditorListActiv
                 intent.setData(params.getContentUri());
             }
         }
-        return new TimelineLoader(params, BundleUtils.fromBundle(args, IntentExtra.INSTANCE_ID));
+        return new TimelineLoader<>(params, BundleUtils.fromBundle(args, IntentExtra.INSTANCE_ID));
     }
 
     @Override

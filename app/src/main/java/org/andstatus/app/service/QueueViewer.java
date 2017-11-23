@@ -43,7 +43,7 @@ public class QueueViewer extends LoadableListActivity {
     }
 
     @Override
-    protected SyncLoader newSyncLoader(Bundle args) {
+    protected SyncLoader<QueueData> newSyncLoader(Bundle args) {
         return new SyncLoader<QueueData>() {
             @Override
             public void load(ProgressPublisher publisher) {

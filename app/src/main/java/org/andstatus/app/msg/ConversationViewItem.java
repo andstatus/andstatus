@@ -38,7 +38,7 @@ import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.TriState;
 
-public class ConversationViewItem extends ConversationItem {
+public class ConversationViewItem extends ConversationItem<ConversationViewItem> {
     public static final ConversationViewItem EMPTY = new ConversationViewItem();
 
     @Override

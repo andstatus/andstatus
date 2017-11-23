@@ -26,9 +26,9 @@ import java.util.List;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineData<T extends ViewItem> {
+public class TimelineData<T extends ViewItem<T>> {
     private static final int MAX_PAGES_COUNT = 5;
-    final List<TimelinePage<T>> pages; // Contains at least onePage
+    protected final List<TimelinePage<T>> pages; // Contains at least one Page
     final long updatedAt = MyLog.uniqueCurrentTimeMS();
     public final TimelineParameters params;
     final boolean isSameTimeline;
@@ -234,7 +234,7 @@ public class TimelineData<T extends ViewItem> {
                     if (item.getId() == itemId) {
                         return position;
                     } else if (item.isCollapsed()) {
-                        for (ViewItem child : item.getChildren()) {
+                        for (T child : item.getChildren()) {
                             if (child.getId() == itemId) {
                                 return position;
                             }

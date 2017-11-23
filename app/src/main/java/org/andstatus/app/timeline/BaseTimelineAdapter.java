@@ -30,7 +30,7 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.List;
 
-public abstract class BaseTimelineAdapter<T extends ViewItem> extends BaseAdapter  implements View.OnClickListener {
+public abstract class BaseTimelineAdapter<T extends ViewItem<T>> extends BaseAdapter  implements View.OnClickListener {
     protected final boolean showAvatars = MyPreferences.getShowAvatars();
     protected final boolean showAttachedImages = MyPreferences.getDownloadAndDisplayAttachedImages();
     protected final boolean markReplies = SharedPreferencesUtil.getBoolean(

@@ -42,7 +42,7 @@ import org.andstatus.app.util.TriState;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class MessageViewItem extends BaseMessageViewItem {
+public class MessageViewItem extends BaseMessageViewItem<MessageViewItem> {
     public final static MessageViewItem EMPTY = new MessageViewItem();
 
     @Override

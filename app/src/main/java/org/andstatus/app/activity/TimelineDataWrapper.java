@@ -22,7 +22,7 @@ import org.andstatus.app.timeline.TimelineData;
 import org.andstatus.app.timeline.TimelinePage;
 import org.andstatus.app.timeline.ViewItem;
 
-abstract class TimelineDataWrapper<T extends ViewItem> extends TimelineData<T> {
+abstract class TimelineDataWrapper<T extends ViewItem<T>> extends TimelineData<T> {
     final TimelineData<ActivityViewItem> listData;
 
     TimelineDataWrapper(TimelineData<ActivityViewItem> listData) {
@@ -44,7 +44,7 @@ abstract class TimelineDataWrapper<T extends ViewItem> extends TimelineData<T> {
     public T getById(long itemId) {
         int position = getPositionById(itemId);
         if (position < 0) {
-            return (T) T.getEmpty(listData.params.getTimelineType());
+            return pages.get(0).getEmptyItem();
         }
         return getItem(position);
     }

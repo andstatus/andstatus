@@ -27,7 +27,7 @@ import org.andstatus.app.util.MyLog;
  * 2014-11-15 We are storing {@link ViewItem#getDate()} for the last item to retrieve, not its ID as before
  * @author yvolk@yurivolkov.com
  */
-class TimelinePositionStorage<T extends ViewItem> {
+class TimelinePositionStorage<T extends ViewItem<T>> {
     private static final int NOT_STORED = -1;
 
     private final BaseTimelineAdapter<T> adapter;

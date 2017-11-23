@@ -24,7 +24,7 @@ import org.andstatus.app.timeline.ViewItem;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class QueueData extends ViewItem implements Comparable<QueueData> {
+public class QueueData extends ViewItem<QueueData> implements Comparable<QueueData> {
     public final static QueueData EMPTY = new QueueData(QueueType.UNKNOWN, CommandData.getEmpty());
 
     @NonNull

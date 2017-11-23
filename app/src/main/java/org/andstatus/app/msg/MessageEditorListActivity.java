@@ -30,7 +30,7 @@ import org.andstatus.app.util.UriUtils;
 /**
  * @author yvolk@yurivolkov.com
  */
-abstract public class MessageEditorListActivity<T extends ViewItem> extends LoadableListActivity<T> implements MessageEditorContainer {
+abstract public class MessageEditorListActivity<T extends ViewItem<T>> extends LoadableListActivity<T> implements MessageEditorContainer {
     private MessageEditor messageEditor;
 
     @Override

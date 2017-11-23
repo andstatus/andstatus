@@ -24,12 +24,12 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.msg.MessageViewItem;
 import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbObjectType;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.user.UserViewItem;
 import org.andstatus.app.util.I18n;
@@ -39,7 +39,7 @@ import org.andstatus.app.util.RelativeTime;
 /** View on ActivityStream
  * @author yvolk@yurivolkov.com
  */
-public class ActivityViewItem extends ViewItem implements Comparable<ActivityViewItem> {
+public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comparable<ActivityViewItem> {
     public static final ActivityViewItem EMPTY = new ActivityViewItem();
     private long id = 0;
     private Origin origin = Origin.EMPTY;
@@ -107,11 +107,11 @@ public class ActivityViewItem extends ViewItem implements Comparable<ActivityVie
     }
 
     @Override
-    public boolean isFilteredOut(KeywordsFilter keywordsFilter, KeywordsFilter searchQuery, boolean hideRepliesNotToMeOrFriends) {
+    public boolean matches(TimelineFilter filter) {
         if (messageId !=0) {
-            return message.isFilteredOut(keywordsFilter, searchQuery, hideRepliesNotToMeOrFriends);
+            return message.matches(filter);
         }
-        return false; // TODO
+        return true; // TODO
     }
 
     String getDetails(Context context) {

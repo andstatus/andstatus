@@ -41,7 +41,7 @@ import java.util.Set;
 /**
  * @author yvolk@yurivolkov.com
  */
-public abstract class BaseMessageAdapter<T extends BaseMessageViewItem> extends BaseTimelineAdapter<T> {
+public abstract class BaseMessageAdapter<T extends BaseMessageViewItem<T>> extends BaseTimelineAdapter<T> {
     protected final boolean showButtonsBelowMessages =
             SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SHOW_BUTTONS_BELOW_MESSAGE, true);
     protected final MessageContextMenu contextMenu;
@@ -108,7 +108,7 @@ public abstract class BaseMessageAdapter<T extends BaseMessageViewItem> extends 
         return view;
     }
 
-    protected void showRebloggers(View view, BaseMessageViewItem item) {
+    protected void showRebloggers(View view, T item) {
         View viewGroup = view.findViewById(R.id.reblogged);
         if (viewGroup == null) {
             return;
@@ -124,22 +124,22 @@ public abstract class BaseMessageAdapter<T extends BaseMessageViewItem> extends 
         }
     }
 
-    protected void showMessageBody(View view, BaseMessageViewItem item) {
+    protected void showMessageBody(View view, T item) {
         TextView body = view.findViewById(R.id.message_body);
         MyUrlSpan.showText(body, item.getBody(), true, true);
     }
 
-    protected void showAvatar(View view, BaseMessageViewItem item) {
+    protected void showAvatar(View view, T item) {
         AvatarView avatarView = view.findViewById(R.id.avatar_image);
         item.avatarFile.showImage(contextMenu.getActivity(), avatarView);
     }
 
-    protected void showAttachedImage(View view, BaseMessageViewItem item) {
+    protected void showAttachedImage(View view, T item) {
         preloadedImages.add(item.getMsgId());
         item.getAttachedImageFile().showImage(contextMenu.getActivity(), view.findViewById(R.id.attached_image));
     }
 
-    protected void showMarkReplies(ViewGroup view, BaseMessageViewItem item) {
+    protected void showMarkReplies(ViewGroup view, T item) {
         boolean show = item.inReplyToUserId != 0 && myContext.persistentAccounts().
                 fromUserId(item.inReplyToUserId).isValid();
         View oldView = view.findViewById(R.id.reply_timeline_marker);
@@ -195,7 +195,7 @@ public abstract class BaseMessageAdapter<T extends BaseMessageViewItem> extends 
         }
     }
 
-    protected void showButtonsBelowMessage(View view, BaseMessageViewItem item) {
+    protected void showButtonsBelowMessage(View view, T item) {
         View viewGroup = view.findViewById(R.id.message_buttons);
         if (viewGroup == null) {
             return;
@@ -215,7 +215,7 @@ public abstract class BaseMessageAdapter<T extends BaseMessageViewItem> extends 
         imageViewTinted.setVisibility(colored ? View.VISIBLE : View.GONE);
     }
 
-    protected void showFavorited(View view, BaseMessageViewItem item) {
+    protected void showFavorited(View view, T item) {
         View favorited = view.findViewById(R.id.message_favorited);
         favorited.setVisibility(item.favorited ? View.VISIBLE : View.GONE );
     }

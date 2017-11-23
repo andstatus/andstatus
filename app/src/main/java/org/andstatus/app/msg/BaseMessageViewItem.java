@@ -29,6 +29,7 @@ import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.timeline.DuplicationLink;
+import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
@@ -39,7 +40,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class BaseMessageViewItem extends ViewItem {
+public class BaseMessageViewItem<T extends BaseMessageViewItem<T>> extends ViewItem<T> {
     public final static BaseMessageViewItem EMPTY = new BaseMessageViewItem();
     private static final int MIN_LENGTH_TO_COMPARE = 5;
     private MyContext myContext = MyContextHolder.get();
@@ -249,17 +250,15 @@ public class BaseMessageViewItem extends ViewItem {
     }
 
     @Override
-    public boolean isFilteredOut(KeywordsFilter keywordsFilter,
-                                 KeywordsFilter searchQuery, boolean hideRepliesNotToMeOrFriends) {
-        String body = MyHtml.getBodyToSearch(getBody());
-        boolean skip = keywordsFilter.matchedAny(body);
-        if (!skip && !searchQuery.isEmpty()) {
-            skip = !searchQuery.matchedAll(body);
+    public boolean matches(TimelineFilter filter) {
+        if (!filter.keywordsFilter.isEmpty() || !filter.searchQuery.isEmpty()) {
+            String bodyToSearch = MyHtml.getBodyToSearch(getBody());
+            if (filter.keywordsFilter.matchedAny(bodyToSearch)) return false;
+            if (!filter.searchQuery.isEmpty() && !filter.searchQuery.matchedAll(bodyToSearch)) return false;
         }
-        if (!skip && hideRepliesNotToMeOrFriends && inReplyToUserId != 0) {
-            skip = !MyContextHolder.get().persistentAccounts().isMeOrMyFriend(inReplyToUserId);
-        }
-        return skip;
+        if (filter.hideRepliesNotToMeOrFriends && inReplyToUserId != 0
+                && !MyContextHolder.get().persistentAccounts().isMeOrMyFriend(inReplyToUserId)) return false;
+        return true;
     }
 
     @Override
