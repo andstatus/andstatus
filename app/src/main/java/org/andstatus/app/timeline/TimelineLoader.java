@@ -25,6 +25,7 @@ import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
 * @author yvolk@yurivolkov.com
@@ -35,7 +36,7 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
 
     private final long instanceId;
 
-    TimelineLoader(@NonNull TimelineParameters params, long instanceId) {
+    protected TimelineLoader(@NonNull TimelineParameters params, long instanceId) {
         this.params = params;
         this.page = new TimelinePage<T>(getParams(), new ArrayList<>());
         this.items = page.items;
@@ -46,8 +47,7 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
     public void load(LoadableListActivity.ProgressPublisher publisher) {
         markStart();
         if (params.whichPage != WhichPage.EMPTY) {
-            Cursor cursor = queryDatabase();
-            loadFromCursor(cursor);
+            filter(loadFromCursor(queryDatabase()));
         }
         params.endTime = System.nanoTime();
         logExecutionStats();
@@ -82,38 +82,24 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
         return cursor;
     }
 
-    private void loadFromCursor(Cursor cursor) {
+    private List<T> loadFromCursor(Cursor cursor) {
         long startTime = System.currentTimeMillis();
-        TimelineFilter filter = new TimelineFilter(getParams().getTimeline());
+        List<T> items = new ArrayList<>();
         int rowsCount = 0;
-        int filteredOutCount = 0;
         if (cursor != null && !cursor.isClosed()) {
             try {
                 if (cursor.moveToFirst()) {
-                    boolean reversedOrder = getParams().isSortOrderAscending();
                     do {
                         long rowStartTime = System.currentTimeMillis();
                         rowsCount++;
                         T item = (T) page.getEmptyItem().fromCursor(cursor);
                         long afterFromCursor = System.currentTimeMillis();
                         getParams().rememberSentDateLoaded(item.getDate());
-                        if (item.matches(filter)) {
-                            if (reversedOrder) {
-                                page.items.add(0, item);
-                            } else {
-                                page.items.add(item);
-                            }
-                        } else {
-                            filteredOutCount++;
-                            if (MyLog.isVerboseEnabled()) {
-                                MyLog.v(this, filteredOutCount + " Filtered out: "
-                                        + I18n.trimTextAt(item.toString(), 100));
-                            }
-                        }
+                        items.add(item);
                         if (MyLog.isVerboseEnabled()) {
                             MyLog.v(this, "row " + rowsCount + ", id:" + item.getId()
                                     + ": " + (System.currentTimeMillis() - rowStartTime) + "ms, fromCursor: "
-                            + (afterFromCursor - rowStartTime) + "ms");
+                                    + (afterFromCursor - rowStartTime) + "ms");
                         }
                     } while (cursor.moveToNext());
                 }
@@ -121,9 +107,41 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
                 cursor.close();
             }
         }
-        MyLog.d(this, "Filtered out " + filteredOutCount + " of " + rowsCount + " rows, "
+        MyLog.d(this, "loadFromCursor " + rowsCount + " rows, "
                 + (System.currentTimeMillis() - startTime) + "ms" );
         getParams().rowsLoaded = rowsCount;
+        return items;
+    }
+
+    protected void filter(List<T> items) {
+        long startTime = System.currentTimeMillis();
+        TimelineFilter filter = new TimelineFilter(getParams().getTimeline());
+        int rowsCount = 0;
+        int filteredOutCount = 0;
+        boolean reversedOrder = getParams().isSortOrderAscending();
+        for (T item : items) {
+            long rowStartTime = System.currentTimeMillis();
+            rowsCount++;
+            if (item.matches(filter)) {
+                if (reversedOrder) {
+                    page.items.add(0, item);
+                } else {
+                    page.items.add(item);
+                }
+            } else {
+                filteredOutCount++;
+                if (MyLog.isVerboseEnabled()) {
+                    MyLog.v(this, filteredOutCount + " Filtered out: "
+                            + I18n.trimTextAt(item.toString(), 100));
+                }
+            }
+            if (MyLog.isVerboseEnabled()) {
+                MyLog.v(this, "row " + rowsCount + ", id:" + item.getId()
+                        + ": " + (System.currentTimeMillis() - rowStartTime) + "ms");
+            }
+        }
+        MyLog.d(this, "Filtered out " + filteredOutCount + " of " + rowsCount + " rows, "
+                + (System.currentTimeMillis() - startTime) + "ms" );
     }
 
     public TimelineParameters getParams() {

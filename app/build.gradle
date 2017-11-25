@@ -3,7 +3,7 @@ apply plugin: "org.sonarqube"
 
 android {
     compileSdkVersion 26
-    buildToolsVersion '26.0.2'
+    buildToolsVersion '26.0.3'
     project.ext.supportVersion = '26.1.0'
 
     compileOptions {
@@ -13,8 +13,8 @@ android {
 
     defaultConfig {
         applicationId "org.andstatus.app"
-        minSdkVersion 21
-        targetSdkVersion 25
+        minSdkVersion 24
+        targetSdkVersion 26
         versionName "36.00"
         versionCode 234
 

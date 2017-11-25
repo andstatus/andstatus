@@ -24,38 +24,49 @@ import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Helper class to construct sql WHERE clause selecting by UserIds
  * @author yvolk@yurivolkov.com
  */
 public class SelectedUserIds {
-    private final Set<Long> ids = new HashSet<>();
+    private final Set<Long> ids;
 
-    public SelectedUserIds(Timeline timeline) {
+    public static SelectedUserIds fromTimeline(@NonNull Timeline timeline) {
         if (timeline.getTimelineType() == TimelineType.USER) {
             if ( timeline.getUserId() != 0) {
-                ids.add(timeline.getUserId());
+                return new SelectedUserIds(timeline.getUserId());
             }
         } else if (timeline.isCombined() || timeline.getTimelineType().isAtOrigin()) {
-            StringBuilder sb = new StringBuilder();
-            for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
-                if (!timeline.getOrigin().isValid() || timeline.getOrigin().equals(ma.getOrigin())) {
-                    ids.add(ma.getUserId());
-                }
-            }
+            return new SelectedUserIds(MyContextHolder.get().persistentAccounts().list().stream()
+                    .filter(ma -> !timeline.getOrigin().isValid() || timeline.getOrigin().equals(ma.getOrigin()))
+                    .map(MyAccount::getUserId).collect(toList()));
         } else if (timeline.getMyAccount().isValid()) {
-            ids.add(timeline.getMyAccount().getUserId());
+            return new SelectedUserIds(timeline.getMyAccount().getUserId());
         }
+        return new SelectedUserIds();
     }
 
-    public SelectedUserIds(@NonNull Collection<MbUser> users) {
-        for (MbUser user : users) {
-            ids.add(user.userId);
-        }
+    public static SelectedUserIds fromUsers(@NonNull Collection<MbUser> users) {
+        return new SelectedUserIds(users.stream().map(user -> user.userId).collect(toList()));
+    }
+
+    public SelectedUserIds(@NonNull Collection<Long> ids) {
+        this.ids = new HashSet<>(ids);
+    }
+
+    public SelectedUserIds(Long ... id) {
+        this.ids = new HashSet<>(Arrays.asList(id));
+    }
+
+    public static SelectedUserIds fromIds(@NonNull Collection<Long> ids) {
+        return new SelectedUserIds(ids);
     }
 
     public int size() {

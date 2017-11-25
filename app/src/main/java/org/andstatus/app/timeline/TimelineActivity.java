@@ -46,6 +46,7 @@ import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityAdapter;
 import org.andstatus.app.activity.ActivityContextMenu;
+import org.andstatus.app.activity.ActivityLoader;
 import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -807,6 +808,9 @@ public class TimelineActivity<T extends ViewItem<T>> extends MessageEditorListAc
             if (!params.getContentUri().equals(intent.getData())) {
                 intent.setData(params.getContentUri());
             }
+        }
+        if (params.getTimelineType().showsActivities()) {
+            return (SyncLoader<T>) new ActivityLoader(params, BundleUtils.fromBundle(args, IntentExtra.INSTANCE_ID));
         }
         return new TimelineLoader<>(params, BundleUtils.fromBundle(args, IntentExtra.INSTANCE_ID));
     }

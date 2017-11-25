@@ -11,6 +11,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
+import org.andstatus.app.data.SelectedUserIds;
 import org.andstatus.app.data.SqlWhere;
 import org.andstatus.app.data.UserListSql;
 import org.andstatus.app.database.table.UserTable;
@@ -21,8 +22,11 @@ import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.timeline.LoadableListActivity.ProgressPublisher;
+import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
+
+import static java.util.stream.Collectors.toList;
 
 public class UserListLoader extends SyncLoader<UserViewItem> {
     protected final UserListType mUserListType;
@@ -64,22 +68,22 @@ public class UserListLoader extends SyncLoader<UserViewItem> {
         items.add(UserViewItem.getEmpty(description));
     }
 
-    protected UserViewItem addUserIdToList(Origin origin, long userId) {
-        UserViewItem viewItem = UserViewItem.fromUserId(origin, userId);
-        addUserToList(viewItem);
-        return viewItem;
+    public UserViewItem addUserIdToList(Origin origin, long userId) {
+        return addUserToList(UserViewItem.fromUserId(origin, userId));
     }
 
-    protected void addUserToList(UserViewItem oUser) {
-        if (!oUser.isEmpty() && !items.contains(oUser)) {
-            items.add(oUser);
-            if (oUser.mbUser.userId == 0 && mAllowLoadingFromInternet) {
-                loadFromInternet(oUser);
-            }
-            if (mProgress != null) {
-                mProgress.publish(Integer.toString(size()));
-            }
+    protected UserViewItem addUserToList(UserViewItem item) {
+        if (item.isEmpty()) return item;
+        int existing = items.indexOf(item);
+        if (existing >= 0) return items.get(existing);
+        items.add(item);
+        if (item.mbUser.userId == 0 && mAllowLoadingFromInternet) {
+            loadFromInternet(item);
         }
+        if (mProgress != null) {
+            mProgress.publish(Integer.toString(size()));
+        }
+        return item;
     }
 
     private void loadFromInternet(UserViewItem oUser) {
@@ -138,23 +142,7 @@ public class UserListLoader extends SyncLoader<UserViewItem> {
     }
 
     protected String getSqlUserIds() {
-        StringBuilder sb = new StringBuilder();
-        int size = 0;
-        for (UserViewItem item : items) {
-            if (!item.populated) {
-                if (size > 0) {
-                    sb.append(", ");
-                }
-                size++;
-                sb.append(Long.toString(item.getUserId()));
-            }
-        }
-        if (size == 1) {
-            return "=" + sb.toString();
-        } else if (size > 1) {
-            return " IN (" + sb.toString() + ")";
-        }
-        return "";
+        return SelectedUserIds.fromIds(items.stream().map(ViewItem::getId).collect(toList())).getSql();
     }
 
     protected String getTitle() {

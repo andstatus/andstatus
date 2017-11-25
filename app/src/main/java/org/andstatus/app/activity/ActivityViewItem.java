@@ -42,13 +42,13 @@ import org.andstatus.app.util.RelativeTime;
 public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comparable<ActivityViewItem> {
     public static final ActivityViewItem EMPTY = new ActivityViewItem();
     private long id = 0;
-    private Origin origin = Origin.EMPTY;
+    Origin origin = Origin.EMPTY;
     private long insDate = 0;
     private long updatedDate = 0;
     public MbActivityType activityType = MbActivityType.EMPTY;
 
     private long messageId;
-    private long userId;
+    long userId;
     private long objActivityId;
 
     MbObjectType objectType = MbObjectType.EMPTY;
@@ -99,9 +99,6 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
         }
         if (messageId != 0) {
             message = MessageViewItem.fromCursorRow(MyContextHolder.get(), cursor);
-        } else if (userId != 0) {
-            user = UserViewItem.fromMbUser(MbUser.fromOriginAndUserId(origin.getId(), userId));
-            user.populateFromDatabase();
         }
         return this;
     }

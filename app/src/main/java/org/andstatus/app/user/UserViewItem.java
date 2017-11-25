@@ -154,7 +154,7 @@ public class UserViewItem extends ViewItem<UserViewItem> implements Comparable<U
         }
     }
 
-    void populateFromCursor(Cursor cursor) {
+    public void populateFromCursor(Cursor cursor) {
         MbUser user = mbUser;
         user.oid = DbUtils.getString(cursor, UserTable.USER_OID);
         user.setUserName(DbUtils.getString(cursor, UserTable.USERNAME));
