@@ -11,7 +11,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.SelectedUserIds;
+import org.andstatus.app.data.SqlUserIds;
 import org.andstatus.app.data.SqlWhere;
 import org.andstatus.app.data.UserListSql;
 import org.andstatus.app.database.table.UserTable;
@@ -142,7 +142,7 @@ public class UserListLoader extends SyncLoader<UserViewItem> {
     }
 
     protected String getSqlUserIds() {
-        return SelectedUserIds.fromIds(items.stream().map(ViewItem::getId).collect(toList())).getSql();
+        return SqlUserIds.fromIds(items.stream().map(ViewItem::getId).collect(toList())).getSql();
     }
 
     protected String getTitle() {

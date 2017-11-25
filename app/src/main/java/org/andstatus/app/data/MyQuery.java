@@ -717,7 +717,7 @@ public class MyQuery {
      */
     @NonNull
     public static Set<Long> getMyFollowersOf(long userId) {
-        SelectedUserIds selectedAccounts = SelectedUserIds.fromTimeline(Timeline.EMPTY);
+        SqlUserIds selectedAccounts = SqlUserIds.fromTimeline(Timeline.EMPTY);
 
         String where = FriendshipTable.USER_ID + selectedAccounts.getSql()
                 + " AND " + FriendshipTable.FRIEND_ID + "=" + userId

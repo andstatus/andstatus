@@ -57,7 +57,7 @@ public class TimelineSql {
      */
     static String tablesForTimeline(Uri uri, String[] projection) {
         Timeline timeline = Timeline.fromParsedUri(MyContextHolder.get(), ParsedUri.fromUri(uri), "");
-        SelectedUserIds selectedAccounts = SelectedUserIds.fromTimeline(timeline);
+        SqlUserIds selectedAccounts = SqlUserIds.fromTimeline(timeline);
     
         Collection<String> columns = new java.util.HashSet<>(Arrays.asList(projection));
 
@@ -133,7 +133,7 @@ public class TimelineSql {
                 break;
             case USER:
             case SENT:
-                SelectedUserIds userIds = SelectedUserIds.fromTimeline(timeline);
+                SqlUserIds userIds = SqlUserIds.fromTimeline(timeline);
                 // All actions by this User(s)
                 activityWhere.append(ActivityTable.ACTOR_ID + " " + userIds.getSql());
                 break;

@@ -27,7 +27,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.ProjectionMap;
-import org.andstatus.app.data.SelectedUserIds;
+import org.andstatus.app.data.SqlUserIds;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.net.social.Audience;
@@ -49,7 +49,7 @@ public class DirectMessagesConversationLoader<T extends ConversationItem> extend
         long actorId = MyQuery.msgIdToLongColumnValue(ActivityTable.ACTOR_ID, oMsg.getMsgId());
         Audience recipients = Audience.fromMsgId(ma.getOriginId(), oMsg.getMsgId());
         String selection = getSelectionForActorAndRecipient("=" + Long.toString(actorId),
-                SelectedUserIds.fromUsers(recipients.getRecipients()).getSql());
+                SqlUserIds.fromUsers(recipients.getRecipients()).getSql());
         Uri uri = MatchedUri.getTimelineUri(
                 Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null));
         Cursor cursor = null;

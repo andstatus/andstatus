@@ -35,38 +35,38 @@ import static java.util.stream.Collectors.toList;
  * Helper class to construct sql WHERE clause selecting by UserIds
  * @author yvolk@yurivolkov.com
  */
-public class SelectedUserIds {
+public class SqlUserIds {
     private final Set<Long> ids;
 
-    public static SelectedUserIds fromTimeline(@NonNull Timeline timeline) {
+    public static SqlUserIds fromTimeline(@NonNull Timeline timeline) {
         if (timeline.getTimelineType() == TimelineType.USER) {
             if ( timeline.getUserId() != 0) {
-                return new SelectedUserIds(timeline.getUserId());
+                return new SqlUserIds(timeline.getUserId());
             }
         } else if (timeline.isCombined() || timeline.getTimelineType().isAtOrigin()) {
-            return new SelectedUserIds(MyContextHolder.get().persistentAccounts().list().stream()
+            return new SqlUserIds(MyContextHolder.get().persistentAccounts().list().stream()
                     .filter(ma -> !timeline.getOrigin().isValid() || timeline.getOrigin().equals(ma.getOrigin()))
                     .map(MyAccount::getUserId).collect(toList()));
         } else if (timeline.getMyAccount().isValid()) {
-            return new SelectedUserIds(timeline.getMyAccount().getUserId());
+            return new SqlUserIds(timeline.getMyAccount().getUserId());
         }
-        return new SelectedUserIds();
+        return new SqlUserIds();
     }
 
-    public static SelectedUserIds fromUsers(@NonNull Collection<MbUser> users) {
-        return new SelectedUserIds(users.stream().map(user -> user.userId).collect(toList()));
+    public static SqlUserIds fromUsers(@NonNull Collection<MbUser> users) {
+        return new SqlUserIds(users.stream().map(user -> user.userId).collect(toList()));
     }
 
-    public SelectedUserIds(@NonNull Collection<Long> ids) {
+    public static SqlUserIds fromIds(@NonNull Collection<Long> ids) {
+        return new SqlUserIds(ids);
+    }
+
+    private SqlUserIds(@NonNull Collection<Long> ids) {
         this.ids = new HashSet<>(ids);
     }
 
-    public SelectedUserIds(Long ... id) {
+    private SqlUserIds(Long ... id) {
         this.ids = new HashSet<>(Arrays.asList(id));
-    }
-
-    public static SelectedUserIds fromIds(@NonNull Collection<Long> ids) {
-        return new SelectedUserIds(ids);
     }
 
     public int size() {

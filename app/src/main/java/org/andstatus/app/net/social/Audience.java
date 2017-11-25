@@ -24,7 +24,7 @@ import android.support.annotation.NonNull;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.SelectedUserIds;
+import org.andstatus.app.data.SqlUserIds;
 import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.util.MyLog;
 
@@ -153,7 +153,7 @@ public class Audience {
         try {
             if (!toDelete.isEmpty()) {
                 db.delete(AudienceTable.TABLE_NAME, AudienceTable.MSG_ID + "=" + msgId
-                        + " AND " + AudienceTable.USER_ID + SelectedUserIds.fromUsers(toDelete).getSql(), null);
+                        + " AND " + AudienceTable.USER_ID + SqlUserIds.fromUsers(toDelete).getSql(), null);
             }
             for (MbUser user : toAdd) {
                 ContentValues values = new ContentValues();
