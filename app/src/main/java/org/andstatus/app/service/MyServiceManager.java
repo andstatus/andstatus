@@ -18,6 +18,7 @@ package org.andstatus.app.service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 
 import net.jcip.annotations.GuardedBy;
 
@@ -121,13 +122,23 @@ public class MyServiceManager extends BroadcastReceiver {
         // Using explicit Service intent, 
         // see http://stackoverflow.com/questions/18924640/starting-android-service-using-explicit-vs-implicit-intent
         Intent serviceIntent = new Intent(MyContextHolder.get().context(), MyService.class);
-        if (commandData != null) {
-            serviceIntent = commandData.toIntent(serviceIntent);
-        }
+        if (commandData != null) serviceIntent = commandData.toIntent(serviceIntent);
         try {
             MyContextHolder.get().context().startService(serviceIntent);
-        } catch ( NullPointerException e) {
-            MyLog.e(TAG, "Starting MyService", e);
+        } catch (IllegalStateException e) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                try {
+                    // Since Android Oreo TODO: https://developer.android.com/about/versions/oreo/android-8.0-changes.html#back-all
+                    // See also https://github.com/evernote/android-job/issues/254
+                    MyContextHolder.get().context().startForegroundService(serviceIntent);
+                } catch (IllegalStateException e2) {
+                    MyLog.e(TAG, "Failed to start MyService in the foreground", e2);
+                }
+            } else {
+                MyLog.e(TAG, "Failed to start MyService", e);
+            }
+        } catch (NullPointerException e) {
+            MyLog.e(TAG, "Failed to start MyService", e);
         }
     }
 
