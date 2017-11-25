@@ -18,6 +18,7 @@ package org.andstatus.app.activity;
 
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.timeline.TimelineLoader;
 import org.andstatus.app.timeline.TimelineParameters;
 import org.andstatus.app.user.UserListLoader;
@@ -40,6 +41,9 @@ public class ActivityLoader extends TimelineLoader<ActivityViewItem> {
         UserListLoader loader = new UserListLoader(UserListType.USERS, getParams().getMyAccount(),
                 getParams().getTimeline().getOrigin(), 0, "");
         for (ActivityViewItem item: items) {
+            if (item.activityType != MbActivityType.CREATE && item.activityType != MbActivityType.UPDATE) {
+                item.actor = loader.addUserIdToList(item.origin, item.actor.getId());
+            }
             if (item.userId != 0) {
                 item.user = loader.addUserIdToList(item.origin, item.userId);
             }

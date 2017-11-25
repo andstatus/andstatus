@@ -33,8 +33,8 @@ import org.andstatus.app.view.MyContextMenu;
 public class UserListContextMenu extends MyContextMenu {
     public final MessageEditorContainer menuContainer;
 
-    public UserListContextMenu(MessageEditorContainer menuContainer) {
-        super(menuContainer.getActivity());
+    public UserListContextMenu(MessageEditorContainer menuContainer, int menuGroup) {
+        super(menuContainer.getActivity(), menuGroup);
         this.menuContainer = menuContainer;
     }
 
@@ -58,26 +58,26 @@ public class UserListContextMenu extends MyContextMenu {
                     .setSubtitle(getMyActor().getAccountName());
             String shortName = getViewItem().mbUser.getUserName();
             if (getViewItem().mbUser.isIdentified()) {
-                UserListContextMenuItem.USER_MESSAGES.addTo(menu, order++,
+                UserListContextMenuItem.USER_MESSAGES.addTo(menu, menuGroup, order++,
                         String.format(getActivity().getText(R.string.menu_item_user_messages).toString(), shortName));
-                UserListContextMenuItem.FRIENDS.addTo(menu, order++,
+                UserListContextMenuItem.FRIENDS.addTo(menu, menuGroup, order++,
                         String.format(
                                 getActivity().getText(R.string.friends_of).toString(), shortName));
-                UserListContextMenuItem.FOLLOWERS.addTo(menu, order++,
+                UserListContextMenuItem.FOLLOWERS.addTo(menu, menuGroup, order++,
                         String.format(
                                 getActivity().getText(R.string.followers_of).toString(), shortName));
                 if (getViewItem().userIsFollowedBy(getMyActor())) {
-                    UserListContextMenuItem.STOP_FOLLOWING.addTo(menu, order++,
+                    UserListContextMenuItem.STOP_FOLLOWING.addTo(menu, menuGroup, order++,
                             String.format(
                                     getActivity().getText(R.string.menu_item_stop_following_user).toString(), shortName));
                 } else if (getViewItem().getUserId() != getMyActor().getUserId()) {
-                    UserListContextMenuItem.FOLLOW.addTo(menu, order++,
+                    UserListContextMenuItem.FOLLOW.addTo(menu, menuGroup, order++,
                             String.format(
                                     getActivity().getText(R.string.menu_item_follow_user).toString(), shortName));
                 }
                 if (!menuContainer.getMessageEditor().isVisible()) {
                     // TODO: Only if he follows me?
-                    UserListContextMenuItem.DIRECT_MESSAGE.addTo(menu, order++,
+                    UserListContextMenuItem.DIRECT_MESSAGE.addTo(menu, menuGroup, order++,
                             R.string.menu_item_direct_message);
                 }
                 switch (getMyActor().numberOfAccountsOfThisOrigin()) {
@@ -85,18 +85,18 @@ public class UserListContextMenu extends MyContextMenu {
                     case 1:
                         break;
                     case 2:
-                        UserListContextMenuItem.ACT_AS_FIRST_OTHER_USER.addTo(menu, order++,
+                        UserListContextMenuItem.ACT_AS_FIRST_OTHER_USER.addTo(menu, menuGroup, order++,
                                 String.format(
                                         getActivity().getText(R.string.menu_item_act_as_user).toString(),
                                         getMyActor().firstOtherAccountOfThisOrigin().getShortestUniqueAccountName(getMyContext())));
                         break;
                     default:
-                        UserListContextMenuItem.ACT_AS.addTo(menu, order++, R.string.menu_item_act_as);
+                        UserListContextMenuItem.ACT_AS.addTo(menu, menuGroup, order++, R.string.menu_item_act_as);
                         break;
                 }
 
             }
-            UserListContextMenuItem.GET_USER.addTo(menu, order++, R.string.get_user);
+            UserListContextMenuItem.GET_USER.addTo(menu, menuGroup, order++, R.string.get_user);
         } catch (Exception e) {
             MyLog.e(this, method, e);
         }
@@ -121,9 +121,14 @@ public class UserListContextMenu extends MyContextMenu {
             return UserViewItem.getEmpty("");
         }
         if (ActivityViewItem.class.isAssignableFrom(mViewItem.getClass())) {
-            return ((ActivityViewItem) mViewItem).user;
+            return getViewItem(((ActivityViewItem) mViewItem));
         }
         return (UserViewItem) mViewItem;
+    }
+
+    @NonNull
+    protected UserViewItem getViewItem(ActivityViewItem activityViewItem) {
+        return activityViewItem.user;
     }
 
     public Origin getOrigin() {

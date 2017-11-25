@@ -34,12 +34,14 @@ import org.andstatus.app.util.MyUrlSpan;
  */
 public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
     private ActivityContextMenu contextMenu;
+    private final UserAdapter actorAdapter;
     private final MessageAdapter messageAdapter;
     private final UserAdapter userAdapter;
 
     public ActivityAdapter(ActivityContextMenu contextMenu, TimelineData<ActivityViewItem> listData) {
         super(contextMenu.message.getMyContext(), listData);
         this.contextMenu = contextMenu;
+        actorAdapter = new UserAdapter(contextMenu.actor, new TimelineDataActorWrapper(listData));
         messageAdapter = new MessageAdapter(contextMenu.message, new TimelineDataMessageWrapper(listData));
         userAdapter = new UserAdapter(contextMenu.user, new TimelineDataUserWrapper(listData));
     }
@@ -95,11 +97,13 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
             item.user.hideActor(item.actor.getUserId());
             if (showAvatars) {
                 AvatarView avatarView = view.findViewById(R.id.actor_avatar_image);
-                item.actor.showAvatar(contextMenu.user.getActivity(), avatarView);
+                item.actor.showAvatar(contextMenu.actor.getActivity(), avatarView);
             }
             MyUrlSpan.showText(view, R.id.action_title, item.actor.getWebFingerIdOrUserName()
-                    + " " + item.activityType.getActedTitle(contextMenu.user.getActivity()), false, false);
-            MyUrlSpan.showText(view, R.id.action_details, item.getDetails(contextMenu.user.getActivity()), false, false);
+                    + " " + item.activityType.getActedTitle(contextMenu.actor.getActivity()), false, false);
+            MyUrlSpan.showText(view, R.id.action_details, item.getDetails(contextMenu.actor.getActivity()), false, false);
+            actorView.setOnCreateContextMenuListener(contextMenu.actor);
+            actorView.setOnClickListener(actorAdapter);
             actorView.setVisibility(View.VISIBLE);
         }
     }

@@ -143,7 +143,7 @@ public class MessageContextMenu extends MyContextMenu {
     private String selectedMenuItemTitle = "";
 
     public MessageContextMenu(MessageListContextMenuContainer menuContainer) {
-        super(menuContainer.getActivity());
+        super(menuContainer.getActivity(), MyContextMenu.MENU_GROUP_MESSAGE);
         this.menuContainer = menuContainer;
     }
 

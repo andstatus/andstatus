@@ -26,16 +26,21 @@ import org.andstatus.app.user.UserListContextMenu;
 import org.andstatus.app.view.MyContextMenu;
 
 public class ActivityContextMenu {
+    public final ActorContextMenu actor;
     public final MessageContextMenu message;
     public final UserListContextMenu user;
 
     public ActivityContextMenu(MessageListContextMenuContainer container) {
+        actor = new ActorContextMenu(container);
         message = new MessageContextMenu(container);
-        user = new UserListContextMenu(container);
+        user = new UserListContextMenu(container, MyContextMenu.MENU_GROUP_USER);
     }
 
     public void onContextItemSelected(MenuItem item) {
         switch (item.getGroupId()) {
+            case MyContextMenu.MENU_GROUP_ACTOR:
+                actor.onContextItemSelected(item);
+                break;
             case MyContextMenu.MENU_GROUP_MESSAGE:
                 message.onContextItemSelected(item);
                 break;

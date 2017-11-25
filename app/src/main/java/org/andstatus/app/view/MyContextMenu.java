@@ -31,11 +31,13 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public class MyContextMenu implements View.OnCreateContextMenuListener {
-    public static final int MENU_GROUP_MESSAGE = Menu.FIRST;
-    public static final int MENU_GROUP_USER = Menu.FIRST + 1;
+    public static final int MENU_GROUP_ACTOR = Menu.FIRST;
+    public static final int MENU_GROUP_MESSAGE = Menu.FIRST + 1;
+    public static final int MENU_GROUP_USER = Menu.FIRST + 2;
 
     @NonNull
     protected final LoadableListActivity listActivity;
+    protected final int menuGroup;
     private View viewOfTheContext = null;
     protected ViewItem mViewItem = null;
     /**
@@ -45,8 +47,9 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
     @NonNull
     private MyAccount myActor = MyAccount.EMPTY;
 
-    public MyContextMenu(@NonNull LoadableListActivity listActivity) {
+    public MyContextMenu(@NonNull LoadableListActivity listActivity, int menuGroup) {
         this.listActivity = listActivity;
+        this.menuGroup = menuGroup;
     }
 
     @Override

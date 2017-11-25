@@ -29,7 +29,7 @@ import org.andstatus.app.view.MyContextMenu;
 public class ManageTimelinesContextMenu extends MyContextMenu {
 
     public ManageTimelinesContextMenu(LoadableListActivity listActivity) {
-        super(listActivity);
+        super(listActivity, 0);
     }
 
     @Override

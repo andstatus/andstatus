@@ -119,28 +119,33 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
                 break;
             }
         }
-        MyLog.v(this, "waitForCommandExecutionEnded " + getListenedCommand().getCommand().save()
+        MyLog.v(this, method + " ended " + getListenedCommand().getCommand().save()
                 + " " + found + ", event:" + locEvent + ", count0=" + count0);
         return found;
     }
 
     public boolean waitForServiceStopped(boolean clearQueue) {
         final String method = "waitForServiceStopped";
-        for (int pass = 0; pass < 10000; pass++) {
+        MyLog.v(this, method + " started");
+        boolean stopped = false;
+        for (int pass = 1; pass < 10000; pass++) {
             if (serviceStopped) {
                 if (clearQueue) {
                     new CommandQueue().clear();
                 }
-                return true;
+                stopped = true;
+                break;
             }
             if (DbUtils.waitMs(method, 10)) {
-                return false;
+                break;
             }
             if (pass % 500 == 0 && MyServiceManager.getServiceState() == MyServiceState.STOPPED) {
-                return true;
+                stopped = true;
+                break;
             }
         }
-        return false;
+        MyLog.v(this, method + " ended, " + (stopped ? " stopped" : " didn't stop"));
+        return stopped;
     }
 
     @Override

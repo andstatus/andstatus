@@ -162,12 +162,12 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         return UNKNOWN;
     }
 
-    public void addTo(Menu menu, int order, int titleRes) {
-        menu.add(MyContextMenu.MENU_GROUP_USER, this.getId(), order, titleRes);
+    public void addTo(Menu menu, int menuGroup, int order, int titleRes) {
+        menu.add(menuGroup, this.getId(), order, titleRes);
     }
 
-    public void addTo(Menu menu, int order, CharSequence title) {
-        menu.add(MyContextMenu.MENU_GROUP_USER, this.getId(), order, title);
+    public void addTo(Menu menu, int menuGroup, int order, CharSequence title) {
+        menu.add(menuGroup, this.getId(), order, title);
     }
     
     public boolean execute(UserListContextMenu menu, MyAccount ma) {

@@ -36,6 +36,7 @@ import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.view.MyContextMenu;
 
 /**
  *  List of users for different contexts 
@@ -58,7 +59,7 @@ public class UserList extends MessageEditorListActivity {
         }
 
         mUserListType = getParsedUri().getUserListType();
-        contextMenu = new UserListContextMenu(this);
+        contextMenu = new UserListContextMenu(this, MyContextMenu.MENU_GROUP_USER);
     }
 
 
