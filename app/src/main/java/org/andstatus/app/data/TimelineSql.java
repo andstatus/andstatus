@@ -214,58 +214,12 @@ public class TimelineSql {
                     + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.MSG_ID
                     + "=" + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.MSG_ID;
         }
-        if (columns.contains(UserTable.ACTOR_NAME)) {
-            tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
-                    + TimelineSql.userNameField() + " AS " + UserTable.ACTOR_NAME
-                    + " FROM " + UserTable.TABLE_NAME + ") AS sender ON "
-                    + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.ACTOR_ID + "=sender."
-                    + BaseColumns._ID;
-
-            if (columns.contains(DownloadTable.ACTOR_AVATAR_FILE_NAME)) {
-                tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
-                        + DownloadTable.USER_ID + ", "
-                        + DownloadTable.DOWNLOAD_STATUS + ", "
-                        + DownloadTable.FILE_NAME
-                        + " FROM " + DownloadTable.TABLE_NAME + ") AS " + ProjectionMap.ACTOR_AVATAR_IMAGE_TABLE_ALIAS
-                        + " ON "
-                        + ProjectionMap.ACTOR_AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_STATUS
-                        + "=" + DownloadStatus.LOADED.save() + " AND "
-                        + ProjectionMap.ACTOR_AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.USER_ID
-                        + "=" + ActivityTable.ACTOR_ID;
-            }
-        }
         if (columns.contains(UserTable.IN_REPLY_TO_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
                     + TimelineSql.userNameField() + " AS " + UserTable.IN_REPLY_TO_NAME
                     + " FROM " + UserTable.TABLE_NAME + ") AS prevAuthor ON "
                     + ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.IN_REPLY_TO_USER_ID
                     + "=prevAuthor." + BaseColumns._ID;
-        }
-        if (columns.contains(FriendshipTable.AUTHOR_FOLLOWED)) {
-            tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
-                    + FriendshipTable.USER_ID + ", "
-                    + FriendshipTable.FRIEND_ID + ", "
-                    + FriendshipTable.FOLLOWED + " AS "
-                    + FriendshipTable.AUTHOR_FOLLOWED
-                    + " FROM " + FriendshipTable.TABLE_NAME + ") AS followingAuthor ON ("
-                    + "followingAuthor." + FriendshipTable.USER_ID + "=" + UserTable.LINKED_USER_ID
-                    + " AND "
-                    + ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.AUTHOR_ID
-                    + "=followingAuthor." + FriendshipTable.FRIEND_ID
-                    + ")";
-        }
-        if (columns.contains(FriendshipTable.ACTOR_FOLLOWED)) {
-            tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
-                    + FriendshipTable.USER_ID + ", "
-                    + FriendshipTable.FRIEND_ID + ", "
-                    + FriendshipTable.FOLLOWED + " AS "
-                    + FriendshipTable.ACTOR_FOLLOWED
-                    + " FROM " + FriendshipTable.TABLE_NAME + ") AS followingSender ON ("
-                    + "followingSender." + FriendshipTable.USER_ID + "=" + UserTable.LINKED_USER_ID
-                    + " AND "
-                    + ProjectionMap.MSG_TABLE_ALIAS + "." + ActivityTable.ACTOR_ID
-                    + "=followingSender." + FriendshipTable.FRIEND_ID
-                    + ")";
         }
         return tables;
     }
@@ -279,9 +233,6 @@ public class TimelineSql {
         columnNames.add(ActivityTable.UPDATED_DATE);
         columnNames.add(ActivityTable.ACTIVITY_TYPE);
         columnNames.add(ActivityTable.ACTOR_ID);
-        if (MyPreferences.getShowAvatars()) {
-            columnNames.add(DownloadTable.ACTOR_AVATAR_FILE_NAME);
-        }
         columnNames.add(ActivityTable.MSG_ID);
         columnNames.add(ActivityTable.USER_ID);
         return columnNames;
@@ -295,7 +246,6 @@ public class TimelineSql {
         columnNames.add(ActivityTable.ACTIVITY_ID);
         columnNames.add(MsgTable.AUTHOR_ID);
         columnNames.add(ActivityTable.ACTOR_ID);
-        columnNames.add(UserTable.ACTOR_NAME);
         columnNames.add(MsgTable.VIA);
         columnNames.add(MsgTable.REBLOGGED);
         return columnNames;

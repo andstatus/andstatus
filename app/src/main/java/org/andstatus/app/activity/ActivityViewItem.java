@@ -85,15 +85,11 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
         insDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
         updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
         origin = MyContextHolder.get().persistentOrigins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID));
-
         actor = UserViewItem.fromMbUser(MbUser.fromOriginAndUserId(origin.getId(),
                 DbUtils.getLong(cursor, ActivityTable.ACTOR_ID)));
-        actor.populateActorFromCursor(cursor);
-
         messageId = DbUtils.getLong(cursor, ActivityTable.MSG_ID);
         userId = DbUtils.getLong(cursor, ActivityTable.USER_ID);
         objActivityId = DbUtils.getLong(cursor, ActivityTable.OBJ_ACTIVITY_ID);
-
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, ": " + (System.currentTimeMillis() - startTime) + "ms");
         }

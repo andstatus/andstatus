@@ -64,15 +64,12 @@ public class ProjectionMap {
         MSG.put(DownloadTable.FILE_NAME, DownloadTable.FILE_NAME);
         MSG.put(DownloadTable.AVATAR_FILE_NAME, AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.FILE_NAME
                 + " AS " + DownloadTable.AVATAR_FILE_NAME);
-        MSG.put(DownloadTable.ACTOR_AVATAR_FILE_NAME, ACTOR_AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.FILE_NAME
-                + " AS " + DownloadTable.ACTOR_AVATAR_FILE_NAME);
         MSG.put(DownloadTable.IMAGE_FILE_NAME, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.FILE_NAME
                 + " AS " + DownloadTable.IMAGE_FILE_NAME);
         MSG.put(DownloadTable.IMAGE_ID, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable._ID
                 + " AS " + DownloadTable.IMAGE_ID);
         MSG.put(DownloadTable.IMAGE_URL, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.URI
                 + " AS " + DownloadTable.IMAGE_URL);
-        MSG.put(UserTable.ACTOR_NAME, UserTable.ACTOR_NAME);
         MSG.put(MsgTable.BODY, MsgTable.BODY);
         MSG.put(MsgTable.VIA, MsgTable.VIA);
         MSG.put(MsgTable.URL, MsgTable.URL);
@@ -86,8 +83,6 @@ public class ProjectionMap {
         MSG.put(MsgTable.UPDATED_DATE, MsgTable.UPDATED_DATE);
         MSG.put(MsgTable.MSG_STATUS, MsgTable.MSG_STATUS);
         MSG.put(MsgTable.INS_DATE, MsgTable.INS_DATE);
-        MSG.put(FriendshipTable.AUTHOR_FOLLOWED, FriendshipTable.AUTHOR_FOLLOWED);
-        MSG.put(FriendshipTable.ACTOR_FOLLOWED, FriendshipTable.ACTOR_FOLLOWED);
     }
 
     /**
