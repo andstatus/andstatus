@@ -17,25 +17,22 @@
 package org.andstatus.app.user;
 
 import android.database.Cursor;
-import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.data.UserListSql;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.util.I18n;
 
@@ -144,16 +141,6 @@ public class UserViewItem extends ViewItem<UserViewItem> implements Comparable<U
         }
     }
 
-    public void populateFromDatabase() {
-        Uri mContentUri = MatchedUri.getUserListItemUri(0, UserListType.USERS, mbUser.originId , getId());
-        try (Cursor c = MyContextHolder.get().context().getContentResolver()
-                .query(mContentUri, UserListSql.getListProjection(), null, null, null)) {
-            while ( c != null && c.moveToNext()) {
-                populateFromCursor(c);
-            }
-        }
-    }
-
     public void populateFromCursor(Cursor cursor) {
         MbUser user = mbUser;
         user.oid = DbUtils.getString(cursor, UserTable.USER_OID);
@@ -177,7 +164,6 @@ public class UserViewItem extends ViewItem<UserViewItem> implements Comparable<U
         myFollowers = MyQuery.getMyFollowersOf(getUserId());
         AvatarFile avatarFile = AvatarFile.fromCursor(getUserId(), cursor, DownloadTable.AVATAR_FILE_NAME);
         setAvatarFile(avatarFile);
-
         populated = true;
     }
 
@@ -186,8 +172,13 @@ public class UserViewItem extends ViewItem<UserViewItem> implements Comparable<U
         user.setRealName(DbUtils.getString(cursor, UserTable.ACTOR_NAME));
         AvatarFile avatarFile = AvatarFile.fromCursor(getUserId(), cursor, DownloadTable.ACTOR_AVATAR_FILE_NAME);
         setAvatarFile(avatarFile);
-
         populated = true;
+    }
+
+    @Override
+    public boolean matches(TimelineFilter filter) {
+        // TODO: implement filtering
+        return super.matches(filter);
     }
 
     public void hideActor(long userId) {

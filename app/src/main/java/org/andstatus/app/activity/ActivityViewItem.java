@@ -107,8 +107,10 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
     public boolean matches(TimelineFilter filter) {
         if (messageId !=0) {
             return message.matches(filter);
+        } else if (userId != 0) {
+            return user.matches(filter);
         }
-        return true; // TODO
+        return true;
     }
 
     String getDetails(Context context) {
