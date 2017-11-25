@@ -195,7 +195,7 @@ public class TimelineSql {
                     + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_STATUS
                     + "=" + DownloadStatus.LOADED.save() + " AND " 
                     + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.USER_ID
-                    + "=" + authorTableName + "." + BaseColumns._ID;
+                    + "=" + ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.AUTHOR_ID;
         }
         if (columns.contains(DownloadTable.IMAGE_FILE_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (" +
