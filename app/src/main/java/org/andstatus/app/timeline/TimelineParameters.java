@@ -62,8 +62,7 @@ public class TimelineParameters {
     volatile String sortOrderAndLimit = "";
 
     // Execution state / loaded data:
-    volatile long startTime = 0;
-    volatile long endTime = 0;
+    volatile boolean isLoaded = false;
     volatile boolean cancelled = false;
     volatile int rowsLoaded = 0;
     volatile long minSentDateLoaded = 0;
@@ -110,7 +109,7 @@ public class TimelineParameters {
     }
 
     public boolean isLoaded() {
-        return endTime > 0;
+        return isLoaded;
     }
 
     public boolean mayHaveYoungerPage() {
@@ -151,7 +150,7 @@ public class TimelineParameters {
                 + (maxSentDate > 0 ? ", maxSentDate=" + new Date(maxSentDate).toString() : "")
                 + (selectionAndArgs.isEmpty() ? "" : ", sa=" + selectionAndArgs)
                 + (TextUtils.isEmpty(sortOrderAndLimit) ? "" : ", sortOrder=" + sortOrderAndLimit)
-                + (startTime > 0 ? ", startTime=" + startTime : "")
+                + (isLoaded  ? ", loaded" : "")
                 + (cancelled ? ", cancelled" : "")
                 + (mLoaderCallbacks == null ? "" : ", loaderCallbacks=" + mLoaderCallbacks)
         );
