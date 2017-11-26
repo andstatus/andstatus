@@ -26,7 +26,6 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.graphics.AvatarView;
@@ -74,9 +73,7 @@ public class UserViewItem extends ViewItem<UserViewItem> implements Comparable<U
     public static UserViewItem fromUserId(Origin origin, long userId) {
         MbUser mbUser = MbUser.EMPTY;
         if (userId != 0) {
-            mbUser = MbUser.fromOriginAndUserOid(origin.getId(), MyQuery.idToOid(OidEnum.USER_OID, userId, 0));
-            mbUser.userId = userId;
-            mbUser.setWebFingerId(MyQuery.userIdToWebfingerId(userId));
+            mbUser = MbUser.fromOriginAndUserId(origin.getId(), userId);
         }
         return fromMbUser(mbUser);
     }
