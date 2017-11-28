@@ -28,12 +28,18 @@
         </subtitle>
     </header>
     <release android:versionName="36.00" android:versionCode="XXX"
-             versionDate="2017-09-XX"
+             versionDate="2017-11-XX"
              versionTitle="Notifications enhancements">
         <changes>
-            <change>Dropped support for Android v.4.x devices. Minimal supported
+            <change>"Notifications" timeline added, which shows <i>activities</i>, not messages only.
+            These previously existed timelines also show activities now: Everything, Sent and User.<br/>
+                This change actually means that the whole internal data model of the application has changed, allowing
+                to solve many old problems. E.g. after reblogging of a message the message doesn't "jump" to the top
+                of the timeline, as before: it is duplicated there as a "Reblog action". The same for Like/Favorite action.
+            </change>
+            <change>Dropped support for older Android devices. Minimal supported
                 <a href="https://en.wikipedia.org/wiki/Android_version_history" target="_blank">Android version</a>
-                is 5.0 now.</change>
+                is 7.0 now.</change>
         </changes>
     </release>
     <release android:versionName="35.06" android:versionCode="232"
