@@ -21,13 +21,13 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
-import android.os.Build;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StopWatch;
 import org.andstatus.app.util.TriState;
 
 import java.io.Closeable;
@@ -114,26 +114,18 @@ public final class DbUtils {
     /** @return true if current thread was interrupted */
     public static boolean waitMs(Object tag, long delayMs) {
         if (delayMs > 1) {
-            long delay = delayMs;
-            // http://stackoverflow.com/questions/363681/generating-random-integers-in-a-range-with-java
-            if (Build.VERSION.SDK_INT >= 21) {
-                delay = (delay/2) + ThreadLocalRandom.current().nextLong(0, delay);
-            }
-            Long startTime = System.currentTimeMillis();
-            Object lock = new Object();
-            synchronized (lock) {
-                while (System.currentTimeMillis() < startTime + delay && System.currentTimeMillis() >= startTime) {
-                    try {
-                        lock.wait(delay);
-                    } catch (InterruptedException e) {
-                        MyLog.v(tag, "Interrupted waiting " + delay + "ms");
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
+            long delay = (delayMs/2) + ThreadLocalRandom.current().nextLong(0, delayMs);
+            StopWatch stopWatch = StopWatch.createStarted();
+            while (stopWatch.getTime() < delay) {
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException e) {
+                    MyLog.v(tag, "Interrupted after waiting " + stopWatch.getTime() + " of " + delay + "ms");
+                    return true;
                 }
             }
         }
-        return Thread.currentThread().isInterrupted();
+        return false;
     }
 
     // Couldn't use "Closeable" as a Type due to incompatibility with API <= 10
