@@ -121,7 +121,7 @@ class Convert26 extends ConvertOneStep {
         sql = "CREATE INDEX idx_activity_notified_timeline ON activity (notified, activity_updated_date)";
         DbUtils.execSQL(db, sql);
 
-        progressLogger.logProgress(stepTitle + ": Adding Update activity for each message");
+        progressLogger.logProgress(stepTitle + ": Adding an Update activity for each message");
         sql = "INSERT INTO activity (" +
             "_id, activity_origin_id, activity_oid, account_id, activity_type, actor_id, activity_msg_id," +
             " activity_user_id, obj_activity_id, activity_updated_date, activity_ins_date" +
@@ -175,9 +175,16 @@ class Convert26 extends ConvertOneStep {
 
         progressLogger.logProgress(stepTitle + ": Marking Mentions");
         sql = "UPDATE msg SET" +
-            " private=2" +
+            " mentioned=2" +
             " WHERE EXISTS" +
             " (SELECT user_id FROM msgofuser WHERE msg_id=msg._id AND msgofuser.mentioned=1)";
+        DbUtils.execSQL(db, sql);
+
+        progressLogger.logProgress(stepTitle + ": Marking mentions as Notifications");
+        sql = "UPDATE activity SET" +
+                " notified=2" +
+                " WHERE activity_type=6 AND EXISTS" +
+                " (SELECT user_id FROM msgofuser WHERE msg_id=activity.activity_msg_id AND msgofuser.mentioned=1)";
         DbUtils.execSQL(db, sql);
 
         sql = "CREATE TABLE audience (user_id INTEGER NOT NULL,msg_id INTEGER NOT NULL, CONSTRAINT pk_audience PRIMARY KEY (msg_id ASC, user_id ASC))";

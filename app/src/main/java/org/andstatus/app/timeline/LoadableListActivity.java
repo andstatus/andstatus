@@ -345,7 +345,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         long itemIdOfAdapterPosition = centralItemId;
         int y = 0;
         if (list.getChildCount() > list.getHeaderViewsCount() + list.getFooterViewsCount() && adapter != null) {
-            int firstVisibleAdapterPosition = list.getFirstVisiblePosition() - list.getHeaderViewsCount();
+            int firstVisibleAdapterPosition = Integer.max(list.getFirstVisiblePosition() - list.getHeaderViewsCount(), 0);
             itemIdOfAdapterPosition = adapter.getItemId(firstVisibleAdapterPosition);
             y = getYOfPosition(list, adapter, firstVisibleAdapterPosition);
         }
