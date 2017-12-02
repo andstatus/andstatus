@@ -121,7 +121,7 @@ public abstract class BaseMessageViewItem<T extends BaseMessageViewItem<T>> exte
 
     private void setCollapsedStatus(StringBuilder messageDetails) {
         if (isCollapsed()) {
-            I18n.appendWithSpace(messageDetails, "(+" + getChildren().size() + ")");
+            I18n.appendWithSpace(messageDetails, "(+" + getChildrenCount() + ")");
         }
     }
 

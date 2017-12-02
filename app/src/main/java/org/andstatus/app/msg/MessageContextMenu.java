@@ -321,8 +321,8 @@ public class MessageContextMenu extends MyContextMenu {
     }
 
     @NonNull
-    private BaseMessageViewItem getViewItem() {
-        if (mViewItem == null) {
+    BaseMessageViewItem getViewItem() {
+        if (mViewItem.isEmpty()) {
             return MessageViewItem.EMPTY;
         }
         if (BaseMessageViewItem.class.isAssignableFrom(mViewItem.getClass())) {

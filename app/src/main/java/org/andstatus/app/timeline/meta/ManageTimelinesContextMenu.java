@@ -70,7 +70,7 @@ public class ManageTimelinesContextMenu extends MyContextMenu {
     }
 
     public ManageTimelinesViewItem getViewItem() {
-        if (mViewItem == null) {
+        if (mViewItem.isEmpty()) {
             return new ManageTimelinesViewItem(listActivity.getMyContext(), Timeline.EMPTY);
         }
         return (ManageTimelinesViewItem) mViewItem;

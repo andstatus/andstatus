@@ -28,6 +28,7 @@ import java.util.List;
 public class ViewItem<T extends ViewItem<T>> {
     private final List<T> children = new ArrayList<>();
     private final boolean isEmpty;
+    private ViewItem parent = EmptyViewItem.EMPTY;
 
     protected ViewItem(boolean isEmpty) {
         this.isEmpty = isEmpty;
@@ -57,7 +58,7 @@ public class ViewItem<T extends ViewItem<T>> {
     }
 
     public boolean isCollapsed() {
-        return !getChildren().isEmpty();
+        return getChildrenCount() > 0;
     }
 
     void collapse(T child) {
@@ -82,5 +83,21 @@ public class ViewItem<T extends ViewItem<T>> {
 
     public boolean isEmpty() {
         return isEmpty;
+    }
+
+    protected int getChildrenCount() {
+        return isEmpty() ? 0 : Integer.max(getParent().getChildrenCount(), getChildren().size());
+    }
+
+    public void setParent(ViewItem parent) {
+        this.parent = parent;
+    }
+    @NonNull
+    public ViewItem getParent() {
+        return parent == null ? EmptyViewItem.EMPTY : parent;
+    }
+
+    public long getTopmostId() {
+        return getParent().isEmpty() ? getId() : getParent().getId();
     }
 }

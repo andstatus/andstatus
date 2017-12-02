@@ -46,6 +46,7 @@ public class ActivityLoader extends TimelineLoader<ActivityViewItem> {
             }
             if (item.userId != 0) {
                 item.user = loader.addUserIdToList(item.origin, item.userId);
+                item.user.setParent(item);
             }
         }
         loader.load(progress -> {});

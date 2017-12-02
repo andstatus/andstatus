@@ -11,7 +11,13 @@ public class StopWatch extends org.apache.commons.lang3.time.StopWatch {
         return sw;
     }
 
-    public void restart() {
+    public long getTimeAndRestart() {
+        long time = getTime();
+        restart();
+        return time;
+    }
+
+    private void restart() {
         reset();
         start();
     }

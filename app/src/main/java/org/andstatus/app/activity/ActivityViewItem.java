@@ -105,6 +105,7 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
         }
         if (messageId != 0) {
             message = MessageViewItem.EMPTY.getNew().fromCursorRow(MyContextHolder.get(), cursor);
+            message.setParent(this);
         }
         return this;
     }
@@ -141,6 +142,9 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
 
     String getDetails(Context context) {
         StringBuilder builder = new StringBuilder(RelativeTime.getDifference(context, updatedDate));
+        if (isCollapsed()) {
+            I18n.appendWithSpace(builder, "(+" + getChildrenCount() + ")");
+        }
         if (MyPreferences.isShowDebuggingInfoInUi()) {
             I18n.appendWithSpace(builder, "(actId=" + id + ")");
         }

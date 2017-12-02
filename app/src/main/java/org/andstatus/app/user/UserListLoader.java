@@ -24,6 +24,7 @@ import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.timeline.LoadableListActivity.ProgressPublisher;
 import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StopWatch;
 import org.andstatus.app.util.StringUtils;
 
 import static java.util.stream.Collectors.toList;
@@ -53,11 +54,16 @@ public class UserListLoader extends SyncLoader<UserViewItem> {
 
     @Override
     public final void load(ProgressPublisher publisher) {
+        final String method = "load";
+        final StopWatch stopWatch = StopWatch.createStarted();
+        if (MyLog.isDebugEnabled()) {
+            MyLog.d(this, method + " started");
+        }
         mProgress = publisher;
-
         loadInternal();
-        MyLog.v(this, "Loaded " + size() + " items");
-
+        if (MyLog.isDebugEnabled()) {
+            MyLog.d(this, "Loaded " + size() + " items, " + stopWatch.getTime() + "ms");
+        }
         if (items.isEmpty()) {
             addEmptyItem(MyContextHolder.get().context()
                     .getText(R.string.nothing_in_the_loadable_list).toString());

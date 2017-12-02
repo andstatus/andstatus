@@ -23,6 +23,7 @@ import android.view.View;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.timeline.EmptyViewItem;
 import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.util.MyLog;
@@ -39,7 +40,7 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
     protected final LoadableListActivity listActivity;
     protected final int menuGroup;
     private View viewOfTheContext = null;
-    protected ViewItem mViewItem = null;
+    protected ViewItem mViewItem = EmptyViewItem.EMPTY;
     /**
      *  Corresponding account information ( "Reply As..." ... )
      *  oh whose behalf we are going to execute an action on this line in the list (message/user...)
@@ -60,7 +61,7 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
     private void saveContextOfSelectedItem(View v) {
         viewOfTheContext = v;
         ViewItem viewItem = listActivity.saveContextOfSelectedItem(v);
-        if (viewItem == null || mViewItem == null || mViewItem.getId() != viewItem.getId()) {
+        if (viewItem.isEmpty() || mViewItem.isEmpty() || mViewItem.getId() != viewItem.getId()) {
             myActor = MyAccount.EMPTY;
         }
         mViewItem = viewItem;

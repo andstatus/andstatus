@@ -195,8 +195,8 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         return this.myContext != myContextNew || configChangeTime != myContextNew.preferencesChangeTime();
     }
 
-    /** @return selectedItem */
-    @Nullable
+    /** @return selectedItem or EmptyViewItem */
+    @NonNull
     public ViewItem saveContextOfSelectedItem(View v) {
         int position = -1;
         if (getListAdapter() != null) {
@@ -213,7 +213,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
                 }
             }
         }
-        return null;
+        return EmptyViewItem.EMPTY;
     }
 
     protected void setCurrentMyAccount(long accountId, long originId) {

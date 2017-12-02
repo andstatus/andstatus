@@ -331,13 +331,13 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
     SHOW_DUPLICATES {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            menu.getActivity().updateList(TriState.FALSE, menu.getMsgId(), false);
+            menu.getActivity().updateList(TriState.FALSE, menu.getViewItem().getTopmostId(), false);
         }
     },
     COLLAPSE_DUPLICATES {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            menu.getActivity().updateList(TriState.TRUE, menu.getMsgId(), false);
+            menu.getActivity().updateList(TriState.TRUE, menu.getViewItem().getTopmostId(), false);
         }
     },
     GET_MESSAGE {

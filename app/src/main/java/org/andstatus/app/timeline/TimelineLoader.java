@@ -48,16 +48,16 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
     public void load(LoadableListActivity.ProgressPublisher publisher) {
         final String method = "load";
         final StopWatch stopWatch = StopWatch.createStarted();
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, method + " started; " + params.toSummary() );
+        if (MyLog.isDebugEnabled()) {
+            MyLog.d(this, method + " started; " + params.toSummary() );
         }
         params.cancelled = false;
         params.timeline.save(params.getMyContext());
         if (params.whichPage != WhichPage.EMPTY) {
             filter(loadFromCursor(queryDatabase()));
         }
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, method
+        if (MyLog.isDebugEnabled()) {
+            MyLog.d(this, method
                     + (getParams().cancelled ? " cancelled"
                         : " ended" + ", " + page.items.size() + " rows,"
                         + " dates from " + MyLog.formatDateTime(page.params.minSentDateLoaded) + " to "
@@ -71,8 +71,8 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
     private Cursor queryDatabase() {
         final String method = "queryDatabase";
         final StopWatch stopWatch = StopWatch.createStarted();
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, method + " started");
+        if (MyLog.isDebugEnabled()) {
+            MyLog.d(this, method + " started");
         }
         Cursor cursor = null;
         for (int attempt = 0; attempt < 3 && !getParams().cancelled; attempt++) {
@@ -87,8 +87,8 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
                 }
             }
         }
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, method + " ended, " + stopWatch.getTime() + "ms");
+        if (MyLog.isDebugEnabled()) {
+            MyLog.d(this, method + " ended, " + stopWatch.getTime() + "ms");
         }
         return cursor;
     }
@@ -96,8 +96,8 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
     private List<T> loadFromCursor(Cursor cursor) {
         final String method = "loadFromCursor";
         final StopWatch stopWatch = StopWatch.createStarted();
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, method + " started" );
+        if (MyLog.isDebugEnabled()) {
+            MyLog.d(this, method + " started" );
         }
         List<T> items = new ArrayList<>();
         int rowsCount = 0;
@@ -114,10 +114,9 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
                         items.add(item);
                         if (MyLog.isVerboseEnabled()) {
                             MyLog.v(this, method + "; row " + rowsCount + ", id:" + item.getId()
-                                    + ", total: " + rowStopWatch.getTime() + "ms, rowMove: " + rowMoveTime + "ms"
+                                    + ", total: " + rowStopWatch.getTimeAndRestart() + "ms, rowMove: " + rowMoveTime + "ms"
                                     + ", fromCursor: " + rowFromCursorTime + "ms");
                         }
-                        rowStopWatch.restart();
                     } while (cursor.moveToNext());
                 }
             } finally {
@@ -125,8 +124,8 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
             }
         }
         getParams().rowsLoaded = rowsCount;
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, method + " ended; " + rowsCount + " rows, " + stopWatch.getTime() + "ms" );
+        if (MyLog.isDebugEnabled()) {
+            MyLog.d(this, method + " ended; " + rowsCount + " rows, " + stopWatch.getTime() + "ms" );
         }
         return items;
     }
@@ -134,8 +133,8 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
     protected void filter(List<T> items) {
         final String method = "filter";
         final StopWatch stopWatch = StopWatch.createStarted();
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, method + " started" );
+        if (MyLog.isDebugEnabled()) {
+            MyLog.d(this, method + " started" );
         }
         TimelineFilter filter = new TimelineFilter(getParams().getTimeline());
         int rowsCount = 0;
@@ -157,14 +156,14 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
                             + I18n.trimTextAt(item.toString(), 100));
                 }
             }
+
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, method + "; row " + rowsCount + ", id:" + item.getId()
-                        + ", " + rowStopWatch.getTime() + "ms");
+                        + ", " + rowStopWatch.getTimeAndRestart() + "ms");
             }
-            rowStopWatch.restart();
         }
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, method + " ended; Filtered out " + filteredOutCount + " of " + rowsCount
+        if (MyLog.isDebugEnabled()) {
+            MyLog.d(this, method + " ended; Filtered out " + filteredOutCount + " of " + rowsCount
                     + " rows, " + stopWatch.getTime() + "ms" );
         }
     }
