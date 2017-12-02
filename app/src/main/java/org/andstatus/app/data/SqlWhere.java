@@ -44,4 +44,9 @@ public class SqlWhere {
     public String getWhere() {
         return TextUtils.isEmpty(where) ? "" : " WHERE (" + where + ")";
     }
+
+    @NonNull
+    public String getAndWhere() {
+        return TextUtils.isEmpty(where) ? "" : " AND " + where;
+    }
 }

@@ -111,25 +111,25 @@ public class TimelineSql {
                 break;
             case HOME:
                 activityWhere.append(ActivityTable.SUBSCRIBED + "=" + TriState.TRUE.id);
-                msgWhere.append(MsgTable.PRIVATE + "!=" + TriState.TRUE.id);
+                msgWhere.append(ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.PRIVATE + "!=" + TriState.TRUE.id);
                 break;
             case DIRECT:
-                msgWhere.append(MsgTable.PRIVATE + "=" + TriState.TRUE.id);
+                msgWhere.append(ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.PRIVATE + "=" + TriState.TRUE.id);
                 break;
             case FAVORITES:
-                msgWhere.append(MsgTable.FAVORITED + "=" + TriState.TRUE.id);
+                msgWhere.append(ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.FAVORITED + "=" + TriState.TRUE.id);
                 break;
             case MENTIONS:
-                msgWhere.append(MsgTable.MENTIONED + "=" + TriState.TRUE.id);
+                msgWhere.append(ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.MENTIONED + "=" + TriState.TRUE.id);
                 break;
             case PUBLIC:
-                msgWhere.append(MsgTable.PRIVATE + "!=" + TriState.TRUE.id);
+                msgWhere.append(ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.PRIVATE + "!=" + TriState.TRUE.id);
                 break;
             case DRAFTS:
-                msgWhere.append(MsgTable.MSG_STATUS + "=" + DownloadStatus.DRAFT.save());
+                msgWhere.append(ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.MSG_STATUS + "=" + DownloadStatus.DRAFT.save());
                 break;
             case OUTBOX:
-                msgWhere.append(MsgTable.MSG_STATUS + "=" + DownloadStatus.SENDING.save());
+                msgWhere.append(ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.MSG_STATUS + "=" + DownloadStatus.SENDING.save());
                 break;
             case USER:
             case SENT:
@@ -168,10 +168,10 @@ public class TimelineSql {
                     + ") AS " + ProjectionMap.ACTIVITY_TABLE_ALIAS;
             String msgTable = activityTable
                     + (timeline.getTimelineType().showsActivities() ? " LEFT" : " INNER") + " JOIN "
-                    + "(SELECT * FROM (" + MsgTable.TABLE_NAME + ")" + msgWhere.getWhere() + ")"
-                        + " AS " + ProjectionMap.MSG_TABLE_ALIAS
+                    + MsgTable.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS
                     + " ON (" + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID + "="
-                        + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.MSG_ID + ")";
+                        + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.MSG_ID
+                        + msgWhere.getAndWhere() + ")";
             tables = tables.replace(msgTablePlaceholder, msgTable);
         }
 
