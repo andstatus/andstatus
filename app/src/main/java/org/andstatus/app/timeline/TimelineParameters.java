@@ -36,7 +36,6 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
 
-import java.util.Date;
 import java.util.Set;
 
 public class TimelineParameters {
@@ -54,10 +53,10 @@ public class TimelineParameters {
     WhichPage whichPage = WhichPage.EMPTY;
     private Set<String> mProjection;
 
-    long maxSentDate = 0;
+    long maxDate = 0;
 
     // These params are updated just before page loading
-    volatile long minSentDate = 0;
+    volatile long minDate = 0;
     volatile SelectionAndArgs selectionAndArgs = new SelectionAndArgs();
     volatile String sortOrderAndLimit = "";
 
@@ -65,8 +64,8 @@ public class TimelineParameters {
     volatile boolean isLoaded = false;
     volatile boolean cancelled = false;
     volatile int rowsLoaded = 0;
-    volatile long minSentDateLoaded = 0;
-    volatile long maxSentDateLoaded = 0;
+    volatile long minDateLoaded = 0;
+    volatile long maxDateLoaded = 0;
 
     public static TimelineParameters clone(@NonNull TimelineParameters prev, WhichPage whichPage) {
         TimelineParameters params = new TimelineParameters(prev.myContext);
@@ -85,16 +84,16 @@ public class TimelineParameters {
         switch (params.whichPage) {
             case OLDER:
                 if (prev.mayHaveOlderPage()) {
-                    params.maxSentDate = prev.minSentDateLoaded;
+                    params.maxDate = prev.minDateLoaded;
                 } else {
-                    params.maxSentDate = prev.maxSentDate;
+                    params.maxDate = prev.maxDate;
                 }
                 break;
             case YOUNGER:
                 if (prev.mayHaveYoungerPage()) {
-                    params.minSentDate = prev.maxSentDateLoaded;
+                    params.minDate = prev.maxDateLoaded;
                 } else {
-                    params.minSentDate = prev.minSentDate;
+                    params.minDate = prev.minDate;
                 }
                 break;
             default:
@@ -113,18 +112,18 @@ public class TimelineParameters {
     }
 
     public boolean mayHaveYoungerPage() {
-        return maxSentDate > 0 ||
-                (minSentDate > 0 && rowsLoaded > 0 && minSentDate < maxSentDateLoaded);
+        return maxDate > 0
+                || (minDate > 0 && rowsLoaded > 0 && minDate < maxDateLoaded);
     }
 
     public boolean mayHaveOlderPage() {
-        return whichPage.equals(WhichPage.CURRENT) ||
-                minSentDate > 0 ||
-                (maxSentDate > 0 && rowsLoaded > 0 && maxSentDate > minSentDateLoaded);
+        return whichPage.equals(WhichPage.CURRENT)
+                || minDate > 0
+                || (maxDate > 0 && rowsLoaded > 0 && maxDate > minDateLoaded);
     }
 
     public boolean isSortOrderAscending() {
-        return maxSentDate == 0 && minSentDate > 0;
+        return maxDate == 0 && minDate > 0;
     }
 
     public TimelineParameters(MyContext myContext) {
@@ -146,8 +145,8 @@ public class TimelineParameters {
                 + ", account=" + timeline.getMyAccount().getAccountName()
                 + (timeline.getUserId() == 0 ? "" : ", selectedUserId=" + timeline.getUserId())
             //    + ", projection=" + Arrays.toString(mProjection)
-                + (minSentDate > 0 ? ", minSentDate=" + new Date(minSentDate).toString() : "")
-                + (maxSentDate > 0 ? ", maxSentDate=" + new Date(maxSentDate).toString() : "")
+                + (minDate > 0 ? ", minDate=" + MyLog.formatDateTime(minDate) : "")
+                + (maxDate > 0 ? ", maxDate=" + MyLog.formatDateTime(maxDate) : "")
                 + (selectionAndArgs.isEmpty() ? "" : ", sa=" + selectionAndArgs)
                 + (TextUtils.isEmpty(sortOrderAndLimit) ? "" : ", sortOrder=" + sortOrderAndLimit)
                 + (isLoaded  ? ", loaded" : "")
@@ -190,9 +189,9 @@ public class TimelineParameters {
 
         if (!timeline.equals(that.timeline)) return false;
         if (!whichPage.equals(WhichPage.CURRENT) && !that.whichPage.equals(WhichPage.CURRENT)) {
-            if (minSentDate != that.minSentDate) return false;
+            if (minDate != that.minDate) return false;
         }
-        return maxSentDate == that.maxSentDate;
+        return maxDate == that.maxDate;
     }
 
     @Override
@@ -201,17 +200,17 @@ public class TimelineParameters {
         if (whichPage.equals(WhichPage.CURRENT)) {
             result = 31 * result + (-1 ^ (-1 >>> 32));
         } else {
-            result = 31 * result + (int) (minSentDate ^ (minSentDate >>> 32));
+            result = 31 * result + (int) (minDate ^ (minDate >>> 32));
         }
-        result = 31 * result + (int) (maxSentDate ^ (maxSentDate >>> 32));
+        result = 31 * result + (int) (maxDate ^ (maxDate >>> 32));
         return result;
     }
 
-    boolean restoreState(@NonNull Bundle savedInstanceState) {
+    boolean restoreState(@NonNull Bundle savedState) {
         whichPage = WhichPage.CURRENT;
-        minSentDate = 0;
-        maxSentDate = 0;
-        return parseUri(Uri.parse(savedInstanceState.getString(IntentExtra.MATCHED_URI.key,"")), "");
+        minDate = 0;
+        maxDate = 0;
+        return parseUri(Uri.parse(savedState.getString(IntentExtra.MATCHED_URI.key,"")), "");
     }
     
     /** @return true if parsed successfully */
@@ -231,19 +230,19 @@ public class TimelineParameters {
         return timeline.getMyAccount();
     }
 
-    public void rememberSentDateLoaded(long sentDate) {
-        if (minSentDateLoaded == 0 || minSentDateLoaded > sentDate) {
-            minSentDateLoaded = sentDate;
+    public void rememberItemDateLoaded(long date) {
+        if (minDateLoaded == 0 || minDateLoaded > date) {
+            minDateLoaded = date;
         }
-        if (maxSentDateLoaded == 0 || maxSentDateLoaded < sentDate) {
-            maxSentDateLoaded = sentDate;
+        if (maxDateLoaded == 0 || maxDateLoaded < date) {
+            maxDateLoaded = date;
         }
     }
 
     private void prepareQueryParameters() {
         switch (whichPage) {
             case CURRENT:
-                minSentDate = (new TimelinePositionStorage<>( null, null, this)).getTLPosition().minSentDate;
+                minDate = (new TimelinePositionStorage<>( null, null, this)).getTLPosition().minSentDate;
                 break;
             default:
                 break;
@@ -254,18 +253,18 @@ public class TimelineParameters {
 
     private String buildSortOrderAndLimit() {
         return  ActivityTable.getTimeSortOrder(getTimelineType(), isSortOrderAscending())
-                + (minSentDate > 0 && maxSentDate > 0 ? "" : " LIMIT " + PAGE_SIZE);
+                + (minDate > 0 && maxDate > 0 ? "" : " LIMIT " + PAGE_SIZE);
     }
 
     private SelectionAndArgs buildSelectionAndArgs() {
         SelectionAndArgs sa = new SelectionAndArgs();
         sa.addSelection(ActivityTable.getTimeSortField(getTimelineType()) + " >= ?",
                 new String[]{
-                        String.valueOf(minSentDate > 0 ? minSentDate : 1)
+                        String.valueOf(minDate > 0 ? minDate : 1)
                 });
-        if (maxSentDate > 0) {
+        if (maxDate > 0) {
             sa.addSelection(ActivityTable.getTimeSortField(getTimelineType()) + " <= ?",
-                    String.valueOf(maxSentDate));
+                    String.valueOf(maxDate));
         }
         return sa;
     }
@@ -282,9 +281,5 @@ public class TimelineParameters {
 
     public MyContext getMyContext() {
         return myContext;
-    }
-
-    public boolean isSameTimeline(TimelineParameters other) {
-        return other != null &&  getTimeline().equals(other.getTimeline());
     }
 }

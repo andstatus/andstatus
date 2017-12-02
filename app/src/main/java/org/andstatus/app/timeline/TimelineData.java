@@ -90,8 +90,8 @@ public class TimelineData<T extends ViewItem<T>> {
                     int found = -1;
                     for (int ind = 0; ind < pages.size(); ind++) {
                         TimelinePage p = pages.get(ind);
-                        if (p.params.maxSentDate == page.params.maxSentDate
-                                && p.params.minSentDate == page.params.minSentDate) {
+                        if (p.params.maxDate == page.params.maxDate
+                                && p.params.minDate == page.params.minDate) {
                             found = ind;
                             break;
                         }
@@ -115,12 +115,12 @@ public class TimelineData<T extends ViewItem<T>> {
             return;
         }
         TimelinePage<T> ePage = pages.get(indExistingPage);
-        if (ePage.params.maxSentDate > 0 && page.params.maxSentDate >= ePage.params.maxSentDate) {
+        if (ePage.params.maxDate > 0 && page.params.maxDate >= ePage.params.maxDate) {
             MyLog.v(this, "Previous younger page removed");
             pages.remove(indExistingPage);
             return;
         }
-        long edgeDate = ePage.params.minSentDateLoaded;
+        long edgeDate = ePage.params.minDateLoaded;
         List<T> toRemove = new ArrayList<>();
         for (int ind = 0; ind < page.items.size(); ind++) {
             T item = page.items.get(ind);
@@ -156,12 +156,12 @@ public class TimelineData<T extends ViewItem<T>> {
             return;
         }
         TimelinePage<T> ePage = pages.get(indExistingPage);
-        if (page.params.minSentDate <= ePage.params.minSentDate) {
+        if (page.params.minDate <= ePage.params.minDate) {
             MyLog.v(this, "Previous older page removed");
             pages.remove(indExistingPage);
             return;
         }
-        long edgeDate = ePage.params.maxSentDateLoaded;
+        long edgeDate = ePage.params.maxDateLoaded;
         List<T> toRemove = new ArrayList<>();
         for (int ind = page.items.size() - 1; ind >= 0; ind--) {
             T item = page.items.get(ind);

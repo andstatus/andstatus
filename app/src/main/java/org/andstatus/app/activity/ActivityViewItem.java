@@ -68,7 +68,7 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
 
     @Override
     public long getDate() {
-        return insDate;
+        return updatedDate;
     }
 
     @Override

@@ -60,8 +60,8 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
             MyLog.d(this, method
                     + (getParams().cancelled ? " cancelled"
                         : " ended" + ", " + page.items.size() + " rows,"
-                        + " dates from " + MyLog.formatDateTime(page.params.minSentDateLoaded) + " to "
-                        + MyLog.formatDateTime(page.params.maxSentDateLoaded)
+                        + " dates from " + MyLog.formatDateTime(page.params.minDateLoaded) + " to "
+                        + MyLog.formatDateTime(page.params.maxDateLoaded)
                     )
                     + ", " + stopWatch.getTime() + "ms"
             );
@@ -110,7 +110,7 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
                         rowsCount++;
                         T item = (T) page.getEmptyItem().fromCursor(cursor);
                         long rowFromCursorTime = rowStopWatch.getTime() - rowMoveTime;
-                        getParams().rememberSentDateLoaded(item.getDate());
+                        getParams().rememberItemDateLoaded(item.getDate());
                         items.add(item);
                         if (MyLog.isVerboseEnabled()) {
                             MyLog.v(this, method + "; row " + rowsCount + ", id:" + item.getId()

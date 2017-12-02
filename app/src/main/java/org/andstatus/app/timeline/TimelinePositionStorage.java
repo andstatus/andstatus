@@ -82,7 +82,7 @@ class TimelinePositionStorage<T extends ViewItem<T>> {
             String msgLog = "id:" + firstVisibleItemId
                     + ", y:" + y
                     + " at pos=" + firstVisiblePosition
-                    + ", minDate=" + minDate
+                    + ", minDate=" + MyLog.formatDateTime(minDate)
                     + " at pos=" + lastPosition + " of " + itemCount
                     + " " + mListParameters.getTimeline();
             if (firstVisibleItemId <= 0) {

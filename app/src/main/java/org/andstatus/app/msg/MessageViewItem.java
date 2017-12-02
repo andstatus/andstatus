@@ -75,7 +75,6 @@ public class MessageViewItem extends BaseMessageViewItem<MessageViewItem> {
         inReplyToUserId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_USER_ID);
         inReplyToName = DbUtils.getString(cursor, UserTable.IN_REPLY_TO_NAME);
         recipientName = DbUtils.getString(cursor, UserTable.RECIPIENT_NAME);
-        activityInsDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
         updatedDate = DbUtils.getLong(cursor, MsgTable.UPDATED_DATE);
         msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
 
