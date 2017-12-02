@@ -208,7 +208,7 @@ public class TimelineData<T extends ViewItem<T>> {
             }
             firstPosition += page.items.size();
         }
-        return pages.get(0).getEmptyItem();
+        return getEmptyItem();
     }
 
     @NonNull
@@ -222,6 +222,11 @@ public class TimelineData<T extends ViewItem<T>> {
                 }
             }
         }
+        return getEmptyItem();
+    }
+
+    @NonNull
+    public T getEmptyItem() {
         return pages.get(0).getEmptyItem();
     }
 

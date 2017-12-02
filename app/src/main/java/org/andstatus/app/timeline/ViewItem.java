@@ -19,7 +19,6 @@ package org.andstatus.app.timeline;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.timeline.meta.TimelineType;
 
 import java.util.ArrayList;
@@ -28,6 +27,11 @@ import java.util.List;
 
 public class ViewItem<T extends ViewItem<T>> {
     private final List<T> children = new ArrayList<>();
+    private final boolean isEmpty;
+
+    protected ViewItem(boolean isEmpty) {
+        this.isEmpty = isEmpty;
+    }
 
     @NonNull
     public T getEmpty(@NonNull TimelineType timelineType) {
@@ -48,7 +52,7 @@ public class ViewItem<T extends ViewItem<T>> {
     }
 
     @NonNull
-    public DuplicationLink duplicates(ViewItem other) {
+    public DuplicationLink duplicates(@NonNull T other) {
         return DuplicationLink.NONE;
     }
 
@@ -62,13 +66,21 @@ public class ViewItem<T extends ViewItem<T>> {
         this.getChildren().add(child);
     }
 
-    /** @return 1. The item and 2. if it should be skipped (filtered out) */
     @NonNull
     public T fromCursor(Cursor cursor) {
         return getEmpty(TimelineType.UNKNOWN);
     }
 
+    @NonNull
+    public T getNew() {
+        return getEmpty(TimelineType.UNKNOWN);
+    }
+
     public boolean matches(TimelineFilter filter) {
         return true;
+    }
+
+    public boolean isEmpty() {
+        return isEmpty;
     }
 }

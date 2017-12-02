@@ -40,8 +40,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class BaseMessageViewItem<T extends BaseMessageViewItem<T>> extends ViewItem<T> {
-    public final static BaseMessageViewItem EMPTY = new BaseMessageViewItem();
+public abstract class BaseMessageViewItem<T extends BaseMessageViewItem<T>> extends ViewItem<T> {
     private static final int MIN_LENGTH_TO_COMPARE = 5;
     private MyContext myContext = MyContextHolder.get();
     long updatedDate = 0;
@@ -64,7 +63,7 @@ public class BaseMessageViewItem<T extends BaseMessageViewItem<T>> extends ViewI
     String messageSource = "";
 
     private String body = "";
-    private String cleanedBody = "";
+    String cleanedBody = "";
 
     boolean favorited = false;
     boolean isFavoritingAction = false;
@@ -77,6 +76,10 @@ public class BaseMessageViewItem<T extends BaseMessageViewItem<T>> extends ViewI
     /** A message can be linked to any user, MyAccount or not */
     private long linkedUserId = 0;
     private MyAccount linkedMyAccount = MyAccount.EMPTY;
+
+    protected BaseMessageViewItem(boolean isEmpty) {
+        super(isEmpty);
+    }
 
     @NonNull
     public MyContext getMyContext() {
@@ -124,54 +127,48 @@ public class BaseMessageViewItem<T extends BaseMessageViewItem<T>> extends ViewI
 
     @Override
     @NonNull
-    public DuplicationLink duplicates(ViewItem otherIn) {
-
-        DuplicationLink link = DuplicationLink.NONE;
-        if (otherIn == null || !BaseMessageViewItem.class.isAssignableFrom(otherIn.getClass())) {
-            return link;
-        }
-        BaseMessageViewItem other = (BaseMessageViewItem) otherIn;
-        if (getMsgId() == other.getMsgId()) {
-            link = duplicatesByFavoritedAndReblogged(other);
-        }
-        if (link == DuplicationLink.NONE) {
-            if (Math.abs(updatedDate - other.updatedDate) < TimeUnit.HOURS.toMillis(24)) {
-                if (cleanedBody.length() < MIN_LENGTH_TO_COMPARE ||
-                        other.cleanedBody.length() < MIN_LENGTH_TO_COMPARE) {
-                    // Too short to compare
-                } else if (cleanedBody.equals(other.cleanedBody)) {
-                    if (updatedDate == other.updatedDate) {
-                        link = duplicatesByFavoritedAndReblogged(other);
-                    } else if (updatedDate < other.updatedDate) {
-                        link = DuplicationLink.IS_DUPLICATED;
-                    } else {
-                        link = DuplicationLink.DUPLICATES;
-                    }
-                } else if (cleanedBody.contains(other.cleanedBody)) {
-                    link = DuplicationLink.DUPLICATES;
-                } else if (other.cleanedBody.contains(cleanedBody)) {
-                    link = DuplicationLink.IS_DUPLICATED;
-                }
-            }
-        }
-        return link;
+    public DuplicationLink duplicates(@NonNull T other) {
+        if (isEmpty() || other.isEmpty()) return DuplicationLink.NONE;
+        return (getMsgId() == other.getMsgId()) ? duplicatesByFavoritedAndReblogged(other) : duplicatesByOther(other);
     }
 
-    private DuplicationLink duplicatesByFavoritedAndReblogged(BaseMessageViewItem other) {
-        DuplicationLink link;
+    @NonNull
+    private DuplicationLink duplicatesByFavoritedAndReblogged(@NonNull T other) {
         if (favorited != other.favorited) {
-            link = favorited ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
+            return favorited ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
         } else if (isFavoritingAction != other.isFavoritingAction) {
-            link = other.isFavoritingAction ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
+            return other.isFavoritingAction ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
         } else if (reblogged != other.reblogged) {
-            link = reblogged ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
+            return reblogged ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
         } else if (!getLinkedMyAccount().equals(other.getLinkedMyAccount())) {
-            link = getLinkedMyAccount().compareTo(other.getLinkedMyAccount()) <= 0 ?
+            return getLinkedMyAccount().compareTo(other.getLinkedMyAccount()) <= 0 ?
                     DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
-        } else {
-            link = rebloggers.size() > other.rebloggers.size() ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
         }
-        return link;
+        return rebloggers.size() > other.rebloggers.size() ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
+    }
+
+    @NonNull
+    private DuplicationLink duplicatesByOther(@NonNull T other) {
+        if (Math.abs(updatedDate - other.updatedDate) >= TimeUnit.HOURS.toMillis(24)
+                || isTooShortToCompare() || other.isTooShortToCompare()) return DuplicationLink.NONE;
+        if (cleanedBody.equals(other.cleanedBody)) {
+            if (updatedDate == other.updatedDate) {
+                return duplicatesByFavoritedAndReblogged(other);
+            } else if (updatedDate < other.updatedDate) {
+                return DuplicationLink.IS_DUPLICATED;
+            } else {
+                return DuplicationLink.DUPLICATES;
+            }
+        } else if (cleanedBody.contains(other.cleanedBody)) {
+            return DuplicationLink.DUPLICATES;
+        } else if (other.cleanedBody.contains(cleanedBody)) {
+            return DuplicationLink.IS_DUPLICATED;
+        }
+        return DuplicationLink.NONE;
+    }
+
+    boolean isTooShortToCompare() {
+        return cleanedBody.length() < MIN_LENGTH_TO_COMPARE;
     }
 
     public boolean isReblogged() {

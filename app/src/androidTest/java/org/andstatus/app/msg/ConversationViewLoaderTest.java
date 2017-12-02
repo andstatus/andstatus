@@ -35,8 +35,7 @@ public class ConversationViewLoaderTest implements ProgressPublisher {
     public void testLoad() {
         ConversationLoader<ConversationViewItem> loader =
                 new ConversationLoaderFactory<ConversationViewItem>().getLoader(
-                ConversationViewItem.class,
-                MyContextHolder.get(), ma, selectedMessageId, false);
+                ConversationViewItem.EMPTY, MyContextHolder.get(), ma, selectedMessageId, false);
         progressCounter = 0;
         loader.load(this);
         List<ConversationViewItem> list = loader.getList();

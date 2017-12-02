@@ -43,60 +43,69 @@ import org.andstatus.app.util.TriState;
  * @author yvolk@yurivolkov.com
  */
 public class MessageViewItem extends BaseMessageViewItem<MessageViewItem> {
-    public final static MessageViewItem EMPTY = new MessageViewItem();
+    public final static MessageViewItem EMPTY = new MessageViewItem(true);
+
+    protected MessageViewItem(boolean isEmpty) {
+        super(isEmpty);
+    }
 
     @Override
     @NonNull
     public MessageViewItem fromCursor(Cursor cursor) {
-        return MessageViewItem.fromCursorRow(getMyContext(), cursor);
+        return getNew().fromCursorRow(getMyContext(), cursor);
     }
 
-    public static MessageViewItem fromCursorRow(MyContext myContext, Cursor cursor) {
+    @NonNull
+    @Override
+    public MessageViewItem getNew() {
+        return new MessageViewItem(false);
+    }
+
+    public MessageViewItem fromCursorRow(MyContext myContext, Cursor cursor) {
         long startTime = System.currentTimeMillis();
-        MessageViewItem item = new MessageViewItem();
-        item.setMyContext(myContext);
-        item.setMsgId(DbUtils.getLong(cursor, ActivityTable.MSG_ID));
-        item.setOriginId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID));
-        item.setLinkedUserAndAccount(DbUtils.getLong(cursor, UserTable.LINKED_USER_ID));
+        setMyContext(myContext);
+        setMsgId(DbUtils.getLong(cursor, ActivityTable.MSG_ID));
+        setOriginId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID));
+        setLinkedUserAndAccount(DbUtils.getLong(cursor, UserTable.LINKED_USER_ID));
 
-        item.authorName = TimelineSql.userColumnIndexToNameAtTimeline(cursor,
+        authorName = TimelineSql.userColumnIndexToNameAtTimeline(cursor,
                 cursor.getColumnIndex(UserTable.AUTHOR_NAME), MyPreferences.getShowOrigin());
-        item.setBody(MyHtml.prepareForView(DbUtils.getString(cursor, MsgTable.BODY)));
-        item.inReplyToMsgId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_MSG_ID);
-        item.inReplyToUserId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_USER_ID);
-        item.inReplyToName = DbUtils.getString(cursor, UserTable.IN_REPLY_TO_NAME);
-        item.recipientName = DbUtils.getString(cursor, UserTable.RECIPIENT_NAME);
-        item.activityInsDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
-        item.updatedDate = DbUtils.getLong(cursor, MsgTable.UPDATED_DATE);
-        item.msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
+        setBody(MyHtml.prepareForView(DbUtils.getString(cursor, MsgTable.BODY)));
+        inReplyToMsgId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_MSG_ID);
+        inReplyToUserId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_USER_ID);
+        inReplyToName = DbUtils.getString(cursor, UserTable.IN_REPLY_TO_NAME);
+        recipientName = DbUtils.getString(cursor, UserTable.RECIPIENT_NAME);
+        activityInsDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
+        updatedDate = DbUtils.getLong(cursor, MsgTable.UPDATED_DATE);
+        msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
 
-        item.authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
+        authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
 
-        item.favorited = DbUtils.getTriState(cursor, MsgTable.FAVORITED) == TriState.TRUE;
-        item.reblogged = DbUtils.getTriState(cursor, MsgTable.REBLOGGED) == TriState.TRUE;
+        favorited = DbUtils.getTriState(cursor, MsgTable.FAVORITED) == TriState.TRUE;
+        reblogged = DbUtils.getTriState(cursor, MsgTable.REBLOGGED) == TriState.TRUE;
 
         String via = DbUtils.getString(cursor, MsgTable.VIA);
         if (!TextUtils.isEmpty(via)) {
-            item.messageSource = Html.fromHtml(via).toString().trim();
+            messageSource = Html.fromHtml(via).toString().trim();
         }
 
-        item.avatarFile = AvatarFile.fromCursor(item.authorId, cursor, DownloadTable.AVATAR_FILE_NAME);
+        avatarFile = AvatarFile.fromCursor(authorId, cursor, DownloadTable.AVATAR_FILE_NAME);
         if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
-            item.attachedImageFile = new AttachedImageFile(
+            attachedImageFile = new AttachedImageFile(
                     DbUtils.getLong(cursor, DownloadTable.IMAGE_ID),
                     DbUtils.getString(cursor, DownloadTable.IMAGE_FILE_NAME));
         }
 
         long beforeRebloggers = System.currentTimeMillis();
-        for (MbUser user : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), item.getOriginId(),
-                item.getMsgId())) {
-            item.rebloggers.put(user.userId, user.getWebFingerId());
+        for (MbUser user : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOriginId(),
+                getMsgId())) {
+            rebloggers.put(user.userId, user.getWebFingerId());
         }
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(item, ": " + (System.currentTimeMillis() - startTime) + "ms, "
-                    + item.rebloggers.size() + " rebloggers: " + (System.currentTimeMillis() - beforeRebloggers) + "ms");
+            MyLog.v(this, ": " + (System.currentTimeMillis() - startTime) + "ms, "
+                    + rebloggers.size() + " rebloggers: " + (System.currentTimeMillis() - beforeRebloggers) + "ms");
         }
-        return item;
+        return this;
     }
 
     @Override

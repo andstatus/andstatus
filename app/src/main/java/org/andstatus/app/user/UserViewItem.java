@@ -39,7 +39,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class UserViewItem extends ViewItem<UserViewItem> implements Comparable<UserViewItem> {
-    public static final UserViewItem EMPTY = fromMbUser(MbUser.EMPTY);
+    public static final UserViewItem EMPTY = new UserViewItem(MbUser.EMPTY, true);
     boolean populated = false;
     @NonNull
     final MbUser mbUser;
@@ -60,11 +60,12 @@ public class UserViewItem extends ViewItem<UserViewItem> implements Comparable<U
         return mbUser.hashCode();
     }
 
-    private UserViewItem(@NonNull MbUser mbUser) {
+    private UserViewItem(@NonNull MbUser mbUser, boolean isEmpty) {
+        super(isEmpty);
         this.mbUser = mbUser;
     }
 
-    public static UserViewItem getEmpty(String description) {
+    public static UserViewItem newEmpty(String description) {
         MbUser mbUser = TextUtils.isEmpty(description) ? MbUser.EMPTY :
                 MbUser.fromOriginAndUserId(0L, 0L).setDescription(description);
         return fromMbUser(mbUser);
@@ -79,7 +80,7 @@ public class UserViewItem extends ViewItem<UserViewItem> implements Comparable<U
     }
 
     public static UserViewItem fromMbUser(@NonNull MbUser mbUser) {
-        return new UserViewItem(mbUser);
+        return new UserViewItem(mbUser, false);
     }
 
     public long getUserId() {
@@ -117,6 +118,12 @@ public class UserViewItem extends ViewItem<UserViewItem> implements Comparable<U
     @Override
     public long getDate() {
         return mbUser.getUpdatedDate();
+    }
+
+    @NonNull
+    @Override
+    public UserViewItem getNew() {
+        return newEmpty("");
     }
 
     public String getWebFingerIdOrUserName() {

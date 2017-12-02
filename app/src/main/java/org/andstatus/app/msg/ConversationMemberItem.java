@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,7 @@
 package org.andstatus.app.msg;
 
 import android.database.Cursor;
+import android.support.annotation.NonNull;
 
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.ActivityTable;
@@ -26,8 +27,19 @@ import org.andstatus.app.util.MyHtml;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ConversationMemberItem extends ConversationItem {
+public class ConversationMemberItem extends ConversationItem<ConversationMemberItem> {
+    public final static ConversationMemberItem EMPTY = new ConversationMemberItem(true);
     long authorId = 0;
+
+    protected ConversationMemberItem(boolean isEmpty) {
+        super(isEmpty);
+    }
+
+    @NonNull
+    @Override
+    public ConversationMemberItem getNew() {
+        return new ConversationMemberItem(false);
+    }
 
     @Override
     String[] getProjection() {

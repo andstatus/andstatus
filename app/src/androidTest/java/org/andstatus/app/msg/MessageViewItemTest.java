@@ -45,9 +45,9 @@ public class MessageViewItemTest {
 
     @Test
     public void testDuplicationLink() {
-        MessageViewItem item1 = new MessageViewItem();
+        MessageViewItem item1 = new MessageViewItem(false);
         item1.setBody(HTML_BODY);
-        MessageViewItem item2 = new MessageViewItem();
+        MessageViewItem item2 = new MessageViewItem(false);
         item2.setBody("Some other text");
         assertDuplicates(item1, DuplicationLink.DUPLICATES, item2);
 

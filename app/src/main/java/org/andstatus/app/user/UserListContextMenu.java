@@ -118,7 +118,7 @@ public class UserListContextMenu extends MyContextMenu {
     @NonNull
     public UserViewItem getViewItem() {
         if (mViewItem == null) {
-            return UserViewItem.getEmpty("");
+            return UserViewItem.newEmpty("");
         }
         if (ActivityViewItem.class.isAssignableFrom(mViewItem.getClass())) {
             return getViewItem(((ActivityViewItem) mViewItem));

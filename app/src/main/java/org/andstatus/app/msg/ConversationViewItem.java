@@ -18,6 +18,7 @@ package org.andstatus.app.msg;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.support.annotation.NonNull;
 import android.text.Html;
 import android.text.TextUtils;
 
@@ -39,7 +40,17 @@ import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.TriState;
 
 public class ConversationViewItem extends ConversationItem<ConversationViewItem> {
-    public static final ConversationViewItem EMPTY = new ConversationViewItem();
+    public static final ConversationViewItem EMPTY = new ConversationViewItem(true);
+
+    private ConversationViewItem(boolean isEmpty) {
+        super(isEmpty);
+    }
+
+    @NonNull
+    @Override
+    public ConversationViewItem getNew() {
+        return new ConversationViewItem(false);
+    }
 
     @Override
     String[] getProjection() {

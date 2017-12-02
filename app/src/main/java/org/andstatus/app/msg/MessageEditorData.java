@@ -93,7 +93,7 @@ public class MessageEditorData {
         result = prime * result + ((ma == null) ? 0 : ma.hashCode());
         result = prime * result + getMediaUri().hashCode();
         result = prime * result + body.hashCode();
-        result = prime * result + (int) (recipients.hashCode() ^ (recipients.hashCode() >>> 32));
+        result = prime * result + recipients.hashCode();
         result = prime * result + (int) (inReplyToMsgId ^ (inReplyToMsgId >>> 32));
         return result;
     }
@@ -289,10 +289,9 @@ public class MessageEditorData {
     }
 
     private void addConversationParticipantsBeforeText() {
-        ConversationLoader<ConversationMemberItem> loader =
+        ConversationLoader<? extends ConversationMemberItem> loader =
                 new ConversationLoaderFactory<ConversationMemberItem>().getLoader(
-                ConversationMemberItem.class,
-                MyContextHolder.get(), ma, inReplyToMsgId, false);
+                ConversationMemberItem.EMPTY, MyContextHolder.get(), ma, inReplyToMsgId, false);
         loader.load(null);
         List<Long> toMention = new ArrayList<>();
         for(ConversationMemberItem item : loader.getList()) {

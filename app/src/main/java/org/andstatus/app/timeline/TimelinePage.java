@@ -38,7 +38,7 @@ public class TimelinePage<T extends ViewItem<T>> {
 
     public TimelinePage(@NonNull TimelineParameters params, List<T> items) {
         this.params = params;
-        emptyItem = new ViewItem<T>().getEmpty(params.getTimelineType());
+        emptyItem = new ViewItem<T>(true).getEmpty(params.getTimelineType());
         this.items = items == null ? Collections.EMPTY_LIST : items;
     }
 }

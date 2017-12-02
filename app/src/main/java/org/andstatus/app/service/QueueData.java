@@ -36,7 +36,8 @@ public class QueueData extends ViewItem<QueueData> implements Comparable<QueueDa
         return new QueueData(queueType, commandData);
     }
 
-    public QueueData(@NonNull QueueType queueType, @NonNull CommandData commandData) {
+    protected QueueData(@NonNull QueueType queueType, @NonNull CommandData commandData) {
+        super(false);
         this.queueType = queueType;
         this.commandData = commandData;
     }
@@ -49,6 +50,12 @@ public class QueueData extends ViewItem<QueueData> implements Comparable<QueueDa
     @Override
     public long getDate() {
         return commandData.getCreatedDate();
+    }
+
+    @NonNull
+    @Override
+    public QueueData getNew() {
+        return EMPTY;
     }
 
     public String toSharedSubject() {

@@ -16,8 +16,11 @@
 
 package org.andstatus.app.timeline.meta;
 
+import android.support.annotation.NonNull;
+
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.timeline.ViewItem;
 
 /**
@@ -27,9 +30,16 @@ public class ManageTimelinesViewItem extends ViewItem<ManageTimelinesViewItem> {
     final Timeline timeline;
     final TimelineTitle timelineTitle;
 
-    public ManageTimelinesViewItem(MyContext myContext, Timeline timeline) {
+    protected ManageTimelinesViewItem(MyContext myContext, Timeline timeline) {
+        super(false);
         this.timeline = timeline;
         this.timelineTitle = TimelineTitle.load(myContext, timeline, MyAccount.EMPTY);
+    }
+
+    @NonNull
+    @Override
+    public ManageTimelinesViewItem getNew() {
+        return new ManageTimelinesViewItem(MyContextHolder.get(), Timeline.EMPTY);
     }
 
     @Override

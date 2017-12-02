@@ -199,7 +199,7 @@ public class ConversationActivity extends MessageEditorListActivity implements M
     @Override
     protected SyncLoader newSyncLoader(Bundle args) {
         return new ConversationLoaderFactory<ConversationViewItem>().
-                getLoader(ConversationViewItem.class,
+                getLoader(ConversationViewItem.EMPTY,
                 getMyContext(), getCurrentMyAccount(), centralItemId, BundleUtils.hasKey(args, IntentExtra.SYNC.key));
     }
 

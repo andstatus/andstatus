@@ -40,6 +40,10 @@ public abstract class ConversationItem<T extends ConversationItem<T>> extends Ba
     int indentLevel = 0;
     int replyLevel = 0;
 
+    protected ConversationItem(boolean isEmpty) {
+        super(isEmpty);
+    }
+
     public void setReversedListOrder(boolean reversedListOrder) {
         this.reversedListOrder = reversedListOrder;
     }

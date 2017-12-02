@@ -33,6 +33,7 @@ import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.list.ContextMenuItem;
 import org.andstatus.app.list.MyBaseListActivity;
 import org.andstatus.app.msg.BaseMessageViewItem;
+import org.andstatus.app.msg.MessageViewItem;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.view.SelectorDialog;
 
@@ -246,7 +247,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
         long idOut = 0;
         for (int ind = 0; ind < getListAdapter().getCount(); ind++) {
             BaseMessageViewItem item = toBaseMessageViewItem(getListAdapter().getItem(ind));
-            if (item != BaseMessageViewItem.EMPTY) {
+            if (!item.isEmpty()) {
                 if (item.inReplyToMsgId != 0 && item.msgStatus == DownloadStatus.LOADED) {
                     DownloadStatus statusOfReplied = DownloadStatus.load(
                             MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, item.inReplyToMsgId));
@@ -264,14 +265,13 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
     }
 
     @NonNull
-    public static BaseMessageViewItem toBaseMessageViewItem(Object objItem) {
-        BaseMessageViewItem item = BaseMessageViewItem.EMPTY;
+    static BaseMessageViewItem toBaseMessageViewItem(Object objItem) {
         if (ActivityViewItem.class.isAssignableFrom(objItem.getClass())) {
-            item = ((ActivityViewItem) objItem).message;
+            return ((ActivityViewItem) objItem).message;
         } else if (BaseMessageViewItem.class.isAssignableFrom(objItem.getClass())) {
-            item = ((BaseMessageViewItem) objItem);
+            return ((BaseMessageViewItem) objItem);
         }
-        return item;
+        return MessageViewItem.EMPTY;
     }
 
     public int getPositionOfListItemId(long itemId) {

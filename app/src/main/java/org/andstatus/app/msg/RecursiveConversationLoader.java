@@ -34,10 +34,10 @@ import org.andstatus.app.util.MyLog;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class RecursiveConversationLoader<T extends ConversationItem> extends ConversationLoader<T> {
-    public RecursiveConversationLoader(Class<T> tClass, MyContext myContext, MyAccount ma,
+public class RecursiveConversationLoader<T extends ConversationItem<T>> extends ConversationLoader<T> {
+    public RecursiveConversationLoader(T emptyItem, MyContext myContext, MyAccount ma,
                                        long selectedMessageId, boolean sync) {
-        super(tClass, myContext, ma, selectedMessageId, sync);
+        super(emptyItem, myContext, ma, selectedMessageId, sync);
     }
 
     @Override

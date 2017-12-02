@@ -323,14 +323,14 @@ public class MessageContextMenu extends MyContextMenu {
     @NonNull
     private BaseMessageViewItem getViewItem() {
         if (mViewItem == null) {
-            return new BaseMessageViewItem();
+            return MessageViewItem.EMPTY;
         }
         if (BaseMessageViewItem.class.isAssignableFrom(mViewItem.getClass())) {
             return (BaseMessageViewItem) mViewItem;
         } else if (ActivityViewItem.class.isAssignableFrom(mViewItem.getClass())){
             return ((ActivityViewItem) mViewItem).message;
         }
-        return new BaseMessageViewItem();
+        return MessageViewItem.EMPTY;
     }
 
     private void addMessageLinksSubmenu(ContextMenu menu, View v, int order) {

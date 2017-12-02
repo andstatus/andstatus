@@ -38,10 +38,10 @@ import org.andstatus.app.util.TriState;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class DirectMessagesConversationLoader<T extends ConversationItem> extends ConversationLoader<T> {
-    public DirectMessagesConversationLoader(Class<T> tClass, MyContext myContext, MyAccount ma,
+public class DirectMessagesConversationLoader<T extends ConversationItem<T>> extends ConversationLoader<T> {
+    public DirectMessagesConversationLoader(T emptyItem, MyContext myContext, MyAccount ma,
                                             long selectedMessageId, boolean sync) {
-        super(tClass, myContext, ma, selectedMessageId, sync);
+        super(emptyItem, myContext, ma, selectedMessageId, sync);
     }
 
     @Override

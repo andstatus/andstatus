@@ -90,7 +90,7 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
     }
 
     private void innerCollapseDuplicates(long itemId, Collection<Pair<TimelinePage<T>, T>> toCollapse) {
-        Pair<TimelinePage<T>, T> parent = new Pair<>(null, null);
+        Pair<TimelinePage<T>, T> parent = new Pair<>(null, data.getEmptyItem());
         Set<Pair<TimelinePage<T>, T>> group = new HashSet<>();
         for (TimelinePage<T> page : data.pages) {
             for (T item : page.items) {

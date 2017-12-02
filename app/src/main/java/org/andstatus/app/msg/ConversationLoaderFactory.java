@@ -25,10 +25,9 @@ import org.andstatus.app.util.TriState;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class ConversationLoaderFactory<T extends ConversationItem> {
+public class ConversationLoaderFactory<T extends ConversationItem<T>> {
 
-    public ConversationLoader<T> getLoader(
-            Class<T> tClass, MyContext myContext, MyAccount ma,
+    public ConversationLoader<T> getLoader(T emptyItem, MyContext myContext, MyAccount ma,
             long messageId, boolean sync) {
         // TODO: to clarify...
         boolean recursiveLoader = ma.getOrigin().getOriginType().isDirectMessageAllowsReply();
@@ -36,9 +35,9 @@ public class ConversationLoaderFactory<T extends ConversationItem> {
             recursiveLoader = MyQuery.msgIdToTriState(MsgTable.PRIVATE, messageId) != TriState.TRUE;
         }
         if (recursiveLoader) {
-            return new RecursiveConversationLoader<>(tClass, myContext, ma, messageId, sync);
+            return new RecursiveConversationLoader<>(emptyItem, myContext, ma, messageId, sync);
         }  else {
-            return new DirectMessagesConversationLoader<>(tClass, myContext, ma, messageId, sync);
+            return new DirectMessagesConversationLoader<>(emptyItem, myContext, ma, messageId, sync);
         }
     }
 }

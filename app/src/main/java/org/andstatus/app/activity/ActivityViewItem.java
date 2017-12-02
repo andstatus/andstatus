@@ -29,6 +29,7 @@ import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbObjectType;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.timeline.DuplicationLink;
 import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.user.UserViewItem;
@@ -40,7 +41,7 @@ import org.andstatus.app.util.RelativeTime;
  * @author yvolk@yurivolkov.com
  */
 public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comparable<ActivityViewItem> {
-    public static final ActivityViewItem EMPTY = new ActivityViewItem();
+    public static final ActivityViewItem EMPTY = new ActivityViewItem(true);
     private long id = 0;
     Origin origin = Origin.EMPTY;
     private long insDate = 0;
@@ -56,6 +57,10 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
     public MessageViewItem message = MessageViewItem.EMPTY;
     public UserViewItem user = UserViewItem.EMPTY;
 
+    protected ActivityViewItem(boolean isEmpty) {
+        super(isEmpty);
+    }
+
     @Override
     public long getId() {
         return id;
@@ -68,14 +73,19 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
 
     @Override
     public int compareTo(@NonNull ActivityViewItem o) {
-        // TODO: replace with Long#compare
-        return insDate < o.insDate ? -1 : (insDate == o.insDate ? 0 : 1);
+        return Long.compare(updatedDate, o.updatedDate);
     }
 
     @NonNull
     @Override
     public ActivityViewItem fromCursor(Cursor cursor) {
-        return new ActivityViewItem().loadCursor(cursor);
+        return getNew().loadCursor(cursor);
+    }
+
+    @NonNull
+    @Override
+    public ActivityViewItem getNew() {
+        return new ActivityViewItem(false);
     }
 
     private ActivityViewItem loadCursor(Cursor cursor) {
@@ -94,7 +104,7 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
             MyLog.v(this, ": " + (System.currentTimeMillis() - startTime) + "ms");
         }
         if (messageId != 0) {
-            message = MessageViewItem.fromCursorRow(MyContextHolder.get(), cursor);
+            message = MessageViewItem.EMPTY.getNew().fromCursorRow(MyContextHolder.get(), cursor);
         }
         return this;
     }
@@ -107,6 +117,26 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
             return user.matches(filter);
         }
         return true;
+    }
+
+    @NonNull
+    @Override
+    public DuplicationLink duplicates(@NonNull ActivityViewItem other) {
+        if (isEmpty() || other.isEmpty() || duplicatesByChildren(other) == DuplicationLink.NONE)
+            return DuplicationLink.NONE;
+        if (activityType != other.activityType && other.activityType == MbActivityType.UPDATE)
+            return DuplicationLink.IS_DUPLICATED;
+        return updatedDate >= other.updatedDate ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
+    }
+
+    @NonNull
+    protected DuplicationLink duplicatesByChildren(@NonNull ActivityViewItem other) {
+        if (messageId !=0) {
+            return message.duplicates(other.message);
+        } else if (userId != 0) {
+            return user.duplicates(other.user);
+        }
+        return super.duplicates(other);
     }
 
     String getDetails(Context context) {

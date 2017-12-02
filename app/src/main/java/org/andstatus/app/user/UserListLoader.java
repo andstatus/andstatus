@@ -65,7 +65,7 @@ public class UserListLoader extends SyncLoader<UserViewItem> {
     }
 
     protected void addEmptyItem(String description) {
-        items.add(UserViewItem.getEmpty(description));
+        items.add(UserViewItem.newEmpty(description));
     }
 
     public UserViewItem addUserIdToList(Origin origin, long userId) {

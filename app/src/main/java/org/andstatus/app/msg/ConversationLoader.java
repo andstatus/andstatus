@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class ConversationLoader<T extends ConversationItem> extends SyncLoader<T> {
+public abstract class ConversationLoader<T extends ConversationItem<T>> extends SyncLoader<T> {
     private static final int MAX_INDENT_LEVEL = 19;
     
     protected final MyContext myContext;
@@ -55,7 +55,7 @@ public abstract class ConversationLoader<T extends ConversationItem> extends Syn
     private boolean conversationSyncRequested = false;
     protected boolean mAllowLoadingFromInternet = false;
     private final ReplyLevelComparator<T> replyLevelComparator = new ReplyLevelComparator<>();
-    private final TFactory<T> tFactory;
+    private final T tFactory;
 
     final Map<Long, T> cachedMessages = new ConcurrentHashMap<>();
     final List<T> msgList = new ArrayList<>();
@@ -67,9 +67,8 @@ public abstract class ConversationLoader<T extends ConversationItem> extends Syn
 
     final List<Long> idsOfTheMessagesToFind = new ArrayList<>();
 
-    public ConversationLoader(
-            Class<T> tClass, MyContext myContext, MyAccount ma, long selectedMessageId, boolean sync) {
-        tFactory = new TFactory<>(tClass);
+    public ConversationLoader(T emptyItem, MyContext myContext, MyAccount ma, long selectedMessageId, boolean sync) {
+        tFactory = emptyItem;
         this.myContext = myContext;
         this.ma = ma;
         this.selectedMessageId = selectedMessageId;
@@ -130,7 +129,7 @@ public abstract class ConversationLoader<T extends ConversationItem> extends Syn
     }
 
     protected T newOMsg(long msgId) {
-        T oMsg = tFactory.newT();
+        T oMsg = tFactory.getNew();
         oMsg.setMyContext(myContext);
         oMsg.setMsgId(msgId);
         return oMsg;
