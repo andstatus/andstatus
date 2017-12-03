@@ -128,8 +128,7 @@ public class DataUpdaterTest {
         url = MyQuery.userIdToStringColumnValue(UserTable.PROFILE_URL, senderId);
         assertEquals("Url of the author " + somebody.getUserName(), somebody.getProfileUrl(), url);
 
-        Uri contentUri = MatchedUri.getTimelineUri(
-                Timeline.getTimeline(TimelineType.MY_FRIENDS, ma, 0, null));
+        Uri contentUri = Timeline.getTimeline(TimelineType.MY_FRIENDS, ma, 0, null).getUri();
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = ActivityTable.getTimeSortOrder(TimelineType.MY_FRIENDS, false);
         sa.addSelection("fUserId = ?", Long.toString(somebody.userId));
@@ -246,8 +245,7 @@ public class DataUpdaterTest {
                 MyQuery.msgIdToTriState(MsgTable.REBLOGGED, messageId));
 
         // TODO: Below is actually a timeline query test, so maybe expand / move...
-        Uri contentUri = MatchedUri.getTimelineUri(
-                Timeline.getTimeline(TimelineType.EVERYTHING, null, 0, ma.getOrigin()));
+        Uri contentUri = Timeline.getTimeline(TimelineType.EVERYTHING, null, 0, ma.getOrigin()).getUri();
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = ActivityTable.getTimeSortOrder(TimelineType.EVERYTHING, false);
         sa.addSelection(MsgTable.MSG_ID + " = ?", Long.toString(messageId));

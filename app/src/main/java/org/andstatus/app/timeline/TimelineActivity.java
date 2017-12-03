@@ -123,7 +123,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends MessageEditorListAc
             myContext.persistentAccounts().setCurrentAccount(newCurrentMyAccount);
         }
         Intent intent = new Intent(myContext.context(), clearTask ? FirstActivity.class : TimelineActivity.class);
-        intent.setData(MatchedUri.getTimelineUri(timeline));
+        intent.setData(timeline.getUri());
         if (clearTask) {
             // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);

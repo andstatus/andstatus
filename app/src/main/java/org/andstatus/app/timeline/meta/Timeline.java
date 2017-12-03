@@ -19,6 +19,7 @@ package org.andstatus.app.timeline.meta;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
@@ -30,6 +31,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.ContentValuesUtils;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.data.SqlWhere;
@@ -1056,5 +1058,9 @@ public class Timeline implements Comparable<Timeline> {
 
     public long getCountSince() {
         return countSince;
+    }
+
+    public Uri getUri() {
+        return MatchedUri.getTimelineUri(this);
     }
 }

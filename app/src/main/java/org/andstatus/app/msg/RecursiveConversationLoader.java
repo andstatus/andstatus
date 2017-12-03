@@ -51,8 +51,7 @@ public class RecursiveConversationLoader<T extends ConversationItem<T>> extends 
         String selection = (conversationId == 0
                 ? ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.MSG_ID + "=" + oMsg.getMsgId()
                 : ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.CONVERSATION_ID + "=" + conversationId);
-        Uri uri = MatchedUri.getTimelineUri(
-                Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null));
+        Uri uri = Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null).getUri();
 
         try (Cursor cursor = myContext.context().getContentResolver().query(uri, oMsg.getProjection(),
                 selection, null, null)) {

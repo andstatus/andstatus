@@ -146,7 +146,7 @@ public class AddedMessagesNotifier {
         // org.andstatus.app.TimelineActivity.onOptionsItemSelected
         Intent intent = new Intent(myContext.context(), FirstActivity.class);
         intent.setData(Uri.withAppendedPath(
-                MatchedUri.getTimelineUri(Timeline.getTimeline(timelineType, null, 0, null)),
+                Timeline.getTimeline(timelineType, null, 0, null).getUri(),
                 "rnd/" + android.os.SystemClock.elapsedRealtime()
                 ));
         PendingIntent pendingIntent = PendingIntent.getActivity(myContext.context(), timelineType.hashCode(),

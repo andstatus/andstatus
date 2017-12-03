@@ -56,7 +56,7 @@ public class ActAsUserTest extends TimelineActivityTest {
         MyLog.i(this, "setUp ended");
         final Timeline timeline = Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null);
         timeline.forgetPositionsAndDates();
-        return new Intent(Intent.ACTION_VIEW, MatchedUri.getTimelineUri(timeline));
+        return new Intent(Intent.ACTION_VIEW, timeline.getUri());
     }
 
     @Test

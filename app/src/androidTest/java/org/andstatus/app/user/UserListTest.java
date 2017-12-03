@@ -57,7 +57,7 @@ public class UserListTest extends TimelineActivityTest {
 
         MyLog.i(this, "setUp ended");
         return new Intent(Intent.ACTION_VIEW,
-                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.HOME, ma, 0, null)));
+                Timeline.getTimeline(TimelineType.HOME, ma, 0, null).getUri());
     }
 
     @Test

@@ -44,6 +44,7 @@ public abstract class BaseMessageViewItem<T extends BaseMessageViewItem<T>> exte
     private static final int MIN_LENGTH_TO_COMPARE = 5;
     private MyContext myContext = MyContextHolder.get();
     long updatedDate = 0;
+    long activityUpdatedDate = 0;
 
     public DownloadStatus msgStatus = DownloadStatus.UNKNOWN;
 
@@ -242,7 +243,7 @@ public abstract class BaseMessageViewItem<T extends BaseMessageViewItem<T>> exte
 
     @Override
     public long getDate() {
-        return updatedDate;
+        return activityUpdatedDate;
     }
 
     @Override

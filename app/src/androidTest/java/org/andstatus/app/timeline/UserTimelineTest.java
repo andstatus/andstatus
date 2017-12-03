@@ -50,7 +50,7 @@ public class UserTimelineTest extends TimelineActivityTest {
         MyLog.i(this, "setUp ended");
         final Timeline timeline = Timeline.getTimeline(TimelineType.USER, ma, userId, ma.getOrigin());
         timeline.forgetPositionsAndDates();
-        return new Intent(Intent.ACTION_VIEW, MatchedUri.getTimelineUri(timeline));
+        return new Intent(Intent.ACTION_VIEW, timeline.getUri());
     }
 
     @Test

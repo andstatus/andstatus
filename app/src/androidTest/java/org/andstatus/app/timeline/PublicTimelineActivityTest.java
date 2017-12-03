@@ -69,8 +69,7 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
         assertEquals(ma.getUserId(), MyContextHolder.get().persistentAccounts().getCurrentAccountUserId());
         MyLog.i(this, "setUp ended");
 
-        return new Intent(Intent.ACTION_VIEW,
-                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.PUBLIC, ma, 0, null)));
+        return new Intent(Intent.ACTION_VIEW, Timeline.getTimeline(TimelineType.PUBLIC, ma, 0, null).getUri());
     }
 
     @Test

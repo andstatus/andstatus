@@ -50,8 +50,7 @@ public class DirectMessagesConversationLoader<T extends ConversationItem<T>> ext
         Audience recipients = Audience.fromMsgId(ma.getOriginId(), oMsg.getMsgId());
         String selection = getSelectionForActorAndRecipient("=" + Long.toString(actorId),
                 SqlUserIds.fromUsers(recipients.getRecipients()).getSql());
-        Uri uri = MatchedUri.getTimelineUri(
-                Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null));
+        Uri uri = Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null).getUri();
         Cursor cursor = null;
         try {
             cursor = myContext.context().getContentResolver().query(uri, oMsg.getProjection(),

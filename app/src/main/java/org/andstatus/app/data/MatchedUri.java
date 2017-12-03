@@ -174,7 +174,7 @@ public enum MatchedUri {
 
     /** Uri for the message in the account's timeline */
     public static Uri getTimelineItemUri(Timeline timeline, long msgId) {
-        Uri uri = getTimelineUri(timeline);
+        Uri uri = timeline.getUri();
         uri = Uri.withAppendedPath(uri,  CONTENT_ITEM_SEGMENT);
         uri = ContentUris.withAppendedId(uri, msgId);
         return uri;

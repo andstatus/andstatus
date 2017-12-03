@@ -177,7 +177,7 @@ public class TimelineParameters {
     }
 
     public void saveState(Bundle outState) {
-        outState.putString(IntentExtra.MATCHED_URI.key, MatchedUri.getTimelineUri(timeline).toString());
+        outState.putString(IntentExtra.MATCHED_URI.key, timeline.getUri().toString());
     }
 
     @Override
@@ -276,7 +276,7 @@ public class TimelineParameters {
     }
 
     public Uri getContentUri() {
-        return MatchedUri.getTimelineUri(timeline);
+        return timeline.getUri();
     }
 
     public MyContext getMyContext() {

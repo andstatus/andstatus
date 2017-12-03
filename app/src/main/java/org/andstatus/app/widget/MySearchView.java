@@ -228,10 +228,8 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
 
     private Uri getUri() {
         if (getSearchObjects() == SearchObjects.MESSAGES) {
-            return MatchedUri.getTimelineUri(
-                            timeline.fromSearch(parentActivity.getMyContext(), isInternetSearch())
-                                    .fromIsCombined(parentActivity.getMyContext(), isCombined())
-            );
+            return timeline.fromSearch(parentActivity.getMyContext(), isInternetSearch())
+                                    .fromIsCombined(parentActivity.getMyContext(), isCombined()).getUri();
         }
         return MatchedUri.getUserListUri(parentActivity.getCurrentMyAccount().getUserId(), UserListType.USERS,
                         isCombined() ? 0 : getOrigin().getId(), 0, "");

@@ -72,8 +72,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
         MyLog.i(this, "setUp ended");
-        return new Intent(Intent.ACTION_VIEW,
-                MatchedUri.getTimelineUri(Timeline.getTimeline(TimelineType.HOME, ma, 0, null)));
+        return new Intent(Intent.ACTION_VIEW, Timeline.getTimeline(TimelineType.HOME, ma, 0, null).getUri());
     }
 
     @Test
