@@ -51,20 +51,16 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
         if (MyLog.isDebugEnabled()) {
             MyLog.d(this, method + " started; " + params.toSummary() );
         }
-        params.cancelled = false;
         params.timeline.save(params.getMyContext());
         if (params.whichPage != WhichPage.EMPTY) {
             filter(loadFromCursor(queryDatabase()));
         }
+        params.isLoaded = true;
         if (MyLog.isDebugEnabled()) {
-            MyLog.d(this, method
-                    + (getParams().cancelled ? " cancelled"
-                        : " ended" + ", " + page.items.size() + " rows,"
-                        + " dates from " + MyLog.formatDateTime(page.params.minDateLoaded) + " to "
-                        + MyLog.formatDateTime(page.params.maxDateLoaded)
-                    )
-                    + ", " + stopWatch.getTime() + "ms"
-            );
+            MyLog.d(this, method + " ended" + ", " + page.items.size() + " rows,"
+                    + " dates from " + MyLog.formatDateTime(page.params.minDateLoaded)
+                    + " to " + MyLog.formatDateTime(page.params.maxDateLoaded)
+                    + ", " + stopWatch.getTime() + "ms");
         }
     }
 
@@ -75,7 +71,7 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
             MyLog.d(this, method + " started");
         }
         Cursor cursor = null;
-        for (int attempt = 0; attempt < 3 && !getParams().cancelled; attempt++) {
+        for (int attempt = 0; attempt < 3; attempt++) {
             try {
                 cursor = getParams().queryDatabase();
                 break;

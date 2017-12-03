@@ -359,7 +359,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends MessageEditorListAc
         hideLoading(method);
         hideSyncing(method);
         crashTest();
-        saveListPosition();
+        saveTimelinePosition();
         myContext.persistentTimelines().saveChanged();
         super.onPause();
     }
@@ -378,11 +378,9 @@ public class TimelineActivity<T extends ViewItem<T>> extends MessageEditorListAc
      * That advice doesn't fit here:
      * see http://stackoverflow.com/questions/5996885/how-to-wait-for-android-runonuithread-to-be-finished
      */
-    protected void saveListPosition() {
+    protected void saveTimelinePosition() {
         if (getParamsLoaded().isLoaded() && isPositionRestored()) {
-            runOnUiThread(
-                () -> new TimelinePositionStorage<>(getListAdapter(), getListView(), getParamsLoaded()).save()
-            );
+            new TimelinePositionStorage<>(getListAdapter(), getListView(), getParamsLoaded()).save();
         }
     }
 
@@ -785,7 +783,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends MessageEditorListAc
                     + (chainedRequest == TriState.TRUE ? "; chained" : "")
                     + "; requesting " + (isDifferentRequest ? "" : "duplicating ")
                     + params.toSummary());
-            saveListPosition();
+            saveTimelinePosition();
             disableHeaderSyncButton(R.string.loading);
             disableFooterButton(R.string.loading);
             showLoading(method, getText(R.string.loading) + " "

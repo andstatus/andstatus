@@ -62,7 +62,6 @@ public class TimelineParameters {
 
     // Execution state / loaded data:
     volatile boolean isLoaded = false;
-    volatile boolean cancelled = false;
     volatile int rowsLoaded = 0;
     volatile long minDateLoaded = 0;
     volatile long maxDateLoaded = 0;
@@ -150,7 +149,6 @@ public class TimelineParameters {
                 + (selectionAndArgs.isEmpty() ? "" : ", sa=" + selectionAndArgs)
                 + (TextUtils.isEmpty(sortOrderAndLimit) ? "" : ", sortOrder=" + sortOrderAndLimit)
                 + (isLoaded  ? ", loaded" : "")
-                + (cancelled ? ", cancelled" : "")
                 + (mLoaderCallbacks == null ? "" : ", loaderCallbacks=" + mLoaderCallbacks)
         );
     }

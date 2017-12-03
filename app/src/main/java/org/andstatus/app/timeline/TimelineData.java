@@ -230,6 +230,7 @@ public class TimelineData<T extends ViewItem<T>> {
         return pages.get(0).getEmptyItem();
     }
 
+    /** @return -1 if not found */
     public int getPositionById(long itemId) {
         int position = -1;
         if (itemId != 0) {

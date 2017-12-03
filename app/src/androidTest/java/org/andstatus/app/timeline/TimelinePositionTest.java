@@ -28,7 +28,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class TimelinePositionStorageTest extends TimelineActivityTest {
+public class TimelinePositionTest extends TimelineActivityTest {
     private static volatile ViewItem previousItem = EmptyViewItem.EMPTY;
 
     @Override
@@ -64,9 +64,9 @@ public class TimelinePositionStorageTest extends TimelineActivityTest {
         final BaseTimelineAdapter listAdapter = getActivity().getListAdapter();
         ViewItem item1 = listAdapter.getItem(position1);
         if (!previousItem.isEmpty()) {
-            int positionOfPreviousItem = getPositionById(previousItem.getId());
+            int previousItemPosition = listAdapter.getPositionById(previousItem.getId());
             assertEquals("; previous:" + previousItem
-                    + "\n  " + (positionOfPreviousItem >=0 ? "at position " + positionOfPreviousItem : "not found now")
+                    + "\n  " + (previousItemPosition >=0 ? "at position " + previousItemPosition : "not found now")
                     + "\ncurrent:" + item1
                     + "\n  at position " + position1,
                     previousItem.getId(), item1.getId());
@@ -76,15 +76,6 @@ public class TimelinePositionStorageTest extends TimelineActivityTest {
         testHelper.selectListPosition(method, nextPosition + getActivity().getListView().getHeaderViewsCount());
         DbUtils.waitMs(this, 2000);
         previousItem = listAdapter.getItem(getFirstVisibleAdapterPosition());
-    }
-
-    /** @return -1 if not found */
-    private int getPositionById(long itemId) {
-        final BaseTimelineAdapter listAdapter = getActivity().getListAdapter();
-        for (int ind = 0; ind < listAdapter.getCount(); ind++) {
-            if (listAdapter.getItem(ind).getId() == itemId) return ind;
-        }
-        return -1;
     }
 
     private int getFirstVisibleAdapterPosition() {
