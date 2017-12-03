@@ -137,11 +137,11 @@ public enum TimelineType implements SelectableEnum {
 
     public boolean isSyncedAutomaticallyByDefault() {
         switch (this) {
+            case DIRECT:
+            case FAVORITES:
             case HOME:
             case NOTIFICATIONS:
-            case DIRECT:
             case SENT:
-            case FAVORITES:
                 return true;
             default:
                 return false;
@@ -150,16 +150,16 @@ public enum TimelineType implements SelectableEnum {
 
     public boolean isSelectable() {
         switch (this) {
-            case UNKNOWN:
-            case MESSAGES_TO_ACT:
-            case USER:
-            case FRIENDS:
-            case FOLLOWERS:
-            case REPLIES:
-            case USERS:
-            case CONVERSATION:
             case COMMANDS_QUEUE:
+            case CONVERSATION:
+            case FOLLOWERS:
+            case FRIENDS:
             case MANAGE_TIMELINES:
+            case MESSAGES_TO_ACT:
+            case REPLIES:
+            case UNKNOWN:
+            case USER:
+            case USERS:
                 return false;
             default:
                 return true;
@@ -167,34 +167,35 @@ public enum TimelineType implements SelectableEnum {
     }
 
     private static final TimelineType[] defaultMyAccountTimelineTypes = {
-            HOME,
-            FAVORITES,
-            NOTIFICATIONS,
-            MENTIONS,
             DIRECT,
-            SENT,
-            MY_FRIENDS,
-            MY_FOLLOWERS,
             DRAFTS,
-            OUTBOX
+            FAVORITES,
+            HOME,
+            MENTIONS,
+            MY_FOLLOWERS,
+            MY_FRIENDS,
+            NOTIFICATIONS,
+            OUTBOX,
+            SENT,
     };
 
     private static final TimelineType[] defaultOriginTimelineTypes = {
+            EVERYTHING,
             PUBLIC,
-            EVERYTHING
     };
 
     public boolean isAtOrigin() {
         switch (this) {
-            case USER:
-            case USERS:
+            case CONVERSATION:
+            case EVERYTHING:
             case FRIENDS:
             case FOLLOWERS:
             case PUBLIC:
             case SEARCH:
-            case EVERYTHING:
+            case SENT:
             case MESSAGES_TO_ACT:
-            case CONVERSATION:
+            case USER:
+            case USERS:
                 return true;
             default:
                 return false;
@@ -207,12 +208,12 @@ public enum TimelineType implements SelectableEnum {
 
     public boolean isForUser() {
         switch (this) {
-            case USER:
-            case FRIENDS:
             case FOLLOWERS:
-            case SENT:
-            case MY_FRIENDS:
+            case FRIENDS:
             case MY_FOLLOWERS:
+            case MY_FRIENDS:
+            case SENT:
+            case USER:
                 return true;
             default:
                 return false;
@@ -230,9 +231,9 @@ public enum TimelineType implements SelectableEnum {
 
     public boolean canBeCombinedForOrigins() {
         switch (this) {
+            case EVERYTHING:
             case PUBLIC:
             case SEARCH:
-            case EVERYTHING:
                 return true;
             default:
                 return false;
@@ -241,17 +242,17 @@ public enum TimelineType implements SelectableEnum {
 
     public boolean canBeCombinedForMyAccounts() {
         switch (this) {
-            case HOME:
-            case FAVORITES:
-            case NOTIFICATIONS:
-            case MENTIONS:
             case DIRECT:
-            case SENT:
+            case DRAFTS:
+            case FAVORITES:
+            case HOME:
+            case MENTIONS:
             case MY_FRIENDS:
             case MY_FOLLOWERS:
-            case DRAFTS:
+            case NOTIFICATIONS:
             case OUTBOX:
             case REPLIES:
+            case SENT:
                 return true;
             default:
                 return false;
@@ -260,11 +261,11 @@ public enum TimelineType implements SelectableEnum {
 
     public boolean isPersistable() {
         switch (this) {
+            case COMMANDS_QUEUE:
+            case CONVERSATION:
+            case MANAGE_TIMELINES:
             case UNKNOWN:
             case USERS:
-            case CONVERSATION:
-            case COMMANDS_QUEUE:
-            case MANAGE_TIMELINES:
                 return false;
             default:
                 return true;
@@ -285,13 +286,13 @@ public enum TimelineType implements SelectableEnum {
 
     public boolean isSubscribedByMe() {
         switch (this) {
-            case HOME:
-            case NOTIFICATIONS:
             case DIRECT:
-            case SENT:
             case FAVORITES:
-            case MY_FRIENDS:
+            case HOME:
             case MENTIONS:
+            case MY_FRIENDS:
+            case NOTIFICATIONS:
+            case SENT:
                 return true;
             default:
                 return false;

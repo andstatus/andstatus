@@ -459,7 +459,7 @@ public class MyProvider extends ContentProvider {
         if (MyContextHolder.get().isReady()) {
             // Get the database and run the query
             SQLiteDatabase db = MyContextHolder.get().getDatabase();
-            boolean logQuery = MyLog.isVerboseEnabled();
+            boolean logQuery = MyLog.isDebugEnabled();
             try {
                 if (sql.length() == 0) {
                     sql = qb.buildQuery(projection, selection, null, null, orderBy, limit);
@@ -481,12 +481,12 @@ public class MyProvider extends ContentProvider {
                 if (selectionArgs != null && selectionArgs.length > 0) {
                     msg += "; selectionArgs=" + Arrays.toString(selectionArgs);
                 }
-                MyLog.v(TAG, msg);
-                if (built) {
+                MyLog.d(this, msg);
+                if (built && MyLog.isVerboseEnabled()) {
                     msg = "uri=" + uri + "; projection=" + Arrays.toString(projection)
                     + "; selection=" + selection + "; sortOrder=" + sortOrder
                     + "; qb.getTables=" + qb.getTables() + "; orderBy=" + orderBy;
-                    MyLog.v(TAG, msg);
+                    MyLog.v(this, msg);
                 }
             }
         }

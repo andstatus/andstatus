@@ -416,6 +416,14 @@ public class MessageContextMenu extends MyContextMenu {
         return menuData.msg.origin;
     }
 
+    public long getActorId() {
+        return menuData.msg.actorId;
+    }
+
+    public long getAuthorId() {
+        return menuData.msg.authorId;
+    }
+
     @NonNull
     String getSelectedMenuItemTitle() {
         return selectedMenuItemTitle;

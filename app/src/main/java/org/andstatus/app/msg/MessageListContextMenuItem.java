@@ -36,6 +36,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.list.ContextMenuItem;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
@@ -110,51 +111,47 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
             menu.menuContainer.getMessageEditor().startEditingMessage(editorData);
         }
     },
-    DIRECT_MESSAGE(true) {
+    DIRECT_MESSAGE {
         @Override
-        MessageEditorData executeAsync(MessageContextMenu menu) {
-            return MessageEditorData.newEmpty(menu.getMyActor())
-                    .addRecipientId(MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, menu.getMsgId()));
-        }
-
-        @Override
-        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
+        void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData_unused) {
+            MessageEditorData editorData = MessageEditorData.newEmpty(menu.getMyActor())
+                    .addRecipientId(menu.getAuthorId());
             if (editorData.recipients.nonEmpty()) {
                 menu.menuContainer.getMessageEditor().startEditingMessage(editorData);
             }
         }
     },
-    FAVORITE() {
+    FAVORITE {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             sendMsgCommand(CommandEnum.CREATE_FAVORITE, editorData);
         }
     },
-    DESTROY_FAVORITE() {
+    DESTROY_FAVORITE {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             sendMsgCommand(CommandEnum.DESTROY_FAVORITE, editorData);
         }
     },
-    REBLOG() {
+    REBLOG {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             sendMsgCommand(CommandEnum.REBLOG, editorData);
         }
     },
-    DESTROY_REBLOG() {
+    DESTROY_REBLOG {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             sendMsgCommand(CommandEnum.DESTROY_REBLOG, editorData);
         }
     },
-    DESTROY_STATUS() {
+    DESTROY_STATUS {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             sendMsgCommand(CommandEnum.DESTROY_STATUS, editorData);
         }
     },
-    SHARE(false) {
+    SHARE {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             MessageShare messageShare = new MessageShare(menu.getOrigin(), menu.getMsgId(),
@@ -190,97 +187,63 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
             copyMessageText(editorData);
         }
     },
-    ACTOR_MESSAGES(true) {
-        @Override
-        MessageEditorData executeAsync(MessageContextMenu menu) {
-            return fillUserId(menu.getMyActor(), menu.getMsgId(), ActivityTable.ACTOR_ID);
-        }
-
+    ACTOR_MESSAGES {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            if (editorData.recipients.nonEmpty()) {
-                menu.switchTimelineActivityView(
-                        Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER,
-                        null, editorData.recipients.getFirst().userId, menu.getOrigin(), ""));
-            }
+            menu.switchTimelineActivityView(
+                    Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER,
+                    null, menu.getActorId(), menu.getOrigin(), ""));
         }
     },
-    AUTHOR_MESSAGES(true) {
-        @Override
-        MessageEditorData executeAsync(MessageContextMenu menu) {
-            return fillUserId(menu.getMyActor(), menu.getMsgId(), MsgTable.AUTHOR_ID);
-        }
-
+    AUTHOR_MESSAGES {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            if (editorData.recipients.nonEmpty()) {
-                menu.switchTimelineActivityView(
-                        Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER,
-                        null, editorData.recipients.getFirst().userId, menu.getOrigin(), ""));
-            }
+            menu.switchTimelineActivityView(
+                    Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER,
+                    null, menu.getAuthorId(), menu.getOrigin(), ""));
         }
     },
-    FOLLOW_ACTOR(true) {
-        @Override
-        MessageEditorData executeAsync(MessageContextMenu menu) {
-            return fillUserId(menu.getMyActor(), menu.getMsgId(), ActivityTable.ACTOR_ID);
-        }
-
+    FOLLOW_ACTOR {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            sendUserCommand(CommandEnum.FOLLOW_USER, editorData);
+            sendUserCommand(CommandEnum.FOLLOW_USER, menu.getOrigin(), menu.getActorId());
         }
     },
-    STOP_FOLLOWING_ACTOR(true) {
-        @Override
-        MessageEditorData executeAsync(MessageContextMenu menu) {
-            return fillUserId(menu.getMyActor(), menu.getMsgId(), ActivityTable.ACTOR_ID);
-        }
-
+    STOP_FOLLOWING_ACTOR {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            sendUserCommand(CommandEnum.STOP_FOLLOWING_USER, editorData);
+            sendUserCommand(CommandEnum.STOP_FOLLOWING_USER, menu.getOrigin(), menu.getActorId());
         }
     },
-    FOLLOW_AUTHOR(true) {
-        @Override
-        MessageEditorData executeAsync(MessageContextMenu menu) {
-            return fillUserId(menu.getMyActor(), menu.getMsgId(), MsgTable.AUTHOR_ID);
-        }
-
+    FOLLOW_AUTHOR {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            sendUserCommand(CommandEnum.FOLLOW_USER, editorData);
+            sendUserCommand(CommandEnum.FOLLOW_USER, menu.getOrigin(), menu.getAuthorId());
         }
     },
-    STOP_FOLLOWING_AUTHOR(true) {
-        @Override
-        MessageEditorData executeAsync(MessageContextMenu menu) {
-            return fillUserId(menu.getMyActor(), menu.getMsgId(), MsgTable.AUTHOR_ID);
-        }
-
+    STOP_FOLLOWING_AUTHOR {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
-            sendUserCommand(CommandEnum.STOP_FOLLOWING_USER, editorData);
+            sendUserCommand(CommandEnum.STOP_FOLLOWING_USER, menu.getOrigin(), menu.getAuthorId());
         }
     },
-    PROFILE(),
-    BLOCK(),
-    ACT_AS_FIRST_OTHER_USER() {
+    PROFILE,
+    BLOCK,
+    ACT_AS_FIRST_OTHER_USER {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             menu.setMyActor(editorData.ma.firstOtherAccountOfThisOrigin());
             menu.showContextMenu();
         }
     },
-    ACT_AS() {
+    ACT_AS {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             AccountSelector.selectAccount(menu.getActivity(),
                     ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS, editorData.ma.getOriginId());
         }
     },
-    OPEN_MESSAGE_PERMALINK(false) {
+    OPEN_MESSAGE_PERMALINK {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             MessageShare messageShare = new MessageShare(menu.getOrigin(), menu.getMsgId(),
@@ -288,7 +251,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
             messageShare.openPermalink(menu.getActivity());
         }
     },
-    VIEW_IMAGE() {
+    VIEW_IMAGE {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             MessageShare messageShare = new MessageShare(menu.getOrigin(), menu.getMsgId(),
@@ -296,7 +259,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
             messageShare.viewImage(menu.getActivity());
         }
     },
-    OPEN_CONVERSATION() {
+    OPEN_CONVERSATION {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             Uri uri = MatchedUri.getTimelineItemUri(
@@ -316,7 +279,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
             }
         }
     },
-    USERS_OF_MESSAGE() {
+    USERS_OF_MESSAGE {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             Uri uri = MatchedUri.getUserListUri(editorData.ma.getUserId(),
@@ -363,8 +326,8 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
             return title.substring(ind + MESSAGE_LINK_SEPARATOR.length());
         }
     },
-    NONEXISTENT(),
-    UNKNOWN();
+    NONEXISTENT,
+    UNKNOWN;
 
     public static final String MESSAGE_LINK_SEPARATOR = ": ";
     private static final String TAG = MessageListContextMenuItem.class.getSimpleName();
@@ -455,12 +418,11 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         // Empty
     }
     
-    void sendUserCommand(CommandEnum command, MessageEditorData editorData) {
+    void sendUserCommand(CommandEnum command, Origin origin, long userId) {
         MyServiceManager.sendManualForegroundCommand(
-                CommandData.newUserCommand(command, null, editorData.ma.getOrigin(),
-                        editorData.recipients.getFirst().userId, ""));
+                CommandData.newUserCommand(command, null, origin, userId, ""));
     }
-    
+
     void sendMsgCommand(CommandEnum command, MessageEditorData editorData) {
         MyServiceManager.sendManualForegroundCommand(
                 CommandData.newItemCommand(command, editorData.ma, editorData.getMsgId()));
