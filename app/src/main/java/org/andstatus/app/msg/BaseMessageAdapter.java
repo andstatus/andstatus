@@ -157,7 +157,7 @@ public abstract class BaseMessageAdapter<T extends BaseMessageViewItem<T>> exten
         }
     }
 
-    protected void setupButtons(View view) {
+    public void setupButtons(View view) {
         if (showButtonsBelowMessages) {
             View buttons = view.findViewById(R.id.message_buttons);
             if (buttons != null) {
@@ -187,11 +187,9 @@ public abstract class BaseMessageAdapter<T extends BaseMessageViewItem<T>> exten
     private void onButtonClick(View v, MessageListContextMenuItem contextMenuItemIn) {
         T item = getItem(v);
         if (item != null && item.msgStatus == DownloadStatus.LOADED) {
-            // Currently selected account is the best candidate as an actor
-            MyAccount ma = contextMenu.getActivity().getCurrentMyAccount();
-            MyAccount actor = (ma.isValid() && ma.getOriginId() == item.getOriginId()) ? ma : item.getLinkedMyAccount();
-            contextMenu.setMyActor(actor);
-            contextMenu.onContextItemSelected(contextMenuItemIn, item.getMsgId());
+            contextMenu.onCreateContextMenu(null, v, null, (contextMenu) -> {
+                contextMenu.onContextItemSelected(contextMenuItemIn, item.getMsgId());
+            });
         }
     }
 

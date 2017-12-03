@@ -57,7 +57,7 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
         if (item.message.getId() == 0) {
             messageView.setVisibility(View.GONE);
         } else {
-            messageAdapter.populateView(messageView, item.message, position);
+            messageAdapter.populateView(view, item.message, position);
             messageView.setOnCreateContextMenuListener(contextMenu.message);
             messageView.setOnClickListener(messageAdapter);
             messageView.setVisibility(View.VISIBLE);
@@ -76,7 +76,10 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
 
     private ViewGroup getEmptyView(View convertView) {
         if (convertView == null) {
-            return (ViewGroup) LayoutInflater.from(contextMenu.message.getActivity()).inflate(R.layout.activity, null);
+            final ViewGroup viewGroup = (ViewGroup) LayoutInflater.from(contextMenu.message.getActivity())
+                    .inflate(R.layout.activity, null);
+            messageAdapter.setupButtons(viewGroup);
+            return viewGroup;
         }
         convertView.setBackgroundResource(0);
         View messageIndented = convertView.findViewById(R.id.message_indented);
