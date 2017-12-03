@@ -460,7 +460,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             // The tweet was sent successfully
             // Reblog should be put into the user's Home timeline!
             new DataUpdater(execContext).onActivity(activity);
-            MyProvider.updateMessageReblogged(execContext.getMyContext(), rebloggedMessageId);
+            MyProvider.updateMessageReblogged(execContext.getMyContext(), activity.accountUser.originId, rebloggedMessageId);
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }

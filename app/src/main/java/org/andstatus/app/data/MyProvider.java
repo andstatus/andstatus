@@ -36,7 +36,6 @@ import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.msg.KeywordsFilter;
-import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -173,9 +172,10 @@ public class MyProvider extends ContentProvider {
     public static int deleteActivity(MyContext myContext, long activityId, long msgId, boolean inTransaction) {
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
-            MyLog.v(MyProvider.TAG, "deleteReblog; Database is null");
+            MyLog.v(MyProvider.TAG, "deleteActivity; Database is null");
             return 0;
         }
+        long originId = MyQuery.activityIdToLongColumnValue(ActivityTable.ORIGIN_ID, activityId);
         int count = db.delete(ActivityTable.TABLE_NAME, BaseColumns._ID + "=" + activityId, null);
         if (count > 0 && msgId != 0) {
             // Was this the last activity for this message?
@@ -185,20 +185,30 @@ public class MyProvider extends ContentProvider {
                 // Delete message if no more its activities left
                 deleteMessage(db, msgId, inTransaction);
             } else {
-                updateMessageReblogged(myContext, msgId);
+                updateMessageFavorited(myContext, originId, msgId);
+                updateMessageReblogged(myContext, originId, msgId);
             }
         }
         return count;
     }
 
-    public static void updateMessageReblogged(MyContext myContext, long msgId) {
+    public static void updateMessageReblogged(MyContext myContext, long originId, long msgId) {
         final String method = "updateMessageReblogged-" + msgId;
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
             MyLog.v(MyProvider.TAG, method + "; Database is null");
             return;
         }
-        // TODO: Implement
+        TriState reblogged = TriState.fromBoolean(
+                myContext.persistentAccounts().hasMyUser(MyQuery.getRebloggers(db, originId, msgId))
+        );
+        String sql = "UPDATE " + MsgTable.TABLE_NAME + " SET " + MsgTable.REBLOGGED + "=" + reblogged.id
+                + " WHERE " + MsgTable._ID + "=" + msgId;
+        try {
+            db.execSQL(sql);
+        } catch (Exception e) {
+            MyLog.w(TAG, method + "; SQL:'" + sql + "'", e);
+        }
     }
 
     public static void updateMessageFavorited(MyContext myContext, long originId, long msgId) {
@@ -208,13 +218,9 @@ public class MyProvider extends ContentProvider {
             MyLog.v(MyProvider.TAG, method + "; Database is null");
             return;
         }
-        TriState favorited = TriState.FALSE;
-        for (MbUser stargazer : MyQuery.getStargazers(db, originId, msgId)) {
-            if (myContext.persistentAccounts().fromUser(stargazer).isValid()) {
-                favorited = TriState.TRUE;
-                break;
-            }
-        }
+        TriState favorited = TriState.fromBoolean(
+                myContext.persistentAccounts().hasMyUser(MyQuery.getStargazers(db, originId, msgId))
+        );
         String sql = "UPDATE " + MsgTable.TABLE_NAME + " SET " + MsgTable.FAVORITED + "=" + favorited.id
                 + " WHERE " + MsgTable._ID + "=" + msgId;
         try {
