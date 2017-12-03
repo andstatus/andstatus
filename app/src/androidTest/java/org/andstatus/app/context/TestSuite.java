@@ -219,7 +219,7 @@ public class TestSuite {
         final ViewGroup list = (ViewGroup) activity.findViewById(android.R.id.list);
         assertTrue(list != null);
         int itemsCount = 0;
-        for (int ind=0; ind<60; ind++) {
+        for (int ind=0; ind<40; ind++) {
             DbUtils.waitMs(method, 2000);
             InstrumentationRegistry.getInstrumentation().waitForIdleSync();
             int itemsCountNew = list.getChildCount();

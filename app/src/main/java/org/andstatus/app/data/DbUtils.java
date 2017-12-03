@@ -111,21 +111,28 @@ public final class DbUtils {
         return waitMs(method, MS_BETWEEN_RETRIES);
     }
 
-    /** @return true if current thread was interrupted */
+    /** @return true if current thread was interrupted
+     * Starting with Android 7 this is constantly interrupted by Android system
+     * */
     public static boolean waitMs(Object tag, long delayMs) {
+        boolean wasInterrupted = false;
         if (delayMs > 1) {
             long delay = (delayMs/2) + ThreadLocalRandom.current().nextLong(0, delayMs);
             StopWatch stopWatch = StopWatch.createStarted();
             while (stopWatch.getTime() < delay) {
+                long remainingDelay = delay - stopWatch.getTime();
+                if (remainingDelay < 2) break;
                 try {
-                    Thread.sleep(delay);
+                    Thread.sleep(remainingDelay);
                 } catch (InterruptedException e) {
-                    MyLog.v(tag, "Interrupted after waiting " + stopWatch.getTime() + " of " + delay + "ms");
-                    return true;
+                    if (!wasInterrupted) {
+                        wasInterrupted = true;
+                        MyLog.v(tag, "Interrupted after waiting " + stopWatch.getTime() + " of " + delay + "ms");
+                    }
                 }
             }
         }
-        return false;
+        return wasInterrupted;
     }
 
     // Couldn't use "Closeable" as a Type due to incompatibility with API <= 10

@@ -44,6 +44,7 @@ import org.andstatus.app.user.UserListType;
 import org.andstatus.app.user.UserViewItem;
 import org.andstatus.app.user.UsersOfMessageListLoader;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.ArrayList;
@@ -64,6 +65,8 @@ public class MessageEditorData {
 
     private DownloadData downloadData = DownloadData.EMPTY;
     CachedImage image = null;
+
+    private TriState isPrivate = TriState.UNKNOWN;
 
     /**
      * Id of the Message to which we are replying.
@@ -163,6 +166,7 @@ public class MessageEditorData {
             data.inReplyToUserId = MyQuery.msgIdToLongColumnValue(MsgTable.IN_REPLY_TO_USER_ID, msgId);
             data.inReplyToBody = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, data.inReplyToMsgId);
             data.recipients = Audience.fromMsgId(ma.getOriginId(), msgId);
+            data.isPrivate = MyQuery.msgIdToTriState(MsgTable.PRIVATE, msgId);
             MyLog.v(TAG, "Loaded " + data);
         } else {
             data = new MessageEditorData(MyContextHolder.get().persistentAccounts().getCurrentAccount());
@@ -355,6 +359,19 @@ public class MessageEditorData {
 
     public MessageEditorData addRecipientId(long userId) {
         recipients.add(MbUser.fromOriginAndUserId(getMyAccount().getOriginId(), userId));
+        return this;
+    }
+
+    public boolean isPrivate() {
+        return isPrivate == TriState.TRUE;
+    }
+
+    public boolean nonPrivate() {
+        return !isPrivate();
+    }
+
+    public MessageEditorData setPrivate(TriState isPrivate) {
+        this.isPrivate = isPrivate;
         return this;
     }
 }

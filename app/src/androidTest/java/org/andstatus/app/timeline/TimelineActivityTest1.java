@@ -78,7 +78,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
     @Test
     public void testOpeningConversationActivity() throws InterruptedException {
         final String method = "testOpeningConversationActivity";
-        TestSuite.waitForListLoaded(getActivity(), 10);
+        TestSuite.waitForListLoaded(getActivity(), 7);
         assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(),
                 ConversationActivity.class);
@@ -99,12 +99,12 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
      */
     @Test
     public void testPositionOnContentChange1() throws MalformedURLException, InterruptedException {
-        onePositionOnContentChange(9, 1);
+        onePositionOnContentChange(5, 1);
     }
 
     @Test
     public void testPositionOnContentChange2() throws MalformedURLException, InterruptedException {
-        onePositionOnContentChange(9, 2);
+        onePositionOnContentChange(0, 2);
     }
     
     private void onePositionOnContentChange(int position0, int iterationId) throws InterruptedException, MalformedURLException {
@@ -181,7 +181,6 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
                 + ", updated in " + (updatedAt2 - updatedAt1) + "ms";
         MyLog.v(this, logText);
         assertTrue(logText, found);
-        assertTrue("Newer items weren't loaded; " + logText, maxDateLoaded2 > maxDateLoaded1);
 
         assertEquals(collapseDuplicates, ((CheckBox) getActivity().findViewById(R.id.collapseDuplicatesToggle)).isChecked());
         assertEquals(collapseDuplicates, getActivity().getListData().isCollapseDuplicates());
@@ -209,7 +208,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
     @Test
     public void testOpeningAccountSelector() throws InterruptedException {
         final String method = "testOpeningAccountSelector";
-        TestSuite.waitForListLoaded(getActivity(), 10);
+        TestSuite.waitForListLoaded(getActivity(), 7);
         ListActivityTestHelper<TimelineActivity> helper =
                 ListActivityTestHelper.newForSelectorDialog(getActivity(), AccountSelector.getDialogTag());
         helper.clickView(method, R.id.selectAccountButton);

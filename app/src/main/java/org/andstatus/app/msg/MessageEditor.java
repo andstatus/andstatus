@@ -296,7 +296,7 @@ public class MessageEditor {
         if (item != null) {
             boolean enableAttach = isVisible()
                     && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ATTACH_IMAGES_TO_MY_MESSAGES, true)
-                    && (editorData.recipients.isEmpty() || editorData.getMyAccount().getOrigin().getOriginType()
+                    && (editorData.nonPrivate() || editorData.getMyAccount().getOrigin().getOriginType()
                     .allowAttachmentForDirectMessage());
             item.setEnabled(enableAttach);
             item.setVisible(enableAttach);

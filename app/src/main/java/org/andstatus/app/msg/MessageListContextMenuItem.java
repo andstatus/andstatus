@@ -115,10 +115,8 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData_unused) {
             MessageEditorData editorData = MessageEditorData.newEmpty(menu.getMyActor())
-                    .addRecipientId(menu.getAuthorId());
-            if (editorData.recipients.nonEmpty()) {
-                menu.menuContainer.getMessageEditor().startEditingMessage(editorData);
-            }
+                    .addRecipientId(menu.getAuthorId()).setPrivate(TriState.TRUE);
+            menu.menuContainer.getMessageEditor().startEditingMessage(editorData);
         }
     },
     FAVORITE {
