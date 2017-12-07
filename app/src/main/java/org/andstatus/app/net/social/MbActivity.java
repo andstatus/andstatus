@@ -349,9 +349,6 @@ public class MbActivity extends AObject {
         if (accountUser.userId == 0) {
             throw new IllegalStateException("Account is unknown " + toString());
         }
-        if (actor.userId == 0) {
-            throw new IllegalStateException("Actor is unknown " + toString());
-        }
         if (getId() == 0) {
             findExisting(myContext);
         }

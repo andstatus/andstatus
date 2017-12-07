@@ -16,6 +16,7 @@
 
 package org.andstatus.app.service;
 
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyPreferences;
@@ -66,10 +67,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
             }
             MyLog.d(this, strLog);
         }
-        String userOid =  MyQuery.idToOid(OidEnum.USER_OID, execContext.getCommandData().getUserId(), 0);
-        if (TextUtils.isEmpty(userOid) && getTimeline().getTimelineType().isForUser()) {
-            throw new ConnectionException("User oId is not found for id=" + execContext.getCommandData().getUserId());
-        }
+        String userOid = getUserOid();
         int toDownload = downloadingLatest ? LATEST_MESSAGES_TO_DOWNLOAD_MAX :
                 (isSyncYounger() ? YOUNGER_MESSAGES_TO_DOWNLOAD_MAX : OLDER_MESSAGES_TO_DOWNLOAD_MAX);
         TimelinePosition previousPosition = syncTracker.getPreviousPosition();
@@ -122,5 +120,25 @@ class TimelineDownloaderOther extends TimelineDownloader {
             }
         }
         di.saveLum();
+    }
+
+    @NonNull
+    private String getUserOid() throws ConnectionException {
+        long userId = execContext.getCommandData().getUserId();
+        if (userId == 0) {
+            if (getTimeline().getMyAccount().isValid()) {
+                return getTimeline().getMyAccount().getUserOid();
+            }
+        } else {
+            String userOid =  MyQuery.idToOid(OidEnum.USER_OID, userId, 0);
+            if (TextUtils.isEmpty(userOid)) {
+                throw new ConnectionException("User oId is not found for id=" + userId + ", timeline:" + getTimeline());
+            }
+            return userOid;
+        }
+        if (getTimeline().getTimelineType().isForUser()) {
+            throw new ConnectionException("No user for the timeline:" + getTimeline());
+        }
+        return "";
     }
 }

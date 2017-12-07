@@ -174,7 +174,9 @@ public class DemoMessageInserter {
         assertNotEquals( "Account is unknown: " + activity, 0, activity.accountUser.userId);
 
         MbUser actor = activity.getActor();
-        assertNotEquals( "Actor id not set for " + actor + " in activity " + activity, 0, actor.userId);
+        if (actor.nonEmpty()) {
+            assertNotEquals( "Actor id not set for " + actor + " in activity " + activity, 0, actor.userId);
+        }
 
         MbMessage message = activity.getMessage();
         if (message.nonEmpty()) {
@@ -194,8 +196,10 @@ public class DemoMessageInserter {
             }
 
             MbUser author = activity.getAuthor();
-            assertNotEquals( "Author id for " + author + " not set in message " + message + " in activity " + activity, 0,
-                    MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, message.msgId));
+            if (author.nonEmpty()) {
+                assertNotEquals( "Author id for " + author + " not set in message " + message + " in activity " + activity, 0,
+                        MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, message.msgId));
+            }
         }
 
         if (activity.type == MbActivityType.LIKE) {

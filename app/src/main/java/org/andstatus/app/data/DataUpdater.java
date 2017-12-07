@@ -180,7 +180,7 @@ public class DataUpdater {
             values.put(MsgTable.MSG_STATUS, message.getStatus().save());
             values.put(MsgTable.UPDATED_DATE, message.getUpdatedDate());
 
-            if (activity.getAuthor().userId != 0) {
+            if (activity.getAuthor().userId != 0 || message.msgId == 0 ) {
                 values.put(MsgTable.AUTHOR_ID, activity.getAuthor().userId);
             }
             values.put(MsgTable.MSG_OID, message.oid);
@@ -369,7 +369,7 @@ public class DataUpdater {
                     realName = userName;
                 }
                 values.put(UserTable.REAL_NAME, realName);
-                // Enf of required attributes
+                // End of required attributes
             }
 
             if (!SharedPreferencesUtil.isEmpty(mbUser.avatarUrl)) {

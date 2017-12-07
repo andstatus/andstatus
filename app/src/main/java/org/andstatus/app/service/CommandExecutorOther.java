@@ -286,7 +286,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     }
 
     private String userInfoLogged(long userId) {
-        String oid = MyQuery.idToOid(OidEnum.USER_OID, userId, 0);
+        String oid = getUserOid("userInfoLogged", userId, false);
         return " userId=" + userId + ", oid" + (TextUtils.isEmpty(oid) ? " is empty" : "'" + oid + "'" +
                 ", webFingerId:'" + MyQuery.userIdToWebfingerId(userId) + "'");
     }
@@ -419,7 +419,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 activity = execContext.getMyAccount().getConnection()
                         .updateStatus(status.trim(), oid, replyToMsgOid, mediaUri);
             } else {
-                String recipientOid = MyQuery.idToOid(OidEnum.USER_OID, recipients.getFirst().userId, 0);
+                String recipientOid = getUserOid(method, recipients.getFirst().userId, true);
                 // Currently we don't use Screen Name, I guess id is enough.
                 activity = execContext.getMyAccount().getConnection()
                         .postDirectMessage(status.trim(), oid, recipientOid, mediaUri);

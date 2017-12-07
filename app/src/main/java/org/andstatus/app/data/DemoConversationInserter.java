@@ -185,6 +185,9 @@ public class DemoConversationInserter {
 
         DemoConversationInserter.assertIfUserIsMyFriend(author3, true, ma2);
 
+        MbActivity anonymousReply = buildActivity(MbUser.EMPTY, "Anonymous reply to Reply 10", reply10, null);
+        addActivity(anonymousReply);
+
         MbActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7, " + demoData.GLOBAL_PUBLIC_MESSAGE_TEXT
                 + " text", reply7, null);
         addPrivateMessage(reply11, TriState.FALSE);
