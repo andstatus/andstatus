@@ -81,10 +81,10 @@ public class MyServiceTest1 extends MyServiceTest {
 
         MyContext myContext = MyContextHolder.get();
         for (Timeline timeline : myContext.persistentTimelines().getFiltered(false, TriState.FALSE,
-                TimelineType.UNKNOWN, myAccount, null)) {
+                TimelineType.UNKNOWN, MyAccount.EMPTY, myAccount.getOrigin())) {
             if (timeline.isSyncedAutomatically()) {
                 if (timeline.isTimeToAutoSync()) {
-                    timeline.setSyncSucceededDate(System.currentTimeMillis());
+                    timeline.onSyncEnded(new CommandResult());
                 }
             }
         }
@@ -93,7 +93,7 @@ public class MyServiceTest1 extends MyServiceTest {
         MyServiceCommandsRunner runner = new MyServiceCommandsRunner(myContext);
         runner.setIgnoreServiceAvailability(true);
         runner.autoSyncAccount(myAccount.getAccountName(), syncResult);
-        assertTrue(runner.toString(), runner.isSyncCompleted());
+        DbUtils.waitMs(this, 5000);
         assertEquals("Requests were sent while all timelines just synced " +
                 runner.toString() + "; " + mService.getHttp().toString(),
                 0, mService.getHttp().getRequestsCounter());
@@ -114,7 +114,7 @@ public class MyServiceTest1 extends MyServiceTest {
         runner.setIgnoreServiceAvailability(true);
         syncResult = new SyncResult();
         runner.autoSyncAccount(myAccount.getAccountName(), syncResult);
-        assertTrue(runner.toString(), runner.isSyncCompleted());
+        DbUtils.waitMs(this, 5000);
         assertEquals("Timeline was not synced: " + timelineToSync + "; " +
                 runner.toString() + "; " + mService.getHttp().toString(),
                 1, mService.getHttp().getRequestsCounter());

@@ -62,37 +62,6 @@ public final class CommandResult implements Parcelable {
     public CommandResult() {
     }
 
-    CommandResult forOneExecStep() {
-        Parcel parcel = Parcel.obtain();
-        writeToParcel(parcel, 0);
-        CommandResult oneStepResult = new CommandResult(parcel);
-        oneStepResult.prepareForLaunch();
-        parcel.recycle();
-        return oneStepResult;
-    }
-    
-    void accumulateOneStep(CommandResult oneStepResult) {
-        numAuthExceptions += oneStepResult.numAuthExceptions;
-        numIoExceptions += oneStepResult.numIoExceptions;
-        numParseExceptions += oneStepResult.numParseExceptions;
-        if (!TextUtils.isEmpty(oneStepResult.mMessage)) {
-            if (TextUtils.isEmpty(mMessage)) {
-                mMessage = oneStepResult.mMessage;
-            } else {
-                mMessage += "; \n" + oneStepResult.mMessage;
-            }
-        }
-        if (itemId == 0) {
-            itemId = oneStepResult.itemId;
-        }
-        hourlyLimit = oneStepResult.hourlyLimit;
-        remainingHits = oneStepResult.remainingHits;
-        messagesAdded += oneStepResult.messagesAdded;
-        mentionsAdded += oneStepResult.mentionsAdded;
-        directedAdded += oneStepResult.directedAdded;
-        downloadedCount += oneStepResult.downloadedCount;
-    }
-    
     public static final Creator<CommandResult> CREATOR = new Creator<CommandResult>() {
         @Override
         public CommandResult createFromParcel(Parcel in) {

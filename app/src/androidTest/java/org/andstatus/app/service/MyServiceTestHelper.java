@@ -52,6 +52,10 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
                 myContext = MyContextHolder.initialize(myContext.context(), this);
                 assertEquals("Context should be ready", true, myContext.isReady());
             }
+
+            MyServiceManager.setServiceUnavailable();
+            MyServiceManager.stopService();
+
             if (!isSingleMockedInstance) {
                 MyAccount ma = demoData.getMyAccount(accountName);
                 httpConnectionMock = ma.getConnection().getHttpMock();
@@ -190,6 +194,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
             myContext.persistentAccounts().initialize();
             myContext.persistentTimelines().initialize();
         }
+        MyServiceManager.setServiceAvailable();
         MyLog.v(this, "tearDown ended");
     }
 

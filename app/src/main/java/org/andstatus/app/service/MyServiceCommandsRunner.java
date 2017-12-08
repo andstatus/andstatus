@@ -20,40 +20,29 @@ import android.content.SyncResult;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-public class MyServiceCommandsRunner implements MyServiceEventsListener {
+public class MyServiceCommandsRunner {
 
     private final MyContext myContext;
-    private boolean syncStarted = false;
-    private final Map<CommandData, Boolean> commands = new ConcurrentHashMap<>();
-    private final Object syncLock = new Object();
-    private final MyServiceEventsReceiver eventsReceiver;
     private boolean ignoreServiceAvailability = false;
 
     public MyServiceCommandsRunner(MyContext myContext) {
         this.myContext = myContext;
-        eventsReceiver = new MyServiceEventsReceiver(myContext, this);
     }
 
     public void autoSyncAccount(String accountName, SyncResult syncResult) {
         final String method = "syncAccount " + accountName;
-        syncStarted = false;
         if (!myContext.isReady()) {
-            syncResult.stats.numIoExceptions++;
             MyLog.d(this, method + "; Context is not ready");
             return;
         }
         MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
         if (!ma.isValid()) {
-            syncResult.stats.numIoExceptions++;
             MyLog.d(this, method + "; The account was not loaded");
             return;      
         } else if (!ma.isValidAndSucceeded()) {
@@ -70,106 +59,20 @@ public class MyServiceCommandsRunner implements MyServiceEventsListener {
 
         sendCommands(commandsOnly);
 
-        waitForCompletion(method, myContext);
+        // we don't wait for completion anymore.
+        // TODO: Implement Synchronous background sync ?!
 
-        unregisterReceiver();
-
-        synchronized(syncLock) {
-            if (!isSyncCompleted()) {
-                syncResult.stats.numIoExceptions++;
-            }
-            for (CommandData commandData : commands.keySet()) {
-                syncResult.stats.numAuthExceptions += commandData.getResult().getNumAuthExceptions();
-                syncResult.stats.numIoExceptions += commandData.getResult().getNumIoExceptions();
-                syncResult.stats.numParseExceptions += commandData.getResult().getNumParseExceptions();
-            }
-        }
-
-        MyLog.v(this, method + " ended, " + (syncResult.hasError() ? "has error" : "ok"));
+        MyLog.v(this, method + " ended, " + commandsOnly + " commands sent");
     }
 
     private void sendCommands(List<CommandData> commandsOnly) {
-        synchronized(syncLock) {
-            syncStarted = true;
-            commands.clear();
-            for (CommandData commandData : commandsOnly) {
-                commands.put(commandData, false);
-            }
-        }
-        eventsReceiver.registerReceiver(myContext.context());
-        for (CommandData commandData : commands.keySet()) {
+        for (CommandData commandData : commandsOnly) {
             if (ignoreServiceAvailability) {
                 MyServiceManager.sendCommandEvenForUnavailable(commandData);
             } else {
                 MyServiceManager.sendCommand(commandData);
             }
         }
-    }
-
-    private void waitForCompletion(String method, MyContext myContext) {
-        try {
-            final long numIterations = commands.size() * 3L;
-            synchronized(syncLock) {
-                for (int iteration = 0; iteration < numIterations; iteration++) {
-                    if (isSyncCompleted()) {
-                        break;
-                    }
-                    if (!myContext.isReady()) {
-                        MyLog.d(this, method + "; MyContext is not ready: " + myContext);
-                        break;
-                    }
-                    syncLock.wait(java.util.concurrent.TimeUnit.SECONDS.toMillis(
-                            MyAsyncTask.MAX_COMMAND_EXECUTION_SECONDS / numIterations ));
-                }
-            }
-        } catch (InterruptedException e) {
-            MyLog.d(this, method + "; Interrupted", e);
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    @Override
-    public void onReceive(CommandData commandData, MyServiceEvent event) {
-        if (event != MyServiceEvent.AFTER_EXECUTING_COMMAND) {
-            return;
-        }
-        Boolean executed = commands.get(commandData);
-        if (executed == null) {
-            return;  // Was not sent for execution
-        }
-        MyLog.v(this, "Synced " + (executed ? "again " : "") + commandData);
-        synchronized (syncLock) {
-            commands.put(commandData, true);
-            if (isSyncCompleted()) {
-                syncLock.notifyAll();
-            }
-        }
-    }
-
-    boolean isSyncCompleted() {
-        return syncStarted && !commands.containsValue(false);
-    }
-
-    private void unregisterReceiver() {
-        eventsReceiver.unregisterReceiver(myContext.context());
-    }
-
-    private int getCompletedCount() {
-        int count = 0;
-        for (Map.Entry<CommandData, Boolean> entry : commands.entrySet()) {
-            if (entry.getValue()) {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    @Override
-    public String toString() {
-        return "MyServiceCommandsRunner{" +
-                "commands:" + commands.size() +
-                ", completed:" + getCompletedCount() +
-                '}';
     }
 
     void setIgnoreServiceAvailability(boolean ignoreServiceAvailability) {
