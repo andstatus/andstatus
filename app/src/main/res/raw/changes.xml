@@ -28,14 +28,34 @@
         </subtitle>
     </header>
     <release android:versionName="36.00" android:versionCode="XXX"
-             versionDate="2017-11-XX"
-             versionTitle="Notifications enhancements">
+             versionDate="2017-12-XX"
+             versionTitle="Activities and Notifications enhancements">
         <changes>
-            <change>"Notifications" timeline added, which shows <i>activities</i>, not messages only.
-            These previously existed timelines also show activities now: Everything, Sent and User.<br/>
-                This change actually means that the whole internal data model of the application has changed, allowing
-                to solve many old problems. E.g. after reblogging of a message the message doesn't "jump" to the top
-                of the timeline, as before: it is duplicated there as a "Reblog action". The same for Like/Favorite action.
+            <change>This is a major change of AndStatus, which is available for Android 7.0+ devices only
+                and which may require quite a long database upgrade on the first run after upgrade.
+                See details below.</change>
+            <change>"Notifications" timeline added, which shows
+                <i><a href="https://www.w3.org/TR/activitypub/#Overview" target="_blank">activities</a></i>, not messages only.
+                These previously existed timelines are now "Activities timelines" also: Everything, Sent and User.
+            </change>
+            <change>The whole internal data model of the application has changed from working with "messages" to working
+                with "<a href="https://www.w3.org/TR/activitypub/#Overview" target="_blank">activities</a>",
+                allowing to present social networks in a richer way and to solve many old problems.
+                E.g. after message reblogging the message doesn't "jump" to the top of the timeline, as before:
+                now you see:
+                <ul>
+                    <li>a "Reblog action" of this message in e.g. Notifications timeline,</li>
+                    <li>and a duplicated message at the top of a Home timeline.</li>
+                </ul>
+                The same for Like/Favorite actions. Follow/"Stop following" actions are shown in "Activities timelines" only
+                (i.e. in Notifications, Everything, Sent and User timelines).<br/>
+                Usage of this feature to its full potential requires its support in Social networks. As of now only
+                Pump.io fully supports activities; Mastodon sends activities in its "Notifications" timeline only.<br/>
+                For the server timelines that contain messages only, AndStatus presents Reblogs as activities, because a
+                "Reblog" _is_ an action even in legacy "Twitter-like" implementations. "Messages" from legacy timelines
+                are interpreted as
+                <a href="https://www.w3.org/TR/activitystreams-vocabulary/#dfn-update" target="_blank">Update actions</a>
+                of these messages.
             </change>
             <change>Dropped support for older Android devices. Minimal supported
                 <a href="https://en.wikipedia.org/wiki/Android_version_history" target="_blank">Android version</a>
@@ -44,13 +64,6 @@
     </release>
     <release android:versionName="35.06" android:versionCode="232"
              versionDate="2017-08-13"
-             versionTitle="Bug fixes">
-        <changes>
-            <change>Fixed potential crash on Conversation restart.</change>
-        </changes>
-    </release>
-    <release android:versionName="35.03" android:versionCode="229"
-             versionDate="2017-07-26"
              versionTitle="Autocompletion of usernames/webfingerIds during message composition. Users search">
         <changes>
             <change>During a message composition, after "@" and the first two or more letters of a Username or a Real Name,

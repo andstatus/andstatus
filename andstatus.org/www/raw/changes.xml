@@ -29,13 +29,6 @@
     </header>
     <release android:versionName="35.06" android:versionCode="232"
              versionDate="2017-08-13"
-             versionTitle="Bug fixes">
-        <changes>
-            <change>Fixed potential crash on Conversation restart.</change>
-        </changes>
-    </release>
-    <release android:versionName="35.03" android:versionCode="229"
-             versionDate="2017-07-26"
              versionTitle="Autocompletion of usernames/webfingerIds during message composition. Users search">
         <changes>
             <change>During a message composition, after "@" and the first two or more letters of a Username or a Real Name,
