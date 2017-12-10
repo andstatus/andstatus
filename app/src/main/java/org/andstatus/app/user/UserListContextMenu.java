@@ -78,7 +78,7 @@ public class UserListContextMenu extends MyContextMenu {
                 if (!menuContainer.getMessageEditor().isVisible()) {
                     // TODO: Only if he follows me?
                     UserListContextMenuItem.DIRECT_MESSAGE.addTo(menu, menuGroup, order++,
-                            R.string.menu_item_direct_message);
+                            R.string.menu_item_private_message);
                 }
                 switch (getMyActor().numberOfAccountsOfThisOrigin()) {
                     case 0:

@@ -57,6 +57,7 @@
                 <a href="https://www.w3.org/TR/activitystreams-vocabulary/#dfn-update" target="_blank">Update actions</a>
                 of these messages.
             </change>
+            <change>Direct messages and timelines renamed to Private with corresponding changes in their content.</change>
             <change>Dropped support for older Android devices. Minimal supported
                 <a href="https://en.wikipedia.org/wiki/Android_version_history" target="_blank">Android version</a>
                 is 7.0 now.</change>

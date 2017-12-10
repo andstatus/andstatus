@@ -40,7 +40,7 @@ public class MyServiceTest2 extends MyServiceTest {
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, false);
         CommandData cd1 = CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
                 demoData.getMyAccount(demoData.TWITTER_TEST_ACCOUNT_NAME),
-                TimelineType.DIRECT);
+                TimelineType.PRIVATE);
         mService.setListenedCommand(cd1);
 
         long startCount = mService.executionStartCount;

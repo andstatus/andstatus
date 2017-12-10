@@ -307,7 +307,7 @@ public class ConnectionPumpio extends Connection {
     }
     
     @Override
-    public MbActivity postDirectMessage(String messageIn, String statusId, String recipientId, Uri mediaUri) throws ConnectionException {
+    public MbActivity postPrivateMessage(String messageIn, String statusId, String recipientId, Uri mediaUri) throws ConnectionException {
         String message = toHtmlIfAllowed(messageIn);
         ActivitySender sender = ActivitySender.fromContent(this, statusId, message);
         sender.setRecipient(recipientId);

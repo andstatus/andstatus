@@ -160,7 +160,7 @@
   <string name="menu_item_destroy_reblog">التراجع عن إعادة النشر</string>
   <string name="menu_item_destroy_reblog_twitter">التراجع عن إعادة التغريد</string>
   <string name="menu_item_destroy_status">حذف الرسالة</string>
-  <string name="menu_item_direct_message">راسالة مباشرة</string>
+  <string name="menu_item_private_message">راسالة مباشرة</string>
   <string name="menu_item_favorite">تفضيل</string>
   <string name="menu_item_follow_user">اتبع \"%1s\"</string>
   <string name="menu_item_view_image">عرض الصورة</string>
@@ -184,7 +184,6 @@
   <string name="message_source_in_reply_to">ردا على %1$s</string>
   <string name="message_source_to">إلى %1$s</string>
   <string name="message_twitter">تغريدة</string>
-  <string name="messages_activity">رسائل مباشرة</string>
   <string name="no">لا</string>
   <string name="not_set">لم يعَيَّن</string>
   <string name="oauth_activity_label">OAuth</string>
@@ -193,8 +192,6 @@
   <string name="options_menu_about">حول AndStatus</string>
   <string name="options_menu_about_cond">حَوْلَ</string>
   <string name="options_menu_attach">إلحاق</string>
-  <string name="options_menu_direct_messages">رسائل مباشرة</string>
-  <string name="options_menu_direct_messages_cond">رسائل</string>
   <string name="options_menu_favorites_timeline">الخط الزمني للمفضلات</string>
   <string name="options_menu_favorites_timeline_cond">المفضلات</string>
   <string name="options_menu_home_timeline">الخط الزمني الرئيسي</string>
@@ -236,8 +233,6 @@
   <string name="resolve_view">عرض رسالة</string>
   <string name="search_timeline_label">البحث في الرسائل والمستخدمين و هاشطاك</string>
   <string name="search_timeline_hint">أدخل اسم مستخدم أو عبارة</string>
-  <string name="search_direct_messages_label">البحث عن الرسائل المباشرة</string>
-  <string name="search_direct_messages_hint">أدخل اسم المستخدم أو عبارة</string>
   <string name="settings_action">إعدادات</string>
   <string name="settings_activity_title">إعدادات</string>
   <string name="splash_button_learn_more">الإطلاع عن المزيد</string>
@@ -288,7 +283,7 @@
   <string name="theme_size_entries_large">كبير</string>
   <string name="timeline_reloaded">لقد تم إعادة تحميل الخط الزمني.</string>
   <string name="timeline_title_all">الجميع</string>
-  <string name="timeline_title_direct_messages">رسائل مباشرة</string>
+  <string name="timeline_title_private">رسائل مباشرة</string>
   <string name="timeline_title_everything">كل شيء</string>
   <string name="timeline_title_favorites">المفضلات</string>
   <string name="timeline_title_home">الرئيسة</string>

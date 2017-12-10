@@ -44,7 +44,7 @@ public class CommandExecutionContextTest {
     @Test
     public void testPrivateAccumulation() {
         CommandExecutionContext execContext = new CommandExecutionContext(
-                CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.DIRECT));
+                CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.PRIVATE));
         final int privateCount = 4;
         for (int ind=0; ind < privateCount; ind++) {
             execContext.getResult().onNotificationEvent(NotificationEvent.PRIVATE);

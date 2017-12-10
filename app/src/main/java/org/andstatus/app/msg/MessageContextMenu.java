@@ -180,7 +180,7 @@ public class MessageContextMenu extends MyContextMenu {
             if (!isEditorVisible()) {
                 // TODO: Only if he follows me?
                 MessageListContextMenuItem.DIRECT_MESSAGE.addTo(menu, order++,
-                        R.string.menu_item_direct_message);
+                        R.string.menu_item_private_message);
             }
 
             if (msg.isLoaded() && !msg.isPrivate()) {
@@ -210,8 +210,7 @@ public class MessageContextMenu extends MyContextMenu {
             if (msg.isAuthorSucceededMyAccount()) {
                 if (msg.isLoaded()) {
                     if (msg.isPrivate()) {
-                        // This is a Direct Message
-                        // TODO: Delete Direct message
+                        // TODO: Delete private (direct) message
                     } else if (!msg.reblogged && msg.getMyAccount().getConnection()
                             .isApiSupported(Connection.ApiRoutineEnum.DESTROY_MESSAGE)) {
                         MessageListContextMenuItem.DESTROY_STATUS.addTo(menu, order++,

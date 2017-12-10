@@ -23,7 +23,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 
 /**
- * Table for both public and direct messages
+ * Table for both public and private messages
  * i.e. for tweets, dents, notices
  * and also for "direct messages", "direct dents" etc.
  */

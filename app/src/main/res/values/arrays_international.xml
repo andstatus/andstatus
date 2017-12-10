@@ -211,9 +211,10 @@
     </string-array>
     <string-array name="timeline_type_entries">
         <item>@string/timeline_title_home</item>
+        <item>@string/notifications_title</item>
         <item>@string/timeline_title_favorites</item>
         <item>@string/timeline_title_mentions</item>
-        <item>@string/timeline_title_direct_messages</item>
+        <item>@string/timeline_title_private</item>
         <item>@string/timeline_title_user</item>
         <item>@string/friends</item>
         <item>@string/timeline_title_public</item>
@@ -221,9 +222,10 @@
     </string-array>
     <string-array name="timeline_type_values">
         <item>home</item>
+        <item>notifications</item>
         <item>favorites</item>
         <item>mentions</item>
-        <item>direct</item>
+        <item>private</item>
         <item>user</item>
         <item>friends</item>
         <item>public</item>

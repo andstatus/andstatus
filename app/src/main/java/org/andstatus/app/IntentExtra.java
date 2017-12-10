@@ -68,7 +68,7 @@ public enum IntentExtra{
      */
     IN_REPLY_TO_ID("IN_REPLY_TO_ID"),
     /**
-     * Recipient of a Direct message
+     * Recipient of a (usually private) message
      */
     RECIPIENT_ID("RECIPIENT_ID"),
     SEARCH_QUERY("SEARCH_QUERY"),

@@ -231,7 +231,7 @@ non verá na liña temporal algunhas mensaxes antiguas.</string>
   <string name="menu_item_destroy_reblog">Quitar repetición</string>
   <string name="menu_item_destroy_reblog_twitter">Quitar rechouchio</string>
   <string name="menu_item_destroy_status">Quitar mensaxe</string>
-  <string name="menu_item_direct_message">Mensaxe Directa</string>
+  <string name="menu_item_private_message">Mensaxe Directa</string>
   <string name="menu_item_edit">Editar</string>
   <string name="menu_item_favorite">Favorita</string>
   <string name="menu_item_follow_user">Seguir \"%1s\"</string>
@@ -256,7 +256,6 @@ non verá na liña temporal algunhas mensaxes antiguas.</string>
   <string name="message_source_in_reply_to">en resposta a %1$s</string>
   <string name="message_source_to">a %1$s</string>
   <string name="message_twitter">Chío</string>
-  <string name="messages_activity">Mensaxes directas</string>
   <string name="never">Nunca</string>
   <string name="new_items_count_abbreviated">Novo</string>
   <string name="no">Non</string>
@@ -268,8 +267,6 @@ non verá na liña temporal algunhas mensaxes antiguas.</string>
   <string name="options_menu_about">Sobre o AndStatus</string>
   <string name="options_menu_about_cond">Sobre</string>
   <string name="options_menu_attach">Anexos</string>
-  <string name="options_menu_direct_messages">Mensaxes directas</string>
-  <string name="options_menu_direct_messages_cond">Mensaxes</string>
   <string name="options_menu_favorites_timeline">Liña de tempo Favoritas</string>
   <string name="options_menu_favorites_timeline_cond">Favoritas</string>
   <string name="options_menu_home_timeline">Liña de tempo Inicio</string>
@@ -330,8 +327,6 @@ non verá na liña temporal algunhas mensaxes antiguas.</string>
   <string name="rounded_avatars">Avatares redondos</string>
   <string name="search_timeline_label">Buscar mensaxes, usuarios e etiquetas</string>
   <string name="search_timeline_hint">Introduza un usuario/frase</string>
-  <string name="search_direct_messages_label">Buscar mensaxes directas</string>
-  <string name="search_direct_messages_hint">Introduza un usuario ou frase</string>
   <string name="select_displayed_in_selector">Escolla si e cando deben ser mostrada esta liña temporal</string>
   <string name="sent">Enviado</string>
   <string name="select_social_network">Escolla rede social</string>
@@ -406,7 +401,7 @@ Admite GNU social, Twitter e Pump.io.</string>
   <string name="timeline_is_combined_by_default">A liña de tempo é Combinada por defecto</string>
   <string name="timeline_reloaded">Recargouse a liña de tempo.</string>
   <string name="timeline_title_all">Todas</string>
-  <string name="timeline_title_direct_messages">Mensaxes directas</string>
+  <string name="timeline_title_private">Mensaxes directas</string>
   <string name="timeline_title_drafts">Borradores</string>
   <string name="timeline_title_everything">Todo</string>
   <string name="timeline_title_favorites">Favoritas</string>

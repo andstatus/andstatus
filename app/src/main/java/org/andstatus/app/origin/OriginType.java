@@ -340,7 +340,7 @@ public enum OriginType implements SelectableEnum {
                 return isSearchTimelineSyncable;
             case MENTIONS:
                 return isMentionsTimelineSyncable;
-            case DIRECT:
+            case PRIVATE:
                 return isDirectTimelineSyncable;
             default:
                 return true;

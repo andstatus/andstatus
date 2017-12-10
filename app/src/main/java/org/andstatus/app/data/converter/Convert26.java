@@ -399,5 +399,8 @@ class Convert26 extends ConvertOneStep {
         DbUtils.execSQL(db, sql);
         sql = "DROP TABLE IF EXISTS msgofuser";
         DbUtils.execSQL(db, sql);
+
+        sql = "UPDATE timeline SET timeline_type='private' WHERE timeline_type='direct'";
+        DbUtils.execSQL(db, sql);
     }
 }

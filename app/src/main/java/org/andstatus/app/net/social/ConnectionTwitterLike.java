@@ -64,7 +64,7 @@ public abstract class ConnectionTwitterLike extends Connection {
             case DESTROY_MESSAGE:
                 url = "statuses/destroy/%messageId%.json";
                 break;
-            case DIRECT_MESSAGES:
+            case PRIVATE_MESSAGES:
                 url = "direct_messages.json";
                 break;
             case FAVORITES_TIMELINE:
@@ -514,7 +514,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     }
     
     @Override
-    public MbActivity postDirectMessage(String message, String statusId, String userId, Uri mediaUri) throws ConnectionException {
+    public MbActivity postPrivateMessage(String message, String statusId, String userId, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put("text", message);

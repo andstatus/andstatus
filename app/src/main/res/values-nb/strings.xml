@@ -205,7 +205,7 @@
   <string name="menu_item_destroy_reblog">Angre repost</string>
   <string name="menu_item_destroy_reblog_twitter">Angre retweet</string>
   <string name="menu_item_destroy_status">Fjerne meldingen</string>
-  <string name="menu_item_direct_message">Direkte melding</string>
+  <string name="menu_item_private_message">Direkte melding</string>
   <string name="menu_item_edit">Rediger</string>
   <string name="menu_item_favorite">Favoritt</string>
   <string name="menu_item_follow_user">Følg \"%1s\"</string>
@@ -230,7 +230,6 @@
   <string name="message_source_in_reply_to">som svar på %1$s</string>
   <string name="message_source_to">til %1$s</string>
   <string name="message_twitter">Tweet</string>
-  <string name="messages_activity">Direkte meldinger</string>
   <string name="no">Nei</string>
   <string name="not_set">ikke sendt</string>
   <string name="oauth_activity_label">OAuth</string>
@@ -239,8 +238,6 @@
   <string name="options_menu_about">Om AndStatus</string>
   <string name="options_menu_about_cond">Om</string>
   <string name="options_menu_attach">Legg ved</string>
-  <string name="options_menu_direct_messages">Direkte meldinger</string>
-  <string name="options_menu_direct_messages_cond">Meldinger</string>
   <string name="options_menu_favorites_timeline">Favoritter tidslinje</string>
   <string name="options_menu_favorites_timeline_cond">Favoritter</string>
   <string name="options_menu_home_timeline">Hjemme tidslinje</string>
@@ -298,8 +295,6 @@
   <string name="resolve_view">Vis melding</string>
   <string name="search_timeline_label">Søk etter meldinger, brukere og hashtags</string>
   <string name="search_timeline_hint">Angi et brukernavn/uttrykk</string>
-  <string name="search_direct_messages_label">Søk i direkte meldinger</string>
-  <string name="search_direct_messages_hint">Angi et brukernavn eller et uttrykk</string>
   <string name="settings_action">Instillinger</string>
   <string name="settings_activity_title">Instillinger</string>
   <string name="splash_button_learn_more">Lær mer</string>
@@ -357,7 +352,7 @@
   <string name="this_option_is_turned_off">(deaktivert)</string>
   <string name="timeline_reloaded">Tidslinjen er lastet på ny.</string>
   <string name="timeline_title_all"> Alle</string>
-  <string name="timeline_title_direct_messages">Direkte meldinger</string>
+  <string name="timeline_title_private">Direkte meldinger</string>
   <string name="timeline_title_drafts">Kladd</string>
   <string name="timeline_title_everything">Alt</string>
   <string name="timeline_title_favorites">Favoritter</string>

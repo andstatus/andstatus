@@ -114,7 +114,7 @@
   <string name="menu_item_block">Bloca</string>
   <string name="menu_item_destroy_favorite">Desfés el preferit</string>
   <string name="menu_item_destroy_status">Suprimeix el missatge</string>
-  <string name="menu_item_direct_message">Missatge directe</string>
+  <string name="menu_item_private_message">Missatge directe</string>
   <string name="menu_item_favorite">Preferit</string>
   <string name="menu_item_follow_user">Segueix \"%1s\"</string>
   <string name="menu_item_view_image">Mostra la imatge</string>
@@ -135,15 +135,12 @@
   <string name="message_source_in_reply_to">en resposta a %1$s</string>
   <string name="message_source_to">a %1$s</string>
   <string name="message_twitter">Piulet</string>
-  <string name="messages_activity">Missatges directes</string>
   <string name="oauth_activity_label">OAuth</string>
   <string name="off">desactivat</string>
   <string name="on">activat</string>
   <string name="options_menu_about">Quant a l\'AndStatus</string>
   <string name="options_menu_about_cond">Quant a...</string>
   <string name="options_menu_attach">Adjunta</string>
-  <string name="options_menu_direct_messages">Missatges directes</string>
-  <string name="options_menu_direct_messages_cond">Missatges</string>
   <string name="options_menu_favorites_timeline_cond">Preferits</string>
   <string name="options_menu_home_timeline_cond">Inici</string>
   <string name="options_menu_global_search">Cerca global</string>
@@ -175,8 +172,6 @@
   <string name="remove_account_menu_item">Suprimeix el compte</string>
   <string name="remove_account_dialog_title">Vols suprimir el compte?</string>
   <string name="resolve_view">Mostra el missatge</string>
-  <string name="search_direct_messages_label">Cerca missatges directes</string>
-  <string name="search_direct_messages_hint">Introdueix un usuari o frase</string>
   <string name="settings_action">Paràmetres</string>
   <string name="settings_activity_title">Paràmetres</string>
   <string name="status_destroyed">S\'ha suprimit el missatge.</string>
@@ -200,7 +195,7 @@
   <string name="theme_size_entries_standard">Estàndard</string>
   <string name="theme_size_entries_large">Gros</string>
   <string name="timeline_title_all">Tots</string>
-  <string name="timeline_title_direct_messages">Missatges directes</string>
+  <string name="timeline_title_private">Missatges directes</string>
   <string name="timeline_title_everything">Tot</string>
   <string name="timeline_title_favorites">Preferits</string>
   <string name="timeline_title_home">Inici</string>

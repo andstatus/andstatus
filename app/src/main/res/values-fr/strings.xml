@@ -165,7 +165,7 @@
   <string name="menu_item_destroy_reblog">Annuler le renvoi</string>
   <string name="menu_item_destroy_reblog_twitter">Annuler le repartage</string>
   <string name="menu_item_destroy_status">Supprimer ce message</string>
-  <string name="menu_item_direct_message">Message privé</string>
+  <string name="menu_item_private_message">Message privé</string>
   <string name="menu_item_favorite">Mettre en favori</string>
   <string name="menu_item_follow_user">S\'abonner \"%1s\"</string>
   <string name="menu_item_view_image">Afficher l\'image</string>
@@ -189,7 +189,6 @@
   <string name="message_source_in_reply_to">en réponse à %1$s</string>
   <string name="message_source_to">à %1$s</string>
   <string name="message_twitter">Tweet</string>
-  <string name="messages_activity">Messages privés</string>
   <string name="no">Non</string>
   <string name="not_set">non renseigné</string>
   <string name="oauth_activity_label">OAuth</string>
@@ -198,8 +197,6 @@
   <string name="options_menu_about">À propos d\'AndStatus</string>
   <string name="options_menu_about_cond">À propos</string>
   <string name="options_menu_attach">Attacher</string>
-  <string name="options_menu_direct_messages">Messages privés</string>
-  <string name="options_menu_direct_messages_cond">Messages</string>
   <string name="options_menu_favorites_timeline">Timeline des favoris</string>
   <string name="options_menu_favorites_timeline_cond">Favoris</string>
   <string name="options_menu_home_timeline">Timeline principale</string>
@@ -246,8 +243,6 @@
   <string name="resolve_view">Voir le message</string>
   <string name="search_timeline_label">Rechercher des messages, utilisateurs, ou hashtags</string>
   <string name="search_timeline_hint">Saisir un(e) identifiant/expression</string>
-  <string name="search_direct_messages_label">Rechercher un message privé</string>
-  <string name="search_direct_messages_hint">Saisir une expression ou un identifiant</string>
   <string name="settings_action">Paramétrages</string>
   <string name="settings_activity_title">Paramétrages</string>
   <string name="splash_button_learn_more">En savoir plus</string>
@@ -304,7 +299,7 @@
   <string name="theme_size_entries_large">Grand</string>
   <string name="timeline_reloaded">La timeline a été rafraîchie.</string>
   <string name="timeline_title_all">Tout</string>
-  <string name="timeline_title_direct_messages">Messages privés</string>
+  <string name="timeline_title_private">Messages privés</string>
   <string name="timeline_title_everything">Tout</string>
   <string name="timeline_title_favorites">Favoris</string>
   <string name="timeline_title_home">Principale</string>

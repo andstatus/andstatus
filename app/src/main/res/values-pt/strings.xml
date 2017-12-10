@@ -246,7 +246,7 @@
   <string name="menu_item_destroy_reblog_pumpio">Anular partilha</string>
   <string name="menu_item_destroy_reblog_twitter">Anular retweet</string>
   <string name="menu_item_destroy_status">Remover mensagem</string>
-  <string name="menu_item_direct_message">Mensagem direta</string>
+  <string name="menu_item_private_message">Mensagem direta</string>
   <string name="menu_item_edit">Editar</string>
   <string name="menu_item_favorite">Favorito</string>
   <string name="menu_item_follow_user">Seguir \"%1s\"</string>
@@ -274,7 +274,6 @@
   <string name="message_source_to">para %1$s</string>
   <string name="message_twitter">Tweet</string>
   <string name="messages">Mensagens</string>
-  <string name="messages_activity">Mensagens diretas</string>
   <string name="n_message_link">Ligação da mensagem</string>
   <string name="n_message_links">%d ligações da mensagem</string>
   <string name="never">Nunca</string>
@@ -290,8 +289,6 @@
   <string name="options_menu_about">Acerca do AndStatus</string>
   <string name="options_menu_about_cond">Acerca</string>
   <string name="options_menu_attach">Anexar</string>
-  <string name="options_menu_direct_messages">Mensagens diretas</string>
-  <string name="options_menu_direct_messages_cond">Mensagens</string>
   <string name="options_menu_favorites_timeline">Cronologia de favoritas</string>
   <string name="options_menu_favorites_timeline_cond">Favoritas</string>
   <string name="options_menu_home_timeline">Cronologia Home</string>
@@ -354,8 +351,6 @@
   <string name="rounded_avatars">Avatars redondos</string>
   <string name="search_timeline_label">Procurar mensagens, utilizadores, hashtags</string>
   <string name="search_timeline_hint">Digite as palavras-chave/#hashtags</string>
-  <string name="search_direct_messages_label">Procurar mensagens diretas</string>
-  <string name="search_direct_messages_hint">Digite o nome de utilizador ou frase</string>
   <string name="search_userlist_hint">Digite o nome/ID Webfinger</string>
   <string name="search_users">Pesquisar utilizadores</string>
   <string name="select_backup_folder">Selecione a pasta de backup</string>
@@ -441,7 +436,7 @@ toque no botão abaixo para verificar novamente as suas credenciais.</string>
   <string name="timeline_is_combined_by_default">Por definição, a cronologia é combinada</string>
   <string name="timeline_reloaded">A cronologia foi recarregada.</string>
   <string name="timeline_title_all">Todas</string>
-  <string name="timeline_title_direct_messages">Mensagens diretas</string>
+  <string name="timeline_title_private">Mensagens diretas</string>
   <string name="timeline_title_drafts">Rascunhos</string>
   <string name="timeline_title_everything">Tudo</string>
   <string name="timeline_title_favorites">Favoritas</string>

@@ -249,7 +249,7 @@
   <string name="menu_item_destroy_reblog_pumpio">Teilen rückgängig machen</string>
   <string name="menu_item_destroy_reblog_twitter">Retweet zurücknehmen</string>
   <string name="menu_item_destroy_status">Nachricht entfernen</string>
-  <string name="menu_item_direct_message">Direktnachricht</string>
+  <string name="menu_item_private_message">Direktnachricht</string>
   <string name="menu_item_edit">Bearbeiten</string>
   <string name="menu_item_favorite">Favorit</string>
   <string name="menu_item_follow_user">Folge \"%1s\"</string>
@@ -277,7 +277,6 @@
   <string name="message_source_to">an %1$s</string>
   <string name="message_twitter">Tweet</string>
   <string name="messages">Nachrichten</string>
-  <string name="messages_activity">Direktnachrichten</string>
   <string name="n_message_link">Nachrichtenlink</string>
   <string name="n_message_links">%d Nachrichtenlinks</string>
   <string name="never">Nie</string>
@@ -293,8 +292,6 @@
   <string name="options_menu_about">Über AndStatus</string>
   <string name="options_menu_about_cond">Über</string>
   <string name="options_menu_attach">Anhängen</string>
-  <string name="options_menu_direct_messages">Direktnachrichten</string>
-  <string name="options_menu_direct_messages_cond">Nachrichten</string>
   <string name="options_menu_favorites_timeline">Favoriten Timeline</string>
   <string name="options_menu_favorites_timeline_cond">Favoriten</string>
   <string name="options_menu_home_timeline">Startseite-Timeline</string>
@@ -357,8 +354,6 @@
   <string name="rounded_avatars">Runde Avatare</string>
   <string name="search_timeline_label">Nachrichten, User und Hashtags durchsuchen</string>
   <string name="search_timeline_hint">Stichwörter/#Hashtags eingeben</string>
-  <string name="search_direct_messages_label">Direktnachrichten durchsuchen</string>
-  <string name="search_direct_messages_hint">Usernamen oder Stichwort eingeben</string>
   <string name="search_userlist_hint">Name/Webfinger-ID eingeben</string>
   <string name="search_users">Benutzer suchen</string>
   <string name="select_backup_folder">Backup-Ordner auswählen</string>
@@ -442,7 +437,7 @@
   <string name="timeline_is_combined_by_default">Timeline ist standardmäßig kombiniert</string>
   <string name="timeline_reloaded">Timeline wurde neu geladen.</string>
   <string name="timeline_title_all">Alle</string>
-  <string name="timeline_title_direct_messages">Direktnachrichten</string>
+  <string name="timeline_title_private">Direktnachrichten</string>
   <string name="timeline_title_drafts">Entwürfe</string>
   <string name="timeline_title_everything">Alles</string>
   <string name="timeline_title_favorites">Favoriten</string>

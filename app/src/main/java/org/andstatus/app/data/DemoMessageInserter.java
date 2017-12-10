@@ -157,7 +157,7 @@ public class DemoMessageInserter {
     public void onActivity(final MbActivity activity) {
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(accountUser.userId);
         assertTrue("Persistent account exists for " + accountUser + " " + activity, ma.isValid());
-        final TimelineType timelineType = activity.getMessage().isPrivate() ? TimelineType.DIRECT : TimelineType.HOME;
+        final TimelineType timelineType = activity.getMessage().isPrivate() ? TimelineType.PRIVATE : TimelineType.HOME;
         DataUpdater di = new DataUpdater(new CommandExecutionContext(
                         CommandData.newTimelineCommand(CommandEnum.EMPTY, ma, timelineType)));
         di.onActivity(activity);

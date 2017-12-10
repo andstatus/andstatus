@@ -248,7 +248,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="menu_item_destroy_reblog_pumpio">共有を元に戻す</string>
   <string name="menu_item_destroy_reblog_twitter">リツイートを元に戻す</string>
   <string name="menu_item_destroy_status">メッセージを削除</string>
-  <string name="menu_item_direct_message">ダイレクトメッセージ</string>
+  <string name="menu_item_private_message">ダイレクトメッセージ</string>
   <string name="menu_item_edit">編集</string>
   <string name="menu_item_favorite">お気に入り</string>
   <string name="menu_item_follow_user">\"%1s\" をフォロー</string>
@@ -276,7 +276,6 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="message_source_to">%1$s に</string>
   <string name="message_twitter">ツイート</string>
   <string name="messages">メッセージ</string>
-  <string name="messages_activity">ダイレクトメッセージ</string>
   <string name="n_message_link">メッセージ リンク</string>
   <string name="n_message_links">%d メッセージ リンク</string>
   <string name="never">しない</string>
@@ -292,8 +291,6 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="options_menu_about">AndStatus について</string>
   <string name="options_menu_about_cond">アプリについて</string>
   <string name="options_menu_attach">添付</string>
-  <string name="options_menu_direct_messages">ダイレクトメッセージ</string>
-  <string name="options_menu_direct_messages_cond">メッセージ</string>
   <string name="options_menu_favorites_timeline">お気に入りのタイムライン</string>
   <string name="options_menu_favorites_timeline_cond">お気に入り</string>
   <string name="options_menu_home_timeline">ホーム タイムライン</string>
@@ -356,8 +353,6 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="rounded_avatars">丸みを帯びたアバター</string>
   <string name="search_timeline_label">メッセージ、ユーザー、およびハッシュを検索</string>
   <string name="search_timeline_hint">キーワード/#ハッシュタグ を入力</string>
-  <string name="search_direct_messages_label">ダイレクトメッセージを検索</string>
-  <string name="search_direct_messages_hint">ユーザー名またはフレーズを入力てください</string>
   <string name="search_userlist_hint">名前/Webfinger ID を入力</string>
   <string name="search_users">ユーザーを検索</string>
   <string name="select_backup_folder">バックアップ フォルダーを選択</string>
@@ -441,7 +436,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="timeline_is_combined_by_default">デフォルトでタイムラインをまとめる</string>
   <string name="timeline_reloaded">タイムラインを再読み込みしました。</string>
   <string name="timeline_title_all">すべて</string>
-  <string name="timeline_title_direct_messages">ダイレクトメッセージ</string>
+  <string name="timeline_title_private">ダイレクトメッセージ</string>
   <string name="timeline_title_drafts">下書き</string>
   <string name="timeline_title_everything">すべて</string>
   <string name="timeline_title_favorites">お気に入り</string>

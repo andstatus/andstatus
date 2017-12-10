@@ -55,7 +55,7 @@ public enum CommandEnum {
     GET_FOLLOWERS("get-followers", R.string.get_followers, -5, ConnectionRequired.SYNC),
     GET_FRIENDS("get-friends", R.string.get_friends, -5, ConnectionRequired.SYNC),
 
-    /** This command is for sending both public and direct messages */
+    /** This command is for sending both public and private messages */
     UPDATE_STATUS("update-status", R.string.button_create_message, -10, ConnectionRequired.SYNC),
     DESTROY_STATUS("destroy-status", R.string.menu_item_destroy_status, -3, ConnectionRequired.SYNC),
     GET_STATUS("get-status", R.string.title_command_get_status, -5, ConnectionRequired.SYNC),

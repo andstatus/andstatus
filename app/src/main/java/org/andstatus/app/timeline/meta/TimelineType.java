@@ -35,8 +35,8 @@ public enum TimelineType implements SelectableEnum {
     FAVORITES("favorites", R.string.timeline_title_favorites, Connection.ApiRoutineEnum.FAVORITES_TIMELINE),
     /** The Mentions timeline and other information (replies...). */
     MENTIONS("mentions", R.string.timeline_title_mentions, Connection.ApiRoutineEnum.MENTIONS_TIMELINE),
-    /** Direct messages (direct dents...) */
-    DIRECT("direct", R.string.timeline_title_direct_messages, Connection.ApiRoutineEnum.DIRECT_MESSAGES),
+    /** Private messages (direct dents...) */
+    PRIVATE("private", R.string.timeline_title_private, Connection.ApiRoutineEnum.PRIVATE_MESSAGES),
     /** Messages of the selected User (where he is an Author or a Sender only (e.g. for Reblog/Retweet).
      * This User is NOT one of our Accounts.
      * Hence this timeline type requires the User parameter. */
@@ -137,7 +137,7 @@ public enum TimelineType implements SelectableEnum {
 
     public boolean isSyncedAutomaticallyByDefault() {
         switch (this) {
-            case DIRECT:
+            case PRIVATE:
             case FAVORITES:
             case HOME:
             case NOTIFICATIONS:
@@ -167,7 +167,7 @@ public enum TimelineType implements SelectableEnum {
     }
 
     private static final TimelineType[] defaultMyAccountTimelineTypes = {
-            DIRECT,
+            PRIVATE,
             DRAFTS,
             FAVORITES,
             HOME,
@@ -242,7 +242,7 @@ public enum TimelineType implements SelectableEnum {
 
     public boolean canBeCombinedForMyAccounts() {
         switch (this) {
-            case DIRECT:
+            case PRIVATE:
             case DRAFTS:
             case FAVORITES:
             case HOME:
@@ -286,7 +286,7 @@ public enum TimelineType implements SelectableEnum {
 
     public boolean isSubscribedByMe() {
         switch (this) {
-            case DIRECT:
+            case PRIVATE:
             case FAVORITES:
             case HOME:
             case MENTIONS:

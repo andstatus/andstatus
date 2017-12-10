@@ -243,7 +243,7 @@
   <string name="menu_item_destroy_reblog_pumpio">Удалить \"поделиться\"</string>
   <string name="menu_item_destroy_reblog_twitter">Удалить ретвит</string>
   <string name="menu_item_destroy_status">Удалить сообщение</string>
-  <string name="menu_item_direct_message">Личное сообщение</string>
+  <string name="menu_item_private_message">Личное сообщение</string>
   <string name="menu_item_edit">Редактировать</string>
   <string name="menu_item_favorite">Добавить в избранное</string>
   <string name="menu_item_follow_user">Следовать за \"%1s\"</string>
@@ -271,7 +271,6 @@
   <string name="message_source_to">для %1$s</string>
   <string name="message_twitter">Сообщение</string>
   <string name="messages">Сообщения</string>
-  <string name="messages_activity">Личные сообщения</string>
   <string name="n_message_link">Ссылка из сообщения</string>
   <string name="n_message_links">%d ссылок из сообщения</string>
   <string name="never">Никогда</string>
@@ -287,8 +286,6 @@
   <string name="options_menu_about">О программе AndStatus</string>
   <string name="options_menu_about_cond">Информация</string>
   <string name="options_menu_attach">Прикрепить</string>
-  <string name="options_menu_direct_messages">Личные сообщения</string>
-  <string name="options_menu_direct_messages_cond">Сообщения</string>
   <string name="options_menu_favorites_timeline">Линия времени Избранного</string>
   <string name="options_menu_favorites_timeline_cond">Избранное</string>
   <string name="options_menu_home_timeline">Домашняя линия времени</string>
@@ -351,8 +348,6 @@
   <string name="rounded_avatars">Округлые аватары</string>
   <string name="search_timeline_label">Поиск сообщений, людей и тем</string>
   <string name="search_timeline_hint">Введите ключевые слова / #хэштеги</string>
-  <string name="search_direct_messages_label">Поиск личных сообщений</string>
-  <string name="search_direct_messages_hint">Введите имя или фразу</string>
   <string name="search_userlist_hint">Введите имя / Webfinger ID</string>
   <string name="search_users">Поиск пользователей</string>
   <string name="select_backup_folder">Выберите папку для создания резервной копии</string>
@@ -436,7 +431,7 @@
   <string name="timeline_is_combined_by_default">Линия времени - Объединённая по умолчанию</string>
   <string name="timeline_reloaded">Лента времени обновлена.</string>
   <string name="timeline_title_all">Все</string>
-  <string name="timeline_title_direct_messages">Личные сообщения</string>
+  <string name="timeline_title_private">Личные сообщения</string>
   <string name="timeline_title_drafts">Черновики</string>
   <string name="timeline_title_everything">Всё</string>
   <string name="timeline_title_favorites">Избранное</string>

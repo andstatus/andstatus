@@ -60,8 +60,8 @@ public abstract class Connection {
     public enum ApiRoutineEnum {
         ACCOUNT_RATE_LIMIT_STATUS,
         ACCOUNT_VERIFY_CREDENTIALS,
-        /** Returns most recent direct messages privately sent to the authenticating user */
-        DIRECT_MESSAGES(true),
+        /** Returns most recent messages privately sent to the authenticating user */
+        PRIVATE_MESSAGES(true),
         CREATE_FAVORITE,
         DESTROY_FAVORITE,
         FOLLOW_USER,
@@ -315,20 +315,18 @@ public abstract class Connection {
             throws ConnectionException;
 
     /**
-     * Post Direct Message
-     * @see <a
-     *      href="https://dev.twitter.com/docs/api/1/post/direct_messages/new">POST direct_messages/new</a>
+     * Post Private ("direct") message
+     * @see <a href="https://dev.twitter.com/docs/api/1/post/direct_messages/new">POST direct_messages/new</a>
      *
-     * @param userId {@link UserTable#USER_OID} - The ID of the user who should receive the direct message
+     * @param userId {@link UserTable#USER_OID} - The ID of the user who should receive the private message
      * @return The sent message if successful (empty message if not)
      */
-    public abstract MbActivity postDirectMessage(String message, String statusId, String userId, Uri mediaUri)
+    public abstract MbActivity postPrivateMessage(String message, String statusId, String userId, Uri mediaUri)
             throws ConnectionException;
 
     /**
-     * Post reblog ("Retweet")
-     * @see <a
-     *      href="https://dev.twitter.com/docs/api/1/post/statuses/retweet/%3Aid">POST statuses/retweet/:id</a>
+     * Post Reblog ("retweet")
+     * @see <a href="https://dev.twitter.com/docs/api/1/post/statuses/retweet/%3Aid">POST statuses/retweet/:id</a>
      * 
      * @param rebloggedId id of the Reblogged message
      */

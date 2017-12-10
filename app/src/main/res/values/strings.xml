@@ -250,13 +250,13 @@
   <string name="menu_item_destroy_reblog_pumpio">Undo share</string>
   <string name="menu_item_destroy_reblog_twitter">Undo retweet</string>
   <string name="menu_item_destroy_status">Remove message</string>
-  <string name="menu_item_direct_message">Direct Message</string>
   <string name="menu_item_edit">Edit</string>
   <string name="menu_item_favorite">Favorite</string>
   <string name="menu_item_follow_user">Follow \"%1s\"</string>
   <string name="menu_item_view_image">View image</string>
   <string name="menu_item_open_conversation">Open Conversation</string>
   <string name="menu_item_open_message_permalink">Open in browser</string>
+  <string name="menu_item_private_message">Private Message</string>
   <string name="menu_item_reply">Reply</string>
   <string name="menu_item_reply_to_conversation_participants">Reply to conversation participants</string>
   <string name="menu_item_reply_to_mentioned_users">Reply to mentioned users</string>
@@ -278,7 +278,6 @@
   <string name="message_source_to">to %1$s</string>
   <string name="message_twitter">Tweet</string>
   <string name="messages">Messages</string>
-  <string name="messages_activity">Direct Messages</string>
   <string name="n_message_link">Message link</string>
   <string name="n_message_links">%d message links</string>
   <string name="never">Never</string>
@@ -311,8 +310,6 @@
   <string name="options_menu_about">About AndStatus</string>
   <string name="options_menu_about_cond">About</string>
   <string name="options_menu_attach">Attach</string>
-  <string name="options_menu_direct_messages">Direct Messages</string>
-  <string name="options_menu_direct_messages_cond">Messages</string>
   <string name="options_menu_favorites_timeline">Favorites Timeline</string>
   <string name="options_menu_favorites_timeline_cond">Favorites</string>
   <string name="options_menu_home_timeline">Home Timeline</string>
@@ -373,8 +370,6 @@
   <string name="rounded_avatars">Rounded avatars</string>
   <string name="search_timeline_label">Search messages, users, and hashtags</string>
   <string name="search_timeline_hint">Enter keywords/#hashtags</string>
-  <string name="search_direct_messages_label">Search direct messages</string>
-  <string name="search_direct_messages_hint">Enter a username or phrase</string>
   <string name="search_userlist_hint">Enter name/Webfinger ID</string>
   <string name="search_users">Search users</string>
   <string name="select_backup_folder">Select backup folder</string>
@@ -459,13 +454,13 @@
   <string name="timeline_is_combined_by_default">Timeline is Combined by default</string>
   <string name="timeline_reloaded">Timeline has been reloaded.</string>
   <string name="timeline_title_all">All</string>
-  <string name="timeline_title_direct_messages">Direct messages</string>
   <string name="timeline_title_drafts">Drafts</string>
   <string name="timeline_title_everything">Everything</string>
   <string name="timeline_title_favorites">Favorites</string>
   <string name="timeline_title_home">Home</string>
   <string name="timeline_title_mentions">Mentions</string>
   <string name="timeline_title_outbox">Outbox</string>
+  <string name="timeline_title_private">Private messages</string>
   <string name="timeline_title_public">Public</string>
   <string name="timeline_title_replies">Replies</string>
   <string name="timeline_title_unknown">(Unknown timeline)</string>

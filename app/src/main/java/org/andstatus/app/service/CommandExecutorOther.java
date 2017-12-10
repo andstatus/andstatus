@@ -412,7 +412,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 throw ConnectionException.hardConnectionException(
                         "Wrong message status: " + statusStored, null);
             }
-            if (recipients.isEmpty() || isPrivate != TriState.TRUE) {   // TODO: Direct message means 'private'
+            if (recipients.isEmpty() || isPrivate != TriState.TRUE) {
                 long replyToMsgId = MyQuery.msgIdToLongColumnValue(
                         MsgTable.IN_REPLY_TO_MSG_ID, msgId);
                 String replyToMsgOid = getMsgOid(method, replyToMsgId, false);
@@ -422,7 +422,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 String recipientOid = getUserOid(method, recipients.getFirst().userId, true);
                 // Currently we don't use Screen Name, I guess id is enough.
                 activity = execContext.getMyAccount().getConnection()
-                        .postDirectMessage(status.trim(), oid, recipientOid, mediaUri);
+                        .postPrivateMessage(status.trim(), oid, recipientOid, mediaUri);
             }
             logIfEmptyMessage(method, msgId, activity.getMessage());
         } catch (ConnectionException e) {

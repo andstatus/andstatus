@@ -156,7 +156,7 @@
   <string name="menu_item_block">Blockera</string>
   <string name="menu_item_destroy_favorite">Remove Favorite</string>
   <string name="menu_item_destroy_status">Remove Tweet</string>
-  <string name="menu_item_direct_message">Direktmeddelande</string>
+  <string name="menu_item_private_message">Direktmeddelande</string>
   <string name="menu_item_edit">Redigera</string>
   <string name="menu_item_favorite">Favorit</string>
   <string name="menu_item_follow_user">Följ \"%1s\"</string>
@@ -181,7 +181,6 @@
   <string name="message_source_in_reply_to">som svar på %1$s</string>
   <string name="message_source_to">till %1$s</string>
   <string name="message_twitter">Tweet</string>
-  <string name="messages_activity">Direktmeddelanden</string>
   <string name="no">Nej</string>
   <string name="not_set">ej valt</string>
   <string name="oauth_activity_label">OAuth</string>
@@ -190,8 +189,6 @@
   <string name="options_menu_about">Om AndStatus</string>
   <string name="options_menu_about_cond">Om</string>
   <string name="options_menu_attach">Bifoga</string>
-  <string name="options_menu_direct_messages">Meddelanden</string>
-  <string name="options_menu_direct_messages_cond">Meddelanden</string>
   <string name="options_menu_favorites_timeline">Favorit-tidslinje</string>
   <string name="options_menu_favorites_timeline_cond">Favoriter</string>
   <string name="options_menu_home_timeline">Hem-tidslinje</string>
@@ -225,8 +222,6 @@
   <string name="resolve_view">View Tweet</string>
   <string name="search_timeline_label">Search tweets, users, and hashtags</string>
   <string name="search_timeline_hint">Ange ett användarnamn/fras</string>
-  <string name="search_direct_messages_label">Sök direktmeddelanden</string>
-  <string name="search_direct_messages_hint">Ange ett användarnamn eller fras</string>
   <string name="settings_action">Inställningar</string>
   <string name="settings_activity_title">Inställningar</string>
   <string name="splash_button_learn_more">Lär dig mer</string>
@@ -264,7 +259,7 @@
   <string name="theme_size_entries_large">Stor</string>
   <string name="timeline_reloaded">Tidslinjen har laddats om.</string>
   <string name="timeline_title_all">Alla</string>
-  <string name="timeline_title_direct_messages">Meddelanden</string>
+  <string name="timeline_title_private">Meddelanden</string>
   <string name="timeline_title_drafts">Utkast</string>
   <string name="timeline_title_everything">Allt</string>
   <string name="timeline_title_favorites">Favoriter</string>

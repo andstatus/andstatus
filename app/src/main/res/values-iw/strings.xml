@@ -121,8 +121,6 @@
   <string name="options_menu_about">אודות AndStatus</string>
   <string name="options_menu_about_cond">אודות</string>
   <string name="options_menu_attach">צרף</string>
-  <string name="options_menu_direct_messages">הודעות ישירות</string>
-  <string name="options_menu_direct_messages_cond">הודעות</string>
   <string name="options_menu_favorites_timeline">ציר זמן מועדף</string>
   <string name="options_menu_favorites_timeline_cond">מועדפים</string>
   <string name="options_menu_home_timeline">ציר זמן בית</string>
@@ -148,7 +146,7 @@
   <string name="theme_size_entries_large">גדול</string>
   <string name="this_option_is_turned_off">(מנוטרלת)</string>
   <string name="timeline_reloaded">ציר זמן נטען מחדש.</string>
-  <string name="timeline_title_direct_messages">הודעות ישירות</string>
+  <string name="timeline_title_private">הודעות ישירות</string>
   <string name="timeline_title_drafts">טיוטות</string>
   <string name="timeline_title_favorites">מועדפים</string>
   <string name="timeline_title_home">בית</string>

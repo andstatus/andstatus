@@ -195,12 +195,12 @@ xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd 
 </section>
 <section>
     <title>
-        <p>5. Direct (private) messages</p>
+        <p>5. Private (direct) messages</p>
     </title>
     <p>Open a Navigation Drawer on a left, tap current Timeline type
         item (Home)
         and select
-        <strong>Direct Messages</strong>
+        <strong>Private</strong>
         from the list.
     </p>
     <p>In order to <strong>delete</strong>

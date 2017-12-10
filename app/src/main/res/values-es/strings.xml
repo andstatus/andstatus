@@ -240,7 +240,7 @@
   <string name="menu_item_destroy_reblog_pumpio">Deshacer la compartición</string>
   <string name="menu_item_destroy_reblog_twitter">Deshacer retweet</string>
   <string name="menu_item_destroy_status">Borra el mensaje</string>
-  <string name="menu_item_direct_message">Mensaje directo</string>
+  <string name="menu_item_private_message">Mensaje directo</string>
   <string name="menu_item_edit">Editar</string>
   <string name="menu_item_favorite">Favorito</string>
   <string name="menu_item_follow_user">Seguir a \"%1s\"</string>
@@ -267,7 +267,6 @@
   <string name="message_source_in_reply_to">en respuesta a %1$s</string>
   <string name="message_source_to">para %1$s</string>
   <string name="message_twitter">Tweet</string>
-  <string name="messages_activity">Mensajes directos</string>
   <string name="n_message_link">Enlace del mensaje</string>
   <string name="n_message_links">Enlaces del mensaje %d</string>
   <string name="never">Nunca</string>
@@ -281,8 +280,6 @@
   <string name="options_menu_about">Acerca de AndStatus</string>
   <string name="options_menu_about_cond">Acerca de</string>
   <string name="options_menu_attach">Adjuntar</string>
-  <string name="options_menu_direct_messages">Mensajes directos</string>
-  <string name="options_menu_direct_messages_cond">Mensajes</string>
   <string name="options_menu_favorites_timeline">Línea de tiempo de favoritos</string>
   <string name="options_menu_favorites_timeline_cond">Favoritos</string>
   <string name="options_menu_home_timeline">Inicio de la línea de tiempo</string>
@@ -344,8 +341,6 @@
   <string name="rounded_avatars">Avatares redondeados</string>
   <string name="search_timeline_label">Búsqueda de mensajes, usuarios y hashtags</string>
   <string name="search_timeline_hint">Introduzca un nombre de usuario/frase</string>
-  <string name="search_direct_messages_label">Buscar mensajes directos</string>
-  <string name="search_direct_messages_hint">Introduzca un nombre de usuario o frase</string>
   <string name="select_backup_folder">Seleccione la carpeta para copia de seguridad</string>
   <string name="select_displayed_in_selector">Seleccionar si se muestra y cuando esta línea temporal</string>
   <string name="sent">Enviado</string>
@@ -428,7 +423,7 @@
   <string name="timeline_is_combined_by_default">La línea temporal combinada por defecto</string>
   <string name="timeline_reloaded">La línea de tiempo se ha vuelto a cargar.</string>
   <string name="timeline_title_all">Todo</string>
-  <string name="timeline_title_direct_messages">Mensajes directos</string>
+  <string name="timeline_title_private">Mensajes directos</string>
   <string name="timeline_title_drafts">Borradores</string>
   <string name="timeline_title_everything">Todo</string>
   <string name="timeline_title_favorites">Favoritos</string>

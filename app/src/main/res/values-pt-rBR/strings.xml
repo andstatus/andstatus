@@ -201,7 +201,7 @@
   <string name="menu_item_destroy_reblog">Desfazer a republicação</string>
   <string name="menu_item_destroy_reblog_twitter">Desfazer retweet</string>
   <string name="menu_item_destroy_status">Remover mensagem</string>
-  <string name="menu_item_direct_message">Mensagem direta</string>
+  <string name="menu_item_private_message">Mensagem direta</string>
   <string name="menu_item_edit">Editar</string>
   <string name="menu_item_favorite">Adicionar aos Favoritos</string>
   <string name="menu_item_follow_user">Seguir \"%1s\"</string>
@@ -225,7 +225,6 @@
   <string name="message_source_in_reply_to">em resposta a %1$s</string>
   <string name="message_source_to">para %1$s</string>
   <string name="message_twitter">Tweet</string>
-  <string name="messages_activity">Mensagens diretas</string>
   <string name="never">Nunca</string>
   <string name="new_items_count_abbreviated">Novas</string>
   <string name="no">Não</string>
@@ -237,8 +236,6 @@
   <string name="options_menu_about">Sobre o AndStatus</string>
   <string name="options_menu_about_cond">Sobre</string>
   <string name="options_menu_attach">Anexar</string>
-  <string name="options_menu_direct_messages">Mensagens diretas</string>
-  <string name="options_menu_direct_messages_cond">Mensagens</string>
   <string name="options_menu_favorites_timeline_cond">Favoritos</string>
   <string name="options_menu_home_timeline">Início da linha do tempo</string>
   <string name="options_menu_home_timeline_cond">Início</string>
@@ -296,8 +293,6 @@
   <string name="rounded_avatars">Avatars redondos</string>
   <string name="search_timeline_label">Procurar mensagens, usuários, hashtags</string>
   <string name="search_timeline_hint">Digite um nome de usuário ou frase</string>
-  <string name="search_direct_messages_label">Procurar mensagens diretas</string>
-  <string name="search_direct_messages_hint">Digite um nome de usuário ou frase</string>
   <string name="select_backup_folder">Selecione a pasta de backup</string>
   <string name="select_displayed_in_selector">Selecione se e quando a linha do tempo será exibida</string>
   <string name="sent">Enviada</string>
@@ -347,7 +342,7 @@ Com suporte a GNU social, Twitter e Pump.io.</string>
   <string name="theme_size_entries_standard">Normal</string>
   <string name="this_option_is_turned_off">(desativado)</string>
   <string name="timeline_title_all">Todos</string>
-  <string name="timeline_title_direct_messages">Mensagens diretas</string>
+  <string name="timeline_title_private">Mensagens diretas</string>
   <string name="timeline_title_drafts">Rascunhos</string>
   <string name="timeline_title_everything">Tudo</string>
   <string name="timeline_title_favorites">Favoritos</string>

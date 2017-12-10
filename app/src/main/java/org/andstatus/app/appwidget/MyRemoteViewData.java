@@ -129,7 +129,7 @@ class MyRemoteViewData {
     private PendingIntent getOnClickIntent(Context context, MyAppWidgetData widgetData) {
         TimelineType timeLineType = TimelineType.UNKNOWN;
         if (widgetData.numPrivate > 0) {
-            timeLineType = TimelineType.DIRECT;
+            timeLineType = TimelineType.PRIVATE;
         } else if (widgetData.numMentions > 0) {
                 timeLineType = TimelineType.MENTIONS;
         } else if (widgetData.numReblogs > 0) {

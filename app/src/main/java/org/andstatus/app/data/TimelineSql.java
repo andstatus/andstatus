@@ -113,7 +113,7 @@ public class TimelineSql {
                 activityWhere.append(ActivityTable.SUBSCRIBED + "=" + TriState.TRUE.id);
                 msgWhere.append(ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.PRIVATE + "!=" + TriState.TRUE.id);
                 break;
-            case DIRECT:
+            case PRIVATE:
                 msgWhere.append(ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.PRIVATE + "=" + TriState.TRUE.id);
                 break;
             case FAVORITES:

@@ -50,7 +50,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
             case DESTROY_FAVORITE:
                 url = "favorites/destroy.json?tweet_mode=extended";
                 break;
-            case DIRECT_MESSAGES:
+            case PRIVATE_MESSAGES:
                 url = "direct_messages.json?tweet_mode=extended";
                 break;
             case FAVORITES_TIMELINE:
