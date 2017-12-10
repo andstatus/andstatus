@@ -472,8 +472,7 @@
   <string name="notification_in_notification_area">Benachrichtigungen aktivieren</string>
   <string name="notification_events_private">Neue Direktnachrichten</string>
   <string name="notification_events_mention">Neue Erwähnungen</string>
-  <string name="title_preference_notifications_queue">Befehle in der Warteschlange</string>
-  <string name="title_preference_notifications_timeline">Neue Nachricht in Home</string>
+  <string name="commands_in_a_queue">Befehle in der Warteschlange</string>
   <string name="title_preference_oauth">OAuth</string>
   <string name="title_preference_old_messages_first_in_conversation">Alte Nachrichten zuerst im Gespräch anzeigen</string>
   <string name="title_preference_origin_system">{0}, Typ: {1}</string>

@@ -47,7 +47,7 @@
     <item
         android:id="@+id/commands_queue_id"
         app:showAsAction="never"
-        android:title="@string/title_preference_notifications_queue">
+        android:title="@string/commands_in_a_queue">
     </item>
     <item
         android:id="@+id/preferences_menu_id"

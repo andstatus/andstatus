@@ -60,7 +60,7 @@ public enum TimelineType implements SelectableEnum {
     REPLIES("replies", R.string.timeline_title_replies, Connection.ApiRoutineEnum.DUMMY),
     USERS("users", R.string.user_list, Connection.ApiRoutineEnum.DUMMY),
     CONVERSATION("conversation", R.string.label_conversation, Connection.ApiRoutineEnum.DUMMY),
-    COMMANDS_QUEUE("commands_queue", R.string.title_preference_notifications_queue, Connection.ApiRoutineEnum.DUMMY),
+    COMMANDS_QUEUE("commands_queue", R.string.commands_in_a_queue, Connection.ApiRoutineEnum.DUMMY),
     MANAGE_TIMELINES("manages_timelines", R.string.manage_timelines, Connection.ApiRoutineEnum.DUMMY)
     ;
 

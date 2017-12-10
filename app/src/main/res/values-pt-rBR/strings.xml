@@ -377,8 +377,7 @@ Com suporte a GNU social, Twitter e Pump.io.</string>
   <string name="notification_in_notification_area">Ativar notificações</string>
   <string name="notification_events_private">Novas mensagens diretas</string>
   <string name="notification_events_mention">Novas menções</string>
-  <string name="title_preference_notifications_queue">Comandos numa fila</string>
-  <string name="title_preference_notifications_timeline">Novas mensagens no Início</string>
+  <string name="commands_in_a_queue">Comandos numa fila</string>
   <string name="title_preference_oauth">OAuth</string>
   <string name="title_preference_old_messages_first_in_conversation">Colocar mensagens antigas no inicio da conversa</string>
   <string name="title_preference_origin_system">{0}, tipo: {1}</string>
