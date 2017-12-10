@@ -47,7 +47,9 @@ import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 /**
  * Contains global state of the application
@@ -56,6 +58,9 @@ import java.util.Locale;
  */
 @ThreadSafe
 public final class MyContextImpl implements MyContext {
+    private static volatile boolean mInForeground = false;
+    private static volatile long mInForegroundChangedAt = 0;
+    private static final long CONSIDER_IN_BACKGROUND_AFTER_SECONDS = 20;
 
     final long instanceId = InstanceId.next();
 
@@ -84,9 +89,7 @@ public final class MyContextImpl implements MyContext {
 
     private final Locale mLocale = Locale.getDefault();
     
-    private static volatile boolean mInForeground = false;
-    private static volatile long mInForegroundChangedAt = 0;
-    private static final long CONSIDER_IN_BACKGROUND_AFTER_SECONDS = 20;
+    private final Set<NotificationEvent> notificationEvents = new HashSet<>();
 
     private MyContextImpl(Object initializerName) {
         mInitializedBy = MyLog.objToTag(initializerName);
@@ -135,6 +138,10 @@ public final class MyContextImpl implements MyContext {
                 break;
             default:
                 break;
+        }
+
+        for (NotificationEvent event: NotificationEvent.values()) {
+            if (event.areNotificationsEnabled()) notificationEvents.add(event);
         }
     }
 
@@ -384,7 +391,12 @@ public final class MyContextImpl implements MyContext {
         mInForeground = inForeground;
     }
 
-	@Override
+    @Override
+    public Set<NotificationEvent> getNotificationEvents() {
+        return notificationEvents;
+    }
+
+    @Override
 	public void notify(NotificationEvent event, Notification notification) {
         NotificationManager nM = (NotificationManager) context().getSystemService(android.content.Context.NOTIFICATION_SERVICE);
         nM.notify(MyLog.APPTAG, event.ordinal(), notification);

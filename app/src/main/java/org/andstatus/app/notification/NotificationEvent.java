@@ -16,6 +16,8 @@
 
 package org.andstatus.app.notification;
 
+import android.support.annotation.NonNull;
+
 import org.andstatus.app.R;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -27,7 +29,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.EMPTY_LIST;
 
 /**
- *
+ * Types of events, about which a User may be notified and which are shown in the "Notifications" timeline
  */
 public enum NotificationEvent {
     ANNOUNCE(1, "notifications_announce", asList(TimelineType.HOME), true, R.string.notification_events_announce),
@@ -35,12 +37,12 @@ public enum NotificationEvent {
     LIKE(3, "notifications_like", EMPTY_LIST, true, R.string.notification_events_like),
     MENTION(4, "notifications_mention", asList(TimelineType.HOME, TimelineType.MENTIONS), true, R.string.notification_events_mention),
     OUTBOX(5, "notifications_outbox", asList(TimelineType.OUTBOX), true, org.andstatus.app.R.string.notification_events_outbox),
-    PRIVATE(6, "notifications_private", asList(TimelineType.PRIVATE), false, R.string.notification_events_private),
+    PRIVATE(6, "notifications_private", asList(TimelineType.PRIVATE), true, R.string.notification_events_private),
     OTHER(7, "", EMPTY_LIST, false, 0),
     EMPTY(0, "", EMPTY_LIST, false, 0),
     ;
 
-    final long id;
+    public final long id;
     final String preferenceKey;
     final boolean defaultValue;
     final List<TimelineType> visibleIn;
@@ -68,4 +70,18 @@ public enum NotificationEvent {
         return StringUtils.nonEmpty(preferenceKey) && SharedPreferencesUtil.getBoolean(preferenceKey, defaultValue);
     }
 
+    /** @return the enum or {@link #EMPTY} */
+    @NonNull
+    public static NotificationEvent fromId(long id) {
+        for (NotificationEvent type : values()) {
+            if (type.id == id) {
+                return type;
+            }
+        }
+        return EMPTY;
+    }
+
+    public boolean isEmpty() {
+        return this == EMPTY;
+    }
 }

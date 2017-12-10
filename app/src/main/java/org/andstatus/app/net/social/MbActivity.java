@@ -30,6 +30,7 @@ import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.notification.NotificationEvent;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
@@ -61,6 +62,7 @@ public class MbActivity extends AObject {
     /** Some additional attributes may appear from "My account's" (authenticated User's) point of view */
     private TriState subscribedByMe = TriState.UNKNOWN;
     private TriState notified = TriState.UNKNOWN;
+    private NotificationEvent notificationEvent = NotificationEvent.EMPTY;
 
     @NonNull
     public static MbActivity fromInner(@NonNull MbUser actor, @NonNull MbActivityType type,
@@ -274,6 +276,7 @@ public class MbActivity extends AObject {
                 + ", me:" + (accountUser.isEmpty() ? "EMPTY" : accountUser.oid)
                 + (subscribedByMe.known() ? (subscribedByMe == TriState.TRUE ? ", subscribed" : ", NOT subscribed") : "" )
                 + (notified.known() ? (notified == TriState.TRUE ? ", notified" : ", NOT notified") : "" )
+                + (notificationEvent.isEmpty() ? "" : ", " + notificationEvent)
                 + (actor.isEmpty() ? "" : ", \nactor:" + actor)
                 + (mbMessage.isEmpty() ? "" : ", \nmessage:" + mbMessage)
                 + (getActivity().isEmpty() ? "" : ", \nactivity:" + getActivity())
@@ -317,6 +320,8 @@ public class MbActivity extends AObject {
         activity.mbActivity.id =  DbUtils.getLong(cursor, ActivityTable.OBJ_ACTIVITY_ID);
         activity.subscribedByMe = DbUtils.getTriState(cursor, ActivityTable.SUBSCRIBED);
         activity.notified = DbUtils.getTriState(cursor, ActivityTable.NOTIFIED);
+        activity.setNotificationEvent(NotificationEvent.fromId(
+                DbUtils.getLong(cursor, ActivityTable.NEW_NOTIFICATION_EVENT)));
         activity.updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
         activity.insDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
         return activity;
@@ -324,7 +329,7 @@ public class MbActivity extends AObject {
     
     public long save(MyContext myContext) {
         if (wontSave(myContext)) return id;
-        calculateIsNotified(myContext);
+        calculateNotification(myContext);
         if (getId() == 0) {
             id = DbUtils.addRowWithRetry(myContext, ActivityTable.TABLE_NAME, toContentValues(), 3);
             MyLog.v(this, "Added " + this);
@@ -408,14 +413,34 @@ public class MbActivity extends AObject {
         }
     }
 
-    private void calculateIsNotified(MyContext myContext) {
-        if (isNotified().known() || getUpdatedDate() < 1 || isActorMe()) return;
-        if ( isAuthorMe()
-                || getMessage().audience().hasMyAccount(myContext)
-                || (getUser().isSameActor(accountUser) && accountUser.nonEmpty())
-                || getActivity().isActorMe() ) {
-            setNotified(TriState.TRUE);
+    private void calculateNotification(MyContext myContext) {
+        if (getUpdatedDate() < 1
+                || isNotified().equals(TriState.FALSE)
+                || isActorMe()
+                || myContext.persistentAccounts().isMyUserId(getActor().userId) ) return;
+        final NotificationEvent event;
+        if(myContext.getNotificationEvents().contains(NotificationEvent.MENTION)
+                && getMessage().audience().hasMyAccount(myContext)) {
+            event = NotificationEvent.MENTION;
+        } else if (myContext.getNotificationEvents().contains(NotificationEvent.ANNOUNCE)
+                && type == MbActivityType.ANNOUNCE
+                && myContext.persistentAccounts().isMyUserId(getAuthor().userId)) {
+            event = NotificationEvent.ANNOUNCE;
+        } else if (myContext.getNotificationEvents().contains(NotificationEvent.LIKE)
+                && (type == MbActivityType.LIKE || type == MbActivityType.UNDO_LIKE)
+                && myContext.persistentAccounts().isMyUserId(getAuthor().userId)) {
+            event = NotificationEvent.LIKE;
+        } else if (myContext.getNotificationEvents().contains(NotificationEvent.FOLLOW)
+                && (type == MbActivityType.FOLLOW || type == MbActivityType.UNDO_FOLLOW)
+                && myContext.persistentAccounts().isMyUserId(getUser().userId)) {
+            event = NotificationEvent.FOLLOW;
+        } else if (myContext.getNotificationEvents().contains(NotificationEvent.PRIVATE)
+                && getMessage().isPrivate()) {
+            event = NotificationEvent.PRIVATE;
+        } else {
+            return;
         }
+        setNotificationEvent(event);
     }
 
     private ContentValues toContentValues() {
@@ -432,6 +457,7 @@ public class MbActivity extends AObject {
         if (notified.known()) {
             values.put(ActivityTable.NOTIFIED, notified.id);
         }
+        values.put(ActivityTable.NEW_NOTIFICATION_EVENT, notificationEvent.id);
         values.put(ActivityTable.UPDATED_DATE, updatedDate);
         if (getId() == 0) {
             values.put(ActivityTable.ACTIVITY_TYPE, type.id);
@@ -461,5 +487,14 @@ public class MbActivity extends AObject {
             default:
                 break;
         }
+    }
+
+    public void setNotificationEvent(@NonNull NotificationEvent notificationEvent) {
+        this.notificationEvent = notificationEvent;
+        if (notificationEvent != NotificationEvent.EMPTY) setNotified(TriState.TRUE);
+    }
+
+    public NotificationEvent getNotificationEvent() {
+        return notificationEvent;
     }
 }

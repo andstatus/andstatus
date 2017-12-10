@@ -242,7 +242,12 @@ public class MyContextForTest implements MyContext {
         myContext.setInForeground(inForeground);
     }
 
-	@Override
+    @Override
+    public Set<NotificationEvent> getNotificationEvents() {
+        return myContext.getNotificationEvents();
+    }
+
+    @Override
 	public void notify(NotificationEvent event, Notification notification) {
 		myContext.notify(event, notification);
 		notifications.put(event, notification);

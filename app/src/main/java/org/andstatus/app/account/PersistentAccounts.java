@@ -243,7 +243,7 @@ public class PersistentAccounts {
         return getCurrentAccount().getUserId();
     }
 
-    public boolean isAccountUserId(long userId) {
+    public boolean isMyUserId(long userId) {
         if (userId == 0) {
             return false;
         }
@@ -513,11 +513,11 @@ public class PersistentAccounts {
         return mAccounts.equals(other.mAccounts);
     }
 
-    public boolean isMeOrMyFriend(long inReplyToUserId) {
-        if (isAccountUserId(inReplyToUserId)) {
+    public boolean isMeOrMyFriend(long userId) {
+        if (isMyUserId(userId)) {
             return true;
         }
-        return isMyFriend(inReplyToUserId);
+        return isMyFriend(userId);
     }
 
     private boolean isMyFriend(long userId) {

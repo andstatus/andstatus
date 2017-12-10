@@ -33,6 +33,7 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.IdentifiableInstance;
 
 import java.util.Locale;
+import java.util.Set;
 
 public interface MyContext extends IdentifiableInstance {
     MyContext newInitialized(Object initializerName);
@@ -61,6 +62,7 @@ public interface MyContext extends IdentifiableInstance {
     /** Is our application in Foreground now? **/
     boolean isInForeground();
     void setInForeground(boolean inForeground);
+    Set<NotificationEvent> getNotificationEvents();
     void notify(NotificationEvent event, Notification notification);
     void clearNotification(TimelineType timelineType);
 

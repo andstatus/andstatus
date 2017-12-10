@@ -335,12 +335,12 @@ public class Timeline implements Comparable<Timeline> {
         }
         MyAccount myAccount = myAccountIn == null ? MyAccount.EMPTY : myAccountIn;
         long userId = timelineType.isForUser() ? userIdIn : 0;
-        if (myContext.persistentAccounts().isAccountUserId(userId)) {
+        if (myContext.persistentAccounts().isMyUserId(userId)) {
             myAccount = myContext.persistentAccounts().fromUserId(userId);
         }
         if (timelineType.isAtOrigin() &&
                 !timelineType.isForUser() &&
-                userId == 0 || (userId != 0 && !myContext.persistentAccounts().isAccountUserId(userId))
+                userId == 0 || (userId != 0 && !myContext.persistentAccounts().isMyUserId(userId))
                 ) {
             return MyAccount.EMPTY;
         }

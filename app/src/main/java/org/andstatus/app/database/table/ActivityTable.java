@@ -45,6 +45,8 @@ public final class ActivityTable implements BaseColumns {
     public static final String SUBSCRIBED = "subscribed";
     /** {@link #ACCOUNT_ID} should be notified of this action */
     public static final String NOTIFIED = "notified";
+    /** {@link org.andstatus.app.notification.NotificationEvent}, is not 0, if the notification is active */
+    public static final String NEW_NOTIFICATION_EVENT = "new_notification_event";
 
     public static final String UPDATED_DATE = "activity_updated_date";
     /**
@@ -56,7 +58,6 @@ public final class ActivityTable implements BaseColumns {
     public static final String ACTIVITY_ID = "activity_id";
     public static final String AUTHOR_ID = "author_id";
     public static final String LAST_UPDATE_ID = "last_update_id";
-    private static final String NEW_NOTIFICATION_EVENT = "new_notification_event";
 
     public static String getTimeSortOrder(TimelineType timelineType, boolean ascending) {
         return getTimeSortField(timelineType) + (ascending ? " ASC" : " DESC");

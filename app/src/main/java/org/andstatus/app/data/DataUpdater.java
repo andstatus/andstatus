@@ -35,7 +35,6 @@ import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.net.social.TimelinePosition;
-import org.andstatus.app.notification.NotificationEvent;
 import org.andstatus.app.service.AttachmentDownloader;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -119,6 +118,7 @@ public class DataUpdater {
             activity.setSubscribedByMe(TriState.TRUE);
         }
         activity.save(execContext.getMyContext());
+        execContext.getResult().onNotificationEvent(activity.getNotificationEvent());
     }
 
     public void saveLum() {
@@ -249,16 +249,12 @@ public class DataUpdater {
                 saveAttachments(message);
             }
 
-            if (!keywordsFilter.matchedAny(message.getBodyToSearch())) {
+            if (keywordsFilter.matchedAny(message.getBodyToSearch())) {
+                activity.setNotified(TriState.FALSE);
+            } else {
                 if (message.getStatus() == DownloadStatus.LOADED) {
                     execContext.getResult().incrementDownloadedCount();
                     execContext.getResult().incrementNewCount();
-                    if (activity.getMessage().audience().hasMyAccount(execContext.getMyContext())) {
-                        execContext.getResult().onNotificationEvent(NotificationEvent.MENTION);
-                    }
-                    if (activity.getMessage().isPrivate()) {
-                        execContext.getResult().onNotificationEvent(NotificationEvent.PRIVATE);
-                    }
                 }
             }
             // Remember all messages that we added or updated

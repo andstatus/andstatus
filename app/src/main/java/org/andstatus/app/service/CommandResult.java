@@ -20,6 +20,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
@@ -249,7 +250,9 @@ public final class CommandResult implements Parcelable {
         newCount++;
     }
 
-    public void onNotificationEvent(NotificationEvent event) {
+    public void onNotificationEvent(@NonNull NotificationEvent event) {
+        if (event == NotificationEvent.EMPTY) return;
+
         AtomicLong count = notificationEventCounts.get(event);
         if (count == null) {
             notificationEventCounts.put(event, new AtomicLong(1));
