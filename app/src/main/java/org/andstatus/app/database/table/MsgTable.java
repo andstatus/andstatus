@@ -131,7 +131,7 @@ public final class MsgTable implements BaseColumns {
                 + BODY + " TEXT,"
                 + BODY_TO_SEARCH + " TEXT,"
                 + VIA + " TEXT,"
-                + AUTHOR_ID + " INTEGER NOT NULL,"
+                + AUTHOR_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + IN_REPLY_TO_MSG_ID + " INTEGER,"
                 + IN_REPLY_TO_USER_ID + " INTEGER,"
                 + PRIVATE + " INTEGER NOT NULL DEFAULT 0,"

@@ -25,6 +25,7 @@ import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.net.http.HttpConnection;
+import org.andstatus.app.notification.NotificationEvent;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionState;
 import org.andstatus.app.timeline.meta.PersistentTimelines;
@@ -60,8 +61,8 @@ public interface MyContext extends IdentifiableInstance {
     /** Is our application in Foreground now? **/
     boolean isInForeground();
     void setInForeground(boolean inForeground);
-    void notify(TimelineType id, Notification notification);
-    void clearNotification(TimelineType id);
+    void notify(NotificationEvent event, Notification notification);
+    void clearNotification(TimelineType timelineType);
 
     // For testing
     boolean isTestRun();

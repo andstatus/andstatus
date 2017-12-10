@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+/*
+ * Copyright (C) 2014-2017 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,18 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.CommandTable;
+import org.andstatus.app.notification.NotificationEvent;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.StringUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Result of the command execution
@@ -54,10 +59,9 @@ public final class CommandResult implements Parcelable {
     private int remainingHits = 0;
     
     // Counters to use for user notifications
-    private int messagesAdded = 0;
-    private int mentionsAdded = 0;
-    private int directedAdded = 0;
-    private int downloadedCount = 0;
+    private long downloadedCount = 0;
+    private long newCount = 0;
+    public final Map<NotificationEvent, AtomicLong> notificationEventCounts = new HashMap<>();
 
     public CommandResult() {
     }
@@ -86,7 +90,7 @@ public final class CommandResult implements Parcelable {
         dest.writeLong(itemId);
         dest.writeInt(hourlyLimit);
         dest.writeInt(remainingHits);
-        dest.writeInt(downloadedCount);
+        dest.writeLong(downloadedCount);
         dest.writeString(progress);
     }
     
@@ -101,7 +105,7 @@ public final class CommandResult implements Parcelable {
         itemId = parcel.readLong();
         hourlyLimit = parcel.readInt();
         remainingHits = parcel.readInt();
-        downloadedCount = parcel.readInt();
+        downloadedCount = parcel.readLong();
         progress = parcel.readString();
     }
 
@@ -189,16 +193,13 @@ public final class CommandResult implements Parcelable {
         if (downloadedCount > 0) {
             message.append("downloaded:" + downloadedCount + ", ");
         }
-        if (messagesAdded > 0) {
-            message.append("messages:" + messagesAdded + ", ");
+        if (newCount > 0) {
+            message.append("new:" + newCount + ", ");
         }
-        if (mentionsAdded > 0) {
-            message.append("mentions:" + mentionsAdded + ", ");
-        }
-        if (directedAdded > 0) {
-            message.append("directed:" + directedAdded + ", ");
-        }
-        if (!TextUtils.isEmpty(mMessage)) {
+        notificationEventCounts.forEach( (event, count) -> {
+            if (count.get() > 0) message.append(event.name() + ":" + count.get() + ", ");
+        });
+        if (StringUtils.nonEmpty(mMessage)) {
             message.append(" \n" + mMessage);
         }
         return message;
@@ -244,38 +245,31 @@ public final class CommandResult implements Parcelable {
         this.remainingHits = remainingHits;
     }
 
-    public void incrementMessagesCount() {
-        messagesAdded++;
+    public void incrementNewCount() {
+        newCount++;
     }
 
-    public void incrementDirectCount() {
-        directedAdded++;
-    }
-
-    public void incrementMentionsCount() {
-        mentionsAdded++;
+    public void onNotificationEvent(NotificationEvent event) {
+        AtomicLong count = notificationEventCounts.get(event);
+        if (count == null) {
+            notificationEventCounts.put(event, new AtomicLong(1));
+        } else {
+            count.incrementAndGet();
+        }
     }
 
     public void incrementDownloadedCount() {
         downloadedCount++;
     }
 
-    public int getDownloadedCount() {
+    public long getDownloadedCount() {
         return downloadedCount;
     }
     
-    public int getMessagesAdded() {
-        return messagesAdded;
+    public long getNewCount() {
+        return newCount;
     }
 
-    public int getMentionsAdded() {
-        return mentionsAdded;
-    }
-
-    public int getDirectedAdded() {
-        return directedAdded;
-    }
-    
     protected int getRetriesLeft() {
         return retriesLeft;
     }
@@ -307,9 +301,8 @@ public final class CommandResult implements Parcelable {
         hourlyLimit = 0;
         remainingHits = 0;
 
-        messagesAdded = 0;
-        mentionsAdded = 0;
-        directedAdded = 0;
+        newCount = 0;
+        notificationEventCounts.values().forEach(c -> c.set(0));
         downloadedCount = 0;
 
         progress = "";

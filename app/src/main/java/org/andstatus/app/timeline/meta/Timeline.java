@@ -957,9 +957,9 @@ public class Timeline implements Comparable<Timeline> {
             syncedTimesCount++;
             syncedTimesCountTotal++;
         }
-        if (result.getMessagesAdded() > 0) {
-            newItemsCount += result.getMessagesAdded();
-            newItemsCountTotal += result.getMessagesAdded();
+        if (result.getNewCount() > 0) {
+            newItemsCount += result.getNewCount();
+            newItemsCountTotal += result.getNewCount();
         }
         if (result.getDownloadedCount() > 0) {
             downloadedItemsCount += result.getDownloadedCount();

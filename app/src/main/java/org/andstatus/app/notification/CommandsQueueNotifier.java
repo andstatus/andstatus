@@ -26,7 +26,6 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
@@ -46,7 +45,7 @@ public class CommandsQueueNotifier {
     public void update(int mainQueueSize, int retryQueueSize) {
         int count = mainQueueSize + retryQueueSize;
         if (count == 0 ) {
-            myContext.clearNotification(TimelineType.EVERYTHING);
+            myContext.clearNotification(TimelineType.OUTBOX);
         } else if (mNotificationsEnabled && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_NOTIFY_OF_COMMANDS_IN_THE_QUEUE, false)) {
             if (mainQueueSize != 0) {
                 MyLog.d(this, mainQueueSize + " commands in Main Queue.");
@@ -60,20 +59,16 @@ public class CommandsQueueNotifier {
 
     /** Based on code from http://developer.android.com/guide/topics/ui/notifiers/notifications.html */
     private void createNotification(int count) {
-        CharSequence messageTitle = myContext.context().getText(R.string.notification_title_queue);
-        String messageText = I18n.formatQuantityMessage(myContext.context(),
-                R.string.notification_queue_format, count, R.array.notification_queue_patterns,
-                R.array.notification_queue_formats);
+        CharSequence messageTitle = myContext.context().getText(NotificationEvent.OUTBOX.titleResId);
+        CharSequence messageText = myContext.context().getText(NotificationEvent.OUTBOX.titleResId)
+                + ": " + count;
 
-        Notification.Builder builder =
-                new Notification.Builder(myContext.context())
-        .setSmallIcon(
-                SharedPreferencesUtil.getBoolean(
-                        MyPreferences.KEY_NOTIFICATION_ICON_ALTERNATIVE, false)
-                        ? R.drawable.notification_icon_circle
-                                : R.drawable.notification_icon)
-                                .setContentTitle(messageTitle)
-                                .setContentText(messageText);
+        Notification.Builder builder = new Notification.Builder(myContext.context())
+        .setSmallIcon(SharedPreferencesUtil.getBoolean(
+            MyPreferences.KEY_NOTIFICATION_ICON_ALTERNATIVE, false)
+            ? R.drawable.notification_icon_circle : R.drawable.notification_icon)
+        .setContentTitle(messageTitle)
+        .setContentText(messageText);
         // Creates an explicit intent for an Activity in your app
         Intent resultIntent = new Intent(myContext.context(), QueueViewer.class);
 
@@ -92,6 +87,6 @@ public class CommandsQueueNotifier {
                         PendingIntent.FLAG_UPDATE_CURRENT
                         );
         builder.setContentIntent(pendingIntent);
-        myContext.notify(TimelineType.EVERYTHING, builder.build());
+        myContext.notify(NotificationEvent.OUTBOX, builder.build());
     }
 }

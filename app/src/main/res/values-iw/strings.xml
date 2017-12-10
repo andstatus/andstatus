@@ -19,12 +19,6 @@
   <string name="account_settings_action">הגדרות חשבון AndStatus</string>
   <string name="account_settings_activity_title">חשבון</string>
   <string name="action_menu_overflow_description">פעולות נוספות&#8230;</string>
-  <string name="appwidget_message_formats_1">הודעה {0}</string>
-  <string name="appwidget_message_formats_2">{0} הודעות</string>
-  <string name="appwidget_mention_formats_1">אזכור {0}</string>
-  <string name="appwidget_mention_formats_2">{0} אזכורים</string>
-  <string name="appwidget_directmessage_formats_1">ישירה {0}</string>
-  <string name="appwidget_directmessage_formats_2">ישירה {0}</string>
   <string name="attachments">תצריף</string>
   <string name="automatic">אוטומטי</string>
   <string name="button_add">הוסף</string>
@@ -45,7 +39,7 @@
   <string name="cannot_send_empty_message">אין אפשרות לשלוח הודעה ריקה.</string>
   <string name="category_title_preference_appearance">מראה</string>
   <string name="category_title_preference_information">מידע</string>
-  <string name="category_title_preference_notifications">התראות</string>
+  <string name="notifications_title">התראות</string>
   <string name="category_title_preference_origin">רשת חברתית</string>
   <string name="category_title_preference_settings">הגדרות</string>
   <string name="color_black">שחוק</string>
@@ -175,10 +169,9 @@
   <string name="title_preference_contact_developer">צור קשר עם המפתח</string>
   <string name="title_preference_history_size">גודל היסטוריה</string>
   <string name="title_preference_history_time">זמן היסטוריה</string>
-  <string name="title_preference_notifications">התרעות</string>
-  <string name="title_preference_notifications_enabled">אפשר התרעות</string>
-  <string name="title_preference_notifications_messages">הודעה ישירה חדשה</string>
-  <string name="title_preference_notifications_mentions">אזכורים חדשים</string>
+  <string name="notification_in_notification_area">אפשר התרעות</string>
+  <string name="notification_events_private">הודעה ישירה חדשה</string>
+  <string name="notification_events_mention">אזכורים חדשים</string>
   <string name="title_preference_oauth">OAuth</string>
   <string name="title_preference_password">סיסמה</string>
   <string name="title_preference_report_bug">דווח על באג</string>

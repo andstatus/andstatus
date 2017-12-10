@@ -27,6 +27,11 @@ import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
+import java.util.concurrent.atomic.AtomicLong;
+
+import static org.andstatus.app.notification.NotificationEvent.MENTION;
+import static org.andstatus.app.notification.NotificationEvent.PRIVATE;
+
 /**
  * The class maintains the appWidget instance (defined by mappWidgetId): - state
  * (that changes when new tweets etc. arrive); - preferences (that are set once
@@ -74,9 +79,9 @@ public class MyAppWidgetData {
     String nothingPref = "";
 
     // Numbers of new Messages accumulated
-    int numHomeTimeline = 0;
-    int numMentions = 0;
-    int numDirectMessages = 0;
+    long numReblogs = 0;
+    long numMentions = 0;
+    long numPrivate = 0;
 
     /**  Value of {@link #dateLastChecked} before counters were cleared */
     long dateSince = 0;
@@ -119,9 +124,9 @@ public class MyAppWidgetData {
             if (dateLastChecked == 0) {
                 clearCounters();
             } else {
-                numHomeTimeline = prefs.getInt(PREF_NUM_HOME_TIMELINE_KEY, 0);
-                numMentions = prefs.getInt(PREF_NUM_MENTIONS_KEY, 0);
-                numDirectMessages = prefs.getInt(PREF_NUM_DIRECTMESSAGES_KEY, 0);
+                numReblogs = prefs.getLong(PREF_NUM_HOME_TIMELINE_KEY, 0);
+                numMentions = prefs.getLong(PREF_NUM_MENTIONS_KEY, 0);
+                numPrivate = prefs.getLong(PREF_NUM_DIRECTMESSAGES_KEY, 0);
                 dateSince = prefs.getLong(PREF_DATESINCE_KEY, 0);
             }
 
@@ -135,14 +140,14 @@ public class MyAppWidgetData {
 
     public void clearCounters() {
         numMentions = 0;
-        numDirectMessages = 0;
-        numHomeTimeline = 0;
+        numPrivate = 0;
+        numReblogs = 0;
         dateSince = dateLastChecked;
         changed = true;
     }
 
     public boolean areThereAnyNewMessagesInAnyTimeline() {
-        return (numMentions >0) || (numDirectMessages > 0) || (numHomeTimeline > 0);
+        return (numMentions >0) || (numPrivate > 0) || (numReblogs > 0);
     }
     
     private void onDataCheckedOnTheServer() {
@@ -164,9 +169,9 @@ public class MyAppWidgetData {
                 MyLog.e(this, "Prefs Editor was not loaded");
             } else {
                 prefs.putString(PREF_NOTHING_KEY, nothingPref);
-                prefs.putInt(PREF_NUM_HOME_TIMELINE_KEY, numHomeTimeline);
-                prefs.putInt(PREF_NUM_MENTIONS_KEY, numMentions);
-                prefs.putInt(PREF_NUM_DIRECTMESSAGES_KEY, numDirectMessages);
+                prefs.putLong(PREF_NUM_HOME_TIMELINE_KEY, numReblogs);
+                prefs.putLong(PREF_NUM_MENTIONS_KEY, numMentions);
+                prefs.putLong(PREF_NUM_DIRECTMESSAGES_KEY, numPrivate);
                 
                 prefs.putLong(PREF_DATECHECKED_KEY, dateLastChecked);
                 prefs.putLong(PREF_DATESINCE_KEY, dateSince);
@@ -191,9 +196,9 @@ public class MyAppWidgetData {
     @Override
     public String toString() {
         return "MyAppWidgetData:{id:" + mAppWidgetId +
-                (numHomeTimeline > 0 ? ", home:" + numHomeTimeline : "") +
+                (numReblogs > 0 ? ", reblogs:" + numReblogs : "") +
                 (numMentions > 0 ? ", mentions:" + numMentions : "") +
-                (numDirectMessages > 0 ? ", direct:" + numDirectMessages : "") +
+                (numPrivate > 0 ? ", private:" + numPrivate : "") +
                 (dateLastChecked > 0 ? ", checked:" + dateLastChecked : "") +
                 (dateSince > 0 ? ", since:" + dateSince : "") +
                 (TextUtils.isEmpty(nothingPref) ? "" : ", nothing:" + nothingPref) +
@@ -204,9 +209,9 @@ public class MyAppWidgetData {
         if (result.hasError() && result.getDownloadedCount() == 0) {
             return;
         }
-        numHomeTimeline += result.getMessagesAdded();
-        numMentions += result.getMentionsAdded();
-        numDirectMessages += result.getDirectedAdded();
+        numReblogs += result.getNewCount();
+        numMentions += result.notificationEventCounts.getOrDefault(MENTION, new AtomicLong(0L)).get();
+        numPrivate += result.notificationEventCounts.getOrDefault(PRIVATE, new AtomicLong(0L)).get();
         onDataCheckedOnTheServer();
         save();
     }

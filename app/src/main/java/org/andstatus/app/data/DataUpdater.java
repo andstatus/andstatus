@@ -35,6 +35,7 @@ import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.net.social.TimelinePosition;
+import org.andstatus.app.notification.NotificationEvent;
 import org.andstatus.app.service.AttachmentDownloader;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -180,7 +181,7 @@ public class DataUpdater {
             values.put(MsgTable.MSG_STATUS, message.getStatus().save());
             values.put(MsgTable.UPDATED_DATE, message.getUpdatedDate());
 
-            if (activity.getAuthor().userId != 0 || message.msgId == 0 ) {
+            if (activity.getAuthor().userId != 0) {
                 values.put(MsgTable.AUTHOR_ID, activity.getAuthor().userId);
             }
             values.put(MsgTable.MSG_OID, message.oid);
@@ -251,12 +252,12 @@ public class DataUpdater {
             if (!keywordsFilter.matchedAny(message.getBodyToSearch())) {
                 if (message.getStatus() == DownloadStatus.LOADED) {
                     execContext.getResult().incrementDownloadedCount();
-                    execContext.getResult().incrementMessagesCount();
+                    execContext.getResult().incrementNewCount();
                     if (activity.getMessage().audience().hasMyAccount(execContext.getMyContext())) {
-                        execContext.getResult().incrementMentionsCount();
+                        execContext.getResult().onNotificationEvent(NotificationEvent.MENTION);
                     }
                     if (activity.getMessage().isPrivate()) {
-                        execContext.getResult().incrementDirectCount();
+                        execContext.getResult().onNotificationEvent(NotificationEvent.PRIVATE);
                     }
                 }
             }

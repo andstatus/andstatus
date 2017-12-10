@@ -11,10 +11,9 @@ import android.text.format.Time;
 import org.andstatus.app.FirstActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.MatchedUri;
+import org.andstatus.app.notification.NotificationEvent;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
@@ -45,28 +44,17 @@ class MyRemoteViewData {
             if (widgetData.numMentions > 0) {
                 isFound = true;
                 widgetText += (widgetText.length() > 0 ? "\n" : "")
-                        + I18n.formatQuantityMessage(context,
-                                R.string.appwidget_new_mention_format,
-                                widgetData.numMentions,
-                                R.array.appwidget_mention_patterns,
-                                R.array.appwidget_mention_formats);
+                    + context.getText(NotificationEvent.MENTION.titleResId) + ": " + widgetData.numMentions;
             }
-            if (widgetData.numDirectMessages > 0) {
+            if (widgetData.numPrivate > 0) {
                 isFound = true;
                 widgetText += (widgetText.length() > 0 ? "\n" : "")
-                        + I18n.formatQuantityMessage(context,
-                                R.string.appwidget_new_directmessage_format,
-                                widgetData.numDirectMessages,
-                                R.array.appwidget_directmessage_patterns,
-                                R.array.appwidget_directmessage_formats);
+                    + context.getText(NotificationEvent.PRIVATE.titleResId) + ": " + widgetData.numPrivate;
             }
-            if (widgetData.numHomeTimeline > 0) {
+            if (widgetData.numReblogs > 0) {
                 isFound = true;
                 widgetText += (widgetText.length() > 0 ? "\n" : "")
-                        + I18n.formatQuantityMessage(context,
-                                R.string.appwidget_new_home_format,
-                                widgetData.numHomeTimeline, R.array.appwidget_home_patterns,
-                                R.array.appwidget_home_formats);
+                    + context.getText(NotificationEvent.ANNOUNCE.titleResId) + ": " + widgetData.numReblogs;
             }
             if (!isFound) {
                 widgetComment = widgetData.nothingPref;
@@ -140,25 +128,24 @@ class MyRemoteViewData {
      */
     private PendingIntent getOnClickIntent(Context context, MyAppWidgetData widgetData) {
         TimelineType timeLineType = TimelineType.UNKNOWN;
-        if (widgetData.numDirectMessages > 0) {
+        if (widgetData.numPrivate > 0) {
             timeLineType = TimelineType.DIRECT;
         } else if (widgetData.numMentions > 0) {
                 timeLineType = TimelineType.MENTIONS;
-        } else if (widgetData.numHomeTimeline > 0) {
-            timeLineType = TimelineType.HOME;
+        } else if (widgetData.numReblogs > 0) {
+            timeLineType = TimelineType.NOTIFICATIONS;
         }
 
         // TODO: MyAccount in the intent is not necessarily the one, which got new messages
         // But so far this looks better than Combined timeline for most users...
         Timeline timeline;
         switch(timeLineType) {
-            case MENTIONS:
-            case DIRECT:
-                timeline = Timeline.getTimeline(timeLineType,
-                        MyContextHolder.get().persistentAccounts().getCurrentAccount(), 0, null);
+            case UNKNOWN:
+                timeline = MyContextHolder.get().persistentTimelines().getDefault();
                 break;
             default:
-                timeline = MyContextHolder.get().persistentTimelines().getDefault();
+                timeline = Timeline.getTimeline(timeLineType,
+                        MyContextHolder.get().persistentAccounts().getCurrentAccount(), 0, null);
                 break;
         }
 

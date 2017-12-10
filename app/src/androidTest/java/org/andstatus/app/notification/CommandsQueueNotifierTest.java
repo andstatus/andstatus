@@ -23,6 +23,6 @@ public class CommandsQueueNotifierTest {
     public void testCreateNotification() {
     	TestSuite.getMyContextForTest().getNotifications().clear();
         CommandsQueueNotifier.newInstance(MyContextHolder.get()).update(3, 7);
-        assertTrue(TestSuite.getMyContextForTest().getNotifications().get(TimelineType.EVERYTHING) != null);
+        assertTrue(TestSuite.getMyContextForTest().getNotifications().get(NotificationEvent.OUTBOX) != null);
     }
 }

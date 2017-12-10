@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-    Copyright (c) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
+    Copyright (c) 2017 yvolk (Yuri Volkov), http://yurivolkov.com
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -15,50 +15,47 @@
 	limitations under the License.
  -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-				  android:title="@string/title_preference_notifications"
-				  android:summary="@string/summary_preference_notifications">
-	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_enabled"
-		android:title="@string/title_preference_notifications_enabled"
-		android:summaryOn="@string/summary_preference_notifications_enabled_on"
-		android:summaryOff="@string/summary_preference_notifications_enabled_off" />
-	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_messages"
-		android:title="@string/title_preference_notifications_messages"
-		android:summaryOn="@string/summary_preference_notifications_messages_on"
-		android:summaryOff="@string/summary_preference_notifications_messages_off"
-		android:defaultValue="true"
-		android:dependency="notifications_enabled" />
-	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_mentions"
-		android:title="@string/title_preference_notifications_mentions"
-		android:summaryOn="@string/summary_preference_notifications_mentions_on"
-		android:summaryOff="@string/summary_preference_notifications_mentions_off"
-		android:defaultValue="true"
-		android:dependency="notifications_enabled" />
-	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_timeline"
-		android:title="@string/title_preference_notifications_timeline"
-		android:summaryOn="@string/summary_preference_notifications_timeline_on"
-		android:summaryOff="@string/summary_preference_notifications_timeline_off"
-		android:defaultValue="false"
-		android:dependency="notifications_enabled" />
-	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_queue"
-		android:title="@string/title_preference_notifications_queue"
-		android:summaryOn="@string/summary_preference_notifications_queue_on"
-		android:summaryOff="@string/summary_preference_notifications_queue_off"
-		android:defaultValue="false"
-		android:dependency="notifications_enabled" />
-	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="vibration"
-		android:title="@string/title_preference_vibration"
-		android:summaryOn="@string/summary_preference_vibration_on"
-		android:summaryOff="@string/summary_preference_vibration_off"
-		android:defaultValue="true"
-		android:dependency="notifications_enabled" />
-	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="notification_icon_alternative"
-		android:title="@string/preference_notification_icon_alternative_title"
-		android:defaultValue="false"
-		android:summaryOff="@string/preference_notification_icon_alternative_off"
-		android:summaryOn="@string/preference_notification_icon_alternative_on"
-		android:dependency="notifications_enabled" />
-	<RingtonePreference android:key="notification_ringtone"
-		android:ringtoneType="notification"
-		android:title="@string/title_preference_notification_sound"
-		android:dependency="notifications_enabled" />
+				  android:title="@string/notifications_title"
+				  android:summary="@string/notifications_summary">
+    <PreferenceCategory android:title="@string/notification_behavior">
+        <org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_enabled"
+            android:title="@string/notification_in_notification_area"
+            android:defaultValue="true" />
+        <org.andstatus.app.context.MultilineCheckBoxPreference android:key="notification_icon_alternative"
+            android:title="@string/notification_icon_alternative_title"
+            android:defaultValue="false"
+            android:summaryOff="@string/notification_icon_alternative_off"
+            android:summaryOn="@string/notification_icon_alternative_on"
+            android:dependency="notifications_enabled" />
+        <org.andstatus.app.context.MultilineCheckBoxPreference android:key="vibration"
+            android:title="@string/title_preference_vibration"
+            android:summaryOn="@string/summary_preference_vibration_on"
+            android:summaryOff="@string/summary_preference_vibration_off"
+            android:defaultValue="true" />
+        <RingtonePreference android:key="notification_ringtone"
+            android:ringtoneType="notification"
+            android:title="@string/notification_sound" />
+   </PreferenceCategory>
+   <PreferenceCategory android:title="@string/notification_events">
+        <org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_follow"
+            android:title="@string/notification_events_follow"
+            android:defaultValue="true" />
+        <org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_like"
+            android:title="@string/notification_events_like"
+            android:defaultValue="true" />
+        <org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_mention"
+            android:title="@string/notification_events_mention"
+            android:defaultValue="true" />
+        <org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_announce"
+            android:title="@string/notification_events_announce"
+            android:defaultValue="true" />
+        <org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_outbox"
+            android:title="@string/notification_events_outbox"
+            android:summary="@string/notification_events_outbox_summary"
+            android:defaultValue="true" />
+        <org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_private"
+            android:title="@string/notification_events_private"
+            android:summary="@string/notification_events_private_summary"
+            android:defaultValue="true" />
+	</PreferenceCategory>
 </PreferenceScreen>

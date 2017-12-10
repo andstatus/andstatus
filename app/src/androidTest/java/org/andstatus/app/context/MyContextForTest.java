@@ -25,6 +25,7 @@ import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.net.http.HttpConnection;
+import org.andstatus.app.notification.NotificationEvent;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionState;
 import org.andstatus.app.timeline.meta.PersistentTimelines;
@@ -49,7 +50,7 @@ public class MyContextForTest implements MyContext {
     private volatile Class<? extends HttpConnection> httpConnectionMockClass = null;
     private volatile HttpConnection httpConnectionMockInstance = null;
     private volatile ConnectionState mockedConnectionState = ConnectionState.UNKNOWN;
-    private final Map<TimelineType, Notification> notifications = new ConcurrentHashMap<>();
+    private final Map<NotificationEvent, Notification> notifications = new ConcurrentHashMap<>();
 
     public MyContextForTest setContext(MyContext myContextIn) {
         MyContext myContext2 = myContextIn;
@@ -242,9 +243,9 @@ public class MyContextForTest implements MyContext {
     }
 
 	@Override
-	public void notify(TimelineType id, Notification notification) {
-		myContext.notify(id, notification);
-		notifications.put(id, notification);
+	public void notify(NotificationEvent event, Notification notification) {
+		myContext.notify(event, notification);
+		notifications.put(event, notification);
 	}
 
 	@Override
@@ -258,7 +259,7 @@ public class MyContextForTest implements MyContext {
         return instanceId;
     }
 
-    public Map<TimelineType, Notification> getNotifications() {
+    public Map<NotificationEvent, Notification> getNotifications() {
 		return notifications;
 	}
 

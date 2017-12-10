@@ -15,57 +15,6 @@
 	limitations under the License.
  -->
 <resources>
-    <string-array name="appwidget_home_formats">
-        <item>@string/appwidget_message_formats_1</item>
-        <item>@string/appwidget_message_formats_2</item>
-    </string-array>
-    <string-array name="appwidget_home_patterns">
-        <item>"1"</item>
-        <item>".*"</item>
-    </string-array>
-    <string-array name="appwidget_mention_formats">
-        <item>@string/appwidget_mention_formats_1</item>
-        <item>@string/appwidget_mention_formats_2</item>
-    </string-array>
-    <string-array name="appwidget_mention_patterns">
-        <!-- same as @appwidget_message_patterns,
-        but I couldn't refer to existing resource, e.g. by 
-        @array/appwidget_message_patterns -->
-        <item>"1"</item>
-        <item>".*"</item>
-    </string-array>
-    <string-array name="notification_home_formats">
-        <item>@string/notification_message_formats_1</item>
-        <item>@string/notification_message_formats_2</item>
-    </string-array>
-    <string-array name="notification_home_patterns">
-        <item>"1"</item>
-        <item>".*"</item>
-    </string-array>
-    <string-array name="notification_mention_formats">
-        <item>@string/notification_mention_formats_1</item>
-        <item>@string/notification_mention_formats_2</item>
-    </string-array>
-    <string-array name="notification_mention_patterns">
-        <item>"1"</item>
-        <item>".*"</item>
-    </string-array>
-    <string-array name="notification_direct_message_formats">
-        <item>@string/notification_direct_message_formats_1</item>
-        <item>@string/notification_direct_message_formats_2</item>
-    </string-array>
-    <string-array name="notification_direct_message_patterns">
-        <item>"1"</item>
-        <item>".*"</item>
-    </string-array>
-    <string-array name="notification_queue_formats">
-        <item>@string/notification_queue_formats_1</item>
-        <item>@string/notification_queue_formats_2</item>
-    </string-array>
-    <string-array name="notification_queue_patterns">
-        <item>"1"</item>
-        <item>".*"</item>
-    </string-array>
     <string-array name="reltime_days_ago_formats">
         <item>@string/reltime_days_ago_formats_1</item>
         <item>@string/reltime_days_ago_formats_2</item>

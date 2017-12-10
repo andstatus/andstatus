@@ -21,12 +21,6 @@
   <string name="action_menu_overflow_description">Fler åtgärder&#8230;</string>
   <string name="appwidget_configure_instructions">Anpassa
     AndStatus Widget meddelande, visas när inget nytt finns:</string>
-  <string name="appwidget_message_formats_1">{0} message</string>
-  <string name="appwidget_message_formats_2">{0} messages</string>
-  <string name="appwidget_mention_formats_1">{0} mention</string>
-  <string name="appwidget_mention_formats_2">{0} mentions</string>
-  <string name="appwidget_directmessage_formats_1">{0} meddelande</string>
-  <string name="appwidget_directmessage_formats_2">{0} meddelanden</string>
   <string name="appwidget_nothingnew_default">Inget nytt sedan:</string>
   <string name="appwidget_nodata">Ingen data ännu.</string>
   <string name="authentication_never">Har inte autentiserat än</string>
@@ -190,21 +184,6 @@
   <string name="messages_activity">Direktmeddelanden</string>
   <string name="no">Nej</string>
   <string name="not_set">ej valt</string>
-  <string name="notification_message_formats_1">{0} nya tweet</string>
-  <string name="notification_message_formats_2">{0} nya tweets</string>
-  <string name="notification_mention_formats_1">{0} new mention</string>
-  <string name="notification_mention_formats_2">{0} new mentions</string>
-  <string name="notification_direct_message_formats_1">{0} nytt meddelande</string>
-  <string name="notification_direct_message_formats_2">{0} nya meddelanden</string>
-  <string name="notification_queue_formats_1">{0} message is\"</string>
-  <string name="notification_queue_formats_2">{0} messages are\"</string>
-  <string name="notification_new_tweet_format">Du har {0}.</string>
-  <string name="notification_new_message_format">Du har {0}.</string>
-  <string name="notification_title_messages">Nya meddelanden</string>
-  <string name="notification_new_mention_format">Du har {0}.</string>
-  <string name="notification_title_mentions">Nya omnämningar</string>
-  <string name="notification_queue_format">{0} väntar i kön på att bli skickade.</string>
-  <string name="notification_title_queue">Alla meddelanden skickades inte</string>
   <string name="oauth_activity_label">OAuth</string>
   <string name="off">av</string>
   <string name="on">på</string>
@@ -263,8 +242,6 @@
   <string name="summary_preference_theme_color">Färg och stil</string>
   <string name="summary_preference_min_log_level">Nivån är {0}.</string>
   <string name="summary_preference_no_ringtone">Tyst</string>
-  <string name="summary_preference_notifications_timeline_off">No notification for Tweets</string>
-  <string name="summary_preference_notifications_timeline_on">You will be notified of new tweets</string>
   <string name="summary_preference_password">Ditt lösenord i det sociala nätverket</string>
   <string name="summary_preference_show_avatars_off">User avatars will not be displayed</string>
   <string name="summary_preference_show_avatars_on">Användaravatarer kommer visas</string>
@@ -311,8 +288,8 @@
   <string name="title_preference_history_size">Historikstorlek</string>
   <string name="title_preference_history_time">Historiktid</string>
   <string name="title_preference_min_log_level">Minsta loggningsnivå</string>
-  <string name="title_preference_notifications_messages">Notify on new DMs</string>
-  <string name="title_preference_notifications_mentions">Notify on new Mentions</string>
+  <string name="notification_events_private">Notify on new DMs</string>
+  <string name="notification_events_mention">Notify on new Mentions</string>
   <string name="title_preference_notifications_queue">Kommandon i kön</string>
   <string name="title_preference_notifications_timeline">Notify on new Tweets</string>
   <string name="title_preference_oauth">OAuth</string>

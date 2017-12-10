@@ -56,6 +56,7 @@ public final class ActivityTable implements BaseColumns {
     public static final String ACTIVITY_ID = "activity_id";
     public static final String AUTHOR_ID = "author_id";
     public static final String LAST_UPDATE_ID = "last_update_id";
+    private static final String NEW_NOTIFICATION_EVENT = "new_notification_event";
 
     public static String getTimeSortOrder(TimelineType timelineType, boolean ascending) {
         return getTimeSortField(timelineType) + (ascending ? " ASC" : " DESC");
@@ -82,6 +83,7 @@ public final class ActivityTable implements BaseColumns {
                 + OBJ_ACTIVITY_ID + " INTEGER NOT NULL,"
                 + SUBSCRIBED + " INTEGER NOT NULL DEFAULT 0,"
                 + NOTIFIED + " INTEGER NOT NULL DEFAULT 0,"
+                + NEW_NOTIFICATION_EVENT + " INTEGER NOT NULL DEFAULT 0,"
                 + INS_DATE + " INTEGER NOT NULL,"
                 + UPDATED_DATE + " INTEGER NOT NULL DEFAULT 0"
                 + ")");
@@ -127,6 +129,11 @@ public final class ActivityTable implements BaseColumns {
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_notified_timeline ON " + TABLE_NAME + " ("
                 + NOTIFIED + ", "
                 + UPDATED_DATE
+                + ")"
+        );
+
+        DbUtils.execSQL(db, "CREATE INDEX idx_activity_new_notification ON " + TABLE_NAME + " ("
+                + NEW_NOTIFICATION_EVENT
                 + ")"
         );
     }

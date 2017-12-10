@@ -36,7 +36,7 @@ public enum MbActivityType {
     UNDO_ANNOUNCE(7, R.string.undid_reblog),
     UNDO_FOLLOW(8, R.string.undid_follow),
     UNDO_LIKE(9, R.string.undid_like),
-    EMPTY(10, R.string.empty_in_parenthesis);
+    EMPTY(0, R.string.empty_in_parenthesis);
 
     public final long id;
     public final int actedResourceId;

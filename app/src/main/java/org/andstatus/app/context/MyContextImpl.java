@@ -35,6 +35,7 @@ import org.andstatus.app.data.converter.DatabaseConverterController;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.net.http.HttpConnection;
+import org.andstatus.app.notification.NotificationEvent;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionState;
 import org.andstatus.app.timeline.meta.PersistentTimelines;
@@ -384,15 +385,19 @@ public final class MyContextImpl implements MyContext {
     }
 
 	@Override
-	public void notify(TimelineType id, Notification notification) {
+	public void notify(NotificationEvent event, Notification notification) {
         NotificationManager nM = (NotificationManager) context().getSystemService(android.content.Context.NOTIFICATION_SERVICE);
-        nM.notify(MyLog.APPTAG, id.ordinal(), notification);
+        nM.notify(MyLog.APPTAG, event.ordinal(), notification);
 	}
 
 	@Override
-	public void clearNotification(TimelineType id) {
+	public void clearNotification(TimelineType timelineType) {
         NotificationManager nM = (NotificationManager) context().getSystemService(android.content.Context.NOTIFICATION_SERVICE);
-        nM.cancel(MyLog.APPTAG, id.ordinal());
+        for(NotificationEvent event: NotificationEvent.values()) {
+            if (event.isShownOn(timelineType)) {
+                nM.cancel(MyLog.APPTAG, event.ordinal());
+            }
+        }
 	}
 
     @Override

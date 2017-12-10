@@ -3,9 +3,12 @@ package org.andstatus.app.service;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.notification.NotificationEvent;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.Assert.assertEquals;
 
@@ -19,34 +22,36 @@ public class CommandExecutionContextTest {
     }
 
     @Test
-    public void testHomeAccumulation() {
+    public void testMentionsAccumulation() {
         CommandExecutionContext execContext = new CommandExecutionContext(
                 CommandData.newTimelineCommand( CommandEnum.GET_TIMELINE, ma, TimelineType.MENTIONS));
         assertEquals(TimelineType.MENTIONS, execContext.getTimeline().getTimelineType());
         
-        final int MESSAGES = 4;
-        final int MENTIONS = 2;
-        for (int ind=0; ind < MESSAGES; ind++) {
-            execContext.getResult().incrementMessagesCount();
+        final int messageCount = 4;
+        final int mentionCount = 2;
+        for (int ind=0; ind < messageCount; ind++) {
+            execContext.getResult().incrementNewCount();
         }
-        for (int ind=0; ind < MENTIONS; ind++) {
-            execContext.getResult().incrementMentionsCount();
+        for (int ind=0; ind < mentionCount; ind++) {
+            execContext.getResult().onNotificationEvent(NotificationEvent.MENTION);
         }
-        assertEquals(MESSAGES, execContext.getResult().getMessagesAdded());
-        assertEquals(MENTIONS, execContext.getResult().getMentionsAdded());
-        assertEquals(0, execContext.getResult().getDirectedAdded());
+        assertEquals(messageCount, execContext.getResult().getNewCount());
+        assertEquals(mentionCount, execContext.getResult().notificationEventCounts.get(NotificationEvent.MENTION).get());
+        assertEquals(0, execContext.getResult().notificationEventCounts.getOrDefault(
+                NotificationEvent.PRIVATE, new AtomicLong(0)).get());
     }
 
     @Test
-    public void testDirectAccumulation() {
+    public void testPrivateAccumulation() {
         CommandExecutionContext execContext = new CommandExecutionContext(
                 CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.DIRECT));
-        final int MESSAGES = 4;
-        for (int ind=0; ind < MESSAGES; ind++) {
-            execContext.getResult().incrementDirectCount();
+        final int privateCount = 4;
+        for (int ind=0; ind < privateCount; ind++) {
+            execContext.getResult().onNotificationEvent(NotificationEvent.PRIVATE);
         }
-        assertEquals(0, execContext.getResult().getMessagesAdded());
-        assertEquals(0, execContext.getResult().getMentionsAdded());
-        assertEquals(MESSAGES, execContext.getResult().getDirectedAdded());
+        assertEquals(0, execContext.getResult().getNewCount());
+        assertEquals(0, execContext.getResult().notificationEventCounts.getOrDefault(
+                NotificationEvent.MENTION, new AtomicLong(0)).get());
+        assertEquals(privateCount, execContext.getResult().notificationEventCounts.get(NotificationEvent.PRIVATE).get());
     }
 }
