@@ -21,6 +21,7 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.FirstActivity;
@@ -63,8 +64,8 @@ public class AddedMessagesNotifier {
         appWidgets.updateViews();
     }
 
-    private void forOneEvent(NotificationEvent event, AtomicLong numMessages) {
-        if (numMessages.get() == 0) return;
+    private void forOneEvent(@NonNull NotificationEvent event, AtomicLong numMessages) {
+        if (numMessages.get() == 0 || !myContext.getNotificationEvents().contains(event)) return;
         String messageText = myContext.context().getText(event.titleResId) + ": " + numMessages.get();
         MyLog.v(this,  messageText);
 

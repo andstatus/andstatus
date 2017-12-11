@@ -38,8 +38,8 @@ public enum NotificationEvent {
     MENTION(4, "notifications_mention", asList(TimelineType.HOME, TimelineType.MENTIONS), true, R.string.notification_events_mention),
     OUTBOX(5, "notifications_outbox", asList(TimelineType.OUTBOX), true, org.andstatus.app.R.string.notification_events_outbox),
     PRIVATE(6, "notifications_private", asList(TimelineType.PRIVATE), true, R.string.notification_events_private),
-    OTHER(7, "", EMPTY_LIST, false, 0),
-    EMPTY(0, "", EMPTY_LIST, false, 0),
+    OTHER(7, "", EMPTY_LIST, false, R.string.unknown_in_parenthesis),
+    EMPTY(0, "", EMPTY_LIST, false, R.string.empty_in_parenthesis),
     ;
 
     public final long id;

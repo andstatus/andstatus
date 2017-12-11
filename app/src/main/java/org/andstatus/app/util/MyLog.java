@@ -577,7 +577,7 @@ public class MyLog {
         }
     }
 
-    private static String currentDateTimeForLogLine() {
+    public static String currentDateTimeForLogLine() {
         return logDateFormat.format(new Date(System.currentTimeMillis()));
     }
 

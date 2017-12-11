@@ -206,7 +206,8 @@ public final class MyContextHolder {
     public static String getSystemInfo(Context context, boolean showVersion) {
         StringBuilder builder = new StringBuilder();
         if (showVersion) builder.append(getVersionText(context));
-        I18n.appendWithSpace(builder, "started "
+        I18n.appendWithSpace(builder, MyLog.currentDateTimeForLogLine());
+        I18n.appendWithSpace(builder, ", started "
                 + RelativeTime.getDifference(context, appStartedAt, SystemClock.elapsedRealtime()));
         builder.append("\n");
         builder.append(ImageCaches.getCacheInfo());

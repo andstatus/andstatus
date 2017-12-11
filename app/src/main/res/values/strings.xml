@@ -519,6 +519,7 @@
   <string name="undid_follow">stopped following</string>
   <string name="undid_like">undid like</string>
   <string name="unimplemented">Not implemented.</string>
+  <string name="unknown_in_parenthesis">(unknown)</string>
   <string name="unknown_userlist">(Unknown user list)</string>
   <string name="updated">updated</string>
   <string name="use_legacy_http_protocol_title">Use legacy HTTP protocol</string>
