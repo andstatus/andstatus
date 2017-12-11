@@ -52,26 +52,17 @@ class TimelinePositionStorage<T extends ViewItem<T>> {
             MyLog.v(this, method + "; skipped");
             return;
         }
-        int firstVisiblePosition = mListView.getFirstVisiblePosition() - mListView.getHeaderViewsCount();
         int itemCount = adapter.getCount();
-        if (firstVisiblePosition >= itemCount) {
-            firstVisiblePosition = itemCount - 1;
-        }
-        long firstVisibleItemId = 0;
-        int lastPosition = -1;
-        long minDate = 0;
+        int firstVisibleAdapterPosition = Integer.min(
+                Integer.max(mListView.getFirstVisiblePosition() - mListView.getHeaderViewsCount(), 0),
+                itemCount - 1);
         int y = 0;
-        if (firstVisiblePosition >= 0) {
-            firstVisibleItemId = adapter.getItemId(firstVisiblePosition);
-            y = LoadableListActivity.getYOfPosition(mListView, adapter, firstVisiblePosition);
-            MyLog.v(this, method + "; firstVisiblePos:" + firstVisiblePosition + " of " + itemCount
-                    + ", id:" + firstVisibleItemId + ", y:" + y);
-            lastPosition = mListView.getLastVisiblePosition() + 10;
-            if (lastPosition >= itemCount) {
-                lastPosition = itemCount - 1;
-            }
-            minDate = adapter.getItem(lastPosition).getDate();
-        }
+        long firstVisibleItemId = adapter.getItemId(firstVisibleAdapterPosition);
+        y = LoadableListActivity.getYOfPosition(mListView, adapter, firstVisibleAdapterPosition);
+        MyLog.v(this, method + "; firstVisiblePos:" + firstVisibleAdapterPosition + " of " + itemCount
+                + ", id:" + firstVisibleItemId + ", y:" + y);
+        int lastPosition = Integer.min(mListView.getLastVisiblePosition() + 10, itemCount - 1);
+        long minDate = adapter.getItem(lastPosition).getDate();
 
         if (firstVisibleItemId <= 0) {
             clear();
@@ -81,7 +72,7 @@ class TimelinePositionStorage<T extends ViewItem<T>> {
         if (MyLog.isVerboseEnabled()) {
             String msgLog = "id:" + firstVisibleItemId
                     + ", y:" + y
-                    + " at pos=" + firstVisiblePosition
+                    + " at pos=" + firstVisibleAdapterPosition
                     + ", minDate=" + MyLog.formatDateTime(minDate)
                     + " at pos=" + lastPosition + " of " + itemCount
                     + " " + mListParameters.getTimeline();

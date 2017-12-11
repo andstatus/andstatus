@@ -634,7 +634,7 @@ public class MyService extends Service {
                             + (MyPreferences.isSyncWhileUsingApplicationEnabled() ? "enabled"
                                     : "disabled")
                             : "background")
-                    + " " + commandData);
+                    + (commandData == null ? "" : " " + commandData));
             if (commandData != null) {
                 commandData.setManuallyLaunched(false);
             }

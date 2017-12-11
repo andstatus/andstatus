@@ -136,7 +136,6 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
         int rowsCount = 0;
         int filteredOutCount = 0;
         boolean reversedOrder = getParams().isSortOrderAscending();
-        final StopWatch rowStopWatch = StopWatch.createStarted();
         for (T item : items) {
             rowsCount++;
             if (item.matches(filter)) {
@@ -147,15 +146,10 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
                 }
             } else {
                 filteredOutCount++;
-                if (MyLog.isVerboseEnabled()) {
+                if (MyLog.isVerboseEnabled() && filteredOutCount < 6) {
                     MyLog.v(this, filteredOutCount + " Filtered out: "
-                            + I18n.trimTextAt(item.toString(), 100));
+                            + I18n.trimTextAt(item.toString(), 200));
                 }
-            }
-
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, method + "; row " + rowsCount + ", id:" + item.getId()
-                        + ", " + rowStopWatch.getTimeAndRestart() + "ms");
             }
         }
         if (MyLog.isDebugEnabled()) {

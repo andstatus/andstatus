@@ -62,7 +62,8 @@ public class MyServiceCommandsRunner {
         // we don't wait for completion anymore.
         // TODO: Implement Synchronous background sync ?!
 
-        MyLog.v(this, method + " ended, " + commandsOnly + " commands sent");
+        MyLog.v(this, method + " ended, "
+                + (commandsOnly.isEmpty() ? "no commands sent" : commandsOnly.size() + " commands sent: " + commandsOnly));
     }
 
     private void sendCommands(List<CommandData> commandsOnly) {
