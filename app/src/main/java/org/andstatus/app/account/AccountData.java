@@ -116,19 +116,16 @@ public class AccountData implements Parcelable, AccountDataWriter {
             setSyncFrequencySeconds(androidAccount, syncFrequencySeconds);
 
             boolean isSyncable = getDataBoolean(MyAccount.KEY_IS_SYNCABLE, true);
-            if (isSyncable != (ContentResolver.getIsSyncable(androidAccount, MatchedUri.AUTHORITY) != 0)) {
+            if (isSyncable != (ContentResolver.getIsSyncable(androidAccount, MatchedUri.AUTHORITY) > 0)) {
                 ContentResolver.setIsSyncable(androidAccount, MatchedUri.AUTHORITY, isSyncable ? 1
                         : 0);
             }
             boolean syncAutomatically = getDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY, true);
-            if (syncAutomatically != ContentResolver.getSyncAutomatically(androidAccount,
-                    MatchedUri.AUTHORITY)) {
+            if (syncAutomatically != ContentResolver.getSyncAutomatically(androidAccount, MatchedUri.AUTHORITY)) {
                 // We need to preserve sync on/off during backup/restore.
                 // don't know about "network tickles"... See:
                 // http://stackoverflow.com/questions/5013254/what-is-a-network-tickle-and-how-to-i-go-about-sending-one
-                ContentResolver
-                        .setSyncAutomatically(androidAccount, MatchedUri.AUTHORITY,
-                                syncAutomatically);
+                ContentResolver.setSyncAutomatically(androidAccount, MatchedUri.AUTHORITY, syncAutomatically);
             }
             android.accounts.AccountManager am = AccountManager.get(myContext.context());
             am.setUserData(androidAccount, KEY_ACCOUNT, toJsonString());
@@ -146,7 +143,7 @@ public class AccountData implements Parcelable, AccountDataWriter {
             return false;
         }
         final AccountData other = (AccountData)o;
-        return hashCode() == other.hashCode();
+        return isPersistent() == other.isPersistent() && toJsonString().equals(other.toJsonString());
     }
 
     @Override
@@ -156,15 +153,15 @@ public class AccountData implements Parcelable, AccountDataWriter {
         return text.hashCode();
     }
 
-    public static void setSyncFrequencySeconds(Account androidAccount, long syncFrequencySeconds) {
+    static void setSyncFrequencySeconds(Account androidAccount, long syncFrequencySeconds) {
         // See
         // http://developer.android.com/reference/android/content/ContentResolver.html#addPeriodicSync(android.accounts.Account, java.lang.String, android.os.Bundle, long)
         // and
         // http://stackoverflow.com/questions/11090604/android-syncadapter-automatically-initialize-syncing
         if (syncFrequencySeconds != getSyncFrequencySeconds(androidAccount)) {
-            ContentResolver.removePeriodicSync(androidAccount, MatchedUri.AUTHORITY, new Bundle());
+            ContentResolver.removePeriodicSync(androidAccount, MatchedUri.AUTHORITY, Bundle.EMPTY);
             if (syncFrequencySeconds > 0) {
-                ContentResolver.addPeriodicSync(androidAccount, MatchedUri.AUTHORITY, new Bundle(), syncFrequencySeconds);
+                ContentResolver.addPeriodicSync(androidAccount, MatchedUri.AUTHORITY, Bundle.EMPTY, syncFrequencySeconds);
             }
         }
     }
