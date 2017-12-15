@@ -71,6 +71,7 @@ public abstract class DataChecker {
     public static void fixData(final ProgressLogger logger, final boolean includeLong) {
         MyContext myContext = MyContextHolder.get();
         if (!myContext.isReady()) {
+            MyLog.w(DataChecker.class, "fixData skipped: context is not ready " + myContext);
             return;
         }
         MyLog.i(DataChecker.class, "fixData started" + (includeLong ? ", including long tasks" : ""));

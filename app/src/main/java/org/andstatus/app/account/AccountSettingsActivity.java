@@ -734,28 +734,24 @@ public class AccountSettingsActivity extends MyActivity {
     }
 
     private void returnToOurActivity() {
-        MyContextHolder.getMyFutureContext(this, this, false).thenRun( new Runnable() {
-            @Override
-            public void run() {
-                MyLog.v(this, "Returning to " + activityOnFinish);
-                MyContext myContext = MyContextHolder.get();
-                MyAccount myAccount = myContext.persistentAccounts().
-                        fromAccountName(getState().getAccount().getAccountName());
-                if (myAccount.isValid()) {
-                    myContext.persistentAccounts().setCurrentAccount(myAccount);
-                }
-                if (activityOnFinish == ActivityOnFinish.HOME) {
-                    Timeline home = Timeline.getTimeline(TimelineType.HOME, myAccount, 0, null);
-                    TimelineActivity.startForTimeline(myContext, AccountSettingsActivity.this, home, myAccount, true);
+        MyContextHolder.getMyFutureContext(this, this, false).thenRun( myContext -> {
+            MyLog.v(this, "Returning to " + activityOnFinish);
+            MyAccount myAccount = myContext.persistentAccounts().
+                    fromAccountName(getState().getAccount().getAccountName());
+            if (myAccount.isValid()) {
+                myContext.persistentAccounts().setCurrentAccount(myAccount);
+            }
+            if (activityOnFinish == ActivityOnFinish.HOME) {
+                Timeline home = Timeline.getTimeline(TimelineType.HOME, myAccount, 0, null);
+                TimelineActivity.startForTimeline(myContext, AccountSettingsActivity.this, home, myAccount, true);
+            } else {
+                if (myContext.persistentAccounts().size() > 1) {
+                    Intent intent = new Intent(myContext.context(), MySettingsActivity.class);
+                    // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(intent);
                 } else {
-                    if (myContext.persistentAccounts().size() > 1) {
-                        Intent intent = new Intent(myContext.context(), MySettingsActivity.class);
-                        // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
-                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                        startActivity(intent);
-                    } else {
-                        TimelineActivity.goHome(AccountSettingsActivity.this);
-                    }
+                    TimelineActivity.goHome(AccountSettingsActivity.this);
                 }
             }
         });

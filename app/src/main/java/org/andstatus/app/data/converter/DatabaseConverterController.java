@@ -164,14 +164,12 @@ public class DatabaseConverterController {
                 MyContextHolder.release();
                 MyContextHolder.initialize(upgradeRequestor, upgradeRequestor);
             }
-            if (MyContextHolder.get().isReady()) {
-                MyServiceManager.setServiceUnavailable();
-                MyServiceManager.stopService();
-                DataChecker.fixData(progressLogger,false);
-                MyContextHolder.release();
-                MyContextHolder.initialize(upgradeRequestor, upgradeRequestor);
-                MyServiceManager.setServiceAvailable();
-            }
+            MyServiceManager.setServiceUnavailable();
+            MyServiceManager.stopService();
+            DataChecker.fixData(progressLogger,false);
+            MyContextHolder.release();
+            MyContextHolder.initialize(upgradeRequestor, upgradeRequestor);
+            MyServiceManager.setServiceAvailable();
         }
     }
     

@@ -26,10 +26,12 @@ import org.andstatus.app.net.http.TlsSniSocketFactory;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.ExceptionsCounter;
 import org.andstatus.app.os.MyAsyncTask;
+import org.andstatus.app.syncadapter.SyncInitiator;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -42,7 +44,7 @@ public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
 
     private volatile FirstActivity firstActivity = null;
     private volatile Intent activityIntentPostRun = null;
-    private volatile Runnable runnablePostRun = null;
+    private volatile Consumer<MyContext> postRunConsumer = null;
 
     private static class DirectExecutor implements Executor {
         private DirectExecutor() {
@@ -76,6 +78,7 @@ public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
     }
 
     private void releaseGlobal() {
+        SyncInitiator.unregister(myPreviousContext);
         TlsSniSocketFactory.forget();
         AsyncTaskLauncher.forget();
         ExceptionsCounter.forget();
@@ -88,6 +91,7 @@ public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
     protected void onPostExecute2(MyContext myContext) {
         runRunnable(myContext);
         startActivity(myContext);
+        SyncInitiator.register(myContext);
     }
 
     public boolean isEmpty() {
@@ -119,9 +123,10 @@ public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
     }
 
     private void startActivity(MyContext myContext) {
+        if (myContext == null) return;
         Intent intent = activityIntentPostRun;
         if (intent != null || firstActivity != null) {
-            runnablePostRun = null;
+            postRunConsumer = null;
             boolean launched = false;
             if (myContext.isReady() && !myContext.isExpired()) {
                 try {
@@ -158,21 +163,21 @@ public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
         }
     }
 
-    public void thenRun(Runnable runnable) {
-        this.runnablePostRun = runnable;
+    public void thenRun(Consumer<MyContext> consumer) {
+        this.postRunConsumer = consumer;
         if (completedBackgroundWork()) {
             runRunnable(getNow());
         }
     }
 
     private void runRunnable(MyContext myContext) {
-        if (runnablePostRun != null) {
+        if (postRunConsumer != null && myContext != null) {
             if (myContext.isReady()) {
-                runnablePostRun.run();
+                postRunConsumer.accept(myContext);
             } else {
                 HelpActivity.startMe(myContext.context(), true, HelpActivity.PAGE_LOGO);
             }
-            runnablePostRun = null;
+            postRunConsumer = null;
         }
     }
 

@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 public class PersistentAccounts {
     /**
@@ -407,29 +408,22 @@ public class PersistentAccounts {
         }
     }
 
-    public List<MyAccount> accountsToSync(MyAccount myAccount, boolean forAllAccounts) {
+    public List<MyAccount> accountsToSync() {
         boolean hasSyncedAutomatically = hasSyncedAutomatically();
-        List<MyAccount> accounts = new ArrayList<>();
-        if (forAllAccounts) {
-            for (MyAccount account : list()) {
-                addMyAccountToSync(accounts, account, hasSyncedAutomatically);
-            }
-        } else {
-            addMyAccountToSync(accounts, myAccount, false);
-        }
-        return accounts;
+        return list().stream().filter( myAccount -> accountToSyncFilter(myAccount, hasSyncedAutomatically))
+                .collect(Collectors.toList());
     }
 
-    private void addMyAccountToSync(List<MyAccount> accounts, MyAccount account, boolean hasSyncedAutomatically) {
+    private boolean accountToSyncFilter(MyAccount account, boolean hasSyncedAutomatically) {
         if ( !account.isValidAndSucceeded()) {
             MyLog.v(this, "Account '" + account.getAccountName() + "' skipped as invalid authenticated account");
-            return;
+            return false;
         }
         if (hasSyncedAutomatically && !account.isSyncedAutomatically()) {
             MyLog.v(this, "Account '" + account.getAccountName() + "' skipped as it is not synced automatically");
-            return;
+            return false;
         }
-        accounts.add(account);
+        return true;
     }
 
     public static final String KEY_ACCOUNT = "account";

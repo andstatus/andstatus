@@ -92,7 +92,7 @@ public class MyServiceTest1 extends MyServiceTest {
         SyncResult syncResult = new SyncResult();
         MyServiceCommandsRunner runner = new MyServiceCommandsRunner(myContext);
         runner.setIgnoreServiceAvailability(true);
-        runner.autoSyncAccount(myAccount.getAccountName(), syncResult);
+        runner.autoSyncAccount(myAccount, syncResult);
         DbUtils.waitMs(this, 5000);
         assertEquals("Requests were sent while all timelines just synced " +
                 runner.toString() + "; " + mService.getHttp().toString(),
@@ -113,7 +113,7 @@ public class MyServiceTest1 extends MyServiceTest {
         runner = new MyServiceCommandsRunner(myContext);
         runner.setIgnoreServiceAvailability(true);
         syncResult = new SyncResult();
-        runner.autoSyncAccount(myAccount.getAccountName(), syncResult);
+        runner.autoSyncAccount(myAccount, syncResult);
         DbUtils.waitMs(this, 5000);
         assertEquals("Timeline was not synced: " + timelineToSync + "; " +
                 runner.toString() + "; " + mService.getHttp().toString(),

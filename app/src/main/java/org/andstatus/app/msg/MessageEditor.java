@@ -71,7 +71,7 @@ public class MessageEditor {
     private MessageEditorBodyView bodyView;
     private final TextView mCharsLeftText;
 
-    private MessageEditorData editorData = MessageEditorData.INVALID;
+    private MessageEditorData editorData = MessageEditorData.EMPTY;
 
     public MessageEditor(MessageEditorContainer editorContainer) {
         this.editorContainer = editorContainer;
@@ -353,7 +353,7 @@ public class MessageEditor {
     }
     
     public void hide() {
-        editorData = MessageEditorData.INVALID;
+        editorData = MessageEditorData.EMPTY;
         updateScreen();
         if (isVisible()) {
             editorView.setVisibility(View.GONE);
@@ -436,11 +436,15 @@ public class MessageEditor {
     }
 
     private void setAdapter() {
-        UserAutoCompleteAdapter adapterOld = (UserAutoCompleteAdapter) bodyView.getAdapter();
-        if (adapterOld == null || !adapterOld.getOrigin().equals(editorData.getMyAccount().getOrigin())) {
-            UserAutoCompleteAdapter adapter = new UserAutoCompleteAdapter(getActivity(),
-                    editorData.getMyAccount().getOrigin());
-            bodyView.setAdapter(adapter);
+        if (editorData == MessageEditorData.EMPTY) {
+            bodyView.setAdapter(null);
+        } else {
+            UserAutoCompleteAdapter adapterOld = (UserAutoCompleteAdapter) bodyView.getAdapter();
+            if (adapterOld == null || !adapterOld.getOrigin().equals(editorData.getMyAccount().getOrigin())) {
+                UserAutoCompleteAdapter adapter = new UserAutoCompleteAdapter(getActivity(),
+                        editorData.getMyAccount().getOrigin());
+                bodyView.setAdapter(adapter);
+            }
         }
     }
 
@@ -576,7 +580,7 @@ public class MessageEditor {
                         MyLog.v(MessageEditorData.TAG, "loadCurrentDraft started, msgId=" + msgId);
                         MessageEditorLock potentialLock = new MessageEditorLock(false, msgId);
                         if (!potentialLock.acquire(true)) {
-                            return MessageEditorData.INVALID;
+                            return MessageEditorData.EMPTY;
                         }
                         lock = potentialLock;
                         MyLog.v(MessageEditorData.TAG, "loadCurrentDraft acquired lock");
@@ -588,7 +592,7 @@ public class MessageEditor {
                         } else {
                             MyLog.v(MessageEditorData.TAG, "Cannot be edited " + msgId + " state:" + status);
                             SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, 0);
-                            return MessageEditorData.INVALID;
+                            return MessageEditorData.EMPTY;
                         }
                     }
 

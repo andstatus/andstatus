@@ -21,8 +21,6 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 
@@ -46,6 +44,7 @@ import org.andstatus.app.util.Permissions;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UriUtils;
 
 import java.util.HashSet;
 import java.util.Locale;
@@ -336,34 +335,9 @@ public final class MyContextImpl implements MyContext {
         return null;
     }
 
-    /**
-     * Based on http://stackoverflow.com/questions/1560788/how-to-check-internet-access-on-android-inetaddress-never-timeouts
-     */
     @Override
     public ConnectionState getConnectionState() {
-        ConnectivityManager connectivityManager =
-                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (connectivityManager == null) {
-            return ConnectionState.UNKNOWN;
-        }
-        ConnectionState state = ConnectionState.OFFLINE;
-        NetworkInfo networkInfoOnline = connectivityManager.getActiveNetworkInfo();
-        if (networkInfoOnline == null) {
-            return state;
-        }
-        if (networkInfoOnline.isAvailable() && networkInfoOnline.isConnected()) {
-            state = ConnectionState.ONLINE;
-        } else {
-            return state;
-        }
-        NetworkInfo networkInfoWiFi = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        if (networkInfoWiFi == null) {
-            return state;
-        }
-        if (networkInfoWiFi.isAvailable() && networkInfoWiFi.isConnected()) {
-            state = ConnectionState.WIFI;
-        }
-        return state;
+        return UriUtils.getConnectionState(mContext);
     }
 
     @Override

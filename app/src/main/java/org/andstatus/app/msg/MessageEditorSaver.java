@@ -37,7 +37,7 @@ import org.andstatus.app.util.SharedPreferencesUtil;
  */
 public class MessageEditorSaver extends MyAsyncTask<MessageEditorCommand, Void, MessageEditorData> {
     final MessageEditor editor;
-    volatile MessageEditorCommand command = new MessageEditorCommand(MessageEditorData.INVALID);
+    volatile MessageEditorCommand command = new MessageEditorCommand(MessageEditorData.EMPTY);
 
     public MessageEditorSaver(MessageEditor editor) {
         super(PoolEnum.QUICK_UI);
@@ -56,7 +56,7 @@ public class MessageEditorSaver extends MyAsyncTask<MessageEditorCommand, Void, 
             command.loadCurrent();
         }
         saveCurrentData();
-        return command.showAfterSave ? MessageEditorData.load(command.currentData.getMsgId()) : MessageEditorData.INVALID;
+        return command.showAfterSave ? MessageEditorData.load(command.currentData.getMsgId()) : MessageEditorData.EMPTY;
     }
 
     private void savePreviousData() {

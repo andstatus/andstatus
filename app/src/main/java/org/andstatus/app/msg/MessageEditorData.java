@@ -55,7 +55,7 @@ import static org.andstatus.app.data.DownloadStatus.UNKNOWN;
 
 public class MessageEditorData {
     public static final String TAG = MessageEditorData.class.getSimpleName();
-    static final MessageEditorData INVALID = MessageEditorData.newEmpty(null);
+    static final MessageEditorData EMPTY = MessageEditorData.newEmpty(null);
 
     private long msgId = 0;
     private long activityId = 0;
@@ -190,7 +190,7 @@ public class MessageEditorData {
             data.recipients.addAll(recipients);
             return data;
         } else {
-            return INVALID;
+            return EMPTY;
         }
     }
 
@@ -235,7 +235,7 @@ public class MessageEditorData {
     }
 
     public boolean isValid() {
-        return this != INVALID && ma.isValid();
+        return this != EMPTY && ma.isValid();
     }
 
     public MessageEditorData setBody(String bodyIn) {

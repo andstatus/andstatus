@@ -17,13 +17,13 @@
 package org.andstatus.app.service;
 
 import android.content.SyncResult;
+import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyLog;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MyServiceCommandsRunner {
@@ -35,13 +35,12 @@ public class MyServiceCommandsRunner {
         this.myContext = myContext;
     }
 
-    public void autoSyncAccount(String accountName, SyncResult syncResult) {
-        final String method = "syncAccount " + accountName;
+    public void autoSyncAccount(@NonNull MyAccount ma, SyncResult syncResult) {
+        final String method = "syncAccount " + ma.getAccountName();
         if (!myContext.isReady()) {
             MyLog.d(this, method + "; Context is not ready");
             return;
         }
-        MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
         if (!ma.isValid()) {
             MyLog.d(this, method + "; The account was not loaded");
             return;      
@@ -50,29 +49,25 @@ public class MyServiceCommandsRunner {
             MyLog.d(this, method + "; Credentials failed, skipping");
             return;
         }
-
-        List<CommandData> commandsOnly = new ArrayList<>();
-        for (Timeline timeline : myContext.persistentTimelines().toAutoSyncForAccount(ma)) {
-            commandsOnly.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, timeline));
+        final List<Timeline> timelines = myContext.persistentTimelines().toAutoSyncForAccount(ma);
+        if (timelines.isEmpty()) {
+            MyLog.d(this, method + "; No timelines to sync");
+            return;
         }
-        MyLog.v(this, method + " started, " + commandsOnly.size() + " timelines");
-
-        sendCommands(commandsOnly);
-
-        // we don't wait for completion anymore.
-        // TODO: Implement Synchronous background sync ?!
-
-        MyLog.v(this, method + " ended, "
-                + (commandsOnly.isEmpty() ? "no commands sent" : commandsOnly.size() + " commands sent: " + commandsOnly));
+        MyLog.v(this, method + " started, " + timelines.size() + " timelines");
+        timelines.stream()
+                .map(t -> CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, t))
+                .forEach(this::sendCommand);
+        MyLog.v(this, method + " ended, " + timelines.size() + " timelines requested: " + timelines);
     }
 
-    private void sendCommands(List<CommandData> commandsOnly) {
-        for (CommandData commandData : commandsOnly) {
-            if (ignoreServiceAvailability) {
-                MyServiceManager.sendCommandEvenForUnavailable(commandData);
-            } else {
-                MyServiceManager.sendCommand(commandData);
-            }
+    private void sendCommand(CommandData commandData) {
+        // we don't wait for completion anymore.
+        // TODO: Implement Synchronous background sync ?!
+        if (ignoreServiceAvailability) {
+            MyServiceManager.sendCommandEvenForUnavailable(commandData);
+        } else {
+            MyServiceManager.sendCommand(commandData);
         }
     }
 

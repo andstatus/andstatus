@@ -33,7 +33,7 @@ public class MessageEditorCommand {
     final MessageEditorData previousData;
 
     public MessageEditorCommand(MessageEditorData currentData) {
-        this(currentData, MessageEditorData.INVALID);
+        this(currentData, MessageEditorData.EMPTY);
     }
 
     public MessageEditorCommand(MessageEditorData currentData, MessageEditorData previousData) {
@@ -41,7 +41,7 @@ public class MessageEditorCommand {
             throw new IllegalArgumentException("currentData is null");
         }
         this.currentData = currentData;
-        this.previousData = previousData == null ? MessageEditorData.INVALID : previousData;
+        this.previousData = previousData == null ? MessageEditorData.EMPTY : previousData;
     }
 
     public boolean acquireLock(boolean wait) {
@@ -99,7 +99,7 @@ public class MessageEditorCommand {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder("Save ");
-        if (currentData == MessageEditorData.INVALID) {
+        if (currentData == MessageEditorData.EMPTY) {
             builder.append("current draft,");
         } else {
             builder.append(currentData.toString());

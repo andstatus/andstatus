@@ -970,7 +970,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends MessageEditorListAc
     }
 
     private void syncForAllAccounts(Timeline timelineToSync, boolean syncYounger, boolean manuallyLaunched) {
-        for (MyAccount ma : myContext.persistentAccounts().accountsToSync(timelineToSync.getMyAccount(), true)) {
+        for (MyAccount ma : myContext.persistentAccounts().accountsToSync()) {
             if (timelineToSync.getTimelineType() == TimelineType.EVERYTHING) {
                 ma.requestSync();
             } else {

@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.SyncResult;
 import android.os.Bundle;
 
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.service.MyServiceCommandsRunner;
 import org.andstatus.app.service.MyServiceManager;
@@ -47,8 +48,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             MyLog.d(this, account.name + " Service unavailable");
             return;
         }
-
-        new MyServiceCommandsRunner(MyContextHolder.initialize(mContext, this)).
-                autoSyncAccount(account.name, syncResult);
+        final MyContext myContext = MyContextHolder.initialize(mContext, this);
+        new MyServiceCommandsRunner(myContext).autoSyncAccount(
+                myContext.persistentAccounts().fromAccountName(account.name), syncResult);
     }
 }

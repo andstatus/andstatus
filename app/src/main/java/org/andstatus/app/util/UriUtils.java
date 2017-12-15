@@ -18,10 +18,13 @@ package org.andstatus.app.util;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import org.andstatus.app.service.ConnectionState;
 import org.json.JSONObject;
 
 import java.net.URL;
@@ -132,5 +135,34 @@ public class UriUtils {
 
     public static boolean isEmptyOid(String oid) {
         return SharedPreferencesUtil.isEmpty(oid);
+    }
+
+    /**
+     * Based on http://stackoverflow.com/questions/1560788/how-to-check-internet-access-on-android-inetaddress-never-timeouts
+     */
+    public static ConnectionState getConnectionState(Context context) {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager == null) {
+            return ConnectionState.UNKNOWN;
+        }
+        ConnectionState state = ConnectionState.OFFLINE;
+        NetworkInfo networkInfoOnline = connectivityManager.getActiveNetworkInfo();
+        if (networkInfoOnline == null) {
+            return state;
+        }
+        if (networkInfoOnline.isAvailable() && networkInfoOnline.isConnected()) {
+            state = ConnectionState.ONLINE;
+        } else {
+            return state;
+        }
+        NetworkInfo networkInfoWiFi = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        if (networkInfoWiFi == null) {
+            return state;
+        }
+        if (networkInfoWiFi.isAvailable() && networkInfoWiFi.isConnected()) {
+            state = ConnectionState.WIFI;
+        }
+        return state;
     }
 }
