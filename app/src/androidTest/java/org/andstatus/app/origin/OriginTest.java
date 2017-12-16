@@ -40,13 +40,13 @@ public class OriginTest {
         origin = MyContextHolder.get().persistentOrigins()
                 .firstOfType(OriginType.TWITTER);
         assertEquals(origin.getOriginType(), OriginType.TWITTER);
-        int textLimit = 140;
+        int textLimit = 280;
         assertEquals("Textlimit", textLimit, origin.getTextLimit());
         assertEquals("Short URL length", 23, origin.shortUrlLength);
         int charactersLeft = origin.charactersLeftForMessage(message);
         // Depending on number of spans!
-        assertTrue("Characters left " + charactersLeft, charactersLeft == 18
-                || charactersLeft == 2);
+        assertTrue("Characters left " + charactersLeft, charactersLeft == 158
+                || charactersLeft == 142);
         assertFalse(origin.isMentionAsWebFingerId());
 
         origin = MyContextHolder.get().persistentOrigins()
@@ -68,7 +68,7 @@ public class OriginTest {
         assertEquals("Textlimit", textLimit, origin.getTextLimit());
         assertTrue(origin.isMentionAsWebFingerId());
 
-        textLimit = OriginType.TWITTER.textLimitDefault;
+        textLimit = 140;
         config = MbConfig.fromTextLimit(textLimit, uploadLimit);
         origin = new Origin.Builder(origin).save(config).build();
         assertEquals("Textlimit", textLimit, origin.getTextLimit());

@@ -28,7 +28,7 @@ public enum TimelineType implements SelectableEnum {
     UNKNOWN("unknown", R.string.timeline_title_unknown, Connection.ApiRoutineEnum.DUMMY),
     /** The Home timeline and other information (replies...). */
     HOME("home", R.string.timeline_title_home, Connection.ApiRoutineEnum.HOME_TIMELINE),
-    NOTIFICATIONS("notifications", R.string.notifications_title, Connection.ApiRoutineEnum.MENTIONS_TIMELINE),
+    NOTIFICATIONS("notifications", R.string.notifications_title, Connection.ApiRoutineEnum.NOTIFICATIONS_TIMELINE),
     PUBLIC("public", R.string.timeline_title_public, Connection.ApiRoutineEnum.PUBLIC_TIMELINE),
     EVERYTHING("everything", R.string.timeline_title_everything, Connection.ApiRoutineEnum.DUMMY),
     SEARCH("search", R.string.options_menu_search, Connection.ApiRoutineEnum.SEARCH_MESSAGES),

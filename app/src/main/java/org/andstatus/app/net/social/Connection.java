@@ -94,6 +94,8 @@ public abstract class Connection {
          * for the authenticating user.
          */
         MENTIONS_TIMELINE,
+        /** Notifications in a separate API */
+        NOTIFICATIONS_TIMELINE,
         /**
          * Get the User timeline for the user with the selectedUserId. We use credentials of Account which may be
          * not the same user. 

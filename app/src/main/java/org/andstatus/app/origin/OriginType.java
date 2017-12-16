@@ -123,8 +123,9 @@ public enum OriginType implements SelectableEnum {
 
     private boolean isPublicTimeLineSyncable = false;
     private boolean isSearchTimelineSyncable = true;
-    private boolean isDirectTimelineSyncable = true;
+    private boolean isPrivateTimelineSyncable = true;
     private boolean isMentionsTimelineSyncable = true;
+    private boolean isNotificationsTimeLineSyncable = false;
     private final boolean isDirectMessageAllowsReply;
     private final boolean isSelectable;
 
@@ -143,7 +144,7 @@ public enum OriginType implements SelectableEnum {
                 shortUrlLengthDefault = 23; 
                 usernameRegEx = USERNAME_REGEX_SIMPLE;
                 validUsernameExamples = USERNAME_EXAMPLES_SIMPLE;
-                textLimitDefault = 140;
+                textLimitDefault = 280;
                 urlDefault = UrlUtils.fromString("https://api.twitter.com");
                 basicPath = "1.1";
                 oauthPath = OAUTH_PATH_DEFAULT;
@@ -174,7 +175,7 @@ public enum OriginType implements SelectableEnum {
                 httpConnectionClassBasic = HttpConnectionEmpty.class;
                 mAllowAttachmentForDirectMessage = true;
                 isSearchTimelineSyncable = false;
-                isDirectTimelineSyncable = false;
+                isPrivateTimelineSyncable = false;
                 isMentionsTimelineSyncable = false;
                 allowEditing = true;
                 isDirectMessageAllowsReply = true;
@@ -218,9 +219,10 @@ public enum OriginType implements SelectableEnum {
                 httpConnectionClassBasic = HttpConnectionEmpty.class;
                 mAllowAttachmentForDirectMessage = false;
                 isSearchTimelineSyncable = true;
-                isDirectTimelineSyncable = false;
-                isMentionsTimelineSyncable = true;
+                isPrivateTimelineSyncable = false;
+                isMentionsTimelineSyncable = false;
                 isPublicTimeLineSyncable = true;
+                isNotificationsTimeLineSyncable = true;
                 allowEditing = false;
                 isDirectMessageAllowsReply = false;
                 isSelectable = true;
@@ -341,7 +343,9 @@ public enum OriginType implements SelectableEnum {
             case MENTIONS:
                 return isMentionsTimelineSyncable;
             case PRIVATE:
-                return isDirectTimelineSyncable;
+                return isPrivateTimelineSyncable;
+            case NOTIFICATIONS:
+                return isNotificationsTimeLineSyncable;
             default:
                 return true;
         }

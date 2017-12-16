@@ -51,7 +51,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             case HOME_TIMELINE:
                 url = "timelines/home";
                 break;
-            case MENTIONS_TIMELINE:
+            case NOTIFICATIONS_TIMELINE:
                 url = "notifications";
                 break;
             case FAVORITES_TIMELINE:

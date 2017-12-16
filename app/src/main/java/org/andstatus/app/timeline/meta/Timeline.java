@@ -348,9 +348,8 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     private long fixedUserId(TimelineType timelineType, long userId) {
-        if (userId == 0 && myAccount.isValid() && timelineType.isForUser()) {
-            return myAccount.getUserId();
-        }
+        if (!timelineType.isForUser()) return 0;
+        if (userId == 0 && myAccount.isValid()) return myAccount.getUserId();
         return userId;
     }
 

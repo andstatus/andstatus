@@ -16,6 +16,7 @@
 
 package org.andstatus.app.data.checker;
 
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.timeline.meta.TimelineSaver;
 import org.andstatus.app.util.MyLog;
@@ -30,7 +31,10 @@ class CheckTimelines extends DataChecker {
         long rowsCount = 0;
         long changedCount = 0;
         try {
-            changedCount = new TimelineSaver(myContext).addDefaultCombined().size();
+            changedCount += new TimelineSaver(myContext).addDefaultCombined().size();
+            for (MyAccount myAccount: myContext.persistentAccounts().list()) {
+                changedCount += new TimelineSaver(myContext).addDefaultForAccount(myContext, myAccount).size();
+            }
         } catch (Exception e) {
             String logMsg = "Error: " + e.getMessage();
             logger.logProgress(logMsg);

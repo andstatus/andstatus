@@ -108,7 +108,7 @@ public class ConnectionMastodonTest {
                 org.andstatus.app.tests.R.raw.mastodon_notifications);
         connection.getHttpMock().setResponse(jso);
 
-        List<MbActivity> timeline = connection.getTimeline(Connection.ApiRoutineEnum.MENTIONS_TIMELINE,
+        List<MbActivity> timeline = connection.getTimeline(Connection.ApiRoutineEnum.NOTIFICATIONS_TIMELINE,
                 new TimelinePosition(""), TimelinePosition.EMPTY, 20, accountUserOid);
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 20, timeline.size());
