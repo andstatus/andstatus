@@ -16,32 +16,42 @@
 
 package org.andstatus.app.syncadapter;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SyncResult;
 import android.os.PowerManager;
+import android.os.SystemClock;
+import android.support.annotation.NonNull;
 
+import org.andstatus.app.MyAction;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.service.ConnectionState;
-import org.andstatus.app.service.MyServiceCommandsRunner;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
+
+import static android.app.AlarmManager.ELAPSED_REALTIME_WAKEUP;
 
 /**
  * Periodic syncing doesn't work reliably, when a device is in a Doze mode, so we need
- * additional way to check if syncing is needed.
+ * additional way(s) to check if syncing is needed.
  */
 public class SyncInitiator extends BroadcastReceiver {
-    private final static BroadcastReceiver BROADCAST_RECEIVER = new SyncInitiator();
+    private final static SyncInitiator BROADCAST_RECEIVER = new SyncInitiator();
+
+    public static void tryToSync(Context context) {
+        BROADCAST_RECEIVER.initializeApp(context);
+    }
 
     // Testing Doze: https://developer.android.com/training/monitoring-device-state/doze-standby.html#testing_doze
     @Override
@@ -51,6 +61,10 @@ public class SyncInitiator extends BroadcastReceiver {
                 + (pm == null || pm.isDeviceIdleMode() ? " idle" : " " + UriUtils.getConnectionState(context))
         );
         if (pm == null || pm.isDeviceIdleMode()) return;
+        initializeApp(context);
+    }
+
+    private void initializeApp(Context context) {
         MyContextHolder.getMyFutureContext(context, this).thenRun(this::checkConnectionState);
     }
 
@@ -67,18 +81,39 @@ public class SyncInitiator extends BroadcastReceiver {
     private boolean syncIfNeeded(MyContext myContext) {
         final ConnectionState connectionState = UriUtils.getConnectionState(myContext.context());
         MyLog.v(this, "syncIfNeeded " + UriUtils.getConnectionState(myContext.context()));
-        if (ConnectionRequired.SYNC.isConnectionStateOk(connectionState)) {
-            for (MyAccount myAccount: myContext.persistentAccounts().accountsToSync()) {
-                if (!myContext.persistentTimelines().toAutoSyncForAccount(myAccount).isEmpty()) {
-                    new MyServiceCommandsRunner(myContext).autoSyncAccount(myAccount, new SyncResult());
-                }
+        if (!ConnectionRequired.SYNC.isConnectionStateOk(connectionState)) return false;
+        for (MyAccount myAccount: myContext.persistentAccounts().accountsToSync()) {
+            if (!myContext.persistentTimelines().toAutoSyncForAccount(myAccount).isEmpty()) {
+                myAccount.requestSync();
             }
-            return true;
         }
-        return false;
+        return true;
     }
 
     public static void register(MyContext myContext) {
+        scheduleRepeatingAlarm(myContext);
+        registerBroadcastReceiver(myContext);
+    }
+
+    private static void scheduleRepeatingAlarm(@NonNull MyContext myContext) {
+        long minSyncIntervalMillis = myContext.persistentAccounts().minSyncIntervalMillis();
+        if (minSyncIntervalMillis > 0) {
+            final AlarmManager alarmManager = myContext.context().getSystemService(AlarmManager.class);
+            if (alarmManager == null) {
+                MyLog.w(SyncInitiator.class, "No AlarmManager ???");
+                return;
+            }
+            MyLog.d(SyncInitiator.class, "Scheduling repeating alarm in "
+                    + TimeUnit.MILLISECONDS.toMinutes(minSyncIntervalMillis) + " minutes");
+            alarmManager.setInexactRepeating(ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime() + minSyncIntervalMillis,
+                    minSyncIntervalMillis,
+                    PendingIntent.getBroadcast(myContext.context(), 0, MyAction.SYNC.getIntent(), 0)
+            );
+        }
+    }
+
+    private static void registerBroadcastReceiver(MyContext myContext) {
         if (myContext != null && myContext.persistentAccounts().hasSyncedAutomatically()) myContext.context()
                 .registerReceiver(BROADCAST_RECEIVER, new IntentFilter(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED));
     }

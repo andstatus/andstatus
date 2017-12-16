@@ -333,11 +333,17 @@ public class PersistentAccounts {
 
     public boolean hasSyncedAutomatically() {
         for (MyAccount ma : mAccounts) {
-            if (ma.isValidAndSucceeded() && ma.isSyncedAutomatically()) {
-                return true;
-            }
+            if (ma.shouldBeSyncedAutomatically()) return true;
         }
         return false;
+    }
+
+    /** @return 0 if no syncing is needed */
+    public long minSyncIntervalMillis() {
+        return mAccounts.stream()
+                .filter(MyAccount::shouldBeSyncedAutomatically)
+                .map(MyAccount::getEffectiveSyncFrequencyMillis)
+                .min(Long::compareTo).orElse(0L);
     }
 
     /** Should not be called from UI thread
@@ -409,17 +415,17 @@ public class PersistentAccounts {
     }
 
     public List<MyAccount> accountsToSync() {
-        boolean hasSyncedAutomatically = hasSyncedAutomatically();
-        return list().stream().filter( myAccount -> accountToSyncFilter(myAccount, hasSyncedAutomatically))
+        boolean syncedAutomaticallyOnly = hasSyncedAutomatically();
+        return list().stream().filter( myAccount -> accountToSyncFilter(myAccount, syncedAutomaticallyOnly))
                 .collect(Collectors.toList());
     }
 
-    private boolean accountToSyncFilter(MyAccount account, boolean hasSyncedAutomatically) {
+    private boolean accountToSyncFilter(MyAccount account, boolean syncedAutomaticallyOnly) {
         if ( !account.isValidAndSucceeded()) {
             MyLog.v(this, "Account '" + account.getAccountName() + "' skipped as invalid authenticated account");
             return false;
         }
-        if (hasSyncedAutomatically && !account.isSyncedAutomatically()) {
+        if (syncedAutomaticallyOnly && !account.isSyncedAutomatically()) {
             MyLog.v(this, "Account '" + account.getAccountName() + "' skipped as it is not synced automatically");
             return false;
         }

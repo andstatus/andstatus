@@ -37,12 +37,16 @@ public enum MyAction {
     VIEW_CONVERSATION("VIEW_CONVERSATION"),
     VIEW_FOLLOWERS("VIEW_FOLLOWERS"),
     VIEW_USERS("VIEW_USERS"),
+    BOOT_COMPLETED("android.intent.action.BOOT_COMPLETED"),
+    ACTION_SHUTDOWN("android.intent.action.ACTION_SHUTDOWN"),
+    SYNC("SYNC"),
     UNKNOWN("UNKNOWN");
     
     private final String action;
     
-    private MyAction(String actionSuffix) {
-        this.action = ClassInApplicationPackage.PACKAGE_NAME + ".action." + actionSuffix;
+    MyAction(String actionOrSuffix) {
+        this.action = actionOrSuffix.contains(".") ? actionOrSuffix
+                : ClassInApplicationPackage.PACKAGE_NAME + ".action." + actionOrSuffix;
     }
 
     public Intent getIntent() {
@@ -53,7 +57,8 @@ public enum MyAction {
         return new Intent(getAction(), uri);
     }
     
-    public static MyAction fromAction(String action) {
+    public static MyAction fromIntent(Intent intent) {
+        String action = intent == null ? "(null)" : intent.getAction();
         for (MyAction value : MyAction.values()) {
             if (value.action.equals(action)) {
                 return value;

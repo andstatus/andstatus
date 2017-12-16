@@ -146,13 +146,6 @@ public class MyPreferences {
     }
 
     /**
-     * @return the number of milliseconds between two sync ("fetch"...) actions.
-     */
-    public static long getSyncFrequencyMs() {
-        return java.util.concurrent.TimeUnit.SECONDS.toMillis(getSyncFrequencySeconds());
-    }
-
-    /**
      * @return the number of seconds between two sync ("fetch"...) actions.
      */
     public static long getSyncFrequencySeconds() {

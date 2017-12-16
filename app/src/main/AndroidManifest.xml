@@ -93,6 +93,7 @@
                 <action android:name="android.intent.action.ACTION_SHUTDOWN" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="org.andstatus.app.action.SERVICE_STATE" />
+                <action android:name="org.andstatus.app.action.SYNC" />
             </intent-filter>
 		</receiver>
         <receiver android:name="org.andstatus.app.appwidget.MyAppWidgetProvider"

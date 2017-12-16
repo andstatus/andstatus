@@ -26,6 +26,7 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyAction;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.os.MyAsyncTask;
+import org.andstatus.app.syncadapter.SyncInitiator;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 
@@ -76,19 +77,27 @@ public class MyServiceManager extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        String action = intent.getAction();
-        if (action.equals(MyAction.SERVICE_STATE.getAction())) {
-            MyContextHolder.getMyFutureContext(context);
-            stateInTime = MyServiceStateInTime.fromIntent(intent);
-            MyLog.d(this, "Notification received: Service state=" + stateInTime.stateEnum);
-        } else if ("android.intent.action.BOOT_COMPLETED".equals(action)) {
-            MyLog.d(this, "Trying to start service on boot");
-            sendCommand(CommandData.getEmpty());            
-        } else if ("android.intent.action.ACTION_SHUTDOWN".equals(action)) {
-            MyContextHolder.onShutDown();
-            MyLog.d(this, "Stopping service on Shutdown");
-            setServiceUnavailable();
-            stopService();
+        switch (MyAction.fromIntent(intent)) {
+            case BOOT_COMPLETED:
+                MyLog.d(this, "Trying to start service on boot");
+                sendCommand(CommandData.getEmpty());
+                break;
+            case SYNC:
+                SyncInitiator.tryToSync(context);
+                break;
+            case SERVICE_STATE:
+                MyContextHolder.getMyFutureContext(context);
+                stateInTime = MyServiceStateInTime.fromIntent(intent);
+                MyLog.d(this, "Notification received: Service state=" + stateInTime.stateEnum);
+                break;
+            case ACTION_SHUTDOWN:
+                setServiceUnavailable();
+                MyLog.d(this, "Stopping service on Shutdown");
+                MyContextHolder.onShutDown();
+                stopService();
+                break;
+            default:
+                break;
         }
     }
 

@@ -778,14 +778,14 @@ public class Timeline implements Comparable<Timeline> {
      * @return true if it's time to auto update this timeline
      */
     public boolean isTimeToAutoSync() {
-        if (System.currentTimeMillis() - Long.max(getSyncSucceededDate(), getSyncFailedDate()) < MIN_RETRY_PERIOD_MS) {
+        if (System.currentTimeMillis() - getLastSyncedDate() < MIN_RETRY_PERIOD_MS) {
             return false;
         }
-        long syncFrequencyMs = myAccount.getEffectiveSyncFrequencySeconds() * 1000;
+        long syncFrequencyMs = myAccount.getEffectiveSyncFrequencyMillis();
         // This correction needs to take into account
         // that we stored time when sync ended, and not when Android initiated the sync.
         long correctionForExecutionTime = syncFrequencyMs / 10;
-        long passedMs = System.currentTimeMillis() - getSyncSucceededDate();
+        long passedMs = System.currentTimeMillis() - getLastSyncedDate();
         boolean blnOut = passedMs > syncFrequencyMs - correctionForExecutionTime;
 
         if (blnOut && MyLog.isVerboseEnabled()) {
@@ -1024,7 +1024,7 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public long getLastSyncedDate() {
-        return syncSucceededDate > 0 ? syncSucceededDate : syncFailedDate;
+        return Long.max(getSyncSucceededDate(), getSyncFailedDate());
     }
 
     @NonNull

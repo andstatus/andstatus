@@ -57,6 +57,8 @@ import org.andstatus.app.util.TriState;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Immutable class that holds "AndStatus account"-specific information including: 
  * a Microblogging System (twitter.com, identi.ca etc.), 
@@ -871,12 +873,12 @@ public final class MyAccount implements Comparable<MyAccount> {
         return syncFrequencySeconds;
     }
 
-    public long getEffectiveSyncFrequencySeconds() {
+    public long getEffectiveSyncFrequencyMillis() {
         long effectiveSyncFrequencySeconds = getSyncFrequencySeconds();
         if (effectiveSyncFrequencySeconds <= 0) {
             effectiveSyncFrequencySeconds= MyPreferences.getSyncFrequencySeconds();
         }
-        return effectiveSyncFrequencySeconds;
+        return TimeUnit.SECONDS.toMillis(effectiveSyncFrequencySeconds);
     }
 
     @Override
@@ -1000,6 +1002,10 @@ public final class MyAccount implements Comparable<MyAccount> {
             result = 31 * result + userOid.hashCode();
         }
         return result;
+    }
+
+    public boolean shouldBeSyncedAutomatically() {
+        return isSyncedAutomatically() && isValidAndSucceeded() && getEffectiveSyncFrequencyMillis() > 0;
     }
 
     public boolean isSyncedAutomatically() {
