@@ -27,9 +27,14 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.service.ConnectionRequired;
+import org.andstatus.app.service.ConnectionState;
 import org.andstatus.app.service.MyServiceCommandsRunner;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
+
+import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Periodic syncing doesn't work reliably, when a device is in a Doze mode, so we need
@@ -38,25 +43,43 @@ import org.andstatus.app.util.UriUtils;
 public class SyncInitiator extends BroadcastReceiver {
     private final static BroadcastReceiver BROADCAST_RECEIVER = new SyncInitiator();
 
+    // Testing Doze: https://developer.android.com/training/monitoring-device-state/doze-standby.html#testing_doze
     @Override
     public void onReceive(Context context, Intent intent) {
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        if (pm != null && !pm.isDeviceIdleMode()
-                && ConnectionRequired.SYNC.isConnectionStateOk(UriUtils.getConnectionState(context))) {
-            MyContextHolder.getMyFutureContext(context, this).thenRun(SyncInitiator::syncIfNeeded);
-        }
+        MyLog.v(this, "onReceive "
+                + (pm == null || pm.isDeviceIdleMode() ? " idle" : " " + UriUtils.getConnectionState(context))
+        );
+        if (pm == null || pm.isDeviceIdleMode()) return;
+        MyContextHolder.getMyFutureContext(context, this).thenRun(this::checkConnectionState);
     }
 
-    private static void syncIfNeeded(MyContext myContext) {
-        for (MyAccount myAccount: myContext.persistentAccounts().accountsToSync()) {
-            if (!myContext.persistentTimelines().toAutoSyncForAccount(myAccount).isEmpty()) {
-                new MyServiceCommandsRunner(myContext).autoSyncAccount(myAccount, new SyncResult());
+    private void checkConnectionState(MyContext myContext) {
+        if (!syncIfNeeded(myContext))
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    syncIfNeeded(myContext);
+                }
+            }, (5 + new Random().nextInt(20)) * 1000);
+    }
+
+    private boolean syncIfNeeded(MyContext myContext) {
+        final ConnectionState connectionState = UriUtils.getConnectionState(myContext.context());
+        MyLog.v(this, "syncIfNeeded " + UriUtils.getConnectionState(myContext.context()));
+        if (ConnectionRequired.SYNC.isConnectionStateOk(connectionState)) {
+            for (MyAccount myAccount: myContext.persistentAccounts().accountsToSync()) {
+                if (!myContext.persistentTimelines().toAutoSyncForAccount(myAccount).isEmpty()) {
+                    new MyServiceCommandsRunner(myContext).autoSyncAccount(myAccount, new SyncResult());
+                }
             }
+            return true;
         }
+        return false;
     }
 
     public static void register(MyContext myContext) {
-        if (myContext != null) myContext.context()
+        if (myContext != null && myContext.persistentAccounts().hasSyncedAutomatically()) myContext.context()
                 .registerReceiver(BROADCAST_RECEIVER, new IntentFilter(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED));
     }
 
