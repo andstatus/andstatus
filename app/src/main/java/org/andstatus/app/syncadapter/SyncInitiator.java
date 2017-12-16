@@ -69,13 +69,18 @@ public class SyncInitiator extends BroadcastReceiver {
     }
 
     private void checkConnectionState(MyContext myContext) {
-        if (!syncIfNeeded(myContext))
+        if (!syncIfNeeded(myContext)) {
             new Timer().schedule(new TimerTask() {
                 @Override
                 public void run() {
                     syncIfNeeded(myContext);
                 }
-            }, (5 + new Random().nextInt(20)) * 1000);
+            }, getRandomDelayMillis(5));
+        }
+    }
+
+    private static long getRandomDelayMillis(int minSeconds) {
+        return TimeUnit.SECONDS.toMillis(minSeconds + new Random().nextInt(minSeconds * 4));
     }
 
     private boolean syncIfNeeded(MyContext myContext) {
@@ -103,10 +108,11 @@ public class SyncInitiator extends BroadcastReceiver {
                 MyLog.w(SyncInitiator.class, "No AlarmManager ???");
                 return;
             }
+            final long randomDelay = getRandomDelayMillis(30);
             MyLog.d(SyncInitiator.class, "Scheduling repeating alarm in "
-                    + TimeUnit.MILLISECONDS.toMinutes(minSyncIntervalMillis) + " minutes");
+                    + TimeUnit.MILLISECONDS.toSeconds(randomDelay) + " seconds");
             alarmManager.setInexactRepeating(ELAPSED_REALTIME_WAKEUP,
-                    SystemClock.elapsedRealtime() + minSyncIntervalMillis,
+                    SystemClock.elapsedRealtime() + randomDelay,
                     minSyncIntervalMillis,
                     PendingIntent.getBroadcast(myContext.context(), 0, MyAction.SYNC.getIntent(), 0)
             );
