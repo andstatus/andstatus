@@ -87,15 +87,9 @@ public class MyPreferences {
     public static final String KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS = "hide_replies_not_to_me_or_friends";
 
     // ----------------------------------------------------------
-    // Notifications
-    public static final String KEY_NOTIFICATIONS_ENABLED = "notifications_enabled";
-    public static final String KEY_NOTIFY_OF_DIRECT_MESSAGES = "notifications_messages";
-    public static final String KEY_NOTIFY_OF_MENTIONS = "notifications_mentions";
-    public static final String KEY_NOTIFY_OF_HOME_TIMELINE = "notifications_timeline";
-    public static final String KEY_NOTIFY_OF_COMMANDS_IN_THE_QUEUE = "notifications_queue";
-    public static final String KEY_NOTIFICATION_VIBRATION = "vibration";
+    // Notifications, How to notify
     public static final String KEY_NOTIFICATION_ICON_ALTERNATIVE = "notification_icon_alternative";
-    public static final String KEY_NOTIFICATION_RINGTONE = "notification_ringtone";
+    public static final String KEY_NOTIFICATION_METHOD_SOUND = "notification_sound";
 
     // ----------------------------------------------------------
     // Storage

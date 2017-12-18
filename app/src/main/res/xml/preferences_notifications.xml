@@ -18,7 +18,7 @@
 				  android:title="@string/notifications_title"
 				  android:summary="@string/notifications_summary">
     <PreferenceCategory android:title="@string/notification_behavior">
-        <org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_enabled"
+        <org.andstatus.app.context.MultilineCheckBoxPreference android:key="notification_in_notification_area"
             android:title="@string/notification_in_notification_area"
             android:defaultValue="true" />
         <org.andstatus.app.context.MultilineCheckBoxPreference android:key="notification_icon_alternative"
@@ -26,13 +26,13 @@
             android:defaultValue="false"
             android:summaryOff="@string/notification_icon_alternative_off"
             android:summaryOn="@string/notification_icon_alternative_on"
-            android:dependency="notifications_enabled" />
+            android:dependency="notification_in_notification_area" />
         <org.andstatus.app.context.MultilineCheckBoxPreference android:key="vibration"
             android:title="@string/title_preference_vibration"
             android:summaryOn="@string/summary_preference_vibration_on"
             android:summaryOff="@string/summary_preference_vibration_off"
             android:defaultValue="true" />
-        <RingtonePreference android:key="notification_ringtone"
+        <RingtonePreference android:key="notification_sound"
             android:ringtoneType="notification"
             android:title="@string/notification_sound" />
    </PreferenceCategory>

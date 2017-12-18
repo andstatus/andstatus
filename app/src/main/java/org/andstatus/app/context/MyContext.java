@@ -25,15 +25,15 @@ import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.net.http.HttpConnection;
-import org.andstatus.app.notification.NotificationEvent;
+import org.andstatus.app.notification.NotificationEventType;
+import org.andstatus.app.notification.Notifier;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionState;
 import org.andstatus.app.timeline.meta.PersistentTimelines;
-import org.andstatus.app.timeline.meta.TimelineType;
+import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.IdentifiableInstance;
 
 import java.util.Locale;
-import java.util.Set;
 
 public interface MyContext extends IdentifiableInstance {
     MyContext newInitialized(Object initializerName);
@@ -62,9 +62,9 @@ public interface MyContext extends IdentifiableInstance {
     /** Is our application in Foreground now? **/
     boolean isInForeground();
     void setInForeground(boolean inForeground);
-    Set<NotificationEvent> getNotificationEvents();
-    void notify(NotificationEvent event, Notification notification);
-    void clearNotification(TimelineType timelineType);
+    Notifier getNotifier();
+    void notify(NotificationEventType event, Notification notification);
+    void clearNotification(@NonNull Timeline timeline);
 
     // For testing
     boolean isTestRun();

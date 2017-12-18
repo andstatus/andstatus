@@ -368,9 +368,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends MessageEditorListAc
      * Cancel notifications of the loaded timeline
      */
     private void clearNotifications() {
-        myContext.clearNotification(getParamsLoaded().getTimelineType());
         MyServiceManager.sendForegroundCommand(
-                CommandData.newAccountCommand(CommandEnum.CLEAR_NOTIFICATIONS, getParamsLoaded().getMyAccount()));
+                CommandData.newTimelineCommand(CommandEnum.CLEAR_NOTIFICATIONS, getParamsLoaded().getTimeline()));
     }
 
     /**

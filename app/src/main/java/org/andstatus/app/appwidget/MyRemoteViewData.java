@@ -11,7 +11,7 @@ import android.text.format.Time;
 import org.andstatus.app.FirstActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.notification.NotificationEvent;
+import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
@@ -39,24 +39,11 @@ class MyRemoteViewData {
             widgetComment = context.getString(R.string.appwidget_nodata);
         } else {
             widgetTime = formatWidgetTime(context, widgetData.dateSince, widgetData.dateLastChecked);
-            boolean isFound = false;
-
-            if (widgetData.numMentions > 0) {
-                isFound = true;
-                widgetText += (widgetText.length() > 0 ? "\n" : "")
-                    + context.getText(NotificationEvent.MENTION.titleResId) + ": " + widgetData.numMentions;
-            }
-            if (widgetData.numPrivate > 0) {
-                isFound = true;
-                widgetText += (widgetText.length() > 0 ? "\n" : "")
-                    + context.getText(NotificationEvent.PRIVATE.titleResId) + ": " + widgetData.numPrivate;
-            }
-            if (widgetData.numReblogs > 0) {
-                isFound = true;
-                widgetText += (widgetText.length() > 0 ? "\n" : "")
-                    + context.getText(NotificationEvent.ANNOUNCE.titleResId) + ": " + widgetData.numReblogs;
-            }
-            if (!isFound) {
+            widgetData.notifier.events.map.values().stream().filter(detail -> detail.count > 0)
+                    .forEach(detail ->
+                            widgetText += (widgetText.length() > 0 ? "\n" : "")
+                            + context.getText(detail.event.titleResId) + ": " + detail.count);
+            if (widgetData.notifier.events.isEmpty()) {
                 widgetComment = widgetData.nothingPref;
             }
         }
@@ -68,7 +55,7 @@ class MyRemoteViewData {
         }
     }
     
-    public static String formatWidgetTime(Context context, long startMillis,
+    static String formatWidgetTime(Context context, long startMillis,
             long endMillis) {
         String formatted = "";
         String strStart = "";
@@ -127,12 +114,14 @@ class MyRemoteViewData {
      *  Open the timeline, which has new messages, or default to the "Home" timeline
      */
     private PendingIntent getOnClickIntent(Context context, MyAppWidgetData widgetData) {
-        TimelineType timeLineType = TimelineType.UNKNOWN;
-        if (widgetData.numPrivate > 0) {
+        TimelineType timeLineType;
+        if (widgetData.notifier.events.getCount(NotificationEventType.PRIVATE) > 0) {
             timeLineType = TimelineType.PRIVATE;
-        } else if (widgetData.numMentions > 0) {
-                timeLineType = TimelineType.MENTIONS;
-        } else if (widgetData.numReblogs > 0) {
+        } else if (widgetData.notifier.events.getCount(NotificationEventType.OUTBOX) > 0) {
+            timeLineType = TimelineType.OUTBOX;
+        } else if (widgetData.notifier.events.isEmpty()) {
+            timeLineType = TimelineType.UNKNOWN;
+        } else {
             timeLineType = TimelineType.NOTIFICATIONS;
         }
 

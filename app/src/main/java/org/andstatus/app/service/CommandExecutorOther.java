@@ -21,7 +21,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
 import android.text.TextUtils;
 
-import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
@@ -99,7 +98,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 (new AvatarDownloader(execContext.getCommandData().getUserId())).load(execContext.getCommandData());
                 break;
             case CLEAR_NOTIFICATIONS:
-                AppWidgets.clearAndUpdateWidgets(execContext.getMyContext());
+                execContext.getMyContext().clearNotification(execContext.getCommandData().getTimeline());
                 break;
             default:
                 MyLog.e(this, "Unexpected command here " + execContext.getCommandData());
@@ -434,6 +433,8 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             activity.getMessage().msgId = msgId;
             new DataUpdater(execContext).onActivity(activity);
             execContext.getResult().setItemId(msgId);
+        } else {
+            execContext.getMyContext().getNotifier().onUnsentMessage(msgId);
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }

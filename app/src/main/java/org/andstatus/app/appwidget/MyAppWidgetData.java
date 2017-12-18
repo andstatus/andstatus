@@ -21,16 +21,12 @@ import android.content.SharedPreferences;
 import android.text.TextUtils;
 
 import org.andstatus.app.R;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.service.CommandResult;
+import org.andstatus.app.notification.Notifier;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
-
-import java.util.concurrent.atomic.AtomicLong;
-
-import static org.andstatus.app.notification.NotificationEvent.MENTION;
-import static org.andstatus.app.notification.NotificationEvent.PRIVATE;
 
 /**
  * The class maintains the appWidget instance (defined by mappWidgetId): - state
@@ -51,12 +47,6 @@ public class MyAppWidgetData {
     public static final String PREFS_FILE_NAME = TAG;
 
     /**
-     * Key to store number of new messages/tweets received
-     */
-    private static final String PREF_NUM_HOME_TIMELINE_KEY = "num_messages";
-    private static final String PREF_NUM_MENTIONS_KEY = "num_mentions";
-    private static final String PREF_NUM_DIRECTMESSAGES_KEY = "num_directmessages";
-    /**
      * Words shown in a case there is nothing new
      */
     public static final String PREF_NOTHING_KEY = "nothing";
@@ -69,7 +59,7 @@ public class MyAppWidgetData {
      */
     public static final String PREF_DATECHECKED_KEY = "datechecked";
 
-    private Context mContext;
+    private final MyContext mContext;
     private int mAppWidgetId;
 
     private String prefsFileName;
@@ -78,10 +68,7 @@ public class MyAppWidgetData {
 
     String nothingPref = "";
 
-    // Numbers of new Messages accumulated
-    long numReblogs = 0;
-    long numMentions = 0;
-    long numPrivate = 0;
+    final Notifier notifier;
 
     /**  Value of {@link #dateLastChecked} before counters were cleared */
     long dateSince = 0;
@@ -93,15 +80,15 @@ public class MyAppWidgetData {
     
     boolean changed = false;
     
-    private MyAppWidgetData(Context context, int appWidgetId) {
-        mContext = context;
+    private MyAppWidgetData(MyContext myContext, int appWidgetId) {
+        mContext = myContext;
         this.mAppWidgetId = appWidgetId;
         prefsFileName = PREFS_FILE_NAME + this.mAppWidgetId;
+        notifier = myContext.getNotifier();
     }
 
     public static MyAppWidgetData newInstance(Context context, int appWidgetId) {
-        MyAppWidgetData data = new MyAppWidgetData(context, appWidgetId);
-        MyContextHolder.initialize(context, data);
+        MyAppWidgetData data = new MyAppWidgetData(MyContextHolder.initialize(context, context), appWidgetId);
         if (MyContextHolder.get().isReady()) {
             data.load();
         }
@@ -115,7 +102,7 @@ public class MyAppWidgetData {
         } else {
             nothingPref = prefs.getString(PREF_NOTHING_KEY, null);
             if (nothingPref == null) {
-                nothingPref = mContext.getString(R.string.appwidget_nothingnew_default);
+                nothingPref = mContext.context().getString(R.string.appwidget_nothingnew_default);
                 if (MyPreferences.isShowDebuggingInfoInUi()) {
                     nothingPref += " (" + mAppWidgetId + ")";
                 }
@@ -124,9 +111,6 @@ public class MyAppWidgetData {
             if (dateLastChecked == 0) {
                 clearCounters();
             } else {
-                numReblogs = prefs.getLong(PREF_NUM_HOME_TIMELINE_KEY, 0);
-                numMentions = prefs.getLong(PREF_NUM_MENTIONS_KEY, 0);
-                numPrivate = prefs.getLong(PREF_NUM_DIRECTMESSAGES_KEY, 0);
                 dateSince = prefs.getLong(PREF_DATESINCE_KEY, 0);
             }
 
@@ -139,17 +123,10 @@ public class MyAppWidgetData {
     }
 
     public void clearCounters() {
-        numMentions = 0;
-        numPrivate = 0;
-        numReblogs = 0;
         dateSince = dateLastChecked;
         changed = true;
     }
 
-    public boolean areThereAnyNewMessagesInAnyTimeline() {
-        return (numMentions >0) || (numPrivate > 0) || (numReblogs > 0);
-    }
-    
     private void onDataCheckedOnTheServer() {
         dateLastChecked = System.currentTimeMillis();
         if (dateSince == 0) {
@@ -159,30 +136,21 @@ public class MyAppWidgetData {
     }
     
     public boolean save() {
-        boolean ok = false;
         if (!isLoaded) {
             MyLog.d(this, "Save without load is not possible");
-        } else {
-            SharedPreferences.Editor prefs = SharedPreferencesUtil.getSharedPreferences(
-                    prefsFileName).edit();
-            if (prefs == null) {
-                MyLog.e(this, "Prefs Editor was not loaded");
-            } else {
-                prefs.putString(PREF_NOTHING_KEY, nothingPref);
-                prefs.putLong(PREF_NUM_HOME_TIMELINE_KEY, numReblogs);
-                prefs.putLong(PREF_NUM_MENTIONS_KEY, numMentions);
-                prefs.putLong(PREF_NUM_DIRECTMESSAGES_KEY, numPrivate);
-                
-                prefs.putLong(PREF_DATECHECKED_KEY, dateLastChecked);
-                prefs.putLong(PREF_DATESINCE_KEY, dateSince);
-                prefs.commit();
-                if (MyLog.isVerboseEnabled()) {
-                    MyLog.v(this, "Saved " + toString());
-                }
-                ok = true;
-            }
+            return false;
         }
-        return ok;
+        final SharedPreferences prefs = SharedPreferencesUtil.getSharedPreferences(prefsFileName);
+        if (prefs == null) return false;
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(PREF_NOTHING_KEY, nothingPref);
+        editor.putLong(PREF_DATECHECKED_KEY, dateLastChecked);
+        editor.putLong(PREF_DATESINCE_KEY, dateSince);
+        editor.apply();
+        if (MyLog.isVerboseEnabled()) {
+            MyLog.v(this, "Saved " + toString());
+        }
+        return true;
     }
 
     /**
@@ -190,28 +158,20 @@ public class MyAppWidgetData {
      * */
     public boolean delete() {
         MyLog.v(this, "Deleting data for widgetId=" + mAppWidgetId );
-        return SharedPreferencesUtil.delete(mContext, prefsFileName); 
+        return SharedPreferencesUtil.delete(mContext.context(), prefsFileName);
     }
 
     @Override
     public String toString() {
         return "MyAppWidgetData:{id:" + mAppWidgetId +
-                (numReblogs > 0 ? ", reblogs:" + numReblogs : "") +
-                (numMentions > 0 ? ", mentions:" + numMentions : "") +
-                (numPrivate > 0 ? ", private:" + numPrivate : "") +
+                ", notifications:" + notifier.events +
                 (dateLastChecked > 0 ? ", checked:" + dateLastChecked : "") +
                 (dateSince > 0 ? ", since:" + dateSince : "") +
                 (TextUtils.isEmpty(nothingPref) ? "" : ", nothing:" + nothingPref) +
                 "}";
     }
 
-    public void update(CommandResult result) {
-        if (result.hasError() && result.getDownloadedCount() == 0) {
-            return;
-        }
-        numReblogs += result.getNewCount();
-        numMentions += result.notificationEventCounts.getOrDefault(MENTION, new AtomicLong(0L)).get();
-        numPrivate += result.notificationEventCounts.getOrDefault(PRIVATE, new AtomicLong(0L)).get();
+    public void update() {
         onDataCheckedOnTheServer();
         save();
     }

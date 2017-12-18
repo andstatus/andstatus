@@ -24,8 +24,10 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.notification.NotificationEvent;
-import org.andstatus.app.service.CommandResult;
+import org.andstatus.app.notification.NotificationData;
+import org.andstatus.app.notification.NotificationEventType;
+import org.andstatus.app.notification.NotificationEvents;
+import org.andstatus.app.notification.Notifier;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 import org.junit.Before;
@@ -153,30 +155,34 @@ public class MyAppWidgetProviderTest {
         final String method = "testReceiver";
     	MyLog.i(this, method + "; started");
 
-        long dateSinceMin = System.currentTimeMillis();  
+        long dateSinceMin = System.currentTimeMillis();
+        final Notifier notifier = MyContextHolder.get().getNotifier();
+        NotificationEvents events = notifier.events;
     	// To set dateSince correctly!
-        updateWidgets(NotificationEvent.ANNOUNCE, 1);
+        updateWidgets(events, NotificationEventType.ANNOUNCE, 1);
         DbUtils.waitMs(method, 5000);
         long dateSinceMax = System.currentTimeMillis();
         DbUtils.waitMs(method, 5000);
         AppWidgets.clearAndUpdateWidgets(myContext);
+        notifier.clearAll();
+
         checkWidgetData(0, 0, 0);
         checkDateChecked(dateSinceMin, dateSinceMax);
 
     	int numMentions = 3;
-        updateWidgets(NotificationEvent.MENTION, numMentions);
+        updateWidgets(events, NotificationEventType.MENTION, numMentions);
     	
     	int numPrivate = 1;
-        updateWidgets(NotificationEvent.PRIVATE, numPrivate);
+        updateWidgets(events, NotificationEventType.PRIVATE, numPrivate);
     	
     	int numReblogs = 7;
-        updateWidgets(NotificationEvent.ANNOUNCE, numReblogs);
+        updateWidgets(events, NotificationEventType.ANNOUNCE, numReblogs);
     	
         checkWidgetData(numMentions, numPrivate, numReblogs);
         
         long dateCheckedMin = System.currentTimeMillis();  
         numMentions++;
-        updateWidgets(NotificationEvent.MENTION, numMentions);
+        updateWidgets(events, NotificationEventType.MENTION, 1);
         checkWidgetData(numMentions, numPrivate, numReblogs);
         long dateCheckedMax = System.currentTimeMillis();
         
@@ -184,7 +190,7 @@ public class MyAppWidgetProviderTest {
         checkDateChecked(dateCheckedMin, dateCheckedMax);
     }
 
-    private void checkWidgetData(int numMentions, int numPrivate, int numReblogs)
+    private void checkWidgetData(long numMentions, long numPrivate, long numReblogs)
             throws InterruptedException {
         final String method = "checkWidgetData";
         DbUtils.waitMs(method, 500);
@@ -194,9 +200,13 @@ public class MyAppWidgetProviderTest {
             MyLog.i(this, method + "; No appWidgets found");
     	}
     	for (MyAppWidgetData widgetData : appWidgets.collection()) {
-            assertEquals("Mentions " + widgetData.toString(), numMentions, widgetData.numMentions);
-    	    assertEquals("Direct " + widgetData.toString(), numPrivate, widgetData.numPrivate);
-            assertEquals("Home " + widgetData.toString(), numReblogs, widgetData.numReblogs);
+    	    NotificationEvents events = widgetData.notifier.events;
+            assertEquals("Mentions " + widgetData.toString(), numMentions,
+                    events.getCount(NotificationEventType.MENTION));
+    	    assertEquals("Private " + widgetData.toString(), numPrivate,
+                    events.getCount(NotificationEventType.PRIVATE));
+            assertEquals("Reblogs " + widgetData.toString(), numReblogs,
+                    events.getCount(NotificationEventType.ANNOUNCE));
     	}
     }
 
@@ -251,18 +261,15 @@ public class MyAppWidgetProviderTest {
 
 	/** 
 	 * Update AndStatus Widget(s),
-	 * if there are some installed... (e.g. on the Home screen...) 
+	 * if there are any installed... (e.g. on the Home screen...)
 	 * @see MyAppWidgetProvider
 	 */
-	private void updateWidgets(NotificationEvent event, int eventCount) throws InterruptedException{
+	private void updateWidgets(NotificationEvents events, NotificationEventType event, int increment) throws InterruptedException{
         final String method = "updateWidgets";
         DbUtils.waitMs(method, 500);
+        events.map.put(event, new NotificationData(event, events.getCount(event) + increment));
         AppWidgets appWidgets = AppWidgets.newInstance(myContext);
-        CommandResult result = new CommandResult();
-        for (int i = 0; i < eventCount; i++) {
-            result.onNotificationEvent(event);
-        }
-        appWidgets.updateData(result);
+        appWidgets.updateData();
         appWidgets.updateViews();
 	}
 	

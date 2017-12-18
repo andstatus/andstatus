@@ -8,7 +8,6 @@ import android.widget.RemoteViews;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Collection;
@@ -48,10 +47,8 @@ public class AppWidgets {
                         new ComponentName(context, MyAppWidgetProvider.class));
     }
 
-    public void updateData(CommandResult result) {
-        for (MyAppWidgetData widgetData : mAppWidgets.values()) {
-            widgetData.update(result);
-        }
+    public void updateData() {
+        mAppWidgets.values().forEach(MyAppWidgetData::update);
     }
 
     public void clearCounters() {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2014-2017 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.andstatus.app.context;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
@@ -33,11 +32,12 @@ import org.andstatus.app.data.converter.DatabaseConverterController;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.net.http.HttpConnection;
-import org.andstatus.app.notification.NotificationEvent;
+import org.andstatus.app.notification.NotificationEventType;
+import org.andstatus.app.notification.Notifier;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionState;
 import org.andstatus.app.timeline.meta.PersistentTimelines;
-import org.andstatus.app.timeline.meta.TimelineType;
+import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.Permissions;
@@ -46,9 +46,7 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Set;
 
 /**
  * Contains global state of the application
@@ -87,8 +85,8 @@ public final class MyContextImpl implements MyContext {
     private volatile boolean mExpired = false;
 
     private final Locale mLocale = Locale.getDefault();
-    
-    private final Set<NotificationEvent> notificationEvents = new HashSet<>();
+
+    private final Notifier notifier = new Notifier(this);
 
     private MyContextImpl(Object initializerName) {
         mInitializedBy = MyLog.objToTag(initializerName);
@@ -138,10 +136,7 @@ public final class MyContextImpl implements MyContext {
             default:
                 break;
         }
-
-        for (NotificationEvent event: NotificationEvent.values()) {
-            if (event.areNotificationsEnabled()) notificationEvents.add(event);
-        }
+        notifier.load();
     }
 
     private void initializeDatabase(boolean createApplicationData) {
@@ -288,6 +283,7 @@ public final class MyContextImpl implements MyContext {
     }
 
     @Override
+    @NonNull
     public PersistentAccounts persistentAccounts() {
         return mPersistentAccounts;
     }
@@ -366,24 +362,18 @@ public final class MyContextImpl implements MyContext {
     }
 
     @Override
-    public Set<NotificationEvent> getNotificationEvents() {
-        return notificationEvents;
+    public Notifier getNotifier() {
+        return notifier;
     }
 
     @Override
-	public void notify(NotificationEvent event, Notification notification) {
-        NotificationManager nM = (NotificationManager) context().getSystemService(android.content.Context.NOTIFICATION_SERVICE);
-        nM.notify(MyLog.APPTAG, event.ordinal(), notification);
+	public void notify(NotificationEventType event, Notification notification) {
+        notifier.notifyAndroid(event, notification);
 	}
 
 	@Override
-	public void clearNotification(TimelineType timelineType) {
-        NotificationManager nM = (NotificationManager) context().getSystemService(android.content.Context.NOTIFICATION_SERVICE);
-        for(NotificationEvent event: NotificationEvent.values()) {
-            if (event.isShownOn(timelineType)) {
-                nM.cancel(MyLog.APPTAG, event.ordinal());
-            }
-        }
+	public void clearNotification(@NonNull Timeline timeline) {
+        notifier.clear(timeline);
 	}
 
     @Override

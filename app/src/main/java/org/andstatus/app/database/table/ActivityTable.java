@@ -21,6 +21,7 @@ import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.timeline.meta.TimelineType;
 
 /** The table holds {@link org.andstatus.app.net.social.MbActivity} */
@@ -45,7 +46,7 @@ public final class ActivityTable implements BaseColumns {
     public static final String SUBSCRIBED = "subscribed";
     /** {@link #ACCOUNT_ID} should be notified of this action */
     public static final String NOTIFIED = "notified";
-    /** {@link org.andstatus.app.notification.NotificationEvent}, is not 0, if the notification is active */
+    /** {@link NotificationEventType}, is not 0, if the notification is active */
     public static final String NEW_NOTIFICATION_EVENT = "new_notification_event";
 
     public static final String UPDATED_DATE = "activity_updated_date";

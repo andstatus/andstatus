@@ -25,7 +25,7 @@ import org.andstatus.app.net.social.MbActivity;
 import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbAttachment;
 import org.andstatus.app.net.social.MbUser;
-import org.andstatus.app.notification.NotificationEvent;
+import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
@@ -105,8 +105,8 @@ public class DemoConversationInserter {
 
         MbActivity reply2 = buildActivity(author2, "Reply 2 to selected is private", selected, null);
         addPrivateMessage(reply2, TriState.TRUE);
-        assertNotificationEvent(reply2, NotificationEvent.PRIVATE);
-        assertNotificationEvent(selected, NotificationEvent.EMPTY);
+        assertNotificationEvent(reply2, NotificationEventType.PRIVATE);
+        assertNotificationEvent(selected, NotificationEventType.EMPTY);
         if (iteration == 1) {
             assertEquals("Should be subscribed " + selected, TriState.TRUE,
                     MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, selected.getId()));
@@ -119,7 +119,7 @@ public class DemoConversationInserter {
                     MyContentType.IMAGE));
         addActivity(reply3);
         addActivity(reply1);
-        assertNotificationEvent(reply1, NotificationEvent.EMPTY);
+        assertNotificationEvent(reply1, NotificationEventType.EMPTY);
         addActivity(reply2);
         MbActivity reply4 = buildActivity(author4, "Reply 4 to Reply 1 other author", reply1, null);
         addActivity(reply4);
@@ -200,7 +200,7 @@ public class DemoConversationInserter {
         MbActivity myReply13 = buildActivity(accountUser, "My reply to Reply 2", reply2, null);
         MbActivity reply14 = buildActivity(author3, "Reply to my message 13", myReply13, null);
         addActivity(reply14);
-        assertNotificationEvent(reply14, NotificationEvent.MENTION);
+        assertNotificationEvent(reply14, NotificationEventType.MENTION);
 
         MbActivity reblogOf14 = buildActivity(author2, MbActivityType.ANNOUNCE);
         reblogOf14.setActivity(reply14);
@@ -211,7 +211,7 @@ public class DemoConversationInserter {
         reblogOfMy13.setActivity(myReply13);
         addActivity(reblogOfMy13);
         DemoMessageInserter.assertNotified(reblogOfMy13, TriState.TRUE);
-        assertNotificationEvent(reblogOfMy13, NotificationEvent.ANNOUNCE);
+        assertNotificationEvent(reblogOfMy13, NotificationEventType.ANNOUNCE);
 
         MbActivity mentionOfAuthor3 = buildActivity(reblogger1, "@" + author3.getUserName() + " mention in reply to 4",
                 reply4, iteration == 1 ? demoData.CONVERSATION_MENTION_OF_AUTHOR3_OID : null);
@@ -220,7 +220,7 @@ public class DemoConversationInserter {
         MbActivity followOf3 = buildActivity(author2, MbActivityType.FOLLOW);
         followOf3.setUser(author3);
         addActivity(followOf3);
-        assertNotificationEvent(followOf3, NotificationEvent.EMPTY);
+        assertNotificationEvent(followOf3, NotificationEventType.EMPTY);
 
         MbActivity notLoaded1 = MbActivity.newPartialMessage(accountUser, MyLog.uniqueDateTimeFormatted());
         MbUser notLoadedUser = MbUser.fromOriginAndUserOid(accountUser.originId, "acct:notloaded@someother.host"
@@ -232,16 +232,16 @@ public class DemoConversationInserter {
         MbActivity followOfMe = buildActivity(getAuthor1(), MbActivityType.FOLLOW);
         followOfMe.setUser(accountUser);
         addActivity(followOfMe);
-        assertNotificationEvent(followOfMe, NotificationEvent.FOLLOW);
+        assertNotificationEvent(followOfMe, NotificationEventType.FOLLOW);
 
         MbActivity reply16 = buildActivity(author2, "Reply 16 to Reply 15", reply15, null);
         addActivity(reply16);
     }
 
-    private void assertNotificationEvent(MbActivity activity, NotificationEvent event) {
+    private void assertNotificationEvent(MbActivity activity, NotificationEventType event) {
         assertEquals("Notification event assertion failed for activity:\n" + activity,
                 event,
-                NotificationEvent.fromId(
+                NotificationEventType.fromId(
                         MyQuery.activityIdToLongColumnValue(ActivityTable.NEW_NOTIFICATION_EVENT, activity.getId())));
     }
 

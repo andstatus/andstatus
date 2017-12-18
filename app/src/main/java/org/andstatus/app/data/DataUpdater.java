@@ -118,7 +118,7 @@ public class DataUpdater {
             activity.setSubscribedByMe(TriState.TRUE);
         }
         activity.save(execContext.getMyContext());
-        execContext.getResult().onNotificationEvent(activity.getNotificationEvent());
+        execContext.getResult().onNotificationEvent(activity.getNotificationEventType());
     }
 
     public void saveLum() {

@@ -36,6 +36,9 @@ import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.msg.KeywordsFilter;
+import org.andstatus.app.net.social.MbActivityType;
+import org.andstatus.app.notification.NotificationEventType;
+import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -223,6 +226,43 @@ public class MyProvider extends ContentProvider {
         );
         String sql = "UPDATE " + MsgTable.TABLE_NAME + " SET " + MsgTable.FAVORITED + "=" + favorited.id
                 + " WHERE " + MsgTable._ID + "=" + msgId;
+        try {
+            db.execSQL(sql);
+        } catch (Exception e) {
+            MyLog.w(TAG, method + "; SQL:'" + sql + "'", e);
+        }
+    }
+
+    public static void clearNotification(@NonNull MyContext myContext, @NonNull Timeline timeline) {
+        final String method = "clearNotification for" + timeline;
+        SQLiteDatabase db = myContext.getDatabase();
+        if (db == null) {
+            MyLog.v(MyProvider.TAG, method + "; Database is null");
+            return;
+        }
+        String sql = "UPDATE " + ActivityTable.TABLE_NAME + " SET " + ActivityTable.NEW_NOTIFICATION_EVENT + "=0" +
+                (timeline.isEmpty() ? "" : " WHERE " + ActivityTable.NEW_NOTIFICATION_EVENT +
+                        SqlUserIds.fromIds(NotificationEventType.idsOfShownOn(timeline.getTimelineType())).getSql());
+        try {
+            db.execSQL(sql);
+        } catch (Exception e) {
+            MyLog.w(TAG, method + "; SQL:'" + sql + "'", e);
+        }
+    }
+
+    public static void setUnsentMessageNotification(@NonNull MyContext myContext, long msgId) {
+        final String method = "setUnsentMessageNotification for msgId=" + msgId;
+        SQLiteDatabase db = myContext.getDatabase();
+        if (db == null) {
+            MyLog.v(MyProvider.TAG, method + "; Database is null");
+            return;
+        }
+        String sql = "UPDATE " + ActivityTable.TABLE_NAME + " SET " +
+                ActivityTable.NEW_NOTIFICATION_EVENT + "=" + NotificationEventType.OUTBOX.id +
+                ", " + ActivityTable.NOTIFIED + "=1" +
+                " WHERE " +
+                ActivityTable.ACTIVITY_TYPE + "=" + MbActivityType.UPDATE.id +
+                " AND " + ActivityTable.MSG_ID + "=" + msgId;
         try {
             db.execSQL(sql);
         } catch (Exception e) {

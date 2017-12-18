@@ -25,11 +25,12 @@ import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.net.http.HttpConnection;
-import org.andstatus.app.notification.NotificationEvent;
+import org.andstatus.app.notification.NotificationEventType;
+import org.andstatus.app.notification.Notifier;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionState;
 import org.andstatus.app.timeline.meta.PersistentTimelines;
-import org.andstatus.app.timeline.meta.TimelineType;
+import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 
@@ -50,7 +51,7 @@ public class MyContextForTest implements MyContext {
     private volatile Class<? extends HttpConnection> httpConnectionMockClass = null;
     private volatile HttpConnection httpConnectionMockInstance = null;
     private volatile ConnectionState mockedConnectionState = ConnectionState.UNKNOWN;
-    private final Map<NotificationEvent, Notification> notifications = new ConcurrentHashMap<>();
+    private final Map<NotificationEventType, Notification> androidNotifications = new ConcurrentHashMap<>();
 
     public MyContextForTest setContext(MyContext myContextIn) {
         MyContext myContext2 = myContextIn;
@@ -243,20 +244,21 @@ public class MyContextForTest implements MyContext {
     }
 
     @Override
-    public Set<NotificationEvent> getNotificationEvents() {
-        return myContext.getNotificationEvents();
+    public Notifier getNotifier() {
+        return myContext.getNotifier();
     }
 
     @Override
-	public void notify(NotificationEvent event, Notification notification) {
+	public void notify(NotificationEventType event, Notification notification) {
 		myContext.notify(event, notification);
-		notifications.put(event, notification);
+		androidNotifications.put(event, notification);
 	}
 
 	@Override
-	public void clearNotification(TimelineType id) {
-		myContext.clearNotification(id);
-		notifications.remove(id);
+	public void clearNotification(@NonNull Timeline timeline) {
+		myContext.clearNotification(timeline);
+        NotificationEventType.validValues.stream().filter(event -> event.isShownOn(timeline.getTimelineType()))
+                .forEach(androidNotifications::remove);
 	}
 
     @Override
@@ -264,8 +266,8 @@ public class MyContextForTest implements MyContext {
         return instanceId;
     }
 
-    public Map<NotificationEvent, Notification> getNotifications() {
-		return notifications;
+    public Map<NotificationEventType, Notification> getAndroidNotifications() {
+		return androidNotifications;
 	}
 
     @Override

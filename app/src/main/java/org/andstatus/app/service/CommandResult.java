@@ -25,7 +25,7 @@ import android.support.annotation.NonNull;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.CommandTable;
-import org.andstatus.app.notification.NotificationEvent;
+import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.StringUtils;
@@ -62,7 +62,7 @@ public final class CommandResult implements Parcelable {
     // Counters to use for user notifications
     private long downloadedCount = 0;
     private long newCount = 0;
-    public final Map<NotificationEvent, AtomicLong> notificationEventCounts = new HashMap<>();
+    public final Map<NotificationEventType, AtomicLong> notificationEventCounts = new HashMap<>();
 
     public CommandResult() {
     }
@@ -250,8 +250,8 @@ public final class CommandResult implements Parcelable {
         newCount++;
     }
 
-    public void onNotificationEvent(@NonNull NotificationEvent event) {
-        if (event == NotificationEvent.EMPTY) return;
+    public void onNotificationEvent(@NonNull NotificationEventType event) {
+        if (event == NotificationEventType.EMPTY) return;
 
         AtomicLong count = notificationEventCounts.get(event);
         if (count == null) {

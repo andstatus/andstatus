@@ -45,6 +45,7 @@ import org.andstatus.app.backup.RestoreActivity;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.msg.KeywordsFilter;
+import org.andstatus.app.notification.NotificationMethodType;
 import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.timeline.meta.ManageTimelines;
@@ -179,14 +180,15 @@ public class MySettingsFragment extends PreferenceFragment implements
     }
     
     protected void showRingtone() {
-        RingtonePreference ringtonePreference = (RingtonePreference) findPreference(MyPreferences.KEY_NOTIFICATION_RINGTONE);
+        RingtonePreference ringtonePreference =
+                (RingtonePreference) findPreference(NotificationMethodType.SOUND.preferenceKey);
         if (ringtonePreference != null) {
-            String ringtoneString = SharedPreferencesUtil.getString(MyPreferences.KEY_NOTIFICATION_RINGTONE, null);
+            String ringtoneString = NotificationMethodType.SOUND.getString();
             Uri uri = Uri.EMPTY;
             Ringtone rt = null;
-            if (ringtoneString == null) {
+            if (TextUtils.isEmpty(ringtoneString)) {
                 uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            } else if (!TextUtils.isEmpty(ringtoneString)) {
+            } else {
                 uri = Uri.parse(ringtoneString);
             }
             MyLog.v(this, "Ringtone URI: " + uri);
@@ -399,7 +401,7 @@ public class MySettingsFragment extends PreferenceFragment implements
                 case MyPreferences.KEY_CONNECTION_TIMEOUT_SECONDS:
                     showConnectionTimeout();
                     break;
-                case MyPreferences.KEY_NOTIFICATION_RINGTONE:
+                case MyPreferences.KEY_NOTIFICATION_METHOD_SOUND:
                     showRingtone();
                     break;
                 case MyPreferences.KEY_HISTORY_SIZE:

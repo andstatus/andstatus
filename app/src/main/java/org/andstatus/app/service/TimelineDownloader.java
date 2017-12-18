@@ -22,7 +22,6 @@ import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Connection;
-import org.andstatus.app.notification.AddedMessagesNotifier;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyLog;
 
@@ -74,7 +73,7 @@ abstract class TimelineDownloader extends CommandExecutorStrategy {
         }
         if (execContext.getResult().getDownloadedCount() > 0) {
             MyLog.v(this, "Notifying of timeline changes");
-            AddedMessagesNotifier.notify(execContext.getMyContext(), execContext.getResult());
+            execContext.getMyContext().getNotifier().update();
         }
     }
 

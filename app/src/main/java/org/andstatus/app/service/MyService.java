@@ -32,7 +32,6 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.notification.CommandsQueueNotifier;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -495,8 +494,6 @@ public class MyService extends Service {
         AsyncTaskLauncher.shutdownExecutors(Collections.singleton(MyAsyncTask.PoolEnum.SYNC));
         releaseWakeLock();
         stopSelfResult(latestProcessedStartId);
-        CommandsQueueNotifier.newInstance(myContext).update(
-                mainQueueSize, retryQueueSize);
     }
 
     private boolean couldStopExecutor(boolean forceNow) {

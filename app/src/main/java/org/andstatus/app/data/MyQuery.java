@@ -33,6 +33,7 @@ import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.I18n;
@@ -125,9 +126,6 @@ public class MyQuery {
         try {
             statement = db.compileStatement(sql);
             value = statement.simpleQueryForLong();
-            if (value == 1 && MyLog.isVerboseEnabled()) {
-                MyLog.v(TAG, msgLogSql);
-            }
         } catch (SQLiteDoneException e) {
             MyLog.ignored(TAG, e);
             value = 0;
@@ -138,7 +136,7 @@ public class MyQuery {
             DbUtils.closeSilently(statement);
         }
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(TAG, msgLog + " -> " + value);
+            MyLog.v(TAG, msgLogSql + " -> " + value);
         }
         return value;
     }
@@ -691,6 +689,15 @@ public class MyQuery {
                 + " FROM " + FriendshipTable.TABLE_NAME
                 + " WHERE " + where;
         return getLongs(sql);
+    }
+
+    @NonNull
+    public static long getNumberOfNotificationEvents(@NonNull NotificationEventType event) {
+        String sql = "SELECT COUNT(*)"
+                + " FROM " + ActivityTable.TABLE_NAME
+                + " WHERE " + ActivityTable.NEW_NOTIFICATION_EVENT + "=" + event.id;
+        Set<Long> numbers = getLongs(sql);
+        return numbers.isEmpty() ? 0 : numbers.iterator().next();
     }
 
     @NonNull
