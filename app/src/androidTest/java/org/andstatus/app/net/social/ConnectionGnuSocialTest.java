@@ -69,6 +69,8 @@ public class ConnectionGnuSocialTest {
         int ind = 0;
         assertEquals("Posting message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
         MbActivity activity = timeline.get(ind);
+        assertEquals("Timeline position", "2663077", activity.getTimelinePosition().getPosition());
+        assertEquals("Message Oid", "2663077", activity.getMessage().oid);
         assertEquals("conversationOid", "2218650", activity.getMessage().conversationOid);
         assertEquals("Favorited " + activity, TriState.TRUE, activity.getMessage().getFavoritedBy(activity.accountUser));
         assertEquals("Oid", "116387", activity.getAuthor().oid);
@@ -90,6 +92,8 @@ public class ConnectionGnuSocialTest {
 
         ind++;
         activity = timeline.get(ind);
+        assertEquals("Timeline position", "2664346", activity.getTimelinePosition().getPosition());
+        assertEquals("Message Oid", "2664346", activity.getMessage().oid);
         assertEquals("conversationOid", "2218650", activity.getMessage().conversationOid);
         assertTrue("Does not have a recipient", activity.recipients().isEmpty());
         assertNotEquals("Is a reblog", MbActivityType.ANNOUNCE,  activity.type);

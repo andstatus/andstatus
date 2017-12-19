@@ -63,10 +63,11 @@ public class ConnectionMastodonTest {
 
         int ind = 0;
         MbActivity activity = timeline.get(ind);
+        assertEquals("Timeline position", "22", activity.getTimelinePosition().getPosition());
+        assertEquals("Message Oid", "22", activity.getMessage().oid);
         assertEquals("Account unknown " + activity, true, MyContextHolder.get().persistentAccounts().fromUser(activity.accountUser).isValid());
         MbMessage message = activity.getMessage();
         assertEquals("Is not a message " + activity, MbObjectType.MESSAGE, activity.getObjectType());
-        assertEquals("Activity Oid " + activity, "", activity.getTimelinePosition().getPosition());
         assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountUser));
         MbUser actor = activity.getActor();
 
@@ -103,7 +104,7 @@ public class ConnectionMastodonTest {
     }
 
     @Test
-    public void testGetMentions() throws IOException {
+    public void testGetNotifications() throws IOException {
         String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.mastodon_notifications);
         connection.getHttpMock().setResponse(jso);
@@ -115,6 +116,8 @@ public class ConnectionMastodonTest {
 
         int ind = 0;
         MbActivity activity = timeline.get(ind);
+        assertEquals("Timeline position", "2667058", activity.getTimelinePosition().getPosition());
+        assertEquals("Message Oid", "4729037", activity.getMessage().oid);
         assertEquals("Is not a Reblog " + activity, MbActivityType.ANNOUNCE, activity.type);
         assertEquals("Is not an activity", MbObjectType.ACTIVITY, activity.getObjectType());
         MbUser actor = activity.getActor();
@@ -126,6 +129,8 @@ public class ConnectionMastodonTest {
 
         ind = 2;
         activity = timeline.get(ind);
+        assertEquals("Timeline position", "2674022", activity.getTimelinePosition().getPosition());
+        assertEquals("Message Oid", "4729037", activity.getMessage().oid);
         assertEquals("Is not an activity " + activity, MbObjectType.ACTIVITY, activity.getObjectType());
         assertEquals("Is not LIKE " + activity, MbActivityType.LIKE, activity.type);
         assertThat(activity.getMessage().getBody(), is("<p>IT infrastructure of modern church</p>"));

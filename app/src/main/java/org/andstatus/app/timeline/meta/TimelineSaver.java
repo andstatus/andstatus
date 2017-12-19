@@ -152,7 +152,6 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
     public List<Timeline> addDefaultForAccount(MyContext myContext, MyAccount myAccount) {
         List<Timeline> timelines = new ArrayList<>();
         for (TimelineType timelineType : TimelineType.getDefaultMyAccountTimelineTypes()) {
-            if (!myAccount.getConnection().isApiSupported(timelineType.getConnectionApiRoutine())) continue;
             final Timeline timeline = Timeline.getTimeline(myContext, 0, timelineType, myAccount, 0, null, "");
             if (timeline.getId() == 0) {
                 saveNewDefaultTimeline(timeline);

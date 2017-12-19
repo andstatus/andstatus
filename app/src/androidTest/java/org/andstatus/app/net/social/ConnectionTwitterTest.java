@@ -98,6 +98,8 @@ public class ConnectionTwitterTest {
         MbActivity activity = timeline.get(ind);
         String hostName = demoData.getTestOriginHost(demoData.TWITTER_TEST_ORIGIN_NAME).replace("api.", "");
         assertEquals("Posting message", MbObjectType.MESSAGE, activity.getObjectType());
+        assertEquals("Timeline position", "381172771428257792", activity.getTimelinePosition().getPosition());
+        assertEquals("Message Oid", "381172771428257792", activity.getMessage().oid);
         assertEquals("MyAccount", connectionData.getAccountUser(), activity.accountUser);
         assertEquals("Favorited " + activity, TriState.TRUE, activity.getMessage().getFavoritedBy(activity.accountUser));
         MbUser author = activity.getAuthor();

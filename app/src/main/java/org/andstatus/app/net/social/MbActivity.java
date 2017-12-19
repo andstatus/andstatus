@@ -88,6 +88,7 @@ public class MbActivity extends AObject {
     public static MbActivity newPartialMessage(@NonNull MbUser accountUser, String msgOid,
                                                long updatedDate, DownloadStatus status) {
         MbActivity activity = from(accountUser, MbActivityType.UPDATE);
+        activity.setTimelinePosition(msgOid);
         final MbMessage message = MbMessage.fromOriginAndOid(activity.accountUser.originId, msgOid, status);
         activity.setMessage(message);
         message.setUpdatedDate(updatedDate);
