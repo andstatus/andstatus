@@ -31,8 +31,8 @@ import java.util.Date;
  * Manages minimal information about the latest downloaded message by one User. 
  * We count messages where the User is either a Sender or an Author
  */
-public final class UserMsg {
-    private static final String TAG = UserMsg.class.getSimpleName();
+public final class UserActivity {
+    private static final String TAG = UserActivity.class.getSimpleName();
 
     private long userId = 0;
     
@@ -52,9 +52,9 @@ public final class UserMsg {
     private boolean changed = false;
     
     /**
-     * Retrieve from the database information about the last downloaded message by this User
+     * Retrieve from the database information about the last downloaded activity by this User
      */
-    public UserMsg(long userIdIn) {
+    public UserActivity(long userIdIn) {
         userId = userIdIn;
         if (userId == 0) {
             throw new IllegalArgumentException(TAG + ": userId==0");
@@ -66,10 +66,10 @@ public final class UserMsg {
     /**
      * All information is supplied in this constructor, so it doesn't lookup anything in the database
      */
-    public UserMsg(long userIdIn, long msgId, long msgDate) {
-        if (userIdIn != 0 && msgId != 0) {
+    public UserActivity(long userIdIn, long activityId, long activityDate) {
+        if (userIdIn != 0 && activityId != 0) {
             userId = userIdIn;
-            onNewActivity(msgId, msgDate);
+            onNewActivity(activityId, activityDate);
         }
     }
     
@@ -116,7 +116,7 @@ public final class UserMsg {
     public boolean save() {
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, "User " + userId + ": " + MyQuery.userIdToWebfingerId(userId)
-                    + " Latest msg update at " + (new Date(getLastActivityDate()).toString())
+                    + " Latest activity update at " + (new Date(getLastActivityDate()).toString())
                     + (changed ? "" : " not changed")                    
                     );
         }
@@ -125,14 +125,14 @@ public final class UserMsg {
         }
 
         // As a precaution compare with stored values ones again
-        long msgDate = MyQuery.userIdToLongColumnValue(UserTable.USER_ACTIVITY_DATE, userId);
-        if (msgDate > lastActivityDate) {
-            lastActivityDate = msgDate;
+        long activityDate = MyQuery.userIdToLongColumnValue(UserTable.USER_ACTIVITY_DATE, userId);
+        if (activityDate > lastActivityDate) {
+            lastActivityDate = activityDate;
             lastActivityId = MyQuery.userIdToLongColumnValue(UserTable.USER_ACTIVITY_ID, userId);
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, "There is newer information in the database. User " + userId + ": "
                         + MyQuery.userIdToWebfingerId(userId)
-                        + " Latest msg update at " + (new Date(getLastActivityDate()).toString()));
+                        + " Latest activity at " + (new Date(getLastActivityDate()).toString()));
             }
             changed = false;
             return true;

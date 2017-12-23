@@ -491,7 +491,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends MessageEditorListAc
 
     public void onItemClick(MessageViewItem item) {
         MyAccount ma = myContext.persistentAccounts().getAccountForThisMessage(item.getOriginId(),
-                item.getLinkedMyAccount(), getParamsNew().getMyAccount(), false);
+                getParamsNew().getMyAccount(), item.getLinkedMyAccount(), false);
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this,
                     "onItemClick, " + item

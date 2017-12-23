@@ -16,6 +16,7 @@
 
 package org.andstatus.app.account;
 
+import android.accounts.Account;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
@@ -33,6 +34,8 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
+
+import java.util.List;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
@@ -100,7 +103,7 @@ public class DemoAccountInserter {
     }
 
     private void assertAccountIsAddedToAccountManager(MyAccount maExpected) {
-        android.accounts.Account[] aa = PersistentAccounts.getAccounts(myContext.context());
+        List<Account> aa = PersistentAccounts.getAccounts(myContext.context());
         MyAccount ma = null;
         for (android.accounts.Account account : aa) {
             ma = MyAccount.Builder.fromAndroidAccount(myContext, account).getAccount();
@@ -108,7 +111,7 @@ public class DemoAccountInserter {
                 break;
             }
         }
-        assertEquals("MyAccount was not found in AccountManager among " + aa.length + " accounts.",
+        assertEquals("MyAccount was not found in AccountManager among " + aa.size() + " accounts.",
                 maExpected, ma);
     }
 

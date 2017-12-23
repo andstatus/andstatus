@@ -19,6 +19,7 @@ package org.andstatus.app.account;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.PeriodicSync;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -53,11 +54,11 @@ public class AccountData implements Parcelable, AccountDataWriter {
         this.persistent = persistent;
     }
     
-    public static AccountData fromAndroidAccount(MyContext myContext, Account androidAccount) {
+    public static AccountData fromAndroidAccount(Context context, Account androidAccount) {
         if (androidAccount == null) {
             throw new IllegalArgumentException(TAG + " account is null");
         }
-        android.accounts.AccountManager am = AccountManager.get(myContext.context());
+        android.accounts.AccountManager am = AccountManager.get(context);
         AccountData accountData = fromJsonString(am.getUserData(androidAccount, KEY_ACCOUNT), true);
         accountData.setDataBoolean(MyAccount.KEY_IS_SYNCABLE,
                 ContentResolver.getIsSyncable(androidAccount, MatchedUri.AUTHORITY) != 0);
@@ -105,7 +106,7 @@ public class AccountData implements Parcelable, AccountDataWriter {
      * @return true if Android account changed
      */
     void saveDataToAndroidAccount(MyContext myContext, Account androidAccount, SaveResult result) {
-        AccountData oldData = fromAndroidAccount(myContext, androidAccount);
+        AccountData oldData = fromAndroidAccount(myContext.context(), androidAccount);
         result.changed = !this.equals(oldData);
         if (result.changed) {
 

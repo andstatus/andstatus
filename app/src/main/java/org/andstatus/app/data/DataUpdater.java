@@ -62,7 +62,7 @@ import static org.andstatus.app.util.UriUtils.nonRealOid;
 public class DataUpdater {
     static final String MSG_ASSERTION_KEY = "updateMessage";
     private final CommandExecutionContext execContext;
-    private LatestUserMessages lum = new LatestUserMessages();
+    private LatestUserActivities lum = new LatestUserActivities();
     private KeywordsFilter keywordsFilter = new KeywordsFilter(
             SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
 
@@ -118,6 +118,10 @@ public class DataUpdater {
             activity.setSubscribedByMe(TriState.TRUE);
         }
         activity.save(execContext.getMyContext());
+        lum.onNewUserActivity(new UserActivity(activity.getActor().userId, activity.getId(), activity.getUpdatedDate()));
+        if ( !activity.isAuthorActor()) {
+            lum.onNewUserActivity(new UserActivity(activity.getAuthor().userId, activity.getId(), activity.getUpdatedDate()));
+        }
         execContext.getResult().onNotificationEvent(activity.getNotificationEventType());
     }
 
@@ -256,11 +260,6 @@ public class DataUpdater {
                     execContext.getResult().incrementDownloadedCount();
                     execContext.getResult().incrementNewCount();
                 }
-            }
-            // Remember all messages that we added or updated
-            lum.onNewUserMsg(new UserMsg(activity.getActor().userId, activity.getId(), activity.getUpdatedDate()));
-            if ( !activity.isAuthorActor()) {
-                lum.onNewUserMsg(new UserMsg(activity.getAuthor().userId, activity.getId(), activity.getUpdatedDate()));
             }
         } catch (Exception e) {
             MyLog.e(this, method, e);

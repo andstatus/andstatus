@@ -19,7 +19,6 @@ package org.andstatus.app.account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -59,11 +58,7 @@ public class AccountSettingsFragment extends Fragment {
                 if (state.getAccount().getAccountName().equals(account.name)) {
                     MyLog.i(this, "Removing account: " + account.name);
                     android.accounts.AccountManager am = AccountManager.get(getActivity());
-                    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-                        am.removeAccount(account, getActivity(), null, null);
-                    } else {
-                        am.removeAccount(account, null, null);
-                    }
+                    am.removeAccount(account, getActivity(), null, null);
                 }
             }
             getActivity().finish();

@@ -20,25 +20,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Collects {@link UserMsg} data (e.g. during timeline download) and allows to save it in bulk 
+ * Collects {@link UserActivity} data (e.g. during timeline download) and allows to save it in bulk
  * @author yvolk@yurivolkov.com
  */
-public class LatestUserMessages {
-    private final Map<Long, UserMsg> messages = new HashMap<>();
+public class LatestUserActivities {
+    private final Map<Long, UserActivity> userActivities = new HashMap<>();
 
     /**
      * Add information about new/updated message by the User
      */
-    public void onNewUserMsg(UserMsg umIn) {
+    public void onNewUserActivity(UserActivity uaIn) {
         // On different implementations see 
         // http://stackoverflow.com/questions/81346/most-efficient-way-to-increment-a-map-value-in-java
-        UserMsg um = messages.get(umIn.getUserId());
+        UserActivity um = userActivities.get(uaIn.getUserId());
         if (um == null) {
-            um = umIn;
+            um = uaIn;
         } else {
-            um.onNewActivity(umIn.getLastActivityId(), umIn.getLastActivityDate() );
+            um.onNewActivity(uaIn.getLastActivityId(), uaIn.getLastActivityDate() );
         }
-        messages.put(um.getUserId(), um);
+        userActivities.put(um.getUserId(), um);
     }
     
     /**
@@ -47,7 +47,7 @@ public class LatestUserMessages {
      */
     public boolean save() {
         boolean ok = true;
-        for (UserMsg um : messages.values()) {
+        for (UserActivity um : userActivities.values()) {
             if (!um.save()) {
                 ok = false;
             }

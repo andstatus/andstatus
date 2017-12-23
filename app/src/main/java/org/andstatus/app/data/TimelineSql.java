@@ -67,9 +67,6 @@ public class TimelineSql {
         activityWhere.append(ActivityTable.UPDATED_DATE + ">0");
         SqlWhere msgWhere = new SqlWhere();
 
-        String linkedUserField = ActivityTable.ACCOUNT_ID;
-        boolean authorNameDefined = false;
-        String authorTableName = "";
         switch (timeline.getTimelineType()) {
             case FOLLOWERS:
             case MY_FOLLOWERS:
@@ -82,32 +79,16 @@ public class TimelineSql {
                     fUserIdColumnName = FriendshipTable.USER_ID;
                     fUserLinkedUserIdColumnName = FriendshipTable.FRIEND_ID;
                 }
-                tables = "(SELECT " + fUserIdColumnName + " AS fUserId, "
-                        + fUserLinkedUserIdColumnName + " AS " + UserTable.LINKED_USER_ID
-                        + " FROM " + FriendshipTable.TABLE_NAME
-                        + " WHERE (" + UserTable.LINKED_USER_ID + selectedAccounts.getSql()
-                        + " AND " + FriendshipTable.FOLLOWED + "=1 )"
-                        + ") as fUser";
-                boolean defineAuthorName = columns.contains(UserTable.AUTHOR_NAME);
-                if (defineAuthorName) {
-                    authorNameDefined = true;
-                    authorTableName = "u1";
-                }
-                String userTable = "(SELECT "
-                        + BaseColumns._ID
-                        + (defineAuthorName ? ", " + TimelineSql.userNameField() + " AS " + UserTable.AUTHOR_NAME : "")
-                        + ", " + UserTable.USER_ACTIVITY_ID
-                        + " FROM " + UserTable.TABLE_NAME + ")";
-                tables += " INNER JOIN " + userTable + " as u1"
-                        + " ON (fUserId=u1." + BaseColumns._ID + ")";
                 // Select only the latest message from each Friend's timeline
-                tables  += " LEFT JOIN (" + msgTablePlaceholder + ") ON ("
-                        + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID + "=u1." + UserTable.USER_ACTIVITY_ID + ")";
-                break;
-            case MESSAGES_TO_ACT:
-                if (selectedAccounts.size() == 1) {
-                    linkedUserField = selectedAccounts.getList();  // Constant ID as a field
-                }
+                String activityIds = "SELECT " + UserTable.USER_ACTIVITY_ID
+                        + " FROM " + UserTable.TABLE_NAME + " AS u1"
+                        + " INNER JOIN " + FriendshipTable.TABLE_NAME
+                        + " ON (" + FriendshipTable.TABLE_NAME + "." + fUserIdColumnName + "=u1." + BaseColumns._ID
+                        + " AND " + FriendshipTable.TABLE_NAME + "."
+                        + fUserLinkedUserIdColumnName + selectedAccounts.getSql()
+                        + " AND " + FriendshipTable.FOLLOWED + "=1"
+                        + ")";
+                activityWhere.append(BaseColumns._ID + " IN (" + activityIds + ")");
                 break;
             case HOME:
                 activityWhere.append(ActivityTable.SUBSCRIBED + "=" + TriState.TRUE.id);
@@ -155,8 +136,7 @@ public class TimelineSql {
                     + ActivityTable._ID + ", "
                     + ActivityTable.ORIGIN_ID + ", "
                     + ActivityTable.INS_DATE + ", "
-                    + (tables.contains(UserTable.LINKED_USER_ID) ? ""
-                        : linkedUserField + " AS " + UserTable.LINKED_USER_ID + ", ")
+                    + ActivityTable.ACCOUNT_ID + ", "
                     + ActivityTable.ACTIVITY_TYPE + ", "
                     + ActivityTable.ACTOR_ID + ", "
                     + ActivityTable.MSG_ID + ", "
@@ -175,27 +155,26 @@ public class TimelineSql {
             tables = tables.replace(msgTablePlaceholder, msgTable);
         }
 
-        if (!authorNameDefined && columns.contains(UserTable.AUTHOR_NAME)) {
+        if (columns.contains(UserTable.AUTHOR_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
                     + BaseColumns._ID + ", " 
                     + TimelineSql.userNameField() + " AS " + UserTable.AUTHOR_NAME
                     + " FROM " + UserTable.TABLE_NAME + ") AS author ON "
                     + ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.AUTHOR_ID + "=author."
                     + BaseColumns._ID;
-            authorNameDefined = true;
-            authorTableName = "author";
-        }
-        if (authorNameDefined && columns.contains(DownloadTable.AVATAR_FILE_NAME)) {
-            tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
-                    + DownloadTable.USER_ID + ", "
-                    + DownloadTable.DOWNLOAD_STATUS + ", "
-                    + DownloadTable.FILE_NAME
-                    + " FROM " + DownloadTable.TABLE_NAME + ") AS " + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS
-                    + " ON "
-                    + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_STATUS
-                    + "=" + DownloadStatus.LOADED.save() + " AND " 
-                    + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.USER_ID
-                    + "=" + ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.AUTHOR_ID;
+
+            if (columns.contains(DownloadTable.AVATAR_FILE_NAME)) {
+                tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
+                        + DownloadTable.USER_ID + ", "
+                        + DownloadTable.DOWNLOAD_STATUS + ", "
+                        + DownloadTable.FILE_NAME
+                        + " FROM " + DownloadTable.TABLE_NAME + ") AS " + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS
+                        + " ON "
+                        + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_STATUS
+                        + "=" + DownloadStatus.LOADED.save() + " AND "
+                        + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.USER_ID
+                        + "=" + ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.AUTHOR_ID;
+            }
         }
         if (columns.contains(DownloadTable.IMAGE_FILE_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (" +
@@ -263,7 +242,7 @@ public class TimelineSql {
         columnNames.add(ActivityTable.INS_DATE); // ??
         columnNames.add(MsgTable.UPDATED_DATE);
         columnNames.add(MsgTable.MSG_STATUS);
-        columnNames.add(UserTable.LINKED_USER_ID);
+        columnNames.add(ActivityTable.ACCOUNT_ID);
         if (MyPreferences.getShowAvatars()) {
             columnNames.add(MsgTable.AUTHOR_ID);
             columnNames.add(DownloadTable.AVATAR_FILE_NAME);

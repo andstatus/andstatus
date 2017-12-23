@@ -212,6 +212,7 @@
   <string name="in_combined_global_search_label">Include in \"Search in Internet\" while in Combined Timeline</string>
   <string name="in_combined_public_reload_label">Include in \"Syncing\" while in Combined Public Timeline</string>
   <string name="in_context">In context</string>
+  <string name="joined">joined</string>
   <string name="label_accountselector">Select an Account</string>
   <string name="label_allow_html_content">Allow HTML content</string>
   <string name="label_backup">Backup application data to SD card</string>

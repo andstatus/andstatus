@@ -14,7 +14,9 @@ import org.andstatus.app.backup.MyBackupDataInput;
 import org.andstatus.app.backup.MyBackupDataOutput;
 import org.andstatus.app.backup.MyBackupDescriptor;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.SqlUserIds;
 import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
@@ -30,7 +32,9 @@ import org.json.JSONObject;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -73,9 +77,8 @@ public class PersistentAccounts {
     
     public PersistentAccounts initialize() {
         myFriends = null;
-        android.accounts.Account[] aa = getAccounts(myContext.context());
         List<MyAccount> myAccounts = new ArrayList<>();
-        for (android.accounts.Account account : aa) {
+        for (android.accounts.Account account : getAccounts(myContext.context())) {
             MyAccount ma = Builder.fromAndroidAccount(myContext, account).getAccount();
             if (ma.isValid()) {
                 myAccounts.add(ma);
@@ -564,11 +567,22 @@ public class PersistentAccounts {
     }
 
     @NonNull
-    public static Account[] getAccounts(Context context) {
+    public static SqlUserIds myAccountIds() {
+        Context context = MyContextHolder.get().context();
+        return SqlUserIds.fromIds(
+            getAccounts(context).stream()
+            .map(account -> AccountData.fromAndroidAccount(context, account).getDataLong(MyAccount.KEY_USER_ID, 0))
+            .filter(id -> id > 0)
+            .collect(Collectors.toList())
+        );
+    }
+
+    @NonNull
+    public static List<Account> getAccounts(Context context) {
         if (Permissions.checkPermission(context, Permissions.PermissionType.GET_ACCOUNTS) ) {
             AccountManager am = AccountManager.get(context);
-            return am.getAccountsByType(AuthenticatorService.ANDROID_ACCOUNT_TYPE);
+            return Arrays.asList(am.getAccountsByType(AuthenticatorService.ANDROID_ACCOUNT_TYPE));
         }
-        return new Account[]{};
+        return Collections.emptyList();
     }
 }

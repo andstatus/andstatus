@@ -16,7 +16,9 @@
 
 package org.andstatus.app.data.converter;
 
+import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.SqlUserIds;
 
 class Convert26 extends ConvertOneStep {
     Convert26() {
@@ -77,6 +79,8 @@ class Convert26 extends ConvertOneStep {
         sql = "DROP INDEX idx_msg_conversation_id";
         DbUtils.execSQL(db, sql);
         sql = "ALTER TABLE msg RENAME TO oldmsg";
+        DbUtils.execSQL(db, sql);
+        sql = "CREATE INDEX idx_msgofuser_message ON msgofuser (msg_id)";
         DbUtils.execSQL(db, sql);
 
         sql = "CREATE TABLE msg (_id INTEGER PRIMARY KEY AUTOINCREMENT,origin_id INTEGER NOT NULL,msg_oid TEXT NOT NULL,msg_status INTEGER NOT NULL DEFAULT 0,conversation_id INTEGER NOT NULL DEFAULT 0,conversation_oid TEXT,url TEXT,body TEXT,body_to_search TEXT,via TEXT,msg_author_id INTEGER NOT NULL DEFAULT 0,in_reply_to_msg_id INTEGER,in_reply_to_user_id INTEGER,private INTEGER NOT NULL DEFAULT 0,favorited INTEGER NOT NULL DEFAULT 0,reblogged INTEGER NOT NULL DEFAULT 0,mentioned INTEGER NOT NULL DEFAULT 0,favorite_count INTEGER NOT NULL DEFAULT 0,reblog_count INTEGER NOT NULL DEFAULT 0,reply_count INTEGER NOT NULL DEFAULT 0,msg_ins_date INTEGER NOT NULL,msg_updated_date INTEGER NOT NULL DEFAULT 0)";
@@ -147,7 +151,9 @@ class Convert26 extends ConvertOneStep {
                 "WHERE reblogged=1 AND reblog_oid IS NOT NULL AND actor_id IS NOT NULL AND actor_id != 0) ON msg_id=oldmsg._id";
         DbUtils.execSQL(db, sql);
 
-        progressLogger.logProgress(stepTitle + ": Adding Favourite activities, linked to Update activities");
+        SqlUserIds myAccountIds = PersistentAccounts.myAccountIds();
+
+        progressLogger.logProgress(stepTitle + ": Adding Favorite activities, linked to Update activities");
         sql = "INSERT INTO activity (" +
             " activity_origin_id, activity_oid, account_id, activity_type, actor_id, activity_msg_id," +
             " activity_user_id,  obj_activity_id, activity_updated_date, activity_ins_date" +
@@ -156,17 +162,40 @@ class Convert26 extends ConvertOneStep {
             " 0,                 _id,             msg_sent_date,          msg_sent_date" +
             " FROM (SELECT * FROM oldmsg WHERE author_id !=0) AS oldmsg" +
             " INNER JOIN" +
-            " (SELECT user_id AS actor_id, msg_id FROM msgofuser WHERE favorited=1 AND actor_id IS NOT NULL AND actor_id != 0) ON msg_id=oldmsg._id";
+            " (SELECT user_id AS actor_id, msg_id FROM msgofuser WHERE favorited=1 AND actor_id IS NOT NULL " +
+                "AND actor_id != 0) ON msg_id=oldmsg._id";
+        DbUtils.execSQL(db, sql);
+
+        progressLogger.logProgress(stepTitle + ": Setting Favorited flag for messages");
+        sql = "UPDATE msg SET" +
+                " favorited=2" +
+                " WHERE EXISTS " +
+                " (SELECT user_id AS actor_id, msg_id FROM msgofuser WHERE favorited=1 AND actor_id IS NOT NULL" +
+                " AND actor_id" + myAccountIds.getSql() + " AND msg_id=msg._id)";
+        DbUtils.execSQL(db, sql);
+
+        progressLogger.logProgress(stepTitle + ": Updating account for Favorites");
+        sql = "UPDATE activity SET" +
+                " subscribed=2," +
+                " account_id=(" +
+                "SELECT user_id FROM msgofuser WHERE msg_id=activity.activity_msg_id" +
+                " AND msgofuser.favorited=1 AND user_id" + myAccountIds.getSql() +
+                ")" +
+                " WHERE activity_type=5 AND EXISTS" +
+                " (SELECT user_id FROM msgofuser WHERE msg_id=activity.activity_msg_id AND msgofuser.favorited=1" +
+                " AND user_id" + myAccountIds.getSql() + ")";
         DbUtils.execSQL(db, sql);
 
         progressLogger.logProgress(stepTitle + ": Setting Subscribed for Update activities");
-        sql = "CREATE INDEX idx_msgofuser_message ON msgofuser (msg_id)";
-        DbUtils.execSQL(db, sql);
-
         sql = "UPDATE activity SET" +
-            " subscribed=2" +
+            " subscribed=2," +
+            " account_id=(" +
+            "SELECT user_id FROM msgofuser WHERE msg_id=activity.activity_msg_id" +
+            " AND msgofuser.subscribed=1 AND user_id" + myAccountIds.getSql() +
+            ")" +
             " WHERE activity_type=6 AND EXISTS" +
-            " (SELECT user_id FROM msgofuser WHERE msg_id=activity.activity_msg_id AND msgofuser.subscribed=1)";
+            " (SELECT user_id FROM msgofuser WHERE msg_id=activity.activity_msg_id AND msgofuser.subscribed=1" +
+            " AND user_id" + myAccountIds.getSql() + ")";
         DbUtils.execSQL(db, sql);
 
         progressLogger.logProgress(stepTitle + ": Marking Private messages");
@@ -176,18 +205,38 @@ class Convert26 extends ConvertOneStep {
             " (SELECT user_id FROM msgofuser WHERE msg_id=msg._id AND msgofuser.directed=1)";
         DbUtils.execSQL(db, sql);
 
+        progressLogger.logProgress(stepTitle + ": Updating account for Private messages");
+        sql = "UPDATE activity SET" +
+            " notified=2," +
+            " subscribed=2," +
+            " account_id=(" +
+            "SELECT user_id FROM msgofuser WHERE msg_id=activity.activity_msg_id" +
+            " AND msgofuser.directed=1 AND user_id" + myAccountIds.getSql() +
+            ")" +
+            " WHERE activity_type=6 AND EXISTS" +
+            " (SELECT user_id FROM msgofuser WHERE msg_id=activity.activity_msg_id AND msgofuser.directed=1" +
+            " AND user_id" + myAccountIds.getSql() + ")";
+        DbUtils.execSQL(db, sql);
+
         progressLogger.logProgress(stepTitle + ": Marking Mentions");
         sql = "UPDATE msg SET" +
             " mentioned=2" +
             " WHERE EXISTS" +
-            " (SELECT user_id FROM msgofuser WHERE msg_id=msg._id AND msgofuser.mentioned=1)";
+            " (SELECT user_id FROM msgofuser WHERE msg_id=msg._id AND msgofuser.mentioned=1 " +
+                " AND user_id" + myAccountIds.getSql() + ")";
         DbUtils.execSQL(db, sql);
 
-        progressLogger.logProgress(stepTitle + ": Marking mentions as Notifications");
+        progressLogger.logProgress(stepTitle + ": Updating account for Mentions");
         sql = "UPDATE activity SET" +
-                " notified=2" +
+                " notified=2," +
+                " subscribed=2," +
+                " account_id=(" +
+                "SELECT user_id FROM msgofuser WHERE msg_id=activity.activity_msg_id" +
+                " AND msgofuser.mentioned=1 AND user_id" + myAccountIds.getSql() +
+                ")" +
                 " WHERE activity_type=6 AND EXISTS" +
-                " (SELECT user_id FROM msgofuser WHERE msg_id=activity.activity_msg_id AND msgofuser.mentioned=1)";
+                " (SELECT user_id FROM msgofuser WHERE msg_id=activity.activity_msg_id AND msgofuser.mentioned=1" +
+                " AND user_id" + myAccountIds.getSql() + ")";
         DbUtils.execSQL(db, sql);
 
         sql = "CREATE TABLE audience (user_id INTEGER NOT NULL,msg_id INTEGER NOT NULL, CONSTRAINT pk_audience PRIMARY KEY (msg_id ASC, user_id ASC))";
@@ -350,7 +399,8 @@ class Convert26 extends ConvertOneStep {
                 " visible_item_id, visible_y, visible_oldest_date" +
                 " FROM oldtimeline";
         DbUtils.execSQL(db, sql);
-        sql = "DROP TABLE oldtimeline";
+
+        sql = "UPDATE timeline SET timeline_type='private' WHERE timeline_type='direct'";
         DbUtils.execSQL(db, sql);
 
         progressLogger.logProgress(stepTitle + ": Converting Command");
@@ -384,23 +434,18 @@ class Convert26 extends ConvertOneStep {
                 " num_io_exceptions, num_parse_exceptions, error_message, downloaded_count, progress_text" +
                 " FROM oldcommand";
         DbUtils.execSQL(db, sql);
-        sql = "DROP TABLE oldcommand";
-        DbUtils.execSQL(db, sql);
 
         progressLogger.logProgress(stepTitle + ": Dropping old tables and indices");
         sql = "DROP INDEX idx_msgofuser_message";
         DbUtils.execSQL(db, sql);
 
-        sql = "DROP TABLE IF EXISTS oldmsg";
-        DbUtils.execSQL(db, sql);
-        sql = "DROP TABLE IF EXISTS olduser";
-        DbUtils.execSQL(db, sql);
-        sql = "DROP TABLE IF EXISTS followinguser";
-        DbUtils.execSQL(db, sql);
-        sql = "DROP TABLE IF EXISTS msgofuser";
-        DbUtils.execSQL(db, sql);
-
-        sql = "UPDATE timeline SET timeline_type='private' WHERE timeline_type='direct'";
-        DbUtils.execSQL(db, sql);
+        dropOldTable("oldtimeline");
+        dropOldTable("oldcommand");
+        dropOldTable("oldmsg");
+        dropOldTable("olduser");
+        dropOldTable("followinguser");
+        dropOldTable("msgofuser");
+        dropOldTable("oldorigin");
+        dropOldTable("olddownload");
     }
 }

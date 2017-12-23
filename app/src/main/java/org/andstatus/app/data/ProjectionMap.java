@@ -20,7 +20,6 @@ import android.provider.BaseColumns;
 
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.DownloadTable;
-import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.database.table.UserTable;
 
@@ -76,7 +75,6 @@ public class ProjectionMap {
         MSG.put(MsgTable.IN_REPLY_TO_MSG_ID, MsgTable.IN_REPLY_TO_MSG_ID);
         MSG.put(MsgTable.IN_REPLY_TO_USER_ID, MsgTable.IN_REPLY_TO_USER_ID);
         MSG.put(UserTable.IN_REPLY_TO_NAME, UserTable.IN_REPLY_TO_NAME);
-        MSG.put(UserTable.LINKED_USER_ID, UserTable.LINKED_USER_ID);
         MSG.put(MsgTable.PRIVATE, MsgTable.PRIVATE);
         MSG.put(MsgTable.FAVORITED, MsgTable.FAVORITED);
         MSG.put(MsgTable.REBLOGGED, MsgTable.REBLOGGED);

@@ -106,12 +106,8 @@ public abstract class BaseMessageViewItem<T extends BaseMessageViewItem<T>> exte
         this.originId = originId;
     }
 
-    void setLinkedUserAndAccount(long linkedUserId) {
-        this.linkedUserId = linkedUserId;
+    void setLinkedAccount(long linkedUserId) {
         linkedMyAccount = getMyContext().persistentAccounts().fromUserId(linkedUserId);
-        if (!linkedMyAccount.isValid()) {
-            linkedMyAccount = getMyContext().persistentAccounts().getFirstSucceededForOriginId(originId);
-        }
     }
 
     @NonNull

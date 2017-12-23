@@ -1,6 +1,7 @@
 package org.andstatus.app.backup;
 
 import android.Manifest;
+import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
@@ -29,6 +30,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.andstatus.app.context.DemoData.demoData;
@@ -135,7 +137,7 @@ public class MyBackupAgentTest {
 
     private void deleteAccounts() throws IOException {
         android.accounts.AccountManager am = AccountManager.get(MyContextHolder.get().context());
-        android.accounts.Account[] aa = PersistentAccounts.getAccounts(MyContextHolder.get().context());
+        List<Account> aa = PersistentAccounts.getAccounts(MyContextHolder.get().context());
         for (android.accounts.Account androidAccount : aa) {
             String logMsg = "Removing old account: " + androidAccount.name;
             MyLog.i(this, logMsg);

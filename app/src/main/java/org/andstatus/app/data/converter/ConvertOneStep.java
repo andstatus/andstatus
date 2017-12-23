@@ -19,6 +19,7 @@ package org.andstatus.app.data.converter;
 import android.database.sqlite.SQLiteDatabase;
 
 import org.andstatus.app.backup.ProgressLogger;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.util.MyLog;
 
 abstract class ConvertOneStep {
@@ -60,5 +61,10 @@ abstract class ConvertOneStep {
 
     public String getLastError() {
         return lastError;
+    }
+
+    void dropOldTable(String tableName) {
+        sql = "DROP TABLE IF EXISTS " + tableName;
+        DbUtils.execSQL(db, sql);
     }
 }

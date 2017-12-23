@@ -49,13 +49,12 @@ public class MyAccountConverter {
             myContext.persistentOrigins().initialize(db);
             
             android.accounts.AccountManager am = AccountManager.get(myContext.context());
-            android.accounts.Account[] aa = PersistentAccounts.getAccounts(myContext.context());
-            Collection<android.accounts.Account> accountsToRemove = new ArrayList<android.accounts.Account>(); 
-            for (android.accounts.Account androidAccount : aa) {
+            Collection<android.accounts.Account> accountsToRemove = new ArrayList<android.accounts.Account>();
+            for (android.accounts.Account androidAccount : PersistentAccounts.getAccounts(myContext.context())) {
                 DatabaseConverterController.stillUpgrading();
                 AndroidAccountData androidAccountData = new AndroidAccountData(am, androidAccount);
                 int versionOldBefore16 = androidAccountData.getDataInt(MyAccount.KEY_VERSION, 0);
-                AccountData accountDataOld = AccountData.fromAndroidAccount(myContext, androidAccount);
+                AccountData accountDataOld = AccountData.fromAndroidAccount(myContext.context(), androidAccount);
                 int versionOld2 = accountDataOld.getDataInt(MyAccount.KEY_VERSION, 0);
                 if (versionOld2 == versionTo) {
                     MyLog.i(TAG, "Account " + androidAccount.name + " is already converted?!, skipping");

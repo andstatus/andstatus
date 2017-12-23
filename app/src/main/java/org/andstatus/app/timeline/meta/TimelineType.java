@@ -54,9 +54,6 @@ public enum TimelineType implements SelectableEnum {
     MY_FOLLOWERS("my_followers", R.string.followers, Connection.ApiRoutineEnum.GET_FOLLOWERS),
     DRAFTS("drafts", R.string.timeline_title_drafts, Connection.ApiRoutineEnum.DUMMY),
     OUTBOX("outbox", R.string.timeline_title_outbox, Connection.ApiRoutineEnum.DUMMY),
-    /** For the selected my account (a user), the timeline includes all messages of the same origin irrespectively existence
-     * of the link between the message and the User. So the User may "Act" on this message. */
-    MESSAGES_TO_ACT("messages_to_act", R.string.timeline_title_home, Connection.ApiRoutineEnum.HOME_TIMELINE),
     REPLIES("replies", R.string.timeline_title_replies, Connection.ApiRoutineEnum.DUMMY),
     USERS("users", R.string.user_list, Connection.ApiRoutineEnum.DUMMY),
     CONVERSATION("conversation", R.string.label_conversation, Connection.ApiRoutineEnum.DUMMY),
@@ -155,7 +152,6 @@ public enum TimelineType implements SelectableEnum {
             case FOLLOWERS:
             case FRIENDS:
             case MANAGE_TIMELINES:
-            case MESSAGES_TO_ACT:
             case REPLIES:
             case UNKNOWN:
             case USER:
@@ -193,7 +189,6 @@ public enum TimelineType implements SelectableEnum {
             case PUBLIC:
             case SEARCH:
             case SENT:
-            case MESSAGES_TO_ACT:
             case USER:
             case USERS:
                 return true;
@@ -278,6 +273,10 @@ public enum TimelineType implements SelectableEnum {
             case NOTIFICATIONS:
             case SENT:
             case USER:
+            case FRIENDS:
+            case MY_FRIENDS:
+            case FOLLOWERS:
+            case MY_FOLLOWERS:
                 return true;
             default:
                 return false;

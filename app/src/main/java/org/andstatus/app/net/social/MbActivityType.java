@@ -23,8 +23,8 @@ import org.andstatus.app.R;
 
 /**
  * Activity type in a sense of
- * Activity Vocabulary https://www.w3.org/TR/activitystreams-vocabulary/#activity-types
- * and ActivityPub, see https://www.w3.org/TR/activitypub/#announce-activity-inbox
+ * <a href="https://www.w3.org/TR/activitystreams-vocabulary/#activity-types">Activity Vocabulary</a>
+ * and ActivityPub, see <a href="https://www.w3.org/TR/activitypub/#announce-activity-inbox">announce-activity-inbox</a>
  */
 public enum MbActivityType {
     ANNOUNCE(1, R.string.reblogged),  // known also as Repost, Retweet, Boost...
@@ -36,6 +36,7 @@ public enum MbActivityType {
     UNDO_ANNOUNCE(7, R.string.undid_reblog),
     UNDO_FOLLOW(8, R.string.undid_follow),
     UNDO_LIKE(9, R.string.undid_like),
+    JOIN(10, R.string.joined),
     EMPTY(0, R.string.empty_in_parenthesis);
 
     public final long id;

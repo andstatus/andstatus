@@ -76,9 +76,9 @@ public class DataUpdaterTest {
         String messageOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB";
         DemoMessageInserter.deleteOldMessage(accountUser.originId, messageOid);
 
-        CommandExecutionContext counters = new CommandExecutionContext(
+        CommandExecutionContext executionContext = new CommandExecutionContext(
                 CommandData.newAccountCommand(CommandEnum.EMPTY, ma));
-        DataUpdater di = new DataUpdater(counters);
+        DataUpdater di = new DataUpdater(executionContext);
         String username = "somebody" + demoData.TESTRUN_UID + "@identi.ca";
         String userOid = "acct:" + username;
         MbUser somebody = MbUser.fromOriginAndUserOid(accountUser.originId, userOid);
@@ -91,10 +91,10 @@ public class DataUpdaterTest {
         assertTrue("User " + username + " added", somebody.userId != 0);
         DemoConversationInserter.assertIfUserIsMyFriend(somebody, false, ma);
 
-        MbActivity activity = MbActivity.newPartialMessage(accountUser, messageOid, 13312696000L, DownloadStatus.LOADED);
+        MbActivity activity = MbActivity.newPartialMessage(accountUser, messageOid, System.currentTimeMillis() , DownloadStatus.LOADED);
         activity.setActor(somebody);
         MbMessage message = activity.getMessage();
-        message.setBody("The test message by Somebody");
+        message.setBody("The test message by Somebody at run " + demoData.TESTRUN_UID);
         message.via = "MyCoolClient";
         message.url = "http://identi.ca/somebody/comment/dasdjfdaskdjlkewjz1EhSrTRB";
 
@@ -127,11 +127,13 @@ public class DataUpdaterTest {
         assertEquals("Sender of the message", somebody.userId, senderId);
         url = MyQuery.userIdToStringColumnValue(UserTable.PROFILE_URL, senderId);
         assertEquals("Url of the author " + somebody.getUserName(), somebody.getProfileUrl(), url);
+        assertEquals("Latest activity of " + somebody, activity.getId(),
+                MyQuery.userIdToLongColumnValue(UserTable.USER_ACTIVITY_ID, somebody.userId));
 
         Uri contentUri = Timeline.getTimeline(TimelineType.MY_FRIENDS, ma, 0, null).getUri();
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = ActivityTable.getTimeSortOrder(TimelineType.MY_FRIENDS, false);
-        sa.addSelection("fUserId = ?", Long.toString(somebody.userId));
+        sa.addSelection(ActivityTable.ACTOR_ID + "=?", Long.toString(somebody.userId));
         String[] PROJECTION = new String[] {
                 MsgTable._ID
         };
@@ -144,17 +146,17 @@ public class DataUpdaterTest {
         di.onActivity(somebody.update(accountUser, accountUser));
         DemoConversationInserter.assertIfUserIsMyFriend(somebody, true, ma);
 
-        cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection,
-                sa.selectionArgs, sortOrder);
-        assertTrue("Message by user=" + somebody.userId + " is not in the Friends timeline",
-                cursor != null && cursor.getCount() > 0);
-        cursor.close();
-
         Set<Long> friendsIds = MyQuery.getFriendsIds(ma.getUserId());
         MyContextHolder.get().persistentAccounts().initialize();
         for (long id : friendsIds) {
             assertTrue("isFriend: " + id, MyContextHolder.get().persistentAccounts().isMeOrMyFriend(id));
         }
+
+        cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection,
+                sa.selectionArgs, sortOrder);
+        assertTrue("Message by user=" + somebody + " is not in the Friends timeline of " + ma,
+                cursor != null && cursor.getCount() > 0);
+        cursor.close();
     }
 
     @Test
@@ -257,7 +259,7 @@ public class DataUpdaterTest {
                 MsgTable.MSG_ID,
                 MsgTable.FAVORITED,
                 MsgTable.UPDATED_DATE,
-                UserTable.LINKED_USER_ID,
+                ActivityTable.ACCOUNT_ID,
         };
         Cursor cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection,
                 sa.selectionArgs, sortOrder);

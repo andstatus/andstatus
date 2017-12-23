@@ -187,7 +187,7 @@ public class ConversationActivity extends MessageEditorListActivity implements M
 
     @Override
     public Timeline getTimeline() {
-        return Timeline.getTimeline(myContext, 0, TimelineType.MESSAGES_TO_ACT,
+        return Timeline.getTimeline(myContext, 0, TimelineType.EVERYTHING,
                 getCurrentMyAccount(), 0, getCurrentMyAccount().getOrigin(), "");
     }
 

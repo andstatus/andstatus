@@ -172,7 +172,7 @@ public final class MyAccount implements Comparable<MyAccount> {
          * @param account should not be null
          */
         protected static Builder fromAndroidAccount(MyContext myContext, android.accounts.Account account) {
-            return fromAccountData(myContext, AccountData.fromAndroidAccount(myContext, account), "fromAndroidAccount");
+            return fromAccountData(myContext, AccountData.fromAndroidAccount(myContext.context(), account), "fromAndroidAccount");
         }
 
         public static Builder fromJson(MyContext myContext, JSONObject jso) throws JSONException {
@@ -858,15 +858,12 @@ public final class MyAccount implements Comparable<MyAccount> {
     }
 
     Account getExistingAndroidAccount() {
-        Account androidAccount = null;
-        Account[] aa = PersistentAccounts.getAccounts(MyContextHolder.get().context());
-        for (android.accounts.Account account : aa) {
+        for (android.accounts.Account account : PersistentAccounts.getAccounts(MyContextHolder.get().context())) {
             if (getAccountName().equals(account.name)) {
-                androidAccount = account;
-                break;
+                return account;
             }
         }
-        return androidAccount;
+        return null;
     }
 
     public long getSyncFrequencySeconds() {

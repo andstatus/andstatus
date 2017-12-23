@@ -22,10 +22,10 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.FriendshipValues;
-import org.andstatus.app.data.LatestUserMessages;
+import org.andstatus.app.data.LatestUserActivities;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.data.UserMsg;
+import org.andstatus.app.data.UserActivity;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.net.http.ConnectionException;
@@ -244,15 +244,15 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                             ActivityTable.TABLE_NAME,
                             ActivityTable._ID,
                             ActivityTable.ACTOR_ID + "=" + mbUser.userId
-                                    + " AND " + ActivityTable.MSG_ID + " != 0"
                                     + " AND " + ActivityTable.ACTIVITY_TYPE + " IN("
+                                    + MbActivityType.FOLLOW.id + ","
                                     + MbActivityType.CREATE.id + ","
                                     + MbActivityType.UPDATE.id + ","
                                     + MbActivityType.ANNOUNCE.id + ","
                                     + MbActivityType.LIKE.id + ")"
                                     + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC LIMIT 1");
                     if (lastActivityId == 0) {
-                        MyLog.v(this, "Failed to find User's message for "
+                        MyLog.v(this, "Failed to find User's activity for "
                                 + mbUser.getNamePreferablyWebFingerId(), e1);
                     } else {
                         long updatedDate = MyQuery.idToLongColumnValue(
@@ -260,12 +260,12 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                                 ActivityTable.TABLE_NAME,
                                 ActivityTable.UPDATED_DATE,
                                 lastActivityId);
-                        LatestUserMessages lum = new LatestUserMessages();
-                        lum.onNewUserMsg(new UserMsg(mbUser.userId, lastActivityId, updatedDate));
+                        LatestUserActivities lum = new LatestUserActivities();
+                        lum.onNewUserActivity(new UserActivity(mbUser.userId, lastActivityId, updatedDate));
                         lum.save();
-                        MyLog.v(this, "Server didn't return User's message for "
+                        MyLog.v(this, "Server didn't return User's activity for "
                                         + mbUser.getNamePreferablyWebFingerId()
-                                        + " found msg " + RelativeTime.
+                                        + " found activity " + RelativeTime.
                                         getDifference(MyContextHolder.get().context(), updatedDate),
                                 e1);
                     }

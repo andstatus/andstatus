@@ -66,7 +66,7 @@ public class MessageViewItem extends BaseMessageViewItem<MessageViewItem> {
         setMyContext(myContext);
         setMsgId(DbUtils.getLong(cursor, ActivityTable.MSG_ID));
         setOriginId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID));
-        setLinkedUserAndAccount(DbUtils.getLong(cursor, UserTable.LINKED_USER_ID));
+        setLinkedAccount(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID));
 
         authorName = TimelineSql.userColumnIndexToNameAtTimeline(cursor,
                 cursor.getColumnIndex(UserTable.AUTHOR_NAME), MyPreferences.getShowOrigin());

@@ -73,8 +73,9 @@ class MessageContextMenuData {
                         MyLog.v(messageContextMenu, "actor:" + msgNew.getMyAccount()
                                 + (changedToCurrent ? " <- to current" : "")
                                 + (msgNew.getMyAccount().equals(myActor) ? "" : " <- myActor:" + myActor)
-                                + (myActor.equals(viewItem.getLinkedMyAccount()) ? "" : " <- linked:"
-                                + viewItem.getLinkedMyAccount())
+                                + (myActor.equals(viewItem.getLinkedMyAccount())
+                                    || !viewItem.getLinkedMyAccount().isValid() ? "" : " <- linked:"
+                                    + viewItem.getLinkedMyAccount())
                                 + "; msgId:" + msgId);
                     }
                     return msgNew.getMyAccount().isValid() ? msgNew : MessageForAccount.EMPTY;

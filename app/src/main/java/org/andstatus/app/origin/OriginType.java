@@ -334,8 +334,6 @@ public enum OriginType implements SelectableEnum {
             return false;
         }
         switch(timelineType) {
-            case MESSAGES_TO_ACT:
-                return false;
             case PUBLIC:
                 return isPublicTimeLineSyncable;
             case SEARCH:

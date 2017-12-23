@@ -85,11 +85,11 @@ public final class UserTable implements BaseColumns {
     public static final String INS_DATE = "user_ins_date";
 
     /**
-     * Id of the latest message where this User was an Actor or an Author
+     * Id of the latest activity where this User was an Actor or an Author
      */
     public static final String USER_ACTIVITY_ID = "user_activity_id";
     /**
-     * Date of the latest message where this User was an Actor or an Author
+     * Date of the latest activity where this User was an Actor
      */
     public static final String USER_ACTIVITY_DATE = "user_activity_date";
 
@@ -100,8 +100,6 @@ public final class UserTable implements BaseColumns {
     public static final String USER_ID = "user_id";
     /** Alias for the primary key used for accounts */
     public static final String ACCOUNT_ID = "account_id";
-    /** Alias used in a timeline to distinguish messages for different users */
-    public static final String LINKED_USER_ID = "linked_user_id";
     /**
      * Derived from {@link ActivityTable#ACTOR_ID}
      * Whether this (and other similar...) is {@link #USERNAME} or {@link #REAL_NAME}, depends on settings
