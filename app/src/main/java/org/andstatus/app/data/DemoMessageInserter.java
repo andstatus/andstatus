@@ -248,8 +248,7 @@ public class DemoMessageInserter {
     static void deleteOldMessage(long originId, String messageOid) {
         long messageIdOld = MyQuery.oidToId(OidEnum.MSG_OID, originId, messageOid);
         if (messageIdOld != 0) {
-            int deleted = MyContextHolder.get().context().getContentResolver().delete(
-                    MatchedUri.getMsgUri(0, messageIdOld),  null, null);
+            int deleted = MyProvider.deleteMessage(MyContextHolder.get().context(), messageIdOld);
             assertEquals( "Old message id=" + messageIdOld + " deleted", 1, deleted);
         }
     }

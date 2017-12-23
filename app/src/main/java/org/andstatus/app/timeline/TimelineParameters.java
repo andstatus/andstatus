@@ -26,7 +26,6 @@ import android.text.TextUtils;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.database.table.ActivityTable;
@@ -257,9 +256,7 @@ public class TimelineParameters {
     private SelectionAndArgs buildSelectionAndArgs() {
         SelectionAndArgs sa = new SelectionAndArgs();
         sa.addSelection(ActivityTable.getTimeSortField(getTimelineType()) + " >= ?",
-                new String[]{
-                        String.valueOf(minDate > 0 ? minDate : 1)
-                });
+                String.valueOf(minDate > 0 ? minDate : 1));
         if (maxDate > 0) {
             sa.addSelection(ActivityTable.getTimeSortField(getTimelineType()) + " <= ?",
                     String.valueOf(maxDate));

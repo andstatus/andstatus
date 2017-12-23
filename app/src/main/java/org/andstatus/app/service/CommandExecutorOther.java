@@ -24,7 +24,6 @@ import android.text.TextUtils;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyQuery;
@@ -46,6 +45,8 @@ import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.List;
+
+import static org.andstatus.app.data.MyProvider.deleteMessage;
 
 class CommandExecutorOther extends CommandExecutorStrategy{
 
@@ -315,12 +316,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             }
         }
         if (ok && msgId != 0) {
-            try {
-                execContext.getContext().getContentResolver()
-                        .delete(MatchedUri.getMsgUri(0, msgId), null, null);
-            } catch (Exception e) {
-                MyLog.e(this, "Error destroying message locally", e);
-            }
+            deleteMessage(execContext.getContext(), msgId);
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }

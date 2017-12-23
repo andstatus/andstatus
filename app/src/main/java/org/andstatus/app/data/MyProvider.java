@@ -18,6 +18,7 @@ package org.andstatus.app.data;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
@@ -109,6 +110,20 @@ public class MyProvider extends ContentProvider {
         return count;
     }
 
+    /** @return Number of deleted messages */
+    public static int deleteMessage(Context context, long msgId) {
+        if (context == null || msgId == 0) return 0;
+        try {
+            return context.getContentResolver().delete(MatchedUri.ACTIVITY_CONTENT_URI,
+                    ActivityTable.TABLE_NAME + "." + ActivityTable.MSG_ID + "=" + msgId,
+                    new String[]{});
+
+        } catch (Exception e) {
+            MyLog.e(TAG, "Error destroying message locally", e);
+        }
+        return 0;
+    }
+
     private static int deleteActivities(SQLiteDatabase db, String selection, String[] selectionArgs, boolean inTransaction) {
         int count = 0;
         String sqlDesc = "";
@@ -118,17 +133,24 @@ public class MyProvider extends ContentProvider {
         try {
             String descSuffix = "; args=" + Arrays.toString(selectionArgs);
 
-            String sqlMsgIds = "SELECT " + ActivityTable.TABLE_NAME + "." + ActivityTable.MSG_ID +
-                    " FROM " + ActivityTable.TABLE_NAME +
-                    " WHERE (" + selection + ")";
+            // Start from deletion of activities
+            sqlDesc = selection + descSuffix;
+            count += db.delete(ActivityTable.TABLE_NAME, selection, selectionArgs);
+
+            // Messages, which don't have any activities
+            String sqlMsgIds = "SELECT msgA." + MsgTable._ID +
+                    " FROM " + MsgTable.TABLE_NAME + " AS msgA" +
+                    " WHERE NOT EXISTS" +
+                    " (SELECT " + ActivityTable.MSG_ID + " FROM " + ActivityTable.TABLE_NAME +
+                    " WHERE " + ActivityTable.MSG_ID + "=msgA." + MsgTable._ID + ")";
             final Set<Long> msgIds = MyQuery.getLongs(sqlMsgIds);
 
             // Audience
             String selectionG = " EXISTS (" + sqlMsgIds +
-                    " AND (" + ActivityTable.TABLE_NAME + "." + ActivityTable.MSG_ID +
+                    " AND (msgA." + MsgTable._ID +
                     "=" + AudienceTable.TABLE_NAME + "." + AudienceTable.MSG_ID + "))";
             sqlDesc = selectionG + descSuffix;
-            count += db.delete(AudienceTable.TABLE_NAME, selectionG, selectionArgs);
+            count += db.delete(AudienceTable.TABLE_NAME, selectionG, new String[]{});
 
             for (long msgId : msgIds) {
                 DownloadData.deleteAllOfThisMsg(db, msgId);
@@ -136,14 +158,11 @@ public class MyProvider extends ContentProvider {
 
             // Messages
             selectionG = " EXISTS (" + sqlMsgIds +
-                    " AND (" + ActivityTable.TABLE_NAME + "." + ActivityTable.MSG_ID +
+                    " AND (msgA." + MsgTable._ID +
                     "=" + MsgTable.TABLE_NAME + "." + MsgTable._ID + "))";
             sqlDesc = selectionG + descSuffix;
-            count += db.delete(MsgTable.TABLE_NAME, selectionG, selectionArgs);
+            count += db.delete(MsgTable.TABLE_NAME, selectionG, new String[]{});
 
-            // Now delete activities themselves
-            sqlDesc = selection + descSuffix;
-            count += db.delete(ActivityTable.TABLE_NAME, selection, selectionArgs);
             if (!inTransaction) {
                 db.setTransactionSuccessful();
             }

@@ -26,10 +26,15 @@ import java.util.Arrays;
 public final class SelectionAndArgs {
     public volatile String selection;
     public volatile String[] selectionArgs;
-    public volatile int nArgs;
+    private volatile int nArgs;
 
     public SelectionAndArgs() {
+        this("");
+    }
+
+    public SelectionAndArgs(String selection_in) {
         clear();
+        selection = selection_in;
     }
 
     public void clear() {
