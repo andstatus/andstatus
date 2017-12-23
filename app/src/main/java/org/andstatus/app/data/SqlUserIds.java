@@ -93,4 +93,14 @@ public class SqlUserIds {
             return " IN (" + getList() + ")";
         }
     }
+
+    public String getNotSql() {
+        if (size() == 0) {
+            return "";
+        } else if (size() == 1) {
+            return "!=" + ids.iterator().next();
+        } else {
+            return " NOT IN (" + getList() + ")";
+        }
+    }
 }

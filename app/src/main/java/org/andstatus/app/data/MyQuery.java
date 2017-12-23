@@ -691,20 +691,26 @@ public class MyQuery {
         return getLongs(sql);
     }
 
-    @NonNull
     public static long getNumberOfNotificationEvents(@NonNull NotificationEventType event) {
-        String sql = "SELECT COUNT(*)"
-                + " FROM " + ActivityTable.TABLE_NAME
-                + " WHERE " + ActivityTable.NEW_NOTIFICATION_EVENT + "=" + event.id;
+        return getCountOfActivities(ActivityTable.NEW_NOTIFICATION_EVENT + "=" + event.id);
+    }
+
+    public static long getCountOfActivities(@NonNull String condition) {
+        String sql = "SELECT COUNT(*) FROM " + ActivityTable.TABLE_NAME
+                + (TextUtils.isEmpty(condition) ? "" : " WHERE " + condition);
         Set<Long> numbers = getLongs(sql);
         return numbers.isEmpty() ? 0 : numbers.iterator().next();
     }
 
     @NonNull
     public static Set<Long> getLongs(String sql) {
+        return getLongs(MyContextHolder.get().getDatabase(), sql);
+    }
+
+    @NonNull
+    public static Set<Long> getLongs(SQLiteDatabase db, String sql) {
         final String method = "getLongs";
         Set<Long> ids = new HashSet<>();
-        SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
             MyLog.v(TAG, method + "; Database is null");
             return ids;

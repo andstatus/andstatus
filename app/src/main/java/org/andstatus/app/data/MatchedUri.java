@@ -24,6 +24,7 @@ import android.text.TextUtils;
 import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.database.DatabaseHolder;
+import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.database.table.UserTable;
@@ -45,11 +46,10 @@ public enum MatchedUri {
      */
     TIMELINE_ITEM(4),
     /**
-     * Operations on {@link MsgTable} itself
+     * Operations on {@link org.andstatus.app.database.table.ActivityTable} and dependent tables
      */
-    MSG(7),
+    ACTIVITY(7),
     MSG_ITEM(10),
-    MSG_COUNT(2),
     ORIGIN(8),
     ORIGIN_ITEM(11),
     /**
@@ -84,8 +84,7 @@ public enum MatchedUri {
     private static final String CENTRAL_ITEM_SEGMENT = "cnt";
 
     private static final String CONTENT_URI_PREFIX = "content://" + AUTHORITY + "/";
-    public static final Uri MSG_CONTENT_URI = Uri.parse(CONTENT_URI_PREFIX + MsgTable.TABLE_NAME + "/" + CONTENT_SEGMENT);
-    public static final Uri MSG_CONTENT_COUNT_URI = Uri.parse(CONTENT_URI_PREFIX + MsgTable.TABLE_NAME + "/" + COUNT_SEGMENT);
+    public static final Uri ACTIVITY_CONTENT_URI = Uri.parse(CONTENT_URI_PREFIX + ActivityTable.TABLE_NAME + "/" + CONTENT_SEGMENT);
 
     private final int code;
     
@@ -120,8 +119,7 @@ public enum MatchedUri {
         URI_MATCHER.addURI(AUTHORITY, MsgTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + USER_SEGMENT + "/#/rnd/#", TIMELINE.code);
         URI_MATCHER.addURI(AUTHORITY, MsgTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + USER_SEGMENT + "/#", TIMELINE.code);
         URI_MATCHER.addURI(AUTHORITY, MsgTable.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", MSG_ITEM.code);
-        URI_MATCHER.addURI(AUTHORITY, MsgTable.TABLE_NAME + "/" + CONTENT_SEGMENT, MSG.code);
-        URI_MATCHER.addURI(AUTHORITY, MsgTable.TABLE_NAME + "/" + COUNT_SEGMENT, MSG_COUNT.code);
+        URI_MATCHER.addURI(AUTHORITY, ActivityTable.TABLE_NAME + "/" + CONTENT_SEGMENT, ACTIVITY.code);
 
         URI_MATCHER.addURI(AUTHORITY, OriginTable.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", ORIGIN_ITEM.code);
         URI_MATCHER.addURI(AUTHORITY, OriginTable.TABLE_NAME + "/" + CONTENT_SEGMENT, ORIGIN.code);
@@ -146,10 +144,11 @@ public enum MatchedUri {
     public String getMimeType() {
         String type = null;
         switch (this) {
-            case MSG:
+            case ACTIVITY:
+                type = CONTENT_TYPE_PREFIX + ActivityTable.TABLE_NAME;
+                break;
             case TIMELINE:
             case TIMELINE_SEARCH:
-            case MSG_COUNT:
                 type = CONTENT_TYPE_PREFIX + MsgTable.TABLE_NAME;
                 break;
             case TIMELINE_ITEM:

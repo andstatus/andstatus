@@ -116,7 +116,7 @@ public class TimelineSql {
             case SENT:
                 SqlUserIds userIds = SqlUserIds.fromTimeline(timeline);
                 // All actions by this User(s)
-                activityWhere.append(ActivityTable.ACTOR_ID + " " + userIds.getSql());
+                activityWhere.append(ActivityTable.ACTOR_ID + userIds.getSql());
                 break;
             case NOTIFICATIONS:
                 activityWhere.append(ActivityTable.NOTIFIED + "=" + TriState.TRUE.id);

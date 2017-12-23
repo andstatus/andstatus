@@ -21,24 +21,25 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.DownloadTable;
-import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.TriState;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Clean database from outdated information
@@ -47,9 +48,9 @@ import java.util.concurrent.TimeUnit;
 public class DataPruner {
     private MyContext mMyContext;
     private ContentResolver mContentResolver;
-    private int mDeleted = 0;
+    private long mDeleted = 0;
     static final long MAX_DAYS_LOGS_TO_KEEP = 10;
-    static final long PRUNE_MIN_PERIOD_DAYS = 1;	
+    private static final long PRUNE_MIN_PERIOD_DAYS = 1;
 
     public DataPruner(MyContext myContext) {
         mMyContext = myContext;
@@ -70,66 +71,54 @@ public class DataPruner {
         mDeleted = 0;
         int nDeletedTime = 0;
         // We're using global preferences here
-        SharedPreferences sp = SharedPreferencesUtil
-                .getDefaultSharedPreferences();
+        SharedPreferences sp = SharedPreferencesUtil.getDefaultSharedPreferences();
 
-        // Don't delete messages, which were favorited by any my account
-        String sqlNotFavoritedOrRebloggedMessage = MsgTable.FAVORITED + "!=" + TriState.TRUE.id
-                + " AND " + MsgTable.REBLOGGED + "!=" + TriState.TRUE.id;
-        String sqlNotLatestMessageByFollowedUser = MsgTable.TABLE_NAME + "." + MsgTable._ID + " NOT IN("
-                + "SELECT " + UserTable.USER_ACTIVITY_ID
-                + " FROM " + UserTable.TABLE_NAME + " AS userf"
-                + " INNER JOIN " + FriendshipTable.TABLE_NAME
-                + " ON" 
-                + " userf." + UserTable._ID + "=" + FriendshipTable.TABLE_NAME + "." + FriendshipTable.FRIEND_ID
-                + " AND " + FriendshipTable.TABLE_NAME + "." + FriendshipTable.FOLLOWED + "=1"
-                + ")";
+        // Don't delete my activities
+        final SqlUserIds accountIds = SqlUserIds.fromIds(MyContextHolder.get().persistentAccounts().list().stream()
+                .map(MyAccount::getUserId).collect(Collectors.toList()));
+        String sqlNotMyActivity = ActivityTable.TABLE_NAME + "." + ActivityTable.ACTOR_ID + accountIds.getNotSql();
+        String sqlNotLatestActivityByUser = ActivityTable.TABLE_NAME + "." + ActivityTable._ID + " NOT IN("
+                + " SELECT " + UserTable.USER_ACTIVITY_ID + " FROM " + UserTable.TABLE_NAME + ")";
 
-        int maxDays = Integer.parseInt(sp.getString(MyPreferences.KEY_HISTORY_TIME, "3"));
+        long maxDays = Integer.parseInt(sp.getString(MyPreferences.KEY_HISTORY_TIME, "3"));
         long latestTimestamp = 0;
 
-        int nTweets = 0;
-        int nToDeleteSize = 0;
-        int nDeletedSize = 0;
-        int maxSize = Integer.parseInt(sp.getString(MyPreferences.KEY_HISTORY_SIZE, "2000"));
+        long nActivities = 0;
+        long nToDeleteSize = 0;
+        long nDeletedSize = 0;
+        long maxSize = Integer.parseInt(sp.getString(MyPreferences.KEY_HISTORY_SIZE, "2000"));
         long latestTimestampSize = 0;
         Cursor cursor = null;
         try {
             if (maxDays > 0) {
                 latestTimestamp = System.currentTimeMillis() - java.util.concurrent.TimeUnit.DAYS.toMillis(maxDays);
                 SelectionAndArgs sa = new SelectionAndArgs();
-                sa.addSelection(MsgTable.TABLE_NAME + "." + MsgTable.INS_DATE + " <  ?",
+                sa.addSelection(ActivityTable.TABLE_NAME + "." + ActivityTable.INS_DATE + " <  ?",
                         String.valueOf(latestTimestamp));
-                sa.addSelection(sqlNotFavoritedOrRebloggedMessage);
-                sa.addSelection(sqlNotLatestMessageByFollowedUser);
-                nDeletedTime = mContentResolver.delete(MatchedUri.MSG_CONTENT_URI, sa.selection, sa.selectionArgs);
+                sa.addSelection(sqlNotMyActivity);
+                sa.addSelection(sqlNotLatestActivityByUser);
+                nDeletedTime = mContentResolver.delete(MatchedUri.ACTIVITY_CONTENT_URI, sa.selection, sa.selectionArgs);
             }
 
             if (maxSize > 0) {
-                nDeletedSize = 0;
-                cursor = mContentResolver.query(MatchedUri.MSG_CONTENT_COUNT_URI, null, null, null, null);
-                if (cursor.moveToFirst()) {
-                    // Count is in the first column
-                    nTweets = cursor.getInt(0);
-                    nToDeleteSize = nTweets - maxSize;
-                }
-                cursor.close();
+                nActivities = MyQuery.getCountOfActivities("");
+                nToDeleteSize = nActivities - maxSize;
                 if (nToDeleteSize > 0) {
                     // Find INS_DATE of the most recent tweet to delete
-                    cursor = mContentResolver.query(MatchedUri.MSG_CONTENT_URI, new String[] {
-                            MsgTable.INS_DATE
-                    }, null, null, MsgTable.INS_DATE + " ASC LIMIT 0," + nToDeleteSize);
+                    cursor = mContentResolver.query(MatchedUri.ACTIVITY_CONTENT_URI, new String[] {
+                            ActivityTable.INS_DATE
+                    }, null, null, ActivityTable.INS_DATE + " ASC LIMIT 0," + nToDeleteSize);
                     if (cursor.moveToLast()) {
                         latestTimestampSize = cursor.getLong(0);
                     }
                     cursor.close();
                     if (latestTimestampSize > 0) {
                         SelectionAndArgs sa = new SelectionAndArgs();
-                        sa.addSelection(MsgTable.TABLE_NAME + "." + MsgTable.INS_DATE + " <=  ?",
+                        sa.addSelection(ActivityTable.TABLE_NAME + "." + ActivityTable.INS_DATE + " <=  ?",
                                 String.valueOf(latestTimestampSize));
-                        sa.addSelection(sqlNotFavoritedOrRebloggedMessage);
-                        sa.addSelection(sqlNotLatestMessageByFollowedUser);
-                        nDeletedSize = mContentResolver.delete(MatchedUri.MSG_CONTENT_URI, sa.selection,
+                        sa.addSelection(sqlNotMyActivity);
+                        sa.addSelection(sqlNotLatestActivityByUser);
+                        nDeletedSize = mContentResolver.delete(MatchedUri.ACTIVITY_CONTENT_URI, sa.selection,
                                 sa.selectionArgs);
                     }
                 }
@@ -151,7 +140,7 @@ public class DataPruner {
                     method + " " + (pruned ? "succeeded" : "failed") + "; History time=" + maxDays + " days; deleted " + nDeletedTime
                     + " , before " + new Date(latestTimestamp).toString());
             MyLog.v(this, method + "; History size=" + maxSize + " messages; deleted "
-                    + nDeletedSize + " of " + nTweets + " messages, before " + new Date(latestTimestampSize).toString());
+                    + nDeletedSize + " of " + nActivities + " messages, before " + new Date(latestTimestampSize).toString());
         }
         return pruned;
     }
@@ -244,7 +233,7 @@ public class DataPruner {
     /**
      * @return number of Messages deleted
      */
-    public int getDeleted() {
+    public long getDeleted() {
         return mDeleted;
     }
 }

@@ -44,6 +44,7 @@ import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 import java.util.Arrays;
+import java.util.Set;
 
 /**
  * Database provider for the MyDatabase database.
@@ -90,14 +91,10 @@ public class MyProvider extends ContentProvider {
         int count;
         ParsedUri uriParser = ParsedUri.fromUri(uri);
         switch (uriParser.matched()) {
-            case MSG:
-                count = deleteMessages(db, selection, selectionArgs, false);
+            case ACTIVITY:
+                count = deleteActivities(db, selection, selectionArgs, false);
                 break;
 
-            case MSG_ITEM:
-                count = deleteMessage(db, uriParser.getMessageId(), false);
-                break;
-                
             case USER:
                 count = deleteUsers(db, selection, selectionArgs);
                 break;
@@ -112,14 +109,7 @@ public class MyProvider extends ContentProvider {
         return count;
     }
 
-    private static int deleteMessage(SQLiteDatabase db, long msgId, boolean inTransaction) {
-        int count;
-        DownloadData.deleteAllOfThisMsg(db, msgId);
-        count = deleteMessages(db, BaseColumns._ID + "=" + msgId, null, inTransaction);
-        return count;
-    }
-
-    private static int deleteMessages(SQLiteDatabase db, String selection, String[] selectionArgs, boolean inTransaction) {
+    private static int deleteActivities(SQLiteDatabase db, String selection, String[] selectionArgs, boolean inTransaction) {
         int count = 0;
         String sqlDesc = "";
         if (!inTransaction) {
@@ -127,31 +117,33 @@ public class MyProvider extends ContentProvider {
         }
         try {
             String descSuffix = "; args=" + Arrays.toString(selectionArgs);
-            // Delete all related records
+
+            String sqlMsgIds = "SELECT " + ActivityTable.TABLE_NAME + "." + ActivityTable.MSG_ID +
+                    " FROM " + ActivityTable.TABLE_NAME +
+                    " WHERE (" + selection + ")";
+            final Set<Long> msgIds = MyQuery.getLongs(sqlMsgIds);
 
             // Audience
-            String selectionG = " EXISTS ("
-                    + "SELECT * FROM " + MsgTable.TABLE_NAME + " WHERE ("
-                    + MsgTable.TABLE_NAME + "." + BaseColumns._ID + "=" + AudienceTable.TABLE_NAME + "." + AudienceTable.MSG_ID
-                    + ") AND ("
-                    + selection
-                    + "))";
+            String selectionG = " EXISTS (" + sqlMsgIds +
+                    " AND (" + ActivityTable.TABLE_NAME + "." + ActivityTable.MSG_ID +
+                    "=" + AudienceTable.TABLE_NAME + "." + AudienceTable.MSG_ID + "))";
             sqlDesc = selectionG + descSuffix;
-            count = db.delete(AudienceTable.TABLE_NAME, selectionG, selectionArgs);
+            count += db.delete(AudienceTable.TABLE_NAME, selectionG, selectionArgs);
 
-            // Activities
-            selectionG = " EXISTS ("
-                    + "SELECT * FROM " + MsgTable.TABLE_NAME + " WHERE ("
-                    + MsgTable.TABLE_NAME + "." + BaseColumns._ID + "=" + ActivityTable.TABLE_NAME + "." + ActivityTable.MSG_ID
-                    + ") AND ("
-                    + selection
-                    + "))";
+            for (long msgId : msgIds) {
+                DownloadData.deleteAllOfThisMsg(db, msgId);
+            }
+
+            // Messages
+            selectionG = " EXISTS (" + sqlMsgIds +
+                    " AND (" + ActivityTable.TABLE_NAME + "." + ActivityTable.MSG_ID +
+                    "=" + MsgTable.TABLE_NAME + "." + MsgTable._ID + "))";
             sqlDesc = selectionG + descSuffix;
-            count = db.delete(ActivityTable.TABLE_NAME, selectionG, selectionArgs);
+            count += db.delete(MsgTable.TABLE_NAME, selectionG, selectionArgs);
 
-            // Now delete messages themselves
+            // Now delete activities themselves
             sqlDesc = selection + descSuffix;
-            count = db.delete(MsgTable.TABLE_NAME, selection, selectionArgs);
+            count += db.delete(ActivityTable.TABLE_NAME, selection, selectionArgs);
             if (!inTransaction) {
                 db.setTransactionSuccessful();
             }
@@ -172,25 +164,28 @@ public class MyProvider extends ContentProvider {
         return count;
     }
 
-    public static int deleteActivity(MyContext myContext, long activityId, long msgId, boolean inTransaction) {
+    public static long deleteActivity(MyContext myContext, long activityId, long msgId, boolean inTransaction) {
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
             MyLog.v(MyProvider.TAG, "deleteActivity; Database is null");
             return 0;
         }
         long originId = MyQuery.activityIdToLongColumnValue(ActivityTable.ORIGIN_ID, activityId);
-        int count = db.delete(ActivityTable.TABLE_NAME, BaseColumns._ID + "=" + activityId, null);
-        if (count > 0 && msgId != 0) {
-            // Was this the last activity for this message?
-            long activityId2 = MyQuery.conditionToLongColumnValue(db, null, ActivityTable.TABLE_NAME,
-                    BaseColumns._ID, ActivityTable.MSG_ID + "=" + msgId);
-            if (activityId2 == 0) {
-                // Delete message if no more its activities left
-                deleteMessage(db, msgId, inTransaction);
-            } else {
-                updateMessageFavorited(myContext, originId, msgId);
-                updateMessageReblogged(myContext, originId, msgId);
-            }
+        if (originId == 0) return 0;
+        // Was this the last activity for this message?
+        final long activityId2 = MyQuery.conditionToLongColumnValue(db, null, ActivityTable.TABLE_NAME,
+                BaseColumns._ID, ActivityTable.MSG_ID + "=" + msgId +
+                        " AND " + ActivityTable.TABLE_NAME + "." + ActivityTable._ID + "!=" + activityId);
+        long count;
+        if (msgId != 0 && activityId2 == 0) {
+            // Delete related message if no more its activities left
+            count = deleteActivities(db, ActivityTable.TABLE_NAME + "." + ActivityTable._ID +
+                    "=" + activityId, new String[]{}, inTransaction);
+        } else {
+            // Delete this activity only
+            count = db.delete(ActivityTable.TABLE_NAME, BaseColumns._ID + "=" + activityId, null);
+            updateMessageFavorited(myContext, originId, msgId);
+            updateMessageReblogged(myContext, originId, msgId);
         }
         return count;
     }
@@ -423,15 +418,8 @@ public class MyProvider extends ContentProvider {
                 }
                 break;
 
-            case MSG_COUNT:
-                sql = "SELECT count(*) FROM " + MsgTable.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS;
-                if (StringUtils.nonEmpty(selection)) {
-                    sql += " WHERE " + selection;
-                }
-                break;
-
-            case MSG:
-                qb.setTables(MsgTable.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS);
+            case ACTIVITY:
+                qb.setTables(ActivityTable.TABLE_NAME + " AS " + ProjectionMap.ACTIVITY_TABLE_ALIAS);
                 qb.setProjectionMap(ProjectionMap.MSG);
                 break;
 
@@ -480,10 +468,6 @@ public class MyProvider extends ContentProvider {
                 case TIMELINE_ITEM:
                 case TIMELINE_SEARCH:
                     orderBy = ActivityTable.getTimeSortOrder(uriParser.getTimelineType(), false);
-                    break;
-
-                case MSG_COUNT:
-                    orderBy = "";
                     break;
 
                 case USER:
@@ -557,12 +541,11 @@ public class MyProvider extends ContentProvider {
         ParsedUri uriParser = ParsedUri.fromUri(uri);
         long accountUserId;
         switch (uriParser.matched()) {
-            case MSG:
+            case ACTIVITY:
                 count = db.update(MsgTable.TABLE_NAME, values, selection, selectionArgs);
                 break;
 
             case MSG_ITEM:
-                accountUserId = uriParser.getAccountUserId();
                 long rowId = uriParser.getMessageId();
                 if (values.size() > 0) {
                     count = db.update(MsgTable.TABLE_NAME, values, BaseColumns._ID + "=" + rowId

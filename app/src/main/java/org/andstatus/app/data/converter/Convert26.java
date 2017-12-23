@@ -141,10 +141,10 @@ class Convert26 extends ConvertOneStep {
         progressLogger.logProgress(stepTitle + ": Adding Announce activities, linked to Update activities");
         sql = "INSERT INTO activity (" +
             " activity_origin_id, activity_oid, account_id, activity_type, actor_id, activity_msg_id," +
-            " activity_user_id,  obj_activity_id, activity_updated_date, activity_ins_date" +
+            " activity_user_id,  obj_activity_id, activity_updated_date,  activity_ins_date" +
             ") SELECT" +
             " origin_id,          reblog_oid,   0,          1,             actor_id, _id," +
-            " 0,                 _id,             msg_sent_date,          msg_sent_date" +
+            " 0,                 _id,             (msg_sent_date + 1000), msg_sent_date" +
             " FROM (SELECT * FROM oldmsg WHERE author_id !=0) AS oldmsg" +
             " INNER JOIN" +
             " (SELECT user_id AS actor_id, reblog_oid, msg_id FROM msgofuser " +
@@ -156,10 +156,10 @@ class Convert26 extends ConvertOneStep {
         progressLogger.logProgress(stepTitle + ": Adding Favorite activities, linked to Update activities");
         sql = "INSERT INTO activity (" +
             " activity_origin_id, activity_oid, account_id, activity_type, actor_id, activity_msg_id," +
-            " activity_user_id,  obj_activity_id, activity_updated_date, activity_ins_date" +
+            " activity_user_id,  obj_activity_id, activity_updated_date,  activity_ins_date" +
             ") SELECT" +
             " origin_id, actor_id || '-like-' || msg_oid, 0, 5,            actor_id, _id," +
-            " 0,                 _id,             msg_sent_date,          msg_sent_date" +
+            " 0,                 _id,             (msg_sent_date + 1000), msg_sent_date" +
             " FROM (SELECT * FROM oldmsg WHERE author_id !=0) AS oldmsg" +
             " INNER JOIN" +
             " (SELECT user_id AS actor_id, msg_id FROM msgofuser WHERE favorited=1 AND actor_id IS NOT NULL " +

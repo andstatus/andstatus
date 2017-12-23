@@ -162,7 +162,8 @@ public class DemoAccountInserter {
                 StringBuilder logMsg =new StringBuilder(myAccount.toString());
                 I18n.appendWithSpace(logMsg, timelineType.toString());
                 for (Timeline timeline : MyContextHolder.get().persistentTimelines().values()) {
-                    if (timeline.getMyAccount().equals(myAccount) && timeline.getTimelineType().equals(timelineType)) {
+                    if (timeline.getMyAccount().equals(myAccount) && timeline.getTimelineType().equals(timelineType)
+                            && !timeline.hasSearchQuery()) {
                         count++;
                         I18n.appendWithSpace(logMsg, timeline.toString());
                     }

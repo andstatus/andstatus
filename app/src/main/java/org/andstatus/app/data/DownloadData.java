@@ -327,9 +327,7 @@ public class DownloadData {
                 MyLog.v(TAG, "Database is null");
                 return;
             }
-            Cursor cursor = null;
-            try {
-                cursor = db.rawQuery(sql, null);
+            try (Cursor cursor = db.rawQuery(sql, null)) {
                 while (cursor.moveToNext()) {
                     long rowIdOld = cursor.getLong(0);
                     new DownloadFile(cursor.getString(1)).delete();
@@ -338,14 +336,12 @@ public class DownloadData {
                 done = true;
             } catch (SQLiteException e) {
                 MyLog.i(DownloadData.class, method + ", Database is locked, pass=" + pass + "; sql='" + sql + "'", e);
-            } finally {
-                DbUtils.closeSilently(cursor);
             }
             if (!done) {
                 DbUtils.waitMs(method, 500);
             }
         }
-        if (!done || rowsDeleted>0) {
+        if (MyLog.isVerboseEnabled() && (!done || rowsDeleted>0)) {
             MyLog.v(DownloadData.class, method + (done ? " succeeded" : " failed") + "; deleted " + rowsDeleted + " rows");
         }
     }
