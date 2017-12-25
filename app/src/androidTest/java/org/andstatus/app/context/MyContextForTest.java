@@ -16,7 +16,6 @@
 
 package org.andstatus.app.context;
 
-import android.app.Notification;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
@@ -25,6 +24,7 @@ import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.net.http.HttpConnection;
+import org.andstatus.app.notification.NotificationData;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.notification.Notifier;
 import org.andstatus.app.origin.PersistentOrigins;
@@ -51,7 +51,7 @@ public class MyContextForTest implements MyContext {
     private volatile Class<? extends HttpConnection> httpConnectionMockClass = null;
     private volatile HttpConnection httpConnectionMockInstance = null;
     private volatile ConnectionState mockedConnectionState = ConnectionState.UNKNOWN;
-    private final Map<NotificationEventType, Notification> androidNotifications = new ConcurrentHashMap<>();
+    private final Map<NotificationEventType, NotificationData> androidNotifications = new ConcurrentHashMap<>();
 
     public MyContextForTest setContext(MyContext myContextIn) {
         MyContext myContext2 = myContextIn;
@@ -249,9 +249,9 @@ public class MyContextForTest implements MyContext {
     }
 
     @Override
-	public void notify(NotificationEventType event, Notification notification) {
-		myContext.notify(event, notification);
-		androidNotifications.put(event, notification);
+	public void notify(NotificationData data) {
+		myContext.notify(data);
+		androidNotifications.put(data.event, data);
 	}
 
 	@Override
@@ -266,7 +266,7 @@ public class MyContextForTest implements MyContext {
         return instanceId;
     }
 
-    public Map<NotificationEventType, Notification> getAndroidNotifications() {
+    public Map<NotificationEventType, NotificationData> getAndroidNotifications() {
 		return androidNotifications;
 	}
 

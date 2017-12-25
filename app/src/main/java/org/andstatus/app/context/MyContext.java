@@ -16,7 +16,6 @@
 
 package org.andstatus.app.context;
 
-import android.app.Notification;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
@@ -25,7 +24,7 @@ import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.net.http.HttpConnection;
-import org.andstatus.app.notification.NotificationEventType;
+import org.andstatus.app.notification.NotificationData;
 import org.andstatus.app.notification.Notifier;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionState;
@@ -63,7 +62,7 @@ public interface MyContext extends IdentifiableInstance {
     boolean isInForeground();
     void setInForeground(boolean inForeground);
     Notifier getNotifier();
-    void notify(NotificationEventType event, Notification notification);
+    void notify(NotificationData data);
     void clearNotification(@NonNull Timeline timeline);
 
     // For testing

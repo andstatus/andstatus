@@ -20,11 +20,11 @@ import android.text.format.DateFormat;
 import android.text.format.DateUtils;
 import android.text.format.Time;
 
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.notification.NotificationData;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.notification.NotificationEvents;
 import org.andstatus.app.notification.Notifier;
@@ -267,7 +267,9 @@ public class MyAppWidgetProviderTest {
 	private void updateWidgets(NotificationEvents events, NotificationEventType event, int increment) throws InterruptedException{
         final String method = "updateWidgets";
         DbUtils.waitMs(method, 500);
-        events.map.put(event, new NotificationData(event, events.getCount(event) + increment));
+        for (int ind = 0; ind < increment; ind++ ) {
+            events.onNewEvent(event, DemoData.demoData.getConversationMyAccount(), System.currentTimeMillis());
+        }
         AppWidgets appWidgets = AppWidgets.newInstance(myContext);
         appWidgets.updateData();
         appWidgets.updateViews();

@@ -2,18 +2,11 @@ package org.andstatus.app.appwidget;
 
 import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
 import android.text.format.Time;
 
-import org.andstatus.app.FirstActivity;
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.notification.NotificationEventType;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
@@ -47,7 +40,7 @@ class MyRemoteViewData {
                 widgetComment = widgetData.nothingPref;
             }
         }
-        onClickIntent = getOnClickIntent(context, widgetData);
+        onClickIntent = widgetData.notifier.events.getPendingIntent();
         
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, method + "; text=\"" + widgetText.replaceAll("\n", "; ") + "\"; comment=\""
@@ -108,42 +101,5 @@ class MyRemoteViewData {
             }
         }       
         return formatted;
-    }
-    
-    /** When user clicks on a widget, launch main AndStatus activity,
-     *  Open the timeline, which has new messages, or default to the "Home" timeline
-     */
-    private PendingIntent getOnClickIntent(Context context, MyAppWidgetData widgetData) {
-        TimelineType timeLineType;
-        if (widgetData.notifier.events.getCount(NotificationEventType.PRIVATE) > 0) {
-            timeLineType = TimelineType.PRIVATE;
-        } else if (widgetData.notifier.events.getCount(NotificationEventType.OUTBOX) > 0) {
-            timeLineType = TimelineType.OUTBOX;
-        } else if (widgetData.notifier.events.isEmpty()) {
-            timeLineType = TimelineType.UNKNOWN;
-        } else {
-            timeLineType = TimelineType.NOTIFICATIONS;
-        }
-
-        // TODO: MyAccount in the intent is not necessarily the one, which got new messages
-        // But so far this looks better than Combined timeline for most users...
-        Timeline timeline;
-        switch(timeLineType) {
-            case UNKNOWN:
-                timeline = MyContextHolder.get().persistentTimelines().getDefault();
-                break;
-            default:
-                timeline = Timeline.getTimeline(timeLineType,
-                        MyContextHolder.get().persistentAccounts().getCurrentAccount(), 0, null);
-                break;
-        }
-
-        Intent intent = new Intent(context, FirstActivity.class);
-        // "rnd" is necessary to actually bring Extra to the target intent
-        // see http://stackoverflow.com/questions/1198558/how-to-send-parameters-from-a-notification-click-to-an-activity
-        intent.setData(Uri.withAppendedPath(timeline.getUri(),
-                "rnd/" + android.os.SystemClock.elapsedRealtime()));
-        return PendingIntent.getActivity(context, timeLineType.hashCode(), intent, 
-                PendingIntent.FLAG_UPDATE_CURRENT);
     }
 }

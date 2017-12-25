@@ -16,7 +16,6 @@
 
 package org.andstatus.app.context;
 
-import android.app.Notification;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
@@ -32,7 +31,7 @@ import org.andstatus.app.data.converter.DatabaseConverterController;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.net.http.HttpConnection;
-import org.andstatus.app.notification.NotificationEventType;
+import org.andstatus.app.notification.NotificationData;
 import org.andstatus.app.notification.Notifier;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionState;
@@ -367,8 +366,8 @@ public final class MyContextImpl implements MyContext {
     }
 
     @Override
-	public void notify(NotificationEventType event, Notification notification) {
-        notifier.notifyAndroid(event, notification);
+	public void notify(NotificationData data) {
+        notifier.notifyAndroid(data);
 	}
 
 	@Override

@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.Set;
 
 public class MyQuery {
-    static final String TAG = MyQuery.class.getSimpleName();
+    private static final String TAG = MyQuery.class.getSimpleName();
 
     private MyQuery() {
         // Empty

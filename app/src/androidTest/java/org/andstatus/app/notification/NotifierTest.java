@@ -57,6 +57,7 @@ public class NotifierTest {
     private void onNotificationEvent(Notifier notifier, NotificationEventType eventType) {
         String where = "SELECT " + ActivityTable._ID + " FROM " + ActivityTable.TABLE_NAME +
                 " WHERE " + ActivityTable.ACTIVITY_TYPE + "=" + eventTypeToActivityType(eventType).id  +
+                " AND " + ActivityTable.UPDATED_DATE + ">1" +
                 " AND " + ActivityTable.NEW_NOTIFICATION_EVENT + "=0";
         final Iterator<Long> iterator = MyQuery.getLongs(where).iterator();
         assertTrue("No data for '" + where + "'", iterator.hasNext());

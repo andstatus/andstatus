@@ -215,7 +215,9 @@ public class MessageEditorTest extends TimelineActivityTest {
         MyLog.i(method, "Callback from a selector");
         Intent data = new Intent();
         data.setData(demoData.LOCAL_IMAGE_TEST_URI2);
-        getActivity().onActivityResult(ActivityRequestCode.ATTACH.id, Activity.RESULT_OK, data);
+        getActivity().runOnUiThread(() -> {
+            getActivity().onActivityResult(ActivityRequestCode.ATTACH.id, Activity.RESULT_OK, data);
+        });
 
         final MessageEditor editor = getActivity().getMessageEditor();
         for (int attempt=0; attempt < 4; attempt++) {
