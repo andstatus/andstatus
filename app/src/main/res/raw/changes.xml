@@ -29,38 +29,41 @@
     </header>
     <release android:versionName="36.00" android:versionCode="XXX"
              versionDate="2017-12-XX"
-             versionTitle="Activities and Notifications enhancements">
+             versionTitle="Activities instead of messages, and enhancements of Notifications">
         <changes>
             <change>This is a major change of AndStatus, which is available for Android 7.0+ devices only
-                and which may require quite a long database upgrade on the first run after upgrade.
-                See details below.</change>
-            <change>"Notifications" timeline added, which shows
-                <i><a href="https://www.w3.org/TR/activitypub/#Overview" target="_blank">activities</a></i>, not messages only.
-                These previously existed timelines are now "Activities timelines" also: Everything, Sent and User.
-            </change>
+                and which may require quite a long database upgrade on the first run after the upgrade.</change>
             <change>The whole internal data model of the application has changed from working with "messages" to working
                 with "<a href="https://www.w3.org/TR/activitypub/#Overview" target="_blank">activities</a>",
                 allowing to present social networks in a richer way and to solve many old problems.
-                E.g. after message reblogging the message doesn't "jump" to the top of the timeline, as before:
-                now you see:
-                <ul>
-                    <li>a "Reblog action" of this message in e.g. Notifications timeline,</li>
-                    <li>and a duplicated message at the top of a Home timeline.</li>
-                </ul>
-                The same for Like/Favorite actions. Follow/"Stop following" actions are shown in "Activities timelines" only
-                (i.e. in Notifications, Everything, Sent and User timelines).<br/>
-                Usage of this feature to its full potential requires its support in Social networks. As of now only
+                E.g. after message reblogging the message doesn't "jump" to the top of a timeline, as before:
+                now you see a new "Reblog action" of this message at the top the timeline.<br/>
+                The same for Like/Favorite and Follow/"Stop following" actions.<br/>
+                Usage of this feature to its full potential requires its support in a Social network. As of now only
                 Pump.io fully supports activities; Mastodon sends activities in its "Notifications" timeline only.<br/>
-                For the server timelines that contain messages only, AndStatus presents Reblogs as activities, because a
-                "Reblog" _is_ an action even in legacy "Twitter-like" implementations. "Messages" from legacy timelines
-                are interpreted as
+                For legacy server timelines that contain messages only, AndStatus also presents Reblogs as activities,
+                because a "Reblog" _is_ an action even in "Twitter-like" implementations.
+                "Messages" from legacy timelines are interpreted as
                 <a href="https://www.w3.org/TR/activitystreams-vocabulary/#dfn-update" target="_blank">Update actions</a>
                 of these messages.
             </change>
             <change>Direct messages and timelines renamed to Private with corresponding changes in their content.</change>
+            <change>"Notifications" timeline added, which shows
+                <i><a href="https://www.w3.org/TR/activitypub/#Overview" target="_blank">activities</a></i> that are
+                configured to be notified about in AndStatus Settings -&gt; Notifications. You can be notified about:
+                Followers, Favorites, Mentions, Reblogs, unset messages in the Outbox and about Private messages.
+            </change>
+            <change>Notifications, shown in Android <a href="https://developer.android.com/guide/topics/ui/notifiers/notifications.html"
+                target="_blank">Notification area</a> and in the AndStatus Widget, are not forgotten anymore.
+                These notifications are persisted even after device reboot. Notifications are reset
+                when a User opens correspondent timeline e.g. by clicking on the Notification or a Widget. In addition
+                to a number of new events (activities/messages), notifications now show an Account (in a case a notification
+                is for one account only) and time, when the last event occurred.
+            </change>
             <change>Dropped support for older Android devices. Minimal supported
                 <a href="https://en.wikipedia.org/wiki/Android_version_history" target="_blank">Android version</a>
-                is 7.0 now.</change>
+                is 7.0 now. This change allowes application developers to start using modern Java 8 language enhancements,
+                including <i>functional programming</i>.</change>
         </changes>
     </release>
     <release android:versionName="35.06" android:versionCode="232"
