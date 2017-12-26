@@ -61,8 +61,6 @@ public class TimelineSql {
     
         Collection<String> columns = new java.util.HashSet<>(Arrays.asList(projection));
 
-        final String msgTablePlaceholder = "$msgTable";
-        String tables = msgTablePlaceholder;
         SqlWhere activityWhere = new SqlWhere();
         activityWhere.append(ActivityTable.UPDATED_DATE + ">0");
         SqlWhere msgWhere = new SqlWhere();
@@ -125,35 +123,19 @@ public class TimelineSql {
                 break;
         }
 
-        if (tables.contains(msgTablePlaceholder)) {
-            if (timeline.getTimelineType().isAtOrigin() && !timeline.isCombined()) {
-                activityWhere.append(ActivityTable.ORIGIN_ID + "=" + timeline.getOrigin().getId());
-            }
-            if (timeline.getTimelineType().isForAccount() && !timeline.isCombined()) {
-                activityWhere.append(ActivityTable.ACCOUNT_ID + "=" + timeline.getMyAccount().getUserId());
-            }
-            String activityTable = "(SELECT "
-                    + ActivityTable._ID + ", "
-                    + ActivityTable.ORIGIN_ID + ", "
-                    + ActivityTable.INS_DATE + ", "
-                    + ActivityTable.ACCOUNT_ID + ", "
-                    + ActivityTable.ACTIVITY_TYPE + ", "
-                    + ActivityTable.ACTOR_ID + ", "
-                    + ActivityTable.MSG_ID + ", "
-                    + ActivityTable.USER_ID + ", "
-                    + ActivityTable.OBJ_ACTIVITY_ID + ", "
-                    + ActivityTable.SUBSCRIBED + ", "
-                    + ActivityTable.UPDATED_DATE
-                    + " FROM " + ActivityTable.TABLE_NAME + activityWhere.getWhere()
-                    + ") AS " + ProjectionMap.ACTIVITY_TABLE_ALIAS;
-            String msgTable = activityTable
-                    + (timeline.getTimelineType().showsActivities() ? " LEFT" : " INNER") + " JOIN "
-                    + MsgTable.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS
-                    + " ON (" + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID + "="
-                        + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.MSG_ID
-                        + msgWhere.getAndWhere() + ")";
-            tables = tables.replace(msgTablePlaceholder, msgTable);
+        if (timeline.getTimelineType().isAtOrigin() && !timeline.isCombined()) {
+            activityWhere.append(ActivityTable.ORIGIN_ID + "=" + timeline.getOrigin().getId());
         }
+        if (timeline.getTimelineType().isForAccount() && !timeline.isCombined()) {
+            activityWhere.append(ActivityTable.ACCOUNT_ID + "=" + timeline.getMyAccount().getUserId());
+        }
+        String  tables = "(SELECT * FROM " + ActivityTable.TABLE_NAME + activityWhere.getWhere()
+                + ") AS " + ProjectionMap.ACTIVITY_TABLE_ALIAS
+                + (msgWhere.isEmpty() ? " LEFT" : " INNER") + " JOIN "
+                + MsgTable.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS
+                + " ON (" + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID + "="
+                    + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.MSG_ID
+                    + msgWhere.getAndWhere() + ")";
 
         if (columns.contains(UserTable.AUTHOR_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "

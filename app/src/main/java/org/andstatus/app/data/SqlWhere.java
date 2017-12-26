@@ -23,7 +23,7 @@ import android.text.TextUtils;
  * @author yvolk@yurivolkov.com
  */
 public class SqlWhere {
-    String where = "";
+    private String where = "";
 
     public void append(String condition) {
         if (TextUtils.isEmpty(condition)) {
@@ -48,5 +48,9 @@ public class SqlWhere {
     @NonNull
     public String getAndWhere() {
         return TextUtils.isEmpty(where) ? "" : " AND " + where;
+    }
+
+    public boolean isEmpty() {
+        return TextUtils.isEmpty(where);
     }
 }

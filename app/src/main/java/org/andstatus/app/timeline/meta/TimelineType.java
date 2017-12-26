@@ -54,7 +54,6 @@ public enum TimelineType implements SelectableEnum {
     MY_FOLLOWERS("my_followers", R.string.followers, Connection.ApiRoutineEnum.GET_FOLLOWERS),
     DRAFTS("drafts", R.string.timeline_title_drafts, Connection.ApiRoutineEnum.DUMMY),
     OUTBOX("outbox", R.string.timeline_title_outbox, Connection.ApiRoutineEnum.DUMMY),
-    REPLIES("replies", R.string.timeline_title_replies, Connection.ApiRoutineEnum.DUMMY),
     USERS("users", R.string.user_list, Connection.ApiRoutineEnum.DUMMY),
     CONVERSATION("conversation", R.string.label_conversation, Connection.ApiRoutineEnum.DUMMY),
     COMMANDS_QUEUE("commands_queue", R.string.commands_in_a_queue, Connection.ApiRoutineEnum.DUMMY),
@@ -152,7 +151,6 @@ public enum TimelineType implements SelectableEnum {
             case FOLLOWERS:
             case FRIENDS:
             case MANAGE_TIMELINES:
-            case REPLIES:
             case UNKNOWN:
             case USER:
             case USERS:
@@ -246,7 +244,6 @@ public enum TimelineType implements SelectableEnum {
             case MY_FOLLOWERS:
             case NOTIFICATIONS:
             case OUTBOX:
-            case REPLIES:
             case SENT:
                 return true;
             default:
@@ -269,15 +266,23 @@ public enum TimelineType implements SelectableEnum {
 
     public boolean showsActivities() {
         switch (this) {
+            case DRAFTS:
             case EVERYTHING:
+            case FOLLOWERS:
+            case FRIENDS:
+            case HOME:
+            case MENTIONS:
+            case MY_FOLLOWERS:
+            case MY_FRIENDS:
             case NOTIFICATIONS:
+            case OUTBOX:
+            case PRIVATE:
+            case PUBLIC:
+            case SEARCH:
             case SENT:
             case USER:
-            case FRIENDS:
-            case MY_FRIENDS:
-            case FOLLOWERS:
-            case MY_FOLLOWERS:
                 return true;
+            case FAVORITES:
             default:
                 return false;
         }
