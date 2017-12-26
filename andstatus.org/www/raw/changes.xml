@@ -67,8 +67,29 @@
                 <a href="https://github.com/andstatus/andstatus/issues/158">#158</a></change>
             <change>Dropped support for older Android devices. Minimal supported
                 <a href="https://en.wikipedia.org/wiki/Android_version_history" target="_blank">Android version</a>
-                is 7.0 now. This change allowes application developers to start using modern Java 8 language enhancements,
+                is 7.0 now. This change allows application developers to start using modern Java 8 language enhancements,
                 including <i>functional programming</i>.</change>
+        </changes>
+    </release>
+    <release android:versionName="35.06" android:versionCode="232"
+             versionDate="2017-08-13"
+             versionTitle="Autocompletion of usernames/webfingerIds during message composition. Users search">
+        <changes>
+            <change>During a message composition, after "@" and the first two or more letters of a Username or a Real Name,
+                AndStatus shows a popup dialog with a list of suitable users for selection. No Internet search is used here
+                - locally cached users only.
+                <a href="https://github.com/andstatus/andstatus/issues/151">#151</a></change>
+            <change>New Search layout with several options replaced two old "Search" and "Global search" menu items.
+                You can search for Messages (as before) or for Users (new feature!),<br/>
+                in the currently selected Social network or in all Social networks ("combined" search);<br/>
+                in the local cache or in Internet also ("Search in Internet" option; only Mastodon and Twitter provide
+                a search for Users in Internet).
+            </change>
+            <change>Fixed avatars occasionally started to change (cache overload)
+                <a href="https://github.com/andstatus/andstatus/issues/458">#458</a></change>
+            <change>Consistent separation between 'Sync with Internet' and 'Reload from cache'. Both menu items are
+                places on an Action Bar and present in almost all lists. Android material icons
+                "Sync" and "Refresh" are used, which are familiar to users.</change>
         </changes>
     </release>
     <release android:versionName="34.05" android:versionCode="225"
