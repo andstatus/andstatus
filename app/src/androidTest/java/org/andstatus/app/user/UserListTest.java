@@ -18,12 +18,13 @@ package org.andstatus.app.user;
 
 import android.content.Intent;
 
+import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DemoConversationInserter;
-import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.MsgTable;
@@ -32,7 +33,7 @@ import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.timeline.ListActivityTestHelper;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.timeline.TimelineActivityTest;
-import org.andstatus.app.timeline.ViewItem;
+import org.andstatus.app.timeline.TimelineData;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
@@ -74,19 +75,26 @@ public class UserListTest extends TimelineActivityTest {
         assertEquals(logMsg, 3, users.size());
         assertEquals(logMsg, "unknownUser@example.com", users.get(2).getUserName());
 
-        ViewItem item = getActivity().getListData().getById(msgId);
-        boolean messageWasFound = item.getId() == msgId;
+        ActivityViewItem item = ActivityViewItem.EMPTY;
+        TimelineData<ActivityViewItem> timelineData = getActivity().getListData();
+        for (int position=0; position < timelineData.size(); position++) {
+            ActivityViewItem item2 = timelineData.getItem(position);
+            if (item2.message.getId() == msgId) {
+                item = item2;
+                break;
+            }
+        }
+        boolean messageWasFound = !item.equals(ActivityViewItem.EMPTY);
         if (!messageWasFound) {
-            item = getActivity().getListData().getItem(0);
-            msgId = item.getId();
-            String logMsg1 = "The message was not found in the timeline " + getActivity().getListData() +
-                    " new msgId=" + msgId;
+            item = timelineData.getItem(0);
+            String logMsg1 = "The message was not found in the timeline " + timelineData +
+                    " new item: " + item;
             logMsg += "\n" + logMsg1;
             MyLog.i(method, logMsg1);
         }
 
         assertTrue("Invoked Context menu for " + logMsg, helper.invokeContextMenuAction4ListItemId(method,
-                msgId, MessageListContextMenuItem.USERS_OF_MESSAGE, 0));
+                item.getId(), MessageListContextMenuItem.USERS_OF_MESSAGE, R.id.message_wrapper));
 
         UserList userList = (UserList) helper.waitForNextActivity(method, 15000);
         TestSuite.waitForListLoaded(userList, 1);

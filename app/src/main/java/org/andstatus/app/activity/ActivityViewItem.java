@@ -43,7 +43,7 @@ import org.andstatus.app.util.RelativeTime;
 public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comparable<ActivityViewItem> {
     public static final ActivityViewItem EMPTY = new ActivityViewItem(true);
     private long id = 0;
-    Origin origin = Origin.EMPTY;
+    private Origin origin = Origin.EMPTY;
     private long insDate = 0;
     private long updatedDate = 0;
     public MbActivityType activityType = MbActivityType.EMPTY;
@@ -64,6 +64,10 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
     @Override
     public long getId() {
         return id;
+    }
+
+    public Origin getOrigin() {
+        return origin;
     }
 
     @Override

@@ -42,10 +42,10 @@ public class ActivityLoader extends TimelineLoader<ActivityViewItem> {
                 getParams().getTimeline().getOrigin(), 0, "");
         for (ActivityViewItem item: items) {
             if (item.activityType != MbActivityType.CREATE && item.activityType != MbActivityType.UPDATE) {
-                item.actor = loader.addUserIdToList(item.origin, item.actor.getId());
+                item.actor = loader.addUserIdToList(item.getOrigin(), item.actor.getId());
             }
             if (item.userId != 0) {
-                item.user = loader.addUserIdToList(item.origin, item.userId);
+                item.user = loader.addUserIdToList(item.getOrigin(), item.userId);
                 item.user.setParent(item);
             }
         }

@@ -25,17 +25,16 @@ import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DemoConversationInserter;
-import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.msg.ConversationActivity;
 import org.andstatus.app.msg.MessageListContextMenuItem;
-import org.andstatus.app.msg.MessageViewItem;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceEvent;
@@ -118,10 +117,10 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
         });
         TestSuite.waitForListLoaded(getActivity(), position0 + 2);
 
-        TimelineData<MessageViewItem> timelineData = getActivity().getListData();
+        TimelineData<ActivityViewItem> timelineData = getActivity().getListData();
         for (int ind = 0; ind < timelineData.size(); ind++) {
-            MessageViewItem item = timelineData.getItem(ind);
-            assertEquals("OriginId of the Item " + ind + " " + item.toString(), ma.getOriginId(), item.getOriginId());
+            ActivityViewItem item = timelineData.getItem(ind);
+            assertEquals("Origin of the Item " + ind + " " + item.toString(), ma.getOrigin(), item.getOrigin());
         }
 
         boolean collapseDuplicates = MyPreferences.isCollapseDuplicates();

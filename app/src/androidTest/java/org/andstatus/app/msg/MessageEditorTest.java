@@ -37,9 +37,9 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.ListActivityTestHelper;
@@ -258,14 +258,17 @@ public class MessageEditorTest extends TimelineActivityTest {
         openEditor();
         ListActivityTestHelper<TimelineActivity> helper =
                 new ListActivityTestHelper<>(getActivity(), ConversationActivity.class);
-        long msgId = helper.getListItemIdOfLoadedReply();
-        String logMsg = "msgId=" + msgId;
+        long listItemId = helper.getListItemIdOfLoadedReply();
+        String logMsg = "listItemId=" + listItemId;
+        long msgId = TimelineType.HOME.showsActivities() ?
+                MyQuery.activityIdToLongColumnValue(ActivityTable.MSG_ID, listItemId) : listItemId;
+        logMsg += ", msgId=" + msgId;
 
         String body = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId);
-        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.COPY_TEXT, R.id.message_wrapper);
+        helper.invokeContextMenuAction4ListItemId(method, listItemId, MessageListContextMenuItem.COPY_TEXT, R.id.message_wrapper);
         assertEquals(logMsg, body, getClipboardText(method));
 
-        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.COPY_AUTHOR, R.id.message_wrapper);
+        helper.invokeContextMenuAction4ListItemId(method, listItemId, MessageListContextMenuItem.COPY_AUTHOR, R.id.message_wrapper);
         String text = getClipboardText(method);
         assertThat(text, CoreMatchers.startsWith("@"));
         assertTrue(logMsg + "; Text: '" + text + "'", text.startsWith("@") && text.lastIndexOf("@") > 1);

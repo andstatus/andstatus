@@ -110,13 +110,6 @@
   <string name="message_edit_hint">הזן את הודעתך כאן!</string>
   <string name="message_is_too_long">הודעה זו ארוכה מדי.</string>
   <string name="message_twitter">ציוץ</string>
-  <string name="notification_mention_formats_1">אזכור {0}</string>
-  <string name="notification_mention_formats_2">{0} אזכורים</string>
-  <string name="notification_new_tweet_format">יש לך {0}.</string>
-  <string name="notification_new_message_format">יש לך {0}.</string>
-  <string name="notification_title_messages">הודעה ישירה חדשה</string>
-  <string name="notification_new_mention_format">יש לך {0}.</string>
-  <string name="notification_title_mentions">אזכורים חדשים</string>
   <string name="oauth_activity_label">OAuth</string>
   <string name="options_menu_about">אודות AndStatus</string>
   <string name="options_menu_about_cond">אודות</string>
