@@ -70,7 +70,7 @@ install:
   # Create and start emulator, see https://developer.android.com/studio/command-line/avdmanager.html
   - echo no | avdmanager create avd -n acib -k "${EMULATOR}" -f
   # https://developer.android.com/studio/run/emulator-commandline.html
-  - emulator -avd acib -engine auto -accel off -no-snapshot -version -no-audio -no-window -camera-back none -camera-front none -verbose -memory 2048 &
+  - emulator -avd acib -engine auto -accel off -no-snapshot -version -verbose -show-kernel -force-32bit -memory 2048 -no-audio -no-window -camera-back none -camera-front none &
   # Start adbd, wait for device connected and show android serial
   - adb wait-for-device get-serialno
   # Show version and download Gradle Wrapper if it's not already cached
