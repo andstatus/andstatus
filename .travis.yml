@@ -14,7 +14,7 @@ env:
     - PROJECT_DIR=${TRAVIS_BUILD_DIR} # Project directory
     - EMULATOR_API_LEVEL=25 # Android API level 25 by default
     - EMULATOR_TAG=google_apis # Google APIs by default, alternatively use default
-    - EMULATOR_ABI=x86_64 # ARM ABI v7a by default
+    - EMULATOR_ABI=armeabi-v7a # ARM ABI v7a by default
     - QEMU_AUDIO_DRV=none # Disable emulator audio to avoid warning
     - GRADLE_USER_HOME="${TRAVIS_BUILD_DIR}/gradle" # Change location for Gradle Wrapper and cache
     - ANDROID_HOME=/usr/local/android-sdk-25.2.3 # Depends on the cookbooks version used in the VM
