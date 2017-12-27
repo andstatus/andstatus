@@ -150,7 +150,7 @@ public class AccountListFragment extends Fragment {
         }
 
         @Override
-        public long getItemId(int position) {
+        public long getUniqueItemId(int position) {
             return mItemList.get(position).getUserId();
         }
 

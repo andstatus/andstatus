@@ -42,7 +42,7 @@
         android:defaultValue="false" />
     <org.andstatus.app.context.MultilineEditTextPreference android:key="dont_synchronize_old_messages"
         android:singleLine="true"
-        android:defaultValue=""
+        android:defaultValue="0"
         android:title="@string/dont_synchronize_old_messages"
         android:summary="@string/dont_synchronize_old_messages_summary" />
     <org.andstatus.app.context.MultilineEditTextPreference android:key="connection_timeout"

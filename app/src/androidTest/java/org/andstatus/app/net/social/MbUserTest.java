@@ -82,6 +82,8 @@ public class MbUserTest {
         checkWebFingerId("someUser ", false);
         checkWebFingerId("some.user", false);
         checkWebFingerId("some.user@example.com", true);
+        checkWebFingerId("so+me.user@example.com", true);
+        checkWebFingerId("some.us+er@example.com", false);
         checkWebFingerId("t131t@identi.ca/PumpIo", false);
         checkWebFingerId("some@example.com.", false);
         checkWebFingerId("some@user", false);

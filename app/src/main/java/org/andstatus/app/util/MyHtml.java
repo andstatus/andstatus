@@ -28,11 +28,18 @@ import org.apache.commons.lang3.text.translate.EntityArrays;
 import org.apache.commons.lang3.text.translate.LookupTranslator;
 import org.apache.commons.lang3.text.translate.NumericEntityUnescaper;
 
+import java.util.regex.Pattern;
+
 public class MyHtml {
-    // See http://docs.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html
-    private static final String GNU_SOCIAL_FAVORITED_SOMETHING_BY_REGEX = "(?s)([^ ]+) favorited something by [^ ]+ (.+)";
-    private static final String SPACES_REGEX = "[\\[\\]\\(\\)\\{\\}\n\'\"<>,:;\\s]+";
-    private static final String PUNCTUATION_BEFORE_COMMA_REGEX = "[,.!?]+,";
+    private static final Pattern GNU_SOCIAL_FAVORITED_SOMETHING_BY_PATTERN = Pattern.compile(
+            "(?s)([^ ]+) favorited something by [^ ]+ (.+)");
+    private static final Pattern SPACES_PATTERN = Pattern.compile("[\\[\\](){}\n\'\"<>,:;\\s]+");
+    private static final Pattern PUNCTUATION_BEFORE_COMMA_PATTERN = Pattern.compile("[,.!?]+,");
+    private static final Pattern MENTION_HASH_PREFIX_PATTERN = Pattern.compile("(,[@#!]([^@#!,]+))");
+    private static final String NEWLINE_SEARCH = "\n";
+    private static final String MULTIPLE_NEWLINES_REGEX = NEWLINE_SEARCH + "\\s*" + NEWLINE_SEARCH;
+    private static final Pattern MULTIPLE_NEWLINES_PATTERN = Pattern.compile(MULTIPLE_NEWLINES_REGEX);
+    private static final String NEWLINE_REPLACE = "\n";
 
     private MyHtml() {
         // Empty
@@ -46,12 +53,10 @@ public class MyHtml {
         return text2;
     }
 
+    @NonNull
 	public static String htmlify(String text) {
-		if (TextUtils.isEmpty(text)) {
-			return "";
-		}
-        String text2 = hasHtmlMarkup(text) ? text : htmlifyPlain(text);
-        return stripUnnecessaryNewlines(text2);
+		if (TextUtils.isEmpty(text)) return "";
+        return stripUnnecessaryNewlines(hasHtmlMarkup(text) ? text : htmlifyPlain(text));
     }
 	
     private static String htmlifyPlain(String text) {
@@ -67,16 +72,12 @@ public class MyHtml {
 
     /** Strips HTML markup from the String */
     public static String fromHtml(String text) {
-        if (TextUtils.isEmpty(text)) {
-            return "";
-        } else {
-            String text2 = text;
-            if ( MyHtml.hasHtmlMarkup(text2)) {
-                text2 = Html.fromHtml(text2).toString();
-            }
-            text2 = unescapeHtml(text2);
-            return stripUnnecessaryNewlines(text2);
-        }
+        return TextUtils.isEmpty(text) ? "" :
+            stripUnnecessaryNewlines(
+                    unescapeHtml(
+                            MyHtml.hasHtmlMarkup(text) ? Html.fromHtml(text).toString() : text
+                    )
+            );
     }
 
     public static String unescapeHtml(String text2) {
@@ -95,30 +96,30 @@ public class MyHtml {
                     new NumericEntityUnescaper()
             );
 
+    @NonNull
     public static String stripUnnecessaryNewlines(String text) {
         if (TextUtils.isEmpty(text)) {
             return "";
         } else {
-            String text2 = text.trim();
-            String NEWLINE_SEARCH = "\n";
-            String NEWLINE_REPLACE = "\n";
-            text2 = text2.replaceAll(NEWLINE_SEARCH + "\\s*" + NEWLINE_SEARCH, NEWLINE_REPLACE);
+            String text2 = MULTIPLE_NEWLINES_PATTERN.matcher(text.trim()).replaceAll(NEWLINE_REPLACE);
             if (text2.endsWith(NEWLINE_REPLACE)) {
-                text2 = text2.substring(0, text2.length() - NEWLINE_REPLACE.length());
+                return text2.substring(0, text2.length() - NEWLINE_REPLACE.length());
             }
             return text2;
         }
     }
 
-    public static String normalizeWordsForSearch(String text) {
+    static String normalizeWordsForSearch(String text) {
         if (TextUtils.isEmpty(text)) {
             return "";
         } else {
-            String text2 = "," + text + ",";
-            text2 = text2.replaceAll(SPACES_REGEX,",");
-            text2 = text2.replaceAll(PUNCTUATION_BEFORE_COMMA_REGEX,",");
-            text2 = text2.replaceAll("(,[@#!]([^@#!,]+))",",$2$1");
-            return text2;
+            return MENTION_HASH_PREFIX_PATTERN.matcher(
+                PUNCTUATION_BEFORE_COMMA_PATTERN.matcher(
+                    SPACES_PATTERN.matcher(
+                            "," + text + ","
+                    ).replaceAll(",")
+                ).replaceAll(",")
+            ).replaceAll(",$2$1");
         }
     }
 
@@ -132,16 +133,18 @@ public class MyHtml {
         return has; 
     }
 
-    @NonNull
     public static boolean isFavoritingAction(String body) {
-        String out = fromHtml(body).toLowerCase();
-        return out.matches(GNU_SOCIAL_FAVORITED_SOMETHING_BY_REGEX);
+        return GNU_SOCIAL_FAVORITED_SOMETHING_BY_PATTERN.matcher(
+                fromHtml(body).toLowerCase()
+        ).matches();
     }
 
     @NonNull
     public static String getCleanedBody(String body) {
-        String text2 = fromHtml(body).toLowerCase();
-        return text2.replaceAll(SPACES_REGEX, " ").
-                replaceFirst(GNU_SOCIAL_FAVORITED_SOMETHING_BY_REGEX,"$2");
+        return GNU_SOCIAL_FAVORITED_SOMETHING_BY_PATTERN.matcher(
+            SPACES_PATTERN.matcher(
+                    fromHtml(body).toLowerCase()
+            ).replaceAll(" ")
+        ).replaceFirst("$2");
     }
 }

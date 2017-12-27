@@ -33,12 +33,10 @@ public class OriginTest {
         String message = "I set \"Shorten URL with: QTTR_AT\" URL longer than 25 Text longer than 140. Will this be shortened: "
                 + urlString;
 
-        Origin origin = MyContextHolder.get().persistentOrigins()
-                .firstOfType(OriginType.ORIGIN_TYPE_DEFAULT);
+        Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.ORIGIN_TYPE_DEFAULT);
         assertEquals(origin.getOriginType(), OriginType.TWITTER);
 
-        origin = MyContextHolder.get().persistentOrigins()
-                .firstOfType(OriginType.TWITTER);
+        origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
         assertEquals(origin.getOriginType(), OriginType.TWITTER);
         int textLimit = 280;
         assertEquals("Textlimit", textLimit, origin.getTextLimit());
@@ -82,10 +80,8 @@ public class OriginTest {
         assertFalse(config.isEmpty());
         config.shortUrlLength = 24;
         origin = new Origin.Builder(origin).save(config).build();
-        assertEquals("Textlimit", OriginType.TEXT_LIMIT_MAXIMUM,
-                origin.getTextLimit());
-        assertEquals("Short URL length", config.shortUrlLength,
-                origin.shortUrlLength);
+        assertEquals("Textlimit", OriginType.TEXT_LIMIT_MAXIMUM, origin.getTextLimit());
+        assertEquals("Short URL length", config.shortUrlLength, origin.shortUrlLength);
         assertEquals("Characters left",
                 origin.getTextLimit() - message.length()
                         - config.shortUrlLength + urlString.length(),
@@ -144,10 +140,11 @@ public class OriginTest {
     @Test
     public void testNameFix() {
         checkOneName("o.mrblog.nl", " o. mrblog. nl ");
-        checkOneName("o.mrblog.nl", " o.   mrblog. nl ");
+        checkOneName("o.mr-blog.nl", " o.   mr-blog. nl ");
         checkOneName("Aqeel.s.instance", "Aqeel's instance");
         checkOneName("BKA.li.Public.GS", "BKA.li Public GS");
         checkOneName("Quitter.Espanol", "Quitter Español");
+        checkOneName("This.is.a.funky.String", "Tĥïŝ ĩš â fůňķŷ Šťŕĭńġ");
     }
     
     private void checkOneName(String out, String in) {

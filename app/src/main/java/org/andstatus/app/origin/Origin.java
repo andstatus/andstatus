@@ -44,6 +44,7 @@ import org.andstatus.app.util.UrlUtils;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.regex.Pattern;
 
 /**
  * Microblogging system (twitter.com, identi.ca, ... ) where messages are being
@@ -54,6 +55,10 @@ import java.net.URL;
 public class Origin {
     public static final int TEXT_LIMIT_FOR_WEBFINGER_ID = 200;
     public static Origin EMPTY = newEmpty(OriginType.UNKNOWN);
+    private static final String VALID_NAME_CHARS = "a-zA-Z_0-9/.-";
+    private static final Pattern VALID_NAME_PATTERN = Pattern.compile("[" + VALID_NAME_CHARS + "]+");
+    private static final Pattern INVALID_NAME_PART_PATTERN = Pattern.compile("[^" + VALID_NAME_CHARS + "]+");
+    private static final Pattern DOTS_PATTERN = Pattern.compile("[.]+");
 
     private static final String TAG = Origin.class.getSimpleName();
 
@@ -88,7 +93,7 @@ public class Origin {
     private boolean inCombinedPublicReload = false;
     
     private TriState mMentionAsWebFingerId = TriState.UNKNOWN;
-    
+
     protected Origin() {
         // Empty
     }
@@ -202,12 +207,7 @@ public class Origin {
     }
 
     public boolean isNameValid(String originNameToCheck) {
-        boolean ok = false;
-        if (originNameToCheck != null) {
-            String validOriginNameRegex = "[a-zñA-Z_0-9/\\.\\-]+";
-            ok = originNameToCheck.matches(validOriginNameRegex);
-        }
-        return ok;
+        return StringUtils.nonEmpty(originNameToCheck) && VALID_NAME_PATTERN.matcher(originNameToCheck).matches();
     }
 
     public URL getUrl() {
@@ -473,8 +473,11 @@ public class Origin {
                 return "";
             }
             // Test with: http://www.regexplanet.com/advanced/java/index.html
-            return nameIn.trim().replaceAll("ñ","n")
-                    .replaceAll("[^a-zA-Z_0-9/\\.\\-]+", ".").replaceAll("[\\.]+", ".");
+            return DOTS_PATTERN.matcher(
+                INVALID_NAME_PART_PATTERN.matcher(
+                        org.apache.commons.lang3.StringUtils.stripAccents(nameIn.trim())
+                ).replaceAll(".")
+            ).replaceAll(".");
         }
 
         public Builder setUrl(URL urlIn) {

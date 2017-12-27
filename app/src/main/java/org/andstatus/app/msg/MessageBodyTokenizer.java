@@ -26,9 +26,9 @@ import org.andstatus.app.util.MyLog;
 import java.util.regex.Pattern;
 
 class MessageBodyTokenizer implements MultiAutoCompleteTextView.Tokenizer {
-    private static final String WEBFINGER_CHARACTERS_REGEX = "[_A-Za-z0-9-\\+\\.@]+";
+    private static final String WEBFINGER_CHARACTERS_REGEX = "[_A-Za-z0-9-+.@]+";
     private static final int MIN_LENGHT_TO_SEARCH = 2;
-    private static Pattern webFingerCharactersPattern = Pattern.compile(WEBFINGER_CHARACTERS_REGEX);
+    private static final Pattern webFingerCharactersPattern = Pattern.compile(WEBFINGER_CHARACTERS_REGEX);
 
     @Override
     public int findTokenStart(final CharSequence text, final int cursor) {

@@ -231,7 +231,11 @@ public class DragItemRecyclerView extends RecyclerView implements AutoScroller.A
     public void onAutoScrollColumnBy(int columns) {
     }
 
-    private View findChildView(float x, float y) {
+    /**
+     * Returns the child view under the specific x,y coordinate.
+     * This method will take margins of the child into account when finding it.
+     */
+    public View findChildView(float x, float y) {
         final int count = getChildCount();
         if (y <= 0 && count > 0) {
             return getChildAt(0);
@@ -460,7 +464,7 @@ public class DragItemRecyclerView extends RecyclerView implements AutoScroller.A
         invalidate();
     }
 
-    void addDragItemAndStart(float y, Object item, long itemId) {
+    int getDragPositionForY(float y) {
         View child = findChildView(0, y);
         int pos;
         if (child == null && getChildCount() > 0) {
@@ -476,6 +480,11 @@ public class DragItemRecyclerView extends RecyclerView implements AutoScroller.A
         if (pos == NO_POSITION) {
             pos = 0;
         }
+        return pos;
+    }
+
+    void addDragItemAndStart(float y, Object item, long itemId) {
+        int pos = getDragPositionForY(y);
 
         mDragState = DragState.DRAG_STARTED;
         mDragItemId = itemId;
