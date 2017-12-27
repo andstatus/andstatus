@@ -298,10 +298,11 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         final String method = "destroyStatus";
         boolean ok = false;
         String oid = getMsgOid(method, msgId, false);
+        DownloadStatus statusStored = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, msgId));
         try {
-            if (msgId == 0 || TextUtils.isEmpty(oid)) {
+            if (msgId == 0 || TextUtils.isEmpty(oid) || statusStored != DownloadStatus.LOADED) {
                 ok = true;
-                MyLog.i(this, method + "; OID is empty for MsgId=" + msgId);
+                MyLog.i(this, method + "; OID='" + oid + "', status='" + statusStored + "' for msgId=" + msgId);
             } else {
                 ok = execContext.getMyAccount().getConnection().destroyStatus(oid);
                 logOk(ok);

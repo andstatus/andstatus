@@ -10,11 +10,11 @@ group: edge  # Add this
 
 env:
   global:
-    - ANDROID_BUILD_TOOLS_VERSION=25.0.3 # Match build-tools version used in build.gradle
+    - ANDROID_BUILD_TOOLS_VERSION=26.0.3 # Match build-tools version used in build.gradle
     - PROJECT_DIR=${TRAVIS_BUILD_DIR} # Project directory
     - EMULATOR_API_LEVEL=25 # Android API level 25 by default
     - EMULATOR_TAG=google_apis # Google APIs by default, alternatively use default
-    - EMULATOR_ABI=armeabi-v7a # ARM ABI v7a by default
+    - EMULATOR_ABI=x86_64 # ARM ABI v7a by default
     - QEMU_AUDIO_DRV=none # Disable emulator audio to avoid warning
     - GRADLE_USER_HOME="${TRAVIS_BUILD_DIR}/gradle" # Change location for Gradle Wrapper and cache
     - ANDROID_HOME=/usr/local/android-sdk-25.2.3 # Depends on the cookbooks version used in the VM
@@ -60,16 +60,17 @@ install:
   - sdkmanager --uninstall "extras;google;google_play_services"
   # Update sdk tools to latest version and install/update components
   - echo yes | sdkmanager "tools"
-  - echo yes | sdkmanager "platforms;android-25" # Latest platform required by SDK tools
+  - echo yes | sdkmanager "platforms;android-26" # Latest platform required by SDK tools
   - echo yes | sdkmanager "platforms;android-${EMULATOR_API_LEVEL}" # Android platform required by emulator
   - echo yes | sdkmanager "extras;android;m2repository"
   - echo yes | sdkmanager "extras;google;m2repository"
   - echo yes | sdkmanager "extras;m2repository;com;android;support;constraint;constraint-layout;1.0.2"
   - echo yes | sdkmanager "extras;m2repository;com;android;support;constraint;constraint-layout-solver;1.0.2"
   - echo yes | sdkmanager "${EMULATOR}" # Install emulator system image
-  # Create and start emulator
-  - echo no | avdmanager create avd -n acib -k "${EMULATOR}" -f --abi "${EMULATOR_ABI}" --tag "${EMULATOR_TAG}"
-  - emulator -avd acib -engine classic -no-window -camera-back none -camera-front none -verbose -memory 2048 &
+  # Create and start emulator, see https://developer.android.com/studio/command-line/avdmanager.html
+  - echo no | avdmanager create avd -n acib -k "${EMULATOR}" -f
+  # https://developer.android.com/studio/run/emulator-commandline.html
+  - emulator -avd acib -engine auto -accel off -no-snapshot -version -no-audio -no-window -camera-back none -camera-front none -verbose -memory 2048 &
   # Start adbd, wait for device connected and show android serial
   - adb wait-for-device get-serialno
   # Show version and download Gradle Wrapper if it's not already cached

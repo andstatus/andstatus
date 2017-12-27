@@ -14,17 +14,18 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
  -->
-<document xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns="urn:app.andstatus.org/changes">
+<document xmlns:android="http://schemas.android.com/apk/res/android">
     <header>
         <title>AndStatus Change Log</title>
         <subtitle>
-            Get the latest release on
+            Get the latest stable release on
             <a href="https://play.google.com/store/apps/details?id=org.andstatus.app"
                target="_blank">Google Play</a>
             or
             <a href="https://f-droid.org/repository/browse/?fdid=org.andstatus.app"
                target="_blank">F-Droid</a>.
+            Or take part in the
+            <a href="https://github.com/andstatus/andstatus/issues/456">open Beta testing of AndStatus</a>.<br/>
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
