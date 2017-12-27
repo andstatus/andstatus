@@ -18,7 +18,7 @@ env:
     - EMULATOR_TAG=google_apis # Google APIs by default, alternatively use default
     - EMULATOR_ABI=armeabi-v7a # ARM ABI v7a by default
     - QEMU_AUDIO_DRV=none # Disable emulator audio to avoid warning
-    - ADB_INSTALL_TIMEOUT=20 # minutes (2 minutes by default)
+    - ADB_INSTALL_TIMEOUT=30 # minutes (2 minutes by default)
     - LONG_LOG_OUTPUT=${TRAVIS_BUILD_DIR}/sdkmanager.log
 
 android:
@@ -48,7 +48,7 @@ install:
   - sdkmanager --list || true
   - sdkmanager --uninstall "extras;google;google_play_services"
   # Update sdk tools to latest version and install/update components
-  - echo y | sdkmanager "tools"
+  - echo yes | sdkmanager "tools"
   - echo yes | sdkmanager "platforms;android-${EMULATOR_API_LEVEL}" > "${LONG_LOG_OUTPUT}" # Android platform required by emulator
   - echo yes | sdkmanager "platforms;android-${COMPILE_API_LEVEL}" >> "${LONG_LOG_OUTPUT}"
   - echo yes | sdkmanager "platforms;android-27" >> "${LONG_LOG_OUTPUT}"                   # Latest platform required by SDK tools
@@ -59,12 +59,12 @@ install:
   - echo yes | sdkmanager "extras;m2repository;com;android;support;constraint;constraint-layout;1.0.2" >> "${LONG_LOG_OUTPUT}"
   - echo yes | sdkmanager "extras;m2repository;com;android;support;constraint;constraint-layout-solver;1.0.2" >> "${LONG_LOG_OUTPUT}"
   - echo yes | sdkmanager "${EMULATOR}" >> "${LONG_LOG_OUTPUT}" # Install emulator system image
+  # Check components status
+  - sdkmanager --list || true
   # Create and start emulator, see https://developer.android.com/studio/command-line/avdmanager.html
   - echo no | avdmanager create avd -n acib -k "${EMULATOR}" -f
   # https://developer.android.com/studio/run/emulator-commandline.html
   - emulator -avd acib -engine auto -accel off -no-snapshot -version -verbose -show-kernel -force-32bit -memory 2048 -no-audio -no-window -camera-back none -camera-front none &
-  # Start adbd, wait for device connected and show android serial
-  - adb wait-for-device get-serialno
   # Show version and download Gradle Wrapper if it's not already cached
   - cd ${PROJECT_DIR} && ./gradlew --version
   # Clean project and download missing dependencies and components
