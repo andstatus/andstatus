@@ -53,7 +53,7 @@ install:
   - echo yes | sdkmanager "platforms;android-${COMPILE_API_LEVEL}" >> "${LONG_LOG_OUTPUT}"
   - echo yes | sdkmanager "platforms;android-27" >> "${LONG_LOG_OUTPUT}"                   # Latest platform required by SDK tools
   - echo yes | sdkmanager "platform-tools" >> "${LONG_LOG_OUTPUT}"
-  - echo yes | sdkmanager "build-tools-${ANDROID_BUILD_TOOLS_VERSION}" >> "${LONG_LOG_OUTPUT}"
+  - echo yes | sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" >> "${LONG_LOG_OUTPUT}"
   - echo yes | sdkmanager "extras;android;m2repository" >> "${LONG_LOG_OUTPUT}"
   - echo yes | sdkmanager "extras;google;m2repository" >> "${LONG_LOG_OUTPUT}"
   - echo yes | sdkmanager "extras;m2repository;com;android;support;constraint;constraint-layout;1.0.2" >> "${LONG_LOG_OUTPUT}"
