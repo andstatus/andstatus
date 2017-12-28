@@ -60,7 +60,7 @@ install:
   - ls -la /usr/local/android-sdk/
   - which emulator
   # https://developer.android.com/studio/run/emulator-commandline.html
-  - emulator -avd avd4andstatus -use-system-libs -engine auto -accel off -no-snapshot -version -verbose -show-kernel -force-32bit -memory 2048 -no-audio -no-window -camera-back none -camera-front none
+  - emulator -avd avd4andstatus -use-system-libs -engine auto -accel off -no-snapshot -version -verbose -show-kernel -memory 2048 -no-audio -no-window -camera-back none -camera-front none
   # Start adbd, wait for device connected and show android serial
   # https://developer.android.com/studio/command-line/adb.html
   - adb devices -l
