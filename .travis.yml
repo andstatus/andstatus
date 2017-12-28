@@ -64,7 +64,7 @@ install:
   # Start adbd, wait for device connected and show android serial
   # https://developer.android.com/studio/command-line/adb.html
   - adb devices -l
-  - adb wait-for -device
+  - adb wait-for-device
   - adb get-serialno
   # Show version and download Gradle Wrapper if it's not already cached
   - cd ${PROJECT_DIR} && ./gradlew --version
