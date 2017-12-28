@@ -57,7 +57,7 @@ install:
   - echo no | avdmanager create avd -n avd4andstatus -k "${EMULATOR}" -f
   - ls -la
   - ls -la $HOME/**/*
-  - ls -la -R /usr/local/android-sdk/
+  - ls -la /usr/local/android-sdk/
   - which emulator
   # https://developer.android.com/studio/run/emulator-commandline.html
   - emulator -avd avd4andstatus -use-system-libs -engine auto -accel off -no-snapshot -version -verbose -show-kernel -force-32bit -memory 2048 -no-audio -no-window -camera-back none -camera-front none
