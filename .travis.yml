@@ -19,6 +19,7 @@ env:
     - QEMU_AUDIO_DRV=none # Disable emulator audio to avoid warning
     - ADB_INSTALL_TIMEOUT=30 # minutes (2 minutes by default)
     - LONG_LOG_OUTPUT=${TRAVIS_BUILD_DIR}/sdkmanager.log
+    - PATH=/usr/local/android-sdk/emulator:${PATH}
 
 before_cache:
   - rm -f ${TRAVIS_BUILD_DIR}/gradle/caches/modules-2/modules-2.lock # Avoid to repack it due locks
@@ -56,6 +57,7 @@ install:
   - echo no | avdmanager create avd -n avd4andstatus -k "${EMULATOR}" -f
   - ls -la
   - ls -la $HOME/**/*
+  - ls -la -R /usr/local/android-sdk/
   - which emulator
   # https://developer.android.com/studio/run/emulator-commandline.html
   - emulator -avd avd4andstatus -use-system-libs -engine auto -accel off -no-snapshot -version -verbose -show-kernel -force-32bit -memory 2048 -no-audio -no-window -camera-back none -camera-front none
