@@ -20,6 +20,7 @@
         <item>English</item>
         <item>Arabic</item>
         <item>Catalan</item>
+        <item>Filipino</item>
         <item>French</item>
         <item>Galician</item>
         <item>German</item>
@@ -31,12 +32,14 @@
         <item>Russian</item>
         <item>Spanish</item>
         <item>Swedish</item>
+        <item>Turkish</item>
     </string-array>
     <string-array name="custom_locale_values">
         <item>default</item>
         <item>en</item>
         <item>ar</item>
         <item>ca</item>
+        <item>fil</item>
         <item>fr</item>
         <item>gl</item>
         <item>de</item>
@@ -48,6 +51,7 @@
         <item>ru</item>
         <item>es</item>
         <item>sv</item>
+        <item>tr</item>
     </string-array>
     <string-array name="fetch_frequency_entries">
         <item>@string/fetch_frequency_entries_3_minutes</item>

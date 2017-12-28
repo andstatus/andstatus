@@ -18,7 +18,7 @@
 <resources>
   <string name="account_settings_action">AndStatus Accounteinstellungen</string>
   <string name="account_settings_activity_title">Konto</string>
-  <string name="account_settings_summary">Synchronisation Frequenz, Benachrichtigungen etc.</string>
+  <string name="account_settings_summary">Synchronisationsfrequenz etc.</string>
   <string name="action_bar_background_color_preference_title">Hintergrundfarbe der Aktionsleiste</string>
   <string name="action_bar_text_preference_title">Text- und Symbolfarbe der Aktionsleiste</string>
   <string name="action_menu_overflow_description">Weitere Aktionen&#8230;</string>
@@ -27,7 +27,7 @@
     Widget gezeigt wird, falls sich nichts geändert hat:</string>
   <string name="appwidget_nothingnew_default">Nichts Neues seit:</string>
   <string name="appwidget_nodata">Noch keine Daten.</string>
-  <string name="acquiring_a_request_token_failed">Token Anfrage fehlgeschlagen</string>
+  <string name="acquiring_a_request_token_failed">Token-Anfrage fehlgeschlagen</string>
   <string name="acquiring_an_access_token_failed">Token-Anfrage fehlgeschlagen</string>
   <string name="attach_images_summary_off">\"Büroklammer+\" Button, mit dem Bilder an deine Beiträge angehängt werden, ist ausgeblendet</string>
   <string name="attach_images_summary_on">Verwende \"Büroklammer +\" Button (Menüpunkt \"Anhängen\") um Bilder an die Nachricht anzufügen. Oder teile ein Bild aus einer anderen Anwendung mit AndStatus</string>
@@ -56,7 +56,6 @@
   <string name="category_title_preference_appearance">Design</string>
   <string name="category_title_preference_credentials">Anmeldedaten</string>
   <string name="category_title_preference_information">Informationen</string>
-  <string name="notifications_title">Benachrichtigungen</string>
   <string name="category_title_preference_origin">Soziales Netzwerk</string>
   <string name="category_title_preference_settings">Einstellungen</string>
   <string name="check_and_fix_data">Daten überprüfen und korrigieren</string>
@@ -85,12 +84,15 @@
   <string name="combined_timeline_off_origin">auf</string>
   <string name="command_follow_user">Folgen</string>
   <string name="command_stop_following_user">Folgen beenden</string>
+  <string name="commands_in_a_queue">Befehle in einer Warteschlange</string>
   <string name="crash_dialog_text">AndStatus ist abgestürzt. Du kannst helfen, das Problem zu beheben. Bitte klicke auf Ok um einen Absturzbericht per Email an die Entwickler zu senden.</string>
   <string name="crash_dialog_comment_prompt">Bitte gib unten deine Kommentare zum Problem an. Es wäre sehr hilfreich für eine Korrektur zu wissen, wann es aufgetreten ist und vielleicht sogar wie es reproduziert werden könnte.</string>
+  <string name="created">erstellt</string>
   <string name="created_label">Erstellt</string>
   <string name="custom_locale_title">Sprache der Anwendung</string>
   <string name="set_as_default_timeline">Als Standard-Timeline festlegen</string>
   <string name="default_timeline_summary">Timeline, die durch einen Launcher geöffnet wird: \"%s\"</string>
+  <string name="deleted">gelöscht</string>
   <string name="device_default">Gerätestandard</string>
   <string name="dialog_summary_acquiring_an_access_token">Bitte warten, während AndStatus OAuth Request Token und Access Token austauscht</string>
   <string name="dialog_summary_acquiring_a_request_token">Bitte warten, während AndStatus ein Request Token für OAuth abholt</string>
@@ -164,6 +166,7 @@
   <string name="fetch_frequency_entries_1_day">1 Tag</string>
   <string name="filters_title">Filter</string>
   <string name="filters_summary">Globale Filter, die auf alle Nachrichten angewendet werden</string>
+  <string name="followed">gefolgt</string>
   <string name="followed_by">Wird gefolgt von</string>
   <string name="followers">Abonnenten</string>
   <string name="followers_of">Abonnenten von \"%1s\"</string>
@@ -204,10 +207,14 @@
   <string name="history_time_entries_1month">1 Monat</string>
   <string name="history_time_entries_1year">1 Jahr</string>
   <string name="history_time_entries_10years">10 Jahre</string>
+  <string name="host_hint">Z. B. gnusocial.net, social.10one.net</string>
+  <string name="host_hint_mastodon">Die Adresse oder Domain einer Instanz, z. B. mastodon.social, icosahedron.website,
+   social.tchncs.de</string>
   <string name="id_of_this_message_was_not_specified">Id dieser Nachricht wurde nicht festgelegt</string>
   <string name="in_combined_global_search_label">Globale Suche in der kombinierten Zeitleiste integrieren</string>
   <string name="in_combined_public_reload_label">In \"Synchronisierung\" einschließen, während du in der kombinierten öffentlichen Timeline bist</string>
   <string name="in_context">Im Zusammenhang</string>
+  <string name="joined">beigetreten</string>
   <string name="label_accountselector">Wähle einen Account</string>
   <string name="label_allow_html_content">HTML-Inhalte erlauben</string>
   <string name="label_backup">Anwendungsdaten auf der SD-Karte sichern</string>
@@ -216,9 +223,6 @@
   <string name="label_conversation">Unterhaltung</string>
   <string name="label_host">Host</string>
   <string name="label_host_mastodon">Mastodon-Instanz</string>
-  <string name="host_hint">Z. B. gnusocial.net, social.10one.net</string>
-  <string name="host_hint_mastodon">Die Adresse oder Domain einer Instanz, z. B. mastodon.social, icosahedron.website,
-   social.tchncs.de</string>
   <string name="label_manage_origin_systems">Verwalte Soziale Netzwerke</string>
   <string name="label_origin_list">Soziale Netzwerke</string>
   <string name="label_origin_name">Name des sozialen Netzwerks</string>
@@ -230,6 +234,7 @@
   <string name="label_with_media">mit Anhang</string>
   <string name="last_synced">Letztes Mal erfolgreich synchronisiert</string>
   <string name="latest_error_label">Aktuelle Fehlermeldung</string>
+  <string name="liked">favorisiert</string>
   <string name="loading">Lade</string>
   <string name="long_press_to_open_context_menu">Lange drücken um das Kontextmenü zu öffnen</string>
   <string name="long_press_to_open_context_menu_on">Drücke lange um das Kontextmenü des Objekts zu öffnen</string>
@@ -249,13 +254,13 @@
   <string name="menu_item_destroy_reblog_pumpio">Teilen rückgängig machen</string>
   <string name="menu_item_destroy_reblog_twitter">Retweet zurücknehmen</string>
   <string name="menu_item_destroy_status">Nachricht entfernen</string>
-  <string name="menu_item_private_message">Direktnachricht</string>
   <string name="menu_item_edit">Bearbeiten</string>
   <string name="menu_item_favorite">Favorit</string>
   <string name="menu_item_follow_user">Folge \"%1s\"</string>
   <string name="menu_item_view_image">Bild anzeigen</string>
   <string name="menu_item_open_conversation">Öffne Gespräch</string>
   <string name="menu_item_open_message_permalink">Im Browser öffnen</string>
+  <string name="menu_item_private_message">Private Nachricht</string>
   <string name="menu_item_reply">Antworten</string>
   <string name="menu_item_reply_to_conversation_participants">Auf Gesprächsteilnehmer antworten</string>
   <string name="menu_item_reply_to_mentioned_users">Auf erwähnte Nutzer antworten</string>
@@ -286,6 +291,23 @@
   <string name="not_set">nicht festgelegt</string>
   <string name="not_syncable">Nicht synchronisierbar</string>
   <string name="nothing_in_the_loadable_list">Hier ist noch nichts...</string>
+  <string name="notification_behavior">Wie Sie benachrichtigt werden</string>
+  <string name="notification_events">Welche Ereignisse in Benachrichtigungen enthalten sind</string>
+  <string name="notification_events_announce">Reblogs</string>
+  <string name="notification_events_follow">Follower</string>
+  <string name="notification_events_like">Favoriten</string>
+  <string name="notification_events_private">Privat</string>
+  <string name="notification_events_private_summary">Private (\"direkte\") Nachrichten</string>
+  <string name="notification_events_mention">Erwähnungen</string>
+  <string name="notification_events_outbox">Postausgang</string>
+  <string name="notification_events_outbox_summary">Nicht gesendete Nachrichten und Aktionen im Postausgang</string>
+  <string name="notification_icon_alternative_title">Alternatives Benachrichtigungssymbol</string>
+  <string name="notification_icon_alternative_off">Symbol als \"&amp;s\" Buchstaben</string>
+  <string name="notification_icon_alternative_on">Symbol als Kreis</string>
+  <string name="notification_in_notification_area">Im Benachrichtigungsfeld zeigen</string>
+  <string name="notification_sound">Benachrichtigungston</string>
+  <string name="notifications_summary">Was in Benachrichtigungen enthalten ist und wie Sie benachrichtigt werden</string>
+  <string name="notifications_title">Benachrichtigungen</string>
   <string name="oauth_activity_label">OAuth</string>
   <string name="off">aus</string>
   <string name="on">an</string>
@@ -320,11 +342,9 @@
   <string name="preference_debugging_info_in_ui_title">Debug-Informationen in einer Benutzeroberfläche</string>
   <string name="preference_log_everything_to_file_title">Logge alles in eine Datei</string>
   <string name="preference_log_network_level_messages_title">Logge Netzwerkebene betreffende Benachrichtigungen</string>
-  <string name="notification_icon_alternative_title">Alternatives Benachrichtigungssymbol</string>
-  <string name="notification_icon_alternative_off">Symbol als \"&amp;s\" Buchstaben</string>
-  <string name="notification_icon_alternative_on">Symbol als Kreis</string>
   <string name="preference_true_black_title">Rein schwarzer Hintergrund</string>
   <string name="preference_use_kitkat_media_chooser_title">KitKat Medienauswahl verwenden</string>
+  <string name="reblogged">hat repostet</string>
   <string name="reblogged_by">reblogged von %1$s</string>
   <string name="reblogged_by_pumpio">geteilt von %1$s</string>
   <string name="reblogged_by_twitter">retweeted von %1$s</string>
@@ -387,7 +407,6 @@
   <string name="summary_preference_theme_color">Farbe und Stil</string>
   <string name="summary_preference_min_log_level">Das Level ist {0}.</string>
   <string name="summary_preference_no_ringtone">Stumm</string>
-  <string name="notifications_summary">Benachrichtigungsoptionen</string>
   <string name="summary_preference_oauth_off">Basis Authentifizierung</string>
   <string name="summary_preference_oauth_on">OAuth (sichere Authentifizierung) ist an</string>
   <string name="summary_preference_origin_system">Tippen Sie hier, um ein Soziales Netzwerk auszuwählen</string>
@@ -437,13 +456,13 @@
   <string name="timeline_is_combined_by_default">Timeline ist standardmäßig kombiniert</string>
   <string name="timeline_reloaded">Timeline wurde neu geladen.</string>
   <string name="timeline_title_all">Alle</string>
-  <string name="timeline_title_private">Direktnachrichten</string>
   <string name="timeline_title_drafts">Entwürfe</string>
   <string name="timeline_title_everything">Alles</string>
   <string name="timeline_title_favorites">Favoriten</string>
   <string name="timeline_title_home">Start</string>
   <string name="timeline_title_mentions">Erwähnungen</string>
   <string name="timeline_title_outbox">Postausgang</string>
+  <string name="timeline_title_private">Private Nachrichten</string>
   <string name="timeline_title_public">Öffentlich</string>
   <string name="timeline_title_replies">Antworten</string>
   <string name="timeline_title_unknown">(Unbekannte Timeline)</string>
@@ -468,11 +487,6 @@
   <string name="title_preference_history_time">Verlauf Zeitraum</string>
   <string name="title_preference_is_default_account">Dies ist das Standardkonto</string>
   <string name="title_preference_min_log_level">Mindestlevel für Logs</string>
-  <string name="notification_sound">Benachrichtigungston</string>
-  <string name="notification_in_notification_area">Benachrichtigungen aktivieren</string>
-  <string name="notification_events_private">Neue Direktnachrichten</string>
-  <string name="notification_events_mention">Neue Erwähnungen</string>
-  <string name="commands_in_a_queue">Befehle in der Warteschlange</string>
   <string name="title_preference_oauth">OAuth</string>
   <string name="title_preference_old_messages_first_in_conversation">Alte Nachrichten zuerst im Gespräch anzeigen</string>
   <string name="title_preference_origin_system">{0}, Typ: {1}</string>
@@ -502,8 +516,13 @@
   <string name="top">Oben</string>
   <string name="total_counters">Gesamtzähler</string>
   <string name="translator_credits">Übersetzer-Impressum</string>
+  <string name="undid_reblog">hat Repost zurückgenommen</string>
+  <string name="undid_follow">folgt nicht mehr</string>
+  <string name="undid_like">hat Favorit zurückgenommen</string>
   <string name="unimplemented">Nicht implementiert.</string>
+  <string name="unknown_in_parenthesis">(unbekannt)</string>
   <string name="unknown_userlist">(Unbekannte Benutzerliste)</string>
+  <string name="updated">aktualisiert</string>
   <string name="use_legacy_http_protocol_title">Veraltetes HTTP-Protokoll verwenden</string>
   <string name="user_in_timeline_entries_username">Benutzername</string>
   <string name="user_in_timeline_entries_at_username">"\@benutzername"</string>
