@@ -16,7 +16,7 @@ env:
     - ANDROID_BUILD_TOOLS_VERSION=26.0.3 # Match build-tools version used in build.gradle
     - PROJECT_DIR=${TRAVIS_BUILD_DIR} # Project directory
     - EMULATOR_TAG=google_apis # Google APIs by default, alternatively use default
-    - EMULATOR_ABI=armeabi-v7a # ARM ABI v7a by default
+    - EMULATOR_ABI=x86 # ARM ABI v7a by default
     - QEMU_AUDIO_DRV=none # Disable emulator audio to avoid warning
     - ADB_INSTALL_TIMEOUT=30 # minutes (2 minutes by default)
     - LONG_LOG_OUTPUT=${TRAVIS_BUILD_DIR}/sdkmanager.log
