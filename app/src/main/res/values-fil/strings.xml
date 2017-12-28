@@ -78,9 +78,9 @@
   <string name="discover_open_instances_title">Tuklasin ang mga bukas na pagkakataon</string>
   <string name="displayed_in_selector">Ipinapakita sa isang selector</string>
   <string name="displayed_in_selector_abbreviated">Ang Ipakita.</string>
-  <string name="database_disk_io_error">Bigyang-pansin! % 1 $ s (mga) error ay nangyari sa panahon ng access sa mga lokal na database cache, na naging sanhi madepektong paggawa ng AndStatus application. \ N Ang ibig sabihin nito SD card sa iyong aparato ay hindi gumagana nang maayos.</string>
+  <string name="database_disk_io_error">Bigyang-pansin! %1$s (mga) error ay nangyari sa panahon ng access sa mga lokal na database cache, na naging sanhi madepektong paggawa ng AndStatus application. \ N Ang ibig sabihin nito SD card sa iyong aparato ay hindi gumagana nang maayos.</string>
   <string name="dont_synchronize_old_messages">Huwag Magsingkronisa ng lumang mga mensahe, kung nakaraang sync ay higit kaysa... oras na nakalipas</string>
-  <string name="dont_synchronize_old_messages_summary">Pagkatapos ng % s oras dahil nakaraan sync
+  <string name="dont_synchronize_old_messages_summary">Pagkatapos ng %s oras dahil nakaraan sync
      AndStatus ay hindi subukan upang i-sync ang lahat ng mga mensahe mula noong pinakahuling mensaheng nai-download,
      ngunit hihilingin lamang 200 kamakailan-lamang na mga mensahe mula sa isang server. Kung bilang ng mga bagong mensahe ay higit pa sa 200,
      hindi mo makikita sa isang Timeline ilang mga mas lumang mga mensahe.</string>
@@ -137,7 +137,7 @@
   <string name="manage_timelines">Pamahalaan ang Timeline</string>
   <string name="mention_as_webfingerid_title">Banggitin bilang @webFingerId</string>
   <string name="menu_item_act_as">Kumilos bilang&#8230;</string>
-  <string name="menu_item_act_as_user">Act bilang \" % 1s \"</string>
+  <string name="menu_item_act_as_user">Act bilang \" %1s \"</string>
   <string name="menu_item_block">Bloke</string>
   <string name="menu_item_copy_text">Kopyahin ang teksto sa clipboard</string>
   <string name="menu_item_copy_author">Kopyahin @author sa clipboard</string>
@@ -148,7 +148,7 @@
   <string name="menu_item_destroy_status">Alisin ang mensahe</string>
   <string name="menu_item_edit">Edit</string>
   <string name="menu_item_favorite">Paborito</string>
-  <string name="menu_item_follow_user">Sundin \" % 1s \"</string>
+  <string name="menu_item_follow_user">Sundin \" %1s \"</string>
   <string name="menu_item_view_image">Tingnan ang imahe</string>
   <string name="menu_item_open_conversation">Buksan ang Pag-uusap</string>
   <string name="menu_item_open_message_permalink">Buksan sa Browser</string>
@@ -160,8 +160,8 @@
   <string name="menu_item_reblog_twitter">Iretweet</string>
   <string name="menu_item_resend">Muling ipadala ang</string>
   <string name="menu_item_share">Magbahagi</string>
-  <string name="menu_item_stop_following_user">Itigil ang mga sumusunod na \" % 1s \"</string>
-  <string name="menu_item_user_messages">Mensahe sa pamamagitan ng \" % 1s \"</string>
+  <string name="menu_item_stop_following_user">Itigil ang mga sumusunod na \" %1s \"</string>
+  <string name="menu_item_user_messages">Mensahe sa pamamagitan ng \" %1s \"</string>
   <string name="options_menu_help">Tulong</string>
   <string name="options_menu_sync">Mag-sync sa Internet</string>
   <string name="options_menu_mentions">Binanggit</string>
