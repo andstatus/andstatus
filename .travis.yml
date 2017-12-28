@@ -11,7 +11,7 @@ group: edge  # Add this
 env:
   global:
     - COMPILE_API_LEVEL=26
-    - EMULATOR_API_LEVEL=26
+    - EMULATOR_API_LEVEL=27
     - ANDROID_BUILD_TOOLS_VERSION=26.0.3 # Match build-tools version used in build.gradle
     - PROJECT_DIR=${TRAVIS_BUILD_DIR} # Project directory
     - EMULATOR_TAG=google_apis # Google APIs by default, alternatively use default
@@ -60,12 +60,10 @@ install:
   - ls -la /usr/local/android-sdk/
   - which emulator
   # https://developer.android.com/studio/run/emulator-commandline.html
-  - emulator -avd avd4andstatus -use-system-libs -engine auto -accel off -no-snapshot -version -verbose -show-kernel -memory 2048 -no-audio -no-window -camera-back none -camera-front none
+  - emulator -avd avd4andstatus -use-system-libs -engine auto -no-snapshot -version -verbose -show-kernel -memory 2048 -no-audio -no-window -camera-back none -camera-front none
   # Start adbd, wait for device connected and show android serial
   # https://developer.android.com/studio/command-line/adb.html
-  - adb devices -l
-  - adb wait-for-device
-  - adb get-serialno
+  - adb wait-for-device get-serialno
   # Show version and download Gradle Wrapper if it's not already cached
   - cd ${PROJECT_DIR} && ./gradlew --version
   # Clean project and download missing dependencies and components
