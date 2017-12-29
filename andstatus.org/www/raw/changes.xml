@@ -1,13 +1,13 @@
 <?xml-stylesheet type='text/xsl' href='changes2html.xsl' encoding="utf-8"?>
-<!-- 
+<!--
 	Copyright (C) 2012-2017 yvolk (Yuri Volkov), http://yurivolkov.com
-	
+
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
 	You may obtain a copy of the License at
-	
+
 	     http://www.apache.org/licenses/LICENSE-2.0
-	
+
 	Unless required by applicable law or agreed to in writing, software
 	distributed under the License is distributed on an "AS IS" BASIS,
 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,8 +29,8 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="36.02" android:versionCode="236"
-             versionDate="2017-12-27"
+    <release android:versionName="36.03" android:versionCode="237"
+             versionDate="2017-12-29"
              versionTitle="Activities instead of messages, and enhancements of Notifications">
         <changes>
             <change>This is a major change of AndStatus, which is available for Android 7.0+ devices only
@@ -58,7 +58,7 @@
                 Followers, Favorites, Mentions, Reblogs, unset messages in the Outbox and about Private messages.
             </change>
             <change>Notifications, shown in Android <a href="https://developer.android.com/guide/topics/ui/notifiers/notifications.html"
-                                                       target="_blank">Notification area</a> and in the AndStatus Widget, are not forgotten anymore.
+                target="_blank">Notification area</a> and in the AndStatus Widget, are not forgotten anymore.
                 These notifications are persisted even after device reboot. Notifications are reset
                 when a User opens correspondent timeline e.g. by clicking on the Notification or a Widget.
                 <a href="https://github.com/andstatus/andstatus/issues/367">#367</a> and

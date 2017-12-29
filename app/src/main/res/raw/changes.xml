@@ -29,8 +29,8 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="36.02" android:versionCode="236"
-             versionDate="2017-12-27"
+    <release android:versionName="36.03" android:versionCode="237"
+             versionDate="2017-12-29"
              versionTitle="Activities instead of messages, and enhancements of Notifications">
         <changes>
             <change>This is a major change of AndStatus, which is available for Android 7.0+ devices only

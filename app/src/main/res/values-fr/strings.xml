@@ -18,6 +18,7 @@
 <resources>
   <string name="account_settings_action">AndStatus paramétrages de compte</string>
   <string name="account_settings_activity_title">Compte</string>
+  <string name="account_settings_summary">Fréquence de synchronisation, etc.</string>
   <string name="action_bar_background_color_preference_title">Couleur de fond de la barre d\'action</string>
   <string name="action_bar_text_preference_title">Couleur de la police et de l’icône de la barre d\'action</string>
   <string name="action_menu_overflow_description">Plus d\'actions&#8230;</string>
@@ -77,8 +78,10 @@
   <string name="command_stop_following_user">Cesser de suivre</string>
   <string name="crash_dialog_text">L\'application AndStatus a planté. Vous pouvez aider à résoudre le problème. Veuillez appuyer sur le bouton Ok pour envoyer le rapport de crash aux développeurs par mail.</string>
   <string name="crash_dialog_comment_prompt">Veuillez indiquer ci-dessous vos commentaires sur le problème. Pour le régler, il sera très utile de savoir quand il a eu lieu et éventuellement comment il pourrait être reproduit.</string>
+  <string name="created">créé</string>
   <string name="created_label">Créé</string>
   <string name="custom_locale_title">Langue de l\'application</string>
+  <string name="deleted">supprimé</string>
   <string name="device_default">Valeur de l\'appareil</string>
   <string name="dialog_summary_acquiring_an_access_token">Merci de patienter pendant qu\'AndStatus échange le jeton de requête OAuth contre un jeton d\'accès</string>
   <string name="dialog_summary_acquiring_a_request_token">Merci de patienter pendant qu\'AndStatus reçoit le jeton de requête OAuth</string>
@@ -116,7 +119,9 @@
   <string name="dialog_title_service_unavailable">Service non disponible</string>
   <string name="dialog_title_timeline_loading">Rafraîchir la timeline&#8230;</string>
   <string name="discover_open_instances_title">Découvrez les instances ouvertes</string>
+  <string name="displayed_in_selector_abbreviated">Affic.</string>
   <string name="database_disk_io_error">Attention ! Il y a eu %1$s erreur(s) lors de l’accès à la base de données du cache local, ce qui a provoqué un dysfonctionnement de AndStatus. \nCela signifie habituellement que la carte SD de votre appareil ne fonctionne pas correctement.</string>
+  <string name="dont_synchronize_old_messages">Ne pas synchroniser les anciens messages si la dernière synchronisation a été faite il y a plus de ... heures</string>
   <string name="download_status_draft">brouillon</string>
   <string name="download_status_unsent">non envoyé</string>
   <string name="drawer_close">Fermer le volet de navigation</string>
@@ -143,6 +148,7 @@
   <string name="fetch_frequency_entries_1_day">jour</string>
   <string name="filters_title">Filtres</string>
   <string name="filters_summary">Filtres globaux à appliquer à tous les messages</string>
+  <string name="followed">suivi</string>
   <string name="followed_by">Suivi par</string>
   <string name="followers">Abonnés</string>
   <string name="followers_of">Abonnés de \"%1s\"</string>
@@ -248,6 +254,15 @@
   <string name="no_more_messages">Plus aucun message</string>
   <string name="not_set">non renseigné</string>
   <string name="nothing_in_the_loadable_list">Rien par ici pour le moment...</string>
+  <string name="notification_events_follow">Abonnés</string>
+  <string name="notification_events_like">Favoris</string>
+  <string name="notification_events_private">Privé</string>
+  <string name="notification_events_private_summary">Messages privés (\"direct\")</string>
+  <string name="notification_events_mention">Mentions</string>
+  <string name="notification_events_outbox">Boîte d’envoi</string>
+  <string name="notification_events_outbox_summary">Messages non envoyés et actions de la boîte d’envoi</string>
+  <string name="notification_icon_alternative_title">Icône de notification alternative</string>
+  <string name="notification_icon_alternative_on">Icône circulaire</string>
   <string name="oauth_activity_label">OAuth</string>
   <string name="off">désactivé</string>
   <string name="on">activé</string>
@@ -300,8 +315,13 @@
   <string name="remove_account_dialog_text">Supprimer le compte supprimera toutes ses données de l\'appareil. Continuer ?</string>
   <string name="resolve_view">Voir le message</string>
   <string name="search_timeline_label">Rechercher des messages, utilisateurs, ou hashtags</string>
+  <string name="search_users">Rechercher des utilisateurs</string>
+  <string name="select_displayed_in_selector">Choisir si et quand cette timeline est affichée</string>
+  <string name="sent">Envoyé</string>
+  <string name="select_social_network">Sélection du réseau social</string>
   <string name="settings_action">Paramétrages</string>
   <string name="settings_activity_title">Paramétrages</string>
+  <string name="since">Depuis %s</string>
   <string name="splash_button_learn_more">En savoir plus</string>
   <string name="splash_button_get_started">Commencer</string>
   <string name="splash_payoff_line">Client de microblogage Light-Weight Twitter, pump.io 
@@ -356,10 +376,13 @@
   <string name="timeline_title_favorites">Favoris</string>
   <string name="timeline_title_home">Principale</string>
   <string name="timeline_title_mentions">Mentions</string>
+  <string name="timeline_title_outbox">Boîte d’envoi</string>
+  <string name="timeline_title_private">Messages privés</string>
   <string name="timeline_title_public">Public</string>
   <string name="timeline_title_replies">Réponses</string>
   <string name="timeline_title_unknown">(Timeline inconnue)</string>
   <string name="timeline_title_user">Utilisateur </string>
+  <string name="title">Titre</string>
   <string name="title_account">Compte</string>
   <string name="title_command_fetch_attachment">Extraire la pièce jointe</string>
   <string name="title_command_fetch_avatar">Avatar</string>
@@ -404,12 +427,14 @@
   <string name="title_timeline">Timeline</string>
   <string name="translator_credits">Crédits de traduction</string>
   <string name="unimplemented">Non implémenté.</string>
+  <string name="updated">mis à jour</string>
   <string name="use_legacy_http_protocol_title">Utiliser l\'ancien protocole HTTP</string>
   <string name="user_in_timeline_entries_username">nom d\'utilisateur</string>
   <string name="user_in_timeline_entries_at_username">"\@utilisateur"</string>
   <string name="user_in_timeline_entries_webfingerid">ID Webfinger</string>
   <string name="user_in_timeline_entries_real_name">Vrai nom</string>
   <string name="user_in_timeline_entries_real_name_at_username">Vrai nom @utilisateur</string>
+  <string name="user_list">Liste d’utilisateurs</string>
   <string name="users">Utilisateurs</string>
   <string name="users_of_message">Utilisateurs du message</string>
   <string name="yes">Oui</string>
