@@ -1,0 +1,224 @@
+<?xml-stylesheet version='1.0' type='text/xsl' href='../raw/fb2_2_html.xsl' encoding="utf-8"?>
+<!-- 
+    Copyright (C) 2015 Yuri Volkov, yvolk@yurivolkov.com
+    
+    Translations are copyrighted by corresponding Translators.
+        
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+    
+         http://www.apache.org/licenses/LICENSE-2.0
+    
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ -->
+<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
+xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../res-src/fb2/FictionBook.xsd">
+<description>
+    <title-info>
+        <genre>computers</genre>
+        <author>
+            <first-name>AndStatus project</first-name>
+            <last-name></last-name>
+        </author>
+        <book-title>Ghid pentru utilizatorul AndStatus</book-title>
+        <lang>engleză</lang>
+        <src-lang>en</src-lang>
+        <translator>
+            <nickname>Înlocuitor pentru acreditările translatorului</nickname>
+        </translator>
+    </title-info>
+    <document-info>
+        <author>
+            <nickname>AndStatus project</nickname>
+            <home-page>http://www.andstatus.org</home-page>
+            <email>andstatus@gmail.com</email>
+        </author>
+        <date>2015-08-16</date>
+        <id></id>
+        <version>2</version>
+    </document-info>
+</description>
+<body>
+<section>
+    <title>
+        <p>Introducere</p>
+    </title>
+    <p>AndStatus este un client Open Source cu trafic redus pentru rețelele sociale
+        client cu conversații aranjate în stilul unui copac.
+        suportă multiple protocoale, incluzând GNU social, Twitter și Pump.io.
+        AndStatus combină conturile tale din toate rețelele într-o singură Cronologie
+        și iți permite citirea și postarea chiar când ești offline.</p>
+    <p>Link-ul către acest ghid este disponibil în bara Acțtiune-&gt;Ajutor.</p>
+    <p>Schimbă Log-ul pe următoarea pagină îți va permite să vezi descrierile
+        și link-urile către discuțiile tuturor caracteristicilor lui AndStatus.</p>
+</section>
+<section>
+    <title>
+        <p>1. Cum să începi</p>
+    </title>
+    <p>Apasă butonul "Începe" mai jos: ecran de adăugat
+        noul cont va fi deschis.
+    </p>
+    <p>Prima oară ți se va afișa sa selectezi o Rețea de socializare
+        a unui cont din listă.
+        Twitter, Pump.io și câteva sisteme de tip "GNU social"(Quitter,
+        LoadAverage și Vinilox) sunt preconfigurate.
+    </p>
+    <p>În cazul în care sistemul tău  ( de tip - "GNU social") nu este listat,
+        Apasă opțiunea din meniu "Descoperă instanțele deschise" pentru a selecta un sistem
+        dintr-o listă live online, menținută de comunitatea GNU social;
+        sau "Adaugă un sistem nou" manual înainte de adăugarea contului nou.</p>
+    <p>Pentru Twitter iți este permis să apeși "Adaugă acest cont"
+        imediat.
+        Pentru alte sisteme ți se va afișa sa introduci numele tău de utilizator și parola
+        înainte ți se va permite să "Adaugă acest cont".</p>
+    <p>După crearea cu succes a unui cont, te rugăm să apeși "săgeată stânga"
+        pe o
+        butoanele "bara Acțiune" sau "Înapoi" pe device-ul tău.
+        De data aceasta o Cronologie de Acasă va fi deschisă,
+        și mesajele pentru acest cont vor începe să se descarce de pe internet.
+    </p>
+    <p>Felicitări! Te rugăm să citești mai jos despre ceea ce poți să faci în continuare.
+    </p>
+    <p>Și nu uita să adaugi widget-ul AndStatus la ecranul de Acasă al
+        dispozitivului tău:
+        widget-ul te va informa despre mesajele noi și poate fi utilizat pentru a lansa
+        AndStatus.
+    </p>
+</section>
+<section>
+    <title>
+        <p>2. AndStatus lucruri de bază</p>
+    </title>
+    <p>Prima vizionare a AndStatus ( după ce măcar un cont a fost adăugat)
+        conține o Cronologie de Acasă.
+    </p>
+    <p>Pentru a executa o acțiune pe un mesaj din listă, tu
+        trebuie
+        <strong>să ții apăsat</strong>
+        pe el ca să apară "meniul Context".
+    </p>
+    <p>Poți să <strong>apeși</strong>
+        un mesaj pentru a afla mai multe detalii și să vezi
+        un copac de conversație de care mesajul aparține.
+    </p>
+    <p>Deschide un "sertar al Navigației" în stânga și apasă pe Cronologia curentă
+        scrie butonul ("Acasă")
+        ca să schimbi către celelalte moduri de vizualizare.
+    </p>
+</section>
+<section>
+    <title>
+        <p>3. Trimiterea și răspunsurile</p>
+    </title>
+    <p>1. Ca să actualizezi status-ul tău, apasă pe butonul "Postează" ("Tweet" pentru twitter).
+        Arată ca un "Envelope+".
+        Editorul de mesaje va fi deschis în josul ecranului.
+    </p>
+    <p>2. Scrie într-un text al mesajului tău în zona de text.
+    </p>
+    <p>3. Opțional, atașează o imagine post-ării tale. Acum, când editorul de mesaj este visibil,
+        un alt buton apare în bara de Acțiune: "Agrafă+".
+        (opțiunea din meniu "Atașează" poate fi ascunsă sub un buton "Revarsă": "trei puncte verticale").
+        Apasă pe acel buton "Atașează" și selectează o imagine. După atașarea cu succes a unei imagini
+        vei vedea textul "(cu media)" deasupra unei zone de text, unde compui mesajul.
+    </p>
+    <p>
+    </p>
+    <p>
+    </p>
+    <p></p>
+</section>
+<section>
+    <title>
+        <p></p>
+    </title>
+    <section>
+        <title>
+            <p></p>
+        </title>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p></p>
+        <p>
+        </p>
+        <p>
+        </p>
+    </section>
+    <section>
+        <title>
+            <p></p>
+        </title>
+        <p></p>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p>
+        </p>
+        <p>.</p>
+    </section>
+</section>
+<section>
+    <title>
+        <p></p>
+    </title>
+    <p>
+    </p>
+    <p>.
+    </p>
+    <p>
+    </p>
+</section>
+<section>
+    <title>
+        <p></p>
+    </title>
+    <p>
+    </p>
+    <p>
+    </p>
+</section>
+<section>
+    <title>
+        <p></p>
+    </title>
+    <p>
+    </p>
+    <p>
+    </p>
+    <p></p>
+    <p>
+    </p>
+    <p>
+    </p>
+</section>
+<section>
+    <title>
+        <p></p>
+    </title>
+    <p>
+    </p>
+    <p>
+    </p>
+    <p>
+    </p>
+    <p></p>
+    <p></p>
+</section>
+</body>
+</FictionBook>

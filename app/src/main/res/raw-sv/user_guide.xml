@@ -89,7 +89,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
     </title>
     <p>
     </p>
-    <p>
+    <p>2. Skriv in ett textmeddelande i textarean.
     </p>
     <p>
     </p>
@@ -134,12 +134,12 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
         </p>
         <p>
         </p>
-        <p>.</p>
+        <p>Se <a xlink:href="https://github.com/andstatus/andstatus/issues/288">här för mer information</a>.</p>
     </section>
 </section>
 <section>
     <title>
-        <p></p>
+        <p>5. Direkta (privata) meddelanden</p>
     </title>
     <p>
     </p>
@@ -159,7 +159,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
 </section>
 <section>
     <title>
-        <p></p>
+        <p>7. Sök (lokal sök)</p>
     </title>
     <p>
     </p>

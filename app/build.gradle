@@ -15,8 +15,8 @@ android {
         applicationId "org.andstatus.app"
         minSdkVersion 24
         targetSdkVersion 26
-        versionName "36.03"
-        versionCode 237
+        versionName "36.04"
+        versionCode 238
 
         testApplicationId "org.andstatus.app.tests"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

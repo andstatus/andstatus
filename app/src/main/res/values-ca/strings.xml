@@ -18,14 +18,12 @@
 <resources>
   <string name="account_settings_action">Configuració del compte AndStatus</string>
   <string name="account_settings_activity_title">Compte</string>
-  <string name="account_settings_summary">Freqüència de sincronització, notificacions...</string>
   <string name="action_menu_overflow_description">Més accions...</string>
   <string name="appwidget_nothingnew_default">Res de nou des de:</string>
   <string name="appwidget_nodata">No hi han dades encara.</string>
   <string name="authentication_never">Encara no t\'has autenticat</string>
   <string name="authentication_successful">Autenticació correcta!</string>
   <string name="button_add">Afegeix</string>
-  <string name="button_add_origin">Afegeix un sistema nou</string>
   <string name="button_backup">Còpia de seguretat</string>
   <string name="button_cancel">Cancel·la</string>
   <string name="button_change_folder">Canvia la carpeta</string>
@@ -40,7 +38,6 @@
   <string name="category_title_preference_appearance">Aspecte</string>
   <string name="category_title_preference_credentials">Credencials d\'usuari</string>
   <string name="category_title_preference_information">Informació</string>
-  <string name="notifications_title">Notificacions</string>
   <string name="category_title_preference_settings">Configuració</string>
   <string name="combined_timeline_on">combinat</string>
   <string name="combined_timeline_off_account">per a</string>
@@ -114,11 +111,9 @@
   <string name="menu_item_block">Bloca</string>
   <string name="menu_item_destroy_favorite">Desfés el preferit</string>
   <string name="menu_item_destroy_status">Suprimeix el missatge</string>
-  <string name="menu_item_private_message">Missatge directe</string>
   <string name="menu_item_favorite">Preferit</string>
   <string name="menu_item_follow_user">Segueix \"%1s\"</string>
   <string name="menu_item_view_image">Mostra la imatge</string>
-  <string name="menu_item_open_message_permalink">Obre a internet</string>
   <string name="menu_item_reply">Respon</string>
   <string name="menu_item_reblog_twitter">Repiula</string>
   <string name="menu_item_resend">Torna a enviar</string>
@@ -143,7 +138,6 @@
   <string name="options_menu_attach">Adjunta</string>
   <string name="options_menu_favorites_timeline_cond">Preferits</string>
   <string name="options_menu_home_timeline_cond">Inici</string>
-  <string name="options_menu_global_search">Cerca global</string>
   <string name="options_menu_help">Ajuda</string>
   <string name="options_menu_mentions">Mencions</string>
   <string name="options_menu_search">Cerca</string>
@@ -151,7 +145,6 @@
   <string name="preference_ssl_mode_secure_summary">Estàs segur: només es permeten les connexions segures SSL</string>
   <string name="preference_ssl_mode_secure">SSL segur</string>
   <string name="preference_ssl_mode_insecure">SSL insegur</string>
-  <string name="notification_icon_alternative_title">Icona de notificació alternativa</string>
   <string name="preference_true_black_title">Fons negre autèntic</string>
   <string name="reblogged_by">respost per %1$s</string>
   <string name="reblogged_by_twitter">repiulat per %1$s</string>
@@ -191,11 +184,10 @@
   <string name="system_is_busy_try_later">El sistema està ocupat. Torna a intentar-ho més tard.</string>
   <string name="theme_color_entries_light">Clar</string>
   <string name="theme_color_entries_dark">Fosc</string>
+  <string name="theme_size_entries_large">Gros</string>
   <string name="theme_size_entries_small">Petit</string>
   <string name="theme_size_entries_standard">Estàndard</string>
-  <string name="theme_size_entries_large">Gros</string>
   <string name="timeline_title_all">Tots</string>
-  <string name="timeline_title_private">Missatges directes</string>
   <string name="timeline_title_everything">Tot</string>
   <string name="timeline_title_favorites">Preferits</string>
   <string name="timeline_title_home">Inici</string>
@@ -213,11 +205,6 @@
   <string name="title_preference_change_log">Registre de canvis</string>
   <string name="title_preference_enter_sends_message">La tecla de retorn envia el missatge</string>
   <string name="title_preference_history_size">Mida de l\'historial</string>
-  <string name="notification_sound">To de notificació</string>
-  <string name="notification_in_notification_area">Habilita les notificacions</string>
-  <string name="notification_events_private">Missatges directes nous</string>
-  <string name="notification_events_mention">Mencions noves</string>
-  <string name="commands_in_a_queue">Ordres en la cua</string>
   <string name="title_preference_oauth">OAuth</string>
   <string name="title_preference_origin_system">{0}, tipus: {1}</string>
   <string name="title_preference_password">Contrasenya</string>

@@ -1,22 +1,22 @@
 AndStatus to lekki, otwarty klient sieci społecznościowych o drzewiastej strukturze wątków.
 Współpracuje z różnymi sieciami społecznościowymi, między inymi
 GNU social (na przykład: Quitter.se, LoadAverage, Vinilox, itp.), Twitter i Pump.io.
-AndStatus can combine your feeds from all networks into one Timeline,
-and it allows you to read and post even when you are offline.
+AndStatus może połączyć twoje feedy ze wszystkich sieci w jedną oś czasu,
+a to pozwala na czytanie i postowanie nawet gdy jesteś offline.
 
-For Android v.4.1+ devices.
+Dla urządzeń z systemem Android v.4.1+.
 
-Differentiating features of AndStatus:
+Wyróżniające funkcje AndStatus:
 
-1. Many accounts in different Social networks. You may have several accounts in each, write/reply as any "You" and share between accounts and systems.
-2. You don't need to be online to read timelines and to post your updates: drafts and unsent posts are kept even after reboot. They will be sent when your device is Online.
-3. Convenient tree-like "Conversation view".
-4. "Global search" allowing you to search public messages in all networks with one query.
-5. Lists of Friends and Followers, presented as User Lists and as Timelines (with the latest message of each user)
-6. Tweets/messages/avatars/attached images are being synced in a background, when your device has a good connection. By default, attachments are downloaded via WiFi only.
-7. Cached data may be stored for years or for several days only - it's your choice.
-8. Backup and restore accounts and messages between your devices. Own your data!
-9. Free and without ads, community supported.
+1. Wiele kont w różnych sieciach społecznościowych. Możesz posiadać kilka kont w każdym, pisz/odpisuj jako którykolwiek "Ty" i udostępniaj między kontami i systemem.
+2. Nie musisz być online aby czytać oś czasu lub postować uaktualnienia: niewysłane posty są przechowywane nawet po reboocie. Zostaną wysłane, gdy twoje urządzenie będzie online.
+3. Wygodny drzewo-podobny "Widok konwersacji".
+4. "Wyszukiwarka globalna" pozwalająca na szukanie publicznych wiadomości we wszystkich sieciach przy jednym zapytaniu.
+5. Listy Znajomych i Śledzących, prezentowane jako Listy Użytkowników i Osie Czasu (z ostatnią wiadomością każdego z użytkowników)
+6. Tweety/wiadomości/avatary/załączone obrazki są synchronizowane w tle, kiedy Twoje urządzenie ma dobre połączenie. Domyślnie, załączniki są pobierane jedynie za pośrednictwem WiFi.
+7. Buforowane dane mogą być przechowywane zarówno przez lata jak i zaledwie kilka dni - to Twój wybór.
+8. Twórz kopie zapasowe i przywracaj konta między Twoimi urządzeniami. Bądź właścicielem swoich danych!
+9. Darmowe i bez reklam, wspierane przez społeczność.
 
-See a Change Log for descriptions of all features of AndStatus with links to their discussions:
+Zobacz Dziennik Zmian dla opisów wszystkich funkcji AndStatus z linkami do ich dyskusji:
 http://andstatus.org/changelog.html

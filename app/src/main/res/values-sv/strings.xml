@@ -31,6 +31,7 @@
   <string name="automatic">Auto</string>
   <string name="background_color_preference_title">Bakgrundsfärg för mörkt tema</string>
   <string name="button_add">Lägg till</string>
+  <string name="button_add_origin">Lägg till nytt socialt nätverk</string>
   <string name="button_backup">Säkerhetskopiera</string>
   <string name="button_cancel">Avbryt</string>
   <string name="button_change_folder">Ändra mapp</string>
@@ -202,6 +203,7 @@
   <string name="menu_item_view_image">Visa bild</string>
   <string name="menu_item_open_conversation">Öppna konversation</string>
   <string name="menu_item_open_message_permalink">Öppna i webbläsare</string>
+  <string name="menu_item_private_message">Privat meddelande</string>
   <string name="menu_item_reply">Svara</string>
   <string name="menu_item_reply_to_conversation_participants">Svara till konversationsdeltagare</string>
   <string name="menu_item_reblog">Retweet</string>
@@ -222,6 +224,7 @@
   <string name="message_source_to">till %1$s</string>
   <string name="message_twitter">Tweet</string>
   <string name="messages">Meddelanden</string>
+  <string name="n_message_link">Meddelandelänk</string>
   <string name="n_message_links">%d meddelandelänkar</string>
   <string name="never">Aldrig</string>
   <string name="no">Nej</string>
@@ -229,6 +232,9 @@
   <string name="not_set">ej valt</string>
   <string name="not_syncable">Inte synkroniseringsbar</string>
   <string name="nothing_in_the_loadable_list">Inget här än...</string>
+  <string name="notification_events_follow">Följare</string>
+  <string name="notification_events_like">Favoriter</string>
+  <string name="notification_events_mention">Omnämningar</string>
   <string name="oauth_activity_label">OAuth</string>
   <string name="off">av</string>
   <string name="on">på</string>
@@ -244,6 +250,7 @@
   <string name="options_menu_sync">Synkronisera med internet</string>
   <string name="options_menu_mentions">Omnämningar</string>
   <string name="options_menu_search">Sök</string>
+  <string name="origin_settings_action">Socialt nätverk</string>
   <string name="page_current">nuvarande</string>
   <string name="page_empty">tom</string>
   <string name="page_older">äldre</string>
@@ -283,6 +290,7 @@
   <string name="search_timeline_label">Search tweets, users, and hashtags</string>
   <string name="search_userlist_hint">Ange namn/Webfinger ID</string>
   <string name="search_users">Sök användare</string>
+  <string name="select_backup_folder">Välj mapp för säkerhetskopiering</string>
   <string name="select_displayed_in_selector">Välj om och när denna tidslinje skall visas</string>
   <string name="select_social_network">Välj socialt nätverk</string>
   <string name="settings_action">Inställningar</string>
@@ -329,6 +337,7 @@
   <string name="system_information">Systeminformation</string>
   <string name="system_is_busy_try_later">Systemet är upptaget. Försök igen senare.</string>
   <string name="tap_on_a_timeline_title_behaviour">Tryck på ett tidslinjetitel-beteende</string>
+  <string name="theme_color_entries_default">Enhetsstandard</string>
   <string name="theme_color_entries_light">Ljus</string>
   <string name="theme_color_entries_dark">Mörk</string>
   <string name="theme_size_entries_large">Stor</string>
@@ -336,6 +345,7 @@
   <string name="theme_size_entries_small">Mindre</string>
   <string name="theme_size_entries_smaller">Mindre</string>
   <string name="theme_size_entries_standard">Normal</string>
+  <string name="this_option_is_turned_off">(inaktiverat)</string>
   <string name="timeline_is_combined_by_default">Tidslinje är kombinerad som standard</string>
   <string name="timeline_reloaded">Tidslinjen har laddats om.</string>
   <string name="timeline_title_all">Alla</string>
@@ -345,6 +355,7 @@
   <string name="timeline_title_home">Vänner</string>
   <string name="timeline_title_mentions">Omnämningar</string>
   <string name="timeline_title_outbox">Utkorg</string>
+  <string name="timeline_title_private">Privata meddelanden</string>
   <string name="timeline_title_replies">Svar</string>
   <string name="timeline_title_unknown">(Okänd tidslinje)</string>
   <string name="timeline_title_user">Användare</string>
@@ -390,6 +401,7 @@
   <string name="title_sending_messages_log_enabled">Logga skickameddelanden till en fil</string>
   <string name="title_timeline">Tidslinje</string>
   <string name="unimplemented">Ej implementerat.</string>
+  <string name="unknown_in_parenthesis">(okänt)</string>
   <string name="unknown_userlist">(Okänd användarlista)</string>
   <string name="user_in_timeline_entries_username">användarnamn</string>
   <string name="user_in_timeline_entries_at_username">"\@användarnamn"</string>

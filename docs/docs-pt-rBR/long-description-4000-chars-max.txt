@@ -1,7 +1,7 @@
 AndStatus é um aplicativo leve para redes sociais com conversas ramificadas.
 Suporta várias redes sociais, incluindo
 GNU social (como Quitter.se, LoadAverage, Vinilox, etc.), Twitter e Pump.io.
-AndStatus pode combinar suas linhas do tempo em somente uma
+AndStatus pode combinar suas linhas do tempo de redes sociais diferentes em uma única só,
 e permite ler e publicar mesmo quando estiver offline.
 
 Para dispositivos com Android 4.1 ou superior.
@@ -16,7 +16,7 @@ Características distintivas do AndStatus:
 6. Os tweets/mensagens/avatares/imagens anexadas estão sendo sincronizados em segundo plano, quando seu dispositivo possui uma boa conexão. Por padrão, anexos são baixados somente via WiFi.
 7. Os dados em cache podem ser mantidos por vários anos ou dias - sua escolha.
 8. Criação e restauração de contas e mensagens entre dispositivos. Os seus dados são apenas seus!
-9. Gratuito e livre, sem anúncios e mantido pela comunidade.
+9. Gratuito, livre, sem anúncios e mantido pela comunidade.
 
-Consulte o registro de alterações para ver uma descrição de todas as funcionalidades do AndStatus e links para suas discussões:
+Consulte a lista de alterações para ver uma descrição de todas as funcionalidades do AndStatus e links para suas discussões:
 http://andstatus.org/changelog.html

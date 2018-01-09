@@ -1,0 +1,269 @@
+<?xml-stylesheet version='1.0' type='text/xsl' href='../raw/fb2_2_html.xsl' encoding="utf-8"?>
+<!-- 
+    Copyright (C) 2015 Yuri Volkov, yvolk@yurivolkov.com
+    
+    Translations are copyrighted by corresponding Translators.
+        
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+    
+         http://www.apache.org/licenses/LICENSE-2.0
+    
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ -->
+<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
+xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../res-src/fb2/FictionBook.xsd">
+<description>
+    <title-info>
+        <genre>computers</genre>
+        <author>
+            <first-name>AndStatus project</first-name>
+            <last-name></last-name>
+        </author>
+        <book-title>AndStatus 用户指南</book-title>
+        <lang>en</lang>
+        <src-lang>en</src-lang>
+        <translator>
+            <nickname>占位符的翻译信用</nickname>
+        </translator>
+    </title-info>
+    <document-info>
+        <author>
+            <nickname>AndStatus project</nickname>
+            <home-page>http://www.andstatus.org</home-page>
+            <email>andstatus@gmail.com</email>
+        </author>
+        <date>2015-08-16</date>
+        <id></id>
+        <version>2</version>
+    </document-info>
+</description>
+<body>
+<section>
+    <title>
+        <p>介绍</p>
+    </title>
+    <p>AndStatus是一个开源的低流量社交网络客户端,
+具有树状线程对话。 
+它支持多种协议,
+包括GNU社交,
+Twitter和Pump.io. 
+AndStatus将来自所有网络的帐户整合到一个时间线中,
+即使在离线状态下也可以阅读和发布。</p>
+    <p>"操作栏 &gt; 帮助" 中提供了指向本指南的链接。</p>
+    <p>在下一页更改日志将允许您查看AndStatus所有功能讨论的说明和链接。</p>
+</section>
+<section>
+    <title>
+        <p>1.  入门说明</p>
+    </title>
+    <p>点击下面的“开始”按钮:  屏幕添加新的帐户将被打开。
+    </p>
+    <p>首先, 
+系统将提示您从列表中选择一个帐户的社交网络。 
+Twitter, Pump.io和几个“GNU社交”类型系统 (Quitter, LoadAverage 和Vinilox)进行了预配置。
+    </p>
+    <p>如果您的 (“GNU社交”类型) 系统没有列出,
+请点击“发现开放实例”菜单项,
+从GNU社区维护的在线列表中选择一个系统; 
+或在添加新帐户之前手动添加新系统。</p>
+    <p>对于Twitter,
+您可以立即按“添加此帐户”。 
+对于其他系统,
+系统会提示您输入用户名和密码,
+然后才能允许“添加此帐户”。</p>
+    <p>成功创建帐户后,
+请点击设备上的“操作栏”或“返回”按钮上的“左箭头”。 
+这次家庭时间表将被打开,
+这个帐户的信息将从互联网开始下载。
+    </p>
+    <p>恭喜!
+请阅读下面有关您可以进一步做什么。
+    </p>
+    <p>不要忘记添加AndStatus的小部件到您的设备的主屏幕:
+小部件会通知您有关新消息,
+可能会用于启动AndStatus。
+    </p>
+</section>
+<section>
+    <title>
+        <p>2. AndStatus 基础</p>
+    </title>
+    <p>AndStatus的第一个视图 (在添加至少一个帐户之后) 包含主页时间轴。
+    </p>
+    <p>为了对列表中的消息执行操作,
+您应该<strong>按住</strong>以获取其“上下文菜单”。
+    </p>
+    <p>您可以<strong>点击</strong>消息以获取更多详细信息,
+并查看消息所属的对话树。
+    </p>
+    <p>打开左侧的“导航抽屉”,
+点击当前的时间轴类型项目 (“主页”) 切换到其他视图。
+    </p>
+</section>
+<section>
+    <title>
+        <p>3.发送和回复</p>
+    </title>
+    <p>1.为了更新你的状态, 点击“发布”按钮 (Twitter的“Tweet”)。 
+它看起来像一个“信封+”。 消息编辑器将在屏幕底部打开。
+    </p>
+    <p>2. 在文本区域输入消息文本。
+    </p>
+    <p>3.
+或者, 将图像附加到您的帖子。 
+现在, 作为消息编辑器是可见的, 
+另一个按钮出现在操作栏上:
+“Paperclip +”。 
+(“附加”菜单项可能隐藏在“溢出”按钮下: “三个垂直点”)。
+ 点击“附加”按钮并选择一张图片。 
+成功附加图片后,
+您将在文本区域上方看到“ (与媒体) ”文字,
+您正在撰写您的信息。
+    </p>
+    <p>4.点击<strong>发送</strong>发送您的消息。 
+如果您处于离线状态,
+则会将该邮件放入队列中,
+稍后自动发送。 
+(使用“队列中的命令”菜单项查看队列中的未发送消息)
+    </p>
+    <p>为了回复,
+<strong>按住</strong>消息并从上下文菜单中选择 <strong>Reply</strong>,
+在底部输入您的回复。
+    </p>
+    <p>要中止帖子或回复,
+只需点击“隐藏”按钮来隐藏文本区域。</p>
+</section>
+<section>
+    <title>
+        <p>4.  附加图片: 发送和显示</p>
+    </title>
+    <section>
+        <title>
+            <p>4.1。 发送图像</p>
+        </title>
+        <p>上一节介绍了将图片附加到帖子的第一种方法:
+您可以在创建消息时将图像附加到消息。
+        </p>
+        <p>发送图像的另一种方式是通过AndStatus“共享”:
+在这里您从另一个应用程序中的图像开始。 
+例如: 你想拍张照片并发送到社交网络。 
+做这个:
+        </p>
+        <p>1. 拍照/在画廊中找到它,
+然后点击图片的缩略图将其打开。
+        </p>
+        <p>2.在菜单中选择“共享”。 
+大多数应用程序确实有“共享”操作...
+        </p>
+        <p>3.在声明可以共享图像的应用程序列表中选择“AndStatus”。
+        </p>
+        <p>4.现在你在AndStatus。 
+如果您有多个帐户,
+请选择所需的帐户,
+否则将立即转发到邮件编辑器。</p>
+        <p>5. 现在你在一个消息编辑器中,
+图片已经附加了 (你应该在消息文本框上方看到“ (与媒体) ”文本）。
+        </p>
+        <p>6.输入任何文字, 然后点击“发送”。 
+(不允许发送没有任何文字的图像)
+        </p>
+    </section>
+    <section>
+        <title>
+            <p>4.2。 显示附加的图像</p>
+        </title>
+        <p>我们有这些设置 在设置 - >附件中):</p>
+        <p>1.“下载并显示附加图像”复选框。 
+如果关闭, 
+甚至不下载附件,
+从而节省您的网
+        </p>
+        <p>请注意,
+当您启用此选项时,
+图像不会立即显示,
+因为AndStatus需要一些时间在后台下载它们。
+        </p>
+        <p>2.“将图像附加到我的消息”。 
+当“开”时, 您可以使用“回形针+”按钮 (“附加”菜单项)
+将图像附加到您的消息。 
+当“关闭”时,
+用于将图像附加到帖子的“回形针”被隐藏起来。
+        </p>
+        <p>详情请参阅<a xlink:href="https://github.com/andstatus/andstatus/issues/288"></a>.</p>
+    </section>
+</section>
+<section>
+    <title>
+        <p>5. 直接 (私人) 消息</p>
+    </title>
+    <p>打开左侧的导航抽屉,
+点击当前时间轴类型项目(主页),
+然后从列表中选择<strong>直接消息</strong>。
+    </p>
+    <p>为了<strong>删除</strong>您的消息 (公共或私人),
+<strong>按住</strong>并选择<strong>删除消息</strong>.
+    </p>
+    <p>如果您在AndStatus帐户的Android“帐户和同步”设置中启用了<strong>自动同步功能</strong>,
+则会在后台获取新消息。 
+在任何情况下,
+您都可以使用操作栏上的“重新加载”命令手动获取 Internet 上的更新。
+    </p>
+</section>
+<section>
+    <title>
+        <p>6.  提及</p>
+    </title>
+    <p>点击导航抽屉中的当前时间线类型项目, 然后选择<strong>提及</strong>
+    </p>
+    <p>提及将列出提及您的<strong>@username</strong>的每条消息
+(甚至提及所有AndStatus帐户为“组合”时间表)。
+    </p>
+</section>
+<section>
+    <title>
+        <p>7.  搜索 (本地搜索)</p>
+    </title>
+    <p>已经从 Internet 加载的消息中的本地搜索搜索。 
+因此即使离线也可以使用。
+    </p>
+    <p>1. 要在消息文本中找到任何单词或短语,
+请在操作栏上选择<strong>搜索</strong>或单击设备上的专用<strong>搜索</strong>按钮。
+    </p>
+    <p>如果您希望显示来自特定用户的消息,
+请搜索“用户名”。</p>
+    <p>要查看特定用户的提及,
+请搜索“@username”。
+    </p>
+    <p>2. 要快速搜索用户 (所选消息的作者或发件人) 的消息,
+请从消息的上下文菜单中选择“按用户名消息”。 
+这实际上是一种全球搜索 (见下文)。
+    </p>
+</section>
+<section>
+    <title>
+        <p>8. 全局搜索</p>
+    </title>
+    <p>全局搜索功能直接向社交网络的服务器发送搜索请求。 
+这就是为什么需要与网络实时互联网连接。
+    </p>
+    <p>首先, 您将看到本地搜索的结果。 
+同时, AndStatus从所选帐户 (或所有社交网络，如果时间轴是“合并”) 的社交网络下载结果。 
+搜索结果正在接收来自服务器的响应正在更新。 
+如果发生连接错误 (即社交网络服务器没有响应),
+您只会看到本地搜索的结果。
+    </p>
+    <p>请注意,
+pump.io 系统还不支持全局搜索。
+    </p>
+    <p>1. 通过“操作栏”上的“全局搜索”项目启动一个单词或短语的全局搜索。</p>
+    <p>2. 作者或发件人全球搜索所选消息的另一种方式是从该消息的上下文菜单中选择“按用户名的消息”。</p>
+</section>
+</body>
+</FictionBook>

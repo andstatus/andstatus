@@ -47,10 +47,10 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
 <body>
 <section>
     <title>
-        <p></p>
+        <p>Introduction</p>
     </title>
-    <p>AndStatus est un client de réseau social Open Source ayant une faible consommation de bande passante et avec des conversations en arborescence.
-         Il prend en charge plusieurs protocoles, y compris GNU social, Twitter et Pump.io.
+    <p>AndStatus est un client de réseaux sociaaux Open Source ayant une faible consommation de bande passante et avec des conversations en arborescence.
+         Il prend en charge plusieurs protocoles, y compris GNU social, Twitter Mastodon et Pump.io.
          AndStatus combine vos comptes de tous les réseaux dans une seule timeline et vous permet de lire et poster alors même que vous êtes hors connexion.</p>
     <p>Un lien vers ce guide est disponible dans la barre d'action-&gt;Aide.</p>
     <p>Le journal des modifications sur la page suivante vous permettra de voir des descriptions et des liens vers les discussions de toutes les fonctionnalités d'AndStatus.</p>

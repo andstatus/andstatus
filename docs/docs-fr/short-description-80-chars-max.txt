@@ -1,1 +1,1 @@
-Client pour réseau social ayant une faible consommation réseau et avec conversations en arborescence
+Client pour réseaux sociaux ayant une faible consommation réseau et avec conversations en arborescence

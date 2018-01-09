@@ -1,0 +1,203 @@
+<?xml-stylesheet version='1.0' type='text/xsl' href='../raw/fb2_2_html.xsl' encoding="utf-8"?>
+<!-- 
+    Copyright (C) 2015 Yuri Volkov, yvolk@yurivolkov.com
+    
+    Translations are copyrighted by corresponding Translators.
+        
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+    
+         http://www.apache.org/licenses/LICENSE-2.0
+    
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ -->
+<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
+xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../res-src/fb2/FictionBook.xsd">
+<description>
+    <title-info>
+        <genre>computers</genre>
+        <author>
+            <first-name>AndStatus project</first-name>
+            <last-name></last-name>
+        </author>
+        <book-title>Patnubay sa Taga-gamit ng AndStatus</book-title>
+        <lang>sa</lang>
+        <src-lang>en</src-lang>
+        <translator>
+            <nickname>Placeholder Para Sa Mga Papuri Sa Tagasalin</nickname>
+        </translator>
+    </title-info>
+    <document-info>
+        <author>
+            <nickname>AndStatus project</nickname>
+            <home-page>http://www.andstatus.org</home-page>
+            <email>andstatus@gmail.com</email>
+        </author>
+        <date>2015-08-16</date>
+        <id></id>
+        <version>2</version>
+    </document-info>
+</description>
+<body>
+<section>
+    <title>
+        <p>Pansimula</p>
+    </title>
+    <p>Ang AndStatus ay isang open-source na mababang trapik na panlipunang networking:
+na kung saan ang mga usapan ng kliyente ay nakahibla na mahahalintulad sa isang puno.
+Ito ay sumusuporta sa iba`t ibang protokol kasama na rito ang GNU social, Twitter at Pump.io.
+Sinasama ng AndStatus ang iyong mga accounts sa lahat ng mga networks sa iisang Timeline
+At pinapahintulutan kang makapagbasa at makapag-post kahit na ikaw ay offline.</p>
+    <p>Ang dugtong sa gabay nito ay makukuha sa Action Bar at Help.</p>
+    <p>Ang Change Log sa susunod na pahina ay magpapahintulot sa iyo na makakita ng pagkakalarawan at mga dugtong para sa pagtalakay sa lahat ng mga tampok ng AndStatus.</p>
+</section>
+<section>
+    <title>
+        <p>1. Pagsisimula</p>
+    </title>
+    <p>I-tap ang button ng ''Get Started'' sa ibaba: tabingan para makapagdagdag
+ang bagong account ay mabubuksan.
+    </p>
+    <p>Unang-una ikaw ay sasabihan na mamili ng Social network
+account galing sa isang listahan.
+Ang Twitter, Pump.io at iilan sa mga klase ng ''GNU social'' na sistema (Quitter, LoadAverage and Vinilox) ay naka-configure.
+    </p>
+    <p>Kung sakaling ang (''GNU social''-type) na sistema ay di naka-lista,
+I-tap ang ''Discover open instances'' sa menu item para makapili ng sistema galing listahan ng live online na pinananatili ng GNU social community; o I-tap ang ''Add new system'' ng mano-mano bago makapag-add ng bagong account.</p>
+    <p>Para sa Twitter ikaw ay pinapahintulutang pindutin ang ''Add this account'' kaagad.
+Para sa ibang sistema ikaw ay sasabihan na i-type ang iyong Username at Password bago ka pahihintulutang pumindot sa ''Add this account''.</p>
+    <p>Pagkatapos ng isang matagumpay na paggawa ng isang account, kung maari sana i-tap ang ''left arrow'' sa ''Action bar'' o sa ''Back'' button ng inyong aparato.
+Sa oras na ito ang Home Timeline ay mabubuksan, at ang mga mensahe sa nasabing account ay magsisimula ng magdownload galing sa Internet.
+    </p>
+    <p>Pagbati! Maaari sanang basahin sa ibaba ang tungkol sa kung ano ang maaari mong gawin sa karagdagan.
+    </p>
+    <p>At wag kakalimutang magdagdag ng AddStatus widget sa Home screen ng iyong aparato: ang widget ay magbibigay - alam sa iyo tungkol sa mga bagong mensahe at ito ay maaaring gamitin para ilunsad ang AndStatus.
+    </p>
+</section>
+<section>
+    <title>
+        <p>2. Mga Pangunahing Kaalaman sa AndStatus</p>
+    </title>
+    <p>Ang unang pagtingin ng AndStatus (pagkatapos magdagdag ng kahit isang account) ay naglalaman ng Home Timeline.
+    </p>
+    <p>Upang maisagawa ang isang aksyon sa isang mensahe galing sa listahan dapat mong hawakan itong upang makuha nito ang ''Context menu''.
+    </p>
+    <p>Maaari kang mag-click sa mensahe upang makakuha ng higit pang mga detalye at  makita mo sa conversation tree kung  saan nabibilang ang mensahe.
+    </p>
+    <p>Buksan ang ''Navigation Drawer'' sa kaliwa at i-tap ang current Timeline type item (''Home'') upang lumipat sa iba pang mga view.
+    </p>
+</section>
+<section>
+    <title>
+        <p>3. Pagpapadala at Pagsasagot</p>
+    </title>
+    <p>1. Upang ma-update ang iyong status, i-tap ang ''Post'' button (''Tweet'' for Twitter).
+Ito ay mukhang isang ''Envelope+''.
+Ang message editor ay mabubuksan sa ibaba ng screen.
+    </p>
+    <p>2. Mag-type ng teksto ng iyong mensahe sa text area.
+    </p>
+    <p>3. Opsyonal, maglakip ng imahe sa iyong post. Ngayon, makikita ang message Editor, may ibang button na makikita sa Action bar: ''Paperclip+''.
+(Ang ''Attach'' menu item ay marahil na nakatago sa ilalim ng ''Overflow'' button: ''three vertical dots'').
+I-tap ang ''Attach'' button at pumili ng imahe. Pagkatapos ng matagumpay ng paglakip ng imahe makakakita ka tektsong ''(with media)'' sa ibabaw ng text area, kung saan mo binubuo ang iyong mensahe.
+    </p>
+    <p>4. I-tap ang <strong>Ipadala</strong> para ipadala ang iyong mensahe. Kung ikaw ay offline, ang mensahe ay ilalagay sa isang Pila na awtomatikong ipapadala kalaunan. (Gamitin ang "Mga utos sa isang pila" na menu aytem upang makita ang iyong mga hindi naipadala na mensahe sa Queue)
+    </p>
+    <p>Upang makatugon, <strong>I-hold down</strong> isang mensahe at piliin ang <strong>Tugon</strong> galing sa menu ng Konteksto, i-type sa iyong tugon sa ibaba.
+    </p>
+    <p>Upang i-abort ang post or tugon, i-tap ng pasimple ang pindutan na "Hide" para itago ang lugar ng teksto.</p>
+</section>
+<section>
+    <title>
+        <p>4. Mga imaheng nakalakip: pagpapadala at pagpapakita</p>
+    </title>
+    <section>
+        <title>
+            <p>4.1. Pagpapadala ng mga imahe</p>
+        </title>
+        <p>Ang unang paraan upang ilakip ang isang larawan sa isang post ay inilarawan sa isang naunang seksyon: isang imahe sa isang mensahe, habang lumilikha ng mensahe.
+        </p>
+        <p>Isa pang paraan upang magpadala ng isang imahe ay "Ibahagi" ito sa pamamagitan ng AndStatus: dito ka magsimula mula sa isang imahe sa isa pang application: Hal. gusto mong kumuha ng litrato at ipadala ito sa isang network na sosyal.
+Gawin ito:
+        </p>
+        <p>1. Kumuha ng larawan / hanapin ito sa isang Galerya at i-click ang thumbnail ng larawan para buksan ito.
+        </p>
+        <p>2. Piliin ang "Ibahagi" sa menu. Karamihan sa mga application ay mayroong aksyon na "Ibahagi"...
+        </p>
+        <p>3. Piliin ang "AndStatus" sa mga listahan ng mga application, na nagpapahayag na maaari silang magbahagi ng mga larawan.
+        </p>
+        <p>4. Ngayon ikaw ay nasa AndStatus. Kung mayroon kang higit sa isang account, piliin ang ninanais na account, kung hindi ay agad kang ipapasa sa isang Editor ng Mensahe.</p>
+        <p>5. Ngayon ikaw ay nasa Editor ng Mensahe, na may nakalakip na larawan (dapat mong makita ang "(na may medya)" na teksto sa ibabaw ng message text box).
+        </p>
+        <p>6. Magtype ng anumang teksto at i-tap ang "Padala". (Hindi pinapayagan na magpadala ng isang mensahe nang walang anumang teksto)
+        </p>
+    </section>
+    <section>
+        <title>
+            <p>4.2. Pagpapakita ng mga imaheng nakalakip</p>
+        </title>
+        <p>Mayroon kaming mga setting na ito (sa mga Setting->Mga Kalakip):</p>
+        <p>1. Checkbox na "I-download at ipakita ang mga nakalakip na larawan". Kung naka-off ito, ang mga nakalakip ay hindi na mada-download kaya napapangalagaan ang iyong network traffic.
+        </p>
+        <p>Pakitandaan na kapag binuksan mo ang pagpipiliang ito, hindi agad-agad makikita ang mga imahe, dahil nangangailangan ang AndStatus ng ilang oras upang i-download ang mga ito sa isang background.
+        </p>
+        <p>2. "Maglakip ng mga imahe sa aking mga mensahe". Kapag naka-"on", maaari mong gamitin ang pindutan ng "Paperclip+"  ("Maglakip" aytem ng menu) upang maglakip ng mga imahe sa iyong mensahe. Kapag naka-"off", ang "Paperclip+", na ginamit upang ilakip ang isang imahe sa iyong post, ay nakatago.
+        </p>
+        <p>Tingnan ang <a xlink:href="https://github.com/andstatus/andstatus/issues/288">dito para sa higit pang impormasyon</a>.</p>
+    </section>
+</section>
+<section>
+    <title>
+        <p>6. Deretsahang (pribadong) mga mensahe</p>
+    </title>
+    <p>Magbukas ng Navigation Drawer sa kaliwa, i-tap ang kasalukuyang uri ng Timeline aytem (Home) at piliin ang <strong>Mga Deretsahang Mensahe</strong> mula sa listahan.
+    </p>
+    <p>Upang <strong>tanggalin</strong> ang iyong mensahe (pampubliko o pribado), <strong> i-hold down</strong> dito at piliin ang <strong>Alisin ang mensahe</strong>.
+    </p>
+    <p>Ang mga bagong mensahe ay kinukuha sa mga takdang panahon sa isang background kung naka-on ang <strong> Awtomatikong pag-sync </strong> sa mga setting ng "Account at Pag-sync" ng Android para sa AndStatus Account. Sa anumang kaso maaari kang makakuha ng mga update mula sa Internet ng mano-mano gamit ang "I-reload" na utos sa isang Action bar.
+    </p>
+</section>
+<section>
+    <title>
+        <p>6. Mga Pagbanggit</p>
+    </title>
+    <p>I-tap ang aytem ng kasalukuyang klase ng Timeline sa Navigation Drawer at piliin ang <strong>Mga Pagbanggit</strong>.
+    </p>
+    <p>Inililista ng mga pagbanggit ang bawat mensahe na nagbabanggit sa iyong <strong>@username</strong> (o kahit pagbanggit ng lahat ng iyong mga account sa AndStatus para sa "pinagsamang" timeline).
+    </p>
+</section>
+<section>
+    <title>
+        <p>7. Paghahanap (lokal na paghahanap)</p>
+    </title>
+    <p>Ang mga paghahanap sa lokal na paghahanap sa mga mensahe na na-load mula sa Internet. Samakatuwid ito ay makakamit kahit offline.
+    </p>
+    <p>1. Upang makahanap ng anumang salita o parirala sa isang teksto ng mga mensahe, piliin ang <strong>Paghahanap</strong> sa isang Action bar o i-click ang isang dedikadong <strong>Paghahanap</strong> na pindutan sa iyong aparato.
+    </p>
+    <p>Kung nais mong magpakita ng mga mensahe mula sa isang partikular na gumagamit, mangyaring maghanap para sa "username".</p>
+    <p>Upang makita ang pagbanggit ng isang particular na User, hanapin ang "@username".
+    </p>
+    <p>2. Upang mabilis na makahanap ng mga mensahe ng isang User (isang May-akda o isang Nagpadala ng isang napiling mensahe), piliin ang "Mga Mensahe sa pamamagitan ng UserName" mula sa menu ng konteksto ng mensahe. Ito ay talagang ayos ng isang Pandaigdigang Paghahanap (tingnan sa ibaba).
+    </p>
+</section>
+<section>
+    <title>
+        <p>8. Pandaigdigang Paghahanap</p>
+    </title>
+    <p>Ang tungkulin ng pandaigdigang paghahanap ay ang pagpapadala ng mga direktang kahilingan sa mga server ng sosyal na network. Ito ang dahilan kung bakit kinakailangan ang live na koneksyon sa Internet sa mga network.
+    </p>
+    <p>Una, iniharap ka sa mga resulta ng paghahanap sa Lokal. Sa kahanay, ang mga resulta ng pagdownload ng AndStatus mula sa isang Social network ng piniling Account (o mula sa lahat ng social network, kung ang isang Timeline ay "pinagsama"). Ang mga resulta ng paghahanap ay ina-update sa pagtanggap ng mga tugon mula sa mga server. Sa isang kaso ng error sa koneksyon (hal. walang tugon mula sa server ng Social network) makikita mo ang mga resulta sa Lokal na Paghahanap lamang.
+    </p>
+    <p>Mangyaring tandaan na hindi sinusuportahan ng sistema ng pump.io ang Pandaigdigang paghahanap.
+    </p>
+    <p>1. Sinisimulan ang pandaigdigang paghahanap ng isang salita o parirala sa paggamit ng aytem na "Pandaigdigang paghahanap" sa "Action bar".</p>
+    <p>2. Isa pang paraan upang maghanap ng malawakan para sa mga mensahe ng isang May-akda o isang Nagpadala ng napiling mensahe ay ang pagpili ng "Mga Mensahe ng Username" mula sa menu ng Konteksto ng mensahing ito.</p>
+</section>
+</body>
+</FictionBook>

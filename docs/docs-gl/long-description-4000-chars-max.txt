@@ -1,17 +1,22 @@
-AndStatus é un cliente de redes sociais con baixo consumo de datos e conversas ordenadas de forma ramificada. Soporta múltiples protocolos, incluíndo GNU social ("StatusNet". ex. Quitter, LoadAverage, Vinilox, etc.), Twitter e Pump.io. AndStatus combina as súas contas de todas as redes nunha única Liña de Tempo e permítelle ler e escribir incluso cando non está conectado.
+AndStatus é un cliente para redes sociais que consume poucos datos e é de Código Aberto, mostrando fíos de conversas ramificadas.
+Da soporte para varias redes, incluíndo
+GNU social (ex. Quitter.se, LoadAverage, Vinilox, etc.), Twitter e Pump.io.
+AndStatus combina as súas fontes de diferentes redes nunha liña temporal,
+e permítelle ler e publicar cando non está en liña.
 
-Para Android 4.1 ou superior. Licenza de Código Aberto.
+Para dispositivos Android v.4.1+.
 
 Características diferenciais de AndStatus:
 
-1. Varias contas en diferentes sistemas de Redes sociais. Pode ter varias contas e cada unha, escribir/respostar con calquera dos "Ti" e compartir entre contas e sistemas.
-2. Non precisa estar conectado para enviar as súas actualizacións: as mensaxes gárdanse (na "cola de envío") incluso ate despois de un reinicio. Serán enviadas cando volte a estar en liña.
+1. Varias contas en diferentes redes sociais. Pode ter varias contas e cada unha, escribir/respostar con calquera dos "Ti" e compartir entre contas e sistemas.
+2. Non precisa estar en liña para ler liñas temporais e publicar as súas actualizacións: borradores e mensaxes non enviadas son gardadas incluso tras reiniciar. Serán enviadas cando volte a estar en liña.
 3. Axeitada "Vista de conversación" en estilo ramificado.
-4. A "Busca global" permítelle buscar mensaxes públicas en todas as redes rexistradas con unha única consulta.
-5. As imaxes de chíos/mensaxes/avatares/anexos son sincronizados en segundo plano, incluso cando o dispositivo ten unha boa conexión.
-6. Os datos en memoria pódense gardar durante anos ou so días - o que vostede queira.
-7. Respaldo doado de restaurado de contas e datos entre os seus dispositivos.
-8. Gratuíto e sen anuncios, apoiado pola comunidade.
+4. "Busca global" permítelle buscar mensaxes públicas en todas as redes con só unha consulta.
+5. Listado de amigas e seguidoras, presentadas como Listas de Usuarias e Liñas de Tempo (coa última mensaxe de cada usuaria)
+6. As imaxes de chíos/mensaxes/avatares/anexos son sincronizados en segundo plano, incluso cando o dispositivo ten unha boa conexión. Por omisión os anexos só se descargarán vía WiFi.
+7. Os datos en memoria pódense gardar durante anos ou so días - o que vostede queira.
+8. Respaldo e restauración de contas e mensaxes entre dispositivos. Os seus datos son seus!
+9. Gratuíto e sen anuncios, apoiado pola comunidade.
 
-Vexa o Rexistro de cambios para descripción de todas as características de AndStatus:
+Vexa o Rexistro de cambios para a descrición de todas as características de AndStatus con ligazóns a súa discusión:
 http://andstatus.org/changelog.html

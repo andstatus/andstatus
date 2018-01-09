@@ -1,0 +1,273 @@
+<?xml-stylesheet version='1.0' type='text/xsl' href='../raw/fb2_2_html.xsl' encoding="utf-8"?>
+<!-- 
+    Copyright (C) 2015 Yuri Volkov, yvolk@yurivolkov.com
+    
+    Translations are copyrighted by corresponding Translators.
+        
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+    
+         http://www.apache.org/licenses/LICENSE-2.0
+    
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ -->
+<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
+xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../res-src/fb2/FictionBook.xsd">
+<description>
+    <title-info>
+        <genre>computers</genre>
+        <author>
+            <first-name>AndStatus project</first-name>
+            <last-name></last-name>
+        </author>
+        <book-title>AndStatus Kullanıcı Rehberi</book-title>
+        <lang>tr</lang>
+        <src-lang>en</src-lang>
+        <translator>
+            <nickname>Çevirenler için ayrılmış bilgi alanı</nickname>
+        </translator>
+    </title-info>
+    <document-info>
+        <author>
+            <nickname>AndStatus project</nickname>
+            <home-page>http://www.andstatus.org</home-page>
+            <email>andstatus@gmail.com</email>
+        </author>
+        <date>2015-08-16</date>
+        <id></id>
+        <version>2</version>
+    </document-info>
+</description>
+<body>
+<section>
+    <title>
+        <p>Giriş</p>
+    </title>
+    <p>AndStatus bir Açık Kaynaklı ağaçsı dişli konuşmalar ile 
+        düşük trafik sosyal ağistemcisidir 
+        GNU social, Twitter ve Pump.io dahil çoklu protokolleri destekler.
+        AndStatus bütün ağlardaki hesaplarınızı bir Zaman Çizelgesi'nde birleştirir
+        ve çevrim dışı olsanız bile okumanıza ve post göndermenize izin verir.</p>
+    <p>Bu rehbere erişim Görev çubuğunda mevcuttur-&gt;Yardım.</p>
+    <p>Sonraki sayfadaki değişiklik kayıtları açıklamaları görmenize izin verecek
+        ve AndStatus'Un bütün özelliklerinin tartışmasına bağlayacak.</p>
+</section>
+<section>
+    <title>
+        <p>1. Başlarken</p>
+    </title>
+    <p>Aşağıdaki "Başlarken" butonuna dokunun: ekleme ekranı
+        yeni hesaplar açılacak.
+    </p>
+    <p>Önce listeden bir hesaptan
+        Sosyal ağ seçmeniz istenir.
+        Twitter, Pump i.o. ve bir kaç "GNU Social"-tipi sistemler (Quitter,
+        LoadAverage and Vinilox) önceden ayarlanır.
+    </p>
+    <p>Sisteminiz listelenmediği duruda,
+         bir sistem seçmek için GNU sosyal topluluğunda bulunan bir canlı listeden
+         "Açık örnekleri keşfet" menü itemine dokunun;
+        yada "Yeni sistem ekle" hesap eklemeden elle eklenir.
+</p>
+    <p>Twitter için "Bu hesabı ekle"ye hemen
+        izin verilir.
+        Diğer sistemler için,  "Bu hesabı ekle"den önce
+        Kullanıcı adı ve Şifrenizi yazmak için yönlendirileceksiniz.</p>
+    <p>Başarılı bir hesap oluşturmadan sonra, 
+        lütfen cihazınızdaki "Görev Çubuğu" yada "Geri" butonundaki
+        "sol ok"a dokunun.
+        Bu sefer bir Ev Ekranı Zaman Çizelgesi açılacak,
+        ve bu hesap için mesajlar internetten indirilmeye başlayacak.
+    </p>
+    <p>Tebrikler! Lütfen daha fazlası için aşağıyı okuyun.
+    </p>
+    <p>Ve cihazınızın ana ekranına bir AndStatus Widget eklemeyi
+        unutmayın:
+        Widget yeni mesajlar ve AndStatus başlatma kullanımı için size bilgi
+        verecek.
+    </p>
+</section>
+<section>
+    <title>
+        <p>2. AndStatus temelleri</p>
+    </title>
+    <p>AndStatus'Un ilk izlenimi (en azından bir hesap eklendikten sonra)
+         bir Ev Ekranı Zaman Çizelgesi içerir.
+    </p>
+    <p>Listedeki bir mesaj üzerinde bir görev gerçekleştirmek için
+        "Bağlam menüsü"ne ulaşım için <strong>sürdürmelisin</strong>.
+    </p>
+    <p>Daha fazla detay almak ve
+        ve mesajla ilgili bir konuşma ağacı görmek için
+        bir mesaja <strong>tıklayabilirsin</strong>.
+    </p>
+    <p>Soldan bir "Gezinme Çekmecesi" açın ve 
+        diğer görünümlere geçmek için 
+        Geçerli Zaman Çizelgesi türüne ("Ev") dokunun.
+    </p>
+</section>
+<section>
+    <title>
+        <p>3. Gönderme ve cevaplama</p>
+    </title>
+    <p>1. Durumunuzu güncellemek için, "Post" düğmesine dokununuz (Twitter için "Tweet").
+        Bir "Zarf +" a benziyor. 
+        Mesaj düzenleyicisi ekranın alt kısmında açılacaktır.
+    </p>
+    <p>2. Mesajınızın metnini metin alanına yazın.
+    </p>
+    <p>3. İsteğe bağlı olarak, postanıza bir resim ekleyin. Şimdi, bir mesaj olarak Editör görünür durumda, 
+        bir İşlem çubuğunda başka bir düğme görünür: "Ataç +".
+        "Ekle" düğmesini tıklayın ve bir resim seçin. Görüntünün başarıyla eklenmesinden sonra
+        mesajınızı oluşturduğunuz bir metin alanının üzerinde "(medya ile birlikte)" metnini göreceksiniz.
+    </p>
+    <p>4. Mesajınızı göndermek için <strong>Gönder</strong>e dokunun. Çevrimdışıysanız, 
+        ileti daha sonra otomatik olarak gönderilmek üzere Bir Kuyruğa konacaktır.
+        (Gönderilmemiş mesajlarınızı Kuyrukta görmek için "Bir sıradaki komutlar" menü öğesini kullanın)
+    </p>
+    <p>Yanıtlamak için, bir mesajı <strong> basılı tutun</> 
+        ve bir Bağlam menüsünden <strong> Cevapla </> seçeneğini seçin,
+        cevabınızı en altına yazın.
+    </p>
+    <p>Bir yayını durdurmak veya yanıtı iptal etmek için, metin alanını gizlemek için
+       "Gizle" düğmesine dokunmanız yeterlidir.</p>
+</section>
+<section>
+    <title>
+        <p>4. Ekli resimler: gönderme ve gösterme</p>
+    </title>
+    <section>
+        <title>
+            <p>4.1. Resim gönderme</p>
+        </title>
+        <p>Bir postaya bir resim eklemek için ilk yol, bir önceki bölümde açıklanmıştır: mesajı 
+            oluştururken mesaja görüntü ekleyebilirsiniz.
+        </p>
+        <p>Bir resim göndermenin başka bir yolu, AndStatus üzerinden "Paylaş" yapmaktır: Burada
+            başka bir uygulamadaki bir resme başlıyorsunuz. Örneğin. bir fotoğraf çekip bir sosyal ağa göndermek istiyorsunuz.
+            Bunu yapın:
+        </p>
+        <p>1. Bir resim çekin / Galeri'de bulun ve resmi açmak için resmin küçük resmini tıklayın.
+        </p>
+        <p>2. Menüden "Paylaş" ı seçin. Çoğu uygulamada bir "Paylaş" işlemi var...
+        </p>
+        <p>3. Görüntüleri paylaşabileceklerini beyan eden bir uygulama listesinden
+            "AndStatus" u seçin.
+        </p>
+        <p>4. Şimdi AndStatus'tasınız. Birden fazla hesabınız varsa,
+            istediğiniz bir hesabı seçin, aksi takdirde derhal bir
+            İleti Düzenleyicisi'ne yönlendirileceksiniz.</p>
+        <p>5. Artık bir Mesaj Düzenleyici'de, resim zaten eklenmiş durumda 
+             (bir mesajın metin kutusunun üzerinde "(medyayla birlikte)" metni görmelisiniz).
+        </p>
+        <p>6. Herhangi bir metni yazın ve "Gönder" düğmesine dokunun. (Herhangi bir metin olmadan bir resim göndermesine izin verilmiyor)
+        </p>
+    </section>
+    <section>
+        <title>
+            <p>4.2. Eklenen görüntülerin gösterimi</p>
+        </title>
+        <p>Bu ayarlara sahibiz (Ayarlar-> Ekler):</p>
+        <p>1. "Ekli resimleri indirin ve görüntüle" onay kutusu. Kapatıldıysa, ekler
+            indirilmez, böylece ağ trafiğiniz korunur.
+        </p>
+        <p>Bu seçeneği açtığınızda, resimlerin hemen gösterilmediğini lütfen unutmayın,
+            çünkü AndStatus'un arka planda indirilmesi biraz zaman alıyor.
+        </p>
+        <p>2. "İletileri benim iletilerime ekle". "Açık" olduğunda mesajınıza resim eklemek için 
+            "Ataç +" düğmesini ("Ekle" menü öğesi) kullanabilirsiniz. 
+            "Kapalı" olduğunda, mesajınıza bir resim eklemek için kullanılan "Ataş)" gizlenir.
+        </p>
+        <p><a xlink:href="https://github.com/andstatus/andstatus/issues/288">Daha fazlası için</a> buraya bak.</p>
+    </section>
+</section>
+<section>
+    <title>
+        <p>5. Doğrudan (özel) mesajlar</p>
+    </title>
+    <p>Sol tarafta bir Gezinme Çekmecesi açın, geçerli Zaman Çizelgesi türüne
+        (Ana Sayfa) dokunun
+        ve listeden
+        <strong> Doğrudan Mesajlar </> 'ı seçin.
+    </p>
+    <p>İletinizi (genel veya özel) <strong> silmek </strong> için 
+        <strong>basılı tutun</strong> ve 
+        <strong>Mesajı kaldır</strong>ı seçin.
+    </p>
+    <p>Yeni mesajlar zaman çizelgelerine arka planda getirilir
+        Bu AndStatus hesabı için Android "Hesap ve Senkron" ayarlarına dönerseniz.
+        Her durumda, bir Görev çubuğundaki "Yeniden Yükle" komutunu kullanarak internetten güncellemeler alabilirsiniz.
+    </p>
+</section>
+<section>
+    <title>
+        <p>6. Bahsetmeler</p>
+    </title>
+    <p>Gezinme Çekmecesinde Geçerli Zaman Çizelgesi türüne dokunun
+        ve ardından
+        <strong> Behsetmeler </strong> 'i seçin
+        .
+    </p>
+    <p>Bahsetmeler <strong>@kullanıcıadı</strong>nızın bahsedildiği her mesajı
+        listeleyecek
+        (veya hatta bir "kombine" zaman çizelgesi için
+        tüm AndStatus hesaplarınızdan bahseder).
+    </p>
+</section>
+<section>
+    <title>
+        <p>7. Arama (yerel arama)</p>
+    </title>
+    <p>Yerel arama, Internet'ten yüklenmiş olan mesajlar arasında 
+        arar.
+        Bu nedenle, çevrimdışı bile kullanılabilir.
+    </p>
+    <p>1. İletiler metninde herhangi bir kelime veya ifadeyi bulmak için,
+        bir Görev çubuğunda <strong> Ara </strong> 'yı seçin 
+        veya cihazınızda özel bir <strong> Ara </strong> düğmesine tıklayın.
+    </p>
+    <p>Belli bir kullanıcıdan gelen mesajları göstermek isterseniz,
+        lütfen "kullanıcıadı" nı arayın.</p>
+    <p>Belirli bir kullanıcının bahsetmelerini görmek için "@kullanıcıadı"nı arayın.
+    </p>
+    <p>2. Bir kullanıcı (bir Yazar veya seçilen bir mesajın Göndericisi)
+        tarafından hızlı bir şekilde aramak için, mesajın içerik menüsünden
+        "Kullanıcı Adlarına Göre Mesajlar" seçeneğini seçin. 
+        Bu aslında bir Global Arama türüdür (aşağıya bakın).
+    </p>
+</section>
+<section>
+    <title>
+        <p>8. Global arama</p>
+    </title>
+    <p>Global arama işlevi doğrudan Sosyal ağların sunucularına
+        bir arama isteği gönderir. 
+        Bu nedenle ağlara canlı İnternet bağlantısı gereklidir.
+    </p>
+    <p>İlk olarak, Yerel arama sonuçları sunuluyor. 
+        Buna paralel olarak, AndStatus,
+        seçilen Hesabın Sosyal ağından sonuçları indirir
+        veya bir Zaman Çizelgesi "birleştirildi" ise,
+        tüm Sosyal ağlardan).
+        Arama sonuçları, sunuculardan gelen yanıtları alır almaz güncellenmektedir.
+        Bağlantı hatası durumunda
+        (örneğin bir Sosyal ağ sunucusundan herhangi bir yanıt gelmezse)
+        yalnızca Yerel Arama sonuçlarını göreceksiniz.
+
+    </p>
+    <p>Pump.io sisteminin Global aramayı henüz desteklemediğini lütfen unutmayın.
+    </p>
+    <p>1. Bir kelime veya ifade ile yapılan genel arama "Görev çubuğunda"
+        "Global arama" maddesini kullanarak başlatılır.</p>
+    <p>2. Seçilen mesajın bir Yazar veya Gönderen tarafından
+        mesajlar için global olarak aranmanın bir başka yolu,
+        bu mesajın Bağlam menüsünden "Kullanıcı Adlarına Göre İletiler" i seçmektir.</p>
+</section>
+</body>
+</FictionBook>

@@ -1,0 +1,276 @@
+<?xml-stylesheet version='1.0' type='text/xsl' href='../raw/fb2_2_html.xsl' encoding="utf-8"?>
+<!-- 
+    Copyright (C) 2015 Yuri Volkov, yvolk@yurivolkov.com
+    
+    Translations are copyrighted by corresponding Translators.
+        
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+    
+         http://www.apache.org/licenses/LICENSE-2.0
+    
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ -->
+<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
+xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../res-src/fb2/FictionBook.xsd">
+<description>
+    <title-info>
+        <genre>computers</genre>
+        <author>
+            <first-name>AndStatus project</first-name>
+            <last-name></last-name>
+        </author>
+        <book-title>AndStatus Panduan Pengguna</book-title>
+        <lang>en</lang>
+        <src-lang>en</src-lang>
+        <translator>
+            <nickname>Placeholder untuk kredit Penerjemah</nickname>
+        </translator>
+    </title-info>
+    <document-info>
+        <author>
+            <nickname>AndStatus project</nickname>
+            <home-page>http://www.andstatus.org</home-page>
+            <email>andstatus@gmail.com</email>
+        </author>
+        <date>2015-08-16</date>
+        <id></id>
+        <version>2</version>
+    </document-info>
+</description>
+<body>
+<section>
+    <title>
+        <p>Pendahuluan</p>
+    </title>
+    <p>AndStatus adalah jejaring sosial Open Source dengan lalu lintas yang rendah
+         klien dengan percakapan berulir seperti pohon.
+         Ini mendukung beberapa protokol, termasuk sosial GNU, Twitter dan Pump.io.
+         AndStatus menggabungkan akun Anda dari semua jaringan menjadi satu Timeline
+         dan memungkinkan Anda membaca dan mengeposkan bahkan saat offline.</p>
+    <p>Tautan ke panduan ini tersedia di Acton bar -&gt;Bantuan.</p>
+    <p>Ubah Log pada halaman berikutnya akan memungkinkan Anda melihat deskripsi
+         dan tautan ke diskusi semua fitur AndStatus.</p>
+</section>
+<section>
+    <title>
+        <p>1. Memulai</p>
+    </title>
+    <p>Ketuk tombol "Memulai" di bawah ini: layar untuk menambahkan
+         akun baru akan dibuka.
+    </p>
+    <p>Pertama Anda akan diminta untuk memilih akun jaringan sosial
+         dari sebuah daftar.
+         Twitter, Pump.io dan beberapa sistem tipe "GNU social" (Quitter,
+         LoadAverage dan Vinilox) telah dikonfigurasikan sebelumnya.
+    </p>
+    <p>Dalam kasus Anda ("GNU social"-tipe) sistem tidak terdaftar,
+         ketuk item menu "Discover open instances" untuk memilih sebuah sistem
+         dari daftar online langsung, dikelola oleh komunitas sosial GNU;
+         atau "Add new system" secara manual sebelum menambahkan akun baru.</p>
+    <p>Untuk Twitter Anda diperbolehkan untuk menekan "Add this account"
+         segera.
+         Untuk sistem lain Anda akan diminta untuk mengetik Nama pengguna dan Kata sandi Anda
+         sebelum Anda diizinkan untuk "Add this account".</p>
+    <p>Setelah berhasil membuat akun, ketuk "panah kiri"
+         pada sebuah
+         Tombol "Action bar" atau "Back" pada perangkat Anda.
+         Kali ini Beranda Timeline akan dibuka,
+         dan pesan untuk akun ini akan mulai diunduh dari Internet.
+    </p>
+    <p>Selamat! Silakan baca di bawah tentang apa yang dapat Anda lakukan lebih jauh.
+    </p>
+    <p>Dan jangan lupa tambahkan widget AndStatus ke layar Perangkat Utama Anda:
+         widget akan memberitahukan Anda tentang pesan baru dan dapat digunakan untuk memulai
+         AndStatus.
+    </p>
+</section>
+<section>
+    <title>
+        <p>2. Dasar-Dasar AndStatus</p>
+    </title>
+    <p>Tampilan pertama AndStatus (setelah setidaknya satu akun ditambahkan)
+         berisi Beranda Timeline.
+    </p>
+    <p>Untuk melakukan sebuah aksi pada sebuah pesan dalam daftar anda
+         harus
+         <strong>hold down</strong>
+         di atasnya untuk mendapatkan "Context menu" nya.
+    </p>
+    <p>Anda bisa <strong>klik</strong>
+         sebuah pesan untuk mendapatkan rincian lebih lanjut tentang hal itu dan untuk melihat
+         sebuah rangkaian percakapan tempat pesan itu berada.
+    </p>
+    <p>Buka "Laci Navigasi" di sebelah kiri dan ketuk Timeline yang saat ini
+         jenis barang ("Rumah")
+         untuk beralih ke tampilan lain.
+    </p>
+</section>
+<section>
+    <title>
+        <p>3. Mengirim dan membalas</p>
+    </title>
+    <p>1. Untuk memperbarui status Anda, ketuk tombol "Post" ("Tweet" untuk Twitter).
+         Ini akan terlihat seperti "Envelope+".
+         Editor pesan akan dibuka di bagian bawah layar.
+    </p>
+    <p>2. Ketik teks pesan Anda ke dalam area teks.
+    </p>
+    <p>3. Opsional, lampirkan gambar ke posting Anda. Sekarang, sebagai pesan Editor yang terlihat,
+         Tombol lain muncul di Action bar: "Paperclip+".
+         (Item menu "Lampirkan" mungkin disembunyikan di bawah tombol "Overflow": "tiga titik vertikal").
+         Ketuk tombol "Lampirkan" dan pilih gambar. Setelah berhasil melampirkan gambar
+         Anda akan melihat teks "(dengan media)" di atas area teks, tempat Anda menulis pesan Anda.
+    </p>
+    <p>4. Tekan <strong>Kirim</strong> untuk mengirim pesan Anda. Jika Anda sedang offline, pesannya akan
+         dimasukkan ke dalam antrian untuk dikirim otomatis nanti. (Gunakan item baris "Perintah dalam antrian"
+         untuk melihat pesan yang belum terkirim di Antrean)
+    </p>
+    <p>Untuk membalas, <strong>hold down</strong>
+         sebuah pesan dan pilih <strong>Reply</strong>
+         dari Konteks menu, ketik balasan Anda di bagian bawah.
+    </p>
+    <p>Untuk membatalkan postingan atau pembalasan, cukup tekan tombol "Hide" untuk menyembunyikan
+        area teks.</p>
+</section>
+<section>
+    <title>
+        <p>4. Gambar terlampir: mengirim dan menampilkan</p>
+    </title>
+    <section>
+        <title>
+            <p>4.1. Mengirim gambar</p>
+        </title>
+        <p>Cara pertama melampirkan gambar ke posting dijelaskan pada bagian sebelumnya: Anda bisa melampirkan            gambar ke pesan, sekaligus membuat pesan.
+        </p>
+        <p>Cara lain untuk mengirim gambar adalah dengan "Berbagi" via AndStatus: di sini Anda mulai dari sebuah gambar
+            di aplikasi lain Misalnya. Anda ingin mengambil foto dan mengirimkannya ke jaringan sosial.
+            Melakukan hal ini:
+        </p>
+        <p>1. Ambil gambar / temukan di Galeri dan klik thumbnail gambar untuk membukanya.
+        </p>
+        <p>2. Pilih "Share" pada menu. Sebagian besar aplikasi memiliki aksi "Bagikan"...
+        </p>
+        <p>3. Pilih "AndStatus" dalam daftar aplikasi, yang menyatakan bahwa mereka
+            bisa berbagi foto.
+        </p>
+        <p>4. Sekarang Anda berada di AndStatus. Jika Anda memiliki lebih dari satu akun,
+            pilih akun yang diinginkan, jika tidak, anda akan segera diteruskan
+            Editor Pesan.</p>
+        <p>5. Sekarang Anda berada di Message Editor, dengan gambar sudah terpasang
+            (Anda harus melihat teks "(dengan media)" di atas kotak teks pesan).
+        </p>
+        <p>6. Ketik teks apapun dan tekan "Send". (Ini tidak diperbolehkan mengirim gambar tanpa teks apapun)
+        </p>
+    </section>
+    <section>
+        <title>
+            <p>4.2. Menampilkan gambar terlampir</p>
+        </title>
+        <p>Kami memiliki setelan ini (di Setelan-> Lampiran):</p>
+        <p>1. "Download dan tampilkan gambar lampiran". Jika dimatikan, lampiran
+             bahkan tidak diunduh sehingga melestarikan lalu lintas jaringan Anda.
+        </p>
+        <p>Harap perhatikan bahwa bila Anda mengaktifkan opsi ini, gambar tidak akan ditampilkan dengan segera,
+             karena AndStatus membutuhkan waktu untuk mendownloadnya di latar belakang.
+        </p>
+        <p>
+        </p>
+        <p>Lihat <a xlink:href="https://github.com/andstatus/andstatus/issues/288">di sini untuk info lebih lanjut</a>.</p>
+    </section>
+</section>
+<section>
+    <title>
+        <p>5. Pesan (pribadi) langsung</p>
+    </title>
+    <p>Buka Laci Navigasi di sebelah kiri, ketuk tipe Timeline saat ini
+         item (rumah)
+         dan pilih
+         <strong>Pesan Langsung</strong>
+         dari daftar.
+    </p>
+    <p>Untuk <strong>hapus</strong>
+        pesan Anda (umum atau pribadi),
+        <strong>tahan</strong> di atasnya dan pilih
+        <strong>Hapus pesan</strong>.
+    </p>
+    <p>Pesan baru diambil ke garis waktu di latar belakang
+         jika Anda telah mengaktifkan <strong>Sinkronisasi otomatis</strong>
+         di setelan "Akun dan Sinkronisasi" Android untuk ini
+         Akun AndStatus.
+         Bagaimanapun, Anda mungkin selalu mendapatkan pembaruan dari Internet
+         secara manual menggunakan perintah "Reload" pada sebuah bar Action.
+    </p>
+</section>
+<section>
+    <title>
+        <p>6. Menyebut</p>
+    </title>
+    <p>Ketuk item jenis Garis waktu saat ini dalam Laci Navigasi
+        lalu pilih
+        <strong>Ucapan</strong>
+        .
+    </p>
+    <p>Penyebutan akan mencantumkan setiap pesan yang menyebutkan nama Anda
+        <strong>@nama pengguna</strong>
+        (atau bahkan menyebutkan semua akun DanStatus Anda untuk a
+        garis waktu "gabungan").
+    </p>
+</section>
+<section>
+    <title>
+        <p>7. Pencarian (pencarian lokal)</p>
+    </title>
+    <p>Penelusuran lokal mencari di antara pesan yang sudah diambil dari
+        Internet.
+        Oleh karena itu tersedia bahkan offline.
+    </p>
+    <p>1. Untuk menemukan kata atau frase dalam teks pesan,
+        pilih <strong>Cari</strong>
+        pada Bar tindakan atau klik berdedikasi
+        <strong>Cari</strong> pada perangkat Anda.
+    </p>
+    <p>Jika Anda ingin menampilkan pesan dari pengguna tertentu,
+        silahkan cari "username".</p>
+    <p>Untuk melihat nama pengguna tertentu, cari "@username".
+    </p>
+    <p>2. Untuk mencari dengan cepat pesan oleh pengguna
+        (Pengirim atau Pengirim pesan yang dipilih), pilih
+        "Pesan oleh Nama pengguna" dari menu konteks pesan.
+        Ini sebenarnya semacam Penelusuran Global (lihat di bawah).
+    </p>
+</section>
+<section>
+    <title>
+        <p>8. Pencarian global</p>
+    </title>
+    <p>Fungsi pencarian global mengirimkan permintaan pencarian langsung ke
+        Server jaringan sosial
+        Inilah sebabnya mengapa koneksi internet langsung ke jaringan sangat dibutuhkan.
+    </p>
+    <p>Pertama, Anda disajikan dengan hasil pencarian Lokal.
+         Secara paralel, hasil unduhan AndStatus
+         dari jaringan Sosial dari Akun yang dipilih
+         (atau dari semua jaringan sosial, jika ada Timeline
+         "gabungan").
+         Hasil pencarian sedang diperbaharui setelah menerima tanggapan dari server.
+         Dalam kasus kesalahan koneksi
+         (yaitu tidak ada tanggapan dari server jaringan Sosial)
+         Anda hanya akan melihat hasil Penelusuran Lokal.
+    </p>
+    <p>Harap dicatat bahwa sistem pump.io belum mendukung pencarian Global.
+    </p>
+    <p>1. Pencarian global dengan kata atau frasa dimulai
+        menggunakan item "Pencarian global" pada "Action bar".</p>
+    <p>2. Cara lain untuk mencari secara global untuk pesan oleh Pengarang atau Pengirim
+        dari pesan yang dipilih adalah memilih
+        "Pesan oleh UserName" dari menu Konteks pesan ini.</p>
+</section>
+</body>
+</FictionBook>

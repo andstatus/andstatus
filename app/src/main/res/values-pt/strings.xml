@@ -87,10 +87,12 @@
   <string name="commands_in_a_queue">Comando na fila</string>
   <string name="crash_dialog_text">O AndStatus terminou abruptamente. Você pode ajudar-nos a corrigir este erro. Prima Ok para enviar o relatório de erros para os programadores.</string>
   <string name="crash_dialog_comment_prompt">Por favor, forneça alguns comentários sobre o problema. O que nos ajuda a resolver o problema: o que estava a fazer quando ocorreu e se pode ser reproduzido.</string>
+  <string name="created">criou</string>
   <string name="created_label">Criado</string>
   <string name="custom_locale_title">Idioma da aplicação</string>
   <string name="set_as_default_timeline">Definir como cronologia padrão</string>
   <string name="default_timeline_summary">A cronologia será aberta com o \'launcher\': \"%s\"</string>
+  <string name="deleted">apagou</string>
   <string name="device_default">Predefinições</string>
   <string name="dialog_summary_acquiring_an_access_token">Por favor aguarde enquanto o AndStatus está a trocar o \"token\" de pedido OAuth pelo \"token\" de acesso.</string>
   <string name="dialog_summary_acquiring_a_request_token">Por favor aguarde enquanto o AndStatus está a obter o \"token\" para OAuth.</string>
@@ -162,6 +164,7 @@
   <string name="fetch_frequency_entries_1_day">dia</string>
   <string name="filters_title">Filtros</string>
   <string name="filters_summary">Filtros globais a aplicar em todas as mensagens</string>
+  <string name="followed">seguiu</string>
   <string name="followed_by">Seguido por</string>
   <string name="followers">Seguidores</string>
   <string name="followers_of">Seguidores de \"%1s\"</string>
@@ -208,6 +211,7 @@
   <string name="in_combined_global_search_label">Incluir na \"Procura global\" ao utilizar a cronologia combinada</string>
   <string name="in_combined_public_reload_label">Incluir na \"Sincronização\" durante a cronologia pública combinada</string>
   <string name="in_context">Em contexto</string>
+  <string name="joined">integrou</string>
   <string name="label_accountselector">Selecione uma conta</string>
   <string name="label_allow_html_content">Permitir conteúdo HTML</string>
   <string name="label_backup">Copiar dados da aplicação para o cartão SD</string>
@@ -285,9 +289,14 @@
   <string name="nothing_in_the_loadable_list">Nada por aqui, ainda...</string>
   <string name="notification_behavior">Modo de notificação</string>
   <string name="notification_events">Eventos a incluir nas notificações</string>
+  <string name="notification_events_announce">Reblogs</string>
   <string name="notification_events_follow">Seguidores</string>
+  <string name="notification_events_like">Favoritas</string>
+  <string name="notification_events_private">Privadas</string>
+  <string name="notification_events_private_summary">Mensagens privadas (diretas)</string>
   <string name="notification_events_mention">Menções</string>
   <string name="notification_events_outbox">Caixa de saída</string>
+  <string name="notification_events_outbox_summary">Mensagens não enviadas e ações na caixa de saída</string>
   <string name="notification_icon_alternative_title">Ícone alternativo de notificação</string>
   <string name="notification_icon_alternative_off">Ícone como letra \"&amp;\"</string>
   <string name="notification_icon_alternative_on">Ícone como círculo</string>
@@ -331,6 +340,7 @@
   <string name="preference_log_network_level_messages_title">Registar mensagens de nível de rede</string>
   <string name="preference_true_black_title">Cor de fundo escura</string>
   <string name="preference_use_kitkat_media_chooser_title">Interface moderna para selecionar um anexo</string>
+  <string name="reblogged">republicou</string>
   <string name="reblogged_by">republicada por %1$s</string>
   <string name="reblogged_by_pumpio">partilhado por %1$s</string>
   <string name="reblogged_by_twitter">retweetada por %1$s</string>
@@ -504,7 +514,11 @@ toque no botão abaixo para verificar novamente as suas credenciais.</string>
   <string name="top">Cima</string>
   <string name="total_counters">Total de contadores</string>
   <string name="translator_credits">Créditos do tradutor</string>
+  <string name="undid_reblog">reverteu \'reblog\'</string>
+  <string name="undid_follow">parou de seguir</string>
+  <string name="undid_like">reverteu \'Gosto\'</string>
   <string name="unimplemented">Não implementado.</string>
+  <string name="unknown_in_parenthesis">(desconhecido)</string>
   <string name="unknown_userlist">(Lista de utilizador desconhecida)</string>
   <string name="updated">atualizada</string>
   <string name="use_legacy_http_protocol_title">Utilizar protocolo HTTP</string>
