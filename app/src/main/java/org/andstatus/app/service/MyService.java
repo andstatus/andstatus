@@ -21,17 +21,21 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 
 import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.MyAction;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.notification.NotificationData;
+import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -115,14 +119,26 @@ public class MyService extends Service {
     @Override
     public void onCreate() {
         MyLog.d(this, "Service created");
-
+        myContext = MyContextHolder.get();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         MyLog.d(this, "onStartCommand: startid=" + startId);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForeground();
+        }
         receiveCommand(intent, startId);
         return START_NOT_STICKY;
+    }
+
+    /** See https://stackoverflow.com/questions/44425584/context-startforegroundservice-did-not-then-call-service-startforeground */
+    private void startForeground() {
+        final NotificationData data = new NotificationData(NotificationEventType.SERVICE_RUNNING, MyAccount.EMPTY)
+                .onEventAt(System.currentTimeMillis());
+        myContext.getNotifier().createNotificationChannel(data);
+        startForeground(NotificationEventType.SERVICE_RUNNING.notificationId(),
+                myContext.getNotifier().getAndroidNotification(data));
     }
 
     @GuardedBy("serviceStateLock")
@@ -466,8 +482,6 @@ public class MyService extends Service {
     }
 
     private void unInitialize() {
-        int mainQueueSize = queues.get(QueueType.CURRENT).size();
-        int retryQueueSize = queues.get(QueueType.RETRY).size();
         int latestProcessedStartId = 0;
         synchronized (serviceStateLock) {
             if( mInitialized) {
@@ -494,6 +508,7 @@ public class MyService extends Service {
         AsyncTaskLauncher.shutdownExecutors(Collections.singleton(MyAsyncTask.PoolEnum.SYNC));
         releaseWakeLock();
         stopSelfResult(latestProcessedStartId);
+        myContext.getNotifier().clearAndroidNotification(NotificationEventType.SERVICE_RUNNING);
     }
 
     private boolean couldStopExecutor(boolean forceNow) {

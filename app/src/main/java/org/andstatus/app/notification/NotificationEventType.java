@@ -40,7 +40,7 @@ public enum NotificationEventType {
     MENTION(4, "notifications_mention", asList(TimelineType.HOME, TimelineType.MENTIONS), true, R.string.notification_events_mention),
     OUTBOX(5, "notifications_outbox", asList(TimelineType.OUTBOX), true, org.andstatus.app.R.string.notification_events_outbox),
     PRIVATE(6, "notifications_private", asList(TimelineType.PRIVATE), true, R.string.notification_events_private),
-    OTHER(7, "notification_unknown", EMPTY_LIST, false, R.string.unknown_in_parenthesis),
+    SERVICE_RUNNING(8, "", EMPTY_LIST, true, R.string.syncing),
     EMPTY(0, "", EMPTY_LIST, false, R.string.empty_in_parenthesis),
     ;
 
@@ -52,7 +52,7 @@ public enum NotificationEventType {
     final List<TimelineType> visibleIn;
     public final int titleResId;
 
-    NotificationEventType(long id, String preferenceKey, List<TimelineType> visibleIn, boolean defaultValue, int titleResId) {
+    NotificationEventType(int id, String preferenceKey, List<TimelineType> visibleIn, boolean defaultValue, int titleResId) {
         this.id = id;
         this.preferenceKey = preferenceKey;
         this.visibleIn = visibleIn;
@@ -61,6 +61,7 @@ public enum NotificationEventType {
     }
 
     public boolean isShownOn(TimelineType timelineType) {
+        if (this == SERVICE_RUNNING) return false;
         switch (timelineType) {
             case NOTIFICATIONS:
             case EVERYTHING:
@@ -70,13 +71,18 @@ public enum NotificationEventType {
         }
     }
 
+    public int notificationId() {
+        return (int) id;
+    }
+
     public static List<Long> idsOfShownOn(TimelineType timelineType) {
         return validValues().stream().filter(eventType -> eventType.isShownOn(timelineType))
                 .map(eventType -> eventType.id).collect(Collectors.toList());
     }
 
     public boolean isEnabled() {
-        return StringUtils.nonEmpty(preferenceKey) && SharedPreferencesUtil.getBoolean(preferenceKey, defaultValue);
+        return StringUtils.nonEmpty(preferenceKey) ? SharedPreferencesUtil.getBoolean(preferenceKey, defaultValue) :
+                defaultValue;
     }
 
     public void setEnabled(boolean enabled) {

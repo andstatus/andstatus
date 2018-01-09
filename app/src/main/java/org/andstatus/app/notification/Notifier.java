@@ -39,11 +39,16 @@ import org.andstatus.app.util.StringUtils;
 
 public class Notifier {
     private static final long[] VIBRATION_PATTERN = {200, 300, 200, 300};
-    public static final int LIGHT_COLOR = Color.GREEN;
+    private static final int LIGHT_COLOR = Color.GREEN;
     public final NotificationEvents events;
+    private NotificationManager nM = null;
     private boolean notificationArea;
     private boolean vibration;
     private String soundUri;
+
+    public Notifier(MyContext myContext) {
+        events = new NotificationEvents(myContext);
+    }
 
     public void clearAll() {
         events.clearAll();
@@ -58,19 +63,13 @@ public class Notifier {
     }
 
     private void clearAndroidNotifications(@NonNull Timeline timeline) {
-        NotificationManager nM = (NotificationManager) events.myContext.context()
-                .getSystemService(Context.NOTIFICATION_SERVICE);
-        if (nM == null) {
-            MyLog.w(this, "No Notification Service");
-            return;
-        }
         NotificationEventType.validValues.stream()
                 .filter(event -> timeline == Timeline.EMPTY || event.isShownOn(timeline.getTimelineType()))
-                .forEach(event -> nM.cancel(MyLog.APPTAG, event.ordinal()));
+                .forEach(this::clearAndroidNotification);
     }
 
-    public Notifier(MyContext myContext) {
-        events = new NotificationEvents(myContext);
+    public void clearAndroidNotification(NotificationEventType eventType) {
+        if (nM != null) nM.cancel(MyLog.APPTAG, eventType.notificationId());
     }
 
     public void update() {
@@ -86,7 +85,7 @@ public class Notifier {
         appWidgets.updateViews();
     }
 
-    private Notification getAndroidNotification(@NonNull NotificationData data) {
+    public Notification getAndroidNotification(@NonNull NotificationData data) {
         String messageText = (data.myAccount.isValid() ? data.myAccount.getAccountName() :
                 getContext().getText(data.event.titleResId)) + ": " + data.count;
         MyLog.v(this,  messageText);
@@ -94,6 +93,16 @@ public class Notifier {
         Notification.Builder builder = new Notification.Builder(getContext());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             builder.setChannelId(data.channelId());
+        } else {
+            if (data.event == NotificationEventType.SERVICE_RUNNING) {
+                builder.setSound(null);
+            } else {
+                if (vibration) {
+                    builder.setVibrate(VIBRATION_PATTERN);
+                }
+                builder.setSound(TextUtils.isEmpty(soundUri) ? null : Uri.parse(soundUri));
+                builder.setLights(LIGHT_COLOR, 500, 1000);
+            }
         }
         if (notificationArea) {
             builder.setSmallIcon(
@@ -106,41 +115,41 @@ public class Notifier {
                 .setWhen(data.updatedDate)
                 .setShowWhen(true);
         }
-        if (vibration) {
-            builder.setVibrate(VIBRATION_PATTERN);
-        }
-        builder.setSound(TextUtils.isEmpty(this.soundUri) ? null : Uri.parse(this.soundUri));
-        builder.setLights(LIGHT_COLOR, 500, 1000);
         builder.setContentIntent(data.getPendingIntent(events.myContext));
         return builder.build();
     }
 
     public void notifyAndroid(NotificationData data) {
-        NotificationManager nM = (NotificationManager) events.myContext.context()
-                .getSystemService(android.content.Context.NOTIFICATION_SERVICE);
-        if (nM == null) {
-            MyLog.w(this, "No Notification Service");
-            return;
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannel(nM, data);
-        }
-        nM.notify(MyLog.APPTAG, data.event.ordinal(), getAndroidNotification(data));
+        if (nM == null) return;
+        createNotificationChannel(data);
+        nM.notify(MyLog.APPTAG, data.event.notificationId(), getAndroidNotification(data));
     }
 
     @TargetApi(Build.VERSION_CODES.O)
-    private void createNotificationChannel(NotificationManager nM, NotificationData data) {
+    public void createNotificationChannel(NotificationData data) {
+        if (nM == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
         String channelId = data.channelId();
         CharSequence channelName = getContext().getText(data.event.titleResId);
         String description = "AndStatus, " + channelName;
-        int importance = NotificationManager.IMPORTANCE_DEFAULT;
-        NotificationChannel mChannel = new NotificationChannel(channelId, channelName, importance);
-        mChannel.setDescription(description);
-        mChannel.enableLights(true);
-        mChannel.setLightColor(LIGHT_COLOR);
-        mChannel.enableVibration(true);
-        mChannel.setVibrationPattern(VIBRATION_PATTERN);
-        nM.createNotificationChannel(mChannel);
+        NotificationChannel channel = new NotificationChannel(channelId, channelName,
+                NotificationManager.IMPORTANCE_DEFAULT);
+        channel.setDescription(description);
+        if (data.event == NotificationEventType.SERVICE_RUNNING) {
+            channel.enableLights(false);
+            channel.enableVibration(false);
+            channel.setImportance(NotificationManager.IMPORTANCE_MIN);
+            channel.setSound(null, Notification.AUDIO_ATTRIBUTES_DEFAULT);
+        } else {
+            channel.enableLights(true);
+            channel.setLightColor(LIGHT_COLOR);
+            channel.enableVibration(vibration);
+            if (vibration) {
+                channel.setVibrationPattern(VIBRATION_PATTERN);
+            }
+            channel.setSound(TextUtils.isEmpty(soundUri) ? null : Uri.parse(soundUri),
+                    Notification.AUDIO_ATTRIBUTES_DEFAULT);
+        }
+        nM.createNotificationChannel(channel);
     }
 
     private Context getContext() {
@@ -148,6 +157,12 @@ public class Notifier {
     }
 
     public void load() {
+        if (events.myContext.isReady()) {
+            nM = (NotificationManager) getContext().getSystemService(android.content.Context.NOTIFICATION_SERVICE);
+            if (nM == null) {
+                MyLog.w(this, "No Notification Service");
+            }
+        }
         notificationArea = NotificationMethodType.NOTIFICATION_AREA.isEnabled();
         vibration = NotificationMethodType.VIBRATION.isEnabled();
         soundUri = NotificationMethodType.SOUND.getString();
