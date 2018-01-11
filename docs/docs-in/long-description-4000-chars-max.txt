@@ -4,7 +4,7 @@ Sosial GNU (mis., Keluar.se, LoMemuat Rata-rata, Vinilox, dll.), Kericau dan Pum
 AndStatus dapat menggabungkan umpan Anda dari semua jaringan menjadi satu Garis waktu,
 dan ini memungkinkan Anda untuk membaca dan mengeposkan bahkan saat offline.
 
-Untuk perangkat Android v.4.1 +.
+Untuk perangkat Android v.7.0 +.
 
 Membedakan fitur AndStatus:
 

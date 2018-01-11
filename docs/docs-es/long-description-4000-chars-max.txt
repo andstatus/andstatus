@@ -4,7 +4,7 @@ GNU social (como Quitter.se, LoadAverage, Vinilox, etc.), Twitter y Pump.io.
 AndStatus puede combinar tus líneas temporales de todas tus redes en una sola
 y te permite leer y publicar incluso desconectado.
 
-Para dispositivos con Android 4.1 o posterior.
+Para dispositivos con Android 7.0 o posterior.
 
 Diferentes características de AndStatus:
 

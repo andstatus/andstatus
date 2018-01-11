@@ -4,7 +4,7 @@ GNU social (ex. Quitter.se, LoadAverage, Vinilox, etc.), Twitter e Pump.io.
 AndStatus combina as súas fontes de diferentes redes nunha liña temporal,
 e permítelle ler e publicar cando non está en liña.
 
-Para dispositivos Android v.4.1+.
+Para dispositivos Android v.7.0+.
 
 Características diferenciais de AndStatus:
 

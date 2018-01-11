@@ -4,7 +4,7 @@ GNU social (par exemple Quitter.se, LoadAverage, Vinilox, etc...), Twitter, Mast
 AndStatus peut combiner vos flux de tous les réseaux sociaux dans un seul fil d'actualité
 et vous permet de lire et de publier même lorsque vous êtes en mode hors connexion.
 
-Pour les appareils Android 4.1 et supérieur.
+Pour les appareils Android 7.0 et supérieur.
 
 Les différentes fonctionnalités d'AndStatus :
 

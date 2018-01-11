@@ -6,7 +6,7 @@ GNU社交 (例如Quitter.se, LoadAverage, Vinilox 等), Twitter 和 Pump.io.
 AndStatus 可以将来自所有网络的提要合并到一个时间轴中
 即使在离线状态下也可以阅读和发布。
 
-适用于 Android v.4.1+ 设备。
+适用于 Android v.7.0+ 设备。
 
 AndStatus 的区别特征:
 

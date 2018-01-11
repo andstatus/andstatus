@@ -4,7 +4,7 @@ GNU Social (z.B. Quitter, LoadAverage, Vinilox, uvm.), Twitter und Pump.io.
 AndStatus kann Ihre Feeds aus allen Netzen in einer Timeline kombinieren,
 und es erlaubt Ihnen zu lesen und zu schreiben, auch wenn Sie offline sind.
 
-Für Geräte ab Android 4.1.
+Für Geräte ab Android 7.0.
 
 Unterscheidungsmerkmale von AndStatus:
 

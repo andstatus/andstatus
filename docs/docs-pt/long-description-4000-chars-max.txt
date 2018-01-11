@@ -4,7 +4,7 @@ GNU social (Quitter.se, LoadAverage, Vinilox, etc.), Twitter e Pump.io.
 O AndStatus pode combinar as fontes de todas as redes em apenas uma cronologia
 e permite-lhe ler e publicar informações mesmo que esteja offline.
 
-Para versões Android 4.1+
+Para versões Android 7.0+
 
 Características distintivas do AndStatus:
 

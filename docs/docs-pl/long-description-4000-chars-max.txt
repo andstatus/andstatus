@@ -4,7 +4,7 @@ GNU social (na przykład: Quitter.se, LoadAverage, Vinilox, itp.), Twitter i Pum
 AndStatus może połączyć twoje feedy ze wszystkich sieci w jedną oś czasu,
 a to pozwala na czytanie i postowanie nawet gdy jesteś offline.
 
-Dla urządzeń z systemem Android v.4.1+.
+Dla urządzeń z systemem Android v.7.0+.
 
 Wyróżniające funkcje AndStatus:
 

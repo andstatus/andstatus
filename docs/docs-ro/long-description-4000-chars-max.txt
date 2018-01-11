@@ -4,7 +4,7 @@ GNU social (ex. Quitter.se, LoadAverage, Vinilox, etc.), Twitter and Pump.io.
 AndStatus poate combina feed-urile din toate rețelele într-o singură Cronologie
 și vă permite să citiți și să postați chiar când sunteți offline.
 
-Pentru dispozitive Android v.4.1+.
+Pentru dispozitive Android v.7.0+.
 
 Trăsături ce diferențiază AndStatus:
 

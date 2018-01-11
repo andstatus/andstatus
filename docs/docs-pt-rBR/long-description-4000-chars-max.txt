@@ -4,7 +4,7 @@ GNU social (como Quitter.se, LoadAverage, Vinilox, etc.), Twitter e Pump.io.
 AndStatus pode combinar suas linhas do tempo de redes sociais diferentes em uma única só,
 e permite ler e publicar mesmo quando estiver offline.
 
-Para dispositivos com Android 4.1 ou superior.
+Para dispositivos com Android 7.0 ou superior.
 
 Características distintivas do AndStatus:
 
