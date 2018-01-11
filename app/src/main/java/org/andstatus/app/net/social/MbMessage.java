@@ -34,7 +34,7 @@ import java.util.List;
 
 import static org.andstatus.app.util.UriUtils.TEMP_OID_PREFIX;
 import static org.andstatus.app.util.UriUtils.isEmptyOid;
-import static org.andstatus.app.util.UriUtils.isOidReal;
+import static org.andstatus.app.util.UriUtils.isRealOid;
 import static org.andstatus.app.util.UriUtils.nonRealOid;
 
 /**
@@ -212,10 +212,10 @@ public class MbMessage extends AObject {
         } else if(nonPrivate()) {
             builder.append("nonprivate,");
         }
-        if(isOidReal(oid)) {
+        if(isRealOid(oid)) {
             builder.append("oid:'" + oid + "',");
         }
-        if(isOidReal(conversationOid)) {
+        if(isRealOid(conversationOid)) {
             builder.append("conversation_oid:'" + conversationOid + "',");
         }
         if(!TextUtils.isEmpty(url)) {

@@ -157,7 +157,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         String oid = getUserOid(method, userId, false);
         String msgLog = method + "; userName='" + userName + "'";
         MbUser user = null;
-        if (UriUtils.isOidReal(oid) || !TextUtils.isEmpty(userName)) {
+        if (UriUtils.isRealOid(oid) || !TextUtils.isEmpty(userName)) {
             try {
                 user = execContext.getMyAccount().getConnection().getUser(oid, userName);
                 logIfUserIsEmpty(msgLog, userId, user);

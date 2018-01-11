@@ -115,12 +115,12 @@ public class MbUser implements Comparable<MbUser> {
     }
 
     public boolean isEmpty() {
-        return this == EMPTY || originId==0 || (userId == 0 && !UriUtils.isOidReal(oid)
+        return this == EMPTY || originId==0 || (userId == 0 && UriUtils.nonRealOid(oid)
                 && TextUtils.isEmpty(webFingerId) && TextUtils.isEmpty(userName));
     }
 
     public boolean isPartiallyDefined() {
-        return originId==0 || !UriUtils.isOidReal(oid) || TextUtils.isEmpty(webFingerId)
+        return originId==0 || UriUtils.nonRealOid(oid) || TextUtils.isEmpty(webFingerId)
                 || TextUtils.isEmpty(userName);
     }
 
@@ -129,7 +129,7 @@ public class MbUser implements Comparable<MbUser> {
     }
 
     public boolean isOidReal() {
-        return UriUtils.isOidReal(oid);
+        return UriUtils.isRealOid(oid);
     }
 
     @Override
@@ -197,7 +197,7 @@ public class MbUser implements Comparable<MbUser> {
         if (userId != 0 || that.userId != 0) {
             return userId == that.userId;
         }
-        if (UriUtils.isOidReal(oid) || UriUtils.isOidReal(that.oid)) {
+        if (UriUtils.isRealOid(oid) || UriUtils.isRealOid(that.oid)) {
             return oid.equals(that.oid);
         }
         if (!TextUtils.isEmpty(getWebFingerId()) || !TextUtils.isEmpty(that.getWebFingerId())) {
@@ -212,7 +212,7 @@ public class MbUser implements Comparable<MbUser> {
         if (userId != 0) {
             return 31 * result + (int) (userId ^ (userId >>> 32));
         }
-        if (UriUtils.isOidReal(oid)) {
+        if (UriUtils.isRealOid(oid)) {
             return 31 * result + oid.hashCode();
         }
         if (!TextUtils.isEmpty(getWebFingerId())) {
@@ -228,7 +228,7 @@ public class MbUser implements Comparable<MbUser> {
             if (userId == that.userId) return true;
         }
         if (originId == that.originId) {
-            if (UriUtils.isOidReal(oid) && UriUtils.isOidReal(that.oid)) {
+            if (UriUtils.isRealOid(oid) && UriUtils.isRealOid(that.oid)) {
                 return oid.equals(that.oid);
             }
         }

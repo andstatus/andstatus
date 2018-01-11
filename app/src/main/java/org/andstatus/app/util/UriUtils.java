@@ -117,7 +117,7 @@ public class UriUtils {
         return false;
     }
 
-    public static boolean isOidReal(String oid) {
+    public static boolean isRealOid(String oid) {
         return !nonRealOid(oid);
     }
 

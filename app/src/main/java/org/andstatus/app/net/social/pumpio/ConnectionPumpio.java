@@ -589,7 +589,7 @@ public class ConnectionPumpio extends Connection {
     @Override
     public MbUser getUser(String userId, String userName) throws ConnectionException {
         ConnectionAndUrl conu = getConnectionAndUrlForUsername(ApiRoutineEnum.GET_USER,
-                UriUtils.isOidReal(userId) ? userOidToUsername(userId) : userName);
+                UriUtils.isRealOid(userId) ? userOidToUsername(userId) : userName);
         JSONObject jso = conu.httpConnection.getRequest(conu.url);
         MbUser mbUser = userFromJson(jso);
         MyLog.v(this, "getUser oid='" + userId + "', userName='" + userName + "' -> " + mbUser.getRealName());

@@ -240,6 +240,6 @@ class ActivitySender {
     }
 
     private boolean isExisting() {
-        return !TextUtils.isEmpty(objectId);
+        return UriUtils.isRealOid(objectId);
     }
 }
