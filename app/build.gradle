@@ -4,7 +4,9 @@ apply plugin: "org.sonarqube"
 android {
     compileSdkVersion 26
     buildToolsVersion '26.0.3'
+
     project.ext.supportVersion = '26.1.0'
+    project.ext.acraVersion = '4.9.2'
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -15,8 +17,8 @@ android {
         applicationId "org.andstatus.app"
         minSdkVersion 24
         targetSdkVersion 26
-        versionName "36.05"
-        versionCode 239
+        versionName "36.06"
+        versionCode 240
 
         testApplicationId "org.andstatus.app.tests"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -65,27 +67,25 @@ sonarqube {
 }
 
 dependencies {
-    compile 'com.github.stephenc.jcip:jcip-annotations:1.0-1'
+    implementation 'com.github.stephenc.jcip:jcip-annotations:1.0-1'
     // http://stephenc.github.io/jcip-annotations/dependency-info.html
-    compile "com.android.support:appcompat-v7:$supportVersion"
-    compile "com.android.support:design:$supportVersion"
-    compile 'ch.acra:acra:4.9.2'
-    // https://github.com/ACRA/acra/wiki/AdvancedUsage
-    compile 'cz.msebera.android:httpclient:4.4.1.2'
-    // https://github.com/smarek/httpclient-android
+    implementation "com.android.support:appcompat-v7:$supportVersion"
+    implementation "com.android.support:design:$supportVersion"
+    implementation "ch.acra:acra:$acraVersion" // https://github.com/ACRA/acra/wiki/AdvancedUsage
+    implementation 'cz.msebera.android:httpclient:4.4.1.2' // https://github.com/smarek/httpclient-android
     /* Don't use these dependencies for now, because AIDE doesn't support exclusion
                            of transitive dependencies.
                         compile 'org.apache.httpcomponents:httpmime:4.3.5'
                         Use the files from 'libs' folder instead:	*/
-    compile files('libs/httpmime-4.3.5.jar')
-    compile files('libs/signpost-httpclient-android-1.2.1.2.jar')
-    compile files('libs/signpost-core-1.2.1.2.jar')
-    compile 'org.apache.commons:commons-lang3:3.7'
-    compile project(':draglistview')
-    compile 'com.github.scribejava:scribejava-core:4.1.0'
-    compile 'junit:junit:4.12'
-    androidTestCompile 'com.android.support.test:runner:1.0.1'
-    androidTestCompile 'com.android.support.test:rules:1.0.1'
-    androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.1'
-    androidTestCompile "com.android.support:support-annotations:$supportVersion"
+    implementation files('libs/httpmime-4.3.5.jar')
+    implementation files('libs/signpost-httpclient-android-1.2.1.2.jar')
+    implementation files('libs/signpost-core-1.2.1.2.jar')
+    implementation 'org.apache.commons:commons-lang3:3.7'
+    implementation project(':draglistview')
+    implementation 'com.github.scribejava:scribejava-core:4.1.0'
+    implementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.1'
+    androidTestImplementation 'com.android.support.test:rules:1.0.1'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+    androidTestImplementation "com.android.support:support-annotations:$supportVersion"
 }

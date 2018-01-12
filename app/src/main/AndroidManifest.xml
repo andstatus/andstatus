@@ -26,9 +26,6 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
-    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
-    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
-    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
     
@@ -63,9 +60,8 @@
             android:process=":acra" />
         <service
             android:name="org.andstatus.app.account.AuthenticatorService"
-            android:exported="true"
-            android:enabled="true"
-            android:permission="android.permission.AUTHENTICATE_ACCOUNTS">
+            android:exported="false"
+            android:enabled="true">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
@@ -76,8 +72,7 @@
         </service>
         <service
             android:name="org.andstatus.app.syncadapter.SyncService"
-            android:exported="true"
-            android:permission="android.permission.WRITE_SYNC_SETTINGS">
+            android:exported="true">
             <intent-filter>
                 <action
                     android:name="android.content.SyncAdapter" />
