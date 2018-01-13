@@ -29,7 +29,7 @@ android {
             }
         }
         debug {
-            // testCoverageEnabled true
+            testCoverageEnabled = project.hasProperty('testCoverageEnabled') ? project.testCoverageEnabled as boolean : false
         }
     }
 

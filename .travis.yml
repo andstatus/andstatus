@@ -84,7 +84,7 @@ before_script:
 script:
   - cd ${PROJECT_DIR}
   - |
-    ./gradlew build assembleAndroidTest
+    ./gradlew build assembleAndroidTest -PtestCoverageEnabled='true'
     retval=$?
     if [ $retval -ne 0 ]; then
       echo "error on assembling, exit code: "$retval
@@ -96,7 +96,7 @@ script:
   # - ./gradlew connectedCheck -PdisablePreDex --continue --stacktrace --debug
   # run:
   - |
-    ./gradlew :app:installDebug :app:installDebugAndroidTest
+    ./gradlew :app:installDebug :app:installDebugAndroidTest -PtestCoverageEnabled='true'
     retval=$?
     if [ $retval -ne 0 ]; then
       echo "error on install, exit code: "$retval
@@ -104,15 +104,15 @@ script:
     fi
 
   #
-  # The below line causes Process crash due to absense of video device
+  # The below line causes Process crash due to absence of video device
   #- adb shell am instrument -w -r -e debug false org.andstatus.app.tests/android.test.InstrumentationTestRunner
   #
   # Run only tests, marked with a special annotation:
   # See https://developer.android.com/reference/android/test/InstrumentationTestRunner.html
   # For testing one method only:
-  # - adb shell am instrument -w -r -e debug false -e class org.andstatus.app.timeline.ActAsUserTest#testActAsUser org.andstatus.app.tests/android.support.test.runner.AndroidJUnitRunner
+  # - adb shell am instrument -w -r -e debug false -e coverage true -e class org.andstatus.app.service.CommandExecutorStrategyTest#testSearch org.andstatus.app.tests/android.support.test.runner.AndroidJUnitRunner
   - |
-    adb shell am instrument -w -r -e executionMode travisTest org.andstatus.app.tests/android.support.test.runner.AndroidJUnitRunner |& tee build/adb-test.log
+    adb shell am instrument -w -r -e executionMode travisTest -e coverage true org.andstatus.app.tests/android.support.test.runner.AndroidJUnitRunner |& tee build/adb-test.log
     retval=$?
     if [ $retval -ne 0 ]; then
       echo "error in adb, exit code: "$retval
@@ -129,6 +129,14 @@ script:
     else
       cat build/adb-test.log | grep "OK ("
     fi
+
+  # Copy coverage data from the emulator
+  - adb shell "rm /sdcard/Download/coverage.ec"
+  - adb shell "run-as org.andstatus.app cp /data/user/0/org.andstatus.app/files/coverage.ec /sdcard/Download"
+  - cd build
+  # copy to "build" folder, where it will be found by Sonar scanner
+  - adb pull "/sdcard/Download/coverage.ec"
+  - cd ..
 
 after_script:
   # Show tests and lint results

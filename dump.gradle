@@ -4,7 +4,6 @@ apply plugin: 'java'
 // See https://issues.gradle.org/browse/GRADLE-1883
 import org.apache.tools.ant.DirectoryScanner
 task dumpAll(type: Zip) {
-    println 'dumpAll entered'
     doFirst {
         println 'dumpAll started'
 
@@ -55,7 +54,6 @@ task dumpAll(type: Zip) {
  * task printInfo(dependsOn: rootProject.subprojects.find() { it.name == "app" }.tasks.find() { it.name == "myDummy"}) {
  */
 task printInfo() {
-    println 'printInfo entered: Experimental task'
     doFirst {
         println "printInfo.doFist"
         println "Projects (" + rootProject.getAllprojects().size() + "): " + rootProject.getAllprojects()

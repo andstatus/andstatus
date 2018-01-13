@@ -9,7 +9,8 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:3.0.1'
-        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.4"
+        // See https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
+        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.1"
 
         // This is temporary workaround for the bug:
         // https://issuetracker.google.com/issues/62623509 "Coverage broken with Java 8 static interface methods"
