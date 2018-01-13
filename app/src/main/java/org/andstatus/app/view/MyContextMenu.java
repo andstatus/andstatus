@@ -72,7 +72,7 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
     }
 
     public void showContextMenu() {
-        if (viewOfTheContext != null && viewOfTheContext.getParent() != null && listActivity.isResumedMy()) {
+        if (viewOfTheContext != null && viewOfTheContext.getParent() != null && listActivity.isMyResumed()) {
             viewOfTheContext.post(new Runnable() {
 
                 @Override

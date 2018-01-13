@@ -31,7 +31,7 @@ class TimelineDataMessageWrapper extends TimelineDataWrapper<MessageViewItem> {
     @NonNull
     @Override
     public MessageViewItem getItem(int position) {
-        return listData.getItem(position).message;
+        return listData.getItem(position).getMessage();
     }
 
     @Override
@@ -40,11 +40,11 @@ class TimelineDataMessageWrapper extends TimelineDataWrapper<MessageViewItem> {
         if (itemId != 0) {
             for (int ind=0; ind < listData.size(); ind++) {
                 ActivityViewItem item = listData.getItem(ind);
-                if (item.message.getId() == itemId) {
+                if (item.getMessage().getId() == itemId) {
                     return position;
                 } else if (item.isCollapsed()) {
                     for (ViewItem child : item.getChildren()) {
-                        if ( ((ActivityViewItem) child).message.getId() == itemId) {
+                        if ( ((ActivityViewItem) child).getMessage().getId() == itemId) {
                             return position;
                         }
                     }

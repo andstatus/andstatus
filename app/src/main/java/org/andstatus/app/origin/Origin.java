@@ -53,8 +53,8 @@ import java.util.regex.Pattern;
  * @author yvolk@yurivolkov.com
  */
 public class Origin {
-    public static final int TEXT_LIMIT_FOR_WEBFINGER_ID = 200;
-    public static Origin EMPTY = newEmpty(OriginType.UNKNOWN);
+    static final int TEXT_LIMIT_FOR_WEBFINGER_ID = 200;
+    public static final Origin EMPTY = newEmpty(OriginType.UNKNOWN);
     private static final String VALID_NAME_CHARS = "a-zA-Z_0-9/.-";
     private static final Pattern VALID_NAME_PATTERN = Pattern.compile("[" + VALID_NAME_CHARS + "]+");
     private static final Pattern INVALID_NAME_PART_PATTERN = Pattern.compile("[^" + VALID_NAME_CHARS + "]+");

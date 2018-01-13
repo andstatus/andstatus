@@ -80,7 +80,7 @@ public class SyncInitiator extends BroadcastReceiver {
     }
 
     private static long getRandomDelayMillis(int minSeconds) {
-        return TimeUnit.SECONDS.toMillis(minSeconds + new Random().nextInt(minSeconds * 4));
+        return TimeUnit.SECONDS.toMillis((long) minSeconds + new Random().nextInt(minSeconds * 4));
     }
 
     private boolean syncIfNeeded(MyContext myContext) {

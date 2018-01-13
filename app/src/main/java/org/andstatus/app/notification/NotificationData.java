@@ -35,8 +35,8 @@ public class NotificationData {
     public static final NotificationData EMPTY = new NotificationData(NotificationEventType.EMPTY, MyAccount.EMPTY);
     public final NotificationEventType event;
     public final MyAccount myAccount;
-    public volatile long updatedDate = 0;
-    public volatile long count = 0;
+    volatile long updatedDate = 0;
+    volatile long count = 0;
 
     public NotificationData(@NonNull NotificationEventType event, @NonNull MyAccount myAccount) {
         this.event = event;
@@ -91,5 +91,9 @@ public class NotificationData {
 
     String channelId() {
         return "channel_" + event.id;
+    }
+
+    public long getCount() {
+        return count;
     }
 }

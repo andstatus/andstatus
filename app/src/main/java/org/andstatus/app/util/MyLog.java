@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2011-2014 yvolk (Yuri Volkov), http://yurivolkov.com
+/*
+ * Copyright (C) 2011-2017 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,7 +84,6 @@ public class MyLog {
     public static final int WARN = Log.WARN;
     public static final int INFO = Log.INFO;
     private static final int IGNORED = VERBOSE - 1;
-    private static final SimpleDateFormat logDateFormat = new SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.US);
 
     private static Object lock = new Object();
     @GuardedBy("lock")
@@ -578,6 +577,7 @@ public class MyLog {
     }
 
     public static String currentDateTimeForLogLine() {
+        final SimpleDateFormat logDateFormat = new SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.US);
         return logDateFormat.format(new Date(System.currentTimeMillis()));
     }
 

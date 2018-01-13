@@ -25,7 +25,7 @@ import org.junit.Before;
 
 import static org.junit.Assert.assertTrue;
 
-class MyServiceTest {
+abstract class MyServiceTest {
     MyServiceTestHelper mService;
     protected volatile MyAccount ma;
 

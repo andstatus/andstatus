@@ -63,7 +63,7 @@ public enum NotificationMethodType {
         }
     }
 
-    public void setEnabled(boolean enabled) {
+    void setEnabled(boolean enabled) {
         if (StringUtils.nonEmpty(preferenceKey)) SharedPreferencesUtil.putBoolean(preferenceKey, enabled);
     }
 

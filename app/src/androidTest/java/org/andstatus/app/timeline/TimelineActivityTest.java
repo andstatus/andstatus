@@ -18,7 +18,7 @@ package org.andstatus.app.timeline;
 
 import org.andstatus.app.context.ActivityTest;
 
-public class TimelineActivityTest extends ActivityTest<TimelineActivity> {
+public abstract class TimelineActivityTest extends ActivityTest<TimelineActivity> {
 
     @Override
     protected Class<TimelineActivity> getActivityClass() {

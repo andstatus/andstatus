@@ -54,19 +54,19 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
         ActivityViewItem item = getItem(position);
         showActor(view, item);
         final ViewGroup messageView = view.findViewById(R.id.message_wrapper);
-        if (item.message.getId() == 0) {
+        if (item.getMessage().getId() == 0) {
             messageView.setVisibility(View.GONE);
         } else {
-            messageAdapter.populateView(view, item.message, position);
+            messageAdapter.populateView(view, item.getMessage(), position);
             messageView.setOnCreateContextMenuListener(contextMenu.message);
             messageView.setOnClickListener(messageAdapter);
             messageView.setVisibility(View.VISIBLE);
         }
         final ViewGroup userView = view.findViewById(R.id.user_wrapper);
-        if (item.user.getId() == 0) {
+        if (item.getUser().getId() == 0) {
             userView.setVisibility(View.GONE);
         } else {
-            userAdapter.populateView(userView, item.user, position);
+            userAdapter.populateView(userView, item.getUser(), position);
             userView.setOnCreateContextMenuListener(contextMenu.user);
             userView.setOnClickListener(userAdapter);
             userView.setVisibility(View.VISIBLE);
@@ -93,17 +93,17 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
 
     private void showActor(ViewGroup view, ActivityViewItem item) {
         final ViewGroup actorView = view.findViewById(R.id.action_wrapper);
-        if (item.activityType == MbActivityType.CREATE || item.activityType == MbActivityType.UPDATE) {
+        if (item.getActivityType() == MbActivityType.CREATE || item.getActivityType() == MbActivityType.UPDATE) {
             actorView.setVisibility(View.GONE);
         } else {
-            item.message.hideActor(item.actor.getUserId());
-            item.user.hideActor(item.actor.getUserId());
+            item.getMessage().hideActor(item.actor.getUserId());
+            item.getUser().hideActor(item.actor.getUserId());
             if (showAvatars) {
                 AvatarView avatarView = view.findViewById(R.id.actor_avatar_image);
                 item.actor.showAvatar(contextMenu.actor.getActivity(), avatarView);
             }
             MyUrlSpan.showText(view, R.id.action_title, item.actor.getWebFingerIdOrUserName()
-                    + " " + item.activityType.getActedTitle(contextMenu.actor.getActivity()), false, false);
+                    + " " + item.getActivityType().getActedTitle(contextMenu.actor.getActivity()), false, false);
             MyUrlSpan.showText(view, R.id.action_details, item.getDetails(contextMenu.actor.getActivity()), false, false);
             actorView.setOnCreateContextMenuListener(contextMenu.actor);
             actorView.setOnClickListener(actorAdapter);

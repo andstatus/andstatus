@@ -18,7 +18,6 @@ package org.andstatus.app;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -45,7 +44,7 @@ public class MyActivity extends AppCompatActivity implements IdentifiableInstanc
 
     protected final long mInstanceId = InstanceId.next();
     protected int mLayoutId = 0;
-    protected boolean mResumed = false;
+    protected boolean myResumed = false;
     /**
      * We are going to finish/restart this Activity (e.g. onResume or even onCreate)
      */
@@ -117,20 +116,20 @@ public class MyActivity extends AppCompatActivity implements IdentifiableInstanc
         }
     }
 
-    public boolean isResumedMy() {
-        return mResumed;
+    public boolean isMyResumed() {
+        return myResumed;
     }
 
     @Override
     protected void onPause() {
-        mResumed = false;
+        myResumed = false;
         super.onPause();
         toggleFullscreen(TriState.FALSE);
     }
 
     @Override
     protected void onResume() {
-        mResumed = true;
+        myResumed = true;
         super.onResume();
     }
 

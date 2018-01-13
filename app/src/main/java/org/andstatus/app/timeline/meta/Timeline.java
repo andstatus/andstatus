@@ -46,6 +46,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 
 import java.util.Date;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -160,11 +161,11 @@ public class Timeline implements Comparable<Timeline> {
         isSyncableForOrigins = false;
     }
 
-    public static Timeline getTimeline(TimelineType timelineType, MyAccount myAccount, long userId, Origin origin) {
+    public static Timeline getTimeline(@NonNull TimelineType timelineType, MyAccount myAccount, long userId, Origin origin) {
         return getTimeline(MyContextHolder.get(), 0, timelineType, myAccount, userId, origin, "");
     }
 
-    public static Timeline getTimeline(MyContext myContext, long id, TimelineType timelineType,
+    public static Timeline getTimeline(MyContext myContext, long id, @NonNull TimelineType timelineType,
                                        MyAccount myAccount, long userId, Origin origin,
                                        String searchQuery) {
         Timeline timeline = new Timeline(myContext, id, timelineType, myAccount, userId, origin, searchQuery);
@@ -174,8 +175,9 @@ public class Timeline implements Comparable<Timeline> {
         return timeline;
     }
 
-    private Timeline(MyContext myContext, long id, TimelineType timelineType, MyAccount myAccount,
+    private Timeline(MyContext myContext, long id, @NonNull TimelineType timelineType, MyAccount myAccount,
                      long userId, Origin origin, String searchQuery) {
+        Objects.requireNonNull(timelineType);
         this.id = id;
         this.myAccount = fixedMyAccount(myContext, timelineType, myAccount, userId);
         this.userId = fixedUserId(timelineType, userId);

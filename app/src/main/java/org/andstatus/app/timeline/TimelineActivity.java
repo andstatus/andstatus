@@ -581,7 +581,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends MessageEditorListAc
         }
         super.onNewIntent(intent);
         parseNewIntent(intent);
-		if (isResumedMy() || getListData().size() > 0 || isLoading()) {
+		if (isMyResumed() || getListData().size() > 0 || isLoading()) {
             showList(getParamsNew().whichPage);
 		}
     }

@@ -44,7 +44,7 @@ public abstract class ImageFile {
             return;
         }
         imageView.setImageId(getId());
-        if (!myActivity.isResumedMy()) {
+        if (!myActivity.isMyResumed()) {
             return;
         }
         if (isEmpty()) {
@@ -166,7 +166,7 @@ public abstract class ImageFile {
                     }
 
                     private boolean skip() {
-                        if (!myActivity.isResumedMy()) {
+                        if (!myActivity.isMyResumed()) {
                             logResult("Skipped not resumed activity");
                             return true;
                         }

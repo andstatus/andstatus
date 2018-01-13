@@ -112,7 +112,7 @@ public final class DemoData {
         DemoConversationInserter.onNewDemoData();
     }
 
-    public void createNewInstance() {
+    void createNewInstance() {
         demoData = new DemoData();
     }
 

@@ -32,10 +32,10 @@ class MyRemoteViewData {
             widgetComment = context.getString(R.string.appwidget_nodata);
         } else {
             widgetTime = formatWidgetTime(context, widgetData.dateSince, widgetData.dateLastChecked);
-            widgetData.notifier.events.map.values().stream().filter(detail -> detail.count > 0)
+            widgetData.notifier.events.map.values().stream().filter(detail -> detail.getCount() > 0)
                     .forEach(detail ->
                             widgetText += (widgetText.length() > 0 ? "\n" : "")
-                            + context.getText(detail.event.titleResId) + ": " + detail.count);
+                            + context.getText(detail.event.titleResId) + ": " + detail.getCount());
             if (widgetData.notifier.events.isEmpty()) {
                 widgetComment = widgetData.nothingPref;
             }

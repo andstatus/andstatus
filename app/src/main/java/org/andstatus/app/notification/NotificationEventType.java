@@ -24,6 +24,7 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -85,7 +86,7 @@ public enum NotificationEventType {
                 defaultValue;
     }
 
-    public void setEnabled(boolean enabled) {
+    void setEnabled(boolean enabled) {
         if (StringUtils.nonEmpty(preferenceKey)) SharedPreferencesUtil.putBoolean(preferenceKey, enabled);
     }
 
@@ -107,7 +108,7 @@ public enum NotificationEventType {
                 validValues.add(event);
             }
         }
-        return validValues;
+        return Collections.unmodifiableList(validValues);
     }
 
     public boolean isEmpty() {

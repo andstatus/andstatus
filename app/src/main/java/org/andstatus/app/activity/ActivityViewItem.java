@@ -46,7 +46,7 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
     private Origin origin = Origin.EMPTY;
     private long insDate = 0;
     private long updatedDate = 0;
-    public MbActivityType activityType = MbActivityType.EMPTY;
+    private MbActivityType activityType = MbActivityType.EMPTY;
 
     private long messageId;
     long userId;
@@ -54,8 +54,8 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
 
     MbObjectType objectType = MbObjectType.EMPTY;
     UserViewItem actor = UserViewItem.EMPTY;
-    public MessageViewItem message = MessageViewItem.EMPTY;
-    public UserViewItem user = UserViewItem.EMPTY;
+    private MessageViewItem message = MessageViewItem.EMPTY;
+    private UserViewItem user = UserViewItem.EMPTY;
 
     protected ActivityViewItem(boolean isEmpty) {
         super(isEmpty);
@@ -164,5 +164,21 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
                 ? user
                 : message
         );
+    }
+
+    public MbActivityType getActivityType() {
+        return activityType;
+    }
+
+    public MessageViewItem getMessage() {
+        return message;
+    }
+
+    public UserViewItem getUser() {
+        return user;
+    }
+
+    public void setUser(UserViewItem user) {
+        this.user = user;
     }
 }

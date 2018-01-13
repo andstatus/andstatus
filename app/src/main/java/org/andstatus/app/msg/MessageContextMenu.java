@@ -251,7 +251,7 @@ public class MessageContextMenu extends MyContextMenu {
         if (BaseMessageViewItem.class.isAssignableFrom(mViewItem.getClass())) {
             return (BaseMessageViewItem) mViewItem;
         } else if (ActivityViewItem.class.isAssignableFrom(mViewItem.getClass())){
-            return ((ActivityViewItem) mViewItem).message;
+            return ((ActivityViewItem) mViewItem).getMessage();
         }
         return MessageViewItem.EMPTY;
     }

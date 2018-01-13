@@ -45,16 +45,15 @@ android {
 }
 
 sonarqube {
+    // See https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
     properties {
         property "sonar.projectName", "AndStatus"
         property "sonar.projectKey", "andstatus"
         property "sonar.projectVersion", project.ext.versionName
 
         property "sonar.sourceEncoding","UTF-8"
-        property "sonar.sources","./src/main"
-        property "sonar.tests","./src/androidTest"
         // See http://docs.sonarqube.org/display/SONAR/Narrowing+the+Focus
-        property "sonar.exclusions","build/**,libs/**,**/*.png,**/*.json,**/*.iml"
+        property "sonar.exclusions","build/**,libs/**,**/*.png,**/*.json,**/*.iml,**/*Secret.*"
 
         property "sonar.import_unknown_files", true
 

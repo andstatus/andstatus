@@ -35,7 +35,6 @@ import java.util.List;
 public class UserAdapter extends BaseTimelineAdapter<UserViewItem> {
     private final UserListContextMenu contextMenu;
     private final int listItemLayoutId;
-    private final boolean showAvatars = MyPreferences.getShowAvatars();
     private final boolean showWebFingerId =
             MyPreferences.getUserInTimeline().equals(UserInTimeline.WEBFINGER_ID);
 

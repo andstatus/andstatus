@@ -20,7 +20,6 @@ import android.net.Uri;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.MenuItem;
@@ -304,7 +303,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
             mSyncLoader = loader;
             updateCompletedLoader();
             try {
-                if (isResumedMy()) {
+                if (isMyResumed()) {
                     onLoadFinished(true);
                 }
             } catch (Exception e) {

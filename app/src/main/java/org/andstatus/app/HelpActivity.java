@@ -350,7 +350,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
                 @Override
                 public void run() {
                     boolean shown = false;
-                    if (isResumedMy()) {
+                    if (isMyResumed()) {
                         try {
                             if (progress == null) {
                                 progress = new ProgressDialog(HelpActivity.this, ProgressDialog.STYLE_SPINNER);

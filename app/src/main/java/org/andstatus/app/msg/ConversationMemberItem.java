@@ -29,7 +29,6 @@ import java.util.List;
 
 public class ConversationMemberItem extends ConversationItem<ConversationMemberItem> {
     public final static ConversationMemberItem EMPTY = new ConversationMemberItem(true);
-    long authorId = 0;
 
     protected ConversationMemberItem(boolean isEmpty) {
         super(isEmpty);

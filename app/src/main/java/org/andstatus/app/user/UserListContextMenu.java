@@ -128,7 +128,7 @@ public class UserListContextMenu extends MyContextMenu {
 
     @NonNull
     protected UserViewItem getViewItem(ActivityViewItem activityViewItem) {
-        return activityViewItem.user;
+        return activityViewItem.getUser();
     }
 
     public Origin getOrigin() {

@@ -31,7 +31,7 @@ class TimelineDataUserWrapper extends TimelineDataWrapper<UserViewItem> {
     @NonNull
     @Override
     public UserViewItem getItem(int position) {
-        return listData.getItem(position).user;
+        return listData.getItem(position).getUser();
     }
 
     @Override
@@ -39,11 +39,11 @@ class TimelineDataUserWrapper extends TimelineDataWrapper<UserViewItem> {
         if (itemId != 0) {
             for (int position=0; position < listData.size(); position++) {
                 ActivityViewItem item = listData.getItem(position);
-                if (item.user.getId() == itemId) {
+                if (item.getUser().getId() == itemId) {
                     return position;
                 } else if (item.isCollapsed()) {
                     for (ViewItem child : item.getChildren()) {
-                        if ( ((ActivityViewItem) child).user.getId() == itemId) {
+                        if ( ((ActivityViewItem) child).getUser().getId() == itemId) {
                             return position;
                         }
                     }

@@ -41,12 +41,12 @@ public class ActivityLoader extends TimelineLoader<ActivityViewItem> {
         UserListLoader loader = new UserListLoader(UserListType.USERS, getParams().getMyAccount(),
                 getParams().getTimeline().getOrigin(), 0, "");
         for (ActivityViewItem item: items) {
-            if (item.activityType != MbActivityType.CREATE && item.activityType != MbActivityType.UPDATE) {
+            if (item.getActivityType() != MbActivityType.CREATE && item.getActivityType() != MbActivityType.UPDATE) {
                 item.actor = loader.addUserIdToList(item.getOrigin(), item.actor.getId());
             }
             if (item.userId != 0) {
-                item.user = loader.addUserIdToList(item.getOrigin(), item.userId);
-                item.user.setParent(item);
+                item.setUser(loader.addUserIdToList(item.getOrigin(), item.userId));
+                item.getUser().setParent(item);
             }
         }
         loader.load(progress -> {});
