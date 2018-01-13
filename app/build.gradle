@@ -2,23 +2,16 @@ apply plugin: 'com.android.application'
 apply plugin: "org.sonarqube"
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion '26.0.3'
-
-    project.ext.supportVersion = '26.1.0'
-    project.ext.acraVersion = '4.9.2'
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
+    compileSdkVersion project.ext.compileSdkVersion
+    buildToolsVersion project.ext.buildToolsVersion
 
     defaultConfig {
-        applicationId "org.andstatus.app"
-        minSdkVersion 24
-        targetSdkVersion 26
-        versionName "36.06"
         versionCode 240
+        versionName "36.06"
+
+        applicationId "org.andstatus.app"
+        minSdkVersion project.ext.minSdkVersion
+        targetSdkVersion project.ext.targetSdkVersion
 
         testApplicationId "org.andstatus.app.tests"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -40,6 +33,11 @@ android {
         }
     }
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     packagingOptions {
         exclude 'META-INF/NOTICE'
         exclude 'META-INF/LICENSE'
@@ -50,7 +48,7 @@ sonarqube {
     properties {
         property "sonar.projectName", "AndStatus"
         property "sonar.projectKey", "andstatus"
-        property "sonar.projectVersion", project.ext.get("versionName")
+        property "sonar.projectVersion", project.ext.versionName
 
         property "sonar.sourceEncoding","UTF-8"
         property "sonar.sources","./src/main"
@@ -67,12 +65,12 @@ sonarqube {
 }
 
 dependencies {
-    implementation 'com.github.stephenc.jcip:jcip-annotations:1.0-1'
+    implementation "com.github.stephenc.jcip:jcip-annotations:$jcipAnnotationsVersion"
     // http://stephenc.github.io/jcip-annotations/dependency-info.html
     implementation "com.android.support:appcompat-v7:$supportVersion"
     implementation "com.android.support:design:$supportVersion"
     implementation "ch.acra:acra:$acraVersion" // https://github.com/ACRA/acra/wiki/AdvancedUsage
-    implementation 'cz.msebera.android:httpclient:4.4.1.2' // https://github.com/smarek/httpclient-android
+    implementation "cz.msebera.android:httpclient:$httpclientVersion" // https://github.com/smarek/httpclient-android
     /* Don't use these dependencies for now, because AIDE doesn't support exclusion
                            of transitive dependencies.
                         compile 'org.apache.httpcomponents:httpmime:4.3.5'
@@ -80,12 +78,13 @@ dependencies {
     implementation files('libs/httpmime-4.3.5.jar')
     implementation files('libs/signpost-httpclient-android-1.2.1.2.jar')
     implementation files('libs/signpost-core-1.2.1.2.jar')
-    implementation 'org.apache.commons:commons-lang3:3.7'
+    implementation "org.apache.commons:commons-lang3:$commonsLangVersion"
     implementation project(':draglistview')
-    implementation 'com.github.scribejava:scribejava-core:4.1.0'
-    implementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.1'
-    androidTestImplementation 'com.android.support.test:rules:1.0.1'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+    implementation "com.github.scribejava:scribejava-core:$scribejavaCoreVersion"
+    implementation "junit:junit:$junitVersion"
+
+    androidTestImplementation "com.android.support.test:runner:$supportTestVersion"
+    androidTestImplementation "com.android.support.test:rules:$supportTestVersion"
+    androidTestImplementation "com.android.support.test.espresso:espresso-core:$espressoCoreVersion"
     androidTestImplementation "com.android.support:support-annotations:$supportVersion"
 }

@@ -24,6 +24,22 @@ buildscript {
 }
 
 allprojects {
+    project.ext.compileSdkVersion = 26 as int
+    project.ext.buildToolsVersion = '26.0.3'
+    project.ext.minSdkVersion = 24 as int
+    project.ext.targetSdkVersion = 26 as int
+
+    // Common versions of dependencies
+    project.ext.supportVersion = '26.1.0'
+    project.ext.acraVersion = '4.9.2' // https://github.com/ACRA/acra/wiki/AdvancedUsage
+    project.ext.jcipAnnotationsVersion = '1.0-1'   // http://stephenc.github.io/jcip-annotations/dependency-info.html
+    project.ext.httpclientVersion = '4.4.1.2' // https://github.com/smarek/httpclient-android
+    project.ext.commonsLangVersion = '3.7'
+    project.ext.scribejavaCoreVersion = '4.1.0'
+    project.ext.junitVersion = '4.12'
+    project.ext.supportTestVersion = '1.0.1'
+    project.ext.espressoCoreVersion = '3.0.1'
+
     repositories {
         jcenter()
         maven {
