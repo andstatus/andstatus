@@ -71,10 +71,6 @@ public enum DownloadStatus {
         }
     }
 
-    public boolean mayBeEdited() {
-        return this == DRAFT || mayBeSent(this);
-    }
-
     public boolean mayBeSent() {
         return mayBeSent(this);
     }

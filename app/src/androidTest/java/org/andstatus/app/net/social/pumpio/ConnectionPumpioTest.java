@@ -382,7 +382,7 @@ public class ConnectionPumpioTest {
 
         MbMessage msg = connection.getMessage("w9wME-JVQw2GQe6POK7FSQ").getMessage();
         if (uniqueUid) {
-            msg.oid += "_" + demoData.TESTRUN_UID;
+            msg = msg.copy(msg.oid + "_" + demoData.TESTRUN_UID);
         }
         assertNotNull("message returned", msg);
         assertEquals("has attachment", msg.attachments.size(), 1);

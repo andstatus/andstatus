@@ -31,10 +31,10 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
-import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MessageForAccount;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.MbMessage;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.ContextMenuHeader;
 import org.andstatus.app.timeline.TimelineActivity;
@@ -107,9 +107,7 @@ public class MessageContextMenu extends MyContextMenu {
             }
             MessageListContextMenuItem.USERS_OF_MESSAGE.addTo(menu, order++, R.string.users_of_message);
 
-            if (msg.isAuthorSucceededMyAccount() &&
-                    (msg.status != DownloadStatus.LOADED ||
-                            getOrigin().getOriginType().allowEditing())) {
+            if (msg.isAuthorSucceededMyAccount() && MbMessage.mayBeEdited(msg.origin.getOriginType(), msg.status)) {
                 MessageListContextMenuItem.EDIT.addTo(menu, order++, R.string.menu_item_edit);
             }
             if (msg.status.mayBeSent()) {

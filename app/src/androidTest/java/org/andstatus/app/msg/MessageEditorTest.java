@@ -37,6 +37,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.ActivityTable;
@@ -299,6 +300,37 @@ public class MessageEditorTest extends TimelineActivityTest {
                     .getSystemService(Context.CLIPBOARD_SERVICE);
             clip = clipboard.getPrimaryClip();
         }
+    }
+
+    @Test
+    public void editLoadedMessage() throws InterruptedException {
+        final String method = "editLoadedMessage";
+        TestSuite.waitForListLoaded(getActivity(), 2);
+        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(),
+                ConversationActivity.class);
+        long listItemId = helper.getListItemIdOfLoadedReply();
+        long msgId = MyQuery.activityIdToLongColumnValue(ActivityTable.MSG_ID, listItemId);
+        String logMsg = "itemId=" + listItemId + ", msgId=" + msgId + " text='"
+                + MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId) + "'";
+
+        boolean invoked = helper.invokeContextMenuAction4ListItemId(method, listItemId,
+                MessageListContextMenuItem.EDIT, R.id.message_wrapper);
+        logMsg += ";" + (invoked ? "" : " failed to invoke Edit menu item," );
+        assertTrue(logMsg, invoked);
+        ActivityTestHelper.closeContextMenu(getActivity());
+
+        View editorView = getActivity().findViewById(R.id.message_editor);
+        ActivityTestHelper.waitViewVisible(method + " " + logMsg, editorView);
+
+        assertEquals("Loaded message should be in DRAFT state on Edit start: " + logMsg, DownloadStatus.DRAFT,
+                DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, msgId)));
+
+        ActivityTestHelper<TimelineActivity> helper2 = new ActivityTestHelper<>(getActivity());
+        helper2.clickMenuItem(method + " clicker Discard " + logMsg, R.id.discardButton);
+        ActivityTestHelper.waitViewInvisible(method + " " + logMsg, editorView);
+
+        assertEquals("Loaded message should be unchanged after Discard: " + logMsg, DownloadStatus.LOADED,
+                DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, msgId)));
     }
 
 }

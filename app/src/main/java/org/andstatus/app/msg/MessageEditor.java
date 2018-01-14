@@ -387,7 +387,7 @@ public class MessageEditor {
             MyLog.v(MessageEditorData.TAG, "Not a valid data " + data);
             return;
         }
-        if (!data.status.mayBeEdited()) {
+        if (!data.mayBeEdited()) {
             MyLog.v(MessageEditorData.TAG, "Cannot be edited " + data);
             return;
         }
@@ -521,7 +521,8 @@ public class MessageEditor {
 
     private void discardAndHide() {
         MessageEditorCommand command = new MessageEditorCommand(editorData.copy());
-        command.currentData.status = DownloadStatus.DELETED;
+        command.currentData.status = UriUtils.isRealOid(command.currentData.msgOid) ?
+                DownloadStatus.LOADED : DownloadStatus.DELETED;
         saveData(command);
     }
 
@@ -585,12 +586,11 @@ public class MessageEditor {
                         lock = potentialLock;
                         MyLog.v(MessageEditorData.TAG, "loadCurrentDraft acquired lock");
 
-                        DownloadStatus status = DownloadStatus.load(
-                                MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, msgId));
-                        if (status.mayBeEdited()) {
-                            return MessageEditorData.load(msgId);
+                        final MessageEditorData data = MessageEditorData.load(msgId);
+                        if (data.mayBeEdited()) {
+                            return data;
                         } else {
-                            MyLog.v(MessageEditorData.TAG, "Cannot be edited " + msgId + " state:" + status);
+                            MyLog.v(MessageEditorData.TAG, "Cannot be edited " + data);
                             SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, 0);
                             return MessageEditorData.EMPTY;
                         }

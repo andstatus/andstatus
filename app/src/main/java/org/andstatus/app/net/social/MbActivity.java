@@ -38,6 +38,8 @@ import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 
+import java.util.Optional;
+
 /** Activity in a sense of Activity Streams https://www.w3.org/TR/activitystreams-core/ */
 public class MbActivity extends AObject {
     public static final MbActivity EMPTY = from(MbUser.EMPTY, MbActivityType.EMPTY);
@@ -206,9 +208,11 @@ public class MbActivity extends AObject {
 
     @NonNull
     public MbMessage getMessage() {
-        if (mbMessage != MbMessage.EMPTY) {
-            return mbMessage;
-        }
+        return Optional.ofNullable(mbMessage).filter(msg -> msg != MbMessage.EMPTY).orElse(getNestedMessage());
+    }
+
+    @NonNull
+    private MbMessage getNestedMessage() {
         /* Referring to the nested message allows to implement an activity, which has both Actor and Author.
             Actor of the nested message is an Author.
             In a database we will have 2 activities: one for each actor! */
@@ -220,7 +224,7 @@ public class MbActivity extends AObject {
             case UPDATE:
             case UNDO_ANNOUNCE:
             case UNDO_LIKE:
-                return getActivity().getMessage();
+                return Optional.ofNullable(getActivity().getMessage()).orElse(MbMessage.EMPTY);
             default:
                 return MbMessage.EMPTY;
         }

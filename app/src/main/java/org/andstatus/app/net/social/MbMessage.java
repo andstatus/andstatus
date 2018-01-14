@@ -24,6 +24,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
@@ -31,6 +32,7 @@ import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.andstatus.app.util.UriUtils.TEMP_OID_PREFIX;
 import static org.andstatus.app.util.UriUtils.isEmptyOid;
@@ -42,12 +44,12 @@ import static org.andstatus.app.util.UriUtils.nonRealOid;
  * @author yvolk@yurivolkov.com
  */
 public class MbMessage extends AObject {
-    public static final MbMessage EMPTY = new MbMessage(0);
+    public static final MbMessage EMPTY = new MbMessage(0, getTempOid());
 
     private boolean isEmpty = false;
     private DownloadStatus status = DownloadStatus.UNKNOWN;
     
-    public String oid="";
+    public final String oid;
     private long updatedDate = 0;
     private Audience recipients = new Audience();
     private String body = "";
@@ -68,9 +70,9 @@ public class MbMessage extends AObject {
     public long msgId = 0L;
     private long conversationId = 0L;
 
+    @NonNull
     public static MbMessage fromOriginAndOid(long originId, String oid, DownloadStatus status) {
-        MbMessage message = new MbMessage(originId);
-        message.oid = isEmptyOid(oid) ? getTempOid() : oid;
+        MbMessage message = new MbMessage(originId, isEmptyOid(oid) ? getTempOid() : oid);
         message.status = status;
         if (TextUtils.isEmpty(oid) && status == DownloadStatus.LOADED) {
             message.status = DownloadStatus.UNKNOWN;
@@ -82,8 +84,9 @@ public class MbMessage extends AObject {
         return TEMP_OID_PREFIX + "msg:" + MyLog.uniqueCurrentTimeMS() ;
     }
 
-    private MbMessage(long originId) {
+    private MbMessage(long originId, String oid) {
         this.originId = originId;
+        this.oid = oid;
     }
 
     @NonNull
@@ -108,6 +111,12 @@ public class MbMessage extends AObject {
 
     private boolean isHtmlContentAllowed() {
         return MyContextHolder.get().persistentOrigins().isHtmlContentAllowed(originId);
+    }
+
+    public static boolean mayBeEdited(OriginType originType, DownloadStatus downloadStatus) {
+        if (originType == null || downloadStatus == null) return false;
+        return downloadStatus == DownloadStatus.DRAFT || downloadStatus.mayBeSent() ||
+                (downloadStatus == DownloadStatus.LOADED && originType.allowEditing());
     }
 
     public void setBody(String body) {
@@ -243,7 +252,7 @@ public class MbMessage extends AObject {
 
     @NonNull
     public MbActivity getInReplyTo() {
-        return inReplyTo;
+        return Optional.ofNullable(inReplyTo).orElse(MbActivity.EMPTY);
     }
 
     public void setInReplyTo(MbActivity activity) {
@@ -302,6 +311,26 @@ public class MbMessage extends AObject {
         MbMessage message = fromOriginAndOid(originId, oid, status);
         message.msgId = msgId;
         message.setUpdatedDate(updatedDate);
+        return message;
+    }
+
+    public MbMessage copy(String oidNew) {
+        MbMessage message = fromOriginAndOid(originId, oidNew, status);
+        message.msgId = msgId;
+        message.setUpdatedDate(updatedDate);
+
+        message.recipients.addAll(recipients);
+        message.setBody(body);
+        message.inReplyTo = getInReplyTo();
+        message.replies.addAll(replies);
+        message.setConversationOid(conversationOid);
+        message.via = via;
+        message.url = url;
+
+        message.attachments.addAll(attachments);
+        message.isPrivate = getPrivate();
+
+        message.conversationId = conversationId;
         return message;
     }
 

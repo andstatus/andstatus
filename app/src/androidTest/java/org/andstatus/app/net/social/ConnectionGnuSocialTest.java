@@ -174,7 +174,7 @@ public class ConnectionGnuSocialTest {
         connection.getHttpMock().setResponse(jso);
         MbActivity activity = connection.getMessage(MESSAGE_OID);
         if (uniqueUid) {
-            activity.getMessage().oid += "_" + demoData.TESTRUN_UID;
+            activity.setMessage(activity.getMessage().copy(activity.getMessage().oid + "_" + demoData.TESTRUN_UID));
         }
         assertNotNull("message returned", activity);
         assertEquals("conversationOid", "1956322", activity.getMessage().conversationOid);

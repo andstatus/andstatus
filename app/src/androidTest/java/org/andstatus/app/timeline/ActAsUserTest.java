@@ -23,8 +23,8 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.msg.ConversationActivity;
 import org.andstatus.app.msg.MessageListContextMenuItem;
@@ -65,11 +65,13 @@ public class ActAsUserTest extends TimelineActivityTest {
         TestSuite.waitForListLoaded(getActivity(), 2);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(),
                 ConversationActivity.class);
-        long msgId = helper.getListItemIdOfLoadedReply();
-        String logMsg = "msgId=" + msgId + " text='" + MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId) + "'";
+        long listItemId = helper.getListItemIdOfLoadedReply();
+        long msgId = MyQuery.activityIdToLongColumnValue(ActivityTable.MSG_ID, listItemId);
+        String logMsg = "itemId=" + listItemId + ", msgId=" + msgId + " text='"
+                + MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId) + "'";
         assertEquals("Default actor", MyAccount.EMPTY, getActivity().getContextMenu().getMyActor());
 
-        boolean invoked = helper.invokeContextMenuAction4ListItemId(method, msgId,
+        boolean invoked = helper.invokeContextMenuAction4ListItemId(method, listItemId,
                 MessageListContextMenuItem.ACT_AS_FIRST_OTHER_USER, R.id.message_wrapper);
         MyAccount actor1 = getActivity().getContextMenu().getMyActor();
         logMsg += ";" + (invoked ? "" : " failed to invoke context menu 1," ) + " actor1=" + actor1;
@@ -82,7 +84,7 @@ public class ActAsUserTest extends TimelineActivityTest {
         logMsg += "; firstOtherActor=" + firstOtherActor;
         assertNotEquals(logMsg, actor1, firstOtherActor);
 
-        boolean invoked2 = helper.invokeContextMenuAction4ListItemId(method, msgId,
+        boolean invoked2 = helper.invokeContextMenuAction4ListItemId(method, listItemId,
                 MessageListContextMenuItem.ACT_AS_FIRST_OTHER_USER, R.id.message_wrapper);
         MyAccount actor2 = getActivity().getContextMenu().getMyActor();
         logMsg += ";" + (invoked2 ? "" : " failed to invoke context menu 2," ) + " actor2=" + actor2;

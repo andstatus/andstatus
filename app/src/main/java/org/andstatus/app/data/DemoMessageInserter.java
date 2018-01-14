@@ -249,7 +249,7 @@ public class DemoMessageInserter {
         long messageIdOld = MyQuery.oidToId(OidEnum.MSG_OID, originId, messageOid);
         if (messageIdOld != 0) {
             int deleted = MyProvider.deleteMessage(MyContextHolder.get().context(), messageIdOld);
-            assertEquals( "Old message id=" + messageIdOld + " deleted", 1, deleted);
+            assertTrue( "Activities of Old message id=" + messageIdOld + " deleted: " + deleted, deleted > 0);
         }
     }
     

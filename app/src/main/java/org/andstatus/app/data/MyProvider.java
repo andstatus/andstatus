@@ -110,7 +110,7 @@ public class MyProvider extends ContentProvider {
         return count;
     }
 
-    /** @return Number of deleted messages */
+    /** @return Number of deleted activities of this message */
     public static int deleteMessage(Context context, long msgId) {
         if (context == null || msgId == 0) return 0;
         try {

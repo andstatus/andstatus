@@ -58,6 +58,7 @@ public class MessageEditorData {
     static final MessageEditorData EMPTY = MessageEditorData.newEmpty(null);
 
     private long msgId = 0;
+    String msgOid = "";
     private long activityId = 0;
     public DownloadStatus status = DownloadStatus.DRAFT;
     @NonNull
@@ -153,6 +154,7 @@ public class MessageEditorData {
                     MyQuery.msgIdToLongColumnValue(MsgTable.AUTHOR_ID, msgId));
             data = new MessageEditorData(ma);
             data.msgId = msgId;
+            data.msgOid = MyQuery.msgIdToStringColumnValue(MsgTable.MSG_OID, msgId);
             data.activityId = MyQuery.msgIdToLongColumnValue(ActivityTable.LAST_UPDATE_ID, msgId);
             data.status = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, msgId));
             data.setBody(MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId));
@@ -179,6 +181,7 @@ public class MessageEditorData {
         if (this.isValid()) {
             MessageEditorData data = MessageEditorData.newEmpty(ma);
             data.msgId = msgId;
+            data.msgOid = msgOid;
             data.status = status;
             data.setBody(body);
             data.downloadData = downloadData;
@@ -195,7 +198,7 @@ public class MessageEditorData {
     }
 
     public void save(Uri imageUriToSave) {
-        MbActivity activity = MbActivity.newPartialMessage(getMyAccount().toPartialUser(), "",
+        MbActivity activity = MbActivity.newPartialMessage(getMyAccount().toPartialUser(), msgOid,
                 System.currentTimeMillis(), status);
         activity.setActor(activity.accountUser);
         MbMessage message = activity.getMessage();
@@ -236,6 +239,10 @@ public class MessageEditorData {
 
     public boolean isValid() {
         return this != EMPTY && ma.isValid();
+    }
+
+    public boolean mayBeEdited() {
+        return MbMessage.mayBeEdited(ma.getOrigin().getOriginType(), status);
     }
 
     public MessageEditorData setBody(String bodyIn) {

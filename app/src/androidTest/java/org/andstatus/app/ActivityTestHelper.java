@@ -66,6 +66,7 @@ public class ActivityTestHelper<T extends MyActivity> implements SelectorActivit
         }
         MyLog.v(method, ok ? "Visible" : "Invisible");
         assertTrue(method + "; View is visible", ok);
+        TestSuite.waitForIdleSync();
         return ok;
     }
 
@@ -83,6 +84,7 @@ public class ActivityTestHelper<T extends MyActivity> implements SelectorActivit
         }
         MyLog.v(method, (ok ? "Invisible" : "Visible"));
         assertTrue(method + "; View is invisible", ok);
+        TestSuite.waitForIdleSync();
         return ok;
     }
 
