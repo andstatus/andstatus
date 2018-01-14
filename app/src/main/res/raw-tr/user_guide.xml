@@ -131,8 +131,8 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
         ileti daha sonra otomatik olarak gönderilmek üzere Bir Kuyruğa konacaktır.
         (Gönderilmemiş mesajlarınızı Kuyrukta görmek için "Bir sıradaki komutlar" menü öğesini kullanın)
     </p>
-    <p>Yanıtlamak için, bir mesajı <strong> basılı tutun</> 
-        ve bir Bağlam menüsünden <strong> Cevapla </> seçeneğini seçin,
+    <p>Yanıtlamak için, bir mesajı <strong> basılı tutun</strong>
+        ve bir Bağlam menüsünden <strong> Cevapla </strong> seçeneğini seçin,
         cevabınızı en altına yazın.
     </p>
     <p>Bir yayını durdurmak veya yanıtı iptal etmek için, metin alanını gizlemek için
@@ -194,7 +194,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
     <p>Sol tarafta bir Gezinme Çekmecesi açın, geçerli Zaman Çizelgesi türüne
         (Ana Sayfa) dokunun
         ve listeden
-        <strong> Doğrudan Mesajlar </> 'ı seçin.
+        <strong> Doğrudan Mesajlar </strong> 'ı seçin.
     </p>
     <p>İletinizi (genel veya özel) <strong> silmek </strong> için 
         <strong>basılı tutun</strong> ve 

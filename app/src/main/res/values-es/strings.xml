@@ -164,7 +164,7 @@
   <string name="fetch_frequency_entries_1_day">día</string>
   <string name="filters_title">Filtros</string>
   <string name="filters_summary">Filtros generales para aplicar a todos los mensajes</string>
-  <string name="followed">seguido</string>
+  <string name="followed">ha seguido a</string>
   <string name="followed_by">Seguido/a por</string>
   <string name="followers">Seguidores</string>
   <string name="followers_of">Seguidores de\"%1s\"</string>
@@ -285,11 +285,13 @@
   <string name="never">Nunca</string>
   <string name="new_items_count_abbreviated">Nuevo</string>
   <string name="no">No</string>
+  <string name="no_more_messages">No hay mas mensajes</string>
   <string name="not_set">no establecido</string>
   <string name="not_syncable">No se puede sincronizar</string>
   <string name="nothing_in_the_loadable_list">Aún no hay nada aquí</string>
   <string name="notification_behavior">Cómo notificarte</string>
   <string name="notification_events">Qué eventos incluir en las notificaciones</string>
+  <string name="notification_events_announce">Mensajes compartidos</string>
   <string name="notification_events_follow">Seguidores</string>
   <string name="notification_events_like">Favoritos</string>
   <string name="notification_events_private">Privado</string>
