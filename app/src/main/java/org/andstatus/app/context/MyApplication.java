@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2015 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2013-2017 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,10 +40,8 @@ import java.util.List;
         mailTo = "andstatus@gmail.com",
         resDialogIcon = R.drawable.icon,
         resDialogText = R.string.crash_dialog_text,
-        resDialogCommentPrompt = R.string.crash_dialog_comment_prompt)
-/**
- * @author yvolk@yurivolkov.com
- */
+        resDialogCommentPrompt = R.string.crash_dialog_comment_prompt,
+        alsoReportToAndroidFramework = true)
 public class MyApplication extends Application {
     public volatile boolean isAcraProcess = false;
 
