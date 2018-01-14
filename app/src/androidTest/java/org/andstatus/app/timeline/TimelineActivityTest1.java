@@ -120,7 +120,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
         TimelineData<ActivityViewItem> timelineData = getActivity().getListData();
         for (int ind = 0; ind < timelineData.size(); ind++) {
             ActivityViewItem item = timelineData.getItem(ind);
-            assertEquals("Origin of the Item " + ind + " " + item.toString(), ma.getOrigin(), item.getOrigin());
+            assertEquals("Origin of the Item " + ind + " " + item.toString(), ma.getOrigin(), item.origin);
         }
 
         boolean collapseDuplicates = MyPreferences.isCollapseDuplicates();

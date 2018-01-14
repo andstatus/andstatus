@@ -54,10 +54,10 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
         ActivityViewItem item = getItem(position);
         showActor(view, item);
         final ViewGroup messageView = view.findViewById(R.id.message_wrapper);
-        if (item.getMessage().getId() == 0) {
+        if (item.message.getId() == 0) {
             messageView.setVisibility(View.GONE);
         } else {
-            messageAdapter.populateView(view, item.getMessage(), position);
+            messageAdapter.populateView(view, item.message, position);
             messageView.setOnCreateContextMenuListener(contextMenu.message);
             messageView.setOnClickListener(messageAdapter);
             messageView.setVisibility(View.VISIBLE);
@@ -93,17 +93,17 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
 
     private void showActor(ViewGroup view, ActivityViewItem item) {
         final ViewGroup actorView = view.findViewById(R.id.action_wrapper);
-        if (item.getActivityType() == MbActivityType.CREATE || item.getActivityType() == MbActivityType.UPDATE) {
+        if (item.activityType == MbActivityType.CREATE || item.activityType == MbActivityType.UPDATE) {
             actorView.setVisibility(View.GONE);
         } else {
-            item.getMessage().hideActor(item.actor.getUserId());
+            item.message.hideActor(item.actor.getUserId());
             item.getUser().hideActor(item.actor.getUserId());
             if (showAvatars) {
                 AvatarView avatarView = view.findViewById(R.id.actor_avatar_image);
                 item.actor.showAvatar(contextMenu.actor.getActivity(), avatarView);
             }
             MyUrlSpan.showText(view, R.id.action_title, item.actor.getWebFingerIdOrUserName()
-                    + " " + item.getActivityType().getActedTitle(contextMenu.actor.getActivity()), false, false);
+                    + " " + item.activityType.getActedTitle(contextMenu.actor.getActivity()), false, false);
             MyUrlSpan.showText(view, R.id.action_details, item.getDetails(contextMenu.actor.getActivity()), false, false);
             actorView.setOnCreateContextMenuListener(contextMenu.actor);
             actorView.setOnClickListener(actorAdapter);

@@ -26,7 +26,6 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.msg.MessageViewItem;
 import org.andstatus.app.net.social.MbActivityType;
-import org.andstatus.app.net.social.MbObjectType;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.DuplicationLink;
@@ -43,31 +42,50 @@ import org.andstatus.app.util.RelativeTime;
 public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comparable<ActivityViewItem> {
     public static final ActivityViewItem EMPTY = new ActivityViewItem(true);
     private long id = 0;
-    private Origin origin = Origin.EMPTY;
-    private long insDate = 0;
+    public final Origin origin;
     private long updatedDate = 0;
-    private MbActivityType activityType = MbActivityType.EMPTY;
+    public final MbActivityType activityType;
 
     private long messageId;
-    long userId;
-    private long objActivityId;
+    public final long userId;
 
-    MbObjectType objectType = MbObjectType.EMPTY;
     UserViewItem actor = UserViewItem.EMPTY;
-    private MessageViewItem message = MessageViewItem.EMPTY;
+    public final MessageViewItem message;
     private UserViewItem user = UserViewItem.EMPTY;
 
     protected ActivityViewItem(boolean isEmpty) {
         super(isEmpty);
+        origin = Origin.EMPTY;
+        activityType  = MbActivityType.EMPTY;
+        userId = 0;
+        message = MessageViewItem.EMPTY;
+    }
+
+    protected ActivityViewItem(Cursor cursor) {
+        super(false);
+        long startTime = System.currentTimeMillis();
+        id = DbUtils.getLong(cursor, ActivityTable.ACTIVITY_ID);
+        origin = MyContextHolder.get().persistentOrigins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID));
+        activityType = MbActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
+        updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
+        actor = UserViewItem.fromMbUser(MbUser.fromOriginAndUserId(origin.getId(),
+                DbUtils.getLong(cursor, ActivityTable.ACTOR_ID)));
+        messageId = DbUtils.getLong(cursor, ActivityTable.MSG_ID);
+        userId = DbUtils.getLong(cursor, ActivityTable.USER_ID);
+        if (MyLog.isVerboseEnabled()) {
+            MyLog.v(this, ": " + (System.currentTimeMillis() - startTime) + "ms");
+        }
+        if (messageId == 0) {
+            message = MessageViewItem.EMPTY;
+        } else {
+            message = MessageViewItem.EMPTY.getNew().fromCursorRow(MyContextHolder.get(), cursor);
+            message.setParent(this);
+        }
     }
 
     @Override
     public long getId() {
         return id;
-    }
-
-    public Origin getOrigin() {
-        return origin;
     }
 
     @Override
@@ -83,35 +101,13 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
     @NonNull
     @Override
     public ActivityViewItem fromCursor(Cursor cursor) {
-        return getNew().loadCursor(cursor);
+        return new ActivityViewItem(cursor);
     }
 
     @NonNull
     @Override
     public ActivityViewItem getNew() {
         return new ActivityViewItem(false);
-    }
-
-    private ActivityViewItem loadCursor(Cursor cursor) {
-        long startTime = System.currentTimeMillis();
-        id = DbUtils.getLong(cursor, ActivityTable.ACTIVITY_ID);
-        activityType = MbActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
-        insDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
-        updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
-        origin = MyContextHolder.get().persistentOrigins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID));
-        actor = UserViewItem.fromMbUser(MbUser.fromOriginAndUserId(origin.getId(),
-                DbUtils.getLong(cursor, ActivityTable.ACTOR_ID)));
-        messageId = DbUtils.getLong(cursor, ActivityTable.MSG_ID);
-        userId = DbUtils.getLong(cursor, ActivityTable.USER_ID);
-        objActivityId = DbUtils.getLong(cursor, ActivityTable.OBJ_ACTIVITY_ID);
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, ": " + (System.currentTimeMillis() - startTime) + "ms");
-        }
-        if (messageId != 0) {
-            message = MessageViewItem.EMPTY.getNew().fromCursorRow(MyContextHolder.get(), cursor);
-            message.setParent(this);
-        }
-        return this;
     }
 
     @Override
@@ -164,14 +160,6 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
                 ? user
                 : message
         );
-    }
-
-    public MbActivityType getActivityType() {
-        return activityType;
-    }
-
-    public MessageViewItem getMessage() {
-        return message;
     }
 
     public UserViewItem getUser() {

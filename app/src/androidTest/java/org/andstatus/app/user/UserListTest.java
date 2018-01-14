@@ -79,7 +79,7 @@ public class UserListTest extends TimelineActivityTest {
         TimelineData<ActivityViewItem> timelineData = getActivity().getListData();
         for (int position=0; position < timelineData.size(); position++) {
             ActivityViewItem item2 = timelineData.getItem(position);
-            if (item2.getMessage().getId() == msgId) {
+            if (item2.message.getId() == msgId) {
                 item = item2;
                 break;
             }

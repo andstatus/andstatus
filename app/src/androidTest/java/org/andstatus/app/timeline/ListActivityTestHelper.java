@@ -267,7 +267,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
     @NonNull
     static BaseMessageViewItem toBaseMessageViewItem(Object objItem) {
         if (ActivityViewItem.class.isAssignableFrom(objItem.getClass())) {
-            return ((ActivityViewItem) objItem).getMessage();
+            return ((ActivityViewItem) objItem).message;
         } else if (BaseMessageViewItem.class.isAssignableFrom(objItem.getClass())) {
             return ((BaseMessageViewItem) objItem);
         }

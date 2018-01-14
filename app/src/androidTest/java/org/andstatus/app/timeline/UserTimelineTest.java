@@ -60,7 +60,7 @@ public class UserTimelineTest extends TimelineActivityTest {
         ActivityViewItem followItem = ActivityViewItem.EMPTY;
         for (int position = 0; position < timelineData.size(); position++) {
             ActivityViewItem item = timelineData.getItem(position);
-            if (item.getActivityType() == MbActivityType.FOLLOW) {
+            if (item.activityType == MbActivityType.FOLLOW) {
                 followItem = item;
             }
         }
