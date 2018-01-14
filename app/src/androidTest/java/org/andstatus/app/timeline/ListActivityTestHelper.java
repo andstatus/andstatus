@@ -37,9 +37,11 @@ import org.andstatus.app.msg.MessageViewItem;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.view.SelectorDialog;
 
-import static org.junit.Assert.assertNotEquals;
+import java.util.function.Predicate;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class ListActivityTestHelper<T extends MyBaseListActivity> {
     private final T mActivity;
@@ -243,25 +245,32 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
     }
 
     public long getListItemIdOfLoadedReply() {
-        final String method = "getListItemIdOfLoadedReply";
-        long idOut = 0;
+        return findListItemId("Loaded reply", item -> {
+            if (item.inReplyToMsgId != 0 && item.msgStatus == DownloadStatus.LOADED) {
+                DownloadStatus statusOfReplied = DownloadStatus.load(
+                        MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, item.inReplyToMsgId));
+                if (statusOfReplied == DownloadStatus.LOADED) {
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
+
+    public long findListItemId(String description, Predicate<BaseMessageViewItem> predicate) {
+        final String method = "findListItemId";
         for (int ind = 0; ind < getListAdapter().getCount(); ind++) {
-            BaseMessageViewItem item = toBaseMessageViewItem(getListAdapter().getItem(ind));
+            final ViewItem viewItem = (ViewItem) getListAdapter().getItem(ind);
+            BaseMessageViewItem item = toBaseMessageViewItem(viewItem);
             if (!item.isEmpty()) {
-                if (item.inReplyToMsgId != 0 && item.msgStatus == DownloadStatus.LOADED) {
-                    DownloadStatus statusOfReplied = DownloadStatus.load(
-                            MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, item.inReplyToMsgId));
-                    if (statusOfReplied == DownloadStatus.LOADED) {
-                        MyLog.v(this, method + ": found " + item);
-                        idOut = getListAdapter().getItemId(ind);
-                        break;
-                    }
-                    MyLog.v(this, method + ": found reply to not loaded message: " + item);
+                if (predicate.test(item)) {
+                    MyLog.v(this, method + ": found " + description + " : " + item);
+                    return viewItem.getId();
                 }
             }
         }
-        assertNotEquals( method + " in " + getListAdapter(), 0, idOut);
-        return idOut;
+        fail(method + "didn't find " + description + " in " + getListAdapter());
+        return 0;
     }
 
     @NonNull

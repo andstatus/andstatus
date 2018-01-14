@@ -308,7 +308,9 @@ public class MessageEditorTest extends TimelineActivityTest {
         TestSuite.waitForListLoaded(getActivity(), 2);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(),
                 ConversationActivity.class);
-        long listItemId = helper.getListItemIdOfLoadedReply();
+        long listItemId = helper.findListItemId("My loaded message",
+                item -> item.authorId == data.getMyAccount().getUserId() && item.msgStatus == DownloadStatus.LOADED);
+
         long msgId = MyQuery.activityIdToLongColumnValue(ActivityTable.MSG_ID, listItemId);
         String logMsg = "itemId=" + listItemId + ", msgId=" + msgId + " text='"
                 + MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId) + "'";
