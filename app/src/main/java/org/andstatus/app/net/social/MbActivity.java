@@ -151,6 +151,10 @@ public class MbActivity extends AObject {
         if (getActivity() != EMPTY) getActivity().setActor(author);
     }
 
+    public boolean isMyActorOrAuthor(@NonNull MyContext myContext) {
+        return myContext.persistentAccounts().isMe(getActor()) || myContext.persistentAccounts().isMe(getAuthor());
+    }
+
     public boolean isActorMe() {
         return accountUser.nonEmpty() && getActor().isSameActor(accountUser);
     }
@@ -422,22 +426,23 @@ public class MbActivity extends AObject {
         if (getUpdatedDate() < 1
                 || isNotified().equals(TriState.FALSE)
                 || isActorMe()
-                || myContext.persistentAccounts().isMyUserId(getActor().userId) ) return;
+                || myContext.persistentAccounts().isMe(getActor())) return;
         final NotificationEventType event;
         if(myContext.getNotifier().isEnabled(NotificationEventType.MENTION)
-                && getMessage().audience().hasMyAccount(myContext)) {
+                && getMessage().audience().hasMyAccount(myContext)
+                && !isMyActorOrAuthor(myContext)) {
             event = NotificationEventType.MENTION;
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.ANNOUNCE)
                 && type == MbActivityType.ANNOUNCE
-                && myContext.persistentAccounts().isMyUserId(getAuthor().userId)) {
+                && myContext.persistentAccounts().isMe(getAuthor())) {
             event = NotificationEventType.ANNOUNCE;
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.LIKE)
                 && (type == MbActivityType.LIKE || type == MbActivityType.UNDO_LIKE)
-                && myContext.persistentAccounts().isMyUserId(getAuthor().userId)) {
+                && myContext.persistentAccounts().isMe(getAuthor())) {
             event = NotificationEventType.LIKE;
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.FOLLOW)
                 && (type == MbActivityType.FOLLOW || type == MbActivityType.UNDO_FOLLOW)
-                && myContext.persistentAccounts().isMyUserId(getUser().userId)) {
+                && myContext.persistentAccounts().isMe(getUser())) {
             event = NotificationEventType.FOLLOW;
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.PRIVATE)
                 && getMessage().isPrivate()) {

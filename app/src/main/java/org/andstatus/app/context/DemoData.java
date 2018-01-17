@@ -56,7 +56,7 @@ public final class DemoData {
     public final String TEST_ORIGIN_PARENT_HOST = "example.com";
     public final String PUMPIO_ORIGIN_NAME = "PumpioTest";
     public final String PUMPIO_MAIN_HOST = "pump1." + TEST_ORIGIN_PARENT_HOST;
-    private final String PUMPIO_TEST_ACCOUNT_USERNAME = "t131t@" + PUMPIO_MAIN_HOST;
+    public final String PUMPIO_TEST_ACCOUNT_USERNAME = "t131t@" + PUMPIO_MAIN_HOST;
     public final String PUMPIO_TEST_ACCOUNT_NAME = PUMPIO_TEST_ACCOUNT_USERNAME + "/" + PUMPIO_ORIGIN_NAME;
     public final String PUMPIO_TEST_ACCOUNT_USER_OID = "acct:" + PUMPIO_TEST_ACCOUNT_USERNAME;
 
@@ -94,7 +94,7 @@ public final class DemoData {
     public final String CONVERSATION_MENTIONS_MESSAGE_OID = "http://" + PUMPIO_MAIN_HOST + "/second/comment/replywithmentions" + TESTRUN_UID;
     public final String CONVERSATION_MENTION_OF_AUTHOR3_OID = "http://" + PUMPIO_MAIN_HOST + "/second/comment/mention3" + TESTRUN_UID;
     public final String HTML_MESSAGE_OID = "http://" + PUMPIO_MAIN_HOST + "/testerofandstatus/comment/htmlfakeuri" + TESTRUN_UID;
-    private final String CONVERSATION_ACCOUNT2_USERNAME = "tester2ofandstatus@" + PUMPIO_MAIN_HOST;
+    public final String CONVERSATION_ACCOUNT2_USERNAME = "tester2ofandstatus@" + PUMPIO_MAIN_HOST;
     public final String CONVERSATION_ACCOUNT2_NAME = CONVERSATION_ACCOUNT2_USERNAME + "/" + CONVERSATION_ORIGIN_NAME;
     public final String CONVERSATION_ACCOUNT2_USER_OID = "acct:" + CONVERSATION_ACCOUNT2_USERNAME;
 

@@ -113,8 +113,8 @@ public class DataUpdater {
     private void updateActivity(MbActivity activity) {
         if (!activity.isSubscribedByMe().equals(TriState.FALSE)
             && activity.getUpdatedDate() > 0
-            && (activity.isAuthorMe() || activity.isActorMe()
-                || activity.getMessage().audience().hasMyAccount(execContext.getMyContext()))) {
+            && (activity.isMyActorOrAuthor(execContext.myContext)
+                || activity.getMessage().audience().hasMyAccount(execContext.myContext))) {
             activity.setSubscribedByMe(TriState.TRUE);
         }
         activity.save(execContext.getMyContext());
@@ -138,7 +138,7 @@ public class DataUpdater {
         final String method = "updateMessage";
         final MbMessage message = activity.getMessage();
         try {
-            MyAccount me = execContext.getMyContext().persistentAccounts().fromUser(activity.accountUser);
+            MyAccount me = execContext.getMyContext().persistentAccounts().fromUserOfSameOrigin(activity.accountUser);
             if (!me.isValid()) {
                 MyLog.w(this, method +"; my account is invalid, skipping: " + activity.toString());
                 return;
@@ -201,7 +201,8 @@ public class DataUpdater {
             for ( MbUser mbUser : message.audience().getRecipients()) {
                 updateUser(mbUser.update(activity.accountUser, activity.getActor()));
             }
-            if (activity.getMessage().audience().hasMyAccount(execContext.getMyContext())) {
+            if (activity.getMessage().audience().hasMyAccount(execContext.getMyContext())
+                    && !activity.isMyActorOrAuthor(execContext.myContext)) {
                 values.put(MsgTable.MENTIONED, TriState.TRUE.id);
             }
 
@@ -314,7 +315,7 @@ public class DataUpdater {
             MyLog.v(this, method + "; mbUser is empty");
             return;
         }
-        MyAccount me = execContext.getMyContext().persistentAccounts().fromUser(activity.accountUser);
+        MyAccount me = execContext.getMyContext().persistentAccounts().fromUserOfSameOrigin(activity.accountUser);
         if (!me.isValid()) {
             if (activity.accountUser.equals(mbUser)) {
                 MyLog.d(this, method +"; adding my account " + activity.accountUser);

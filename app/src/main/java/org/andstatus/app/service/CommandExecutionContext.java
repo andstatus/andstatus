@@ -11,7 +11,7 @@ import org.andstatus.app.util.MyLog;
 
 public class CommandExecutionContext {
     private CommandData commandData;
-    private MyContext myContext;
+    public final MyContext myContext;
 
     public CommandExecutionContext(CommandData commandData) {
         this(MyContextHolder.get(), commandData);

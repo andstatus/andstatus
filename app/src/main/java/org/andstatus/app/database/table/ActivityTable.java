@@ -46,6 +46,7 @@ public final class ActivityTable implements BaseColumns {
     public static final String SUBSCRIBED = "subscribed";
     /** {@link #ACCOUNT_ID} should be notified of this action */
     public static final String NOTIFIED = "notified";
+    // TODO: Add "is mine" flag/ID... to easily make "SENT/USER" timelines
     /** {@link NotificationEventType}, is not 0, if the notification is active */
     public static final String NEW_NOTIFICATION_EVENT = "new_notification_event";
 

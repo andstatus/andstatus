@@ -21,7 +21,6 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.SqlUserIds;
@@ -95,18 +94,7 @@ public class Audience {
     }
 
     public boolean hasMyAccount(MyContext myContext) {
-        return getMyAccount(myContext).isValid();
-    }
-
-    @NonNull
-    public MyAccount getMyAccount(MyContext myContext) {
-        for (MbUser user : recipients) {
-            MyAccount myAccount = myContext.persistentAccounts().fromMbUser(user);
-            if (myAccount.isValid()) {
-                return myAccount;
-            }
-        }
-        return MyAccount.EMPTY;
+        return myContext.persistentAccounts().hasMyUser(recipients);
     }
 
     @NonNull

@@ -273,7 +273,7 @@ public class MyProvider extends ContentProvider {
         }
         String sql = "UPDATE " + ActivityTable.TABLE_NAME + " SET " +
                 ActivityTable.NEW_NOTIFICATION_EVENT + "=" + NotificationEventType.OUTBOX.id +
-                ", " + ActivityTable.NOTIFIED + "=1" +
+                ", " + ActivityTable.NOTIFIED + "=" + TriState.TRUE.id +
                 " WHERE " +
                 ActivityTable.ACTIVITY_TYPE + "=" + MbActivityType.UPDATE.id +
                 " AND " + ActivityTable.MSG_ID + "=" + msgId;

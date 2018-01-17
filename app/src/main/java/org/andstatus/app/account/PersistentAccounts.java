@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
@@ -50,7 +51,7 @@ public class PersistentAccounts {
     private final MyContext myContext;
     private final List<MyAccount> mAccounts = new CopyOnWriteArrayList<>();
     private int distinctOriginsCount = 0;
-    private volatile Set<Long> myFriends = null;
+    private final Set<Long> myFriends = new ConcurrentSkipListSet<>();
 
     private PersistentAccounts(MyContext myContext) {
         this.myContext = myContext;
@@ -76,7 +77,6 @@ public class PersistentAccounts {
     }
     
     public PersistentAccounts initialize() {
-        myFriends = null;
         List<MyAccount> myAccounts = new ArrayList<>();
         for (android.accounts.Account account : getAccounts(myContext.context())) {
             MyAccount ma = Builder.fromAndroidAccount(myContext, account).getAccount();
@@ -91,6 +91,7 @@ public class PersistentAccounts {
         mAccounts.addAll(myAccounts);
         calculateDistinctOriginsCount();
         MyLog.v(this, "Account list initialized, " + mAccounts.size() + " accounts in " + distinctOriginsCount + " origins");
+        initializeMyFriends();
         return this;
     }
 
@@ -172,7 +173,8 @@ public class PersistentAccounts {
     }
 
     @NonNull
-    public MyAccount fromUser(@NonNull MbUser user) {
+    public MyAccount fromUserOfSameOrigin(@NonNull MbUser user) {
+        final boolean webFingerIdValid = user.isWebFingerIdValid();
         for (MyAccount persistentAccount : mAccounts) {
             if (persistentAccount.getOriginId() == user.originId) {
                 if (StringUtils.nonEmpty(user.oid)) {
@@ -183,7 +185,7 @@ public class PersistentAccounts {
                     if (persistentAccount.getUserId() == user.userId) {
                         return persistentAccount;
                     }
-                } else if (user.isWebFingerIdValid()) {
+                } else if (webFingerIdValid) {
                     if (persistentAccount.getWebFingerId().equals(user.getWebFingerId())) {
                         return persistentAccount;
                     }
@@ -193,14 +195,46 @@ public class PersistentAccounts {
         return MyAccount.EMPTY;
     }
 
-    @NonNull
     public boolean hasMyUser(@NonNull Collection<MbUser> users) {
         for (MbUser user : users) {
-            if (fromMbUser(user).isValid()) {
-                return true;
-            }
+            if (fromUser(user).isValid()) return true;
         }
         return false;
+    }
+
+    public boolean isMe(@NonNull MbUser user) {
+      return fromUser(user).isValid();
+    }
+
+    public boolean isMyUserId(long userId) {
+        return fromUserId(userId).isValid();
+    }
+
+    /** Doesn't take origin into account */
+    @NonNull
+    public MyAccount fromUser(@NonNull MbUser user) {
+        MyAccount ma = fromUserId(user.userId);
+        return ma.isValid() ? ma : fromWebFingerId(user.getWebFingerId());
+    }
+
+    /**
+     * Get MyAccount by the UserId. 
+     * Please note that a valid User may not have an Account (in AndStatus)
+     * @return EMPTY account if was not found
+     */
+    @NonNull
+    public MyAccount fromUserId(long userId) {
+        if (userId == 0) return MyAccount.EMPTY;
+        return mAccounts.stream().filter(myAccount -> myAccount.getUserId() == userId).findFirst()
+                .orElse(MyAccount.EMPTY);
+    }
+
+    /** Doesn't take origin into account */
+    @NonNull
+    MyAccount fromWebFingerId(String webFingerId) {
+        if (TextUtils.isEmpty(webFingerId)) return MyAccount.EMPTY;
+        return mAccounts.stream().filter(myAccount -> myAccount.getWebFingerId().equals(webFingerId)).findFirst()
+                .orElse(MyAccount.EMPTY);
     }
 
     /**
@@ -232,66 +266,19 @@ public class PersistentAccounts {
         }
         return ma;
     }
-    
+
     /**
      * Get Guid of current MyAccount (MyAccount selected by the user). The account isPersistent
      */
     public String getCurrentAccountName() {
         return getCurrentAccount().getAccountName();
     }
-    
+
     /**
      * @return 0 if no valid persistent accounts exist
      */
     public long getCurrentAccountUserId() {
         return getCurrentAccount().getUserId();
-    }
-
-    public boolean isMyUserId(long userId) {
-        if (userId == 0) {
-            return false;
-        }
-        return fromUserId(userId).isValid();
-    }
-
-    @NonNull
-    public MyAccount fromMbUser(@NonNull MbUser user) {
-        MyAccount ma = fromUserId(user.userId);
-        if (!ma.isValid() && user.isWebFingerIdValid()) {
-            for (MyAccount persistentAccount : mAccounts) {
-                if (persistentAccount.getWebFingerId().equals(user.getWebFingerId())) {
-                    return persistentAccount;
-                }
-            }
-        }
-        return ma;
-    }
-
-    /**
-     * Get MyAccount by the UserId. 
-     * Please note that a valid User may not have an Account (in AndStatus)
-     * @return EMPTY account if was not found
-     */
-    @NonNull
-    public MyAccount fromUserId(long userId) {
-        return fromUserId(userId, MyAccount.EMPTY);
-    }
-
-    /**
-     * Get MyAccount by the UserId.
-     * Please note that a valid User may not have an Account (in AndStatus)
-     * @return defaultMe if was not found
-     */
-    @NonNull
-    public MyAccount fromUserId(long userId, @NonNull MyAccount defaultMe) {
-        if (userId != 0) {
-            for (MyAccount persistentAccount : mAccounts) {
-                if (persistentAccount.getUserId() == userId) {
-                    return  persistentAccount;
-                }
-            }
-        }
-        return defaultMe;
     }
 
     @NonNull
@@ -494,9 +481,7 @@ public class PersistentAccounts {
 
     @Override
     public String toString() {
-        return "PersistentAccounts{" +
-                "mAccounts=" + mAccounts +
-                '}';
+        return "PersistentAccounts{" + mAccounts + '}';
     }
 
     @Override
@@ -517,35 +502,27 @@ public class PersistentAccounts {
     }
 
     public boolean isMeOrMyFriend(long userId) {
-        if (isMyUserId(userId)) {
-            return true;
-        }
-        return isMyFriend(userId);
+        return isMyUserId(userId) || isMyFriend(userId);
     }
 
     private boolean isMyFriend(long userId) {
-        if (myFriends == null) {
-            initializeMyFriends();
-        }
         return myFriends.contains(userId);
     }
 
     private void initializeMyFriends() {
-        Set<Long> friends = new HashSet<>();
-        String sql = "SELECT DISTINCT " + FriendshipTable.FRIEND_ID + " FROM " + FriendshipTable.TABLE_NAME
-                + " WHERE " + FriendshipTable.FOLLOWED + "=1";
+        myFriends.clear();
         SQLiteDatabase db = myContext.getDatabase();
-        if (db == null) {
-            return;
-        }
+        if (db == null) return;
+        String sql = "SELECT DISTINCT " + FriendshipTable.FRIEND_ID + " FROM " + FriendshipTable.TABLE_NAME
+            + " WHERE " + FriendshipTable.FOLLOWED + "=1" + " AND " + FriendshipTable.USER_ID
+            + SqlUserIds.fromIds(mAccounts.stream().map(MyAccount::getUserId).collect(Collectors.toList())).getSql();
         try (Cursor cursor = db.rawQuery(sql, null)) {
             while (cursor.moveToNext()) {
-                friends.add(cursor.getLong(0));
+                myFriends.add(cursor.getLong(0));
             }
         } catch (Exception e) {
             MyLog.i(this, "SQL:'" + sql + "'", e);
         }
-        myFriends = friends;
     }
 
     public void reorderAccounts(List<MyAccount> reorderedItems) {

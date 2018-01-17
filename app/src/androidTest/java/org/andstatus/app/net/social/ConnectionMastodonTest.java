@@ -65,7 +65,7 @@ public class ConnectionMastodonTest {
         MbActivity activity = timeline.get(ind);
         assertEquals("Timeline position", "22", activity.getTimelinePosition().getPosition());
         assertEquals("Message Oid", "22", activity.getMessage().oid);
-        assertEquals("Account unknown " + activity, true, MyContextHolder.get().persistentAccounts().fromUser(activity.accountUser).isValid());
+        assertEquals("Account unknown " + activity, true, MyContextHolder.get().persistentAccounts().fromUserOfSameOrigin(activity.accountUser).isValid());
         MbMessage message = activity.getMessage();
         assertEquals("Is not a message " + activity, MbObjectType.MESSAGE, activity.getObjectType());
         assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountUser));
