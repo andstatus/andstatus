@@ -54,8 +54,7 @@ install:
   # Check components status
   - sdkmanager --list || true
   # Create and start emulator, see https://developer.android.com/studio/command-line/avdmanager.html
-  # - echo no | avdmanager create avd -n test -k "${EMULATOR_SDK_ID}" -f
-  - echo no | android create avd --force -n test -t "android-${EMULATOR_API}" --abi "${EMULATOR_ABI}"
+  - echo no | avdmanager create avd -n test -k "${EMULATOR_SDK_ID}" -f
   - ls -la
   - ls -la $HOME/**/*
   - ls -la /usr/local/android-sdk/
