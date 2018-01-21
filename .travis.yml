@@ -35,9 +35,8 @@ notifications:
   email: false
 
 before_install:
+- printenv
 - yes | sdkmanager "platforms;android-27"
-- echo "HOME            : ${HOME}"
-- echo "TRAVIS_BUILD_DIR: ${TRAVIS_BUILD_DIR}"
 
 before_script:
 - echo "y" | android update sdk -a --no-ui --filter android-$EMULATOR_API
