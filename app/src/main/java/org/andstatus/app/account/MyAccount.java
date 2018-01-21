@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2010-2016 yvolk (Yuri Volkov), http://yurivolkov.com
+/*
+ * Copyright (C) 2010-2018 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,6 +116,26 @@ public final class MyAccount implements Comparable<MyAccount> {
     public static final String KEY_IS_SYNCED_AUTOMATICALLY = "sync_automatically";
     public static final String KEY_ORDER = "order";
 
+
+    private final AccountData accountData;
+    private MbUser user;
+    private AccountName oAccountName;
+
+    private Connection connection = null;
+    /** Was this user authenticated last time _current_ credentials were verified?
+     *  CredentialsVerified.NEVER - after changes of "credentials": password/OAuth...
+     */
+    private CredentialsVerificationStatus credentialsVerified = CredentialsVerificationStatus.NEVER;
+    /** Is this user authenticated with OAuth? */
+    private boolean isOAuth = true;
+    private long syncFrequencySeconds = 0;
+    private boolean isSyncable = true;
+    private boolean isSyncedAutomatically = true;
+    private final int version;
+    public static final int ACCOUNT_VERSION = 16;
+    private boolean deleted;
+    private int order = 0;
+
     public AccountName getOAccountName() {
         return oAccountName;
     }
@@ -217,10 +237,11 @@ public final class MyAccount implements Comparable<MyAccount> {
                 return;
             }
             boolean changed = false;
-            if (isPersistent() && myAccount.userId == 0) {
+            if (isPersistent() && myAccount.user.userId == 0) {
                 changed = true;
                 assignUserId();
-                MyLog.e(TAG, "MyAccount '" + myAccount.getAccountName() + "' was not connected to the User table. UserId=" + myAccount.userId);
+                MyLog.e(TAG, "MyAccount '" + myAccount.getAccountName()
+                        + "' was not connected to the User table. UserId=" + myAccount.user.userId);
             }
             if (!myAccount.getCredentialsPresent()
                     && myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
@@ -261,9 +282,9 @@ public final class MyAccount implements Comparable<MyAccount> {
         boolean deleteData() {
             boolean ok = true;
 
-            if (isPersistent() && myAccount.userId != 0) {
+            if (isPersistent() && myAccount.user.userId != 0) {
                 // TODO: Delete databases for this User
-                myAccount.userId = 0;
+                myAccount.user.userId = 0;
             }
             setAndroidAccountDeleted();
             return ok;
@@ -305,11 +326,11 @@ public final class MyAccount implements Comparable<MyAccount> {
                 }
                 Account androidAccount = getNewOrExistingAndroidAccount();
                 myAccount.accountData.setDataString(KEY_USERNAME, myAccount.oAccountName.getUsername());
-                myAccount.accountData.setDataString(KEY_USER_OID, myAccount.userOid);
+                myAccount.accountData.setDataString(KEY_USER_OID, myAccount.user.oid);
                 myAccount.accountData.setDataString(Origin.KEY_ORIGIN_NAME, myAccount.oAccountName.getOriginName());
                 myAccount.credentialsVerified.put(myAccount.accountData);
                 myAccount.accountData.setDataBoolean(KEY_OAUTH, myAccount.isOAuth);
-                myAccount.accountData.setDataLong(KEY_USER_ID, myAccount.userId);
+                myAccount.accountData.setDataLong(KEY_USER_ID, myAccount.user.userId);
                 if (myAccount.connection != null) {
                     myAccount.connection.save(myAccount.accountData);
                 }
@@ -407,10 +428,9 @@ public final class MyAccount implements Comparable<MyAccount> {
             if (ok && TextUtils.isEmpty(user.oid)) {
                 ok = false;
             }
-            String newName = "";
+            final String newName = ok ? user.getUserName() : "";
             boolean errorSettingUsername = false;
             if (ok) {
-                newName = user.getUserName();
                 Origin origin = myContext.persistentOrigins().fromId(user.originId);
                 ok = origin.isUsernameValid(newName);
                 errorSettingUsername = !ok;
@@ -426,13 +446,12 @@ public final class MyAccount implements Comparable<MyAccount> {
             }
             if (ok) {
                 setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
-                myAccount.userOid = user.oid;
+                myAccount.user = user;
                 if (DatabaseConverterController.isUpgrading()) {
                     MyLog.v(TAG, "Upgrade in progress");
-                    myAccount.userId = myAccount.accountData.getDataLong(KEY_USER_ID, myAccount.userId);
+                    myAccount.user.userId = myAccount.accountData.getDataLong(KEY_USER_ID, myAccount.user.userId);
                 } else {
-                    DataUpdater di = new DataUpdater(myAccount);
-                    myAccount.userId = di.onActivity(user.update(user)).getUser().userId;
+                    new DataUpdater(myAccount).onActivity(user.update(user));
                 }
             }
             if (ok && !isPersistent()) {
@@ -497,14 +516,14 @@ public final class MyAccount implements Comparable<MyAccount> {
         }
 
         private void assignUserId() {
-            myAccount.userId = MyQuery.userNameToId(myAccount.getOriginId(), myAccount.getUsername());
-            if (myAccount.userId == 0) {
+            myAccount.user.userId = MyQuery.userNameToId(myAccount.getOriginId(), myAccount.getUsername());
+            if (myAccount.user.userId == 0) {
                 DataUpdater di = new DataUpdater(myAccount);
                 try {
                     // Construct "User" from available account info
                     MbUser user = myAccount.toPartialUser();
                     user.setUserName(myAccount.getUsername());
-                    myAccount.userId = di.onActivity(user.update(myAccount.toPartialUser())).getUser().userId;
+                    myAccount.user.userId = di.onActivity(user.update(myAccount.toPartialUser())).getUser().userId;
                 } catch (Exception e) {
                     MyLog.e(TAG, "Construct user", e);
                 }
@@ -569,26 +588,6 @@ public final class MyAccount implements Comparable<MyAccount> {
             return true;
         }
     }
-
-    private final AccountData accountData;
-    private AccountName oAccountName;
-    private String userOid;
-    /** Id in the database, see {@link UserTable#_ID} */
-    private long userId;
-    private Connection connection = null;
-    /** Was this user authenticated last time _current_ credentials were verified?
-     *  CredentialsVerified.NEVER - after changes of "credentials": password/OAuth...
-     */
-    private CredentialsVerificationStatus credentialsVerified = CredentialsVerificationStatus.NEVER;
-    /** Is this user authenticated with OAuth? */
-    private boolean isOAuth = true;
-    private long syncFrequencySeconds = 0;
-    private boolean isSyncable = true;
-    private boolean isSyncedAutomatically = true;
-    private final int version;
-    public static final int ACCOUNT_VERSION = 16;
-    private boolean deleted;
-    private int order = 0;
 
     public enum CredentialsVerificationStatus {
         /**
@@ -728,10 +727,10 @@ public final class MyAccount implements Comparable<MyAccount> {
 
     public boolean isValid() {
         return (!deleted && version == MyAccount.ACCOUNT_VERSION)
-                && userId != 0
+                && user.userId != 0
                 && connection != null
                 && oAccountName.isValid()
-                && !TextUtils.isEmpty(userOid);
+                && !TextUtils.isEmpty(user.oid);
     }
 
     private MyAccount(MyContext myContext, AccountData accountDataIn) {
@@ -748,8 +747,8 @@ public final class MyAccount implements Comparable<MyAccount> {
         syncFrequencySeconds = accountData.getDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, 0L);
         isSyncable = accountData.getDataBoolean(KEY_IS_SYNCABLE, true);
         isSyncedAutomatically = accountData.getDataBoolean(KEY_IS_SYNCED_AUTOMATICALLY, true);
-        userId = accountData.getDataLong(KEY_USER_ID, 0L);
-        userOid = accountData.getDataString(KEY_USER_OID, "");
+        user = MbUser.fromOriginAndUserOid(oAccountName.getOrigin().getId(), accountData.getDataString(KEY_USER_OID, ""));
+        user.userId = accountData.getDataLong(KEY_USER_ID, 0L);
         setOAuth(TriState.UNKNOWN);
         credentialsVerified = CredentialsVerificationStatus.load(accountData);
         order = accountData.getDataInt(KEY_ORDER, 1);
@@ -778,15 +777,12 @@ public final class MyAccount implements Comparable<MyAccount> {
         return oAccountName.getName();
     }
 
-    /**
-     * @return the {@link #userId}
-     */
     public long getUserId() {
-        return userId;
+        return user.userId;
     }
 
     public String getUserOid() {
-        return userOid;
+        return user.oid;
     }
 
     /**
@@ -886,11 +882,11 @@ public final class MyAccount implements Comparable<MyAccount> {
 
         String members = (isValid() ? "" : "(invalid) ") + "accountName:" + oAccountName + ",";
         try {
-            if (userId != 0) {
-                members += "id:" + userId + ",";
+            if (user.userId != 0) {
+                members += "id:" + user.userId + ",";
             }
-            if (!TextUtils.isEmpty(userOid)) {
-                members += "oid:" + userOid + ",";
+            if (!TextUtils.isEmpty(user.oid)) {
+                members += "oid:" + user.oid + ",";
             }
             if (!isPersistent()) {
                 members += "not persistent,";
@@ -932,11 +928,11 @@ public final class MyAccount implements Comparable<MyAccount> {
         JSONObject jso = new JSONObject();
         jso.put(KEY_ACCOUNT, getAccountName());  
         jso.put(KEY_USERNAME, getUsername());  
-        jso.put(KEY_USER_OID, userOid);
+        jso.put(KEY_USER_OID, user.oid);
         jso.put(Origin.KEY_ORIGIN_NAME, oAccountName.getOriginName());
         credentialsVerified.put(jso);
         jso.put(KEY_OAUTH, isOAuth);
-        jso.put(KEY_USER_ID, userId);
+        jso.put(KEY_USER_ID, user.userId);
         if (connection != null) {
             connection.save(jso);
         }
@@ -988,15 +984,15 @@ public final class MyAccount implements Comparable<MyAccount> {
         MyAccount myAccount = (MyAccount) o;
 
         if (!oAccountName.equals(myAccount.oAccountName)) return false;
-        return StringUtils.equalsNotEmpty(userOid, myAccount.userOid);
+        return StringUtils.equalsNotEmpty(user.oid, myAccount.user.oid);
 
     }
 
     @Override
     public int hashCode() {
         int result = oAccountName.hashCode();
-        if (!TextUtils.isEmpty(userOid)) {
-            result = 31 * result + userOid.hashCode();
+        if (!TextUtils.isEmpty(user.oid)) {
+            result = 31 * result + user.oid.hashCode();
         }
         return result;
     }

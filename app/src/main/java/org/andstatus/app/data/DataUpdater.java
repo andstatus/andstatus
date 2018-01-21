@@ -138,7 +138,7 @@ public class DataUpdater {
         final String method = "updateMessage";
         final MbMessage message = activity.getMessage();
         try {
-            MyAccount me = execContext.getMyContext().persistentAccounts().fromUserOfSameOrigin(activity.accountUser);
+            MyAccount me = execContext.getMyContext().persistentAccounts().getAccountFor(activity.accountUser);
             if (!me.isValid()) {
                 MyLog.w(this, method +"; my account is invalid, skipping: " + activity.toString());
                 return;
@@ -315,7 +315,7 @@ public class DataUpdater {
             MyLog.v(this, method + "; mbUser is empty");
             return;
         }
-        MyAccount me = execContext.getMyContext().persistentAccounts().fromUserOfSameOrigin(activity.accountUser);
+        MyAccount me = execContext.getMyContext().persistentAccounts().getAccountFor(activity.accountUser);
         if (!me.isValid()) {
             if (activity.accountUser.equals(mbUser)) {
                 MyLog.d(this, method +"; adding my account " + activity.accountUser);

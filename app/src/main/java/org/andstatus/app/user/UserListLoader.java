@@ -128,23 +128,22 @@ public class UserListLoader extends SyncLoader<UserViewItem> {
     }
 
     private void populateItem(Cursor cursor) {
-        UserViewItem item = getById(DbUtils.getLong(cursor, BaseColumns._ID));
-        if (item == null) {
-            long userId = DbUtils.getLong(cursor, BaseColumns._ID);
-            Origin origin = MyContextHolder.get().persistentOrigins().fromId(
-                    DbUtils.getLong(cursor, UserTable.ORIGIN_ID));
-            item = addUserIdToList(origin, userId);
+        UserViewItem item = UserViewItem.EMPTY.fromCursor(cursor);
+        int index = getById(DbUtils.getLong(cursor, BaseColumns._ID));
+        if (index < 0) {
+            items.add(item);
+        } else {
+            items.set(index, item);
         }
-        item.populateFromCursor(cursor);
     }
 
-    private UserViewItem getById(long userId) {
-        for (UserViewItem item : items) {
-            if (item.getUserId() == userId) {
-                return item;
+    private int getById(long userId) {
+        for (int ind=0; ind < items.size(); ind++) {
+            if (items.get(ind).getUserId() == userId) {
+                return ind;
             }
         }
-        return null;
+        return -1;
     }
 
     protected String getSqlUserIds() {

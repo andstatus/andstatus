@@ -28,6 +28,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 
@@ -40,12 +41,15 @@ import java.util.List;
  * @author yvolk@yurivolkov.com
  */
 public class MbUser implements Comparable<MbUser> {
-    public static final MbUser EMPTY = new MbUser(0L);
+    public static final MbUser EMPTY = new MbUser(0L, "");
     // RegEx from http://www.mkyong.com/regular-expressions/how-to-validate-email-address-with-regular-expression/
     public static final String WEBFINGER_ID_REGEX = "^[_A-Za-z0-9-+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
-    public String oid = "";
+    public final String oid;
     private String userName = "";
+
     private String webFingerId = "";
+    private boolean isWebFingerIdValid = false;
+
     private String realName = "";
     private String description = "";
     public String location = "";
@@ -74,19 +78,18 @@ public class MbUser implements Comparable<MbUser> {
 
     @NonNull
     public static MbUser fromOriginAndUserOid(long originId, String userOid) {
-        MbUser user = new MbUser(originId);
-        user.oid = TextUtils.isEmpty(userOid) ? "" : userOid;
-        return user;
+        return new MbUser(originId, TextUtils.isEmpty(userOid) ? "" : userOid);
     }
 
     public static MbUser fromOriginAndUserId(long originId, long userId) {
-        MbUser user = new MbUser(originId);
+        MbUser user = new MbUser(originId, "");
         user.userId = userId;
         return user;
     }
 
-    private MbUser(long originId) {
+    private MbUser(long originId, String userOid) {
         this.originId = originId;
+        this.oid = TextUtils.isEmpty(userOid) ? "" : userOid;
     }
 
     @NonNull
@@ -221,7 +224,12 @@ public class MbUser implements Comparable<MbUser> {
         return 31 * result + getUserName().hashCode();
     }
 
-    public boolean isSameActor(MbUser that) {
+    /** Doesn't take origin into account */
+    public boolean isSameUser(MbUser that) {
+        return  isSameUser(that, false);
+    }
+
+    private boolean isSameUser(MbUser that, boolean sameOriginOnly) {
         if (this == that) return true;
         if (that == null) return false;
         if (userId != 0 && that.userId != 0) {
@@ -231,8 +239,10 @@ public class MbUser implements Comparable<MbUser> {
             if (UriUtils.isRealOid(oid) && UriUtils.isRealOid(that.oid)) {
                 return oid.equals(that.oid);
             }
+        } else if (sameOriginOnly) {
+            return false;
         }
-        return isWebFingerIdValid() && that.isWebFingerIdValid() && getWebFingerId().equals(that.getWebFingerId());
+        return isWebFingerIdValid && that.isWebFingerIdValid && webFingerId.equals(that.webFingerId);
     }
 
     private void fixWebFingerId() {
@@ -254,6 +264,7 @@ public class MbUser implements Comparable<MbUser> {
     public void setWebFingerId(String webFingerId) {
         if (isWebFingerIdValid(webFingerId)) {
             this.webFingerId = webFingerId;
+            isWebFingerIdValid = true;
         }
     }
 
@@ -279,15 +290,11 @@ public class MbUser implements Comparable<MbUser> {
     }
 
     public boolean isWebFingerIdValid() {
-        return  isWebFingerIdValid(webFingerId);
+        return  isWebFingerIdValid;
     }
 
-    public static boolean isWebFingerIdValid(String webFingerId) {
-        boolean ok = false;
-        if (!TextUtils.isEmpty(webFingerId)) {
-            ok = webFingerId.matches(WEBFINGER_ID_REGEX);
-        }
-        return ok;
+    static boolean isWebFingerIdValid(String webFingerId) {
+        return StringUtils.nonEmpty(webFingerId) && webFingerId.matches(WEBFINGER_ID_REGEX);
     }
 
     /**

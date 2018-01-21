@@ -72,6 +72,9 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
                 DbUtils.getLong(cursor, ActivityTable.ACTOR_ID)));
         messageId = DbUtils.getLong(cursor, ActivityTable.MSG_ID);
         userId = DbUtils.getLong(cursor, ActivityTable.USER_ID);
+        if (userId != 0) {
+            user = UserViewItem.fromUserId(origin, userId);
+        }
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, ": " + (System.currentTimeMillis() - startTime) + "ms");
         }

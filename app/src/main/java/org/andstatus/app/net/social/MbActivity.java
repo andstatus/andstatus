@@ -126,7 +126,7 @@ public class MbActivity extends AObject {
     }
 
     public boolean isAuthorActor() {
-        return getActor().isSameActor(getAuthor());
+        return getActor().isSameUser(getAuthor());
     }
 
     @NonNull
@@ -153,14 +153,6 @@ public class MbActivity extends AObject {
 
     public boolean isMyActorOrAuthor(@NonNull MyContext myContext) {
         return myContext.persistentAccounts().isMe(getActor()) || myContext.persistentAccounts().isMe(getAuthor());
-    }
-
-    public boolean isActorMe() {
-        return accountUser.nonEmpty() && getActor().isSameActor(accountUser);
-    }
-
-    public boolean isAuthorMe() {
-        return accountUser.nonEmpty() && getAuthor().isSameActor(accountUser);
     }
 
     @NonNull
@@ -425,7 +417,6 @@ public class MbActivity extends AObject {
     private void calculateNotification(MyContext myContext) {
         if (getUpdatedDate() < 1
                 || isNotified().equals(TriState.FALSE)
-                || isActorMe()
                 || myContext.persistentAccounts().isMe(getActor())) return;
         final NotificationEventType event;
         if(myContext.getNotifier().isEnabled(NotificationEventType.MENTION)
@@ -487,7 +478,7 @@ public class MbActivity extends AObject {
         switch (type) {
             case LIKE:
             case UNDO_LIKE:
-                final MyAccount myActorAccount = myContext.persistentAccounts().fromUser(actor);
+                final MyAccount myActorAccount = myContext.persistentAccounts().getUserFor(actor);
                 if (myActorAccount.isValid()) {
                     MyLog.v(this, myActorAccount + " " + type
                             + " '" + getMessage().oid + "' " + I18n.trimTextAt(getMessage().getBody(), 80));

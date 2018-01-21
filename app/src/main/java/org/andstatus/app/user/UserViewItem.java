@@ -17,6 +17,7 @@
 package org.andstatus.app.user;
 
 import android.database.Cursor;
+import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -145,9 +146,13 @@ public class UserViewItem extends ViewItem<UserViewItem> implements Comparable<U
         }
     }
 
-    public void populateFromCursor(Cursor cursor) {
-        MbUser user = mbUser;
-        user.oid = DbUtils.getString(cursor, UserTable.USER_OID);
+    @NonNull
+    public UserViewItem fromCursor(@NonNull Cursor cursor) {
+        MbUser user = MbUser.fromOriginAndUserOid (
+                DbUtils.getLong(cursor, UserTable.ORIGIN_ID),
+                DbUtils.getString(cursor, UserTable.USER_OID)
+        );
+        user.userId = DbUtils.getLong(cursor, BaseColumns._ID);
         user.setUserName(DbUtils.getString(cursor, UserTable.USERNAME));
         user.setWebFingerId(DbUtils.getString(cursor, UserTable.WEBFINGER_ID));
         user.setRealName(DbUtils.getString(cursor, UserTable.REAL_NAME));
@@ -165,10 +170,13 @@ public class UserViewItem extends ViewItem<UserViewItem> implements Comparable<U
         user.setCreatedDate(DbUtils.getLong(cursor, UserTable.CREATED_DATE));
         user.setUpdatedDate(DbUtils.getLong(cursor, UserTable.UPDATED_DATE));
 
-        myFollowers = MyQuery.getMyFollowersOf(getUserId());
-        AvatarFile avatarFile = AvatarFile.fromCursor(getUserId(), cursor, DownloadTable.AVATAR_FILE_NAME);
-        setAvatarFile(avatarFile);
-        populated = true;
+        UserViewItem item = new UserViewItem(user, false);
+
+        item.myFollowers = MyQuery.getMyFollowersOf(user.userId);
+        AvatarFile avatarFile = AvatarFile.fromCursor(user.userId, cursor, DownloadTable.AVATAR_FILE_NAME);
+        item.setAvatarFile(avatarFile);
+        item.populated = true;
+        return item;
     }
 
     @Override

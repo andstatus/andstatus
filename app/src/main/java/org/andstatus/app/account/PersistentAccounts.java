@@ -173,11 +173,21 @@ public class PersistentAccounts {
     }
 
     @NonNull
-    public MyAccount fromUserOfSameOrigin(@NonNull MbUser user) {
-        final boolean webFingerIdValid = user.isWebFingerIdValid();
+    public MyAccount getAccountFor(@NonNull MbUser user) {
+        return fromUser(user, true);
+    }
+
+    /** Doesn't take origin into account */
+    @NonNull
+    public MyAccount getUserFor(@NonNull MbUser user) {
+        return fromUser(user, false);
+    }
+
+    @NonNull
+    private MyAccount fromUser(@NonNull MbUser user, boolean sameOriginOnly) {
         for (MyAccount persistentAccount : mAccounts) {
-            if (persistentAccount.getOriginId() == user.originId) {
-                if (StringUtils.nonEmpty(user.oid)) {
+            if (!sameOriginOnly || persistentAccount.getOriginId() == user.originId) {
+                if (persistentAccount.getOriginId() == user.originId && StringUtils.nonEmpty(user.oid)) {
                     if (persistentAccount.getUserOid().equals(user.oid)) {
                         return persistentAccount;
                     }
@@ -185,7 +195,7 @@ public class PersistentAccounts {
                     if (persistentAccount.getUserId() == user.userId) {
                         return persistentAccount;
                     }
-                } else if (webFingerIdValid) {
+                } else if (user.isWebFingerIdValid()) {
                     if (persistentAccount.getWebFingerId().equals(user.getWebFingerId())) {
                         return persistentAccount;
                     }
@@ -197,24 +207,17 @@ public class PersistentAccounts {
 
     public boolean hasMyUser(@NonNull Collection<MbUser> users) {
         for (MbUser user : users) {
-            if (fromUser(user).isValid()) return true;
+            if (getUserFor(user).isValid()) return true;
         }
         return false;
     }
 
     public boolean isMe(@NonNull MbUser user) {
-      return fromUser(user).isValid();
+      return getUserFor(user).isValid();
     }
 
     public boolean isMyUserId(long userId) {
         return fromUserId(userId).isValid();
-    }
-
-    /** Doesn't take origin into account */
-    @NonNull
-    public MyAccount fromUser(@NonNull MbUser user) {
-        MyAccount ma = fromUserId(user.userId);
-        return ma.isValid() ? ma : fromWebFingerId(user.getWebFingerId());
     }
 
     /**
@@ -338,16 +341,16 @@ public class PersistentAccounts {
 
     /** Should not be called from UI thread
      * Find MyAccount, which may be linked to a message in this origin.
-     * First try two supplied user IDs, then try any other existing account
+     * First try two supplied accounts, then try any other existing account
      * @return Invalid account if nothing suitable found
      */
     @NonNull
-    public MyAccount getAccountForThisMessage(long originId, MyAccount firstUser, MyAccount preferredUser,
+    public MyAccount getAccountForThisMessage(long originId, MyAccount firstAccount, MyAccount preferredAccount,
                                               boolean succeededOnly)  {
         final String method = "getAccountForThisMessage";
-        MyAccount ma = firstUser == null ? MyAccount.EMPTY : firstUser;
+        MyAccount ma = firstAccount == null ? MyAccount.EMPTY : firstAccount;
         if (!accountFits(ma, originId, succeededOnly)) {
-            ma = betterFit(ma, preferredUser == null ? MyAccount.EMPTY : preferredUser, originId, succeededOnly);
+            ma = betterFit(ma, preferredAccount == null ? MyAccount.EMPTY : preferredAccount, originId, succeededOnly);
         }
         if (!accountFits(ma, originId, succeededOnly)) {
             ma = betterFit(ma, getFirstSucceededForOriginId(originId), originId, succeededOnly);
@@ -358,7 +361,7 @@ public class PersistentAccounts {
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, method + "; originId=" + originId
                     + "; user1=" + ma
-                    + (ma.equals(preferredUser) ? "" : "; user2=" + preferredUser)
+                    + (ma.equals(preferredAccount) ? "" : "; user2=" + preferredAccount)
                     + (succeededOnly ? "; succeeded only" : ""));
         }
         return ma;
