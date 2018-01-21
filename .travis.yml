@@ -11,11 +11,11 @@ group: edge  # Add this
 env:
   global:
     - COMPILE_API=26
-    - EMULATOR_API=27
+    - EMULATOR_API=24
     - ANDROID_BUILD_TOOLS_VERSION=26.0.3 # Match build-tools version used in build.gradle
     - PROJECT_DIR=${TRAVIS_BUILD_DIR} # Project directory
     - EMULATOR_TAG=google_apis # Google APIs by default, alternatively use default
-    - EMULATOR_ABI=x86 # ARM ABI v7a by default ( armeabi-v7a )
+    - EMULATOR_ABI=armeabi-v7a # ARM ABI v7a by default ( x86 or armeabi-v7a )
     - EMULATOR_SDK_ID="system-images;android-${EMULATOR_API};${EMULATOR_TAG};${EMULATOR_ABI}" # Used to install/create emulator
     - QEMU_AUDIO_DRV=none # Disable emulator audio to avoid warning
     - ADB_INSTALL_TIMEOUT=30 # minutes (2 minutes by default)
@@ -45,7 +45,7 @@ install:
   - sdkmanager --uninstall "extras;google;google_play_services"
   # Update sdk tools to latest version and install/update components
   - echo yes | sdkmanager "tools"
-  # - echo yes | sdkmanager "platforms;android-${EMULATOR_API}" > "${LONG_LOG_OUTPUT}" # Android platform required by emulator
+   - echo yes | sdkmanager "platforms;android-${EMULATOR_API}" > "${LONG_LOG_OUTPUT}" # Android platform required by emulator
   - echo yes | sdkmanager "platforms;android-${COMPILE_API}" >> "${LONG_LOG_OUTPUT}"
   - echo yes | sdkmanager "platforms;android-27" >> "${LONG_LOG_OUTPUT}"                   # Latest platform required by SDK tools
   - echo yes | sdkmanager "platform-tools" >> "${LONG_LOG_OUTPUT}"
@@ -60,8 +60,7 @@ install:
   - ls -la /usr/local/android-sdk/
   - which emulator
   # https://developer.android.com/studio/run/emulator-commandline.html
-  # - emulator -avd test -engine auto -no-snapshot -version -verbose -show-kernel -memory 2048 -no-audio -no-window -camera-back none -camera-front none
-  - emulator -avd test -no-skin -no-window &
+  - emulator -avd test -engine auto -no-snapshot -version -verbose -show-kernel -no-audio -no-window -camera-back none -camera-front none
   # Start adbd, wait for device connected and show android serial
   # https://developer.android.com/studio/command-line/adb.html
   - adb wait-for-device get-serialno
