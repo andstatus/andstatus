@@ -20,7 +20,7 @@ env:
     - QEMU_AUDIO_DRV=none # Disable emulator audio to avoid warning
     - ADB_INSTALL_TIMEOUT=30 # minutes (2 minutes by default)
     - LONG_LOG_OUTPUT=${TRAVIS_BUILD_DIR}/sdkmanager.log
-    - PATH=/usr/local/android-sdk/emulator:/usr/local/android-sdk/tools/bin:${PATH}
+    - PATH=/usr/local/android-sdk/tools/bin:${PATH}
 
 before_cache:
   - rm -f ${TRAVIS_BUILD_DIR}/gradle/caches/modules-2/modules-2.lock # Avoid to repack it due locks
