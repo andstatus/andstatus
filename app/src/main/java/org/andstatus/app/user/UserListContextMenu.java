@@ -132,7 +132,6 @@ public class UserListContextMenu extends MyContextMenu {
     }
 
     public Origin getOrigin() {
-        return getMyContext().persistentOrigins().fromId(
-                getViewItem().mbUser.originId);
+        return getViewItem().mbUser.origin;
     }
 }

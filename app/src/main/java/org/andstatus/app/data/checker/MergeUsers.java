@@ -68,7 +68,8 @@ class MergeUsers extends DataChecker {
             c = myContext.getDatabase().rawQuery(sql, null);
             while (c.moveToNext()) {
                 rowsCount++;
-                MbUser user = MbUser.fromOriginAndUserOid(c.getLong(1), c.getString(2));
+                MbUser user = MbUser.fromOriginAndUserOid(myContext.persistentOrigins().fromId(c.getLong(1)),
+                        c.getString(2));
                 user.userId = c.getLong(0);
                 user.setWebFingerId(c.getString(3));
                 if (isTheSameUser(prev, user)) {
@@ -91,7 +92,7 @@ class MergeUsers extends DataChecker {
         if (prev == null || user == null) {
             return false;
         }
-        if (prev.originId != user.originId) {
+        if (!prev.origin.equals(user.origin)) {
             return false;
         }
         if (!prev.oid.equals(user.oid)) {

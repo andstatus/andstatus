@@ -60,7 +60,7 @@ public class UsersOfMessageListLoader extends UserListLoader {
     private void addFromMessageRow() {
         final long authorId = MyQuery.msgIdToLongColumnValue(MsgTable.AUTHOR_ID, selectedMessageId);
         if (mentionedOnly) {
-            addUsersFromMessageBody(MbUser.fromOriginAndUserId(originOfSelectedMessage.getId(), authorId));
+            addUsersFromMessageBody(MbUser.fromOriginAndUserId(originOfSelectedMessage, authorId));
         } else {
             MbUser author = addUserIdToList(originOfSelectedMessage, authorId).mbUser;
             addUserIdToList(originOfSelectedMessage,
@@ -82,7 +82,7 @@ public class UsersOfMessageListLoader extends UserListLoader {
 
     private void addRebloggers() {
         for (MbUser reblogger : MyQuery.getRebloggers(
-                MyContextHolder.get().getDatabase(), origin.getId(), selectedMessageId)) {
+                MyContextHolder.get().getDatabase(), origin, selectedMessageId)) {
             addUserIdToList(originOfSelectedMessage, reblogger.userId);
         }
     }

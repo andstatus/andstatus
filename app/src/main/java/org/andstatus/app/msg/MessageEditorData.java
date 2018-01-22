@@ -167,7 +167,7 @@ public class MessageEditorData {
             data.inReplyToMsgId = MyQuery.msgIdToLongColumnValue(MsgTable.IN_REPLY_TO_MSG_ID, msgId);
             data.inReplyToUserId = MyQuery.msgIdToLongColumnValue(MsgTable.IN_REPLY_TO_USER_ID, msgId);
             data.inReplyToBody = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, data.inReplyToMsgId);
-            data.recipients = Audience.fromMsgId(ma.getOriginId(), msgId);
+            data.recipients = Audience.fromMsgId(ma.getOrigin(), msgId);
             data.isPrivate = MyQuery.msgIdToTriState(MsgTable.PRIVATE, msgId);
             MyLog.v(TAG, "Loaded " + data);
         } else {
@@ -211,7 +211,7 @@ public class MessageEditorData {
             if (inReplyToUserId == 0) {
                 inReplyToUserId = MyQuery.msgIdToLongColumnValue(MsgTable.AUTHOR_ID, inReplyToMsgId);
             }
-            inReplyTo.setActor(MbUser.fromOriginAndUserId(message.originId, inReplyToUserId));
+            inReplyTo.setActor(MbUser.fromOriginAndUserId(getMyAccount().getOrigin(), inReplyToUserId));
             message.setInReplyTo(inReplyTo);
         }
         Uri mediaUri = imageUriToSave.equals(Uri.EMPTY) ? downloadData.getUri() : imageUriToSave;
@@ -359,13 +359,11 @@ public class MessageEditorData {
     }
 
     private UserInTimeline getUserInTimeline() {
-        return ma
-                .getOrigin().isMentionAsWebFingerId() ? UserInTimeline.WEBFINGER_ID
-                : UserInTimeline.USERNAME;
+        return ma.getOrigin().isMentionAsWebFingerId() ? UserInTimeline.WEBFINGER_ID : UserInTimeline.USERNAME;
     }
 
     public MessageEditorData addRecipientId(long userId) {
-        recipients.add(MbUser.fromOriginAndUserId(getMyAccount().getOriginId(), userId));
+        recipients.add(MbUser.fromOriginAndUserId(getMyAccount().getOrigin(), userId));
         return this;
     }
 

@@ -112,10 +112,6 @@ public class PersistentOrigins {
         return mOrigins.values();
     }
     
-    public boolean isHtmlContentAllowed(long originId) {
-        return fromId(originId).isHtmlContentAllowed();
-    }
-
     public List<Origin> originsToSync(Origin originIn, boolean forAllOrigins, boolean isSearch) {
         boolean hasSynced = hasSyncedForAllOrigins(isSearch);
         List<Origin> origins = new ArrayList<>();

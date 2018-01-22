@@ -17,6 +17,7 @@
 package org.andstatus.app.account;
 
 import android.accounts.Account;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
@@ -78,7 +79,7 @@ public class DemoAccountInserter {
         assertEquals("Origin for '" + accountNameString + "' account created", accountName.getOrigin().getOriginType(), originType);
         long accountUserId_existing = MyQuery.oidToId(myContext.getDatabase(), OidEnum.USER_OID,
                 accountName.getOrigin().getId(), userOid);
-        MbUser mbUser = MbUser.fromOriginAndUserOid(accountName.getOrigin().getId(), userOid);
+        MbUser mbUser = MbUser.fromOriginAndUserOid(accountName.getOrigin(), userOid);
         mbUser.setUserName(accountName.getUsername());
         mbUser.avatarUrl = avatarUrl;
         MyAccount ma = addAccountFromMbUser(mbUser);
@@ -115,15 +116,17 @@ public class DemoAccountInserter {
                 maExpected, ma);
     }
 
-    private MyAccount addAccountFromMbUser(MbUser mbUser) {
-        Origin origin = myContext.persistentOrigins().fromId(mbUser.originId);
-        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(myContext, mbUser.getUserName() + "/" + origin.getName(), TriState.TRUE);
+    private MyAccount addAccountFromMbUser(@NonNull MbUser mbUser) {
+        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(myContext,
+                mbUser.getUserName() + "/" + mbUser.origin.getName(), TriState.TRUE);
         if (builder.getAccount().isOAuth()) {
-            builder.setUserTokenWithSecret("sampleUserTokenFor" + mbUser.getUserName(), "sampleUserSecretFor" + mbUser.getUserName());
+            builder.setUserTokenWithSecret("sampleUserTokenFor" + mbUser.getUserName(),
+                    "sampleUserSecretFor" + mbUser.getUserName());
         } else {
             builder.setPassword("samplePasswordFor" + mbUser.getUserName());
         }
-        assertTrue("Credentials of " + mbUser + " are present (origin name=" + origin.getName() + ")", builder.getAccount().getCredentialsPresent());
+        assertTrue("Credentials of " + mbUser + " are present (origin name=" + mbUser.origin.getName() + ")",
+                builder.getAccount().getCredentialsPresent());
         try {
             builder.onCredentialsVerified(mbUser, null);
         } catch (ConnectionException e) {
@@ -147,7 +150,7 @@ public class DemoAccountInserter {
         assertEquals("User in the database for id=" + userId,
                 mbUser.oid,
                 MyQuery.idToOid(myContext.getDatabase(), OidEnum.USER_OID, userId, 0));
-        assertEquals("Account name", mbUser.getUserName() + "/" + origin.getName(), ma.getAccountName());
+        assertEquals("Account name", mbUser.getUserName() + "/" + mbUser.origin.getName(), ma.getAccountName());
         MyLog.v(this, ma.getAccountName() + " added, id=" + ma.getUserId());
         DemoConversationInserter.getUsers().put(mbUser.oid, mbUser);
         return ma;

@@ -66,8 +66,8 @@ public class OriginConnectionData {
         return accountName.getOrigin().getOriginType();
     }
 
-    public long getOriginId() {
-        return accountName.getOrigin().getId();
+    public Origin getOrigin() {
+        return accountName.getOrigin();
     }
 
     public boolean isSsl() {

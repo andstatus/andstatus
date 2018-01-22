@@ -65,7 +65,7 @@ public class MessageViewItem extends BaseMessageViewItem<MessageViewItem> {
         long startTime = System.currentTimeMillis();
         setMyContext(myContext);
         setMsgId(DbUtils.getLong(cursor, ActivityTable.MSG_ID));
-        setOriginId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID));
+        setOrigin(myContext.persistentOrigins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)));
         setLinkedAccount(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID));
 
         authorName = TimelineSql.userColumnIndexToNameAtTimeline(cursor,
@@ -97,8 +97,7 @@ public class MessageViewItem extends BaseMessageViewItem<MessageViewItem> {
         }
 
         long beforeRebloggers = System.currentTimeMillis();
-        for (MbUser user : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOriginId(),
-                getMsgId())) {
+        for (MbUser user : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getMsgId())) {
             rebloggers.put(user.userId, user.getWebFingerId());
         }
         if (MyLog.isVerboseEnabled()) {

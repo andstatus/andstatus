@@ -37,7 +37,7 @@ import org.andstatus.app.util.TriState;
  * @author yvolk@yurivolkov.com
  */
 public class MessageForAccount {
-    public static final MessageForAccount EMPTY = new MessageForAccount(0, 0, 0, MyAccount.EMPTY);
+    public static final MessageForAccount EMPTY = new MessageForAccount(Origin.EMPTY, 0, 0, MyAccount.EMPTY);
     @NonNull
     public final Origin origin;
     private final long activityId;
@@ -61,8 +61,8 @@ public class MessageForAccount {
     public boolean actorFollowed = false;
     public boolean authorFollowed = false;
 
-    public MessageForAccount(long originId, long activityId, long msgId, MyAccount myAccount) {
-        this.origin = MyContextHolder.get().persistentOrigins().fromId(originId);
+    public MessageForAccount(@NonNull Origin origin, long activityId, long msgId, MyAccount myAccount) {
+        this.origin = origin;
         this.activityId = activityId;
         this.msgId = msgId;
         this.myAccount = calculateMyAccount(origin, myAccount);
@@ -105,7 +105,7 @@ public class MessageForAccount {
         } catch (Exception e) {
             MyLog.i(this, method + "; SQL:'" + sql + "'", e);
         }
-        Audience recipients = Audience.fromMsgId(origin.getId(), msgId);
+        Audience recipients = Audience.fromMsgId(origin, msgId);
         isRecipient = recipients.has(userId);
         DownloadData downloadData = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY);
         imageFilename = downloadData.getStatus() == DownloadStatus.LOADED ? downloadData.getFilename() : "";

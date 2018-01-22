@@ -29,7 +29,6 @@ import org.andstatus.app.data.DemoGnuSocialConversationInserter;
 import org.andstatus.app.data.checker.CheckConversations;
 import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.DemoOriginInserter;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
@@ -267,8 +266,7 @@ public final class DemoData {
     public MyAccount getMyAccount(String accountName) {
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
         assertTrue(accountName + " exists", ma.isValid());
-        Origin origin = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
-        assertTrue("Origin for " + accountName + " doesn't exist", origin.isValid());
+        assertTrue("Origin for " + accountName + " doesn't exist", ma.getOrigin().isValid());
         return ma;
     }
 

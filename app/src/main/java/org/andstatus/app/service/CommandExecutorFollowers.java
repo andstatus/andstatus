@@ -183,7 +183,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                 if (userId == 0) {
                     MyLog.i(this, "Failed to identify a User for oid=" + userOidNew, e);
                 } else {
-                    mbUser = MbUser.fromOriginAndUserOid(execContext.getMyAccount().getOriginId(), userOidNew);
+                    mbUser = MbUser.fromOriginAndUserOid(execContext.getMyAccount().getOrigin(), userOidNew);
                     mbUser.userId = userId;
                     mbUser.setWebFingerId(MyQuery.userIdToWebfingerId(userId));
                     MyLog.v(this, "Server doesn't return User object for " + mbUser , e);

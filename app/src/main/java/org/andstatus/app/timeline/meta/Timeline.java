@@ -237,8 +237,7 @@ public class Timeline implements Comparable<Timeline> {
                 myContext.persistentAccounts()
                         .fromUserId(DbUtils.getLong(cursor, TimelineTable.ACCOUNT_ID)),
                 DbUtils.getLong(cursor, TimelineTable.USER_ID),
-                myContext.persistentOrigins()
-                        .fromId(DbUtils.getLong(cursor, TimelineTable.ORIGIN_ID)),
+                myContext.persistentOrigins().fromId(DbUtils.getLong(cursor, TimelineTable.ORIGIN_ID)),
                 DbUtils.getString(cursor, TimelineTable.SEARCH_QUERY));
 
         timeline.id = DbUtils.getLong(cursor, TimelineTable._ID);
@@ -301,8 +300,7 @@ public class Timeline implements Comparable<Timeline> {
                 timeline = getTimeline(myContext, 0,
                         TimelineType.load(bundle.getString(IntentExtra.TIMELINE_TYPE.key)),
                         myAccount, bundle.getLong(IntentExtra.USER_ID.key),
-                        myContext.persistentOrigins().fromId(
-                                BundleUtils.fromBundle(bundle, IntentExtra.ORIGIN_ID)),
+                        myContext.persistentOrigins().fromId(BundleUtils.fromBundle(bundle, IntentExtra.ORIGIN_ID)),
                         BundleUtils.getString(bundle, IntentExtra.SEARCH_QUERY));
             }
         }
@@ -318,7 +316,7 @@ public class Timeline implements Comparable<Timeline> {
                 parsedUri.getTimelineType(),
                 myContext.persistentAccounts().fromUserId(parsedUri.getAccountUserId()),
                 parsedUri.getUserId(),
-                myContext.persistentOrigins().fromId(parsedUri.getOriginId()),
+                parsedUri.getOrigin(myContext),
                 searchQuery);
         if (timeline.getTimelineType() == TimelineType.UNKNOWN) {
             MyLog.e(Timeline.class, "fromParsedUri; uri:" + parsedUri.getUri() + "; " + timeline);

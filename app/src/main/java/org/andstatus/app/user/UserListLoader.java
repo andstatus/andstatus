@@ -97,7 +97,7 @@ public class UserListLoader extends SyncLoader<UserViewItem> {
         MyServiceManager.sendForegroundCommand(
                 CommandData.newUserCommand(
                         CommandEnum.GET_USER,
-                        null, MyContextHolder.get().persistentOrigins().fromId(oUser.mbUser.originId),
+                        null, oUser.mbUser.origin,
                         oUser.getUserId(),
                         oUser.mbUser.getUserName()));
     }

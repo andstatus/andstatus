@@ -299,7 +299,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         if (TextUtils.isEmpty(oid) || TextUtils.isEmpty(userName)) {
             throw ConnectionException.loggedJsonException(this, "Id or username is empty", null, jso);
         }
-        MbUser user = MbUser.fromOriginAndUserOid(data.getOriginId(), oid);
+        MbUser user = MbUser.fromOriginAndUserOid(data.getOrigin(), oid);
         user.setUserName(userName);
         user.setRealName(jso.optString("display_name"));
         user.setWebFingerId(jso.optString("acct"));
@@ -365,7 +365,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 if (!SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
                     // Construct Related message from available info
                     MbActivity inReplyTo = MbActivity.newPartialMessage(data.getAccountUser(), inReplyToMessageOid);
-                    inReplyTo.setActor(MbUser.fromOriginAndUserOid(data.getOriginId(), inReplyToUserOid));
+                    inReplyTo.setActor(MbUser.fromOriginAndUserOid(data.getOrigin(), inReplyToUserOid));
                     message.setInReplyTo(inReplyTo);
                 }
             }
@@ -422,7 +422,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     public MbActivity followUser(String userId, Boolean follow) throws ConnectionException {
         JSONObject relationship = postRequest(getApiPathWithUserId(follow ? ApiRoutineEnum.FOLLOW_USER :
                 ApiRoutineEnum.STOP_FOLLOWING_USER, userId), new JSONObject());
-        MbUser user = MbUser.fromOriginAndUserOid(data.getOriginId(), userId);
+        MbUser user = MbUser.fromOriginAndUserOid(data.getOrigin(), userId);
         if (relationship == null || relationship.isNull("following")) {
             return MbActivity.EMPTY;
         }

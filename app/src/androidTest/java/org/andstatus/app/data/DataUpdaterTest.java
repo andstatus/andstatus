@@ -74,20 +74,20 @@ public class DataUpdaterTest {
         MyAccount ma = demoData.getConversationMyAccount();
         MbUser accountUser = ma.toPartialUser();
         String messageOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB";
-        DemoMessageInserter.deleteOldMessage(accountUser.originId, messageOid);
+        DemoMessageInserter.deleteOldMessage(accountUser.origin, messageOid);
 
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 CommandData.newAccountCommand(CommandEnum.EMPTY, ma));
         DataUpdater di = new DataUpdater(executionContext);
         String username = "somebody" + demoData.TESTRUN_UID + "@identi.ca";
         String userOid = "acct:" + username;
-        MbUser somebody = MbUser.fromOriginAndUserOid(accountUser.originId, userOid);
+        MbUser somebody = MbUser.fromOriginAndUserOid(accountUser.origin, userOid);
         somebody.setUserName(username);
         somebody.followedByMe = TriState.FALSE;
         somebody.setProfileUrl("http://identi.ca/somebody");
         di.onActivity(somebody.update(accountUser, accountUser));
 
-        somebody.userId = MyQuery.oidToId(OidEnum.USER_OID, accountUser.originId, userOid);
+        somebody.userId = MyQuery.oidToId(OidEnum.USER_OID, accountUser.origin.getId(), userOid);
         assertTrue("User " + username + " added", somebody.userId != 0);
         DemoConversationInserter.assertIfUserIsMyFriend(somebody, false, ma);
 
@@ -110,12 +110,7 @@ public class DataUpdaterTest {
                 DownloadStatus.load(data.getValues().getAsInteger(MsgTable.MSG_STATUS)));
         assertEquals("Message permalink before storage", message.url,
                 data.getValues().getAsString(MsgTable.URL));
-        assertEquals(
-                "Message permalink",
-                message.url,
-                MyContextHolder.get().persistentOrigins()
-                        .fromId(accountUser.originId)
-                        .messagePermalink(messageId));
+        assertEquals("Message permalink", message.url, accountUser.origin.messagePermalink(messageId));
 
         assertEquals("Message stored as loaded", DownloadStatus.LOADED, DownloadStatus.load(
                 MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, messageId)));
@@ -167,7 +162,7 @@ public class DataUpdaterTest {
         String messageOid = "https://pumpity.net/api/comment/sa23wdi78dhgjerdfddajDSQ-" + demoData.TESTRUN_UID;
 
         String username = "t131t@pumpity.net";
-        MbUser author = MbUser.fromOriginAndUserOid(accountUser.originId, "acct:"
+        MbUser author = MbUser.fromOriginAndUserOid(accountUser.origin, "acct:"
                 + username);
         author.setUserName(username);
 
@@ -187,7 +182,7 @@ public class DataUpdaterTest {
                 MyQuery.msgIdToTriState(MsgTable.PRIVATE, messageId));
         DemoMessageInserter.assertNotified(activity, TriState.TRUE);
 
-        Audience audience = Audience.fromMsgId(accountUser.originId, messageId);
+        Audience audience = Audience.fromMsgId(accountUser.origin, messageId);
         assertNotEquals("No recipients for " + activity, 0, audience.getRecipients().size());
         assertEquals("Recipient " + ma.getAccountName() + "; " + audience.getRecipients(),
                 ma.getUserId(), audience.getFirst().userId);
@@ -200,7 +195,7 @@ public class DataUpdaterTest {
         MbUser accountUser = ma.toPartialUser();
 
         String authorUserName = "anybody@pumpity.net";
-        MbUser author = MbUser.fromOriginAndUserOid(accountUser.originId, "acct:"
+        MbUser author = MbUser.fromOriginAndUserOid(accountUser.origin, "acct:"
                 + authorUserName);
         author.setUserName(authorUserName);
 
@@ -213,7 +208,7 @@ public class DataUpdaterTest {
         message.via = "SomeOtherClient";
 
         String otherUserName = "firstreader@identi.ca";
-        MbUser otherUser = MbUser.fromOriginAndUserOid(accountUser.originId, "acct:" + otherUserName);
+        MbUser otherUser = MbUser.fromOriginAndUserOid(accountUser.origin, "acct:" + otherUserName);
         otherUser.setUserName(otherUserName);
         MbActivity likeActivity = MbActivity.fromInner(otherUser, MbActivityType.LIKE, activity);
 
@@ -223,7 +218,7 @@ public class DataUpdaterTest {
         assertNotEquals("First activity added", 0, activity.getId());
         assertNotEquals("LIKE activity added", 0, likeActivity.getId());
 
-        List<MbUser> stargazers = MyQuery.getStargazers(myContext.getDatabase(), accountUser.originId, message.msgId);
+        List<MbUser> stargazers = MyQuery.getStargazers(myContext.getDatabase(), accountUser.origin, message.msgId);
         boolean favoritedByOtherUser = false;
         for (MbUser user : stargazers) {
             if (user.equals(accountUser)) {
@@ -289,7 +284,7 @@ public class DataUpdaterTest {
         MbUser accountUser = ma.toPartialUser();
 
         String authorUserName = "example@pumpity.net";
-        MbUser author = MbUser.fromOriginAndUserOid(accountUser.originId, "acct:" + authorUserName);
+        MbUser author = MbUser.fromOriginAndUserOid(accountUser.origin, "acct:" + authorUserName);
         author.setUserName(authorUserName);
 
         MbActivity activity = MbActivity.newPartialMessage(accountUser,
@@ -304,7 +299,7 @@ public class DataUpdaterTest {
         String inReplyToOid = "https://identi.ca/api/comment/dfjklzdfSf28skdkfgloxWB" + iterationId  + demoData.TESTRUN_UID;
         MbActivity inReplyTo = MbActivity.newPartialMessage(accountUser, inReplyToOid,
                 0, DownloadStatus.UNKNOWN);
-        inReplyTo.setActor(MbUser.fromOriginAndUserOid(accountUser.originId,
+        inReplyTo.setActor(MbUser.fromOriginAndUserOid(accountUser.origin,
                 "irtUser" +  iterationId + demoData.TESTRUN_UID).setUserName("irt" + authorUserName +  iterationId));
         message.setInReplyTo(inReplyTo);
 
@@ -317,7 +312,7 @@ public class DataUpdaterTest {
             assertNotEquals("In reply to activity added " + inReplyTo, 0, inReplyTo.getId());
         }
 
-        List<MbUser> stargazers = MyQuery.getStargazers(myContext.getDatabase(), accountUser.originId, message.msgId);
+        List<MbUser> stargazers = MyQuery.getStargazers(myContext.getDatabase(), accountUser.origin, message.msgId);
         boolean favoritedByMe = false;
         for (MbUser user : stargazers) {
             if (user.equals(accountUser)) {
@@ -343,7 +338,7 @@ public class DataUpdaterTest {
         assertEquals("Message stored as loaded", DownloadStatus.LOADED, DownloadStatus.load(
                 MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, messageId)));
 
-        long inReplyToId = MyQuery.oidToId(OidEnum.MSG_OID, accountUser.originId,
+        long inReplyToId = MyQuery.oidToId(OidEnum.MSG_OID, accountUser.origin.getId(),
                 inReplyToOid);
         assertTrue("In reply to message added", inReplyToId != 0);
         assertEquals("Message reply status is unknown", DownloadStatus.UNKNOWN, DownloadStatus.load(
@@ -355,7 +350,7 @@ public class DataUpdaterTest {
         MbActivity activity = ConnectionGnuSocialTest.getMessageWithAttachment(
                 InstrumentationRegistry.getInstrumentation().getContext());
 
-        MyAccount ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOriginId(activity.getActor().originId);
+        MyAccount ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(activity.getActor().origin);
         assertTrue("Account is valid " + ma, ma.isValid());
         DataUpdater di = new DataUpdater(ma);
         long messageId = di.onActivity(activity).getMessage().msgId;
@@ -430,7 +425,7 @@ public class DataUpdaterTest {
         assertEquals("Username stored", user1.getUserName(),
                 MyQuery.userIdToStringColumnValue(UserTable.USERNAME, userId1));
 
-        MbUser user1partial = MbUser.fromOriginAndUserOid(user1.originId, user1.oid);
+        MbUser user1partial = MbUser.fromOriginAndUserOid(user1.origin, user1.oid);
         assertTrue("Partially defined", user1partial.isPartiallyDefined());
         long userId1partial = di.onActivity(user1partial.update(accountUser)).getUser().userId;
         assertEquals("Same user", userId1, userId1partial);
@@ -523,7 +518,7 @@ public class DataUpdaterTest {
         assertEquals("User has temp Oid", MbUser.getTempOid(buddyUserName, ""), MyQuery.idToOid(OidEnum.USER_OID, userId1, 0));
 
         String realBuddyOid = "acc:" + buddyUserName;
-        MbUser user = MbUser.fromOriginAndUserOid(ma.getOriginId(), realBuddyOid);
+        MbUser user = MbUser.fromOriginAndUserOid(ma.getOrigin(), realBuddyOid);
         user.setUserName(buddyUserName);
         DataUpdater di = new DataUpdater(ma);
         long userId2 = di.onActivity(user.update(ma.toPartialUser())).getUser().userId;
@@ -545,7 +540,7 @@ public class DataUpdaterTest {
         DataUpdater di = new DataUpdater(ma);
         String username = "somebody" + demoData.TESTRUN_UID + "@somewhere.net";
         String userOid = "acct:" + username;
-        MbUser somebody = MbUser.fromOriginAndUserOid(accountUser.originId, userOid);
+        MbUser somebody = MbUser.fromOriginAndUserOid(accountUser.origin, userOid);
         somebody.setUserName(username);
         somebody.setProfileUrl("https://somewhere.net/" + username);
 
@@ -581,7 +576,7 @@ public class DataUpdaterTest {
         MbUser accountUser = ma.toPartialUser();
         MyAccount myMentionedAccount = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT2_NAME);
         MbUser myMentionedUser = myMentionedAccount.toPartialUser().setUserName(myMentionedAccount.getUsername());
-        MbUser author1 = MbUser.fromOriginAndUserOid(accountUser.originId, "sam" + demoData.TESTRUN_UID);
+        MbUser author1 = MbUser.fromOriginAndUserOid(accountUser.origin, "sam" + demoData.TESTRUN_UID);
         author1.setUserName("samBrook");
 
         MbActivity activity1 = MbActivity.newPartialMessage(accountUser, String.valueOf(System.nanoTime()),

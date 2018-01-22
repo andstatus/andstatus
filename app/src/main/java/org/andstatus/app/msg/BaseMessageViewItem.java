@@ -28,6 +28,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.DuplicationLink;
 import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
@@ -49,7 +50,7 @@ public abstract class BaseMessageViewItem<T extends BaseMessageViewItem<T>> exte
     public DownloadStatus msgStatus = DownloadStatus.UNKNOWN;
 
     private long mMsgId;
-    private long originId;
+    private Origin origin = Origin.EMPTY;
 
     String authorName = "";
     long authorId = 0;
@@ -98,12 +99,12 @@ public abstract class BaseMessageViewItem<T extends BaseMessageViewItem<T>> exte
         this.mMsgId = mMsgId;
     }
 
-    public long getOriginId() {
-        return originId;
+    public Origin getOrigin() {
+        return origin;
     }
 
-    void setOriginId(long originId) {
-        this.originId = originId;
+    void setOrigin(@NonNull Origin origin) {
+        this.origin = origin;
     }
 
     void setLinkedAccount(long linkedUserId) {

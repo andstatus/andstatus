@@ -20,8 +20,6 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.origin.Origin;
@@ -41,7 +39,7 @@ import java.util.List;
  * @author yvolk@yurivolkov.com
  */
 public class MbUser implements Comparable<MbUser> {
-    public static final MbUser EMPTY = new MbUser(0L, "");
+    public static final MbUser EMPTY = new MbUser(Origin.EMPTY, "");
     // RegEx from http://www.mkyong.com/regular-expressions/how-to-validate-email-address-with-regular-expression/
     public static final String WEBFINGER_ID_REGEX = "^[_A-Za-z0-9-+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
     public final String oid;
@@ -73,22 +71,23 @@ public class MbUser implements Comparable<MbUser> {
     public TriState followedByMe = TriState.UNKNOWN;
 
     // In our system
-    public final long originId;
+    @NonNull
+    public final Origin origin;
     public long userId = 0L;
 
     @NonNull
-    public static MbUser fromOriginAndUserOid(long originId, String userOid) {
-        return new MbUser(originId, TextUtils.isEmpty(userOid) ? "" : userOid);
+    public static MbUser fromOriginAndUserOid(@NonNull Origin origin, String userOid) {
+        return new MbUser(origin, userOid);
     }
 
-    public static MbUser fromOriginAndUserId(long originId, long userId) {
-        MbUser user = new MbUser(originId, "");
+    public static MbUser fromOriginAndUserId(@NonNull Origin origin, long userId) {
+        MbUser user = new MbUser(origin, "");
         user.userId = userId;
         return user;
     }
 
-    private MbUser(long originId, String userOid) {
-        this.originId = originId;
+    private MbUser(Origin origin, String userOid) {
+        this.origin = origin;
         this.oid = TextUtils.isEmpty(userOid) ? "" : userOid;
     }
 
@@ -118,12 +117,12 @@ public class MbUser implements Comparable<MbUser> {
     }
 
     public boolean isEmpty() {
-        return this == EMPTY || originId==0 || (userId == 0 && UriUtils.nonRealOid(oid)
+        return this == EMPTY || !origin.isValid() || (userId == 0 && UriUtils.nonRealOid(oid)
                 && TextUtils.isEmpty(webFingerId) && TextUtils.isEmpty(userName));
     }
 
     public boolean isPartiallyDefined() {
-        return originId==0 || UriUtils.nonRealOid(oid) || TextUtils.isEmpty(webFingerId)
+        return !origin.isValid() || UriUtils.nonRealOid(oid) || TextUtils.isEmpty(webFingerId)
                 || TextUtils.isEmpty(userName);
     }
 
@@ -141,7 +140,7 @@ public class MbUser implements Comparable<MbUser> {
             return "MbUser:EMPTY";
         }
         String str = MbUser.class.getSimpleName();
-        String members = "oid=" + oid + "; originId=" + originId;
+        String members = "oid=" + oid + "; origin=" + origin.getName();
         if (userId != 0) {
             members += "; id=" + userId;
         }
@@ -196,7 +195,7 @@ public class MbUser implements Comparable<MbUser> {
         if (o == null || getClass() != o.getClass()) return false;
 
         MbUser that = (MbUser) o;
-        if (originId != that.originId) return false;
+        if (!origin.equals(that.origin)) return false;
         if (userId != 0 || that.userId != 0) {
             return userId == that.userId;
         }
@@ -211,7 +210,7 @@ public class MbUser implements Comparable<MbUser> {
 
     @Override
     public int hashCode() {
-        int result = (int) (originId ^ (originId >>> 32));
+        int result = origin.hashCode ();
         if (userId != 0) {
             return 31 * result + (int) (userId ^ (userId >>> 32));
         }
@@ -235,7 +234,7 @@ public class MbUser implements Comparable<MbUser> {
         if (userId != 0 && that.userId != 0) {
             if (userId == that.userId) return true;
         }
-        if (originId == that.originId) {
+        if (origin.equals(that.origin)) {
             if (UriUtils.isRealOid(oid) && UriUtils.isRealOid(that.oid)) {
                 return oid.equals(that.oid);
             }
@@ -251,9 +250,7 @@ public class MbUser implements Comparable<MbUser> {
         } else if (userName.contains("@")) {
             setWebFingerId(userName);
         } else if (!UriUtils.isEmpty(profileUri)){
-            MyContext myContext = MyContextHolder.get();
-            if(myContext.isReady()) {
-                Origin origin = myContext.persistentOrigins().fromId(originId);
+            if(origin.isValid()) {
                 setWebFingerId(userName + "@" + origin.fixUriforPermalink(profileUri).getHost());
             } else {
                 setWebFingerId(webFingerId = userName + "@" + profileUri.getHost());
@@ -304,20 +301,20 @@ public class MbUser implements Comparable<MbUser> {
     public long lookupUserId() {
         if (userId == 0) {
             if (isOidReal()) {
-                userId = MyQuery.oidToId(OidEnum.USER_OID, originId, oid);
+                userId = MyQuery.oidToId(OidEnum.USER_OID, origin.getId(), oid);
             }
         }
         if (userId == 0 && isWebFingerIdValid()) {
-            userId = MyQuery.webFingerIdToId(originId, webFingerId);
+            userId = MyQuery.webFingerIdToId(origin.getId(), webFingerId);
         }
         if (userId == 0 && !isWebFingerIdValid() && !TextUtils.isEmpty(userName)) {
-            userId = MyQuery.userNameToId(originId, userName);
+            userId = MyQuery.userNameToId(origin.getId(), userName);
         }
         if (userId == 0) {
-            userId = MyQuery.oidToId(OidEnum.USER_OID, originId, getTempOid());
+            userId = MyQuery.oidToId(OidEnum.USER_OID, origin.getId(), getTempOid());
         }
         if (userId == 0 && hasAltTempOid()) {
-            userId = MyQuery.oidToId(OidEnum.USER_OID, originId, getAltTempOid());
+            userId = MyQuery.oidToId(OidEnum.USER_OID, origin.getId(), getAltTempOid());
         }
         return userId;
     }
@@ -345,7 +342,6 @@ public class MbUser implements Comparable<MbUser> {
 
     public List<MbUser> extractUsersFromBodyText(String textIn, boolean replyOnly) {
         final String SEPARATORS = ", ;'=`~!#$%^&*(){}[]/";
-        Origin origin = MyContextHolder.get().persistentOrigins().fromId(originId);
         List<MbUser> users = new ArrayList<>();
         String text = MyHtml.fromHtml(textIn);
         while (!TextUtils.isEmpty(text)) {
@@ -374,7 +370,7 @@ public class MbUser implements Comparable<MbUser> {
                 text = "";
             }
             if (MbUser.isWebFingerIdValid(validWebFingerId) || !TextUtils.isEmpty(validUserName)) {
-                MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), "");
+                MbUser mbUser = MbUser.fromOriginAndUserOid(origin, "");
                 if (!MbUser.isWebFingerIdValid(validWebFingerId)) {
                     // Try a host of the Author first
                     mbUser.userId = MyQuery.webFingerIdToId(origin.getId(), validUserName + "@" + getHost());
@@ -465,10 +461,10 @@ public class MbUser implements Comparable<MbUser> {
             if (userId == another.userId) {
                 return 0;
             }
-            return originId > another.originId ? 1 : -1;
+            return origin.getId() > another.origin.getId() ? 1 : -1;
         }
-        if (originId != another.originId) {
-            return originId > another.originId ? 1 : -1;
+        if (origin.getId() != another.origin.getId()) {
+            return origin.getId() > another.origin.getId() ? 1 : -1;
         }
         return oid.compareTo(another.oid);
     }

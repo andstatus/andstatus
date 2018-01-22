@@ -53,7 +53,7 @@ public class MyAccountTest {
         Origin origin = myContext.persistentOrigins().firstOfType(originType);
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(myContext,
                 userName + AccountName.ORIGIN_SEPARATOR + origin.getName(), TriState.UNKNOWN);
-        assertEquals(logMsg, origin.getId(), builder.getAccount().getOriginId());
+        assertEquals(logMsg, origin, builder.getAccount().getOrigin());
         assertEquals(logMsg, userName + AccountName.ORIGIN_SEPARATOR + origin.getName(), builder.getAccount().getAccountName());
     }
     

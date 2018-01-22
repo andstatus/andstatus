@@ -393,7 +393,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         String status = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId);
         String oid = getMsgOid(method, msgId, false);
         TriState isPrivate = MyQuery.msgIdToTriState(MsgTable.PRIVATE, msgId);
-        Audience recipients = Audience.fromMsgId(execContext.getMyAccount().getOriginId(), msgId);
+        Audience recipients = Audience.fromMsgId(execContext.getMyAccount().getOrigin(), msgId);
         Uri mediaUri = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY).
                 mediaUriToBePosted();
         String msgLog = "text:'" + MyLog.trimmedString(status, 40) + "'"
@@ -458,7 +458,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             // The tweet was sent successfully
             // Reblog should be put into the user's Home timeline!
             new DataUpdater(execContext).onActivity(activity);
-            MyProvider.updateMessageReblogged(execContext.getMyContext(), activity.accountUser.originId, rebloggedMessageId);
+            MyProvider.updateMessageReblogged(execContext.getMyContext(), activity.accountUser.origin, rebloggedMessageId);
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }

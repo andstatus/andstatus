@@ -59,7 +59,7 @@ public class DemoMessageInserter {
     public DemoMessageInserter(MbUser accountUser) {
         this.accountUser = accountUser;
         assertTrue(accountUser != null);
-        origin = MyContextHolder.get().persistentOrigins().fromId(accountUser.originId);
+        origin = accountUser.origin;
         assertTrue("Origin exists for " + accountUser, origin.isValid());
     }
 
@@ -77,7 +77,7 @@ public class DemoMessageInserter {
     }
     
     final MbUser buildUserFromOid(String userOid) {
-        MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), userOid);
+        MbUser mbUser = MbUser.fromOriginAndUserOid(origin, userOid);
         String username;
         String profileUrl;
         if (origin.getOriginType() == OriginType.PUMPIO) {
@@ -121,7 +121,7 @@ public class DemoMessageInserter {
             }
         }
         MbActivity activity = buildActivity(author, MbActivityType.UPDATE, messageOid);
-        MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), messageOid, messageStatus);
+        MbMessage message = MbMessage.fromOriginAndOid(origin, messageOid, messageStatus);
         activity.setMessage(message);
         message.setUpdatedDate(activity.getUpdatedDate());
         message.setBody(body);
@@ -203,7 +203,7 @@ public class DemoMessageInserter {
         }
 
         if (activity.type == MbActivityType.LIKE) {
-            List<MbUser> stargazers = MyQuery.getStargazers(MyContextHolder.get().getDatabase(), accountUser.originId, message.msgId);
+            List<MbUser> stargazers = MyQuery.getStargazers(MyContextHolder.get().getDatabase(), accountUser.origin, message.msgId);
             boolean found = false;
             for (MbUser stargazer : stargazers) {
                 if (stargazer.userId == actor.userId) {
@@ -216,7 +216,7 @@ public class DemoMessageInserter {
         }
 
         if (activity.type == MbActivityType.ANNOUNCE) {
-            List<MbUser> rebloggers = MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), accountUser.originId, message.msgId);
+            List<MbUser> rebloggers = MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), accountUser.origin, message.msgId);
             boolean found = false;
             for (MbUser stargazer : rebloggers) {
                 if (stargazer.userId == actor.userId) {
@@ -245,8 +245,8 @@ public class DemoMessageInserter {
         }
     }
 
-    static void deleteOldMessage(long originId, String messageOid) {
-        long messageIdOld = MyQuery.oidToId(OidEnum.MSG_OID, originId, messageOid);
+    static void deleteOldMessage(@NonNull Origin origin, String messageOid) {
+        long messageIdOld = MyQuery.oidToId(OidEnum.MSG_OID, origin.getId(), messageOid);
         if (messageIdOld != 0) {
             int deleted = MyProvider.deleteMessage(MyContextHolder.get().context(), messageIdOld);
             assertTrue( "Activities of Old message id=" + messageIdOld + " deleted: " + deleted, deleted > 0);

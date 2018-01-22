@@ -17,10 +17,12 @@
 package org.andstatus.app.service;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.MessageForAccount;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 
 public class AttachmentDownloader extends FileDownloader {
@@ -31,13 +33,13 @@ public class AttachmentDownloader extends FileDownloader {
 
     @Override
     protected MyAccount findBestAccountForDownload() {
-        long originId = MyQuery.msgIdToOriginId(data.msgId);
         boolean subscribedFound = false;
-        MyAccount bestAccount = MyContextHolder.get().persistentAccounts().
-                getFirstSucceededForOriginId(originId);
-        for( MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
-            if(ma.getOriginId() == originId && ma.isValidAndSucceeded()) {
-                MessageForAccount msg = new MessageForAccount(originId, 0, data.msgId, ma);
+        final MyContext myContext = MyContextHolder.get();
+        final Origin origin = myContext.persistentOrigins().fromId(MyQuery.msgIdToOriginId(data.msgId));
+        MyAccount bestAccount = myContext.persistentAccounts().getFirstSucceededForOrigin(origin);
+        for( MyAccount ma : myContext.persistentAccounts().list()) {
+            if(ma.getOrigin().equals(origin) && ma.isValidAndSucceeded()) {
+                MessageForAccount msg = new MessageForAccount(origin, 0, data.msgId, ma);
                 if(msg.hasPrivateAccess()) {
                     bestAccount = ma;
                     break;

@@ -54,7 +54,7 @@ public class DemoGnuSocialConversationInserter {
         accountUser = MyContextHolder.get().persistentAccounts().fromAccountName(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME)
                 .toPartialUser();
         assertTrue( "Account user is not defined " + accountUser, accountUser.isPartiallyDefined());
-        assertEquals( "Inconsistent origin for " + accountUser + "\n and " + origin, accountUser.originId, origin.getId());
+        assertEquals( "Inconsistent origin for " + accountUser + "\n and " + origin, accountUser.origin, origin);
     }
     
     private void addConversation() {
@@ -132,7 +132,7 @@ public class DemoGnuSocialConversationInserter {
 
     private MbUser userFromOidAndAvatar(String userOid, @Nullable String avatarUrl) {
         String userName = "user" + userOid;
-        MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), userOid);
+        MbUser mbUser = MbUser.fromOriginAndUserOid(origin, userOid);
         mbUser.setUserName(userName);
         if (avatarUrl != null) {
             mbUser.avatarUrl = avatarUrl;

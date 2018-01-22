@@ -30,7 +30,7 @@ class OriginGnuSocial extends Origin {
     protected String alternativeMessagePermalink(long messageId) {
         try {
             return new URL(url,
-                    (Audience.fromMsgId(getId(), messageId).isEmpty() ?
+                    (Audience.fromMsgId(this, messageId).isEmpty() ?
                     "notice" : "message") + "/"
                     + MyQuery.msgIdToStringColumnValue(MsgTable.MSG_OID, messageId)).toExternalForm();
         } catch (MalformedURLException e) {

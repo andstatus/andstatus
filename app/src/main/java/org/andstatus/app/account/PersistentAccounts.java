@@ -104,11 +104,11 @@ public class PersistentAccounts {
     }
     
     private void calculateDistinctOriginsCount() {
-        Set<Long> originIds = new HashSet<>();
+        Set<Origin> origins = new HashSet<>();
         for (MyAccount ma : mAccounts) {
-            originIds.add(ma.getOriginId());
+            origins.add(ma.getOrigin());
         }
-        distinctOriginsCount = originIds.size();
+        distinctOriginsCount = origins.size();
     }
     
     public static PersistentAccounts newEmpty(MyContext myContext) {
@@ -186,8 +186,8 @@ public class PersistentAccounts {
     @NonNull
     private MyAccount fromUser(@NonNull MbUser user, boolean sameOriginOnly) {
         for (MyAccount persistentAccount : mAccounts) {
-            if (!sameOriginOnly || persistentAccount.getOriginId() == user.originId) {
-                if (persistentAccount.getOriginId() == user.originId && StringUtils.nonEmpty(user.oid)) {
+            if (!sameOriginOnly || persistentAccount.getOrigin().equals(user.origin)) {
+                if (persistentAccount.getOrigin().equals(user.origin) && StringUtils.nonEmpty(user.oid)) {
                     if (persistentAccount.getUserOid().equals(user.oid)) {
                         return persistentAccount;
                     }
@@ -286,12 +286,7 @@ public class PersistentAccounts {
 
     @NonNull
     public MyAccount getFirstSucceeded() {
-        return getFirstSucceededForOriginId(0);
-    }
-
-    @NonNull
-    public MyAccount getFirstSucceededForOrigin(@NonNull Origin origin) {
-        return getFirstSucceededForOriginId(origin.getId());
+        return getFirstSucceededForOrigin(Origin.EMPTY);
     }
 
     /**
@@ -299,14 +294,14 @@ public class PersistentAccounts {
      * If not auto synced, at least verified and succeeded,
      * If there is no verified account, any account of this Origin is been returned.
      * Otherwise invalid account is returned;
-     * @param originId May be 0 to search in any Origin
+     * @param origin May be EMPTY to search in any Origin
      * @return Invalid account if not found
      */
     @NonNull
-    public MyAccount getFirstSucceededForOriginId(long originId) {
+    public MyAccount getFirstSucceededForOrigin(@NonNull Origin origin) {
         MyAccount ma = MyAccount.EMPTY;
         for (MyAccount persistentAccount : mAccounts) {
-            if (originId==0 || persistentAccount.getOriginId() == originId) {
+            if (!origin.isValid() || persistentAccount.getOrigin().equals(origin)) {
                 if (!ma.isValid()) {
                     ma = persistentAccount;
                 }
@@ -345,21 +340,21 @@ public class PersistentAccounts {
      * @return Invalid account if nothing suitable found
      */
     @NonNull
-    public MyAccount getAccountForThisMessage(long originId, MyAccount firstAccount, MyAccount preferredAccount,
+    public MyAccount getAccountForThisMessage(Origin origin, MyAccount firstAccount, MyAccount preferredAccount,
                                               boolean succeededOnly)  {
         final String method = "getAccountForThisMessage";
         MyAccount ma = firstAccount == null ? MyAccount.EMPTY : firstAccount;
-        if (!accountFits(ma, originId, succeededOnly)) {
-            ma = betterFit(ma, preferredAccount == null ? MyAccount.EMPTY : preferredAccount, originId, succeededOnly);
+        if (!accountFits(ma, origin, succeededOnly)) {
+            ma = betterFit(ma, preferredAccount == null ? MyAccount.EMPTY : preferredAccount, origin, succeededOnly);
         }
-        if (!accountFits(ma, originId, succeededOnly)) {
-            ma = betterFit(ma, getFirstSucceededForOriginId(originId), originId, succeededOnly);
+        if (!accountFits(ma, origin, succeededOnly)) {
+            ma = betterFit(ma, getFirstSucceededForOrigin(origin), origin, succeededOnly);
         }
-        if (!accountFits(ma, originId, false)) {
+        if (!accountFits(ma, origin, false)) {
             ma = MyAccount.EMPTY;
         }
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, method + "; originId=" + originId
+            MyLog.v(this, method + "; origin=" + origin.getName()
                     + "; user1=" + ma
                     + (ma.equals(preferredAccount) ? "" : "; user2=" + preferredAccount)
                     + (succeededOnly ? "; succeeded only" : ""));
@@ -367,15 +362,16 @@ public class PersistentAccounts {
         return ma;
     }
 
-    private boolean accountFits(MyAccount ma, long originId, boolean succeededOnly) {
+    private boolean accountFits(MyAccount ma, @NonNull Origin origin, boolean succeededOnly) {
         return ma != null
                 && (succeededOnly ? ma.isValidAndSucceeded() : ma.isValid())
-                && (originId == 0 || ma.getOriginId() == originId);
+                && (!origin.isValid() || ma.getOrigin().equals(origin));
     }
 
     @NonNull
-    private MyAccount betterFit(@NonNull MyAccount oldMa, @NonNull MyAccount newMa, long originId, boolean succeededOnly) {
-        if (accountFits(oldMa, originId, succeededOnly) || !accountFits(newMa, originId, false)) {
+    private MyAccount betterFit(@NonNull MyAccount oldMa, @NonNull MyAccount newMa, @NonNull Origin origin,
+                                boolean succeededOnly) {
+        if (accountFits(oldMa, origin, succeededOnly) || !accountFits(newMa, origin, false)) {
             return oldMa;
         }
         if (!oldMa.isValid() && newMa.isValid()) {

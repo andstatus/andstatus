@@ -132,7 +132,7 @@ public class ConnectionPumpio extends Connection {
             return MbUser.EMPTY;
         }
         String oid = jso.optString("id");
-        MbUser user = MbUser.fromOriginAndUserOid(data.getOriginId(), oid);
+        MbUser user = MbUser.fromOriginAndUserOid(data.getOrigin(), oid);
         user.setUserName(userOidToUsername(oid));
         user.setRealName(jso.optString("displayName"));
         user.avatarUrl = JsonUtils.optStringInside(jso, "image", "url");
@@ -222,8 +222,7 @@ public class ConnectionPumpio extends Connection {
     }
     
     private String toHtmlIfAllowed(String message) {
-        return MyContextHolder.get().persistentOrigins().isHtmlContentAllowed(data.getOriginId()) ?
-            MyHtml.htmlify(message) : message;
+        return data.getOrigin().isHtmlContentAllowed() ? MyHtml.htmlify(message) : message;
     }
 
     String oidToObjectType(String oid) {

@@ -33,7 +33,7 @@ public class MessageForAccountTest {
                 null, DownloadStatus.LOADED);
         mi.onActivity(activity1);
         
-        MessageForAccount mfa = new MessageForAccount(ma.getOriginId(), activity1.getId(), activity1.getMessage().msgId, ma);
+        MessageForAccount mfa = new MessageForAccount(ma.getOrigin(), activity1.getId(), activity1.getMessage().msgId, ma);
         assertTrue(mfa.isAuthor);
         assertTrue(mfa.isActor);
         assertTrue(mfa.isSubscribed);
@@ -47,7 +47,7 @@ public class MessageForAccountTest {
         replyTo1.getMessage().setPrivate(FALSE);
         mi.onActivity(replyTo1);
         
-        mfa = new MessageForAccount(ma.getOriginId(), replyTo1.getId(), replyTo1.getMessage().msgId, ma);
+        mfa = new MessageForAccount(ma.getOrigin(), replyTo1.getId(), replyTo1.getMessage().msgId, ma);
         assertFalse(mfa.isAuthor);
         assertFalse(mfa.isActor);
         assertFalse(mfa.isPrivate());
@@ -61,7 +61,7 @@ public class MessageForAccountTest {
         replyTo2.getMessage().setPrivate(FALSE);
         mi.onActivity(replyTo2);
         
-        mfa = new MessageForAccount(ma.getOriginId(), 0, replyTo2.getMessage().msgId, ma);
+        mfa = new MessageForAccount(ma.getOrigin(), 0, replyTo2.getMessage().msgId, ma);
         assertFalse(mfa.isAuthor);
         assertFalse(mfa.isActor);
         assertFalse(mfa.isPrivate());
@@ -81,7 +81,7 @@ public class MessageForAccountTest {
         activity4.setUpdatedDate(System.currentTimeMillis());
         mi.onActivity(activity4);
 
-        mfa = new MessageForAccount(ma.getOriginId(), 0, reblogged1.getMessage().msgId, ma);
+        mfa = new MessageForAccount(ma.getOrigin(), 0, reblogged1.getMessage().msgId, ma);
         assertFalse(mfa.isAuthor);
         assertFalse(mfa.isActor);
         assertFalse(mfa.isSubscribed);

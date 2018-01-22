@@ -19,6 +19,7 @@ package org.andstatus.app.timeline;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.timeline.meta.TimelineType;
 
 import java.util.ArrayList;

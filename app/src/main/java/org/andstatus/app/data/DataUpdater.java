@@ -151,7 +151,7 @@ public class DataUpdater {
                 }
             }
             if (message.msgId == 0) {
-                message.msgId = MyQuery.oidToId(OidEnum.MSG_OID, message.originId, message.oid);
+                message.msgId = MyQuery.oidToId(OidEnum.MSG_OID, message.origin.getId(), message.oid);
             }
 
             /*
@@ -189,7 +189,7 @@ public class DataUpdater {
                 values.put(MsgTable.AUTHOR_ID, activity.getAuthor().userId);
             }
             values.put(MsgTable.MSG_OID, message.oid);
-            values.put(MsgTable.ORIGIN_ID, message.originId);
+            values.put(MsgTable.ORIGIN_ID, message.origin.getId());
             if (nonEmptyOid(message.conversationOid)) {
                 values.put(MsgTable.CONVERSATION_OID, message.conversationOid);
             }
@@ -248,7 +248,7 @@ public class DataUpdater {
                 execContext.getContext().getContentResolver().update(msgUri, values, null, null);
                 MyLog.v("MbMessage", "Updated " + message);
             }
-            message.audience().save(execContext.getMyContext(), message.originId, message.msgId);
+            message.audience().save(execContext.getMyContext(), message.origin, message.msgId);
 
             if (isFirstTimeLoaded || isDraftUpdated) {
                 saveAttachments(message);
@@ -417,7 +417,7 @@ public class DataUpdater {
             Uri userUri = MatchedUri.getUserUri(me.getUserId(), userId);
             if (userId == 0) {
                 // There was no such row so add new one
-                values.put(UserTable.ORIGIN_ID, mbUser.originId);
+                values.put(UserTable.ORIGIN_ID, mbUser.origin.getId());
                 userId = ParsedUri.fromUri(
                         execContext.getContext().getContentResolver().insert(userUri, values))
                         .getUserId();

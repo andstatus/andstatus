@@ -65,8 +65,7 @@ public final class DemoOriginInserter {
                 inCombinedGlobalSearch, inCombinedPublicReload);
 
         MyContextHolder.get().persistentOrigins().initialize();
-        Origin origin2 = MyContextHolder.get().persistentOrigins()
-                .fromId(origin.getId());
+        Origin origin2 = MyContextHolder.get().persistentOrigins().fromId(origin.getId());
         checkAttributes(origin2, originName, hostOrUrl, isSsl, sslMode, allowHtml,
                 inCombinedGlobalSearch, inCombinedPublicReload);
         return origin;

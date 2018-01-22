@@ -25,6 +25,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.SqlUserIds;
 import org.andstatus.app.database.table.AudienceTable;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 
 import java.util.HashSet;
@@ -33,14 +34,14 @@ import java.util.Set;
 public class Audience {
     private final Set<MbUser> recipients = new HashSet<>();
 
-    public static Audience fromMsgId(long originId, long msgId) {
+    public static Audience fromMsgId(@NonNull Origin origin, long msgId) {
         String where = AudienceTable.MSG_ID + "=" + msgId;
         String sql = "SELECT " + AudienceTable.USER_ID
                 + " FROM " + AudienceTable.TABLE_NAME
                 + " WHERE " + where;
         Audience audience = new Audience();
         for (long recipientId : MyQuery.getLongs(sql)) {
-            audience.add(MbUser.fromOriginAndUserId(originId, recipientId));
+            audience.add(MbUser.fromOriginAndUserId(origin, recipientId));
         }
         return audience;
     }
@@ -116,12 +117,12 @@ public class Audience {
         return false;
     }
 
-    public void save(@NonNull MyContext myContext, long originId, long msgId) {
+    public void save(@NonNull MyContext myContext, @NonNull Origin origin, long msgId) {
         SQLiteDatabase db = myContext.getDatabase();
-        if (db == null || originId == 0 || msgId == 0) {
+        if (db == null || !origin.isValid() || msgId == 0) {
             return;
         }
-        Audience prevAudience = Audience.fromMsgId(originId, msgId);
+        Audience prevAudience = Audience.fromMsgId(origin, msgId);
         Set<MbUser> toDelete = new HashSet<>();
         Set<MbUser> toAdd = new HashSet<>();
         for (MbUser user : prevAudience.getRecipients()) {

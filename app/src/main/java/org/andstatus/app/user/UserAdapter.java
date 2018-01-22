@@ -65,8 +65,7 @@ public class UserAdapter extends BaseTimelineAdapter<UserViewItem> {
     public void populateView(View view, UserViewItem item, int position) {
         MyUrlSpan.showText(view, R.id.username,
                 item.mbUser.toUserTitle(showWebFingerId) + ( isCombined() ?
-                        " / " + myContext.persistentOrigins()
-                                .fromId(item.mbUser.originId).getName() : ""),
+                        " / " + item.mbUser.origin.getName() : ""),
                 false, false);
         if (showAvatars) {
             showAvatar(item, view);

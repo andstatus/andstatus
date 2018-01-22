@@ -24,6 +24,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
@@ -44,7 +45,7 @@ import static org.andstatus.app.util.UriUtils.nonRealOid;
  * @author yvolk@yurivolkov.com
  */
 public class MbMessage extends AObject {
-    public static final MbMessage EMPTY = new MbMessage(0, getTempOid());
+    public static final MbMessage EMPTY = new MbMessage(Origin.EMPTY, getTempOid());
 
     private boolean isEmpty = false;
     private DownloadStatus status = DownloadStatus.UNKNOWN;
@@ -66,13 +67,13 @@ public class MbMessage extends AObject {
     private TriState isPrivate = TriState.UNKNOWN;
 
     // In our system
-    public final long originId;
+    public final Origin origin;
     public long msgId = 0L;
     private long conversationId = 0L;
 
     @NonNull
-    public static MbMessage fromOriginAndOid(long originId, String oid, DownloadStatus status) {
-        MbMessage message = new MbMessage(originId, isEmptyOid(oid) ? getTempOid() : oid);
+    public static MbMessage fromOriginAndOid(@NonNull Origin origin, String oid, DownloadStatus status) {
+        MbMessage message = new MbMessage(origin, isEmptyOid(oid) ? getTempOid() : oid);
         message.status = status;
         if (TextUtils.isEmpty(oid) && status == DownloadStatus.LOADED) {
             message.status = DownloadStatus.UNKNOWN;
@@ -84,8 +85,8 @@ public class MbMessage extends AObject {
         return TEMP_OID_PREFIX + "msg:" + MyLog.uniqueCurrentTimeMS() ;
     }
 
-    private MbMessage(long originId, String oid) {
-        this.originId = originId;
+    private MbMessage(Origin origin, String oid) {
+        this.origin = origin;
         this.oid = oid;
     }
 
@@ -110,7 +111,7 @@ public class MbMessage extends AObject {
     }
 
     private boolean isHtmlContentAllowed() {
-        return MyContextHolder.get().persistentOrigins().isHtmlContentAllowed(originId);
+        return origin.isHtmlContentAllowed();
     }
 
     public static boolean mayBeEdited(OriginType originType, DownloadStatus downloadStatus) {
@@ -140,7 +141,7 @@ public class MbMessage extends AObject {
 
     public long lookupConversationId() {
         if (conversationId == 0  && !TextUtils.isEmpty(conversationOid)) {
-            conversationId = MyQuery.conversationOidToId(originId, conversationOid);
+            conversationId = MyQuery.conversationOidToId(origin.getId(), conversationOid);
         }
         if (conversationId == 0 && msgId != 0) {
             conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, msgId);
@@ -171,7 +172,7 @@ public class MbMessage extends AObject {
 
     public boolean isEmpty() {
         return this.isEmpty
-                || originId == 0
+                || !origin.isValid()
                 || (nonRealOid(oid)
                     && ((status != DownloadStatus.SENDING && status != DownloadStatus.DRAFT)
                         || (TextUtils.isEmpty(body) && attachments.isEmpty())));
@@ -234,7 +235,7 @@ public class MbMessage extends AObject {
             builder.append("via:'" + via + "',");
         }
         builder.append("updated:" + MyLog.debugFormatOfDate(updatedDate) + ",");
-        builder.append("originId:" + originId + ",");
+        builder.append("origin:" + origin.getName() + ",");
         if(recipients.nonEmpty()) {
             builder.append("\nrecipients:" + recipients + ",");
         }
@@ -308,14 +309,14 @@ public class MbMessage extends AObject {
     }
 
     public MbMessage shallowCopy() {
-        MbMessage message = fromOriginAndOid(originId, oid, status);
+        MbMessage message = fromOriginAndOid(origin, oid, status);
         message.msgId = msgId;
         message.setUpdatedDate(updatedDate);
         return message;
     }
 
     public MbMessage copy(String oidNew) {
-        MbMessage message = fromOriginAndOid(originId, oidNew, status);
+        MbMessage message = fromOriginAndOid(origin, oidNew, status);
         message.msgId = msgId;
         message.setUpdatedDate(updatedDate);
 

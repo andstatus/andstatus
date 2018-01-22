@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -109,7 +109,8 @@ public class AccountName {
         }
         return originName;
     }
-    
+
+    @NonNull
     public static AccountName fromAccountName(MyContext myContext, String accountNameString) {
         AccountName accountName = new AccountName();
         accountName.origin = myContext.persistentOrigins().fromName(accountNameToOriginName(accountNameString));

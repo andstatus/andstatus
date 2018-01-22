@@ -23,6 +23,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
@@ -68,14 +69,14 @@ public class UserViewItem extends ViewItem<UserViewItem> implements Comparable<U
 
     public static UserViewItem newEmpty(String description) {
         MbUser mbUser = TextUtils.isEmpty(description) ? MbUser.EMPTY :
-                MbUser.fromOriginAndUserId(0L, 0L).setDescription(description);
+                MbUser.fromOriginAndUserId(Origin.EMPTY, 0L).setDescription(description);
         return fromMbUser(mbUser);
     }
 
     public static UserViewItem fromUserId(Origin origin, long userId) {
         MbUser mbUser = MbUser.EMPTY;
         if (userId != 0) {
-            mbUser = MbUser.fromOriginAndUserId(origin.getId(), userId);
+            mbUser = MbUser.fromOriginAndUserId(origin, userId);
         }
         return fromMbUser(mbUser);
     }
@@ -146,10 +147,11 @@ public class UserViewItem extends ViewItem<UserViewItem> implements Comparable<U
         }
     }
 
+    @Override
     @NonNull
     public UserViewItem fromCursor(@NonNull Cursor cursor) {
         MbUser user = MbUser.fromOriginAndUserOid (
-                DbUtils.getLong(cursor, UserTable.ORIGIN_ID),
+                MyContextHolder.get().persistentOrigins().fromId(DbUtils.getLong(cursor, UserTable.ORIGIN_ID)),
                 DbUtils.getString(cursor, UserTable.USER_OID)
         );
         user.userId = DbUtils.getLong(cursor, BaseColumns._ID);

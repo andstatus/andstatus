@@ -20,8 +20,10 @@ import android.support.annotation.NonNull;
 import android.view.View;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MessageForAccount;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
 
@@ -58,16 +60,17 @@ class MessageContextMenuData {
                 @Override
                 protected MessageForAccount doInBackground2(Void... params) {
                     MyAccount currentMyAccount = menuContainer.getCurrentMyAccount();
-                    long originId = MyQuery.msgIdToOriginId(msgId);
-                    MyAccount ma1 = menuContainer.getActivity().getMyContext().persistentAccounts()
-                            .getAccountForThisMessage(originId, myActor, viewItem.getLinkedMyAccount(), false);
-                    MessageForAccount msgNew = new MessageForAccount(originId, 0, msgId, ma1);
+                    final MyContext myContext = menuContainer.getActivity().getMyContext();
+                    final Origin origin = myContext.persistentOrigins().fromId(MyQuery.msgIdToOriginId(msgId));
+                    MyAccount ma1 = myContext.persistentAccounts()
+                            .getAccountForThisMessage(origin, myActor, viewItem.getLinkedMyAccount(), false);
+                    MessageForAccount msgNew = new MessageForAccount(origin, 0, msgId, ma1);
                     boolean changedToCurrent = !ma1.equals(currentMyAccount) && !myActor.isValid() && ma1.isValid()
                             && !msgNew.isTiedToThisAccount()
                             && !menuContainer.getTimeline().getTimelineType().isForAccount()
-                            && currentMyAccount.isValid() && ma1.getOriginId() == currentMyAccount.getOriginId();
+                            && currentMyAccount.isValid() && ma1.getOrigin().equals(currentMyAccount.getOrigin());
                     if (changedToCurrent) {
-                        msgNew = new MessageForAccount(originId, 0, msgId, currentMyAccount);
+                        msgNew = new MessageForAccount(origin, 0, msgId, currentMyAccount);
                     }
                     if (MyLog.isVerboseEnabled()) {
                         MyLog.v(messageContextMenu, "actor:" + msgNew.getMyAccount()

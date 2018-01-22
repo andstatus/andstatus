@@ -490,7 +490,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends MessageEditorListAc
     }
 
     public void onItemClick(MessageViewItem item) {
-        MyAccount ma = myContext.persistentAccounts().getAccountForThisMessage(item.getOriginId(),
+        MyAccount ma = myContext.persistentAccounts().getAccountForThisMessage(item.getOrigin(),
                 getParamsNew().getMyAccount(), item.getLinkedMyAccount(), false);
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this,
@@ -502,8 +502,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends MessageEditorListAc
             return;
         }
         Uri uri = MatchedUri.getTimelineItemUri(
-                Timeline.getTimeline(TimelineType.EVERYTHING, null, 0,
-                        myContext.persistentOrigins().fromId(item.getOriginId())),
+                Timeline.getTimeline(TimelineType.EVERYTHING, null, 0, item.getOrigin()),
                 item.getMsgId());
 
         String action = getIntent().getAction();

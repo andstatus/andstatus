@@ -91,7 +91,7 @@ public class MbActivity extends AObject {
                                                long updatedDate, DownloadStatus status) {
         MbActivity activity = from(accountUser, MbActivityType.UPDATE);
         activity.setTimelinePosition(msgOid);
-        final MbMessage message = MbMessage.fromOriginAndOid(activity.accountUser.originId, msgOid, status);
+        final MbMessage message = MbMessage.fromOriginAndOid(activity.accountUser.origin, msgOid, status);
         activity.setMessage(message);
         message.setUpdatedDate(updatedDate);
         activity.setUpdatedDate(updatedDate);
@@ -312,10 +312,10 @@ public class MbActivity extends AObject {
 
         activity.id = DbUtils.getLong(cursor, ActivityTable._ID);
         activity.timelinePosition = new TimelinePosition(DbUtils.getString(cursor, ActivityTable.ACTIVITY_OID));
-        activity.actor = MbUser.fromOriginAndUserId(activity.accountUser.originId,
+        activity.actor = MbUser.fromOriginAndUserId(activity.accountUser.origin,
                 DbUtils.getLong(cursor, ActivityTable.ACTOR_ID));
-        activity.mbMessage = MbMessage.fromOriginAndOid(activity.accountUser.originId, "", DownloadStatus.UNKNOWN);
-        activity.mbUser = MbUser.fromOriginAndUserId(activity.accountUser.originId,
+        activity.mbMessage = MbMessage.fromOriginAndOid(activity.accountUser.origin, "", DownloadStatus.UNKNOWN);
+        activity.mbUser = MbUser.fromOriginAndUserId(activity.accountUser.origin,
                 DbUtils.getLong(cursor, ActivityTable.USER_ID));
         activity.mbActivity = MbActivity.from(activity.accountUser, MbActivityType.EMPTY);
         activity.mbActivity.id =  DbUtils.getLong(cursor, ActivityTable.OBJ_ACTIVITY_ID);
@@ -401,7 +401,7 @@ public class MbActivity extends AObject {
 
     private void findExisting(MyContext myContext) {
         if (!timelinePosition.isEmpty()) {
-            id = MyQuery.oidToId(myContext.getDatabase(), OidEnum.ACTIVITY_OID, accountUser.originId,
+            id = MyQuery.oidToId(myContext.getDatabase(), OidEnum.ACTIVITY_OID, accountUser.origin.getId(),
                     timelinePosition.getPosition());
         }
         if (id != 0) {
@@ -446,7 +446,7 @@ public class MbActivity extends AObject {
 
     private ContentValues toContentValues() {
         ContentValues values = new ContentValues();
-        values.put(ActivityTable.ORIGIN_ID, accountUser.originId);
+        values.put(ActivityTable.ORIGIN_ID, accountUser.origin.getId());
         values.put(ActivityTable.ACCOUNT_ID, accountUser.userId);
         values.put(ActivityTable.ACTOR_ID, getActor().userId);
         values.put(ActivityTable.MSG_ID, getMessage().msgId);
@@ -482,7 +482,7 @@ public class MbActivity extends AObject {
                 if (myActorAccount.isValid()) {
                     MyLog.v(this, myActorAccount + " " + type
                             + " '" + getMessage().oid + "' " + I18n.trimTextAt(getMessage().getBody(), 80));
-                    MyProvider.updateMessageFavorited(myContext, accountUser.originId, getMessage().msgId);
+                    MyProvider.updateMessageFavorited(myContext, accountUser.origin, getMessage().msgId);
                 }
                 break;
             default:

@@ -39,6 +39,7 @@ import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.msg.KeywordsFilter;
 import org.andstatus.app.net.social.MbActivityType;
 import org.andstatus.app.notification.NotificationEventType;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
@@ -191,6 +192,7 @@ public class MyProvider extends ContentProvider {
         }
         long originId = MyQuery.activityIdToLongColumnValue(ActivityTable.ORIGIN_ID, activityId);
         if (originId == 0) return 0;
+        Origin origin = MyContextHolder.get().persistentOrigins().fromId(originId);
         // Was this the last activity for this message?
         final long activityId2 = MyQuery.conditionToLongColumnValue(db, null, ActivityTable.TABLE_NAME,
                 BaseColumns._ID, ActivityTable.MSG_ID + "=" + msgId +
@@ -203,13 +205,13 @@ public class MyProvider extends ContentProvider {
         } else {
             // Delete this activity only
             count = db.delete(ActivityTable.TABLE_NAME, BaseColumns._ID + "=" + activityId, null);
-            updateMessageFavorited(myContext, originId, msgId);
-            updateMessageReblogged(myContext, originId, msgId);
+            updateMessageFavorited(myContext, origin, msgId);
+            updateMessageReblogged(myContext, origin, msgId);
         }
         return count;
     }
 
-    public static void updateMessageReblogged(MyContext myContext, long originId, long msgId) {
+    public static void updateMessageReblogged(MyContext myContext, Origin origin, long msgId) {
         final String method = "updateMessageReblogged-" + msgId;
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
@@ -217,7 +219,7 @@ public class MyProvider extends ContentProvider {
             return;
         }
         TriState reblogged = TriState.fromBoolean(
-                myContext.persistentAccounts().hasMyUser(MyQuery.getRebloggers(db, originId, msgId))
+                myContext.persistentAccounts().hasMyUser(MyQuery.getRebloggers(db, origin, msgId))
         );
         String sql = "UPDATE " + MsgTable.TABLE_NAME + " SET " + MsgTable.REBLOGGED + "=" + reblogged.id
                 + " WHERE " + MsgTable._ID + "=" + msgId;
@@ -228,7 +230,7 @@ public class MyProvider extends ContentProvider {
         }
     }
 
-    public static void updateMessageFavorited(MyContext myContext, long originId, long msgId) {
+    public static void updateMessageFavorited(MyContext myContext, @NonNull Origin origin, long msgId) {
         final String method = "updateMessageFavorited-" + msgId;
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
@@ -236,7 +238,7 @@ public class MyProvider extends ContentProvider {
             return;
         }
         TriState favorited = TriState.fromBoolean(
-                myContext.persistentAccounts().hasMyUser(MyQuery.getStargazers(db, originId, msgId))
+                myContext.persistentAccounts().hasMyUser(MyQuery.getStargazers(db, origin, msgId))
         );
         String sql = "UPDATE " + MsgTable.TABLE_NAME + " SET " + MsgTable.FAVORITED + "=" + favorited.id
                 + " WHERE " + MsgTable._ID + "=" + msgId;

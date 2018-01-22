@@ -166,8 +166,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     @Override
     protected void setMessageBodyFromJson(MbMessage message, JSONObject jso) throws JSONException {
         boolean bodyFound = false;
-        if (MyContextHolder.get().persistentOrigins().isHtmlContentAllowed(data.getOriginId())
-                && !jso.isNull(HTML_BODY_FIELD_NAME)) {
+        if (data.getOrigin().isHtmlContentAllowed() && !jso.isNull(HTML_BODY_FIELD_NAME)) {
             message.setBody(jso.getString(HTML_BODY_FIELD_NAME));
             bodyFound = true;
         }

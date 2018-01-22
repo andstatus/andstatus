@@ -97,7 +97,7 @@ public class DemoConversationInserter {
         author3.followedByMe = TriState.TRUE;
 
         MbActivity reply1Copy = buildActivity(accountUser,
-                MbUser.fromOriginAndUserOid(reply1.accountUser.originId, reply1.getAuthor().oid),
+                MbUser.fromOriginAndUserOid(reply1.accountUser.origin, reply1.getAuthor().oid),
                 "", MbActivity.EMPTY,
                 reply1.getMessage().oid, DownloadStatus.UNKNOWN);
         MbActivity reply12 = buildActivity(author2, "Reply 12 to 1 in Replies", reply1Copy, null);
@@ -223,7 +223,7 @@ public class DemoConversationInserter {
         assertNotificationEvent(followOf3, NotificationEventType.EMPTY);
 
         MbActivity notLoaded1 = MbActivity.newPartialMessage(accountUser, MyLog.uniqueDateTimeFormatted());
-        MbUser notLoadedUser = MbUser.fromOriginAndUserOid(accountUser.originId, "acct:notloaded@someother.host"
+        MbUser notLoadedUser = MbUser.fromOriginAndUserOid(accountUser.origin, "acct:notloaded@someother.host"
         + demoData.TEST_ORIGIN_PARENT_HOST);
         notLoaded1.setActor(notLoadedUser);
         MbActivity reply15 = buildActivity(author4, "Reply 15 to not loaded 1", notLoaded1, null);

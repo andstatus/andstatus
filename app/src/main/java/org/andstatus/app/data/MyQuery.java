@@ -25,6 +25,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
 import android.text.TextUtils;
 
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.database.table.ActivityTable;
@@ -287,23 +288,23 @@ public class MyQuery {
         return new Pair<>(0L, MbActivityType.EMPTY);
     }
 
-    public static List<MbUser> getStargazers(SQLiteDatabase db, long originId, long msgId) {
-        return msgIdToActors(db, originId, msgId, MbActivityType.LIKE, MbActivityType.UNDO_LIKE);
+    public static List<MbUser> getStargazers(SQLiteDatabase db, @NonNull Origin origin, long msgId) {
+        return msgIdToActors(db, origin, msgId, MbActivityType.LIKE, MbActivityType.UNDO_LIKE);
     }
 
-    public static List<MbUser> getRebloggers(SQLiteDatabase db, long originId, long msgId) {
-        return msgIdToActors(db, originId, msgId, MbActivityType.ANNOUNCE, MbActivityType.UNDO_ANNOUNCE);
+    public static List<MbUser> getRebloggers(SQLiteDatabase db, @NonNull Origin origin, long msgId) {
+        return msgIdToActors(db, origin, msgId, MbActivityType.ANNOUNCE, MbActivityType.UNDO_ANNOUNCE);
     }
 
     /** @return for each acted user (userId is a key): ID of the last type1 or type2 activity
      *  and the type of the activity */
     @NonNull
     public static List<MbUser> msgIdToActors(
-            SQLiteDatabase db, long originId, long msgId, MbActivityType typeToReturn, MbActivityType undoType) {
+            SQLiteDatabase db, @NonNull Origin origin, long msgId, MbActivityType typeToReturn, MbActivityType undoType) {
         String method = "msgIdToLastOfTypes";
         final List<Long> foundActors = new ArrayList<>();
         final List<MbUser> users = new ArrayList<>();
-        if (db == null || msgId == 0) {
+        if (db == null || !origin.isValid() || msgId == 0) {
             return users;
         }
         String sql = "SELECT " + ActivityTable.ACTIVITY_TYPE + ", " + ActivityTable.ACTOR_ID + ", "
@@ -320,7 +321,7 @@ public class MyQuery {
                     foundActors.add(actorId);
                     MbActivityType activityType = MbActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
                     if (activityType.equals(typeToReturn)) {
-                        MbUser user = MbUser.fromOriginAndUserId(originId, actorId);
+                        MbUser user = MbUser.fromOriginAndUserId(origin, actorId);
                         user.setRealName(DbUtils.getString(cursor, UserTable.ACTOR_NAME));
                         user.setWebFingerId(DbUtils.getString(cursor, UserTable.WEBFINGER_ID));
                         users.add(user);

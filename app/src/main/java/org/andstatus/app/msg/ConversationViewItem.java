@@ -109,7 +109,7 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
             ind++;
         } while (cursor.moveToNext());
 
-        for (MbUser user : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOriginId(), getMsgId())) {
+        for (MbUser user : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getMsgId())) {
             rebloggers.put(user.userId, user.getWebFingerId());
         }
     }

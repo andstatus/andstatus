@@ -68,7 +68,7 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
         origin = MyContextHolder.get().persistentOrigins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID));
         activityType = MbActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
         updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
-        actor = UserViewItem.fromMbUser(MbUser.fromOriginAndUserId(origin.getId(),
+        actor = UserViewItem.fromMbUser(MbUser.fromOriginAndUserId(origin,
                 DbUtils.getLong(cursor, ActivityTable.ACTOR_ID)));
         messageId = DbUtils.getLong(cursor, ActivityTable.MSG_ID);
         userId = DbUtils.getLong(cursor, ActivityTable.USER_ID);

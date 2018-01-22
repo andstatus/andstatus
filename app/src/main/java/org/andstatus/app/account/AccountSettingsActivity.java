@@ -45,7 +45,6 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
-import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
@@ -268,12 +267,11 @@ public class AccountSettingsActivity extends MyActivity {
     }
 
     private void onOriginSelected(Origin origin) {
-        if (state.getAccount().getOriginId() != origin.getId()) {
+        if (!state.getAccount().getOrigin().equals(origin)) {
             // If we have changed the System, we should recreate the Account
             state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                     MyContextHolder.get(),
-                    AccountName.fromOriginAndUserName(origin,
-                            state.getAccount().getUsername()).toString(),
+                    AccountName.fromOriginAndUserName(origin, state.getAccount().getUsername()).toString(),
                     TriState.fromBoolean(state.getAccount().isOAuth()));
             updateScreen();
         }
