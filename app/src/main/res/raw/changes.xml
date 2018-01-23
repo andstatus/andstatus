@@ -433,7 +433,7 @@
             <change>Continuous quality checking of AndStatus started, with actual and historical
                 results and diagrams publicly available. AndStatus is being built automatically by
                 <a href="https://travis-ci.org/andstatus/andstatus">Travis CI</a> and its quality
-                is being analysed by <a href="https://sonarqube.com/dashboard?id=andstatus">SonarQube</a>.
+                is being analysed by <a href="https://sonarcloud.io/dashboard?id=andstatus">SonarQube</a>.
                 Both services are free for Open Source projects.
                 <a href="https://github.com/andstatus/andstatus/issues/408">#408</a>
             </change>

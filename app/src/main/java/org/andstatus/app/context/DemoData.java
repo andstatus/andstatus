@@ -63,7 +63,7 @@ public final class DemoData {
     public final String GNUSOCIAL_TEST_ACCOUNT_USERNAME = "t131t";
     public final String GNUSOCIAL_TEST_ACCOUNT_NAME = GNUSOCIAL_TEST_ACCOUNT_USERNAME + "/" + GNUSOCIAL_TEST_ORIGIN_NAME;
     public final String GNUSOCIAL_TEST_ACCOUNT_USER_OID = "115391";
-    public final String GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL = "https://quitter.se/avatar/115686-48-20150106084830.jpeg";
+    public final String GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL = "https://findicons.com/files/icons/2036/farm/48/rabbit.png";
     public final String GNUSOCIAL_TEST_ACCOUNT2_USERNAME = "gtester2";
     public final String GNUSOCIAL_TEST_ACCOUNT2_NAME = GNUSOCIAL_TEST_ACCOUNT2_USERNAME + "/" + GNUSOCIAL_TEST_ORIGIN_NAME;
     public final String GNUSOCIAL_TEST_ACCOUNT2_USER_OID = "8902454";

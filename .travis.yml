@@ -98,3 +98,5 @@ cache:
   - $HOME/.android/build-cache
 before_install:
 - yes | sdkmanager "platforms;android-27"
+after_success:
+  - ./gradlew sonarqube -Dsonar.host.url=https://sonarqube.com -Dsonar.login=$SONAR_TOKEN -Dsonar.verbose=true
