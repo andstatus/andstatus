@@ -35,7 +35,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.CommandTable;
 import org.andstatus.app.database.table.MsgTable;
-import org.andstatus.app.database.table.UserTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.WhichPage;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -395,7 +395,7 @@ public class CommandData implements Comparable<CommandData> {
                         myContext.context().getText(R.string.combined_timeline_off_account));
                 I18n.appendWithSpace(builder, MyQuery.userIdToWebfingerId(timeline.getUserId()));
                 if (myContext.persistentAccounts().getDistinctOriginsCount() > 1) {
-                    long originId = MyQuery.userIdToLongColumnValue(UserTable.ORIGIN_ID,
+                    long originId = MyQuery.userIdToLongColumnValue(ActorTable.ORIGIN_ID,
                             timeline.getUserId());
                     I18n.appendWithSpace(builder, 
                             myContext.context().getText(R.string.combined_timeline_off_origin));

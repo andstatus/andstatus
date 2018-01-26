@@ -35,9 +35,9 @@ import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.database.table.OriginTable;
-import org.andstatus.app.database.table.UserTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.msg.KeywordsFilter;
-import org.andstatus.app.net.social.MbActivityType;
+import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -180,7 +180,7 @@ public class MyProvider extends ContentProvider {
     private int deleteUsers(SQLiteDatabase db, String selection, String[] selectionArgs) {
         int count;
         // TODO: Delete related records also... 
-        count = db.delete(UserTable.TABLE_NAME, selection, selectionArgs);
+        count = db.delete(ActorTable.TABLE_NAME, selection, selectionArgs);
         return count;
     }
 
@@ -277,7 +277,7 @@ public class MyProvider extends ContentProvider {
                 ActivityTable.NEW_NOTIFICATION_EVENT + "=" + NotificationEventType.OUTBOX.id +
                 ", " + ActivityTable.NOTIFIED + "=" + TriState.TRUE.id +
                 " WHERE " +
-                ActivityTable.ACTIVITY_TYPE + "=" + MbActivityType.UPDATE.id +
+                ActivityTable.ACTIVITY_TYPE + "=" + ActivityType.UPDATE.id +
                 " AND " + ActivityTable.MSG_ID + "=" + msgId;
         try {
             db.execSQL(sql);
@@ -337,8 +337,8 @@ public class MyProvider extends ContentProvider {
                     break;
 
                 case USER_ITEM:
-                    table = UserTable.TABLE_NAME;
-                    values.put(UserTable.INS_DATE, MyLog.uniqueCurrentTimeMS());
+                    table = ActorTable.TABLE_NAME;
+                    values.put(ActorTable.INS_DATE, MyLog.uniqueCurrentTimeMS());
                     accountUserId = uriParser.getAccountUserId();
                     friendshipValues = FriendshipValues.valueOf(accountUserId, 0, values);
                     break;
@@ -351,7 +351,7 @@ public class MyProvider extends ContentProvider {
             if (rowId == -1) {
                 throw new SQLException("Failed to insert row into " + uri);
             }
-            if ( UserTable.TABLE_NAME.equals(table)) {
+            if ( ActorTable.TABLE_NAME.equals(table)) {
                 optionallyLoadAvatar(rowId, values);
             }
             
@@ -380,7 +380,7 @@ public class MyProvider extends ContentProvider {
     }
 
     private void optionallyLoadAvatar(long userId, ContentValues values) {
-        if (MyPreferences.getShowAvatars() && values.containsKey(UserTable.AVATAR_URL)) {
+        if (MyPreferences.getShowAvatars() && values.containsKey(ActorTable.AVATAR_URL)) {
             AvatarData.getForUser(userId).requestDownload();
         }
     }
@@ -430,7 +430,7 @@ public class MyProvider extends ContentProvider {
                     }
                     KeywordsFilter searchQuery  = new KeywordsFilter(rawQuery);
                     // TODO: Search in MyDatabase.User.USERNAME also
-                    selection = "(" + UserTable.AUTHOR_NAME + " LIKE ?  OR "
+                    selection = "(" + ActorTable.AUTHOR_NAME + " LIKE ?  OR "
                             + searchQuery.getSqlSelection(MsgTable.BODY_TO_SEARCH)
                             + ")" + selection;
 
@@ -456,8 +456,8 @@ public class MyProvider extends ContentProvider {
                     } else {
                         selection = "";
                     }
-                    selection = "(" + UserTable.WEBFINGER_ID + " LIKE ?" +
-                            " OR " + UserTable.REAL_NAME + " LIKE ? )" + selection;
+                    selection = "(" + ActorTable.WEBFINGER_ID + " LIKE ?" +
+                            " OR " + ActorTable.REAL_NAME + " LIKE ? )" + selection;
 
                     selectionArgs = StringUtils.addBeforeArray(selectionArgs, "%" + rawQuery + "%");
                     selectionArgs = StringUtils.addBeforeArray(selectionArgs, "%" + rawQuery + "%");
@@ -472,7 +472,7 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case USER_ITEM:
-                qb.setTables(UserTable.TABLE_NAME);
+                qb.setTables(ActorTable.TABLE_NAME);
                 qb.setProjectionMap(ProjectionMap.USER);
                 qb.appendWhere(BaseColumns._ID + "=" + uriParser.getUserId());
                 break;
@@ -496,7 +496,7 @@ public class MyProvider extends ContentProvider {
                 case USERLIST_ITEM:
                 case USERLIST_SEARCH:
                 case USER_ITEM:
-                    orderBy = UserTable.DEFAULT_SORT_ORDER;
+                    orderBy = ActorTable.DEFAULT_SORT_ORDER;
                     break;
 
                 default:
@@ -576,7 +576,7 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case USER:
-                count = db.update(UserTable.TABLE_NAME, values, selection, selectionArgs);
+                count = db.update(ActorTable.TABLE_NAME, values, selection, selectionArgs);
                 break;
 
             case USER_ITEM:
@@ -584,7 +584,7 @@ public class MyProvider extends ContentProvider {
                 long selectedUserId = uriParser.getUserId();
                 FriendshipValues friendshipValues = FriendshipValues.valueOf(accountUserId, selectedUserId, values);
                 if (values.size() > 0) {
-                    count = db.update(UserTable.TABLE_NAME, values, BaseColumns._ID + "=" + selectedUserId
+                    count = db.update(ActorTable.TABLE_NAME, values, BaseColumns._ID + "=" + selectedUserId
                                     + (StringUtils.nonEmpty(selection) ? " AND (" + selection + ')' : ""),
                             selectionArgs);
                 }

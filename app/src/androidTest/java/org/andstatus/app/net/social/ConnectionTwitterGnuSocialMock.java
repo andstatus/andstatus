@@ -29,11 +29,11 @@ public class ConnectionTwitterGnuSocialMock extends ConnectionTwitterGnuSocial {
         OriginConnectionData connectionData = OriginConnectionData.fromAccountName(
                 AccountName.fromOriginAndUserName(origin, demoData.GNUSOCIAL_TEST_ACCOUNT_USERNAME),
                 TriState.UNKNOWN);
-        connectionData.setAccountUser(demoData.getAccountUserByOid(demoData.GNUSOCIAL_TEST_ACCOUNT_USER_OID));
+        connectionData.setAccountActor(demoData.getAccountUserByOid(demoData.GNUSOCIAL_TEST_ACCOUNT_USER_OID));
         connectionData.setDataReader(new AccountDataReaderEmpty());
         enrichConnectionData(connectionData);
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserOfSameOrigin(connectionData.getAccountUser());
-        assertTrue("Invalid my account " + connectionData.getAccountUser(), ma.isValid());
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserOfSameOrigin(connectionData.getAccountActor());
+        assertTrue("Invalid my account " + connectionData.getAccountActor(), ma.isValid());
         try {
             setAccountData(connectionData);
         } catch (ConnectionException e) {

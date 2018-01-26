@@ -22,18 +22,18 @@ import android.view.MenuItem;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.msg.MessageContextMenu;
 import org.andstatus.app.msg.MessageListContextMenuContainer;
-import org.andstatus.app.user.UserListContextMenu;
+import org.andstatus.app.user.ActorListContextMenu;
 import org.andstatus.app.view.MyContextMenu;
 
 public class ActivityContextMenu {
     public final ActorContextMenu actor;
     public final MessageContextMenu message;
-    public final UserListContextMenu user;
+    public final ActorListContextMenu objActor;
 
     public ActivityContextMenu(MessageListContextMenuContainer container) {
         actor = new ActorContextMenu(container);
         message = new MessageContextMenu(container);
-        user = new UserListContextMenu(container, MyContextMenu.MENU_GROUP_USER);
+        objActor = new ActorListContextMenu(container, MyContextMenu.MENU_GROUP_OBJACTOR);
     }
 
     public void onContextItemSelected(MenuItem item) {
@@ -44,8 +44,8 @@ public class ActivityContextMenu {
             case MyContextMenu.MENU_GROUP_MESSAGE:
                 message.onContextItemSelected(item);
                 break;
-            case MyContextMenu.MENU_GROUP_USER:
-                user.onContextItemSelected(item);
+            case MyContextMenu.MENU_GROUP_OBJACTOR:
+                objActor.onContextItemSelected(item);
                 break;
             default:
                 break;

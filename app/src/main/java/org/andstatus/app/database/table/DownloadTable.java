@@ -33,7 +33,7 @@ public final class DownloadTable implements BaseColumns {
     /** See {@link DownloadType} */
     public static final String DOWNLOAD_TYPE = "download_type";
     /** Avatar is connected to exactly one user */
-    public static final String USER_ID = UserTable.USER_ID;
+    public static final String USER_ID = ActorTable.ACTOR_ID;
     /** Attachment is connected to a message */
     public static final String MSG_ID =  MsgTable.MSG_ID;
     /** See {@link MyContentType} */

@@ -32,8 +32,8 @@ import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.MsgTable;
-import org.andstatus.app.database.table.UserTable;
-import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.database.table.ActorTable;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
@@ -69,12 +69,12 @@ public class MessageViewItem extends BaseMessageViewItem<MessageViewItem> {
         setLinkedAccount(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID));
 
         authorName = TimelineSql.userColumnIndexToNameAtTimeline(cursor,
-                cursor.getColumnIndex(UserTable.AUTHOR_NAME), MyPreferences.getShowOrigin());
+                cursor.getColumnIndex(ActorTable.AUTHOR_NAME), MyPreferences.getShowOrigin());
         setBody(MyHtml.prepareForView(DbUtils.getString(cursor, MsgTable.BODY)));
         inReplyToMsgId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_MSG_ID);
         inReplyToUserId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_USER_ID);
-        inReplyToName = DbUtils.getString(cursor, UserTable.IN_REPLY_TO_NAME);
-        recipientName = DbUtils.getString(cursor, UserTable.RECIPIENT_NAME);
+        inReplyToName = DbUtils.getString(cursor, ActorTable.IN_REPLY_TO_NAME);
+        recipientName = DbUtils.getString(cursor, ActorTable.RECIPIENT_NAME);
         activityUpdatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
         updatedDate = DbUtils.getLong(cursor, MsgTable.UPDATED_DATE);
         msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
@@ -97,7 +97,7 @@ public class MessageViewItem extends BaseMessageViewItem<MessageViewItem> {
         }
 
         long beforeRebloggers = System.currentTimeMillis();
-        for (MbUser user : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getMsgId())) {
+        for (Actor user : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getMsgId())) {
             rebloggers.put(user.userId, user.getWebFingerId());
         }
         if (MyLog.isVerboseEnabled()) {

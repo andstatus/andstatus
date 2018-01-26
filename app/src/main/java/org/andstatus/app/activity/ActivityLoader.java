@@ -18,11 +18,11 @@ package org.andstatus.app.activity;
 
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.net.social.MbActivityType;
+import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.timeline.TimelineLoader;
 import org.andstatus.app.timeline.TimelineParameters;
-import org.andstatus.app.user.UserListLoader;
-import org.andstatus.app.user.UserListType;
+import org.andstatus.app.user.ActorListLoader;
+import org.andstatus.app.user.ActorListType;
 
 import java.util.List;
 
@@ -38,10 +38,10 @@ public class ActivityLoader extends TimelineLoader<ActivityViewItem> {
     }
 
     private List<ActivityViewItem> loadUsers(List<ActivityViewItem> items) {
-        UserListLoader loader = new UserListLoader(UserListType.USERS, getParams().getMyAccount(),
+        ActorListLoader loader = new ActorListLoader(ActorListType.USERS, getParams().getMyAccount(),
                 getParams().getTimeline().getOrigin(), 0, "");
         for (ActivityViewItem item: items) {
-            if (item.activityType != MbActivityType.CREATE && item.activityType != MbActivityType.UPDATE) {
+            if (item.activityType != ActivityType.CREATE && item.activityType != ActivityType.UPDATE) {
                 loader.addUserIdToList(item.origin, item.actor.getId());
             }
             if (item.userId != 0) {
@@ -50,7 +50,7 @@ public class ActivityLoader extends TimelineLoader<ActivityViewItem> {
         }
         loader.load(progress -> {});
         for (ActivityViewItem item: items) {
-            if (item.activityType != MbActivityType.CREATE && item.activityType != MbActivityType.UPDATE) {
+            if (item.activityType != ActivityType.CREATE && item.activityType != ActivityType.UPDATE) {
                 int index = loader.getList().indexOf(item.actor);
                 if (index >= 0) {
                     item.actor = loader.getList().get(index);

@@ -21,7 +21,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.AvatarData;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.UserTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 
@@ -37,7 +37,7 @@ public class AvatarDownloader extends FileDownloader {
     @Override
     protected MyAccount findBestAccountForDownload() {
         final Origin origin = MyContextHolder.get().persistentOrigins().fromId(
-                MyQuery.userIdToLongColumnValue(UserTable.ORIGIN_ID, data.userId));
+                MyQuery.userIdToLongColumnValue(ActorTable.ORIGIN_ID, data.userId));
         return MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(origin);
     }
 

@@ -34,9 +34,8 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.database.table.OriginTable;
-import org.andstatus.app.database.table.UserTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.http.SslModeEnum;
-import org.andstatus.app.net.social.MbConfig;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -310,8 +309,8 @@ public class Origin {
             }
             cursor.close();
             if (count == 0) {
-                sql = "SELECT Count(*) FROM " + UserTable.TABLE_NAME + " WHERE "
-                        + UserTable.ORIGIN_ID + "=" + id;
+                sql = "SELECT Count(*) FROM " + ActorTable.TABLE_NAME + " WHERE "
+                        + ActorTable.ORIGIN_ID + "=" + id;
                 cursor = db.rawQuery(sql, null);
                 if (cursor.moveToNext()) {
                     count = cursor.getLong(0);
@@ -539,7 +538,7 @@ public class Origin {
             return this;
         }
         
-        public Builder save(MbConfig config) {
+        public Builder save(OriginConfig config) {
             origin.shortUrlLength = config.shortUrlLength;
             setTextLimit(config.textLimit);
             save();

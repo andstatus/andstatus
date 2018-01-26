@@ -23,12 +23,12 @@ import org.andstatus.app.msg.ConversationViewItem;
 import org.andstatus.app.msg.MessageViewItem;
 import org.andstatus.app.service.QueueData;
 import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.user.UserViewItem;
+import org.andstatus.app.user.ActorViewItem;
 
 public enum ViewItemType {
     ACTIVITY(ActivityViewItem.EMPTY),
     MESSAGE(MessageViewItem.EMPTY),
-    USER(UserViewItem.EMPTY),
+    USER(ActorViewItem.EMPTY),
     CONVERSATION(ConversationViewItem.EMPTY),
     COMMANDS_QUEUE(QueueData.EMPTY),
     UNKNOWN(EmptyViewItem.EMPTY);

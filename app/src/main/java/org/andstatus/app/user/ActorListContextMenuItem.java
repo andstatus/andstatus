@@ -36,24 +36,23 @@ import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.view.MyContextMenu;
 
-public enum UserListContextMenuItem implements ContextMenuItem {
+public enum ActorListContextMenuItem implements ContextMenuItem {
     GET_USER() {
         @Override
-        void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
+        void executeOnUiThread(ActorListContextMenu menu, MyAccount ma) {
             CommandData commandData = CommandData.newUserCommand(
                     CommandEnum.GET_USER,
                     ma,
                     menu.getOrigin(),
                     menu.getViewItem().getUserId(),
-                    menu.getViewItem().mbUser.getUserName());
+                    menu.getViewItem().actor.getActorName());
             MyServiceManager.sendManualForegroundCommand(commandData);
         }
     },
     DIRECT_MESSAGE() {
         @Override
-        void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
+        void executeOnUiThread(ActorListContextMenu menu, MyAccount ma) {
             MessageEditorData editorData = MessageEditorData.newEmpty(menu.getMyActor())
                     .addRecipientId(menu.getViewItem().getUserId());
             if (editorData.recipients.nonEmpty()) {
@@ -63,13 +62,13 @@ public enum UserListContextMenuItem implements ContextMenuItem {
     },
     SHARE() {
         @Override
-        void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
+        void executeOnUiThread(ActorListContextMenu menu, MyAccount ma) {
             // TODO
         }
     },
     USER_MESSAGES() {
         @Override
-        void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
+        void executeOnUiThread(ActorListContextMenu menu, MyAccount ma) {
             TimelineActivity.startForTimeline(menu.getActivity().getMyContext(),
                     menu.getActivity(),
                     Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER,
@@ -78,26 +77,26 @@ public enum UserListContextMenuItem implements ContextMenuItem {
     },
     FOLLOW() {
         @Override
-        void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
+        void executeOnUiThread(ActorListContextMenu menu, MyAccount ma) {
             sendUserCommand(CommandEnum.FOLLOW_USER, ma, menu);
         }
     },
     STOP_FOLLOWING() {
         @Override
-        void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
+        void executeOnUiThread(ActorListContextMenu menu, MyAccount ma) {
             sendUserCommand(CommandEnum.STOP_FOLLOWING_USER, ma, menu);
         }
     },
     ACT_AS_FIRST_OTHER_USER() {
         @Override
-        void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
+        void executeOnUiThread(ActorListContextMenu menu, MyAccount ma) {
             menu.setMyActor(ma.firstOtherAccountOfThisOrigin());
             menu.showContextMenu();
         }
     },
     ACT_AS() {
         @Override
-        void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
+        void executeOnUiThread(ActorListContextMenu menu, MyAccount ma) {
             AccountSelector.selectAccount(menu.getActivity(),
                     ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS, ma.getOriginId());
         }
@@ -109,8 +108,8 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         }
 
         @Override
-        void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
-            startUserListActivity(menu, ma, UserListType.FOLLOWERS);
+        void executeOnUiThread(ActorListContextMenu menu, MyAccount ma) {
+            startUserListActivity(menu, ma, ActorListType.FOLLOWERS);
         }
     },
     FRIENDS(true) {
@@ -120,31 +119,31 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         }
 
         @Override
-        void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
-            startUserListActivity(menu, ma, UserListType.FRIENDS);
+        void executeOnUiThread(ActorListContextMenu menu, MyAccount ma) {
+            startUserListActivity(menu, ma, ActorListType.FRIENDS);
         }
     },
     NONEXISTENT(),
     UNKNOWN();
 
     private static class Params {
-        UserListContextMenu menu;
+        ActorListContextMenu menu;
         volatile MyAccount ma;
 
-        Params(UserListContextMenu menu, MyAccount ma) {
+        Params(ActorListContextMenu menu, MyAccount ma) {
             this.menu = menu;
             this.ma = ma;
         }
     }
 
     private final boolean mIsAsync;
-    private static final String TAG = UserListContextMenuItem.class.getSimpleName();
+    private static final String TAG = ActorListContextMenuItem.class.getSimpleName();
 
-    UserListContextMenuItem() {
+    ActorListContextMenuItem() {
         this(false);
     }
 
-    UserListContextMenuItem(boolean isAsync) {
+    ActorListContextMenuItem(boolean isAsync) {
         this.mIsAsync = isAsync;
     }
 
@@ -153,8 +152,8 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         return Menu.FIRST + ordinal() + 1;
     }
     
-    public static UserListContextMenuItem fromId(int id) {
-        for (UserListContextMenuItem item : UserListContextMenuItem.values()) {
+    public static ActorListContextMenuItem fromId(int id) {
+        for (ActorListContextMenuItem item : ActorListContextMenuItem.values()) {
             if (item.getId() == id) {
                 return item;
             }
@@ -170,7 +169,7 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         menu.add(menuGroup, this.getId(), order, title);
     }
     
-    public boolean execute(UserListContextMenu menu, MyAccount ma) {
+    public boolean execute(ActorListContextMenu menu, MyAccount ma) {
         Params params = new Params(menu, ma);
         MyLog.v(this, "execute started");
         if (mIsAsync) {
@@ -187,7 +186,7 @@ public enum UserListContextMenuItem implements ContextMenuItem {
                     @Override
                     protected Void doInBackground2(Void... params2) {
                         MyLog.v(this, "execute async started. "
-                                + params.menu.getViewItem().mbUser.getNamePreferablyWebFingerId());
+                                + params.menu.getViewItem().actor.getNamePreferablyWebFingerId());
                         executeAsync(params);
                         return null;
                     }
@@ -210,7 +209,7 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         // Empty
     }
 
-    void executeOnUiThread(UserListContextMenu menu, MyAccount ma) {
+    void executeOnUiThread(ActorListContextMenu menu, MyAccount ma) {
         // Empty
     }
 
@@ -218,7 +217,7 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         long userId = params.menu.getViewItem().getUserId();
         Origin origin = params.menu.getOrigin();
         if (!origin.isValid()) {
-            MyLog.e(this, "Unknown origin for " + params.menu.getViewItem().mbUser);
+            MyLog.e(this, "Unknown origin for " + params.menu.getViewItem().actor);
             return;
         }
         if (!params.ma.isValid() || !params.ma.getOrigin().equals(origin)) {
@@ -230,9 +229,9 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         }
     }
 
-    void startUserListActivity(UserListContextMenu menu, MyAccount ma, UserListType userListType) {
+    void startUserListActivity(ActorListContextMenu menu, MyAccount ma, ActorListType actorListType) {
         Uri uri = MatchedUri.getUserListUri(ma.getUserId(),
-                userListType,
+                actorListType,
                 menu.getOrigin().getId(),
                 menu.getViewItem().getUserId(), "");
         if (MyLog.isVerboseEnabled()) {
@@ -241,7 +240,7 @@ public enum UserListContextMenuItem implements ContextMenuItem {
         menu.getActivity().startActivity(MyAction.VIEW_FOLLOWERS.getIntent(uri));
     }
 
-    void sendUserCommand(CommandEnum command, MyAccount myActor, UserListContextMenu menu) {
+    void sendUserCommand(CommandEnum command, MyAccount myActor, ActorListContextMenu menu) {
         MyServiceManager.sendManualForegroundCommand(
                 CommandData.newUserCommand(command, myActor, menu.getOrigin(), menu.getViewItem().getUserId(), ""));
     }

@@ -28,8 +28,8 @@ import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
-import org.andstatus.app.net.social.MbActivity;
-import org.andstatus.app.net.social.MbAttachment;
+import org.andstatus.app.net.social.AActivity;
+import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.util.MyLog;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,8 +58,8 @@ public class AttachmentDownloaderTest {
     public void testImageAttachmentLoad() throws IOException {
         String body = "A message with an image attachment";
         DemoMessageInserter mi = new DemoMessageInserter(ma);
-        MbActivity activity = mi.buildActivity(mi.buildUser(), body, null, null, DownloadStatus.LOADED);
-        activity.getMessage().attachments.add(MbAttachment.fromUrlAndContentType(
+        AActivity activity = mi.buildActivity(mi.buildUser(), body, null, null, DownloadStatus.LOADED);
+        activity.getMessage().attachments.add(Attachment.fromUrlAndContentType(
                 new URL("http://www.publicdomainpictures.net/pictures/60000/nahled/landscape-1376582205Yno.jpg"),
                 MyContentType.IMAGE));
         mi.onActivity(activity);

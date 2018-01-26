@@ -24,14 +24,14 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.net.social.Connection;
 
 /**
- * Users table (they are both senders AND recipients in the {@link MsgTable} table)
+ * Actors table (they are both senders AND recipients in the {@link MsgTable} table)
  * Some of these Users are Accounts (connected to accounts in AndStatus),
  * see {@link MyAccount#getUserId()}
  */
-public final class UserTable implements BaseColumns {
+public final class ActorTable implements BaseColumns {
     public static final String TABLE_NAME = "user";
 
-    private UserTable() {
+    private ActorTable() {
     }
 
     // Table columns
@@ -45,9 +45,9 @@ public final class UserTable implements BaseColumns {
      * ID in the originating system
      * The id is not unique for this table, because we have IDs from different systems in one column.
      */
-    public static final String USER_OID = "user_oid";
-    /** This is called "screen_name" in Twitter API */
-    public static final String USERNAME = "username";
+    public static final String ACTOR_OID = "user_oid";
+    /** This is called "screen_name" in Twitter API, "login" or "username" in others */
+    public static final String ACTORNAME = "username";
     /** It looks like an email address with your nickname then "@" then your server */
     public static final String WEBFINGER_ID = "webfinger_id";
     /** This is called "name" in Twitter API */
@@ -85,27 +85,27 @@ public final class UserTable implements BaseColumns {
     public static final String INS_DATE = "user_ins_date";
 
     /**
-     * Id of the latest activity where this User was an Actor or an Author
+     * Id of the latest activity where this actor was an Actor or an Author
      */
-    public static final String USER_ACTIVITY_ID = "user_activity_id";
+    public static final String ACTOR_ACTIVITY_ID = "user_activity_id";
     /**
      * Date of the latest activity where this User was an Actor
      */
-    public static final String USER_ACTIVITY_DATE = "user_activity_date";
+    public static final String ACTOR_ACTIVITY_DATE = "user_activity_date";
 
     /*
      * Derived columns (they are not stored in this table but are result of joins)
      */
     /** Alias for the primary key */
-    public static final String USER_ID = "user_id";
+    public static final String ACTOR_ID = "user_id";
     /** Alias for the primary key used for accounts */
     public static final String ACCOUNT_ID = "account_id";
     /**
      * Derived from {@link ActivityTable#ACTOR_ID}
-     * Whether this (and other similar...) is {@link #USERNAME} or {@link #REAL_NAME}, depends on settings
+     * Whether this (and other similar...) is {@link #ACTORNAME} or {@link #REAL_NAME}, depends on settings
      *
      * Derived from {@link ActivityTable#ACTOR_ID} */
-    public static final String ACTOR_NAME = "actor_name";
+    public static final String ACTIVITY_ACTOR_NAME = "activity_actor_name";
     /** Derived from {@link MsgTable#AUTHOR_ID} */
     public static final String AUTHOR_NAME = "author_name";
     /** Derived from {@link MsgTable#IN_REPLY_TO_USER_ID} */
@@ -113,14 +113,14 @@ public final class UserTable implements BaseColumns {
     /** Derived from {@link AudienceTable#USER_ID} */
     public static final String RECIPIENT_NAME = "recipient_name";
 
-    public static final String DEFAULT_SORT_ORDER = USERNAME + " ASC";
+    public static final String DEFAULT_SORT_ORDER = ACTORNAME + " ASC";
 
     public static void create(SQLiteDatabase db) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + ORIGIN_ID + " INTEGER NOT NULL,"
-                + USER_OID + " TEXT NOT NULL,"
-                + USERNAME + " TEXT NOT NULL,"
+                + ACTOR_OID + " TEXT NOT NULL,"
+                + ACTORNAME + " TEXT NOT NULL,"
                 + WEBFINGER_ID + " TEXT NOT NULL,"
                 + REAL_NAME + " TEXT,"
                 + DESCRIPTION + " TEXT,"
@@ -136,13 +136,13 @@ public final class UserTable implements BaseColumns {
                 + CREATED_DATE + " INTEGER NOT NULL DEFAULT 0,"
                 + UPDATED_DATE + " INTEGER NOT NULL DEFAULT 0,"
                 + INS_DATE + " INTEGER NOT NULL,"
-                + USER_ACTIVITY_ID + " INTEGER NOT NULL DEFAULT 0,"
-                + USER_ACTIVITY_DATE + " INTEGER NOT NULL DEFAULT 0"
+                + ACTOR_ACTIVITY_ID + " INTEGER NOT NULL DEFAULT 0,"
+                + ACTOR_ACTIVITY_DATE + " INTEGER NOT NULL DEFAULT 0"
                 + ")");
 
         DbUtils.execSQL(db, "CREATE UNIQUE INDEX idx_user_origin ON " + TABLE_NAME + " ("
                 + ORIGIN_ID + ", "
-                + USER_OID
+                + ACTOR_OID
                 + ")");
     }
 }

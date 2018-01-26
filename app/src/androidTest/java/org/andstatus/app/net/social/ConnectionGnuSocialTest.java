@@ -41,7 +41,7 @@ import static org.junit.Assert.assertTrue;
 public class ConnectionGnuSocialTest {
     private ConnectionTwitterGnuSocialMock connection;
 
-    public static MbActivity getMessageWithAttachment(Context context) throws Exception {
+    public static AActivity getMessageWithAttachment(Context context) throws Exception {
         ConnectionGnuSocialTest test = new ConnectionGnuSocialTest();
         test.setUp();
         return test.privateGetMessageWithAttachment(context, true);
@@ -60,21 +60,21 @@ public class ConnectionGnuSocialTest {
         connection.getHttpMock().setResponse(jso);
 
         String accountUserOid = demoData.GNUSOCIAL_TEST_ACCOUNT_USER_OID;
-        List<MbActivity> timeline = connection.getTimeline(ApiRoutineEnum.PUBLIC_TIMELINE,
+        List<AActivity> timeline = connection.getTimeline(ApiRoutineEnum.PUBLIC_TIMELINE,
                 new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountUserOid);
         assertNotNull("timeline returned", timeline);
         int size = 3;
         assertEquals("Number of items in the Timeline", size, timeline.size());
 
         int ind = 0;
-        assertEquals("Posting message", MbObjectType.MESSAGE, timeline.get(ind).getObjectType());
-        MbActivity activity = timeline.get(ind);
+        assertEquals("Posting message", AObjectType.NOTE, timeline.get(ind).getObjectType());
+        AActivity activity = timeline.get(ind);
         assertEquals("Timeline position", "2663077", activity.getTimelinePosition().getPosition());
         assertEquals("Message Oid", "2663077", activity.getMessage().oid);
         assertEquals("conversationOid", "2218650", activity.getMessage().conversationOid);
-        assertEquals("Favorited " + activity, TriState.TRUE, activity.getMessage().getFavoritedBy(activity.accountUser));
+        assertEquals("Favorited " + activity, TriState.TRUE, activity.getMessage().getFavoritedBy(activity.accountActor));
         assertEquals("Oid", "116387", activity.getAuthor().oid);
-        assertEquals("Username", "aru", activity.getAuthor().getUserName());
+        assertEquals("Username", "aru", activity.getAuthor().getActorName());
         assertEquals("WebFinger ID", "aru@status.vinilox.eu", activity.getAuthor().getWebFingerId());
         assertEquals("Display name", "aru", activity.getAuthor().getRealName());
         assertEquals("Description", "Manjaro user, student of physics and metalhead. Excuse my english ( ͡° ͜ʖ ͡°)", activity.getAuthor().getDescription());
@@ -96,19 +96,19 @@ public class ConnectionGnuSocialTest {
         assertEquals("Message Oid", "2664346", activity.getMessage().oid);
         assertEquals("conversationOid", "2218650", activity.getMessage().conversationOid);
         assertTrue("Does not have a recipient", activity.recipients().isEmpty());
-        assertNotEquals("Is a reblog", MbActivityType.ANNOUNCE,  activity.type);
+        assertNotEquals("Is a reblog", ActivityType.ANNOUNCE,  activity.type);
 
-        final MbActivity inReplyTo = activity.getMessage().getInReplyTo();
+        final AActivity inReplyTo = activity.getMessage().getInReplyTo();
         assertTrue("Is a reply", inReplyTo.nonEmpty());
         assertEquals("Reply to the message id", "2663833", inReplyTo.getMessage().oid);
         assertEquals("Reply to the message by userOid", "114973", inReplyTo.getActor().oid);
         assertEquals("Updated date should be 0 for inReplyTo message", 0, inReplyTo.getMessage().getUpdatedDate());
         assertEquals("Updated date should be 0 for inReplyTo activity", 0, inReplyTo.getUpdatedDate());
 
-        assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountUser));
+        assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountActor));
         String startsWith = "@<span class=\"vcard\">";
         assertEquals("Body of this message starts with", startsWith, activity.getMessage().getBody().substring(0, startsWith.length()));
-        assertEquals("Username", "andstatus", activity.getAuthor().getUserName());
+        assertEquals("Username", "andstatus", activity.getAuthor().getActorName());
         assertEquals("Display name", "AndStatus@quitter.se", activity.getAuthor().getRealName());
         assertEquals("Banner URL", "https://quitter.se/file/3fd65c6088ea02dc3a5ded9798a865a8ff5425b13878da35ad894cd084d015fc.png", activity.getAuthor().bannerUrl);
 
@@ -116,11 +116,11 @@ public class ConnectionGnuSocialTest {
         activity = timeline.get(ind);
         assertEquals("conversationOid", "2218650", activity.getMessage().conversationOid);
         assertEquals("Message not private", TriState.UNKNOWN, activity.getMessage().getPrivate());
-        assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountUser));
-        assertEquals("MyAccount", accountUserOid, activity.accountUser.oid);
+        assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountActor));
+        assertEquals("MyAccount", accountUserOid, activity.accountActor.oid);
         assertEquals("Actor", activity.getAuthor().oid, activity.getActor().oid);
         assertEquals("Oid", "114973", activity.getAuthor().oid);
-        assertEquals("Username", "mmn", activity.getAuthor().getUserName());
+        assertEquals("Username", "mmn", activity.getAuthor().getActorName());
         assertEquals("WebFinger ID", "mmn@social.umeahackerspace.se", activity.getAuthor().getWebFingerId());
         assertEquals("Display name", "mmn", activity.getAuthor().getRealName());
         assertEquals("Description", "", activity.getAuthor().getDescription());
@@ -143,7 +143,7 @@ public class ConnectionGnuSocialTest {
                 org.andstatus.app.tests.R.raw.twitter_home_timeline);
         connection.getHttpMock().setResponse(jso);
         
-        List<MbActivity> timeline = connection.searchMessages(new TimelinePosition(""), TimelinePosition.EMPTY, 20,
+        List<AActivity> timeline = connection.searchMessages(new TimelinePosition(""), TimelinePosition.EMPTY, 20,
                 demoData.GLOBAL_PUBLIC_MESSAGE_TEXT);
         assertNotNull("timeline returned", timeline);
         int size = 4;
@@ -156,7 +156,7 @@ public class ConnectionGnuSocialTest {
                 org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
         connection.getHttpMock().setResponse(jso);
         
-        MbActivity activity = connection.updateStatus("Test post message with media", "", "", demoData.LOCAL_IMAGE_TEST_URI);
+        AActivity activity = connection.updateStatus("Test post message with media", "", "", demoData.LOCAL_IMAGE_TEST_URI);
         activity.getMessage().setPrivate(TriState.FALSE);
         assertEquals("Message returned", privateGetMessageWithAttachment(
                 InstrumentationRegistry.getInstrumentation().getContext(), false).getMessage(), activity.getMessage());
@@ -167,22 +167,22 @@ public class ConnectionGnuSocialTest {
         privateGetMessageWithAttachment(InstrumentationRegistry.getInstrumentation().getContext(), true);
     }
 
-    private MbActivity privateGetMessageWithAttachment(Context context, boolean uniqueUid) throws IOException {
+    private AActivity privateGetMessageWithAttachment(Context context, boolean uniqueUid) throws IOException {
         final String MESSAGE_OID = "2215662";
         // Originally downloaded from https://quitter.se/api/statuses/show.json?id=2215662
         String jso = RawResourceUtils.getString(context, org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
         connection.getHttpMock().setResponse(jso);
-        MbActivity activity = connection.getMessage(MESSAGE_OID);
+        AActivity activity = connection.getMessage(MESSAGE_OID);
         if (uniqueUid) {
             activity.setMessage(activity.getMessage().copy(activity.getMessage().oid + "_" + demoData.TESTRUN_UID));
         }
         assertNotNull("message returned", activity);
         assertEquals("conversationOid", "1956322", activity.getMessage().conversationOid);
-        assertEquals("Author", "mcscx", activity.getAuthor().getUserName());
+        assertEquals("Author", "mcscx", activity.getAuthor().getActorName());
         assertEquals("null Homepage (url) should be treated as blank", "", activity.getAuthor().getHomepage());
 
         assertEquals("has attachment", activity.getMessage().attachments.size(), 1);
-        MbAttachment attachment = MbAttachment.fromUrlAndContentType(new URL(
+        Attachment attachment = Attachment.fromUrlAndContentType(new URL(
                 "https://quitter.se/file/mcscx-20131110T222250-427wlgn.png")
                 , MyContentType.IMAGE);
         assertEquals("attachment", attachment, activity.getMessage().attachments.get(0));
@@ -195,9 +195,9 @@ public class ConnectionGnuSocialTest {
         String jString = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.loadaverage_repost_response);
         connection.getHttpMock().setResponse(jString);
-        MbActivity activity = connection.postReblog(MESSAGE_OID);
-        assertEquals(MbActivityType.ANNOUNCE, activity.type);
-        MbMessage message = activity.getMessage();
+        AActivity activity = connection.postReblog(MESSAGE_OID);
+        assertEquals(ActivityType.ANNOUNCE, activity.type);
+        Note message = activity.getMessage();
         assertEquals("Message oid" + message, MESSAGE_OID, message.oid);
         assertEquals("conversationOid", "9118253", message.conversationOid);
         assertEquals(1, connection.getHttpMock().getRequestsCounter());

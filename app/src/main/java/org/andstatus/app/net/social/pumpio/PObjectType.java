@@ -20,7 +20,7 @@ import org.json.JSONObject;
 
 /** @see <a href="https://www.w3.org/TR/activitystreams-vocabulary/#activity-types">Object Types</a>
  * */
-enum ObjectType {
+enum PObjectType {
     ACTIVITY("activity", null) {
         @Override
         public boolean isTypeOf(JSONObject jso) {
@@ -46,9 +46,9 @@ enum ObjectType {
     UNKNOWN("unknown", null);
     
     private String id;
-    private ObjectType compatibleType = this;
+    private PObjectType compatibleType = this;
 
-    ObjectType(String fieldName, ObjectType compatibleType) {
+    PObjectType(String fieldName, PObjectType compatibleType) {
         this.id = fieldName;
         if (compatibleType != null) {
             this.compatibleType = compatibleType;
@@ -67,13 +67,13 @@ enum ObjectType {
         return is;
     }
 
-    public static ObjectType compatibleWith(JSONObject jso) {
-        ObjectType type = fromJson(jso);
+    public static PObjectType compatibleWith(JSONObject jso) {
+        PObjectType type = fromJson(jso);
         return type.compatibleType == null ? UNKNOWN : type.compatibleType;
     }
 
-    public static ObjectType fromJson(JSONObject jso) {
-        for(ObjectType type : ObjectType.values()) {
+    public static PObjectType fromJson(JSONObject jso) {
+        for(PObjectType type : PObjectType.values()) {
             if (type.isTypeOf(jso)) {
                 return type;
             }

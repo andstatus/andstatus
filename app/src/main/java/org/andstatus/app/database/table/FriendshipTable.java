@@ -32,7 +32,7 @@ public final class FriendshipTable {
     /**
      * Who is following
      */
-    public static final String USER_ID = UserTable.USER_ID;
+    public static final String USER_ID = ActorTable.ACTOR_ID;
     /**
      * Friend by {@link #USER_ID} (is followed by {@link #USER_ID})
      */

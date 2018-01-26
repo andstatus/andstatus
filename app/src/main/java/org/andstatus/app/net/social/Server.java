@@ -19,16 +19,16 @@ package org.andstatus.app.net.social;
 import android.text.TextUtils;
 
 /** 
- * Microblogging system metadata (e.g. from a Microblogging system's discovery service)
+ * Metadata of a (server of a) Social Network (e.g. from a discovery service)
  * @author yvolk@yurivolkov.com
  * */
-public class MbOrigin {
+public class Server {
     public final String name;
     public final String urlString;
     public final long usersCount;
     public final long messagesCount;
 
-    public MbOrigin(String name, String urlString, long usersCount, long messagesCount) {
+    public Server(String name, String urlString, long usersCount, long messagesCount) {
         this.name = name;
         this.urlString = urlString;
         this.usersCount = usersCount;

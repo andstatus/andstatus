@@ -21,10 +21,12 @@ import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.net.social.AActivity;
+import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.timeline.meta.TimelineType;
 
-/** The table holds {@link org.andstatus.app.net.social.MbActivity} */
+/** The table holds {@link AActivity} */
 public final class ActivityTable implements BaseColumns {
     public static final String TABLE_NAME = "activity";
 
@@ -32,13 +34,13 @@ public final class ActivityTable implements BaseColumns {
     /** id in a Social Network {@link OriginTable} */
     public static final String ACTIVITY_OID = "activity_oid";
     public static final String ACCOUNT_ID = "account_id";
-    /** ID of {@link org.andstatus.app.net.social.MbActivityType} */
+    /** ID of {@link ActivityType} */
     public static final String ACTIVITY_TYPE = "activity_type";
     public static final String ACTOR_ID = "actor_id";
     /** Message as Object */
     public static final String MSG_ID = "activity_" + MsgTable.MSG_ID;
     /** Us as Object */
-    public static final String USER_ID = "activity_" + UserTable.USER_ID;
+    public static final String USER_ID = "activity_" + ActorTable.ACTOR_ID;
     /** Inner Activity as Object */
     public static final String OBJ_ACTIVITY_ID = "obj_activity_id";
 

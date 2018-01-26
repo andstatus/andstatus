@@ -21,7 +21,7 @@ import org.andstatus.app.timeline.LoadableListActivity;
 public interface ActionableUserList {
     LoadableListActivity getActivity();
     long getSelectedMsgId();
-    UserListType getUserListType();
+    ActorListType getUserListType();
     boolean isListCombined();
 
 }

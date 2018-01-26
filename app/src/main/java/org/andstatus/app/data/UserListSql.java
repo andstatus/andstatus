@@ -22,7 +22,7 @@ import android.provider.BaseColumns;
 
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.DownloadTable;
-import org.andstatus.app.database.table.UserTable;
+import org.andstatus.app.database.table.ActorTable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,7 +43,7 @@ public class UserListSql {
     static String tablesForList(Uri uri, String[] projection) {
         Collection<String> columns = new java.util.HashSet<>(Arrays.asList(projection));
 
-        String tables = UserTable.TABLE_NAME;
+        String tables = ActorTable.TABLE_NAME;
         if (columns.contains(DownloadTable.AVATAR_FILE_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
                     + DownloadTable.USER_ID + ", "
@@ -54,7 +54,7 @@ public class UserListSql {
                     + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_STATUS
                     + "=" + DownloadStatus.LOADED.save() + " AND "
                     + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.USER_ID
-                    + "=" + UserTable.TABLE_NAME + "." + BaseColumns._ID;
+                    + "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID;
         }
         return tables;
     }
@@ -68,28 +68,28 @@ public class UserListSql {
 
     private static List<String> getBaseProjection() {
         List<String> columnNames = new ArrayList<>();
-        columnNames.add(UserTable._ID);
-        columnNames.add(UserTable.USER_OID);
-        columnNames.add(UserTable.USERNAME);
-        columnNames.add(UserTable.WEBFINGER_ID);
-        columnNames.add(UserTable.REAL_NAME);
-        columnNames.add(UserTable.DESCRIPTION);
-        columnNames.add(UserTable.LOCATION);
+        columnNames.add(ActorTable._ID);
+        columnNames.add(ActorTable.ACTOR_OID);
+        columnNames.add(ActorTable.ACTORNAME);
+        columnNames.add(ActorTable.WEBFINGER_ID);
+        columnNames.add(ActorTable.REAL_NAME);
+        columnNames.add(ActorTable.DESCRIPTION);
+        columnNames.add(ActorTable.LOCATION);
 
-        columnNames.add(UserTable.PROFILE_URL);
-        columnNames.add(UserTable.HOMEPAGE);
+        columnNames.add(ActorTable.PROFILE_URL);
+        columnNames.add(ActorTable.HOMEPAGE);
         if (MyPreferences.getShowAvatars()) {
             columnNames.add(DownloadTable.AVATAR_FILE_NAME);
         }
 
-        columnNames.add(UserTable.MSG_COUNT);
-        columnNames.add(UserTable.FAVORITES_COUNT);
-        columnNames.add(UserTable.FOLLOWING_COUNT);
-        columnNames.add(UserTable.FOLLOWERS_COUNT);
+        columnNames.add(ActorTable.MSG_COUNT);
+        columnNames.add(ActorTable.FAVORITES_COUNT);
+        columnNames.add(ActorTable.FOLLOWING_COUNT);
+        columnNames.add(ActorTable.FOLLOWERS_COUNT);
 
-        columnNames.add(UserTable.CREATED_DATE);
-        columnNames.add(UserTable.UPDATED_DATE);
-        columnNames.add(UserTable.ORIGIN_ID);
+        columnNames.add(ActorTable.CREATED_DATE);
+        columnNames.add(ActorTable.UPDATED_DATE);
+        columnNames.add(ActorTable.ORIGIN_ID);
         return columnNames;
     }
 

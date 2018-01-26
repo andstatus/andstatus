@@ -143,7 +143,7 @@
                 <data android:mimeType="vnd.android.cursor.item/org.andstatus.app.provider.msg"/>
             </intent-filter>
         </activity>
-        <activity android:name=".user.UserList"
+        <activity android:name=".user.ActorList"
                   android:label="@string/user_list"
                   android:parentActivityName=".timeline.TimelineActivity">
             <intent-filter>

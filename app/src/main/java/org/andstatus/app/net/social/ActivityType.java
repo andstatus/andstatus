@@ -26,7 +26,7 @@ import org.andstatus.app.R;
  * <a href="https://www.w3.org/TR/activitystreams-vocabulary/#activity-types">Activity Vocabulary</a>
  * and ActivityPub, see <a href="https://www.w3.org/TR/activitypub/#announce-activity-inbox">announce-activity-inbox</a>
  */
-public enum MbActivityType {
+public enum ActivityType {
     ANNOUNCE(1, R.string.reblogged),  // known also as Repost, Retweet, Boost...
     CREATE(2, R.string.created),
     DELETE(3, R.string.deleted),
@@ -42,12 +42,12 @@ public enum MbActivityType {
     public final long id;
     public final int actedResourceId;
 
-    MbActivityType(long id, int actedResourceId) {
+    ActivityType(long id, int actedResourceId) {
         this.id = id;
         this.actedResourceId = actedResourceId;
     }
 
-    public static MbActivityType undo(MbActivityType type) {
+    public static ActivityType undo(ActivityType type) {
         switch (type) {
             case ANNOUNCE:
                 return UNDO_ANNOUNCE;
@@ -62,8 +62,8 @@ public enum MbActivityType {
 
     /** @return the enum or {@link #EMPTY} */
     @NonNull
-    public static MbActivityType fromId(long id) {
-        for (MbActivityType type : values()) {
+    public static ActivityType fromId(long id) {
+        for (ActivityType type : values()) {
             if (type.id == id) {
                 return type;
             }

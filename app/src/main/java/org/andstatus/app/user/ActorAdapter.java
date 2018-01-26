@@ -32,20 +32,20 @@ import org.andstatus.app.util.MyUrlSpan;
 
 import java.util.List;
 
-public class UserAdapter extends BaseTimelineAdapter<UserViewItem> {
-    private final UserListContextMenu contextMenu;
+public class ActorAdapter extends BaseTimelineAdapter<ActorViewItem> {
+    private final ActorListContextMenu contextMenu;
     private final int listItemLayoutId;
     private final boolean showWebFingerId =
             MyPreferences.getUserInTimeline().equals(UserInTimeline.WEBFINGER_ID);
 
-    public UserAdapter(@NonNull UserListContextMenu contextMenu, TimelineData<UserViewItem> listData) {
+    public ActorAdapter(@NonNull ActorListContextMenu contextMenu, TimelineData<ActorViewItem> listData) {
         super(contextMenu.getActivity().getMyContext(), listData);
         this.contextMenu = contextMenu;
         this.listItemLayoutId = R.id.user_wrapper;
     }
 
-    UserAdapter(@NonNull UserListContextMenu contextMenu, int listItemLayoutId, List<UserViewItem> items,
-                Timeline timeline) {
+    ActorAdapter(@NonNull ActorListContextMenu contextMenu, int listItemLayoutId, List<ActorViewItem> items,
+                 Timeline timeline) {
         super(contextMenu.getActivity().getMyContext(), timeline, items);
         this.contextMenu = contextMenu;
         this.listItemLayoutId = listItemLayoutId;
@@ -57,30 +57,30 @@ public class UserAdapter extends BaseTimelineAdapter<UserViewItem> {
         view.setOnCreateContextMenuListener(contextMenu);
         view.setOnClickListener(this);
         setPosition(view, position);
-        UserViewItem item = getItem(position);
+        ActorViewItem item = getItem(position);
         populateView(view, item, position);
         return view;
     }
 
-    public void populateView(View view, UserViewItem item, int position) {
+    public void populateView(View view, ActorViewItem item, int position) {
         MyUrlSpan.showText(view, R.id.username,
-                item.mbUser.toUserTitle(showWebFingerId) + ( isCombined() ?
-                        " / " + item.mbUser.origin.getName() : ""),
+                item.actor.toUserTitle(showWebFingerId) + ( isCombined() ?
+                        " / " + item.actor.origin.getName() : ""),
                 false, false);
         if (showAvatars) {
             showAvatar(item, view);
         }
-        MyUrlSpan.showText(view, R.id.homepage, item.mbUser.getHomepage(), true, false);
+        MyUrlSpan.showText(view, R.id.homepage, item.actor.getHomepage(), true, false);
         MyUrlSpan.showText(view, R.id.description, item.getDescription(), false, false);
-        MyUrlSpan.showText(view, R.id.location, item.mbUser.location, false, false);
-        MyUrlSpan.showText(view, R.id.profile_url, item.mbUser.getProfileUrl(), true, false);
+        MyUrlSpan.showText(view, R.id.location, item.actor.location, false, false);
+        MyUrlSpan.showText(view, R.id.profile_url, item.actor.getProfileUrl(), true, false);
 
-        showCounter(view, R.id.msg_count, item.mbUser.msgCount);
-        showCounter(view, R.id.favorites_count, item.mbUser.favoritesCount);
-        showCounter(view, R.id.following_count, item.mbUser.followingCount);
-        showCounter(view, R.id.followers_count, item.mbUser.followersCount);
+        showCounter(view, R.id.msg_count, item.actor.msgCount);
+        showCounter(view, R.id.favorites_count, item.actor.favoritesCount);
+        showCounter(view, R.id.following_count, item.actor.followingCount);
+        showCounter(view, R.id.followers_count, item.actor.followersCount);
 
-        MyUrlSpan.showText(view, R.id.location, item.mbUser.location, false, false);
+        MyUrlSpan.showText(view, R.id.location, item.actor.location, false, false);
         showMyFollowers(view, item);
     }
 
@@ -92,12 +92,12 @@ public class UserAdapter extends BaseTimelineAdapter<UserViewItem> {
         return LayoutInflater.from(contextMenu.getActivity()).inflate(listItemLayoutId, null);
     }
 
-    private void showAvatar(UserViewItem item, View view) {
+    private void showAvatar(ActorViewItem item, View view) {
         AvatarView avatarView = view.findViewById(R.id.avatar_image);
         item.showAvatar(contextMenu.getActivity(), avatarView);
     }
 
-    private void showMyFollowers(View view, UserViewItem item) {
+    private void showMyFollowers(View view, ActorViewItem item) {
         StringBuilder builder = new StringBuilder();
         if (!item.myFollowers.isEmpty()) {
             int count = 0;

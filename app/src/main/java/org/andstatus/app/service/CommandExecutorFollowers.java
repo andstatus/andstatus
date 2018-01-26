@@ -27,11 +27,11 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.UserActivity;
 import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.UserTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Connection;
-import org.andstatus.app.net.social.MbActivityType;
-import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.ActivityType;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
@@ -46,7 +46,7 @@ import java.util.Set;
 public class CommandExecutorFollowers extends CommandExecutorStrategy {
     long userId = 0;
     String userOid = "";
-    List<MbUser> usersNew = new ArrayList<>();
+    List<Actor> actorsNew = new ArrayList<>();
     String commandSummary = "";
 
     @Override
@@ -72,7 +72,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
             TimelineSyncTracker syncTracker = new TimelineSyncTracker(execContext.getTimeline(), true);
             syncTracker.onTimelineDownloaded();
 
-            MyLog.d(this, commandSummary + " ended, " + usersNew.size() + " users");
+            MyLog.d(this, commandSummary + " ended, " + actorsNew.size() + " users");
             logOk(true);
         } catch (ConnectionException e) {
             logConnectionException(e, commandSummary);
@@ -110,12 +110,12 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
     private void syncFollowers() throws ConnectionException {
         if (execContext.getMyAccount().getConnection()
                 .isApiSupported(Connection.ApiRoutineEnum.GET_FOLLOWERS)) {
-            usersNew = execContext.getMyAccount().getConnection().getFollowers(userOid);
+            actorsNew = execContext.getMyAccount().getConnection().getFollowers(userOid);
         } else if (execContext.getMyAccount().getConnection()
                 .isApiSupported(Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS)) {
             List<String> userOidsNew =
                     execContext.getMyAccount().getConnection().getFollowersIds(userOid);
-            if (getUsersForOids(userOidsNew, usersNew)) return;
+            if (getUsersForOids(userOidsNew, actorsNew)) return;
         } else {
             throw new ConnectionException(ConnectionException.StatusCode.UNSUPPORTED_API,
                     Connection.ApiRoutineEnum.GET_FOLLOWERS
@@ -125,13 +125,13 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         Set<Long> userIdsOld = MyQuery.getFollowersIds(userId);
         execContext.getResult().incrementDownloadedCount();
         broadcastProgress(execContext.getContext().getText(R.string.followers).toString()
-                + ": " + userIdsOld.size() + " -> " + usersNew.size(), false);
+                + ": " + userIdsOld.size() + " -> " + actorsNew.size(), false);
 
-        if (updateNewUsersAndTheirLatestMessages(usersNew)) return;
+        if (updateNewUsersAndTheirLatestMessages(actorsNew)) return;
 
-        for (MbUser mbUser : usersNew) {
-            userIdsOld.remove(mbUser.userId);
-            FriendshipValues.setFollowed(mbUser.userId, userId);
+        for (Actor actor : actorsNew) {
+            userIdsOld.remove(actor.userId);
+            FriendshipValues.setFollowed(actor.userId, userId);
         }
         for (long userIdOld : userIdsOld) {
             FriendshipValues.setNotFollowed(userIdOld, userId);
@@ -141,12 +141,12 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
     private void syncFriends() throws ConnectionException {
         if (execContext.getMyAccount().getConnection()
                 .isApiSupported(Connection.ApiRoutineEnum.GET_FRIENDS)) {
-            usersNew = execContext.getMyAccount().getConnection().getFriends(userOid);
+            actorsNew = execContext.getMyAccount().getConnection().getFriends(userOid);
         } else if (execContext.getMyAccount().getConnection()
                 .isApiSupported(Connection.ApiRoutineEnum.GET_FRIENDS_IDS)) {
             List<String> userOidsNew =
                     execContext.getMyAccount().getConnection().getFriendsIds(userOid);
-            if (getUsersForOids(userOidsNew, usersNew)) return;
+            if (getUsersForOids(userOidsNew, actorsNew)) return;
         } else {
             throw new ConnectionException(ConnectionException.StatusCode.UNSUPPORTED_API,
                     Connection.ApiRoutineEnum.GET_FRIENDS
@@ -156,26 +156,26 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         Set<Long> userIdsOld = MyQuery.getFriendsIds(userId);
         execContext.getResult().incrementDownloadedCount();
         broadcastProgress(execContext.getContext().getText(R.string.friends).toString()
-                + ": " + userIdsOld.size() + " -> " + usersNew.size(), false);
+                + ": " + userIdsOld.size() + " -> " + actorsNew.size(), false);
 
-        if (updateNewUsersAndTheirLatestMessages(usersNew)) return;
+        if (updateNewUsersAndTheirLatestMessages(actorsNew)) return;
 
-        for (MbUser mbUser : usersNew) {
-            userIdsOld.remove(mbUser.userId);
-            FriendshipValues.setFollowed(userId, mbUser.userId);
+        for (Actor actor : actorsNew) {
+            userIdsOld.remove(actor.userId);
+            FriendshipValues.setFollowed(userId, actor.userId);
         }
         for (long userIdOld : userIdsOld) {
             FriendshipValues.setNotFollowed(userId, userIdOld);
         }
     }
 
-    private boolean getUsersForOids(List<String> userOidsNew, List<MbUser> usersNew) {
+    private boolean getUsersForOids(List<String> userOidsNew, List<Actor> usersNew) {
         long count = 0;
         for (String userOidNew : userOidsNew) {
-            MbUser mbUser = null;
+            Actor actor = null;
             try {
                 count++;
-                mbUser = execContext.getMyAccount().getConnection().getUser(userOidNew, null);
+                actor = execContext.getMyAccount().getConnection().getActor(userOidNew, null);
                 execContext.getResult().incrementDownloadedCount();
             } catch (ConnectionException e) {
                 long userId = MyQuery.oidToId(OidEnum.USER_OID,
@@ -183,17 +183,17 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                 if (userId == 0) {
                     MyLog.i(this, "Failed to identify a User for oid=" + userOidNew, e);
                 } else {
-                    mbUser = MbUser.fromOriginAndUserOid(execContext.getMyAccount().getOrigin(), userOidNew);
-                    mbUser.userId = userId;
-                    mbUser.setWebFingerId(MyQuery.userIdToWebfingerId(userId));
-                    MyLog.v(this, "Server doesn't return User object for " + mbUser , e);
+                    actor = Actor.fromOriginAndActorOid(execContext.getMyAccount().getOrigin(), userOidNew);
+                    actor.userId = userId;
+                    actor.setWebFingerId(MyQuery.userIdToWebfingerId(userId));
+                    MyLog.v(this, "Server doesn't return User object for " + actor , e);
                 }
             }
-            if (mbUser != null) {
+            if (actor != null) {
                 broadcastProgress(String.valueOf(count) + ". "
                         + execContext.getContext().getText(R.string.get_user)
-                        + ": " + mbUser.getNamePreferablyWebFingerId(), true);
-                usersNew.add(mbUser);
+                        + ": " + actor.getNamePreferablyWebFingerId(), true);
+                usersNew.add(actor);
             }
             if (logSoftErrorIfStopping()) {
                 return true;
@@ -205,15 +205,15 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
     /**
      * @return true if we need to interrupt process
      */
-    private boolean updateNewUsersAndTheirLatestMessages(List<MbUser> usersNew) {
+    private boolean updateNewUsersAndTheirLatestMessages(List<Actor> actorsNew) {
         DataUpdater di = new DataUpdater(execContext);
         boolean allMessagesLoaded = true;
         long count = 0;
-        for (MbUser user : usersNew) {
+        for (Actor user : actorsNew) {
             count++;
             broadcastProgress(String.valueOf(count) + ". " + execContext.getContext().getText(R.string.button_save)
                     + ": " + user.getNamePreferablyWebFingerId(), true);
-            di.onActivity(user.update(execContext.getMyAccount().getUser()), false);
+            di.onActivity(user.update(execContext.getMyAccount().getActor()), false);
             if (!user.hasLatestMessage()) {
                 allMessagesLoaded = false;
             }
@@ -221,8 +221,8 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         di.saveLum();
         if (!allMessagesLoaded) {
             count = 0;
-            for (MbUser mbUser : usersNew) {
-                if (mbUser.hasLatestMessage()) {
+            for (Actor actor : actorsNew) {
+                if (actor.hasLatestMessage()) {
                     continue;
                 }
                 count++;
@@ -230,29 +230,29 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                 try {
                     broadcastProgress(String.valueOf(count) + ". "
                             + execContext.getContext().getText(R.string.title_command_get_status)
-                            + ": " + mbUser.getNamePreferablyWebFingerId(), true);
-                    di.downloadOneMessageBy(mbUser.oid);
+                            + ": " + actor.getNamePreferablyWebFingerId(), true);
+                    di.downloadOneMessageBy(actor.oid);
                     execContext.getResult().incrementDownloadedCount();
                 } catch (ConnectionException e) {
                     e1 = e;
                 }
-                long lastActivityId = MyQuery.userIdToLongColumnValue(UserTable.USER_ACTIVITY_ID, mbUser.userId);
+                long lastActivityId = MyQuery.userIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, actor.userId);
                 if (lastActivityId == 0) {
                     lastActivityId = MyQuery.conditionToLongColumnValue(execContext.getMyContext().getDatabase(),
                             "getLatestActivity",
                             ActivityTable.TABLE_NAME,
                             ActivityTable._ID,
-                            ActivityTable.ACTOR_ID + "=" + mbUser.userId
+                            ActivityTable.ACTOR_ID + "=" + actor.userId
                                     + " AND " + ActivityTable.ACTIVITY_TYPE + " IN("
-                                    + MbActivityType.FOLLOW.id + ","
-                                    + MbActivityType.CREATE.id + ","
-                                    + MbActivityType.UPDATE.id + ","
-                                    + MbActivityType.ANNOUNCE.id + ","
-                                    + MbActivityType.LIKE.id + ")"
+                                    + ActivityType.FOLLOW.id + ","
+                                    + ActivityType.CREATE.id + ","
+                                    + ActivityType.UPDATE.id + ","
+                                    + ActivityType.ANNOUNCE.id + ","
+                                    + ActivityType.LIKE.id + ")"
                                     + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC LIMIT 1");
                     if (lastActivityId == 0) {
                         MyLog.v(this, "Failed to find User's activity for "
-                                + mbUser.getNamePreferablyWebFingerId(), e1);
+                                + actor.getNamePreferablyWebFingerId(), e1);
                     } else {
                         long updatedDate = MyQuery.idToLongColumnValue(
                                 execContext.getMyContext().getDatabase(),
@@ -260,10 +260,10 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                                 ActivityTable.UPDATED_DATE,
                                 lastActivityId);
                         LatestUserActivities lum = new LatestUserActivities();
-                        lum.onNewUserActivity(new UserActivity(mbUser.userId, lastActivityId, updatedDate));
+                        lum.onNewUserActivity(new UserActivity(actor.userId, lastActivityId, updatedDate));
                         lum.save();
                         MyLog.v(this, "Server didn't return User's activity for "
-                                        + mbUser.getNamePreferablyWebFingerId()
+                                        + actor.getNamePreferablyWebFingerId()
                                         + " found activity " + RelativeTime.
                                         getDifference(MyContextHolder.get().context(), updatedDate),
                                 e1);

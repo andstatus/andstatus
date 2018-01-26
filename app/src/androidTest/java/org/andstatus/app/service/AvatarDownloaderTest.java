@@ -27,7 +27,7 @@ import org.andstatus.app.data.DownloadFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.DownloadTable;
-import org.andstatus.app.database.table.UserTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
 import org.andstatus.app.util.MyLog;
@@ -68,7 +68,7 @@ public class AvatarDownloaderTest {
     }
     
     private void loadForOneMyAccount(String urlStringInitial) throws IOException {
-        String urlString1 = MyQuery.userIdToStringColumnValue(UserTable.AVATAR_URL, ma.getUserId());
+        String urlString1 = MyQuery.userIdToStringColumnValue(ActorTable.AVATAR_URL, ma.getUserId());
         assertEquals(urlStringInitial, urlString1);
         
         AvatarData.deleteAllOfThisUser(ma.getUserId());
@@ -117,7 +117,7 @@ public class AvatarDownloaderTest {
         ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         
         changeMaAvatarUrl(demoData.CONVERSATION_ACCOUNT_AVATAR_URL);
-        String urlString = MyQuery.userIdToStringColumnValue(UserTable.AVATAR_URL, ma.getUserId());
+        String urlString = MyQuery.userIdToStringColumnValue(ActorTable.AVATAR_URL, ma.getUserId());
         assertEquals(demoData.CONVERSATION_ACCOUNT_AVATAR_URL, urlString);
         
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
@@ -140,9 +140,9 @@ public class AvatarDownloaderTest {
 
     static int changeAvatarUrl(MyAccount myAccount, String urlString) {
         ContentValues values = new ContentValues();
-        values.put(UserTable.AVATAR_URL, urlString);
+        values.put(ActorTable.AVATAR_URL, urlString);
         return MyContextHolder.get().getDatabase()
-                .update(UserTable.TABLE_NAME, values, UserTable._ID + "=" + myAccount.getUserId(), null);
+                .update(ActorTable.TABLE_NAME, values, ActorTable._ID + "=" + myAccount.getUserId(), null);
     }
 
     private int changeMaAvatarStatus(String urlString, DownloadStatus status) throws MalformedURLException {

@@ -36,13 +36,13 @@ import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.net.social.Audience;
-import org.andstatus.app.net.social.MbActivity;
-import org.andstatus.app.net.social.MbAttachment;
-import org.andstatus.app.net.social.MbMessage;
-import org.andstatus.app.net.social.MbUser;
-import org.andstatus.app.user.UserListType;
-import org.andstatus.app.user.UserViewItem;
-import org.andstatus.app.user.UsersOfMessageListLoader;
+import org.andstatus.app.net.social.AActivity;
+import org.andstatus.app.net.social.Attachment;
+import org.andstatus.app.net.social.Note;
+import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.user.ActorListType;
+import org.andstatus.app.user.ActorViewItem;
+import org.andstatus.app.user.ActorsOfNoteListLoader;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
@@ -198,26 +198,26 @@ public class MessageEditorData {
     }
 
     public void save(Uri imageUriToSave) {
-        MbActivity activity = MbActivity.newPartialMessage(getMyAccount().getUser(), msgOid,
+        AActivity activity = AActivity.newPartialMessage(getMyAccount().getActor(), msgOid,
                 System.currentTimeMillis(), status);
-        activity.setActor(activity.accountUser);
-        MbMessage message = activity.getMessage();
+        activity.setActor(activity.accountActor);
+        Note message = activity.getMessage();
         message.msgId = getMsgId();
         message.setBody(body);
         message.addRecipients(recipients);
         if (inReplyToMsgId != 0) {
-            final MbActivity inReplyTo = MbActivity.newPartialMessage(getMyAccount().getUser(),
+            final AActivity inReplyTo = AActivity.newPartialMessage(getMyAccount().getActor(),
                     MyQuery.idToOid(OidEnum.MSG_OID, inReplyToMsgId, 0), 0, UNKNOWN);
             if (inReplyToUserId == 0) {
                 inReplyToUserId = MyQuery.msgIdToLongColumnValue(MsgTable.AUTHOR_ID, inReplyToMsgId);
             }
-            inReplyTo.setActor(MbUser.fromOriginAndUserId(getMyAccount().getOrigin(), inReplyToUserId));
+            inReplyTo.setActor(Actor.fromOriginAndActorId(getMyAccount().getOrigin(), inReplyToUserId));
             message.setInReplyTo(inReplyTo);
         }
         Uri mediaUri = imageUriToSave.equals(Uri.EMPTY) ? downloadData.getUri() : imageUriToSave;
         if (!mediaUri.equals(Uri.EMPTY)) {
             message.attachments.add(
-                    MbAttachment.fromUriAndContentType(mediaUri, MyContentType.IMAGE));
+                    Attachment.fromUriAndContentType(mediaUri, MyContentType.IMAGE));
         }
         DataUpdater di = new DataUpdater(getMyAccount());
         setMsgId(di.onActivity(activity).getMessage().msgId);
@@ -242,7 +242,7 @@ public class MessageEditorData {
     }
 
     public boolean mayBeEdited() {
-        return MbMessage.mayBeEdited(ma.getOrigin().getOriginType(), status);
+        return Note.mayBeEdited(ma.getOrigin().getOriginType(), status);
     }
 
     public MessageEditorData setBody(String bodyIn) {
@@ -314,11 +314,11 @@ public class MessageEditorData {
     }
 
     private void addMentionedUsersBeforeText() {
-        UsersOfMessageListLoader loader = new UsersOfMessageListLoader(UserListType.USERS_OF_MESSAGE, ma, inReplyToMsgId
+        ActorsOfNoteListLoader loader = new ActorsOfNoteListLoader(ActorListType.USERS_OF_MESSAGE, ma, inReplyToMsgId
                 , "").setMentionedOnly(true);
         loader.load(null);
         List<Long> toMention = new ArrayList<>();
-        for(UserViewItem item : loader.getList()) {
+        for(ActorViewItem item : loader.getList()) {
             toMention.add(item.getUserId());
         }
         addUsersBeforeText(toMention);
@@ -363,7 +363,7 @@ public class MessageEditorData {
     }
 
     public MessageEditorData addRecipientId(long userId) {
-        recipients.add(MbUser.fromOriginAndUserId(getMyAccount().getOrigin(), userId));
+        recipients.add(Actor.fromOriginAndActorId(getMyAccount().getOrigin(), userId));
         return this;
     }
 

@@ -20,7 +20,6 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
@@ -28,13 +27,13 @@ import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.social.Connection;
-import org.andstatus.app.net.social.MbActivity;
-import org.andstatus.app.net.social.MbActivityType;
-import org.andstatus.app.net.social.MbAttachment;
-import org.andstatus.app.net.social.MbMessage;
-import org.andstatus.app.net.social.MbObjectType;
-import org.andstatus.app.net.social.MbRateLimitStatus;
-import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.AActivity;
+import org.andstatus.app.net.social.ActivityType;
+import org.andstatus.app.net.social.Attachment;
+import org.andstatus.app.net.social.Note;
+import org.andstatus.app.net.social.AObjectType;
+import org.andstatus.app.net.social.RateLimitStatus;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.JsonUtils;
@@ -116,24 +115,24 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public MbRateLimitStatus rateLimitStatus() throws ConnectionException {
+    public RateLimitStatus rateLimitStatus() throws ConnectionException {
         // TODO Method stub
-        return new MbRateLimitStatus();
+        return new RateLimitStatus();
     }
 
     @Override
-    public MbUser verifyCredentials() throws ConnectionException {
+    public Actor verifyCredentials() throws ConnectionException {
         JSONObject user = http.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
-        return userFromJson(user);
+        return actorFromJson(user);
     }
 
-    private MbUser userFromJson(JSONObject jso) throws ConnectionException {
-        if (!ObjectType.PERSON.isTypeOf(jso)) {
-            return MbUser.EMPTY;
+    private Actor actorFromJson(JSONObject jso) throws ConnectionException {
+        if (!PObjectType.PERSON.isTypeOf(jso)) {
+            return Actor.EMPTY;
         }
         String oid = jso.optString("id");
-        MbUser user = MbUser.fromOriginAndUserOid(data.getOrigin(), oid);
-        user.setUserName(userOidToUsername(oid));
+        Actor user = Actor.fromOriginAndActorOid(data.getOrigin(), oid);
+        user.setActorName(userOidToUsername(oid));
         user.setRealName(jso.optString("displayName"));
         user.avatarUrl = JsonUtils.optStringInside(jso, "image", "url");
         user.location = JsonUtils.optStringInside(jso, "location", "displayName");
@@ -154,36 +153,36 @@ public class ConnectionPumpio extends Connection {
     }
     
     @Override
-    public MbActivity destroyFavorite(String messageId) throws ConnectionException {
-        return actOnMessage(ActivityType.UNFAVORITE, messageId);
+    public AActivity destroyFavorite(String messageId) throws ConnectionException {
+        return actOnMessage(PActivityType.UNFAVORITE, messageId);
     }
 
     @Override
-    public MbActivity createFavorite(String messageId) throws ConnectionException {
-        return actOnMessage(ActivityType.FAVORITE, messageId);
+    public AActivity createFavorite(String messageId) throws ConnectionException {
+        return actOnMessage(PActivityType.FAVORITE, messageId);
     }
 
     @Override
     public boolean destroyStatus(String messageId) throws ConnectionException {
-        return !actOnMessage(ActivityType.DELETE, messageId).isEmpty();
+        return !actOnMessage(PActivityType.DELETE, messageId).isEmpty();
     }
 
-    private MbActivity actOnMessage(ActivityType activityType, String messageId) throws ConnectionException {
+    private AActivity actOnMessage(PActivityType activityType, String messageId) throws ConnectionException {
         return ActivitySender.fromId(this, messageId).sendMessage(activityType);
     }
 
     @Override
-    public List<MbUser> getFollowers(String userId) throws ConnectionException {
+    public List<Actor> getFollowers(String userId) throws ConnectionException {
         return getUsers(userId, ApiRoutineEnum.GET_FOLLOWERS);
     }
 
     @Override
-    public List<MbUser> getFriends(String userId) throws ConnectionException {
+    public List<Actor> getFriends(String userId) throws ConnectionException {
         return getUsers(userId, ApiRoutineEnum.GET_FRIENDS);
     }
 
     @NonNull
-    private List<MbUser> getUsers(String userId, ApiRoutineEnum apiRoutine) throws ConnectionException {
+    private List<Actor> getUsers(String userId, ApiRoutineEnum apiRoutine) throws ConnectionException {
         int limit = 200;
         ConnectionAndUrl conu = getConnectionAndUrl(apiRoutine, userId);
         Uri sUri = Uri.parse(conu.url);
@@ -191,12 +190,12 @@ public class ConnectionPumpio extends Connection {
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
         String url = builder.build().toString();
         JSONArray jArr = conu.httpConnection.getRequestAsArray(url);
-        List<MbUser> users = new ArrayList<>();
+        List<Actor> users = new ArrayList<>();
         if (jArr != null) {
             for (int index = 0; index < jArr.length(); index++) {
                 try {
                     JSONObject jso = jArr.getJSONObject(index);
-                    MbUser item = userFromJson(jso);
+                    Actor item = actorFromJson(jso);
                     users.add(item);
                 } catch (JSONException e) {
                     throw ConnectionException.loggedJsonException(this, "Parsing list of users", e, null);
@@ -208,17 +207,17 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
-    protected MbActivity getMessage1(String messageId) throws ConnectionException {
+    protected AActivity getMessage1(String messageId) throws ConnectionException {
         return activityFromJson(http.getRequest(messageId));
     }
 
     @Override
-    public MbActivity updateStatus(String messageIn, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
+    public AActivity updateStatus(String messageIn, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
         String message = toHtmlIfAllowed(messageIn);
         ActivitySender sender = ActivitySender.fromContent(this, statusId, message);
         sender.setInReplyTo(inReplyToId);
         sender.setMediaUri(mediaUri);
-        return activityFromJson(sender.sendMe(ActivityType.POST));
+        return activityFromJson(sender.sendMe(PActivityType.POST));
     }
     
     private String toHtmlIfAllowed(String message) {
@@ -306,23 +305,23 @@ public class ConnectionPumpio extends Connection {
     }
     
     @Override
-    public MbActivity postPrivateMessage(String messageIn, String statusId, String recipientId, Uri mediaUri) throws ConnectionException {
+    public AActivity postPrivateMessage(String messageIn, String statusId, String recipientId, Uri mediaUri) throws ConnectionException {
         String message = toHtmlIfAllowed(messageIn);
         ActivitySender sender = ActivitySender.fromContent(this, statusId, message);
         sender.setRecipient(recipientId);
         sender.setMediaUri(mediaUri);
-        return activityFromJson(sender.sendMe(ActivityType.POST));
+        return activityFromJson(sender.sendMe(PActivityType.POST));
     }
 
     @Override
-    public MbActivity postReblog(String rebloggedId) throws ConnectionException {
-        return actOnMessage(ActivityType.SHARE, rebloggedId);
+    public AActivity postReblog(String rebloggedId) throws ConnectionException {
+        return actOnMessage(PActivityType.SHARE, rebloggedId);
     }
 
     @NonNull
     @Override
-    public List<MbActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                        TimelinePosition oldestPosition, int limit, String userId)
+    public List<AActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
+                                       TimelinePosition oldestPosition, int limit, String userId)
             throws ConnectionException {
         ConnectionAndUrl conu = getConnectionAndUrl(apiRoutine, userId);
         Uri sUri = Uri.parse(conu.url);
@@ -337,7 +336,7 @@ public class ConnectionPumpio extends Connection {
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
         String url = builder.build().toString();
         JSONArray jArr = conu.httpConnection.getRequestAsArray(url);
-        List<MbActivity> activities = new ArrayList<>();
+        List<AActivity> activities = new ArrayList<>();
         if (jArr != null) {
             // Read the activities in the chronological order
             for (int index = jArr.length() - 1; index >= 0; index--) {
@@ -364,46 +363,46 @@ public class ConnectionPumpio extends Connection {
     }
 
     @NonNull
-    MbActivity activityFromJson(JSONObject jsoActivity) throws ConnectionException {
+    AActivity activityFromJson(JSONObject jsoActivity) throws ConnectionException {
         if (jsoActivity == null) {
-            return MbActivity.EMPTY;
+            return AActivity.EMPTY;
         }
-        final ActivityType verb = ActivityType.load(jsoActivity.optString("verb"));
-        MbActivity activity = MbActivity.from(data.getAccountUser(),
-                verb == ActivityType.UNKNOWN ? MbActivityType.UPDATE : verb.mbActivityType);
+        final PActivityType verb = PActivityType.load(jsoActivity.optString("verb"));
+        AActivity activity = AActivity.from(data.getAccountActor(),
+                verb == PActivityType.UNKNOWN ? ActivityType.UPDATE : verb.activityType);
         try {
-            if (ObjectType.ACTIVITY.isTypeOf(jsoActivity)) {
+            if (PObjectType.ACTIVITY.isTypeOf(jsoActivity)) {
                 String oid = jsoActivity.optString("id");
                 if (TextUtils.isEmpty(oid)) {
                     MyLog.d(this, "Pumpio activity has no id:" + jsoActivity.toString(2));
-                    return MbActivity.EMPTY;
+                    return AActivity.EMPTY;
                 }
                 activity.setTimelinePosition(oid);
                 activity.setUpdatedDate(dateFromJson(jsoActivity, "updated"));
                 if (jsoActivity.has("actor")) {
-                    activity.setActor(userFromJson(jsoActivity.getJSONObject("actor")));
+                    activity.setActor(actorFromJson(jsoActivity.getJSONObject("actor")));
                 }
 
                 JSONObject objectOfActivity = jsoActivity.getJSONObject("object");
-                if (ObjectType.ACTIVITY.isTypeOf(objectOfActivity)) {
+                if (PObjectType.ACTIVITY.isTypeOf(objectOfActivity)) {
                     // Simplified dealing with nested activities
-                    MbActivity innerActivity = activityFromJson(objectOfActivity);
-                    activity.setUser(innerActivity.getUser());
+                    AActivity innerActivity = activityFromJson(objectOfActivity);
+                    activity.setObjActor(innerActivity.getObjActor());
                     activity.setMessage(innerActivity.getMessage());
                 } else {
                     parseObjectOfActivity(activity, objectOfActivity);
                 }
-                if (activity.getObjectType().equals(MbObjectType.MESSAGE)) {
+                if (activity.getObjectType().equals(AObjectType.NOTE)) {
                     if (jsoActivity.has("to")) {
                         JSONObject to = jsoActivity.optJSONObject("to");
                         if ( to != null) {
-                            activity.getMessage().addRecipient(userFromJson(to));
+                            activity.getMessage().addRecipient(actorFromJson(to));
                         } else {
                             JSONArray arrayOfTo = jsoActivity.optJSONArray("to");
                             if (arrayOfTo != null && arrayOfTo.length() > 0) {
                                 // TODO: handle multiple recipients
                                 to = arrayOfTo.optJSONObject(0);
-                                MbUser recipient = userFromJson(to);
+                                Actor recipient = actorFromJson(to);
                                 if (!recipient.isEmpty()) {
                                     activity.getMessage().addRecipient(recipient);
                                 }
@@ -424,15 +423,15 @@ public class ConnectionPumpio extends Connection {
         return activity;
     }
 
-    private void parseObjectOfActivity(MbActivity activity, JSONObject objectOfActivity) throws ConnectionException {
-        if (ObjectType.PERSON.isTypeOf(objectOfActivity)) {
-            activity.setUser(userFromJson(objectOfActivity));
-        } else if (ObjectType.compatibleWith(objectOfActivity) == ObjectType.COMMENT) {
+    private void parseObjectOfActivity(AActivity activity, JSONObject objectOfActivity) throws ConnectionException {
+        if (PObjectType.PERSON.isTypeOf(objectOfActivity)) {
+            activity.setObjActor(actorFromJson(objectOfActivity));
+        } else if (PObjectType.compatibleWith(objectOfActivity) == PObjectType.COMMENT) {
             messageFromJsonComment(activity, objectOfActivity);
         }
     }
 
-    private void setVia(MbMessage message, JSONObject activity) throws JSONException {
+    private void setVia(Note message, JSONObject activity) throws JSONException {
         if (TextUtils.isEmpty(message.via) && activity.has(Properties.GENERATOR.code)) {
             JSONObject generator = activity.getJSONObject(Properties.GENERATOR.code);
             if (generator.has("displayName")) {
@@ -449,7 +448,7 @@ public class ConnectionPumpio extends Connection {
         return null;
     }
     
-    private void messageFromJsonComment(MbActivity parentActivity, JSONObject jso) throws ConnectionException {
+    private void messageFromJsonComment(AActivity parentActivity, JSONObject jso) throws ConnectionException {
         try {
             String oid = jso.optString("id");
             if (TextUtils.isEmpty(oid)) {
@@ -460,13 +459,13 @@ public class ConnectionPumpio extends Connection {
             if (updatedDate == 0) {
                 updatedDate = dateFromJson(jso, "published");
             }
-            final MbActivity messageActivity = MbActivity.newPartialMessage(data.getAccountUser(), oid,
+            final AActivity messageActivity = AActivity.newPartialMessage(data.getAccountActor(), oid,
                     updatedDate, DownloadStatus.LOADED);
             if (jso.has("author")) {
-                messageActivity.setActor(userFromJson(jso.getJSONObject("author")));
+                messageActivity.setActor(actorFromJson(jso.getJSONObject("author")));
             }
 
-            final MbActivity activity;
+            final AActivity activity;
             switch (parentActivity.type) {
                 case UPDATE:
                 case CREATE:
@@ -484,7 +483,7 @@ public class ConnectionPumpio extends Connection {
                     break;
             }
 
-            MbMessage message =  activity.getMessage();
+            Note message =  activity.getMessage();
             if (jso.has("content")) {
                 message.setBody(jso.getString("content"));
             }
@@ -497,7 +496,7 @@ public class ConnectionPumpio extends Connection {
                 if (url == null) {
                     url = getImageUrl(jso, "image");
                 }
-                MbAttachment mbAttachment =  MbAttachment.fromUrlAndContentType(url, MyContentType.IMAGE);
+                Attachment mbAttachment =  Attachment.fromUrlAndContentType(url, MyContentType.IMAGE);
                 if (mbAttachment.isValid()) {
                     message.attachments.add(mbAttachment);
                 } else {
@@ -516,7 +515,7 @@ public class ConnectionPumpio extends Connection {
                     JSONArray jArr = replies.getJSONArray("items");
                     for (int index = 0; index < jArr.length(); index++) {
                         try {
-                            MbActivity item = activityFromJson(jArr.getJSONObject(index));
+                            AActivity item = activityFromJson(jArr.getJSONObject(index));
                             message.replies.add(item);
                         } catch (JSONException e) {
                             throw ConnectionException.loggedJsonException(this,
@@ -570,29 +569,29 @@ public class ConnectionPumpio extends Connection {
     
     @NonNull
     @Override
-    public List<MbActivity> searchMessages(TimelinePosition youngestPosition,
-                                           TimelinePosition oldestPosition, int limit, String searchQuery)
+    public List<AActivity> searchMessages(TimelinePosition youngestPosition,
+                                          TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException {
         return new ArrayList<>();
     }
 
     @Override
-    public MbActivity followUser(String userId, Boolean follow) throws ConnectionException {
-        return actOnUser(follow ? ActivityType.FOLLOW : ActivityType.STOP_FOLLOWING, userId);
+    public AActivity followUser(String userId, Boolean follow) throws ConnectionException {
+        return actOnActor(follow ? PActivityType.FOLLOW : PActivityType.STOP_FOLLOWING, userId);
     }
 
-    private MbActivity actOnUser(ActivityType activityType, String userId) throws ConnectionException {
+    private AActivity actOnActor(PActivityType activityType, String userId) throws ConnectionException {
         return ActivitySender.fromId(this, userId).sendUser(activityType);
     }
     
     @Override
-    public MbUser getUser(String userId, String userName) throws ConnectionException {
+    public Actor getActor(String userId, String userName) throws ConnectionException {
         ConnectionAndUrl conu = getConnectionAndUrlForUsername(ApiRoutineEnum.GET_USER,
                 UriUtils.isRealOid(userId) ? userOidToUsername(userId) : userName);
         JSONObject jso = conu.httpConnection.getRequest(conu.url);
-        MbUser mbUser = userFromJson(jso);
-        MyLog.v(this, "getUser oid='" + userId + "', userName='" + userName + "' -> " + mbUser.getRealName());
-        return mbUser;
+        Actor actor = actorFromJson(jso);
+        MyLog.v(this, "getActor oid='" + userId + "', userName='" + userName + "' -> " + actor.getRealName());
+        return actor;
     }
 
     protected OriginConnectionData getData() {

@@ -28,7 +28,7 @@ import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.database.table.TimelineTable;
-import org.andstatus.app.database.table.UserTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -81,7 +81,7 @@ public class DatabaseCreator {
         MyLog.i(this, "Creating tables");
         MsgTable.create(db);
         AudienceTable.create(db);
-        UserTable.create(db);
+        ActorTable.create(db);
         FriendshipTable.create(db);
         DownloadTable.create(db);
         OriginTable.create(db);

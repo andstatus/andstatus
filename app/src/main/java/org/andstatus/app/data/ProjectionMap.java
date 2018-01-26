@@ -21,7 +21,7 @@ import android.provider.BaseColumns;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.MsgTable;
-import org.andstatus.app.database.table.UserTable;
+import org.andstatus.app.database.table.ActorTable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -58,7 +58,7 @@ public class ProjectionMap {
         MSG.put(MsgTable.ORIGIN_ID, MsgTable.ORIGIN_ID);
         MSG.put(MsgTable.MSG_OID, MsgTable.MSG_OID);
         MSG.put(MsgTable.AUTHOR_ID, MsgTable.AUTHOR_ID);
-        MSG.put(UserTable.AUTHOR_NAME, UserTable.AUTHOR_NAME);
+        MSG.put(ActorTable.AUTHOR_NAME, ActorTable.AUTHOR_NAME);
         MSG.put(DownloadTable.DOWNLOAD_STATUS, DownloadTable.DOWNLOAD_STATUS);
         MSG.put(DownloadTable.FILE_NAME, DownloadTable.FILE_NAME);
         MSG.put(DownloadTable.AVATAR_FILE_NAME, AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.FILE_NAME
@@ -74,7 +74,7 @@ public class ProjectionMap {
         MSG.put(MsgTable.URL, MsgTable.URL);
         MSG.put(MsgTable.IN_REPLY_TO_MSG_ID, MsgTable.IN_REPLY_TO_MSG_ID);
         MSG.put(MsgTable.IN_REPLY_TO_USER_ID, MsgTable.IN_REPLY_TO_USER_ID);
-        MSG.put(UserTable.IN_REPLY_TO_NAME, UserTable.IN_REPLY_TO_NAME);
+        MSG.put(ActorTable.IN_REPLY_TO_NAME, ActorTable.IN_REPLY_TO_NAME);
         MSG.put(MsgTable.PRIVATE, MsgTable.PRIVATE);
         MSG.put(MsgTable.FAVORITED, MsgTable.FAVORITED);
         MSG.put(MsgTable.REBLOGGED, MsgTable.REBLOGGED);
@@ -84,37 +84,37 @@ public class ProjectionMap {
     }
 
     /**
-     * Projection map for the {@link UserTable} table
+     * Projection map for the {@link ActorTable} table
      */
     static final Map<String, String> USER = new HashMap<>();
     static {
-        USER.put(BaseColumns._ID, UserTable.TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
-        USER.put(UserTable.ORIGIN_ID, UserTable.ORIGIN_ID);
-        USER.put(UserTable.USER_ID, UserTable.TABLE_NAME + "." + BaseColumns._ID + " AS " + UserTable.USER_ID);
-        USER.put(UserTable.USER_OID, UserTable.USER_OID);
-        USER.put(UserTable.USERNAME, UserTable.USERNAME);
-        USER.put(UserTable.WEBFINGER_ID, UserTable.WEBFINGER_ID);
-        USER.put(UserTable.REAL_NAME, UserTable.REAL_NAME);
-        USER.put(UserTable.DESCRIPTION, UserTable.DESCRIPTION);
-        USER.put(UserTable.LOCATION, UserTable.LOCATION);
+        USER.put(BaseColumns._ID, ActorTable.TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
+        USER.put(ActorTable.ORIGIN_ID, ActorTable.ORIGIN_ID);
+        USER.put(ActorTable.ACTOR_ID, ActorTable.TABLE_NAME + "." + BaseColumns._ID + " AS " + ActorTable.ACTOR_ID);
+        USER.put(ActorTable.ACTOR_OID, ActorTable.ACTOR_OID);
+        USER.put(ActorTable.ACTORNAME, ActorTable.ACTORNAME);
+        USER.put(ActorTable.WEBFINGER_ID, ActorTable.WEBFINGER_ID);
+        USER.put(ActorTable.REAL_NAME, ActorTable.REAL_NAME);
+        USER.put(ActorTable.DESCRIPTION, ActorTable.DESCRIPTION);
+        USER.put(ActorTable.LOCATION, ActorTable.LOCATION);
 
-        USER.put(UserTable.PROFILE_URL, UserTable.PROFILE_URL);
-        USER.put(UserTable.HOMEPAGE, UserTable.HOMEPAGE);
-        USER.put(UserTable.AVATAR_URL, UserTable.AVATAR_URL);
+        USER.put(ActorTable.PROFILE_URL, ActorTable.PROFILE_URL);
+        USER.put(ActorTable.HOMEPAGE, ActorTable.HOMEPAGE);
+        USER.put(ActorTable.AVATAR_URL, ActorTable.AVATAR_URL);
         USER.put(DownloadTable.AVATAR_FILE_NAME, AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.FILE_NAME + " AS " + DownloadTable.AVATAR_FILE_NAME);
-        USER.put(UserTable.BANNER_URL, UserTable.BANNER_URL);
+        USER.put(ActorTable.BANNER_URL, ActorTable.BANNER_URL);
 
-        USER.put(UserTable.MSG_COUNT, UserTable.MSG_COUNT);
-        USER.put(UserTable.FAVORITES_COUNT, UserTable.FAVORITES_COUNT);
-        USER.put(UserTable.FOLLOWING_COUNT, UserTable.FOLLOWING_COUNT);
-        USER.put(UserTable.FOLLOWERS_COUNT, UserTable.FOLLOWERS_COUNT);
+        USER.put(ActorTable.MSG_COUNT, ActorTable.MSG_COUNT);
+        USER.put(ActorTable.FAVORITES_COUNT, ActorTable.FAVORITES_COUNT);
+        USER.put(ActorTable.FOLLOWING_COUNT, ActorTable.FOLLOWING_COUNT);
+        USER.put(ActorTable.FOLLOWERS_COUNT, ActorTable.FOLLOWERS_COUNT);
 
-        USER.put(UserTable.CREATED_DATE, UserTable.CREATED_DATE);
-        USER.put(UserTable.UPDATED_DATE, UserTable.UPDATED_DATE);
-        USER.put(UserTable.INS_DATE, UserTable.INS_DATE);
+        USER.put(ActorTable.CREATED_DATE, ActorTable.CREATED_DATE);
+        USER.put(ActorTable.UPDATED_DATE, ActorTable.UPDATED_DATE);
+        USER.put(ActorTable.INS_DATE, ActorTable.INS_DATE);
         
-        USER.put(UserTable.USER_ACTIVITY_ID, UserTable.USER_ACTIVITY_ID);
-        USER.put(UserTable.USER_ACTIVITY_DATE, UserTable.USER_ACTIVITY_DATE);
+        USER.put(ActorTable.ACTOR_ACTIVITY_ID, ActorTable.ACTOR_ACTIVITY_ID);
+        USER.put(ActorTable.ACTOR_ACTIVITY_DATE, ActorTable.ACTOR_ACTIVITY_DATE);
     }
     
     private ProjectionMap() {

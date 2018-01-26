@@ -62,7 +62,7 @@ public class VerifyCredentialsTest {
                 MyContextHolder.get().persistentOrigins().fromName(demoData.TWITTER_TEST_ORIGIN_NAME),
                 demoData.TWITTER_TEST_ACCOUNT_USERNAME),
                 TriState.UNKNOWN);
-        connectionData.setAccountUser(demoData.getAccountUserByOid(demoData.TWITTER_TEST_ACCOUNT_USER_OID));
+        connectionData.setAccountActor(demoData.getAccountUserByOid(demoData.TWITTER_TEST_ACCOUNT_USER_OID));
         connectionData.setDataReader(new AccountDataReaderEmpty());
         connection = connectionData.newConnection();
         httpConnection = (HttpConnectionMock) connection.http;
@@ -91,27 +91,27 @@ public class VerifyCredentialsTest {
                 org.andstatus.app.tests.R.raw.verify_credentials_twitter);
         httpConnection.setResponse(jso);
 
-        MbUser mbUser = connection.verifyCredentials();
-        assertEquals("User's oid is user oid of this account", demoData.TWITTER_TEST_ACCOUNT_USER_OID, mbUser.oid);
+        Actor actor = connection.verifyCredentials();
+        assertEquals("User's oid is user oid of this account", demoData.TWITTER_TEST_ACCOUNT_USER_OID, actor.oid);
 
         Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(
                 MyContextHolder.get(), demoData.TWITTER_TEST_ACCOUNT_NAME +
                 "/" + origin.getName(), TriState.TRUE);
-        builder.onCredentialsVerified(mbUser, null);
+        builder.onCredentialsVerified(actor, null);
         assertTrue("Account is persistent", builder.isPersistent());
         long userId = builder.getAccount().getUserId();
-        assertTrue("Account " + mbUser.getUserName() + " has UserId", userId != 0);
-        assertEquals("Account UserOid", builder.getAccount().getUserOid(), mbUser.oid);
+        assertTrue("Account " + actor.getActorName() + " has UserId", userId != 0);
+        assertEquals("Account UserOid", builder.getAccount().getUserOid(), actor.oid);
         assertEquals("User in the database for id=" + userId,
-                mbUser.oid,
+                actor.oid,
                 MyQuery.idToOid(OidEnum.USER_OID, userId, 0));
 
         String msgOid = "383296535213002752";
         long msgId = MyQuery.oidToId(OidEnum.MSG_OID, origin.getId(), msgOid) ;
         assertTrue("Message not found", msgId != 0);
         long userIdM = MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, msgId);
-        assertEquals("Message not by " + mbUser.getUserName() + " found", userId, userIdM);
+        assertEquals("Message not by " + actor.getActorName() + " found", userId, userIdM);
 
         assertEquals("Message permalink at twitter",
                 "https://" + origin.fixUriforPermalink(UriUtils.fromUrl(origin.getUrl())).getHost()

@@ -32,23 +32,23 @@ public class ConnectionEmpty extends Connection {
     }
 
     @Override
-    public MbRateLimitStatus rateLimitStatus() throws ConnectionException {
-        return new MbRateLimitStatus();
+    public RateLimitStatus rateLimitStatus() throws ConnectionException {
+        return new RateLimitStatus();
     }
 
     @Override
-    public MbUser verifyCredentials() throws ConnectionException {
-        return MbUser.EMPTY;
+    public Actor verifyCredentials() throws ConnectionException {
+        return Actor.EMPTY;
     }
 
     @Override
-    public MbActivity destroyFavorite(String statusId) throws ConnectionException {
-        return MbActivity.EMPTY;
+    public AActivity destroyFavorite(String statusId) throws ConnectionException {
+        return AActivity.EMPTY;
     }
 
     @Override
-    public MbActivity createFavorite(String statusId) throws ConnectionException {
-        return MbActivity.EMPTY;
+    public AActivity createFavorite(String statusId) throws ConnectionException {
+        return AActivity.EMPTY;
     }
 
     @Override
@@ -57,41 +57,41 @@ public class ConnectionEmpty extends Connection {
     }
 
     @Override
-    public MbActivity getMessage1(String statusId) throws ConnectionException {
-        return MbActivity.EMPTY;
+    public AActivity getMessage1(String statusId) throws ConnectionException {
+        return AActivity.EMPTY;
     }
 
     @Override
-    public MbActivity updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
-        return MbActivity.EMPTY;
+    public AActivity updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
+        return AActivity.EMPTY;
     }
 
     @Override
-    public MbActivity postPrivateMessage(String message, String statusId, String userId, Uri mediaUri) throws ConnectionException {
-        return MbActivity.EMPTY;
+    public AActivity postPrivateMessage(String message, String statusId, String userId, Uri mediaUri) throws ConnectionException {
+        return AActivity.EMPTY;
     }
 
     @Override
-    public MbActivity postReblog(String rebloggedId) throws ConnectionException {
-        return MbActivity.EMPTY;
+    public AActivity postReblog(String rebloggedId) throws ConnectionException {
+        return AActivity.EMPTY;
     }
 
     @NonNull
     @Override
-    public List<MbActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                        TimelinePosition oldestPosition, int limit, String userId)
+    public List<AActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
+                                       TimelinePosition oldestPosition, int limit, String userId)
             throws ConnectionException {
         return new ArrayList<>();
     }
 
     @Override
-    public MbActivity followUser(String userId, Boolean follow) throws ConnectionException {
-        return MbActivity.EMPTY;
+    public AActivity followUser(String userId, Boolean follow) throws ConnectionException {
+        return AActivity.EMPTY;
     }
 
     @Override
-    public MbUser getUser(String userId, String userName) throws ConnectionException {
-        return MbUser.EMPTY;
+    public Actor getActor(String userId, String userName) throws ConnectionException {
+        return Actor.EMPTY;
     }
 
 }

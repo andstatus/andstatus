@@ -22,8 +22,8 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.database.table.MsgTable;
-import org.andstatus.app.net.social.MbActivity;
-import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.AActivity;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyHtml;
@@ -56,8 +56,8 @@ public class HtmlContentInserter {
         mySetup();
     }
 
-    private MbUser buildUserFromOid(String userOid) {
-        return new DemoMessageInserter(ma).buildUserFromOid(userOid);
+    private Actor buildUserFromOid(String userOid) {
+        return new DemoMessageInserter(ma).buildActorFromOid(userOid);
     }
     
     public void insertHtml() {
@@ -67,7 +67,7 @@ public class HtmlContentInserter {
 
     private void testHtmlContent() {
         boolean isHtmlContentAllowedStored = origin.isHtmlContentAllowed(); 
-        MbUser author1 = buildUserFromOid("acct:html@example.com");
+        Actor author1 = buildUserFromOid("acct:html@example.com");
         author1.avatarUrl = "http://png-5.findicons.com/files/icons/2198/dark_glass/128/html.png";
 
         String bodyString = "<h4>This is a message with HTML content</h4>" 
@@ -90,17 +90,17 @@ public class HtmlContentInserter {
         assertEquals(allowed, origin.isHtmlContentAllowed());
     }
     
-    private void assertHtmlMessage(MbUser author, String bodyString, String messageOid) {
+    private void assertHtmlMessage(Actor author, String bodyString, String messageOid) {
         assertHtmlMessageContentAllowed(author, bodyString, messageOid, true);
         assertHtmlMessageContentAllowed(author, bodyString + " no HTML", 
         		TextUtils.isEmpty(messageOid) ? null : messageOid + "-noHtml", false);
     }
 
-	private DemoMessageInserter assertHtmlMessageContentAllowed(MbUser author,
+	private DemoMessageInserter assertHtmlMessageContentAllowed(Actor author,
                                                                 String bodyString, String messageOid, boolean htmlContentAllowed) {
 		setHtmlContentAllowed(htmlContentAllowed);
         DemoMessageInserter mi = new DemoMessageInserter(ma);
-        final MbActivity activity = mi.buildActivity(author, bodyString, null, messageOid, DownloadStatus.LOADED);
+        final AActivity activity = mi.buildActivity(author, bodyString, null, messageOid, DownloadStatus.LOADED);
         mi.onActivity(activity);
         long msgId1 = activity.getMessage().msgId;
         String body = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId1);

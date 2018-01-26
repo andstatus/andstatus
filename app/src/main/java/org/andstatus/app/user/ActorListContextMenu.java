@@ -30,10 +30,10 @@ import org.andstatus.app.timeline.ContextMenuHeader;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.view.MyContextMenu;
 
-public class UserListContextMenu extends MyContextMenu {
+public class ActorListContextMenu extends MyContextMenu {
     public final MessageEditorContainer menuContainer;
 
-    public UserListContextMenu(MessageEditorContainer menuContainer, int menuGroup) {
+    public ActorListContextMenu(MessageEditorContainer menuContainer, int menuGroup) {
         super(menuContainer.getActivity(), menuGroup);
         this.menuContainer = menuContainer;
     }
@@ -54,30 +54,30 @@ public class UserListContextMenu extends MyContextMenu {
         int order = 0;
         try {
             new ContextMenuHeader(getActivity(), menu)
-                    .setTitle(getViewItem().mbUser.toUserTitle(false))
+                    .setTitle(getViewItem().actor.toUserTitle(false))
                     .setSubtitle(getMyActor().getAccountName());
-            String shortName = getViewItem().mbUser.getUserName();
-            if (getViewItem().mbUser.isIdentified()) {
-                UserListContextMenuItem.USER_MESSAGES.addTo(menu, menuGroup, order++,
+            String shortName = getViewItem().actor.getActorName();
+            if (getViewItem().actor.isIdentified()) {
+                ActorListContextMenuItem.USER_MESSAGES.addTo(menu, menuGroup, order++,
                         String.format(getActivity().getText(R.string.menu_item_user_messages).toString(), shortName));
-                UserListContextMenuItem.FRIENDS.addTo(menu, menuGroup, order++,
+                ActorListContextMenuItem.FRIENDS.addTo(menu, menuGroup, order++,
                         String.format(
                                 getActivity().getText(R.string.friends_of).toString(), shortName));
-                UserListContextMenuItem.FOLLOWERS.addTo(menu, menuGroup, order++,
+                ActorListContextMenuItem.FOLLOWERS.addTo(menu, menuGroup, order++,
                         String.format(
                                 getActivity().getText(R.string.followers_of).toString(), shortName));
                 if (getViewItem().userIsFollowedBy(getMyActor())) {
-                    UserListContextMenuItem.STOP_FOLLOWING.addTo(menu, menuGroup, order++,
+                    ActorListContextMenuItem.STOP_FOLLOWING.addTo(menu, menuGroup, order++,
                             String.format(
                                     getActivity().getText(R.string.menu_item_stop_following_user).toString(), shortName));
                 } else if (getViewItem().getUserId() != getMyActor().getUserId()) {
-                    UserListContextMenuItem.FOLLOW.addTo(menu, menuGroup, order++,
+                    ActorListContextMenuItem.FOLLOW.addTo(menu, menuGroup, order++,
                             String.format(
                                     getActivity().getText(R.string.menu_item_follow_user).toString(), shortName));
                 }
                 if (!menuContainer.getMessageEditor().isVisible()) {
                     // TODO: Only if he follows me?
-                    UserListContextMenuItem.DIRECT_MESSAGE.addTo(menu, menuGroup, order++,
+                    ActorListContextMenuItem.DIRECT_MESSAGE.addTo(menu, menuGroup, order++,
                             R.string.menu_item_private_message);
                 }
                 switch (getMyActor().numberOfAccountsOfThisOrigin()) {
@@ -85,18 +85,18 @@ public class UserListContextMenu extends MyContextMenu {
                     case 1:
                         break;
                     case 2:
-                        UserListContextMenuItem.ACT_AS_FIRST_OTHER_USER.addTo(menu, menuGroup, order++,
+                        ActorListContextMenuItem.ACT_AS_FIRST_OTHER_USER.addTo(menu, menuGroup, order++,
                                 String.format(
                                         getActivity().getText(R.string.menu_item_act_as_user).toString(),
                                         getMyActor().firstOtherAccountOfThisOrigin().getShortestUniqueAccountName(getMyContext())));
                         break;
                     default:
-                        UserListContextMenuItem.ACT_AS.addTo(menu, menuGroup, order++, R.string.menu_item_act_as);
+                        ActorListContextMenuItem.ACT_AS.addTo(menu, menuGroup, order++, R.string.menu_item_act_as);
                         break;
                 }
 
             }
-            UserListContextMenuItem.GET_USER.addTo(menu, menuGroup, order++, R.string.get_user);
+            ActorListContextMenuItem.GET_USER.addTo(menu, menuGroup, order++, R.string.get_user);
         } catch (Exception e) {
             MyLog.e(this, method, e);
         }
@@ -106,9 +106,9 @@ public class UserListContextMenu extends MyContextMenu {
     public boolean onContextItemSelected(MenuItem item) {
         MyAccount ma = getMyActor();
         if (ma.isValid()) {
-            UserListContextMenuItem contextMenuItem = UserListContextMenuItem.fromId(item.getItemId());
+            ActorListContextMenuItem contextMenuItem = ActorListContextMenuItem.fromId(item.getItemId());
             MyLog.v(this, "onContextItemSelected: " + contextMenuItem + "; actor="
-                    + ma.getAccountName() + "; user=" + getViewItem().mbUser.getNamePreferablyWebFingerId());
+                    + ma.getAccountName() + "; user=" + getViewItem().actor.getNamePreferablyWebFingerId());
             return contextMenuItem.execute(this, ma);
         } else {
             return false;
@@ -116,22 +116,22 @@ public class UserListContextMenu extends MyContextMenu {
     }
 
     @NonNull
-    public UserViewItem getViewItem() {
+    public ActorViewItem getViewItem() {
         if (mViewItem.isEmpty()) {
-            return UserViewItem.EMPTY;
+            return ActorViewItem.EMPTY;
         }
         if (ActivityViewItem.class.isAssignableFrom(mViewItem.getClass())) {
             return getViewItem(((ActivityViewItem) mViewItem));
         }
-        return (UserViewItem) mViewItem;
+        return (ActorViewItem) mViewItem;
     }
 
     @NonNull
-    protected UserViewItem getViewItem(ActivityViewItem activityViewItem) {
+    protected ActorViewItem getViewItem(ActivityViewItem activityViewItem) {
         return activityViewItem.getUser();
     }
 
     public Origin getOrigin() {
-        return getViewItem().mbUser.origin;
+        return getViewItem().actor.origin;
     }
 }

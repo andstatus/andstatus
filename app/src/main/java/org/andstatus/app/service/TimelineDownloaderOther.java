@@ -25,7 +25,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
-import org.andstatus.app.net.social.MbActivity;
+import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
@@ -78,7 +78,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
             try {
                 int limit = execContext.getMyAccount().getConnection().fixedDownloadLimit(
                         toDownload, getTimeline().getTimelineType().getConnectionApiRoutine());
-                List<MbActivity> activities;
+                List<AActivity> activities;
                 switch (getTimeline().getTimelineType()) {
                     case SEARCH:
                         activities = execContext.getMyAccount().getConnection().searchMessages(
@@ -94,7 +94,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
                                 limit, userOid);
                         break;
                 }
-                for (MbActivity activity : activities) {
+                for (AActivity activity : activities) {
                     toDownload--;
                     syncTracker.onNewMsg(activity.getTimelinePosition(), activity.getUpdatedDate());
                     if (!activity.isSubscribedByMe().equals(TriState.FALSE)

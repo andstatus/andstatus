@@ -21,7 +21,7 @@ import android.provider.BaseColumns;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.UserTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Date;
@@ -59,8 +59,8 @@ public final class UserActivity {
         if (userId == 0) {
             throw new IllegalArgumentException(TAG + ": userId==0");
         }
-        lastActivityId = MyQuery.userIdToLongColumnValue(UserTable.USER_ACTIVITY_ID, userId);
-        lastActivityDate = MyQuery.userIdToLongColumnValue(UserTable.USER_ACTIVITY_DATE, userId);
+        lastActivityId = MyQuery.userIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, userId);
+        lastActivityDate = MyQuery.userIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_DATE, userId);
     }
 
     /**
@@ -125,10 +125,10 @@ public final class UserActivity {
         }
 
         // As a precaution compare with stored values ones again
-        long activityDate = MyQuery.userIdToLongColumnValue(UserTable.USER_ACTIVITY_DATE, userId);
+        long activityDate = MyQuery.userIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_DATE, userId);
         if (activityDate > lastActivityDate) {
             lastActivityDate = activityDate;
-            lastActivityId = MyQuery.userIdToLongColumnValue(UserTable.USER_ACTIVITY_ID, userId);
+            lastActivityId = MyQuery.userIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, userId);
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, "There is newer information in the database. User " + userId + ": "
                         + MyQuery.userIdToWebfingerId(userId)
@@ -140,10 +140,10 @@ public final class UserActivity {
 
         String sql = "";
         try {
-            sql += UserTable.USER_ACTIVITY_ID + "=" + lastActivityId;
-            sql += ", " + UserTable.USER_ACTIVITY_DATE + "=" + lastActivityDate;
+            sql += ActorTable.ACTOR_ACTIVITY_ID + "=" + lastActivityId;
+            sql += ", " + ActorTable.ACTOR_ACTIVITY_DATE + "=" + lastActivityDate;
 
-            sql = "UPDATE " + UserTable.TABLE_NAME + " SET " + sql
+            sql = "UPDATE " + ActorTable.TABLE_NAME + " SET " + sql
                     + " WHERE " + BaseColumns._ID + "=" + userId;
 
             SQLiteDatabase db = MyContextHolder.get().getDatabase();

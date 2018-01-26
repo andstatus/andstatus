@@ -29,9 +29,9 @@ import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.DownloadTable;
-import org.andstatus.app.database.table.UserTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.graphics.AvatarView;
-import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
@@ -40,11 +40,11 @@ import org.andstatus.app.util.I18n;
 import java.util.HashSet;
 import java.util.Set;
 
-public class UserViewItem extends ViewItem<UserViewItem> implements Comparable<UserViewItem> {
-    public static final UserViewItem EMPTY = new UserViewItem(MbUser.EMPTY, true);
+public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable<ActorViewItem> {
+    public static final ActorViewItem EMPTY = new ActorViewItem(Actor.EMPTY, true);
     boolean populated = false;
     @NonNull
-    final MbUser mbUser;
+    final Actor actor;
     private AvatarFile avatarFile = null;
     Set<Long> myFollowers = new HashSet<>();
 
@@ -53,44 +53,44 @@ public class UserViewItem extends ViewItem<UserViewItem> implements Comparable<U
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        UserViewItem that = (UserViewItem) o;
-        return mbUser.equals(that.mbUser);
+        ActorViewItem that = (ActorViewItem) o;
+        return actor.equals(that.actor);
     }
 
     @Override
     public int hashCode() {
-        return mbUser.hashCode();
+        return actor.hashCode();
     }
 
-    private UserViewItem(@NonNull MbUser mbUser, boolean isEmpty) {
+    private ActorViewItem(@NonNull Actor actor, boolean isEmpty) {
         super(isEmpty);
-        this.mbUser = mbUser;
+        this.actor = actor;
     }
 
-    public static UserViewItem newEmpty(String description) {
-        MbUser mbUser = TextUtils.isEmpty(description) ? MbUser.EMPTY :
-                MbUser.fromOriginAndUserId(Origin.EMPTY, 0L).setDescription(description);
-        return fromMbUser(mbUser);
+    public static ActorViewItem newEmpty(String description) {
+        Actor actor = TextUtils.isEmpty(description) ? Actor.EMPTY :
+                Actor.fromOriginAndActorId(Origin.EMPTY, 0L).setDescription(description);
+        return fromActor(actor);
     }
 
-    public static UserViewItem fromUserId(Origin origin, long userId) {
-        MbUser mbUser = MbUser.EMPTY;
+    public static ActorViewItem fromUserId(Origin origin, long userId) {
+        Actor actor = Actor.EMPTY;
         if (userId != 0) {
-            mbUser = MbUser.fromOriginAndUserId(origin, userId);
+            actor = Actor.fromOriginAndActorId(origin, userId);
         }
-        return fromMbUser(mbUser);
+        return fromActor(actor);
     }
 
-    public static UserViewItem fromMbUser(@NonNull MbUser mbUser) {
-        return new UserViewItem(mbUser, false);
+    public static ActorViewItem fromActor(@NonNull Actor actor) {
+        return new ActorViewItem(actor, false);
     }
 
     public long getUserId() {
-        return mbUser.userId;
+        return actor.userId;
     }
 
     public String getDescription() {
-        StringBuilder builder = new StringBuilder(mbUser.getDescription());
+        StringBuilder builder = new StringBuilder(actor.getDescription());
         if (MyPreferences.isShowDebuggingInfoInUi()) {
             I18n.appendWithSpace(builder, "(id=" + getUserId() + ")");
         }
@@ -99,13 +99,13 @@ public class UserViewItem extends ViewItem<UserViewItem> implements Comparable<U
 
     @Override
     public String toString() {
-        return "UserListViewItem{" +
-                mbUser +
+        return "ActorViewItem{" +
+                actor +
                 '}';
     }
 
     public boolean isEmpty() {
-        return mbUser.isEmpty();
+        return actor.isEmpty();
     }
 
     public boolean userIsFollowedBy(MyAccount ma) {
@@ -119,21 +119,21 @@ public class UserViewItem extends ViewItem<UserViewItem> implements Comparable<U
 
     @Override
     public long getDate() {
-        return mbUser.getUpdatedDate();
+        return actor.getUpdatedDate();
     }
 
     @NonNull
     @Override
-    public UserViewItem getNew() {
+    public ActorViewItem getNew() {
         return newEmpty("");
     }
 
     public String getWebFingerIdOrUserName() {
-        return mbUser.getNamePreferablyWebFingerId();
+        return actor.getNamePreferablyWebFingerId();
     }
 
     @Override
-    public int compareTo(@NonNull UserViewItem o) {
+    public int compareTo(@NonNull ActorViewItem o) {
         return getWebFingerIdOrUserName().compareTo(o.getWebFingerIdOrUserName());
     }
 
@@ -149,30 +149,30 @@ public class UserViewItem extends ViewItem<UserViewItem> implements Comparable<U
 
     @Override
     @NonNull
-    public UserViewItem fromCursor(@NonNull Cursor cursor) {
-        MbUser user = MbUser.fromOriginAndUserOid (
-                MyContextHolder.get().persistentOrigins().fromId(DbUtils.getLong(cursor, UserTable.ORIGIN_ID)),
-                DbUtils.getString(cursor, UserTable.USER_OID)
+    public ActorViewItem fromCursor(@NonNull Cursor cursor) {
+        Actor user = Actor.fromOriginAndActorOid(
+                MyContextHolder.get().persistentOrigins().fromId(DbUtils.getLong(cursor, ActorTable.ORIGIN_ID)),
+                DbUtils.getString(cursor, ActorTable.ACTOR_OID)
         );
         user.userId = DbUtils.getLong(cursor, BaseColumns._ID);
-        user.setUserName(DbUtils.getString(cursor, UserTable.USERNAME));
-        user.setWebFingerId(DbUtils.getString(cursor, UserTable.WEBFINGER_ID));
-        user.setRealName(DbUtils.getString(cursor, UserTable.REAL_NAME));
-        user.setDescription(DbUtils.getString(cursor, UserTable.DESCRIPTION));
-        user.location = DbUtils.getString(cursor, UserTable.LOCATION);
+        user.setActorName(DbUtils.getString(cursor, ActorTable.ACTORNAME));
+        user.setWebFingerId(DbUtils.getString(cursor, ActorTable.WEBFINGER_ID));
+        user.setRealName(DbUtils.getString(cursor, ActorTable.REAL_NAME));
+        user.setDescription(DbUtils.getString(cursor, ActorTable.DESCRIPTION));
+        user.location = DbUtils.getString(cursor, ActorTable.LOCATION);
 
-        user.setProfileUrl(DbUtils.getString(cursor, UserTable.PROFILE_URL));
-        user.setHomepage(DbUtils.getString(cursor, UserTable.HOMEPAGE));
+        user.setProfileUrl(DbUtils.getString(cursor, ActorTable.PROFILE_URL));
+        user.setHomepage(DbUtils.getString(cursor, ActorTable.HOMEPAGE));
 
-        user.msgCount = DbUtils.getLong(cursor, UserTable.MSG_COUNT);
-        user.favoritesCount = DbUtils.getLong(cursor, UserTable.FAVORITES_COUNT);
-        user.followingCount = DbUtils.getLong(cursor, UserTable.FOLLOWING_COUNT);
-        user.followersCount = DbUtils.getLong(cursor, UserTable.FOLLOWERS_COUNT);
+        user.msgCount = DbUtils.getLong(cursor, ActorTable.MSG_COUNT);
+        user.favoritesCount = DbUtils.getLong(cursor, ActorTable.FAVORITES_COUNT);
+        user.followingCount = DbUtils.getLong(cursor, ActorTable.FOLLOWING_COUNT);
+        user.followersCount = DbUtils.getLong(cursor, ActorTable.FOLLOWERS_COUNT);
 
-        user.setCreatedDate(DbUtils.getLong(cursor, UserTable.CREATED_DATE));
-        user.setUpdatedDate(DbUtils.getLong(cursor, UserTable.UPDATED_DATE));
+        user.setCreatedDate(DbUtils.getLong(cursor, ActorTable.CREATED_DATE));
+        user.setUpdatedDate(DbUtils.getLong(cursor, ActorTable.UPDATED_DATE));
 
-        UserViewItem item = new UserViewItem(user, false);
+        ActorViewItem item = new ActorViewItem(user, false);
 
         item.myFollowers = MyQuery.getMyFollowersOf(user.userId);
         AvatarFile avatarFile = AvatarFile.fromCursor(user.userId, cursor, DownloadTable.AVATAR_FILE_NAME);

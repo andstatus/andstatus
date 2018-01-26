@@ -28,7 +28,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.MsgTable;
-import org.andstatus.app.database.table.UserTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SelectionAndArgs;
@@ -78,7 +78,7 @@ public class DataPruner {
                 .map(MyAccount::getUserId).collect(Collectors.toList()));
         String sqlNotMyActivity = ActivityTable.TABLE_NAME + "." + ActivityTable.ACTOR_ID + accountIds.getNotSql();
         String sqlNotLatestActivityByUser = ActivityTable.TABLE_NAME + "." + ActivityTable._ID + " NOT IN("
-                + " SELECT " + UserTable.USER_ACTIVITY_ID + " FROM " + UserTable.TABLE_NAME + ")";
+                + " SELECT " + ActorTable.ACTOR_ACTIVITY_ID + " FROM " + ActorTable.TABLE_NAME + ")";
 
         long maxDays = Integer.parseInt(sp.getString(MyPreferences.KEY_HISTORY_TIME, "3"));
         long latestTimestamp = 0;

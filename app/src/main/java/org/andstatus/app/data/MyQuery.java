@@ -25,15 +25,14 @@ import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
 import android.text.TextUtils;
 
-import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.UserInTimeline;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.database.table.MsgTable;
-import org.andstatus.app.database.table.UserTable;
-import org.andstatus.app.net.social.MbActivityType;
-import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.database.table.ActorTable;
+import org.andstatus.app.net.social.ActivityType;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -58,15 +57,15 @@ public class MyQuery {
     static String userNameField(UserInTimeline userInTimeline) {
         switch (userInTimeline) {
             case AT_USERNAME:
-                return "('@' || " + UserTable.USERNAME + ")";
+                return "('@' || " + ActorTable.ACTORNAME + ")";
             case WEBFINGER_ID:
-                return UserTable.WEBFINGER_ID;
+                return ActorTable.WEBFINGER_ID;
             case REAL_NAME:
-                return UserTable.REAL_NAME;
+                return ActorTable.REAL_NAME;
             case REAL_NAME_AT_USERNAME:
-                return "(" + UserTable.REAL_NAME + " || ' @' || " + UserTable.USERNAME + ")";
+                return "(" + ActorTable.REAL_NAME + " || ' @' || " + ActorTable.ACTORNAME + ")";
             default:
-                return UserTable.USERNAME;
+                return ActorTable.ACTORNAME;
         }
     }
 
@@ -95,8 +94,8 @@ public class MyQuery {
                         + "=" + quoteIfNotQuoted(oid);
                 break;
             case USER_OID:
-                sql = "SELECT " + BaseColumns._ID + " FROM " + UserTable.TABLE_NAME
-                        + " WHERE " + UserTable.ORIGIN_ID + "=" + originId + " AND " + UserTable.USER_OID
+                sql = "SELECT " + BaseColumns._ID + " FROM " + ActorTable.TABLE_NAME
+                        + " WHERE " + ActorTable.ORIGIN_ID + "=" + originId + " AND " + ActorTable.ACTOR_OID
                         + "=" + quoteIfNotQuoted(oid);
                 break;
             case ACTIVITY_OID:
@@ -209,8 +208,8 @@ public class MyQuery {
                         break;
     
                     case USER_OID:
-                        sql = "SELECT " + UserTable.USER_OID + " FROM "
-                                + UserTable.TABLE_NAME + " WHERE " + BaseColumns._ID + "="
+                        sql = "SELECT " + ActorTable.ACTOR_OID + " FROM "
+                                + ActorTable.TABLE_NAME + " WHERE " + BaseColumns._ID + "="
                                 + entityId;
                         break;
     
@@ -221,7 +220,7 @@ public class MyQuery {
                         sql = "SELECT " + ActivityTable.ACTIVITY_OID + " FROM "
                                 + ActivityTable.TABLE_NAME + " WHERE "
                                 + ActivityTable.MSG_ID + "=" + entityId + " AND "
-                                + ActivityTable.ACTIVITY_TYPE + "=" + MbActivityType.ANNOUNCE.id + " AND "
+                                + ActivityTable.ACTIVITY_TYPE + "=" + ActivityType.ANNOUNCE.id + " AND "
                                 + ActivityTable.ACTOR_ID + "=" + rebloggerUserId;
                         break;
     
@@ -253,23 +252,23 @@ public class MyQuery {
     }
 
     /** @return ID of the Reblog/Undo reblog activity and the type of the Activity */
-    public static Pair<Long, MbActivityType> msgIdToLastReblogging(SQLiteDatabase db, long msgId, long actorId) {
-        return msgIdToLastOfTypes(db, msgId, actorId, MbActivityType.ANNOUNCE, MbActivityType.UNDO_ANNOUNCE);
+    public static Pair<Long, ActivityType> msgIdToLastReblogging(SQLiteDatabase db, long msgId, long actorId) {
+        return msgIdToLastOfTypes(db, msgId, actorId, ActivityType.ANNOUNCE, ActivityType.UNDO_ANNOUNCE);
     }
 
     /** @return ID of the last LIKE/UNDO_LIKE activity and the type of the activity */
     @NonNull
-    public static Pair<Long, MbActivityType> msgIdToLastFavoriting(SQLiteDatabase db, long msgId, long actorId) {
-        return msgIdToLastOfTypes(db, msgId, actorId, MbActivityType.LIKE, MbActivityType.UNDO_LIKE);
+    public static Pair<Long, ActivityType> msgIdToLastFavoriting(SQLiteDatabase db, long msgId, long actorId) {
+        return msgIdToLastOfTypes(db, msgId, actorId, ActivityType.LIKE, ActivityType.UNDO_LIKE);
     }
 
     /** @return ID of the last type1 or type2 activity and the type of the activity for the selected user */
     @NonNull
-    public static Pair<Long, MbActivityType> msgIdToLastOfTypes(
-            SQLiteDatabase db, long msgId, long actorId, MbActivityType type1, MbActivityType type2) {
+    public static Pair<Long, ActivityType> msgIdToLastOfTypes(
+            SQLiteDatabase db, long msgId, long actorId, ActivityType type1, ActivityType type2) {
         String method = "msgIdToLastOfTypes";
         if (db == null || msgId == 0 || actorId == 0) {
-            return new Pair<>(0L, MbActivityType.EMPTY);
+            return new Pair<>(0L, ActivityType.EMPTY);
         }
         String sql = "SELECT " + ActivityTable.ACTIVITY_TYPE + ", " + ActivityTable._ID
                 + " FROM " + ActivityTable.TABLE_NAME
@@ -280,37 +279,37 @@ public class MyQuery {
                 + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC LIMIT 1";
         try (Cursor cursor = db.rawQuery(sql, null)) {
             if (cursor.moveToNext()) {
-                return new Pair<>(cursor.getLong(1), MbActivityType.fromId(cursor.getLong(0)));
+                return new Pair<>(cursor.getLong(1), ActivityType.fromId(cursor.getLong(0)));
             }
         } catch (Exception e) {
             MyLog.i(TAG, method + "; SQL:'" + sql + "'", e);
         }
-        return new Pair<>(0L, MbActivityType.EMPTY);
+        return new Pair<>(0L, ActivityType.EMPTY);
     }
 
-    public static List<MbUser> getStargazers(SQLiteDatabase db, @NonNull Origin origin, long msgId) {
-        return msgIdToActors(db, origin, msgId, MbActivityType.LIKE, MbActivityType.UNDO_LIKE);
+    public static List<Actor> getStargazers(SQLiteDatabase db, @NonNull Origin origin, long msgId) {
+        return msgIdToActors(db, origin, msgId, ActivityType.LIKE, ActivityType.UNDO_LIKE);
     }
 
-    public static List<MbUser> getRebloggers(SQLiteDatabase db, @NonNull Origin origin, long msgId) {
-        return msgIdToActors(db, origin, msgId, MbActivityType.ANNOUNCE, MbActivityType.UNDO_ANNOUNCE);
+    public static List<Actor> getRebloggers(SQLiteDatabase db, @NonNull Origin origin, long msgId) {
+        return msgIdToActors(db, origin, msgId, ActivityType.ANNOUNCE, ActivityType.UNDO_ANNOUNCE);
     }
 
     /** @return for each acted user (userId is a key): ID of the last type1 or type2 activity
      *  and the type of the activity */
     @NonNull
-    public static List<MbUser> msgIdToActors(
-            SQLiteDatabase db, @NonNull Origin origin, long msgId, MbActivityType typeToReturn, MbActivityType undoType) {
+    public static List<Actor> msgIdToActors(
+            SQLiteDatabase db, @NonNull Origin origin, long msgId, ActivityType typeToReturn, ActivityType undoType) {
         String method = "msgIdToLastOfTypes";
         final List<Long> foundActors = new ArrayList<>();
-        final List<MbUser> users = new ArrayList<>();
+        final List<Actor> users = new ArrayList<>();
         if (db == null || !origin.isValid() || msgId == 0) {
             return users;
         }
         String sql = "SELECT " + ActivityTable.ACTIVITY_TYPE + ", " + ActivityTable.ACTOR_ID + ", "
-                + UserTable.WEBFINGER_ID + ", " + TimelineSql.userNameField() + " AS " + UserTable.ACTOR_NAME
-                + " FROM " + ActivityTable.TABLE_NAME + " INNER JOIN " + UserTable.TABLE_NAME
-                + " ON " + ActivityTable.ACTOR_ID + "=" + UserTable.TABLE_NAME + "." + UserTable._ID
+                + ActorTable.WEBFINGER_ID + ", " + TimelineSql.userNameField() + " AS " + ActorTable.ACTIVITY_ACTOR_NAME
+                + " FROM " + ActivityTable.TABLE_NAME + " INNER JOIN " + ActorTable.TABLE_NAME
+                + " ON " + ActivityTable.ACTOR_ID + "=" + ActorTable.TABLE_NAME + "." + ActorTable._ID
                 + " WHERE " + ActivityTable.MSG_ID + "=" + msgId + " AND "
                 + ActivityTable.ACTIVITY_TYPE + " IN(" + typeToReturn.id + "," + undoType.id + ")"
                 + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC";
@@ -319,11 +318,11 @@ public class MyQuery {
                 long actorId = DbUtils.getLong(cursor, ActivityTable.ACTOR_ID);
                 if (!foundActors.contains(actorId)) {
                     foundActors.add(actorId);
-                    MbActivityType activityType = MbActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
+                    ActivityType activityType = ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
                     if (activityType.equals(typeToReturn)) {
-                        MbUser user = MbUser.fromOriginAndUserId(origin, actorId);
-                        user.setRealName(DbUtils.getString(cursor, UserTable.ACTOR_NAME));
-                        user.setWebFingerId(DbUtils.getString(cursor, UserTable.WEBFINGER_ID));
+                        Actor user = Actor.fromOriginAndActorId(origin, actorId);
+                        user.setRealName(DbUtils.getString(cursor, ActorTable.ACTIVITY_ACTOR_NAME));
+                        user.setWebFingerId(DbUtils.getString(cursor, ActorTable.WEBFINGER_ID));
                         users.add(user);
                     }
                 }
@@ -345,8 +344,8 @@ public class MyQuery {
             return actorToMessage;
         }
         String sql = "SELECT " + ActivityTable.ACTIVITY_TYPE + ", " + ActivityTable.SUBSCRIBED
-                + " FROM " + ActivityTable.TABLE_NAME + " INNER JOIN " + UserTable.TABLE_NAME
-                + " ON " + ActivityTable.ACTOR_ID + "=" + UserTable.TABLE_NAME + "." + UserTable._ID
+                + " FROM " + ActivityTable.TABLE_NAME + " INNER JOIN " + ActorTable.TABLE_NAME
+                + " ON " + ActivityTable.ACTOR_ID + "=" + ActorTable.TABLE_NAME + "." + ActorTable._ID
                 + " WHERE " + ActivityTable.MSG_ID + "=" + msgId + " AND "
                 + ActivityTable.ACTOR_ID + "=" + userId
                 + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC";
@@ -355,20 +354,20 @@ public class MyQuery {
                 if (DbUtils.getTriState(cursor, ActivityTable.SUBSCRIBED) == TriState.TRUE) {
                     actorToMessage.subscribed = true;
                 }
-                MbActivityType activityType = MbActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
+                ActivityType activityType = ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
                 switch (activityType) {
                     case LIKE:
                     case UNDO_LIKE:
                         if (!favoriteFound) {
                             favoriteFound = true;
-                            actorToMessage.favorited = activityType == MbActivityType.LIKE;
+                            actorToMessage.favorited = activityType == ActivityType.LIKE;
                         }
                         break;
                     case ANNOUNCE:
                     case UNDO_ANNOUNCE:
                         if (!reblogFound) {
                             reblogFound = true;
-                            actorToMessage.reblogged = activityType == MbActivityType.ANNOUNCE;
+                            actorToMessage.reblogged = activityType == ActivityType.ANNOUNCE;
                         }
                         break;
                     default:
@@ -393,9 +392,9 @@ public class MyQuery {
                     throw new IllegalArgumentException( method + "; Not implemented \"" + userIdColumnName + "\"");
                 } else if(userIdColumnName.contentEquals(MsgTable.AUTHOR_ID) ||
                         userIdColumnName.contentEquals(MsgTable.IN_REPLY_TO_USER_ID)) {
-                    sql = "SELECT " + userNameField(userInTimeline) + " FROM " + UserTable.TABLE_NAME
+                    sql = "SELECT " + userNameField(userInTimeline) + " FROM " + ActorTable.TABLE_NAME
                             + " INNER JOIN " + MsgTable.TABLE_NAME + " ON "
-                            + MsgTable.TABLE_NAME + "." + userIdColumnName + "=" + UserTable.TABLE_NAME + "." + BaseColumns._ID
+                            + MsgTable.TABLE_NAME + "." + userIdColumnName + "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID
                             + " WHERE " + MsgTable.TABLE_NAME + "." + BaseColumns._ID + "=" + messageId;
                 } else {
                     throw new IllegalArgumentException( method + "; Unknown name \"" + userIdColumnName + "\"");
@@ -428,17 +427,17 @@ public class MyQuery {
     }
 
     public static String userIdToName(long userId, UserInTimeline userInTimeline) {
-        return idToStringColumnValue(UserTable.TABLE_NAME, userNameField(userInTimeline), userId);
+        return idToStringColumnValue(ActorTable.TABLE_NAME, userNameField(userInTimeline), userId);
     }
 
     /**
-     * Convenience method to get column value from {@link UserTable} table
+     * Convenience method to get column value from {@link ActorTable} table
      * @param columnName without table name
-     * @param systemId {@link UserTable#USER_ID}
+     * @param systemId {@link ActorTable#ACTOR_ID}
      * @return 0 in case not found or error
      */
     public static long userIdToLongColumnValue(String columnName, long systemId) {
-        return idToLongColumnValue(null, UserTable.TABLE_NAME, columnName, systemId);
+        return idToLongColumnValue(null, ActorTable.TABLE_NAME, columnName, systemId);
     }
 
     public static long idToLongColumnValue(SQLiteDatabase databaseIn, String tableName, String columnName, long systemId) {
@@ -483,7 +482,7 @@ public class MyQuery {
 
     @NonNull
     public static String userIdToStringColumnValue(String columnName, long systemId) {
-        return idToStringColumnValue(UserTable.TABLE_NAME, columnName, systemId);
+        return idToStringColumnValue(ActorTable.TABLE_NAME, columnName, systemId);
     }
 
     /**
@@ -598,24 +597,24 @@ public class MyQuery {
             case ActivityTable.ACTOR_ID:
                 columnName = columnNameIn;
                 condition = ActivityTable.ACTIVITY_TYPE + " IN("
-                        + MbActivityType.CREATE.id + ","
-                        + MbActivityType.UPDATE.id + ","
-                        + MbActivityType.ANNOUNCE.id + ","
-                        + MbActivityType.LIKE.id + ")";
+                        + ActivityType.CREATE.id + ","
+                        + ActivityType.UPDATE.id + ","
+                        + ActivityType.ANNOUNCE.id + ","
+                        + ActivityType.LIKE.id + ")";
                 break;
             case ActivityTable.AUTHOR_ID:
                 columnName = ActivityTable.ACTOR_ID;
                 condition = ActivityTable.ACTIVITY_TYPE + " IN("
-                        + MbActivityType.CREATE.id + ","
-                        + MbActivityType.UPDATE.id + ")";
+                        + ActivityType.CREATE.id + ","
+                        + ActivityType.UPDATE.id + ")";
                 break;
             case ActivityTable.LAST_UPDATE_ID:
             case ActivityTable.UPDATED_DATE:
                 columnName = columnNameIn.equals(ActivityTable.LAST_UPDATE_ID) ? ActivityTable._ID : columnNameIn;
                 condition = ActivityTable.ACTIVITY_TYPE + " IN("
-                        + MbActivityType.CREATE.id + ","
-                        + MbActivityType.UPDATE.id + ","
-                        + MbActivityType.DELETE.id + ")";
+                        + ActivityType.CREATE.id + ","
+                        + ActivityType.UPDATE.id + ","
+                        + ActivityType.DELETE.id + ")";
                 break;
             default:
                 throw new IllegalArgumentException( method + "; Illegal column '" + columnNameIn + "'");
@@ -626,19 +625,19 @@ public class MyQuery {
     }
 
     public static long webFingerIdToId(long originId, String webFingerId) {
-        return userColumnValueToId(originId, UserTable.WEBFINGER_ID, webFingerId);
+        return userColumnValueToId(originId, ActorTable.WEBFINGER_ID, webFingerId);
     }
     
     /**
      * Lookup the User's id based on the Username in the Originating system
      * 
      * @param originId - see {@link MsgTable#ORIGIN_ID}
-     * @param userName - see {@link UserTable#USERNAME}
+     * @param userName - see {@link ActorTable#ACTORNAME}
      * @return - id in our System (i.e. in the table, e.g.
-     *         {@link UserTable#_ID} ), 0 if not found
+     *         {@link ActorTable#_ID} ), 0 if not found
      */
     public static long userNameToId(long originId, String userName) {
-        return userColumnValueToId(originId, UserTable.USERNAME, userName);
+        return userColumnValueToId(originId, ActorTable.ACTORNAME, userName);
     }
 
     private static long userColumnValueToId(long originId, String columnName, String columnValue) {
@@ -652,8 +651,8 @@ public class MyQuery {
         SQLiteStatement prog = null;
         String sql = "";
         try {
-            sql = "SELECT " + BaseColumns._ID + " FROM " + UserTable.TABLE_NAME
-                    + " WHERE " + UserTable.ORIGIN_ID + "=" + originId + " AND " + columnName + "='"
+            sql = "SELECT " + BaseColumns._ID + " FROM " + ActorTable.TABLE_NAME
+                    + " WHERE " + ActorTable.ORIGIN_ID + "=" + originId + " AND " + columnName + "='"
                     + columnValue + "'";
             prog = db.compileStatement(sql);
             id = prog.simpleQueryForLong();

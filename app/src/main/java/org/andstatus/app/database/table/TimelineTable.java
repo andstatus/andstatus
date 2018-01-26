@@ -35,8 +35,8 @@ public class TimelineTable implements BaseColumns {
     /** Alias for #_ID */
     public static final String TIMELINE_ID = "timeline_id";
     public static final String TIMELINE_TYPE = "timeline_type";
-    public static final String ACCOUNT_ID = UserTable.ACCOUNT_ID;
-    public static final String USER_ID = UserTable.USER_ID;
+    public static final String ACCOUNT_ID = ActorTable.ACCOUNT_ID;
+    public static final String USER_ID = ActorTable.ACTOR_ID;
     public static final String USER_IN_TIMELINE = "user_in_timeline";
     public static final String ORIGIN_ID =  OriginTable.ORIGIN_ID;
     public static final String SEARCH_QUERY = "search_query";

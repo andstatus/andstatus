@@ -19,11 +19,11 @@ package org.andstatus.app.activity;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.msg.MessageEditorContainer;
-import org.andstatus.app.user.UserListContextMenu;
-import org.andstatus.app.user.UserViewItem;
+import org.andstatus.app.user.ActorListContextMenu;
+import org.andstatus.app.user.ActorViewItem;
 import org.andstatus.app.view.MyContextMenu;
 
-public class ActorContextMenu extends UserListContextMenu {
+public class ActorContextMenu extends ActorListContextMenu {
 
     public ActorContextMenu(MessageEditorContainer menuContainer) {
         super(menuContainer, MyContextMenu.MENU_GROUP_ACTOR);
@@ -31,7 +31,7 @@ public class ActorContextMenu extends UserListContextMenu {
 
     @NonNull
     @Override
-    protected UserViewItem getViewItem(ActivityViewItem activityViewItem) {
+    protected ActorViewItem getViewItem(ActivityViewItem activityViewItem) {
         return activityViewItem.actor;
     }
 }

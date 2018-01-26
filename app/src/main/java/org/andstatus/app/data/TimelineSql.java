@@ -30,7 +30,7 @@ import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.database.table.MsgTable;
-import org.andstatus.app.database.table.UserTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -78,8 +78,8 @@ public class TimelineSql {
                     fUserLinkedUserIdColumnName = FriendshipTable.FRIEND_ID;
                 }
                 // Select only the latest message from each Friend's timeline
-                String activityIds = "SELECT " + UserTable.USER_ACTIVITY_ID
-                        + " FROM " + UserTable.TABLE_NAME + " AS u1"
+                String activityIds = "SELECT " + ActorTable.ACTOR_ACTIVITY_ID
+                        + " FROM " + ActorTable.TABLE_NAME + " AS u1"
                         + " INNER JOIN " + FriendshipTable.TABLE_NAME
                         + " ON (" + FriendshipTable.TABLE_NAME + "." + fUserIdColumnName + "=u1." + BaseColumns._ID
                         + " AND " + FriendshipTable.TABLE_NAME + "."
@@ -137,11 +137,11 @@ public class TimelineSql {
                     + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.MSG_ID
                     + msgWhere.getAndWhere() + ")";
 
-        if (columns.contains(UserTable.AUTHOR_NAME)) {
+        if (columns.contains(ActorTable.AUTHOR_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
                     + BaseColumns._ID + ", " 
-                    + TimelineSql.userNameField() + " AS " + UserTable.AUTHOR_NAME
-                    + " FROM " + UserTable.TABLE_NAME + ") AS author ON "
+                    + TimelineSql.userNameField() + " AS " + ActorTable.AUTHOR_NAME
+                    + " FROM " + ActorTable.TABLE_NAME + ") AS author ON "
                     + ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.AUTHOR_ID + "=author."
                     + BaseColumns._ID;
 
@@ -175,10 +175,10 @@ public class TimelineSql {
                     + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.MSG_ID
                     + "=" + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.MSG_ID;
         }
-        if (columns.contains(UserTable.IN_REPLY_TO_NAME)) {
+        if (columns.contains(ActorTable.IN_REPLY_TO_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
-                    + TimelineSql.userNameField() + " AS " + UserTable.IN_REPLY_TO_NAME
-                    + " FROM " + UserTable.TABLE_NAME + ") AS prevAuthor ON "
+                    + TimelineSql.userNameField() + " AS " + ActorTable.IN_REPLY_TO_NAME
+                    + " FROM " + ActorTable.TABLE_NAME + ") AS prevAuthor ON "
                     + ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.IN_REPLY_TO_USER_ID
                     + "=prevAuthor." + BaseColumns._ID;
         }
@@ -216,10 +216,10 @@ public class TimelineSql {
         Set<String> columnNames = new HashSet<>();
         columnNames.add(ActivityTable.MSG_ID);
         columnNames.add(ActivityTable.ORIGIN_ID);
-        columnNames.add(UserTable.AUTHOR_NAME);
+        columnNames.add(ActorTable.AUTHOR_NAME);
         columnNames.add(MsgTable.BODY);
         columnNames.add(MsgTable.IN_REPLY_TO_MSG_ID);
-        columnNames.add(UserTable.IN_REPLY_TO_NAME);
+        columnNames.add(ActorTable.IN_REPLY_TO_NAME);
         columnNames.add(MsgTable.FAVORITED);
         columnNames.add(ActivityTable.INS_DATE); // ??
         columnNames.add(MsgTable.UPDATED_DATE);

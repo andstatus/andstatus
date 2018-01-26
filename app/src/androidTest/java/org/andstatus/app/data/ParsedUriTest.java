@@ -20,7 +20,7 @@ import android.net.Uri;
 
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.user.UserListType;
+import org.andstatus.app.user.ActorListType;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,11 +43,11 @@ public class ParsedUriTest {
     private void assertOneUserList(long originId) {
         long userId = 5;
         long msgId = 2;
-        Uri uri = MatchedUri.getUserListUri(userId, UserListType.USERS_OF_MESSAGE, originId, msgId, "");
+        Uri uri = MatchedUri.getUserListUri(userId, ActorListType.USERS_OF_MESSAGE, originId, msgId, "");
         ParsedUri parsedUri = ParsedUri.fromUri(uri);
         String msgLog = parsedUri.toString();
         assertEquals(TimelineType.UNKNOWN, parsedUri.getTimelineType());
-        assertEquals(msgLog, UserListType.USERS_OF_MESSAGE, parsedUri.getUserListType());
+        assertEquals(msgLog, ActorListType.USERS_OF_MESSAGE, parsedUri.getUserListType());
         assertEquals(msgLog, userId, parsedUri.getAccountUserId());
         assertEquals(msgLog, originId, parsedUri.getOriginId());
         assertEquals(msgLog, msgId, parsedUri.getMessageId());

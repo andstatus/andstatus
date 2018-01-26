@@ -23,19 +23,19 @@ import org.andstatus.app.database.table.FriendshipTable;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class FollowersListLoader extends UserListLoader {
+public class FollowersListLoader extends ActorListLoader {
     private long userId;
     private final String userName;
 
-    public FollowersListLoader(UserListType userListType, MyAccount ma, long centralItemId, String searchQuery) {
-        super(userListType, ma, ma.getOrigin(), centralItemId, searchQuery);
+    public FollowersListLoader(ActorListType actorListType, MyAccount ma, long centralItemId, String searchQuery) {
+        super(actorListType, ma, ma.getOrigin(), centralItemId, searchQuery);
         userId = centralItemId;
         userName = MyQuery.userIdToWebfingerId(userId);
     }
 
     protected String getSqlUserIds() {
         String sql = "SELECT ";
-        switch (mUserListType) {
+        switch (mActorListType) {
             case FOLLOWERS:
                 sql += FriendshipTable.USER_ID
                         + " FROM " + FriendshipTable.TABLE_NAME

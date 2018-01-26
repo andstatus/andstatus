@@ -16,9 +16,9 @@
 
 package org.andstatus.app.net.social;
 
-public enum MbObjectType {
-    MESSAGE,
-    USER,
+public enum AObjectType {
+    NOTE,
+    ACTOR,
     ACTIVITY,
     EMPTY
 }

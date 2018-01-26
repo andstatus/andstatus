@@ -29,7 +29,7 @@ import org.andstatus.app.net.social.ConnectionEmpty;
 import org.andstatus.app.net.social.ConnectionMastodon;
 import org.andstatus.app.net.social.ConnectionTheTwitter;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocial;
-import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.TriState;
@@ -163,7 +163,7 @@ public enum OriginType implements SelectableEnum {
                 canSetUrlOfOrigin = false;
                 shouldSetNewUsernameManuallyIfOAuth = true;
                 shouldSetNewUsernameManuallyNoOAuth = false;
-                usernameRegEx = MbUser.WEBFINGER_ID_REGEX;
+                usernameRegEx = Actor.WEBFINGER_ID_REGEX;
                 validUsernameExamples = "andstatus@identi.ca test425@1realtime.net";
                 // This is not a hard limit, just for convenience
                 textLimitDefault = TEXT_LIMIT_MAXIMUM;

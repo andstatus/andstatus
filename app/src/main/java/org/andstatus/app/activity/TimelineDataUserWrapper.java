@@ -20,9 +20,9 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.timeline.TimelineData;
 import org.andstatus.app.timeline.ViewItem;
-import org.andstatus.app.user.UserViewItem;
+import org.andstatus.app.user.ActorViewItem;
 
-class TimelineDataUserWrapper extends TimelineDataWrapper<UserViewItem> {
+class TimelineDataUserWrapper extends TimelineDataWrapper<ActorViewItem> {
 
     TimelineDataUserWrapper(TimelineData<ActivityViewItem> listData) {
         super(listData);
@@ -30,7 +30,7 @@ class TimelineDataUserWrapper extends TimelineDataWrapper<UserViewItem> {
 
     @NonNull
     @Override
-    public UserViewItem getItem(int position) {
+    public ActorViewItem getItem(int position) {
         return listData.getItem(position).getUser();
     }
 

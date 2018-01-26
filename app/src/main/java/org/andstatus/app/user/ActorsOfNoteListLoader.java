@@ -21,7 +21,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.MsgTable;
-import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 
 import java.util.List;
@@ -29,14 +29,14 @@ import java.util.List;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class UsersOfMessageListLoader extends UserListLoader {
+public class ActorsOfNoteListLoader extends ActorListLoader {
     private final long selectedMessageId;
     private final Origin originOfSelectedMessage;
     final String messageBody;
     private boolean mentionedOnly = false;
 
-    public UsersOfMessageListLoader(UserListType userListType, MyAccount ma, long centralItemId, String searchQuery) {
-        super(userListType, ma, ma.getOrigin(), centralItemId, searchQuery);
+    public ActorsOfNoteListLoader(ActorListType actorListType, MyAccount ma, long centralItemId, String searchQuery) {
+        super(actorListType, ma, ma.getOrigin(), centralItemId, searchQuery);
 
         selectedMessageId = centralItemId;
         messageBody = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, selectedMessageId);
@@ -44,7 +44,7 @@ public class UsersOfMessageListLoader extends UserListLoader {
                 MyQuery.msgIdToOriginId(selectedMessageId));
     }
 
-    public UsersOfMessageListLoader setMentionedOnly(boolean mentionedOnly) {
+    public ActorsOfNoteListLoader setMentionedOnly(boolean mentionedOnly) {
         this.mentionedOnly = mentionedOnly;
         return this;
     }
@@ -60,9 +60,9 @@ public class UsersOfMessageListLoader extends UserListLoader {
     private void addFromMessageRow() {
         final long authorId = MyQuery.msgIdToLongColumnValue(MsgTable.AUTHOR_ID, selectedMessageId);
         if (mentionedOnly) {
-            addUsersFromMessageBody(MbUser.fromOriginAndUserId(originOfSelectedMessage, authorId));
+            addUsersFromMessageBody(Actor.fromOriginAndActorId(originOfSelectedMessage, authorId));
         } else {
-            MbUser author = addUserIdToList(originOfSelectedMessage, authorId).mbUser;
+            Actor author = addUserIdToList(originOfSelectedMessage, authorId).actor;
             addUserIdToList(originOfSelectedMessage,
                     MyQuery.msgIdToLongColumnValue(ActivityTable.ACTOR_ID, selectedMessageId));
             addUserIdToList(originOfSelectedMessage,
@@ -73,15 +73,15 @@ public class UsersOfMessageListLoader extends UserListLoader {
         }
     }
 
-    private void addUsersFromMessageBody(MbUser author) {
-        List<MbUser> users = author.extractUsersFromBodyText(messageBody, false);
-        for (MbUser mbUser: users) {
-            addUserToList(UserViewItem.fromMbUser(mbUser));
+    private void addUsersFromMessageBody(Actor author) {
+        List<Actor> actors = author.extractActorsFromBodyText(messageBody, false);
+        for (Actor actor: actors) {
+            addActorToList(ActorViewItem.fromActor(actor));
         }
     }
 
     private void addRebloggers() {
-        for (MbUser reblogger : MyQuery.getRebloggers(
+        for (Actor reblogger : MyQuery.getRebloggers(
                 MyContextHolder.get().getDatabase(), origin, selectedMessageId)) {
             addUserIdToList(originOfSelectedMessage, reblogger.userId);
         }

@@ -21,7 +21,7 @@ package org.andstatus.app.net.social;
  * of how many more requests are allowed 
  * and the limit of such requests
  */
-public class MbRateLimitStatus {
+public class RateLimitStatus {
     public int remaining = 0;
     public int limit = 0;
     

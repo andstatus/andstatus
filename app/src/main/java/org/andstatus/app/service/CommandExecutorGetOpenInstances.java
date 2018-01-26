@@ -18,7 +18,7 @@ package org.andstatus.app.service;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.ConnectionException;
-import org.andstatus.app.net.social.MbOrigin;
+import org.andstatus.app.net.social.Server;
 import org.andstatus.app.origin.DiscoveredOrigins;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
@@ -35,7 +35,7 @@ public class CommandExecutorGetOpenInstances extends CommandExecutorStrategy {
     void execute() {
         boolean ok = false;
         Origin execOrigin = execContext.getCommandData().getTimeline().getOrigin();
-        List<MbOrigin> result = null;
+        List<Server> result = null;
         try {
             result = OriginConnectionData.fromAccountName(
                     execContext.getMyAccount().getOAccountName(), TriState.UNKNOWN).
@@ -47,7 +47,7 @@ public class CommandExecutorGetOpenInstances extends CommandExecutorStrategy {
         }
         if (ok) {
             List<Origin> newOrigins = new ArrayList<Origin>();
-            for (MbOrigin mbOrigin : result) {
+            for (Server mbOrigin : result) {
                 execContext.getResult().incrementDownloadedCount();
                 Origin origin = new Origin.Builder(execOrigin.getOriginType()).setName(mbOrigin.name)
                         .setHostOrUrl(mbOrigin.urlString)

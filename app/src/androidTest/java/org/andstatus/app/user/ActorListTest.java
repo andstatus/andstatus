@@ -29,7 +29,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.msg.MessageListContextMenuItem;
-import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.timeline.ListActivityTestHelper;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.timeline.TimelineActivityTest;
@@ -45,7 +45,7 @@ import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class UserListTest extends TimelineActivityTest {
+public class ActorListTest extends TimelineActivityTest {
 
     @Override
     protected Intent getActivityIntent() {
@@ -65,15 +65,15 @@ public class UserListTest extends TimelineActivityTest {
     public void testUsersOfMessage() throws InterruptedException {
         final String method = "testUsersOfMessage";
         TestSuite.waitForListLoaded(getActivity(), 2);
-        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(), UserList.class);
+        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(), ActorList.class);
         long msgId = MyQuery.oidToId(OidEnum.MSG_OID, demoData.getConversationOriginId(),
                 demoData.CONVERSATION_MENTIONS_MESSAGE_OID);
         String body = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId);
         String logMsg = MyQuery.msgInfoForLog(msgId);
 
-        List<MbUser> users = MbUser.fromOriginAndUserOid(demoData.getConversationMyAccount().getOrigin(), "").extractUsersFromBodyText(body, false);
+        List<Actor> users = Actor.fromOriginAndActorOid(demoData.getConversationMyAccount().getOrigin(), "").extractActorsFromBodyText(body, false);
         assertEquals(logMsg, 3, users.size());
-        assertEquals(logMsg, "unknownUser@example.com", users.get(2).getUserName());
+        assertEquals(logMsg, "unknownUser@example.com", users.get(2).getActorName());
 
         ActivityViewItem item = ActivityViewItem.EMPTY;
         TimelineData<ActivityViewItem> timelineData = getActivity().getListData();
@@ -96,30 +96,30 @@ public class UserListTest extends TimelineActivityTest {
         assertTrue("Invoked Context menu for " + logMsg, helper.invokeContextMenuAction4ListItemId(method,
                 item.getId(), MessageListContextMenuItem.USERS_OF_MESSAGE, R.id.message_wrapper));
 
-        UserList userList = (UserList) helper.waitForNextActivity(method, 15000);
-        TestSuite.waitForListLoaded(userList, 1);
+        ActorList actorList = (ActorList) helper.waitForNextActivity(method, 15000);
+        TestSuite.waitForListLoaded(actorList, 1);
 
-        List<UserViewItem> listItems = userList.getListLoader().getList();
+        List<ActorViewItem> listItems = actorList.getListLoader().getList();
 
         if (messageWasFound) {
             assertEquals(listItems.toString(), 5, listItems.size());
 
-            MbUser userE = DemoConversationInserter.getUsers().get(demoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
+            Actor userE = DemoConversationInserter.getUsers().get(demoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
             assertTrue("Found " + demoData.CONVERSATION_AUTHOR_THIRD_USER_OID + " cached ", userE != null);
-            MbUser userA = getByUserOid(listItems, demoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
+            Actor userA = getByUserOid(listItems, demoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
             assertTrue("Found " + demoData.CONVERSATION_AUTHOR_THIRD_USER_OID + ", " + logMsg, userA != null);
             compareAttributes(userE, userA, true);
         }
 
-        ListActivityTestHelper<UserList> userListHelper = new ListActivityTestHelper<>(userList);
+        ListActivityTestHelper<ActorList> userListHelper = new ListActivityTestHelper<>(actorList);
         userListHelper.clickListAtPosition(method, userListHelper.getPositionOfListItemId(listItems.get(
                 listItems.size() > 2 ? 2 : 0).getUserId()));
         DbUtils.waitMs(method, 500);
     }
 
-    private void compareAttributes(MbUser expected, MbUser actual, boolean forUserList) {
+    private void compareAttributes(Actor expected, Actor actual, boolean forUserList) {
         assertEquals("Oid", expected.oid, actual.oid);
-        assertEquals("Username", expected.getUserName(), actual.getUserName());
+        assertEquals("Username", expected.getActorName(), actual.getActorName());
         assertEquals("WebFinger ID", expected.getWebFingerId(), actual.getWebFingerId());
         assertEquals("Display name", expected.getRealName(), actual.getRealName());
         assertEquals("Description", expected.getDescription(), actual.getDescription());
@@ -138,10 +138,10 @@ public class UserListTest extends TimelineActivityTest {
         assertEquals("Updated at", expected.getUpdatedDate(), actual.getUpdatedDate());
     }
 
-    static MbUser getByUserOid(List<UserViewItem> listItems, String oid) {
-        for (UserViewItem item : listItems) {
-            if (item.mbUser.oid.equals(oid)) {
-                return item.mbUser;
+    static Actor getByUserOid(List<ActorViewItem> listItems, String oid) {
+        for (ActorViewItem item : listItems) {
+            if (item.actor.oid.equals(oid)) {
+                return item.actor;
             }
         }
         return null;

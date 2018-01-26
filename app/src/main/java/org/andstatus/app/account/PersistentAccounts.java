@@ -18,7 +18,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.SqlUserIds;
 import org.andstatus.app.database.table.FriendshipTable;
-import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.I18n;
@@ -172,30 +172,30 @@ public class PersistentAccounts {
     }
 
     @NonNull
-    public MyAccount fromUserOfSameOrigin(@NonNull MbUser user) {
+    public MyAccount fromUserOfSameOrigin(@NonNull Actor user) {
         return fromUser(user, true);
     }
 
     /** Doesn't take origin into account */
     @NonNull
-    public MyAccount fromUser(@NonNull MbUser user) {
+    public MyAccount fromUser(@NonNull Actor user) {
         return fromUser(user, false);
     }
 
     @NonNull
-    public MyAccount fromUser(@NonNull MbUser other, boolean sameOriginOnly) {
-        return myAccounts.stream().filter(ma -> ma.getUser().isSame(other, sameOriginOnly))
+    public MyAccount fromUser(@NonNull Actor other, boolean sameOriginOnly) {
+        return myAccounts.stream().filter(ma -> ma.getActor().isSame(other, sameOriginOnly))
                 .findFirst().orElse(MyAccount.EMPTY);
     }
 
-    public boolean contains(@NonNull Collection<MbUser> users) {
-        for (MbUser user : users) {
+    public boolean contains(@NonNull Collection<Actor> users) {
+        for (Actor user : users) {
             if (fromUser(user).isValid()) return true;
         }
         return false;
     }
 
-    public boolean contains(@NonNull MbUser user) {
+    public boolean contains(@NonNull Actor user) {
       return fromUser(user).isValid();
     }
 

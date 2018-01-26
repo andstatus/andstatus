@@ -25,10 +25,10 @@ import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.database.table.MsgTable;
-import org.andstatus.app.database.table.UserTable;
-import org.andstatus.app.net.social.MbActivity;
-import org.andstatus.app.net.social.MbActivityType;
-import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.database.table.ActorTable;
+import org.andstatus.app.net.social.AActivity;
+import org.andstatus.app.net.social.ActivityType;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Set;
@@ -42,38 +42,38 @@ class MergeUsers extends DataChecker {
     @Override
     long fixInternal(boolean countOnly) {
         int changedCount = 0;
-        for (MbActivity activity : getUsersToMerge()) {
+        for (AActivity activity : getUsersToMerge()) {
             mergeUser(activity);
             changedCount++;
         }
         return changedCount;
     }
 
-    private Set<MbActivity> getUsersToMerge() {
+    private Set<AActivity> getUsersToMerge() {
         final String method = "getUsersToMerge";
 
-        Set<MbActivity> mergeActivities = new ConcurrentSkipListSet<>();
-        String sql = "SELECT " + UserTable._ID
-                + ", " + UserTable.ORIGIN_ID
-                + ", " + UserTable.USER_OID
-                + ", " + UserTable.WEBFINGER_ID
-                + " FROM " + UserTable.TABLE_NAME
-                + " ORDER BY " + UserTable.ORIGIN_ID
-                + ", " + UserTable.USER_OID
+        Set<AActivity> mergeActivities = new ConcurrentSkipListSet<>();
+        String sql = "SELECT " + ActorTable._ID
+                + ", " + ActorTable.ORIGIN_ID
+                + ", " + ActorTable.ACTOR_OID
+                + ", " + ActorTable.WEBFINGER_ID
+                + " FROM " + ActorTable.TABLE_NAME
+                + " ORDER BY " + ActorTable.ORIGIN_ID
+                + ", " + ActorTable.ACTOR_OID
                 ;
         Cursor c = null;
         long rowsCount = 0;
         try {
-            MbUser prev = null;
+            Actor prev = null;
             c = myContext.getDatabase().rawQuery(sql, null);
             while (c.moveToNext()) {
                 rowsCount++;
-                MbUser user = MbUser.fromOriginAndUserOid(myContext.persistentOrigins().fromId(c.getLong(1)),
+                Actor user = Actor.fromOriginAndActorOid(myContext.persistentOrigins().fromId(c.getLong(1)),
                         c.getString(2));
                 user.userId = c.getLong(0);
                 user.setWebFingerId(c.getString(3));
                 if (isTheSameUser(prev, user)) {
-                    MbActivity activity = whomToMerge(prev, user);
+                    AActivity activity = whomToMerge(prev, user);
                     mergeActivities.add(activity);
                     prev = activity.getActor();
                 } else {
@@ -88,7 +88,7 @@ class MergeUsers extends DataChecker {
         return mergeActivities;
     }
 
-    private boolean isTheSameUser(MbUser prev, MbUser user) {
+    private boolean isTheSameUser(Actor prev, Actor user) {
         if (prev == null || user == null) {
             return false;
         }
@@ -102,20 +102,20 @@ class MergeUsers extends DataChecker {
     }
 
     @NonNull
-    private MbActivity whomToMerge(@NonNull MbUser prev, @NonNull MbUser user) {
-        MbActivity activity = MbActivity.from(MbUser.EMPTY, MbActivityType.UPDATE);
-        activity.setUser(user);
-        MbUser mergeWith = prev;
+    private AActivity whomToMerge(@NonNull Actor prev, @NonNull Actor user) {
+        AActivity activity = AActivity.from(Actor.EMPTY, ActivityType.UPDATE);
+        activity.setObjActor(user);
+        Actor mergeWith = prev;
         if (myContext.persistentAccounts().fromUserId(user.userId).isValid()) {
             mergeWith = user;
-            activity.setUser(prev);
+            activity.setObjActor(prev);
         }
         activity.setActor(mergeWith);
         return activity;
     }
 
-    private void mergeUser(MbActivity activity) {
-        MbUser user = activity.getUser();
+    private void mergeUser(AActivity activity) {
+        Actor user = activity.getObjActor();
         String logMsg = "Merging " + user + " with " + activity.getActor();
         logger.logProgress(logMsg);
         // TODO: clean the code!
@@ -133,10 +133,10 @@ class MergeUsers extends DataChecker {
 
         deleteRows(logMsg, user, DownloadTable.TABLE_NAME, DownloadTable.USER_ID);
 
-        deleteRows(logMsg, user, UserTable.TABLE_NAME, UserTable._ID);
+        deleteRows(logMsg, user, ActorTable.TABLE_NAME, ActorTable._ID);
     }
 
-    private void updateColumn(String logMsg, MbActivity activity, String table, String column, boolean ignoreError) {
+    private void updateColumn(String logMsg, AActivity activity, String table, String column, boolean ignoreError) {
         String sql = "";
         try {
             sql = "UPDATE "
@@ -144,7 +144,7 @@ class MergeUsers extends DataChecker {
                     + " SET "
                     + column + "=" + activity.getActor().userId
                     + " WHERE "
-                    + column + "=" + activity.getUser().userId;
+                    + column + "=" + activity.getObjActor().userId;
             myContext.getDatabase().execSQL(sql);
         } catch (Exception e) {
             if (!ignoreError) {
@@ -154,7 +154,7 @@ class MergeUsers extends DataChecker {
         }
     }
 
-    private void deleteRows(String logMsg, MbUser user, String table, String column) {
+    private void deleteRows(String logMsg, Actor user, String table, String column) {
         String sql = "";
         try {
             sql = "DELETE "

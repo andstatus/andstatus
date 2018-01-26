@@ -20,10 +20,10 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
+import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
@@ -110,7 +110,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     }
 
     @Override
-    public MbActivity updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
+    public AActivity updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put("status", message);
@@ -133,9 +133,9 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     }
     
     @Override
-    public MbConfig getConfig() throws ConnectionException {
+    public OriginConfig getConfig() throws ConnectionException {
         JSONObject result = http.getRequest(getApiPath(ApiRoutineEnum.GET_CONFIG));
-        MbConfig config = MbConfig.getEmpty();
+        OriginConfig config = OriginConfig.getEmpty();
         if (result != null) {
             JSONObject site = result.optJSONObject("site");
             if (site != null) {
@@ -145,7 +145,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
                 if (attachments != null && site.optBoolean("uploads")) {
                     uploadLimit = site.optInt("file_quota");
                 }
-                config = MbConfig.fromTextLimit(textLimit, uploadLimit);
+                config = OriginConfig.fromTextLimit(textLimit, uploadLimit);
                 // "shorturllength" is not used
             }
         }
@@ -153,7 +153,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     }
 
     @Override
-    public List<MbActivity> getConversation(String conversationOid) throws ConnectionException {
+    public List<AActivity> getConversation(String conversationOid) throws ConnectionException {
         if (TextUtils.isEmpty(conversationOid)) {
             return new ArrayList<>();
         } else {
@@ -164,7 +164,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     }
 
     @Override
-    protected void setMessageBodyFromJson(MbMessage message, JSONObject jso) throws JSONException {
+    protected void setMessageBodyFromJson(Note message, JSONObject jso) throws JSONException {
         boolean bodyFound = false;
         if (data.getOrigin().isHtmlContentAllowed() && !jso.isNull(HTML_BODY_FIELD_NAME)) {
             message.setBody(jso.getString(HTML_BODY_FIELD_NAME));
@@ -177,13 +177,13 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
 
     @Override
     @NonNull
-    MbActivity activityFromJson2(JSONObject jso) throws ConnectionException {
+    AActivity activityFromJson2(JSONObject jso) throws ConnectionException {
         if (jso == null) {
-            return MbActivity.EMPTY;
+            return AActivity.EMPTY;
         }
         final String method = "activityFromJson2";
-        MbActivity activity = super.activityFromJson2(jso);
-        MbMessage message = activity.getMessage();
+        AActivity activity = super.activityFromJson2(jso);
+        Note message = activity.getMessage();
         message.url = jso.optString("external_url");
         message.setConversationOid(jso.optString(CONVERSATION_ID_FIELD_NAME));
         if (!jso.isNull(ATTACHMENTS_FIELD_NAME)) {
@@ -195,7 +195,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
                     if (url == null) {
                         url = UrlUtils.fromJson(attachment, "thumb_url");
                     }
-                    MbAttachment mbAttachment =  MbAttachment.fromUrlAndContentType(url, MyContentType.fromUrl(url, attachment.optString("mimetype")));
+                    Attachment mbAttachment =  Attachment.fromUrlAndContentType(url, MyContentType.fromUrl(url, attachment.optString("mimetype")));
                     if (mbAttachment.isValid()) {
                         message.attachments.add(mbAttachment);
                     } else {
@@ -210,18 +210,18 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     }
 
     @Override
-    protected MbUser userFromJson(JSONObject jso) throws ConnectionException {
-        MbUser mbUser = super.userFromJson(jso);
+    protected Actor actorFromJson(JSONObject jso) throws ConnectionException {
+        Actor actor = super.actorFromJson(jso);
         if (jso != null) {
-            mbUser.setProfileUrl(jso.optString("statusnet_profile_url"));
+            actor.setProfileUrl(jso.optString("statusnet_profile_url"));
         }
-        return mbUser;
+        return actor;
     }
     
     @Override
-    public List<MbOrigin> getOpenInstances() throws ConnectionException {
+    public List<Server> getOpenInstances() throws ConnectionException {
         JSONObject result = http.getUnauthenticatedRequest(getApiPath(ApiRoutineEnum.GET_OPEN_INSTANCES));
-        List<MbOrigin> origins = new ArrayList<>();
+        List<Server> origins = new ArrayList<>();
         StringBuilder logMessage = new StringBuilder(ApiRoutineEnum.GET_OPEN_INSTANCES.toString());
         boolean error = false;
         if (result == null) {
@@ -240,7 +240,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
                     while(iterator.hasNext()) {
                         String key = iterator.next();
                         JSONObject instance = data.getJSONObject(key);
-                        origins.add(new MbOrigin(instance.optString("instance_name"),
+                        origins.add(new Server(instance.optString("instance_name"),
                                 instance.optString("instance_address"),
                                 instance.optLong("users_count"),
                                 instance.optLong("notices_count")));

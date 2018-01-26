@@ -20,7 +20,7 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 
@@ -53,7 +53,7 @@ public class SqlUserIds {
         return new SqlUserIds();
     }
 
-    public static SqlUserIds fromUsers(@NonNull Collection<MbUser> users) {
+    public static SqlUserIds fromUsers(@NonNull Collection<Actor> users) {
         return new SqlUserIds(users.stream().map(user -> user.userId).collect(toList()));
     }
 

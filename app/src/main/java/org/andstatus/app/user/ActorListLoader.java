@@ -14,7 +14,7 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.SqlUserIds;
 import org.andstatus.app.data.SqlWhere;
 import org.andstatus.app.data.UserListSql;
-import org.andstatus.app.database.table.UserTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
@@ -29,8 +29,8 @@ import org.andstatus.app.util.StringUtils;
 
 import static java.util.stream.Collectors.toList;
 
-public class UserListLoader extends SyncLoader<UserViewItem> {
-    protected final UserListType mUserListType;
+public class ActorListLoader extends SyncLoader<ActorViewItem> {
+    protected final ActorListType mActorListType;
     private String searchQuery = "";
     protected final MyAccount ma;
     protected final Origin origin;
@@ -39,8 +39,8 @@ public class UserListLoader extends SyncLoader<UserViewItem> {
 
     private LoadableListActivity.ProgressPublisher mProgress;
 
-    public UserListLoader(UserListType userListType, MyAccount ma, Origin origin, long centralItemId, String searchQuery) {
-        mUserListType = userListType;
+    public ActorListLoader(ActorListType actorListType, MyAccount ma, Origin origin, long centralItemId, String searchQuery) {
+        mActorListType = actorListType;
         this.searchQuery = searchQuery;
         this.ma = ma;
         this.origin = origin;
@@ -71,19 +71,19 @@ public class UserListLoader extends SyncLoader<UserViewItem> {
     }
 
     protected void addEmptyItem(String description) {
-        items.add(UserViewItem.newEmpty(description));
+        items.add(ActorViewItem.newEmpty(description));
     }
 
-    public UserViewItem addUserIdToList(Origin origin, long userId) {
-        return addUserToList(UserViewItem.fromUserId(origin, userId));
+    public ActorViewItem addUserIdToList(Origin origin, long userId) {
+        return addActorToList(ActorViewItem.fromUserId(origin, userId));
     }
 
-    protected UserViewItem addUserToList(UserViewItem item) {
+    protected ActorViewItem addActorToList(ActorViewItem item) {
         if (item.isEmpty()) return item;
         int existing = items.indexOf(item);
         if (existing >= 0) return items.get(existing);
         items.add(item);
-        if (item.mbUser.userId == 0 && mAllowLoadingFromInternet) {
+        if (item.actor.userId == 0 && mAllowLoadingFromInternet) {
             loadFromInternet(item);
         }
         if (mProgress != null) {
@@ -92,19 +92,19 @@ public class UserListLoader extends SyncLoader<UserViewItem> {
         return item;
     }
 
-    private void loadFromInternet(UserViewItem oUser) {
+    private void loadFromInternet(ActorViewItem oUser) {
         MyLog.v(this, "User " + oUser + " will be loaded from the Internet");
         MyServiceManager.sendForegroundCommand(
                 CommandData.newUserCommand(
                         CommandEnum.GET_USER,
-                        null, oUser.mbUser.origin,
+                        null, oUser.actor.origin,
                         oUser.getUserId(),
-                        oUser.mbUser.getUserName()));
+                        oUser.actor.getActorName()));
     }
 
     protected void loadInternal() {
         // TODO: Why only MyAccount's ID ??
-        Uri mContentUri = MatchedUri.getUserListUri(ma.getUserId(), mUserListType, ma.getOriginId(), mCentralItemId,
+        Uri mContentUri = MatchedUri.getUserListUri(ma.getUserId(), mActorListType, ma.getOriginId(), mCentralItemId,
                 searchQuery);
         try (Cursor c = MyContextHolder.get().context().getContentResolver()
                     .query(mContentUri, UserListSql.getListProjection(), getSelection(), null, null)) {
@@ -119,16 +119,16 @@ public class UserListLoader extends SyncLoader<UserViewItem> {
         SqlWhere where = new SqlWhere();
         String sqlUserIds = getSqlUserIds();
         if (StringUtils.nonEmpty(sqlUserIds)) {
-            where.append(UserTable.TABLE_NAME + "." + BaseColumns._ID + sqlUserIds);
+            where.append(ActorTable.TABLE_NAME + "." + BaseColumns._ID + sqlUserIds);
         } else if (origin.isValid()) {
-            where.append(UserTable.TABLE_NAME + "." + UserTable.ORIGIN_ID + "=" + ma.getOriginId());
+            where.append(ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID + "=" + ma.getOriginId());
         }
         return where.getCondition();
 
     }
 
     private void populateItem(Cursor cursor) {
-        UserViewItem item = UserViewItem.EMPTY.fromCursor(cursor);
+        ActorViewItem item = ActorViewItem.EMPTY.fromCursor(cursor);
         int index = getById(DbUtils.getLong(cursor, BaseColumns._ID));
         if (index < 0) {
             items.add(item);
@@ -151,12 +151,12 @@ public class UserListLoader extends SyncLoader<UserViewItem> {
     }
 
     protected String getTitle() {
-        return MyPreferences.isShowDebuggingInfoInUi() ? mUserListType.toString() : "";
+        return MyPreferences.isShowDebuggingInfoInUi() ? mActorListType.toString() : "";
     }
 
     @Override
     public String toString() {
-        return mUserListType.toString()
+        return mActorListType.toString()
                 + "; central=" + mCentralItemId
                 + "; " + super.toString();
     }

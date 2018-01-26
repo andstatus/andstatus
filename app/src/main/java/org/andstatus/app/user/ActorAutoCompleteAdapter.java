@@ -29,7 +29,7 @@ import android.widget.Filterable;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.database.table.UserTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.CollectionsUtil;
@@ -41,15 +41,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class UserAutoCompleteAdapter extends BaseAdapter implements Filterable {
+public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable {
     private final Origin origin;
     private final MyActivity myActivity;
     private final LayoutInflater mInflater;
 
     private ArrayFilter mFilter;
-    private List<UserViewItem> items = new ArrayList<>();
+    private List<ActorViewItem> items = new ArrayList<>();
 
-    public UserAutoCompleteAdapter(@NonNull MyActivity myActivity, @NonNull Origin origin) {
+    public ActorAutoCompleteAdapter(@NonNull MyActivity myActivity, @NonNull Origin origin) {
         this.origin = origin;
         this.myActivity =myActivity;
         mInflater = LayoutInflater.from(myActivity);
@@ -66,7 +66,7 @@ public class UserAutoCompleteAdapter extends BaseAdapter implements Filterable {
 
     @Override
     public @Nullable
-    UserViewItem getItem(int position) {
+    ActorViewItem getItem(int position) {
         return items.get(position);
     }
 
@@ -83,16 +83,16 @@ public class UserAutoCompleteAdapter extends BaseAdapter implements Filterable {
         } else {
             view = convertView;
         }
-        final UserViewItem item = getItem(position);
+        final ActorViewItem item = getItem(position);
         String userName = item == null ? "???" : item.getWebFingerIdOrUserName();
         MyUrlSpan.showText(view, R.id.username, userName, false, true);
         MyUrlSpan.showText(view, R.id.description, item == null ? "" :
-                I18n.trimTextAt(item.mbUser.getDescription(), 80).toString(), false, false);
+                I18n.trimTextAt(item.actor.getDescription(), 80).toString(), false, false);
         showAvatar(view, item);
         return view;
     }
 
-    private void showAvatar(View view, UserViewItem item) {
+    private void showAvatar(View view, ActorViewItem item) {
         AvatarView avatarView = (AvatarView) view.findViewById(R.id.avatar_image);
         if (item == null) {
             avatarView.setVisibility(View.INVISIBLE);
@@ -117,7 +117,7 @@ public class UserAutoCompleteAdapter extends BaseAdapter implements Filterable {
     private class ArrayFilter extends Filter {
         @Override
         protected FilterResults performFiltering(CharSequence prefix) {
-            List<UserViewItem> filteredValues = new ArrayList<>();
+            List<ActorViewItem> filteredValues = new ArrayList<>();
             if (!TextUtils.isEmpty(prefix)) {
                 final String prefixString = prefix.toString().toLowerCase();
                 filteredValues = loadFiltered(prefixString);
@@ -129,23 +129,23 @@ public class UserAutoCompleteAdapter extends BaseAdapter implements Filterable {
             return results;
         }
 
-        private List<UserViewItem> loadFiltered(final String prefixString) {
+        private List<ActorViewItem> loadFiltered(final String prefixString) {
             if (!origin.isValid()) {
                 return Collections.emptyList();
             }
-            UserListLoader loader = new UserListLoader(UserListType.USERS,
+            ActorListLoader loader = new ActorListLoader(ActorListType.USERS,
                     MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(origin), origin, 0, "") {
                 @NonNull
                 @Override
                 protected String getSelection() {
-                    return UserTable.TABLE_NAME + "." + UserTable.ORIGIN_ID + "=" + origin.getId() + " AND "
-                            + UserTable.TABLE_NAME + "." + UserTable.WEBFINGER_ID + " LIKE '" + prefixString + "%'";
+                    return ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID + "=" + origin.getId() + " AND "
+                            + ActorTable.TABLE_NAME + "." + ActorTable.WEBFINGER_ID + " LIKE '" + prefixString + "%'";
                 }
             };
             loader.load(null);
-            List<UserViewItem> filteredValues = loader.getList();
-            for (UserViewItem viewItem : filteredValues) {
-                MyLog.v(this, "filtered: " + viewItem.mbUser);
+            List<ActorViewItem> filteredValues = loader.getList();
+            for (ActorViewItem viewItem : filteredValues) {
+                MyLog.v(this, "filtered: " + viewItem.actor);
             }
             return filteredValues;
         }
@@ -153,7 +153,7 @@ public class UserAutoCompleteAdapter extends BaseAdapter implements Filterable {
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
             //noinspection unchecked
-            items = (List<UserViewItem>) results.values;
+            items = (List<ActorViewItem>) results.values;
             if (results.count > 0) {
                 notifyDataSetChanged();
             } else {
@@ -166,8 +166,8 @@ public class UserAutoCompleteAdapter extends BaseAdapter implements Filterable {
             if (resultValue == null) {
                 return "(null)";
             }
-            return origin.isMentionAsWebFingerId() ? ((UserViewItem)resultValue).getWebFingerIdOrUserName()
-                    : ((UserViewItem)resultValue).mbUser.getUserName();
+            return origin.isMentionAsWebFingerId() ? ((ActorViewItem)resultValue).getWebFingerIdOrUserName()
+                    : ((ActorViewItem)resultValue).actor.getActorName();
         }
     }
 }

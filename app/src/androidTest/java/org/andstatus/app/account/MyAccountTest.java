@@ -20,7 +20,7 @@ import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
@@ -64,8 +64,8 @@ public class MyAccountTest {
     public void testUser() {
         MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(demoData.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
-        MbUser accountUser = ma.getUser();
-        assertFalse("User is partial " + accountUser, accountUser.isPartiallyDefined());
+        Actor accountActor = ma.getActor();
+        assertFalse("User is partial " + accountActor, accountActor.isPartiallyDefined());
     }
 
     public static void fixPersistentAccounts(MyContext myContext) {

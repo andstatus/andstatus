@@ -27,7 +27,7 @@ import org.andstatus.app.data.DemoConversationInserter;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.http.ConnectionException;
-import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -79,13 +79,13 @@ public class DemoAccountInserter {
         assertEquals("Origin for '" + accountNameString + "' account created", accountName.getOrigin().getOriginType(), originType);
         long accountUserId_existing = MyQuery.oidToId(myContext.getDatabase(), OidEnum.USER_OID,
                 accountName.getOrigin().getId(), userOid);
-        MbUser user = MbUser.fromOriginAndUserOid(accountName.getOrigin(), userOid);
-        user.setUserName(accountName.getUsername());
+        Actor user = Actor.fromOriginAndActorOid(accountName.getOrigin(), userOid);
+        user.setActorName(accountName.getUsername());
         user.avatarUrl = avatarUrl;
         if (!user.isWebFingerIdValid() && UrlUtils.hasHost(user.origin.getUrl())) {
-            user.setWebFingerId(user.getUserName() + "@" + user.origin.getUrl().getHost());
+            user.setWebFingerId(user.getActorName() + "@" + user.origin.getUrl().getHost());
         }
-        MyAccount ma = addAccountFromMbUser(user);
+        MyAccount ma = addAccountFromActor(user);
         long accountUserId = ma.getUserId();
         String msg = "AccountUserId for '" + accountNameString + ", (first: '" + firstAccountUserOid + "')";
         if (accountUserId_existing == 0 && !userOid.contains(firstAccountUserOid)) {
@@ -99,8 +99,8 @@ public class DemoAccountInserter {
 
         assertAccountIsAddedToAccountManager(ma);
 
-        assertEquals("Oid: " + ma.getUser(), user.oid, ma.getUser().oid);
-        assertEquals("Partially defined: " + ma.getUser(), false, ma.getUser().isPartiallyDefined());
+        assertEquals("Oid: " + ma.getActor(), user.oid, ma.getActor().oid);
+        assertEquals("Partially defined: " + ma.getActor(), false, ma.getActor().isPartiallyDefined());
         return ma;
     }
 
@@ -117,19 +117,19 @@ public class DemoAccountInserter {
                 maExpected, ma);
     }
 
-    private MyAccount addAccountFromMbUser(@NonNull MbUser mbUser) {
+    private MyAccount addAccountFromActor(@NonNull Actor actor) {
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(myContext,
-                mbUser.getUserName() + "/" + mbUser.origin.getName(), TriState.TRUE);
+                actor.getActorName() + "/" + actor.origin.getName(), TriState.TRUE);
         if (builder.getAccount().isOAuth()) {
-            builder.setUserTokenWithSecret("sampleUserTokenFor" + mbUser.getUserName(),
-                    "sampleUserSecretFor" + mbUser.getUserName());
+            builder.setUserTokenWithSecret("sampleUserTokenFor" + actor.getActorName(),
+                    "sampleUserSecretFor" + actor.getActorName());
         } else {
-            builder.setPassword("samplePasswordFor" + mbUser.getUserName());
+            builder.setPassword("samplePasswordFor" + actor.getActorName());
         }
-        assertTrue("Credentials of " + mbUser + " are present (origin name=" + mbUser.origin.getName() + ")",
+        assertTrue("Credentials of " + actor + " are present (origin name=" + actor.origin.getName() + ")",
                 builder.getAccount().getCredentialsPresent());
         try {
-            builder.onCredentialsVerified(mbUser, null);
+            builder.onCredentialsVerified(actor, null);
         } catch (ConnectionException e) {
             MyLog.e(this, e);
             fail(e.getMessage());
@@ -137,23 +137,23 @@ public class DemoAccountInserter {
 
         assertTrue("Account is persistent " + builder.getAccount(), builder.isPersistent());
         MyAccount ma = builder.getAccount();
-        assertEquals("Credentials of " + mbUser.getUserName() + " successfully verified",
+        assertEquals("Credentials of " + actor.getActorName() + " successfully verified",
                 CredentialsVerificationStatus.SUCCEEDED, ma.getCredentialsVerified());
         long userId = ma.getUserId();
-        assertTrue("Account " + mbUser.getUserName() + " has UserId", userId != 0);
-        assertEquals("Account UserOid", ma.getUserOid(), mbUser.oid);
+        assertTrue("Account " + actor.getActorName() + " has UserId", userId != 0);
+        assertEquals("Account UserOid", ma.getUserOid(), actor.oid);
         String oid = MyQuery.idToOid(myContext.getDatabase(), OidEnum.USER_OID, userId, 0);
         if (TextUtils.isEmpty(oid)) {
-            String message = "Couldn't find a User in the database for id=" + userId + " oid=" + mbUser.oid;
+            String message = "Couldn't find a User in the database for id=" + userId + " oid=" + actor.oid;
             MyLog.v(this, message);
             fail(message);
         }
         assertEquals("User in the database for id=" + userId,
-                mbUser.oid,
+                actor.oid,
                 MyQuery.idToOid(myContext.getDatabase(), OidEnum.USER_OID, userId, 0));
-        assertEquals("Account name", mbUser.getUserName() + "/" + mbUser.origin.getName(), ma.getAccountName());
+        assertEquals("Account name", actor.getActorName() + "/" + actor.origin.getName(), ma.getAccountName());
         MyLog.v(this, ma.getAccountName() + " added, id=" + ma.getUserId());
-        DemoConversationInserter.getUsers().put(mbUser.oid, mbUser);
+        DemoConversationInserter.getUsers().put(actor.oid, actor);
         return ma;
     }
 

@@ -41,25 +41,25 @@ import org.andstatus.app.util.UriUtils;
 import java.util.Optional;
 
 /** Activity in a sense of Activity Streams https://www.w3.org/TR/activitystreams-core/ */
-public class MbActivity extends AObject {
-    public static final MbActivity EMPTY = from(MbUser.EMPTY, MbActivityType.EMPTY);
+public class AActivity extends AObject {
+    public static final AActivity EMPTY = from(Actor.EMPTY, ActivityType.EMPTY);
     private TimelinePosition timelinePosition = TimelinePosition.EMPTY;
     private long updatedDate = 0;
     private long id = 0;
     private long insDate = 0;
 
     @NonNull
-    public final MbUser accountUser;
+    public final Actor accountActor;
     @NonNull
-    public final MbActivityType type;
-    private MbUser actor = MbUser.EMPTY;
+    public final ActivityType type;
+    private Actor actor = Actor.EMPTY;
 
     // Objects of the Activity may be of several types...
     @NonNull
-    private MbMessage mbMessage = MbMessage.EMPTY;
+    private Note note = Note.EMPTY;
     @NonNull
-    private MbUser mbUser = MbUser.EMPTY;
-    private MbActivity mbActivity = MbActivity.EMPTY;
+    private Actor objActor = Actor.EMPTY;
+    private AActivity aActivity = AActivity.EMPTY;
 
     /** Some additional attributes may appear from "My account's" (authenticated User's) point of view */
     private TriState subscribedByMe = TriState.UNKNOWN;
@@ -67,9 +67,9 @@ public class MbActivity extends AObject {
     private NotificationEventType notificationEventType = NotificationEventType.EMPTY;
 
     @NonNull
-    public static MbActivity fromInner(@NonNull MbUser actor, @NonNull MbActivityType type,
-                                       @NonNull MbActivity innerActivity) {
-        final MbActivity activity = new MbActivity(innerActivity.accountUser, type);
+    public static AActivity fromInner(@NonNull Actor actor, @NonNull ActivityType type,
+                                      @NonNull AActivity innerActivity) {
+        final AActivity activity = new AActivity(innerActivity.accountActor, type);
         activity.setActor(actor);
         activity.setActivity(innerActivity);
         activity.setUpdatedDate(innerActivity.getUpdatedDate() + 60);
@@ -77,52 +77,52 @@ public class MbActivity extends AObject {
     }
 
     @NonNull
-    public static MbActivity from(@NonNull MbUser accountUser, @NonNull MbActivityType type) {
-        return new MbActivity(accountUser, type);
+    public static AActivity from(@NonNull Actor accountActor, @NonNull ActivityType type) {
+        return new AActivity(accountActor, type);
     }
 
     @NonNull
-    public static MbActivity newPartialMessage(@NonNull MbUser accountUser, String msgOid) {
-        return newPartialMessage(accountUser, msgOid, 0, DownloadStatus.UNKNOWN);
+    public static AActivity newPartialMessage(@NonNull Actor accountActor, String msgOid) {
+        return newPartialMessage(accountActor, msgOid, 0, DownloadStatus.UNKNOWN);
     }
 
     @NonNull
-    public static MbActivity newPartialMessage(@NonNull MbUser accountUser, String msgOid,
-                                               long updatedDate, DownloadStatus status) {
-        MbActivity activity = from(accountUser, MbActivityType.UPDATE);
+    public static AActivity newPartialMessage(@NonNull Actor accountActor, String msgOid,
+                                              long updatedDate, DownloadStatus status) {
+        AActivity activity = from(accountActor, ActivityType.UPDATE);
         activity.setTimelinePosition(msgOid);
-        final MbMessage message = MbMessage.fromOriginAndOid(activity.accountUser.origin, msgOid, status);
+        final Note message = Note.fromOriginAndOid(activity.accountActor.origin, msgOid, status);
         activity.setMessage(message);
         message.setUpdatedDate(updatedDate);
         activity.setUpdatedDate(updatedDate);
         return activity;
     }
 
-    private MbActivity(MbUser accountUser, MbActivityType type) {
-        this.accountUser = accountUser == null ? MbUser.EMPTY : accountUser;
-        this.type = type == null ? MbActivityType.EMPTY : type;
+    private AActivity(Actor accountActor, ActivityType type) {
+        this.accountActor = accountActor == null ? Actor.EMPTY : accountActor;
+        this.type = type == null ? ActivityType.EMPTY : type;
     }
 
     @NonNull
-    public MbUser getActor() {
+    public Actor getActor() {
         if (!actor.isEmpty()) {
             return actor;
         }
         switch (getObjectType()) {
-            case USER:
-                return mbUser;
-            case MESSAGE:
+            case ACTOR:
+                return objActor;
+            case NOTE:
                 return getAuthor();
             default:
-                return MbUser.EMPTY;
+                return Actor.EMPTY;
         }
     }
 
-    public void setActor(MbUser actor) {
-        if (this == EMPTY && MbUser.EMPTY != actor) {
+    public void setActor(Actor actor) {
+        if (this == EMPTY && Actor.EMPTY != actor) {
             throw new IllegalStateException("Cannot set Actor of EMPTY Activity");
         }
-        this.actor = actor == null ? MbUser.EMPTY : actor;
+        this.actor = actor == null ? Actor.EMPTY : actor;
     }
 
     public boolean isAuthorActor() {
@@ -130,24 +130,24 @@ public class MbActivity extends AObject {
     }
 
     @NonNull
-    public MbUser getAuthor() {
+    public Actor getAuthor() {
         if (isEmpty()) {
-            return MbUser.EMPTY;
+            return Actor.EMPTY;
         }
-        if (getObjectType().equals(MbObjectType.MESSAGE)) {
+        if (getObjectType().equals(AObjectType.NOTE)) {
             switch (type) {
                 case CREATE:
                 case UPDATE:
                 case DELETE:
                     return actor;
                 default:
-                    return MbUser.EMPTY;
+                    return Actor.EMPTY;
             }
         }
         return getActivity().getAuthor();
     }
 
-    public void setAuthor(MbUser author) {
+    public void setAuthor(Actor author) {
         if (getActivity() != EMPTY) getActivity().setActor(author);
     }
 
@@ -156,21 +156,21 @@ public class MbActivity extends AObject {
     }
 
     @NonNull
-    public MbObjectType getObjectType() {
-        if (mbMessage.nonEmpty()) {
-            return MbObjectType.MESSAGE;
-        } else if (mbUser.nonEmpty()) {
-            return MbObjectType.USER;
+    public AObjectType getObjectType() {
+        if (note.nonEmpty()) {
+            return AObjectType.NOTE;
+        } else if (objActor.nonEmpty()) {
+            return AObjectType.ACTOR;
         } else if (getActivity().nonEmpty()) {
-            return MbObjectType.ACTIVITY;
+            return AObjectType.ACTIVITY;
         } else {
-            return MbObjectType.EMPTY;
+            return AObjectType.EMPTY;
         }
     }
 
     public boolean isEmpty() {
-        return this == MbActivity.EMPTY ||  type == MbActivityType.EMPTY || getObjectType() == MbObjectType.EMPTY
-                || accountUser.isEmpty();
+        return this == AActivity.EMPTY ||  type == ActivityType.EMPTY || getObjectType() == AObjectType.EMPTY
+                || accountActor.isEmpty();
     }
 
     public TimelinePosition getTimelinePosition() {
@@ -203,12 +203,12 @@ public class MbActivity extends AObject {
     }
 
     @NonNull
-    public MbMessage getMessage() {
-        return Optional.ofNullable(mbMessage).filter(msg -> msg != MbMessage.EMPTY).orElse(getNestedMessage());
+    public Note getMessage() {
+        return Optional.ofNullable(note).filter(msg -> msg != Note.EMPTY).orElse(getNestedMessage());
     }
 
     @NonNull
-    private MbMessage getNestedMessage() {
+    private Note getNestedMessage() {
         /* Referring to the nested message allows to implement an activity, which has both Actor and Author.
             Actor of the nested message is an Author.
             In a database we will have 2 activities: one for each actor! */
@@ -220,29 +220,29 @@ public class MbActivity extends AObject {
             case UPDATE:
             case UNDO_ANNOUNCE:
             case UNDO_LIKE:
-                return Optional.ofNullable(getActivity().getMessage()).orElse(MbMessage.EMPTY);
+                return Optional.ofNullable(getActivity().getMessage()).orElse(Note.EMPTY);
             default:
-                return MbMessage.EMPTY;
+                return Note.EMPTY;
         }
     }
 
-    public void setMessage(MbMessage mbMessage) {
-        if (this == EMPTY && MbMessage.EMPTY != mbMessage) {
+    public void setMessage(Note note) {
+        if (this == EMPTY && Note.EMPTY != note) {
             throw new IllegalStateException("Cannot set Message of EMPTY Activity");
         }
-        this.mbMessage = mbMessage == null ? MbMessage.EMPTY : mbMessage;
+        this.note = note == null ? Note.EMPTY : note;
     }
 
     @NonNull
-    public MbUser getUser() {
-        return mbUser;
+    public Actor getObjActor() {
+        return objActor;
     }
 
-    public void setUser(MbUser mbUser) {
-        if (this == EMPTY && MbUser.EMPTY != mbUser) {
-            throw new IllegalStateException("Cannot set User of EMPTY Activity");
+    public void setObjActor(Actor actor) {
+        if (this == EMPTY && Actor.EMPTY != actor) {
+            throw new IllegalStateException("Cannot set objActor of EMPTY Activity");
         }
-        this.mbUser = mbUser == null ? MbUser.EMPTY : mbUser;
+        this.objActor = actor == null ? Actor.EMPTY : actor;
     }
 
     public Audience recipients() {
@@ -250,16 +250,16 @@ public class MbActivity extends AObject {
     }
 
     @NonNull
-    public MbActivity getActivity() {
-        return (mbActivity == null) ? MbActivity.EMPTY : mbActivity;
+    public AActivity getActivity() {
+        return (aActivity == null) ? AActivity.EMPTY : aActivity;
     }
 
-    public void setActivity(MbActivity activity) {
-        if (this == EMPTY && MbActivity.EMPTY != activity) {
+    public void setActivity(AActivity activity) {
+        if (this == EMPTY && AActivity.EMPTY != activity) {
             throw new IllegalStateException("Cannot set Activity of EMPTY Activity");
         }
         if (activity != null) {
-            this.mbActivity = activity;
+            this.aActivity = activity;
         }
     }
 
@@ -274,14 +274,14 @@ public class MbActivity extends AObject {
                 + ", id:" + id
                 + ", oid:" + timelinePosition
                 + ", updated:" + MyLog.debugFormatOfDate(updatedDate)
-                + ", me:" + (accountUser.isEmpty() ? "EMPTY" : accountUser.oid)
+                + ", me:" + (accountActor.isEmpty() ? "EMPTY" : accountActor.oid)
                 + (subscribedByMe.known() ? (subscribedByMe == TriState.TRUE ? ", subscribed" : ", NOT subscribed") : "" )
                 + (notified.known() ? (notified == TriState.TRUE ? ", notified" : ", NOT notified") : "" )
                 + (notificationEventType.isEmpty() ? "" : ", " + notificationEventType)
                 + (actor.isEmpty() ? "" : ", \nactor:" + actor)
-                + (mbMessage.isEmpty() ? "" : ", \nmessage:" + mbMessage)
+                + (note.isEmpty() ? "" : ", \nmessage:" + note)
                 + (getActivity().isEmpty() ? "" : ", \nactivity:" + getActivity())
-                + (mbUser.isEmpty() ? "" : ", user:" + mbUser)
+                + (objActor.isEmpty() ? "" : ", user:" + objActor)
                 + '}';
     }
 
@@ -305,20 +305,20 @@ public class MbActivity extends AObject {
         if (notified != null) this.notified = notified;
     }
 
-    public static MbActivity fromCursor(MyContext myContext, Cursor cursor) {
-        MbActivity activity = from(
-                myContext.persistentAccounts().fromUserId(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID)).getUser(),
-                MbActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE)));
+    public static AActivity fromCursor(MyContext myContext, Cursor cursor) {
+        AActivity activity = from(
+                myContext.persistentAccounts().fromUserId(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID)).getActor(),
+                ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE)));
 
         activity.id = DbUtils.getLong(cursor, ActivityTable._ID);
         activity.timelinePosition = new TimelinePosition(DbUtils.getString(cursor, ActivityTable.ACTIVITY_OID));
-        activity.actor = MbUser.fromOriginAndUserId(activity.accountUser.origin,
+        activity.actor = Actor.fromOriginAndActorId(activity.accountActor.origin,
                 DbUtils.getLong(cursor, ActivityTable.ACTOR_ID));
-        activity.mbMessage = MbMessage.fromOriginAndOid(activity.accountUser.origin, "", DownloadStatus.UNKNOWN);
-        activity.mbUser = MbUser.fromOriginAndUserId(activity.accountUser.origin,
+        activity.note = Note.fromOriginAndOid(activity.accountActor.origin, "", DownloadStatus.UNKNOWN);
+        activity.objActor = Actor.fromOriginAndActorId(activity.accountActor.origin,
                 DbUtils.getLong(cursor, ActivityTable.USER_ID));
-        activity.mbActivity = MbActivity.from(activity.accountUser, MbActivityType.EMPTY);
-        activity.mbActivity.id =  DbUtils.getLong(cursor, ActivityTable.OBJ_ACTIVITY_ID);
+        activity.aActivity = AActivity.from(activity.accountActor, ActivityType.EMPTY);
+        activity.aActivity.id =  DbUtils.getLong(cursor, ActivityTable.OBJ_ACTIVITY_ID);
         activity.subscribedByMe = DbUtils.getTriState(cursor, ActivityTable.SUBSCRIBED);
         activity.notified = DbUtils.getTriState(cursor, ActivityTable.NOTIFIED);
         activity.setNotificationEventType(NotificationEventType.fromId(
@@ -343,7 +343,7 @@ public class MbActivity extends AObject {
     }
 
     private boolean wontSave(MyContext myContext) {
-        if (isEmpty() || (type.equals(MbActivityType.UPDATE) && getObjectType().equals(MbObjectType.USER))
+        if (isEmpty() || (type.equals(ActivityType.UPDATE) && getObjectType().equals(AObjectType.ACTOR))
                 || (timelinePosition.isEmpty() && getId() != 0)) {
             MyLog.v(this, "Won't save " + this);
             return true;
@@ -352,7 +352,7 @@ public class MbActivity extends AObject {
         if (MyAsyncTask.isUiThread()) {
             throw new IllegalStateException("Saving activity on the Main thread " + toString());
         }
-        if (accountUser.userId == 0) {
+        if (accountActor.userId == 0) {
             throw new IllegalStateException("Account is unknown " + toString());
         }
         if (getId() == 0) {
@@ -368,10 +368,10 @@ public class MbActivity extends AObject {
             switch (type) {
                 case LIKE:
                 case UNDO_LIKE:
-                    final Pair<Long, MbActivityType> favAndType = MyQuery.msgIdToLastFavoriting(myContext.getDatabase(),
-                            getMessage().msgId, accountUser.userId);
-                    if ((favAndType.second.equals(MbActivityType.LIKE) && type == MbActivityType.LIKE)
-                            || (favAndType.second.equals(MbActivityType.UNDO_LIKE) && type == MbActivityType.UNDO_LIKE)
+                    final Pair<Long, ActivityType> favAndType = MyQuery.msgIdToLastFavoriting(myContext.getDatabase(),
+                            getMessage().msgId, accountActor.userId);
+                    if ((favAndType.second.equals(ActivityType.LIKE) && type == ActivityType.LIKE)
+                            || (favAndType.second.equals(ActivityType.UNDO_LIKE) && type == ActivityType.UNDO_LIKE)
                             ) {
                         MyLog.v(this, "Skipped as already " + type.name() + " " + this);
                         return true;
@@ -379,10 +379,10 @@ public class MbActivity extends AObject {
                     break;
                 case ANNOUNCE:
                 case UNDO_ANNOUNCE:
-                    final Pair<Long, MbActivityType> reblAndType = MyQuery.msgIdToLastReblogging(myContext.getDatabase(),
-                            getMessage().msgId, accountUser.userId);
-                    if ((reblAndType.second.equals(MbActivityType.ANNOUNCE) && type == MbActivityType.ANNOUNCE)
-                            || (reblAndType.second.equals(MbActivityType.UNDO_ANNOUNCE) && type == MbActivityType.UNDO_ANNOUNCE)
+                    final Pair<Long, ActivityType> reblAndType = MyQuery.msgIdToLastReblogging(myContext.getDatabase(),
+                            getMessage().msgId, accountActor.userId);
+                    if ((reblAndType.second.equals(ActivityType.ANNOUNCE) && type == ActivityType.ANNOUNCE)
+                            || (reblAndType.second.equals(ActivityType.UNDO_ANNOUNCE) && type == ActivityType.UNDO_ANNOUNCE)
                             ) {
                         MyLog.v(this, "Skipped as already " + type.name() + " " + this);
                         return true;
@@ -401,13 +401,13 @@ public class MbActivity extends AObject {
 
     private void findExisting(MyContext myContext) {
         if (!timelinePosition.isEmpty()) {
-            id = MyQuery.oidToId(myContext.getDatabase(), OidEnum.ACTIVITY_OID, accountUser.origin.getId(),
+            id = MyQuery.oidToId(myContext.getDatabase(), OidEnum.ACTIVITY_OID, accountActor.origin.getId(),
                     timelinePosition.getPosition());
         }
         if (id != 0) {
             return;
         }
-        if (getMessage().msgId != 0 && (type == MbActivityType.UPDATE || type == MbActivityType.CREATE)) {
+        if (getMessage().msgId != 0 && (type == ActivityType.UPDATE || type == ActivityType.CREATE)) {
             id = MyQuery.conditionToLongColumnValue(myContext.getDatabase(),"", ActivityTable.TABLE_NAME,
                     ActivityTable._ID, ActivityTable.MSG_ID + "=" + getMessage().msgId + " AND "
             + ActivityTable.ACTIVITY_TYPE + "=" + type.id);
@@ -424,16 +424,16 @@ public class MbActivity extends AObject {
                 && !isMyActorOrAuthor(myContext)) {
             event = NotificationEventType.MENTION;
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.ANNOUNCE)
-                && type == MbActivityType.ANNOUNCE
+                && type == ActivityType.ANNOUNCE
                 && myContext.persistentAccounts().contains(getAuthor())) {
             event = NotificationEventType.ANNOUNCE;
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.LIKE)
-                && (type == MbActivityType.LIKE || type == MbActivityType.UNDO_LIKE)
+                && (type == ActivityType.LIKE || type == ActivityType.UNDO_LIKE)
                 && myContext.persistentAccounts().contains(getAuthor())) {
             event = NotificationEventType.LIKE;
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.FOLLOW)
-                && (type == MbActivityType.FOLLOW || type == MbActivityType.UNDO_FOLLOW)
-                && myContext.persistentAccounts().contains(getUser())) {
+                && (type == ActivityType.FOLLOW || type == ActivityType.UNDO_FOLLOW)
+                && myContext.persistentAccounts().contains(getObjActor())) {
             event = NotificationEventType.FOLLOW;
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.PRIVATE)
                 && getMessage().isPrivate()) {
@@ -446,11 +446,11 @@ public class MbActivity extends AObject {
 
     private ContentValues toContentValues() {
         ContentValues values = new ContentValues();
-        values.put(ActivityTable.ORIGIN_ID, accountUser.origin.getId());
-        values.put(ActivityTable.ACCOUNT_ID, accountUser.userId);
+        values.put(ActivityTable.ORIGIN_ID, accountActor.origin.getId());
+        values.put(ActivityTable.ACCOUNT_ID, accountActor.userId);
         values.put(ActivityTable.ACTOR_ID, getActor().userId);
         values.put(ActivityTable.MSG_ID, getMessage().msgId);
-        values.put(ActivityTable.USER_ID, getUser().userId);
+        values.put(ActivityTable.USER_ID, getObjActor().userId);
         values.put(ActivityTable.OBJ_ACTIVITY_ID, getActivity().id);
         if (subscribedByMe.known()) {
             values.put(ActivityTable.SUBSCRIBED, subscribedByMe.id);
@@ -482,7 +482,7 @@ public class MbActivity extends AObject {
                 if (myActorAccount.isValid()) {
                     MyLog.v(this, myActorAccount + " " + type
                             + " '" + getMessage().oid + "' " + I18n.trimTextAt(getMessage().getBody(), 80));
-                    MyProvider.updateMessageFavorited(myContext, accountUser.origin, getMessage().msgId);
+                    MyProvider.updateMessageFavorited(myContext, accountActor.origin, getMessage().msgId);
                 }
                 break;
             default:

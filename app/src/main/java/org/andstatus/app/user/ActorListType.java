@@ -23,7 +23,7 @@ import org.andstatus.app.R;
 /**
  * These values define different named UserList filters
  */
-public enum UserListType {
+public enum ActorListType {
     /**
      * The type is unknown
      */
@@ -46,7 +46,7 @@ public enum UserListType {
     private final int titleResId;
     private final boolean mAtOrigin;
     
-    UserListType(String code, int resId, boolean atOrigin) {
+    ActorListType(String code, int resId, boolean atOrigin) {
         this.code = code;
         this.titleResId = resId;
         this.mAtOrigin = atOrigin;
@@ -90,8 +90,8 @@ public enum UserListType {
     /**
      * Returns the enum or UNKNOWN
      */
-    public static UserListType load(String strCode) {
-        for (UserListType tt : UserListType.values()) {
+    public static ActorListType load(String strCode) {
+        for (ActorListType tt : ActorListType.values()) {
             if (tt.code.equals(strCode)) {
                 return tt;
             }

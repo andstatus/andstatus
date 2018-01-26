@@ -55,22 +55,22 @@ public class ConnectionMastodonTest {
                 org.andstatus.app.tests.R.raw.mastodon_home_timeline);
         connection.getHttpMock().setResponse(jso);
 
-        List<MbActivity> timeline = connection.getTimeline(Connection.ApiRoutineEnum.HOME_TIMELINE,
+        List<AActivity> timeline = connection.getTimeline(Connection.ApiRoutineEnum.HOME_TIMELINE,
                 new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountUserOid);
         assertNotNull("timeline returned", timeline);
         int size = 1;
         assertEquals("Number of items in the Timeline", size, timeline.size());
 
         int ind = 0;
-        MbActivity activity = timeline.get(ind);
+        AActivity activity = timeline.get(ind);
         assertEquals("Timeline position", "22", activity.getTimelinePosition().getPosition());
         assertEquals("Message Oid", "22", activity.getMessage().oid);
         assertEquals("Account unknown " + activity, true, MyContextHolder.get().persistentAccounts()
-                .fromUserOfSameOrigin(activity.accountUser).isValid());
-        MbMessage message = activity.getMessage();
-        assertEquals("Is not a message " + activity, MbObjectType.MESSAGE, activity.getObjectType());
-        assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountUser));
-        MbUser actor = activity.getActor();
+                .fromUserOfSameOrigin(activity.accountActor).isValid());
+        Note message = activity.getMessage();
+        assertEquals("Is not a message " + activity, AObjectType.NOTE, activity.getObjectType());
+        assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountActor));
+        Actor actor = activity.getActor();
 
         String stringDate = "2017-04-16T11:13:12.133Z";
         long parsedDate = connection.parseDate(stringDate);
@@ -79,7 +79,7 @@ public class ConnectionMastodonTest {
 
         assertEquals("Actor is partially defined " + actor, false, actor.isPartiallyDefined());
         assertEquals("Actor Oid", "37", actor.oid);
-        assertEquals("Username", "t131t1", actor.getUserName());
+        assertEquals("Username", "t131t1", actor.getActorName());
 
         assertEquals("Message Oid " + activity, "22", message.oid);
         assertEquals("Message url" + activity, "https://neumastodon.com/@t131t1/22", message.url);
@@ -87,7 +87,7 @@ public class ConnectionMastodonTest {
         assertEquals("Message application", "Web", message.via);
 
         assertEquals("Media attachments", 1, message.attachments.size());
-        MbAttachment attachment = message.attachments.get(0);
+        Attachment attachment = message.attachments.get(0);
         assertEquals("Content type", MyContentType.IMAGE, attachment.contentType);
         assertEquals("Content type", UriUtils.fromString("https://files.neumastodon.com/media_attachments/files/000/306/223/original/e678f956970a585b.png?1492832537"),
                 attachment.getUri());
@@ -99,7 +99,7 @@ public class ConnectionMastodonTest {
                 org.andstatus.app.tests.R.raw.mastodon_get_conversation);
         connection.getHttpMock().setResponse(jso);
 
-        List<MbActivity> timeline = connection.getConversation("5596683");
+        List<AActivity> timeline = connection.getConversation("5596683");
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 5, timeline.size());
     }
@@ -110,57 +110,57 @@ public class ConnectionMastodonTest {
                 org.andstatus.app.tests.R.raw.mastodon_notifications);
         connection.getHttpMock().setResponse(jso);
 
-        List<MbActivity> timeline = connection.getTimeline(Connection.ApiRoutineEnum.NOTIFICATIONS_TIMELINE,
+        List<AActivity> timeline = connection.getTimeline(Connection.ApiRoutineEnum.NOTIFICATIONS_TIMELINE,
                 new TimelinePosition(""), TimelinePosition.EMPTY, 20, accountUserOid);
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 20, timeline.size());
 
         int ind = 0;
-        MbActivity activity = timeline.get(ind);
+        AActivity activity = timeline.get(ind);
         assertEquals("Timeline position", "2667058", activity.getTimelinePosition().getPosition());
         assertEquals("Message Oid", "4729037", activity.getMessage().oid);
-        assertEquals("Is not a Reblog " + activity, MbActivityType.ANNOUNCE, activity.type);
-        assertEquals("Is not an activity", MbObjectType.ACTIVITY, activity.getObjectType());
-        MbUser actor = activity.getActor();
+        assertEquals("Is not a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);
+        assertEquals("Is not an activity", AObjectType.ACTIVITY, activity.getObjectType());
+        Actor actor = activity.getActor();
         assertEquals("Actor's Oid", "15451", actor.oid);
-        assertEquals("Actor's username", "Chaosphere", actor.getUserName());
+        assertEquals("Actor's username", "Chaosphere", actor.getActorName());
         assertEquals("WebfingerId", "Chaosphere@mastodon.social", actor.getWebFingerId());
-        assertEquals("Author's username" + activity, "AndStatus", activity.getAuthor().getUserName());
-        assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountUser));
+        assertEquals("Author's username" + activity, "AndStatus", activity.getAuthor().getActorName());
+        assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountActor));
 
         ind = 2;
         activity = timeline.get(ind);
         assertEquals("Timeline position", "2674022", activity.getTimelinePosition().getPosition());
         assertEquals("Message Oid", "4729037", activity.getMessage().oid);
-        assertEquals("Is not an activity " + activity, MbObjectType.ACTIVITY, activity.getObjectType());
-        assertEquals("Is not LIKE " + activity, MbActivityType.LIKE, activity.type);
+        assertEquals("Is not an activity " + activity, AObjectType.ACTIVITY, activity.getObjectType());
+        assertEquals("Is not LIKE " + activity, ActivityType.LIKE, activity.type);
         assertThat(activity.getMessage().getBody(), is("<p>IT infrastructure of modern church</p>"));
-        assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountUser));
-        assertEquals("Author's username", "AndStatus", activity.getAuthor().getUserName());
+        assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountActor));
+        assertEquals("Author's username", "AndStatus", activity.getAuthor().getActorName());
         actor = activity.getActor();
         assertEquals("Actor's Oid", "48790", actor.oid);
-        assertEquals("Actor's Username", "vfrmedia", actor.getUserName());
+        assertEquals("Actor's Username", "vfrmedia", actor.getActorName());
         assertEquals("WebfingerId", "vfrmedia@social.tchncs.de", actor.getWebFingerId());
 
         ind = 17;
         activity = timeline.get(ind);
-        assertEquals("Is not FOLLOW " + activity, MbActivityType.FOLLOW, activity.type);
-        assertEquals("Is not a USER", MbObjectType.USER, activity.getObjectType());
+        assertEquals("Is not FOLLOW " + activity, ActivityType.FOLLOW, activity.type);
+        assertEquals("Is not a USER", AObjectType.ACTOR, activity.getObjectType());
         actor = activity.getActor();
         assertEquals("Actor's Oid", "24853", actor.oid);
-        assertEquals("Username", "resir014", actor.getUserName());
+        assertEquals("Username", "resir014", actor.getActorName());
         assertEquals("WebfingerId", "resir014@icosahedron.website", actor.getWebFingerId());
-        MbUser user = activity.getUser();
+        Actor user = activity.getObjActor();
         assertEquals("Not following me" + activity, accountUserOid, user.oid);
 
         ind = 19;
         activity = timeline.get(ind);
-        assertEquals("Is not UPDATE " + activity, MbActivityType.UPDATE, activity.type);
-        assertEquals("Is not a message", MbObjectType.MESSAGE, activity.getObjectType());
+        assertEquals("Is not UPDATE " + activity, ActivityType.UPDATE, activity.type);
+        assertEquals("Is not a message", AObjectType.NOTE, activity.getObjectType());
         assertThat(activity.getMessage().getBody(), containsString("universe of Mastodon"));
         actor = activity.getActor();
         assertEquals("Actor's Oid", "119218", actor.oid);
-        assertEquals("Username", "izwx6502", actor.getUserName());
+        assertEquals("Username", "izwx6502", actor.getActorName());
         assertEquals("WebfingerId", "izwx6502@mstdn.jp", actor.getWebFingerId());
     }
 }

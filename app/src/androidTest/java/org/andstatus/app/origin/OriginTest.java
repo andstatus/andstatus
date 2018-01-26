@@ -9,8 +9,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.net.http.SslModeEnum;
-import org.andstatus.app.net.social.MbActivity;
-import org.andstatus.app.net.social.MbConfig;
+import org.andstatus.app.net.social.AActivity;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -61,13 +60,13 @@ public class OriginTest {
                 .firstOfType(OriginType.GNUSOCIAL);
         textLimit = Origin.TEXT_LIMIT_FOR_WEBFINGER_ID;
         int uploadLimit = 0;
-        MbConfig config = MbConfig.fromTextLimit(textLimit, uploadLimit);
+        OriginConfig config = OriginConfig.fromTextLimit(textLimit, uploadLimit);
         origin = new Origin.Builder(origin).save(config).build();
         assertEquals("Textlimit", textLimit, origin.getTextLimit());
         assertTrue(origin.isMentionAsWebFingerId());
 
         textLimit = 140;
-        config = MbConfig.fromTextLimit(textLimit, uploadLimit);
+        config = OriginConfig.fromTextLimit(textLimit, uploadLimit);
         origin = new Origin.Builder(origin).save(config).build();
         assertEquals("Textlimit", textLimit, origin.getTextLimit());
         assertEquals("Short URL length", 0, origin.shortUrlLength);
@@ -76,7 +75,7 @@ public class OriginTest {
         assertFalse(origin.isMentionAsWebFingerId());
 
         textLimit = 0;
-        config = MbConfig.fromTextLimit(textLimit, uploadLimit);
+        config = OriginConfig.fromTextLimit(textLimit, uploadLimit);
         assertFalse(config.isEmpty());
         config.shortUrlLength = 24;
         origin = new Origin.Builder(origin).save(config).build();
@@ -123,7 +122,7 @@ public class OriginTest {
         assertEquals(origin.getOriginType(), OriginType.TWITTER);
         String body = "Posting to Twitter " + demoData.TESTRUN_UID;
         String messageOid = "2578909845023" + demoData.TESTRUN_UID;
-        MbActivity activity = DemoMessageInserter.addMessageForAccount(
+        AActivity activity = DemoMessageInserter.addMessageForAccount(
                 demoData.getMyAccount(demoData.TWITTER_TEST_ACCOUNT_NAME),
                 body, messageOid, DownloadStatus.LOADED);
         final long msgId = activity.getMessage().msgId;

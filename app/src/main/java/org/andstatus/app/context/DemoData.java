@@ -27,7 +27,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DemoConversationInserter;
 import org.andstatus.app.data.DemoGnuSocialConversationInserter;
 import org.andstatus.app.data.checker.CheckConversations;
-import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.DemoOriginInserter;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.os.AsyncTaskLauncher;
@@ -271,13 +271,13 @@ public final class DemoData {
     }
 
     @NonNull
-    public MbUser getAccountUserByOid(String userOid) {
+    public Actor getAccountUserByOid(String userOid) {
         for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
             if (ma.getUserOid().equals(userOid)) {
-                return ma.getUser();
+                return ma.getActor();
             }
         }
-        return MbUser.EMPTY;
+        return Actor.EMPTY;
     }
 
     public long getConversationOriginId() {

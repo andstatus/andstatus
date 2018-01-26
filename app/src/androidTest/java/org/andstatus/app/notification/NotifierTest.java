@@ -5,7 +5,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.net.social.MbActivityType;
+import org.andstatus.app.net.social.ActivityType;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -69,12 +69,12 @@ public class NotifierTest {
         notifier.update();
     }
 
-    private MbActivityType eventTypeToActivityType(NotificationEventType eventType) {
+    private ActivityType eventTypeToActivityType(NotificationEventType eventType) {
         switch (eventType) {
             case ANNOUNCE:
-                return MbActivityType.ANNOUNCE;
+                return ActivityType.ANNOUNCE;
             default:
-                return MbActivityType.UPDATE;
+                return ActivityType.UPDATE;
         }
     }
 

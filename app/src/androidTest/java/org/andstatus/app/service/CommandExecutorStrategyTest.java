@@ -27,7 +27,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnectionMock;
-import org.andstatus.app.net.social.MbActivity;
+import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.origin.DiscoveredOrigins;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -156,7 +156,7 @@ public class CommandExecutorStrategyTest {
 
     private CommandData getCommandDataForUnsentMessage(String suffix) {
         String body = "Some text " + suffix + " to send " + System.currentTimeMillis() + "ms";
-        MbActivity activity = DemoMessageInserter.addMessageForAccount(
+        AActivity activity = DemoMessageInserter.addMessageForAccount(
                 ma, body, "", DownloadStatus.SENDING);
         return CommandData.newUpdateStatus(ma, activity.getMessage().msgId);
     }

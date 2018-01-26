@@ -30,14 +30,14 @@ public class MbActivityTest {
 
     @Test
     public void testEmpty() {
-        MbActivity empty = MbActivity.EMPTY;
+        AActivity empty = AActivity.EMPTY;
         assertEquals(empty.toString(), true, empty.isEmpty());
-        assertEquals(MbUser.EMPTY, empty.accountUser);
-        assertEquals(MbUser.EMPTY, empty.getActor());
-        assertEquals(MbUser.EMPTY, empty.getAuthor());
-        assertEquals(empty.toString(), MbUser.EMPTY, empty.getUser());
-        assertEquals(MbMessage.EMPTY, empty.getMessage());
-        assertEquals(MbActivity.EMPTY, empty.getActivity());
-        assertEquals(MbObjectType.EMPTY, empty.getObjectType());
+        assertEquals(Actor.EMPTY, empty.accountActor);
+        assertEquals(Actor.EMPTY, empty.getActor());
+        assertEquals(Actor.EMPTY, empty.getAuthor());
+        assertEquals(empty.toString(), Actor.EMPTY, empty.getObjActor());
+        assertEquals(Note.EMPTY, empty.getMessage());
+        assertEquals(AActivity.EMPTY, empty.getActivity());
+        assertEquals(AObjectType.EMPTY, empty.getObjectType());
     }
 }

@@ -2,9 +2,9 @@ package org.andstatus.app.data;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.net.social.MbActivity;
-import org.andstatus.app.net.social.MbActivityType;
-import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.AActivity;
+import org.andstatus.app.net.social.ActivityType;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.util.MyLog;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,8 +28,8 @@ public class MessageForAccountTest {
         MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         DemoMessageInserter mi = new DemoMessageInserter(ma);
-        MbUser accountUser = ma.getUser();
-        MbActivity activity1 = mi.buildActivity(accountUser, "My testing message", null,
+        Actor accountActor = ma.getActor();
+        AActivity activity1 = mi.buildActivity(accountActor, "My testing message", null,
                 null, DownloadStatus.LOADED);
         mi.onActivity(activity1);
         
@@ -41,8 +41,8 @@ public class MessageForAccountTest {
         assertTrue(mfa.isTiedToThisAccount());
         assertTrue(mfa.hasPrivateAccess());
         
-        MbUser author2 = mi.buildUserFromOid("acct:a2." + demoData.TESTRUN_UID + "@pump.example.com");
-        final MbActivity replyTo1 = mi.buildActivity(author2, "@" + accountUser.getUserName()
+        Actor author2 = mi.buildActorFromOid("acct:a2." + demoData.TESTRUN_UID + "@pump.example.com");
+        final AActivity replyTo1 = mi.buildActivity(author2, "@" + accountActor.getActorName()
                 + " Replying to you", activity1, null, DownloadStatus.LOADED);
         replyTo1.getMessage().setPrivate(FALSE);
         mi.onActivity(replyTo1);
@@ -55,8 +55,8 @@ public class MessageForAccountTest {
         assertTrue(mfa.isTiedToThisAccount());
         assertTrue(mfa.hasPrivateAccess());
 
-        MbUser author3 = mi.buildUserFromOid("acct:b3." + demoData.TESTRUN_UID + "@pumpity.example.com");
-        MbActivity replyTo2 = mi.buildActivity(author3, "@" + author2.getUserName()
+        Actor author3 = mi.buildActorFromOid("acct:b3." + demoData.TESTRUN_UID + "@pumpity.example.com");
+        AActivity replyTo2 = mi.buildActivity(author3, "@" + author2.getActorName()
                 + " Replying to the second author", replyTo1, null, DownloadStatus.LOADED);
         replyTo2.getMessage().setPrivate(FALSE);
         mi.onActivity(replyTo2);
@@ -70,11 +70,11 @@ public class MessageForAccountTest {
         assertFalse(mfa.hasPrivateAccess());
         assertFalse(mfa.reblogged);
 
-        MbActivity reblogged1 = mi.buildActivity(author3, "@" + author2.getUserName()
+        AActivity reblogged1 = mi.buildActivity(author3, "@" + author2.getActorName()
                 + " This reply is reblogged by anotherMan", replyTo1, null, DownloadStatus.LOADED);
-        MbUser anotherMan = mi.buildUserFromOid("acct:c4." + demoData.TESTRUN_UID + "@pump.example.com");
-        anotherMan.setUserName("anotherMan" + demoData.TESTRUN_UID);
-        MbActivity activity4 = MbActivity.from(accountUser, MbActivityType.ANNOUNCE);
+        Actor anotherMan = mi.buildActorFromOid("acct:c4." + demoData.TESTRUN_UID + "@pump.example.com");
+        anotherMan.setActorName("anotherMan" + demoData.TESTRUN_UID);
+        AActivity activity4 = AActivity.from(accountActor, ActivityType.ANNOUNCE);
         activity4.setActor(anotherMan);
         activity4.setActivity(reblogged1);
         activity4.setTimelinePosition(MyLog.uniqueDateTimeFormatted());

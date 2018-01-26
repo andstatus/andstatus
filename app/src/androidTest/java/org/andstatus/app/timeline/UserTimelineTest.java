@@ -24,7 +24,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.net.social.MbActivityType;
+import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
@@ -60,7 +60,7 @@ public class UserTimelineTest extends TimelineActivityTest {
         ActivityViewItem followItem = ActivityViewItem.EMPTY;
         for (int position = 0; position < timelineData.size(); position++) {
             ActivityViewItem item = timelineData.getItem(position);
-            if (item.activityType == MbActivityType.FOLLOW) {
+            if (item.activityType == ActivityType.FOLLOW) {
                 followItem = item;
             }
         }

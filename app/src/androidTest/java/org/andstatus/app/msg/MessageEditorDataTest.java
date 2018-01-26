@@ -8,7 +8,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.database.table.UserTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.origin.Origin;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,8 +64,8 @@ public class MessageEditorDataTest {
             return;
         }
         String expectedName = MyQuery.userIdToStringColumnValue(
-                data.ma.getOrigin().isMentionAsWebFingerId() ? UserTable.WEBFINGER_ID
-                        : UserTable.USERNAME, mentionedUserId);
+                data.ma.getOrigin().isMentionAsWebFingerId() ? ActorTable.WEBFINGER_ID
+                        : ActorTable.ACTORNAME, mentionedUserId);
         assertTrue(!TextUtils.isEmpty(expectedName));
         boolean isMentioned = data.body.contains("@" + expectedName);
         assertEquals(data.toString() + "; expected name:" + expectedName, isMentioned_in, isMentioned);

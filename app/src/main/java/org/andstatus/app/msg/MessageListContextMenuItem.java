@@ -44,7 +44,7 @@ import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.user.UserListType;
+import org.andstatus.app.user.ActorListType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
@@ -281,7 +281,7 @@ public enum MessageListContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(MessageContextMenu menu, MessageEditorData editorData) {
             Uri uri = MatchedUri.getUserListUri(editorData.ma.getUserId(),
-                    UserListType.USERS_OF_MESSAGE, menu.getOrigin().getId(),
+                    ActorListType.USERS_OF_MESSAGE, menu.getOrigin().getId(),
                     menu.getMsgId(), "");
             if (MyLog.isLoggable(this, MyLog.DEBUG)) {
                 MyLog.d(this, "onItemClick, startActivity=" + uri);

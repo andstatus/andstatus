@@ -27,7 +27,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.timeline.ListActivityTestHelper;
 import org.andstatus.app.util.MyLog;
 import org.junit.Test;
@@ -38,11 +38,11 @@ import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class UserListWorkTest extends ActivityTest<UserList> {
+public class ActorListWorkTest extends ActivityTest<ActorList> {
 
     @Override
-    protected Class<UserList> getActivityClass() {
-        return UserList.class;
+    protected Class<ActorList> getActivityClass() {
+        return ActorList.class;
     }
 
     @Override
@@ -60,27 +60,27 @@ public class UserListWorkTest extends ActivityTest<UserList> {
         MyLog.i(this, "setUp ended");
 
         return new Intent(MyAction.VIEW_USERS.getAction(),
-                MatchedUri.getUserListUri(ma.getUserId(), UserListType.USERS_OF_MESSAGE, ma.getOriginId(), msgId, ""));
+                MatchedUri.getUserListUri(ma.getUserId(), ActorListType.USERS_OF_MESSAGE, ma.getOriginId(), msgId, ""));
     }
 
     @Test
     public void testFollowersList() throws InterruptedException {
         final String method = "testFollowersList";
         TestSuite.waitForListLoaded(getActivity(), 2);
-        ListActivityTestHelper<UserList> helper = new ListActivityTestHelper<>(getActivity(), FollowersList.class);
+        ListActivityTestHelper<ActorList> helper = new ListActivityTestHelper<>(getActivity(), FollowersList.class);
 
-        List<UserViewItem> listItems = getActivity().getListLoader().getList();
+        List<ActorViewItem> listItems = getActivity().getListLoader().getList();
         assertEquals(listItems.toString(), 5, listItems.size());
 
-        MbUser userA = UserListTest.getByUserOid(listItems, demoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
+        Actor userA = ActorListTest.getByUserOid(listItems, demoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
 
         assertTrue("Invoked Context menu for " + userA, helper.invokeContextMenuAction4ListItemId(
-                method, userA.userId, UserListContextMenuItem.FOLLOWERS, 0));
+                method, userA.userId, ActorListContextMenuItem.FOLLOWERS, 0));
 
         FollowersList userList = (FollowersList) helper.waitForNextActivity(method, 15000);
         TestSuite.waitForListLoaded(userList, 1);
 
-        List<UserViewItem> followersItems = userList.getListLoader().getList();
+        List<ActorViewItem> followersItems = userList.getListLoader().getList();
         ListActivityTestHelper<FollowersList> followersHelper = new ListActivityTestHelper<>(userList);
         followersHelper.clickListAtPosition(method,
                 followersHelper.getPositionOfListItemId(followersItems.get(0).getUserId()));

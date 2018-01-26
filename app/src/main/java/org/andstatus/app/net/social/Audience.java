@@ -32,7 +32,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Audience {
-    private final Set<MbUser> recipients = new HashSet<>();
+    private final Set<Actor> recipients = new HashSet<>();
 
     public static Audience fromMsgId(@NonNull Origin origin, long msgId) {
         String where = AudienceTable.MSG_ID + "=" + msgId;
@@ -41,21 +41,21 @@ public class Audience {
                 + " WHERE " + where;
         Audience audience = new Audience();
         for (long recipientId : MyQuery.getLongs(sql)) {
-            audience.add(MbUser.fromOriginAndUserId(origin, recipientId));
+            audience.add(Actor.fromOriginAndActorId(origin, recipientId));
         }
         return audience;
     }
 
-    public MbUser getFirst() {
+    public Actor getFirst() {
         if (recipients.isEmpty()) {
-            return MbUser.EMPTY;
+            return Actor.EMPTY;
         }
         return recipients.iterator().next();
     }
 
     public String getUserNames() {
         StringBuilder sb = new StringBuilder();
-        for (MbUser user : recipients) {
+        for (Actor user : recipients) {
             if (sb.length() > 0) {
                 sb.append(", ");
             }
@@ -64,7 +64,7 @@ public class Audience {
         return sb.toString();
     }
 
-    public Set<MbUser> getRecipients() {
+    public Set<Actor> getRecipients() {
         return recipients;
     }
 
@@ -77,12 +77,12 @@ public class Audience {
     }
 
     public void addAll(@NonNull Audience audience) {
-        for (MbUser user : audience.recipients) {
+        for (Actor user : audience.recipients) {
             add(user);
         }
     }
 
-    public void add(@NonNull MbUser user) {
+    public void add(@NonNull Actor user) {
         if (!recipients.contains(user)) {
             recipients.add(user);
             return;
@@ -99,9 +99,9 @@ public class Audience {
     }
 
     @NonNull
-    public boolean contains(MbUser mbUser) {
-        for (MbUser user : recipients) {
-            if (user.equals(mbUser)) {
+    public boolean contains(Actor actor) {
+        for (Actor user : recipients) {
+            if (user.equals(actor)) {
                 return true;
             }
         }
@@ -109,7 +109,7 @@ public class Audience {
     }
 
     public boolean contains(long userId) {
-        for (MbUser user : recipients) {
+        for (Actor user : recipients) {
             if (user.userId == userId) {
                 return true;
             }
@@ -123,14 +123,14 @@ public class Audience {
             return;
         }
         Audience prevAudience = Audience.fromMsgId(origin, msgId);
-        Set<MbUser> toDelete = new HashSet<>();
-        Set<MbUser> toAdd = new HashSet<>();
-        for (MbUser user : prevAudience.getRecipients()) {
+        Set<Actor> toDelete = new HashSet<>();
+        Set<Actor> toAdd = new HashSet<>();
+        for (Actor user : prevAudience.getRecipients()) {
             if (!getRecipients().contains(user)) {
                 toDelete.add(user);
             }
         }
-        for (MbUser user : getRecipients()) {
+        for (Actor user : getRecipients()) {
             if (!prevAudience.getRecipients().contains(user)) {
                 if (user.userId == 0) {
                     MyLog.w(this, "No userId for " + user);
@@ -144,7 +144,7 @@ public class Audience {
                 db.delete(AudienceTable.TABLE_NAME, AudienceTable.MSG_ID + "=" + msgId
                         + " AND " + AudienceTable.USER_ID + SqlUserIds.fromUsers(toDelete).getSql(), null);
             }
-            for (MbUser user : toAdd) {
+            for (Actor user : toAdd) {
                 ContentValues values = new ContentValues();
                 values.put(AudienceTable.MSG_ID, msgId);
                 values.put(AudienceTable.USER_ID, user.userId);

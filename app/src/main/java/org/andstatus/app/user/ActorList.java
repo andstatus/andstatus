@@ -43,11 +43,11 @@ import org.andstatus.app.view.MyContextMenu;
  *  e.g. "Users of the message", "Followers of my account(s)" etc.
  *  @author yvolk@yurivolkov.com
  */
-public class UserList extends MessageEditorListActivity {
-    protected UserListType mUserListType = UserListType.UNKNOWN;
-    private UserListContextMenu contextMenu = null;
+public class ActorList extends MessageEditorListActivity {
+    protected ActorListType mActorListType = ActorListType.UNKNOWN;
+    private ActorListContextMenu contextMenu = null;
 
-    public UserList() {
+    public ActorList() {
         mLayoutId = R.layout.my_list_swipe;
     }
 
@@ -58,8 +58,8 @@ public class UserList extends MessageEditorListActivity {
             return;
         }
 
-        mUserListType = getParsedUri().getUserListType();
-        contextMenu = new UserListContextMenu(this, MyContextMenu.MENU_GROUP_USER);
+        mActorListType = getParsedUri().getUserListType();
+        contextMenu = new ActorListContextMenu(this, MyContextMenu.MENU_GROUP_OBJACTOR);
     }
 
 
@@ -100,13 +100,13 @@ public class UserList extends MessageEditorListActivity {
     }
 
     @Override
-    protected UserListLoader newSyncLoader(Bundle args) {
-        switch (mUserListType) {
+    protected ActorListLoader newSyncLoader(Bundle args) {
+        switch (mActorListType) {
             case USERS_OF_MESSAGE:
-                return new UsersOfMessageListLoader(mUserListType, getCurrentMyAccount(), centralItemId,
+                return new ActorsOfNoteListLoader(mActorListType, getCurrentMyAccount(), centralItemId,
                         getParsedUri().getSearchQuery());
             default:
-                return new UserListLoader(mUserListType, getCurrentMyAccount(), getParsedUri().getOrigin(myContext),
+                return new ActorListLoader(mActorListType, getCurrentMyAccount(), getParsedUri().getOrigin(myContext),
                         centralItemId, getParsedUri().getSearchQuery());
         }
     }
@@ -121,19 +121,19 @@ public class UserList extends MessageEditorListActivity {
 
     @Override
     protected BaseTimelineAdapter newListAdapter() {
-        return new UserAdapter(contextMenu, R.layout.user, getListLoader().getList(),
+        return new ActorAdapter(contextMenu, R.layout.user, getListLoader().getList(),
                 Timeline.fromParsedUri(myContext, getParsedUri(), ""));
     }
 
     @SuppressWarnings("unchecked")
-    protected UserListLoader getListLoader() {
-        return (UserListLoader) getLoaded();
+    protected ActorListLoader getListLoader() {
+        return (ActorListLoader) getLoaded();
     }
 
     @Override
     protected CharSequence getCustomTitle() {
         mSubtitle = I18n.trimTextAt(MyHtml.fromHtml(getListLoader().getTitle()), 80);
-        final StringBuilder title = new StringBuilder(mUserListType.getTitle(this));
+        final StringBuilder title = new StringBuilder(mActorListType.getTitle(this));
         if (StringUtils.nonEmpty(getParsedUri().getSearchQuery())) {
             I18n.appendWithSpace(title, "'" + getParsedUri().getSearchQuery() + "'");
         }

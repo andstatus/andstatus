@@ -51,7 +51,7 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.LoadableListActivity;
-import org.andstatus.app.user.UserAutoCompleteAdapter;
+import org.andstatus.app.user.ActorAutoCompleteAdapter;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
@@ -439,9 +439,9 @@ public class MessageEditor {
         if (editorData == MessageEditorData.EMPTY) {
             bodyView.setAdapter(null);
         } else {
-            UserAutoCompleteAdapter adapterOld = (UserAutoCompleteAdapter) bodyView.getAdapter();
+            ActorAutoCompleteAdapter adapterOld = (ActorAutoCompleteAdapter) bodyView.getAdapter();
             if (adapterOld == null || !adapterOld.getOrigin().equals(editorData.getMyAccount().getOrigin())) {
-                UserAutoCompleteAdapter adapter = new UserAutoCompleteAdapter(getActivity(),
+                ActorAutoCompleteAdapter adapter = new ActorAutoCompleteAdapter(getActivity(),
                         editorData.getMyAccount().getOrigin());
                 bodyView.setAdapter(adapter);
             }

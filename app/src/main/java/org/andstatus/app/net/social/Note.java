@@ -44,8 +44,8 @@ import static org.andstatus.app.util.UriUtils.nonRealOid;
  * Message of a Social Network
  * @author yvolk@yurivolkov.com
  */
-public class MbMessage extends AObject {
-    public static final MbMessage EMPTY = new MbMessage(Origin.EMPTY, getTempOid());
+public class Note extends AObject {
+    public static final Note EMPTY = new Note(Origin.EMPTY, getTempOid());
 
     private boolean isEmpty = false;
     private DownloadStatus status = DownloadStatus.UNKNOWN;
@@ -55,13 +55,13 @@ public class MbMessage extends AObject {
     private Audience recipients = new Audience();
     private String body = "";
 
-    private MbActivity inReplyTo = MbActivity.EMPTY;
-    public final List<MbActivity> replies = new ArrayList<>();
+    private AActivity inReplyTo = AActivity.EMPTY;
+    public final List<AActivity> replies = new ArrayList<>();
     public String conversationOid="";
     public String via = "";
     public String url="";
 
-    public final List<MbAttachment> attachments = new ArrayList<>();
+    public final List<Attachment> attachments = new ArrayList<>();
 
     /** Some additional attributes may appear from "My account's" (authenticated User's) point of view */
     private TriState isPrivate = TriState.UNKNOWN;
@@ -72,8 +72,8 @@ public class MbMessage extends AObject {
     private long conversationId = 0L;
 
     @NonNull
-    public static MbMessage fromOriginAndOid(@NonNull Origin origin, String oid, DownloadStatus status) {
-        MbMessage message = new MbMessage(origin, isEmptyOid(oid) ? getTempOid() : oid);
+    public static Note fromOriginAndOid(@NonNull Origin origin, String oid, DownloadStatus status) {
+        Note message = new Note(origin, isEmptyOid(oid) ? getTempOid() : oid);
         message.status = status;
         if (TextUtils.isEmpty(oid) && status == DownloadStatus.LOADED) {
             message.status = DownloadStatus.UNKNOWN;
@@ -85,19 +85,19 @@ public class MbMessage extends AObject {
         return TEMP_OID_PREFIX + "msg:" + MyLog.uniqueCurrentTimeMS() ;
     }
 
-    private MbMessage(Origin origin, String oid) {
+    private Note(Origin origin, String oid) {
         this.origin = origin;
         this.oid = oid;
     }
 
     @NonNull
-    public MbActivity update(MbUser accountUser) {
-        return act(accountUser, MbUser.EMPTY, MbActivityType.UPDATE);
+    public AActivity update(Actor accountActor) {
+        return act(accountActor, Actor.EMPTY, ActivityType.UPDATE);
     }
 
     @NonNull
-    public MbActivity act(MbUser accountUser, @NonNull MbUser actor, @NonNull MbActivityType activityType) {
-        MbActivity mbActivity = MbActivity.from(accountUser, activityType);
+    public AActivity act(Actor accountActor, @NonNull Actor actor, @NonNull ActivityType activityType) {
+        AActivity mbActivity = AActivity.from(accountActor, activityType);
         mbActivity.setActor(actor);
         mbActivity.setMessage(this);
         return mbActivity;
@@ -130,7 +130,7 @@ public class MbMessage extends AObject {
         }
     }
 
-    public MbMessage setConversationOid(String conversationOid) {
+    public Note setConversationOid(String conversationOid) {
         if (TextUtils.isEmpty(conversationOid)) {
             this.conversationOid = "";
         } else {
@@ -186,7 +186,7 @@ public class MbMessage extends AObject {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        MbMessage other = (MbMessage) o;
+        Note other = (Note) o;
         return hashCode() == other.hashCode();
     }
 
@@ -252,11 +252,11 @@ public class MbMessage extends AObject {
     }
 
     @NonNull
-    public MbActivity getInReplyTo() {
-        return Optional.ofNullable(inReplyTo).orElse(MbActivity.EMPTY);
+    public AActivity getInReplyTo() {
+        return Optional.ofNullable(inReplyTo).orElse(AActivity.EMPTY);
     }
 
-    public void setInReplyTo(MbActivity activity) {
+    public void setInReplyTo(AActivity activity) {
         if (activity != null && activity.nonEmpty()) {
             inReplyTo = activity;
         }
@@ -274,7 +274,7 @@ public class MbMessage extends AObject {
         return !isPrivate();
     }
 
-    public MbMessage setPrivate(TriState isPrivate) {
+    public Note setPrivate(TriState isPrivate) {
         this.isPrivate = isPrivate;
         return this;
     }
@@ -296,27 +296,27 @@ public class MbMessage extends AObject {
         recipients.addAll(audience);
     }
 
-    public void addRecipient(MbUser recipient) {
+    public void addRecipient(Actor recipient) {
         if (recipient != null && recipient.nonEmpty()) {
             recipients.add(recipient);
         }
     }
 
-    public void addRecipientsFromBodyText(MbUser author) {
-        for (MbUser user : author.extractUsersFromBodyText(getBody(), true)) {
+    public void addRecipientsFromBodyText(Actor author) {
+        for (Actor user : author.extractActorsFromBodyText(getBody(), true)) {
             addRecipient(user);
         }
     }
 
-    public MbMessage shallowCopy() {
-        MbMessage message = fromOriginAndOid(origin, oid, status);
+    public Note shallowCopy() {
+        Note message = fromOriginAndOid(origin, oid, status);
         message.msgId = msgId;
         message.setUpdatedDate(updatedDate);
         return message;
     }
 
-    public MbMessage copy(String oidNew) {
-        MbMessage message = fromOriginAndOid(origin, oidNew, status);
+    public Note copy(String oidNew) {
+        Note message = fromOriginAndOid(origin, oidNew, status);
         message.msgId = msgId;
         message.setUpdatedDate(updatedDate);
 
@@ -335,30 +335,30 @@ public class MbMessage extends AObject {
         return message;
     }
 
-    public void addFavoriteBy(@NonNull MbUser accountUser, @NonNull TriState favoritedByMe) {
+    public void addFavoriteBy(@NonNull Actor accountActor, @NonNull TriState favoritedByMe) {
         if (favoritedByMe != TriState.TRUE) {
             return;
         }
-        MbActivity favorite = MbActivity.from(accountUser, MbActivityType.LIKE);
-        favorite.setActor(accountUser);
+        AActivity favorite = AActivity.from(accountActor, ActivityType.LIKE);
+        favorite.setActor(accountActor);
         favorite.setUpdatedDate(getUpdatedDate());
         favorite.setMessage(shallowCopy());
         replies.add(favorite);
     }
 
     @NonNull
-    public TriState getFavoritedBy(MbUser accountUser) {
+    public TriState getFavoritedBy(Actor accountActor) {
         if (msgId == 0) {
-            for (MbActivity reply : replies) {
-                if (reply.type == MbActivityType.LIKE && reply.getActor().equals(accountUser)
+            for (AActivity reply : replies) {
+                if (reply.type == ActivityType.LIKE && reply.getActor().equals(accountActor)
                         && reply.getMessage().oid.equals(oid) ) {
                     return TriState.TRUE;
                 }
             }
             return TriState.UNKNOWN;
         } else {
-            final Pair<Long, MbActivityType> favAndType = MyQuery.msgIdToLastFavoriting(MyContextHolder.get().getDatabase(),
-                    msgId, accountUser.userId);
+            final Pair<Long, ActivityType> favAndType = MyQuery.msgIdToLastFavoriting(MyContextHolder.get().getDatabase(),
+                    msgId, accountActor.userId);
             switch (favAndType.second) {
                 case LIKE:
                     return TriState.TRUE;

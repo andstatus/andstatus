@@ -33,8 +33,8 @@ import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.MsgTable;
-import org.andstatus.app.database.table.UserTable;
-import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.database.table.ActorTable;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.TriState;
@@ -84,7 +84,7 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
             authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
             super.load(cursor);
             msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
-            authorName = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.AUTHOR_NAME, false);
+            authorName = TimelineSql.userColumnNameToNameAtTimeline(cursor, ActorTable.AUTHOR_NAME, false);
             setBody(MyHtml.prepareForView(DbUtils.getString(cursor, MsgTable.BODY)));
             String via = DbUtils.getString(cursor, MsgTable.VIA);
             if (!TextUtils.isEmpty(via)) {
@@ -96,7 +96,7 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
             }
             inReplyToMsgId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_MSG_ID);
             inReplyToUserId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_USER_ID);
-            inReplyToName = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.IN_REPLY_TO_NAME, false);
+            inReplyToName = TimelineSql.userColumnNameToNameAtTimeline(cursor, ActorTable.IN_REPLY_TO_NAME, false);
             //TODO:  recipientName = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.RECIPIENT_NAME, false);
 
             if (DbUtils.getTriState(cursor, MsgTable.REBLOGGED) == TriState.TRUE) {
@@ -109,7 +109,7 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
             ind++;
         } while (cursor.moveToNext());
 
-        for (MbUser user : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getMsgId())) {
+        for (Actor user : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getMsgId())) {
             rebloggers.put(user.userId, user.getWebFingerId());
         }
     }

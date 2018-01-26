@@ -108,7 +108,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     }
 
     @Override
-    public MbActivity updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri)
+    public AActivity updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri)
             throws ConnectionException {
         if (UriUtils.isEmpty(mediaUri)) {
             return super.updateStatus(message, statusId, inReplyToId, mediaUri);
@@ -116,7 +116,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         return updateWithMedia(message, inReplyToId, mediaUri);
     }
 
-    private MbActivity updateWithMedia(String message, String inReplyToId, Uri mediaUri) throws ConnectionException {
+    private AActivity updateWithMedia(String message, String inReplyToId, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put("status", message);
@@ -135,7 +135,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     }
 
     @Override
-    public MbActivity createFavorite(String statusId) throws ConnectionException {
+    public AActivity createFavorite(String statusId) throws ConnectionException {
         JSONObject out = new JSONObject();
         try {
             out.put("id", statusId);
@@ -147,7 +147,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     }
 
     @Override
-    public MbActivity destroyFavorite(String statusId) throws ConnectionException {
+    public AActivity destroyFavorite(String statusId) throws ConnectionException {
         JSONObject out = new JSONObject();
         try {
             out.put("id", statusId);
@@ -160,8 +160,8 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
 
     @NonNull
     @Override
-    public List<MbActivity> searchMessages(TimelinePosition youngestPosition,
-                                           TimelinePosition oldestPosition, int limit, String searchQuery)
+    public List<AActivity> searchMessages(TimelinePosition youngestPosition,
+                                          TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_MESSAGES;
         String url = this.getApiPath(apiRoutine);
@@ -178,7 +178,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
 
     @NonNull
     @Override
-    public List<MbUser> searchUsers(int limit, String searchQuery) throws ConnectionException {
+    public List<Actor> searchUsers(int limit, String searchQuery) throws ConnectionException {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_USERS;
         String url = this.getApiPath(apiRoutine);
         Uri sUri = Uri.parse(url);
@@ -193,12 +193,12 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     private static final String ATTACHMENTS_FIELD_NAME = "media";
     @Override
     @NonNull
-    MbActivity activityFromJson2(JSONObject jso) throws ConnectionException {
+    AActivity activityFromJson2(JSONObject jso) throws ConnectionException {
         if (jso == null) {
-            return MbActivity.EMPTY;
+            return AActivity.EMPTY;
         }
         final String method = "activityFromJson2";
-        MbActivity activity = super.activityFromJson2(jso);
+        AActivity activity = super.activityFromJson2(jso);
         // See https://dev.twitter.com/docs/entities
         JSONObject entities = jso.optJSONObject("entities");
         if (entities != null && entities.has(ATTACHMENTS_FIELD_NAME)) {
@@ -207,7 +207,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
                 for (int ind = 0; ind < jArr.length(); ind++) {
                     JSONObject attachment = (JSONObject) jArr.get(ind);
                     Uri uri = UriUtils.fromAlternativeTags(attachment, "media_url_https", "media_url_http");
-                    MbAttachment mbAttachment =  MbAttachment.fromUriAndContentType(uri, MyContentType.IMAGE);
+                    Attachment mbAttachment =  Attachment.fromUriAndContentType(uri, MyContentType.IMAGE);
                     if (mbAttachment.isValid()) {
                         activity.getMessage().attachments.add(mbAttachment);
                     } else {
@@ -222,7 +222,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     }
 
     @Override
-    protected void setMessageBodyFromJson(MbMessage message, JSONObject jso) throws JSONException {
+    protected void setMessageBodyFromJson(Note message, JSONObject jso) throws JSONException {
         boolean bodyFound = false;
         if (!jso.isNull("full_text")) {
             message.setBody(jso.getString("full_text"));
@@ -233,7 +233,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         }
     }
 
-    List<MbUser> getMbUsers(String userId, ApiRoutineEnum apiRoutine) throws ConnectionException {
+    List<Actor> getActors(String userId, ApiRoutineEnum apiRoutine) throws ConnectionException {
         String url = this.getApiPath(apiRoutine);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();

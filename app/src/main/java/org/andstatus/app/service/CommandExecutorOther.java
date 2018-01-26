@@ -32,11 +32,11 @@ import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.social.Audience;
-import org.andstatus.app.net.social.MbActivity;
-import org.andstatus.app.net.social.MbActivityType;
-import org.andstatus.app.net.social.MbMessage;
-import org.andstatus.app.net.social.MbRateLimitStatus;
-import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.AActivity;
+import org.andstatus.app.net.social.ActivityType;
+import org.andstatus.app.net.social.Note;
+import org.andstatus.app.net.social.RateLimitStatus;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.support.java.util.function.Supplier;
 import org.andstatus.app.support.java.util.function.SupplierWithException;
 import org.andstatus.app.util.MyLog;
@@ -110,12 +110,12 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     private void searchUsers(String searchQuery) {
         final String method = "searchUsers";
         String msgLog = method + "; query='" + searchQuery + "'";
-        List<MbUser> users = null;
+        List<Actor> users = null;
         if (StringUtils.nonEmpty(searchQuery)) {
             try {
                 users = execContext.getMyAccount().getConnection().searchUsers(USERS_LIMIT, searchQuery);
-                for (MbUser user : users) {
-                    new DataUpdater(execContext).onActivity(user.update(execContext.getMyAccount().getUser()));
+                for (Actor user : users) {
+                    new DataUpdater(execContext).onActivity(user.update(execContext.getMyAccount().getActor()));
                 }
             } catch (ConnectionException e) {
                 logConnectionException(e, msgLog);
@@ -138,10 +138,10 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         }
     }
 
-    private void onActivities(String method, SupplierWithException<List<MbActivity>, ConnectionException> supplier,
+    private void onActivities(String method, SupplierWithException<List<AActivity>, ConnectionException> supplier,
                               Supplier<String> contextInfoSupplier) {
         try {
-            List<MbActivity> activities = supplier.get();
+            List<AActivity> activities = supplier.get();
             DataUpdater.onActivities(execContext, activities);
         } catch (ConnectionException e) {
             if (e.getStatusCode() == StatusCode.NOT_FOUND) {
@@ -156,10 +156,10 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         final String method = "getUser";
         String oid = getUserOid(method, userId, false);
         String msgLog = method + "; userName='" + userName + "'";
-        MbUser user = null;
+        Actor user = null;
         if (UriUtils.isRealOid(oid) || !TextUtils.isEmpty(userName)) {
             try {
-                user = execContext.getMyAccount().getConnection().getUser(oid, userName);
+                user = execContext.getMyAccount().getConnection().getActor(oid, userName);
                 logIfUserIsEmpty(msgLog, userId, user);
             } catch (ConnectionException e) {
                 logConnectionException(e, msgLog + userInfoLogged(userId));
@@ -169,7 +169,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             logExecutionError(true, msgLog + userInfoLogged(userId));
         }
         if (noErrors() && user != null) {
-            new DataUpdater(execContext).onActivity(user.update(execContext.getMyAccount().getUser()));
+            new DataUpdater(execContext).onActivity(user.update(execContext.getMyAccount().getActor()));
         }
         MyLog.d(this, (msgLog + (noErrors() ? " succeeded" : " failed") ));
     }
@@ -180,7 +180,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     private void createOrDestroyFavorite(long msgId, boolean create) {
         final String method = (create ? "create" : "destroy") + "Favorite";
         String oid = getMsgOid(method, msgId, true);
-        MbActivity activity = null;
+        AActivity activity = null;
         if (noErrors()) {
             try {
                 if (create) {
@@ -194,7 +194,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             }
         }
         if (noErrors()) {
-            if (!activity.type.equals(create ? MbActivityType.LIKE : MbActivityType.UNDO_LIKE)) {
+            if (!activity.type.equals(create ? ActivityType.LIKE : ActivityType.UNDO_LIKE)) {
                 /*
                  * yvolk: 2011-09-27 Twitter docs state that
                  * this may happen due to asynchronous nature of
@@ -205,7 +205,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 if (create) {
                     // For the case we created favorite, let's
                     // change the flag manually.
-                    activity = activity.getMessage().act(activity.accountUser, activity.getActor(), MbActivityType.LIKE);
+                    activity = activity.getMessage().act(activity.accountActor, activity.getActor(), ActivityType.LIKE);
 
                     MyLog.d(this, method + "; Favorited flag didn't change yet.");
                     // Let's try to assume that everything was OK
@@ -243,20 +243,20 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     private void followOrStopFollowingUser(long userId, boolean follow) {
         final String method = (follow ? "follow" : "stopFollowing") + "User";
         String oid = getUserOid(method, userId, true);
-        MbActivity activity = null;
+        AActivity activity = null;
         if (noErrors()) {
             try {
                 activity = execContext.getMyAccount().getConnection().followUser(oid, follow);
-                logIfUserIsEmpty(method, userId, activity.getUser());
+                logIfUserIsEmpty(method, userId, activity.getObjActor());
             } catch (ConnectionException e) {
                 logConnectionException(e, method + userInfoLogged(userId));
             }
         }
         if (activity != null && noErrors()) {
-            if (!activity.type.equals(follow ? MbActivityType.FOLLOW : MbActivityType.UNDO_FOLLOW)) {
+            if (!activity.type.equals(follow ? ActivityType.FOLLOW : ActivityType.UNDO_FOLLOW)) {
                 if (follow) {
                     // Act just like for creating favorite...
-                    activity = activity.getUser().act(MbUser.EMPTY, activity.getActor(), MbActivityType.FOLLOW);
+                    activity = activity.getObjActor().act(Actor.EMPTY, activity.getActor(), ActivityType.FOLLOW);
                     MyLog.d(this, "Follow a User. 'following' flag didn't change yet.");
                     // Let's try to assume that everything was OK:
                 } else {
@@ -270,7 +270,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }
 
-    private void logIfUserIsEmpty(String method, long userId, MbUser user) {
+    private void logIfUserIsEmpty(String method, long userId, Actor user) {
         if (user == null || user.isEmpty()) {
             logExecutionError(false, "Received User is empty, " + method + userInfoLogged(userId));
         }
@@ -328,9 +328,9 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     private void destroyReblog(long msgId) {
         final String method = "destroyReblog";
         final long actorId = execContext.getMyAccount().getUserId();
-        final Pair<Long, MbActivityType> reblogAndType = MyQuery.msgIdToLastReblogging(
+        final Pair<Long, ActivityType> reblogAndType = MyQuery.msgIdToLastReblogging(
                 execContext.getMyContext().getDatabase(), msgId, actorId);
-        if (reblogAndType.second != MbActivityType.ANNOUNCE) {
+        if (reblogAndType.second != ActivityType.ANNOUNCE) {
             logExecutionError(true, "No local Reblog of "
                     + MyQuery.msgInfoForLog(msgId) + " by " + execContext.getMyAccount() );
             return;
@@ -364,7 +364,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         String oid = getMsgOid(method, msgId, true);
         if (noErrors()) {
             try {
-                MbActivity activity = execContext.getMyAccount().getConnection().getMessage(oid);
+                AActivity activity = execContext.getMyAccount().getConnection().getMessage(oid);
                 if (activity.isEmpty()) {
                     logExecutionError(false, "Received Message is empty, " + MyQuery.msgInfoForLog(msgId));
                 } else {
@@ -389,7 +389,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
 
     private void updateStatus(long msgId) {
         final String method = "updateStatus";
-        MbActivity activity = null;
+        AActivity activity = null;
         String status = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId);
         String oid = getMsgOid(method, msgId, false);
         TriState isPrivate = MyQuery.msgIdToTriState(MsgTable.PRIVATE, msgId);
@@ -436,7 +436,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }
 
-    private void logIfEmptyMessage(String method, long msgId, MbMessage message) {
+    private void logIfEmptyMessage(String method, long msgId, Note message) {
         if (message == null || message.isEmpty()) {
             logExecutionError(false, method + "; Received Message is empty, " + MyQuery.msgInfoForLog(msgId));
         }
@@ -445,7 +445,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     private void reblog(long rebloggedMessageId) {
         final String method = "Reblog";
         String oid = getMsgOid(method, rebloggedMessageId, true);
-        MbActivity activity = MbActivity.EMPTY;
+        AActivity activity = AActivity.EMPTY;
         if (noErrors()) {
             try {
                 activity = execContext.getMyAccount().getConnection().postReblog(oid);
@@ -458,14 +458,14 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             // The tweet was sent successfully
             // Reblog should be put into the user's Home timeline!
             new DataUpdater(execContext).onActivity(activity);
-            MyProvider.updateMessageReblogged(execContext.getMyContext(), activity.accountUser.origin, rebloggedMessageId);
+            MyProvider.updateMessageReblogged(execContext.getMyContext(), activity.accountActor.origin, rebloggedMessageId);
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }
     
     private void rateLimitStatus() {
         try {
-            MbRateLimitStatus rateLimitStatus = execContext.getMyAccount().getConnection().rateLimitStatus();
+            RateLimitStatus rateLimitStatus = execContext.getMyAccount().getConnection().rateLimitStatus();
             boolean ok = !rateLimitStatus.isEmpty();
             if (ok) {
                 execContext.getResult().setRemainingHits(rateLimitStatus.remaining); 

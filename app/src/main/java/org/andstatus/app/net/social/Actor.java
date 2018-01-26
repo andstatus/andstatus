@@ -40,13 +40,13 @@ import java.util.List;
  * 'Mb' stands for "Microblogging system" 
  * @author yvolk@yurivolkov.com
  */
-public class MbUser implements Comparable<MbUser> {
-    public static final MbUser EMPTY = new MbUser(Origin.EMPTY, "");
+public class Actor implements Comparable<Actor> {
+    public static final Actor EMPTY = new Actor(Origin.EMPTY, "");
     // RegEx from http://www.mkyong.com/regular-expressions/how-to-validate-email-address-with-regular-expression/
     public static final String WEBFINGER_ID_REGEX = "^[_A-Za-z0-9-+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
     @NonNull
     public final String oid;
-    private String userName = "";
+    private String actorName = "";
 
     private String webFingerId = "";
     private boolean isWebFingerIdValid = false;
@@ -68,7 +68,7 @@ public class MbUser implements Comparable<MbUser> {
     private long createdDate = 0;
     private long updatedDate = 0;
 
-    private MbActivity latestActivity = null;
+    private AActivity latestActivity = null;
 
     // Hack for Twitter like origins...
     public TriState followedByMe = TriState.UNKNOWN;
@@ -79,39 +79,39 @@ public class MbUser implements Comparable<MbUser> {
     public long userId = 0L;
 
     @NonNull
-    public static MbUser fromOriginAndUserOid(@NonNull Origin origin, String userOid) {
-        return new MbUser(origin, userOid);
+    public static Actor fromOriginAndActorOid(@NonNull Origin origin, String userOid) {
+        return new Actor(origin, userOid);
     }
 
-    public static MbUser fromOriginAndUserId(@NonNull Origin origin, long userId) {
-        MbUser user = new MbUser(origin, "");
+    public static Actor fromOriginAndActorId(@NonNull Origin origin, long userId) {
+        Actor user = new Actor(origin, "");
         user.userId = userId;
         return user;
     }
 
-    private MbUser(Origin origin, String userOid) {
+    private Actor(Origin origin, String userOid) {
         this.origin = origin;
         this.oid = TextUtils.isEmpty(userOid) ? "" : userOid;
     }
 
     @NonNull
-    public MbActivity update(MbUser accountUser) {
-        return update(accountUser, accountUser);
+    public AActivity update(Actor accountActor) {
+        return update(accountActor, accountActor);
     }
 
     @NonNull
-    public MbActivity update(MbUser accountUser, @NonNull MbUser actor) {
-        return act(accountUser, actor, MbActivityType.UPDATE);
+    public AActivity update(Actor accountActor, @NonNull Actor actor) {
+        return act(accountActor, actor, ActivityType.UPDATE);
     }
 
     @NonNull
-    public MbActivity act(MbUser accountUser, @NonNull MbUser actor, @NonNull MbActivityType activityType) {
-        if (this == EMPTY || accountUser == EMPTY || actor == EMPTY) {
-            return MbActivity.EMPTY;
+    public AActivity act(Actor accountActor, @NonNull Actor actor, @NonNull ActivityType activityType) {
+        if (this == EMPTY || accountActor == EMPTY || actor == EMPTY) {
+            return AActivity.EMPTY;
         }
-        MbActivity mbActivity = MbActivity.from(accountUser, activityType);
+        AActivity mbActivity = AActivity.from(accountActor, activityType);
         mbActivity.setActor(actor);
-        mbActivity.setUser(this);
+        mbActivity.setObjActor(this);
         return mbActivity;
     }
 
@@ -121,12 +121,12 @@ public class MbUser implements Comparable<MbUser> {
 
     public boolean isEmpty() {
         return this == EMPTY || !origin.isValid() || (userId == 0 && UriUtils.nonRealOid(oid)
-                && TextUtils.isEmpty(webFingerId) && TextUtils.isEmpty(userName));
+                && TextUtils.isEmpty(webFingerId) && TextUtils.isEmpty(actorName));
     }
 
     public boolean isPartiallyDefined() {
         return !origin.isValid() || UriUtils.nonRealOid(oid) || TextUtils.isEmpty(webFingerId)
-                || TextUtils.isEmpty(userName);
+                || TextUtils.isEmpty(actorName);
     }
 
     public boolean isIdentified() {
@@ -140,15 +140,15 @@ public class MbUser implements Comparable<MbUser> {
     @Override
     public String toString() {
         if (this == EMPTY) {
-            return "MbUser:EMPTY";
+            return "Actor:EMPTY";
         }
-        String str = MbUser.class.getSimpleName();
+        String str = Actor.class.getSimpleName();
         String members = "oid=" + oid + "; origin=" + origin.getName();
         if (userId != 0) {
             members += "; id=" + userId;
         }
-        if (!TextUtils.isEmpty(userName)) {
-            members += "; username=" + userName;
+        if (!TextUtils.isEmpty(actorName)) {
+            members += "; username=" + actorName;
         }
         if (!TextUtils.isEmpty(webFingerId)) {
             members += "; webFingerId=" + webFingerId;
@@ -165,15 +165,15 @@ public class MbUser implements Comparable<MbUser> {
         return str + "{" + members + "}";
     }
 
-    public String getUserName() {
-        return userName;
+    public String getActorName() {
+        return actorName;
     }
 
-    public MbUser setUserName(String userName) {
+    public Actor setActorName(String actorName) {
         if (this == EMPTY) {
-            throw new IllegalStateException("Cannot set username of EMPTY MbUser");
+            throw new IllegalStateException("Cannot set actorName of EMPTY Actor");
         }
-        this.userName = SharedPreferencesUtil.isEmpty(userName) ? "" : userName.trim();
+        this.actorName = SharedPreferencesUtil.isEmpty(actorName) ? "" : actorName.trim();
         fixWebFingerId();
         return this;
     }
@@ -197,7 +197,7 @@ public class MbUser implements Comparable<MbUser> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        MbUser that = (MbUser) o;
+        Actor that = (Actor) o;
         if (!origin.equals(that.origin)) return false;
         if (userId != 0 || that.userId != 0) {
             return userId == that.userId;
@@ -208,7 +208,7 @@ public class MbUser implements Comparable<MbUser> {
         if (!TextUtils.isEmpty(getWebFingerId()) || !TextUtils.isEmpty(that.getWebFingerId())) {
             return getWebFingerId().equals(that.getWebFingerId());
         }
-        return getUserName().equals(that.getUserName());
+        return getActorName().equals(that.getActorName());
     }
 
     @Override
@@ -223,15 +223,15 @@ public class MbUser implements Comparable<MbUser> {
         if (!TextUtils.isEmpty(getWebFingerId())) {
             return 31 * result + getWebFingerId().hashCode();
         }
-        return 31 * result + getUserName().hashCode();
+        return 31 * result + getActorName().hashCode();
     }
 
     /** Doesn't take origin into account */
-    public boolean isSame(MbUser that) {
+    public boolean isSame(Actor that) {
         return  isSame(that, false);
     }
 
-    public boolean isSame(MbUser other, boolean sameOriginOnly) {
+    public boolean isSame(Actor other, boolean sameOriginOnly) {
         if (this == other) return true;
         if (other == null) return false;
         if (userId != 0) {
@@ -248,14 +248,14 @@ public class MbUser implements Comparable<MbUser> {
     }
 
     private void fixWebFingerId() {
-        if (TextUtils.isEmpty(userName)) return;
-        if (userName.contains("@")) {
-            setWebFingerId(userName);
+        if (TextUtils.isEmpty(actorName)) return;
+        if (actorName.contains("@")) {
+            setWebFingerId(actorName);
         } else if (!UriUtils.isEmpty(profileUri)){
             if(origin.isValid()) {
-                setWebFingerId(userName + "@" + origin.fixUriforPermalink(profileUri).getHost());
+                setWebFingerId(actorName + "@" + origin.fixUriforPermalink(profileUri).getHost());
             } else {
-                setWebFingerId(userName + "@" + profileUri.getHost());
+                setWebFingerId(actorName + "@" + profileUri.getHost());
             }
         }
     }
@@ -274,7 +274,7 @@ public class MbUser implements Comparable<MbUser> {
     public String getNamePreferablyWebFingerId() {
         String name = getWebFingerId();
         if (TextUtils.isEmpty(name)) {
-            name = getUserName();
+            name = getActorName();
         }
         if (TextUtils.isEmpty(name)) {
             name = realName;
@@ -309,8 +309,8 @@ public class MbUser implements Comparable<MbUser> {
         if (userId == 0 && isWebFingerIdValid()) {
             userId = MyQuery.webFingerIdToId(origin.getId(), webFingerId);
         }
-        if (userId == 0 && !isWebFingerIdValid() && !TextUtils.isEmpty(userName)) {
-            userId = MyQuery.userNameToId(origin.getId(), userName);
+        if (userId == 0 && !isWebFingerIdValid() && !TextUtils.isEmpty(actorName)) {
+            userId = MyQuery.userNameToId(origin.getId(), actorName);
         }
         if (userId == 0) {
             userId = MyQuery.oidToId(OidEnum.USER_OID, origin.getId(), getTempOid());
@@ -322,7 +322,7 @@ public class MbUser implements Comparable<MbUser> {
     }
 
     public boolean hasAltTempOid() {
-        return !getTempOid().equals(getAltTempOid()) && !TextUtils.isEmpty(userName);
+        return !getTempOid().equals(getAltTempOid()) && !TextUtils.isEmpty(actorName);
     }
 
     public boolean hasLatestMessage() {
@@ -330,11 +330,11 @@ public class MbUser implements Comparable<MbUser> {
     }
 
     public String getTempOid() {
-        return getTempOid(webFingerId, userName);
+        return getTempOid(webFingerId, actorName);
     }
 
     public String getAltTempOid() {
-        return getTempOid("", userName);
+        return getTempOid("", actorName);
     }
 
     public static String getTempOid(String webFingerId, String validUserName) {
@@ -342,9 +342,9 @@ public class MbUser implements Comparable<MbUser> {
         return UriUtils.TEMP_OID_PREFIX + oid;
     }
 
-    public List<MbUser> extractUsersFromBodyText(String textIn, boolean replyOnly) {
+    public List<Actor> extractActorsFromBodyText(String textIn, boolean replyOnly) {
         final String SEPARATORS = ", ;'=`~!#$%^&*(){}[]/";
-        List<MbUser> users = new ArrayList<>();
+        List<Actor> actors = new ArrayList<>();
         String text = MyHtml.fromHtml(textIn);
         while (!TextUtils.isEmpty(text)) {
             int atPos = text.indexOf('@');
@@ -372,33 +372,33 @@ public class MbUser implements Comparable<MbUser> {
                 text = "";
             }
             if (StringUtils.nonEmpty(validWebFingerId) || StringUtils.nonEmpty(validUserName)) {
-                addExtractedUser(users, validWebFingerId, validUserName);
+                addExtractedUser(actors, validWebFingerId, validUserName);
             }
         }
-        return users;
+        return actors;
     }
 
-    private void addExtractedUser(List<MbUser> users, String webFingerId, String validUserName) {
-        MbUser mbUser = MbUser.fromOriginAndUserOid(origin, "");
-        if (MbUser.isWebFingerIdValid(webFingerId)) {
-            mbUser.setWebFingerId(webFingerId);
+    private void addExtractedUser(List<Actor> actors, String webFingerId, String validUserName) {
+        Actor actor = Actor.fromOriginAndActorOid(origin, "");
+        if (Actor.isWebFingerIdValid(webFingerId)) {
+            actor.setWebFingerId(webFingerId);
         } else {
             // Try a host of the Author, next - a host of this Social network
             for (String host : Arrays.asList(getHost(), origin.getHost())) {
                 if (UrlUtils.hostIsValid(host)) {
                     final String possibleWebFingerId = validUserName + "@" + host;
-                    mbUser.userId = MyQuery.webFingerIdToId(origin.getId(), possibleWebFingerId);
-                    if (mbUser.userId != 0) {
-                        mbUser.setWebFingerId(possibleWebFingerId);
+                    actor.userId = MyQuery.webFingerIdToId(origin.getId(), possibleWebFingerId);
+                    if (actor.userId != 0) {
+                        actor.setWebFingerId(possibleWebFingerId);
                         break;
                     }
                 }
             }
         }
-        mbUser.setUserName(validUserName);
-        mbUser.lookupUserId();
-        if (!users.contains(mbUser)) {
-            users.add(mbUser);
+        actor.setActorName(validUserName);
+        actor.lookupUserId();
+        if (!actors.contains(actor)) {
+            actors.add(actor);
         }
     }
 
@@ -414,7 +414,7 @@ public class MbUser implements Comparable<MbUser> {
         return description;
     }
 
-    public MbUser setDescription(String description) {
+    public Actor setDescription(String description) {
         if (!SharedPreferencesUtil.isEmpty(description)) {
             this.description = description;
         }
@@ -458,7 +458,7 @@ public class MbUser implements Comparable<MbUser> {
     }
 
     @Override
-    public int compareTo(MbUser another) {
+    public int compareTo(Actor another) {
         if (userId != 0 && another.userId != 0) {
             if (userId == another.userId) {
                 return 0;
@@ -471,11 +471,11 @@ public class MbUser implements Comparable<MbUser> {
         return oid.compareTo(another.oid);
     }
 
-    public MbActivity getLatestActivity() {
+    public AActivity getLatestActivity() {
         return latestActivity;
     }
 
-    public void setLatestActivity(@NonNull MbActivity latestActivity) {
+    public void setLatestActivity(@NonNull AActivity latestActivity) {
         this.latestActivity = latestActivity;
         if (this.latestActivity.getAuthor().isEmpty()) {
             this.latestActivity.setAuthor(this);
@@ -486,8 +486,8 @@ public class MbUser implements Comparable<MbUser> {
         StringBuilder builder = new StringBuilder();
         if (showWebFingerId && !TextUtils.isEmpty(getWebFingerId())) {
             builder.append(getWebFingerId());
-        } else if (!TextUtils.isEmpty(getUserName())) {
-            builder.append("@" + getUserName());
+        } else if (!TextUtils.isEmpty(getActorName())) {
+            builder.append("@" + getActorName());
         }
         if (!TextUtils.isEmpty(getRealName())) {
             I18n.appendWithSpace(builder, "(" + getRealName() + ")");

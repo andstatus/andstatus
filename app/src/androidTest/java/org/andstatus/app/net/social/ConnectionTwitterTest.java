@@ -68,7 +68,7 @@ public class ConnectionTwitterTest {
         connectionData = OriginConnectionData.fromAccountName(
                 AccountName.fromOriginAndUserName(origin, demoData.TWITTER_TEST_ACCOUNT_USERNAME),
                 TriState.UNKNOWN);
-        connectionData.setAccountUser(demoData.getAccountUserByOid(demoData.TWITTER_TEST_ACCOUNT_USER_OID));
+        connectionData.setAccountActor(demoData.getAccountUserByOid(demoData.TWITTER_TEST_ACCOUNT_USER_OID));
         connectionData.setDataReader(new AccountDataReaderEmpty());
         connection = connectionData.newConnection();
         httpConnection = (HttpConnectionMock) connection.http;
@@ -88,23 +88,23 @@ public class ConnectionTwitterTest {
                 org.andstatus.app.tests.R.raw.twitter_home_timeline);
         httpConnection.setResponse(jso);
         
-        List<MbActivity> timeline = connection.getTimeline(ApiRoutineEnum.HOME_TIMELINE,
-                new TimelinePosition("380925803053449216") , TimelinePosition.EMPTY, 20, connectionData.getAccountUser().oid);
+        List<AActivity> timeline = connection.getTimeline(ApiRoutineEnum.HOME_TIMELINE,
+                new TimelinePosition("380925803053449216") , TimelinePosition.EMPTY, 20, connectionData.getAccountActor().oid);
         assertNotNull("timeline returned", timeline);
         int size = 4;
         assertEquals("Number of items in the Timeline", size, timeline.size());
 
         int ind = 0;
-        MbActivity activity = timeline.get(ind);
+        AActivity activity = timeline.get(ind);
         String hostName = demoData.getTestOriginHost(demoData.TWITTER_TEST_ORIGIN_NAME).replace("api.", "");
-        assertEquals("Posting message", MbObjectType.MESSAGE, activity.getObjectType());
+        assertEquals("Posting message", AObjectType.NOTE, activity.getObjectType());
         assertEquals("Timeline position", "381172771428257792", activity.getTimelinePosition().getPosition());
         assertEquals("Message Oid", "381172771428257792", activity.getMessage().oid);
-        assertEquals("MyAccount", connectionData.getAccountUser(), activity.accountUser);
-        assertEquals("Favorited " + activity, TriState.TRUE, activity.getMessage().getFavoritedBy(activity.accountUser));
-        MbUser author = activity.getAuthor();
+        assertEquals("MyAccount", connectionData.getAccountActor(), activity.accountActor);
+        assertEquals("Favorited " + activity, TriState.TRUE, activity.getMessage().getFavoritedBy(activity.accountActor));
+        Actor author = activity.getAuthor();
         assertEquals("Oid", "221452291", author.oid);
-        assertEquals("Username", "Know", author.getUserName());
+        assertEquals("Username", "Know", author.getActorName());
         assertEquals("WebFinger ID", "Know@" + hostName, author.getWebFingerId());
         assertEquals("Display name", "Just so you Know", author.getRealName());
         assertEquals("Description", "Unimportant facts you'll never need to know. Legally responsible publisher: @FUN", author.getDescription());
@@ -123,15 +123,15 @@ public class ConnectionTwitterTest {
 
         ind++;
         activity = timeline.get(ind);
-        MbMessage message = activity.getMessage();
+        Note message = activity.getMessage();
         assertTrue("Message is loaded", message.getStatus() == DownloadStatus.LOADED);
         assertTrue("Does not have a recipient", message.audience().isEmpty());
-        assertNotEquals("Is a Reblog " + activity, MbActivityType.ANNOUNCE, activity.type);
+        assertNotEquals("Is a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);
         assertTrue("Is a reply", message.getInReplyTo().nonEmpty());
         assertEquals("Reply to the message id", "17176774678", message.getInReplyTo().getMessage().oid);
         assertEquals("Reply to the message by userOid", demoData.TWITTER_TEST_ACCOUNT_USER_OID, message.getInReplyTo().getAuthor().oid);
         assertTrue("Reply status is unknown", message.getInReplyTo().getMessage().getStatus() == DownloadStatus.UNKNOWN);
-        assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountUser));
+        assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountActor));
         String startsWith = "@t131t";
         assertEquals("Body of this message starts with", startsWith, message.getBody().substring(0, startsWith.length()));
 
@@ -139,13 +139,13 @@ public class ConnectionTwitterTest {
         activity = timeline.get(ind);
         message = activity.getMessage();
         assertTrue("Does not have a recipient", message.audience().isEmpty());
-        assertEquals("Is not a Reblog " + activity, MbActivityType.ANNOUNCE, activity.type);
+        assertEquals("Is not a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);
         assertTrue("Is not a reply", message.getInReplyTo().isEmpty());
         assertEquals("Reblog of the message id", "315088751183409153", message.oid);
         assertEquals("Author of reblogged message oid", "442756884", activity.getAuthor().oid);
         assertEquals("Reblog id", "383295679507869696", activity.getTimelinePosition().getPosition());
         assertEquals("Reblogger oid", "111911542", activity.getActor().oid);
-        assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountUser));
+        assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountActor));
         startsWith = "This AndStatus application";
         assertEquals("Body of reblogged message starts with", startsWith,
                 message.getBody().substring(0, startsWith.length()));
@@ -160,10 +160,10 @@ public class ConnectionTwitterTest {
         activity = timeline.get(ind);
         message = activity.getMessage();
         assertTrue("Does not have a recipient", message.audience().isEmpty());
-        assertNotEquals("Is a Reblog " + activity, MbActivityType.ANNOUNCE, activity.type);
+        assertNotEquals("Is a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);
         assertTrue("Is not a reply", message.getInReplyTo().isEmpty());
-        assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountUser));
-        assertEquals("Author's oid is user oid of this account", connectionData.getAccountUser().oid, activity.getAuthor().oid);
+        assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountActor));
+        assertEquals("Author's oid is user oid of this account", connectionData.getAccountActor().oid, activity.getAuthor().oid);
         startsWith = "And this is";
         assertEquals("Body of this message starts with", startsWith, message.getBody().substring(0, startsWith.length()));
     }
@@ -174,10 +174,10 @@ public class ConnectionTwitterTest {
                 org.andstatus.app.tests.R.raw.twitter_message_with_media);
         httpConnection.setResponse(jso);
 
-        MbMessage message = connection.getMessage("503799441900314624").getMessage();
+        Note message = connection.getMessage("503799441900314624").getMessage();
         assertNotNull("message returned", message);
         assertEquals("has attachment", message.attachments.size(), 1);
-        MbAttachment attachment = MbAttachment.fromUrlAndContentType(new URL(
+        Attachment attachment = Attachment.fromUrlAndContentType(new URL(
                 "https://pbs.twimg.com/media/Bv3a7EsCAAIgigY.jpg"), MyContentType.IMAGE);
         assertEquals("attachment", attachment, message.attachments.get(0));
         attachment.setUrl(new URL("https://pbs.twimg.com/media/Bv4a7EsCAAIgigY.jpg"));
@@ -192,9 +192,9 @@ public class ConnectionTwitterTest {
 
         String body = "Update: Streckensperrung zw. Berliner Tor &lt;&gt; Bergedorf. Ersatzverkehr mit Bussen und Taxis " +
                 "Störungsdauer bis ca. 10 Uhr. #hvv #sbahnhh";
-        MbActivity activity = connection.getMessage("834306097003581440");
-        assertEquals("No message returned " + activity, activity.getObjectType(), MbObjectType.MESSAGE);
-        MbMessage message = activity.getMessage();
+        AActivity activity = connection.getMessage("834306097003581440");
+        assertEquals("No message returned " + activity, activity.getObjectType(), AObjectType.NOTE);
+        Note message = activity.getMessage();
         assertEquals("Body of this message", MyHtml.unescapeHtml(body), message.getBody());
         assertEquals("Body of this message", ",update,streckensperrung,zw,berliner,tor,bergedorf,ersatzverkehr,mit,bussen," +
                 "und,taxis,störungsdauer,bis,ca,10,uhr,hvv,#hvv,sbahnhh,#sbahnhh,", message.getBodyToSearch());

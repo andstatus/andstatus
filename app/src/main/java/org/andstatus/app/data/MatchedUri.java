@@ -27,9 +27,9 @@ import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.database.table.OriginTable;
-import org.andstatus.app.database.table.UserTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.user.UserListType;
+import org.andstatus.app.user.ActorListType;
 
 /**
  * Classifier of Uri-s, passed to our content provider
@@ -59,7 +59,7 @@ public enum MatchedUri {
     USERLIST_SEARCH(12),
     USERLIST_ITEM(13),
     /**
-     * Operations on {@link UserTable} itself
+     * Operations on {@link ActorTable} itself
      */
     USER(6),
     USER_ITEM(9),
@@ -124,11 +124,11 @@ public enum MatchedUri {
         URI_MATCHER.addURI(AUTHORITY, OriginTable.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", ORIGIN_ITEM.code);
         URI_MATCHER.addURI(AUTHORITY, OriginTable.TABLE_NAME + "/" + CONTENT_SEGMENT, ORIGIN.code);
 
-        URI_MATCHER.addURI(AUTHORITY, UserTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CONTENT_ITEM_SEGMENT + "/#", USERLIST_ITEM.code);
-        URI_MATCHER.addURI(AUTHORITY, UserTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CENTRAL_ITEM_SEGMENT + "/#/" + SEARCH_SEGMENT + "/*", USERLIST_SEARCH.code);
-        URI_MATCHER.addURI(AUTHORITY, UserTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CENTRAL_ITEM_SEGMENT + "/#", USERLIST.code);
-        URI_MATCHER.addURI(AUTHORITY, UserTable.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", USER_ITEM.code);
-        URI_MATCHER.addURI(AUTHORITY, UserTable.TABLE_NAME + "/#/" + CONTENT_SEGMENT, USER.code);
+        URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CONTENT_ITEM_SEGMENT + "/#", USERLIST_ITEM.code);
+        URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CENTRAL_ITEM_SEGMENT + "/#/" + SEARCH_SEGMENT + "/*", USERLIST_SEARCH.code);
+        URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CENTRAL_ITEM_SEGMENT + "/#", USERLIST.code);
+        URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", USER_ITEM.code);
+        URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + CONTENT_SEGMENT, USER.code);
     }
     
     /**
@@ -160,10 +160,10 @@ public enum MatchedUri {
                 break;
             case USER:
             case USERLIST:
-                type = CONTENT_TYPE_PREFIX + UserTable.TABLE_NAME;
+                type = CONTENT_TYPE_PREFIX + ActorTable.TABLE_NAME;
                 break;
             case USER_ITEM:
-                type = CONTENT_ITEM_TYPE_PREFIX + UserTable.TABLE_NAME;
+                type = CONTENT_ITEM_TYPE_PREFIX + ActorTable.TABLE_NAME;
                 break;
             default:
                 break;
@@ -198,13 +198,13 @@ public enum MatchedUri {
 
     /**
      * Build a UseList Uri for this User / {@link MyAccount}
-     * @param accountUserId {@link UserTable#USER_ID}. This user <i>may</i> be an account: {@link MyAccount#getUserId()}
+     * @param accountUserId {@link ActorTable#ACTOR_ID}. This user <i>may</i> be an account: {@link MyAccount#getUserId()}
      * @param searchQuery
      */
-    public static Uri getUserListUri(long accountUserId, UserListType userListType, long originId, long centralItemId,
+    public static Uri getUserListUri(long accountUserId, ActorListType actorListType, long originId, long centralItemId,
                                      String searchQuery) {
-        Uri uri = getBaseAccountUri(accountUserId, UserTable.TABLE_NAME);
-        uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + userListType.save());
+        Uri uri = getBaseAccountUri(accountUserId, ActorTable.TABLE_NAME);
+        uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + actorListType.save());
         uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + originId);
         uri = Uri.withAppendedPath(uri, CENTRAL_ITEM_SEGMENT);
         uri = ContentUris.withAppendedId(uri, centralItemId);
@@ -215,9 +215,9 @@ public enum MatchedUri {
         return uri;
     }
 
-    public static Uri getUserListItemUri(long accountUserId, UserListType userListType, long originId, long userId) {
-        Uri uri = getBaseAccountUri(accountUserId, UserTable.TABLE_NAME);
-        uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + userListType.save());
+    public static Uri getUserListItemUri(long accountUserId, ActorListType actorListType, long originId, long userId) {
+        Uri uri = getBaseAccountUri(accountUserId, ActorTable.TABLE_NAME);
+        uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + actorListType.save());
         uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + originId);
         uri = Uri.withAppendedPath(uri, CONTENT_ITEM_SEGMENT);
         uri = ContentUris.withAppendedId(uri, userId);
@@ -225,7 +225,7 @@ public enum MatchedUri {
     }
 
     public static Uri getUserUri(long accountUserId, long userId) {
-        return getContentItemUri(accountUserId, UserTable.TABLE_NAME, userId);
+        return getContentItemUri(accountUserId, ActorTable.TABLE_NAME, userId);
     }
 
     public static Uri getOriginUri(long originId) {

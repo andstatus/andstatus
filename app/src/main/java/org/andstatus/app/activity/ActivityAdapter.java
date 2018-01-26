@@ -23,10 +23,10 @@ import android.view.ViewGroup;
 import org.andstatus.app.R;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.msg.MessageAdapter;
-import org.andstatus.app.net.social.MbActivityType;
+import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.TimelineData;
-import org.andstatus.app.user.UserAdapter;
+import org.andstatus.app.user.ActorAdapter;
 import org.andstatus.app.util.MyUrlSpan;
 
 /**
@@ -34,16 +34,16 @@ import org.andstatus.app.util.MyUrlSpan;
  */
 public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
     private ActivityContextMenu contextMenu;
-    private final UserAdapter actorAdapter;
+    private final ActorAdapter actorAdapter;
     private final MessageAdapter messageAdapter;
-    private final UserAdapter userAdapter;
+    private final ActorAdapter objActorAdapter;
 
     public ActivityAdapter(ActivityContextMenu contextMenu, TimelineData<ActivityViewItem> listData) {
         super(contextMenu.message.getMyContext(), listData);
         this.contextMenu = contextMenu;
-        actorAdapter = new UserAdapter(contextMenu.actor, new TimelineDataActorWrapper(listData));
+        actorAdapter = new ActorAdapter(contextMenu.actor, new TimelineDataActorWrapper(listData));
         messageAdapter = new MessageAdapter(contextMenu.message, new TimelineDataMessageWrapper(listData));
-        userAdapter = new UserAdapter(contextMenu.user, new TimelineDataUserWrapper(listData));
+        objActorAdapter = new ActorAdapter(contextMenu.objActor, new TimelineDataUserWrapper(listData));
     }
 
     @Override
@@ -66,9 +66,9 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
         if (item.getUser().getId() == 0) {
             userView.setVisibility(View.GONE);
         } else {
-            userAdapter.populateView(userView, item.getUser(), position);
-            userView.setOnCreateContextMenuListener(contextMenu.user);
-            userView.setOnClickListener(userAdapter);
+            objActorAdapter.populateView(userView, item.getUser(), position);
+            userView.setOnCreateContextMenuListener(contextMenu.objActor);
+            userView.setOnClickListener(objActorAdapter);
             userView.setVisibility(View.VISIBLE);
         }
         return view;
@@ -93,7 +93,7 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
 
     private void showActor(ViewGroup view, ActivityViewItem item) {
         final ViewGroup actorView = view.findViewById(R.id.action_wrapper);
-        if (item.activityType == MbActivityType.CREATE || item.activityType == MbActivityType.UPDATE) {
+        if (item.activityType == ActivityType.CREATE || item.activityType == ActivityType.UPDATE) {
             actorView.setVisibility(View.GONE);
         } else {
             item.message.hideActor(item.actor.getUserId());

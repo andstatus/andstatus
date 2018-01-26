@@ -26,8 +26,8 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
-import org.andstatus.app.net.social.MbActivity;
-import org.andstatus.app.net.social.MbAttachment;
+import org.andstatus.app.net.social.AActivity;
+import org.andstatus.app.net.social.Attachment;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -57,9 +57,9 @@ public class LargeImageTest {
         String body = "Large image attachment";
         MyAccount ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         DemoMessageInserter mi = new DemoMessageInserter(ma);
-        MbActivity activity = mi.buildActivity(mi.buildUser(), body, null, null, DownloadStatus.LOADED);
+        AActivity activity = mi.buildActivity(mi.buildUser(), body, null, null, DownloadStatus.LOADED);
         activity.getMessage().attachments
-                .add(MbAttachment
+                .add(Attachment
                         .fromUrlAndContentType(
                                 new URL(
                                         "http://www.example.com/pictures/large_image.png"),

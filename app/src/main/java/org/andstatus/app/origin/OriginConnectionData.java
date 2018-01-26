@@ -26,7 +26,7 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionEmpty;
 import org.andstatus.app.net.social.Connection;
-import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.util.TriState;
 
 import java.net.URL;
@@ -36,7 +36,7 @@ public class OriginConnectionData {
     private boolean isOAuth = true;
     private URL originUrl = null;
 
-    private MbUser accountUser = MbUser.EMPTY;
+    private Actor accountActor = Actor.EMPTY;
     private AccountDataReader dataReader = null;
     
     private Class<? extends org.andstatus.app.net.http.HttpConnection> httpConnectionClass = HttpConnectionEmpty.class;
@@ -54,8 +54,8 @@ public class OriginConnectionData {
     }
 
     @NonNull
-    public MbUser getAccountUser() {
-        return accountUser;
+    public Actor getAccountActor() {
+        return accountActor;
     }
 
     public AccountName getAccountName() {
@@ -99,9 +99,9 @@ public class OriginConnectionData {
         return connection;
     }
 
-    public void setAccountUser(MbUser accountUser) {
-        if (accountUser != null) {
-            this.accountUser = accountUser;
+    public void setAccountActor(Actor accountActor) {
+        if (accountActor != null) {
+            this.accountActor = accountActor;
         }
     }
 

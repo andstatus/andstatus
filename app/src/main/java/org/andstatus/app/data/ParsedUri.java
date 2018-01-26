@@ -24,7 +24,7 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.user.UserListType;
+import org.andstatus.app.user.ActorListType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 
@@ -101,7 +101,7 @@ public class ParsedUri {
                     break;
                 case USERLIST:
                 case USERLIST_SEARCH:
-                    if (getUserListType() == UserListType.FOLLOWERS) {
+                    if (getUserListType() == ActorListType.FOLLOWERS) {
                         userId = getItemId();
                     }
                     break;
@@ -135,20 +135,20 @@ public class ParsedUri {
         return tt;        
     }
 
-    public UserListType getUserListType() {
+    public ActorListType getUserListType() {
         try {
             switch (matchedUri) {
                 case USERLIST:
                 case USERLIST_ITEM:
                 case USERLIST_SEARCH:
-                    return UserListType.load(uri.getPathSegments().get(3));
+                    return ActorListType.load(uri.getPathSegments().get(3));
                 default:
                     break;
             }
         } catch (Exception e) {
             MyLog.d(this, toString(), e);
         }
-        return UserListType.UNKNOWN;
+        return ActorListType.UNKNOWN;
     }
 
     public long getOriginId() {
@@ -179,7 +179,7 @@ public class ParsedUri {
                     break;
                 case USERLIST:
                 case USERLIST_SEARCH:
-                    if (getUserListType() == UserListType.USERS_OF_MESSAGE) {
+                    if (getUserListType() == ActorListType.USERS_OF_MESSAGE) {
                         messageId = getItemId();
                     }
                     break;

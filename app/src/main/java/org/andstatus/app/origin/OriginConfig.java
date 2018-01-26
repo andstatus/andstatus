@@ -14,32 +14,28 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.net.social;
+package org.andstatus.app.origin;
 
-/**
- * 'Mb' stands for "Microblogging system" 
- * @author yvolk@yurivolkov.com
- */
-public class MbConfig {
+public class OriginConfig {
     private boolean isEmpty = true;
     
     public int shortUrlLength = 0;
     public int textLimit = 0;
     public int uploadLimit = 0;
     
-    public static MbConfig getEmpty() {
-        return new MbConfig();
+    public static OriginConfig getEmpty() {
+        return new OriginConfig();
     }
 
-    public static MbConfig fromTextLimit(int textLimit, int uploadLimit) {
-        MbConfig config = new MbConfig();
+    public static OriginConfig fromTextLimit(int textLimit, int uploadLimit) {
+        OriginConfig config = new OriginConfig();
         config.textLimit = textLimit;
         config.uploadLimit = uploadLimit;
         config.isEmpty = false;
         return config;
     }
     
-    private MbConfig() {
+    private OriginConfig() {
         // Empty
     }
     

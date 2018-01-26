@@ -25,13 +25,13 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.msg.MessageViewItem;
-import org.andstatus.app.net.social.MbActivityType;
-import org.andstatus.app.net.social.MbUser;
+import org.andstatus.app.net.social.ActivityType;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.DuplicationLink;
 import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
-import org.andstatus.app.user.UserViewItem;
+import org.andstatus.app.user.ActorViewItem;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
@@ -44,19 +44,19 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
     private long id = 0;
     public final Origin origin;
     private long updatedDate = 0;
-    public final MbActivityType activityType;
+    public final ActivityType activityType;
 
     private long messageId;
     public final long userId;
 
-    UserViewItem actor = UserViewItem.EMPTY;
+    ActorViewItem actor = ActorViewItem.EMPTY;
     public final MessageViewItem message;
-    private UserViewItem user = UserViewItem.EMPTY;
+    private ActorViewItem user = ActorViewItem.EMPTY;
 
     protected ActivityViewItem(boolean isEmpty) {
         super(isEmpty);
         origin = Origin.EMPTY;
-        activityType  = MbActivityType.EMPTY;
+        activityType  = ActivityType.EMPTY;
         userId = 0;
         message = MessageViewItem.EMPTY;
     }
@@ -66,14 +66,14 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
         long startTime = System.currentTimeMillis();
         id = DbUtils.getLong(cursor, ActivityTable.ACTIVITY_ID);
         origin = MyContextHolder.get().persistentOrigins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID));
-        activityType = MbActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
+        activityType = ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
         updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
-        actor = UserViewItem.fromMbUser(MbUser.fromOriginAndUserId(origin,
+        actor = ActorViewItem.fromActor(Actor.fromOriginAndActorId(origin,
                 DbUtils.getLong(cursor, ActivityTable.ACTOR_ID)));
         messageId = DbUtils.getLong(cursor, ActivityTable.MSG_ID);
         userId = DbUtils.getLong(cursor, ActivityTable.USER_ID);
         if (userId != 0) {
-            user = UserViewItem.fromUserId(origin, userId);
+            user = ActorViewItem.fromUserId(origin, userId);
         }
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, ": " + (System.currentTimeMillis() - startTime) + "ms");
@@ -128,7 +128,7 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
     public DuplicationLink duplicates(@NonNull ActivityViewItem other) {
         if (isEmpty() || other.isEmpty() || duplicatesByChildren(other) == DuplicationLink.NONE)
             return DuplicationLink.NONE;
-        if (activityType != other.activityType && other.activityType == MbActivityType.UPDATE)
+        if (activityType != other.activityType && other.activityType == ActivityType.UPDATE)
             return DuplicationLink.IS_DUPLICATED;
         return updatedDate >= other.updatedDate ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
     }
@@ -165,11 +165,11 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
         );
     }
 
-    public UserViewItem getUser() {
+    public ActorViewItem getUser() {
         return user;
     }
 
-    public void setUser(UserViewItem user) {
+    public void setUser(ActorViewItem user) {
         this.user = user;
     }
 }

@@ -26,7 +26,7 @@ import org.andstatus.app.service.MyServiceManager;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class FollowersList extends UserList {
+public class FollowersList extends ActorList {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +40,7 @@ public class FollowersList extends UserList {
     protected void syncWithInternet(boolean manuallyLaunched) {
         final String method = "syncWithInternet";
         showSyncing(method, getText(R.string.options_menu_sync));
-        CommandEnum command = mUserListType == UserListType.FOLLOWERS ?
+        CommandEnum command = mActorListType == ActorListType.FOLLOWERS ?
                 CommandEnum.GET_FOLLOWERS : CommandEnum.GET_FRIENDS;
         MyServiceManager.sendForegroundCommand(
                 (CommandData.newUserCommand(command, null, getCurrentMyAccount().getOrigin(), getFollowedUserId(), ""))
@@ -48,8 +48,8 @@ public class FollowersList extends UserList {
     }
 
     @Override
-    protected UserListLoader newSyncLoader(Bundle args) {
-        return new FollowersListLoader(mUserListType, getCurrentMyAccount(), getFollowedUserId(),
+    protected ActorListLoader newSyncLoader(Bundle args) {
+        return new FollowersListLoader(mActorListType, getCurrentMyAccount(), getFollowedUserId(),
                 getParsedUri().getSearchQuery());
     }
 }

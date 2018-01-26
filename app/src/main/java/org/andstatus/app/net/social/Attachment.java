@@ -23,17 +23,17 @@ import org.andstatus.app.util.UriUtils;
 
 import java.net.URL;
 
-public class MbAttachment {
+public class Attachment {
     private Uri uri = null;
     public MyContentType contentType = MyContentType.UNKNOWN;
 
-    public static MbAttachment fromUrlAndContentType(URL urlIn, MyContentType contentTypeIn) {
+    public static Attachment fromUrlAndContentType(URL urlIn, MyContentType contentTypeIn) {
         return fromUriAndContentType(UriUtils.fromUrl(urlIn),
                 MyContentType.fromUrl(urlIn, contentTypeIn));
     }
 
-    public static MbAttachment fromUriAndContentType(Uri uriIn, MyContentType contentTypeIn) {
-        MbAttachment attachment = new MbAttachment();
+    public static Attachment fromUriAndContentType(Uri uriIn, MyContentType contentTypeIn) {
+        Attachment attachment = new Attachment();
         if (uriIn == null) {
             throw new IllegalArgumentException("Uri is null");
         }
@@ -45,7 +45,7 @@ public class MbAttachment {
         return attachment;
     }
 
-    private MbAttachment() {
+    private Attachment() {
         // Empty
     }
     
@@ -70,7 +70,7 @@ public class MbAttachment {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        MbAttachment other = (MbAttachment) o;
+        Attachment other = (Attachment) o;
         if (contentType != other.contentType) {
             return false;
         }

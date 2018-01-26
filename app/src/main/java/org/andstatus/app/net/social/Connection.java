@@ -22,13 +22,14 @@ import android.text.TextUtils;
 
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.database.table.UserTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.OAuthService;
+import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONArray;
@@ -188,7 +189,7 @@ public abstract class Connection {
     /**
      * Check API requests status.
      */
-    public abstract MbRateLimitStatus rateLimitStatus() throws ConnectionException;
+    public abstract RateLimitStatus rateLimitStatus() throws ConnectionException;
 
     /**
      * Do we need password to be set?
@@ -233,9 +234,9 @@ public abstract class Connection {
     /**
      * Verify the user's credentials.
      */
-    public abstract MbUser verifyCredentials() throws ConnectionException;
+    public abstract Actor verifyCredentials() throws ConnectionException;
 
-    public abstract MbActivity destroyFavorite(String statusId) throws ConnectionException;
+    public abstract AActivity destroyFavorite(String statusId) throws ConnectionException;
 
     /**
      * Favorites the status specified in the ID parameter as the authenticating user.
@@ -244,7 +245,7 @@ public abstract class Connection {
      *      href="http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-favorites%C2%A0create">Twitter
      *      REST API Method: favorites create</a>
      */
-    public abstract MbActivity createFavorite(String statusId) throws ConnectionException;
+    public abstract AActivity createFavorite(String statusId) throws ConnectionException;
 
     public boolean destroyReblog(String statusId) throws ConnectionException {
         return destroyStatus(statusId);
@@ -262,7 +263,7 @@ public abstract class Connection {
     /**
      * Returns a list of users the specified user is following.
      */
-    public List<MbUser> getFriends(String userId) throws ConnectionException {
+    public List<Actor> getFriends(String userId) throws ConnectionException {
         throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getUsersFollowedBy for userOid=" + userId);
     }
     
@@ -278,7 +279,7 @@ public abstract class Connection {
         throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getIdsOfUsersFollowing userOid=" + userId);
     }
 
-    public List<MbUser> getFollowers(String userId) throws ConnectionException {
+    public List<Actor> getFollowers(String userId) throws ConnectionException {
         throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getUsersFollowing userOid=" + userId);
     }
 
@@ -287,14 +288,14 @@ public abstract class Connection {
      * More than one activity may be returned (as replies) to reflect Favoriting and Reblogging of the "status"
      */
     @NonNull
-    public final MbActivity getMessage(String statusId) throws ConnectionException {
+    public final AActivity getMessage(String statusId) throws ConnectionException {
         return getMessage1(statusId);
     }
 
     /** See {@link #getMessage(String)} */
-    protected abstract MbActivity getMessage1(String statusId) throws ConnectionException;
+    protected abstract AActivity getMessage1(String statusId) throws ConnectionException;
 
-    public List<MbActivity> getConversation(String conversationOid) throws ConnectionException {
+    public List<AActivity> getConversation(String conversationOid) throws ConnectionException {
         throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getConversation oid=" + conversationOid);
     }
 
@@ -313,17 +314,17 @@ public abstract class Connection {
      *      href="https://dev.twitter.com/docs/api/1/post/statuses/update">Twitter
      *      POST statuses/update</a>
      */
-    public abstract MbActivity updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri)
+    public abstract AActivity updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri)
             throws ConnectionException;
 
     /**
      * Post Private ("direct") message
      * @see <a href="https://dev.twitter.com/docs/api/1/post/direct_messages/new">POST direct_messages/new</a>
      *
-     * @param userId {@link UserTable#USER_OID} - The ID of the user who should receive the private message
+     * @param userId {@link ActorTable#ACTOR_OID} - The ID of the user who should receive the private message
      * @return The sent message if successful (empty message if not)
      */
-    public abstract MbActivity postPrivateMessage(String message, String statusId, String userId, Uri mediaUri)
+    public abstract AActivity postPrivateMessage(String message, String statusId, String userId, Uri mediaUri)
             throws ConnectionException;
 
     /**
@@ -332,7 +333,7 @@ public abstract class Connection {
      * 
      * @param rebloggedId id of the Reblogged message
      */
-    public abstract MbActivity postReblog(String rebloggedId)
+    public abstract AActivity postReblog(String rebloggedId)
             throws ConnectionException;
 
     /**
@@ -340,18 +341,18 @@ public abstract class Connection {
      * @param userId For the {@link ApiRoutineEnum#USER_TIMELINE}, null for the other timelines
      */
     @NonNull
-    public abstract List<MbActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                                 TimelinePosition oldestPosition, int limit, String userId)
+    public abstract List<AActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
+                                                TimelinePosition oldestPosition, int limit, String userId)
             throws ConnectionException;
 
     @NonNull
-    public List<MbActivity> searchMessages(TimelinePosition youngestPosition,
-                    TimelinePosition oldestPosition, int limit, String searchQuery) throws ConnectionException {
+    public List<AActivity> searchMessages(TimelinePosition youngestPosition,
+                                          TimelinePosition oldestPosition, int limit, String searchQuery) throws ConnectionException {
         return new ArrayList<>();
     }
 
     @NonNull
-    public List<MbUser> searchUsers(int limit, String searchQuery) throws ConnectionException {
+    public List<Actor> searchUsers(int limit, String searchQuery) throws ConnectionException {
         return new ArrayList<>();
     }
 
@@ -361,12 +362,12 @@ public abstract class Connection {
      * @param follow true - Follow, false - Stop following
      * @return User object with 'following' flag set/reset
      */
-    public abstract MbActivity followUser(String userId, Boolean follow) throws ConnectionException;
+    public abstract AActivity followUser(String userId, Boolean follow) throws ConnectionException;
 
     /**
      * Get information about the specified User
      */
-    public abstract MbUser getUser(String userId, String userName) throws ConnectionException;
+    public abstract Actor getActor(String userId, String userName) throws ConnectionException;
     
     protected final String fixSinceId(String sinceId) {
         String out = "";
@@ -434,11 +435,11 @@ public abstract class Connection {
         return http.postRequest(apiPath, formParams);
     }
 
-    public MbConfig getConfig() throws ConnectionException {
-        return MbConfig.getEmpty();
+    public OriginConfig getConfig() throws ConnectionException {
+        return OriginConfig.getEmpty();
     }
 
-    public List<MbOrigin> getOpenInstances() throws ConnectionException {
+    public List<Server> getOpenInstances() throws ConnectionException {
         throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, MyLog.objToTag(this));
     }
     

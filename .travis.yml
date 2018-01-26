@@ -82,8 +82,9 @@ script:
   fi
 
 # Copy coverage data from the emulator
-- adb shell "rm /sdcard/Download/coverage.ec"
-- adb shell "run-as org.andstatus.app cp /data/user/0/org.andstatus.app/files/coverage.ec /sdcard/Download"
+- |
+  adb shell "rm /sdcard/Download/coverage.ec"
+  adb shell "run-as org.andstatus.app cp /data/user/0/org.andstatus.app/files/coverage.ec /sdcard/Download"
 - cd build
 # copy to "build" folder, where it will be found by Sonar scanner
 - adb pull "/sdcard/Download/coverage.ec"

@@ -16,7 +16,7 @@ public class AudienceTable {
     private AudienceTable() {
     }
 
-    public static final String USER_ID = UserTable.USER_ID;
+    public static final String USER_ID = ActorTable.ACTOR_ID;
     public static final String MSG_ID =  MsgTable.MSG_ID;
 
     public static void create(SQLiteDatabase db) {

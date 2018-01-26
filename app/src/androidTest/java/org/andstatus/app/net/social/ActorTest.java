@@ -28,7 +28,7 @@ import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-public class MbUserTest {
+public class ActorTest {
 
     @Before
     public void setUp() throws Exception {
@@ -45,13 +45,13 @@ public class MbUserTest {
                 + " Please take this into account\n@" + webFingerId2
                 + " @" + demoData.GNUSOCIAL_TEST_ACCOUNT2_USERNAME
                 + " And let me mention: @" + shortUsername3;
-        List<MbUser> users = MbUser.fromOriginAndUserOid(origin, "").extractUsersFromBodyText(body, false);
+        List<Actor> users = Actor.fromOriginAndActorOid(origin, "").extractActorsFromBodyText(body, false);
         String msgLog = body + " ->\n" + users;
         assertEquals(msgLog, 4, users.size());
-        assertEquals(msgLog, demoData.GNUSOCIAL_TEST_ACCOUNT_USERNAME, users.get(0).getUserName());
-        assertEquals(msgLog, demoData.GNUSOCIAL_TEST_ACCOUNT2_USERNAME, users.get(1).getUserName());
+        assertEquals(msgLog, demoData.GNUSOCIAL_TEST_ACCOUNT_USERNAME, users.get(0).getActorName());
+        assertEquals(msgLog, demoData.GNUSOCIAL_TEST_ACCOUNT2_USERNAME, users.get(1).getActorName());
         assertEquals(msgLog, webFingerId2, users.get(2).getWebFingerId());
-        assertEquals(msgLog, shortUsername3, users.get(3).getUserName());
+        assertEquals(msgLog, shortUsername3, users.get(3).getActorName());
     }
 
     @Test
@@ -66,14 +66,14 @@ public class MbUserTest {
                 + " by @" + USERNAME1 + " @@" + SKIPPED_USERNAME2 + " @#" + SKIPPED_USERNAME3
                 + " &amp; @" + USERNAME4
                 + " https://t.co/djkdfeowefPh";
-        List<MbUser> users = MbUser.fromOriginAndUserOid(origin, "").extractUsersFromBodyText(body, false);
+        List<Actor> users = Actor.fromOriginAndActorOid(origin, "").extractActorsFromBodyText(body, false);
         String msgLog = body + " -> " + users;
         assertEquals(msgLog, 2, users.size());
-        assertEquals(msgLog, USERNAME1, users.get(0).getUserName());
+        assertEquals(msgLog, USERNAME1, users.get(0).getActorName());
         assertFalse(msgLog, users.get(0).isOidReal());
         assertFalse(msgLog, users.get(0).hasAltTempOid());
 
-        assertEquals(msgLog, USERNAME4, users.get(1).getUserName());
+        assertEquals(msgLog, USERNAME4, users.get(1).getActorName());
     }
 
     @Test
@@ -94,20 +94,20 @@ public class MbUserTest {
 
     private void checkWebFingerId(String userName, boolean valid) {
         assertEquals("Username '" + userName + "' " + (valid ? "is valid" : "invalid"), valid,
-                MbUser.isWebFingerIdValid(userName));
+                Actor.isWebFingerIdValid(userName));
     }
 
     @Test
     public void testEquals() {
         Origin origin = MyContextHolder.get().persistentOrigins().fromId(18);
-        MbUser user1 = MbUser.fromOriginAndUserOid(origin, "acct:fourthWithoutAvatar@pump.example.com");
+        Actor user1 = Actor.fromOriginAndActorOid(origin, "acct:fourthWithoutAvatar@pump.example.com");
         user1.userId = 11;
-        user1.setUserName("fourthWithoutAvatar@pump.example.com");
+        user1.setActorName("fourthWithoutAvatar@pump.example.com");
         user1.setRealName("Real fourthWithoutAvatar@pump.example.com");
         user1.setProfileUrl("http://pump.example.com/fourthWithoutAvatar");
 
-        MbUser user2 = MbUser.fromOriginAndUserId(origin, 11);
-        user2.setUserName("fourthWithoutAvatar@pump.example.com");
+        Actor user2 = Actor.fromOriginAndActorId(origin, 11);
+        user2.setActorName("fourthWithoutAvatar@pump.example.com");
 
         assertEquals(user1, user2);
         assertEquals(user1.toString() + " vs " + user2, user1.hashCode(), user2.hashCode());
