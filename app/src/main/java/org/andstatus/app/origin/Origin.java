@@ -220,10 +220,14 @@ public class Origin {
     
     public boolean urlIsValid() {
         if (originType.canSetUrlOfOrigin()) {
-            return url != null;
+            return UrlUtils.hasHost(url);
         } else {
             return true;
         }
+    }
+
+    public String getHost() {
+        return UrlUtils.hasHost(url) ? url.getHost() : "";
     }
 
     public boolean isSsl() {

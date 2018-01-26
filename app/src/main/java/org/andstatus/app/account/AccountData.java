@@ -24,6 +24,7 @@ import android.content.PeriodicSync;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount.Builder.SaveResult;
@@ -53,7 +54,8 @@ public class AccountData implements Parcelable, AccountDataWriter {
     void setPersistent(boolean persistent) {
         this.persistent = persistent;
     }
-    
+
+    @NonNull
     public static AccountData fromAndroidAccount(Context context, Account androidAccount) {
         if (androidAccount == null) {
             throw new IllegalArgumentException(TAG + " account is null");

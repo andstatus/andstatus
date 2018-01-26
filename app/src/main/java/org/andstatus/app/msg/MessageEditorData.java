@@ -198,7 +198,7 @@ public class MessageEditorData {
     }
 
     public void save(Uri imageUriToSave) {
-        MbActivity activity = MbActivity.newPartialMessage(getMyAccount().toPartialUser(), msgOid,
+        MbActivity activity = MbActivity.newPartialMessage(getMyAccount().getUser(), msgOid,
                 System.currentTimeMillis(), status);
         activity.setActor(activity.accountUser);
         MbMessage message = activity.getMessage();
@@ -206,7 +206,7 @@ public class MessageEditorData {
         message.setBody(body);
         message.addRecipients(recipients);
         if (inReplyToMsgId != 0) {
-            final MbActivity inReplyTo = MbActivity.newPartialMessage(getMyAccount().toPartialUser(),
+            final MbActivity inReplyTo = MbActivity.newPartialMessage(getMyAccount().getUser(),
                     MyQuery.idToOid(OidEnum.MSG_OID, inReplyToMsgId, 0), 0, UNKNOWN);
             if (inReplyToUserId == 0) {
                 inReplyToUserId = MyQuery.msgIdToLongColumnValue(MsgTable.AUTHOR_ID, inReplyToMsgId);

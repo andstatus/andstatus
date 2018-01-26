@@ -274,7 +274,7 @@ public final class DemoData {
     public MbUser getAccountUserByOid(String userOid) {
         for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
             if (ma.getUserOid().equals(userOid)) {
-                return ma.toPartialUser();
+                return ma.getUser();
             }
         }
         return MbUser.EMPTY;

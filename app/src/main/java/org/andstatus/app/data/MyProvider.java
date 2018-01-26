@@ -219,7 +219,7 @@ public class MyProvider extends ContentProvider {
             return;
         }
         TriState reblogged = TriState.fromBoolean(
-                myContext.persistentAccounts().hasMyUser(MyQuery.getRebloggers(db, origin, msgId))
+                myContext.persistentAccounts().contains(MyQuery.getRebloggers(db, origin, msgId))
         );
         String sql = "UPDATE " + MsgTable.TABLE_NAME + " SET " + MsgTable.REBLOGGED + "=" + reblogged.id
                 + " WHERE " + MsgTable._ID + "=" + msgId;
@@ -238,7 +238,7 @@ public class MyProvider extends ContentProvider {
             return;
         }
         TriState favorited = TriState.fromBoolean(
-                myContext.persistentAccounts().hasMyUser(MyQuery.getStargazers(db, origin, msgId))
+                myContext.persistentAccounts().contains(MyQuery.getStargazers(db, origin, msgId))
         );
         String sql = "UPDATE " + MsgTable.TABLE_NAME + " SET " + MsgTable.FAVORITED + "=" + favorited.id
                 + " WHERE " + MsgTable._ID + "=" + msgId;

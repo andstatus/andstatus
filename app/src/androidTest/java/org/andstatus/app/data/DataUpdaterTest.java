@@ -72,7 +72,7 @@ public class DataUpdaterTest {
     @Test
     public void testFriends() throws ConnectionException {
         MyAccount ma = demoData.getConversationMyAccount();
-        MbUser accountUser = ma.toPartialUser();
+        MbUser accountUser = ma.getUser();
         String messageOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB";
         DemoMessageInserter.deleteOldMessage(accountUser.origin, messageOid);
 
@@ -157,7 +157,7 @@ public class DataUpdaterTest {
     @Test
     public void testPrivateMessageToMyAccount() throws ConnectionException {
         MyAccount ma = demoData.getConversationMyAccount();
-        MbUser accountUser = ma.toPartialUser();
+        MbUser accountUser = ma.getUser();
 
         String messageOid = "https://pumpity.net/api/comment/sa23wdi78dhgjerdfddajDSQ-" + demoData.TESTRUN_UID;
 
@@ -192,7 +192,7 @@ public class DataUpdaterTest {
     @Test
     public void testMessageFavoritedByOtherUser() throws ConnectionException {
         MyAccount ma = demoData.getConversationMyAccount();
-        MbUser accountUser = ma.toPartialUser();
+        MbUser accountUser = ma.getUser();
 
         String authorUserName = "anybody@pumpity.net";
         MbUser author = MbUser.fromOriginAndUserOid(accountUser.origin, "acct:"
@@ -281,7 +281,7 @@ public class DataUpdaterTest {
 
     private void oneReplyMessageFavoritedByMyActor(String iterationId, boolean favorited) {
         MyAccount ma = demoData.getConversationMyAccount();
-        MbUser accountUser = ma.toPartialUser();
+        MbUser accountUser = ma.getUser();
 
         String authorUserName = "example@pumpity.net";
         MbUser author = MbUser.fromOriginAndUserOid(accountUser.origin, "acct:" + authorUserName);
@@ -366,7 +366,7 @@ public class DataUpdaterTest {
     public void testUnsentMessageWithAttachment() throws Exception {
         final String method = "testUnsentMessageWithAttachment";
         MyAccount ma = MyContextHolder.get().persistentAccounts().getFirstSucceeded();
-        MbUser accountUser = ma.toPartialUser();
+        MbUser accountUser = ma.getUser();
         MbActivity activity = MbActivity.newPartialMessage(accountUser, "", System.currentTimeMillis(), DownloadStatus.SENDING);
         activity.setActor(accountUser);
         MbMessage message = activity.getMessage();
@@ -413,7 +413,7 @@ public class DataUpdaterTest {
     @Test
     public void testUserNameChanged() {
         MyAccount ma = TestSuite.getMyContextForTest().persistentAccounts().fromAccountName(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
-        MbUser accountUser = ma.toPartialUser();
+        MbUser accountUser = ma.getUser();
         String username = "peter" + demoData.TESTRUN_UID;
         MbUser user1 = new DemoMessageInserter(ma).buildUserFromOid("34804" + demoData.TESTRUN_UID);
         user1.setUserName(username);
@@ -465,7 +465,7 @@ public class DataUpdaterTest {
     public void testInsertUser() {
         MyAccount ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         MbUser user = new DemoMessageInserter(ma).buildUserFromOid("34807" + demoData.TESTRUN_UID);
-        MbUser accountUser = ma.toPartialUser();
+        MbUser accountUser = ma.getUser();
 
         DataUpdater di = new DataUpdater(ma);
         long id = di.onActivity(user.update(accountUser)).getUser().userId;
@@ -521,7 +521,7 @@ public class DataUpdaterTest {
         MbUser user = MbUser.fromOriginAndUserOid(ma.getOrigin(), realBuddyOid);
         user.setUserName(buddyUserName);
         DataUpdater di = new DataUpdater(ma);
-        long userId2 = di.onActivity(user.update(ma.toPartialUser())).getUser().userId;
+        long userId2 = di.onActivity(user.update(ma.getUser())).getUser().userId;
         assertEquals(userId1, userId2);
         assertEquals("TempOid replaced with real", realBuddyOid, MyQuery.idToOid(OidEnum.USER_OID, userId1, 0));
 
@@ -535,7 +535,7 @@ public class DataUpdaterTest {
 
     private void addOneMessage4testReplyInBody(String buddyUserName, String body, boolean isReply) {
         MyAccount ma = demoData.getConversationMyAccount();
-        MbUser accountUser = ma.toPartialUser();
+        MbUser accountUser = ma.getUser();
 
         DataUpdater di = new DataUpdater(ma);
         String username = "somebody" + demoData.TESTRUN_UID + "@somewhere.net";
@@ -573,9 +573,9 @@ public class DataUpdaterTest {
     @Test
     public void testMention() {
         MyAccount ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
-        MbUser accountUser = ma.toPartialUser();
+        MbUser accountUser = ma.getUser();
         MyAccount myMentionedAccount = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT2_NAME);
-        MbUser myMentionedUser = myMentionedAccount.toPartialUser().setUserName(myMentionedAccount.getUsername());
+        MbUser myMentionedUser = myMentionedAccount.getUser().setUserName(myMentionedAccount.getUsername());
         MbUser author1 = MbUser.fromOriginAndUserOid(accountUser.origin, "sam" + demoData.TESTRUN_UID);
         author1.setUserName("samBrook");
 

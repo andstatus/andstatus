@@ -35,14 +35,14 @@ public final class UrlUtils {
     }
 
     public static boolean hostIsValid(String host) {
-        boolean ok = false;
-        if (host != null) {
-            // From
-            // http://stackoverflow.com/questions/106179/regular-expression-to-match-hostname-or-ip-address?rq=1
-            String validHostnameRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$";
-            ok = host.matches(validHostnameRegex);
-        }
-        return ok;
+        if (TextUtils.isEmpty(host)) return false;
+        // From http://stackoverflow.com/questions/106179/regular-expression-to-match-hostname-or-ip-address?rq=1
+        String validHostnameRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$";
+        return host.matches(validHostnameRegex);
+    }
+
+    public static boolean hasHost(URL url) {
+        return url != null && hostIsValid(url.getHost());
     }
 
     public static boolean isHostOnly(URL url) {

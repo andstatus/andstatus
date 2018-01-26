@@ -126,7 +126,7 @@ public class MbActivity extends AObject {
     }
 
     public boolean isAuthorActor() {
-        return getActor().isSameUser(getAuthor());
+        return getActor().isSame(getAuthor());
     }
 
     @NonNull
@@ -152,7 +152,7 @@ public class MbActivity extends AObject {
     }
 
     public boolean isMyActorOrAuthor(@NonNull MyContext myContext) {
-        return myContext.persistentAccounts().isMe(getActor()) || myContext.persistentAccounts().isMe(getAuthor());
+        return myContext.persistentAccounts().contains(getActor()) || myContext.persistentAccounts().contains(getAuthor());
     }
 
     @NonNull
@@ -306,8 +306,8 @@ public class MbActivity extends AObject {
     }
 
     public static MbActivity fromCursor(MyContext myContext, Cursor cursor) {
-        MbActivity activity = from(myContext.persistentAccounts()
-                        .fromUserId(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID)).toPartialUser(),
+        MbActivity activity = from(
+                myContext.persistentAccounts().fromUserId(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID)).getUser(),
                 MbActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE)));
 
         activity.id = DbUtils.getLong(cursor, ActivityTable._ID);
@@ -417,23 +417,23 @@ public class MbActivity extends AObject {
     private void calculateNotification(MyContext myContext) {
         if (getUpdatedDate() < 1
                 || isNotified().equals(TriState.FALSE)
-                || myContext.persistentAccounts().isMe(getActor())) return;
+                || myContext.persistentAccounts().contains(getActor())) return;
         final NotificationEventType event;
         if(myContext.getNotifier().isEnabled(NotificationEventType.MENTION)
-                && getMessage().audience().hasMyAccount(myContext)
+                && getMessage().audience().containsMe(myContext)
                 && !isMyActorOrAuthor(myContext)) {
             event = NotificationEventType.MENTION;
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.ANNOUNCE)
                 && type == MbActivityType.ANNOUNCE
-                && myContext.persistentAccounts().isMe(getAuthor())) {
+                && myContext.persistentAccounts().contains(getAuthor())) {
             event = NotificationEventType.ANNOUNCE;
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.LIKE)
                 && (type == MbActivityType.LIKE || type == MbActivityType.UNDO_LIKE)
-                && myContext.persistentAccounts().isMe(getAuthor())) {
+                && myContext.persistentAccounts().contains(getAuthor())) {
             event = NotificationEventType.LIKE;
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.FOLLOW)
                 && (type == MbActivityType.FOLLOW || type == MbActivityType.UNDO_FOLLOW)
-                && myContext.persistentAccounts().isMe(getUser())) {
+                && myContext.persistentAccounts().contains(getUser())) {
             event = NotificationEventType.FOLLOW;
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.PRIVATE)
                 && getMessage().isPrivate()) {
@@ -478,7 +478,7 @@ public class MbActivity extends AObject {
         switch (type) {
             case LIKE:
             case UNDO_LIKE:
-                final MyAccount myActorAccount = myContext.persistentAccounts().getUserFor(actor);
+                final MyAccount myActorAccount = myContext.persistentAccounts().fromUser(actor);
                 if (myActorAccount.isValid()) {
                     MyLog.v(this, myActorAccount + " " + type
                             + " '" + getMessage().oid + "' " + I18n.trimTextAt(getMessage().getBody(), 80));

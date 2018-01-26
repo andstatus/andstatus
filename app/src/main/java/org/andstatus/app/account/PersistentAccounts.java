@@ -24,7 +24,6 @@ import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.Permissions;
-import org.andstatus.app.util.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,7 +48,7 @@ public class PersistentAccounts {
     private volatile String currentAccountName = "";
 
     private final MyContext myContext;
-    private final List<MyAccount> mAccounts = new CopyOnWriteArrayList<>();
+    private final List<MyAccount> myAccounts = new CopyOnWriteArrayList<>();
     private int distinctOriginsCount = 0;
     private final Set<Long> myFriends = new ConcurrentSkipListSet<>();
 
@@ -65,15 +64,15 @@ public class PersistentAccounts {
      * @return not null 
      */
     public List<MyAccount> list() {
-        return mAccounts;
+        return myAccounts;
     }
     
     public boolean isEmpty() {
-        return mAccounts.isEmpty();
+        return myAccounts.isEmpty();
     }
     
     public int size() {
-        return mAccounts.size();
+        return myAccounts.size();
     }
     
     public PersistentAccounts initialize() {
@@ -87,16 +86,16 @@ public class PersistentAccounts {
             }
         }
         CollectionsUtil.sort(myAccounts);
-        mAccounts.clear();
-        mAccounts.addAll(myAccounts);
+        this.myAccounts.clear();
+        this.myAccounts.addAll(myAccounts);
         calculateDistinctOriginsCount();
-        MyLog.v(this, "Account list initialized, " + mAccounts.size() + " accounts in " + distinctOriginsCount + " origins");
+        MyLog.v(this, "Account list initialized, " + this.myAccounts.size() + " accounts in " + distinctOriginsCount + " origins");
         initializeMyFriends();
         return this;
     }
 
     public MyAccount getDefaultAccount() {
-        return mAccounts.isEmpty() ? MyAccount.EMPTY : list().get(0);
+        return myAccounts.isEmpty() ? MyAccount.EMPTY : list().get(0);
     }
 
     public int getDistinctOriginsCount() {
@@ -105,7 +104,7 @@ public class PersistentAccounts {
     
     private void calculateDistinctOriginsCount() {
         Set<Origin> origins = new HashSet<>();
-        for (MyAccount ma : mAccounts) {
+        for (MyAccount ma : myAccounts) {
             origins.add(ma.getOrigin());
         }
         distinctOriginsCount = origins.size();
@@ -125,7 +124,7 @@ public class PersistentAccounts {
 
         // Delete the User's object from the list
         MyAccount toDelete = null;
-        for (MyAccount persistentAccount : mAccounts) {
+        for (MyAccount persistentAccount : myAccounts) {
             if (persistentAccount.equals(ma)) {
                 toDelete = persistentAccount;
                 break;
@@ -135,7 +134,7 @@ public class PersistentAccounts {
             MyAccount.Builder.fromMyAccount(myContext, ma, "delete", false).deleteData();
 
             // And delete the object from the list
-            mAccounts.remove(toDelete);
+            myAccounts.remove(toDelete);
 
             isDeleted = true;
             MyPreferences.onPreferencesChanged();
@@ -155,7 +154,7 @@ public class PersistentAccounts {
         if (!accountName.isValid()) {
             return MyAccount.EMPTY;
         }
-        for (MyAccount persistentAccount : mAccounts) {
+        for (MyAccount persistentAccount : myAccounts) {
             if (persistentAccount.getAccountName().equals(accountName.toString())) {
                 return persistentAccount;
             }
@@ -163,8 +162,8 @@ public class PersistentAccounts {
         for (android.accounts.Account androidAccount : getAccounts(myContext.context())) {
             if (accountName.toString().equals(androidAccount.name)) {
                 MyAccount myAccount = Builder.fromAndroidAccount(myContext, androidAccount).getAccount();
-                mAccounts.add(myAccount);
-                CollectionsUtil.sort(mAccounts);
+                myAccounts.add(myAccount);
+                CollectionsUtil.sort(myAccounts);
                 MyPreferences.onPreferencesChanged();
                 return myAccount;
             }
@@ -173,47 +172,31 @@ public class PersistentAccounts {
     }
 
     @NonNull
-    public MyAccount getAccountFor(@NonNull MbUser user) {
+    public MyAccount fromUserOfSameOrigin(@NonNull MbUser user) {
         return fromUser(user, true);
     }
 
     /** Doesn't take origin into account */
     @NonNull
-    public MyAccount getUserFor(@NonNull MbUser user) {
+    public MyAccount fromUser(@NonNull MbUser user) {
         return fromUser(user, false);
     }
 
     @NonNull
-    private MyAccount fromUser(@NonNull MbUser user, boolean sameOriginOnly) {
-        for (MyAccount persistentAccount : mAccounts) {
-            if (!sameOriginOnly || persistentAccount.getOrigin().equals(user.origin)) {
-                if (persistentAccount.getOrigin().equals(user.origin) && StringUtils.nonEmpty(user.oid)) {
-                    if (persistentAccount.getUserOid().equals(user.oid)) {
-                        return persistentAccount;
-                    }
-                } else if (user.userId != 0) {
-                    if (persistentAccount.getUserId() == user.userId) {
-                        return persistentAccount;
-                    }
-                } else if (user.isWebFingerIdValid()) {
-                    if (persistentAccount.getWebFingerId().equals(user.getWebFingerId())) {
-                        return persistentAccount;
-                    }
-                }
-            }
-        }
-        return MyAccount.EMPTY;
+    public MyAccount fromUser(@NonNull MbUser other, boolean sameOriginOnly) {
+        return myAccounts.stream().filter(ma -> ma.getUser().isSame(other, sameOriginOnly))
+                .findFirst().orElse(MyAccount.EMPTY);
     }
 
-    public boolean hasMyUser(@NonNull Collection<MbUser> users) {
+    public boolean contains(@NonNull Collection<MbUser> users) {
         for (MbUser user : users) {
-            if (getUserFor(user).isValid()) return true;
+            if (fromUser(user).isValid()) return true;
         }
         return false;
     }
 
-    public boolean isMe(@NonNull MbUser user) {
-      return getUserFor(user).isValid();
+    public boolean contains(@NonNull MbUser user) {
+      return fromUser(user).isValid();
     }
 
     public boolean isMyUserId(long userId) {
@@ -228,7 +211,7 @@ public class PersistentAccounts {
     @NonNull
     public MyAccount fromUserId(long userId) {
         if (userId == 0) return MyAccount.EMPTY;
-        return mAccounts.stream().filter(myAccount -> myAccount.getUserId() == userId).findFirst()
+        return myAccounts.stream().filter(ma -> ma.getUserId() == userId).findFirst()
                 .orElse(MyAccount.EMPTY);
     }
 
@@ -236,7 +219,7 @@ public class PersistentAccounts {
     @NonNull
     MyAccount fromWebFingerId(String webFingerId) {
         if (TextUtils.isEmpty(webFingerId)) return MyAccount.EMPTY;
-        return mAccounts.stream().filter(myAccount -> myAccount.getWebFingerId().equals(webFingerId)).findFirst()
+        return myAccounts.stream().filter(myAccount -> myAccount.getWebFingerId().equals(webFingerId)).findFirst()
                 .orElse(MyAccount.EMPTY);
     }
 
@@ -254,7 +237,7 @@ public class PersistentAccounts {
         currentAccountName = "";
         ma = getDefaultAccount();
         if (!ma.isValid()) {
-            for (MyAccount myAccount : mAccounts) {
+            for (MyAccount myAccount : myAccounts) {
                 if (myAccount.isValid()) {
                     ma = myAccount;
                     break;
@@ -300,17 +283,17 @@ public class PersistentAccounts {
     @NonNull
     public MyAccount getFirstSucceededForOrigin(@NonNull Origin origin) {
         MyAccount ma = MyAccount.EMPTY;
-        for (MyAccount persistentAccount : mAccounts) {
-            if (!origin.isValid() || persistentAccount.getOrigin().equals(origin)) {
+        for (MyAccount myAccount : myAccounts) {
+            if (!origin.isValid() || myAccount.getOrigin().equals(origin)) {
                 if (!ma.isValid()) {
-                    ma = persistentAccount;
+                    ma = myAccount;
                 }
-                if (persistentAccount.isValidAndSucceeded()) {
+                if (myAccount.isValidAndSucceeded()) {
                     if (!ma.isValidAndSucceeded()) {
-                        ma = persistentAccount;
+                        ma = myAccount;
                     }
-                    if (persistentAccount.isSyncedAutomatically()) {
-                        ma = persistentAccount;
+                    if (myAccount.isSyncedAutomatically()) {
+                        ma = myAccount;
                         break;
                     }
                 }
@@ -320,7 +303,7 @@ public class PersistentAccounts {
     }
 
     public boolean hasSyncedAutomatically() {
-        for (MyAccount ma : mAccounts) {
+        for (MyAccount ma : myAccounts) {
             if (ma.shouldBeSyncedAutomatically()) return true;
         }
         return false;
@@ -328,7 +311,7 @@ public class PersistentAccounts {
 
     /** @return 0 if no syncing is needed */
     public long minSyncIntervalMillis() {
-        return mAccounts.stream()
+        return myAccounts.stream()
                 .filter(MyAccount::shouldBeSyncedAutomatically)
                 .map(MyAccount::getEffectiveSyncFrequencyMillis)
                 .min(Long::compareTo).orElse(0L);
@@ -393,7 +376,7 @@ public class PersistentAccounts {
 
     public void onDefaultSyncFrequencyChanged() {
         long syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
-        for (MyAccount ma : mAccounts) {
+        for (MyAccount ma : myAccounts) {
             if (ma.getSyncFrequencySeconds() <= 0) {
                 Account account = ma.getExistingAndroidAccount();
                 if (account != null) {
@@ -426,7 +409,7 @@ public class PersistentAccounts {
         long backedUpCount = 0;
         JSONArray jsa = new JSONArray();
         try {
-            for (MyAccount ma : mAccounts) {
+            for (MyAccount ma : myAccounts) {
                 jsa.put(ma.toJson());
                 backedUpCount++;
             }
@@ -480,12 +463,12 @@ public class PersistentAccounts {
 
     @Override
     public String toString() {
-        return "PersistentAccounts{" + mAccounts + '}';
+        return "PersistentAccounts{" + myAccounts + '}';
     }
 
     @Override
     public int hashCode() {
-        return mAccounts.hashCode();
+        return myAccounts.hashCode();
     }
 
     @Override
@@ -497,7 +480,7 @@ public class PersistentAccounts {
             return false;
         }
         PersistentAccounts other = (PersistentAccounts) o;
-        return mAccounts.equals(other.mAccounts);
+        return myAccounts.equals(other.myAccounts);
     }
 
     public boolean isMeOrMyFriend(long userId) {
@@ -514,7 +497,7 @@ public class PersistentAccounts {
         if (db == null) return;
         String sql = "SELECT DISTINCT " + FriendshipTable.FRIEND_ID + " FROM " + FriendshipTable.TABLE_NAME
             + " WHERE " + FriendshipTable.FOLLOWED + "=1" + " AND " + FriendshipTable.USER_ID
-            + SqlUserIds.fromIds(mAccounts.stream().map(MyAccount::getUserId).collect(Collectors.toList())).getSql();
+            + SqlUserIds.fromIds(myAccounts.stream().map(MyAccount::getUserId).collect(Collectors.toList())).getSql();
         try (Cursor cursor = db.rawQuery(sql, null)) {
             while (cursor.moveToNext()) {
                 myFriends.add(cursor.getLong(0));
@@ -537,7 +520,7 @@ public class PersistentAccounts {
             }
         }
         if (changed) {
-            CollectionsUtil.sort(mAccounts);
+            CollectionsUtil.sort(myAccounts);
             MyPreferences.onPreferencesChanged();
         }
     }

@@ -53,7 +53,7 @@ public class DemoMessageInserter {
     private final Origin origin;
 
     public DemoMessageInserter(MyAccount ma) {
-        this(ma.toPartialUser());
+        this(ma.getUser());
     }
 
     public DemoMessageInserter(MbUser accountUser) {
@@ -112,8 +112,9 @@ public class DemoMessageInserter {
         String messageOid = messageOidIn;
         if (TextUtils.isEmpty(messageOid) && messageStatus != DownloadStatus.SENDING) {
             if (origin.getOriginType() == OriginType.PUMPIO) {
-                messageOid =  (author.isPartiallyDefined() ? "http://pumpiotest" + origin.getId()
-                        + ".example.com/user/" + author.oid : author.getProfileUrl())
+                messageOid = (UrlUtils.hasHost(UrlUtils.fromString(author.getProfileUrl()))
+                          ? author.getProfileUrl()
+                          : "http://pumpiotest" + origin.getId() + ".example.com/user/" + author.oid)
                         + "/" + (inReplyToActivity == null ? "note" : "comment")
                         + "/thisisfakeuri" + System.nanoTime();
             } else {
@@ -255,7 +256,7 @@ public class DemoMessageInserter {
     
     public static MbActivity addMessageForAccount(MyAccount ma, String body, String messageOid, DownloadStatus messageStatus) {
         assertTrue("Is not valid: " + ma, ma.isValid());
-        MbUser accountUser = ma.toPartialUser();
+        MbUser accountUser = ma.getUser();
         DemoMessageInserter mi = new DemoMessageInserter(accountUser);
         MbActivity activity = mi.buildActivity(accountUser, body, null, messageOid, messageStatus);
         mi.onActivity(activity);

@@ -131,7 +131,7 @@ public final class MyAccount implements Comparable<MyAccount> {
     private boolean isSyncable = true;
     private boolean isSyncedAutomatically = true;
     private final int version;
-    public static final int ACCOUNT_VERSION = 16;
+    static final int ACCOUNT_VERSION = 16;
     private boolean deleted;
     private int order = 0;
 
@@ -139,11 +139,8 @@ public final class MyAccount implements Comparable<MyAccount> {
         return oAccountName;
     }
 
-    public MbUser toPartialUser() {
-        MbUser mbUser = MbUser.fromOriginAndUserOid(user.origin, user.oid);
-        mbUser.userId = user.userId;
-        mbUser.setWebFingerId(user.getWebFingerId());
-        return mbUser;
+    public MbUser getUser() {
+        return user;
     }
 
     public String getWebFingerId() {
@@ -169,10 +166,7 @@ public final class MyAccount implements Comparable<MyAccount> {
             }
         }
 
-        /**
-         * Creates new account, which is not Persistent yet
-         * @param accountName
-         */
+        /** Creates new account, which is not Persistent yet */
         private static Builder newFromAccountName(MyContext myContext, String accountName, TriState isOAuthTriState) {
             MyAccount ma = new MyAccount(myContext, null, accountName);
             ma.setOAuth(isOAuthTriState);
@@ -183,13 +177,10 @@ public final class MyAccount implements Comparable<MyAccount> {
             return newFromAccountName(myContext, accountName, TriState.UNKNOWN).getAccount();
         }
 
-        /**
-         * Loads existing account from Persistence 
-         * @param myContext
-         * @param account should not be null
-         */
-        protected static Builder fromAndroidAccount(MyContext myContext, android.accounts.Account account) {
-            return fromAccountData(myContext, AccountData.fromAndroidAccount(myContext.context(), account), "fromAndroidAccount");
+        /** Loads existing account from Persistence */
+        protected static Builder fromAndroidAccount(MyContext myContext, @NonNull android.accounts.Account account) {
+            return fromAccountData(myContext, AccountData.fromAndroidAccount(myContext.context(), account),
+                    "fromAndroidAccount");
         }
 
         public static Builder fromJson(MyContext myContext, JSONObject jso) throws JSONException {
@@ -218,7 +209,7 @@ public final class MyAccount implements Comparable<MyAccount> {
         private void setConnection() {
             OriginConnectionData connectionData = OriginConnectionData.fromAccountName(
                     myAccount.oAccountName, TriState.fromBoolean(myAccount.isOAuth));
-            connectionData.setAccountUser(myAccount.toPartialUser());
+            connectionData.setAccountUser(myAccount.getUser());
             connectionData.setDataReader(myAccount.accountData);
             try {
                 myAccount.connection = connectionData.newConnection();
@@ -256,7 +247,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                     MyLog.v(TAG, method + " Loaded " + this.toString());
                 }
             } else {
-                MyLog.i(TAG, method + " Failed to load: Invalid account; version=" + myAccount.version + "; " + this.toString());
+                MyLog.i(TAG, method + " Failed to load: Invalid account; version=" + myAccount.version + "; " + this);
             }
         }
 
@@ -509,10 +500,7 @@ public final class MyAccount implements Comparable<MyAccount> {
             if (myAccount.user.userId == 0) {
                 DataUpdater di = new DataUpdater(myAccount);
                 try {
-                    // Construct "User" from available account info
-                    MbUser user = myAccount.toPartialUser();
-                    user.setUserName(myAccount.getUsername());
-                    myAccount.user.userId = di.onActivity(user.update(myAccount.toPartialUser())).getUser().userId;
+                    di.onActivity(myAccount.user.update(myAccount.getUser()));
                 } catch (Exception e) {
                     MyLog.e(TAG, "Construct user", e);
                 }

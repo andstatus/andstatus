@@ -28,7 +28,7 @@ public class MessageForAccountTest {
         MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
         DemoMessageInserter mi = new DemoMessageInserter(ma);
-        MbUser accountUser = ma.toPartialUser();
+        MbUser accountUser = ma.getUser();
         MbActivity activity1 = mi.buildActivity(accountUser, "My testing message", null,
                 null, DownloadStatus.LOADED);
         mi.onActivity(activity1);

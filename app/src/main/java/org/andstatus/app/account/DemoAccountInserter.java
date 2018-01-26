@@ -28,13 +28,13 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.MbUser;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UrlUtils;
 
 import java.util.List;
 
@@ -79,10 +79,13 @@ public class DemoAccountInserter {
         assertEquals("Origin for '" + accountNameString + "' account created", accountName.getOrigin().getOriginType(), originType);
         long accountUserId_existing = MyQuery.oidToId(myContext.getDatabase(), OidEnum.USER_OID,
                 accountName.getOrigin().getId(), userOid);
-        MbUser mbUser = MbUser.fromOriginAndUserOid(accountName.getOrigin(), userOid);
-        mbUser.setUserName(accountName.getUsername());
-        mbUser.avatarUrl = avatarUrl;
-        MyAccount ma = addAccountFromMbUser(mbUser);
+        MbUser user = MbUser.fromOriginAndUserOid(accountName.getOrigin(), userOid);
+        user.setUserName(accountName.getUsername());
+        user.avatarUrl = avatarUrl;
+        if (!user.isWebFingerIdValid() && UrlUtils.hasHost(user.origin.getUrl())) {
+            user.setWebFingerId(user.getUserName() + "@" + user.origin.getUrl().getHost());
+        }
+        MyAccount ma = addAccountFromMbUser(user);
         long accountUserId = ma.getUserId();
         String msg = "AccountUserId for '" + accountNameString + ", (first: '" + firstAccountUserOid + "')";
         if (accountUserId_existing == 0 && !userOid.contains(firstAccountUserOid)) {
@@ -96,10 +99,8 @@ public class DemoAccountInserter {
 
         assertAccountIsAddedToAccountManager(ma);
 
-        MbUser mbUser2 = ma.toPartialUser();
-        assertEquals("Oid: " + mbUser2, mbUser.oid, mbUser2.oid);
-        assertEquals("Partially defined: " + mbUser2, true, mbUser2.isPartiallyDefined());
-
+        assertEquals("Oid: " + ma.getUser(), user.oid, ma.getUser().oid);
+        assertEquals("Partially defined: " + ma.getUser(), false, ma.getUser().isPartiallyDefined());
         return ma;
     }
 

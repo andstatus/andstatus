@@ -106,7 +106,7 @@ public class MessageForAccount {
             MyLog.i(this, method + "; SQL:'" + sql + "'", e);
         }
         Audience recipients = Audience.fromMsgId(origin, msgId);
-        isRecipient = recipients.has(userId);
+        isRecipient = recipients.contains(userId);
         DownloadData downloadData = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY);
         imageFilename = downloadData.getStatus() == DownloadStatus.LOADED ? downloadData.getFilename() : "";
         ActorToMessage actorToMessage = MyQuery.favoritedAndReblogged(db, msgId, userId);

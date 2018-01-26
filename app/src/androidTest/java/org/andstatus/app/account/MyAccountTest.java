@@ -20,6 +20,7 @@ import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.net.social.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
@@ -27,7 +28,9 @@ import org.andstatus.app.util.TriState;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class MyAccountTest {
@@ -56,7 +59,14 @@ public class MyAccountTest {
         assertEquals(logMsg, origin, builder.getAccount().getOrigin());
         assertEquals(logMsg, userName + AccountName.ORIGIN_SEPARATOR + origin.getName(), builder.getAccount().getAccountName());
     }
-    
+
+    @Test
+    public void testUser() {
+        MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
+        assertTrue(demoData.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
+        MbUser accountUser = ma.getUser();
+        assertFalse("User is partial " + accountUser, accountUser.isPartiallyDefined());
+    }
 
     public static void fixPersistentAccounts(MyContext myContext) {
         for (MyAccount ma : myContext.persistentAccounts().list()) {

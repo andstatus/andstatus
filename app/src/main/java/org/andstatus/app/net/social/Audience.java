@@ -94,12 +94,12 @@ public class Audience {
         recipients.add(user);
     }
 
-    public boolean hasMyAccount(MyContext myContext) {
-        return myContext.persistentAccounts().hasMyUser(recipients);
+    public boolean containsMe(MyContext myContext) {
+        return myContext.persistentAccounts().contains(recipients);
     }
 
     @NonNull
-    public boolean has(MbUser mbUser) {
+    public boolean contains(MbUser mbUser) {
         for (MbUser user : recipients) {
             if (user.equals(mbUser)) {
                 return true;
@@ -108,7 +108,7 @@ public class Audience {
         return false;
     }
 
-    public boolean has(long userId) {
+    public boolean contains(long userId) {
         for (MbUser user : recipients) {
             if (user.userId == userId) {
                 return true;

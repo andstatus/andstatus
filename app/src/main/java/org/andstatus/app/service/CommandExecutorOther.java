@@ -115,7 +115,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             try {
                 users = execContext.getMyAccount().getConnection().searchUsers(USERS_LIMIT, searchQuery);
                 for (MbUser user : users) {
-                    new DataUpdater(execContext).onActivity(user.update(execContext.getMyAccount().toPartialUser()));
+                    new DataUpdater(execContext).onActivity(user.update(execContext.getMyAccount().getUser()));
                 }
             } catch (ConnectionException e) {
                 logConnectionException(e, msgLog);
@@ -169,7 +169,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             logExecutionError(true, msgLog + userInfoLogged(userId));
         }
         if (noErrors() && user != null) {
-            new DataUpdater(execContext).onActivity(user.update(execContext.getMyAccount().toPartialUser()));
+            new DataUpdater(execContext).onActivity(user.update(execContext.getMyAccount().getUser()));
         }
         MyLog.d(this, (msgLog + (noErrors() ? " succeeded" : " failed") ));
     }

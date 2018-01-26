@@ -40,12 +40,13 @@ public class MbUserTest {
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.GNUSOCIAL_TEST_ORIGIN_NAME);
         String webFingerId2 = "anotherUser@somedomain.org";
         String shortUsername3 = "shortusername";
-        String body = "@" + demoData.GNUSOCIAL_TEST_ACCOUNT_USERNAME + " @" + demoData.GNUSOCIAL_TEST_ACCOUNT2_USERNAME
+        String body = "@" + demoData.GNUSOCIAL_TEST_ACCOUNT_USERNAME
+                + " @" + demoData.GNUSOCIAL_TEST_ACCOUNT2_USERNAME
                 + " Please take this into account\n@" + webFingerId2
                 + " @" + demoData.GNUSOCIAL_TEST_ACCOUNT2_USERNAME
                 + " And let me mention: @" + shortUsername3;
         List<MbUser> users = MbUser.fromOriginAndUserOid(origin, "").extractUsersFromBodyText(body, false);
-        String msgLog = body + " -> " + users;
+        String msgLog = body + " ->\n" + users;
         assertEquals(msgLog, 4, users.size());
         assertEquals(msgLog, demoData.GNUSOCIAL_TEST_ACCOUNT_USERNAME, users.get(0).getUserName());
         assertEquals(msgLog, demoData.GNUSOCIAL_TEST_ACCOUNT2_USERNAME, users.get(1).getUserName());

@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class DemoGnuSocialConversationInserter {
@@ -52,8 +53,9 @@ public class DemoGnuSocialConversationInserter {
         origin = MyContextHolder.get().persistentOrigins().fromName(demoData.GNUSOCIAL_TEST_ORIGIN_NAME);
         assertTrue(demoData.GNUSOCIAL_TEST_ORIGIN_NAME + " exists", origin.isValid());
         accountUser = MyContextHolder.get().persistentAccounts().fromAccountName(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME)
-                .toPartialUser();
-        assertTrue( "Account user is not defined " + accountUser, accountUser.isPartiallyDefined());
+                .getUser();
+        assertFalse( "Account user is not defined " + accountUser,
+                accountUser.isEmpty() || accountUser.isPartiallyDefined());
         assertEquals( "Inconsistent origin for " + accountUser + "\n and " + origin, accountUser.origin, origin);
     }
     

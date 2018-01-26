@@ -68,7 +68,7 @@ public class DemoConversationInserter {
         iteration = iterationCounter.incrementAndGet();
         ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(demoData.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
-        accountUser = ma.toPartialUser();
+        accountUser = ma.getUser();
         insertAndTestConversation();
     }
 
@@ -180,9 +180,9 @@ public class DemoConversationInserter {
 
         // Message downloaded by another account
         final MyAccount ma2 = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT2_NAME);
-        MbUser accountUser2 = ma2.toPartialUser();
         author3.followedByMe = TriState.TRUE;
-        MbActivity reply10 = buildActivity(accountUser2, author3, "Reply 10 to Reply 8", reply8, null, DownloadStatus.LOADED);
+        MbActivity reply10 = buildActivity(ma2.getUser(), author3, "Reply 10 to Reply 8", reply8,
+                null, DownloadStatus.LOADED);
         assertEquals("The third is a message Author", author3,  reply10.getAuthor());
         addActivity(reply10);
         author3.followedByMe = TriState.UNKNOWN;

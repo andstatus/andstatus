@@ -29,9 +29,11 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
+import org.andstatus.app.util.UrlUtils;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -42,6 +44,7 @@ public class MbUser implements Comparable<MbUser> {
     public static final MbUser EMPTY = new MbUser(Origin.EMPTY, "");
     // RegEx from http://www.mkyong.com/regular-expressions/how-to-validate-email-address-with-regular-expression/
     public static final String WEBFINGER_ID_REGEX = "^[_A-Za-z0-9-+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
+    @NonNull
     public final String oid;
     private String userName = "";
 
@@ -224,36 +227,35 @@ public class MbUser implements Comparable<MbUser> {
     }
 
     /** Doesn't take origin into account */
-    public boolean isSameUser(MbUser that) {
-        return  isSameUser(that, false);
+    public boolean isSame(MbUser that) {
+        return  isSame(that, false);
     }
 
-    private boolean isSameUser(MbUser that, boolean sameOriginOnly) {
-        if (this == that) return true;
-        if (that == null) return false;
-        if (userId != 0 && that.userId != 0) {
-            if (userId == that.userId) return true;
+    public boolean isSame(MbUser other, boolean sameOriginOnly) {
+        if (this == other) return true;
+        if (other == null) return false;
+        if (userId != 0) {
+            if (userId == other.userId) return true;
         }
-        if (origin.equals(that.origin)) {
-            if (UriUtils.isRealOid(oid) && UriUtils.isRealOid(that.oid)) {
-                return oid.equals(that.oid);
+        if (origin.equals(other.origin)) {
+            if (UriUtils.isRealOid(oid) && oid.equals(other.oid)) {
+                return true;
             }
         } else if (sameOriginOnly) {
             return false;
         }
-        return isWebFingerIdValid && that.isWebFingerIdValid && webFingerId.equals(that.webFingerId);
+        return isWebFingerIdValid && other.isWebFingerIdValid && webFingerId.equals(other.webFingerId);
     }
 
     private void fixWebFingerId() {
-        if (TextUtils.isEmpty(userName)) {
-            // Do nothing
-        } else if (userName.contains("@")) {
+        if (TextUtils.isEmpty(userName)) return;
+        if (userName.contains("@")) {
             setWebFingerId(userName);
         } else if (!UriUtils.isEmpty(profileUri)){
             if(origin.isValid()) {
                 setWebFingerId(userName + "@" + origin.fixUriforPermalink(profileUri).getHost());
             } else {
-                setWebFingerId(webFingerId = userName + "@" + profileUri.getHost());
+                setWebFingerId(userName + "@" + profileUri.getHost());
             }
         }
     }
@@ -369,32 +371,35 @@ public class MbUser implements Comparable<MbUser> {
             } else {
                 text = "";
             }
-            if (MbUser.isWebFingerIdValid(validWebFingerId) || !TextUtils.isEmpty(validUserName)) {
-                MbUser mbUser = MbUser.fromOriginAndUserOid(origin, "");
-                if (!MbUser.isWebFingerIdValid(validWebFingerId)) {
-                    // Try a host of the Author first
-                    mbUser.userId = MyQuery.webFingerIdToId(origin.getId(), validUserName + "@" + getHost());
-                    if (mbUser.userId == 0 && (origin.getUrl() != null)) {
-                        // Next try host of this Social network
-                        mbUser.userId = MyQuery.webFingerIdToId(origin.getId(), validUserName 
-                            + "@" + origin.getUrl().getHost());
-                    }
-                    if (mbUser.userId != 0) {
-                        validWebFingerId = validUserName + "@" + getHost();
-                    }
-                }
-                mbUser.setWebFingerId(validWebFingerId);
-                mbUser.setUserName(validUserName);
-                mbUser.lookupUserId();
-                if (!users.contains(mbUser)) {
-                    users.add(mbUser);
-                }
-                if (replyOnly) {
-                    break;
-                }
+            if (StringUtils.nonEmpty(validWebFingerId) || StringUtils.nonEmpty(validUserName)) {
+                addExtractedUser(users, validWebFingerId, validUserName);
             }
         }
         return users;
+    }
+
+    private void addExtractedUser(List<MbUser> users, String webFingerId, String validUserName) {
+        MbUser mbUser = MbUser.fromOriginAndUserOid(origin, "");
+        if (MbUser.isWebFingerIdValid(webFingerId)) {
+            mbUser.setWebFingerId(webFingerId);
+        } else {
+            // Try a host of the Author, next - a host of this Social network
+            for (String host : Arrays.asList(getHost(), origin.getHost())) {
+                if (UrlUtils.hostIsValid(host)) {
+                    final String possibleWebFingerId = validUserName + "@" + host;
+                    mbUser.userId = MyQuery.webFingerIdToId(origin.getId(), possibleWebFingerId);
+                    if (mbUser.userId != 0) {
+                        mbUser.setWebFingerId(possibleWebFingerId);
+                        break;
+                    }
+                }
+            }
+        }
+        mbUser.setUserName(validUserName);
+        mbUser.lookupUserId();
+        if (!users.contains(mbUser)) {
+            users.add(mbUser);
+        }
     }
 
     public String getHost() {
@@ -402,10 +407,7 @@ public class MbUser implements Comparable<MbUser> {
         if (pos >= 0) {
             return getWebFingerId().substring(pos + 1);
         }
-        if (!TextUtils.isEmpty(profileUri.getHost())) {
-            return profileUri.getHost();
-        }
-        return "";
+        return StringUtils.nonEmpty(profileUri.getHost()) ? profileUri.getHost() : "";
     }
     
     public String getDescription() {
