@@ -59,8 +59,8 @@ public class ActorListWorkTest extends ActivityTest<ActorList> {
         assertTrue(msgId > 0);
         MyLog.i(this, "setUp ended");
 
-        return new Intent(MyAction.VIEW_USERS.getAction(),
-                MatchedUri.getActorListUri(ma.getActorId(), ActorListType.USERS_OF_MESSAGE, ma.getOriginId(), msgId, ""));
+        return new Intent(MyAction.VIEW_ACTORS.getAction(),
+                MatchedUri.getActorListUri(ma.getActorId(), ActorListType.ACTORS_OF_NOTE, ma.getOriginId(), msgId, ""));
     }
 
     @Test

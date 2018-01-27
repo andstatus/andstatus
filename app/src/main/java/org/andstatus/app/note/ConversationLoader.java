@@ -171,7 +171,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
         }
         MyLog.v(this, "Message id=" + msgId + " will be loaded from the Internet");
         MyServiceManager.sendForegroundCommand(
-                CommandData.newItemCommand(CommandEnum.GET_STATUS, ma, msgId));
+                CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, msgId));
     }
 
     private boolean requestConversationSync(long msgId_in) {

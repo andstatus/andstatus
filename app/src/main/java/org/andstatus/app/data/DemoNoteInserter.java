@@ -199,7 +199,7 @@ public class DemoNoteInserter {
             Actor author = activity.getAuthor();
             if (author.nonEmpty()) {
                 assertNotEquals( "Author id for " + author + " not set in message " + message + " in activity " + activity, 0,
-                        MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, message.msgId));
+                        MyQuery.noteIdToActorId(MsgTable.AUTHOR_ID, message.msgId));
             }
         }
 

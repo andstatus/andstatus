@@ -81,7 +81,7 @@ abstract public class NoteEditorListActivity<T extends ViewItem<T>> extends Load
     protected void onReceiveAfterExecutingCommand(CommandData commandData) {
         super.onReceiveAfterExecutingCommand(commandData);
         switch (commandData.getCommand()) {
-            case UPDATE_STATUS:
+            case UPDATE_NOTE:
                 noteEditor.loadCurrentDraft();
                 break;
             default:

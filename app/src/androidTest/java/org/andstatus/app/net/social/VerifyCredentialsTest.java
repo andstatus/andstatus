@@ -110,7 +110,7 @@ public class VerifyCredentialsTest {
         String msgOid = "383296535213002752";
         long msgId = MyQuery.oidToId(OidEnum.MSG_OID, origin.getId(), msgOid) ;
         assertTrue("Message not found", msgId != 0);
-        long userIdM = MyQuery.msgIdToUserId(MsgTable.AUTHOR_ID, msgId);
+        long userIdM = MyQuery.noteIdToActorId(MsgTable.AUTHOR_ID, msgId);
         assertEquals("Message not by " + actor.getActorName() + " found", actorId, userIdM);
 
         assertEquals("Message permalink at twitter",

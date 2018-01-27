@@ -130,7 +130,7 @@ public class CommandQueue {
                 } else {
                     if (queue.offer(cd)) {
                         count++;
-                        if (MyLog.isVerboseEnabled() && (count < 6 || cd.getCommand() == CommandEnum.UPDATE_STATUS )) {
+                        if (MyLog.isVerboseEnabled() && (count < 6 || cd.getCommand() == CommandEnum.UPDATE_NOTE)) {
                             MyLog.v(context, method + "; " + count + ": " + cd.toString());
                         }
                     } else {
@@ -189,7 +189,7 @@ public class CommandQueue {
                     values.put(CommandTable.QUEUE_TYPE, queueType.save());
                     db.insert(CommandTable.TABLE_NAME, null, values);
                     count++;
-                    if (MyLog.isVerboseEnabled() && (count < 6 || cd.getCommand() == CommandEnum.UPDATE_STATUS )) {
+                    if (MyLog.isVerboseEnabled() && (count < 6 || cd.getCommand() == CommandEnum.UPDATE_NOTE)) {
                         MyLog.v(context, method + "; " + count + ": " + cd.toString());
                     }
                     if (MyContextHolder.get().isTestRun() && queue.contains(cd)) {

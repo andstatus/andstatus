@@ -541,7 +541,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
     protected boolean isRefreshNeededAfterExecuting(CommandData commandData) {
         boolean needed = false;
         switch(commandData.getCommand()) {
-            case GET_STATUS:
+            case GET_NOTE:
             case GET_CONVERSATION:
 			case GET_FOLLOWERS:
             case GET_FRIENDS:
@@ -549,13 +549,13 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
                     needed = true;
                 }
                 break;
-            case GET_USER:
-            case UPDATE_STATUS:
+            case GET_ACTOR:
+            case UPDATE_NOTE:
             case CREATE_FAVORITE:
             case DESTROY_FAVORITE:
             case REBLOG:
-            case DESTROY_REBLOG:
-            case DESTROY_STATUS:
+            case DELETE_REBLOG:
+            case DELETE_NOTE:
             case FETCH_ATTACHMENT:
             case FETCH_AVATAR:
                 if (!commandData.getResult().hasError()) {

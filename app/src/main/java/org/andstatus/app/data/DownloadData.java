@@ -406,7 +406,7 @@ public class DownloadData {
         if (!DownloadStatus.LOADED.equals(status) && !hardError) {
             MyServiceManager.sendCommand(
                     actorId != 0 ?
-                            CommandData.newUserCommand(CommandEnum.FETCH_AVATAR, null, null, actorId, "")
+                            CommandData.newActorCommand(CommandEnum.FETCH_AVATAR, null, null, actorId, "")
                             : CommandData.newFetchAttachment(msgId, downloadId));
         }
     }

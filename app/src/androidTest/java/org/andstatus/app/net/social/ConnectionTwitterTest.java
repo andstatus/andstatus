@@ -201,7 +201,7 @@ public class ConnectionTwitterTest {
 
         MyAccount ma = demoData.getMyAccount(connectionData.getAccountName().toString());
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                CommandData.newAccountCommand(CommandEnum.GET_STATUS, ma));
+                CommandData.newAccountCommand(CommandEnum.GET_NOTE, ma));
         DataUpdater di = new DataUpdater(executionContext);
         di.onActivity(activity);
         assertNotEquals("Message was not added " + activity, 0, message.msgId);

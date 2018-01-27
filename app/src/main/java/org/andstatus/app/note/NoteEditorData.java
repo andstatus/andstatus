@@ -314,7 +314,7 @@ public class NoteEditorData {
     }
 
     private void addMentionedUsersBeforeText() {
-        ActorsOfNoteListLoader loader = new ActorsOfNoteListLoader(ActorListType.USERS_OF_MESSAGE, ma, inReplyToMsgId
+        ActorsOfNoteListLoader loader = new ActorsOfNoteListLoader(ActorListType.ACTORS_OF_NOTE, ma, inReplyToMsgId
                 , "").setMentionedOnly(true);
         loader.load(null);
         List<Long> toMention = new ArrayList<>();

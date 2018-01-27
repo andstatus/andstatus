@@ -58,7 +58,7 @@ public class ActorContextMenu extends MyContextMenu {
                     .setSubtitle(getMyActor().getAccountName());
             String shortName = getViewItem().actor.getActorName();
             if (getViewItem().actor.isIdentified()) {
-                ActorContextMenuItem.USER_MESSAGES.addTo(menu, menuGroup, order++,
+                ActorContextMenuItem.ACTOR_MESSAGES.addTo(menu, menuGroup, order++,
                         String.format(getActivity().getText(R.string.menu_item_user_messages).toString(), shortName));
                 ActorContextMenuItem.FRIENDS.addTo(menu, menuGroup, order++,
                         String.format(
@@ -85,7 +85,7 @@ public class ActorContextMenu extends MyContextMenu {
                     case 1:
                         break;
                     case 2:
-                        ActorContextMenuItem.ACT_AS_FIRST_OTHER_ACTOR.addTo(menu, menuGroup, order++,
+                        ActorContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT.addTo(menu, menuGroup, order++,
                                 String.format(
                                         getActivity().getText(R.string.menu_item_act_as_user).toString(),
                                         getMyActor().firstOtherAccountOfThisOrigin().getShortestUniqueAccountName(getMyContext())));
@@ -96,7 +96,7 @@ public class ActorContextMenu extends MyContextMenu {
                 }
 
             }
-            ActorContextMenuItem.GET_USER.addTo(menu, menuGroup, order++, R.string.get_user);
+            ActorContextMenuItem.GET_ACTOR.addTo(menu, menuGroup, order++, R.string.get_user);
         } catch (Exception e) {
             MyLog.e(this, method, e);
         }

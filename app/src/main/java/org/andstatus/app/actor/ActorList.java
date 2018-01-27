@@ -102,7 +102,7 @@ public class ActorList extends NoteEditorListActivity {
     @Override
     protected ActorListLoader newSyncLoader(Bundle args) {
         switch (mActorListType) {
-            case USERS_OF_MESSAGE:
+            case ACTORS_OF_NOTE:
                 return new ActorsOfNoteListLoader(mActorListType, getCurrentMyAccount(), centralItemId,
                         getParsedUri().getSearchQuery());
             default:
@@ -147,12 +147,12 @@ public class ActorList extends NoteEditorListActivity {
     @Override
     protected boolean isCommandToShowInSyncIndicator(CommandData commandData) {
         switch (commandData.getCommand()) {
-            case GET_USER:
+            case GET_ACTOR:
             case GET_FOLLOWERS:
             case GET_FRIENDS:
-            case FOLLOW_USER:
-            case STOP_FOLLOWING_USER:
-            case SEARCH_USERS:
+            case FOLLOW_ACTOR:
+            case STOP_FOLLOWING_ACTOR:
+            case SEARCH_ACTORS:
             case FETCH_AVATAR:
                 return true;
             default:
@@ -163,9 +163,9 @@ public class ActorList extends NoteEditorListActivity {
     @Override
     protected boolean isRefreshNeededAfterExecuting(CommandData commandData) {
         switch(commandData.getCommand()) {
-            case FOLLOW_USER:
-            case STOP_FOLLOWING_USER:
-            case SEARCH_USERS:
+            case FOLLOW_ACTOR:
+            case STOP_FOLLOWING_ACTOR:
+            case SEARCH_ACTORS:
                 return true;
             default:
                 return super.isRefreshNeededAfterExecuting(commandData);

@@ -72,7 +72,7 @@ public class ActAsTest extends TimelineActivityTest {
         assertEquals("Default actor", MyAccount.EMPTY, getActivity().getContextMenu().getMyActor());
 
         boolean invoked = helper.invokeContextMenuAction4ListItemId(method, listItemId,
-                NoteContextMenuItem.ACT_AS_FIRST_OTHER_USER, R.id.message_wrapper);
+                NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT, R.id.message_wrapper);
         MyAccount actor1 = getActivity().getContextMenu().getMyActor();
         logMsg += ";" + (invoked ? "" : " failed to invoke context menu 1," ) + " actor1=" + actor1;
         assertTrue(logMsg, actor1.isValid());
@@ -85,7 +85,7 @@ public class ActAsTest extends TimelineActivityTest {
         assertNotEquals(logMsg, actor1, firstOtherActor);
 
         boolean invoked2 = helper.invokeContextMenuAction4ListItemId(method, listItemId,
-                NoteContextMenuItem.ACT_AS_FIRST_OTHER_USER, R.id.message_wrapper);
+                NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT, R.id.message_wrapper);
         MyAccount actor2 = getActivity().getContextMenu().getMyActor();
         logMsg += ";" + (invoked2 ? "" : " failed to invoke context menu 2," ) + " actor2=" + actor2;
         assertNotEquals(logMsg, actor1, actor2);

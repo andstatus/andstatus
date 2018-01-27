@@ -95,8 +95,8 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
     private void loadFromInternet(ActorViewItem oUser) {
         MyLog.v(this, "User " + oUser + " will be loaded from the Internet");
         MyServiceManager.sendForegroundCommand(
-                CommandData.newUserCommand(
-                        CommandEnum.GET_USER,
+                CommandData.newActorCommand(
+                        CommandEnum.GET_ACTOR,
                         null, oUser.actor.origin,
                         oUser.getActorId(),
                         oUser.actor.getActorName()));

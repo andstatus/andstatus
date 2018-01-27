@@ -60,30 +60,30 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 createOrDestroyFavorite(execContext.getCommandData().itemId, 
                         execContext.getCommandData().getCommand() == CommandEnum.CREATE_FAVORITE);
                 break;
-            case FOLLOW_USER:
-            case STOP_FOLLOWING_USER:
+            case FOLLOW_ACTOR:
+            case STOP_FOLLOWING_ACTOR:
                 followOrStopFollowingUser(execContext.getCommandData().getUserId(),
-                        execContext.getCommandData().getCommand() == CommandEnum.FOLLOW_USER);
+                        execContext.getCommandData().getCommand() == CommandEnum.FOLLOW_ACTOR);
                 break;
-            case UPDATE_STATUS:
+            case UPDATE_NOTE:
                 updateStatus(execContext.getCommandData().itemId);
                 break;
-            case DESTROY_STATUS:
+            case DELETE_NOTE:
                 destroyStatus(execContext.getCommandData().itemId);
                 break;
-            case DESTROY_REBLOG:
+            case DELETE_REBLOG:
                 destroyReblog(execContext.getCommandData().itemId);
                 break;
             case GET_CONVERSATION:
                 getConversation(execContext.getCommandData().itemId);
                 break;
-            case GET_STATUS:
+            case GET_NOTE:
                 getStatus(execContext.getCommandData().itemId);
                 break;
-            case GET_USER:
+            case GET_ACTOR:
                 getActor(execContext.getCommandData().getUserId(), execContext.getCommandData().getActorName());
                 break;
-            case SEARCH_USERS:
+            case SEARCH_ACTORS:
                 searchUsers(execContext.getCommandData().getActorName());
                 break;
             case REBLOG:

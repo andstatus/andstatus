@@ -717,7 +717,7 @@ public class MyService extends Service {
 
         private void addSyncOfThisToQueue(CommandData commandDataExecuted) {
             if (commandDataExecuted.getResult().hasError()
-                    || commandDataExecuted.getCommand() != CommandEnum.UPDATE_STATUS
+                    || commandDataExecuted.getCommand() != CommandEnum.UPDATE_NOTE
                     || !SharedPreferencesUtil.getBoolean(
                             MyPreferences.KEY_SYNC_AFTER_MESSAGE_WAS_SENT, false)) {
                 return;

@@ -163,7 +163,7 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
                 buttons.setVisibility(View.VISIBLE);
                 setOnButtonClick(buttons, R.id.reply_button, NoteContextMenuItem.REPLY);
                 setOnButtonClick(buttons, R.id.reblog_button, NoteContextMenuItem.REBLOG);
-                setOnButtonClick(buttons, R.id.reblog_button_tinted, NoteContextMenuItem.DESTROY_REBLOG);
+                setOnButtonClick(buttons, R.id.reblog_button_tinted, NoteContextMenuItem.DELETE_REBLOG);
                 setOnButtonClick(buttons, R.id.favorite_button, NoteContextMenuItem.FAVORITE);
                 setOnButtonClick(buttons, R.id.favorite_button_tinted, NoteContextMenuItem.DESTROY_FAVORITE);
                 setOnButtonClick(buttons, R.id.more_button, NoteContextMenuItem.UNKNOWN);

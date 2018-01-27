@@ -179,7 +179,7 @@ public class ParsedUri {
                     break;
                 case USERLIST:
                 case USERLIST_SEARCH:
-                    if (getUserListType() == ActorListType.USERS_OF_MESSAGE) {
+                    if (getUserListType() == ActorListType.ACTORS_OF_NOTE) {
                         messageId = getItemId();
                     }
                     break;

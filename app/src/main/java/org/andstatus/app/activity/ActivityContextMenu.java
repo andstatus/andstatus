@@ -41,7 +41,7 @@ public class ActivityContextMenu {
             case MyContextMenu.MENU_GROUP_ACTOR:
                 actor.onContextItemSelected(item);
                 break;
-            case MyContextMenu.MENU_GROUP_MESSAGE:
+            case MyContextMenu.MENU_GROUP_NOTE:
                 message.onContextItemSelected(item);
                 break;
             case MyContextMenu.MENU_GROUP_OBJACTOR:

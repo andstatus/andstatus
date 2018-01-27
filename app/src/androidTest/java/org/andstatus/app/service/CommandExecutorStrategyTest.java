@@ -137,7 +137,7 @@ public class CommandExecutorStrategyTest {
 
         httpConnectionMock.setException(null);
         commandData = CommandData.newItemCommand(
-                CommandEnum.DESTROY_STATUS,
+                CommandEnum.DELETE_NOTE,
                 demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME),
                 msgId);
         CommandExecutorStrategy.executeCommand(commandData, null);
@@ -145,7 +145,7 @@ public class CommandExecutorStrategyTest {
 
         final long INEXISTENT_MSG_ID = -1;
         commandData = CommandData.newItemCommand(
-                CommandEnum.DESTROY_STATUS,
+                CommandEnum.DELETE_NOTE,
                 demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME),
                 INEXISTENT_MSG_ID);
         CommandExecutorStrategy.executeCommand(commandData, null);

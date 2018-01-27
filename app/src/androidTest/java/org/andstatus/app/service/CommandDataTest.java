@@ -126,13 +126,13 @@ public class CommandDataTest {
         queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.MENTIONS));
         queue.add(CommandData.newUpdateStatus(null, 3));
         queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME).setInForeground(true));
-        queue.add(CommandData.newCommand(CommandEnum.GET_STATUS));
+        queue.add(CommandData.newCommand(CommandEnum.GET_NOTE));
 
         assertCommand(queue, CommandEnum.GET_TIMELINE, TimelineType.HOME);
-        assertCommand(queue, CommandEnum.UPDATE_STATUS);
-        assertCommand(queue, CommandEnum.UPDATE_STATUS);
+        assertCommand(queue, CommandEnum.UPDATE_NOTE);
+        assertCommand(queue, CommandEnum.UPDATE_NOTE);
         assertCommand(queue, CommandEnum.GET_FRIENDS);
-        assertCommand(queue, CommandEnum.GET_STATUS);
+        assertCommand(queue, CommandEnum.GET_NOTE);
         assertCommand(queue, CommandEnum.GET_TIMELINE, TimelineType.SENT);
         assertCommand(queue, CommandEnum.GET_TIMELINE, TimelineType.SEARCH);
         assertCommand(queue, CommandEnum.GET_TIMELINE, TimelineType.MENTIONS);
@@ -152,8 +152,8 @@ public class CommandDataTest {
 
     @Test
     public void testSummary() {
-        followUnfollowSummary(CommandEnum.FOLLOW_USER);
-        followUnfollowSummary(CommandEnum.STOP_FOLLOWING_USER);
+        followUnfollowSummary(CommandEnum.FOLLOW_ACTOR);
+        followUnfollowSummary(CommandEnum.STOP_FOLLOWING_ACTOR);
     }
 
     private void followUnfollowSummary(CommandEnum command) {
@@ -161,7 +161,7 @@ public class CommandDataTest {
         assertTrue(ma.isValid());
         long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOrigin().getId(),
                 demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
-        CommandData data = CommandData.newUserCommand(
+        CommandData data = CommandData.newActorCommand(
                 command, null, demoData.getConversationMyAccount().getOrigin(), actorId, "");
         String summary = data.toCommandSummary(MyContextHolder.get());
         String msgLog = command.name() + "; Summary:'" + summary + "'";

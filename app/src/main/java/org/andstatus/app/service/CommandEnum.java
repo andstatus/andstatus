@@ -48,23 +48,23 @@ public enum CommandEnum {
     CREATE_FAVORITE("create-favorite", R.string.menu_item_favorite, 0, ConnectionRequired.SYNC),
     DESTROY_FAVORITE("destroy-favorite", R.string.menu_item_destroy_favorite, 0, ConnectionRequired.SYNC),
 
-    GET_USER("get-user", R.string.get_user, -5, ConnectionRequired.SYNC),
-    SEARCH_USERS("search-users", R.string.search_users, -5, ConnectionRequired.SYNC),
-    FOLLOW_USER("follow-user", R.string.command_follow_user, 0, ConnectionRequired.SYNC),
-    STOP_FOLLOWING_USER("stop-following-user", R.string.command_stop_following_user, 0, ConnectionRequired.SYNC),
+    GET_ACTOR("get-user", R.string.get_user, -5, ConnectionRequired.SYNC),
+    SEARCH_ACTORS("search-users", R.string.search_users, -5, ConnectionRequired.SYNC),
+    FOLLOW_ACTOR("follow-user", R.string.command_follow_user, 0, ConnectionRequired.SYNC),
+    STOP_FOLLOWING_ACTOR("stop-following-user", R.string.command_stop_following_user, 0, ConnectionRequired.SYNC),
     GET_FOLLOWERS("get-followers", R.string.get_followers, -5, ConnectionRequired.SYNC),
     GET_FRIENDS("get-friends", R.string.get_friends, -5, ConnectionRequired.SYNC),
 
     /** This command is for sending both public and private messages */
-    UPDATE_STATUS("update-status", R.string.button_create_message, -10, ConnectionRequired.SYNC),
-    DESTROY_STATUS("destroy-status", R.string.menu_item_destroy_status, -3, ConnectionRequired.SYNC),
-    GET_STATUS("get-status", R.string.title_command_get_status, -5, ConnectionRequired.SYNC),
+    UPDATE_NOTE("update-status", R.string.button_create_message, -10, ConnectionRequired.SYNC),
+    DELETE_NOTE("destroy-status", R.string.menu_item_destroy_status, -3, ConnectionRequired.SYNC),
+    GET_NOTE("get-status", R.string.title_command_get_status, -5, ConnectionRequired.SYNC),
     GET_CONVERSATION("get-conversation", R.string.get_conversation, -5, ConnectionRequired.SYNC),
     /** see http://gstools.org/api/doc/ */
     GET_OPEN_INSTANCES("get_open_instances", R.string.get_open_instances_title, -1, ConnectionRequired.SYNC),
 
     REBLOG("reblog", R.string.menu_item_reblog, -9, ConnectionRequired.SYNC),
-    DESTROY_REBLOG("destroy-reblog", R.string.menu_item_destroy_reblog, -3, ConnectionRequired.SYNC),
+    DELETE_REBLOG("destroy-reblog", R.string.menu_item_destroy_reblog, -3, ConnectionRequired.SYNC),
 
     RATE_LIMIT_STATUS("rate-limit-status", 0, 0, ConnectionRequired.SYNC),
 

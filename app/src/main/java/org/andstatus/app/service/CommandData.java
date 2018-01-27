@@ -86,12 +86,12 @@ public class CommandData implements Comparable<CommandData> {
             Timeline timeline =  Timeline.getTimeline(myContext, 0, TimelineType.SEARCH, null, 0, origin, queryString);
             return new CommandData(0, CommandEnum.GET_TIMELINE, timeline, 0);
         } else {
-            return newUserCommand(CommandEnum.SEARCH_USERS, null, origin, 0, queryString);
+            return newActorCommand(CommandEnum.SEARCH_ACTORS, null, origin, 0, queryString);
         }
     }
 
     public static CommandData newUpdateStatus(MyAccount myAccount, long unsentMessageId) {
-        CommandData commandData = newAccountCommand(CommandEnum.UPDATE_STATUS, myAccount);
+        CommandData commandData = newAccountCommand(CommandEnum.UPDATE_NOTE, myAccount);
         commandData.itemId = unsentMessageId;
         commandData.setTrimmedMessageBodyAsDescription(unsentMessageId);
         return commandData;
@@ -113,8 +113,8 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     @NonNull
-    public static CommandData newUserCommand(CommandEnum command, MyAccount myActor,
-                                             Origin origin, long actorId, String actorName) {
+    public static CommandData newActorCommand(CommandEnum command, MyAccount myActor,
+                                              Origin origin, long actorId, String actorName) {
         CommandData commandData = newTimelineCommand(command, myActor, TimelineType.USER, actorId, origin);
         commandData.setActorName(actorName);
         commandData.description = commandData.getActorName();
@@ -404,7 +404,7 @@ public class CommandData implements Comparable<CommandData> {
                 }
                 break;
             case FETCH_ATTACHMENT:
-            case UPDATE_STATUS:
+            case UPDATE_NOTE:
                 I18n.appendWithSpace(builder, "\"");
                 builder.append(trimConditionally(description, summaryOnly));
                 builder.append("\"");
@@ -417,14 +417,14 @@ public class CommandData implements Comparable<CommandData> {
                 builder.append(" ");
                 builder.append(TimelineTitle.load(myContext, timeline, null).toString());
                 break;
-            case FOLLOW_USER:
-            case STOP_FOLLOWING_USER:
+            case FOLLOW_ACTOR:
+            case STOP_FOLLOWING_ACTOR:
             case GET_FOLLOWERS:
             case GET_FRIENDS:
                 I18n.appendWithSpace(builder, MyQuery.actorIdToWebfingerId(timeline.getActorId()));
                 break;
-            case GET_USER:
-            case SEARCH_USERS:
+            case GET_ACTOR:
+            case SEARCH_ACTORS:
                 if (StringUtils.nonEmpty(getActorName())) {
                     builder.append(" \"");
                     builder.append(getActorName());

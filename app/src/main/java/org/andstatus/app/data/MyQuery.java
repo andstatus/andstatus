@@ -530,7 +530,7 @@ public class MyQuery {
         return TextUtils.isEmpty(columnValue) ? "" : columnValue;
     }
 
-    public static long msgIdToUserId(String msgUserIdColumnName, long systemId) {
+    public static long noteIdToActorId(String msgUserIdColumnName, long systemId) {
         long actorId = 0;
         try {
             if (msgUserIdColumnName.contentEquals(ActivityTable.ACTOR_ID) ||

@@ -58,7 +58,7 @@ public class NoteContextMenu extends MyContextMenu {
     private String selectedMenuItemTitle = "";
 
     public NoteContextMenu(NoteContextMenuContainer menuContainer) {
-        super(menuContainer.getActivity(), MyContextMenu.MENU_GROUP_MESSAGE);
+        super(menuContainer.getActivity(), MyContextMenu.MENU_GROUP_NOTE);
         this.menuContainer = menuContainer;
     }
 
@@ -105,7 +105,7 @@ public class NoteContextMenu extends MyContextMenu {
             } else if (getActivity().getListData().canBeCollapsed(getActivity().getPositionOfContextMenu())) {
                 NoteContextMenuItem.COLLAPSE_DUPLICATES.addTo(menu, order++, R.string.collapse_duplicates);
             }
-            NoteContextMenuItem.USERS_OF_MESSAGE.addTo(menu, order++, R.string.users_of_message);
+            NoteContextMenuItem.ACTORS_OF_NOTE.addTo(menu, order++, R.string.users_of_message);
 
             if (msg.isAuthorSucceededMyAccount() && Note.mayBeEdited(msg.origin.getOriginType(), msg.status)) {
                 NoteContextMenuItem.EDIT.addTo(menu, order++, R.string.menu_item_edit);
@@ -167,7 +167,7 @@ public class NoteContextMenu extends MyContextMenu {
                 NoteContextMenuItem.REPLY.addTo(menu, order++, R.string.menu_item_reply);
                 NoteContextMenuItem.REPLY_TO_CONVERSATION_PARTICIPANTS.addTo(menu, order++,
                         R.string.menu_item_reply_to_conversation_participants);
-                NoteContextMenuItem.REPLY_TO_MENTIONED_USERS.addTo(menu, order++,
+                NoteContextMenuItem.REPLY_TO_MENTIONED_ACTORS.addTo(menu, order++,
                         R.string.menu_item_reply_to_mentioned_users);
             }
             NoteContextMenuItem.SHARE.addTo(menu, order++, R.string.menu_item_share);
@@ -177,7 +177,7 @@ public class NoteContextMenu extends MyContextMenu {
 
             if (!isEditorVisible()) {
                 // TODO: Only if he follows me?
-                NoteContextMenuItem.DIRECT_MESSAGE.addTo(menu, order++,
+                NoteContextMenuItem.PRIVATE_NOTE.addTo(menu, order++,
                         R.string.menu_item_private_message);
             }
 
@@ -190,7 +190,7 @@ public class NoteContextMenu extends MyContextMenu {
                             R.string.menu_item_favorite);
                 }
                 if (msg.reblogged) {
-                    NoteContextMenuItem.DESTROY_REBLOG.addTo(menu, order++,
+                    NoteContextMenuItem.DELETE_REBLOG.addTo(menu, order++,
                             msg.getMyAccount().alternativeTermForResourceId(R.string.menu_item_destroy_reblog));
                 } else {
                     // Don't allow a User to reblog himself
@@ -202,7 +202,7 @@ public class NoteContextMenu extends MyContextMenu {
             }
 
             if (msg.isLoaded()) {
-                NoteContextMenuItem.OPEN_MESSAGE_PERMALINK.addTo(menu, order++, R.string.menu_item_open_message_permalink);
+                NoteContextMenuItem.OPEN_NOTE_PERMALINK.addTo(menu, order++, R.string.menu_item_open_message_permalink);
             }
 
             if (msg.isAuthorSucceededMyAccount()) {
@@ -211,11 +211,11 @@ public class NoteContextMenu extends MyContextMenu {
                         // TODO: Delete private (direct) message
                     } else if (!msg.reblogged && msg.getMyAccount().getConnection()
                             .isApiSupported(Connection.ApiRoutineEnum.DESTROY_MESSAGE)) {
-                        NoteContextMenuItem.DESTROY_STATUS.addTo(menu, order++,
+                        NoteContextMenuItem.DELETE_NOTE.addTo(menu, order++,
                                 R.string.menu_item_destroy_status);
                     }
                 } else {
-                    NoteContextMenuItem.DESTROY_STATUS.addTo(menu, order++, R.string.button_discard);
+                    NoteContextMenuItem.DELETE_NOTE.addTo(menu, order++, R.string.button_discard);
                 }
             }
 
@@ -225,7 +225,7 @@ public class NoteContextMenu extends MyContextMenu {
                     case 1:
                         break;
                     case 2:
-                        NoteContextMenuItem.ACT_AS_FIRST_OTHER_USER.addTo(menu, order++,
+                        NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT.addTo(menu, order++,
                                 String.format(
                                         getActivity().getText(R.string.menu_item_act_as_user).toString(),
                                         msg.getMyAccount().firstOtherAccountOfThisOrigin().getShortestUniqueAccountName(getMyContext())));
@@ -235,7 +235,7 @@ public class NoteContextMenu extends MyContextMenu {
                         break;
                 }
             }
-            NoteContextMenuItem.GET_MESSAGE.addTo(menu, order, R.string.get_message);
+            NoteContextMenuItem.GET_NOTE.addTo(menu, order, R.string.get_message);
         } catch (Exception e) {
             MyLog.e(this, method, e);
         }
@@ -260,9 +260,9 @@ public class NoteContextMenu extends MyContextMenu {
             case 0:
                 break;
             case 1:
-                menu.add(ContextMenu.NONE, NoteContextMenuItem.MESSAGE_LINK.getId(),
+                menu.add(ContextMenu.NONE, NoteContextMenuItem.OPEN_NOTE_LINK.getId(),
                             order, getActivity().getText(R.string.n_message_link).toString() +
-                                NoteContextMenuItem.MESSAGE_LINK_SEPARATOR +
+                                NoteContextMenuItem.NOTE_LINK_SEPARATOR +
                                 links[0].getURL());
                 break;
             default:
@@ -271,7 +271,7 @@ public class NoteContextMenu extends MyContextMenu {
                                         links.length));
                 int orderSubmenu = 0;
                 for (URLSpan link : links) {
-                    subMenu.add(ContextMenu.NONE, NoteContextMenuItem.MESSAGE_LINK.getId(),
+                    subMenu.add(ContextMenu.NONE, NoteContextMenuItem.OPEN_NOTE_LINK.getId(),
                             orderSubmenu++, link.getURL());
                 }
                 break;

@@ -33,7 +33,7 @@ import org.andstatus.app.util.MyLog;
  */
 public class MyContextMenu implements View.OnCreateContextMenuListener {
     public static final int MENU_GROUP_ACTOR = Menu.FIRST;
-    public static final int MENU_GROUP_MESSAGE = Menu.FIRST + 1;
+    public static final int MENU_GROUP_NOTE = Menu.FIRST + 1;
     public static final int MENU_GROUP_OBJACTOR = Menu.FIRST + 2;
 
     @NonNull

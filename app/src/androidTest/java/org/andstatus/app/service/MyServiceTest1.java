@@ -46,7 +46,7 @@ public class MyServiceTest1 extends MyServiceTest {
         String urlString = "http://andstatus.org/nonexistent2_avatar_" + System.currentTimeMillis() +  ".png";
         AvatarDownloaderTest.changeAvatarUrl(ma, urlString);
         
-        mService.setListenedCommand(CommandData.newUserCommand(
+        mService.setListenedCommand(CommandData.newActorCommand(
                 CommandEnum.FETCH_AVATAR,
                 null, ma.getOrigin(),
                 ma.getActorId(),

@@ -25,7 +25,7 @@ import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.timeline.WhichPage;
 
 public enum ManageTimelinesContextMenuItem implements ContextMenuItem {
-    SHOW_MESSAGES() {
+    SHOW_NOTES() {
         @Override
         public boolean execute(ManageTimelinesContextMenu menu, ManageTimelinesViewItem viewItem) {
             TimelineActivity.startForTimeline(menu.getActivity().getMyContext(), menu.getActivity(),

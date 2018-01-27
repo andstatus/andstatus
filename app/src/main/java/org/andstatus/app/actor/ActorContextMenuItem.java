@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,11 +38,11 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 
 public enum ActorContextMenuItem implements ContextMenuItem {
-    GET_USER() {
+    GET_ACTOR() {
         @Override
         void executeOnUiThread(ActorContextMenu menu, MyAccount ma) {
-            CommandData commandData = CommandData.newUserCommand(
-                    CommandEnum.GET_USER,
+            CommandData commandData = CommandData.newActorCommand(
+                    CommandEnum.GET_ACTOR,
                     ma,
                     menu.getOrigin(),
                     menu.getViewItem().getActorId(),
@@ -66,7 +66,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
             // TODO
         }
     },
-    USER_MESSAGES() {
+    ACTOR_MESSAGES() {
         @Override
         void executeOnUiThread(ActorContextMenu menu, MyAccount ma) {
             TimelineActivity.startForTimeline(menu.getActivity().getMyContext(),
@@ -78,16 +78,16 @@ public enum ActorContextMenuItem implements ContextMenuItem {
     FOLLOW() {
         @Override
         void executeOnUiThread(ActorContextMenu menu, MyAccount ma) {
-            sendUserCommand(CommandEnum.FOLLOW_USER, ma, menu);
+            sendUserCommand(CommandEnum.FOLLOW_ACTOR, ma, menu);
         }
     },
     STOP_FOLLOWING() {
         @Override
         void executeOnUiThread(ActorContextMenu menu, MyAccount ma) {
-            sendUserCommand(CommandEnum.STOP_FOLLOWING_USER, ma, menu);
+            sendUserCommand(CommandEnum.STOP_FOLLOWING_ACTOR, ma, menu);
         }
     },
-    ACT_AS_FIRST_OTHER_ACTOR() {
+    ACT_AS_FIRST_OTHER_ACCOUNT() {
         @Override
         void executeOnUiThread(ActorContextMenu menu, MyAccount ma) {
             menu.setMyActor(ma.firstOtherAccountOfThisOrigin());
@@ -242,6 +242,6 @@ public enum ActorContextMenuItem implements ContextMenuItem {
 
     void sendUserCommand(CommandEnum command, MyAccount myActor, ActorContextMenu menu) {
         MyServiceManager.sendManualForegroundCommand(
-                CommandData.newUserCommand(command, myActor, menu.getOrigin(), menu.getViewItem().getActorId(), ""));
+                CommandData.newActorCommand(command, myActor, menu.getOrigin(), menu.getViewItem().getActorId(), ""));
     }
 }

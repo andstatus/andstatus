@@ -43,7 +43,7 @@ public class FollowersList extends ActorList {
         CommandEnum command = mActorListType == ActorListType.FOLLOWERS ?
                 CommandEnum.GET_FOLLOWERS : CommandEnum.GET_FRIENDS;
         MyServiceManager.sendForegroundCommand(
-                (CommandData.newUserCommand(command, null, getCurrentMyAccount().getOrigin(), getFollowedUserId(), ""))
+                (CommandData.newActorCommand(command, null, getCurrentMyAccount().getOrigin(), getFollowedUserId(), ""))
                         .setManuallyLaunched(manuallyLaunched));
     }
 

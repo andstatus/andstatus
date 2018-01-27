@@ -1086,14 +1086,14 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             case GET_OLDER_TIMELINE:
             case FETCH_ATTACHMENT:
             case FETCH_AVATAR:
-            case UPDATE_STATUS:
-            case DESTROY_STATUS:
+            case UPDATE_NOTE:
+            case DELETE_NOTE:
             case CREATE_FAVORITE:
             case DESTROY_FAVORITE:
-            case FOLLOW_USER:
-            case STOP_FOLLOWING_USER:
+            case FOLLOW_ACTOR:
+            case STOP_FOLLOWING_ACTOR:
             case REBLOG:
-            case DESTROY_REBLOG:
+            case DELETE_REBLOG:
                 return true;
             default:
                 return false;

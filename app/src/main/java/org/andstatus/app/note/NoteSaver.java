@@ -92,7 +92,7 @@ public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorDa
             return;
         }
         CommandData commandData = data.status == DownloadStatus.DELETED ?
-                CommandData.newItemCommand(CommandEnum.DESTROY_STATUS, data.getMyAccount(), data.getMsgId()) :
+                CommandData.newItemCommand(CommandEnum.DELETE_NOTE, data.getMyAccount(), data.getMsgId()) :
                 CommandData.newUpdateStatus(data.getMyAccount(), data.getMsgId());
         MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.UNKNOWN)
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
