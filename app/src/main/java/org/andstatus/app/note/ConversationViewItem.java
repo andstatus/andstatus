@@ -32,7 +32,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.DownloadTable;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.util.I18n;
@@ -81,12 +81,12 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
                 break;
             }
 
-            authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
+            authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID);
             super.load(cursor);
-            msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
+            msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
             authorName = TimelineSql.userColumnNameToNameAtTimeline(cursor, ActorTable.AUTHOR_NAME, false);
-            setBody(MyHtml.prepareForView(DbUtils.getString(cursor, MsgTable.BODY)));
-            String via = DbUtils.getString(cursor, MsgTable.VIA);
+            setBody(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.BODY)));
+            String via = DbUtils.getString(cursor, NoteTable.VIA);
             if (!TextUtils.isEmpty(via)) {
                 messageSource = Html.fromHtml(via).toString().trim();
             }
@@ -94,23 +94,23 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
             if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
                 attachedImageFile = AttachedImageFile.fromCursor(cursor);
             }
-            inReplyToMsgId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_MSG_ID);
-            inReplyToUserId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_USER_ID);
+            inReplyToMsgId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
+            inReplyToUserId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID);
             inReplyToName = TimelineSql.userColumnNameToNameAtTimeline(cursor, ActorTable.IN_REPLY_TO_NAME, false);
             //TODO:  recipientName = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.RECIPIENT_NAME, false);
 
-            if (DbUtils.getTriState(cursor, MsgTable.REBLOGGED) == TriState.TRUE) {
+            if (DbUtils.getTriState(cursor, NoteTable.REBLOGGED) == TriState.TRUE) {
                 reblogged = true;
             }
-            if (DbUtils.getTriState(cursor, MsgTable.FAVORITED) == TriState.TRUE) {
+            if (DbUtils.getTriState(cursor, NoteTable.FAVORITED) == TriState.TRUE) {
                 favorited = true;
             }
 
             ind++;
         } while (cursor.moveToNext());
 
-        for (Actor user : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getMsgId())) {
-            rebloggers.put(user.actorId, user.getWebFingerId());
+        for (Actor actor : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getMsgId())) {
+            rebloggers.put(actor.actorId, actor.getWebFingerId());
         }
     }
 }

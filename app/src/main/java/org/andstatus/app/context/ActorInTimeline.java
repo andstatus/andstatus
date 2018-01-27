@@ -20,9 +20,9 @@ import android.text.TextUtils;
 
 import org.andstatus.app.util.MyLog;
 
-/** How to show a User in a Timeline */
+/** How to show an Actor in a Timeline */
 public enum ActorInTimeline {
-    USERNAME(1),
+    ACTORNAME(1),
     AT_ACTORNAME(2),
     WEBFINGER_ID(3),
     REAL_NAME(4),

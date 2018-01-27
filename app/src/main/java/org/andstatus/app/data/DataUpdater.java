@@ -25,7 +25,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.FriendshipTable;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.net.http.ConnectionException;
@@ -118,9 +118,9 @@ public class DataUpdater {
             activity.setSubscribedByMe(TriState.TRUE);
         }
         activity.save(execContext.getMyContext());
-        lum.onNewUserActivity(new ActorActivity(activity.getActor().actorId, activity.getId(), activity.getUpdatedDate()));
+        lum.onNewActorActivity(new ActorActivity(activity.getActor().actorId, activity.getId(), activity.getUpdatedDate()));
         if ( !activity.isAuthorActor()) {
-            lum.onNewUserActivity(new ActorActivity(activity.getAuthor().actorId, activity.getId(), activity.getUpdatedDate()));
+            lum.onNewActorActivity(new ActorActivity(activity.getAuthor().actorId, activity.getId(), activity.getUpdatedDate()));
         }
         execContext.getResult().onNotificationEvent(activity.getNotificationEventType());
     }
@@ -167,8 +167,8 @@ public class DataUpdater {
             long updatedDateStored = 0;
             if (message.msgId != 0) {
                 DownloadStatus statusStored = DownloadStatus.load(
-                        MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, message.msgId));
-                updatedDateStored = MyQuery.msgIdToLongColumnValue(MsgTable.UPDATED_DATE, message.msgId);
+                        MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, message.msgId));
+                updatedDateStored = MyQuery.msgIdToLongColumnValue(NoteTable.UPDATED_DATE, message.msgId);
                 if (isFirstTimeLoaded) {
                     isFirstTimeLoaded = statusStored != DownloadStatus.LOADED;
                 }
@@ -182,19 +182,19 @@ public class DataUpdater {
 
             // TODO: move as toContentValues() into MbMessage
             ContentValues values = new ContentValues();
-            values.put(MsgTable.MSG_STATUS, message.getStatus().save());
-            values.put(MsgTable.UPDATED_DATE, message.getUpdatedDate());
+            values.put(NoteTable.NOTE_STATUS, message.getStatus().save());
+            values.put(NoteTable.UPDATED_DATE, message.getUpdatedDate());
 
             if (activity.getAuthor().actorId != 0) {
-                values.put(MsgTable.AUTHOR_ID, activity.getAuthor().actorId);
+                values.put(NoteTable.AUTHOR_ID, activity.getAuthor().actorId);
             }
-            values.put(MsgTable.MSG_OID, message.oid);
-            values.put(MsgTable.ORIGIN_ID, message.origin.getId());
+            values.put(NoteTable.NOTE_OID, message.oid);
+            values.put(NoteTable.ORIGIN_ID, message.origin.getId());
             if (nonEmptyOid(message.conversationOid)) {
-                values.put(MsgTable.CONVERSATION_OID, message.conversationOid);
+                values.put(NoteTable.CONVERSATION_OID, message.conversationOid);
             }
-            values.put(MsgTable.BODY, message.getBody());
-            values.put(MsgTable.BODY_TO_SEARCH, message.getBodyToSearch());
+            values.put(NoteTable.BODY, message.getBody());
+            values.put(NoteTable.BODY_TO_SEARCH, message.getBodyToSearch());
 
             activity.getMessage().addRecipientsFromBodyText(activity.getActor());
             updateInReplyTo(activity, values);
@@ -203,21 +203,21 @@ public class DataUpdater {
             }
             if (activity.getMessage().audience().containsMe(execContext.getMyContext())
                     && !activity.isMyActorOrAuthor(execContext.myContext)) {
-                values.put(MsgTable.MENTIONED, TriState.TRUE.id);
+                values.put(NoteTable.MENTIONED, TriState.TRUE.id);
             }
 
             if (!TextUtils.isEmpty(message.via)) {
-                values.put(MsgTable.VIA, message.via);
+                values.put(NoteTable.VIA, message.via);
             }
             if (!TextUtils.isEmpty(message.url)) {
-                values.put(MsgTable.URL, message.url);
+                values.put(NoteTable.URL, message.url);
             }
             if (message.getPrivate().known()) {
-                values.put(MsgTable.PRIVATE, message.getPrivate().id);
+                values.put(NoteTable.PRIVATE, message.getPrivate().id);
             }
 
             if (message.lookupConversationId() != 0) {
-                values.put(MsgTable.CONVERSATION_ID, message.getConversationId());
+                values.put(NoteTable.CONVERSATION_ID, message.getConversationId());
             }
 
             if (MyLog.isVerboseEnabled()) {
@@ -239,7 +239,7 @@ public class DataUpdater {
 
                 if (message.getConversationId() == 0) {
                     ContentValues values2 = new ContentValues();
-                    values2.put(MsgTable.CONVERSATION_ID, message.setConversationIdFromMsgId());
+                    values2.put(NoteTable.CONVERSATION_ID, message.setConversationIdFromMsgId());
                     execContext.getContext().getContentResolver().update(msgUri, values2, null, null);
                 }
                 MyLog.v("MbMessage", "Added " + message);
@@ -276,9 +276,9 @@ public class DataUpdater {
             new DataUpdater(execContext).onActivity(inReply);
             if (inReply.getMessage().msgId != 0) {
                 activity.getMessage().addRecipient(inReply.getAuthor());
-                values.put(MsgTable.IN_REPLY_TO_MSG_ID, inReply.getMessage().msgId);
+                values.put(NoteTable.IN_REPLY_TO_NOTE_ID, inReply.getMessage().msgId);
                 if (inReply.getAuthor().actorId != 0) {
-                    values.put(MsgTable.IN_REPLY_TO_USER_ID, inReply.getAuthor().actorId);
+                    values.put(NoteTable.IN_REPLY_TO_ACTOR_ID, inReply.getAuthor().actorId);
                 }
             }
         }
@@ -408,21 +408,21 @@ public class DataUpdater {
 
             if (followedByMe.known()) {
                 values.put(FriendshipTable.FOLLOWED, followedByMe.toBoolean(false));
-                MyLog.v(this, "User '" + me.getAccountName() + "' "
+                MyLog.v(this, "Account '" + me.getAccountName() + "' "
                                 + (followedByMe.toBoolean(false) ? "follows" : "stop following ")
                                 + objActor.getActorName());
             }
             
-            // Construct the Uri to the User
-            Uri userUri = MatchedUri.getActorUri(me.getActorId(), actorId);
+            // Construct the Uri to the Actor
+            Uri actorUri = MatchedUri.getActorUri(me.getActorId(), actorId);
             if (actorId == 0) {
                 // There was no such row so add new one
                 values.put(ActorTable.ORIGIN_ID, objActor.origin.getId());
                 actorId = ParsedUri.fromUri(
-                        execContext.getContext().getContentResolver().insert(userUri, values))
+                        execContext.getContext().getContentResolver().insert(actorUri, values))
                         .getActorId();
             } else if (values.size() > 0) {
-                execContext.getContext().getContentResolver().update(userUri, values, null, null);
+                execContext.getContext().getContentResolver().update(actorUri, values, null, null);
             }
             objActor.actorId = actorId;
             if (objActor.hasLatestMessage()) {
@@ -437,7 +437,7 @@ public class DataUpdater {
 
     public void downloadOneNoteBy(String actorOid) throws ConnectionException {
         List<AActivity> activities = execContext.getConnection().getTimeline(
-                TimelineType.USER.getConnectionApiRoutine(), TimelinePosition.EMPTY,
+                TimelineType.ACTOR.getConnectionApiRoutine(), TimelinePosition.EMPTY,
                 TimelinePosition.EMPTY, 1, actorOid);
         for (AActivity item : activities) {
             onActivity(item, false);

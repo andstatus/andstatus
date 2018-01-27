@@ -54,7 +54,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
     @Override
     public void onDeleted(Context context, int[] appWidgetIds) {
         MyLog.v(this, "onDeleted; ids=" + Arrays.toString(appWidgetIds));
-        // When the user deletes the widget, delete all data, associated with it.
+        // When a user deletes the widget, delete all data, associated with it.
         for (int id : appWidgetIds) {
             MyAppWidgetData.newInstance(context, id).delete();
         }

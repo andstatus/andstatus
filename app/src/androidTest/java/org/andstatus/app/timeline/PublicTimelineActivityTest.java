@@ -29,7 +29,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.note.BaseNoteViewItem;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -162,7 +162,7 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
                         String.valueOf(viewItem.getBody()).contains(publicMessageText));
                 assertNotEquals("Message #" + viewItem.getId() + " '" + viewItem.getBody()
                         + "' is private" + "\n" + viewItem, TriState.TRUE,
-                        MyQuery.msgIdToTriState(MsgTable.PRIVATE, viewItem.getId()));
+                        MyQuery.msgIdToTriState(NoteTable.PRIVATE, viewItem.getId()));
                 msgCount++;
             }
         }

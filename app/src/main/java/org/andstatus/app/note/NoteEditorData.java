@@ -33,7 +33,7 @@ import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.AActivity;
@@ -151,24 +151,24 @@ public class NoteEditorData {
         NoteEditorData data;
         if (msgId != 0) {
             MyAccount ma = MyContextHolder.get().persistentAccounts().fromActorId(
-                    MyQuery.msgIdToLongColumnValue(MsgTable.AUTHOR_ID, msgId));
+                    MyQuery.msgIdToLongColumnValue(NoteTable.AUTHOR_ID, msgId));
             data = new NoteEditorData(ma);
             data.msgId = msgId;
-            data.msgOid = MyQuery.msgIdToStringColumnValue(MsgTable.MSG_OID, msgId);
+            data.msgOid = MyQuery.msgIdToStringColumnValue(NoteTable.NOTE_OID, msgId);
             data.activityId = MyQuery.msgIdToLongColumnValue(ActivityTable.LAST_UPDATE_ID, msgId);
-            data.status = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, msgId));
-            data.setBody(MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId));
+            data.status = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, msgId));
+            data.setBody(MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId));
             data.downloadData = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY);
             if (data.downloadData.getStatus() == LOADED) {
                 AttachedImageFile imageFile = new AttachedImageFile(data.downloadData.getDownloadId(),
                         data.downloadData.getFilename());
                 data.image = imageFile.loadAndGetImage();
             }
-            data.inReplyToMsgId = MyQuery.msgIdToLongColumnValue(MsgTable.IN_REPLY_TO_MSG_ID, msgId);
-            data.inReplyToUserId = MyQuery.msgIdToLongColumnValue(MsgTable.IN_REPLY_TO_USER_ID, msgId);
-            data.inReplyToBody = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, data.inReplyToMsgId);
+            data.inReplyToMsgId = MyQuery.msgIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, msgId);
+            data.inReplyToUserId = MyQuery.msgIdToLongColumnValue(NoteTable.IN_REPLY_TO_ACTOR_ID, msgId);
+            data.inReplyToBody = MyQuery.msgIdToStringColumnValue(NoteTable.BODY, data.inReplyToMsgId);
             data.recipients = Audience.fromMsgId(ma.getOrigin(), msgId);
-            data.isPrivate = MyQuery.msgIdToTriState(MsgTable.PRIVATE, msgId);
+            data.isPrivate = MyQuery.msgIdToTriState(NoteTable.PRIVATE, msgId);
             MyLog.v(TAG, "Loaded " + data);
         } else {
             data = new NoteEditorData(MyContextHolder.get().persistentAccounts().getCurrentAccount());
@@ -209,7 +209,7 @@ public class NoteEditorData {
             final AActivity inReplyTo = AActivity.newPartialMessage(getMyAccount().getActor(),
                     MyQuery.idToOid(OidEnum.MSG_OID, inReplyToMsgId, 0), 0, UNKNOWN);
             if (inReplyToUserId == 0) {
-                inReplyToUserId = MyQuery.msgIdToLongColumnValue(MsgTable.AUTHOR_ID, inReplyToMsgId);
+                inReplyToUserId = MyQuery.msgIdToLongColumnValue(NoteTable.AUTHOR_ID, inReplyToMsgId);
             }
             inReplyTo.setActor(Actor.fromOriginAndActorId(getMyAccount().getOrigin(), inReplyToUserId));
             message.setInReplyTo(inReplyTo);
@@ -325,7 +325,7 @@ public class NoteEditorData {
     }
 
     private void addUsersBeforeText(List<Long> toMention) {
-        toMention.add(0, MyQuery.msgIdToLongColumnValue(MsgTable.AUTHOR_ID, inReplyToMsgId));
+        toMention.add(0, MyQuery.msgIdToLongColumnValue(NoteTable.AUTHOR_ID, inReplyToMsgId));
         List<Long> mentioned = new ArrayList<>();
         mentioned.add(ma.getActorId());  // Don't mention an author of this message
         String mentions = "";
@@ -359,7 +359,7 @@ public class NoteEditorData {
     }
 
     private ActorInTimeline getActorInTimeline() {
-        return ma.getOrigin().isMentionAsWebFingerId() ? ActorInTimeline.WEBFINGER_ID : ActorInTimeline.USERNAME;
+        return ma.getOrigin().isMentionAsWebFingerId() ? ActorInTimeline.WEBFINGER_ID : ActorInTimeline.ACTORNAME;
     }
 
     public NoteEditorData addRecipientId(long actorId) {

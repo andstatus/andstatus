@@ -122,7 +122,7 @@ public class PersistentAccounts {
     public boolean delete(MyAccount ma) {
         boolean isDeleted = false;
 
-        // Delete the User's object from the list
+        // Delete the Actor's object from the list
         MyAccount toDelete = null;
         for (MyAccount persistentAccount : myAccounts) {
             if (persistentAccount.equals(ma)) {
@@ -172,14 +172,14 @@ public class PersistentAccounts {
     }
 
     @NonNull
-    public MyAccount fromUserOfSameOrigin(@NonNull Actor user) {
-        return fromUser(user, true);
+    public MyAccount fromUserOfSameOrigin(@NonNull Actor actor) {
+        return fromUser(actor, true);
     }
 
     /** Doesn't take origin into account */
     @NonNull
-    public MyAccount fromUser(@NonNull Actor user) {
-        return fromUser(user, false);
+    public MyAccount fromUser(@NonNull Actor actor) {
+        return fromUser(actor, false);
     }
 
     @NonNull
@@ -189,14 +189,14 @@ public class PersistentAccounts {
     }
 
     public boolean contains(@NonNull Collection<Actor> users) {
-        for (Actor user : users) {
-            if (fromUser(user).isValid()) return true;
+        for (Actor actor : users) {
+            if (fromUser(actor).isValid()) return true;
         }
         return false;
     }
 
-    public boolean contains(@NonNull Actor user) {
-      return fromUser(user).isValid();
+    public boolean contains(@NonNull Actor actor) {
+      return fromUser(actor).isValid();
     }
 
     public boolean isMyActorId(long actorId) {

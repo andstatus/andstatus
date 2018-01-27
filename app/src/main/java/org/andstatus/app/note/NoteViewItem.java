@@ -31,7 +31,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.DownloadTable;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.util.I18n;
@@ -70,21 +70,21 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
 
         authorName = TimelineSql.userColumnIndexToNameAtTimeline(cursor,
                 cursor.getColumnIndex(ActorTable.AUTHOR_NAME), MyPreferences.getShowOrigin());
-        setBody(MyHtml.prepareForView(DbUtils.getString(cursor, MsgTable.BODY)));
-        inReplyToMsgId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_MSG_ID);
-        inReplyToUserId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_USER_ID);
+        setBody(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.BODY)));
+        inReplyToMsgId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
+        inReplyToUserId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID);
         inReplyToName = DbUtils.getString(cursor, ActorTable.IN_REPLY_TO_NAME);
         recipientName = DbUtils.getString(cursor, ActorTable.RECIPIENT_NAME);
         activityUpdatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
-        updatedDate = DbUtils.getLong(cursor, MsgTable.UPDATED_DATE);
-        msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
+        updatedDate = DbUtils.getLong(cursor, NoteTable.UPDATED_DATE);
+        msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
 
-        authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
+        authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID);
 
-        favorited = DbUtils.getTriState(cursor, MsgTable.FAVORITED) == TriState.TRUE;
-        reblogged = DbUtils.getTriState(cursor, MsgTable.REBLOGGED) == TriState.TRUE;
+        favorited = DbUtils.getTriState(cursor, NoteTable.FAVORITED) == TriState.TRUE;
+        reblogged = DbUtils.getTriState(cursor, NoteTable.REBLOGGED) == TriState.TRUE;
 
-        String via = DbUtils.getString(cursor, MsgTable.VIA);
+        String via = DbUtils.getString(cursor, NoteTable.VIA);
         if (!TextUtils.isEmpty(via)) {
             messageSource = Html.fromHtml(via).toString().trim();
         }
@@ -97,8 +97,8 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
         }
 
         long beforeRebloggers = System.currentTimeMillis();
-        for (Actor user : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getMsgId())) {
-            rebloggers.put(user.actorId, user.getWebFingerId());
+        for (Actor actor : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getMsgId())) {
+            rebloggers.put(actor.actorId, actor.getWebFingerId());
         }
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, ": " + (System.currentTimeMillis() - startTime) + "ms, "

@@ -24,7 +24,7 @@ import android.support.annotation.NonNull;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
@@ -82,12 +82,12 @@ public class NoteForAccount {
 
     private void getData() {
         final String method = "getData";
-        String sql = "SELECT " + MsgTable.MSG_STATUS + ", "
-                + MsgTable.BODY + ", "
-                + MsgTable.AUTHOR_ID + ","
-                + MsgTable.PRIVATE
-                + " FROM " + MsgTable.TABLE_NAME
-                + " WHERE " + MsgTable._ID + "=" + msgId;
+        String sql = "SELECT " + NoteTable.NOTE_STATUS + ", "
+                + NoteTable.BODY + ", "
+                + NoteTable.AUTHOR_ID + ","
+                + NoteTable.PRIVATE
+                + " FROM " + NoteTable.TABLE_NAME
+                + " WHERE " + NoteTable._ID + "=" + msgId;
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
             MyLog.v(this, method + "; Database is null");
@@ -95,12 +95,12 @@ public class NoteForAccount {
         }
         try (Cursor cursor = db.rawQuery(sql, null)) {
             if (cursor.moveToNext()) {
-                status = DownloadStatus.load(DbUtils.getLong(cursor, MsgTable.MSG_STATUS));
-                body = DbUtils.getString(cursor, MsgTable.BODY);
-                authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
+                status = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
+                body = DbUtils.getString(cursor, NoteTable.BODY);
+                authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID);
                 isAuthor = (accountActorId == authorId);
                 isAuthorMySucceededMyAccount = isAuthor && myAccount.isValidAndSucceeded();
-                isPrivate = DbUtils.getTriState(cursor, MsgTable.PRIVATE);
+                isPrivate = DbUtils.getTriState(cursor, NoteTable.PRIVATE);
             }
         } catch (Exception e) {
             MyLog.i(this, method + "; SQL:'" + sql + "'", e);

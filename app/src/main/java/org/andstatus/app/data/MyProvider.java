@@ -33,7 +33,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.AudienceTable;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.note.KeywordsFilter;
@@ -97,11 +97,11 @@ public class MyProvider extends ContentProvider {
                 count = deleteActivities(db, selection, selectionArgs, false);
                 break;
 
-            case USER:
+            case ACTOR:
                 count = deleteUsers(db, selection, selectionArgs);
                 break;
 
-            case USER_ITEM:
+            case ACTOR_ITEM:
                 count = deleteUsers(db, BaseColumns._ID + "=" + uriParser.getActorId(), null);
                 break;
 
@@ -139,16 +139,16 @@ public class MyProvider extends ContentProvider {
             count += db.delete(ActivityTable.TABLE_NAME, selection, selectionArgs);
 
             // Messages, which don't have any activities
-            String sqlMsgIds = "SELECT msgA." + MsgTable._ID +
-                    " FROM " + MsgTable.TABLE_NAME + " AS msgA" +
+            String sqlMsgIds = "SELECT msgA." + NoteTable._ID +
+                    " FROM " + NoteTable.TABLE_NAME + " AS msgA" +
                     " WHERE NOT EXISTS" +
                     " (SELECT " + ActivityTable.MSG_ID + " FROM " + ActivityTable.TABLE_NAME +
-                    " WHERE " + ActivityTable.MSG_ID + "=msgA." + MsgTable._ID + ")";
+                    " WHERE " + ActivityTable.MSG_ID + "=msgA." + NoteTable._ID + ")";
             final Set<Long> msgIds = MyQuery.getLongs(sqlMsgIds);
 
             // Audience
             String selectionG = " EXISTS (" + sqlMsgIds +
-                    " AND (msgA." + MsgTable._ID +
+                    " AND (msgA." + NoteTable._ID +
                     "=" + AudienceTable.TABLE_NAME + "." + AudienceTable.MSG_ID + "))";
             sqlDesc = selectionG + descSuffix;
             count += db.delete(AudienceTable.TABLE_NAME, selectionG, new String[]{});
@@ -159,10 +159,10 @@ public class MyProvider extends ContentProvider {
 
             // Messages
             selectionG = " EXISTS (" + sqlMsgIds +
-                    " AND (msgA." + MsgTable._ID +
-                    "=" + MsgTable.TABLE_NAME + "." + MsgTable._ID + "))";
+                    " AND (msgA." + NoteTable._ID +
+                    "=" + NoteTable.TABLE_NAME + "." + NoteTable._ID + "))";
             sqlDesc = selectionG + descSuffix;
-            count += db.delete(MsgTable.TABLE_NAME, selectionG, new String[]{});
+            count += db.delete(NoteTable.TABLE_NAME, selectionG, new String[]{});
 
             if (!inTransaction) {
                 db.setTransactionSuccessful();
@@ -221,8 +221,8 @@ public class MyProvider extends ContentProvider {
         TriState reblogged = TriState.fromBoolean(
                 myContext.persistentAccounts().contains(MyQuery.getRebloggers(db, origin, msgId))
         );
-        String sql = "UPDATE " + MsgTable.TABLE_NAME + " SET " + MsgTable.REBLOGGED + "=" + reblogged.id
-                + " WHERE " + MsgTable._ID + "=" + msgId;
+        String sql = "UPDATE " + NoteTable.TABLE_NAME + " SET " + NoteTable.REBLOGGED + "=" + reblogged.id
+                + " WHERE " + NoteTable._ID + "=" + msgId;
         try {
             db.execSQL(sql);
         } catch (Exception e) {
@@ -240,8 +240,8 @@ public class MyProvider extends ContentProvider {
         TriState favorited = TriState.fromBoolean(
                 myContext.persistentAccounts().contains(MyQuery.getStargazers(db, origin, msgId))
         );
-        String sql = "UPDATE " + MsgTable.TABLE_NAME + " SET " + MsgTable.FAVORITED + "=" + favorited.id
-                + " WHERE " + MsgTable._ID + "=" + msgId;
+        String sql = "UPDATE " + NoteTable.TABLE_NAME + " SET " + NoteTable.FAVORITED + "=" + favorited.id
+                + " WHERE " + NoteTable._ID + "=" + msgId;
         try {
             db.execSQL(sql);
         } catch (Exception e) {
@@ -321,14 +321,14 @@ public class MyProvider extends ContentProvider {
                 case MSG_ITEM:
                     accountUserId = uriParser.getAccountUserId();
                     
-                    table = MsgTable.TABLE_NAME;
-                    if (!values.containsKey(MsgTable.BODY)) {
-                        values.put(MsgTable.BODY, "");
+                    table = NoteTable.TABLE_NAME;
+                    if (!values.containsKey(NoteTable.BODY)) {
+                        values.put(NoteTable.BODY, "");
                     }
-                    if (!values.containsKey(MsgTable.VIA)) {
-                        values.put(MsgTable.VIA, "");
+                    if (!values.containsKey(NoteTable.VIA)) {
+                        values.put(NoteTable.VIA, "");
                     }
-                    values.put(MsgTable.INS_DATE, MyLog.uniqueCurrentTimeMS());
+                    values.put(NoteTable.INS_DATE, MyLog.uniqueCurrentTimeMS());
                     
                     break;
                     
@@ -336,7 +336,7 @@ public class MyProvider extends ContentProvider {
                     table = OriginTable.TABLE_NAME;
                     break;
 
-                case USER_ITEM:
+                case ACTOR_ITEM:
                     table = ActorTable.TABLE_NAME;
                     values.put(ActorTable.INS_DATE, MyLog.uniqueCurrentTimeMS());
                     accountUserId = uriParser.getAccountUserId();
@@ -367,7 +367,7 @@ public class MyProvider extends ContentProvider {
                 case ORIGIN_ITEM:
                     newUri = MatchedUri.getOriginUri(rowId);
                     break;
-                case USER_ITEM:
+                case ACTOR_ITEM:
                     newUri = MatchedUri.getActorUri(accountUserId, rowId);
                     break;
                 default:
@@ -429,11 +429,9 @@ public class MyProvider extends ContentProvider {
                         selection = "";
                     }
                     KeywordsFilter searchQuery  = new KeywordsFilter(rawQuery);
-                    // TODO: Search in MyDatabase.User.USERNAME also
                     selection = "(" + ActorTable.AUTHOR_NAME + " LIKE ?  OR "
-                            + searchQuery.getSqlSelection(MsgTable.BODY_TO_SEARCH)
+                            + searchQuery.getSqlSelection(NoteTable.BODY_TO_SEARCH)
                             + ")" + selection;
-
                     selectionArgs = searchQuery.prependSqlSelectionArgs(selectionArgs);
                     selectionArgs = StringUtils.addBeforeArray(selectionArgs, "%" + rawQuery + "%");
                 }
@@ -444,11 +442,11 @@ public class MyProvider extends ContentProvider {
                 qb.setProjectionMap(ProjectionMap.MSG);
                 break;
 
-            case USER:
-            case USERLIST:
-            case USERLIST_SEARCH:
+            case ACTOR:
+            case ACTORLIST:
+            case ACTORLIST_SEARCH:
                 qb.setTables(ActorListSql.tablesForList(uri, projection));
-                qb.setProjectionMap(ProjectionMap.USER);
+                qb.setProjectionMap(ProjectionMap.ACTOR);
                 rawQuery = uriParser.getSearchQuery();
                 if (StringUtils.nonEmpty(rawQuery)) {
                     if (StringUtils.nonEmpty(selection)) {
@@ -465,15 +463,15 @@ public class MyProvider extends ContentProvider {
                 limit =  String.valueOf(PAGE_SIZE);
                 break;
 
-            case USERLIST_ITEM:
+            case ACTORLIST_ITEM:
                 qb.setTables(ActorListSql.tablesForList(uri, projection));
-                qb.setProjectionMap(ProjectionMap.USER);
+                qb.setProjectionMap(ProjectionMap.ACTOR);
                 qb.appendWhere(BaseColumns._ID + "=" + uriParser.getActorId());
                 break;
 
-            case USER_ITEM:
+            case ACTOR_ITEM:
                 qb.setTables(ActorTable.TABLE_NAME);
-                qb.setProjectionMap(ProjectionMap.USER);
+                qb.setProjectionMap(ProjectionMap.ACTOR);
                 qb.appendWhere(BaseColumns._ID + "=" + uriParser.getActorId());
                 break;
 
@@ -491,11 +489,11 @@ public class MyProvider extends ContentProvider {
                     orderBy = ActivityTable.getTimeSortOrder(uriParser.getTimelineType(), false);
                     break;
 
-                case USER:
-                case USERLIST:
-                case USERLIST_ITEM:
-                case USERLIST_SEARCH:
-                case USER_ITEM:
+                case ACTOR:
+                case ACTORLIST:
+                case ACTORLIST_ITEM:
+                case ACTORLIST_SEARCH:
+                case ACTOR_ITEM:
                     orderBy = ActorTable.DEFAULT_SORT_ORDER;
                     break;
 
@@ -563,23 +561,23 @@ public class MyProvider extends ContentProvider {
         long accountUserId;
         switch (uriParser.matched()) {
             case ACTIVITY:
-                count = db.update(MsgTable.TABLE_NAME, values, selection, selectionArgs);
+                count = db.update(NoteTable.TABLE_NAME, values, selection, selectionArgs);
                 break;
 
             case MSG_ITEM:
                 long rowId = uriParser.getMessageId();
                 if (values.size() > 0) {
-                    count = db.update(MsgTable.TABLE_NAME, values, BaseColumns._ID + "=" + rowId
+                    count = db.update(NoteTable.TABLE_NAME, values, BaseColumns._ID + "=" + rowId
                             + (StringUtils.nonEmpty(selection) ? " AND (" + selection + ')' : ""),
                             selectionArgs);
                 }
                 break;
 
-            case USER:
+            case ACTOR:
                 count = db.update(ActorTable.TABLE_NAME, values, selection, selectionArgs);
                 break;
 
-            case USER_ITEM:
+            case ACTOR_ITEM:
                 accountUserId = uriParser.getAccountUserId();
                 long selectedUserId = uriParser.getActorId();
                 FriendshipValues friendshipValues = FriendshipValues.valueOf(accountUserId, selectedUserId, values);

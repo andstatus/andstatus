@@ -21,7 +21,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
@@ -100,12 +100,12 @@ public class CheckConversations extends DataChecker {
     private void loadMessages() {
         items.clear();
         replies.clear();
-        String sql = "SELECT " + MsgTable._ID
-                + ", " + MsgTable.ORIGIN_ID
-                + ", " + MsgTable.IN_REPLY_TO_MSG_ID
-                + ", " + MsgTable.CONVERSATION_ID
-                + ", " + MsgTable.CONVERSATION_OID
-                + " FROM " + MsgTable.TABLE_NAME
+        String sql = "SELECT " + NoteTable._ID
+                + ", " + NoteTable.ORIGIN_ID
+                + ", " + NoteTable.IN_REPLY_TO_NOTE_ID
+                + ", " + NoteTable.CONVERSATION_ID
+                + ", " + NoteTable.CONVERSATION_OID
+                + " FROM " + NoteTable.TABLE_NAME
                 ;
         Cursor c = null;
         long rowsCount = 0;
@@ -216,17 +216,17 @@ public class CheckConversations extends DataChecker {
                             + (item.isInReplyToIdChanged() && item.isConversationIdChanged() ? " and " : "")
                             + (item.isConversationIdChanged() ? "conversationId changed from "
                                 + item.conversationId_initial + " to " + item.conversationId : "")
-                            + ", Body:'" + MyQuery.msgIdToStringColumnValue(MsgTable.BODY, item.id) + "'");
+                            + ", Body:'" + MyQuery.msgIdToStringColumnValue(NoteTable.BODY, item.id) + "'");
                     }
                     if (!countOnly) {
-                        sql = "UPDATE " + MsgTable.TABLE_NAME
+                        sql = "UPDATE " + NoteTable.TABLE_NAME
                                 + " SET "
                                 + (item.isInReplyToIdChanged() ?
-                                    MsgTable.IN_REPLY_TO_MSG_ID + "=" + DbUtils.sqlZeroToNull(item.inReplyToId) : "")
+                                    NoteTable.IN_REPLY_TO_NOTE_ID + "=" + DbUtils.sqlZeroToNull(item.inReplyToId) : "")
                                 + (item.isInReplyToIdChanged() && item.isConversationIdChanged() ? ", " : "")
                                 + (item.isConversationIdChanged() ?
-                                    MsgTable.CONVERSATION_ID + "=" + DbUtils.sqlZeroToNull(item.conversationId) : "")
-                                + " WHERE " + MsgTable._ID + "=" + item.id;
+                                    NoteTable.CONVERSATION_ID + "=" + DbUtils.sqlZeroToNull(item.conversationId) : "")
+                                + " WHERE " + NoteTable._ID + "=" + item.id;
                         myContext.getDatabase().execSQL(sql);
                     }
                     changedCount++;

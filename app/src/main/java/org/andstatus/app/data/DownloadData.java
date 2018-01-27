@@ -94,7 +94,7 @@ public class DownloadData {
         String sql = "SELECT " + DownloadTable.DOWNLOAD_STATUS + ", "
                 + DownloadTable.FILE_NAME
                 + (downloadType == DownloadType.UNKNOWN ? ", " + DownloadTable.DOWNLOAD_TYPE : "")
-                + (actorId == 0 ? ", " + DownloadTable.USER_ID : "")
+                + (actorId == 0 ? ", " + DownloadTable.ACTOR_ID : "")
                 + (msgId == 0 ? ", " + DownloadTable.MSG_ID : "")
                 + (contentType == MyContentType.UNKNOWN ? ", " + DownloadTable.CONTENT_TYPE : "")
                 + (downloadId == 0 ? ", " + DownloadTable._ID : "")
@@ -117,7 +117,7 @@ public class DownloadData {
                     downloadType = DownloadType.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_TYPE));
                 }
                 if (actorId == 0) {
-                    actorId = DbUtils.getLong(cursor, DownloadTable.USER_ID);
+                    actorId = DbUtils.getLong(cursor, DownloadTable.ACTOR_ID);
                 }
                 if (msgId == 0) {
                     msgId = DbUtils.getLong(cursor, DownloadTable.MSG_ID);
@@ -147,7 +147,7 @@ public class DownloadData {
     private String getWhereClause() {
         StringBuilder builder = new StringBuilder();
         if (actorId != 0) {
-            builder.append(DownloadTable.USER_ID + "=" + actorId);
+            builder.append(DownloadTable.ACTOR_ID + "=" + actorId);
         } else if (msgId != 0) {
             builder.append(DownloadTable.MSG_ID + "=" + msgId);
         } else {
@@ -223,7 +223,7 @@ public class DownloadData {
        ContentValues values = new ContentValues();
        values.put(DownloadTable.DOWNLOAD_TYPE, downloadType.save());
        if (actorId != 0) {
-           values.put(DownloadTable.USER_ID, actorId);
+           values.put(DownloadTable.ACTOR_ID, actorId);
        }
        if (msgId != 0) {
            values.put(DownloadTable.MSG_ID, msgId);
@@ -310,7 +310,7 @@ public class DownloadData {
     
     public static void deleteOtherOfThisUser(long actorId, long rowId) {
         final String method = "deleteOtherOfThisUser actorId=" + actorId + (rowId != 0 ? ", downloadId=" + rowId : "");
-        String where = DownloadTable.USER_ID + "=" + actorId
+        String where = DownloadTable.ACTOR_ID + "=" + actorId
                 + (rowId != 0 ? " AND " + DownloadTable._ID + "<>" + Long.toString(rowId) : "") ;
         deleteSelected(method, MyContextHolder.get().getDatabase(), where);
     }

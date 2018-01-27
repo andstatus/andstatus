@@ -34,7 +34,7 @@ import org.andstatus.app.data.ContentValuesUtils;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.CommandTable;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.WhichPage;
@@ -69,11 +69,11 @@ public class CommandData implements Comparable<CommandData> {
      * It holds actorId for command, which need such parameter (not only for a timeline)
      */
     private final Timeline timeline;
-    /** This is: 1. Generally: Message ID ({@link MsgTable#MSG_ID} of the {@link MsgTable})...
+    /** This is: 1. Generally: Note ID ({@link NoteTable#NOTE_ID} of the {@link NoteTable})...
      */
     protected long itemId = 0;
     /** Sometimes we don't know {@link #timeline#getUserId} yet...
-     * Used for User search also
+     * Used for Actor search also
      */
     private String actorName = "";
 
@@ -107,7 +107,7 @@ public class CommandData implements Comparable<CommandData> {
     private void setTrimmedMessageBodyAsDescription(long msgId) {
         if (msgId != 0) {
             description = trimConditionally(
-                            MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId), true)
+                            MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId), true)
                             .toString();
         }
     }
@@ -115,7 +115,7 @@ public class CommandData implements Comparable<CommandData> {
     @NonNull
     public static CommandData newActorCommand(CommandEnum command, MyAccount myActor,
                                               Origin origin, long actorId, String actorName) {
-        CommandData commandData = newTimelineCommand(command, myActor, TimelineType.USER, actorId, origin);
+        CommandData commandData = newTimelineCommand(command, myActor, TimelineType.ACTOR, actorId, origin);
         commandData.setActorName(actorName);
         commandData.description = commandData.getActorName();
         return commandData;
@@ -188,7 +188,7 @@ public class CommandData implements Comparable<CommandData> {
                         Timeline.fromBundle(myContext, bundle),
                         bundle.getLong(IntentExtra.CREATED_DATE.key));
                 commandData.itemId = bundle.getLong(IntentExtra.ITEM_ID.key);
-                commandData.setActorName(BundleUtils.getString(bundle, IntentExtra.USER_NAME));
+                commandData.setActorName(BundleUtils.getString(bundle, IntentExtra.ACTOR_NAME));
                 commandData.description = BundleUtils.getString(bundle, IntentExtra.COMMAND_DESCRIPTION);
                 commandData.mInForeground = bundle.getBoolean(IntentExtra.IN_FOREGROUND.key);
                 commandData.mManuallyLaunched = bundle.getBoolean(IntentExtra.MANUALLY_LAUNCHED.key);
@@ -215,7 +215,7 @@ public class CommandData implements Comparable<CommandData> {
         BundleUtils.putNotEmpty(bundle, IntentExtra.COMMAND, command.save());
         timeline.toBundle(bundle);
         BundleUtils.putNotZero(bundle, IntentExtra.ITEM_ID, itemId);
-        BundleUtils.putNotEmpty(bundle, IntentExtra.USER_NAME, actorName);
+        BundleUtils.putNotEmpty(bundle, IntentExtra.ACTOR_NAME, actorName);
         BundleUtils.putNotEmpty(bundle, IntentExtra.COMMAND_DESCRIPTION, description);
         bundle.putBoolean(IntentExtra.IN_FOREGROUND.key, mInForeground);
         bundle.putBoolean(IntentExtra.MANUALLY_LAUNCHED.key, mManuallyLaunched);
@@ -295,7 +295,7 @@ public class CommandData implements Comparable<CommandData> {
         }
         builder.append(",created:" + RelativeTime.getDifference(MyContextHolder.get().context(), getCreatedDate()));
         if (StringUtils.nonEmpty(actorName)) {
-            builder.append(",user:'" + actorName + "'");
+            builder.append(",actor:'" + actorName + "'");
         }
         if (StringUtils.nonEmpty(description) && !description.equals(actorName)) {
             builder.append(",\"");

@@ -25,7 +25,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.note.ConversationActivity;
 import org.andstatus.app.note.NoteContextMenuItem;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -68,7 +68,7 @@ public class ActAsTest extends TimelineActivityTest {
         long listItemId = helper.getListItemIdOfLoadedReply();
         long msgId = MyQuery.activityIdToLongColumnValue(ActivityTable.MSG_ID, listItemId);
         String logMsg = "itemId=" + listItemId + ", msgId=" + msgId + " text='"
-                + MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId) + "'";
+                + MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId) + "'";
         assertEquals("Default actor", MyAccount.EMPTY, getActivity().getContextMenu().getMyActor());
 
         boolean invoked = helper.invokeContextMenuAction4ListItemId(method, listItemId,

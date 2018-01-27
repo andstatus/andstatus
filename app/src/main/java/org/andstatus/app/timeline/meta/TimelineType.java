@@ -31,20 +31,20 @@ public enum TimelineType implements SelectableEnum {
     NOTIFICATIONS("notifications", R.string.notifications_title, Connection.ApiRoutineEnum.NOTIFICATIONS_TIMELINE),
     PUBLIC("public", R.string.timeline_title_public, Connection.ApiRoutineEnum.PUBLIC_TIMELINE),
     EVERYTHING("everything", R.string.timeline_title_everything, Connection.ApiRoutineEnum.DUMMY),
-    SEARCH("search", R.string.options_menu_search, Connection.ApiRoutineEnum.SEARCH_MESSAGES),
+    SEARCH("search", R.string.options_menu_search, Connection.ApiRoutineEnum.SEARCH_NOTES),
     FAVORITES("favorites", R.string.timeline_title_favorites, Connection.ApiRoutineEnum.FAVORITES_TIMELINE),
     /** The Mentions timeline and other information (replies...). */
     MENTIONS("mentions", R.string.timeline_title_mentions, Connection.ApiRoutineEnum.MENTIONS_TIMELINE),
-    /** Private messages (direct dents...) */
+    /** Private notes (direct tweets, dents...) */
     PRIVATE("private", R.string.timeline_title_private, Connection.ApiRoutineEnum.PRIVATE_NOTES),
-    /** Messages of the selected User (where he is an Author or a Sender only (e.g. for Reblog/Retweet).
-     * This User is NOT one of our Accounts.
-     * Hence this timeline type requires the User parameter. */
-    USER("user", R.string.timeline_title_user, Connection.ApiRoutineEnum.USER_TIMELINE),
-    /** Almost like {@link #USER}, but for a User, who is one of my accounts. */
-    SENT("sent", R.string.sent, Connection.ApiRoutineEnum.USER_TIMELINE),
-    /** Latest messages of every Friend of this user - AndStatus account
-     * (i.e of every user, followed by this User).
+    /** Notes by the selected Actor (where he is an Author or an Actor only (e.g. for Reblog/Retweet).
+     * This Actor is NOT one of our Accounts.
+     * Hence this timeline type requires the Actor parameter. */
+    ACTOR("user", R.string.timeline_title_user, Connection.ApiRoutineEnum.ACTOR_TIMELINE),
+    /** Almost like {@link #ACTOR}, but for an Actor, who is one of my accounts. */
+    SENT("sent", R.string.sent, Connection.ApiRoutineEnum.ACTOR_TIMELINE),
+    /** Latest notes of every Friend of this Actor
+     * (i.e of every user, followed by this Actor).
      * So this is essentially a list of "Friends". See {@link FriendshipTable} */
     FRIENDS("friends", R.string.friends, Connection.ApiRoutineEnum.GET_FRIENDS),
     /** Same as {@link #FRIENDS} but for my accounts only */
@@ -54,7 +54,7 @@ public enum TimelineType implements SelectableEnum {
     MY_FOLLOWERS("my_followers", R.string.followers, Connection.ApiRoutineEnum.GET_FOLLOWERS),
     DRAFTS("drafts", R.string.timeline_title_drafts, Connection.ApiRoutineEnum.DUMMY),
     OUTBOX("outbox", R.string.timeline_title_outbox, Connection.ApiRoutineEnum.DUMMY),
-    USERS("users", R.string.user_list, Connection.ApiRoutineEnum.DUMMY),
+    ACTORS("users", R.string.user_list, Connection.ApiRoutineEnum.DUMMY),
     CONVERSATION("conversation", R.string.label_conversation, Connection.ApiRoutineEnum.DUMMY),
     COMMANDS_QUEUE("commands_queue", R.string.commands_in_a_queue, Connection.ApiRoutineEnum.DUMMY),
     MANAGE_TIMELINES("manages_timelines", R.string.manage_timelines, Connection.ApiRoutineEnum.DUMMY)
@@ -152,8 +152,8 @@ public enum TimelineType implements SelectableEnum {
             case FRIENDS:
             case MANAGE_TIMELINES:
             case UNKNOWN:
-            case USER:
-            case USERS:
+            case ACTOR:
+            case ACTORS:
                 return false;
             default:
                 return true;
@@ -187,8 +187,8 @@ public enum TimelineType implements SelectableEnum {
             case PUBLIC:
             case SEARCH:
             case SENT:
-            case USER:
-            case USERS:
+            case ACTOR:
+            case ACTORS:
                 return true;
             default:
                 return false;
@@ -206,7 +206,7 @@ public enum TimelineType implements SelectableEnum {
             case MY_FOLLOWERS:
             case MY_FRIENDS:
             case SENT:
-            case USER:
+            case ACTOR:
                 return true;
             default:
                 return false;
@@ -257,7 +257,7 @@ public enum TimelineType implements SelectableEnum {
             case CONVERSATION:
             case MANAGE_TIMELINES:
             case UNKNOWN:
-            case USERS:
+            case ACTORS:
                 return false;
             default:
                 return true;
@@ -280,7 +280,7 @@ public enum TimelineType implements SelectableEnum {
             case PUBLIC:
             case SEARCH:
             case SENT:
-            case USER:
+            case ACTOR:
                 return true;
             case FAVORITES:
             default:

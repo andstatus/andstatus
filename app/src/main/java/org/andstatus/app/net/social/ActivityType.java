@@ -27,7 +27,7 @@ import org.andstatus.app.R;
  * and ActivityPub, see <a href="https://www.w3.org/TR/activitypub/#announce-activity-inbox">announce-activity-inbox</a>
  */
 public enum ActivityType {
-    ANNOUNCE(1, R.string.reblogged),  // known also as Repost, Retweet, Boost...
+    ANNOUNCE(1, R.string.reblogged),  // known also as Reblog, Repost, Retweet, Boost...
     CREATE(2, R.string.created),
     DELETE(3, R.string.deleted),
     FOLLOW(4, R.string.followed),

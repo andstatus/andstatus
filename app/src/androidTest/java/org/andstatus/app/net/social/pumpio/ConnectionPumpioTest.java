@@ -155,7 +155,7 @@ public class ConnectionPumpioTest {
                 "api/user/somebody/profile"};
         String hosts[] = {demoData.PUMPIO_MAIN_HOST, demoData.PUMPIO_MAIN_HOST};
         for (int ind=0; ind < actorOids.length; ind++) {
-            ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.GET_USER, actorOids[ind]);
+            ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.GET_ACTOR, actorOids[ind]);
             assertEquals("Expecting '" + urls[ind] + "'", urls[ind], conu.url);
             assertEquals("Expecting '" + hosts[ind] + "'", hosts[ind], conu.httpConnection.data.originUrl.getHost());
         }
@@ -211,19 +211,19 @@ public class ConnectionPumpioTest {
         assertEquals("Actor not followed by me", TriState.TRUE, activity.getActor().followedByMe);
         assertEquals("Activity Object", AObjectType.ACTOR, activity.getObjectType());
         Actor objActor = activity.getObjActor();
-        assertEquals("User followed", "acct:atalsta@microca.st", objActor.oid);
+        assertEquals("objActor followed", "acct:atalsta@microca.st", objActor.oid);
         assertEquals("WebFinger ID", "atalsta@microca.st", objActor.getWebFingerId());
-        assertEquals("User followed by me", TriState.FALSE, objActor.followedByMe);
+        assertEquals("Actor followed by me", TriState.FALSE, objActor.followedByMe);
 
         ind++;
         activity = timeline.get(ind);
         assertEquals("Is not FOLLOW " + activity, ActivityType.FOLLOW, activity.type);
-        assertEquals("User", AObjectType.ACTOR, activity.getObjectType());
+        assertEquals("Actor", AObjectType.ACTOR, activity.getObjectType());
         objActor = activity.getObjActor();
         assertEquals("Url of the actor", "https://identi.ca/t131t", activity.getActor().getProfileUrl());
         assertEquals("WebFinger ID", "t131t@identi.ca", activity.getActor().getWebFingerId());
         assertEquals("Following", TriState.TRUE, objActor.followedByMe);
-        assertEquals("Url of the user", "https://fmrl.me/grdryn", objActor.getProfileUrl());
+        assertEquals("Url of objActor", "https://fmrl.me/grdryn", objActor.getProfileUrl());
 
         ind++;
         activity = timeline.get(ind);
@@ -252,7 +252,7 @@ public class ConnectionPumpioTest {
         note = activity.getMessage();
         assertEquals(activity.isSubscribedByMe(), TriState.UNKNOWN);
         assertTrue("Is a reply", note.getInReplyTo().nonEmpty());
-        assertEquals("Is not a reply to this user " + activity, "jankusanagi@identi.ca", note.getInReplyTo().getAuthor().getActorName());
+        assertEquals("Is not a reply to this actor " + activity, "jankusanagi@identi.ca", note.getInReplyTo().getAuthor().getActorName());
         assertEquals(TriState.UNKNOWN, note.getInReplyTo().isSubscribedByMe());
     }
 
@@ -282,7 +282,7 @@ public class ConnectionPumpioTest {
         String inReplyToId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
         httpConnectionMock.setResponse("");
         connection.getData().setAccountActor(demoData.getAccountUserByOid(demoData.CONVERSATION_ACCOUNT_ACTOR_OID));
-        connection.updateStatus(body, "", inReplyToId, null);
+        connection.updateNote(body, "", inReplyToId, null);
         JSONObject activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         JSONObject obj = activity.getJSONObject("object");
@@ -295,7 +295,7 @@ public class ConnectionPumpioTest {
 
         body = "Testing the application...";
         inReplyToId = "";
-        connection.updateStatus(body, "", inReplyToId, null);
+        connection.updateNote(body, "", inReplyToId, null);
         activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         obj = activity.getJSONObject("object");
@@ -313,7 +313,7 @@ public class ConnectionPumpioTest {
         String rebloggedId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
         httpConnectionMock.setResponse("");
         connection.getData().setAccountActor(demoData.getAccountUserByOid(demoData.CONVERSATION_ACCOUNT_ACTOR_OID));
-        connection.postReblog(rebloggedId);
+        connection.announce(rebloggedId);
         JSONObject activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         JSONObject obj = activity.getJSONObject("object");
@@ -329,12 +329,12 @@ public class ConnectionPumpioTest {
         httpConnectionMock.setResponse(jso);
         connection.getData().setAccountActor(demoData.getAccountUserByOid(demoData.CONVERSATION_ACCOUNT_ACTOR_OID));
         String actorOid = "acct:evan@e14n.com";
-        AActivity activity = connection.followActor(actorOid, false);
+        AActivity activity = connection.follow(actorOid, false);
         assertEquals("Not unfollow action", ActivityType.UNDO_FOLLOW, activity.type);
-        Actor user = activity.getObjActor();
-        assertTrue("User is present", !user.isEmpty());
+        Actor objActor = activity.getObjActor();
+        assertTrue("objActor is present", !objActor.isEmpty());
         assertEquals("Actor", "acct:t131t@pump1.example.com", activity.getActor().oid);
-        assertEquals("Object of action", actorOid, user.oid);
+        assertEquals("Object of action", actorOid, objActor.oid);
     }
 
     @Test
@@ -349,12 +349,12 @@ public class ConnectionPumpioTest {
                 org.andstatus.app.tests.R.raw.pumpio_delete_comment_response);
         httpConnectionMock.setResponse(jso);
         connection.getData().setAccountActor(demoData.getAccountUserByOid(demoData.CONVERSATION_ACCOUNT_ACTOR_OID));
-        assertTrue("Success", connection.destroyStatus("https://" + demoData.PUMPIO_MAIN_HOST
+        assertTrue("Success", connection.deleteNote("https://" + demoData.PUMPIO_MAIN_HOST
                 + "/api/comment/xf0WjLeEQSlyi8jwHJ0ttre"));
 
         boolean thrown = false;
         try {
-            connection.destroyStatus("");
+            connection.deleteNote("");
         } catch (IllegalArgumentException e) {
             MyLog.v(this, e);
             thrown = true;
@@ -369,7 +369,7 @@ public class ConnectionPumpioTest {
         httpConnectionMock.setResponse(jso);
         
         connection.getData().setAccountActor(demoData.getAccountUserByOid(demoData.CONVERSATION_ACCOUNT_ACTOR_OID));
-        AActivity activity = connection.updateStatus("Test post message with media", "", "", demoData.LOCAL_IMAGE_TEST_URI);
+        AActivity activity = connection.updateNote("Test post message with media", "", "", demoData.LOCAL_IMAGE_TEST_URI);
         activity.getMessage().setPrivate(TriState.FALSE);
         assertEquals("Message returned", privateGetMessageWithAttachment(
                 InstrumentationRegistry.getInstrumentation().getContext(), false), activity.getMessage());
@@ -380,7 +380,7 @@ public class ConnectionPumpioTest {
                 org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
         httpConnectionMock.setResponse(jso);
 
-        Note msg = connection.getMessage("w9wME-JVQw2GQe6POK7FSQ").getMessage();
+        Note msg = connection.getNote("w9wME-JVQw2GQe6POK7FSQ").getMessage();
         if (uniqueUid) {
             msg = msg.copy(msg.oid + "_" + demoData.TESTRUN_UID);
         }
@@ -405,7 +405,7 @@ public class ConnectionPumpioTest {
         httpConnectionMock.setResponse(jso);
 
         final String msgOid = "https://identi.ca/api/note/Z-x96Q8rTHSxTthYYULRHA";
-        final AActivity activity = connection.getMessage(msgOid);
+        final AActivity activity = connection.getNote(msgOid);
         Note message = activity.getMessage();
         assertNotNull("message returned", message);
         assertEquals("Message oid", msgOid, message.oid);

@@ -27,7 +27,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
@@ -66,7 +66,7 @@ public class NoteShare {
 
     Intent intentToViewAndShare(boolean share) {
         StringBuilder subject = new StringBuilder();
-        String msgBody = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, messageId);
+        String msgBody = MyQuery.msgIdToStringColumnValue(NoteTable.BODY, messageId);
         String msgBodyPlainText = msgBody;
         if (origin.isHtmlContentAllowed()) {
             msgBodyPlainText = MyHtml.fromHtml(msgBody);
@@ -105,10 +105,10 @@ public class NoteShare {
                                 html ? SIGNATURE_FORMAT_HTML
                                         : SIGNATURE_PLAIN_TEXT,
                                 MyQuery.msgIdToUsername(
-                                        MsgTable.AUTHOR_ID,
+                                        NoteTable.AUTHOR_ID,
                                         messageId,
                                         origin.isMentionAsWebFingerId() ? ActorInTimeline.WEBFINGER_ID
-                                                : ActorInTimeline.USERNAME),
+                                                : ActorInTimeline.ACTORNAME),
                                 origin.messagePermalink(messageId)
                                 )).toString();
     }

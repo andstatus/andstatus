@@ -29,7 +29,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.list.ContextMenuItem;
 import org.andstatus.app.list.MyBaseListActivity;
 import org.andstatus.app.note.BaseNoteViewItem;
@@ -248,7 +248,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
         return findListItemId("Loaded reply", item -> {
             if (item.inReplyToMsgId != 0 && item.msgStatus == DownloadStatus.LOADED) {
                 DownloadStatus statusOfReplied = DownloadStatus.load(
-                        MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, item.inReplyToMsgId));
+                        MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, item.inReplyToMsgId));
                 if (statusOfReplied == DownloadStatus.LOADED) {
                     return true;
                 }

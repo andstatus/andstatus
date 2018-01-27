@@ -32,7 +32,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.http.SslModeEnum;
@@ -182,7 +182,7 @@ public class Origin {
     }
 
     public final String messagePermalink(long messageId) {
-        String msgUrl = MyQuery.msgIdToStringColumnValue(MsgTable.URL, messageId);
+        String msgUrl = MyQuery.msgIdToStringColumnValue(NoteTable.URL, messageId);
         if (!TextUtils.isEmpty(msgUrl)) {
             try {
                 return new URL(msgUrl).toExternalForm();
@@ -301,8 +301,8 @@ public class Origin {
             return false;
         }
         try {
-            String sql = "SELECT Count(*) FROM " + MsgTable.TABLE_NAME + " WHERE "
-                    + MsgTable.ORIGIN_ID + "=" + id;
+            String sql = "SELECT Count(*) FROM " + NoteTable.TABLE_NAME + " WHERE "
+                    + NoteTable.ORIGIN_ID + "=" + id;
             cursor = db.rawQuery(sql, null);
             if (cursor.moveToNext()) {
                 count = cursor.getLong(0);

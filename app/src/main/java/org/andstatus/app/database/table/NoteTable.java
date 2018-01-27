@@ -23,14 +23,14 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 
 /**
- * Table for both public and private messages
+ * Table for both public and private notes
  * i.e. for tweets, dents, notices
  * and also for "direct messages", "direct dents" etc.
  */
-public final class MsgTable implements BaseColumns {
+public final class NoteTable implements BaseColumns {
     public static final String TABLE_NAME = "msg";
 
-    private MsgTable() {
+    private NoteTable() {
     }
 
     // Table columns are below:
@@ -49,11 +49,11 @@ public final class MsgTable implements BaseColumns {
      * The id is not unique for this table, because we have IDs from different systems in one column
      * and IDs from different systems may overlap.
      */
-    public static final String MSG_OID = "msg_oid";
+    public static final String NOTE_OID = "msg_oid";
     /**
      * See {@link DownloadStatus}. Defaults to {@link DownloadStatus#UNKNOWN}
      */
-    public static final String MSG_STATUS = "msg_status";
+    public static final String NOTE_STATUS = "msg_status";
     /** Conversation ID, internal to AndStatus */
     public static final String CONVERSATION_ID = "conversation_id";
     /** ID of the conversation in the originating system (if the system supports this) */
@@ -80,7 +80,7 @@ public final class MsgTable implements BaseColumns {
     /**
      * If not null: Link to the Msg._ID in this table
      */
-    public static final String IN_REPLY_TO_MSG_ID = "in_reply_to_msg_id";
+    public static final String IN_REPLY_TO_NOTE_ID = "in_reply_to_msg_id";
     /**
      * Date and time when the message was created or updated in the originating system.
      * We store it as long milliseconds.
@@ -109,22 +109,22 @@ public final class MsgTable implements BaseColumns {
     // Columns, which duplicate other existing info. Here to speed up data retrieval
     public static final String AUTHOR_ID = "msg_author_id";
     /**
-     * If not null: to which Sender this message is a reply = User._ID
+     * If not null: to which Sender this message is a reply = Actor._ID
      * This field is not necessary but speeds up IN_REPLY_TO_NAME calculation
      */
-    public static final String IN_REPLY_TO_USER_ID = "in_reply_to_user_id";
+    public static final String IN_REPLY_TO_ACTOR_ID = "in_reply_to_user_id";
 
     // Derived columns (they are not stored in this table but are result of joins and aliasing)
 
     /** Alias for the primary key */
-    public static final String MSG_ID =  "msg_id";
+    public static final String NOTE_ID =  "msg_id";
 
     public static void create(SQLiteDatabase db) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + ORIGIN_ID + " INTEGER NOT NULL,"
-                + MSG_OID + " TEXT NOT NULL,"
-                + MSG_STATUS + " INTEGER NOT NULL DEFAULT 0,"
+                + NOTE_OID + " TEXT NOT NULL,"
+                + NOTE_STATUS + " INTEGER NOT NULL DEFAULT 0,"
                 + CONVERSATION_ID + " INTEGER NOT NULL DEFAULT 0" + ","
                 + CONVERSATION_OID + " TEXT,"
                 + URL + " TEXT,"
@@ -132,8 +132,8 @@ public final class MsgTable implements BaseColumns {
                 + BODY_TO_SEARCH + " TEXT,"
                 + VIA + " TEXT,"
                 + AUTHOR_ID + " INTEGER NOT NULL DEFAULT 0,"
-                + IN_REPLY_TO_MSG_ID + " INTEGER,"
-                + IN_REPLY_TO_USER_ID + " INTEGER,"
+                + IN_REPLY_TO_NOTE_ID + " INTEGER,"
+                + IN_REPLY_TO_ACTOR_ID + " INTEGER,"
                 + PRIVATE + " INTEGER NOT NULL DEFAULT 0,"
                 + FAVORITED + " INTEGER NOT NULL DEFAULT 0,"
                 + REBLOGGED + " INTEGER NOT NULL DEFAULT 0,"
@@ -147,13 +147,13 @@ public final class MsgTable implements BaseColumns {
 
         DbUtils.execSQL(db, "CREATE UNIQUE INDEX idx_msg_origin ON " + TABLE_NAME + " ("
                 + ORIGIN_ID + ", "
-                + MSG_OID
+                + NOTE_OID
                 + ")"
         );
 
         // Index not null rows only, see https://www.sqlite.org/partialindex.html
         DbUtils.execSQL(db, "CREATE INDEX idx_msg_in_reply_to_msg_id ON " + TABLE_NAME + " ("
-                + IN_REPLY_TO_MSG_ID
+                + IN_REPLY_TO_NOTE_ID
                 + ")"
         );
 

@@ -73,9 +73,9 @@ public class ParsedUri {
                 case TIMELINE_ITEM:
                 case MSG_ITEM:
                 case ORIGIN_ITEM:
-                case USERLIST:
-                case USERLIST_SEARCH:
-                case USER_ITEM:
+                case ACTORLIST:
+                case ACTORLIST_SEARCH:
+                case ACTOR_ITEM:
                     accountUserId = Long.parseLong(uri.getPathSegments().get(1));
                     break;
                 default:
@@ -96,16 +96,16 @@ public class ParsedUri {
                 case TIMELINE:
                     actorId = Long.parseLong(uri.getPathSegments().get(7));
                     break;
-                case USER_ITEM:
+                case ACTOR_ITEM:
                     actorId = Long.parseLong(uri.getPathSegments().get(3));
                     break;
-                case USERLIST:
-                case USERLIST_SEARCH:
+                case ACTORLIST:
+                case ACTORLIST_SEARCH:
                     if (getUserListType() == ActorListType.FOLLOWERS) {
                         actorId = getItemId();
                     }
                     break;
-                case USERLIST_ITEM:
+                case ACTORLIST_ITEM:
                     actorId = getItemId();
                     break;
                 default:
@@ -138,9 +138,9 @@ public class ParsedUri {
     public ActorListType getUserListType() {
         try {
             switch (matchedUri) {
-                case USERLIST:
-                case USERLIST_ITEM:
-                case USERLIST_SEARCH:
+                case ACTORLIST:
+                case ACTORLIST_ITEM:
+                case ACTORLIST_SEARCH:
                     return ActorListType.load(uri.getPathSegments().get(3));
                 default:
                     break;
@@ -177,8 +177,8 @@ public class ParsedUri {
                 case MSG_ITEM:
                     messageId = Long.parseLong(uri.getPathSegments().get(3));
                     break;
-                case USERLIST:
-                case USERLIST_SEARCH:
+                case ACTORLIST:
+                case ACTORLIST_SEARCH:
                     if (getUserListType() == ActorListType.ACTORS_OF_NOTE) {
                         messageId = getItemId();
                     }
@@ -204,7 +204,7 @@ public class ParsedUri {
         try {
             switch (matchedUri) {
                 case TIMELINE_SEARCH:
-                case USERLIST_SEARCH:
+                case ACTORLIST_SEARCH:
                     return StringUtils.notNull(uri.getPathSegments().get(9));
                 default:
                     break;

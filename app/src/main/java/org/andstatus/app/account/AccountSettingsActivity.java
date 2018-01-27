@@ -919,7 +919,7 @@ public class AccountSettingsActivity extends MyActivity {
      * During this task:
      * 1. AndStatus ("Consumer") Requests "Request Token" from Twitter ("Service provider"), 
      * 2. Waits for that Request Token
-     * 3. Consumer directs User to the Service Provider: opens Twitter site in Internet Browser window
+     * 3. Consumer directs a User to the Service Provider: opens Twitter site in Internet Browser window
      *    in order to Obtain User Authorization.
      * 4. This task ends.
      * 

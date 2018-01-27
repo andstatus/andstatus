@@ -82,7 +82,7 @@ public class ConnectionPumpio extends Connection {
             case GET_FRIENDS_IDS:
                 url = "user/%nickname%/following";
                 break;
-            case GET_USER:
+            case GET_ACTOR:
                 url = "user/%nickname%/profile";
                 break;
             case REGISTER_CLIENT:
@@ -94,17 +94,17 @@ public class ConnectionPumpio extends Connection {
             case FAVORITES_TIMELINE:
                 url = "user/%nickname%/favorites";
                 break;
-            case POST_WITH_MEDIA:
+            case UPDATE_NOTE_WITH_MEDIA:
                 url = "user/%nickname%/uploads";
                 break;
-            case CREATE_FAVORITE:
-            case DESTROY_FAVORITE:
-            case FOLLOW_USER:
-            case POST_DIRECT_MESSAGE:
-            case POST_REBLOG:
-            case DESTROY_MESSAGE:
-            case POST_MESSAGE:
-            case USER_TIMELINE:
+            case LIKE:
+            case UNDO_LIKE:
+            case FOLLOW:
+            case UPDATE_PRIVATE_NOTE:
+            case ANNOUNCE:
+            case DELETE_NOTE:
+            case UPDATE_NOTE:
+            case ACTOR_TIMELINE:
                 url = "user/%nickname%/feed";
                 break;
             default:
@@ -122,8 +122,8 @@ public class ConnectionPumpio extends Connection {
 
     @Override
     public Actor verifyCredentials() throws ConnectionException {
-        JSONObject user = http.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
-        return actorFromJson(user);
+        JSONObject actor = http.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
+        return actorFromJson(actor);
     }
 
     private Actor actorFromJson(JSONObject jso) throws ConnectionException {
@@ -131,20 +131,20 @@ public class ConnectionPumpio extends Connection {
             return Actor.EMPTY;
         }
         String oid = jso.optString("id");
-        Actor user = Actor.fromOriginAndActorOid(data.getOrigin(), oid);
-        user.setActorName(actorOidToActorName(oid));
-        user.setRealName(jso.optString("displayName"));
-        user.avatarUrl = JsonUtils.optStringInside(jso, "image", "url");
-        user.location = JsonUtils.optStringInside(jso, "location", "displayName");
-        user.setDescription(jso.optString("summary"));
-        user.setHomepage(jso.optString("url"));
-        user.setProfileUrl(jso.optString("url"));
-        user.setUpdatedDate(dateFromJson(jso, "updated"));
+        Actor actor = Actor.fromOriginAndActorOid(data.getOrigin(), oid);
+        actor.setActorName(actorOidToActorName(oid));
+        actor.setRealName(jso.optString("displayName"));
+        actor.avatarUrl = JsonUtils.optStringInside(jso, "image", "url");
+        actor.location = JsonUtils.optStringInside(jso, "location", "displayName");
+        actor.setDescription(jso.optString("summary"));
+        actor.setHomepage(jso.optString("url"));
+        actor.setProfileUrl(jso.optString("url"));
+        actor.setUpdatedDate(dateFromJson(jso, "updated"));
         JSONObject pumpIo = jso.optJSONObject("pump_io");
         if (pumpIo != null && !pumpIo.isNull("followed")) {
-            user.followedByMe = TriState.fromBoolean(pumpIo.optBoolean("followed"));
+            actor.followedByMe = TriState.fromBoolean(pumpIo.optBoolean("followed"));
         }
-        return user;
+        return actor;
     }
 
     @Override
@@ -153,18 +153,18 @@ public class ConnectionPumpio extends Connection {
     }
     
     @Override
-    public AActivity destroyFavorite(String messageId) throws ConnectionException {
-        return actOnMessage(PActivityType.UNFAVORITE, messageId);
+    public AActivity undoLike(String noteOid) throws ConnectionException {
+        return actOnMessage(PActivityType.UNFAVORITE, noteOid);
     }
 
     @Override
-    public AActivity createFavorite(String messageId) throws ConnectionException {
-        return actOnMessage(PActivityType.FAVORITE, messageId);
+    public AActivity like(String noteOid) throws ConnectionException {
+        return actOnMessage(PActivityType.FAVORITE, noteOid);
     }
 
     @Override
-    public boolean destroyStatus(String messageId) throws ConnectionException {
-        return !actOnMessage(PActivityType.DELETE, messageId).isEmpty();
+    public boolean deleteNote(String noteOid) throws ConnectionException {
+        return !actOnMessage(PActivityType.DELETE, noteOid).isEmpty();
     }
 
     private AActivity actOnMessage(PActivityType activityType, String messageId) throws ConnectionException {
@@ -172,13 +172,13 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public List<Actor> getFollowers(String actorId) throws ConnectionException {
-        return getUsers(actorId, ApiRoutineEnum.GET_FOLLOWERS);
+    public List<Actor> getFollowers(String actorOid) throws ConnectionException {
+        return getUsers(actorOid, ApiRoutineEnum.GET_FOLLOWERS);
     }
 
     @Override
-    public List<Actor> getFriends(String actorId) throws ConnectionException {
-        return getUsers(actorId, ApiRoutineEnum.GET_FRIENDS);
+    public List<Actor> getFriends(String actorOid) throws ConnectionException {
+        return getUsers(actorOid, ApiRoutineEnum.GET_FRIENDS);
     }
 
     @NonNull
@@ -207,15 +207,15 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
-    protected AActivity getMessage1(String messageId) throws ConnectionException {
-        return activityFromJson(http.getRequest(messageId));
+    protected AActivity getNote1(String noteOid) throws ConnectionException {
+        return activityFromJson(http.getRequest(noteOid));
     }
 
     @Override
-    public AActivity updateStatus(String messageIn, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
+    public AActivity updateNote(String messageIn, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
         String message = toHtmlIfAllowed(messageIn);
-        ActivitySender sender = ActivitySender.fromContent(this, statusId, message);
-        sender.setInReplyTo(inReplyToId);
+        ActivitySender sender = ActivitySender.fromContent(this, noteOid, message);
+        sender.setInReplyTo(inReplyToOid);
         sender.setMediaUri(mediaUri);
         return activityFromJson(sender.sendMe(PActivityType.POST));
     }
@@ -305,25 +305,25 @@ public class ConnectionPumpio extends Connection {
     }
     
     @Override
-    public AActivity postPrivateMessage(String messageIn, String statusId, String recipientId, Uri mediaUri) throws ConnectionException {
+    public AActivity updatePrivateNote(String messageIn, String noteOid, String actorOid, Uri mediaUri) throws ConnectionException {
         String message = toHtmlIfAllowed(messageIn);
-        ActivitySender sender = ActivitySender.fromContent(this, statusId, message);
-        sender.setRecipient(recipientId);
+        ActivitySender sender = ActivitySender.fromContent(this, noteOid, message);
+        sender.setRecipient(actorOid);
         sender.setMediaUri(mediaUri);
         return activityFromJson(sender.sendMe(PActivityType.POST));
     }
 
     @Override
-    public AActivity postReblog(String rebloggedId) throws ConnectionException {
-        return actOnMessage(PActivityType.SHARE, rebloggedId);
+    public AActivity announce(String rebloggedNoteOid) throws ConnectionException {
+        return actOnMessage(PActivityType.SHARE, rebloggedNoteOid);
     }
 
     @NonNull
     @Override
     public List<AActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                       TimelinePosition oldestPosition, int limit, String actorId)
+                                       TimelinePosition oldestPosition, int limit, String actorOid)
             throws ConnectionException {
-        ConnectionAndUrl conu = getConnectionAndUrl(apiRoutine, actorId);
+        ConnectionAndUrl conu = getConnectionAndUrl(apiRoutine, actorOid);
         Uri sUri = Uri.parse(conu.url);
         Uri.Builder builder = sUri.buildUpon();
         if (youngestPosition.nonEmpty()) {
@@ -576,8 +576,8 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public AActivity followActor(String actorId, Boolean follow) throws ConnectionException {
-        return actOnActor(follow ? PActivityType.FOLLOW : PActivityType.STOP_FOLLOWING, actorId);
+    public AActivity follow(String actorOid, Boolean follow) throws ConnectionException {
+        return actOnActor(follow ? PActivityType.FOLLOW : PActivityType.STOP_FOLLOWING, actorOid);
     }
 
     private AActivity actOnActor(PActivityType activityType, String actorId) throws ConnectionException {
@@ -585,12 +585,12 @@ public class ConnectionPumpio extends Connection {
     }
     
     @Override
-    public Actor getActor(String actorId, String actorName) throws ConnectionException {
-        ConnectionAndUrl conu = getConnectionAndUrlForUsername(ApiRoutineEnum.GET_USER,
-                UriUtils.isRealOid(actorId) ? actorOidToActorName(actorId) : actorName);
+    public Actor getActor(String actorOid, String actorName) throws ConnectionException {
+        ConnectionAndUrl conu = getConnectionAndUrlForUsername(ApiRoutineEnum.GET_ACTOR,
+                UriUtils.isRealOid(actorOid) ? actorOidToActorName(actorOid) : actorName);
         JSONObject jso = conu.httpConnection.getRequest(conu.url);
         Actor actor = actorFromJson(jso);
-        MyLog.v(this, "getActor oid='" + actorId + "', userName='" + actorName + "' -> " + actor.getRealName());
+        MyLog.v(this, "getActor oid='" + actorOid + "', userName='" + actorName + "' -> " + actor.getRealName());
         return actor;
     }
 

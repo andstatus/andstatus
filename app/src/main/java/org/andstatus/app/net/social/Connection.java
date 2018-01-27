@@ -46,8 +46,8 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Handles connection to the API of the Microblogging System (i.e. to the "Origin")
- * Authenticated User info (User account in the Microblogging system) and connection properties 
+ * Handles connection to the API of the Social Network (i.e. to the "Origin")
+ * Authenticated User info (User account in the Social Network) and connection properties
  * are provided in the constructor.
  * 
  * @author yvolk@yurivolkov.com
@@ -61,11 +61,11 @@ public abstract class Connection {
     public enum ApiRoutineEnum {
         ACCOUNT_RATE_LIMIT_STATUS,
         ACCOUNT_VERIFY_CREDENTIALS,
-        /** Returns most recent messages privately sent to the authenticating user */
+        /** Returns most recent notes privately sent to the authenticating user */
         PRIVATE_NOTES(true),
-        CREATE_FAVORITE,
-        DESTROY_FAVORITE,
-        FOLLOW_USER,
+        LIKE,
+        UNDO_LIKE,
+        FOLLOW,
         GET_CONFIG,
         GET_CONVERSATION,
         /** List of actors */
@@ -75,13 +75,13 @@ public abstract class Connection {
         GET_FOLLOWERS,
         GET_FOLLOWERS_IDS,
         GET_OPEN_INSTANCES,
-        GET_USER,
-        POST_MESSAGE,
-        POST_WITH_MEDIA,
-        POST_DIRECT_MESSAGE,
-        POST_REBLOG,
-        DESTROY_REBLOG,
-        DESTROY_MESSAGE,
+        GET_ACTOR,
+        UPDATE_NOTE,
+        UPDATE_NOTE_WITH_MEDIA,
+        UPDATE_PRIVATE_NOTE,
+        ANNOUNCE,
+        UNDO_ANNOUNCE,
+        DELETE_NOTE,
         REGISTER_CLIENT,
         /**
          * Get the Home timeline (whatever it is...).
@@ -89,27 +89,27 @@ public abstract class Connection {
          */
         HOME_TIMELINE,
         /**
-         * Get the user's replies.
+         * Get the actor's replies.
          * 
          * Returns most recent @replies (status updates prefixed with @actorname)
-         * for the authenticating user.
+         * for the authenticating user (an account).
          */
         MENTIONS_TIMELINE,
         /** Notifications in a separate API */
         NOTIFICATIONS_TIMELINE,
         /**
-         * Get the User timeline for the user with the selectedActorId. We use credentials of Account which may be
-         * not the same actor.
+         * Get the Actor timeline for an actor with the selectedActorId.
+         * We use credentials of our Account, which may be not the same the actor.
          */
-        USER_TIMELINE,
+        ACTOR_TIMELINE,
         PUBLIC_TIMELINE,
         TAG_TIMELINE,
         FAVORITES_TIMELINE,
-        SEARCH_MESSAGES,
-        SEARCH_USERS,
+        SEARCH_NOTES,
+        SEARCH_ACTORS,
 
-        GET_MESSAGE,
-        STOP_FOLLOWING_USER,
+        GET_NOTE,
+        UNDO_FOLLOW,
         
         /**
          * OAuth APIs
@@ -126,18 +126,18 @@ public abstract class Connection {
          */
         DUMMY;
         
-        private final boolean msgPrivate;
+        private final boolean isNotePrivate;
 
         ApiRoutineEnum() {
             this(false);
         }
         
-        ApiRoutineEnum(boolean msgPrivate) {
-            this.msgPrivate = msgPrivate;
+        ApiRoutineEnum(boolean isNotePrivate) {
+            this.isNotePrivate = isNotePrivate;
         }
 
-        public boolean isMsgPrivate() {
-            return msgPrivate;
+        public boolean isNotePrivate() {
+            return isNotePrivate;
         }
     }
 
@@ -200,7 +200,7 @@ public abstract class Connection {
     }
     
     /**
-     * Set User's password if the Connection object needs it
+     * Set Account's password if the Connection object needs it
      */
     public final void setPassword(String password) {
         http.setPassword(password);
@@ -236,113 +236,111 @@ public abstract class Connection {
      */
     public abstract Actor verifyCredentials() throws ConnectionException;
 
-    public abstract AActivity destroyFavorite(String statusId) throws ConnectionException;
+    public abstract AActivity undoLike(String noteOid) throws ConnectionException;
 
     /**
-     * Favorites the status specified in the ID parameter as the authenticating user.
+     * Favorites the status specified in the ID parameter as the authenticating account.
      * Returns the favorite status when successful.
      * @see <a
      *      href="http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-favorites%C2%A0create">Twitter
      *      REST API Method: favorites create</a>
      */
-    public abstract AActivity createFavorite(String statusId) throws ConnectionException;
+    public abstract AActivity like(String noteOid) throws ConnectionException;
 
-    public boolean destroyReblog(String statusId) throws ConnectionException {
-        return destroyStatus(statusId);
+    public boolean undoAnnounce(String noteOid) throws ConnectionException {
+        return deleteNote(noteOid);
     }
 
     /**
      * Destroys the status specified by the required ID parameter.
-     * The authenticating user must be the author of the specified status.
+     * The authenticating account's actor must be the author of the specified status.
      * @see <a
      *      href="http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-statuses%C2%A0destroy">Twitter
      *      REST API Method: statuses/destroy</a>
      */
-    public abstract boolean destroyStatus(String statusId) throws ConnectionException;
+    public abstract boolean deleteNote(String noteOid) throws ConnectionException;
 
     /**
      * Returns a list of users the specified user is following.
      */
-    public List<Actor> getFriends(String actorId) throws ConnectionException {
-        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFriends for actorOid=" + actorId);
+    public List<Actor> getFriends(String actorOid) throws ConnectionException {
+        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFriends for actorOid=" + actorOid);
     }
     
     /**
      * Returns a list of IDs for every user the specified user is following.
      */
-    public List<String> getFriendsIds(String actorId) throws ConnectionException {
-        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFriendsIds for actorOid=" + actorId);
+    public List<String> getFriendsIds(String actorOid) throws ConnectionException {
+        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFriendsIds for actorOid=" + actorOid);
     }
 
     @NonNull
-    public List<String> getFollowersIds(String actorId) throws ConnectionException {
-        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFollowersIds actorOid=" + actorId);
+    public List<String> getFollowersIds(String actorOid) throws ConnectionException {
+        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFollowersIds actorOid=" + actorOid);
     }
 
-    public List<Actor> getFollowers(String actorId) throws ConnectionException {
-        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFollowers actorOid=" + actorId);
+    public List<Actor> getFollowers(String actorOid) throws ConnectionException {
+        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFollowers actorOid=" + actorOid);
     }
 
     /**
-     * Requests a single message (status), specified by the id parameter.
+     * Requests a single note (status), specified by the id parameter.
      * More than one activity may be returned (as replies) to reflect Favoriting and Reblogging of the "status"
      */
     @NonNull
-    public final AActivity getMessage(String statusId) throws ConnectionException {
-        return getMessage1(statusId);
+    public final AActivity getNote(String noteOid) throws ConnectionException {
+        return getNote1(noteOid);
     }
 
-    /** See {@link #getMessage(String)} */
-    protected abstract AActivity getMessage1(String statusId) throws ConnectionException;
+    /** See {@link #getNote(String)} */
+    protected abstract AActivity getNote1(String noteOid) throws ConnectionException;
 
     public List<AActivity> getConversation(String conversationOid) throws ConnectionException {
         throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getConversation oid=" + conversationOid);
     }
 
     /**
-     * Update user status by posting to the Twitter REST API.
-     * 
+     * Update user status by posting to the Server's API
      * Updates the authenticating user's status, also known as tweeting/blogging.
-     * To upload an image to accompany the tweet, use POST statuses/update_with_media.
-     * 
+     *
      * @param message       Text of the "status"
-     * @param statusId      id is not empty, if we are updating existing "status"
-     * @param inReplyToId   The ID of an existing status that the update is in reply to.
+     * @param noteOid      id is not empty, if we are updating existing "status"
+     * @param inReplyToOid   The ID of an existing status that the update is in reply to.
      * @param mediaUri   @throws ConnectionException
      *
      * @see <a
      *      href="https://dev.twitter.com/docs/api/1/post/statuses/update">Twitter
      *      POST statuses/update</a>
      */
-    public abstract AActivity updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri)
+    public abstract AActivity updateNote(String message, String noteOid, String inReplyToOid, Uri mediaUri)
             throws ConnectionException;
 
     /**
      * Post Private ("direct") message
      * @see <a href="https://dev.twitter.com/docs/api/1/post/direct_messages/new">POST direct_messages/new</a>
      *
-     * @param actorId {@link ActorTable#ACTOR_OID} - The ID of the user who should receive the private message
+     * @param actorOid {@link ActorTable#ACTOR_OID} - The ID of the user who should receive the private message
      * @return The sent message if successful (empty message if not)
      */
-    public abstract AActivity postPrivateMessage(String message, String statusId, String actorId, Uri mediaUri)
+    public abstract AActivity updatePrivateNote(String message, String noteOid, String actorOid, Uri mediaUri)
             throws ConnectionException;
 
     /**
      * Post Reblog ("retweet")
      * @see <a href="https://dev.twitter.com/docs/api/1/post/statuses/retweet/%3Aid">POST statuses/retweet/:id</a>
      * 
-     * @param rebloggedId id of the Reblogged message
+     * @param rebloggedNoteOid id of the Reblogged note
      */
-    public abstract AActivity postReblog(String rebloggedId)
+    public abstract AActivity announce(String rebloggedNoteOid)
             throws ConnectionException;
 
     /**
      * Universal method for several Timeline Types...
-     * @param actorId For the {@link ApiRoutineEnum#USER_TIMELINE}, null for the other timelines
+     * @param actorOid For the {@link ApiRoutineEnum#ACTOR_TIMELINE}, null for the other timelines
      */
     @NonNull
     public abstract List<AActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                                TimelinePosition oldestPosition, int limit, String actorId)
+                                                TimelinePosition oldestPosition, int limit, String actorOid)
             throws ConnectionException;
 
     @NonNull
@@ -357,17 +355,15 @@ public abstract class Connection {
     }
 
     /**
-     * Allows this User to follow the user specified in the actorId parameter
-     * Allows this User to stop following the user specified in the actorId parameter
+     * Allows this Account to follow (or stop following) an actor specified in the actorOid parameter
      * @param follow true - Follow, false - Stop following
-     * @return User object with 'following' flag set/reset
      */
-    public abstract AActivity followActor(String actorId, Boolean follow) throws ConnectionException;
+    public abstract AActivity follow(String actorOid, Boolean follow) throws ConnectionException;
 
     /**
-     * Get information about the specified User
+     * Get information about the specified Actor
      */
-    public abstract Actor getActor(String actorId, String actorName) throws ConnectionException;
+    public abstract Actor getActor(String actorOid, String actorName) throws ConnectionException;
     
     protected final String fixSinceId(String sinceId) {
         String out = "";

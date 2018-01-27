@@ -25,7 +25,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.ProjectionMap;
 import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
@@ -46,10 +46,10 @@ public class RecursiveConversationLoader<T extends ConversationItem<T>> extends 
     }
 
     private void cacheConversation(T oMsg) {
-        long conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, oMsg.getMsgId());
+        long conversationId = MyQuery.msgIdToLongColumnValue(NoteTable.CONVERSATION_ID, oMsg.getMsgId());
         String selection = (conversationId == 0
                 ? ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.MSG_ID + "=" + oMsg.getMsgId()
-                : ProjectionMap.MSG_TABLE_ALIAS + "." + MsgTable.CONVERSATION_ID + "=" + conversationId);
+                : ProjectionMap.MSG_TABLE_ALIAS + "." + NoteTable.CONVERSATION_ID + "=" + conversationId);
         Uri uri = Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null).getUri();
 
         try (Cursor cursor = myContext.context().getContentResolver().query(uri, oMsg.getProjection(),

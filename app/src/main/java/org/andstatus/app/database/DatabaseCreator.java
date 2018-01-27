@@ -25,7 +25,7 @@ import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.database.table.CommandTable;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.FriendshipTable;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.database.table.TimelineTable;
 import org.andstatus.app.database.table.ActorTable;
@@ -47,7 +47,7 @@ public class DatabaseCreator {
      * v.23 2015-09-02 app.v.19 msg_status added for Unsent messages
      * v.22 2015-04-04 app.v.17 use_legacy_http added to Origin
      * v.21 2015-03-14 app.v.16 mention_as_webfinger_id added to Origin,
-     *                 index on {@link MsgTable#IN_REPLY_TO_MSG_ID} added.
+     *                 index on {@link NoteTable#IN_REPLY_TO_NOTE_ID} added.
      * v.20 2015-02-04 app.v.15 SslMode added to Origin
      * v.19 2014-11-15 Index on sent date added to messages
      * v.18 2014-09-21 Duplicated User.USERNAME allowed
@@ -79,7 +79,7 @@ public class DatabaseCreator {
      */
     public DatabaseCreator create() {
         MyLog.i(this, "Creating tables");
-        MsgTable.create(db);
+        NoteTable.create(db);
         AudienceTable.create(db);
         ActorTable.create(db);
         FriendshipTable.create(db);

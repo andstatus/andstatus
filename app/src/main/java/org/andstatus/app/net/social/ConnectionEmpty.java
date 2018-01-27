@@ -42,55 +42,55 @@ public class ConnectionEmpty extends Connection {
     }
 
     @Override
-    public AActivity destroyFavorite(String statusId) throws ConnectionException {
+    public AActivity undoLike(String noteOid) throws ConnectionException {
         return AActivity.EMPTY;
     }
 
     @Override
-    public AActivity createFavorite(String statusId) throws ConnectionException {
+    public AActivity like(String noteOid) throws ConnectionException {
         return AActivity.EMPTY;
     }
 
     @Override
-    public boolean destroyStatus(String statusId) throws ConnectionException {
+    public boolean deleteNote(String noteOid) throws ConnectionException {
         return false;
     }
 
     @Override
-    public AActivity getMessage1(String statusId) throws ConnectionException {
+    public AActivity getNote1(String noteOid) throws ConnectionException {
         return AActivity.EMPTY;
     }
 
     @Override
-    public AActivity updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
+    public AActivity updateNote(String message, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
         return AActivity.EMPTY;
     }
 
     @Override
-    public AActivity postPrivateMessage(String message, String statusId, String actorId, Uri mediaUri) throws ConnectionException {
+    public AActivity updatePrivateNote(String message, String noteOid, String actorOid, Uri mediaUri) throws ConnectionException {
         return AActivity.EMPTY;
     }
 
     @Override
-    public AActivity postReblog(String rebloggedId) throws ConnectionException {
+    public AActivity announce(String rebloggedNoteOid) throws ConnectionException {
         return AActivity.EMPTY;
     }
 
     @NonNull
     @Override
     public List<AActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                       TimelinePosition oldestPosition, int limit, String actorId)
+                                       TimelinePosition oldestPosition, int limit, String actorOid)
             throws ConnectionException {
         return new ArrayList<>();
     }
 
     @Override
-    public AActivity followActor(String actorId, Boolean follow) throws ConnectionException {
+    public AActivity follow(String actorOid, Boolean follow) throws ConnectionException {
         return AActivity.EMPTY;
     }
 
     @Override
-    public Actor getActor(String actorId, String actorName) throws ConnectionException {
+    public Actor getActor(String actorOid, String actorName) throws ConnectionException {
         return Actor.EMPTY;
     }
 

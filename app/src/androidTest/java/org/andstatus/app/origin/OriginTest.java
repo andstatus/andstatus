@@ -7,7 +7,7 @@ import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.data.DemoNoteInserter;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.net.social.AActivity;
 import org.junit.Before;
@@ -127,8 +127,8 @@ public class OriginTest {
                 body, messageOid, DownloadStatus.LOADED);
         final long msgId = activity.getMessage().msgId;
         assertNotEquals(0, msgId);
-        String userName = MyQuery.msgIdToUsername(MsgTable.AUTHOR_ID, msgId,
-                ActorInTimeline.USERNAME);
+        String userName = MyQuery.msgIdToUsername(NoteTable.AUTHOR_ID, msgId,
+                ActorInTimeline.ACTORNAME);
         String permalink = origin.messagePermalink(msgId);
         String desc = "Permalink of Twitter message '" + messageOid + "' by '" + userName
                 + "' at " + origin.toString() + " is " + permalink;
@@ -163,29 +163,29 @@ public class OriginTest {
     @Test
     public void testUsernameIsValid() {
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.GNUSOCIAL_TEST_ORIGIN_NAME);
-        checkUsernameIsValid(origin, "", false);
-        checkUsernameIsValid(origin, "someUser.", false);
-        checkUsernameIsValid(origin, "someUser ", false);
-        checkUsernameIsValid(origin, "someUser", true);
-        checkUsernameIsValid(origin, "some.user", true);
-        checkUsernameIsValid(origin, "some.user/GnuSocial", false);
-        checkUsernameIsValid(origin, "some@user", false);
+        checkActorNameIsValid(origin, "", false);
+        checkActorNameIsValid(origin, "someUser.", false);
+        checkActorNameIsValid(origin, "someUser ", false);
+        checkActorNameIsValid(origin, "someUser", true);
+        checkActorNameIsValid(origin, "some.user", true);
+        checkActorNameIsValid(origin, "some.user/GnuSocial", false);
+        checkActorNameIsValid(origin, "some@user", false);
 
         origin = MyContextHolder.get().persistentOrigins().fromName(demoData.PUMPIO_ORIGIN_NAME);
-        checkUsernameIsValid(origin, "", false);
-        checkUsernameIsValid(origin, "someUser.", false);
-        checkUsernameIsValid(origin, "someUser ", false);
-        checkUsernameIsValid(origin, "someUser", false);
-        checkUsernameIsValid(origin, "some.user", false);
-        checkUsernameIsValid(origin, "some.user@example.com", true);
-        checkUsernameIsValid(origin, "t131t@identi.ca/PumpIo", false);
-        checkUsernameIsValid(origin, "some@example.com.", false);
-        checkUsernameIsValid(origin, "some@example.com", true);
-        checkUsernameIsValid(origin, "some@user", false);
-        checkUsernameIsValid(origin, "AndStatus@datamost.com", true);
+        checkActorNameIsValid(origin, "", false);
+        checkActorNameIsValid(origin, "someUser.", false);
+        checkActorNameIsValid(origin, "someUser ", false);
+        checkActorNameIsValid(origin, "someUser", false);
+        checkActorNameIsValid(origin, "some.user", false);
+        checkActorNameIsValid(origin, "some.user@example.com", true);
+        checkActorNameIsValid(origin, "t131t@identi.ca/PumpIo", false);
+        checkActorNameIsValid(origin, "some@example.com.", false);
+        checkActorNameIsValid(origin, "some@example.com", true);
+        checkActorNameIsValid(origin, "some@user", false);
+        checkActorNameIsValid(origin, "AndStatus@datamost.com", true);
     }
 
-    private void checkUsernameIsValid(Origin origin, String userName, boolean valid) {
+    private void checkActorNameIsValid(Origin origin, String userName, boolean valid) {
         assertEquals("Username '" + userName + "' " + (valid ? "is not valid" : "is valid"), valid,
                 origin.isUsernameValid(userName));
     }

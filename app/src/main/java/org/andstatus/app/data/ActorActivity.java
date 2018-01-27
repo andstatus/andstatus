@@ -28,8 +28,8 @@ import java.util.Date;
 
 
 /**
- * Manages minimal information about the latest downloaded message by one User. 
- * We count messages where the User is either a Sender or an Author
+ * Manages minimal information about the latest downloaded message by one Actor (or a User represented by the Actor).
+ * We count messages where the Actor is either a Sender or an Author
  */
 public final class ActorActivity {
     private static final String TAG = ActorActivity.class.getSimpleName();
@@ -37,7 +37,7 @@ public final class ActorActivity {
     private long actorId = 0;
     
     /**
-     * The id of the latest downloaded Message by this User
+     * The id of the latest downloaded Message by this Actor
      * 0 - none were downloaded
      */
     private long lastActivityId = 0;
@@ -52,7 +52,7 @@ public final class ActorActivity {
     private boolean changed = false;
     
     /**
-     * Retrieve from the database information about the last downloaded activity by this User
+     * Retrieve from the database information about the last downloaded activity by this Actor
      */
     public ActorActivity(long userIdIn) {
         actorId = userIdIn;
@@ -78,14 +78,14 @@ public final class ActorActivity {
     }
     
     /**
-     * @return Id of the last downloaded message by this User
+     * @return Id of the last downloaded message by this Actor
      */
     public long getLastActivityId() {
         return lastActivityId;
     }
 
     /**
-     * @return Sent Date of the last downloaded message by this User
+     * @return Sent Date of the last downloaded message by this Actor
      */
     public long getLastActivityDate() {
         return lastActivityDate;
@@ -115,7 +115,7 @@ public final class ActorActivity {
      */
     public boolean save() {
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "User " + actorId + ": " + MyQuery.actorIdToWebfingerId(actorId)
+            MyLog.v(this, "actorId " + actorId + ": " + MyQuery.actorIdToWebfingerId(actorId)
                     + " Latest activity update at " + (new Date(getLastActivityDate()).toString())
                     + (changed ? "" : " not changed")                    
                     );
@@ -130,7 +130,7 @@ public final class ActorActivity {
             lastActivityDate = activityDate;
             lastActivityId = MyQuery.userIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, actorId);
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "There is newer information in the database. User " + actorId + ": "
+                MyLog.v(this, "There is newer information in the database. Actor " + actorId + ": "
                         + MyQuery.actorIdToWebfingerId(actorId)
                         + " Latest activity at " + (new Date(getLastActivityDate()).toString()));
             }

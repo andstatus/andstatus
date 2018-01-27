@@ -124,7 +124,7 @@ class ActivitySender {
             }
             activity.put("object", obj);
 
-            ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.POST_MESSAGE,
+            ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.UPDATE_NOTE,
                     connection.getData().getAccountActor().oid);
             jso = connection.postRequest(conu.url, activity);
             if (jso == null) {
@@ -208,7 +208,7 @@ class ActivitySender {
         try {
             JSONObject formParams = new JSONObject();
             formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mMediaUri.toString());
-            ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.POST_WITH_MEDIA,
+            ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.UPDATE_NOTE_WITH_MEDIA,
                     connection.getData().getAccountActor().oid);
             obj1 = connection.postRequest(conu.url, formParams);
             if (obj1 == null) {

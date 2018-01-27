@@ -156,7 +156,7 @@ public class ConnectionGnuSocialTest {
                 org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
         connection.getHttpMock().setResponse(jso);
         
-        AActivity activity = connection.updateStatus("Test post message with media", "", "", demoData.LOCAL_IMAGE_TEST_URI);
+        AActivity activity = connection.updateNote("Test post message with media", "", "", demoData.LOCAL_IMAGE_TEST_URI);
         activity.getMessage().setPrivate(TriState.FALSE);
         assertEquals("Message returned", privateGetMessageWithAttachment(
                 InstrumentationRegistry.getInstrumentation().getContext(), false).getMessage(), activity.getMessage());
@@ -172,7 +172,7 @@ public class ConnectionGnuSocialTest {
         // Originally downloaded from https://quitter.se/api/statuses/show.json?id=2215662
         String jso = RawResourceUtils.getString(context, org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
         connection.getHttpMock().setResponse(jso);
-        AActivity activity = connection.getMessage(MESSAGE_OID);
+        AActivity activity = connection.getNote(MESSAGE_OID);
         if (uniqueUid) {
             activity.setMessage(activity.getMessage().copy(activity.getMessage().oid + "_" + demoData.TESTRUN_UID));
         }
@@ -195,7 +195,7 @@ public class ConnectionGnuSocialTest {
         String jString = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.loadaverage_repost_response);
         connection.getHttpMock().setResponse(jString);
-        AActivity activity = connection.postReblog(MESSAGE_OID);
+        AActivity activity = connection.announce(MESSAGE_OID);
         assertEquals(ActivityType.ANNOUNCE, activity.type);
         Note message = activity.getMessage();
         assertEquals("Message oid" + message, MESSAGE_OID, message.oid);

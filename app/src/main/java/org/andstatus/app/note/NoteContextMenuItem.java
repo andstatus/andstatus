@@ -34,7 +34,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.list.ContextMenuItem;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.AsyncTaskLauncher;
@@ -160,7 +160,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     COPY_TEXT(true) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
-            String body = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, menu.getMsgId());
+            String body = MyQuery.msgIdToStringColumnValue(NoteTable.BODY, menu.getMsgId());
             if (menu.getOrigin().isHtmlContentAllowed()) {
                 body = MyHtml.fromHtml(body);
             }
@@ -175,7 +175,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     COPY_AUTHOR(true) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
-            final long authorId = MyQuery.noteIdToActorId(MsgTable.AUTHOR_ID, menu.getMsgId());
+            final long authorId = MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, menu.getMsgId());
             MyLog.v(this, "msgId:" + menu.getMsgId() + " -> authorId:" + authorId);
             return NoteEditorData.newEmpty(menu.getMyActor()).appendMentionedUserToText(authorId);
         }
@@ -189,7 +189,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
             menu.switchTimelineActivityView(
-                    Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER,
+                    Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.ACTOR,
                     null, menu.getActorId(), menu.getOrigin(), ""));
         }
     },
@@ -197,7 +197,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
             menu.switchTimelineActivityView(
-                    Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER,
+                    Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.ACTOR,
                     null, menu.getAuthorId(), menu.getOrigin(), ""));
         }
     },

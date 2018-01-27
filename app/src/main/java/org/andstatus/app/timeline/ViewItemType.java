@@ -27,8 +27,8 @@ import org.andstatus.app.actor.ActorViewItem;
 
 public enum ViewItemType {
     ACTIVITY(ActivityViewItem.EMPTY),
-    MESSAGE(NoteViewItem.EMPTY),
-    USER(ActorViewItem.EMPTY),
+    NOTE(NoteViewItem.EMPTY),
+    ACTOR(ActorViewItem.EMPTY),
     CONVERSATION(ConversationViewItem.EMPTY),
     COMMANDS_QUEUE(QueueData.EMPTY),
     UNKNOWN(EmptyViewItem.EMPTY);
@@ -44,8 +44,8 @@ public enum ViewItemType {
             return ACTIVITY;
         }
         switch (timelineType) {
-            case USERS:
-                return USER;
+            case ACTORS:
+                return ACTOR;
             case CONVERSATION:
                 return CONVERSATION;
             case COMMANDS_QUEUE:
@@ -53,7 +53,7 @@ public enum ViewItemType {
             case UNKNOWN:
                 return UNKNOWN;
             default:
-                return MESSAGE;
+                return NOTE;
         }
     }
 }

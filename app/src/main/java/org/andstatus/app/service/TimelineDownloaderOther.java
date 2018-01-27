@@ -132,12 +132,12 @@ class TimelineDownloaderOther extends TimelineDownloader {
         } else {
             String actorOid =  MyQuery.idToOid(OidEnum.ACTOR_OID, actorId, 0);
             if (TextUtils.isEmpty(actorOid)) {
-                throw new ConnectionException("User oId is not found for id=" + actorId + ", timeline:" + getTimeline());
+                throw new ConnectionException("Actor oId is not found for id=" + actorId + ", timeline:" + getTimeline());
             }
             return actorOid;
         }
         if (getTimeline().getTimelineType().isForActor()) {
-            throw new ConnectionException("No user for the timeline:" + getTimeline());
+            throw new ConnectionException("No actor for the timeline:" + getTimeline());
         }
         return "";
     }

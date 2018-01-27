@@ -20,7 +20,7 @@ import android.content.Context;
 import android.database.Cursor;
 
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.util.I18n;
 
 public abstract class ConversationItem<T extends ConversationItem<T>> extends BaseNoteViewItem<T> implements Comparable<ConversationItem> {
@@ -32,7 +32,7 @@ public abstract class ConversationItem<T extends ConversationItem<T>> extends Ba
     /**
      * This order is reverse to the {@link #mListOrder}. 
      * First message in the conversation has it == 1.
-     * The number is visible to the user.
+     * The number is visible to a User.
      */
     int historyOrder = 0;
     int mNReplies = 0;
@@ -93,8 +93,8 @@ public abstract class ConversationItem<T extends ConversationItem<T>> extends Ba
     abstract String[] getProjection();
     
     void load(Cursor cursor) {
-        inReplyToMsgId = DbUtils.getLong(cursor, MsgTable.IN_REPLY_TO_MSG_ID);
-        updatedDate = DbUtils.getLong(cursor, MsgTable.UPDATED_DATE);
+        inReplyToMsgId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
+        updatedDate = DbUtils.getLong(cursor, NoteTable.UPDATED_DATE);
     }
 
     @Override

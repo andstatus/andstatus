@@ -27,7 +27,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DemoConversationInserter;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.note.NoteContextMenuItem;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.timeline.ListActivityTestHelper;
@@ -68,7 +68,7 @@ public class ActorListTest extends TimelineActivityTest {
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(), ActorList.class);
         long msgId = MyQuery.oidToId(OidEnum.MSG_OID, demoData.getConversationOriginId(),
                 demoData.CONVERSATION_MENTIONS_NOTE_OID);
-        String body = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId);
+        String body = MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId);
         String logMsg = MyQuery.msgInfoForLog(msgId);
 
         List<Actor> users = Actor.fromOriginAndActorOid(demoData.getConversationMyAccount().getOrigin(), "").extractActorsFromBodyText(body, false);

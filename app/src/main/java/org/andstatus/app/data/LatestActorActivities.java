@@ -27,9 +27,9 @@ public class LatestActorActivities {
     private final Map<Long, ActorActivity> actorActivities = new HashMap<>();
 
     /**
-     * Add information about new/updated message by the User
+     * Add information about new/updated message by the Actor
      */
-    public void onNewUserActivity(ActorActivity uaIn) {
+    public void onNewActorActivity(ActorActivity uaIn) {
         // On different implementations see 
         // http://stackoverflow.com/questions/81346/most-efficient-way-to-increment-a-map-value-in-java
         ActorActivity um = actorActivities.get(uaIn.getActorId());

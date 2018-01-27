@@ -27,7 +27,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.DownloadTable;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
@@ -150,8 +150,8 @@ public class DataPruner {
         String sql = "SELECT DISTINCT " + DownloadTable.MSG_ID + " FROM " + DownloadTable.TABLE_NAME
                 + " WHERE " + DownloadTable.MSG_ID + " NOT NULL"
                 + " AND NOT EXISTS (" 
-                + "SELECT * FROM " + MsgTable.TABLE_NAME
-                + " WHERE " + MsgTable.TABLE_NAME + "." + MsgTable._ID + "=" + DownloadTable.MSG_ID
+                + "SELECT * FROM " + NoteTable.TABLE_NAME
+                + " WHERE " + NoteTable.TABLE_NAME + "." + NoteTable._ID + "=" + DownloadTable.MSG_ID
                 + ")";
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {

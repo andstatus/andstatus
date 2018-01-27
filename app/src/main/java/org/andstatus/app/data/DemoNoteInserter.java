@@ -22,7 +22,7 @@ import android.text.TextUtils;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Note;
@@ -199,7 +199,7 @@ public class DemoNoteInserter {
             Actor author = activity.getAuthor();
             if (author.nonEmpty()) {
                 assertNotEquals( "Author id for " + author + " not set in message " + message + " in activity " + activity, 0,
-                        MyQuery.noteIdToActorId(MsgTable.AUTHOR_ID, message.msgId));
+                        MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, message.msgId));
             }
         }
 
@@ -212,7 +212,7 @@ public class DemoNoteInserter {
                     break;
                 }
             }
-            assertTrue("User, who favorited, is not found among stargazers: " + activity
+            assertTrue("Actor, who favorited, is not found among stargazers: " + activity
                     + "\nstargazers: " + stargazers, found);
         }
 
@@ -239,7 +239,7 @@ public class DemoNoteInserter {
         }
 
         if (activity.getObjActor().nonEmpty()) {
-            assertNotEquals( "User was not added: " + activity.getObjActor(), 0, activity.getObjActor().actorId);
+            assertNotEquals( "Actor was not added: " + activity.getObjActor(), 0, activity.getObjActor().actorId);
         }
         if (activity.getActivity().nonEmpty()) {
             checkActivityRecursively(activity.getActivity(), level + 1);

@@ -44,10 +44,10 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
             case ACCOUNT_RATE_LIMIT_STATUS:
                 url = "application/rate_limit_status.json";
                 break;
-            case CREATE_FAVORITE:
+            case LIKE:
                 url = "favorites/create.json?tweet_mode=extended";
                 break;
-            case DESTROY_FAVORITE:
+            case UNDO_LIKE:
                 url = "favorites/destroy.json?tweet_mode=extended";
                 break;
             case PRIVATE_NOTES:
@@ -65,7 +65,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
                 // https://dev.twitter.com/docs/api/1.1/get/friends/list
                 url = "friends/list.json";
                 break;
-            case GET_MESSAGE:
+            case GET_NOTE:
                 url = "statuses/show.json" + "?id=%noteId%&tweet_mode=extended";
                 break;
             case HOME_TIMELINE:
@@ -75,26 +75,26 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
                 // https://dev.twitter.com/docs/api/1.1/get/statuses/mentions_timeline
                 url = "statuses/mentions_timeline.json?tweet_mode=extended";
                 break;
-            case POST_DIRECT_MESSAGE:
+            case UPDATE_PRIVATE_NOTE:
                 url = "direct_messages/new.json?tweet_mode=extended";
                 break;
-            case POST_MESSAGE:
+            case UPDATE_NOTE:
                 url = "statuses/update.json?tweet_mode=extended";
                 break;
-            case POST_REBLOG:
+            case ANNOUNCE:
                 url = "statuses/retweet/%noteId%.json?tweet_mode=extended";
                 break;
-            case POST_WITH_MEDIA:
+            case UPDATE_NOTE_WITH_MEDIA:
                 url = "statuses/update_with_media.json?tweet_mode=extended";
                 break;
-            case SEARCH_MESSAGES:
+            case SEARCH_NOTES:
                 // https://dev.twitter.com/docs/api/1.1/get/search/tweets
                 url = "search/tweets.json?tweet_mode=extended";
                 break;
-            case SEARCH_USERS:
+            case SEARCH_ACTORS:
                 url = "users/search.json?tweet_mode=extended";
                 break;
-            case USER_TIMELINE:
+            case ACTOR_TIMELINE:
                 url = "statuses/user_timeline.json?tweet_mode=extended";
                 break;
             default:
@@ -108,12 +108,12 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     }
 
     @Override
-    public AActivity updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri)
+    public AActivity updateNote(String message, String noteOid, String inReplyToOid, Uri mediaUri)
             throws ConnectionException {
         if (UriUtils.isEmpty(mediaUri)) {
-            return super.updateStatus(message, statusId, inReplyToId, mediaUri);
+            return super.updateNote(message, noteOid, inReplyToOid, mediaUri);
         }
-        return updateWithMedia(message, inReplyToId, mediaUri);
+        return updateWithMedia(message, inReplyToOid, mediaUri);
     }
 
     private AActivity updateWithMedia(String message, String inReplyToId, Uri mediaUri) throws ConnectionException {
@@ -130,31 +130,31 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         } catch (JSONException e) {
             MyLog.e(this, e);
         }
-        JSONObject jso = postRequest(ApiRoutineEnum.POST_WITH_MEDIA, formParams);
+        JSONObject jso = postRequest(ApiRoutineEnum.UPDATE_NOTE_WITH_MEDIA, formParams);
         return activityFromJson(jso);
     }
 
     @Override
-    public AActivity createFavorite(String statusId) throws ConnectionException {
+    public AActivity like(String noteOid) throws ConnectionException {
         JSONObject out = new JSONObject();
         try {
-            out.put("id", statusId);
+            out.put("id", noteOid);
         } catch (JSONException e) {
             MyLog.e(this, e);
         }
-        JSONObject jso = postRequest(ApiRoutineEnum.CREATE_FAVORITE, out);
+        JSONObject jso = postRequest(ApiRoutineEnum.LIKE, out);
         return activityFromJson(jso);
     }
 
     @Override
-    public AActivity destroyFavorite(String statusId) throws ConnectionException {
+    public AActivity undoLike(String noteOid) throws ConnectionException {
         JSONObject out = new JSONObject();
         try {
-            out.put("id", statusId);
+            out.put("id", noteOid);
         } catch (JSONException e) {
             MyLog.e(this, e);
         }
-        JSONObject jso = postRequest(ApiRoutineEnum.DESTROY_FAVORITE, out);
+        JSONObject jso = postRequest(ApiRoutineEnum.UNDO_LIKE, out);
         return activityFromJson(jso);
     }
 
@@ -163,7 +163,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     public List<AActivity> searchNotes(TimelinePosition youngestPosition,
                                        TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException {
-        ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_MESSAGES;
+        ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_NOTES;
         String url = this.getApiPath(apiRoutine);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
@@ -179,7 +179,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     @NonNull
     @Override
     public List<Actor> searchActors(int limit, String searchQuery) throws ConnectionException {
-        ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_USERS;
+        ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_ACTORS;
         String url = this.getApiPath(apiRoutine);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();

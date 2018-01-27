@@ -121,11 +121,11 @@ public final class MyAccount implements Comparable<MyAccount> {
     private Actor actor;
 
     private Connection connection = null;
-    /** Was this user authenticated last time _current_ credentials were verified?
+    /** Was this account authenticated last time _current_ credentials were verified?
      *  CredentialsVerified.NEVER - after changes of "credentials": password/OAuth...
      */
     private CredentialsVerificationStatus credentialsVerified = CredentialsVerificationStatus.NEVER;
-    /** Is this user authenticated with OAuth? */
+    /** Is this account authenticated with OAuth? */
     private boolean isOAuth = true;
     private long syncFrequencySeconds = 0;
     private boolean isSyncable = true;
@@ -228,11 +228,11 @@ public final class MyAccount implements Comparable<MyAccount> {
                 changed = true;
                 assignUserId();
                 MyLog.e(TAG, "MyAccount '" + myAccount.getAccountName()
-                        + "' was not connected to the User table. ActorId=" + myAccount.actor.actorId);
+                        + "' was not connected to the Actorr table. actorId=" + myAccount.actor.actorId);
             }
             if (!myAccount.getCredentialsPresent()
                     && myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
-                MyLog.e(TAG, "User's credentials were lost?! Fixing...");
+                MyLog.e(TAG, "Account's credentials were lost?! Fixing...");
                 setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER);
                 changed = true;
             }
@@ -390,7 +390,7 @@ public final class MyAccount implements Comparable<MyAccount> {
         }
 
         /**
-         * Verify the user's credentials. Returns true if authentication was
+         * Verify the account's credentials. Returns true if authentication was
          * successful
          *
          * @see CredentialsVerificationStatus
@@ -402,43 +402,43 @@ public final class MyAccount implements Comparable<MyAccount> {
                 return true;
             }
             try {
-                Actor user = myAccount.getConnection().verifyCredentials();
-                return onCredentialsVerified(user, null);
+                Actor actor = myAccount.getConnection().verifyCredentials();
+                return onCredentialsVerified(actor, null);
             } catch (ConnectionException e) {
                 return onCredentialsVerified(null, e);
             }
         }
 
-        public boolean onCredentialsVerified(Actor user, ConnectionException ce) throws ConnectionException {
-            boolean ok = ce == null && user != null && !user.isEmpty() && StringUtils.nonEmpty(user.oid)
-                    && user.origin.isUsernameValid(user.getActorName());
+        public boolean onCredentialsVerified(Actor actor, ConnectionException ce) throws ConnectionException {
+            boolean ok = ce == null && actor != null && !actor.isEmpty() && StringUtils.nonEmpty(actor.oid)
+                    && actor.origin.isUsernameValid(actor.getActorName());
             boolean errorSettingUsername = !ok;
 
             boolean credentialsOfOtherUser = false;
-            // We are comparing user names ignoring case, but we fix correct case
+            // We are comparing actor names ignoring case, but we fix correct case
             // as the Originating system tells us. 
             if (ok && !TextUtils.isEmpty(myAccount.getUsername())
-                    && myAccount.getUsername().compareToIgnoreCase(user.getActorName()) != 0) {
-                // Credentials belong to other User ??
+                    && myAccount.getUsername().compareToIgnoreCase(actor.getActorName()) != 0) {
+                // Credentials belong to other Account ??
                 ok = false;
                 credentialsOfOtherUser = true;
             }
 
             if (ok) {
                 setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
-                myAccount.actor = user;
+                myAccount.actor = actor;
                 if (DatabaseConverterController.isUpgrading()) {
                     MyLog.v(TAG, "Upgrade in progress");
                     myAccount.actor.actorId = myAccount.accountData.getDataLong(KEY_ACTOR_ID, myAccount.actor.actorId);
                 } else {
-                    new DataUpdater(myAccount).onActivity(user.update(user));
+                    new DataUpdater(myAccount).onActivity(actor.update(actor));
                 }
                 if (!isPersistent()) {
-                    // Now we know the name (or proper case of the name) of this User!
+                    // Now we know the name (or proper case of the name) of this Account!
                     // We don't recreate MyAccount object for the new name
                     //   in order to preserve credentials.
                     myAccount.oAccountName = AccountName.fromOriginAndUserName(
-                            myAccount.oAccountName.getOrigin(), user.getActorName());
+                            myAccount.oAccountName.getOrigin(), actor.getActorName());
                     myAccount.connection.save(myAccount.accountData);
                     setConnection();
                     save();
@@ -454,11 +454,11 @@ public final class MyAccount implements Comparable<MyAccount> {
             }
             if (credentialsOfOtherUser) {
                 MyLog.e(TAG, myContext.context().getText(R.string.error_credentials_of_other_user) + ": "
-                        + user.getNamePreferablyWebFingerId());
-                throw new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_USER, user.getNamePreferablyWebFingerId());
+                        + actor.getNamePreferablyWebFingerId());
+                throw new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_USER, actor.getNamePreferablyWebFingerId());
             }
             if (errorSettingUsername) {
-                String msg = myContext.context().getText(R.string.error_set_username) + user.getActorName();
+                String msg = myContext.context().getText(R.string.error_set_username) + actor.getActorName();
                 MyLog.e(TAG, msg);
                 throw new ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg);
             }
@@ -496,13 +496,13 @@ public final class MyAccount implements Comparable<MyAccount> {
         }
 
         private void assignUserId() {
-            myAccount.actor.actorId = MyQuery.userNameToId(myAccount.getOriginId(), myAccount.getUsername());
+            myAccount.actor.actorId = MyQuery.actorNameToId(myAccount.getOriginId(), myAccount.getUsername());
             if (myAccount.actor.actorId == 0) {
                 DataUpdater di = new DataUpdater(myAccount);
                 try {
                     di.onActivity(myAccount.actor.update(myAccount.getActor()));
                 } catch (Exception e) {
-                    MyLog.e(TAG, "Construct user", e);
+                    MyLog.e(TAG, "assignUserId", e);
                 }
             }
         }
@@ -550,12 +550,12 @@ public final class MyAccount implements Comparable<MyAccount> {
 
     public enum CredentialsVerificationStatus {
         /**
-         * NEVER - means that User was never successfully authenticated with current credentials.
+         * NEVER - means that the Account was never successfully authenticated with current credentials.
          *  This is why we reset the state to NEVER every time credentials have been changed.
          */
         NEVER(1),
         FAILED(2),
-        /** The User was successfully authenticated */
+        /** The Account was successfully authenticated */
         SUCCEEDED(3);
 
         private int id;
@@ -752,7 +752,7 @@ public final class MyAccount implements Comparable<MyAccount> {
     }
 
     /**
-     * @return The system in which the User is defined, see {@link OriginTable}
+     * @return The system in which the Account is defined, see {@link OriginTable}
      */
     public Origin getOrigin() {
         return actor.origin;
@@ -810,7 +810,7 @@ public final class MyAccount implements Comparable<MyAccount> {
 
     public boolean isSearchSupported(SearchObjects searchObjects) {
         return getConnection().isApiSupported(searchObjects == SearchObjects.MESSAGES
-                ? ApiRoutineEnum.SEARCH_MESSAGES : ApiRoutineEnum.SEARCH_USERS);
+                ? ApiRoutineEnum.SEARCH_NOTES : ApiRoutineEnum.SEARCH_ACTORS);
     }
 
     public void requestSync() {

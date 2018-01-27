@@ -63,40 +63,40 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             case TAG_TIMELINE:
                 url = "timelines/tag/%tag%";
                 break;
-            case USER_TIMELINE:
+            case ACTOR_TIMELINE:
                 url = "accounts/%actorId%/statuses";
                 break;
             case ACCOUNT_VERIFY_CREDENTIALS:
                 url = "accounts/verify_credentials";
                 break;
-            case POST_MESSAGE:
+            case UPDATE_NOTE:
                 url = "statuses";
                 break;
-            case POST_WITH_MEDIA:
+            case UPDATE_NOTE_WITH_MEDIA:
                 url = "media";
                 break;
-            case GET_MESSAGE:
+            case GET_NOTE:
                 url = "statuses/%noteId%";
                 break;
-            case SEARCH_MESSAGES:
+            case SEARCH_NOTES:
                 url = "search"; /* actually, this is a complex search "for content" */
                 break;
-            case SEARCH_USERS:
+            case SEARCH_ACTORS:
                 url = "accounts/search";
                 break;
             case GET_CONVERSATION:
                 url = "statuses/%noteId%/context";
                 break;
-            case CREATE_FAVORITE:
+            case LIKE:
                 url = "statuses/%noteId%/favourite";
                 break;
-            case DESTROY_FAVORITE:
+            case UNDO_LIKE:
                 url = "statuses/%noteId%/unfavourite";
                 break;
-            case FOLLOW_USER:
+            case FOLLOW:
                 url = "accounts/%actorId%/follow";
                 break;
-            case STOP_FOLLOWING_USER:
+            case UNDO_FOLLOW:
                 url = "accounts/%actorId%/unfollow";
                 break;
             case GET_FOLLOWERS:
@@ -105,13 +105,13 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             case GET_FRIENDS:
                 url = "accounts/%actorId%/following";
                 break;
-            case GET_USER:
+            case GET_ACTOR:
                 url = "accounts/%actorId%";
                 break;
-            case POST_REBLOG:
+            case ANNOUNCE:
                 url = "statuses/%noteId%/reblog";
                 break;
-            case DESTROY_REBLOG:
+            case UNDO_ANNOUNCE:
                 url = "statuses/%noteId%/unreblog";
                 break;
             default:
@@ -209,7 +209,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         if (TextUtils.isEmpty(tag)) {
             return new ArrayList<>();
         }
-        ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_USERS;
+        ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_ACTORS;
         String url = getApiPath(apiRoutine);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
@@ -250,13 +250,13 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
 
     @Override
-    public AActivity updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
+    public AActivity updateNote(String message, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         JSONObject mediaObject = null;
         try {
             formParams.put("status", message);
-            if ( !TextUtils.isEmpty(inReplyToId)) {
-                formParams.put("in_reply_to_id", inReplyToId);
+            if ( !TextUtils.isEmpty(inReplyToOid)) {
+                formParams.put("in_reply_to_id", inReplyToOid);
             }
             if (!UriUtils.isEmpty(mediaUri)) {
                 mediaObject = uploadMedia(mediaUri);
@@ -267,7 +267,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Error posting message '" + mediaUri + "'", e, mediaObject);
         }
-        JSONObject jso = postRequest(ApiRoutineEnum.POST_MESSAGE, formParams);
+        JSONObject jso = postRequest(ApiRoutineEnum.UPDATE_NOTE, formParams);
         return activityFromJson(jso);
     }
 
@@ -277,7 +277,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             JSONObject formParams = new JSONObject();
             formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "file");
             formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mediaUri.toString());
-            jso = postRequest(ApiRoutineEnum.POST_WITH_MEDIA, formParams);
+            jso = postRequest(ApiRoutineEnum.UPDATE_NOTE_WITH_MEDIA, formParams);
             if (jso != null) {
                 if (MyLog.isVerboseEnabled()) {
                     MyLog.v(this, "uploaded '" + mediaUri.toString() + "' " + jso.toString(2));
@@ -299,22 +299,22 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         if (TextUtils.isEmpty(oid) || TextUtils.isEmpty(userName)) {
             throw ConnectionException.loggedJsonException(this, "Id or username is empty", null, jso);
         }
-        Actor user = Actor.fromOriginAndActorOid(data.getOrigin(), oid);
-        user.setActorName(userName);
-        user.setRealName(jso.optString("display_name"));
-        user.setWebFingerId(jso.optString("acct"));
-        if (!SharedPreferencesUtil.isEmpty(user.getRealName())) {
-            user.setProfileUrl(data.getOriginUrl());
+        Actor actor = Actor.fromOriginAndActorOid(data.getOrigin(), oid);
+        actor.setActorName(userName);
+        actor.setRealName(jso.optString("display_name"));
+        actor.setWebFingerId(jso.optString("acct"));
+        if (!SharedPreferencesUtil.isEmpty(actor.getRealName())) {
+            actor.setProfileUrl(data.getOriginUrl());
         }
-        user.avatarUrl = UriUtils.fromJson(jso, "avatar").toString();
-        user.bannerUrl = UriUtils.fromJson(jso, "header").toString();
-        user.setDescription(jso.optString("note"));
-        user.setProfileUrl(jso.optString("url"));
-        user.msgCount = jso.optLong("statuses_count");
-        user.followingCount = jso.optLong("following_count");
-        user.followersCount = jso.optLong("followers_count");
-        user.setCreatedDate(dateFromJson(jso, "created_at"));
-        return user;
+        actor.avatarUrl = UriUtils.fromJson(jso, "avatar").toString();
+        actor.bannerUrl = UriUtils.fromJson(jso, "header").toString();
+        actor.setDescription(jso.optString("note"));
+        actor.setProfileUrl(jso.optString("url"));
+        actor.msgCount = jso.optLong("statuses_count");
+        actor.followingCount = jso.optLong("following_count");
+        actor.followersCount = jso.optLong("followers_count");
+        actor.setCreatedDate(dateFromJson(jso, "created_at"));
+        return actor;
     }
 
     @Override
@@ -411,30 +411,30 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     }
 
     @Override
-    public Actor getActor(String actorId, String actorName) throws ConnectionException {
-        JSONObject jso = http.getRequest(getApiPathWithUserId(ApiRoutineEnum.GET_USER, actorId));
+    public Actor getActor(String actorOid, String actorName) throws ConnectionException {
+        JSONObject jso = http.getRequest(getApiPathWithUserId(ApiRoutineEnum.GET_ACTOR, actorOid));
         Actor actor = actorFromJson(jso);
-        MyLog.v(this, "getUser oid='" + actorId + "', userName='" + actorName + "' -> " + actor.getRealName());
+        MyLog.v(this, "getUser oid='" + actorOid + "', userName='" + actorName + "' -> " + actor.getRealName());
         return actor;
     }
 
     @Override
-    public AActivity followActor(String actorId, Boolean follow) throws ConnectionException {
-        JSONObject relationship = postRequest(getApiPathWithUserId(follow ? ApiRoutineEnum.FOLLOW_USER :
-                ApiRoutineEnum.STOP_FOLLOWING_USER, actorId), new JSONObject());
-        Actor user = Actor.fromOriginAndActorOid(data.getOrigin(), actorId);
+    public AActivity follow(String actorOid, Boolean follow) throws ConnectionException {
+        JSONObject relationship = postRequest(getApiPathWithUserId(follow ? ApiRoutineEnum.FOLLOW :
+                ApiRoutineEnum.UNDO_FOLLOW, actorOid), new JSONObject());
+        Actor actor = Actor.fromOriginAndActorOid(data.getOrigin(), actorOid);
         if (relationship == null || relationship.isNull("following")) {
             return AActivity.EMPTY;
         }
         TriState following = TriState.fromBoolean(relationship.optBoolean("following"));
-        return user.act(Actor.EMPTY, data.getAccountActor(), following.toBoolean(!follow) == follow
+        return actor.act(Actor.EMPTY, data.getAccountActor(), following.toBoolean(!follow) == follow
                 ? (follow ? ActivityType.FOLLOW : ActivityType.UNDO_FOLLOW)
                 : ActivityType.UPDATE );
     }
 
     @Override
-    public boolean destroyReblog(String statusId) throws ConnectionException {
-        JSONObject jso = http.postRequest(getApiPathWithMessageId(ApiRoutineEnum.DESTROY_REBLOG, statusId));
+    public boolean undoAnnounce(String noteOid) throws ConnectionException {
+        JSONObject jso = http.postRequest(getApiPathWithMessageId(ApiRoutineEnum.UNDO_ANNOUNCE, noteOid));
         if (jso != null && MyLog.isVerboseEnabled()) {
             try {
                 MyLog.v(this, "destroyReblog response: " + jso.toString(2));

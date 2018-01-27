@@ -209,12 +209,12 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         DataUpdater di = new DataUpdater(execContext);
         boolean allMessagesLoaded = true;
         long count = 0;
-        for (Actor user : actorsNew) {
+        for (Actor actor : actorsNew) {
             count++;
             broadcastProgress(String.valueOf(count) + ". " + execContext.getContext().getText(R.string.button_save)
-                    + ": " + user.getNamePreferablyWebFingerId(), true);
-            di.onActivity(user.update(execContext.getMyAccount().getActor()), false);
-            if (!user.hasLatestMessage()) {
+                    + ": " + actor.getNamePreferablyWebFingerId(), true);
+            di.onActivity(actor.update(execContext.getMyAccount().getActor()), false);
+            if (!actor.hasLatestMessage()) {
                 allMessagesLoaded = false;
             }
         }
@@ -251,7 +251,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                                     + ActivityType.LIKE.id + ")"
                                     + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC LIMIT 1");
                     if (lastActivityId == 0) {
-                        MyLog.v(this, "Failed to find User's activity for "
+                        MyLog.v(this, "Failed to find Actor's activity for "
                                 + actor.getNamePreferablyWebFingerId(), e1);
                     } else {
                         long updatedDate = MyQuery.idToLongColumnValue(
@@ -260,9 +260,9 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                                 ActivityTable.UPDATED_DATE,
                                 lastActivityId);
                         LatestActorActivities lum = new LatestActorActivities();
-                        lum.onNewUserActivity(new ActorActivity(actor.actorId, lastActivityId, updatedDate));
+                        lum.onNewActorActivity(new ActorActivity(actor.actorId, lastActivityId, updatedDate));
                         lum.save();
-                        MyLog.v(this, "Server didn't return User's activity for "
+                        MyLog.v(this, "Server didn't return Actor's activity for "
                                         + actor.getNamePreferablyWebFingerId()
                                         + " found activity " + RelativeTime.
                                         getDifference(MyContextHolder.get().context(), updatedDate),

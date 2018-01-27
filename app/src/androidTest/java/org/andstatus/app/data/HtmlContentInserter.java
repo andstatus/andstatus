@@ -21,7 +21,7 @@ import android.text.TextUtils;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
@@ -103,13 +103,13 @@ public class HtmlContentInserter {
         final AActivity activity = mi.buildActivity(author, bodyString, null, messageOid, DownloadStatus.LOADED);
         mi.onActivity(activity);
         long msgId1 = activity.getMessage().msgId;
-        String body = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId1);
+        String body = MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId1);
         if (htmlContentAllowed) {
             assertEquals("HTML preserved", bodyString, body);
         } else {
             assertEquals("HTML removed", MyHtml.fromHtml(bodyString), body);
         }
-        String bodyToSearch = MyQuery.msgIdToStringColumnValue(MsgTable.BODY_TO_SEARCH, msgId1);
+        String bodyToSearch = MyQuery.msgIdToStringColumnValue(NoteTable.BODY_TO_SEARCH, msgId1);
         assertEquals("Body to search", MyHtml.getBodyToSearch(body), bodyToSearch);
 		return mi;
 	}

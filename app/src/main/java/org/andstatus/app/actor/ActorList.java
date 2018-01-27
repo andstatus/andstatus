@@ -121,7 +121,7 @@ public class ActorList extends NoteEditorListActivity {
 
     @Override
     protected BaseTimelineAdapter newListAdapter() {
-        return new ActorAdapter(contextMenu, R.layout.user, getListLoader().getList(),
+        return new ActorAdapter(contextMenu, R.layout.actor, getListLoader().getList(),
                 Timeline.fromParsedUri(myContext, getParsedUri(), ""));
     }
 

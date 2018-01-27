@@ -14,7 +14,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.service.MyServiceTestHelper;
 import org.andstatus.app.timeline.ListActivityTestHelper;
@@ -78,11 +78,11 @@ public class UnsentNotesTest extends TimelineActivityTest {
         mService.waitForServiceStopped(false);
 
         String condition = "BODY='" + body + "'";
-        long unsentMsgId = MyQuery.conditionToLongColumnValue(MsgTable.TABLE_NAME, BaseColumns._ID, condition);
+        long unsentMsgId = MyQuery.conditionToLongColumnValue(NoteTable.TABLE_NAME, BaseColumns._ID, condition);
         step = "Unsent message " + unsentMsgId;
         assertTrue(method + "; " + step + ": " + condition, unsentMsgId != 0);
         assertEquals(method + "; " + step, DownloadStatus.SENDING, DownloadStatus.load(
-                MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, unsentMsgId)));
+                MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)));
 
         step = "Start editing unsent message" + unsentMsgId ;
         getActivity().getNoteEditor().startEditingMessage(NoteEditorData.load(unsentMsgId));
@@ -94,7 +94,7 @@ public class UnsentNotesTest extends TimelineActivityTest {
         ActivityTestHelper.waitViewInvisible(method + "; " + step, editorView);
 
         assertEquals(method + "; " + step, DownloadStatus.DRAFT, DownloadStatus.load(
-                MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, unsentMsgId)));
+                MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)));
 
         MyLog.v(this, method + " ended");
     }

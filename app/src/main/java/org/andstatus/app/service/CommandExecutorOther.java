@@ -28,7 +28,7 @@ import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.social.Audience;
@@ -62,7 +62,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 break;
             case FOLLOW_ACTOR:
             case STOP_FOLLOWING_ACTOR:
-                followOrStopFollowingUser(execContext.getCommandData().getUserId(),
+                followOrStopFollowingActor(execContext.getCommandData().getUserId(),
                         execContext.getCommandData().getCommand() == CommandEnum.FOLLOW_ACTOR);
                 break;
             case UPDATE_NOTE:
@@ -84,7 +84,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 getActor(execContext.getCommandData().getUserId(), execContext.getCommandData().getActorName());
                 break;
             case SEARCH_ACTORS:
-                searchUsers(execContext.getCommandData().getActorName());
+                searchActors(execContext.getCommandData().getActorName());
                 break;
             case REBLOG:
                 reblog(execContext.getCommandData().itemId);
@@ -107,15 +107,15 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         }
     }
 
-    private void searchUsers(String searchQuery) {
-        final String method = "searchUsers";
+    private void searchActors(String searchQuery) {
+        final String method = "searchActors";
         String msgLog = method + "; query='" + searchQuery + "'";
         List<Actor> users = null;
         if (StringUtils.nonEmpty(searchQuery)) {
             try {
                 users = execContext.getMyAccount().getConnection().searchActors(USERS_LIMIT, searchQuery);
-                for (Actor user : users) {
-                    new DataUpdater(execContext).onActivity(user.update(execContext.getMyAccount().getActor()));
+                for (Actor actor : users) {
+                    new DataUpdater(execContext).onActivity(actor.update(execContext.getMyAccount().getActor()));
                 }
             } catch (ConnectionException e) {
                 logConnectionException(e, msgLog);
@@ -160,12 +160,12 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         if (UriUtils.isRealOid(oid) || !TextUtils.isEmpty(userName)) {
             try {
                 actor = execContext.getMyAccount().getConnection().getActor(oid, userName);
-                logIfUserIsEmpty(msgLog, actorId, actor);
+                logIfActorIsEmpty(msgLog, actorId, actor);
             } catch (ConnectionException e) {
                 logConnectionException(e, msgLog + userInfoLogged(actorId));
             }
         } else {
-            msgLog += ", invalid user IDs";
+            msgLog += ", invalid actor IDs";
             logExecutionError(true, msgLog + userInfoLogged(actorId));
         }
         if (noErrors() && actor != null) {
@@ -184,9 +184,9 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         if (noErrors()) {
             try {
                 if (create) {
-                    activity = execContext.getMyAccount().getConnection().createFavorite(oid);
+                    activity = execContext.getMyAccount().getConnection().like(oid);
                 } else {
-                    activity = execContext.getMyAccount().getConnection().destroyFavorite(oid);
+                    activity = execContext.getMyAccount().getConnection().undoLike(oid);
                 }
                 logIfEmptyMessage(method, msgId, activity.getMessage());
             } catch (ConnectionException e) {
@@ -220,7 +220,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             }
 
             if (noErrors()) {
-                // Please note that the Favorited message may be NOT in the User's Home timeline!
+                // Please note that the Favorited message may be NOT in the Account's Home timeline!
                 new DataUpdater(execContext).onActivity(activity);
             }
         }
@@ -240,14 +240,14 @@ class CommandExecutorOther extends CommandExecutorStrategy{
      * @param actorId
      * @param follow true - Follow, false - Stop following
      */
-    private void followOrStopFollowingUser(long actorId, boolean follow) {
-        final String method = (follow ? "follow" : "stopFollowing") + "User";
+    private void followOrStopFollowingActor(long actorId, boolean follow) {
+        final String method = (follow ? "follow" : "stopFollowing") + "Actor";
         String oid = getActorOid(method, actorId, true);
         AActivity activity = null;
         if (noErrors()) {
             try {
-                activity = execContext.getMyAccount().getConnection().followActor(oid, follow);
-                logIfUserIsEmpty(method, actorId, activity.getObjActor());
+                activity = execContext.getMyAccount().getConnection().follow(oid, follow);
+                logIfActorIsEmpty(method, actorId, activity.getObjActor());
             } catch (ConnectionException e) {
                 logConnectionException(e, method + userInfoLogged(actorId));
             }
@@ -257,7 +257,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 if (follow) {
                     // Act just like for creating favorite...
                     activity = activity.getObjActor().act(Actor.EMPTY, activity.getActor(), ActivityType.FOLLOW);
-                    MyLog.d(this, "Follow a User. 'following' flag didn't change yet.");
+                    MyLog.d(this, "Follow an Actor. 'following' flag didn't change yet.");
                     // Let's try to assume that everything was OK:
                 } else {
                     logExecutionError(false, "'following' flag didn't change yet, " + method + userInfoLogged(actorId));
@@ -270,9 +270,9 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }
 
-    private void logIfUserIsEmpty(String method, long actorId, Actor user) {
-        if (user == null || user.isEmpty()) {
-            logExecutionError(false, "Received User is empty, " + method + userInfoLogged(actorId));
+    private void logIfActorIsEmpty(String method, long actorId, Actor actor) {
+        if (actor == null || actor.isEmpty()) {
+            logExecutionError(false, "Received Actor is empty, " + method + userInfoLogged(actorId));
         }
     }
 
@@ -280,7 +280,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     private String getActorOid(String method, long actorId, boolean required) {
         String oid = MyQuery.idToOid(OidEnum.ACTOR_OID, actorId, 0);
         if (required && TextUtils.isEmpty(oid)) {
-            logExecutionError(true, method + "; no User ID in the Social Network " + userInfoLogged(actorId));
+            logExecutionError(true, method + "; no Actor ID in the Social Network " + userInfoLogged(actorId));
         }
         return oid;
     }
@@ -298,13 +298,13 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         final String method = "destroyStatus";
         boolean ok = false;
         String oid = getMsgOid(method, msgId, false);
-        DownloadStatus statusStored = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, msgId));
+        DownloadStatus statusStored = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, msgId));
         try {
             if (msgId == 0 || TextUtils.isEmpty(oid) || statusStored != DownloadStatus.LOADED) {
                 ok = true;
                 MyLog.i(this, method + "; OID='" + oid + "', status='" + statusStored + "' for msgId=" + msgId);
             } else {
-                ok = execContext.getMyAccount().getConnection().destroyStatus(oid);
+                ok = execContext.getMyAccount().getConnection().deleteNote(oid);
                 logOk(ok);
             }
         } catch (ConnectionException e) {
@@ -337,7 +337,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         }
         String reblogOid = MyQuery.idToOid(OidEnum.REBLOG_OID, msgId, actorId);
         try {
-            if (!execContext.getMyAccount().getConnection().destroyReblog(reblogOid)) {
+            if (!execContext.getMyAccount().getConnection().undoAnnounce(reblogOid)) {
                 logExecutionError(false, "Connection returned 'false' " + method
                         + MyQuery.msgInfoForLog(msgId));
             }
@@ -364,7 +364,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         String oid = getMsgOid(method, msgId, true);
         if (noErrors()) {
             try {
-                AActivity activity = execContext.getMyAccount().getConnection().getMessage(oid);
+                AActivity activity = execContext.getMyAccount().getConnection().getNote(oid);
                 if (activity.isEmpty()) {
                     logExecutionError(false, "Received Message is empty, " + MyQuery.msgInfoForLog(msgId));
                 } else {
@@ -390,9 +390,9 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     private void updateStatus(long msgId) {
         final String method = "updateStatus";
         AActivity activity = null;
-        String status = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId);
+        String status = MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId);
         String oid = getMsgOid(method, msgId, false);
-        TriState isPrivate = MyQuery.msgIdToTriState(MsgTable.PRIVATE, msgId);
+        TriState isPrivate = MyQuery.msgIdToTriState(NoteTable.PRIVATE, msgId);
         Audience recipients = Audience.fromMsgId(execContext.getMyAccount().getOrigin(), msgId);
         Uri mediaUri = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY).
                 mediaUriToBePosted();
@@ -403,22 +403,22 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 MyLog.v(this, method + ";" + msgLog);
             }
             DownloadStatus statusStored = DownloadStatus.load(
-                    MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, msgId));
+                    MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, msgId));
             if (!statusStored.mayBeSent()) {
                 throw ConnectionException.hardConnectionException(
                         "Wrong message status: " + statusStored, null);
             }
             if (recipients.isEmpty() || isPrivate != TriState.TRUE) {
                 long replyToMsgId = MyQuery.msgIdToLongColumnValue(
-                        MsgTable.IN_REPLY_TO_MSG_ID, msgId);
+                        NoteTable.IN_REPLY_TO_NOTE_ID, msgId);
                 String replyToMsgOid = getMsgOid(method, replyToMsgId, false);
                 activity = execContext.getMyAccount().getConnection()
-                        .updateStatus(status.trim(), oid, replyToMsgOid, mediaUri);
+                        .updateNote(status.trim(), oid, replyToMsgOid, mediaUri);
             } else {
                 String recipientOid = getActorOid(method, recipients.getFirst().actorId, true);
                 // Currently we don't use Screen Name, I guess id is enough.
                 activity = execContext.getMyAccount().getConnection()
-                        .postPrivateMessage(status.trim(), oid, recipientOid, mediaUri);
+                        .updatePrivateNote(status.trim(), oid, recipientOid, mediaUri);
             }
             logIfEmptyMessage(method, msgId, activity.getMessage());
         } catch (ConnectionException e) {
@@ -426,7 +426,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         }
         if (noErrors() && activity != null) {
             // The message was sent successfully, so now update unsent message
-            // New User's message should be put into the user's Home timeline.
+            // New Actor's message should be put into the Account's Home timeline.
             activity.getMessage().msgId = msgId;
             new DataUpdater(execContext).onActivity(activity);
             execContext.getResult().setItemId(msgId);
@@ -448,7 +448,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         AActivity activity = AActivity.EMPTY;
         if (noErrors()) {
             try {
-                activity = execContext.getMyAccount().getConnection().postReblog(oid);
+                activity = execContext.getMyAccount().getConnection().announce(oid);
                 logIfEmptyMessage(method, rebloggedMessageId, activity.getMessage());
             } catch (ConnectionException e) {
                 logConnectionException(e, "Reblog " + oid);
@@ -456,7 +456,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         }
         if (noErrors()) {
             // The tweet was sent successfully
-            // Reblog should be put into the user's Home timeline!
+            // Reblog should be put into the Account's Home timeline!
             new DataUpdater(execContext).onActivity(activity);
             MyProvider.updateMessageReblogged(execContext.getMyContext(), activity.accountActor.origin, rebloggedMessageId);
         }

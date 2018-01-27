@@ -87,7 +87,7 @@ class AndroidAccountData implements AccountDataReader {
     }
 
     /**
-     * User Data associated with the account
+     * Actor's and User Data associated with the account
      */
     @Override
     public String getDataString(String key, String defValue) {

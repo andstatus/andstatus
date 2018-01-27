@@ -62,7 +62,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
             case PUBLIC_TIMELINE:
                 url = "statuses/public_timeline.json";
                 break;
-            case SEARCH_MESSAGES:
+            case SEARCH_NOTES:
                 url = "search.json";
                 break;
             default:
@@ -76,10 +76,10 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     }
 
     @Override
-    public List<String> getFriendsIds(String actorId) throws ConnectionException {
+    public List<String> getFriendsIds(String actorOid) throws ConnectionException {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FRIENDS_IDS));
         Uri.Builder builder = sUri.buildUpon();
-        builder.appendQueryParameter("user_id", actorId);
+        builder.appendQueryParameter("user_id", actorOid);
         List<String> list = new ArrayList<>();
         JSONArray jArr = http.getRequestAsArray(builder.build().toString());
         try {
@@ -93,10 +93,10 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     }
 
     @Override
-    public List<String> getFollowersIds(String actorId) throws ConnectionException {
+    public List<String> getFollowersIds(String actorOid) throws ConnectionException {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FOLLOWERS_IDS));
         Uri.Builder builder = sUri.buildUpon();
-        builder.appendQueryParameter("user_id", actorId);
+        builder.appendQueryParameter("user_id", actorOid);
         List<String> list = new ArrayList<>();
         JSONArray jArr = http.getRequestAsArray(builder.build().toString());
         try {
@@ -110,7 +110,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     }
 
     @Override
-    public AActivity updateStatus(String message, String statusId, String inReplyToId, Uri mediaUri) throws ConnectionException {
+    public AActivity updateNote(String message, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put("status", message);
@@ -118,8 +118,8 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
             // This parameter was removed from Twitter API, but it still is in GNUsocial
             formParams.put("source", HttpConnection.USER_AGENT);
             
-            if ( !TextUtils.isEmpty(inReplyToId)) {
-                formParams.put("in_reply_to_status_id", inReplyToId);
+            if ( !TextUtils.isEmpty(inReplyToOid)) {
+                formParams.put("in_reply_to_status_id", inReplyToOid);
             }
             if (!UriUtils.isEmpty(mediaUri)) {
                 formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "media");
@@ -128,7 +128,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
         } catch (JSONException e) {
             MyLog.e(this, e);
         }
-        JSONObject jso = postRequest(ApiRoutineEnum.POST_MESSAGE, formParams);
+        JSONObject jso = postRequest(ApiRoutineEnum.UPDATE_NOTE, formParams);
         return activityFromJson(jso);
     }
     

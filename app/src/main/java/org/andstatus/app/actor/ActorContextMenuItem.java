@@ -71,7 +71,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         void executeOnUiThread(ActorContextMenu menu, MyAccount ma) {
             TimelineActivity.startForTimeline(menu.getActivity().getMyContext(),
                     menu.getActivity(),
-                    Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER,
+                    Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.ACTOR,
                             null, menu.getViewItem().getActorId(), menu.getOrigin(), ""), ma, false);
         }
     },

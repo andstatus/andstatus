@@ -120,7 +120,7 @@ public class CommandDataTest {
         Queue<CommandData> queue = new PriorityBlockingQueue<>(100);
         final MyAccount ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         queue.add(CommandData.newCommand(CommandEnum.GET_FRIENDS));
-        queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.USER, ma.getActorId(), ma.getOrigin()));
+        queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.ACTOR, ma.getActorId(), ma.getOrigin()));
         queue.add(CommandData.newSearch(SearchObjects.MESSAGES, MyContextHolder.get(), ma.getOrigin(), "q1"));
         queue.add(CommandData.newUpdateStatus(null, 2));
         queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.MENTIONS));

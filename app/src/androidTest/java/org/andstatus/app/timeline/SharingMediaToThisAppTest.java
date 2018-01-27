@@ -17,7 +17,7 @@ import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.service.MyServiceTestHelper;
 import org.andstatus.app.util.MyLog;
 import org.junit.After;
@@ -92,10 +92,10 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest {
         assertTrue(message, mService.getHttp().substring2PostedPath("statuses/update").length() > 0);
 
         String condition = "BODY='" + body + "'";
-        long unsentMsgId = MyQuery.conditionToLongColumnValue(MsgTable.TABLE_NAME, BaseColumns._ID, condition);
+        long unsentMsgId = MyQuery.conditionToLongColumnValue(NoteTable.TABLE_NAME, BaseColumns._ID, condition);
         assertTrue("Unsent message found: " + condition, unsentMsgId != 0);
         assertEquals("Status of unsent message", DownloadStatus.SENDING, DownloadStatus.load(
-                MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, unsentMsgId)));
+                MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)));
 
         DownloadData dd = DownloadData.getSingleForMessage(unsentMsgId,
                 MyContentType.IMAGE, null);

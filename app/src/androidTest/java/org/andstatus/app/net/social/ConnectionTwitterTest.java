@@ -163,7 +163,7 @@ public class ConnectionTwitterTest {
         assertNotEquals("Is a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);
         assertTrue("Is not a reply", message.getInReplyTo().isEmpty());
         assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountActor));
-        assertEquals("Author's oid is user oid of this account", connectionData.getAccountActor().oid, activity.getAuthor().oid);
+        assertEquals("Author's oid is actor oid of this account", connectionData.getAccountActor().oid, activity.getAuthor().oid);
         startsWith = "And this is";
         assertEquals("Body of this message starts with", startsWith, message.getBody().substring(0, startsWith.length()));
     }
@@ -174,7 +174,7 @@ public class ConnectionTwitterTest {
                 org.andstatus.app.tests.R.raw.twitter_message_with_media);
         httpConnection.setResponse(jso);
 
-        Note message = connection.getMessage("503799441900314624").getMessage();
+        Note message = connection.getNote("503799441900314624").getMessage();
         assertNotNull("message returned", message);
         assertEquals("has attachment", message.attachments.size(), 1);
         Attachment attachment = Attachment.fromUrlAndContentType(new URL(
@@ -192,7 +192,7 @@ public class ConnectionTwitterTest {
 
         String body = "Update: Streckensperrung zw. Berliner Tor &lt;&gt; Bergedorf. Ersatzverkehr mit Bussen und Taxis " +
                 "Störungsdauer bis ca. 10 Uhr. #hvv #sbahnhh";
-        AActivity activity = connection.getMessage("834306097003581440");
+        AActivity activity = connection.getNote("834306097003581440");
         assertEquals("No message returned " + activity, activity.getObjectType(), AObjectType.NOTE);
         Note message = activity.getMessage();
         assertEquals("Body of this message", MyHtml.unescapeHtml(body), message.getBody());

@@ -24,7 +24,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.net.social.Connection;
 
 /**
- * Actors table (they are both senders AND recipients in the {@link MsgTable} table)
+ * Actors table (they are both senders AND recipients in the {@link NoteTable} table)
  * Some of these Users are Accounts (connected to accounts in AndStatus),
  * see {@link MyAccount#getActorId()}
  */
@@ -52,17 +52,17 @@ public final class ActorTable implements BaseColumns {
     public static final String WEBFINGER_ID = "webfinger_id";
     /** This is called "name" in Twitter API */
     public static final String REAL_NAME = "real_name";
-    /** User's description / "About myself" */
+    /** Actor's description / "About myself" */
     public static final String DESCRIPTION = "user_description";
     /** Location string */
     public static final String LOCATION = "location";
     /**
-     * User's profile URL
+     * Actor's profile URL
      * A link to the representation of the resource. Currently this is simply URL to the HTML
      * representation of the resource (its "permalink")
      */
     public static final String PROFILE_URL = "profile_url";
-    /** URL of User's web home page */
+    /** URL of Actor's web home page */
     public static final String HOMEPAGE = "homepage";
     /** The latest url of the avatar */
     public static final String AVATAR_URL = "avatar_url";
@@ -77,7 +77,7 @@ public final class ActorTable implements BaseColumns {
      * Date and time when the row was created in the originating system.
      * We store it as long returned by {@link Connection#dateFromJson}.
      * NULL means the row was not retrieved from the Internet yet
-     * (And maybe there is no such User in the originating system...)
+     * (And maybe there is no such an Actor in the originating system...)
      */
     public static final String CREATED_DATE = "user_created_date";
     public static final String UPDATED_DATE = "user_updated_date";
@@ -89,7 +89,7 @@ public final class ActorTable implements BaseColumns {
      */
     public static final String ACTOR_ACTIVITY_ID = "user_activity_id";
     /**
-     * Date of the latest activity where this User was an Actor
+     * Date of the latest activity of this Actor (were he was an Actor)
      */
     public static final String ACTOR_ACTIVITY_DATE = "user_activity_date";
 
@@ -106,9 +106,9 @@ public final class ActorTable implements BaseColumns {
      *
      * Derived from {@link ActivityTable#ACTOR_ID} */
     public static final String ACTIVITY_ACTOR_NAME = "activity_actor_name";
-    /** Derived from {@link MsgTable#AUTHOR_ID} */
+    /** Derived from {@link NoteTable#AUTHOR_ID} */
     public static final String AUTHOR_NAME = "author_name";
-    /** Derived from {@link MsgTable#IN_REPLY_TO_USER_ID} */
+    /** Derived from {@link NoteTable#IN_REPLY_TO_ACTOR_ID} */
     public static final String IN_REPLY_TO_NAME = "in_reply_to_name";
     /** Derived from {@link AudienceTable#USER_ID} */
     public static final String RECIPIENT_NAME = "recipient_name";

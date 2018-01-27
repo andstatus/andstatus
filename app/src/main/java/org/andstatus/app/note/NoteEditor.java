@@ -43,7 +43,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
@@ -462,7 +462,7 @@ public class NoteEditor {
     private void showMessageDetails() {
         String messageDetails = "";
         if (editorData.inReplyToMsgId != 0) {
-            String replyToName = MyQuery.msgIdToUsername(MsgTable.AUTHOR_ID, editorData.inReplyToMsgId,
+            String replyToName = MyQuery.msgIdToUsername(NoteTable.AUTHOR_ID, editorData.inReplyToMsgId,
                     MyPreferences.getUserInTimeline());
             messageDetails += " " + String.format(
                     getActivity().getText(R.string.message_source_in_reply_to).toString(), replyToName);

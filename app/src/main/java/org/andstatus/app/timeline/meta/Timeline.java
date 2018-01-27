@@ -299,7 +299,7 @@ public class Timeline implements Comparable<Timeline> {
             if (timeline.isEmpty()) {
                 timeline = getTimeline(myContext, 0,
                         TimelineType.load(bundle.getString(IntentExtra.TIMELINE_TYPE.key)),
-                        myAccount, bundle.getLong(IntentExtra.USER_ID.key),
+                        myAccount, bundle.getLong(IntentExtra.ACTOR_ID.key),
                         myContext.persistentOrigins().fromId(BundleUtils.fromBundle(bundle, IntentExtra.ORIGIN_ID)),
                         BundleUtils.getString(bundle, IntentExtra.SEARCH_QUERY));
             }
@@ -407,7 +407,7 @@ public class Timeline implements Comparable<Timeline> {
         if (timelineType.isForActor()) {
             if (myAccount.getActorId() == actorId) {
                 switch (timelineType) {
-                    case USER:
+                    case ACTOR:
                         return TimelineType.SENT;
                     case FRIENDS:
                         return TimelineType.MY_FRIENDS;
@@ -419,7 +419,7 @@ public class Timeline implements Comparable<Timeline> {
             } else {
                 switch (timelineType) {
                     case SENT:
-                        return TimelineType.USER;
+                        return TimelineType.ACTOR;
                     case MY_FRIENDS:
                         return TimelineType.FRIENDS;
                     case MY_FOLLOWERS:
@@ -763,7 +763,7 @@ public class Timeline implements Comparable<Timeline> {
             bundle.putString(IntentExtra.TIMELINE_TYPE.key, timelineType.save());
         }
         BundleUtils.putNotZero(bundle, IntentExtra.ORIGIN_ID, origin.getId());
-        BundleUtils.putNotZero(bundle, IntentExtra.USER_ID, actorId);
+        BundleUtils.putNotZero(bundle, IntentExtra.ACTOR_ID, actorId);
         BundleUtils.putNotEmpty(bundle, IntentExtra.SEARCH_QUERY, searchQuery);
     }
 

@@ -92,14 +92,14 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
         return item;
     }
 
-    private void loadFromInternet(ActorViewItem oUser) {
-        MyLog.v(this, "User " + oUser + " will be loaded from the Internet");
+    private void loadFromInternet(ActorViewItem viewItem) {
+        MyLog.v(this, "Actor " + viewItem.actor + " will be loaded from the Internet");
         MyServiceManager.sendForegroundCommand(
                 CommandData.newActorCommand(
                         CommandEnum.GET_ACTOR,
-                        null, oUser.actor.origin,
-                        oUser.getActorId(),
-                        oUser.actor.getActorName()));
+                        null, viewItem.actor.origin,
+                        viewItem.getActorId(),
+                        viewItem.actor.getActorName()));
     }
 
     protected void loadInternal() {

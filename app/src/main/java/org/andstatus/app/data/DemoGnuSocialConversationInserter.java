@@ -19,7 +19,7 @@ package org.andstatus.app.data;
 import android.support.annotation.Nullable;
 
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
@@ -54,7 +54,7 @@ public class DemoGnuSocialConversationInserter {
         assertTrue(demoData.GNUSOCIAL_TEST_ORIGIN_NAME + " exists", origin.isValid());
         accountActor = MyContextHolder.get().persistentAccounts().fromAccountName(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME)
                 .getActor();
-        assertFalse( "Account user is not defined " + accountActor,
+        assertFalse( "Account actor is not defined " + accountActor,
                 accountActor.isEmpty() || accountActor.isPartiallyDefined());
         assertEquals( "Inconsistent origin for " + accountActor + "\n and " + origin, accountActor.origin, origin);
     }
@@ -129,7 +129,7 @@ public class DemoGnuSocialConversationInserter {
         addActivity(activity);
         assertEquals("Message is " + (isPrivate.equals(TriState.TRUE) ? "private" :
                         isPrivate.equals(TriState.FALSE) ? "non private" : "") + ": " + activity.getMessage().getBody(),
-                isPrivate, MyQuery.msgIdToTriState(MsgTable.PRIVATE, activity.getMessage().msgId));
+                isPrivate, MyQuery.msgIdToTriState(NoteTable.PRIVATE, activity.getMessage().msgId));
     }
 
     private Actor actorFromOidAndAvatar(String actorOid, @Nullable String avatarUrl) {

@@ -26,7 +26,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.origin.Origin;
@@ -92,7 +92,7 @@ public class VerifyCredentialsTest {
         httpConnection.setResponse(jso);
 
         Actor actor = connection.verifyCredentials();
-        assertEquals("User's oid is user oid of this account", demoData.TWITTER_TEST_ACCOUNT_ACTOR_OID, actor.oid);
+        assertEquals("Actor's oid is actorOid of this account", demoData.TWITTER_TEST_ACCOUNT_ACTOR_OID, actor.oid);
 
         Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(
@@ -103,14 +103,14 @@ public class VerifyCredentialsTest {
         long actorId = builder.getAccount().getActorId();
         assertTrue("Account " + actor.getActorName() + " has ActorId", actorId != 0);
         assertEquals("Account actorOid", builder.getAccount().getActorOid(), actor.oid);
-        assertEquals("User in the database for id=" + actorId,
+        assertEquals("Actor in the database for id=" + actorId,
                 actor.oid,
                 MyQuery.idToOid(OidEnum.ACTOR_OID, actorId, 0));
 
         String msgOid = "383296535213002752";
         long msgId = MyQuery.oidToId(OidEnum.MSG_OID, origin.getId(), msgOid) ;
         assertTrue("Message not found", msgId != 0);
-        long userIdM = MyQuery.noteIdToActorId(MsgTable.AUTHOR_ID, msgId);
+        long userIdM = MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, msgId);
         assertEquals("Message not by " + actor.getActorName() + " found", actorId, userIdM);
 
         assertEquals("Message permalink at twitter",

@@ -24,7 +24,7 @@ import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.FriendshipTable;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
@@ -68,16 +68,16 @@ class MergeActors extends DataChecker {
             c = myContext.getDatabase().rawQuery(sql, null);
             while (c.moveToNext()) {
                 rowsCount++;
-                Actor user = Actor.fromOriginAndActorOid(myContext.persistentOrigins().fromId(c.getLong(1)),
+                Actor actor = Actor.fromOriginAndActorOid(myContext.persistentOrigins().fromId(c.getLong(1)),
                         c.getString(2));
-                user.actorId = c.getLong(0);
-                user.setWebFingerId(c.getString(3));
-                if (isTheSameUser(prev, user)) {
-                    AActivity activity = whomToMerge(prev, user);
+                actor.actorId = c.getLong(0);
+                actor.setWebFingerId(c.getString(3));
+                if (isTheSameUser(prev, actor)) {
+                    AActivity activity = whomToMerge(prev, actor);
                     mergeActivities.add(activity);
                     prev = activity.getActor();
                 } else {
-                    prev = user;
+                    prev = actor;
                 }
             }
         } finally {
@@ -88,26 +88,26 @@ class MergeActors extends DataChecker {
         return mergeActivities;
     }
 
-    private boolean isTheSameUser(Actor prev, Actor user) {
-        if (prev == null || user == null) {
+    private boolean isTheSameUser(Actor prev, Actor actor) {
+        if (prev == null || actor == null) {
             return false;
         }
-        if (!prev.origin.equals(user.origin)) {
+        if (!prev.origin.equals(actor.origin)) {
             return false;
         }
-        if (!prev.oid.equals(user.oid)) {
+        if (!prev.oid.equals(actor.oid)) {
             return false;
         }
         return true;
     }
 
     @NonNull
-    private AActivity whomToMerge(@NonNull Actor prev, @NonNull Actor user) {
+    private AActivity whomToMerge(@NonNull Actor prev, @NonNull Actor actor) {
         AActivity activity = AActivity.from(Actor.EMPTY, ActivityType.UPDATE);
-        activity.setObjActor(user);
+        activity.setObjActor(actor);
         Actor mergeWith = prev;
-        if (myContext.persistentAccounts().fromActorId(user.actorId).isValid()) {
-            mergeWith = user;
+        if (myContext.persistentAccounts().fromActorId(actor.actorId).isValid()) {
+            mergeWith = actor;
             activity.setObjActor(prev);
         }
         activity.setActor(mergeWith);
@@ -115,25 +115,25 @@ class MergeActors extends DataChecker {
     }
 
     private void mergeActor(AActivity activity) {
-        Actor user = activity.getObjActor();
-        String logMsg = "Merging " + user + " with " + activity.getActor();
+        Actor actor = activity.getObjActor();
+        String logMsg = "Merging " + actor + " with " + activity.getActor();
         logger.logProgress(logMsg);
         // TODO: clean the code!
         updateColumn(logMsg, activity, ActivityTable.TABLE_NAME, ActivityTable.ACTOR_ID, false);
         updateColumn(logMsg, activity, ActivityTable.TABLE_NAME, ActivityTable.USER_ID, false);
 
-        updateColumn(logMsg, activity, MsgTable.TABLE_NAME, MsgTable.AUTHOR_ID, false);
-        updateColumn(logMsg, activity, MsgTable.TABLE_NAME, MsgTable.IN_REPLY_TO_USER_ID, false);
+        updateColumn(logMsg, activity, NoteTable.TABLE_NAME, NoteTable.AUTHOR_ID, false);
+        updateColumn(logMsg, activity, NoteTable.TABLE_NAME, NoteTable.IN_REPLY_TO_ACTOR_ID, false);
 
         updateColumn(logMsg, activity, AudienceTable.TABLE_NAME, AudienceTable.USER_ID, true);
-        deleteRows(logMsg, user, AudienceTable.TABLE_NAME, AudienceTable.USER_ID);
+        deleteRows(logMsg, actor, AudienceTable.TABLE_NAME, AudienceTable.USER_ID);
 
-        deleteRows(logMsg, user, FriendshipTable.TABLE_NAME, FriendshipTable.ACTOR_ID);
-        deleteRows(logMsg, user, FriendshipTable.TABLE_NAME, FriendshipTable.FRIEND_ID);
+        deleteRows(logMsg, actor, FriendshipTable.TABLE_NAME, FriendshipTable.ACTOR_ID);
+        deleteRows(logMsg, actor, FriendshipTable.TABLE_NAME, FriendshipTable.FRIEND_ID);
 
-        deleteRows(logMsg, user, DownloadTable.TABLE_NAME, DownloadTable.USER_ID);
+        deleteRows(logMsg, actor, DownloadTable.TABLE_NAME, DownloadTable.ACTOR_ID);
 
-        deleteRows(logMsg, user, ActorTable.TABLE_NAME, ActorTable._ID);
+        deleteRows(logMsg, actor, ActorTable.TABLE_NAME, ActorTable._ID);
     }
 
     private void updateColumn(String logMsg, AActivity activity, String table, String column, boolean ignoreError) {
@@ -154,14 +154,10 @@ class MergeActors extends DataChecker {
         }
     }
 
-    private void deleteRows(String logMsg, Actor user, String table, String column) {
+    private void deleteRows(String logMsg, Actor actor, String table, String column) {
         String sql = "";
         try {
-            sql = "DELETE "
-                    + " FROM "
-                    + table
-                    + " WHERE "
-                    + column + "=" + user.actorId;
+            sql = "DELETE FROM " + table + " WHERE " + column + "=" + actor.actorId;
             myContext.getDatabase().execSQL(sql);
         } catch (Exception e) {
             logger.logProgress("Error: " + e.getMessage() + ", SQL:" + sql);

@@ -20,7 +20,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 
@@ -39,7 +39,7 @@ public class ActorsOfNoteListLoader extends ActorListLoader {
         super(actorListType, ma, ma.getOrigin(), centralItemId, searchQuery);
 
         selectedMessageId = centralItemId;
-        messageBody = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, selectedMessageId);
+        messageBody = MyQuery.msgIdToStringColumnValue(NoteTable.BODY, selectedMessageId);
         originOfSelectedMessage = MyContextHolder.get().persistentOrigins().fromId(
                 MyQuery.msgIdToOriginId(selectedMessageId));
     }
@@ -58,7 +58,7 @@ public class ActorsOfNoteListLoader extends ActorListLoader {
     }
 
     private void addFromMessageRow() {
-        final long authorId = MyQuery.msgIdToLongColumnValue(MsgTable.AUTHOR_ID, selectedMessageId);
+        final long authorId = MyQuery.msgIdToLongColumnValue(NoteTable.AUTHOR_ID, selectedMessageId);
         if (mentionedOnly) {
             addUsersFromMessageBody(Actor.fromOriginAndActorId(originOfSelectedMessage, authorId));
         } else {
@@ -66,7 +66,7 @@ public class ActorsOfNoteListLoader extends ActorListLoader {
             addActorIdToList(originOfSelectedMessage,
                     MyQuery.msgIdToLongColumnValue(ActivityTable.ACTOR_ID, selectedMessageId));
             addActorIdToList(originOfSelectedMessage,
-                    MyQuery.msgIdToLongColumnValue(MsgTable.IN_REPLY_TO_USER_ID, selectedMessageId));
+                    MyQuery.msgIdToLongColumnValue(NoteTable.IN_REPLY_TO_ACTOR_ID, selectedMessageId));
             // TODO: Add recipients
             addUsersFromMessageBody(author);
             addRebloggers();

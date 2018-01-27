@@ -150,7 +150,7 @@ public class AvatarDownloaderTest {
         ContentValues values = new ContentValues();
         values.put(DownloadTable.DOWNLOAD_STATUS, status.save());
         return MyContextHolder.get().getDatabase()
-                .update(DownloadTable.TABLE_NAME, values, DownloadTable.USER_ID + "=" + ma.getActorId()
+                .update(DownloadTable.TABLE_NAME, values, DownloadTable.ACTOR_ID + "=" + ma.getActorId()
                         + " AND " + DownloadTable.URI + "=" + MyQuery.quoteIfNotQuoted(url.toExternalForm()), null);
     }
 

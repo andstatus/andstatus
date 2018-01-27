@@ -29,7 +29,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.FriendshipTable;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
@@ -72,10 +72,10 @@ public class MyQuery {
     /**
      * Lookup the System's (AndStatus) id from the Originated system's id
      * 
-     * @param originId - see {@link MsgTable#ORIGIN_ID}
-     * @param oid - see {@link MsgTable#MSG_OID}
+     * @param originId - see {@link NoteTable#ORIGIN_ID}
+     * @param oid - see {@link NoteTable#NOTE_OID}
      * @return - id in our System (i.e. in the table, e.g.
-     *         {@link MsgTable#_ID} ). Or 0 if nothing was found.
+     *         {@link NoteTable#_ID} ). Or 0 if nothing was found.
      */
     public static long oidToId(OidEnum oidEnum, long originId, String oid) {
         return oidToId(null, oidEnum, originId, oid);
@@ -89,8 +89,8 @@ public class MyQuery {
         String sql;
         switch (oidEnum) {
             case MSG_OID:
-                sql = "SELECT " + BaseColumns._ID + " FROM " + MsgTable.TABLE_NAME
-                        + " WHERE " + MsgTable.ORIGIN_ID + "=" + originId + " AND " + MsgTable.MSG_OID
+                sql = "SELECT " + BaseColumns._ID + " FROM " + NoteTable.TABLE_NAME
+                        + " WHERE " + NoteTable.ORIGIN_ID + "=" + originId + " AND " + NoteTable.NOTE_OID
                         + "=" + quoteIfNotQuoted(oid);
                 break;
             case ACTOR_OID:
@@ -167,19 +167,19 @@ public class MyQuery {
      * Lookup Originated system's id from the System's (AndStatus) id
      * 
      * @param oe what oid we need
-     * @param entityId - see {@link MsgTable#_ID}
-     * @param rebloggerUserId Is needed to find reblog by this user
+     * @param entityId - see {@link NoteTable#_ID}
+     * @param rebloggerActorId Is needed to find reblog by this actor
      * @return - oid in Originated system (i.e. in the table, e.g.
-     *         {@link MsgTable#MSG_OID} empty string in case of an error
+     *         {@link NoteTable#NOTE_OID} empty string in case of an error
      */
     @NonNull
-    public static String idToOid(OidEnum oe, long entityId, long rebloggerUserId) {
+    public static String idToOid(OidEnum oe, long entityId, long rebloggerActorId) {
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
             MyLog.v(TAG, "idToOid: database is null, oe=" + oe + " id=" + entityId);
             return "";
         } else {
-            return idToOid(db, oe, entityId, rebloggerUserId);
+            return idToOid(db, oe, entityId, rebloggerActorId);
         }
     }
 
@@ -187,13 +187,13 @@ public class MyQuery {
      * Lookup Originated system's id from the System's (AndStatus) id
      * 
      * @param oe what oid we need
-     * @param entityId - see {@link MsgTable#_ID}
-     * @param rebloggerUserId Is needed to find reblog by this user
+     * @param entityId - see {@link NoteTable#_ID}
+     * @param rebloggerActorId Is needed to find reblog by this actor
      * @return - oid in Originated system (i.e. in the table, e.g.
-     *         {@link MsgTable#MSG_OID} empty string in case of an error
+     *         {@link NoteTable#NOTE_OID} empty string in case of an error
      */
     @NonNull
-    public static String idToOid(SQLiteDatabase db, OidEnum oe, long entityId, long rebloggerUserId) {
+    public static String idToOid(SQLiteDatabase db, OidEnum oe, long entityId, long rebloggerActorId) {
         String method = "idToOid";
         String oid = "";
         SQLiteStatement prog = null;
@@ -203,8 +203,8 @@ public class MyQuery {
             try {
                 switch (oe) {
                     case MSG_OID:
-                        sql = "SELECT " + MsgTable.MSG_OID + " FROM "
-                                + MsgTable.TABLE_NAME + " WHERE " + BaseColumns._ID + "=" + entityId;
+                        sql = "SELECT " + NoteTable.NOTE_OID + " FROM "
+                                + NoteTable.TABLE_NAME + " WHERE " + BaseColumns._ID + "=" + entityId;
                         break;
     
                     case ACTOR_OID:
@@ -214,14 +214,14 @@ public class MyQuery {
                         break;
     
                     case REBLOG_OID:
-                        if (rebloggerUserId == 0) {
+                        if (rebloggerActorId == 0) {
                             MyLog.e(TAG, method + ": actorId was not defined");
                         }
                         sql = "SELECT " + ActivityTable.ACTIVITY_OID + " FROM "
                                 + ActivityTable.TABLE_NAME + " WHERE "
                                 + ActivityTable.MSG_ID + "=" + entityId + " AND "
                                 + ActivityTable.ACTIVITY_TYPE + "=" + ActivityType.ANNOUNCE.id + " AND "
-                                + ActivityTable.ACTOR_ID + "=" + rebloggerUserId;
+                                + ActivityTable.ACTOR_ID + "=" + rebloggerActorId;
                         break;
     
                     default:
@@ -262,7 +262,7 @@ public class MyQuery {
         return msgIdToLastOfTypes(db, msgId, actorId, ActivityType.LIKE, ActivityType.UNDO_LIKE);
     }
 
-    /** @return ID of the last type1 or type2 activity and the type of the activity for the selected user */
+    /** @return ID of the last type1 or type2 activity and the type of the activity for the selected actor */
     @NonNull
     public static Pair<Long, ActivityType> msgIdToLastOfTypes(
             SQLiteDatabase db, long msgId, long actorId, ActivityType type1, ActivityType type2) {
@@ -320,10 +320,10 @@ public class MyQuery {
                     foundActors.add(actorId);
                     ActivityType activityType = ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
                     if (activityType.equals(typeToReturn)) {
-                        Actor user = Actor.fromOriginAndActorId(origin, actorId);
-                        user.setRealName(DbUtils.getString(cursor, ActorTable.ACTIVITY_ACTOR_NAME));
-                        user.setWebFingerId(DbUtils.getString(cursor, ActorTable.WEBFINGER_ID));
-                        users.add(user);
+                        Actor actor = Actor.fromOriginAndActorId(origin, actorId);
+                        actor.setRealName(DbUtils.getString(cursor, ActorTable.ACTIVITY_ACTOR_NAME));
+                        actor.setWebFingerId(DbUtils.getString(cursor, ActorTable.WEBFINGER_ID));
+                        users.add(actor);
                     }
                 }
             }
@@ -390,12 +390,12 @@ public class MyQuery {
                 if (userIdColumnName.contentEquals(ActivityTable.ACTOR_ID)) {
                     // TODO:
                     throw new IllegalArgumentException( method + "; Not implemented \"" + userIdColumnName + "\"");
-                } else if(userIdColumnName.contentEquals(MsgTable.AUTHOR_ID) ||
-                        userIdColumnName.contentEquals(MsgTable.IN_REPLY_TO_USER_ID)) {
+                } else if(userIdColumnName.contentEquals(NoteTable.AUTHOR_ID) ||
+                        userIdColumnName.contentEquals(NoteTable.IN_REPLY_TO_ACTOR_ID)) {
                     sql = "SELECT " + userNameField(actorInTimeline) + " FROM " + ActorTable.TABLE_NAME
-                            + " INNER JOIN " + MsgTable.TABLE_NAME + " ON "
-                            + MsgTable.TABLE_NAME + "." + userIdColumnName + "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID
-                            + " WHERE " + MsgTable.TABLE_NAME + "." + BaseColumns._ID + "=" + messageId;
+                            + " INNER JOIN " + NoteTable.TABLE_NAME + " ON "
+                            + NoteTable.TABLE_NAME + "." + userIdColumnName + "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID
+                            + " WHERE " + NoteTable.TABLE_NAME + "." + BaseColumns._ID + "=" + messageId;
                 } else {
                     throw new IllegalArgumentException( method + "; Unknown name \"" + userIdColumnName + "\"");
                 }
@@ -450,7 +450,7 @@ public class MyQuery {
 
     /**
      * Convenience method to get long column value from the 'tableName' table
-     * @param tableName e.g. {@link MsgTable#TABLE_NAME}
+     * @param tableName e.g. {@link NoteTable#TABLE_NAME}
      * @param columnName without table name
      * @param condition WHERE part of SQL statement
      * @return 0 in case not found or error or systemId==0
@@ -477,7 +477,7 @@ public class MyQuery {
 
     @NonNull
     public static String msgIdToStringColumnValue(String columnName, long systemId) {
-        return idToStringColumnValue(MsgTable.TABLE_NAME, columnName, systemId);
+        return idToStringColumnValue(NoteTable.TABLE_NAME, columnName, systemId);
     }
 
     @NonNull
@@ -487,7 +487,7 @@ public class MyQuery {
 
     /**
      * Convenience method to get String column value from the 'tableName' table
-     * @param tableName e.g. {@link MsgTable#TABLE_NAME}
+     * @param tableName e.g. {@link NoteTable#TABLE_NAME}
      * @param columnName without table name
      * @param systemId tableName._id
      * @return not null; "" in a case not found or error or systemId==0
@@ -534,8 +534,8 @@ public class MyQuery {
         long actorId = 0;
         try {
             if (msgUserIdColumnName.contentEquals(ActivityTable.ACTOR_ID) ||
-                    msgUserIdColumnName.contentEquals(MsgTable.AUTHOR_ID) ||
-                    msgUserIdColumnName.contentEquals(MsgTable.IN_REPLY_TO_USER_ID)) {
+                    msgUserIdColumnName.contentEquals(NoteTable.AUTHOR_ID) ||
+                    msgUserIdColumnName.contentEquals(NoteTable.IN_REPLY_TO_ACTOR_ID)) {
                 actorId = msgIdToLongColumnValue(msgUserIdColumnName, systemId);
             } else {
                 throw new IllegalArgumentException("msgIdToUserId; Illegal column '" + msgUserIdColumnName + "'");
@@ -548,7 +548,7 @@ public class MyQuery {
     }
 
     public static long msgIdToOriginId(long systemId) {
-        return msgIdToLongColumnValue(MsgTable.ORIGIN_ID, systemId);
+        return msgIdToLongColumnValue(NoteTable.ORIGIN_ID, systemId);
     }
 
     public static TriState activityIdToTriState(String columnName, long systemId) {
@@ -570,7 +570,7 @@ public class MyQuery {
     }
 
     /**
-     * Convenience method to get column value from {@link MsgTable} table
+     * Convenience method to get column value from {@link NoteTable} table
      * @param columnName without table name
      * @param systemId  MyDatabase.MSG_TABLE_NAME + "." + Msg._ID
      * @return 0 in case not found or error
@@ -583,7 +583,7 @@ public class MyQuery {
             case ActivityTable.LAST_UPDATE_ID:
                 return msgIdToLongActivityColumnValue(null, columnName, systemId);
             default:
-                return idToLongColumnValue(null, MsgTable.TABLE_NAME, columnName, systemId);
+                return idToLongColumnValue(null, NoteTable.TABLE_NAME, columnName, systemId);
         }
     }
 
@@ -625,23 +625,23 @@ public class MyQuery {
     }
 
     public static long webFingerIdToId(long originId, String webFingerId) {
-        return userColumnValueToId(originId, ActorTable.WEBFINGER_ID, webFingerId);
+        return actorColumnValueToId(originId, ActorTable.WEBFINGER_ID, webFingerId);
     }
     
     /**
-     * Lookup the User's id based on the Username in the Originating system
+     * Lookup the Actor's id based on the actorName in the Originating system
      * 
-     * @param originId - see {@link MsgTable#ORIGIN_ID}
+     * @param originId - see {@link NoteTable#ORIGIN_ID}
      * @param userName - see {@link ActorTable#ACTORNAME}
      * @return - id in our System (i.e. in the table, e.g.
      *         {@link ActorTable#_ID} ), 0 if not found
      */
-    public static long userNameToId(long originId, String userName) {
-        return userColumnValueToId(originId, ActorTable.ACTORNAME, userName);
+    public static long actorNameToId(long originId, String userName) {
+        return actorColumnValueToId(originId, ActorTable.ACTORNAME, userName);
     }
 
-    private static long userColumnValueToId(long originId, String columnName, String columnValue) {
-        final String method = "user" + columnName + "ToId";
+    private static long actorColumnValueToId(long originId, String columnName, String columnValue) {
+        final String method = "actor" + columnName + "ToId";
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
             MyLog.v(TAG, method + "; Database is null");
@@ -726,7 +726,7 @@ public class MyQuery {
     }
 
     /**
-     *  MyAccounts' userIDs, who follow the specified User
+     *  MyAccounts' actorIds, who follow the specified Actor
      */
     @NonNull
     public static Set<Long> getMyFollowersOf(long actorId) {
@@ -758,17 +758,17 @@ public class MyQuery {
         I18n.appendWithComma(builder, "msgId:" + msgId);
         String oid = idToOid(OidEnum.MSG_OID, msgId, 0);
         I18n.appendWithComma(builder, "oid" + (TextUtils.isEmpty(oid) ? " is empty" : ":'" + oid + "'"));
-        String body = MyHtml.fromHtml(msgIdToStringColumnValue(MsgTable.BODY, msgId));
+        String body = MyHtml.fromHtml(msgIdToStringColumnValue(NoteTable.BODY, msgId));
         I18n.appendAtNewLine(builder, "text:'" + body + "'");
-        Origin origin = MyContextHolder.get().persistentOrigins().fromId(msgIdToLongColumnValue(MsgTable.ORIGIN_ID, msgId));
+        Origin origin = MyContextHolder.get().persistentOrigins().fromId(msgIdToLongColumnValue(NoteTable.ORIGIN_ID, msgId));
         I18n.appendAtNewLine(builder, origin.toString());
         return builder.toString();
     }
 
     public static long conversationOidToId(long originId, String conversationOid) {
-        return conditionToLongColumnValue(MsgTable.TABLE_NAME, MsgTable.CONVERSATION_ID,
-                MsgTable.ORIGIN_ID + "=" + originId
-                + " AND " + MsgTable.CONVERSATION_OID + "=" + quoteIfNotQuoted(conversationOid));
+        return conditionToLongColumnValue(NoteTable.TABLE_NAME, NoteTable.CONVERSATION_ID,
+                NoteTable.ORIGIN_ID + "=" + originId
+                + " AND " + NoteTable.CONVERSATION_OID + "=" + quoteIfNotQuoted(conversationOid));
     }
 
     @NonNull
@@ -776,15 +776,15 @@ public class MyQuery {
         if (msgId == 0) {
             return "";
         }
-        String oid = msgIdToStringColumnValue(MsgTable.CONVERSATION_OID, msgId);
+        String oid = msgIdToStringColumnValue(NoteTable.CONVERSATION_OID, msgId);
         if (!TextUtils.isEmpty(oid)) {
             return oid;
         }
-        long conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, msgId);
+        long conversationId = MyQuery.msgIdToLongColumnValue(NoteTable.CONVERSATION_ID, msgId);
         if (conversationId == 0) {
             return idToOid(OidEnum.MSG_OID, msgId, 0);
         }
-        oid = msgIdToStringColumnValue(MsgTable.CONVERSATION_OID, conversationId);
+        oid = msgIdToStringColumnValue(NoteTable.CONVERSATION_OID, conversationId);
         if (!TextUtils.isEmpty(oid)) {
             return oid;
         }

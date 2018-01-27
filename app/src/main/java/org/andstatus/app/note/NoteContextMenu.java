@@ -121,7 +121,7 @@ public class NoteContextMenu extends MyContextMenu {
 
             // "Actor" is about an Activity, not about a Message
             if (menuContainer.getTimeline().getActorId() != msg.actorId) {
-                // Messages by a Sender of this message ("User timeline" of that user)
+                // Notes, where an Actor of this note is an Actor ("Actor timeline" of that actor)
                 NoteContextMenuItem.ACTOR_MESSAGES.addTo(menu, order++,
                         String.format(
                                 getActivity().getText(R.string.menu_item_user_messages).toString(),
@@ -142,7 +142,7 @@ public class NoteContextMenu extends MyContextMenu {
             }
 
             if (menuContainer.getTimeline().getActorId() != msg.authorId && msg.actorId != msg.authorId) {
-                // Messages by an Author of this message ("User timeline" of that user)
+                // Messages by an Author of this message ("Actor timeline" of that actor)
                 NoteContextMenuItem.AUTHOR_MESSAGES.addTo(menu, order++,
                         String.format(
                                 getActivity().getText(R.string.menu_item_user_messages).toString(),
@@ -193,7 +193,7 @@ public class NoteContextMenu extends MyContextMenu {
                     NoteContextMenuItem.DELETE_REBLOG.addTo(menu, order++,
                             msg.getMyAccount().alternativeTermForResourceId(R.string.menu_item_destroy_reblog));
                 } else {
-                    // Don't allow a User to reblog himself
+                    // Don't allow an Actor to reblog himself
                     if (getMyActor().getActorId() != msg.actorId) {
                         NoteContextMenuItem.REBLOG.addTo(menu, order++,
                                 msg.getMyAccount().alternativeTermForResourceId(R.string.menu_item_reblog));
@@ -210,7 +210,7 @@ public class NoteContextMenu extends MyContextMenu {
                     if (msg.isPrivate()) {
                         // TODO: Delete private (direct) message
                     } else if (!msg.reblogged && msg.getMyAccount().getConnection()
-                            .isApiSupported(Connection.ApiRoutineEnum.DESTROY_MESSAGE)) {
+                            .isApiSupported(Connection.ApiRoutineEnum.DELETE_NOTE)) {
                         NoteContextMenuItem.DELETE_NOTE.addTo(menu, order++,
                                 R.string.menu_item_destroy_status);
                     }

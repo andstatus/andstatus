@@ -21,7 +21,7 @@ import android.database.sqlite.SQLiteDatabase;
 import org.andstatus.app.data.DbUtils;
 
 /**
- * IDs of Users the specified (by {@link FriendshipTable#ACTOR_ID}) user is following
+ * IDs of Users the specified (by {@link FriendshipTable#ACTOR_ID}) actor is following
  * (otherwise known as their "friends").
  */
 public final class FriendshipTable {
@@ -44,11 +44,11 @@ public final class FriendshipTable {
     public static final String FOLLOWED = "followed";
 
     /**
-     * Derived column: if the Author of the message is followed by the User
+     * Derived column: if the Author of the message is followed by the Actor
      */
     public static final String AUTHOR_FOLLOWED = "author_followed";
     /**
-     * Derived column: if the Sender of the message is followed by the User
+     * Derived column: if the Sender of the message is followed by the Actor
      */
     public static final String ACTOR_FOLLOWED = "actor_followed";
 

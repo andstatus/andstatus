@@ -20,7 +20,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Attachment;
@@ -254,7 +254,7 @@ public class DemoConversationInserter {
     private void addPrivateMessage(AActivity activity, TriState isPrivate) {
         activity.getMessage().setPrivate(isPrivate);
         addActivity(activity);
-        TriState storedPrivate = MyQuery.msgIdToTriState(MsgTable.PRIVATE, activity.getMessage().msgId);
+        TriState storedPrivate = MyQuery.msgIdToTriState(NoteTable.PRIVATE, activity.getMessage().msgId);
         assertEquals("Message is " + (isPrivate.equals(TriState.TRUE) ? "private" :
                         isPrivate.equals(TriState.FALSE) ? "non private" : "") + ": " + activity.getMessage().getBody(),
                 isPrivate, storedPrivate);
@@ -283,8 +283,8 @@ public class DemoConversationInserter {
         DemoNoteInserter.onActivityS(activity);
     }
 
-    static void assertIfUserIsMyFriend(Actor user, boolean isFriendOf, MyAccount ma) {
+    static void assertIfUserIsMyFriend(Actor actor, boolean isFriendOf, MyAccount ma) {
         Set<Long> friendsIds = MyQuery.getFriendsIds(ma.getActorId());
-        assertEquals("User " + user + " is a friend of " + ma, isFriendOf, friendsIds.contains(user.actorId));
+        assertEquals("User " + actor + " is a friend of " + ma, isFriendOf, friendsIds.contains(actor.actorId));
     }
 }

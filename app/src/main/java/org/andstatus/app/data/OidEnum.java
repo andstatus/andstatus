@@ -22,12 +22,11 @@ package org.andstatus.app.data;
 public enum OidEnum {
     /** oid of this message */
     MSG_OID,
-    /** If the message was reblogged by the User,
-     * then oid of the "reblog" message,
-     * else oid of the reblogged message (the first message which was reblogged)
+    /** If a note was reblogged by an Actor, then this is oid of an "announce" ("reblog") note,
+     * else oid of the reblogged note (the first note which was reblogged)
      */
     REBLOG_OID,
-    /** oid of this User */
+    /** oid of this Actor */
     ACTOR_OID,
     ACTIVITY_OID
 }

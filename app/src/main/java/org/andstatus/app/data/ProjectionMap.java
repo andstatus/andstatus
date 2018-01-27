@@ -20,7 +20,7 @@ import android.provider.BaseColumns;
 
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.DownloadTable;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.ActorTable;
 
 import java.util.HashMap;
@@ -54,10 +54,10 @@ public class ProjectionMap {
         MSG.put(ActivityTable.UPDATED_DATE, ActivityTable.UPDATED_DATE);
 
         MSG.put(BaseColumns._ID, MSG_TABLE_ALIAS + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
-        MSG.put(MsgTable.MSG_ID, MSG_TABLE_ALIAS + "." + BaseColumns._ID + " AS " + MsgTable.MSG_ID);
-        MSG.put(MsgTable.ORIGIN_ID, MsgTable.ORIGIN_ID);
-        MSG.put(MsgTable.MSG_OID, MsgTable.MSG_OID);
-        MSG.put(MsgTable.AUTHOR_ID, MsgTable.AUTHOR_ID);
+        MSG.put(NoteTable.NOTE_ID, MSG_TABLE_ALIAS + "." + BaseColumns._ID + " AS " + NoteTable.NOTE_ID);
+        MSG.put(NoteTable.ORIGIN_ID, NoteTable.ORIGIN_ID);
+        MSG.put(NoteTable.NOTE_OID, NoteTable.NOTE_OID);
+        MSG.put(NoteTable.AUTHOR_ID, NoteTable.AUTHOR_ID);
         MSG.put(ActorTable.AUTHOR_NAME, ActorTable.AUTHOR_NAME);
         MSG.put(DownloadTable.DOWNLOAD_STATUS, DownloadTable.DOWNLOAD_STATUS);
         MSG.put(DownloadTable.FILE_NAME, DownloadTable.FILE_NAME);
@@ -69,52 +69,52 @@ public class ProjectionMap {
                 + " AS " + DownloadTable.IMAGE_ID);
         MSG.put(DownloadTable.IMAGE_URL, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.URI
                 + " AS " + DownloadTable.IMAGE_URL);
-        MSG.put(MsgTable.BODY, MsgTable.BODY);
-        MSG.put(MsgTable.VIA, MsgTable.VIA);
-        MSG.put(MsgTable.URL, MsgTable.URL);
-        MSG.put(MsgTable.IN_REPLY_TO_MSG_ID, MsgTable.IN_REPLY_TO_MSG_ID);
-        MSG.put(MsgTable.IN_REPLY_TO_USER_ID, MsgTable.IN_REPLY_TO_USER_ID);
+        MSG.put(NoteTable.BODY, NoteTable.BODY);
+        MSG.put(NoteTable.VIA, NoteTable.VIA);
+        MSG.put(NoteTable.URL, NoteTable.URL);
+        MSG.put(NoteTable.IN_REPLY_TO_NOTE_ID, NoteTable.IN_REPLY_TO_NOTE_ID);
+        MSG.put(NoteTable.IN_REPLY_TO_ACTOR_ID, NoteTable.IN_REPLY_TO_ACTOR_ID);
         MSG.put(ActorTable.IN_REPLY_TO_NAME, ActorTable.IN_REPLY_TO_NAME);
-        MSG.put(MsgTable.PRIVATE, MsgTable.PRIVATE);
-        MSG.put(MsgTable.FAVORITED, MsgTable.FAVORITED);
-        MSG.put(MsgTable.REBLOGGED, MsgTable.REBLOGGED);
-        MSG.put(MsgTable.UPDATED_DATE, MsgTable.UPDATED_DATE);
-        MSG.put(MsgTable.MSG_STATUS, MsgTable.MSG_STATUS);
-        MSG.put(MsgTable.INS_DATE, MsgTable.INS_DATE);
+        MSG.put(NoteTable.PRIVATE, NoteTable.PRIVATE);
+        MSG.put(NoteTable.FAVORITED, NoteTable.FAVORITED);
+        MSG.put(NoteTable.REBLOGGED, NoteTable.REBLOGGED);
+        MSG.put(NoteTable.UPDATED_DATE, NoteTable.UPDATED_DATE);
+        MSG.put(NoteTable.NOTE_STATUS, NoteTable.NOTE_STATUS);
+        MSG.put(NoteTable.INS_DATE, NoteTable.INS_DATE);
     }
 
     /**
      * Projection map for the {@link ActorTable} table
      */
-    static final Map<String, String> USER = new HashMap<>();
+    static final Map<String, String> ACTOR = new HashMap<>();
     static {
-        USER.put(BaseColumns._ID, ActorTable.TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
-        USER.put(ActorTable.ORIGIN_ID, ActorTable.ORIGIN_ID);
-        USER.put(ActorTable.ACTOR_ID, ActorTable.TABLE_NAME + "." + BaseColumns._ID + " AS " + ActorTable.ACTOR_ID);
-        USER.put(ActorTable.ACTOR_OID, ActorTable.ACTOR_OID);
-        USER.put(ActorTable.ACTORNAME, ActorTable.ACTORNAME);
-        USER.put(ActorTable.WEBFINGER_ID, ActorTable.WEBFINGER_ID);
-        USER.put(ActorTable.REAL_NAME, ActorTable.REAL_NAME);
-        USER.put(ActorTable.DESCRIPTION, ActorTable.DESCRIPTION);
-        USER.put(ActorTable.LOCATION, ActorTable.LOCATION);
+        ACTOR.put(BaseColumns._ID, ActorTable.TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
+        ACTOR.put(ActorTable.ORIGIN_ID, ActorTable.ORIGIN_ID);
+        ACTOR.put(ActorTable.ACTOR_ID, ActorTable.TABLE_NAME + "." + BaseColumns._ID + " AS " + ActorTable.ACTOR_ID);
+        ACTOR.put(ActorTable.ACTOR_OID, ActorTable.ACTOR_OID);
+        ACTOR.put(ActorTable.ACTORNAME, ActorTable.ACTORNAME);
+        ACTOR.put(ActorTable.WEBFINGER_ID, ActorTable.WEBFINGER_ID);
+        ACTOR.put(ActorTable.REAL_NAME, ActorTable.REAL_NAME);
+        ACTOR.put(ActorTable.DESCRIPTION, ActorTable.DESCRIPTION);
+        ACTOR.put(ActorTable.LOCATION, ActorTable.LOCATION);
 
-        USER.put(ActorTable.PROFILE_URL, ActorTable.PROFILE_URL);
-        USER.put(ActorTable.HOMEPAGE, ActorTable.HOMEPAGE);
-        USER.put(ActorTable.AVATAR_URL, ActorTable.AVATAR_URL);
-        USER.put(DownloadTable.AVATAR_FILE_NAME, AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.FILE_NAME + " AS " + DownloadTable.AVATAR_FILE_NAME);
-        USER.put(ActorTable.BANNER_URL, ActorTable.BANNER_URL);
+        ACTOR.put(ActorTable.PROFILE_URL, ActorTable.PROFILE_URL);
+        ACTOR.put(ActorTable.HOMEPAGE, ActorTable.HOMEPAGE);
+        ACTOR.put(ActorTable.AVATAR_URL, ActorTable.AVATAR_URL);
+        ACTOR.put(DownloadTable.AVATAR_FILE_NAME, AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.FILE_NAME + " AS " + DownloadTable.AVATAR_FILE_NAME);
+        ACTOR.put(ActorTable.BANNER_URL, ActorTable.BANNER_URL);
 
-        USER.put(ActorTable.MSG_COUNT, ActorTable.MSG_COUNT);
-        USER.put(ActorTable.FAVORITES_COUNT, ActorTable.FAVORITES_COUNT);
-        USER.put(ActorTable.FOLLOWING_COUNT, ActorTable.FOLLOWING_COUNT);
-        USER.put(ActorTable.FOLLOWERS_COUNT, ActorTable.FOLLOWERS_COUNT);
+        ACTOR.put(ActorTable.MSG_COUNT, ActorTable.MSG_COUNT);
+        ACTOR.put(ActorTable.FAVORITES_COUNT, ActorTable.FAVORITES_COUNT);
+        ACTOR.put(ActorTable.FOLLOWING_COUNT, ActorTable.FOLLOWING_COUNT);
+        ACTOR.put(ActorTable.FOLLOWERS_COUNT, ActorTable.FOLLOWERS_COUNT);
 
-        USER.put(ActorTable.CREATED_DATE, ActorTable.CREATED_DATE);
-        USER.put(ActorTable.UPDATED_DATE, ActorTable.UPDATED_DATE);
-        USER.put(ActorTable.INS_DATE, ActorTable.INS_DATE);
+        ACTOR.put(ActorTable.CREATED_DATE, ActorTable.CREATED_DATE);
+        ACTOR.put(ActorTable.UPDATED_DATE, ActorTable.UPDATED_DATE);
+        ACTOR.put(ActorTable.INS_DATE, ActorTable.INS_DATE);
         
-        USER.put(ActorTable.ACTOR_ACTIVITY_ID, ActorTable.ACTOR_ACTIVITY_ID);
-        USER.put(ActorTable.ACTOR_ACTIVITY_DATE, ActorTable.ACTOR_ACTIVITY_DATE);
+        ACTOR.put(ActorTable.ACTOR_ACTIVITY_ID, ActorTable.ACTOR_ACTIVITY_ID);
+        ACTOR.put(ActorTable.ACTOR_ACTIVITY_DATE, ActorTable.ACTOR_ACTIVITY_DATE);
     }
     
     private ProjectionMap() {

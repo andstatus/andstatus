@@ -150,32 +150,32 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
     @Override
     @NonNull
     public ActorViewItem fromCursor(@NonNull Cursor cursor) {
-        Actor user = Actor.fromOriginAndActorOid(
+        Actor actor = Actor.fromOriginAndActorOid(
                 MyContextHolder.get().persistentOrigins().fromId(DbUtils.getLong(cursor, ActorTable.ORIGIN_ID)),
                 DbUtils.getString(cursor, ActorTable.ACTOR_OID)
         );
-        user.actorId = DbUtils.getLong(cursor, BaseColumns._ID);
-        user.setActorName(DbUtils.getString(cursor, ActorTable.ACTORNAME));
-        user.setWebFingerId(DbUtils.getString(cursor, ActorTable.WEBFINGER_ID));
-        user.setRealName(DbUtils.getString(cursor, ActorTable.REAL_NAME));
-        user.setDescription(DbUtils.getString(cursor, ActorTable.DESCRIPTION));
-        user.location = DbUtils.getString(cursor, ActorTable.LOCATION);
+        actor.actorId = DbUtils.getLong(cursor, BaseColumns._ID);
+        actor.setActorName(DbUtils.getString(cursor, ActorTable.ACTORNAME));
+        actor.setWebFingerId(DbUtils.getString(cursor, ActorTable.WEBFINGER_ID));
+        actor.setRealName(DbUtils.getString(cursor, ActorTable.REAL_NAME));
+        actor.setDescription(DbUtils.getString(cursor, ActorTable.DESCRIPTION));
+        actor.location = DbUtils.getString(cursor, ActorTable.LOCATION);
 
-        user.setProfileUrl(DbUtils.getString(cursor, ActorTable.PROFILE_URL));
-        user.setHomepage(DbUtils.getString(cursor, ActorTable.HOMEPAGE));
+        actor.setProfileUrl(DbUtils.getString(cursor, ActorTable.PROFILE_URL));
+        actor.setHomepage(DbUtils.getString(cursor, ActorTable.HOMEPAGE));
 
-        user.msgCount = DbUtils.getLong(cursor, ActorTable.MSG_COUNT);
-        user.favoritesCount = DbUtils.getLong(cursor, ActorTable.FAVORITES_COUNT);
-        user.followingCount = DbUtils.getLong(cursor, ActorTable.FOLLOWING_COUNT);
-        user.followersCount = DbUtils.getLong(cursor, ActorTable.FOLLOWERS_COUNT);
+        actor.msgCount = DbUtils.getLong(cursor, ActorTable.MSG_COUNT);
+        actor.favoritesCount = DbUtils.getLong(cursor, ActorTable.FAVORITES_COUNT);
+        actor.followingCount = DbUtils.getLong(cursor, ActorTable.FOLLOWING_COUNT);
+        actor.followersCount = DbUtils.getLong(cursor, ActorTable.FOLLOWERS_COUNT);
 
-        user.setCreatedDate(DbUtils.getLong(cursor, ActorTable.CREATED_DATE));
-        user.setUpdatedDate(DbUtils.getLong(cursor, ActorTable.UPDATED_DATE));
+        actor.setCreatedDate(DbUtils.getLong(cursor, ActorTable.CREATED_DATE));
+        actor.setUpdatedDate(DbUtils.getLong(cursor, ActorTable.UPDATED_DATE));
 
-        ActorViewItem item = new ActorViewItem(user, false);
+        ActorViewItem item = new ActorViewItem(actor, false);
 
-        item.myFollowers = MyQuery.getMyFollowersOf(user.actorId);
-        AvatarFile avatarFile = AvatarFile.fromCursor(user.actorId, cursor, DownloadTable.AVATAR_FILE_NAME);
+        item.myFollowers = MyQuery.getMyFollowersOf(actor.actorId);
+        AvatarFile avatarFile = AvatarFile.fromCursor(actor.actorId, cursor, DownloadTable.AVATAR_FILE_NAME);
         item.setAvatarFile(avatarFile);
         item.populated = true;
         return item;

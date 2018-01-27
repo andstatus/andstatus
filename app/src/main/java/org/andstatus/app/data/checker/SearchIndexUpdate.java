@@ -18,7 +18,7 @@ package org.andstatus.app.data.checker;
 
 import android.database.Cursor;
 
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
@@ -37,10 +37,10 @@ class SearchIndexUpdate extends DataChecker {
 
     @Override
     long fixInternal(boolean countOnly) {
-        String sql = "SELECT " + MsgTable._ID
-                + ", " + MsgTable.BODY
-                + ", " + MsgTable.BODY_TO_SEARCH
-                + " FROM " + MsgTable.TABLE_NAME
+        String sql = "SELECT " + NoteTable._ID
+                + ", " + NoteTable.BODY
+                + ", " + NoteTable.BODY_TO_SEARCH
+                + " FROM " + NoteTable.TABLE_NAME
                 ;
         long rowsCount = 0;
         long changedCount = 0;
@@ -54,10 +54,10 @@ class SearchIndexUpdate extends DataChecker {
                 if (!bodyToSearchExpected.equals(bodyToSearch)) {
                     changedCount++;
                     MyLog.i(this, "Wrong body to search for " + id + ": " + quoteIfNotQuoted(body));
-                    sql = "UPDATE " + MsgTable.TABLE_NAME
+                    sql = "UPDATE " + NoteTable.TABLE_NAME
                             + " SET "
-                            + MsgTable.BODY_TO_SEARCH + "=" + quoteIfNotQuoted(bodyToSearchExpected)
-                            + " WHERE " + MsgTable._ID + "=" + id;
+                            + NoteTable.BODY_TO_SEARCH + "=" + quoteIfNotQuoted(bodyToSearchExpected)
+                            + " WHERE " + NoteTable._ID + "=" + id;
                     myContext.getDatabase().execSQL(sql);
                 }
                 if (logger.loggedMoreSecondsAgoThan(PROGRESS_REPORT_PERIOD_SECONDS)) {

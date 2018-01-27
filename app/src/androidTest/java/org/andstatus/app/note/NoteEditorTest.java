@@ -41,7 +41,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.ListActivityTestHelper;
 import org.andstatus.app.timeline.TimelineActivity;
@@ -265,7 +265,7 @@ public class NoteEditorTest extends TimelineActivityTest {
                 MyQuery.activityIdToLongColumnValue(ActivityTable.MSG_ID, listItemId) : listItemId;
         logMsg += ", msgId=" + msgId;
 
-        String body = MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId);
+        String body = MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId);
         helper.invokeContextMenuAction4ListItemId(method, listItemId, NoteContextMenuItem.COPY_TEXT, R.id.message_wrapper);
         assertEquals(logMsg, body, getClipboardText(method));
 
@@ -313,7 +313,7 @@ public class NoteEditorTest extends TimelineActivityTest {
 
         long msgId = MyQuery.activityIdToLongColumnValue(ActivityTable.MSG_ID, listItemId);
         String logMsg = "itemId=" + listItemId + ", msgId=" + msgId + " text='"
-                + MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId) + "'";
+                + MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId) + "'";
 
         boolean invoked = helper.invokeContextMenuAction4ListItemId(method, listItemId,
                 NoteContextMenuItem.EDIT, R.id.message_wrapper);
@@ -325,14 +325,14 @@ public class NoteEditorTest extends TimelineActivityTest {
         ActivityTestHelper.waitViewVisible(method + " " + logMsg, editorView);
 
         assertEquals("Loaded message should be in DRAFT state on Edit start: " + logMsg, DownloadStatus.DRAFT,
-                DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, msgId)));
+                DownloadStatus.load(MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, msgId)));
 
         ActivityTestHelper<TimelineActivity> helper2 = new ActivityTestHelper<>(getActivity());
         helper2.clickMenuItem(method + " clicker Discard " + logMsg, R.id.discardButton);
         ActivityTestHelper.waitViewInvisible(method + " " + logMsg, editorView);
 
         assertEquals("Loaded message should be unchanged after Discard: " + logMsg, DownloadStatus.LOADED,
-                DownloadStatus.load(MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, msgId)));
+                DownloadStatus.load(MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, msgId)));
     }
 
 }

@@ -145,13 +145,13 @@ public class ConnectionMastodonTest {
         ind = 17;
         activity = timeline.get(ind);
         assertEquals("Is not FOLLOW " + activity, ActivityType.FOLLOW, activity.type);
-        assertEquals("Is not a USER", AObjectType.ACTOR, activity.getObjectType());
+        assertEquals("Is not an ACTOR", AObjectType.ACTOR, activity.getObjectType());
         actor = activity.getActor();
         assertEquals("Actor's Oid", "24853", actor.oid);
         assertEquals("Username", "resir014", actor.getActorName());
         assertEquals("WebfingerId", "resir014@icosahedron.website", actor.getWebFingerId());
-        Actor user = activity.getObjActor();
-        assertEquals("Not following me" + activity, accountActorOid, user.oid);
+        Actor objActor = activity.getObjActor();
+        assertEquals("Not following me" + activity, accountActorOid, objActor.oid);
 
         ind = 19;
         activity = timeline.get(ind);

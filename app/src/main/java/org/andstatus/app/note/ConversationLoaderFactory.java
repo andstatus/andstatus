@@ -19,7 +19,7 @@ package org.andstatus.app.note;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.util.TriState;
 
 /**
@@ -32,7 +32,7 @@ public class ConversationLoaderFactory<T extends ConversationItem<T>> {
         // TODO: to clarify...
         boolean recursiveLoader = ma.getOrigin().getOriginType().isDirectMessageAllowsReply();
         if (!recursiveLoader) {
-            recursiveLoader = MyQuery.msgIdToTriState(MsgTable.PRIVATE, messageId) != TriState.TRUE;
+            recursiveLoader = MyQuery.msgIdToTriState(NoteTable.PRIVATE, messageId) != TriState.TRUE;
         }
         if (recursiveLoader) {
             return new RecursiveConversationLoader<>(emptyItem, myContext, ma, messageId, sync);

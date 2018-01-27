@@ -43,7 +43,7 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
     protected ViewItem mViewItem = EmptyViewItem.EMPTY;
     /**
      *  Corresponding account information ( "Reply As..." ... )
-     *  oh whose behalf we are going to execute an action on this line in the list (message/user...)
+     *  oh whose behalf we are going to execute an action on this line in the list (on a note / other actor...)
      */
     @NonNull
     private MyAccount myActor = MyAccount.EMPTY;

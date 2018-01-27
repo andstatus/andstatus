@@ -84,9 +84,9 @@ public class Actor implements Comparable<Actor> {
     }
 
     public static Actor fromOriginAndActorId(@NonNull Origin origin, long actorId) {
-        Actor user = new Actor(origin, "");
-        user.actorId = actorId;
-        return user;
+        Actor actor = new Actor(origin, "");
+        actor.actorId = actorId;
+        return actor;
     }
 
     private Actor(@NonNull Origin origin, String actorOid) {
@@ -310,7 +310,7 @@ public class Actor implements Comparable<Actor> {
             actorId = MyQuery.webFingerIdToId(origin.getId(), webFingerId);
         }
         if (actorId == 0 && !isWebFingerIdValid() && !TextUtils.isEmpty(actorName)) {
-            actorId = MyQuery.userNameToId(origin.getId(), actorName);
+            actorId = MyQuery.actorNameToId(origin.getId(), actorName);
         }
         if (actorId == 0) {
             actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(), getTempOid());
@@ -495,7 +495,7 @@ public class Actor implements Comparable<Actor> {
         return builder.toString();
     }
 
-    public String getTimelineUserName() {
+    public String getTimelineActorName() {
         return MyQuery.actorIdToWebfingerId(actorId);
     }
 }

@@ -32,7 +32,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DemoConversationInserter;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.note.ConversationActivity;
 import org.andstatus.app.note.NoteContextMenuItem;
 import org.andstatus.app.service.CommandData;
@@ -224,7 +224,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
                 ListActivityTestHelper.newForSelectorDialog(getActivity(), AccountSelector.getDialogTag());
         long msgId = helper.getListItemIdOfLoadedReply();
         String logMsg = "msgId:" + msgId
-                + "; text:'" + MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId) + "'";
+                + "; text:'" + MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId) + "'";
         assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId,
                 NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT, R.id.message_wrapper));
         MyAccount actor1 = getActivity().getContextMenu().getMyActor();

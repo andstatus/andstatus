@@ -77,7 +77,7 @@ public class NotificationEvents {
         return map.values().stream().filter(data -> data.count > 0).count() == 0;
     }
 
-    /** When user clicks on a widget, open a timeline, which has new messages, or default timeline */
+    /** When a User clicks on a widget, open a timeline, which has new messages, or a default timeline */
     public PendingIntent getPendingIntent() {
         return map.getOrDefault(getEventTypeWithCount(), NotificationData.EMPTY).getPendingIntent(myContext);
     }

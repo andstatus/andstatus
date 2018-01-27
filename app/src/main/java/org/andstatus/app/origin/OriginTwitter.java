@@ -22,7 +22,7 @@ import android.support.annotation.StringRes;
 import org.andstatus.app.R;
 import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
@@ -68,8 +68,8 @@ class OriginTwitter extends Origin {
         }
         final Uri uri = fixUriforPermalink(UriUtils.fromUrl(url));
         if (Audience.fromMsgId(this, messageId).isEmpty()) {
-            String userName = MyQuery.msgIdToUsername(MsgTable.AUTHOR_ID, messageId, ActorInTimeline.USERNAME);
-            final String oid = MyQuery.msgIdToStringColumnValue(MsgTable.MSG_OID, messageId);
+            String userName = MyQuery.msgIdToUsername(NoteTable.AUTHOR_ID, messageId, ActorInTimeline.ACTORNAME);
+            final String oid = MyQuery.msgIdToStringColumnValue(NoteTable.NOTE_OID, messageId);
             return Uri.withAppendedPath(uri, userName + "/status/" + oid).toString();
         } else {
             return Uri.withAppendedPath(uri, "messages").toString();

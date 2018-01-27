@@ -8,7 +8,7 @@ import org.andstatus.app.data.DbUtils;
  * Recipients and Mentioned users
  * See https://www.w3.org/TR/activitystreams-vocabulary/#audienceTargeting
  * We don't distinguish between Primary and Secondary audiences yet.
- * Targeting to Public is flagged by {@link MsgTable#PRIVATE}
+ * Targeting to Public is flagged by {@link NoteTable#PRIVATE}
  */
 public class AudienceTable {
     public static final String TABLE_NAME = "audience";
@@ -17,7 +17,7 @@ public class AudienceTable {
     }
 
     public static final String USER_ID = ActorTable.ACTOR_ID;
-    public static final String MSG_ID =  MsgTable.MSG_ID;
+    public static final String MSG_ID =  NoteTable.NOTE_ID;
 
     public static void create(SQLiteDatabase db) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("

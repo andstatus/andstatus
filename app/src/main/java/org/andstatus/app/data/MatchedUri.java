@@ -25,7 +25,7 @@ import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -53,16 +53,16 @@ public enum MatchedUri {
     ORIGIN(8),
     ORIGIN_ITEM(11),
     /**
-     * List of Users
+     * List of Actors
      */
-    USERLIST(5),
-    USERLIST_SEARCH(12),
-    USERLIST_ITEM(13),
+    ACTORLIST(5),
+    ACTORLIST_SEARCH(12),
+    ACTORLIST_ITEM(13),
     /**
      * Operations on {@link ActorTable} itself
      */
-    USER(6),
-    USER_ITEM(9),
+    ACTOR(6),
+    ACTOR_ITEM(9),
     
     UNKNOWN(0);
     
@@ -80,7 +80,7 @@ public enum MatchedUri {
     private static final String COUNT_SEGMENT = "count";
     private static final String CONTENT_SEGMENT = "content";
     private static final String CONTENT_ITEM_SEGMENT = "item";
-    private static final String USER_SEGMENT = "user";
+    private static final String ACTOR_SEGMENT = "user";
     private static final String CENTRAL_ITEM_SEGMENT = "cnt";
 
     private static final String CONTENT_URI_PREFIX = "content://" + AUTHORITY + "/";
@@ -114,21 +114,21 @@ public enum MatchedUri {
          * 4 - 5. ORIGIN_SEGMENT +  0 or 1  (1 for combined timeline)
          * 6 - 7. MyDatabase.MSG_TABLE_NAME + "/" + MSG_ID  (optional, used to access specific Message)
          */
-        URI_MATCHER.addURI(AUTHORITY, MsgTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + USER_SEGMENT + "/#/" + CONTENT_ITEM_SEGMENT + "/#", TIMELINE_ITEM.code);
-        URI_MATCHER.addURI(AUTHORITY, MsgTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + USER_SEGMENT + "/#/" + SEARCH_SEGMENT + "/*", TIMELINE_SEARCH.code);
-        URI_MATCHER.addURI(AUTHORITY, MsgTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + USER_SEGMENT + "/#/rnd/#", TIMELINE.code);
-        URI_MATCHER.addURI(AUTHORITY, MsgTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + USER_SEGMENT + "/#", TIMELINE.code);
-        URI_MATCHER.addURI(AUTHORITY, MsgTable.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", MSG_ITEM.code);
+        URI_MATCHER.addURI(AUTHORITY, NoteTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + ACTOR_SEGMENT + "/#/" + CONTENT_ITEM_SEGMENT + "/#", TIMELINE_ITEM.code);
+        URI_MATCHER.addURI(AUTHORITY, NoteTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + ACTOR_SEGMENT + "/#/" + SEARCH_SEGMENT + "/*", TIMELINE_SEARCH.code);
+        URI_MATCHER.addURI(AUTHORITY, NoteTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + ACTOR_SEGMENT + "/#/rnd/#", TIMELINE.code);
+        URI_MATCHER.addURI(AUTHORITY, NoteTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + ACTOR_SEGMENT + "/#", TIMELINE.code);
+        URI_MATCHER.addURI(AUTHORITY, NoteTable.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", MSG_ITEM.code);
         URI_MATCHER.addURI(AUTHORITY, ActivityTable.TABLE_NAME + "/" + CONTENT_SEGMENT, ACTIVITY.code);
 
         URI_MATCHER.addURI(AUTHORITY, OriginTable.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", ORIGIN_ITEM.code);
         URI_MATCHER.addURI(AUTHORITY, OriginTable.TABLE_NAME + "/" + CONTENT_SEGMENT, ORIGIN.code);
 
-        URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CONTENT_ITEM_SEGMENT + "/#", USERLIST_ITEM.code);
-        URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CENTRAL_ITEM_SEGMENT + "/#/" + SEARCH_SEGMENT + "/*", USERLIST_SEARCH.code);
-        URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CENTRAL_ITEM_SEGMENT + "/#", USERLIST.code);
-        URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", USER_ITEM.code);
-        URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + CONTENT_SEGMENT, USER.code);
+        URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CONTENT_ITEM_SEGMENT + "/#", ACTORLIST_ITEM.code);
+        URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CENTRAL_ITEM_SEGMENT + "/#/" + SEARCH_SEGMENT + "/*", ACTORLIST_SEARCH.code);
+        URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CENTRAL_ITEM_SEGMENT + "/#", ACTORLIST.code);
+        URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", ACTOR_ITEM.code);
+        URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + CONTENT_SEGMENT, ACTOR.code);
     }
     
     /**
@@ -149,20 +149,20 @@ public enum MatchedUri {
                 break;
             case TIMELINE:
             case TIMELINE_SEARCH:
-                type = CONTENT_TYPE_PREFIX + MsgTable.TABLE_NAME;
+                type = CONTENT_TYPE_PREFIX + NoteTable.TABLE_NAME;
                 break;
             case TIMELINE_ITEM:
             case MSG_ITEM:
-                type = CONTENT_ITEM_TYPE_PREFIX + MsgTable.TABLE_NAME;
+                type = CONTENT_ITEM_TYPE_PREFIX + NoteTable.TABLE_NAME;
                 break;
             case ORIGIN_ITEM:
                 type = CONTENT_ITEM_TYPE_PREFIX + OriginTable.TABLE_NAME;
                 break;
-            case USER:
-            case USERLIST:
+            case ACTOR:
+            case ACTORLIST:
                 type = CONTENT_TYPE_PREFIX + ActorTable.TABLE_NAME;
                 break;
-            case USER_ITEM:
+            case ACTOR_ITEM:
                 type = CONTENT_ITEM_TYPE_PREFIX + ActorTable.TABLE_NAME;
                 break;
             default:
@@ -180,10 +180,10 @@ public enum MatchedUri {
     }
 
     public static Uri getTimelineUri(Timeline timeline) {
-        Uri uri = getBaseAccountUri(timeline.getMyAccount().getActorId(), MsgTable.TABLE_NAME);
+        Uri uri = getBaseAccountUri(timeline.getMyAccount().getActorId(), NoteTable.TABLE_NAME);
         uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + timeline.getTimelineType().save());
         uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + timeline.getOrigin().getId());
-        uri = Uri.withAppendedPath(uri,  USER_SEGMENT);
+        uri = Uri.withAppendedPath(uri, ACTOR_SEGMENT);
         uri = ContentUris.withAppendedId(uri, timeline.getActorId());
         if (!TextUtils.isEmpty(timeline.getSearchQuery())) {
             uri = Uri.withAppendedPath(uri, SEARCH_SEGMENT);
@@ -193,12 +193,12 @@ public enum MatchedUri {
     }
 
     public static Uri getMsgUri(long accountUserId, long msgId) {
-        return getContentItemUri(accountUserId, MsgTable.TABLE_NAME, msgId);
+        return getContentItemUri(accountUserId, NoteTable.TABLE_NAME, msgId);
     }
 
     /**
-     * Build a UseList Uri for this User / {@link MyAccount}
-     * @param accountActorId {@link ActorTable#ACTOR_ID}. This user <i>may</i> be an account: {@link MyAccount#getActorId()}
+     * Build an ActorList Uri for this Actor / {@link MyAccount}
+     * @param accountActorId {@link ActorTable#ACTOR_ID}. This actor <i>may</i> be an account: {@link MyAccount#getActorId()}
      * @param searchQuery
      */
     public static Uri getActorListUri(long accountActorId, ActorListType actorListType, long originId, long centralItemId,

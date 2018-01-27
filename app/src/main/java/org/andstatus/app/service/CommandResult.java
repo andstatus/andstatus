@@ -59,7 +59,7 @@ public final class CommandResult implements Parcelable {
     private int hourlyLimit = 0;
     private int remainingHits = 0;
     
-    // Counters to use for user notifications
+    // Counters for user notifications
     private long downloadedCount = 0;
     private long newCount = 0;
     public final Map<NotificationEventType, AtomicLong> notificationEventCounts = new HashMap<>();

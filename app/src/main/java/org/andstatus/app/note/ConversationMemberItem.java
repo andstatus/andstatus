@@ -21,7 +21,7 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.util.MyHtml;
 
 import java.util.ArrayList;
@@ -44,18 +44,18 @@ public class ConversationMemberItem extends ConversationItem<ConversationMemberI
     String[] getProjection() {
         List<String> columnNames = new ArrayList<>();
         columnNames.add(ActivityTable.MSG_ID);
-        columnNames.add(MsgTable.UPDATED_DATE);
-        columnNames.add(MsgTable.IN_REPLY_TO_MSG_ID);
-        columnNames.add(MsgTable.AUTHOR_ID);
-        columnNames.add(MsgTable.BODY);
+        columnNames.add(NoteTable.UPDATED_DATE);
+        columnNames.add(NoteTable.IN_REPLY_TO_NOTE_ID);
+        columnNames.add(NoteTable.AUTHOR_ID);
+        columnNames.add(NoteTable.BODY);
         return columnNames.toArray(new String[]{});
     }
 
     @Override
     void load(Cursor cursor) {
         super.load(cursor);
-        authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
-        setBody(MyHtml.fromHtml(DbUtils.getString(cursor, MsgTable.BODY)));
+        authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID);
+        setBody(MyHtml.fromHtml(DbUtils.getString(cursor, NoteTable.BODY)));
     }
 
     @Override

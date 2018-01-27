@@ -23,7 +23,7 @@ import android.text.TextUtils;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.MsgTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyHtml;
@@ -63,7 +63,7 @@ public class Note extends AObject {
 
     public final List<Attachment> attachments = new ArrayList<>();
 
-    /** Some additional attributes may appear from "My account's" (authenticated User's) point of view */
+    /** Some additional attributes may appear from "My account's" (authenticated Account's) point of view */
     private TriState isPrivate = TriState.UNKNOWN;
 
     // In our system
@@ -144,11 +144,11 @@ public class Note extends AObject {
             conversationId = MyQuery.conversationOidToId(origin.getId(), conversationOid);
         }
         if (conversationId == 0 && msgId != 0) {
-            conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID, msgId);
+            conversationId = MyQuery.msgIdToLongColumnValue(NoteTable.CONVERSATION_ID, msgId);
         }
         if (conversationId == 0 && getInReplyTo().nonEmpty()) {
             if (getInReplyTo().getMessage().msgId != 0) {
-                conversationId = MyQuery.msgIdToLongColumnValue(MsgTable.CONVERSATION_ID,
+                conversationId = MyQuery.msgIdToLongColumnValue(NoteTable.CONVERSATION_ID,
                         getInReplyTo().getMessage().msgId);
             }
         }
@@ -303,8 +303,8 @@ public class Note extends AObject {
     }
 
     public void addRecipientsFromBodyText(Actor author) {
-        for (Actor user : author.extractActorsFromBodyText(getBody(), true)) {
-            addRecipient(user);
+        for (Actor actor : author.extractActorsFromBodyText(getBody(), true)) {
+            addRecipient(actor);
         }
     }
 

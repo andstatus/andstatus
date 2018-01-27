@@ -39,7 +39,7 @@ public class SqlActorIds {
     private final Set<Long> ids;
 
     public static SqlActorIds fromTimeline(@NonNull Timeline timeline) {
-        if (timeline.getTimelineType() == TimelineType.USER) {
+        if (timeline.getTimelineType() == TimelineType.ACTOR) {
             if ( timeline.getActorId() != 0) {
                 return new SqlActorIds(timeline.getActorId());
             }

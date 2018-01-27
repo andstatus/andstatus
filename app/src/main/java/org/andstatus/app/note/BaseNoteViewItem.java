@@ -74,8 +74,6 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     AttachedImageFile attachedImageFile = AttachedImageFile.EMPTY;
     AvatarFile avatarFile = AvatarFile.EMPTY;
 
-    /** A message can be linked to any user, MyAccount or not */
-    private long linkedUserId = 0;
     private MyAccount linkedMyAccount = MyAccount.EMPTY;
 
     protected BaseNoteViewItem(boolean isEmpty) {

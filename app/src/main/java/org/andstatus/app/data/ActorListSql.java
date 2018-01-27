@@ -46,21 +46,21 @@ public class ActorListSql {
         String tables = ActorTable.TABLE_NAME;
         if (columns.contains(DownloadTable.AVATAR_FILE_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
-                    + DownloadTable.USER_ID + ", "
+                    + DownloadTable.ACTOR_ID + ", "
                     + DownloadTable.DOWNLOAD_STATUS + ", "
                     + DownloadTable.FILE_NAME
                     + " FROM " + DownloadTable.TABLE_NAME + ") AS " + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS
                     + " ON "
                     + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_STATUS
                     + "=" + DownloadStatus.LOADED.save() + " AND "
-                    + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.USER_ID
+                    + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.ACTOR_ID
                     + "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID;
         }
         return tables;
     }
 
     /**
-     * Table columns to use for a User item content
+     * Table columns to use for an Actor item content
      */
     public static String[] getListProjection() {
         return getBaseProjection().toArray(new String[]{});

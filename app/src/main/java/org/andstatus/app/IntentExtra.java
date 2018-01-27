@@ -52,9 +52,9 @@ public enum IntentExtra{
     MEDIA_URI("MEDIA_URI"),
     /** Account name, see {@link MyAccount#getAccountName()} */
     ACCOUNT_NAME("ACCOUNT_NAME"),
-    /** Selected User. E.g. the User whose messages we are seeing */
-    USER_ID("USER_ID"),
-    USER_NAME("USER_NAME"),
+    /** Selected Actor. E.g. the Actor whose notes we are seeing */
+    ACTOR_ID("ACTOR_ID"),
+    ACTOR_NAME("ACTOR_NAME"),
     ORIGIN_ID("ORIGIN_ID"),
     ORIGIN_NAME("ORIGIN_NAME"),
     ORIGIN_TYPE("ORIGIN_TYPE"),

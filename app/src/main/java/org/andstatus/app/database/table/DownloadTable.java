@@ -32,10 +32,10 @@ public final class DownloadTable implements BaseColumns {
     }
     /** See {@link DownloadType} */
     public static final String DOWNLOAD_TYPE = "download_type";
-    /** Avatar is connected to exactly one user */
-    public static final String USER_ID = ActorTable.ACTOR_ID;
+    /** Avatar is connected to exactly one actor */
+    public static final String ACTOR_ID = ActorTable.ACTOR_ID;
     /** Attachment is connected to a message */
-    public static final String MSG_ID =  MsgTable.MSG_ID;
+    public static final String MSG_ID =  NoteTable.NOTE_ID;
     /** See {@link MyContentType} */
     public static final String CONTENT_TYPE = "content_type";
     /**
@@ -71,7 +71,7 @@ public final class DownloadTable implements BaseColumns {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + DOWNLOAD_TYPE + " INTEGER NOT NULL,"
-                + USER_ID + " INTEGER NOT NULL DEFAULT 0,"
+                + ACTOR_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + MSG_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + CONTENT_TYPE + " INTEGER NOT NULL,"
                 + VALID_FROM + " INTEGER NOT NULL,"
@@ -82,7 +82,7 @@ public final class DownloadTable implements BaseColumns {
                 + ")");
 
         DbUtils.execSQL(db, "CREATE INDEX idx_download_user ON " + TABLE_NAME + " ("
-                + USER_ID + ", "
+                + ACTOR_ID + ", "
                 + DOWNLOAD_STATUS
                 + ")");
 

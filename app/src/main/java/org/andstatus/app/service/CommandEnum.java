@@ -41,7 +41,7 @@ public enum CommandEnum {
     GET_TIMELINE("fetch-timeline", 0, 4, ConnectionRequired.SYNC),
     GET_OLDER_TIMELINE("get-older-timeline", 0, 4, ConnectionRequired.SYNC),
 
-    /** Fetch avatar for the specified user */
+    /** Fetch avatar for the specified actor */
     FETCH_AVATAR("fetch-avatar", R.string.title_command_fetch_avatar, 9, ConnectionRequired.SYNC),
     FETCH_ATTACHMENT("fetch-attachment", R.string.title_command_fetch_attachment, 11, ConnectionRequired.DOWNLOAD_ATTACHMENT),
     
@@ -68,7 +68,7 @@ public enum CommandEnum {
 
     RATE_LIMIT_STATUS("rate-limit-status", 0, 0, ConnectionRequired.SYNC),
 
-    /** Clear previous notifications (because e.g. user opened a Timeline) */
+    /** Clear previous notifications (because e.g. a user opened a Timeline) */
     CLEAR_NOTIFICATIONS("clear-notifications", 0, -20, ConnectionRequired.ANY),
 
     /** Stop the service after finishing all asynchronous treads (i.e. not immediately!) */
