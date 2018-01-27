@@ -43,7 +43,7 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.user.ActorListType;
+import org.andstatus.app.actor.ActorListType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.view.SuggestionsAdapter;
@@ -231,7 +231,7 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
             return timeline.fromSearch(parentActivity.getMyContext(), isInternetSearch())
                                     .fromIsCombined(parentActivity.getMyContext(), isCombined()).getUri();
         }
-        return MatchedUri.getUserListUri(parentActivity.getCurrentMyAccount().getUserId(), ActorListType.USERS,
+        return MatchedUri.getActorListUri(parentActivity.getCurrentMyAccount().getActorId(), ActorListType.USERS,
                         isCombined() ? 0 : getOrigin().getId(), 0, "");
     }
 

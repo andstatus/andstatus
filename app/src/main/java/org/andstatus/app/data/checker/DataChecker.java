@@ -75,7 +75,7 @@ public abstract class DataChecker {
             return;
         }
         MyLog.i(DataChecker.class, "fixData started" + (includeLong ? ", including long tasks" : ""));
-        for(DataChecker checker : new DataChecker[]{new MergeUsers(),
+        for(DataChecker checker : new DataChecker[]{new MergeActors(),
                 new CheckConversations(), new CheckTimelines(), new SearchIndexUpdate()}) {
             if (includeLong || checker.notLong()) checker.setMyContext(myContext).setLogger(logger).fix();
         }

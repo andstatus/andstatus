@@ -19,7 +19,7 @@ package org.andstatus.app;
 import android.widget.Spinner;
 
 import org.andstatus.app.timeline.TimelineActivity;
-import org.andstatus.app.user.ActorList;
+import org.andstatus.app.actor.ActorList;
 
 public enum SearchObjects {
     MESSAGES(TimelineActivity.class),

@@ -76,7 +76,7 @@ public class TimelineTitle {
         if (timeline.hasSearchQuery()) {
             I18n.appendWithSpace(title, "'" + timeline.getSearchQuery() + "'");
         }
-        if (timeline.getUserId() != 0 && (timeline.isUserDifferentFromAccount() ||
+        if (timeline.getActorId() != 0 && (timeline.isUserDifferentFromAccount() ||
                 timeline.getTimelineType().isAtOrigin())) {
             if (timeline.isUserDifferentFromAccount()) {
                 I18n.appendWithSpace(title, timeline.getUserInTimeline());

@@ -24,7 +24,7 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.user.ActorListType;
+import org.andstatus.app.actor.ActorListType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 
@@ -87,26 +87,26 @@ public class ParsedUri {
         return accountUserId;        
     }
     
-    public long getUserId() {
-        long userId = 0;
+    public long getActorId() {
+        long actorId = 0;
         try {
             switch (matchedUri) {
                 case TIMELINE_SEARCH:
                 case TIMELINE_ITEM:
                 case TIMELINE:
-                    userId = Long.parseLong(uri.getPathSegments().get(7));
+                    actorId = Long.parseLong(uri.getPathSegments().get(7));
                     break;
                 case USER_ITEM:
-                    userId = Long.parseLong(uri.getPathSegments().get(3));
+                    actorId = Long.parseLong(uri.getPathSegments().get(3));
                     break;
                 case USERLIST:
                 case USERLIST_SEARCH:
                     if (getUserListType() == ActorListType.FOLLOWERS) {
-                        userId = getItemId();
+                        actorId = getItemId();
                     }
                     break;
                 case USERLIST_ITEM:
-                    userId = getItemId();
+                    actorId = getItemId();
                     break;
                 default:
                     break;
@@ -114,7 +114,7 @@ public class ParsedUri {
         } catch (Exception e) {
             MyLog.e(this, toString(), e);
         }
-        return userId;
+        return actorId;
     }
     
     public TimelineType getTimelineType() {

@@ -54,11 +54,11 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.list.SyncLoader;
-import org.andstatus.app.msg.MessageAdapter;
-import org.andstatus.app.msg.MessageContextMenu;
-import org.andstatus.app.msg.MessageEditorListActivity;
-import org.andstatus.app.msg.MessageListContextMenuContainer;
-import org.andstatus.app.msg.MessageViewItem;
+import org.andstatus.app.note.NoteAdapter;
+import org.andstatus.app.note.NoteContextMenu;
+import org.andstatus.app.note.NoteEditorListActivity;
+import org.andstatus.app.note.NoteContextMenuContainer;
+import org.andstatus.app.note.NoteViewItem;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -87,8 +87,8 @@ import java.util.Collections;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineActivity<T extends ViewItem<T>> extends MessageEditorListActivity<T> implements
-        MessageListContextMenuContainer, AbsListView.OnScrollListener {
+public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActivity<T> implements
+        NoteContextMenuContainer, AbsListView.OnScrollListener {
     public static final String HORIZONTAL_ELLIPSIS = "\u2026";
 
     /** Parameters for the next page request, not necessarily requested already */
@@ -204,8 +204,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends MessageEditorListAc
             return (BaseTimelineAdapter<T>) new ActivityAdapter(contextMenu,
                     (TimelineData<ActivityViewItem>) getListData());
         }
-        return (BaseTimelineAdapter<T>) new MessageAdapter(
-                contextMenu.message, (TimelineData<MessageViewItem>) getListData());
+        return (BaseTimelineAdapter<T>) new NoteAdapter(
+                contextMenu.message, (TimelineData<NoteViewItem>) getListData());
     }
 
     @Override
@@ -435,7 +435,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends MessageEditorListAc
                 // which are not on the timeline.
                 // E.g. messages by users, downloaded on demand.
                 getParamsNew().getSelectedUserId() == 0 ||
-                        getParamsNew().getSelectedUserId() == getParamsNew().getMyAccount().getUserId())) {
+                        getParamsNew().getSelectedUserId() == getParamsNew().getMyAccount().getActorId())) {
             MyCheckBox.setEnabled(drawerView, R.id.combinedTimelineToggle,
                     getParamsLoaded().getTimeline().isCombined());
         }
@@ -489,7 +489,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends MessageEditorListAc
         HelpActivity.startMe(this, false, HelpActivity.PAGE_CHANGELOG);
     }
 
-    public void onItemClick(MessageViewItem item) {
+    public void onItemClick(NoteViewItem item) {
         MyAccount ma = myContext.persistentAccounts().getAccountForThisMessage(item.getOrigin(),
                 getParamsNew().getMyAccount(), item.getLinkedMyAccount(), false);
         if (MyLog.isVerboseEnabled()) {
@@ -678,7 +678,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends MessageEditorListAc
     private void updateScreen() {
         MyServiceManager.setServiceAvailable();
         invalidateOptionsMenu();
-        getMessageEditor().updateScreen();
+        getNoteEditor().updateScreen();
         updateTitle(mRateLimitText);
         mDrawerToggle.setDrawerIndicatorEnabled(!getParamsLoaded().isAtHome());
         ViewUtils.showView(
@@ -694,7 +694,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends MessageEditorListAc
                 updateActivityTitle(this, additionalTitleText);
     }
 
-    MessageContextMenu getContextMenu() {
+    NoteContextMenu getContextMenu() {
         return contextMenu.message;
     }
 
@@ -1006,8 +1006,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends MessageEditorListAc
 
     protected void crashTest() {
         final String CRASH_TEST_STRING = "Crash test 2015-04-10";
-        if (MyLog.isVerboseEnabled() && getMessageEditor() != null &&
-                getMessageEditor().getData().body.contains(CRASH_TEST_STRING)) {
+        if (MyLog.isVerboseEnabled() && getNoteEditor() != null &&
+                getNoteEditor().getData().body.contains(CRASH_TEST_STRING)) {
             MyLog.e(this, "Initiating crash test exception");
             throw new NullPointerException("This is a test crash event");
         }
@@ -1071,12 +1071,12 @@ public class TimelineActivity<T extends ViewItem<T>> extends MessageEditorListAc
 
     private void accountToShareViaSelected(Intent data) {
         MyAccount ma = myContext.persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
-        getMessageEditor().startEditingSharedData(ma, mTextToShareViaThisApp, mMediaToShareViaThisApp);
+        getNoteEditor().startEditingSharedData(ma, mTextToShareViaThisApp, mMediaToShareViaThisApp);
     }
 
     @Override
     protected boolean isEditorVisible() {
-        return getMessageEditor().isVisible();
+        return getNoteEditor().isVisible();
     }
 
     @Override

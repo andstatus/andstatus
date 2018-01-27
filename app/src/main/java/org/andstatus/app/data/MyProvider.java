@@ -36,7 +36,7 @@ import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.database.table.ActorTable;
-import org.andstatus.app.msg.KeywordsFilter;
+import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.Origin;
@@ -102,7 +102,7 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case USER_ITEM:
-                count = deleteUsers(db, BaseColumns._ID + "=" + uriParser.getUserId(), null);
+                count = deleteUsers(db, BaseColumns._ID + "=" + uriParser.getActorId(), null);
                 break;
 
             default:
@@ -258,7 +258,7 @@ public class MyProvider extends ContentProvider {
         }
         String sql = "UPDATE " + ActivityTable.TABLE_NAME + " SET " + ActivityTable.NEW_NOTIFICATION_EVENT + "=0" +
                 (timeline.isEmpty() ? "" : " WHERE " + ActivityTable.NEW_NOTIFICATION_EVENT +
-                        SqlUserIds.fromIds(NotificationEventType.idsOfShownOn(timeline.getTimelineType())).getSql());
+                        SqlActorIds.fromIds(NotificationEventType.idsOfShownOn(timeline.getTimelineType())).getSql());
         try {
             db.execSQL(sql);
         } catch (Exception e) {
@@ -368,7 +368,7 @@ public class MyProvider extends ContentProvider {
                     newUri = MatchedUri.getOriginUri(rowId);
                     break;
                 case USER_ITEM:
-                    newUri = MatchedUri.getUserUri(accountUserId, rowId);
+                    newUri = MatchedUri.getActorUri(accountUserId, rowId);
                     break;
                 default:
                     break;
@@ -379,9 +379,9 @@ public class MyProvider extends ContentProvider {
         return newUri;
     }
 
-    private void optionallyLoadAvatar(long userId, ContentValues values) {
+    private void optionallyLoadAvatar(long actorId, ContentValues values) {
         if (MyPreferences.getShowAvatars() && values.containsKey(ActorTable.AVATAR_URL)) {
-            AvatarData.getForUser(userId).requestDownload();
+            AvatarData.getForUser(actorId).requestDownload();
         }
     }
     
@@ -447,7 +447,7 @@ public class MyProvider extends ContentProvider {
             case USER:
             case USERLIST:
             case USERLIST_SEARCH:
-                qb.setTables(UserListSql.tablesForList(uri, projection));
+                qb.setTables(ActorListSql.tablesForList(uri, projection));
                 qb.setProjectionMap(ProjectionMap.USER);
                 rawQuery = uriParser.getSearchQuery();
                 if (StringUtils.nonEmpty(rawQuery)) {
@@ -466,15 +466,15 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case USERLIST_ITEM:
-                qb.setTables(UserListSql.tablesForList(uri, projection));
+                qb.setTables(ActorListSql.tablesForList(uri, projection));
                 qb.setProjectionMap(ProjectionMap.USER);
-                qb.appendWhere(BaseColumns._ID + "=" + uriParser.getUserId());
+                qb.appendWhere(BaseColumns._ID + "=" + uriParser.getActorId());
                 break;
 
             case USER_ITEM:
                 qb.setTables(ActorTable.TABLE_NAME);
                 qb.setProjectionMap(ProjectionMap.USER);
-                qb.appendWhere(BaseColumns._ID + "=" + uriParser.getUserId());
+                qb.appendWhere(BaseColumns._ID + "=" + uriParser.getActorId());
                 break;
 
             default:
@@ -581,7 +581,7 @@ public class MyProvider extends ContentProvider {
 
             case USER_ITEM:
                 accountUserId = uriParser.getAccountUserId();
-                long selectedUserId = uriParser.getUserId();
+                long selectedUserId = uriParser.getActorId();
                 FriendshipValues friendshipValues = FriendshipValues.valueOf(accountUserId, selectedUserId, values);
                 if (values.size() > 0) {
                     count = db.update(ActorTable.TABLE_NAME, values, BaseColumns._ID + "=" + selectedUserId

@@ -358,7 +358,7 @@ public class Note extends AObject {
             return TriState.UNKNOWN;
         } else {
             final Pair<Long, ActivityType> favAndType = MyQuery.msgIdToLastFavoriting(MyContextHolder.get().getDatabase(),
-                    msgId, accountActor.userId);
+                    msgId, accountActor.actorId);
             switch (favAndType.second) {
                 case LIKE:
                     return TriState.TRUE;

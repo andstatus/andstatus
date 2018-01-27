@@ -75,12 +75,12 @@ public class DemoConversationInserter {
     private void insertAndTestConversation() {
         assertEquals("Only PumpIo supported in this test", OriginType.PUMPIO, demoData.CONVERSATION_ORIGIN_TYPE  );
 
-        Actor author2 = buildUserFromOid(demoData.CONVERSATION_AUTHOR_SECOND_USER_OID);
+        Actor author2 = buildUserFromOid(demoData.CONVERSATION_AUTHOR_SECOND_ACTOR_OID);
         author2.avatarUrl = "http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png";
 
-        Actor author3 = buildUserFromOid(demoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
+        Actor author3 = buildUserFromOid(demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
         author3.setRealName("John Smith");
-        author3.setActorName(demoData.CONVERSATION_AUTHOR_THIRD_USERNAME);
+        author3.setActorName(demoData.CONVERSATION_AUTHOR_THIRD_ACTORNAME);
         author3.setHomepage("http://johnsmith.com/welcome");
         author3.setCreatedDate(new GregorianCalendar(2011,5,12).getTimeInMillis());
         author3.setDescription("I am an ordinary guy, interested in computer science");
@@ -91,7 +91,7 @@ public class DemoConversationInserter {
         
         AActivity minus1 = buildActivity(author2, "Older one message", null, null);
         AActivity selected = buildActivity(getAuthor1(), "Selected message from Home timeline", minus1,
-                iteration == 1 ? demoData.CONVERSATION_ENTRY_MESSAGE_OID : null);
+                iteration == 1 ? demoData.CONVERSATION_ENTRY_NOTE_OID : null);
         selected.setSubscribedByMe(TriState.TRUE);
         AActivity reply1 = buildActivity(author3, "Reply 1 to selected", selected, null);
         author3.followedByMe = TriState.TRUE;
@@ -124,7 +124,7 @@ public class DemoConversationInserter {
         AActivity reply4 = buildActivity(author4, "Reply 4 to Reply 1 other author", reply1, null);
         addActivity(reply4);
 
-        DemoMessageInserter.increaseUpdateDate(reply4);
+        DemoNoteInserter.increaseUpdateDate(reply4);
         addPrivateMessage(reply4, TriState.FALSE);
 
         DemoConversationInserter.assertIfUserIsMyFriend(author3, true, ma);
@@ -133,7 +133,7 @@ public class DemoConversationInserter {
                 + "@" + author3.getActorName()
                 + " @unknownUser@example.com";
         AActivity reply5 = buildActivity(author2, BODY_OF_MENTIONS_MESSAGE, reply4,
-                iteration == 1 ? demoData.CONVERSATION_MENTIONS_MESSAGE_OID : null);
+                iteration == 1 ? demoData.CONVERSATION_MENTIONS_NOTE_OID : null);
         addActivity(reply5);
 
         Actor reblogger1 = buildUserFromOid("acct:reblogger@" + demoData.PUMPIO_MAIN_HOST);
@@ -152,7 +152,7 @@ public class DemoConversationInserter {
         addActivity(likeOf6);
 
         AActivity reply7 = buildActivity(getAuthor1(), "Reply 7 to Reply 2 is about "
-        + demoData.PUBLIC_MESSAGE_TEXT + " and something else", reply2, null);
+        + demoData.PUBLIC_NOTE_TEXT + " and something else", reply2, null);
         addPrivateMessage(reply7, TriState.FALSE);
         
         AActivity reply8 = buildActivity(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
@@ -192,10 +192,10 @@ public class DemoConversationInserter {
         AActivity anonymousReply = buildActivity(Actor.EMPTY, "Anonymous reply to Reply 10", reply10, null);
         addActivity(anonymousReply);
 
-        AActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7, " + demoData.GLOBAL_PUBLIC_MESSAGE_TEXT
+        AActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7, " + demoData.GLOBAL_PUBLIC_NOTE_TEXT
                 + " text", reply7, null);
         addPrivateMessage(reply11, TriState.FALSE);
-        DemoMessageInserter.assertNotified(reply11, TriState.UNKNOWN);
+        DemoNoteInserter.assertNotified(reply11, TriState.UNKNOWN);
 
         AActivity myReply13 = buildActivity(accountActor, "My reply to Reply 2", reply2, null);
         AActivity reply14 = buildActivity(author3, "Reply to my message 13", myReply13, null);
@@ -205,12 +205,12 @@ public class DemoConversationInserter {
         AActivity reblogOf14 = buildActivity(author2, ActivityType.ANNOUNCE);
         reblogOf14.setActivity(reply14);
         addActivity(reblogOf14);
-        DemoMessageInserter.assertNotified(reblogOf14, TriState.TRUE);
+        DemoNoteInserter.assertNotified(reblogOf14, TriState.TRUE);
 
         AActivity reblogOfMy13 = buildActivity(author3, ActivityType.ANNOUNCE);
         reblogOfMy13.setActivity(myReply13);
         addActivity(reblogOfMy13);
-        DemoMessageInserter.assertNotified(reblogOfMy13, TriState.TRUE);
+        DemoNoteInserter.assertNotified(reblogOfMy13, TriState.TRUE);
         assertNotificationEvent(reblogOfMy13, NotificationEventType.ANNOUNCE);
 
         AActivity mentionOfAuthor3 = buildActivity(reblogger1, "@" + author3.getActorName() + " mention in reply to 4",
@@ -260,12 +260,12 @@ public class DemoConversationInserter {
                 isPrivate, storedPrivate);
     }
 
-    private Actor buildUserFromOid(String userOid) {
-        return new DemoMessageInserter(accountActor).buildActorFromOid(userOid);
+    private Actor buildUserFromOid(String actorOid) {
+        return new DemoNoteInserter(accountActor).buildActorFromOid(actorOid);
     }
 
     private AActivity buildActivity(Actor actor, ActivityType type) {
-        return new DemoMessageInserter(accountActor).buildActivity(actor, type, "");
+        return new DemoNoteInserter(accountActor).buildActivity(actor, type, "");
     }
 
     private AActivity buildActivity(Actor author, String body, AActivity inReplyTo, String messageOidIn) {
@@ -274,17 +274,17 @@ public class DemoConversationInserter {
 
     private AActivity buildActivity(Actor accountActor, Actor author, String body, AActivity inReplyTo,
                                     String messageOidIn, DownloadStatus status) {
-        return new DemoMessageInserter(accountActor).buildActivity(author, body
+        return new DemoNoteInserter(accountActor).buildActivity(author, body
                         + (inReplyTo != null ? " it" + iteration : "") + bodySuffix,
                 inReplyTo, messageOidIn, status);
     }
 
     private void addActivity(AActivity activity) {
-        DemoMessageInserter.onActivityS(activity);
+        DemoNoteInserter.onActivityS(activity);
     }
 
     static void assertIfUserIsMyFriend(Actor user, boolean isFriendOf, MyAccount ma) {
-        Set<Long> friendsIds = MyQuery.getFriendsIds(ma.getUserId());
-        assertEquals("User " + user + " is a friend of " + ma, isFriendOf, friendsIds.contains(user.userId));
+        Set<Long> friendsIds = MyQuery.getFriendsIds(ma.getActorId());
+        assertEquals("User " + user + " is a friend of " + ma, isFriendOf, friendsIds.contains(user.actorId));
     }
 }

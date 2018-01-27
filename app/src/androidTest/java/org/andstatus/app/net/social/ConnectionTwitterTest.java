@@ -66,9 +66,9 @@ public class ConnectionTwitterTest {
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.TWITTER_TEST_ORIGIN_NAME);
 
         connectionData = OriginConnectionData.fromAccountName(
-                AccountName.fromOriginAndUserName(origin, demoData.TWITTER_TEST_ACCOUNT_USERNAME),
+                AccountName.fromOriginAndUserName(origin, demoData.TWITTER_TEST_ACCOUNT_ACTORNAME),
                 TriState.UNKNOWN);
-        connectionData.setAccountActor(demoData.getAccountUserByOid(demoData.TWITTER_TEST_ACCOUNT_USER_OID));
+        connectionData.setAccountActor(demoData.getAccountUserByOid(demoData.TWITTER_TEST_ACCOUNT_ACTOR_OID));
         connectionData.setDataReader(new AccountDataReaderEmpty());
         connection = connectionData.newConnection();
         httpConnection = (HttpConnectionMock) connection.http;
@@ -129,7 +129,7 @@ public class ConnectionTwitterTest {
         assertNotEquals("Is a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);
         assertTrue("Is a reply", message.getInReplyTo().nonEmpty());
         assertEquals("Reply to the message id", "17176774678", message.getInReplyTo().getMessage().oid);
-        assertEquals("Reply to the message by userOid", demoData.TWITTER_TEST_ACCOUNT_USER_OID, message.getInReplyTo().getAuthor().oid);
+        assertEquals("Reply to the message by actorOid", demoData.TWITTER_TEST_ACCOUNT_ACTOR_OID, message.getInReplyTo().getAuthor().oid);
         assertTrue("Reply status is unknown", message.getInReplyTo().getMessage().getStatus() == DownloadStatus.UNKNOWN);
         assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountActor));
         String startsWith = "@t131t";

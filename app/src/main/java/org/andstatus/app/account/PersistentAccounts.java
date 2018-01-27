@@ -16,7 +16,7 @@ import org.andstatus.app.backup.MyBackupDescriptor;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.SqlUserIds;
+import org.andstatus.app.data.SqlActorIds;
 import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
@@ -199,19 +199,19 @@ public class PersistentAccounts {
       return fromUser(user).isValid();
     }
 
-    public boolean isMyUserId(long userId) {
-        return fromUserId(userId).isValid();
+    public boolean isMyActorId(long actorId) {
+        return fromActorId(actorId).isValid();
     }
 
     /**
-     * Get MyAccount by the UserId. 
-     * Please note that a valid User may not have an Account (in AndStatus)
+     * Get MyAccount by the ActorId.
+     * Please note that a valid Actor may not have an Account (in AndStatus)
      * @return EMPTY account if was not found
      */
     @NonNull
-    public MyAccount fromUserId(long userId) {
-        if (userId == 0) return MyAccount.EMPTY;
-        return myAccounts.stream().filter(ma -> ma.getUserId() == userId).findFirst()
+    public MyAccount fromActorId(long actorId) {
+        if (actorId == 0) return MyAccount.EMPTY;
+        return myAccounts.stream().filter(ma -> ma.getActorId() == actorId).findFirst()
                 .orElse(MyAccount.EMPTY);
     }
 
@@ -263,8 +263,8 @@ public class PersistentAccounts {
     /**
      * @return 0 if no valid persistent accounts exist
      */
-    public long getCurrentAccountUserId() {
-        return getCurrentAccount().getUserId();
+    public long getCurrentAccountActorId() {
+        return getCurrentAccount().getActorId();
     }
 
     @NonNull
@@ -483,12 +483,12 @@ public class PersistentAccounts {
         return myAccounts.equals(other.myAccounts);
     }
 
-    public boolean isMeOrMyFriend(long userId) {
-        return isMyUserId(userId) || isMyFriend(userId);
+    public boolean isMeOrMyFriend(long actorId) {
+        return isMyActorId(actorId) || isMyFriend(actorId);
     }
 
-    private boolean isMyFriend(long userId) {
-        return myFriends.contains(userId);
+    private boolean isMyFriend(long actorId) {
+        return myFriends.contains(actorId);
     }
 
     private void initializeMyFriends() {
@@ -496,8 +496,8 @@ public class PersistentAccounts {
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null) return;
         String sql = "SELECT DISTINCT " + FriendshipTable.FRIEND_ID + " FROM " + FriendshipTable.TABLE_NAME
-            + " WHERE " + FriendshipTable.FOLLOWED + "=1" + " AND " + FriendshipTable.USER_ID
-            + SqlUserIds.fromIds(myAccounts.stream().map(MyAccount::getUserId).collect(Collectors.toList())).getSql();
+            + " WHERE " + FriendshipTable.FOLLOWED + "=1" + " AND " + FriendshipTable.ACTOR_ID
+            + SqlActorIds.fromIds(myAccounts.stream().map(MyAccount::getActorId).collect(Collectors.toList())).getSql();
         try (Cursor cursor = db.rawQuery(sql, null)) {
             while (cursor.moveToNext()) {
                 myFriends.add(cursor.getLong(0));
@@ -526,11 +526,11 @@ public class PersistentAccounts {
     }
 
     @NonNull
-    public static SqlUserIds myAccountIds() {
+    public static SqlActorIds myAccountIds() {
         Context context = MyContextHolder.get().context();
-        return SqlUserIds.fromIds(
+        return SqlActorIds.fromIds(
             getAccounts(context).stream()
-            .map(account -> AccountData.fromAndroidAccount(context, account).getDataLong(MyAccount.KEY_USER_ID, 0))
+            .map(account -> AccountData.fromAndroidAccount(context, account).getDataLong(MyAccount.KEY_ACTOR_ID, 0))
             .filter(id -> id > 0)
             .collect(Collectors.toList())
         );

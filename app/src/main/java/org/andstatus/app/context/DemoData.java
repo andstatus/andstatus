@@ -55,51 +55,51 @@ public final class DemoData {
     public final String TEST_ORIGIN_PARENT_HOST = "example.com";
     public final String PUMPIO_ORIGIN_NAME = "PumpioTest";
     public final String PUMPIO_MAIN_HOST = "pump1." + TEST_ORIGIN_PARENT_HOST;
-    public final String PUMPIO_TEST_ACCOUNT_USERNAME = "t131t@" + PUMPIO_MAIN_HOST;
-    public final String PUMPIO_TEST_ACCOUNT_NAME = PUMPIO_TEST_ACCOUNT_USERNAME + "/" + PUMPIO_ORIGIN_NAME;
-    public final String PUMPIO_TEST_ACCOUNT_USER_OID = "acct:" + PUMPIO_TEST_ACCOUNT_USERNAME;
+    public final String PUMPIO_TEST_ACCOUNT_ACTORNAME = "t131t@" + PUMPIO_MAIN_HOST;
+    public final String PUMPIO_TEST_ACCOUNT_NAME = PUMPIO_TEST_ACCOUNT_ACTORNAME + "/" + PUMPIO_ORIGIN_NAME;
+    public final String PUMPIO_TEST_ACCOUNT_ACTOR_OID = "acct:" + PUMPIO_TEST_ACCOUNT_ACTORNAME;
 
     public final String GNUSOCIAL_TEST_ORIGIN_NAME = "GNUsocialTest";
-    public final String GNUSOCIAL_TEST_ACCOUNT_USERNAME = "t131t";
-    public final String GNUSOCIAL_TEST_ACCOUNT_NAME = GNUSOCIAL_TEST_ACCOUNT_USERNAME + "/" + GNUSOCIAL_TEST_ORIGIN_NAME;
-    public final String GNUSOCIAL_TEST_ACCOUNT_USER_OID = "115391";
+    public final String GNUSOCIAL_TEST_ACCOUNT_ACTORNAME = "t131t";
+    public final String GNUSOCIAL_TEST_ACCOUNT_NAME = GNUSOCIAL_TEST_ACCOUNT_ACTORNAME + "/" + GNUSOCIAL_TEST_ORIGIN_NAME;
+    public final String GNUSOCIAL_TEST_ACCOUNT_ACTOR_OID = "115391";
     public final String GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL = "https://findicons.com/files/icons/2036/farm/48/rabbit.png";
-    public final String GNUSOCIAL_TEST_ACCOUNT2_USERNAME = "gtester2";
-    public final String GNUSOCIAL_TEST_ACCOUNT2_NAME = GNUSOCIAL_TEST_ACCOUNT2_USERNAME + "/" + GNUSOCIAL_TEST_ORIGIN_NAME;
-    public final String GNUSOCIAL_TEST_ACCOUNT2_USER_OID = "8902454";
+    public final String GNUSOCIAL_TEST_ACCOUNT2_ACTORNAME = "gtester2";
+    public final String GNUSOCIAL_TEST_ACCOUNT2_NAME = GNUSOCIAL_TEST_ACCOUNT2_ACTORNAME + "/" + GNUSOCIAL_TEST_ORIGIN_NAME;
+    public final String GNUSOCIAL_TEST_ACCOUNT2_ACTOR_OID = "8902454";
 
     public final String TWITTER_TEST_ORIGIN_NAME = "TwitterTest";
-    public final String TWITTER_TEST_ACCOUNT_USERNAME = "t131t";
-    public final String TWITTER_TEST_ACCOUNT_USER_OID = "144771645";
-    public final String TWITTER_TEST_ACCOUNT_NAME = TWITTER_TEST_ACCOUNT_USERNAME + "/" + TWITTER_TEST_ORIGIN_NAME;
+    public final String TWITTER_TEST_ACCOUNT_ACTORNAME = "t131t";
+    public final String TWITTER_TEST_ACCOUNT_ACTOR_OID = "144771645";
+    public final String TWITTER_TEST_ACCOUNT_NAME = TWITTER_TEST_ACCOUNT_ACTORNAME + "/" + TWITTER_TEST_ORIGIN_NAME;
 
     public final String MASTODON_TEST_ORIGIN_NAME = "MastodonTest";
-    public final String MASTODON_TEST_ACCOUNT_USERNAME = "t131t1";
-    public final String MASTODON_TEST_ACCOUNT_NAME = MASTODON_TEST_ACCOUNT_USERNAME + "/" + MASTODON_TEST_ORIGIN_NAME;
-    public final String MASTODON_TEST_ACCOUNT_USER_OID = "37";
+    public final String MASTODON_TEST_ACCOUNT_ACTORNAME = "t131t1";
+    public final String MASTODON_TEST_ACCOUNT_NAME = MASTODON_TEST_ACCOUNT_ACTORNAME + "/" + MASTODON_TEST_ORIGIN_NAME;
+    public final String MASTODON_TEST_ACCOUNT_ACTOR_OID = "37";
 
     public final OriginType CONVERSATION_ORIGIN_TYPE = OriginType.PUMPIO;
     public final String CONVERSATION_ORIGIN_NAME = PUMPIO_ORIGIN_NAME;
-    private final String CONVERSATION_ACCOUNT_USERNAME = "testerofandstatus@" + PUMPIO_MAIN_HOST;
-    public final String CONVERSATION_ACCOUNT_NAME = CONVERSATION_ACCOUNT_USERNAME + "/" + CONVERSATION_ORIGIN_NAME;
-    public final String CONVERSATION_ACCOUNT_USER_OID = "acct:" + CONVERSATION_ACCOUNT_USERNAME;
+    private final String CONVERSATION_ACCOUNT_ACTORNAME = "testerofandstatus@" + PUMPIO_MAIN_HOST;
+    public final String CONVERSATION_ACCOUNT_NAME = CONVERSATION_ACCOUNT_ACTORNAME + "/" + CONVERSATION_ORIGIN_NAME;
+    public final String CONVERSATION_ACCOUNT_ACTOR_OID = "acct:" + CONVERSATION_ACCOUNT_ACTORNAME;
     public final String CONVERSATION_ACCOUNT_AVATAR_URL = "http://andstatus.org/images/andstatus-logo.png";
-    public final String CONVERSATION_ENTRY_MESSAGE_OID = "http://" + PUMPIO_MAIN_HOST + "/testerofandstatus/comment/thisisfakeuri" + TESTRUN_UID;
+    public final String CONVERSATION_ENTRY_NOTE_OID = "http://" + PUMPIO_MAIN_HOST + "/testerofandstatus/comment/thisisfakeuri" + TESTRUN_UID;
     public final String CONVERSATION_ENTRY_AUTHOR_OID = "acct:first@pumpentry.example.com";
-    public final String CONVERSATION_AUTHOR_SECOND_USERNAME = "second@" + PUMPIO_MAIN_HOST;
-    public final String CONVERSATION_AUTHOR_SECOND_USER_OID = "acct:" + CONVERSATION_AUTHOR_SECOND_USERNAME;
-    public final String CONVERSATION_AUTHOR_THIRD_USERNAME = "third@pump3.example.com";
-    public final String CONVERSATION_AUTHOR_THIRD_USER_OID = "acct:" + CONVERSATION_AUTHOR_THIRD_USERNAME;
-    public final String CONVERSATION_MENTIONS_MESSAGE_OID = "http://" + PUMPIO_MAIN_HOST + "/second/comment/replywithmentions" + TESTRUN_UID;
+    public final String CONVERSATION_AUTHOR_SECOND_ACTORNAME = "second@" + PUMPIO_MAIN_HOST;
+    public final String CONVERSATION_AUTHOR_SECOND_ACTOR_OID = "acct:" + CONVERSATION_AUTHOR_SECOND_ACTORNAME;
+    public final String CONVERSATION_AUTHOR_THIRD_ACTORNAME = "third@pump3.example.com";
+    public final String CONVERSATION_AUTHOR_THIRD_ACTOR_OID = "acct:" + CONVERSATION_AUTHOR_THIRD_ACTORNAME;
+    public final String CONVERSATION_MENTIONS_NOTE_OID = "http://" + PUMPIO_MAIN_HOST + "/second/comment/replywithmentions" + TESTRUN_UID;
     public final String CONVERSATION_MENTION_OF_AUTHOR3_OID = "http://" + PUMPIO_MAIN_HOST + "/second/comment/mention3" + TESTRUN_UID;
-    public final String HTML_MESSAGE_OID = "http://" + PUMPIO_MAIN_HOST + "/testerofandstatus/comment/htmlfakeuri" + TESTRUN_UID;
-    public final String CONVERSATION_ACCOUNT2_USERNAME = "tester2ofandstatus@" + PUMPIO_MAIN_HOST;
-    public final String CONVERSATION_ACCOUNT2_NAME = CONVERSATION_ACCOUNT2_USERNAME + "/" + CONVERSATION_ORIGIN_NAME;
-    public final String CONVERSATION_ACCOUNT2_USER_OID = "acct:" + CONVERSATION_ACCOUNT2_USERNAME;
+    public final String HTML_NOTE_OID = "http://" + PUMPIO_MAIN_HOST + "/testerofandstatus/comment/htmlfakeuri" + TESTRUN_UID;
+    public final String CONVERSATION_ACCOUNT2_ACTORNAME = "tester2ofandstatus@" + PUMPIO_MAIN_HOST;
+    public final String CONVERSATION_ACCOUNT2_NAME = CONVERSATION_ACCOUNT2_ACTORNAME + "/" + CONVERSATION_ORIGIN_NAME;
+    public final String CONVERSATION_ACCOUNT2_ACTOR_OID = "acct:" + CONVERSATION_ACCOUNT2_ACTORNAME;
 
-    public final String PLAIN_TEXT_MESSAGE_OID = "2167283" + TESTRUN_UID;
-    public final String PUBLIC_MESSAGE_TEXT = "UniqueText" + TESTRUN_UID;
-    public final String GLOBAL_PUBLIC_MESSAGE_TEXT = "Public_in_AndStatus_" + TESTRUN_UID;
+    public final String PLAIN_TEXT_NOTE_OID = "2167283" + TESTRUN_UID;
+    public final String PUBLIC_NOTE_TEXT = "UniqueText" + TESTRUN_UID;
+    public final String GLOBAL_PUBLIC_NOTE_TEXT = "Public_in_AndStatus_" + TESTRUN_UID;
     /** See http://stackoverflow.com/questions/6602417/get-the-uri-of-an-image-stored-in-drawable */
     public final Uri LOCAL_IMAGE_TEST_URI = Uri.parse("android.resource://org.andstatus.app.tests/drawable/icon");
     public final Uri LOCAL_IMAGE_TEST_URI2 = Uri.parse("android.resource://org.andstatus.app/drawable/splash_logo");
@@ -190,7 +190,7 @@ public final class DemoData {
                 new DemoConversationInserter().insertConversation("");
                 new DemoGnuSocialConversationInserter().insertConversation();
                 if (progressCallback != null) {
-                    progressCallback.onProgressMessage("Demo messages added...");
+                    progressCallback.onProgressMessage("Demo notes added...");
                     DbUtils.waitMs(TAG, 1000);
                 }
                 if (MyContextHolder.get().persistentAccounts().size() == 0) {
@@ -271,9 +271,9 @@ public final class DemoData {
     }
 
     @NonNull
-    public Actor getAccountUserByOid(String userOid) {
+    public Actor getAccountUserByOid(String actorOid) {
         for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
-            if (ma.getUserOid().equals(userOid)) {
+            if (ma.getActorOid().equals(actorOid)) {
                 return ma.getActor();
             }
         }

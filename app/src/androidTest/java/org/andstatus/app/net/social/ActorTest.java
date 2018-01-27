@@ -40,16 +40,16 @@ public class ActorTest {
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.GNUSOCIAL_TEST_ORIGIN_NAME);
         String webFingerId2 = "anotherUser@somedomain.org";
         String shortUsername3 = "shortusername";
-        String body = "@" + demoData.GNUSOCIAL_TEST_ACCOUNT_USERNAME
-                + " @" + demoData.GNUSOCIAL_TEST_ACCOUNT2_USERNAME
+        String body = "@" + demoData.GNUSOCIAL_TEST_ACCOUNT_ACTORNAME
+                + " @" + demoData.GNUSOCIAL_TEST_ACCOUNT2_ACTORNAME
                 + " Please take this into account\n@" + webFingerId2
-                + " @" + demoData.GNUSOCIAL_TEST_ACCOUNT2_USERNAME
+                + " @" + demoData.GNUSOCIAL_TEST_ACCOUNT2_ACTORNAME
                 + " And let me mention: @" + shortUsername3;
         List<Actor> users = Actor.fromOriginAndActorOid(origin, "").extractActorsFromBodyText(body, false);
         String msgLog = body + " ->\n" + users;
         assertEquals(msgLog, 4, users.size());
-        assertEquals(msgLog, demoData.GNUSOCIAL_TEST_ACCOUNT_USERNAME, users.get(0).getActorName());
-        assertEquals(msgLog, demoData.GNUSOCIAL_TEST_ACCOUNT2_USERNAME, users.get(1).getActorName());
+        assertEquals(msgLog, demoData.GNUSOCIAL_TEST_ACCOUNT_ACTORNAME, users.get(0).getActorName());
+        assertEquals(msgLog, demoData.GNUSOCIAL_TEST_ACCOUNT2_ACTORNAME, users.get(1).getActorName());
         assertEquals(msgLog, webFingerId2, users.get(2).getWebFingerId());
         assertEquals(msgLog, shortUsername3, users.get(3).getActorName());
     }
@@ -101,7 +101,7 @@ public class ActorTest {
     public void testEquals() {
         Origin origin = MyContextHolder.get().persistentOrigins().fromId(18);
         Actor user1 = Actor.fromOriginAndActorOid(origin, "acct:fourthWithoutAvatar@pump.example.com");
-        user1.userId = 11;
+        user1.actorId = 11;
         user1.setActorName("fourthWithoutAvatar@pump.example.com");
         user1.setRealName("Real fourthWithoutAvatar@pump.example.com");
         user1.setProfileUrl("http://pump.example.com/fourthWithoutAvatar");

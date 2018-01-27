@@ -22,10 +22,10 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.FriendshipValues;
-import org.andstatus.app.data.LatestUserActivities;
+import org.andstatus.app.data.LatestActorActivities;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.data.UserActivity;
+import org.andstatus.app.data.ActorActivity;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.http.ConnectionException;
@@ -44,8 +44,8 @@ import java.util.Set;
  * @author yvolk@yurivolkov.com
  */
 public class CommandExecutorFollowers extends CommandExecutorStrategy {
-    long userId = 0;
-    String userOid = "";
+    long actorId = 0;
+    String actorOid = "";
     List<Actor> actorsNew = new ArrayList<>();
     String commandSummary = "";
 
@@ -97,11 +97,11 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
 
     private boolean lookupUser() {
         final String method = "lookupUser";
-        userId = execContext.getCommandData().getUserId();
-        userOid = MyQuery.idToOid(OidEnum.USER_OID, userId, 0);
-        if (TextUtils.isEmpty(userOid)) {
+        actorId = execContext.getCommandData().getUserId();
+        actorOid = MyQuery.idToOid(OidEnum.ACTOR_OID, actorId, 0);
+        if (TextUtils.isEmpty(actorOid)) {
             execContext.getResult().incrementParseExceptions();
-            MyLog.e(this, method + "; userOid not found for id: " + userId);
+            MyLog.e(this, method + "; actorOid not found for id: " + actorId);
             return true;
         }
         return false;
@@ -110,19 +110,19 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
     private void syncFollowers() throws ConnectionException {
         if (execContext.getMyAccount().getConnection()
                 .isApiSupported(Connection.ApiRoutineEnum.GET_FOLLOWERS)) {
-            actorsNew = execContext.getMyAccount().getConnection().getFollowers(userOid);
+            actorsNew = execContext.getMyAccount().getConnection().getFollowers(actorOid);
         } else if (execContext.getMyAccount().getConnection()
                 .isApiSupported(Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS)) {
-            List<String> userOidsNew =
-                    execContext.getMyAccount().getConnection().getFollowersIds(userOid);
-            if (getUsersForOids(userOidsNew, actorsNew)) return;
+            List<String> actorOidsNew =
+                    execContext.getMyAccount().getConnection().getFollowersIds(actorOid);
+            if (getUsersForOids(actorOidsNew, actorsNew)) return;
         } else {
             throw new ConnectionException(ConnectionException.StatusCode.UNSUPPORTED_API,
                     Connection.ApiRoutineEnum.GET_FOLLOWERS
                     + " and " + Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS);
         }
 
-        Set<Long> userIdsOld = MyQuery.getFollowersIds(userId);
+        Set<Long> userIdsOld = MyQuery.getFollowersIds(actorId);
         execContext.getResult().incrementDownloadedCount();
         broadcastProgress(execContext.getContext().getText(R.string.followers).toString()
                 + ": " + userIdsOld.size() + " -> " + actorsNew.size(), false);
@@ -130,30 +130,30 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         if (updateNewUsersAndTheirLatestMessages(actorsNew)) return;
 
         for (Actor actor : actorsNew) {
-            userIdsOld.remove(actor.userId);
-            FriendshipValues.setFollowed(actor.userId, userId);
+            userIdsOld.remove(actor.actorId);
+            FriendshipValues.setFollowed(actor.actorId, actorId);
         }
         for (long userIdOld : userIdsOld) {
-            FriendshipValues.setNotFollowed(userIdOld, userId);
+            FriendshipValues.setNotFollowed(userIdOld, actorId);
         }
     }
 
     private void syncFriends() throws ConnectionException {
         if (execContext.getMyAccount().getConnection()
                 .isApiSupported(Connection.ApiRoutineEnum.GET_FRIENDS)) {
-            actorsNew = execContext.getMyAccount().getConnection().getFriends(userOid);
+            actorsNew = execContext.getMyAccount().getConnection().getFriends(actorOid);
         } else if (execContext.getMyAccount().getConnection()
                 .isApiSupported(Connection.ApiRoutineEnum.GET_FRIENDS_IDS)) {
-            List<String> userOidsNew =
-                    execContext.getMyAccount().getConnection().getFriendsIds(userOid);
-            if (getUsersForOids(userOidsNew, actorsNew)) return;
+            List<String> actorOidsNew =
+                    execContext.getMyAccount().getConnection().getFriendsIds(actorOid);
+            if (getUsersForOids(actorOidsNew, actorsNew)) return;
         } else {
             throw new ConnectionException(ConnectionException.StatusCode.UNSUPPORTED_API,
                     Connection.ApiRoutineEnum.GET_FRIENDS
                             + " and " + Connection.ApiRoutineEnum.GET_FRIENDS_IDS);
         }
 
-        Set<Long> userIdsOld = MyQuery.getFriendsIds(userId);
+        Set<Long> userIdsOld = MyQuery.getFriendsIds(actorId);
         execContext.getResult().incrementDownloadedCount();
         broadcastProgress(execContext.getContext().getText(R.string.friends).toString()
                 + ": " + userIdsOld.size() + " -> " + actorsNew.size(), false);
@@ -161,39 +161,39 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         if (updateNewUsersAndTheirLatestMessages(actorsNew)) return;
 
         for (Actor actor : actorsNew) {
-            userIdsOld.remove(actor.userId);
-            FriendshipValues.setFollowed(userId, actor.userId);
+            userIdsOld.remove(actor.actorId);
+            FriendshipValues.setFollowed(actorId, actor.actorId);
         }
         for (long userIdOld : userIdsOld) {
-            FriendshipValues.setNotFollowed(userId, userIdOld);
+            FriendshipValues.setNotFollowed(actorId, userIdOld);
         }
     }
 
-    private boolean getUsersForOids(List<String> userOidsNew, List<Actor> usersNew) {
+    private boolean getUsersForOids(List<String> actorOidsNew, List<Actor> actorsNew) {
         long count = 0;
-        for (String userOidNew : userOidsNew) {
+        for (String actorOidNew : actorOidsNew) {
             Actor actor = null;
             try {
                 count++;
-                actor = execContext.getMyAccount().getConnection().getActor(userOidNew, null);
+                actor = execContext.getMyAccount().getConnection().getActor(actorOidNew, null);
                 execContext.getResult().incrementDownloadedCount();
             } catch (ConnectionException e) {
-                long userId = MyQuery.oidToId(OidEnum.USER_OID,
-                        execContext.getMyAccount().getOriginId(), userOidNew);
-                if (userId == 0) {
-                    MyLog.i(this, "Failed to identify a User for oid=" + userOidNew, e);
+                long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID,
+                        execContext.getMyAccount().getOriginId(), actorOidNew);
+                if (actorId == 0) {
+                    MyLog.i(this, "Failed to identify an Actor for oid=" + actorOidNew, e);
                 } else {
-                    actor = Actor.fromOriginAndActorOid(execContext.getMyAccount().getOrigin(), userOidNew);
-                    actor.userId = userId;
-                    actor.setWebFingerId(MyQuery.userIdToWebfingerId(userId));
-                    MyLog.v(this, "Server doesn't return User object for " + actor , e);
+                    actor = Actor.fromOriginAndActorOid(execContext.getMyAccount().getOrigin(), actorOidNew);
+                    actor.actorId = actorId;
+                    actor.setWebFingerId(MyQuery.actorIdToWebfingerId(actorId));
+                    MyLog.v(this, "Server doesn't return Actor object for " + actor , e);
                 }
             }
             if (actor != null) {
                 broadcastProgress(String.valueOf(count) + ". "
                         + execContext.getContext().getText(R.string.get_user)
                         + ": " + actor.getNamePreferablyWebFingerId(), true);
-                usersNew.add(actor);
+                actorsNew.add(actor);
             }
             if (logSoftErrorIfStopping()) {
                 return true;
@@ -231,18 +231,18 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                     broadcastProgress(String.valueOf(count) + ". "
                             + execContext.getContext().getText(R.string.title_command_get_status)
                             + ": " + actor.getNamePreferablyWebFingerId(), true);
-                    di.downloadOneMessageBy(actor.oid);
+                    di.downloadOneNoteBy(actor.oid);
                     execContext.getResult().incrementDownloadedCount();
                 } catch (ConnectionException e) {
                     e1 = e;
                 }
-                long lastActivityId = MyQuery.userIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, actor.userId);
+                long lastActivityId = MyQuery.userIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, actor.actorId);
                 if (lastActivityId == 0) {
                     lastActivityId = MyQuery.conditionToLongColumnValue(execContext.getMyContext().getDatabase(),
                             "getLatestActivity",
                             ActivityTable.TABLE_NAME,
                             ActivityTable._ID,
-                            ActivityTable.ACTOR_ID + "=" + actor.userId
+                            ActivityTable.ACTOR_ID + "=" + actor.actorId
                                     + " AND " + ActivityTable.ACTIVITY_TYPE + " IN("
                                     + ActivityType.FOLLOW.id + ","
                                     + ActivityType.CREATE.id + ","
@@ -259,8 +259,8 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                                 ActivityTable.TABLE_NAME,
                                 ActivityTable.UPDATED_DATE,
                                 lastActivityId);
-                        LatestUserActivities lum = new LatestUserActivities();
-                        lum.onNewUserActivity(new UserActivity(actor.userId, lastActivityId, updatedDate));
+                        LatestActorActivities lum = new LatestActorActivities();
+                        lum.onNewUserActivity(new ActorActivity(actor.actorId, lastActivityId, updatedDate));
                         lum.save();
                         MyLog.v(this, "Server didn't return User's activity for "
                                         + actor.getNamePreferablyWebFingerId()

@@ -45,56 +45,56 @@ import static org.junit.Assert.fail;
 
 public class DemoAccountInserter {
     private MyContext myContext;
-    private String firstAccountUserOid = null;
+    private String firstAccountActorOid = null;
 
     public DemoAccountInserter(MyContext myContext) {
         this.myContext = myContext;
     }
 
     public void insert() {
-        addAccount(demoData.PUMPIO_TEST_ACCOUNT_USER_OID, demoData.PUMPIO_TEST_ACCOUNT_NAME,
+        addAccount(demoData.PUMPIO_TEST_ACCOUNT_ACTOR_OID, demoData.PUMPIO_TEST_ACCOUNT_NAME,
                 "", OriginType.PUMPIO);
-        addAccount(demoData.TWITTER_TEST_ACCOUNT_USER_OID, demoData.TWITTER_TEST_ACCOUNT_NAME,
+        addAccount(demoData.TWITTER_TEST_ACCOUNT_ACTOR_OID, demoData.TWITTER_TEST_ACCOUNT_NAME,
                 "", OriginType.TWITTER);
-        addAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_USER_OID, demoData.GNUSOCIAL_TEST_ACCOUNT_NAME,
+        addAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_ACTOR_OID, demoData.GNUSOCIAL_TEST_ACCOUNT_NAME,
                 demoData.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL, OriginType.GNUSOCIAL);
-        addAccount(demoData.GNUSOCIAL_TEST_ACCOUNT2_USER_OID, demoData.GNUSOCIAL_TEST_ACCOUNT2_NAME,
+        addAccount(demoData.GNUSOCIAL_TEST_ACCOUNT2_ACTOR_OID, demoData.GNUSOCIAL_TEST_ACCOUNT2_NAME,
                 "", OriginType.GNUSOCIAL);
-        addAccount(demoData.MASTODON_TEST_ACCOUNT_USER_OID, demoData.MASTODON_TEST_ACCOUNT_NAME,
+        addAccount(demoData.MASTODON_TEST_ACCOUNT_ACTOR_OID, demoData.MASTODON_TEST_ACCOUNT_NAME,
                 demoData.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL, OriginType.MASTODON);
-        addAccount(demoData.CONVERSATION_ACCOUNT_USER_OID, demoData.CONVERSATION_ACCOUNT_NAME,
+        addAccount(demoData.CONVERSATION_ACCOUNT_ACTOR_OID, demoData.CONVERSATION_ACCOUNT_NAME,
                 demoData.CONVERSATION_ACCOUNT_AVATAR_URL, demoData.CONVERSATION_ORIGIN_TYPE);
-        addAccount(demoData.CONVERSATION_ACCOUNT2_USER_OID, demoData.CONVERSATION_ACCOUNT2_NAME,
+        addAccount(demoData.CONVERSATION_ACCOUNT2_ACTOR_OID, demoData.CONVERSATION_ACCOUNT2_NAME,
                 "", demoData.CONVERSATION_ORIGIN_TYPE);
     }
 
-    private MyAccount addAccount(String userOid, String accountNameString, String avatarUrl, OriginType originType) {
-        if (firstAccountUserOid == null) {
-            firstAccountUserOid = userOid;
+    private MyAccount addAccount(String actorOid, String accountNameString, String avatarUrl, OriginType originType) {
+        if (firstAccountActorOid == null) {
+            firstAccountActorOid = actorOid;
         }
         demoData.checkDataPath();
         AccountName accountName = AccountName.fromAccountName(myContext, accountNameString);
         MyLog.v(this, "Adding account " + accountName);
         assertTrue("Name '" + accountNameString + "' is valid for " + originType, accountName.isValid());
         assertEquals("Origin for '" + accountNameString + "' account created", accountName.getOrigin().getOriginType(), originType);
-        long accountUserId_existing = MyQuery.oidToId(myContext.getDatabase(), OidEnum.USER_OID,
-                accountName.getOrigin().getId(), userOid);
-        Actor user = Actor.fromOriginAndActorOid(accountName.getOrigin(), userOid);
+        long accountUserId_existing = MyQuery.oidToId(myContext.getDatabase(), OidEnum.ACTOR_OID,
+                accountName.getOrigin().getId(), actorOid);
+        Actor user = Actor.fromOriginAndActorOid(accountName.getOrigin(), actorOid);
         user.setActorName(accountName.getUsername());
         user.avatarUrl = avatarUrl;
         if (!user.isWebFingerIdValid() && UrlUtils.hasHost(user.origin.getUrl())) {
             user.setWebFingerId(user.getActorName() + "@" + user.origin.getUrl().getHost());
         }
         MyAccount ma = addAccountFromActor(user);
-        long accountUserId = ma.getUserId();
-        String msg = "AccountUserId for '" + accountNameString + ", (first: '" + firstAccountUserOid + "')";
-        if (accountUserId_existing == 0 && !userOid.contains(firstAccountUserOid)) {
+        long accountUserId = ma.getActorId();
+        String msg = "AccountUserId for '" + accountNameString + ", (first: '" + firstAccountActorOid + "')";
+        if (accountUserId_existing == 0 && !actorOid.contains(firstAccountActorOid)) {
             assertTrue(msg + " != 1", accountUserId != 1);
         } else {
             assertTrue(msg + " != 0", accountUserId != 0);
         }
-        assertTrue("Account " + userOid + " is persistent", ma.isValid());
-        assertTrue("Account UserOid", ma.getUserOid().equalsIgnoreCase(userOid));
+        assertTrue("Account " + actorOid + " is persistent", ma.isValid());
+        assertTrue("Account actorOid", ma.getActorOid().equalsIgnoreCase(actorOid));
         assertTrue("Account is successfully verified", ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED);
 
         assertAccountIsAddedToAccountManager(ma);
@@ -139,20 +139,20 @@ public class DemoAccountInserter {
         MyAccount ma = builder.getAccount();
         assertEquals("Credentials of " + actor.getActorName() + " successfully verified",
                 CredentialsVerificationStatus.SUCCEEDED, ma.getCredentialsVerified());
-        long userId = ma.getUserId();
-        assertTrue("Account " + actor.getActorName() + " has UserId", userId != 0);
-        assertEquals("Account UserOid", ma.getUserOid(), actor.oid);
-        String oid = MyQuery.idToOid(myContext.getDatabase(), OidEnum.USER_OID, userId, 0);
+        long actorId = ma.getActorId();
+        assertTrue("Account " + actor.getActorName() + " has ActorId", actorId != 0);
+        assertEquals("Account actorOid", ma.getActorOid(), actor.oid);
+        String oid = MyQuery.idToOid(myContext.getDatabase(), OidEnum.ACTOR_OID, actorId, 0);
         if (TextUtils.isEmpty(oid)) {
-            String message = "Couldn't find a User in the database for id=" + userId + " oid=" + actor.oid;
+            String message = "Couldn't find a User in the database for id=" + actorId + " oid=" + actor.oid;
             MyLog.v(this, message);
             fail(message);
         }
-        assertEquals("User in the database for id=" + userId,
+        assertEquals("User in the database for id=" + actorId,
                 actor.oid,
-                MyQuery.idToOid(myContext.getDatabase(), OidEnum.USER_OID, userId, 0));
+                MyQuery.idToOid(myContext.getDatabase(), OidEnum.ACTOR_OID, actorId, 0));
         assertEquals("Account name", actor.getActorName() + "/" + actor.origin.getName(), ma.getAccountName());
-        MyLog.v(this, ma.getAccountName() + " added, id=" + ma.getUserId());
+        MyLog.v(this, ma.getAccountName() + " added, id=" + ma.getActorId());
         DemoConversationInserter.getUsers().put(actor.oid, actor);
         return ma;
     }

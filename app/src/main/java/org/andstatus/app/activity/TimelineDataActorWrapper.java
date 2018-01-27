@@ -20,7 +20,7 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.timeline.TimelineData;
 import org.andstatus.app.timeline.ViewItem;
-import org.andstatus.app.user.ActorViewItem;
+import org.andstatus.app.actor.ActorViewItem;
 
 class TimelineDataActorWrapper extends TimelineDataWrapper<ActorViewItem> {
 

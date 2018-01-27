@@ -26,7 +26,7 @@ import org.andstatus.app.net.social.Connection;
 /**
  * Actors table (they are both senders AND recipients in the {@link MsgTable} table)
  * Some of these Users are Accounts (connected to accounts in AndStatus),
- * see {@link MyAccount#getUserId()}
+ * see {@link MyAccount#getActorId()}
  */
 public final class ActorTable implements BaseColumns {
     public static final String TABLE_NAME = "user";

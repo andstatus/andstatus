@@ -37,13 +37,13 @@ public class AvatarDownloader extends FileDownloader {
     @Override
     protected MyAccount findBestAccountForDownload() {
         final Origin origin = MyContextHolder.get().persistentOrigins().fromId(
-                MyQuery.userIdToLongColumnValue(ActorTable.ORIGIN_ID, data.userId));
+                MyQuery.userIdToLongColumnValue(ActorTable.ORIGIN_ID, data.actorId));
         return MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(origin);
     }
 
     @Override
     protected void onSuccessfulLoad() {
         data.deleteOtherOfThisUser();
-        MyLog.v(this, "Loaded avatar userId:" + data.userId + "; uri:'" + data.getUri() + "'");
+        MyLog.v(this, "Loaded avatar actorId:" + data.actorId + "; uri:'" + data.getUri() + "'");
     }
 }

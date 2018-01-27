@@ -25,9 +25,9 @@ public class ConnectionMastodonMock extends ConnectionMastodon {
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.MASTODON_TEST_ORIGIN_NAME);
 
         OriginConnectionData connectionData = OriginConnectionData.fromAccountName(
-                AccountName.fromOriginAndUserName(origin, demoData.MASTODON_TEST_ACCOUNT_USERNAME),
+                AccountName.fromOriginAndUserName(origin, demoData.MASTODON_TEST_ACCOUNT_ACTORNAME),
                 TriState.UNKNOWN);
-        connectionData.setAccountActor(demoData.getAccountUserByOid(demoData.MASTODON_TEST_ACCOUNT_USER_OID));
+        connectionData.setAccountActor(demoData.getAccountUserByOid(demoData.MASTODON_TEST_ACCOUNT_ACTOR_OID));
         connectionData.setDataReader(new AccountDataReaderEmpty());
         enrichConnectionData(connectionData);
         try {

@@ -35,7 +35,7 @@ public abstract class FileDownloader {
 
     static FileDownloader newForDownloadRow(long rowIdIn) {
         DownloadData data = DownloadData.fromId(rowIdIn);
-        if (data.userId != 0) {
+        if (data.actorId != 0) {
             return new AvatarDownloader(data);
         } else {
             return new AttachmentDownloader(data);

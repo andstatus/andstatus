@@ -24,14 +24,14 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.msg.MessageViewItem;
+import org.andstatus.app.note.NoteViewItem;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.DuplicationLink;
 import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
-import org.andstatus.app.user.ActorViewItem;
+import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
@@ -46,19 +46,19 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
     private long updatedDate = 0;
     public final ActivityType activityType;
 
-    private long messageId;
-    public final long userId;
+    private long noteId;
+    public final long objActorId;
 
     ActorViewItem actor = ActorViewItem.EMPTY;
-    public final MessageViewItem message;
-    private ActorViewItem user = ActorViewItem.EMPTY;
+    public final NoteViewItem noteViewItem;
+    private ActorViewItem objActorItem = ActorViewItem.EMPTY;
 
     protected ActivityViewItem(boolean isEmpty) {
         super(isEmpty);
         origin = Origin.EMPTY;
         activityType  = ActivityType.EMPTY;
-        userId = 0;
-        message = MessageViewItem.EMPTY;
+        objActorId = 0;
+        noteViewItem = NoteViewItem.EMPTY;
     }
 
     protected ActivityViewItem(Cursor cursor) {
@@ -70,19 +70,19 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
         updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
         actor = ActorViewItem.fromActor(Actor.fromOriginAndActorId(origin,
                 DbUtils.getLong(cursor, ActivityTable.ACTOR_ID)));
-        messageId = DbUtils.getLong(cursor, ActivityTable.MSG_ID);
-        userId = DbUtils.getLong(cursor, ActivityTable.USER_ID);
-        if (userId != 0) {
-            user = ActorViewItem.fromUserId(origin, userId);
+        noteId = DbUtils.getLong(cursor, ActivityTable.MSG_ID);
+        objActorId = DbUtils.getLong(cursor, ActivityTable.USER_ID);
+        if (objActorId != 0) {
+            objActorItem = ActorViewItem.fromActorId(origin, objActorId);
         }
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, ": " + (System.currentTimeMillis() - startTime) + "ms");
         }
-        if (messageId == 0) {
-            message = MessageViewItem.EMPTY;
+        if (noteId == 0) {
+            noteViewItem = NoteViewItem.EMPTY;
         } else {
-            message = MessageViewItem.EMPTY.getNew().fromCursorRow(MyContextHolder.get(), cursor);
-            message.setParent(this);
+            noteViewItem = NoteViewItem.EMPTY.getNew().fromCursorRow(MyContextHolder.get(), cursor);
+            noteViewItem.setParent(this);
         }
     }
 
@@ -115,10 +115,10 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
 
     @Override
     public boolean matches(TimelineFilter filter) {
-        if (messageId !=0) {
-            return message.matches(filter);
-        } else if (userId != 0) {
-            return user.matches(filter);
+        if (noteId !=0) {
+            return noteViewItem.matches(filter);
+        } else if (objActorId != 0) {
+            return objActorItem.matches(filter);
         }
         return true;
     }
@@ -135,10 +135,10 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
 
     @NonNull
     protected DuplicationLink duplicatesByChildren(@NonNull ActivityViewItem other) {
-        if (messageId !=0) {
-            return message.duplicates(other.message);
-        } else if (userId != 0) {
-            return user.duplicates(other.user);
+        if (noteId !=0) {
+            return noteViewItem.duplicates(other.noteViewItem);
+        } else if (objActorId != 0) {
+            return objActorItem.duplicates(other.objActorItem);
         }
         return super.duplicates(other);
     }
@@ -159,17 +159,17 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
         if (this == EMPTY) {
             return "EMPTY";
         }
-        return actor.getWebFingerIdOrUserName() + " " + activityType + " " + (messageId == 0
-                ? user
-                : message
+        return actor.getWebFingerIdOrActorName() + " " + activityType + " " + (noteId == 0
+                ? objActorItem
+                : noteViewItem
         );
     }
 
-    public ActorViewItem getUser() {
-        return user;
+    public ActorViewItem getObjActorItem() {
+        return objActorItem;
     }
 
-    public void setUser(ActorViewItem user) {
-        this.user = user;
+    public void setObjActorItem(ActorViewItem objActorItem) {
+        this.objActorItem = objActorItem;
     }
 }

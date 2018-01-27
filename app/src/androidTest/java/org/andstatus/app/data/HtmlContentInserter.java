@@ -56,8 +56,8 @@ public class HtmlContentInserter {
         mySetup();
     }
 
-    private Actor buildUserFromOid(String userOid) {
-        return new DemoMessageInserter(ma).buildActorFromOid(userOid);
+    private Actor buildActorFromOid(String actorOid) {
+        return new DemoNoteInserter(ma).buildActorFromOid(actorOid);
     }
     
     public void insertHtml() {
@@ -67,7 +67,7 @@ public class HtmlContentInserter {
 
     private void testHtmlContent() {
         boolean isHtmlContentAllowedStored = origin.isHtmlContentAllowed(); 
-        Actor author1 = buildUserFromOid("acct:html@example.com");
+        Actor author1 = buildActorFromOid("acct:html@example.com");
         author1.avatarUrl = "http://png-5.findicons.com/files/icons/2198/dark_glass/128/html.png";
 
         String bodyString = "<h4>This is a message with HTML content</h4>" 
@@ -77,7 +77,7 @@ public class HtmlContentInserter {
         assertFalse("HTML removed", MyHtml.fromHtml(bodyString).contains("<"));
         assertHtmlMessage(author1, bodyString, null);
 
-        assertHtmlMessage(author1, HTML_BODY_IMG_STRING, demoData.HTML_MESSAGE_OID);
+        assertHtmlMessage(author1, HTML_BODY_IMG_STRING, demoData.HTML_NOTE_OID);
         
         setHtmlContentAllowed(isHtmlContentAllowedStored);
     }
@@ -96,10 +96,10 @@ public class HtmlContentInserter {
         		TextUtils.isEmpty(messageOid) ? null : messageOid + "-noHtml", false);
     }
 
-	private DemoMessageInserter assertHtmlMessageContentAllowed(Actor author,
-                                                                String bodyString, String messageOid, boolean htmlContentAllowed) {
+	private DemoNoteInserter assertHtmlMessageContentAllowed(Actor author,
+                                                             String bodyString, String messageOid, boolean htmlContentAllowed) {
 		setHtmlContentAllowed(htmlContentAllowed);
-        DemoMessageInserter mi = new DemoMessageInserter(ma);
+        DemoNoteInserter mi = new DemoNoteInserter(ma);
         final AActivity activity = mi.buildActivity(author, bodyString, null, messageOid, DownloadStatus.LOADED);
         mi.onActivity(activity);
         long msgId1 = activity.getMessage().msgId;

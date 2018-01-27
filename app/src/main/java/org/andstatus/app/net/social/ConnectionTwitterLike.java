@@ -56,15 +56,15 @@ public abstract class ConnectionTwitterLike extends Connection {
                 url = "account/verify_credentials.json";
                 break;
             case CREATE_FAVORITE:
-                url = "favorites/create/%messageId%.json";
+                url = "favorites/create/%noteId%.json";
                 break;
             case DESTROY_FAVORITE:
-                url = "favorites/destroy/%messageId%.json";
+                url = "favorites/destroy/%noteId%.json";
                 break;
             case DESTROY_MESSAGE:
-                url = "statuses/destroy/%messageId%.json";
+                url = "statuses/destroy/%noteId%.json";
                 break;
-            case PRIVATE_MESSAGES:
+            case PRIVATE_NOTES:
                 url = "direct_messages.json";
                 break;
             case FAVORITES_TIMELINE:
@@ -80,7 +80,7 @@ public abstract class ConnectionTwitterLike extends Connection {
                 url = "friends/ids.json";
                 break;
             case GET_MESSAGE:
-                url = "statuses/show.json" + "?id=%messageId%";
+                url = "statuses/show.json" + "?id=%noteId%";
                 break;
             case GET_USER:
                 url = "users/show.json";
@@ -98,7 +98,7 @@ public abstract class ConnectionTwitterLike extends Connection {
                 url = "statuses/update.json";
                 break;
             case POST_REBLOG:
-                url = "statuses/retweet/%messageId%.json";
+                url = "statuses/retweet/%noteId%.json";
                 break;
             case STOP_FOLLOWING_USER:
                 url = "friendships/destroy.json";
@@ -134,10 +134,10 @@ public abstract class ConnectionTwitterLike extends Connection {
      *      href="https://dev.twitter.com/docs/api/1.1/post/friendships/destroy">POST friendships/destroy</a>
      */
     @Override
-    public AActivity followUser(String userId, Boolean follow) throws ConnectionException {
+    public AActivity followActor(String actorId, Boolean follow) throws ConnectionException {
         JSONObject out = new JSONObject();
         try {
-            out.put("user_id", userId);
+            out.put("user_id", actorId);
         } catch (JSONException e) {
             MyLog.e(this, e);
         }
@@ -152,11 +152,11 @@ public abstract class ConnectionTwitterLike extends Connection {
      * @see <a href="https://dev.twitter.com/docs/api/1.1/get/friends/ids">GET friends/ids</a>
      */
     @Override
-    public List<String> getFriendsIds(String userId) throws ConnectionException {
+    public List<String> getFriendsIds(String actorId) throws ConnectionException {
         String method = "getFriendsIds";
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FRIENDS_IDS));
         Uri.Builder builder = sUri.buildUpon();
-        builder.appendQueryParameter("user_id", userId);
+        builder.appendQueryParameter("user_id", actorId);
         List<String> list = new ArrayList<>();
         JSONArray jArr = getRequestArrayInObject(builder.build().toString(), "ids");
         try {
@@ -176,11 +176,11 @@ public abstract class ConnectionTwitterLike extends Connection {
      */
     @NonNull
     @Override
-    public List<String> getFollowersIds(String userId) throws ConnectionException {
+    public List<String> getFollowersIds(String actorId) throws ConnectionException {
         String method = "getFollowersIds";
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FOLLOWERS_IDS));
         Uri.Builder builder = sUri.buildUpon();
-        builder.appendQueryParameter("user_id", userId);
+        builder.appendQueryParameter("user_id", actorId);
         List<String> list = new ArrayList<>();
         JSONArray jArr = getRequestArrayInObject(builder.build().toString(), "ids");
         try {
@@ -209,22 +209,22 @@ public abstract class ConnectionTwitterLike extends Connection {
     @NonNull
     @Override
     public List<AActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                       TimelinePosition oldestPosition, int limit, String userId)
+                                       TimelinePosition oldestPosition, int limit, String actorId)
             throws ConnectionException {
-        Uri.Builder builder = getTimelineUriBuilder(apiRoutine, limit, userId);
+        Uri.Builder builder = getTimelineUriBuilder(apiRoutine, limit, actorId);
         appendPositionParameters(builder, youngestPosition, oldestPosition);
         JSONArray jArr = http.getRequestAsArray(builder.build().toString());
         return jArrToTimeline(jArr, apiRoutine, builder.build().toString());
     }
 
     @NonNull
-    protected Uri.Builder getTimelineUriBuilder(ApiRoutineEnum apiRoutine, int limit, String userId) throws ConnectionException {
+    protected Uri.Builder getTimelineUriBuilder(ApiRoutineEnum apiRoutine, int limit, String actorId) throws ConnectionException {
         String url = this.getApiPath(apiRoutine);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
-        if (!TextUtils.isEmpty(userId)) {
-            builder.appendQueryParameter("user_id", userId);
+        if (!TextUtils.isEmpty(actorId)) {
+            builder.appendQueryParameter("user_id", actorId);
         }
         return builder;
     }
@@ -313,17 +313,17 @@ public abstract class ConnectionTwitterLike extends Connection {
             }
 
             // If the Msg is a Reply to other message
-            String inReplyToUserOid = "";
+            String inReplyToActorOid = "";
             if (jso.has("in_reply_to_user_id_str")) {
-                inReplyToUserOid = jso.getString("in_reply_to_user_id_str");
+                inReplyToActorOid = jso.getString("in_reply_to_user_id_str");
             } else if (jso.has("in_reply_to_user_id")) {
                 // This is for Status.net
-                inReplyToUserOid = jso.getString("in_reply_to_user_id");
+                inReplyToActorOid = jso.getString("in_reply_to_user_id");
             }
-            if (SharedPreferencesUtil.isEmpty(inReplyToUserOid)) {
-                inReplyToUserOid = "";
+            if (SharedPreferencesUtil.isEmpty(inReplyToActorOid)) {
+                inReplyToActorOid = "";
             }
-            if (!SharedPreferencesUtil.isEmpty(inReplyToUserOid)) {
+            if (!SharedPreferencesUtil.isEmpty(inReplyToActorOid)) {
                 String inReplyToMessageOid = "";
                 if (jso.has("in_reply_to_status_id_str")) {
                     inReplyToMessageOid = jso.getString("in_reply_to_status_id_str");
@@ -333,7 +333,7 @@ public abstract class ConnectionTwitterLike extends Connection {
                 }
                 if (!SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
                     // Construct Related message from available info
-                    Actor inReplyToUser = Actor.fromOriginAndActorOid(data.getOrigin(), inReplyToUserOid);
+                    Actor inReplyToUser = Actor.fromOriginAndActorOid(data.getOrigin(), inReplyToActorOid);
                     if (jso.has("in_reply_to_screen_name")) {
                         inReplyToUser.setActorName(jso.getString("in_reply_to_screen_name"));
                     }
@@ -418,8 +418,8 @@ public abstract class ConnectionTwitterLike extends Connection {
 
     @NonNull
     @Override
-    public List<AActivity> searchMessages(TimelinePosition youngestPosition,
-                                          TimelinePosition oldestPosition, int limit, String searchQuery)
+    public List<AActivity> searchNotes(TimelinePosition youngestPosition,
+                                       TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_MESSAGES;
         String url = this.getApiPath(apiRoutine);
@@ -499,27 +499,27 @@ public abstract class ConnectionTwitterLike extends Connection {
      * @see <a href="https://dev.twitter.com/docs/api/1.1/get/users/show">GET users/show</a>
      */
     @Override
-    public Actor getActor(String userId, String userName) throws ConnectionException {
+    public Actor getActor(String actorId, String actorName) throws ConnectionException {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_USER));
         Uri.Builder builder = sUri.buildUpon();
-        if (UriUtils.isRealOid(userId)) {
-            builder.appendQueryParameter("user_id", userId);
+        if (UriUtils.isRealOid(actorId)) {
+            builder.appendQueryParameter("user_id", actorId);
         } else {
-            builder.appendQueryParameter("screen_name", userName);
+            builder.appendQueryParameter("screen_name", actorName);
         }
         JSONObject jso = http.getRequest(builder.build().toString());
         Actor actor = actorFromJson(jso);
-        MyLog.v(this, "getUser oid='" + userId + "', userName='" + userName + "' -> " + actor.getRealName());
+        MyLog.v(this, "getUser oid='" + actorId + "', userName='" + actorName + "' -> " + actor.getRealName());
         return actor;
     }
     
     @Override
-    public AActivity postPrivateMessage(String message, String statusId, String userId, Uri mediaUri) throws ConnectionException {
+    public AActivity postPrivateMessage(String message, String statusId, String actorId, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put("text", message);
-            if ( !TextUtils.isEmpty(userId)) {
-                formParams.put("user_id", userId);
+            if ( !TextUtils.isEmpty(actorId)) {
+                formParams.put("user_id", actorId);
             }
         } catch (JSONException e) {
             MyLog.e(this, e);
@@ -603,25 +603,25 @@ public abstract class ConnectionTwitterLike extends Connection {
         return postRequest(getApiPath(apiRoutine), formParams);
     }
 
-    String getApiPathWithMessageId(ApiRoutineEnum routineEnum, String userId) throws ConnectionException {
-        return getApiPath(routineEnum).replace("%messageId%", userId);
+    String getApiPathWithMessageId(ApiRoutineEnum routineEnum, String noteId) throws ConnectionException {
+        return getApiPath(routineEnum).replace("%noteId%", noteId);
     }
 
-    String getApiPathWithUserId(ApiRoutineEnum routineEnum, String userId) throws ConnectionException {
-        return getApiPath(routineEnum).replace("%userId%", userId);
-    }
-
-    @Override
-    public List<Actor> getFollowers(String userId) throws ConnectionException {
-        return getActors(userId, ApiRoutineEnum.GET_FOLLOWERS);
+    String getApiPathWithUserId(ApiRoutineEnum routineEnum, String actorId) throws ConnectionException {
+        return getApiPath(routineEnum).replace("%actorId%", actorId);
     }
 
     @Override
-    public List<Actor> getFriends(String userId) throws ConnectionException {
-        return getActors(userId, ApiRoutineEnum.GET_FRIENDS);
+    public List<Actor> getFollowers(String actorId) throws ConnectionException {
+        return getActors(actorId, ApiRoutineEnum.GET_FOLLOWERS);
     }
 
-    List<Actor> getActors(String userId, ApiRoutineEnum apiRoutine) throws ConnectionException {
+    @Override
+    public List<Actor> getFriends(String actorId) throws ConnectionException {
+        return getActors(actorId, ApiRoutineEnum.GET_FRIENDS);
+    }
+
+    List<Actor> getActors(String actorId, ApiRoutineEnum apiRoutine) throws ConnectionException {
         return new ArrayList<>();
     }
 

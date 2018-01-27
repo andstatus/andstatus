@@ -21,8 +21,8 @@ import android.support.annotation.NonNull;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.timeline.TimelineLoader;
 import org.andstatus.app.timeline.TimelineParameters;
-import org.andstatus.app.user.ActorListLoader;
-import org.andstatus.app.user.ActorListType;
+import org.andstatus.app.actor.ActorListLoader;
+import org.andstatus.app.actor.ActorListType;
 
 import java.util.List;
 
@@ -42,10 +42,10 @@ public class ActivityLoader extends TimelineLoader<ActivityViewItem> {
                 getParams().getTimeline().getOrigin(), 0, "");
         for (ActivityViewItem item: items) {
             if (item.activityType != ActivityType.CREATE && item.activityType != ActivityType.UPDATE) {
-                loader.addUserIdToList(item.origin, item.actor.getId());
+                loader.addActorIdToList(item.origin, item.actor.getId());
             }
-            if (item.userId != 0) {
-                loader.addUserIdToList(item.origin, item.userId);
+            if (item.objActorId != 0) {
+                loader.addActorIdToList(item.origin, item.objActorId);
             }
         }
         loader.load(progress -> {});
@@ -56,12 +56,12 @@ public class ActivityLoader extends TimelineLoader<ActivityViewItem> {
                     item.actor = loader.getList().get(index);
                 }
             }
-            if (item.userId != 0) {
-                int index = loader.getList().indexOf(item.getUser());
+            if (item.objActorId != 0) {
+                int index = loader.getList().indexOf(item.getObjActorItem());
                 if (index >= 0) {
-                    item.setUser(loader.getList().get(index));
+                    item.setObjActorItem(loader.getList().get(index));
                 }
-                item.getUser().setParent(item);
+                item.getObjActorItem().setParent(item);
             }
         }
         return items;

@@ -20,7 +20,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadData;
-import org.andstatus.app.data.MessageForAccount;
+import org.andstatus.app.data.NoteForAccount;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
@@ -39,7 +39,7 @@ public class AttachmentDownloader extends FileDownloader {
         MyAccount bestAccount = myContext.persistentAccounts().getFirstSucceededForOrigin(origin);
         for( MyAccount ma : myContext.persistentAccounts().list()) {
             if(ma.getOrigin().equals(origin) && ma.isValidAndSucceeded()) {
-                MessageForAccount msg = new MessageForAccount(origin, 0, data.msgId, ma);
+                NoteForAccount msg = new NoteForAccount(origin, 0, data.msgId, ma);
                 if(msg.hasPrivateAccess()) {
                     bestAccount = ma;
                     break;

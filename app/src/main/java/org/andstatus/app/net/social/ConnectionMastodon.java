@@ -21,7 +21,7 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.data.MyContentType;
-import org.andstatus.app.msg.KeywordsFilter;
+import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.util.MyLog;
@@ -64,7 +64,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 url = "timelines/tag/%tag%";
                 break;
             case USER_TIMELINE:
-                url = "accounts/%userId%/statuses";
+                url = "accounts/%actorId%/statuses";
                 break;
             case ACCOUNT_VERIFY_CREDENTIALS:
                 url = "accounts/verify_credentials";
@@ -76,7 +76,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 url = "media";
                 break;
             case GET_MESSAGE:
-                url = "statuses/%messageId%";
+                url = "statuses/%noteId%";
                 break;
             case SEARCH_MESSAGES:
                 url = "search"; /* actually, this is a complex search "for content" */
@@ -85,34 +85,34 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 url = "accounts/search";
                 break;
             case GET_CONVERSATION:
-                url = "statuses/%messageId%/context";
+                url = "statuses/%noteId%/context";
                 break;
             case CREATE_FAVORITE:
-                url = "statuses/%messageId%/favourite";
+                url = "statuses/%noteId%/favourite";
                 break;
             case DESTROY_FAVORITE:
-                url = "statuses/%messageId%/unfavourite";
+                url = "statuses/%noteId%/unfavourite";
                 break;
             case FOLLOW_USER:
-                url = "accounts/%userId%/follow";
+                url = "accounts/%actorId%/follow";
                 break;
             case STOP_FOLLOWING_USER:
-                url = "accounts/%userId%/unfollow";
+                url = "accounts/%actorId%/unfollow";
                 break;
             case GET_FOLLOWERS:
-                url = "accounts/%userId%/followers";
+                url = "accounts/%actorId%/followers";
                 break;
             case GET_FRIENDS:
-                url = "accounts/%userId%/following";
+                url = "accounts/%actorId%/following";
                 break;
             case GET_USER:
-                url = "accounts/%userId%";
+                url = "accounts/%actorId%";
                 break;
             case POST_REBLOG:
-                url = "statuses/%messageId%/reblog";
+                url = "statuses/%noteId%/reblog";
                 break;
             case DESTROY_REBLOG:
-                url = "statuses/%messageId%/unreblog";
+                url = "statuses/%noteId%/unreblog";
                 break;
             default:
                 url = "";
@@ -124,8 +124,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     @NonNull
     @Override
-    protected Uri.Builder getTimelineUriBuilder(ApiRoutineEnum apiRoutine, int limit, String userId) throws ConnectionException {
-        String url = this.getApiPathWithUserId(apiRoutine, userId);
+    protected Uri.Builder getTimelineUriBuilder(ApiRoutineEnum apiRoutine, int limit, String actorId) throws ConnectionException {
+        String url = this.getApiPathWithUserId(apiRoutine, actorId);
         return Uri.parse(url).buildUpon().appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
     }
 
@@ -185,8 +185,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     @NonNull
     @Override
-    public List<AActivity> searchMessages(TimelinePosition youngestPosition,
-                                          TimelinePosition oldestPosition, int limit, String searchQuery)
+    public List<AActivity> searchNotes(TimelinePosition youngestPosition,
+                                       TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException {
         String tag = new KeywordsFilter(searchQuery).getFirstTagOrFirstKeyword();
         if (TextUtils.isEmpty(tag)) {
@@ -204,7 +204,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     @NonNull
     @Override
-    public List<Actor> searchUsers(int limit, String searchQuery) throws ConnectionException {
+    public List<Actor> searchActors(int limit, String searchQuery) throws ConnectionException {
         String tag = new KeywordsFilter(searchQuery).getFirstTagOrFirstKeyword();
         if (TextUtils.isEmpty(tag)) {
             return new ArrayList<>();
@@ -350,14 +350,14 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             }
 
             // If the Msg is a Reply to other message
-            String inReplyToUserOid = "";
+            String inReplyToActorOid = "";
             if (jso.has("in_reply_to_account_id")) {
-                inReplyToUserOid = jso.getString("in_reply_to_account_id");
+                inReplyToActorOid = jso.getString("in_reply_to_account_id");
             }
-            if (SharedPreferencesUtil.isEmpty(inReplyToUserOid)) {
-                inReplyToUserOid = "";
+            if (SharedPreferencesUtil.isEmpty(inReplyToActorOid)) {
+                inReplyToActorOid = "";
             }
-            if (!SharedPreferencesUtil.isEmpty(inReplyToUserOid)) {
+            if (!SharedPreferencesUtil.isEmpty(inReplyToActorOid)) {
                 String inReplyToMessageOid = "";
                 if (jso.has("in_reply_to_id")) {
                     inReplyToMessageOid = jso.getString("in_reply_to_id");
@@ -365,7 +365,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 if (!SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
                     // Construct Related message from available info
                     AActivity inReplyTo = AActivity.newPartialMessage(data.getAccountActor(), inReplyToMessageOid);
-                    inReplyTo.setActor(Actor.fromOriginAndActorOid(data.getOrigin(), inReplyToUserOid));
+                    inReplyTo.setActor(Actor.fromOriginAndActorOid(data.getOrigin(), inReplyToActorOid));
                     message.setInReplyTo(inReplyTo);
                 }
             }
@@ -411,18 +411,18 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     }
 
     @Override
-    public Actor getActor(String userId, String userName) throws ConnectionException {
-        JSONObject jso = http.getRequest(getApiPathWithUserId(ApiRoutineEnum.GET_USER, userId));
+    public Actor getActor(String actorId, String actorName) throws ConnectionException {
+        JSONObject jso = http.getRequest(getApiPathWithUserId(ApiRoutineEnum.GET_USER, actorId));
         Actor actor = actorFromJson(jso);
-        MyLog.v(this, "getUser oid='" + userId + "', userName='" + userName + "' -> " + actor.getRealName());
+        MyLog.v(this, "getUser oid='" + actorId + "', userName='" + actorName + "' -> " + actor.getRealName());
         return actor;
     }
 
     @Override
-    public AActivity followUser(String userId, Boolean follow) throws ConnectionException {
+    public AActivity followActor(String actorId, Boolean follow) throws ConnectionException {
         JSONObject relationship = postRequest(getApiPathWithUserId(follow ? ApiRoutineEnum.FOLLOW_USER :
-                ApiRoutineEnum.STOP_FOLLOWING_USER, userId), new JSONObject());
-        Actor user = Actor.fromOriginAndActorOid(data.getOrigin(), userId);
+                ApiRoutineEnum.STOP_FOLLOWING_USER, actorId), new JSONObject());
+        Actor user = Actor.fromOriginAndActorOid(data.getOrigin(), actorId);
         if (relationship == null || relationship.isNull("following")) {
             return AActivity.EMPTY;
         }
@@ -446,8 +446,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         return jso != null;
     }
 
-    List<Actor> getActors(String userId, ApiRoutineEnum apiRoutine) throws ConnectionException {
-        String url = this.getApiPathWithUserId(apiRoutine, userId);
+    List<Actor> getActors(String actorId, ApiRoutineEnum apiRoutine) throws ConnectionException {
+        String url = this.getApiPathWithUserId(apiRoutine, actorId);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
         int limit = 400;

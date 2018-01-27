@@ -23,7 +23,7 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.SqlUserIds;
+import org.andstatus.app.data.SqlActorIds;
 import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
@@ -108,9 +108,9 @@ public class Audience {
         return false;
     }
 
-    public boolean contains(long userId) {
+    public boolean contains(long actorId) {
         for (Actor user : recipients) {
-            if (user.userId == userId) {
+            if (user.actorId == actorId) {
                 return true;
             }
         }
@@ -130,24 +130,24 @@ public class Audience {
                 toDelete.add(user);
             }
         }
-        for (Actor user : getRecipients()) {
-            if (!prevAudience.getRecipients().contains(user)) {
-                if (user.userId == 0) {
-                    MyLog.w(this, "No userId for " + user);
+        for (Actor actor : getRecipients()) {
+            if (!prevAudience.getRecipients().contains(actor)) {
+                if (actor.actorId == 0) {
+                    MyLog.w(this, "No actorId for " + actor);
                 } else {
-                    toAdd.add(user);
+                    toAdd.add(actor);
                 }
             }
         }
         try {
             if (!toDelete.isEmpty()) {
                 db.delete(AudienceTable.TABLE_NAME, AudienceTable.MSG_ID + "=" + msgId
-                        + " AND " + AudienceTable.USER_ID + SqlUserIds.fromUsers(toDelete).getSql(), null);
+                        + " AND " + AudienceTable.USER_ID + SqlActorIds.fromUsers(toDelete).getSql(), null);
             }
             for (Actor user : toAdd) {
                 ContentValues values = new ContentValues();
                 values.put(AudienceTable.MSG_ID, msgId);
-                values.put(AudienceTable.USER_ID, user.userId);
+                values.put(AudienceTable.USER_ID, user.actorId);
                 long rowId = db.insert(AudienceTable.TABLE_NAME, null, values);
                 if (rowId == -1) {
                     throw new SQLException("Failed to insert " + user);

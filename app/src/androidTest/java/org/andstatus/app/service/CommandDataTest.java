@@ -51,7 +51,7 @@ public class CommandDataTest {
 
         long msgId = MyQuery.oidToId(OidEnum.MSG_OID, MyContextHolder.get().persistentOrigins()
                 .fromName(demoData.CONVERSATION_ORIGIN_NAME).getId(),
-                demoData.CONVERSATION_ENTRY_MESSAGE_OID);
+                demoData.CONVERSATION_ENTRY_NOTE_OID);
         long downloadDataRowId = 23;
         commandData = CommandData.newFetchAttachment(msgId, downloadDataRowId);
         testQueueOneCommandData(commandData, time0);
@@ -120,7 +120,7 @@ public class CommandDataTest {
         Queue<CommandData> queue = new PriorityBlockingQueue<>(100);
         final MyAccount ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         queue.add(CommandData.newCommand(CommandEnum.GET_FRIENDS));
-        queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.USER, ma.getUserId(), ma.getOrigin()));
+        queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.USER, ma.getActorId(), ma.getOrigin()));
         queue.add(CommandData.newSearch(SearchObjects.MESSAGES, MyContextHolder.get(), ma.getOrigin(), "q1"));
         queue.add(CommandData.newUpdateStatus(null, 2));
         queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.MENTIONS));
@@ -159,15 +159,15 @@ public class CommandDataTest {
     private void followUnfollowSummary(CommandEnum command) {
         MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
-        long userId = MyQuery.oidToId(OidEnum.USER_OID, ma.getOrigin().getId(),
-                demoData.CONVERSATION_AUTHOR_THIRD_USER_OID);
+        long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOrigin().getId(),
+                demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
         CommandData data = CommandData.newUserCommand(
-                command, null, demoData.getConversationMyAccount().getOrigin(), userId, "");
+                command, null, demoData.getConversationMyAccount().getOrigin(), actorId, "");
         String summary = data.toCommandSummary(MyContextHolder.get());
         String msgLog = command.name() + "; Summary:'" + summary + "'";
         MyLog.v(this, msgLog);
         assertTrue(msgLog, summary.contains(command.getTitle(MyContextHolder.get(),
-                ma.getAccountName()) + " " + MyQuery.userIdToWebfingerId(userId)));
+                ma.getAccountName()) + " " + MyQuery.actorIdToWebfingerId(actorId)));
     }
 
 }

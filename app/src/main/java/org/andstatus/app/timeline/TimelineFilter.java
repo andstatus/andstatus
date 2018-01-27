@@ -17,7 +17,7 @@
 package org.andstatus.app.timeline;
 
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.msg.KeywordsFilter;
+import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.SharedPreferencesUtil;

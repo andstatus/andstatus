@@ -25,7 +25,7 @@ public class DownloadData {
     public static final DownloadData EMPTY = new DownloadData();
 
     private DownloadType downloadType = DownloadType.UNKNOWN;
-    public long userId = 0;
+    public long actorId = 0;
     public long msgId = 0;
     private MyContentType contentType = MyContentType.UNKNOWN;
     private DownloadStatus status = DownloadStatus.UNKNOWN; 
@@ -77,7 +77,7 @@ public class DownloadData {
             hardError = true;
             break;
         }
-        userId = userIdIn;
+        actorId = userIdIn;
         msgId = msgIdIn;
         contentType = contentTypeIn;
         uri = UriUtils.notNull(uriIn);
@@ -94,7 +94,7 @@ public class DownloadData {
         String sql = "SELECT " + DownloadTable.DOWNLOAD_STATUS + ", "
                 + DownloadTable.FILE_NAME
                 + (downloadType == DownloadType.UNKNOWN ? ", " + DownloadTable.DOWNLOAD_TYPE : "")
-                + (userId == 0 ? ", " + DownloadTable.USER_ID : "")
+                + (actorId == 0 ? ", " + DownloadTable.USER_ID : "")
                 + (msgId == 0 ? ", " + DownloadTable.MSG_ID : "")
                 + (contentType == MyContentType.UNKNOWN ? ", " + DownloadTable.CONTENT_TYPE : "")
                 + (downloadId == 0 ? ", " + DownloadTable._ID : "")
@@ -116,8 +116,8 @@ public class DownloadData {
                 if (downloadType == DownloadType.UNKNOWN) {
                     downloadType = DownloadType.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_TYPE));
                 }
-                if (userId == 0) {
-                    userId = DbUtils.getLong(cursor, DownloadTable.USER_ID);
+                if (actorId == 0) {
+                    actorId = DbUtils.getLong(cursor, DownloadTable.USER_ID);
                 }
                 if (msgId == 0) {
                     msgId = DbUtils.getLong(cursor, DownloadTable.MSG_ID);
@@ -136,9 +136,9 @@ public class DownloadData {
     }
 
     private boolean checkHardErrorBeforeLoad() {
-        if ((userId != 0) && (msgId != 0)
-                || (userId == 0 && msgId == 0 && downloadId == 0)
-                || (userId != 0 && downloadType != DownloadType.AVATAR)) {
+        if ((actorId != 0) && (msgId != 0)
+                || (actorId == 0 && msgId == 0 && downloadId == 0)
+                || (actorId != 0 && downloadType != DownloadType.AVATAR)) {
             hardError = true;
         }
         return hardError;
@@ -146,8 +146,8 @@ public class DownloadData {
 
     private String getWhereClause() {
         StringBuilder builder = new StringBuilder();
-        if (userId != 0) {
-            builder.append(DownloadTable.USER_ID + "=" + userId);
+        if (actorId != 0) {
+            builder.append(DownloadTable.USER_ID + "=" + actorId);
         } else if (msgId != 0) {
             builder.append(DownloadTable.MSG_ID + "=" + msgId);
         } else {
@@ -163,7 +163,7 @@ public class DownloadData {
     }
 
     private void fixFieldsAfterLoad() {
-        if ((userId == 0) && (msgId == 0) || UriUtils.isEmpty(uri)) {
+        if ((actorId == 0) && (msgId == 0) || UriUtils.isEmpty(uri)) {
             hardError = true;
         }
         if (fileStored == null) {
@@ -222,8 +222,8 @@ public class DownloadData {
     private void addNew() {
        ContentValues values = new ContentValues();
        values.put(DownloadTable.DOWNLOAD_TYPE, downloadType.save());
-       if (userId != 0) {
-           values.put(DownloadTable.USER_ID, userId);
+       if (actorId != 0) {
+           values.put(DownloadTable.USER_ID, actorId);
        }
        if (msgId != 0) {
            values.put(DownloadTable.MSG_ID, msgId);
@@ -275,8 +275,8 @@ public class DownloadData {
 
     public String userMsgUriToString() {
         StringBuilder builder = new StringBuilder();
-        if (userId != 0) {
-            builder.append("userId=" + userId + "; ");
+        if (actorId != 0) {
+            builder.append("actorId=" + actorId + "; ");
         }
         if (msgId != 0) {
             builder.append("msgId=" + msgId + "; ");
@@ -301,16 +301,16 @@ public class DownloadData {
     }
     
     public void deleteOtherOfThisUser() {
-        deleteOtherOfThisUser(userId, downloadId);
+        deleteOtherOfThisUser(actorId, downloadId);
     }
 
-    public static void deleteAllOfThisUser(long userId) {
-        deleteOtherOfThisUser(userId, 0);
+    public static void deleteAllOfThisUser(long actorId) {
+        deleteOtherOfThisUser(actorId, 0);
     }
     
-    public static void deleteOtherOfThisUser(long userId, long rowId) {
-        final String method = "deleteOtherOfThisUser userId=" + userId + (rowId != 0 ? ", downloadId=" + rowId : "");
-        String where = DownloadTable.USER_ID + "=" + userId
+    public static void deleteOtherOfThisUser(long actorId, long rowId) {
+        final String method = "deleteOtherOfThisUser actorId=" + actorId + (rowId != 0 ? ", downloadId=" + rowId : "");
+        String where = DownloadTable.USER_ID + "=" + actorId
                 + (rowId != 0 ? " AND " + DownloadTable._ID + "<>" + Long.toString(rowId) : "") ;
         deleteSelected(method, MyContextHolder.get().getDatabase(), where);
     }
@@ -405,8 +405,8 @@ public class DownloadData {
         }
         if (!DownloadStatus.LOADED.equals(status) && !hardError) {
             MyServiceManager.sendCommand(
-                    userId != 0 ?
-                            CommandData.newUserCommand(CommandEnum.FETCH_AVATAR, null, null, userId, "")
+                    actorId != 0 ?
+                            CommandData.newUserCommand(CommandEnum.FETCH_AVATAR, null, null, actorId, "")
                             : CommandData.newFetchAttachment(msgId, downloadId));
         }
     }
@@ -419,8 +419,8 @@ public class DownloadData {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("uri:'" + getUri() + "',");
-        if(userId != 0) {
-            builder.append("userId:" + userId + ",");
+        if(actorId != 0) {
+            builder.append("actorId:" + actorId + ",");
         }
         if(msgId != 0) {
             builder.append("msgId:" + msgId + ",");

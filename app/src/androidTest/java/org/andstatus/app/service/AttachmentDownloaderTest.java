@@ -21,7 +21,7 @@ import android.net.Uri;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.DemoMessageInserter;
+import org.andstatus.app.data.DemoNoteInserter;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.FileProvider;
@@ -57,7 +57,7 @@ public class AttachmentDownloaderTest {
     @Test
     public void testImageAttachmentLoad() throws IOException {
         String body = "A message with an image attachment";
-        DemoMessageInserter mi = new DemoMessageInserter(ma);
+        DemoNoteInserter mi = new DemoNoteInserter(ma);
         AActivity activity = mi.buildActivity(mi.buildUser(), body, null, null, DownloadStatus.LOADED);
         activity.getMessage().attachments.add(Attachment.fromUrlAndContentType(
                 new URL("http://www.publicdomainpictures.net/pictures/60000/nahled/landscape-1376582205Yno.jpg"),

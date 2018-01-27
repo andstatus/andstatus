@@ -114,7 +114,7 @@ public class NotificationEvents {
                 NotificationEventType eventType = NotificationEventType
                         .fromId(DbUtils.getLong(cursor, ActivityTable.NEW_NOTIFICATION_EVENT));
                 MyAccount myAccount = myContext.persistentAccounts()
-                        .fromUserId(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID));
+                        .fromActorId(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID));
                 long updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
                 onNewEvent(eventType, myAccount, updatedDate);
             }

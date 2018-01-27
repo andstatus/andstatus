@@ -44,7 +44,7 @@ import org.andstatus.app.backup.BackupActivity;
 import org.andstatus.app.backup.RestoreActivity;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.graphics.ImageCaches;
-import org.andstatus.app.msg.KeywordsFilter;
+import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.notification.NotificationMethodType;
 import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.service.QueueViewer;

@@ -62,15 +62,15 @@ public abstract class Connection {
         ACCOUNT_RATE_LIMIT_STATUS,
         ACCOUNT_VERIFY_CREDENTIALS,
         /** Returns most recent messages privately sent to the authenticating user */
-        PRIVATE_MESSAGES(true),
+        PRIVATE_NOTES(true),
         CREATE_FAVORITE,
         DESTROY_FAVORITE,
         FOLLOW_USER,
         GET_CONFIG,
         GET_CONVERSATION,
-        /** List of users */
+        /** List of actors */
         GET_FRIENDS, 
-        /** List of Users' IDs */
+        /** List of Actors' IDs */
         GET_FRIENDS_IDS,
         GET_FOLLOWERS,
         GET_FOLLOWERS_IDS,
@@ -91,15 +91,15 @@ public abstract class Connection {
         /**
          * Get the user's replies.
          * 
-         * Returns most recent @replies (status updates prefixed with @username) 
+         * Returns most recent @replies (status updates prefixed with @actorname)
          * for the authenticating user.
          */
         MENTIONS_TIMELINE,
         /** Notifications in a separate API */
         NOTIFICATIONS_TIMELINE,
         /**
-         * Get the User timeline for the user with the selectedUserId. We use credentials of Account which may be
-         * not the same user. 
+         * Get the User timeline for the user with the selectedActorId. We use credentials of Account which may be
+         * not the same actor.
          */
         USER_TIMELINE,
         PUBLIC_TIMELINE,
@@ -232,7 +232,7 @@ public abstract class Connection {
     }
     
     /**
-     * Verify the user's credentials.
+     * Verify the account's credentials.
      */
     public abstract Actor verifyCredentials() throws ConnectionException;
 
@@ -263,24 +263,24 @@ public abstract class Connection {
     /**
      * Returns a list of users the specified user is following.
      */
-    public List<Actor> getFriends(String userId) throws ConnectionException {
-        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getUsersFollowedBy for userOid=" + userId);
+    public List<Actor> getFriends(String actorId) throws ConnectionException {
+        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFriends for actorOid=" + actorId);
     }
     
     /**
      * Returns a list of IDs for every user the specified user is following.
      */
-    public List<String> getFriendsIds(String userId) throws ConnectionException {
-        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getIdsOfUsersFollowedBy for userOid=" + userId);
+    public List<String> getFriendsIds(String actorId) throws ConnectionException {
+        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFriendsIds for actorOid=" + actorId);
     }
 
     @NonNull
-    public List<String> getFollowersIds(String userId) throws ConnectionException {
-        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getIdsOfUsersFollowing userOid=" + userId);
+    public List<String> getFollowersIds(String actorId) throws ConnectionException {
+        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFollowersIds actorOid=" + actorId);
     }
 
-    public List<Actor> getFollowers(String userId) throws ConnectionException {
-        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getUsersFollowing userOid=" + userId);
+    public List<Actor> getFollowers(String actorId) throws ConnectionException {
+        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFollowers actorOid=" + actorId);
     }
 
     /**
@@ -321,10 +321,10 @@ public abstract class Connection {
      * Post Private ("direct") message
      * @see <a href="https://dev.twitter.com/docs/api/1/post/direct_messages/new">POST direct_messages/new</a>
      *
-     * @param userId {@link ActorTable#ACTOR_OID} - The ID of the user who should receive the private message
+     * @param actorId {@link ActorTable#ACTOR_OID} - The ID of the user who should receive the private message
      * @return The sent message if successful (empty message if not)
      */
-    public abstract AActivity postPrivateMessage(String message, String statusId, String userId, Uri mediaUri)
+    public abstract AActivity postPrivateMessage(String message, String statusId, String actorId, Uri mediaUri)
             throws ConnectionException;
 
     /**
@@ -338,36 +338,36 @@ public abstract class Connection {
 
     /**
      * Universal method for several Timeline Types...
-     * @param userId For the {@link ApiRoutineEnum#USER_TIMELINE}, null for the other timelines
+     * @param actorId For the {@link ApiRoutineEnum#USER_TIMELINE}, null for the other timelines
      */
     @NonNull
     public abstract List<AActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                                TimelinePosition oldestPosition, int limit, String userId)
+                                                TimelinePosition oldestPosition, int limit, String actorId)
             throws ConnectionException;
 
     @NonNull
-    public List<AActivity> searchMessages(TimelinePosition youngestPosition,
-                                          TimelinePosition oldestPosition, int limit, String searchQuery) throws ConnectionException {
+    public List<AActivity> searchNotes(TimelinePosition youngestPosition,
+                                       TimelinePosition oldestPosition, int limit, String searchQuery) throws ConnectionException {
         return new ArrayList<>();
     }
 
     @NonNull
-    public List<Actor> searchUsers(int limit, String searchQuery) throws ConnectionException {
+    public List<Actor> searchActors(int limit, String searchQuery) throws ConnectionException {
         return new ArrayList<>();
     }
 
     /**
-     * Allows this User to follow the user specified in the userId parameter
-     * Allows this User to stop following the user specified in the userId parameter
+     * Allows this User to follow the user specified in the actorId parameter
+     * Allows this User to stop following the user specified in the actorId parameter
      * @param follow true - Follow, false - Stop following
      * @return User object with 'following' flag set/reset
      */
-    public abstract AActivity followUser(String userId, Boolean follow) throws ConnectionException;
+    public abstract AActivity followActor(String actorId, Boolean follow) throws ConnectionException;
 
     /**
      * Get information about the specified User
      */
-    public abstract Actor getActor(String userId, String userName) throws ConnectionException;
+    public abstract Actor getActor(String actorId, String actorName) throws ConnectionException;
     
     protected final String fixSinceId(String sinceId) {
         String out = "";

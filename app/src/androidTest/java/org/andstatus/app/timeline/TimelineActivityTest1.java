@@ -33,8 +33,8 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DemoConversationInserter;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.MsgTable;
-import org.andstatus.app.msg.ConversationActivity;
-import org.andstatus.app.msg.MessageListContextMenuItem;
+import org.andstatus.app.note.ConversationActivity;
+import org.andstatus.app.note.NoteContextMenuItem;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceEvent;
@@ -83,7 +83,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
                 ConversationActivity.class);
         long msgId = helper.getListItemIdOfLoadedReply();
         helper.selectListPosition(method, helper.getPositionOfListItemId(msgId));
-        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.OPEN_CONVERSATION, R.id.message_wrapper);
+        helper.invokeContextMenuAction4ListItemId(method, msgId, NoteContextMenuItem.OPEN_CONVERSATION, R.id.message_wrapper);
         Activity nextActivity = helper.waitForNextActivity(method, 40000);
         DbUtils.waitMs(method, 500);
         nextActivity.finish();
@@ -226,20 +226,20 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
         String logMsg = "msgId:" + msgId
                 + "; text:'" + MyQuery.msgIdToStringColumnValue(MsgTable.BODY, msgId) + "'";
         assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId,
-                MessageListContextMenuItem.ACT_AS_FIRST_OTHER_USER, R.id.message_wrapper));
+                NoteContextMenuItem.ACT_AS_FIRST_OTHER_USER, R.id.message_wrapper));
         MyAccount actor1 = getActivity().getContextMenu().getMyActor();
         logMsg += "; actor1:" + actor1;
         assertTrue(logMsg, actor1.isValid());
 
         ActivityTestHelper.closeContextMenu(getActivity());
 
-        helper.invokeContextMenuAction4ListItemId(method, msgId, MessageListContextMenuItem.ACT_AS, R.id.message_wrapper);
+        helper.invokeContextMenuAction4ListItemId(method, msgId, NoteContextMenuItem.ACT_AS, R.id.message_wrapper);
 
         MyAccount actor2 = actor1.firstOtherAccountOfThisOrigin();
         logMsg += ", actor2:" + actor2.getAccountName();
         assertNotSame(logMsg, actor1, actor2);
 
-        helper.selectIdFromSelectorDialog(logMsg, actor2.getUserId());
+        helper.selectIdFromSelectorDialog(logMsg, actor2.getActorId());
         DbUtils.waitMs(method, 500);
 
         MyAccount ma3 = getActivity().getContextMenu().getMyActor();

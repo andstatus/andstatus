@@ -67,7 +67,7 @@ public class ConnectionEmpty extends Connection {
     }
 
     @Override
-    public AActivity postPrivateMessage(String message, String statusId, String userId, Uri mediaUri) throws ConnectionException {
+    public AActivity postPrivateMessage(String message, String statusId, String actorId, Uri mediaUri) throws ConnectionException {
         return AActivity.EMPTY;
     }
 
@@ -79,18 +79,18 @@ public class ConnectionEmpty extends Connection {
     @NonNull
     @Override
     public List<AActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                       TimelinePosition oldestPosition, int limit, String userId)
+                                       TimelinePosition oldestPosition, int limit, String actorId)
             throws ConnectionException {
         return new ArrayList<>();
     }
 
     @Override
-    public AActivity followUser(String userId, Boolean follow) throws ConnectionException {
+    public AActivity followActor(String actorId, Boolean follow) throws ConnectionException {
         return AActivity.EMPTY;
     }
 
     @Override
-    public Actor getActor(String userId, String userName) throws ConnectionException {
+    public Actor getActor(String actorId, String actorName) throws ConnectionException {
         return Actor.EMPTY;
     }
 

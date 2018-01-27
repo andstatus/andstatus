@@ -31,19 +31,19 @@ import org.andstatus.app.util.SharedPreferencesUtil;
  * @author yvolk@yurivolkov.com
  */
 public class FriendshipValues {
-    public long userId;
+    public long actorId;
     public long friendId;
     private ContentValues contentValues = new ContentValues();
 
     /**
      * Move all keys that belong to {@link FriendshipTable} table from values to the newly created ContentValues.
-     * @param userId - first part of key
+     * @param actorId - first part of key
      * @param friendId - second part of key
      * @param values - all other fields (currently only 1)
      * @return
      */
-    public static FriendshipValues valueOf(long userId, long friendId, ContentValues values) {
-        FriendshipValues userValues = new FriendshipValues(userId, friendId);
+    public static FriendshipValues valueOf(long actorId, long friendId, ContentValues values) {
+        FriendshipValues userValues = new FriendshipValues(actorId, friendId);
         ContentValuesUtils.moveBooleanKey(FriendshipTable.FOLLOWED, "", values, userValues.contentValues);
         return userValues;
     }
@@ -62,8 +62,8 @@ public class FriendshipValues {
         fu.update(MyContextHolder.get().getDatabase());
     }
 
-    public FriendshipValues(long userId, long friendId) {
-        this.userId = userId;
+    public FriendshipValues(long actorId, long friendId) {
+        this.actorId = actorId;
         this.friendId = friendId;
     }
     
@@ -79,7 +79,7 @@ public class FriendshipValues {
      */
     public void update(SQLiteDatabase db) {
         boolean followed = false;
-        if (db != null &&  userId != 0 && friendId != 0 && contentValues.containsKey(FriendshipTable.FOLLOWED)) {
+        if (db != null &&  actorId != 0 && friendId != 0 && contentValues.containsKey(FriendshipTable.FOLLOWED)) {
             followed = SharedPreferencesUtil.isTrue(contentValues.get(FriendshipTable.FOLLOWED));
         } else {
             // Don't change anything as there is no information
@@ -100,7 +100,7 @@ public class FriendshipValues {
 
     private void tryToUpdate(SQLiteDatabase db, boolean followed) {
         // TODO: create universal dExists method...
-        String where = FriendshipTable.USER_ID + "=" + userId
+        String where = FriendshipTable.ACTOR_ID + "=" + actorId
                 + " AND " + FriendshipTable.FRIEND_ID + "=" + friendId;
         String sql = "SELECT * FROM " + FriendshipTable.TABLE_NAME + " WHERE " + where;
 
@@ -120,7 +120,7 @@ public class FriendshipValues {
             // There was no such row
             ContentValues cv = new ContentValues(contentValues);
             // Add Key fields
-            cv.put(FriendshipTable.USER_ID, userId);
+            cv.put(FriendshipTable.ACTOR_ID, actorId);
             cv.put(FriendshipTable.FRIEND_ID, friendId);
             
             db.insert(FriendshipTable.TABLE_NAME, null, cv);

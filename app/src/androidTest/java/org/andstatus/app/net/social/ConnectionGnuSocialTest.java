@@ -59,9 +59,9 @@ public class ConnectionGnuSocialTest {
                 org.andstatus.app.tests.R.raw.quitter_home);
         connection.getHttpMock().setResponse(jso);
 
-        String accountUserOid = demoData.GNUSOCIAL_TEST_ACCOUNT_USER_OID;
+        String accountActorOid = demoData.GNUSOCIAL_TEST_ACCOUNT_ACTOR_OID;
         List<AActivity> timeline = connection.getTimeline(ApiRoutineEnum.PUBLIC_TIMELINE,
-                new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountUserOid);
+                new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountActorOid);
         assertNotNull("timeline returned", timeline);
         int size = 3;
         assertEquals("Number of items in the Timeline", size, timeline.size());
@@ -101,7 +101,7 @@ public class ConnectionGnuSocialTest {
         final AActivity inReplyTo = activity.getMessage().getInReplyTo();
         assertTrue("Is a reply", inReplyTo.nonEmpty());
         assertEquals("Reply to the message id", "2663833", inReplyTo.getMessage().oid);
-        assertEquals("Reply to the message by userOid", "114973", inReplyTo.getActor().oid);
+        assertEquals("Reply to the message by actorOid", "114973", inReplyTo.getActor().oid);
         assertEquals("Updated date should be 0 for inReplyTo message", 0, inReplyTo.getMessage().getUpdatedDate());
         assertEquals("Updated date should be 0 for inReplyTo activity", 0, inReplyTo.getUpdatedDate());
 
@@ -117,7 +117,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("conversationOid", "2218650", activity.getMessage().conversationOid);
         assertEquals("Message not private", TriState.UNKNOWN, activity.getMessage().getPrivate());
         assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountActor));
-        assertEquals("MyAccount", accountUserOid, activity.accountActor.oid);
+        assertEquals("MyAccount", accountActorOid, activity.accountActor.oid);
         assertEquals("Actor", activity.getAuthor().oid, activity.getActor().oid);
         assertEquals("Oid", "114973", activity.getAuthor().oid);
         assertEquals("Username", "mmn", activity.getAuthor().getActorName());
@@ -143,8 +143,8 @@ public class ConnectionGnuSocialTest {
                 org.andstatus.app.tests.R.raw.twitter_home_timeline);
         connection.getHttpMock().setResponse(jso);
         
-        List<AActivity> timeline = connection.searchMessages(new TimelinePosition(""), TimelinePosition.EMPTY, 20,
-                demoData.GLOBAL_PUBLIC_MESSAGE_TEXT);
+        List<AActivity> timeline = connection.searchNotes(new TimelinePosition(""), TimelinePosition.EMPTY, 20,
+                demoData.GLOBAL_PUBLIC_NOTE_TEXT);
         assertNotNull("timeline returned", timeline);
         int size = 4;
         assertEquals("Number of items in the Timeline", size, timeline.size());

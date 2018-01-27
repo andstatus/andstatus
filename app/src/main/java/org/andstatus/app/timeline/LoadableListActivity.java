@@ -216,7 +216,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
     }
 
     protected void setCurrentMyAccount(long accountId, long originId) {
-        setCurrentMyAccount(myContext.persistentAccounts().fromUserId(accountId),
+        setCurrentMyAccount(myContext.persistentAccounts().fromActorId(accountId),
                 myContext.persistentOrigins().fromId(originId));
     }
 

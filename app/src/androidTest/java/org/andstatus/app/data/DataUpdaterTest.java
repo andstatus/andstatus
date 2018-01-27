@@ -74,21 +74,21 @@ public class DataUpdaterTest {
         MyAccount ma = demoData.getConversationMyAccount();
         Actor accountActor = ma.getActor();
         String messageOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB";
-        DemoMessageInserter.deleteOldMessage(accountActor.origin, messageOid);
+        DemoNoteInserter.deleteOldMessage(accountActor.origin, messageOid);
 
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 CommandData.newAccountCommand(CommandEnum.EMPTY, ma));
         DataUpdater di = new DataUpdater(executionContext);
         String username = "somebody" + demoData.TESTRUN_UID + "@identi.ca";
-        String userOid = "acct:" + username;
-        Actor somebody = Actor.fromOriginAndActorOid(accountActor.origin, userOid);
+        String actorOid = "acct:" + username;
+        Actor somebody = Actor.fromOriginAndActorOid(accountActor.origin, actorOid);
         somebody.setActorName(username);
         somebody.followedByMe = TriState.FALSE;
         somebody.setProfileUrl("http://identi.ca/somebody");
         di.onActivity(somebody.update(accountActor, accountActor));
 
-        somebody.userId = MyQuery.oidToId(OidEnum.USER_OID, accountActor.origin.getId(), userOid);
-        assertTrue("User " + username + " added", somebody.userId != 0);
+        somebody.actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, accountActor.origin.getId(), actorOid);
+        assertTrue("User " + username + " added", somebody.actorId != 0);
         DemoConversationInserter.assertIfUserIsMyFriend(somebody, false, ma);
 
         AActivity activity = AActivity.newPartialMessage(accountActor, messageOid, System.currentTimeMillis() , DownloadStatus.LOADED);
@@ -115,20 +115,20 @@ public class DataUpdaterTest {
         assertEquals("Message stored as loaded", DownloadStatus.LOADED, DownloadStatus.load(
                 MyQuery.msgIdToLongColumnValue(MsgTable.MSG_STATUS, messageId)));
         long authorId = MyQuery.msgIdToLongColumnValue(ActivityTable.AUTHOR_ID, messageId);
-        assertEquals("Author of the message", somebody.userId, authorId);
+        assertEquals("Author of the message", somebody.actorId, authorId);
         String url = MyQuery.msgIdToStringColumnValue(MsgTable.URL, messageId);
         assertEquals("Url of the message", message.url, url);
         long senderId = MyQuery.msgIdToLongColumnValue(ActivityTable.ACTOR_ID, messageId);
-        assertEquals("Sender of the message", somebody.userId, senderId);
+        assertEquals("Sender of the message", somebody.actorId, senderId);
         url = MyQuery.userIdToStringColumnValue(ActorTable.PROFILE_URL, senderId);
         assertEquals("Url of the author " + somebody.getActorName(), somebody.getProfileUrl(), url);
         assertEquals("Latest activity of " + somebody, activity.getId(),
-                MyQuery.userIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, somebody.userId));
+                MyQuery.userIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, somebody.actorId));
 
         Uri contentUri = Timeline.getTimeline(TimelineType.MY_FRIENDS, ma, 0, null).getUri();
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = ActivityTable.getTimeSortOrder(TimelineType.MY_FRIENDS, false);
-        sa.addSelection(ActivityTable.ACTOR_ID + "=?", Long.toString(somebody.userId));
+        sa.addSelection(ActivityTable.ACTOR_ID + "=?", Long.toString(somebody.actorId));
         String[] PROJECTION = new String[] {
                 MsgTable._ID
         };
@@ -141,7 +141,7 @@ public class DataUpdaterTest {
         di.onActivity(somebody.update(accountActor, accountActor));
         DemoConversationInserter.assertIfUserIsMyFriend(somebody, true, ma);
 
-        Set<Long> friendsIds = MyQuery.getFriendsIds(ma.getUserId());
+        Set<Long> friendsIds = MyQuery.getFriendsIds(ma.getActorId());
         MyContextHolder.get().persistentAccounts().initialize();
         for (long id : friendsIds) {
             assertTrue("isFriend: " + id, MyContextHolder.get().persistentAccounts().isMeOrMyFriend(id));
@@ -166,7 +166,7 @@ public class DataUpdaterTest {
                 + username);
         author.setActorName(username);
 
-        AActivity activity = new DemoMessageInserter(accountActor).buildActivity(
+        AActivity activity = new DemoNoteInserter(accountActor).buildActivity(
                 author,
                 "Hello, this is a test Direct message by your namesake from http://pumpity.net",
                 null, messageOid, DownloadStatus.LOADED);
@@ -180,12 +180,12 @@ public class DataUpdaterTest {
 
         assertEquals("Message should be private", TriState.TRUE,
                 MyQuery.msgIdToTriState(MsgTable.PRIVATE, messageId));
-        DemoMessageInserter.assertNotified(activity, TriState.TRUE);
+        DemoNoteInserter.assertNotified(activity, TriState.TRUE);
 
         Audience audience = Audience.fromMsgId(accountActor.origin, messageId);
         assertNotEquals("No recipients for " + activity, 0, audience.getRecipients().size());
         assertEquals("Recipient " + ma.getAccountName() + "; " + audience.getRecipients(),
-                ma.getUserId(), audience.getFirst().userId);
+                ma.getActorId(), audience.getFirst().actorId);
         assertEquals("Number of recipients for " + activity, 1, audience.getRecipients().size());
     }
 
@@ -237,7 +237,7 @@ public class DataUpdaterTest {
                 MyQuery.msgIdToTriState(MsgTable.FAVORITED, messageId));
         assertEquals("Activity is subscribed " + likeActivity, TriState.UNKNOWN,
                 MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, likeActivity.getId()));
-        DemoMessageInserter.assertNotified(likeActivity, TriState.UNKNOWN);
+        DemoNoteInserter.assertNotified(likeActivity, TriState.UNKNOWN);
         assertEquals("Message is reblogged", TriState.UNKNOWN,
                 MyQuery.msgIdToTriState(MsgTable.REBLOGGED, messageId));
 
@@ -332,7 +332,7 @@ public class DataUpdaterTest {
         }
         assertEquals("Activity is subscribed", TriState.UNKNOWN,
                 MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, activity.getId()));
-        DemoMessageInserter.assertNotified(activity, TriState.UNKNOWN);
+        DemoNoteInserter.assertNotified(activity, TriState.UNKNOWN);
         assertEquals("Message is reblogged", TriState.UNKNOWN,
                 MyQuery.msgIdToTriState(MsgTable.REBLOGGED, messageId));
         assertEquals("Message stored as loaded", DownloadStatus.LOADED, DownloadStatus.load(
@@ -411,64 +411,64 @@ public class DataUpdaterTest {
     }
 
     @Test
-    public void testUserNameChanged() {
+    public void testActorNameChanged() {
         MyAccount ma = TestSuite.getMyContextForTest().persistentAccounts().fromAccountName(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         Actor accountActor = ma.getActor();
         String username = "peter" + demoData.TESTRUN_UID;
-        Actor user1 = new DemoMessageInserter(ma).buildActorFromOid("34804" + demoData.TESTRUN_UID);
-        user1.setActorName(username);
-        user1.setProfileUrl("https://" + demoData.GNUSOCIAL_TEST_ORIGIN_NAME + ".example.com/");
+        Actor actor1 = new DemoNoteInserter(ma).buildActorFromOid("34804" + demoData.TESTRUN_UID);
+        actor1.setActorName(username);
+        actor1.setProfileUrl("https://" + demoData.GNUSOCIAL_TEST_ORIGIN_NAME + ".example.com/");
         
         DataUpdater di = new DataUpdater(ma);
-        long userId1 = di.onActivity(user1.update(accountActor)).getObjActor().userId;
-        assertTrue("User added", userId1 != 0);
-        assertEquals("Username stored", user1.getActorName(),
-                MyQuery.userIdToStringColumnValue(ActorTable.ACTORNAME, userId1));
+        long actorId1 = di.onActivity(actor1.update(accountActor)).getObjActor().actorId;
+        assertTrue("User added", actorId1 != 0);
+        assertEquals("Username stored", actor1.getActorName(),
+                MyQuery.userIdToStringColumnValue(ActorTable.ACTORNAME, actorId1));
 
-        Actor user1partial = Actor.fromOriginAndActorOid(user1.origin, user1.oid);
-        assertTrue("Partially defined", user1partial.isPartiallyDefined());
-        long userId1partial = di.onActivity(user1partial.update(accountActor)).getObjActor().userId;
-        assertEquals("Same user", userId1, userId1partial);
-        assertEquals("Partially defined user shouldn't change Username", user1.getActorName(),
-                MyQuery.userIdToStringColumnValue(ActorTable.ACTORNAME, userId1));
-        assertEquals("Partially defined user shouldn't change WebfingerId", user1.getWebFingerId(),
-                MyQuery.userIdToStringColumnValue(ActorTable.WEBFINGER_ID, userId1));
-        assertEquals("Partially defined user shouldn't change Real name", user1.getRealName(),
-                MyQuery.userIdToStringColumnValue(ActorTable.REAL_NAME, userId1));
+        Actor actor1partial = Actor.fromOriginAndActorOid(actor1.origin, actor1.oid);
+        assertTrue("Partially defined", actor1partial.isPartiallyDefined());
+        long userId1partial = di.onActivity(actor1partial.update(accountActor)).getObjActor().actorId;
+        assertEquals("Same user", actorId1, userId1partial);
+        assertEquals("Partially defined user shouldn't change Username", actor1.getActorName(),
+                MyQuery.userIdToStringColumnValue(ActorTable.ACTORNAME, actorId1));
+        assertEquals("Partially defined user shouldn't change WebfingerId", actor1.getWebFingerId(),
+                MyQuery.userIdToStringColumnValue(ActorTable.WEBFINGER_ID, actorId1));
+        assertEquals("Partially defined user shouldn't change Real name", actor1.getRealName(),
+                MyQuery.userIdToStringColumnValue(ActorTable.REAL_NAME, actorId1));
 
-        user1.setActorName(user1.getActorName() + "renamed");
-        long userId1Renamed = di.onActivity(user1.update(accountActor)).getObjActor().userId;
-        assertEquals("Same user renamed", userId1, userId1Renamed);
-        assertEquals("Same user renamed", user1.getActorName(),
-                MyQuery.userIdToStringColumnValue(ActorTable.ACTORNAME, userId1));
+        actor1.setActorName(actor1.getActorName() + "renamed");
+        long userId1Renamed = di.onActivity(actor1.update(accountActor)).getObjActor().actorId;
+        assertEquals("Same user renamed", actorId1, userId1Renamed);
+        assertEquals("Same user renamed", actor1.getActorName(),
+                MyQuery.userIdToStringColumnValue(ActorTable.ACTORNAME, actorId1));
 
-        Actor user2SameOldUserName = new DemoMessageInserter(ma).buildActorFromOid("34805"
+        Actor user2SameOldUserName = new DemoNoteInserter(ma).buildActorFromOid("34805"
                 + demoData.TESTRUN_UID);
         user2SameOldUserName.setActorName(username);
-        long userId2 = di.onActivity(user2SameOldUserName.update(accountActor)).getObjActor().userId;
-        assertTrue("Other user with the same user name as old name of user", userId1 != userId2);
+        long userId2 = di.onActivity(user2SameOldUserName.update(accountActor)).getObjActor().actorId;
+        assertTrue("Other user with the same user name as old name of user", actorId1 != userId2);
         assertEquals("Username stored", user2SameOldUserName.getActorName(),
                 MyQuery.userIdToStringColumnValue(ActorTable.ACTORNAME, userId2));
 
-        Actor user3SameNewUserName = new DemoMessageInserter(ma).buildActorFromOid("34806"
+        Actor user3SameNewUserName = new DemoNoteInserter(ma).buildActorFromOid("34806"
                 + demoData.TESTRUN_UID);
-        user3SameNewUserName.setActorName(user1.getActorName());
+        user3SameNewUserName.setActorName(actor1.getActorName());
         user3SameNewUserName.setProfileUrl("https://" + demoData.GNUSOCIAL_TEST_ORIGIN_NAME + ".other.example.com/");
-        long userId3 = di.onActivity(user3SameNewUserName.update(accountActor)).getObjActor().userId;
-        assertTrue("User added " + user3SameNewUserName, userId3 != 0);
-        assertTrue("Other user with the same user name as the new name of user1, but different WebFingerId", userId1 != userId3);
-        assertEquals("Username stored for userId=" + userId3, user3SameNewUserName.getActorName(),
-                MyQuery.userIdToStringColumnValue(ActorTable.ACTORNAME, userId3));
+        long actorId3 = di.onActivity(user3SameNewUserName.update(accountActor)).getObjActor().actorId;
+        assertTrue("User added " + user3SameNewUserName, actorId3 != 0);
+        assertTrue("Other user with the same user name as the new name of actor1, but different WebFingerId", actorId1 != actorId3);
+        assertEquals("Username stored for actorId=" + actorId3, user3SameNewUserName.getActorName(),
+                MyQuery.userIdToStringColumnValue(ActorTable.ACTORNAME, actorId3));
     }
 
     @Test
     public void testInsertUser() {
         MyAccount ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
-        Actor user = new DemoMessageInserter(ma).buildActorFromOid("34807" + demoData.TESTRUN_UID);
+        Actor user = new DemoNoteInserter(ma).buildActorFromOid("34807" + demoData.TESTRUN_UID);
         Actor accountActor = ma.getActor();
 
         DataUpdater di = new DataUpdater(ma);
-        long id = di.onActivity(user.update(accountActor)).getObjActor().userId;
+        long id = di.onActivity(user.update(accountActor)).getObjActor().actorId;
         assertTrue("User added", id != 0);
         assertEquals("Username", user.getActorName(),
                 MyQuery.userIdToStringColumnValue(ActorTable.ACTORNAME, id));
@@ -515,20 +515,20 @@ public class DataUpdaterTest {
         addOneMessage4testReplyInBody(buddyUserName, "Oh, " + body, false);
 
         long userId1 = MyQuery.webFingerIdToId(ma.getOriginId(), buddyUserName);
-        assertEquals("User has temp Oid", Actor.getTempOid(buddyUserName, ""), MyQuery.idToOid(OidEnum.USER_OID, userId1, 0));
+        assertEquals("User has temp Oid", Actor.getTempOid(buddyUserName, ""), MyQuery.idToOid(OidEnum.ACTOR_OID, userId1, 0));
 
         String realBuddyOid = "acc:" + buddyUserName;
         Actor user = Actor.fromOriginAndActorOid(ma.getOrigin(), realBuddyOid);
         user.setActorName(buddyUserName);
         DataUpdater di = new DataUpdater(ma);
-        long userId2 = di.onActivity(user.update(ma.getActor())).getObjActor().userId;
+        long userId2 = di.onActivity(user.update(ma.getActor())).getObjActor().actorId;
         assertEquals(userId1, userId2);
-        assertEquals("TempOid replaced with real", realBuddyOid, MyQuery.idToOid(OidEnum.USER_OID, userId1, 0));
+        assertEquals("TempOid replaced with real", realBuddyOid, MyQuery.idToOid(OidEnum.ACTOR_OID, userId1, 0));
 
         body = "<a href=\"http://example.com/a\">@" + buddyUserName + "</a>, this is an HTML <i>formatted</i> message";
         addOneMessage4testReplyInBody(buddyUserName, body, true);
 
-        buddyUserName = demoData.CONVERSATION_AUTHOR_THIRD_USERNAME;
+        buddyUserName = demoData.CONVERSATION_AUTHOR_THIRD_ACTORNAME;
         body = "@" + buddyUserName + " I know you are already in our cache";
         addOneMessage4testReplyInBody(buddyUserName, body, true);
     }
@@ -539,8 +539,8 @@ public class DataUpdaterTest {
 
         DataUpdater di = new DataUpdater(ma);
         String username = "somebody" + demoData.TESTRUN_UID + "@somewhere.net";
-        String userOid = "acct:" + username;
-        Actor somebody = Actor.fromOriginAndActorOid(accountActor.origin, userOid);
+        String actorOid = "acct:" + username;
+        Actor somebody = Actor.fromOriginAndActorOid(accountActor.origin, actorOid);
         somebody.setActorName(username);
         somebody.setProfileUrl("https://somewhere.net/" + username);
 
@@ -563,7 +563,7 @@ public class DataUpdaterTest {
         if (isReply) {
             assertTrue("'" + buddyUserName + "' should be a recipient " + activity.recipients().getRecipients(),
                     buddy.nonEmpty());
-            assertNotEquals("'" + buddyUserName + "' is not added " + buddy, 0, buddy.userId);
+            assertNotEquals("'" + buddyUserName + "' is not added " + buddy, 0, buddy.actorId);
         } else {
             assertTrue("Don't treat this message as a reply:'"
                     + message.getBody() + "'", buddy.isEmpty());

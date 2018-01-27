@@ -26,18 +26,18 @@ import org.andstatus.app.graphics.ImageCaches;
 
 public class AvatarFile extends ImageFile {
     public static final AvatarFile EMPTY = new AvatarFile(0, null);
-    private final long userId;
+    private final long actorId;
     public static final int AVATAR_SIZE_DIP = 48;
     
-    public AvatarFile(long userIdIn, String filename) {
+    public AvatarFile(long actorId, String filename) {
         super(filename);
-        userId = userIdIn;
+        this.actorId = actorId;
     }
 
     @NonNull
-    public static AvatarFile fromCursor(long userId, Cursor cursor, String avatarColumnName) {
+    public static AvatarFile fromCursor(long actorId, Cursor cursor, String avatarColumnName) {
         String avatarFilename = DbUtils.getString(cursor, avatarColumnName);
-        return new AvatarFile(userId, avatarFilename);
+        return new AvatarFile(actorId, avatarFilename);
     }
 
     @Override
@@ -47,7 +47,7 @@ public class AvatarFile extends ImageFile {
 
     @Override
     protected long getId() {
-        return userId;
+        return actorId;
     }
 
     @Override
@@ -57,8 +57,8 @@ public class AvatarFile extends ImageFile {
 
     @Override
     protected void requestAsyncDownload() {
-        if (userId != 0) {
-            AvatarData.asyncRequestDownload(userId);
+        if (actorId != 0) {
+            AvatarData.asyncRequestDownload(actorId);
         }
     }
 

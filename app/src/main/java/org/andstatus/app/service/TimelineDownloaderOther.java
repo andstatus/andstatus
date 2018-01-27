@@ -67,7 +67,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
             }
             MyLog.d(this, strLog);
         }
-        String userOid = getUserOid();
+        String actorOid = getActorOid();
         int toDownload = downloadingLatest ? LATEST_MESSAGES_TO_DOWNLOAD_MAX :
                 (isSyncYounger() ? YOUNGER_MESSAGES_TO_DOWNLOAD_MAX : OLDER_MESSAGES_TO_DOWNLOAD_MAX);
         TimelinePosition previousPosition = syncTracker.getPreviousPosition();
@@ -81,7 +81,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
                 List<AActivity> activities;
                 switch (getTimeline().getTimelineType()) {
                     case SEARCH:
-                        activities = execContext.getMyAccount().getConnection().searchMessages(
+                        activities = execContext.getMyAccount().getConnection().searchNotes(
                                 isSyncYounger() ? previousPosition : TimelinePosition.EMPTY,
                                 isSyncYounger() ? TimelinePosition.EMPTY : previousPosition,
                                 limit, getTimeline().getSearchQuery());
@@ -91,7 +91,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
                                 getTimeline().getTimelineType().getConnectionApiRoutine(),
                                 isSyncYounger() ? previousPosition : TimelinePosition.EMPTY,
                                 isSyncYounger() ? TimelinePosition.EMPTY : previousPosition,
-                                limit, userOid);
+                                limit, actorOid);
                         break;
                 }
                 for (AActivity activity : activities) {
@@ -123,20 +123,20 @@ class TimelineDownloaderOther extends TimelineDownloader {
     }
 
     @NonNull
-    private String getUserOid() throws ConnectionException {
-        long userId = execContext.getCommandData().getUserId();
-        if (userId == 0) {
+    private String getActorOid() throws ConnectionException {
+        long actorId = execContext.getCommandData().getUserId();
+        if (actorId == 0) {
             if (getTimeline().getMyAccount().isValid()) {
-                return getTimeline().getMyAccount().getUserOid();
+                return getTimeline().getMyAccount().getActorOid();
             }
         } else {
-            String userOid =  MyQuery.idToOid(OidEnum.USER_OID, userId, 0);
-            if (TextUtils.isEmpty(userOid)) {
-                throw new ConnectionException("User oId is not found for id=" + userId + ", timeline:" + getTimeline());
+            String actorOid =  MyQuery.idToOid(OidEnum.ACTOR_OID, actorId, 0);
+            if (TextUtils.isEmpty(actorOid)) {
+                throw new ConnectionException("User oId is not found for id=" + actorId + ", timeline:" + getTimeline());
             }
-            return userOid;
+            return actorOid;
         }
-        if (getTimeline().getTimelineType().isForUser()) {
+        if (getTimeline().getTimelineType().isForActor()) {
             throw new ConnectionException("No user for the timeline:" + getTimeline());
         }
         return "";

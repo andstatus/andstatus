@@ -22,7 +22,7 @@ import org.andstatus.app.SearchObjects;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.DemoMessageInserter;
+import org.andstatus.app.data.DemoNoteInserter;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
@@ -76,17 +76,17 @@ public class CommandExecutorStrategyTest {
     @Test
     public void testSearch() {
         CommandData commandData = CommandData.newSearch(SearchObjects.MESSAGES,
-                MyContextHolder.get(), null, demoData.GLOBAL_PUBLIC_MESSAGE_TEXT);
+                MyContextHolder.get(), null, demoData.GLOBAL_PUBLIC_NOTE_TEXT);
         CommandExecutorStrategy strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(CommandExecutorStrategy.class, strategy.getClass());
 
         commandData = CommandData.newSearch(SearchObjects.MESSAGES,
-                MyContextHolder.get(), ma.getOrigin(), demoData.GLOBAL_PUBLIC_MESSAGE_TEXT);
+                MyContextHolder.get(), ma.getOrigin(), demoData.GLOBAL_PUBLIC_NOTE_TEXT);
         strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(TimelineDownloaderOther.class, strategy.getClass());
         strategy.execute();
         assertTrue("Requested '" + Arrays.toString(httpConnectionMock.getResults().toArray()) + "'",
-                httpConnectionMock.getResults().get(0).getUrl().contains(demoData.GLOBAL_PUBLIC_MESSAGE_TEXT) );
+                httpConnectionMock.getResults().get(0).getUrl().contains(demoData.GLOBAL_PUBLIC_NOTE_TEXT) );
     }
 
     @Test
@@ -156,7 +156,7 @@ public class CommandExecutorStrategyTest {
 
     private CommandData getCommandDataForUnsentMessage(String suffix) {
         String body = "Some text " + suffix + " to send " + System.currentTimeMillis() + "ms";
-        AActivity activity = DemoMessageInserter.addMessageForAccount(
+        AActivity activity = DemoNoteInserter.addMessageForAccount(
                 ma, body, "", DownloadStatus.SENDING);
         return CommandData.newUpdateStatus(ma, activity.getMessage().msgId);
     }

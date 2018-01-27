@@ -27,7 +27,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.database.table.ActorTable;
-import org.andstatus.app.msg.KeywordsFilter;
+import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
@@ -62,7 +62,7 @@ import static org.andstatus.app.util.UriUtils.nonRealOid;
 public class DataUpdater {
     static final String MSG_ASSERTION_KEY = "updateMessage";
     private final CommandExecutionContext execContext;
-    private LatestUserActivities lum = new LatestUserActivities();
+    private LatestActorActivities lum = new LatestActorActivities();
     private KeywordsFilter keywordsFilter = new KeywordsFilter(
             SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
 
@@ -118,9 +118,9 @@ public class DataUpdater {
             activity.setSubscribedByMe(TriState.TRUE);
         }
         activity.save(execContext.getMyContext());
-        lum.onNewUserActivity(new UserActivity(activity.getActor().userId, activity.getId(), activity.getUpdatedDate()));
+        lum.onNewUserActivity(new ActorActivity(activity.getActor().actorId, activity.getId(), activity.getUpdatedDate()));
         if ( !activity.isAuthorActor()) {
-            lum.onNewUserActivity(new UserActivity(activity.getAuthor().userId, activity.getId(), activity.getUpdatedDate()));
+            lum.onNewUserActivity(new ActorActivity(activity.getAuthor().actorId, activity.getId(), activity.getUpdatedDate()));
         }
         execContext.getResult().onNotificationEvent(activity.getNotificationEventType());
     }
@@ -185,8 +185,8 @@ public class DataUpdater {
             values.put(MsgTable.MSG_STATUS, message.getStatus().save());
             values.put(MsgTable.UPDATED_DATE, message.getUpdatedDate());
 
-            if (activity.getAuthor().userId != 0) {
-                values.put(MsgTable.AUTHOR_ID, activity.getAuthor().userId);
+            if (activity.getAuthor().actorId != 0) {
+                values.put(MsgTable.AUTHOR_ID, activity.getAuthor().actorId);
             }
             values.put(MsgTable.MSG_OID, message.oid);
             values.put(MsgTable.ORIGIN_ID, message.origin.getId());
@@ -234,7 +234,7 @@ public class DataUpdater {
             }
             if (message.msgId == 0) {
                 Uri msgUri = execContext.getContext().getContentResolver().insert(
-                        MatchedUri.getMsgUri(me.getUserId(), 0), values);
+                        MatchedUri.getMsgUri(me.getActorId(), 0), values);
                 message.msgId = ParsedUri.fromUri(msgUri).getMessageId();
 
                 if (message.getConversationId() == 0) {
@@ -244,7 +244,7 @@ public class DataUpdater {
                 }
                 MyLog.v("MbMessage", "Added " + message);
             } else {
-                Uri msgUri = MatchedUri.getMsgUri(me.getUserId(), message.msgId);
+                Uri msgUri = MatchedUri.getMsgUri(me.getActorId(), message.msgId);
                 execContext.getContext().getContentResolver().update(msgUri, values, null, null);
                 MyLog.v("MbMessage", "Updated " + message);
             }
@@ -277,8 +277,8 @@ public class DataUpdater {
             if (inReply.getMessage().msgId != 0) {
                 activity.getMessage().addRecipient(inReply.getAuthor());
                 values.put(MsgTable.IN_REPLY_TO_MSG_ID, inReply.getMessage().msgId);
-                if (inReply.getAuthor().userId != 0) {
-                    values.put(MsgTable.IN_REPLY_TO_USER_ID, inReply.getAuthor().userId);
+                if (inReply.getAuthor().actorId != 0) {
+                    values.put(MsgTable.IN_REPLY_TO_USER_ID, inReply.getAuthor().actorId);
                 }
             }
         }
@@ -330,30 +330,30 @@ public class DataUpdater {
                 activity.type.equals(ActivityType.UNDO_FOLLOW) ? TriState.FALSE : TriState.UNKNOWN;
         if (objActor.followedByMe.known()) {
             followedByMe = objActor.followedByMe;
-        } else if (activity.getActor().userId == me.getUserId() && me.getUserId() != 0) {
+        } else if (activity.getActor().actorId == me.getActorId() && me.getActorId() != 0) {
             followedByMe = followedByActor;
         }
 
-        long userId = objActor.lookupUserId();
-        if (userId != 0 && objActor.isPartiallyDefined() && followedByMe.unknown()) {
+        long actorId = objActor.lookupActorId();
+        if (actorId != 0 && objActor.isPartiallyDefined() && followedByMe.unknown()) {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, method + "; Skipping partially defined: " + objActor.toString());
             }
             return;
         }
 
-        String userOid = (userId == 0 && !objActor.isOidReal()) ? objActor.getTempOid() : objActor.oid;
+        String actorOid = (actorId == 0 && !objActor.isOidReal()) ? objActor.getTempOid() : objActor.oid;
         try {
             ContentValues values = new ContentValues();
-            if (userId == 0 || !objActor.isPartiallyDefined()) {
-                if (userId == 0 || objActor.isOidReal()) {
-                    values.put(ActorTable.ACTOR_OID, userOid);
+            if (actorId == 0 || !objActor.isPartiallyDefined()) {
+                if (actorId == 0 || objActor.isOidReal()) {
+                    values.put(ActorTable.ACTOR_OID, actorOid);
                 }
 
                 // Substitute required empty values with some temporary for a new entry only!
                 String userName = objActor.getActorName();
                 if (SharedPreferencesUtil.isEmpty(userName)) {
-                    userName = "id:" + userOid;
+                    userName = "id:" + actorOid;
                 }
                 values.put(ActorTable.ACTORNAME, userName);
                 String webFingerId = objActor.getWebFingerId();
@@ -414,31 +414,31 @@ public class DataUpdater {
             }
             
             // Construct the Uri to the User
-            Uri userUri = MatchedUri.getUserUri(me.getUserId(), userId);
-            if (userId == 0) {
+            Uri userUri = MatchedUri.getActorUri(me.getActorId(), actorId);
+            if (actorId == 0) {
                 // There was no such row so add new one
                 values.put(ActorTable.ORIGIN_ID, objActor.origin.getId());
-                userId = ParsedUri.fromUri(
+                actorId = ParsedUri.fromUri(
                         execContext.getContext().getContentResolver().insert(userUri, values))
-                        .getUserId();
+                        .getActorId();
             } else if (values.size() > 0) {
                 execContext.getContext().getContentResolver().update(userUri, values, null, null);
             }
-            objActor.userId = userId;
+            objActor.actorId = actorId;
             if (objActor.hasLatestMessage()) {
                 updateMessage(objActor.getLatestActivity(), false);
             }
         } catch (Exception e) {
-            MyLog.e(this, method + "; userId=" + userId + "; oid=" + userOid, e);
+            MyLog.e(this, method + "; actorId=" + actorId + "; oid=" + actorOid, e);
         }
-        MyLog.v(this, method + "; userId=" + userId + "; oid=" + userOid);
+        MyLog.v(this, method + "; actorId=" + actorId + "; oid=" + actorOid);
         return;
     }
 
-    public void downloadOneMessageBy(String userOid) throws ConnectionException {
+    public void downloadOneNoteBy(String actorOid) throws ConnectionException {
         List<AActivity> activities = execContext.getConnection().getTimeline(
                 TimelineType.USER.getConnectionApiRoutine(), TimelinePosition.EMPTY,
-                TimelinePosition.EMPTY, 1, userOid);
+                TimelinePosition.EMPTY, 1, actorOid);
         for (AActivity item : activities) {
             onActivity(item, false);
         }

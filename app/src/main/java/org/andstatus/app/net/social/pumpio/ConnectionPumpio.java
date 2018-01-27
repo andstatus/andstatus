@@ -132,7 +132,7 @@ public class ConnectionPumpio extends Connection {
         }
         String oid = jso.optString("id");
         Actor user = Actor.fromOriginAndActorOid(data.getOrigin(), oid);
-        user.setActorName(userOidToUsername(oid));
+        user.setActorName(actorOidToActorName(oid));
         user.setRealName(jso.optString("displayName"));
         user.avatarUrl = JsonUtils.optStringInside(jso, "image", "url");
         user.location = JsonUtils.optStringInside(jso, "location", "displayName");
@@ -172,19 +172,19 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public List<Actor> getFollowers(String userId) throws ConnectionException {
-        return getUsers(userId, ApiRoutineEnum.GET_FOLLOWERS);
+    public List<Actor> getFollowers(String actorId) throws ConnectionException {
+        return getUsers(actorId, ApiRoutineEnum.GET_FOLLOWERS);
     }
 
     @Override
-    public List<Actor> getFriends(String userId) throws ConnectionException {
-        return getUsers(userId, ApiRoutineEnum.GET_FRIENDS);
+    public List<Actor> getFriends(String actorId) throws ConnectionException {
+        return getUsers(actorId, ApiRoutineEnum.GET_FRIENDS);
     }
 
     @NonNull
-    private List<Actor> getUsers(String userId, ApiRoutineEnum apiRoutine) throws ConnectionException {
+    private List<Actor> getUsers(String actorId, ApiRoutineEnum apiRoutine) throws ConnectionException {
         int limit = 200;
-        ConnectionAndUrl conu = getConnectionAndUrl(apiRoutine, userId);
+        ConnectionAndUrl conu = getConnectionAndUrl(apiRoutine, actorId);
         Uri sUri = Uri.parse(conu.url);
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
@@ -257,11 +257,11 @@ public class ConnectionPumpio extends Connection {
         return objectType;
     }
 
-    ConnectionAndUrl getConnectionAndUrl(ApiRoutineEnum apiRoutine, String userId) throws ConnectionException {
-        if (TextUtils.isEmpty(userId)) {
-            throw new ConnectionException(StatusCode.BAD_REQUEST, apiRoutine + ": userId is required");
+    ConnectionAndUrl getConnectionAndUrl(ApiRoutineEnum apiRoutine, String actorId) throws ConnectionException {
+        if (TextUtils.isEmpty(actorId)) {
+            throw new ConnectionException(StatusCode.BAD_REQUEST, apiRoutine + ": actorId is required");
         }
-        return  getConnectionAndUrlForUsername(apiRoutine, userOidToUsername(userId));
+        return  getConnectionAndUrlForUsername(apiRoutine, actorOidToActorName(actorId));
     }
 
     private ConnectionAndUrl getConnectionAndUrlForUsername(ApiRoutineEnum apiRoutine, String username) throws ConnectionException {
@@ -321,9 +321,9 @@ public class ConnectionPumpio extends Connection {
     @NonNull
     @Override
     public List<AActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                       TimelinePosition oldestPosition, int limit, String userId)
+                                       TimelinePosition oldestPosition, int limit, String actorId)
             throws ConnectionException {
-        ConnectionAndUrl conu = getConnectionAndUrl(apiRoutine, userId);
+        ConnectionAndUrl conu = getConnectionAndUrl(apiRoutine, actorId);
         Uri sUri = Uri.parse(conu.url);
         Uri.Builder builder = sUri.buildUpon();
         if (youngestPosition.nonEmpty()) {
@@ -530,19 +530,19 @@ public class ConnectionPumpio extends Connection {
     }
     
     /**
-     * 2014-01-22 According to the crash reports, userId may not have "acct:" prefix
+     * 2014-01-22 According to the crash reports, actorId may not have "acct:" prefix
      */
-    public String userOidToUsername(String userId) {
-        String username = "";
-        if (!TextUtils.isEmpty(userId)) {
-            int indexOfColon = userId.indexOf(':');
+    public String actorOidToActorName(String actorId) {
+        String actorName = "";
+        if (!TextUtils.isEmpty(actorId)) {
+            int indexOfColon = actorId.indexOf(':');
             if (indexOfColon >= 0) {
-                username = userId.substring(indexOfColon+1);
+                actorName = actorId.substring(indexOfColon+1);
             } else {
-                username = userId;
+                actorName = actorId;
             }
         }
-        return username;
+        return actorName;
     }
     
     public String usernameToNickname(String username) {
@@ -569,28 +569,28 @@ public class ConnectionPumpio extends Connection {
     
     @NonNull
     @Override
-    public List<AActivity> searchMessages(TimelinePosition youngestPosition,
-                                          TimelinePosition oldestPosition, int limit, String searchQuery)
+    public List<AActivity> searchNotes(TimelinePosition youngestPosition,
+                                       TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException {
         return new ArrayList<>();
     }
 
     @Override
-    public AActivity followUser(String userId, Boolean follow) throws ConnectionException {
-        return actOnActor(follow ? PActivityType.FOLLOW : PActivityType.STOP_FOLLOWING, userId);
+    public AActivity followActor(String actorId, Boolean follow) throws ConnectionException {
+        return actOnActor(follow ? PActivityType.FOLLOW : PActivityType.STOP_FOLLOWING, actorId);
     }
 
-    private AActivity actOnActor(PActivityType activityType, String userId) throws ConnectionException {
-        return ActivitySender.fromId(this, userId).sendUser(activityType);
+    private AActivity actOnActor(PActivityType activityType, String actorId) throws ConnectionException {
+        return ActivitySender.fromId(this, actorId).sendUser(activityType);
     }
     
     @Override
-    public Actor getActor(String userId, String userName) throws ConnectionException {
+    public Actor getActor(String actorId, String actorName) throws ConnectionException {
         ConnectionAndUrl conu = getConnectionAndUrlForUsername(ApiRoutineEnum.GET_USER,
-                UriUtils.isRealOid(userId) ? userOidToUsername(userId) : userName);
+                UriUtils.isRealOid(actorId) ? actorOidToActorName(actorId) : actorName);
         JSONObject jso = conu.httpConnection.getRequest(conu.url);
         Actor actor = actorFromJson(jso);
-        MyLog.v(this, "getActor oid='" + userId + "', userName='" + userName + "' -> " + actor.getRealName());
+        MyLog.v(this, "getActor oid='" + actorId + "', userName='" + actorName + "' -> " + actor.getRealName());
         return actor;
     }
 

@@ -50,7 +50,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
             case DESTROY_FAVORITE:
                 url = "favorites/destroy.json?tweet_mode=extended";
                 break;
-            case PRIVATE_MESSAGES:
+            case PRIVATE_NOTES:
                 url = "direct_messages.json?tweet_mode=extended";
                 break;
             case FAVORITES_TIMELINE:
@@ -66,7 +66,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
                 url = "friends/list.json";
                 break;
             case GET_MESSAGE:
-                url = "statuses/show.json" + "?id=%messageId%&tweet_mode=extended";
+                url = "statuses/show.json" + "?id=%noteId%&tweet_mode=extended";
                 break;
             case HOME_TIMELINE:
                 url = "statuses/home_timeline.json?tweet_mode=extended";
@@ -82,7 +82,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
                 url = "statuses/update.json?tweet_mode=extended";
                 break;
             case POST_REBLOG:
-                url = "statuses/retweet/%messageId%.json?tweet_mode=extended";
+                url = "statuses/retweet/%noteId%.json?tweet_mode=extended";
                 break;
             case POST_WITH_MEDIA:
                 url = "statuses/update_with_media.json?tweet_mode=extended";
@@ -160,8 +160,8 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
 
     @NonNull
     @Override
-    public List<AActivity> searchMessages(TimelinePosition youngestPosition,
-                                          TimelinePosition oldestPosition, int limit, String searchQuery)
+    public List<AActivity> searchNotes(TimelinePosition youngestPosition,
+                                       TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_MESSAGES;
         String url = this.getApiPath(apiRoutine);
@@ -178,7 +178,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
 
     @NonNull
     @Override
-    public List<Actor> searchUsers(int limit, String searchQuery) throws ConnectionException {
+    public List<Actor> searchActors(int limit, String searchQuery) throws ConnectionException {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_USERS;
         String url = this.getApiPath(apiRoutine);
         Uri sUri = Uri.parse(url);
@@ -233,13 +233,13 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         }
     }
 
-    List<Actor> getActors(String userId, ApiRoutineEnum apiRoutine) throws ConnectionException {
+    List<Actor> getActors(String actorId, ApiRoutineEnum apiRoutine) throws ConnectionException {
         String url = this.getApiPath(apiRoutine);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
         int limit = 200;
-        if (!TextUtils.isEmpty(userId)) {
-            builder.appendQueryParameter("user_id", userId);
+        if (!TextUtils.isEmpty(actorId)) {
+            builder.appendQueryParameter("user_id", actorId);
         }
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
         return jArrToUsers(http.getRequestAsArray(builder.build().toString()), apiRoutine, url);

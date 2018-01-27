@@ -36,7 +36,7 @@ public enum TimelineType implements SelectableEnum {
     /** The Mentions timeline and other information (replies...). */
     MENTIONS("mentions", R.string.timeline_title_mentions, Connection.ApiRoutineEnum.MENTIONS_TIMELINE),
     /** Private messages (direct dents...) */
-    PRIVATE("private", R.string.timeline_title_private, Connection.ApiRoutineEnum.PRIVATE_MESSAGES),
+    PRIVATE("private", R.string.timeline_title_private, Connection.ApiRoutineEnum.PRIVATE_NOTES),
     /** Messages of the selected User (where he is an Author or a Sender only (e.g. for Reblog/Retweet).
      * This User is NOT one of our Accounts.
      * Hence this timeline type requires the User parameter. */
@@ -199,7 +199,7 @@ public enum TimelineType implements SelectableEnum {
         return !isAtOrigin();
     }
 
-    public boolean isForUser() {
+    public boolean isForActor() {
         switch (this) {
             case FOLLOWERS:
             case FRIENDS:

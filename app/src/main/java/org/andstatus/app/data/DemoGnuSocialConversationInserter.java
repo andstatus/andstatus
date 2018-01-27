@@ -80,16 +80,16 @@ public class DemoGnuSocialConversationInserter {
         addActivity(reply1);
         addActivity(reply2);
 
-        AActivity reply4 = buildActivity(author4, "Reply 4 to Reply 1, " + demoData.PUBLIC_MESSAGE_TEXT + " other author", reply1, null);
+        AActivity reply4 = buildActivity(author4, "Reply 4 to Reply 1, " + demoData.PUBLIC_NOTE_TEXT + " other author", reply1, null);
         addActivity(reply4);
-        DemoMessageInserter.increaseUpdateDate(reply4);
+        DemoNoteInserter.increaseUpdateDate(reply4);
         addPrivateMessage(reply4, TriState.TRUE);
 
         addActivity(buildActivity(author2, "Reply 5 to Reply 4", reply4, null));
         addActivity(buildActivity(author3, "Reply 6 to Reply 4 - the second", reply4, null));
 
         AActivity reply7 = buildActivity(author1, "Reply 7 to Reply 2 is about "
-        + demoData.PUBLIC_MESSAGE_TEXT + " and something else", reply2, null);
+        + demoData.PUBLIC_NOTE_TEXT + " and something else", reply2, null);
         addPrivateMessage(reply7, TriState.FALSE);
         
         AActivity reply8 = buildActivity(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
@@ -97,28 +97,28 @@ public class DemoGnuSocialConversationInserter {
         addActivity(reply9);
         AActivity reply10 = buildActivity(author3, "Reply 10 to Reply 8", reply8, null);
         addActivity(reply10);
-        AActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7 with " + demoData.GLOBAL_PUBLIC_MESSAGE_TEXT + " text", reply7, null);
+        AActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7 with " + demoData.GLOBAL_PUBLIC_NOTE_TEXT + " text", reply7, null);
         addPrivateMessage(reply11, TriState.FALSE);
 
         AActivity reply12 = buildActivity(author2, "Reply 12 to Reply 7 reblogged by author1", reply7, null);
-        DemoMessageInserter.onActivityS(reply12);
+        DemoNoteInserter.onActivityS(reply12);
 
-        AActivity myReblogOf12 = new DemoMessageInserter(accountActor).buildActivity(accountActor, ActivityType.ANNOUNCE, "");
+        AActivity myReblogOf12 = new DemoNoteInserter(accountActor).buildActivity(accountActor, ActivityType.ANNOUNCE, "");
         myReblogOf12.setActivity(reply12);
-        DemoMessageInserter.onActivityS(myReblogOf12);
+        DemoNoteInserter.onActivityS(myReblogOf12);
 
         AActivity myReplyTo12 = buildActivity(accountActor, "My reply to 12 after my reblog", reply12, null);
-        DemoMessageInserter.onActivityS(myReplyTo12);
+        DemoNoteInserter.onActivityS(myReplyTo12);
 
-        AActivity likeOfMyReply = new DemoMessageInserter(accountActor).buildActivity(author1, ActivityType.LIKE, "");
+        AActivity likeOfMyReply = new DemoNoteInserter(accountActor).buildActivity(author1, ActivityType.LIKE, "");
         likeOfMyReply.setActivity(myReplyTo12);
         addActivity(likeOfMyReply);
-        DemoMessageInserter.assertNotified(likeOfMyReply, TriState.TRUE);
+        DemoNoteInserter.assertNotified(likeOfMyReply, TriState.TRUE);
 
-        AActivity followOfMe = new DemoMessageInserter(accountActor).buildActivity(author2, ActivityType.FOLLOW, "");
+        AActivity followOfMe = new DemoNoteInserter(accountActor).buildActivity(author2, ActivityType.FOLLOW, "");
         followOfMe.setObjActor(accountActor);
-        DemoMessageInserter.onActivityS(followOfMe);
-        DemoMessageInserter.assertNotified(followOfMe, TriState.TRUE);
+        DemoNoteInserter.onActivityS(followOfMe);
+        DemoNoteInserter.assertNotified(followOfMe, TriState.TRUE);
 
         AActivity reply13 = buildActivity(author2, "Reply 13 to MyReply12", myReplyTo12, null);
         addActivity(reply13);
@@ -132,9 +132,9 @@ public class DemoGnuSocialConversationInserter {
                 isPrivate, MyQuery.msgIdToTriState(MsgTable.PRIVATE, activity.getMessage().msgId));
     }
 
-    private Actor actorFromOidAndAvatar(String userOid, @Nullable String avatarUrl) {
-        String userName = "actor" + userOid;
-        Actor actor = Actor.fromOriginAndActorOid(origin, userOid);
+    private Actor actorFromOidAndAvatar(String actorOid, @Nullable String avatarUrl) {
+        String userName = "actor" + actorOid;
+        Actor actor = Actor.fromOriginAndActorOid(origin, actorOid);
         actor.setActorName(userName);
         if (avatarUrl != null) {
             actor.avatarUrl = avatarUrl;
@@ -144,7 +144,7 @@ public class DemoGnuSocialConversationInserter {
     }
     
     private AActivity buildActivity(Actor author, String body, AActivity inReplyToMessage, String messageOidIn) {
-        final AActivity activity = new DemoMessageInserter(accountActor).buildActivity(author, body
+        final AActivity activity = new DemoNoteInserter(accountActor).buildActivity(author, body
                         + (inReplyToMessage != null ? " it" + iteration : ""),
                 inReplyToMessage, messageOidIn, DownloadStatus.LOADED);
         activity.getMessage().setConversationOid(conversationOid);
@@ -152,6 +152,6 @@ public class DemoGnuSocialConversationInserter {
     }
     
     private void addActivity(AActivity activity) {
-        DemoMessageInserter.onActivityS(activity);
+        DemoNoteInserter.onActivityS(activity);
     }
 }

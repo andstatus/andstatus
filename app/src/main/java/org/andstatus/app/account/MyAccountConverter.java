@@ -65,8 +65,8 @@ public class MyAccountConverter {
                     AccountData accountData = AccountData.fromJson(null, false);
                     androidAccountData.moveStringKeyTo(MyAccount.KEY_USERNAME, accountData);
                     androidAccountData.moveStringKeyTo(Origin.KEY_ORIGIN_NAME, accountData);
-                    androidAccountData.moveStringKeyTo(MyAccount.KEY_USER_OID, accountData);
-                    androidAccountData.moveLongKeyTo(MyAccount.KEY_USER_ID, accountData);
+                    androidAccountData.moveStringKeyTo(MyAccount.KEY_ACTOR_OID, accountData);
+                    androidAccountData.moveLongKeyTo(MyAccount.KEY_ACTOR_ID, accountData);
                     
                     Origin origin = myContext.persistentOrigins().fromName(accountData.getDataString(Origin.KEY_ORIGIN_NAME, ""));
                     

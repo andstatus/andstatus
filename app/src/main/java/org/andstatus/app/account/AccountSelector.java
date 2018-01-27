@@ -70,9 +70,9 @@ public class AccountSelector extends SelectorDialog {
         getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                long userId = Long.parseLong(((TextView) view.findViewById(R.id.id)).getText()
+                long actorId = Long.parseLong(((TextView) view.findViewById(R.id.id)).getText()
                         .toString());
-                returnSelectedAccount(MyContextHolder.get().persistentAccounts().fromUserId(userId));
+                returnSelectedAccount(MyContextHolder.get().persistentAccounts().fromActorId(actorId));
             }
         });
     }
@@ -99,7 +99,7 @@ public class AccountSelector extends SelectorDialog {
             }
             map.put(KEY_VISIBLE_NAME, visibleName);
             map.put(KEY_SYNC_AUTO, ma.isSyncedAutomatically() && ma.isValidAndSucceeded() ? syncText : "");
-            map.put(BaseColumns._ID, Long.toString(ma.getUserId()));
+            map.put(BaseColumns._ID, Long.toString(ma.getActorId()));
             list.add(map);
         }
 

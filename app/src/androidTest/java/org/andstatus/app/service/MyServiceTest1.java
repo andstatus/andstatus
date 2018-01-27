@@ -49,7 +49,7 @@ public class MyServiceTest1 extends MyServiceTest {
         mService.setListenedCommand(CommandData.newUserCommand(
                 CommandEnum.FETCH_AVATAR,
                 null, ma.getOrigin(),
-                ma.getUserId(),
+                ma.getActorId(),
                 ""));
 
         long startCount = mService.executionStartCount;

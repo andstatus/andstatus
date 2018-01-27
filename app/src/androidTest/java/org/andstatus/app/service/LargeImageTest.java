@@ -20,7 +20,7 @@ import android.support.test.InstrumentationRegistry;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.AttachedImageFile;
-import org.andstatus.app.data.DemoMessageInserter;
+import org.andstatus.app.data.DemoNoteInserter;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
@@ -56,7 +56,7 @@ public class LargeImageTest {
     private DownloadData insertMessage() throws IOException {
         String body = "Large image attachment";
         MyAccount ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
-        DemoMessageInserter mi = new DemoMessageInserter(ma);
+        DemoNoteInserter mi = new DemoNoteInserter(ma);
         AActivity activity = mi.buildActivity(mi.buildUser(), body, null, null, DownloadStatus.LOADED);
         activity.getMessage().attachments
                 .add(Attachment

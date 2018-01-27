@@ -81,10 +81,10 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 getStatus(execContext.getCommandData().itemId);
                 break;
             case GET_USER:
-                getUser(execContext.getCommandData().getUserId(), execContext.getCommandData().getUserName());
+                getActor(execContext.getCommandData().getUserId(), execContext.getCommandData().getActorName());
                 break;
             case SEARCH_USERS:
-                searchUsers(execContext.getCommandData().getUserName());
+                searchUsers(execContext.getCommandData().getActorName());
                 break;
             case REBLOG:
                 reblog(execContext.getCommandData().itemId);
@@ -113,7 +113,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         List<Actor> users = null;
         if (StringUtils.nonEmpty(searchQuery)) {
             try {
-                users = execContext.getMyAccount().getConnection().searchUsers(USERS_LIMIT, searchQuery);
+                users = execContext.getMyAccount().getConnection().searchActors(USERS_LIMIT, searchQuery);
                 for (Actor user : users) {
                     new DataUpdater(execContext).onActivity(user.update(execContext.getMyAccount().getActor()));
                 }
@@ -152,24 +152,24 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }
 
-    private void getUser(long userId, String userName) {
+    private void getActor(long actorId, String userName) {
         final String method = "getUser";
-        String oid = getUserOid(method, userId, false);
+        String oid = getActorOid(method, actorId, false);
         String msgLog = method + "; userName='" + userName + "'";
-        Actor user = null;
+        Actor actor = null;
         if (UriUtils.isRealOid(oid) || !TextUtils.isEmpty(userName)) {
             try {
-                user = execContext.getMyAccount().getConnection().getActor(oid, userName);
-                logIfUserIsEmpty(msgLog, userId, user);
+                actor = execContext.getMyAccount().getConnection().getActor(oid, userName);
+                logIfUserIsEmpty(msgLog, actorId, actor);
             } catch (ConnectionException e) {
-                logConnectionException(e, msgLog + userInfoLogged(userId));
+                logConnectionException(e, msgLog + userInfoLogged(actorId));
             }
         } else {
             msgLog += ", invalid user IDs";
-            logExecutionError(true, msgLog + userInfoLogged(userId));
+            logExecutionError(true, msgLog + userInfoLogged(actorId));
         }
-        if (noErrors() && user != null) {
-            new DataUpdater(execContext).onActivity(user.update(execContext.getMyAccount().getActor()));
+        if (noErrors() && actor != null) {
+            new DataUpdater(execContext).onActivity(actor.update(execContext.getMyAccount().getActor()));
         }
         MyLog.d(this, (msgLog + (noErrors() ? " succeeded" : " failed") ));
     }
@@ -237,19 +237,19 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     }
 
     /**
-     * @param userId
+     * @param actorId
      * @param follow true - Follow, false - Stop following
      */
-    private void followOrStopFollowingUser(long userId, boolean follow) {
+    private void followOrStopFollowingUser(long actorId, boolean follow) {
         final String method = (follow ? "follow" : "stopFollowing") + "User";
-        String oid = getUserOid(method, userId, true);
+        String oid = getActorOid(method, actorId, true);
         AActivity activity = null;
         if (noErrors()) {
             try {
-                activity = execContext.getMyAccount().getConnection().followUser(oid, follow);
-                logIfUserIsEmpty(method, userId, activity.getObjActor());
+                activity = execContext.getMyAccount().getConnection().followActor(oid, follow);
+                logIfUserIsEmpty(method, actorId, activity.getObjActor());
             } catch (ConnectionException e) {
-                logConnectionException(e, method + userInfoLogged(userId));
+                logConnectionException(e, method + userInfoLogged(actorId));
             }
         }
         if (activity != null && noErrors()) {
@@ -260,7 +260,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                     MyLog.d(this, "Follow a User. 'following' flag didn't change yet.");
                     // Let's try to assume that everything was OK:
                 } else {
-                    logExecutionError(false, "'following' flag didn't change yet, " + method + userInfoLogged(userId));
+                    logExecutionError(false, "'following' flag didn't change yet, " + method + userInfoLogged(actorId));
                 }
             }
             if (noErrors()) {
@@ -270,25 +270,25 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }
 
-    private void logIfUserIsEmpty(String method, long userId, Actor user) {
+    private void logIfUserIsEmpty(String method, long actorId, Actor user) {
         if (user == null || user.isEmpty()) {
-            logExecutionError(false, "Received User is empty, " + method + userInfoLogged(userId));
+            logExecutionError(false, "Received User is empty, " + method + userInfoLogged(actorId));
         }
     }
 
     @NonNull
-    private String getUserOid(String method, long userId, boolean required) {
-        String oid = MyQuery.idToOid(OidEnum.USER_OID, userId, 0);
+    private String getActorOid(String method, long actorId, boolean required) {
+        String oid = MyQuery.idToOid(OidEnum.ACTOR_OID, actorId, 0);
         if (required && TextUtils.isEmpty(oid)) {
-            logExecutionError(true, method + "; no User ID in the Social Network " + userInfoLogged(userId));
+            logExecutionError(true, method + "; no User ID in the Social Network " + userInfoLogged(actorId));
         }
         return oid;
     }
 
-    private String userInfoLogged(long userId) {
-        String oid = getUserOid("userInfoLogged", userId, false);
-        return " userId=" + userId + ", oid" + (TextUtils.isEmpty(oid) ? " is empty" : "'" + oid + "'" +
-                ", webFingerId:'" + MyQuery.userIdToWebfingerId(userId) + "'");
+    private String userInfoLogged(long actorId) {
+        String oid = getActorOid("userInfoLogged", actorId, false);
+        return " actorId=" + actorId + ", oid" + (TextUtils.isEmpty(oid) ? " is empty" : "'" + oid + "'" +
+                ", webFingerId:'" + MyQuery.actorIdToWebfingerId(actorId) + "'");
     }
 
     /**
@@ -327,7 +327,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
      */
     private void destroyReblog(long msgId) {
         final String method = "destroyReblog";
-        final long actorId = execContext.getMyAccount().getUserId();
+        final long actorId = execContext.getMyAccount().getActorId();
         final Pair<Long, ActivityType> reblogAndType = MyQuery.msgIdToLastReblogging(
                 execContext.getMyContext().getDatabase(), msgId, actorId);
         if (reblogAndType.second != ActivityType.ANNOUNCE) {
@@ -415,7 +415,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 activity = execContext.getMyAccount().getConnection()
                         .updateStatus(status.trim(), oid, replyToMsgOid, mediaUri);
             } else {
-                String recipientOid = getUserOid(method, recipients.getFirst().userId, true);
+                String recipientOid = getActorOid(method, recipients.getFirst().actorId, true);
                 // Currently we don't use Screen Name, I guess id is enough.
                 activity = execContext.getMyAccount().getConnection()
                         .postPrivateMessage(status.trim(), oid, recipientOid, mediaUri);

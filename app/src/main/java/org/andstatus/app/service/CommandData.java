@@ -66,7 +66,7 @@ public class CommandData implements Comparable<CommandData> {
 
     /** {@link MyAccount} for this command. Invalid account if command is not Account
      * specific e.g. {@link CommandEnum#DELETE_COMMAND}
-     * It holds UserId for command, which need such parameter (not only for a timeline)
+     * It holds actorId for command, which need such parameter (not only for a timeline)
      */
     private final Timeline timeline;
     /** This is: 1. Generally: Message ID ({@link MsgTable#MSG_ID} of the {@link MsgTable})...
@@ -75,7 +75,7 @@ public class CommandData implements Comparable<CommandData> {
     /** Sometimes we don't know {@link #timeline#getUserId} yet...
      * Used for User search also
      */
-    private String userName = "";
+    private String actorName = "";
 
     private volatile int result = 0;
     private CommandResult commandResult = new CommandResult();
@@ -114,10 +114,10 @@ public class CommandData implements Comparable<CommandData> {
 
     @NonNull
     public static CommandData newUserCommand(CommandEnum command, MyAccount myActor,
-                                             Origin origin, long userId, String userName) {
-        CommandData commandData = newTimelineCommand(command, myActor, TimelineType.USER, userId, origin);
-        commandData.setUserName(userName);
-        commandData.description = commandData.getUserName();
+                                             Origin origin, long actorId, String actorName) {
+        CommandData commandData = newTimelineCommand(command, myActor, TimelineType.USER, actorId, origin);
+        commandData.setActorName(actorName);
+        commandData.description = commandData.getActorName();
         return commandData;
     }
 
@@ -149,8 +149,8 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public static CommandData newTimelineCommand(CommandEnum command, MyAccount myAccount,
-                                                 TimelineType timelineType, long userId, Origin origin) {
-        return newTimelineCommand(command, Timeline.getTimeline(timelineType, myAccount, userId, origin));
+                                                 TimelineType timelineType, long actorId, Origin origin) {
+        return newTimelineCommand(command, Timeline.getTimeline(timelineType, myAccount, actorId, origin));
     }
 
     public static CommandData newTimelineCommand(CommandEnum command, Timeline timeline) {
@@ -188,7 +188,7 @@ public class CommandData implements Comparable<CommandData> {
                         Timeline.fromBundle(myContext, bundle),
                         bundle.getLong(IntentExtra.CREATED_DATE.key));
                 commandData.itemId = bundle.getLong(IntentExtra.ITEM_ID.key);
-                commandData.setUserName(BundleUtils.getString(bundle, IntentExtra.USER_NAME));
+                commandData.setActorName(BundleUtils.getString(bundle, IntentExtra.USER_NAME));
                 commandData.description = BundleUtils.getString(bundle, IntentExtra.COMMAND_DESCRIPTION);
                 commandData.mInForeground = bundle.getBoolean(IntentExtra.IN_FOREGROUND.key);
                 commandData.mManuallyLaunched = bundle.getBoolean(IntentExtra.MANUALLY_LAUNCHED.key);
@@ -215,7 +215,7 @@ public class CommandData implements Comparable<CommandData> {
         BundleUtils.putNotEmpty(bundle, IntentExtra.COMMAND, command.save());
         timeline.toBundle(bundle);
         BundleUtils.putNotZero(bundle, IntentExtra.ITEM_ID, itemId);
-        BundleUtils.putNotEmpty(bundle, IntentExtra.USER_NAME, userName);
+        BundleUtils.putNotEmpty(bundle, IntentExtra.USER_NAME, actorName);
         BundleUtils.putNotEmpty(bundle, IntentExtra.COMMAND_DESCRIPTION, description);
         bundle.putBoolean(IntentExtra.IN_FOREGROUND.key, mInForeground);
         bundle.putBoolean(IntentExtra.MANUALLY_LAUNCHED.key, mManuallyLaunched);
@@ -232,7 +232,7 @@ public class CommandData implements Comparable<CommandData> {
         values.put(CommandTable.MANUALLY_LAUNCHED, mManuallyLaunched);
         timeline.toCommandContentValues(values);
         ContentValuesUtils.putNotZero(values, CommandTable.ITEM_ID, itemId);
-        values.put(CommandTable.USERNAME, userName);
+        values.put(CommandTable.USERNAME, actorName);
         commandResult.toContentValues(values);
     }
 
@@ -250,7 +250,7 @@ public class CommandData implements Comparable<CommandData> {
         commandData.mInForeground = DbUtils.getBoolean(cursor, CommandTable.IN_FOREGROUND);
         commandData.mManuallyLaunched = DbUtils.getBoolean(cursor, CommandTable.MANUALLY_LAUNCHED);
         commandData.itemId = DbUtils.getLong(cursor, CommandTable.ITEM_ID);
-        commandData.setUserName(DbUtils.getString(cursor, CommandTable.USERNAME));
+        commandData.setActorName(DbUtils.getString(cursor, CommandTable.USERNAME));
         commandData.commandResult = CommandResult.fromCursor(cursor);
         return commandData;
     }
@@ -294,10 +294,10 @@ public class CommandData implements Comparable<CommandData> {
             builder.append(",manual");
         }
         builder.append(",created:" + RelativeTime.getDifference(MyContextHolder.get().context(), getCreatedDate()));
-        if (StringUtils.nonEmpty(userName)) {
-            builder.append(",user:'" + userName + "'");
+        if (StringUtils.nonEmpty(actorName)) {
+            builder.append(",user:'" + actorName + "'");
         }
-        if (StringUtils.nonEmpty(description) && !description.equals(userName)) {
+        if (StringUtils.nonEmpty(description) && !description.equals(actorName)) {
             builder.append(",\"");
             builder.append(description);
             builder.append("\"");
@@ -393,10 +393,10 @@ public class CommandData implements Comparable<CommandData> {
             case FETCH_AVATAR:
                 I18n.appendWithSpace(builder, 
                         myContext.context().getText(R.string.combined_timeline_off_account));
-                I18n.appendWithSpace(builder, MyQuery.userIdToWebfingerId(timeline.getUserId()));
+                I18n.appendWithSpace(builder, MyQuery.actorIdToWebfingerId(timeline.getActorId()));
                 if (myContext.persistentAccounts().getDistinctOriginsCount() > 1) {
                     long originId = MyQuery.userIdToLongColumnValue(ActorTable.ORIGIN_ID,
-                            timeline.getUserId());
+                            timeline.getActorId());
                     I18n.appendWithSpace(builder, 
                             myContext.context().getText(R.string.combined_timeline_off_origin));
                     I18n.appendWithSpace(builder, 
@@ -421,13 +421,13 @@ public class CommandData implements Comparable<CommandData> {
             case STOP_FOLLOWING_USER:
             case GET_FOLLOWERS:
             case GET_FRIENDS:
-                I18n.appendWithSpace(builder, MyQuery.userIdToWebfingerId(timeline.getUserId()));
+                I18n.appendWithSpace(builder, MyQuery.actorIdToWebfingerId(timeline.getActorId()));
                 break;
             case GET_USER:
             case SEARCH_USERS:
-                if (StringUtils.nonEmpty(getUserName())) {
+                if (StringUtils.nonEmpty(getActorName())) {
                     builder.append(" \"");
-                    builder.append(getUserName());
+                    builder.append(getActorName());
                     builder.append("\"");
                 }
                 break;
@@ -536,16 +536,16 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public long getUserId() {
-        return timeline.getUserId();
+        return timeline.getActorId();
     }
 
-    public String getUserName() {
-        return userName;
+    public String getActorName() {
+        return actorName;
     }
 
-    public void setUserName(String userName) {
-        if (TextUtils.isEmpty(this.userName) && !TextUtils.isEmpty(userName)) {
-            this.userName = userName;
+    public void setActorName(String actorName) {
+        if (TextUtils.isEmpty(this.actorName) && !TextUtils.isEmpty(actorName)) {
+            this.actorName = actorName;
         }
     }
 }

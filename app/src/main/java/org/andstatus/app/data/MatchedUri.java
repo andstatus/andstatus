@@ -29,7 +29,7 @@ import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.user.ActorListType;
+import org.andstatus.app.actor.ActorListType;
 
 /**
  * Classifier of Uri-s, passed to our content provider
@@ -180,11 +180,11 @@ public enum MatchedUri {
     }
 
     public static Uri getTimelineUri(Timeline timeline) {
-        Uri uri = getBaseAccountUri(timeline.getMyAccount().getUserId(), MsgTable.TABLE_NAME);
+        Uri uri = getBaseAccountUri(timeline.getMyAccount().getActorId(), MsgTable.TABLE_NAME);
         uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + timeline.getTimelineType().save());
         uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + timeline.getOrigin().getId());
         uri = Uri.withAppendedPath(uri,  USER_SEGMENT);
-        uri = ContentUris.withAppendedId(uri, timeline.getUserId());
+        uri = ContentUris.withAppendedId(uri, timeline.getActorId());
         if (!TextUtils.isEmpty(timeline.getSearchQuery())) {
             uri = Uri.withAppendedPath(uri, SEARCH_SEGMENT);
             uri = Uri.withAppendedPath(uri, Uri.encode(timeline.getSearchQuery()));
@@ -198,12 +198,12 @@ public enum MatchedUri {
 
     /**
      * Build a UseList Uri for this User / {@link MyAccount}
-     * @param accountUserId {@link ActorTable#ACTOR_ID}. This user <i>may</i> be an account: {@link MyAccount#getUserId()}
+     * @param accountActorId {@link ActorTable#ACTOR_ID}. This user <i>may</i> be an account: {@link MyAccount#getActorId()}
      * @param searchQuery
      */
-    public static Uri getUserListUri(long accountUserId, ActorListType actorListType, long originId, long centralItemId,
-                                     String searchQuery) {
-        Uri uri = getBaseAccountUri(accountUserId, ActorTable.TABLE_NAME);
+    public static Uri getActorListUri(long accountActorId, ActorListType actorListType, long originId, long centralItemId,
+                                      String searchQuery) {
+        Uri uri = getBaseAccountUri(accountActorId, ActorTable.TABLE_NAME);
         uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + actorListType.save());
         uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + originId);
         uri = Uri.withAppendedPath(uri, CENTRAL_ITEM_SEGMENT);
@@ -215,17 +215,17 @@ public enum MatchedUri {
         return uri;
     }
 
-    public static Uri getUserListItemUri(long accountUserId, ActorListType actorListType, long originId, long userId) {
+    public static Uri getActorListItemUri(long accountUserId, ActorListType actorListType, long originId, long actorId) {
         Uri uri = getBaseAccountUri(accountUserId, ActorTable.TABLE_NAME);
         uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + actorListType.save());
         uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + originId);
         uri = Uri.withAppendedPath(uri, CONTENT_ITEM_SEGMENT);
-        uri = ContentUris.withAppendedId(uri, userId);
+        uri = ContentUris.withAppendedId(uri, actorId);
         return uri;
     }
 
-    public static Uri getUserUri(long accountUserId, long userId) {
-        return getContentItemUri(accountUserId, ActorTable.TABLE_NAME, userId);
+    public static Uri getActorUri(long accountActorId, long actorId) {
+        return getContentItemUri(accountActorId, ActorTable.TABLE_NAME, actorId);
     }
 
     public static Uri getOriginUri(long originId) {
@@ -233,7 +233,7 @@ public enum MatchedUri {
     }
 
     /**
-     * @param accountUserId userId of MyAccount or 0 if not needed
+     * @param accountUserId actorId of MyAccount or 0 if not needed
      * @param tableName name in the {@link DatabaseHolder}
      * @param itemId ID or 0 - if the Item doesn't exist
      */

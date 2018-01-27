@@ -32,8 +32,8 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.MsgTable;
 import org.andstatus.app.list.ContextMenuItem;
 import org.andstatus.app.list.MyBaseListActivity;
-import org.andstatus.app.msg.BaseMessageViewItem;
-import org.andstatus.app.msg.MessageViewItem;
+import org.andstatus.app.note.BaseNoteViewItem;
+import org.andstatus.app.note.NoteViewItem;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.view.SelectorDialog;
 
@@ -257,11 +257,11 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
         });
     }
 
-    public long findListItemId(String description, Predicate<BaseMessageViewItem> predicate) {
+    public long findListItemId(String description, Predicate<BaseNoteViewItem> predicate) {
         final String method = "findListItemId";
         for (int ind = 0; ind < getListAdapter().getCount(); ind++) {
             final ViewItem viewItem = (ViewItem) getListAdapter().getItem(ind);
-            BaseMessageViewItem item = toBaseMessageViewItem(viewItem);
+            BaseNoteViewItem item = toBaseMessageViewItem(viewItem);
             if (!item.isEmpty()) {
                 if (predicate.test(item)) {
                     MyLog.v(this, method + ": found " + description + " : " + item);
@@ -274,13 +274,13 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
     }
 
     @NonNull
-    static BaseMessageViewItem toBaseMessageViewItem(Object objItem) {
+    static BaseNoteViewItem toBaseMessageViewItem(Object objItem) {
         if (ActivityViewItem.class.isAssignableFrom(objItem.getClass())) {
-            return ((ActivityViewItem) objItem).message;
-        } else if (BaseMessageViewItem.class.isAssignableFrom(objItem.getClass())) {
-            return ((BaseMessageViewItem) objItem);
+            return ((ActivityViewItem) objItem).noteViewItem;
+        } else if (BaseNoteViewItem.class.isAssignableFrom(objItem.getClass())) {
+            return ((BaseNoteViewItem) objItem);
         }
-        return MessageViewItem.EMPTY;
+        return NoteViewItem.EMPTY;
     }
 
     public int getPositionOfListItemId(long itemId) {

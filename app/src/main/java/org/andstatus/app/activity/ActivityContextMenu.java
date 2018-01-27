@@ -20,20 +20,20 @@ import android.os.Bundle;
 import android.view.MenuItem;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.msg.MessageContextMenu;
-import org.andstatus.app.msg.MessageListContextMenuContainer;
-import org.andstatus.app.user.ActorListContextMenu;
+import org.andstatus.app.note.NoteContextMenu;
+import org.andstatus.app.note.NoteContextMenuContainer;
+import org.andstatus.app.actor.ActorContextMenu;
 import org.andstatus.app.view.MyContextMenu;
 
 public class ActivityContextMenu {
-    public final ActorContextMenu actor;
-    public final MessageContextMenu message;
-    public final ActorListContextMenu objActor;
+    public final org.andstatus.app.activity.ActorContextMenu actor;
+    public final NoteContextMenu message;
+    public final ActorContextMenu objActor;
 
-    public ActivityContextMenu(MessageListContextMenuContainer container) {
-        actor = new ActorContextMenu(container);
-        message = new MessageContextMenu(container);
-        objActor = new ActorListContextMenu(container, MyContextMenu.MENU_GROUP_OBJACTOR);
+    public ActivityContextMenu(NoteContextMenuContainer container) {
+        actor = new org.andstatus.app.activity.ActorContextMenu(container);
+        message = new NoteContextMenu(container);
+        objActor = new ActorContextMenu(container, MyContextMenu.MENU_GROUP_OBJACTOR);
     }
 
     public void onContextItemSelected(MenuItem item) {

@@ -18,14 +18,13 @@ package org.andstatus.app.activity;
 
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.msg.MessageEditorContainer;
-import org.andstatus.app.user.ActorListContextMenu;
-import org.andstatus.app.user.ActorViewItem;
+import org.andstatus.app.note.NoteEditorContainer;
+import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.view.MyContextMenu;
 
-public class ActorContextMenu extends ActorListContextMenu {
+public class ActorContextMenu extends org.andstatus.app.actor.ActorContextMenu {
 
-    public ActorContextMenu(MessageEditorContainer menuContainer) {
+    public ActorContextMenu(NoteEditorContainer menuContainer) {
         super(menuContainer, MyContextMenu.MENU_GROUP_ACTOR);
     }
 

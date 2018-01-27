@@ -120,7 +120,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
             addDefaultOriginTimelinesIfNoneFound(ma.getOrigin());
 
             long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
-                    TimelineTable._ID, TimelineTable.ACCOUNT_ID + "=" + ma.getUserId());
+                    TimelineTable._ID, TimelineTable.ACCOUNT_ID + "=" + ma.getActorId());
             if (timelineId == 0) {
                 addDefaultForAccount(myContext, ma);
             }

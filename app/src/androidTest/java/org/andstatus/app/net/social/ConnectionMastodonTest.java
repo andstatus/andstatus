@@ -40,12 +40,12 @@ import static org.junit.Assert.assertThat;
 
 public class ConnectionMastodonTest {
     private ConnectionMastodonMock connection;
-    private String accountUserOid;
+    private String accountActorOid;
 
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
-        accountUserOid = demoData.MASTODON_TEST_ACCOUNT_USER_OID;
+        accountActorOid = demoData.MASTODON_TEST_ACCOUNT_ACTOR_OID;
         connection = new ConnectionMastodonMock();
     }
 
@@ -56,7 +56,7 @@ public class ConnectionMastodonTest {
         connection.getHttpMock().setResponse(jso);
 
         List<AActivity> timeline = connection.getTimeline(Connection.ApiRoutineEnum.HOME_TIMELINE,
-                new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountUserOid);
+                new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountActorOid);
         assertNotNull("timeline returned", timeline);
         int size = 1;
         assertEquals("Number of items in the Timeline", size, timeline.size());
@@ -111,7 +111,7 @@ public class ConnectionMastodonTest {
         connection.getHttpMock().setResponse(jso);
 
         List<AActivity> timeline = connection.getTimeline(Connection.ApiRoutineEnum.NOTIFICATIONS_TIMELINE,
-                new TimelinePosition(""), TimelinePosition.EMPTY, 20, accountUserOid);
+                new TimelinePosition(""), TimelinePosition.EMPTY, 20, accountActorOid);
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 20, timeline.size());
 
@@ -151,7 +151,7 @@ public class ConnectionMastodonTest {
         assertEquals("Username", "resir014", actor.getActorName());
         assertEquals("WebfingerId", "resir014@icosahedron.website", actor.getWebFingerId());
         Actor user = activity.getObjActor();
-        assertEquals("Not following me" + activity, accountUserOid, user.oid);
+        assertEquals("Not following me" + activity, accountActorOid, user.oid);
 
         ind = 19;
         activity = timeline.get(ind);

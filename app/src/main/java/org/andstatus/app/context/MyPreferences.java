@@ -188,8 +188,8 @@ public class MyPreferences {
                 SharedPreferencesUtil.getString(KEY_TAP_ON_A_TIMELINE_TITLE_BEHAVIOUR, ""));
     }
 
-    public static UserInTimeline getUserInTimeline() {
-        return UserInTimeline.load(SharedPreferencesUtil.getString(KEY_USER_IN_TIMELINE, ""));
+    public static ActorInTimeline getUserInTimeline() {
+        return ActorInTimeline.load(SharedPreferencesUtil.getString(KEY_USER_IN_TIMELINE, ""));
     }
 
     public static boolean isShowDebuggingInfoInUi() {

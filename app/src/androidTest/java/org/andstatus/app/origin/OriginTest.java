@@ -3,8 +3,8 @@ package org.andstatus.app.origin;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.context.UserInTimeline;
-import org.andstatus.app.data.DemoMessageInserter;
+import org.andstatus.app.context.ActorInTimeline;
+import org.andstatus.app.data.DemoNoteInserter;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.MsgTable;
@@ -122,13 +122,13 @@ public class OriginTest {
         assertEquals(origin.getOriginType(), OriginType.TWITTER);
         String body = "Posting to Twitter " + demoData.TESTRUN_UID;
         String messageOid = "2578909845023" + demoData.TESTRUN_UID;
-        AActivity activity = DemoMessageInserter.addMessageForAccount(
+        AActivity activity = DemoNoteInserter.addMessageForAccount(
                 demoData.getMyAccount(demoData.TWITTER_TEST_ACCOUNT_NAME),
                 body, messageOid, DownloadStatus.LOADED);
         final long msgId = activity.getMessage().msgId;
         assertNotEquals(0, msgId);
         String userName = MyQuery.msgIdToUsername(MsgTable.AUTHOR_ID, msgId,
-                UserInTimeline.USERNAME);
+                ActorInTimeline.USERNAME);
         String permalink = origin.messagePermalink(msgId);
         String desc = "Permalink of Twitter message '" + messageOid + "' by '" + userName
                 + "' at " + origin.toString() + " is " + permalink;

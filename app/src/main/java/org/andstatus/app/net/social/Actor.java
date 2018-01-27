@@ -76,22 +76,22 @@ public class Actor implements Comparable<Actor> {
     // In our system
     @NonNull
     public final Origin origin;
-    public long userId = 0L;
+    public long actorId = 0L;
 
     @NonNull
-    public static Actor fromOriginAndActorOid(@NonNull Origin origin, String userOid) {
-        return new Actor(origin, userOid);
+    public static Actor fromOriginAndActorOid(@NonNull Origin origin, String actorOid) {
+        return new Actor(origin, actorOid);
     }
 
-    public static Actor fromOriginAndActorId(@NonNull Origin origin, long userId) {
+    public static Actor fromOriginAndActorId(@NonNull Origin origin, long actorId) {
         Actor user = new Actor(origin, "");
-        user.userId = userId;
+        user.actorId = actorId;
         return user;
     }
 
-    private Actor(Origin origin, String userOid) {
+    private Actor(@NonNull Origin origin, String actorOid) {
         this.origin = origin;
-        this.oid = TextUtils.isEmpty(userOid) ? "" : userOid;
+        this.oid = TextUtils.isEmpty(actorOid) ? "" : actorOid;
     }
 
     @NonNull
@@ -120,7 +120,7 @@ public class Actor implements Comparable<Actor> {
     }
 
     public boolean isEmpty() {
-        return this == EMPTY || !origin.isValid() || (userId == 0 && UriUtils.nonRealOid(oid)
+        return this == EMPTY || !origin.isValid() || (actorId == 0 && UriUtils.nonRealOid(oid)
                 && TextUtils.isEmpty(webFingerId) && TextUtils.isEmpty(actorName));
     }
 
@@ -130,7 +130,7 @@ public class Actor implements Comparable<Actor> {
     }
 
     public boolean isIdentified() {
-        return userId != 0 && isOidReal();
+        return actorId != 0 && isOidReal();
     }
 
     public boolean isOidReal() {
@@ -144,8 +144,8 @@ public class Actor implements Comparable<Actor> {
         }
         String str = Actor.class.getSimpleName();
         String members = "oid=" + oid + "; origin=" + origin.getName();
-        if (userId != 0) {
-            members += "; id=" + userId;
+        if (actorId != 0) {
+            members += "; id=" + actorId;
         }
         if (!TextUtils.isEmpty(actorName)) {
             members += "; username=" + actorName;
@@ -199,8 +199,8 @@ public class Actor implements Comparable<Actor> {
 
         Actor that = (Actor) o;
         if (!origin.equals(that.origin)) return false;
-        if (userId != 0 || that.userId != 0) {
-            return userId == that.userId;
+        if (actorId != 0 || that.actorId != 0) {
+            return actorId == that.actorId;
         }
         if (UriUtils.isRealOid(oid) || UriUtils.isRealOid(that.oid)) {
             return oid.equals(that.oid);
@@ -214,8 +214,8 @@ public class Actor implements Comparable<Actor> {
     @Override
     public int hashCode() {
         int result = origin.hashCode ();
-        if (userId != 0) {
-            return 31 * result + (int) (userId ^ (userId >>> 32));
+        if (actorId != 0) {
+            return 31 * result + (int) (actorId ^ (actorId >>> 32));
         }
         if (UriUtils.isRealOid(oid)) {
             return 31 * result + oid.hashCode();
@@ -234,8 +234,8 @@ public class Actor implements Comparable<Actor> {
     public boolean isSame(Actor other, boolean sameOriginOnly) {
         if (this == other) return true;
         if (other == null) return false;
-        if (userId != 0) {
-            if (userId == other.userId) return true;
+        if (actorId != 0) {
+            if (actorId == other.actorId) return true;
         }
         if (origin.equals(other.origin)) {
             if (UriUtils.isRealOid(oid) && oid.equals(other.oid)) {
@@ -283,7 +283,7 @@ public class Actor implements Comparable<Actor> {
             name = "oid: " + oid;
         }
         if (TextUtils.isEmpty(name)) {
-            name = "id: " + userId;
+            name = "id: " + actorId;
         }
         return name;
     }
@@ -298,27 +298,27 @@ public class Actor implements Comparable<Actor> {
 
     /**
      * Lookup the System's (AndStatus) id from the Originated system's id
-     * @return userId
+     * @return actorId
      */
-    public long lookupUserId() {
-        if (userId == 0) {
+    public long lookupActorId() {
+        if (actorId == 0) {
             if (isOidReal()) {
-                userId = MyQuery.oidToId(OidEnum.USER_OID, origin.getId(), oid);
+                actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(), oid);
             }
         }
-        if (userId == 0 && isWebFingerIdValid()) {
-            userId = MyQuery.webFingerIdToId(origin.getId(), webFingerId);
+        if (actorId == 0 && isWebFingerIdValid()) {
+            actorId = MyQuery.webFingerIdToId(origin.getId(), webFingerId);
         }
-        if (userId == 0 && !isWebFingerIdValid() && !TextUtils.isEmpty(actorName)) {
-            userId = MyQuery.userNameToId(origin.getId(), actorName);
+        if (actorId == 0 && !isWebFingerIdValid() && !TextUtils.isEmpty(actorName)) {
+            actorId = MyQuery.userNameToId(origin.getId(), actorName);
         }
-        if (userId == 0) {
-            userId = MyQuery.oidToId(OidEnum.USER_OID, origin.getId(), getTempOid());
+        if (actorId == 0) {
+            actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(), getTempOid());
         }
-        if (userId == 0 && hasAltTempOid()) {
-            userId = MyQuery.oidToId(OidEnum.USER_OID, origin.getId(), getAltTempOid());
+        if (actorId == 0 && hasAltTempOid()) {
+            actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(), getAltTempOid());
         }
-        return userId;
+        return actorId;
     }
 
     public boolean hasAltTempOid() {
@@ -387,8 +387,8 @@ public class Actor implements Comparable<Actor> {
             for (String host : Arrays.asList(getHost(), origin.getHost())) {
                 if (UrlUtils.hostIsValid(host)) {
                     final String possibleWebFingerId = validUserName + "@" + host;
-                    actor.userId = MyQuery.webFingerIdToId(origin.getId(), possibleWebFingerId);
-                    if (actor.userId != 0) {
+                    actor.actorId = MyQuery.webFingerIdToId(origin.getId(), possibleWebFingerId);
+                    if (actor.actorId != 0) {
                         actor.setWebFingerId(possibleWebFingerId);
                         break;
                     }
@@ -396,7 +396,7 @@ public class Actor implements Comparable<Actor> {
             }
         }
         actor.setActorName(validUserName);
-        actor.lookupUserId();
+        actor.lookupActorId();
         if (!actors.contains(actor)) {
             actors.add(actor);
         }
@@ -459,8 +459,8 @@ public class Actor implements Comparable<Actor> {
 
     @Override
     public int compareTo(Actor another) {
-        if (userId != 0 && another.userId != 0) {
-            if (userId == another.userId) {
+        if (actorId != 0 && another.actorId != 0) {
+            if (actorId == another.actorId) {
                 return 0;
             }
             return origin.getId() > another.origin.getId() ? 1 : -1;
@@ -496,6 +496,6 @@ public class Actor implements Comparable<Actor> {
     }
 
     public String getTimelineUserName() {
-        return MyQuery.userIdToWebfingerId(userId);
+        return MyQuery.actorIdToWebfingerId(actorId);
     }
 }

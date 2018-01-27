@@ -54,7 +54,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
                 url = "statusnet/config.json";
                 break;
             case GET_CONVERSATION:
-                url = "statusnet/conversation/%messageId%.json";
+                url = "statusnet/conversation/%noteId%.json";
                 break;
             case GET_OPEN_INSTANCES:
                 url = "http://gstools.org/api/get_open_instances";
@@ -76,10 +76,10 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     }
 
     @Override
-    public List<String> getFriendsIds(String userId) throws ConnectionException {
+    public List<String> getFriendsIds(String actorId) throws ConnectionException {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FRIENDS_IDS));
         Uri.Builder builder = sUri.buildUpon();
-        builder.appendQueryParameter("user_id", userId);
+        builder.appendQueryParameter("user_id", actorId);
         List<String> list = new ArrayList<>();
         JSONArray jArr = http.getRequestAsArray(builder.build().toString());
         try {
@@ -93,10 +93,10 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     }
 
     @Override
-    public List<String> getFollowersIds(String userId) throws ConnectionException {
+    public List<String> getFollowersIds(String actorId) throws ConnectionException {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FOLLOWERS_IDS));
         Uri.Builder builder = sUri.buildUpon();
-        builder.appendQueryParameter("user_id", userId);
+        builder.appendQueryParameter("user_id", actorId);
         List<String> list = new ArrayList<>();
         JSONArray jArr = http.getRequestAsArray(builder.build().toString());
         try {

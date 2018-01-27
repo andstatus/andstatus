@@ -281,7 +281,7 @@ public class AActivity extends AObject {
                 + (actor.isEmpty() ? "" : ", \nactor:" + actor)
                 + (note.isEmpty() ? "" : ", \nmessage:" + note)
                 + (getActivity().isEmpty() ? "" : ", \nactivity:" + getActivity())
-                + (objActor.isEmpty() ? "" : ", user:" + objActor)
+                + (objActor.isEmpty() ? "" : ", objActor:" + objActor)
                 + '}';
     }
 
@@ -307,7 +307,7 @@ public class AActivity extends AObject {
 
     public static AActivity fromCursor(MyContext myContext, Cursor cursor) {
         AActivity activity = from(
-                myContext.persistentAccounts().fromUserId(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID)).getActor(),
+                myContext.persistentAccounts().fromActorId(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID)).getActor(),
                 ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE)));
 
         activity.id = DbUtils.getLong(cursor, ActivityTable._ID);
@@ -352,7 +352,7 @@ public class AActivity extends AObject {
         if (MyAsyncTask.isUiThread()) {
             throw new IllegalStateException("Saving activity on the Main thread " + toString());
         }
-        if (accountActor.userId == 0) {
+        if (accountActor.actorId == 0) {
             throw new IllegalStateException("Account is unknown " + toString());
         }
         if (getId() == 0) {
@@ -369,7 +369,7 @@ public class AActivity extends AObject {
                 case LIKE:
                 case UNDO_LIKE:
                     final Pair<Long, ActivityType> favAndType = MyQuery.msgIdToLastFavoriting(myContext.getDatabase(),
-                            getMessage().msgId, accountActor.userId);
+                            getMessage().msgId, accountActor.actorId);
                     if ((favAndType.second.equals(ActivityType.LIKE) && type == ActivityType.LIKE)
                             || (favAndType.second.equals(ActivityType.UNDO_LIKE) && type == ActivityType.UNDO_LIKE)
                             ) {
@@ -380,7 +380,7 @@ public class AActivity extends AObject {
                 case ANNOUNCE:
                 case UNDO_ANNOUNCE:
                     final Pair<Long, ActivityType> reblAndType = MyQuery.msgIdToLastReblogging(myContext.getDatabase(),
-                            getMessage().msgId, accountActor.userId);
+                            getMessage().msgId, accountActor.actorId);
                     if ((reblAndType.second.equals(ActivityType.ANNOUNCE) && type == ActivityType.ANNOUNCE)
                             || (reblAndType.second.equals(ActivityType.UNDO_ANNOUNCE) && type == ActivityType.UNDO_ANNOUNCE)
                             ) {
@@ -447,10 +447,10 @@ public class AActivity extends AObject {
     private ContentValues toContentValues() {
         ContentValues values = new ContentValues();
         values.put(ActivityTable.ORIGIN_ID, accountActor.origin.getId());
-        values.put(ActivityTable.ACCOUNT_ID, accountActor.userId);
-        values.put(ActivityTable.ACTOR_ID, getActor().userId);
+        values.put(ActivityTable.ACCOUNT_ID, accountActor.actorId);
+        values.put(ActivityTable.ACTOR_ID, getActor().actorId);
         values.put(ActivityTable.MSG_ID, getMessage().msgId);
-        values.put(ActivityTable.USER_ID, getObjActor().userId);
+        values.put(ActivityTable.USER_ID, getObjActor().actorId);
         values.put(ActivityTable.OBJ_ACTIVITY_ID, getActivity().id);
         if (subscribedByMe.known()) {
             values.put(ActivityTable.SUBSCRIBED, subscribedByMe.id);

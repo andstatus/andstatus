@@ -151,7 +151,7 @@ public class AccountListFragment extends Fragment {
 
         @Override
         public long getUniqueItemId(int position) {
-            return mItemList.get(position).getUserId();
+            return mItemList.get(position).getActorId();
         }
 
         public class ViewHolder extends DragItemAdapter.ViewHolder {
@@ -164,7 +164,7 @@ public class AccountListFragment extends Fragment {
             public void onItemClicked(View view) {
                 Intent intent = new Intent(getActivity(), AccountSettingsActivity.class);
                 intent.putExtra(IntentExtra.ACCOUNT_NAME.key,
-                        MyContextHolder.get().persistentAccounts().fromUserId(mItemId).getAccountName());
+                        MyContextHolder.get().persistentAccounts().fromActorId(mItemId).getAccountName());
                 getActivity().startActivity(intent);
             }
 

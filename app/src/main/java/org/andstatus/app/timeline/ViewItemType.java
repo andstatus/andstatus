@@ -19,15 +19,15 @@ package org.andstatus.app.timeline;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.activity.ActivityViewItem;
-import org.andstatus.app.msg.ConversationViewItem;
-import org.andstatus.app.msg.MessageViewItem;
+import org.andstatus.app.note.ConversationViewItem;
+import org.andstatus.app.note.NoteViewItem;
 import org.andstatus.app.service.QueueData;
 import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.user.ActorViewItem;
+import org.andstatus.app.actor.ActorViewItem;
 
 public enum ViewItemType {
     ACTIVITY(ActivityViewItem.EMPTY),
-    MESSAGE(MessageViewItem.EMPTY),
+    MESSAGE(NoteViewItem.EMPTY),
     USER(ActorViewItem.EMPTY),
     CONVERSATION(ConversationViewItem.EMPTY),
     COMMANDS_QUEUE(QueueData.EMPTY),

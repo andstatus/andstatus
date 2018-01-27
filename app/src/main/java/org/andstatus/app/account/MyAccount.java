@@ -87,11 +87,11 @@ public final class MyAccount implements Comparable<MyAccount> {
     /**
      * {@link ActorTable#_ID} in our System.
      */
-    public static final String KEY_USER_ID = "user_id";
+    public static final String KEY_ACTOR_ID = "user_id";
     /**
      * {@link ActorTable#ACTOR_OID} in Microblogging System.
      */
-    public static final String KEY_USER_OID = "user_oid";
+    public static final String KEY_ACTOR_OID = "user_oid";
 
     /**
      * Is OAuth on for this MyAccount?
@@ -224,11 +224,11 @@ public final class MyAccount implements Comparable<MyAccount> {
                 return;
             }
             boolean changed = false;
-            if (isPersistent() && myAccount.actor.userId == 0) {
+            if (isPersistent() && myAccount.actor.actorId == 0) {
                 changed = true;
                 assignUserId();
                 MyLog.e(TAG, "MyAccount '" + myAccount.getAccountName()
-                        + "' was not connected to the User table. UserId=" + myAccount.actor.userId);
+                        + "' was not connected to the User table. ActorId=" + myAccount.actor.actorId);
             }
             if (!myAccount.getCredentialsPresent()
                     && myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
@@ -263,15 +263,15 @@ public final class MyAccount implements Comparable<MyAccount> {
         }
 
         /**
-         * Delete all User's data
+         * Delete all Account's data
          * @return true = success 
          */
         boolean deleteData() {
             boolean ok = true;
 
-            if (isPersistent() && myAccount.actor.userId != 0) {
-                // TODO: Delete databases for this User
-                myAccount.actor.userId = 0;
+            if (isPersistent() && myAccount.actor.actorId != 0) {
+                // TODO: Delete databases for this Account
+                myAccount.actor.actorId = 0;
             }
             setAndroidAccountDeleted();
             return ok;
@@ -313,11 +313,11 @@ public final class MyAccount implements Comparable<MyAccount> {
                 }
                 Account androidAccount = getNewOrExistingAndroidAccount();
                 myAccount.accountData.setDataString(KEY_USERNAME, myAccount.oAccountName.getUsername());
-                myAccount.accountData.setDataString(KEY_USER_OID, myAccount.actor.oid);
+                myAccount.accountData.setDataString(KEY_ACTOR_OID, myAccount.actor.oid);
                 myAccount.accountData.setDataString(Origin.KEY_ORIGIN_NAME, myAccount.oAccountName.getOriginName());
                 myAccount.credentialsVerified.put(myAccount.accountData);
                 myAccount.accountData.setDataBoolean(KEY_OAUTH, myAccount.isOAuth);
-                myAccount.accountData.setDataLong(KEY_USER_ID, myAccount.actor.userId);
+                myAccount.accountData.setDataLong(KEY_ACTOR_ID, myAccount.actor.actorId);
                 if (myAccount.connection != null) {
                     myAccount.connection.save(myAccount.accountData);
                 }
@@ -429,7 +429,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                 myAccount.actor = user;
                 if (DatabaseConverterController.isUpgrading()) {
                     MyLog.v(TAG, "Upgrade in progress");
-                    myAccount.actor.userId = myAccount.accountData.getDataLong(KEY_USER_ID, myAccount.actor.userId);
+                    myAccount.actor.actorId = myAccount.accountData.getDataLong(KEY_ACTOR_ID, myAccount.actor.actorId);
                 } else {
                     new DataUpdater(myAccount).onActivity(user.update(user));
                 }
@@ -496,8 +496,8 @@ public final class MyAccount implements Comparable<MyAccount> {
         }
 
         private void assignUserId() {
-            myAccount.actor.userId = MyQuery.userNameToId(myAccount.getOriginId(), myAccount.getUsername());
-            if (myAccount.actor.userId == 0) {
+            myAccount.actor.actorId = MyQuery.userNameToId(myAccount.getOriginId(), myAccount.getUsername());
+            if (myAccount.actor.actorId == 0) {
                 DataUpdater di = new DataUpdater(myAccount);
                 try {
                     di.onActivity(myAccount.actor.update(myAccount.getActor()));
@@ -686,7 +686,7 @@ public final class MyAccount implements Comparable<MyAccount> {
 
     public boolean isValid() {
         return (!deleted && version == MyAccount.ACCOUNT_VERSION)
-                && actor.userId != 0
+                && actor.actorId != 0
                 && connection != null
                 && oAccountName.isValid()
                 && !TextUtils.isEmpty(actor.oid);
@@ -705,10 +705,10 @@ public final class MyAccount implements Comparable<MyAccount> {
     private MyAccount(@NonNull AccountData accountData, @NonNull AccountName accountName) {
         this.accountData = accountData;
         oAccountName = accountName;
-        actor = Actor.fromOriginAndActorOid(accountName.getOrigin(), accountData.getDataString(KEY_USER_OID, ""));
-        actor.userId = accountData.getDataLong(KEY_USER_ID, 0L);
+        actor = Actor.fromOriginAndActorOid(accountName.getOrigin(), accountData.getDataString(KEY_ACTOR_OID, ""));
+        actor.actorId = accountData.getDataLong(KEY_ACTOR_ID, 0L);
         actor.setActorName(oAccountName.getUsername());
-        actor.setWebFingerId(MyQuery.userIdToWebfingerId(actor.userId));
+        actor.setWebFingerId(MyQuery.actorIdToWebfingerId(actor.actorId));
         this.version = accountData.getDataInt(KEY_VERSION, ACCOUNT_VERSION);
 
         deleted = accountData.getDataBoolean(KEY_DELETED, false);
@@ -743,11 +743,11 @@ public final class MyAccount implements Comparable<MyAccount> {
         return oAccountName.getName();
     }
 
-    public long getUserId() {
-        return actor.userId;
+    public long getActorId() {
+        return actor.actorId;
     }
 
-    public String getUserOid() {
+    public String getActorOid() {
         return actor.oid;
     }
 
@@ -848,8 +848,8 @@ public final class MyAccount implements Comparable<MyAccount> {
 
         String members = (isValid() ? "" : "(invalid) ") + "accountName:" + oAccountName + ",";
         try {
-            if (actor.userId != 0) {
-                members += "id:" + actor.userId + ",";
+            if (actor.actorId != 0) {
+                members += "id:" + actor.actorId + ",";
             }
             if (!TextUtils.isEmpty(actor.oid)) {
                 members += "oid:" + actor.oid + ",";
@@ -894,11 +894,11 @@ public final class MyAccount implements Comparable<MyAccount> {
         JSONObject jso = new JSONObject();
         jso.put(KEY_ACCOUNT, getAccountName());  
         jso.put(KEY_USERNAME, getUsername());  
-        jso.put(KEY_USER_OID, actor.oid);
+        jso.put(KEY_ACTOR_OID, actor.oid);
         jso.put(Origin.KEY_ORIGIN_NAME, oAccountName.getOriginName());
         credentialsVerified.put(jso);
         jso.put(KEY_OAUTH, isOAuth);
-        jso.put(KEY_USER_ID, actor.userId);
+        jso.put(KEY_ACTOR_ID, actor.actorId);
         if (connection != null) {
             connection.save(jso);
         }

@@ -25,7 +25,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.context.UserInTimeline;
+import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.FriendshipTable;
@@ -57,7 +57,7 @@ public class TimelineSql {
      */
     static String tablesForTimeline(Uri uri, String[] projection) {
         Timeline timeline = Timeline.fromParsedUri(MyContextHolder.get(), ParsedUri.fromUri(uri), "");
-        SqlUserIds selectedAccounts = SqlUserIds.fromTimeline(timeline);
+        SqlActorIds selectedAccounts = SqlActorIds.fromTimeline(timeline);
     
         Collection<String> columns = new java.util.HashSet<>(Arrays.asList(projection));
 
@@ -71,10 +71,10 @@ public class TimelineSql {
             case FRIENDS:
             case MY_FRIENDS:
                 String fUserIdColumnName = FriendshipTable.FRIEND_ID;
-                String fUserLinkedUserIdColumnName = FriendshipTable.USER_ID;
+                String fUserLinkedUserIdColumnName = FriendshipTable.ACTOR_ID;
                 if (timeline.getTimelineType() == TimelineType.FOLLOWERS ||
                         timeline.getTimelineType() == TimelineType.MY_FOLLOWERS) {
-                    fUserIdColumnName = FriendshipTable.USER_ID;
+                    fUserIdColumnName = FriendshipTable.ACTOR_ID;
                     fUserLinkedUserIdColumnName = FriendshipTable.FRIEND_ID;
                 }
                 // Select only the latest message from each Friend's timeline
@@ -112,7 +112,7 @@ public class TimelineSql {
                 break;
             case USER:
             case SENT:
-                SqlUserIds userIds = SqlUserIds.fromTimeline(timeline);
+                SqlActorIds userIds = SqlActorIds.fromTimeline(timeline);
                 // All actions by this User(s)
                 activityWhere.append(ActivityTable.ACTOR_ID + userIds.getSql());
                 break;
@@ -127,7 +127,7 @@ public class TimelineSql {
             activityWhere.append(ActivityTable.ORIGIN_ID + "=" + timeline.getOrigin().getId());
         }
         if (timeline.getTimelineType().isForAccount() && !timeline.isCombined()) {
-            activityWhere.append(ActivityTable.ACCOUNT_ID + "=" + timeline.getMyAccount().getUserId());
+            activityWhere.append(ActivityTable.ACCOUNT_ID + "=" + timeline.getMyAccount().getActorId());
         }
         String  tables = "(SELECT * FROM " + ActivityTable.TABLE_NAME + activityWhere.getWhere()
                 + ") AS " + ProjectionMap.ACTIVITY_TABLE_ALIAS
@@ -273,7 +273,7 @@ public class TimelineSql {
                         MyPreferences.isShowDebuggingInfoInUi()) {
                     long authorId = DbUtils.getLong(cursor, MsgTable.AUTHOR_ID);
                     if (authorId != 0) {
-                        userName += " id:" + MyQuery.idToOid(OidEnum.USER_OID, authorId, 0);
+                        userName += " id:" + MyQuery.idToOid(OidEnum.ACTOR_OID, authorId, 0);
                     }
                 }
             }
@@ -282,8 +282,8 @@ public class TimelineSql {
     }
 
     public static String userNameField() {
-        UserInTimeline userInTimeline = MyPreferences.getUserInTimeline();
-        return MyQuery.userNameField(userInTimeline);
+        ActorInTimeline actorInTimeline = MyPreferences.getUserInTimeline();
+        return MyQuery.userNameField(actorInTimeline);
     }
     
 }

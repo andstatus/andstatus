@@ -28,10 +28,9 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.MsgTable;
-import org.andstatus.app.msg.BaseMessageViewItem;
+import org.andstatus.app.note.BaseNoteViewItem;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -66,7 +65,7 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
         assertTrue(ma.isValidAndSucceeded());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
-        assertEquals(ma.getUserId(), MyContextHolder.get().persistentAccounts().getCurrentAccountUserId());
+        assertEquals(ma.getActorId(), MyContextHolder.get().persistentAccounts().getCurrentAccountActorId());
         MyLog.i(this, "setUp ended");
 
         return new Intent(Intent.ACTION_VIEW, Timeline.getTimeline(TimelineType.PUBLIC, ma, 0, null).getUri());
@@ -74,12 +73,12 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
 
     @Test
     public void testGlobalSearchInOptionsMenu() throws InterruptedException {
-        oneSearchTest("testGlobalSearchInOptionsMenu", demoData.GLOBAL_PUBLIC_MESSAGE_TEXT, true);
+        oneSearchTest("testGlobalSearchInOptionsMenu", demoData.GLOBAL_PUBLIC_NOTE_TEXT, true);
     }
 
     @Test
     public void testSearch() throws InterruptedException {
-        oneSearchTest("testSearch", demoData.PUBLIC_MESSAGE_TEXT, false);
+        oneSearchTest("testSearch", demoData.PUBLIC_NOTE_TEXT, false);
     }
 
     private void oneSearchTest(String method, String messageText, boolean internetSearch) throws InterruptedException {
@@ -155,7 +154,7 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
         for (int index = 0; index < list.getChildCount(); index++) {
             View messageView = list.getChildAt(index);
             TextView bodyView = messageView.findViewById(R.id.message_body);
-            final BaseMessageViewItem viewItem = ListActivityTestHelper.toBaseMessageViewItem(
+            final BaseNoteViewItem viewItem = ListActivityTestHelper.toBaseMessageViewItem(
                     timelineActivity.getListAdapter().getItem(messageView));
             if (bodyView != null) {
                 assertTrue("Message #" + viewItem.getId() + " '" + viewItem.getBody()

@@ -65,7 +65,7 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest {
         final String method = "testSharingMediaToThisApp";
         ListActivityTestHelper<TimelineActivity> listActivityTestHelper =
                 ListActivityTestHelper.newForSelectorDialog(getActivity(), AccountSelector.getDialogTag());
-        listActivityTestHelper.selectIdFromSelectorDialog(method, ma.getUserId());
+        listActivityTestHelper.selectIdFromSelectorDialog(method, ma.getActorId());
 
         View editorView = getActivity().findViewById(R.id.message_editor);
         ActivityTestHelper.waitViewVisible(method, editorView);

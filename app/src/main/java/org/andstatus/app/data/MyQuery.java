@@ -26,7 +26,7 @@ import android.support.v4.util.Pair;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.UserInTimeline;
+import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.database.table.MsgTable;
@@ -54,15 +54,15 @@ public class MyQuery {
         // Empty
     }
 
-    static String userNameField(UserInTimeline userInTimeline) {
-        switch (userInTimeline) {
-            case AT_USERNAME:
+    static String userNameField(ActorInTimeline actorInTimeline) {
+        switch (actorInTimeline) {
+            case AT_ACTORNAME:
                 return "('@' || " + ActorTable.ACTORNAME + ")";
             case WEBFINGER_ID:
                 return ActorTable.WEBFINGER_ID;
             case REAL_NAME:
                 return ActorTable.REAL_NAME;
-            case REAL_NAME_AT_USERNAME:
+            case REAL_NAME_AT_ACTORNAME:
                 return "(" + ActorTable.REAL_NAME + " || ' @' || " + ActorTable.ACTORNAME + ")";
             default:
                 return ActorTable.ACTORNAME;
@@ -93,7 +93,7 @@ public class MyQuery {
                         + " WHERE " + MsgTable.ORIGIN_ID + "=" + originId + " AND " + MsgTable.MSG_OID
                         + "=" + quoteIfNotQuoted(oid);
                 break;
-            case USER_OID:
+            case ACTOR_OID:
                 sql = "SELECT " + BaseColumns._ID + " FROM " + ActorTable.TABLE_NAME
                         + " WHERE " + ActorTable.ORIGIN_ID + "=" + originId + " AND " + ActorTable.ACTOR_OID
                         + "=" + quoteIfNotQuoted(oid);
@@ -207,7 +207,7 @@ public class MyQuery {
                                 + MsgTable.TABLE_NAME + " WHERE " + BaseColumns._ID + "=" + entityId;
                         break;
     
-                    case USER_OID:
+                    case ACTOR_OID:
                         sql = "SELECT " + ActorTable.ACTOR_OID + " FROM "
                                 + ActorTable.TABLE_NAME + " WHERE " + BaseColumns._ID + "="
                                 + entityId;
@@ -215,7 +215,7 @@ public class MyQuery {
     
                     case REBLOG_OID:
                         if (rebloggerUserId == 0) {
-                            MyLog.e(TAG, method + ": userId was not defined");
+                            MyLog.e(TAG, method + ": actorId was not defined");
                         }
                         sql = "SELECT " + ActivityTable.ACTIVITY_OID + " FROM "
                                 + ActivityTable.TABLE_NAME + " WHERE "
@@ -295,7 +295,7 @@ public class MyQuery {
         return msgIdToActors(db, origin, msgId, ActivityType.ANNOUNCE, ActivityType.UNDO_ANNOUNCE);
     }
 
-    /** @return for each acted user (userId is a key): ID of the last type1 or type2 activity
+    /** @return for each actor (actorId is a key): ID of the last type1 or type2 activity
      *  and the type of the activity */
     @NonNull
     public static List<Actor> msgIdToActors(
@@ -334,25 +334,25 @@ public class MyQuery {
     }
 
     @NonNull
-    public static ActorToMessage favoritedAndReblogged(
-            SQLiteDatabase db, long msgId, long userId) {
+    public static ActorToNote favoritedAndReblogged(
+            SQLiteDatabase db, long msgId, long actorId) {
         String method = "favoritedAndReblogged";
         boolean favoriteFound = false;
         boolean reblogFound = false;
-        ActorToMessage actorToMessage = new ActorToMessage();
-        if (db == null || msgId == 0 || userId == 0) {
-            return actorToMessage;
+        ActorToNote actorToNote = new ActorToNote();
+        if (db == null || msgId == 0 || actorId == 0) {
+            return actorToNote;
         }
         String sql = "SELECT " + ActivityTable.ACTIVITY_TYPE + ", " + ActivityTable.SUBSCRIBED
                 + " FROM " + ActivityTable.TABLE_NAME + " INNER JOIN " + ActorTable.TABLE_NAME
                 + " ON " + ActivityTable.ACTOR_ID + "=" + ActorTable.TABLE_NAME + "." + ActorTable._ID
                 + " WHERE " + ActivityTable.MSG_ID + "=" + msgId + " AND "
-                + ActivityTable.ACTOR_ID + "=" + userId
+                + ActivityTable.ACTOR_ID + "=" + actorId
                 + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC";
         try (Cursor cursor = db.rawQuery(sql, null)) {
             while(cursor.moveToNext()) {
                 if (DbUtils.getTriState(cursor, ActivityTable.SUBSCRIBED) == TriState.TRUE) {
-                    actorToMessage.subscribed = true;
+                    actorToNote.subscribed = true;
                 }
                 ActivityType activityType = ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
                 switch (activityType) {
@@ -360,14 +360,14 @@ public class MyQuery {
                     case UNDO_LIKE:
                         if (!favoriteFound) {
                             favoriteFound = true;
-                            actorToMessage.favorited = activityType == ActivityType.LIKE;
+                            actorToNote.favorited = activityType == ActivityType.LIKE;
                         }
                         break;
                     case ANNOUNCE:
                     case UNDO_ANNOUNCE:
                         if (!reblogFound) {
                             reblogFound = true;
-                            actorToMessage.reblogged = activityType == ActivityType.ANNOUNCE;
+                            actorToNote.reblogged = activityType == ActivityType.ANNOUNCE;
                         }
                         break;
                     default:
@@ -377,10 +377,10 @@ public class MyQuery {
         } catch (Exception e) {
             MyLog.w(TAG, method + "; SQL:'" + sql + "'", e);
         }
-        return actorToMessage;
+        return actorToNote;
     }
 
-    public static String msgIdToUsername(String userIdColumnName, long messageId, UserInTimeline userInTimeline) {
+    public static String msgIdToUsername(String userIdColumnName, long messageId, ActorInTimeline actorInTimeline) {
         final String method = "msgIdToUsername";
         String userName = "";
         if (messageId != 0) {
@@ -392,7 +392,7 @@ public class MyQuery {
                     throw new IllegalArgumentException( method + "; Not implemented \"" + userIdColumnName + "\"");
                 } else if(userIdColumnName.contentEquals(MsgTable.AUTHOR_ID) ||
                         userIdColumnName.contentEquals(MsgTable.IN_REPLY_TO_USER_ID)) {
-                    sql = "SELECT " + userNameField(userInTimeline) + " FROM " + ActorTable.TABLE_NAME
+                    sql = "SELECT " + userNameField(actorInTimeline) + " FROM " + ActorTable.TABLE_NAME
                             + " INNER JOIN " + MsgTable.TABLE_NAME + " ON "
                             + MsgTable.TABLE_NAME + "." + userIdColumnName + "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID
                             + " WHERE " + MsgTable.TABLE_NAME + "." + BaseColumns._ID + "=" + messageId;
@@ -422,12 +422,12 @@ public class MyQuery {
         return userName;
     }
 
-    public static String userIdToWebfingerId(long userId) {
-        return userIdToName(userId, UserInTimeline.WEBFINGER_ID);
+    public static String actorIdToWebfingerId(long actorId) {
+        return actorIdToName(actorId, ActorInTimeline.WEBFINGER_ID);
     }
 
-    public static String userIdToName(long userId, UserInTimeline userInTimeline) {
-        return idToStringColumnValue(ActorTable.TABLE_NAME, userNameField(userInTimeline), userId);
+    public static String actorIdToName(long actorId, ActorInTimeline actorInTimeline) {
+        return idToStringColumnValue(ActorTable.TABLE_NAME, userNameField(actorInTimeline), actorId);
     }
 
     /**
@@ -531,12 +531,12 @@ public class MyQuery {
     }
 
     public static long msgIdToUserId(String msgUserIdColumnName, long systemId) {
-        long userId = 0;
+        long actorId = 0;
         try {
             if (msgUserIdColumnName.contentEquals(ActivityTable.ACTOR_ID) ||
                     msgUserIdColumnName.contentEquals(MsgTable.AUTHOR_ID) ||
                     msgUserIdColumnName.contentEquals(MsgTable.IN_REPLY_TO_USER_ID)) {
-                userId = msgIdToLongColumnValue(msgUserIdColumnName, systemId);
+                actorId = msgIdToLongColumnValue(msgUserIdColumnName, systemId);
             } else {
                 throw new IllegalArgumentException("msgIdToUserId; Illegal column '" + msgUserIdColumnName + "'");
             }
@@ -544,7 +544,7 @@ public class MyQuery {
             MyLog.e(TAG, "msgIdToUserId", e);
             return 0;
         }
-        return userId;
+        return actorId;
     }
 
     public static long msgIdToOriginId(long systemId) {
@@ -672,18 +672,18 @@ public class MyQuery {
     }
 
     @NonNull
-    public static Set<Long> getFollowersIds(long userId) {
-        String where = FriendshipTable.FRIEND_ID + "=" + userId
+    public static Set<Long> getFollowersIds(long actorId) {
+        String where = FriendshipTable.FRIEND_ID + "=" + actorId
                 + " AND " + FriendshipTable.FOLLOWED + "=1";
-        String sql = "SELECT " + FriendshipTable.USER_ID
+        String sql = "SELECT " + FriendshipTable.ACTOR_ID
                 + " FROM " + FriendshipTable.TABLE_NAME
                 + " WHERE " + where;
         return getLongs(sql);
     }
 
     @NonNull
-    public static Set<Long> getFriendsIds(long userId) {
-        String where = FriendshipTable.USER_ID + "=" + userId
+    public static Set<Long> getFriendsIds(long actorId) {
+        String where = FriendshipTable.ACTOR_ID + "=" + actorId
                 + " AND " + FriendshipTable.FOLLOWED + "=1";
         String sql = "SELECT " + FriendshipTable.FRIEND_ID
                 + " FROM " + FriendshipTable.TABLE_NAME
@@ -729,13 +729,13 @@ public class MyQuery {
      *  MyAccounts' userIDs, who follow the specified User
      */
     @NonNull
-    public static Set<Long> getMyFollowersOf(long userId) {
-        SqlUserIds selectedAccounts = SqlUserIds.fromTimeline(Timeline.EMPTY);
+    public static Set<Long> getMyFollowersOf(long actorId) {
+        SqlActorIds selectedAccounts = SqlActorIds.fromTimeline(Timeline.EMPTY);
 
-        String where = FriendshipTable.USER_ID + selectedAccounts.getSql()
-                + " AND " + FriendshipTable.FRIEND_ID + "=" + userId
+        String where = FriendshipTable.ACTOR_ID + selectedAccounts.getSql()
+                + " AND " + FriendshipTable.FRIEND_ID + "=" + actorId
                 + " AND " + FriendshipTable.FOLLOWED + "=1";
-        String sql = "SELECT " + FriendshipTable.USER_ID
+        String sql = "SELECT " + FriendshipTable.ACTOR_ID
                 + " FROM " + FriendshipTable.TABLE_NAME
                 + " WHERE " + where;
 
@@ -743,10 +743,10 @@ public class MyQuery {
     }
 
     public static boolean isFollowing(long followerId, long friendId) {
-        String where = FriendshipTable.USER_ID + "=" + followerId
+        String where = FriendshipTable.ACTOR_ID + "=" + followerId
                 + " AND " + FriendshipTable.FRIEND_ID + "=" + friendId
                 + " AND " + FriendshipTable.FOLLOWED + "=1";
-        String sql = "SELECT " + FriendshipTable.USER_ID
+        String sql = "SELECT " + FriendshipTable.ACTOR_ID
                 + " FROM " + FriendshipTable.TABLE_NAME
                 + " WHERE " + where;
 
