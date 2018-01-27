@@ -77,7 +77,7 @@ public class ConnectionPumpioTest {
         originUrl = UrlUtils.fromString("https://" + demoData.PUMPIO_MAIN_HOST);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        OriginConnectionData connectionData = OriginConnectionData.fromAccountName(AccountName.fromOriginAndUserName(
+        OriginConnectionData connectionData = OriginConnectionData.fromAccountName(AccountName.fromOriginAndUsername(
                 MyContextHolder.get().persistentOrigins().fromName(demoData.PUMPIO_ORIGIN_NAME), ""),
                 TriState.UNKNOWN);
         connectionData.setAccountActor(demoData.getAccountUserByOid(demoData.PUMPIO_TEST_ACCOUNT_ACTOR_OID));
@@ -185,7 +185,7 @@ public class ConnectionPumpioTest {
                 TestSuite.utcTime(activity.getUpdatedDate()));
         Actor actor = activity.getActor();
         assertEquals("Sender's oid", "acct:jpope@io.jpope.org", actor.oid);
-        assertEquals("Sender's username", "jpope@io.jpope.org", actor.getActorName());
+        assertEquals("Sender's username", "jpope@io.jpope.org", actor.getUsername());
         assertEquals("Sender's Display name", "jpope", actor.getRealName());
         assertEquals("Sender's profile image URL", "https://io.jpope.org/uploads/jpope/2013/7/8/LPyLPw_thumb.png", actor.avatarUrl);
         assertEquals("Sender's profile URL", "https://io.jpope.org/jpope", actor.getProfileUrl());
@@ -252,7 +252,7 @@ public class ConnectionPumpioTest {
         note = activity.getMessage();
         assertEquals(activity.isSubscribedByMe(), TriState.UNKNOWN);
         assertTrue("Is a reply", note.getInReplyTo().nonEmpty());
-        assertEquals("Is not a reply to this actor " + activity, "jankusanagi@identi.ca", note.getInReplyTo().getAuthor().getActorName());
+        assertEquals("Is not a reply to this actor " + activity, "jankusanagi@identi.ca", note.getInReplyTo().getAuthor().getUsername());
         assertEquals(TriState.UNKNOWN, note.getInReplyTo().isSubscribedByMe());
     }
 
@@ -271,7 +271,7 @@ public class ConnectionPumpioTest {
         assertEquals("Response for t131t", size, users.size());
 
         assertEquals("Does the Pope shit in the woods?", users.get(1).getDescription());
-        assertEquals("gitorious@identi.ca", users.get(2).getActorName());
+        assertEquals("gitorious@identi.ca", users.get(2).getUsername());
         assertEquals("acct:ken@coding.example", users.get(3).oid);
         assertEquals("Yuri Volkov", users.get(4).getRealName());
     }

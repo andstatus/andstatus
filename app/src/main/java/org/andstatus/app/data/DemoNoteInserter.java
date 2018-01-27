@@ -82,7 +82,7 @@ public class DemoNoteInserter {
         String profileUrl;
         if (origin.getOriginType() == OriginType.PUMPIO) {
             ConnectionPumpio connection = new ConnectionPumpio();
-            username = connection.actorOidToActorName(actorOid);
+            username = connection.actorOidToUsername(actorOid);
             profileUrl = "http://" + connection.usernameToHost(username) + "/"
                     + connection.usernameToNickname(username);
         } else {
@@ -90,7 +90,7 @@ public class DemoNoteInserter {
             profileUrl = "https://" + demoData.GNUSOCIAL_TEST_ORIGIN_NAME
                     + ".example.com/profiles/" + username;
         }
-        actor.setActorName(username);
+        actor.setUsername(username);
         actor.setProfileUrl(profileUrl);
         actor.setRealName("Real " + username);
         actor.setDescription("This is about " + username);

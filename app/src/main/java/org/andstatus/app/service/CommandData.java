@@ -75,7 +75,7 @@ public class CommandData implements Comparable<CommandData> {
     /** Sometimes we don't know {@link #timeline#getUserId} yet...
      * Used for Actor search also
      */
-    private String actorName = "";
+    private String username = "";
 
     private volatile int result = 0;
     private CommandResult commandResult = new CommandResult();
@@ -114,10 +114,10 @@ public class CommandData implements Comparable<CommandData> {
 
     @NonNull
     public static CommandData newActorCommand(CommandEnum command, MyAccount myActor,
-                                              Origin origin, long actorId, String actorName) {
+                                              Origin origin, long actorId, String username) {
         CommandData commandData = newTimelineCommand(command, myActor, TimelineType.ACTOR, actorId, origin);
-        commandData.setActorName(actorName);
-        commandData.description = commandData.getActorName();
+        commandData.setUsername(username);
+        commandData.description = commandData.getUsername();
         return commandData;
     }
 
@@ -188,7 +188,7 @@ public class CommandData implements Comparable<CommandData> {
                         Timeline.fromBundle(myContext, bundle),
                         bundle.getLong(IntentExtra.CREATED_DATE.key));
                 commandData.itemId = bundle.getLong(IntentExtra.ITEM_ID.key);
-                commandData.setActorName(BundleUtils.getString(bundle, IntentExtra.ACTOR_NAME));
+                commandData.setUsername(BundleUtils.getString(bundle, IntentExtra.ACTOR_NAME));
                 commandData.description = BundleUtils.getString(bundle, IntentExtra.COMMAND_DESCRIPTION);
                 commandData.mInForeground = bundle.getBoolean(IntentExtra.IN_FOREGROUND.key);
                 commandData.mManuallyLaunched = bundle.getBoolean(IntentExtra.MANUALLY_LAUNCHED.key);
@@ -215,7 +215,7 @@ public class CommandData implements Comparable<CommandData> {
         BundleUtils.putNotEmpty(bundle, IntentExtra.COMMAND, command.save());
         timeline.toBundle(bundle);
         BundleUtils.putNotZero(bundle, IntentExtra.ITEM_ID, itemId);
-        BundleUtils.putNotEmpty(bundle, IntentExtra.ACTOR_NAME, actorName);
+        BundleUtils.putNotEmpty(bundle, IntentExtra.ACTOR_NAME, username);
         BundleUtils.putNotEmpty(bundle, IntentExtra.COMMAND_DESCRIPTION, description);
         bundle.putBoolean(IntentExtra.IN_FOREGROUND.key, mInForeground);
         bundle.putBoolean(IntentExtra.MANUALLY_LAUNCHED.key, mManuallyLaunched);
@@ -232,7 +232,7 @@ public class CommandData implements Comparable<CommandData> {
         values.put(CommandTable.MANUALLY_LAUNCHED, mManuallyLaunched);
         timeline.toCommandContentValues(values);
         ContentValuesUtils.putNotZero(values, CommandTable.ITEM_ID, itemId);
-        values.put(CommandTable.USERNAME, actorName);
+        values.put(CommandTable.USERNAME, username);
         commandResult.toContentValues(values);
     }
 
@@ -250,7 +250,7 @@ public class CommandData implements Comparable<CommandData> {
         commandData.mInForeground = DbUtils.getBoolean(cursor, CommandTable.IN_FOREGROUND);
         commandData.mManuallyLaunched = DbUtils.getBoolean(cursor, CommandTable.MANUALLY_LAUNCHED);
         commandData.itemId = DbUtils.getLong(cursor, CommandTable.ITEM_ID);
-        commandData.setActorName(DbUtils.getString(cursor, CommandTable.USERNAME));
+        commandData.setUsername(DbUtils.getString(cursor, CommandTable.USERNAME));
         commandData.commandResult = CommandResult.fromCursor(cursor);
         return commandData;
     }
@@ -294,10 +294,10 @@ public class CommandData implements Comparable<CommandData> {
             builder.append(",manual");
         }
         builder.append(",created:" + RelativeTime.getDifference(MyContextHolder.get().context(), getCreatedDate()));
-        if (StringUtils.nonEmpty(actorName)) {
-            builder.append(",actor:'" + actorName + "'");
+        if (StringUtils.nonEmpty(username)) {
+            builder.append(",actor:'" + username + "'");
         }
-        if (StringUtils.nonEmpty(description) && !description.equals(actorName)) {
+        if (StringUtils.nonEmpty(description) && !description.equals(username)) {
             builder.append(",\"");
             builder.append(description);
             builder.append("\"");
@@ -425,9 +425,9 @@ public class CommandData implements Comparable<CommandData> {
                 break;
             case GET_ACTOR:
             case SEARCH_ACTORS:
-                if (StringUtils.nonEmpty(getActorName())) {
+                if (StringUtils.nonEmpty(getUsername())) {
                     builder.append(" \"");
-                    builder.append(getActorName());
+                    builder.append(getUsername());
                     builder.append("\"");
                 }
                 break;
@@ -539,13 +539,13 @@ public class CommandData implements Comparable<CommandData> {
         return timeline.getActorId();
     }
 
-    public String getActorName() {
-        return actorName;
+    public String getUsername() {
+        return username;
     }
 
-    public void setActorName(String actorName) {
-        if (TextUtils.isEmpty(this.actorName) && !TextUtils.isEmpty(actorName)) {
-            this.actorName = actorName;
+    public void setUsername(String username) {
+        if (TextUtils.isEmpty(this.username) && !TextUtils.isEmpty(username)) {
+            this.username = username;
         }
     }
 }

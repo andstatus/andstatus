@@ -98,7 +98,7 @@ public final class DemoOriginInserter {
     private void insertTestKeys(Origin origin) {
         HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(
                 OriginConnectionData.fromAccountName(
-                        AccountName.fromOriginAndUserName(origin, ""), TriState.UNKNOWN)
+                        AccountName.fromOriginAndUsername(origin, ""), TriState.UNKNOWN)
         );
         final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
         final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());

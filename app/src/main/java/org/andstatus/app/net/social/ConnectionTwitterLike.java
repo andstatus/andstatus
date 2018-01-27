@@ -297,7 +297,7 @@ public abstract class ConnectionTwitterLike extends Connection {
                 }
                 if (!SharedPreferencesUtil.isEmpty(senderOid)) {
                     author = Actor.fromOriginAndActorOid(data.getOrigin(), senderOid);
-                    author.setActorName(senderName);
+                    author.setUsername(senderName);
                 }
             }
             activity.setActor(author);
@@ -335,7 +335,7 @@ public abstract class ConnectionTwitterLike extends Connection {
                     // Construct Related message from available info
                     Actor inReplyToUser = Actor.fromOriginAndActorOid(data.getOrigin(), inReplyToActorOid);
                     if (jso.has("in_reply_to_screen_name")) {
-                        inReplyToUser.setActorName(jso.getString("in_reply_to_screen_name"));
+                        inReplyToUser.setUsername(jso.getString("in_reply_to_screen_name"));
                     }
                     AActivity inReplyTo = AActivity.newPartialMessage(data.getAccountActor(), inReplyToMessageOid);
                     inReplyTo.setActor(inReplyToUser);
@@ -383,7 +383,7 @@ public abstract class ConnectionTwitterLike extends Connection {
             }
         }
         Actor actor = Actor.fromOriginAndActorOid(data.getOrigin(), oid);
-        actor.setActorName(userName);
+        actor.setUsername(userName);
         actor.setRealName(jso.optString("name"));
         if (!SharedPreferencesUtil.isEmpty(actor.getRealName())) {
             actor.setProfileUrl(data.getOriginUrl());
@@ -499,17 +499,17 @@ public abstract class ConnectionTwitterLike extends Connection {
      * @see <a href="https://dev.twitter.com/docs/api/1.1/get/users/show">GET users/show</a>
      */
     @Override
-    public Actor getActor(String actorOid, String actorName) throws ConnectionException {
+    public Actor getActor(String actorOid, String username) throws ConnectionException {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_ACTOR));
         Uri.Builder builder = sUri.buildUpon();
         if (UriUtils.isRealOid(actorOid)) {
             builder.appendQueryParameter("user_id", actorOid);
         } else {
-            builder.appendQueryParameter("screen_name", actorName);
+            builder.appendQueryParameter("screen_name", username);
         }
         JSONObject jso = http.getRequest(builder.build().toString());
         Actor actor = actorFromJson(jso);
-        MyLog.v(this, "getUser oid='" + actorOid + "', userName='" + actorName + "' -> " + actor.getRealName());
+        MyLog.v(this, "getActor oid='" + actorOid + "', username='" + username + "' -> " + actor.getRealName());
         return actor;
     }
     

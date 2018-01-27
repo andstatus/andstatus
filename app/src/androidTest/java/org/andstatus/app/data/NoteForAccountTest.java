@@ -42,7 +42,7 @@ public class NoteForAccountTest {
         assertTrue(mfa.hasPrivateAccess());
         
         Actor author2 = mi.buildActorFromOid("acct:a2." + demoData.TESTRUN_UID + "@pump.example.com");
-        final AActivity replyTo1 = mi.buildActivity(author2, "@" + accountActor.getActorName()
+        final AActivity replyTo1 = mi.buildActivity(author2, "@" + accountActor.getUsername()
                 + " Replying to you", activity1, null, DownloadStatus.LOADED);
         replyTo1.getMessage().setPrivate(FALSE);
         mi.onActivity(replyTo1);
@@ -56,7 +56,7 @@ public class NoteForAccountTest {
         assertTrue(mfa.hasPrivateAccess());
 
         Actor author3 = mi.buildActorFromOid("acct:b3." + demoData.TESTRUN_UID + "@pumpity.example.com");
-        AActivity replyTo2 = mi.buildActivity(author3, "@" + author2.getActorName()
+        AActivity replyTo2 = mi.buildActivity(author3, "@" + author2.getUsername()
                 + " Replying to the second author", replyTo1, null, DownloadStatus.LOADED);
         replyTo2.getMessage().setPrivate(FALSE);
         mi.onActivity(replyTo2);
@@ -70,10 +70,10 @@ public class NoteForAccountTest {
         assertFalse(mfa.hasPrivateAccess());
         assertFalse(mfa.reblogged);
 
-        AActivity reblogged1 = mi.buildActivity(author3, "@" + author2.getActorName()
+        AActivity reblogged1 = mi.buildActivity(author3, "@" + author2.getUsername()
                 + " This reply is reblogged by anotherMan", replyTo1, null, DownloadStatus.LOADED);
         Actor anotherMan = mi.buildActorFromOid("acct:c4." + demoData.TESTRUN_UID + "@pump.example.com");
-        anotherMan.setActorName("anotherMan" + demoData.TESTRUN_UID);
+        anotherMan.setUsername("anotherMan" + demoData.TESTRUN_UID);
         AActivity activity4 = AActivity.from(accountActor, ActivityType.ANNOUNCE);
         activity4.setActor(anotherMan);
         activity4.setActivity(reblogged1);

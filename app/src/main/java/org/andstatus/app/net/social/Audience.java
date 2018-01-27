@@ -59,7 +59,7 @@ public class Audience {
             if (sb.length() > 0) {
                 sb.append(", ");
             }
-            sb.append(actor.getTimelineActorName());
+            sb.append(actor.getTimelineUsername());
         }
         return sb.toString();
     }

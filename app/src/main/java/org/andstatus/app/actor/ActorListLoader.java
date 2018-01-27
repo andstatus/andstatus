@@ -99,7 +99,7 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
                         CommandEnum.GET_ACTOR,
                         null, viewItem.actor.origin,
                         viewItem.getActorId(),
-                        viewItem.actor.getActorName()));
+                        viewItem.actor.getUsername()));
     }
 
     protected void loadInternal() {

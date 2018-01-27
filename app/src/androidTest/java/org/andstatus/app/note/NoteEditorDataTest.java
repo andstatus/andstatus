@@ -64,7 +64,7 @@ public class NoteEditorDataTest {
         }
         String expectedName = MyQuery.userIdToStringColumnValue(
                 data.ma.getOrigin().isMentionAsWebFingerId() ? ActorTable.WEBFINGER_ID
-                        : ActorTable.ACTORNAME, mentionedUserId);
+                        : ActorTable.USERNAME, mentionedUserId);
         assertTrue(!TextUtils.isEmpty(expectedName));
         boolean isMentioned = data.body.contains("@" + expectedName);
         assertEquals(data.toString() + "; expected name:" + expectedName, isMentioned_in, isMentioned);

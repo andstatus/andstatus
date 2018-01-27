@@ -68,7 +68,7 @@ class OriginTwitter extends Origin {
         }
         final Uri uri = fixUriforPermalink(UriUtils.fromUrl(url));
         if (Audience.fromMsgId(this, messageId).isEmpty()) {
-            String userName = MyQuery.msgIdToUsername(NoteTable.AUTHOR_ID, messageId, ActorInTimeline.ACTORNAME);
+            String userName = MyQuery.msgIdToUsername(NoteTable.AUTHOR_ID, messageId, ActorInTimeline.USERNAME);
             final String oid = MyQuery.msgIdToStringColumnValue(NoteTable.NOTE_OID, messageId);
             return Uri.withAppendedPath(uri, userName + "/status/" + oid).toString();
         } else {

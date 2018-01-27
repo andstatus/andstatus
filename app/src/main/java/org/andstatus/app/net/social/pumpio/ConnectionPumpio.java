@@ -132,7 +132,7 @@ public class ConnectionPumpio extends Connection {
         }
         String oid = jso.optString("id");
         Actor actor = Actor.fromOriginAndActorOid(data.getOrigin(), oid);
-        actor.setActorName(actorOidToActorName(oid));
+        actor.setUsername(actorOidToUsername(oid));
         actor.setRealName(jso.optString("displayName"));
         actor.avatarUrl = JsonUtils.optStringInside(jso, "image", "url");
         actor.location = JsonUtils.optStringInside(jso, "location", "displayName");
@@ -261,7 +261,7 @@ public class ConnectionPumpio extends Connection {
         if (TextUtils.isEmpty(actorId)) {
             throw new ConnectionException(StatusCode.BAD_REQUEST, apiRoutine + ": actorId is required");
         }
-        return  getConnectionAndUrlForUsername(apiRoutine, actorOidToActorName(actorId));
+        return  getConnectionAndUrlForUsername(apiRoutine, actorOidToUsername(actorId));
     }
 
     private ConnectionAndUrl getConnectionAndUrlForUsername(ApiRoutineEnum apiRoutine, String username) throws ConnectionException {
@@ -532,17 +532,17 @@ public class ConnectionPumpio extends Connection {
     /**
      * 2014-01-22 According to the crash reports, actorId may not have "acct:" prefix
      */
-    public String actorOidToActorName(String actorId) {
-        String actorName = "";
+    public String actorOidToUsername(String actorId) {
+        String username = "";
         if (!TextUtils.isEmpty(actorId)) {
             int indexOfColon = actorId.indexOf(':');
             if (indexOfColon >= 0) {
-                actorName = actorId.substring(indexOfColon+1);
+                username = actorId.substring(indexOfColon+1);
             } else {
-                actorName = actorId;
+                username = actorId;
             }
         }
-        return actorName;
+        return username;
     }
     
     public String usernameToNickname(String username) {
@@ -585,12 +585,12 @@ public class ConnectionPumpio extends Connection {
     }
     
     @Override
-    public Actor getActor(String actorOid, String actorName) throws ConnectionException {
+    public Actor getActor(String actorOid, String username) throws ConnectionException {
         ConnectionAndUrl conu = getConnectionAndUrlForUsername(ApiRoutineEnum.GET_ACTOR,
-                UriUtils.isRealOid(actorOid) ? actorOidToActorName(actorOid) : actorName);
+                UriUtils.isRealOid(actorOid) ? actorOidToUsername(actorOid) : username);
         JSONObject jso = conu.httpConnection.getRequest(conu.url);
         Actor actor = actorFromJson(jso);
-        MyLog.v(this, "getActor oid='" + actorOid + "', userName='" + actorName + "' -> " + actor.getRealName());
+        MyLog.v(this, "getActor oid='" + actorOid + "', username='" + username + "' -> " + actor.getRealName());
         return actor;
     }
 

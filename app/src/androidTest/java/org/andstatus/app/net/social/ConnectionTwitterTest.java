@@ -66,7 +66,7 @@ public class ConnectionTwitterTest {
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.TWITTER_TEST_ORIGIN_NAME);
 
         connectionData = OriginConnectionData.fromAccountName(
-                AccountName.fromOriginAndUserName(origin, demoData.TWITTER_TEST_ACCOUNT_ACTORNAME),
+                AccountName.fromOriginAndUsername(origin, demoData.TWITTER_TEST_ACCOUNT_USERNAME),
                 TriState.UNKNOWN);
         connectionData.setAccountActor(demoData.getAccountUserByOid(demoData.TWITTER_TEST_ACCOUNT_ACTOR_OID));
         connectionData.setDataReader(new AccountDataReaderEmpty());
@@ -104,7 +104,7 @@ public class ConnectionTwitterTest {
         assertEquals("Favorited " + activity, TriState.TRUE, activity.getMessage().getFavoritedBy(activity.accountActor));
         Actor author = activity.getAuthor();
         assertEquals("Oid", "221452291", author.oid);
-        assertEquals("Username", "Know", author.getActorName());
+        assertEquals("Username", "Know", author.getUsername());
         assertEquals("WebFinger ID", "Know@" + hostName, author.getWebFingerId());
         assertEquals("Display name", "Just so you Know", author.getRealName());
         assertEquals("Description", "Unimportant facts you'll never need to know. Legally responsible publisher: @FUN", author.getDescription());

@@ -74,7 +74,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("conversationOid", "2218650", activity.getMessage().conversationOid);
         assertEquals("Favorited " + activity, TriState.TRUE, activity.getMessage().getFavoritedBy(activity.accountActor));
         assertEquals("Oid", "116387", activity.getAuthor().oid);
-        assertEquals("Username", "aru", activity.getAuthor().getActorName());
+        assertEquals("Username", "aru", activity.getAuthor().getUsername());
         assertEquals("WebFinger ID", "aru@status.vinilox.eu", activity.getAuthor().getWebFingerId());
         assertEquals("Display name", "aru", activity.getAuthor().getRealName());
         assertEquals("Description", "Manjaro user, student of physics and metalhead. Excuse my english ( ͡° ͜ʖ ͡°)", activity.getAuthor().getDescription());
@@ -108,7 +108,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountActor));
         String startsWith = "@<span class=\"vcard\">";
         assertEquals("Body of this message starts with", startsWith, activity.getMessage().getBody().substring(0, startsWith.length()));
-        assertEquals("Username", "andstatus", activity.getAuthor().getActorName());
+        assertEquals("Username", "andstatus", activity.getAuthor().getUsername());
         assertEquals("Display name", "AndStatus@quitter.se", activity.getAuthor().getRealName());
         assertEquals("Banner URL", "https://quitter.se/file/3fd65c6088ea02dc3a5ded9798a865a8ff5425b13878da35ad894cd084d015fc.png", activity.getAuthor().bannerUrl);
 
@@ -120,7 +120,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("MyAccount", accountActorOid, activity.accountActor.oid);
         assertEquals("Actor", activity.getAuthor().oid, activity.getActor().oid);
         assertEquals("Oid", "114973", activity.getAuthor().oid);
-        assertEquals("Username", "mmn", activity.getAuthor().getActorName());
+        assertEquals("Username", "mmn", activity.getAuthor().getUsername());
         assertEquals("WebFinger ID", "mmn@social.umeahackerspace.se", activity.getAuthor().getWebFingerId());
         assertEquals("Display name", "mmn", activity.getAuthor().getRealName());
         assertEquals("Description", "", activity.getAuthor().getDescription());
@@ -178,7 +178,7 @@ public class ConnectionGnuSocialTest {
         }
         assertNotNull("message returned", activity);
         assertEquals("conversationOid", "1956322", activity.getMessage().conversationOid);
-        assertEquals("Author", "mcscx", activity.getAuthor().getActorName());
+        assertEquals("Author", "mcscx", activity.getAuthor().getUsername());
         assertEquals("null Homepage (url) should be treated as blank", "", activity.getAuthor().getHomepage());
 
         assertEquals("has attachment", activity.getMessage().attachments.size(), 1);

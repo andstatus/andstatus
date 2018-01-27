@@ -58,9 +58,9 @@ public class VerifyCredentialsTest {
         TestSuite.initializeWithData(this);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        OriginConnectionData connectionData = OriginConnectionData.fromAccountName(AccountName.fromOriginAndUserName(
+        OriginConnectionData connectionData = OriginConnectionData.fromAccountName(AccountName.fromOriginAndUsername(
                 MyContextHolder.get().persistentOrigins().fromName(demoData.TWITTER_TEST_ORIGIN_NAME),
-                demoData.TWITTER_TEST_ACCOUNT_ACTORNAME),
+                demoData.TWITTER_TEST_ACCOUNT_USERNAME),
                 TriState.UNKNOWN);
         connectionData.setAccountActor(demoData.getAccountUserByOid(demoData.TWITTER_TEST_ACCOUNT_ACTOR_OID));
         connectionData.setDataReader(new AccountDataReaderEmpty());
@@ -101,7 +101,7 @@ public class VerifyCredentialsTest {
         builder.onCredentialsVerified(actor, null);
         assertTrue("Account is persistent", builder.isPersistent());
         long actorId = builder.getAccount().getActorId();
-        assertTrue("Account " + actor.getActorName() + " has ActorId", actorId != 0);
+        assertTrue("Account " + actor.getUsername() + " has ActorId", actorId != 0);
         assertEquals("Account actorOid", builder.getAccount().getActorOid(), actor.oid);
         assertEquals("Actor in the database for id=" + actorId,
                 actor.oid,
@@ -111,7 +111,7 @@ public class VerifyCredentialsTest {
         long msgId = MyQuery.oidToId(OidEnum.MSG_OID, origin.getId(), msgOid) ;
         assertTrue("Message not found", msgId != 0);
         long userIdM = MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, msgId);
-        assertEquals("Message not by " + actor.getActorName() + " found", actorId, userIdM);
+        assertEquals("Message not by " + actor.getUsername() + " found", actorId, userIdM);
 
         assertEquals("Message permalink at twitter",
                 "https://" + origin.fixUriforPermalink(UriUtils.fromUrl(origin.getUrl())).getHost()

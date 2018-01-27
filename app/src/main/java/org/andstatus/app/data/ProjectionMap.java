@@ -92,7 +92,7 @@ public class ProjectionMap {
         ACTOR.put(ActorTable.ORIGIN_ID, ActorTable.ORIGIN_ID);
         ACTOR.put(ActorTable.ACTOR_ID, ActorTable.TABLE_NAME + "." + BaseColumns._ID + " AS " + ActorTable.ACTOR_ID);
         ACTOR.put(ActorTable.ACTOR_OID, ActorTable.ACTOR_OID);
-        ACTOR.put(ActorTable.ACTORNAME, ActorTable.ACTORNAME);
+        ACTOR.put(ActorTable.USERNAME, ActorTable.USERNAME);
         ACTOR.put(ActorTable.WEBFINGER_ID, ActorTable.WEBFINGER_ID);
         ACTOR.put(ActorTable.REAL_NAME, ActorTable.REAL_NAME);
         ACTOR.put(ActorTable.DESCRIPTION, ActorTable.DESCRIPTION);

@@ -79,7 +79,7 @@ public class ConnectionMastodonTest {
 
         assertEquals("Actor is partially defined " + actor, false, actor.isPartiallyDefined());
         assertEquals("Actor Oid", "37", actor.oid);
-        assertEquals("Username", "t131t1", actor.getActorName());
+        assertEquals("Username", "t131t1", actor.getUsername());
 
         assertEquals("Message Oid " + activity, "22", message.oid);
         assertEquals("Message url" + activity, "https://neumastodon.com/@t131t1/22", message.url);
@@ -123,9 +123,9 @@ public class ConnectionMastodonTest {
         assertEquals("Is not an activity", AObjectType.ACTIVITY, activity.getObjectType());
         Actor actor = activity.getActor();
         assertEquals("Actor's Oid", "15451", actor.oid);
-        assertEquals("Actor's username", "Chaosphere", actor.getActorName());
+        assertEquals("Actor's username", "Chaosphere", actor.getUsername());
         assertEquals("WebfingerId", "Chaosphere@mastodon.social", actor.getWebFingerId());
-        assertEquals("Author's username" + activity, "AndStatus", activity.getAuthor().getActorName());
+        assertEquals("Author's username" + activity, "AndStatus", activity.getAuthor().getUsername());
         assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountActor));
 
         ind = 2;
@@ -136,10 +136,10 @@ public class ConnectionMastodonTest {
         assertEquals("Is not LIKE " + activity, ActivityType.LIKE, activity.type);
         assertThat(activity.getMessage().getBody(), is("<p>IT infrastructure of modern church</p>"));
         assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountActor));
-        assertEquals("Author's username", "AndStatus", activity.getAuthor().getActorName());
+        assertEquals("Author's username", "AndStatus", activity.getAuthor().getUsername());
         actor = activity.getActor();
         assertEquals("Actor's Oid", "48790", actor.oid);
-        assertEquals("Actor's Username", "vfrmedia", actor.getActorName());
+        assertEquals("Actor's Username", "vfrmedia", actor.getUsername());
         assertEquals("WebfingerId", "vfrmedia@social.tchncs.de", actor.getWebFingerId());
 
         ind = 17;
@@ -148,7 +148,7 @@ public class ConnectionMastodonTest {
         assertEquals("Is not an ACTOR", AObjectType.ACTOR, activity.getObjectType());
         actor = activity.getActor();
         assertEquals("Actor's Oid", "24853", actor.oid);
-        assertEquals("Username", "resir014", actor.getActorName());
+        assertEquals("Username", "resir014", actor.getUsername());
         assertEquals("WebfingerId", "resir014@icosahedron.website", actor.getWebFingerId());
         Actor objActor = activity.getObjActor();
         assertEquals("Not following me" + activity, accountActorOid, objActor.oid);
@@ -160,7 +160,7 @@ public class ConnectionMastodonTest {
         assertThat(activity.getMessage().getBody(), containsString("universe of Mastodon"));
         actor = activity.getActor();
         assertEquals("Actor's Oid", "119218", actor.oid);
-        assertEquals("Username", "izwx6502", actor.getActorName());
+        assertEquals("Username", "izwx6502", actor.getUsername());
         assertEquals("WebfingerId", "izwx6502@mstdn.jp", actor.getWebFingerId());
     }
 }

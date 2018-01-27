@@ -46,7 +46,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
                     ma,
                     menu.getOrigin(),
                     menu.getViewItem().getActorId(),
-                    menu.getViewItem().actor.getActorName());
+                    menu.getViewItem().actor.getUsername());
             MyServiceManager.sendManualForegroundCommand(commandData);
         }
     },

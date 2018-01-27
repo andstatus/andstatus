@@ -90,7 +90,7 @@ public class ConnectionEmpty extends Connection {
     }
 
     @Override
-    public Actor getActor(String actorOid, String actorName) throws ConnectionException {
+    public Actor getActor(String actorOid, String username) throws ConnectionException {
         return Actor.EMPTY;
     }
 

@@ -34,11 +34,11 @@ public class AccountName {
     public static final String ORIGIN_SEPARATOR = "/";
     
     /**
-     * The system in which the username is defined, see {@link Origin}
+     * The system in which the Account is defined, see {@link Origin}
      */
     private Origin origin;
     /**
-     * The username is unique for the {@link Origin}
+     * The username ("screen name") is unique for the {@link Origin}
      */
     private String username;
 
@@ -91,11 +91,10 @@ public class AccountName {
 
     protected static AccountName fromOriginAndUserNames(MyContext myContext, String originName,
                                                         String username) {
-        return fromOriginAndUserName(
-                myContext.persistentOrigins().fromName(fixOriginName(originName)), username);
+        return fromOriginAndUsername(myContext.persistentOrigins().fromName(fixOriginName(originName)), username);
     }
 
-    public static AccountName fromOriginAndUserName(@NonNull Origin origin, String username) {
+    public static AccountName fromOriginAndUsername(@NonNull Origin origin, String username) {
         AccountName accountName = new AccountName();
         accountName.origin = origin;
         accountName.username = accountName.fixUsername(username);

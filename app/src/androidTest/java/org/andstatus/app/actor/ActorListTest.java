@@ -73,7 +73,7 @@ public class ActorListTest extends TimelineActivityTest {
 
         List<Actor> users = Actor.fromOriginAndActorOid(demoData.getConversationMyAccount().getOrigin(), "").extractActorsFromBodyText(body, false);
         assertEquals(logMsg, 3, users.size());
-        assertEquals(logMsg, "unknownUser@example.com", users.get(2).getActorName());
+        assertEquals(logMsg, "unknownUser@example.com", users.get(2).getUsername());
 
         ActivityViewItem item = ActivityViewItem.EMPTY;
         TimelineData<ActivityViewItem> timelineData = getActivity().getListData();
@@ -119,7 +119,7 @@ public class ActorListTest extends TimelineActivityTest {
 
     private void compareAttributes(Actor expected, Actor actual, boolean forActorList) {
         assertEquals("Oid", expected.oid, actual.oid);
-        assertEquals("Username", expected.getActorName(), actual.getActorName());
+        assertEquals("Username", expected.getUsername(), actual.getUsername());
         assertEquals("WebFinger ID", expected.getWebFingerId(), actual.getWebFingerId());
         assertEquals("Display name", expected.getRealName(), actual.getRealName());
         assertEquals("Description", expected.getDescription(), actual.getDescription());

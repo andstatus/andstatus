@@ -70,7 +70,7 @@ public class ActorListSql {
         List<String> columnNames = new ArrayList<>();
         columnNames.add(ActorTable._ID);
         columnNames.add(ActorTable.ACTOR_OID);
-        columnNames.add(ActorTable.ACTORNAME);
+        columnNames.add(ActorTable.USERNAME);
         columnNames.add(ActorTable.WEBFINGER_ID);
         columnNames.add(ActorTable.REAL_NAME);
         columnNames.add(ActorTable.DESCRIPTION);

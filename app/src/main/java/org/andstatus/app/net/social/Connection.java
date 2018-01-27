@@ -91,7 +91,7 @@ public abstract class Connection {
         /**
          * Get the actor's replies.
          * 
-         * Returns most recent @replies (status updates prefixed with @actorname)
+         * Returns most recent @replies (status updates prefixed with @username)
          * for the authenticating user (an account).
          */
         MENTIONS_TIMELINE,
@@ -363,7 +363,7 @@ public abstract class Connection {
     /**
      * Get information about the specified Actor
      */
-    public abstract Actor getActor(String actorOid, String actorName) throws ConnectionException;
+    public abstract Actor getActor(String actorOid, String username) throws ConnectionException;
     
     protected final String fixSinceId(String sinceId) {
         String out = "";

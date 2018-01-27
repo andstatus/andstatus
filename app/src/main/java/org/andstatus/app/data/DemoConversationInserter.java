@@ -80,7 +80,7 @@ public class DemoConversationInserter {
 
         Actor author3 = buildUserFromOid(demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
         author3.setRealName("John Smith");
-        author3.setActorName(demoData.CONVERSATION_AUTHOR_THIRD_ACTORNAME);
+        author3.setUsername(demoData.CONVERSATION_AUTHOR_THIRD_USERNAME);
         author3.setHomepage("http://johnsmith.com/welcome");
         author3.setCreatedDate(new GregorianCalendar(2011,5,12).getTimeInMillis());
         author3.setDescription("I am an ordinary guy, interested in computer science");
@@ -130,7 +130,7 @@ public class DemoConversationInserter {
         DemoConversationInserter.assertIfUserIsMyFriend(author3, true, ma);
 
         final String BODY_OF_MENTIONS_MESSAGE = "@fourthWithoutAvatar@pump.example.com Reply 5 to Reply 4\n"
-                + "@" + author3.getActorName()
+                + "@" + author3.getUsername()
                 + " @unknownUser@example.com";
         AActivity reply5 = buildActivity(author2, BODY_OF_MENTIONS_MESSAGE, reply4,
                 iteration == 1 ? demoData.CONVERSATION_MENTIONS_NOTE_OID : null);
@@ -213,7 +213,7 @@ public class DemoConversationInserter {
         DemoNoteInserter.assertNotified(reblogOfMy13, TriState.TRUE);
         assertNotificationEvent(reblogOfMy13, NotificationEventType.ANNOUNCE);
 
-        AActivity mentionOfAuthor3 = buildActivity(reblogger1, "@" + author3.getActorName() + " mention in reply to 4",
+        AActivity mentionOfAuthor3 = buildActivity(reblogger1, "@" + author3.getUsername() + " mention in reply to 4",
                 reply4, iteration == 1 ? demoData.CONVERSATION_MENTION_OF_AUTHOR3_OID : null);
         addActivity(mentionOfAuthor3);
 

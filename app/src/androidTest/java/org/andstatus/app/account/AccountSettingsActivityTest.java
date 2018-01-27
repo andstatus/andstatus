@@ -82,7 +82,7 @@ public class AccountSettingsActivityTest extends ActivityTest<AccountSettingsAct
     private void assertUsernameTextField(int viewId) {
         TextView usernameText = (TextView) getActivity().findViewById(viewId);
         assertTrue(usernameText != null);
-        assertEquals("Selected Username", ma.getUsername(), usernameText.getText().toString());
+        assertEquals("Selected username", ma.getUsername(), usernameText.getText().toString());
     }
     
     private void openingOriginList() throws InterruptedException {

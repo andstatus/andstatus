@@ -108,7 +108,7 @@ public class NoteShare {
                                         NoteTable.AUTHOR_ID,
                                         messageId,
                                         origin.isMentionAsWebFingerId() ? ActorInTimeline.WEBFINGER_ID
-                                                : ActorInTimeline.ACTORNAME),
+                                                : ActorInTimeline.USERNAME),
                                 origin.messagePermalink(messageId)
                                 )).toString();
     }

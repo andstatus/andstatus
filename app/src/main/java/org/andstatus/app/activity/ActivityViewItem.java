@@ -159,7 +159,7 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
         if (this == EMPTY) {
             return "EMPTY";
         }
-        return actor.getWebFingerIdOrActorName() + " " + activityType + " " + (noteId == 0
+        return actor.getWebFingerIdOrUsername() + " " + activityType + " " + (noteId == 0
                 ? objActorItem
                 : noteViewItem
         );

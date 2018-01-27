@@ -84,7 +84,7 @@ public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable 
             view = convertView;
         }
         final ActorViewItem item = getItem(position);
-        String userName = item == null ? "???" : item.getWebFingerIdOrActorName();
+        String userName = item == null ? "???" : item.getWebFingerIdOrUsername();
         MyUrlSpan.showText(view, R.id.username, userName, false, true);
         MyUrlSpan.showText(view, R.id.description, item == null ? "" :
                 I18n.trimTextAt(item.actor.getDescription(), 80).toString(), false, false);
@@ -166,8 +166,8 @@ public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable 
             if (resultValue == null) {
                 return "(null)";
             }
-            return origin.isMentionAsWebFingerId() ? ((ActorViewItem)resultValue).getWebFingerIdOrActorName()
-                    : ((ActorViewItem)resultValue).actor.getActorName();
+            return origin.isMentionAsWebFingerId() ? ((ActorViewItem)resultValue).getWebFingerIdOrUsername()
+                    : ((ActorViewItem)resultValue).actor.getUsername();
         }
     }
 }

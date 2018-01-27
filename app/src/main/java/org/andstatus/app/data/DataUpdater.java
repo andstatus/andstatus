@@ -351,11 +351,11 @@ public class DataUpdater {
                 }
 
                 // Substitute required empty values with some temporary for a new entry only!
-                String userName = objActor.getActorName();
+                String userName = objActor.getUsername();
                 if (SharedPreferencesUtil.isEmpty(userName)) {
                     userName = "id:" + actorOid;
                 }
-                values.put(ActorTable.ACTORNAME, userName);
+                values.put(ActorTable.USERNAME, userName);
                 String webFingerId = objActor.getWebFingerId();
                 if (SharedPreferencesUtil.isEmpty(webFingerId)) {
                     webFingerId = userName;
@@ -410,7 +410,7 @@ public class DataUpdater {
                 values.put(FriendshipTable.FOLLOWED, followedByMe.toBoolean(false));
                 MyLog.v(this, "Account '" + me.getAccountName() + "' "
                                 + (followedByMe.toBoolean(false) ? "follows" : "stop following ")
-                                + objActor.getActorName());
+                                + objActor.getUsername());
             }
             
             // Construct the Uri to the Actor

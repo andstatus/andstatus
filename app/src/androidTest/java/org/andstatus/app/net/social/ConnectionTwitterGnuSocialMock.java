@@ -27,7 +27,7 @@ public class ConnectionTwitterGnuSocialMock extends ConnectionTwitterGnuSocial {
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.GNUSOCIAL_TEST_ORIGIN_NAME);
 
         OriginConnectionData connectionData = OriginConnectionData.fromAccountName(
-                AccountName.fromOriginAndUserName(origin, demoData.GNUSOCIAL_TEST_ACCOUNT_ACTORNAME),
+                AccountName.fromOriginAndUsername(origin, demoData.GNUSOCIAL_TEST_ACCOUNT_USERNAME),
                 TriState.UNKNOWN);
         connectionData.setAccountActor(demoData.getAccountUserByOid(demoData.GNUSOCIAL_TEST_ACCOUNT_ACTOR_OID));
         connectionData.setDataReader(new AccountDataReaderEmpty());

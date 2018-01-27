@@ -80,10 +80,10 @@ public class DemoAccountInserter {
         long accountUserId_existing = MyQuery.oidToId(myContext.getDatabase(), OidEnum.ACTOR_OID,
                 accountName.getOrigin().getId(), actorOid);
         Actor actor = Actor.fromOriginAndActorOid(accountName.getOrigin(), actorOid);
-        actor.setActorName(accountName.getUsername());
+        actor.setUsername(accountName.getUsername());
         actor.avatarUrl = avatarUrl;
         if (!actor.isWebFingerIdValid() && UrlUtils.hasHost(actor.origin.getUrl())) {
-            actor.setWebFingerId(actor.getActorName() + "@" + actor.origin.getUrl().getHost());
+            actor.setWebFingerId(actor.getUsername() + "@" + actor.origin.getUrl().getHost());
         }
         MyAccount ma = addAccountFromActor(actor);
         long accountUserId = ma.getActorId();
@@ -119,12 +119,12 @@ public class DemoAccountInserter {
 
     private MyAccount addAccountFromActor(@NonNull Actor actor) {
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(myContext,
-                actor.getActorName() + "/" + actor.origin.getName(), TriState.TRUE);
+                actor.getUsername() + "/" + actor.origin.getName(), TriState.TRUE);
         if (builder.getAccount().isOAuth()) {
-            builder.setUserTokenWithSecret("sampleUserTokenFor" + actor.getActorName(),
-                    "sampleUserSecretFor" + actor.getActorName());
+            builder.setUserTokenWithSecret("sampleUserTokenFor" + actor.getUsername(),
+                    "sampleUserSecretFor" + actor.getUsername());
         } else {
-            builder.setPassword("samplePasswordFor" + actor.getActorName());
+            builder.setPassword("samplePasswordFor" + actor.getUsername());
         }
         assertTrue("Credentials of " + actor + " are present (origin name=" + actor.origin.getName() + ")",
                 builder.getAccount().getCredentialsPresent());
@@ -137,10 +137,10 @@ public class DemoAccountInserter {
 
         assertTrue("Account is persistent " + builder.getAccount(), builder.isPersistent());
         MyAccount ma = builder.getAccount();
-        assertEquals("Credentials of " + actor.getActorName() + " successfully verified",
+        assertEquals("Credentials of " + actor.getUsername() + " successfully verified",
                 CredentialsVerificationStatus.SUCCEEDED, ma.getCredentialsVerified());
         long actorId = ma.getActorId();
-        assertTrue("Account " + actor.getActorName() + " has ActorId", actorId != 0);
+        assertTrue("Account " + actor.getUsername() + " has ActorId", actorId != 0);
         assertEquals("Account actorOid", ma.getActorOid(), actor.oid);
         String oid = MyQuery.idToOid(myContext.getDatabase(), OidEnum.ACTOR_OID, actorId, 0);
         if (TextUtils.isEmpty(oid)) {
@@ -151,7 +151,7 @@ public class DemoAccountInserter {
         assertEquals("Actor in the database for id=" + actorId,
                 actor.oid,
                 MyQuery.idToOid(myContext.getDatabase(), OidEnum.ACTOR_OID, actorId, 0));
-        assertEquals("Account name", actor.getActorName() + "/" + actor.origin.getName(), ma.getAccountName());
+        assertEquals("Account name", actor.getUsername() + "/" + actor.origin.getName(), ma.getAccountName());
         MyLog.v(this, ma.getAccountName() + " added, id=" + ma.getActorId());
         DemoConversationInserter.getUsers().put(actor.oid, actor);
         return ma;

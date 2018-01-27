@@ -22,11 +22,11 @@ import org.andstatus.app.util.MyLog;
 
 /** How to show an Actor in a Timeline */
 public enum ActorInTimeline {
-    ACTORNAME(1),
-    AT_ACTORNAME(2),
+    USERNAME(1),
+    AT_USERNAME(2),
     WEBFINGER_ID(3),
     REAL_NAME(4),
-    REAL_NAME_AT_ACTORNAME(5);
+    REAL_NAME_AT_USERNAME(5);
 
     private static final String TAG = ActorInTimeline.class.getSimpleName();
     

@@ -40,7 +40,7 @@ public class OAuthClientKeysTest {
     public void testKeysSave() {
         HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(
                 OriginConnectionData.fromAccountName(
-                        AccountName.fromOriginAndUserName(
+                        AccountName.fromOriginAndUsername(
                                 MyContextHolder.get().persistentOrigins().
                                         firstOfType(OriginType.PUMPIO), ""), TriState.UNKNOWN)
         );

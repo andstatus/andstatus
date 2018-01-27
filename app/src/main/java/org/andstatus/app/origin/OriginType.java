@@ -98,9 +98,9 @@ public enum OriginType implements SelectableEnum {
 
     protected boolean shouldSetNewUsernameManuallyIfOAuth = false;
 
-    /** May a User set actorName for the new Account/Actor manually?
+    /** May a User set username for the new Account/Actor manually?
      * This is only for no OAuth */
-    protected boolean shouldSetNewActorNameManuallyNoOAuth = false;
+    protected boolean shouldSetNewUsernameManuallyNoOAuth = false;
     protected String usernameRegEx = USERNAME_REGEX_SIMPLE;
     public final String validUsernameExamples;
     /**
@@ -139,7 +139,7 @@ public enum OriginType implements SelectableEnum {
                 canChangeOAuth = false;  
                 canSetUrlOfOrigin = true;
                 shouldSetNewUsernameManuallyIfOAuth = false;
-                shouldSetNewActorNameManuallyNoOAuth = true;
+                shouldSetNewUsernameManuallyNoOAuth = true;
                 // TODO: Read from Config
                 shortUrlLengthDefault = 23; 
                 usernameRegEx = USERNAME_REGEX_SIMPLE;
@@ -162,7 +162,7 @@ public enum OriginType implements SelectableEnum {
                 canChangeOAuth = false;
                 canSetUrlOfOrigin = false;
                 shouldSetNewUsernameManuallyIfOAuth = true;
-                shouldSetNewActorNameManuallyNoOAuth = false;
+                shouldSetNewUsernameManuallyNoOAuth = false;
                 usernameRegEx = Actor.WEBFINGER_ID_REGEX;
                 validUsernameExamples = "andstatus@identi.ca test425@1realtime.net";
                 // This is not a hard limit, just for convenience
@@ -186,7 +186,7 @@ public enum OriginType implements SelectableEnum {
                 canChangeOAuth = false; 
                 canSetUrlOfOrigin = true;
                 shouldSetNewUsernameManuallyIfOAuth = false;
-                shouldSetNewActorNameManuallyNoOAuth = true;
+                shouldSetNewUsernameManuallyNoOAuth = true;
                 usernameRegEx = USERNAME_REGEX_SIMPLE;
                 validUsernameExamples = USERNAME_EXAMPLES_SIMPLE;
                 canChangeSsl = true;
@@ -207,7 +207,7 @@ public enum OriginType implements SelectableEnum {
                 canChangeOAuth = false;
                 canSetUrlOfOrigin = true;
                 shouldSetNewUsernameManuallyIfOAuth = false;
-                shouldSetNewActorNameManuallyNoOAuth = true;
+                shouldSetNewUsernameManuallyNoOAuth = true;
                 usernameRegEx = USERNAME_REGEX_SIMPLE;
                 validUsernameExamples = USERNAME_EXAMPLES_SIMPLE;
                 textLimitDefault = 500;
@@ -374,7 +374,7 @@ public enum OriginType implements SelectableEnum {
     }
 
     public boolean isUsernameNeededToStartAddingNewAccount(boolean isOAuth) {
-        return isOAuth ? shouldSetNewUsernameManuallyIfOAuth : shouldSetNewActorNameManuallyNoOAuth;
+        return isOAuth ? shouldSetNewUsernameManuallyIfOAuth : shouldSetNewUsernameManuallyNoOAuth;
     }
 
     public URL getUrlDefault() {

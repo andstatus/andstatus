@@ -359,7 +359,7 @@ public class NoteEditorData {
     }
 
     private ActorInTimeline getActorInTimeline() {
-        return ma.getOrigin().isMentionAsWebFingerId() ? ActorInTimeline.WEBFINGER_ID : ActorInTimeline.ACTORNAME;
+        return ma.getOrigin().isMentionAsWebFingerId() ? ActorInTimeline.WEBFINGER_ID : ActorInTimeline.USERNAME;
     }
 
     public NoteEditorData addRecipientId(long actorId) {

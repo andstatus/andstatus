@@ -61,7 +61,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Immutable class that holds "AndStatus account"-specific information including: 
- * a Microblogging System (twitter.com, identi.ca etc.), 
+ * a Social network (twitter.com, identi.ca etc.),
  * Username in that system and {@link Connection} to it.
  *
  * @author yvolk@yurivolkov.com
@@ -411,14 +411,14 @@ public final class MyAccount implements Comparable<MyAccount> {
 
         public boolean onCredentialsVerified(Actor actor, ConnectionException ce) throws ConnectionException {
             boolean ok = ce == null && actor != null && !actor.isEmpty() && StringUtils.nonEmpty(actor.oid)
-                    && actor.origin.isUsernameValid(actor.getActorName());
+                    && actor.origin.isUsernameValid(actor.getUsername());
             boolean errorSettingUsername = !ok;
 
             boolean credentialsOfOtherUser = false;
             // We are comparing actor names ignoring case, but we fix correct case
             // as the Originating system tells us. 
             if (ok && !TextUtils.isEmpty(myAccount.getUsername())
-                    && myAccount.getUsername().compareToIgnoreCase(actor.getActorName()) != 0) {
+                    && myAccount.getUsername().compareToIgnoreCase(actor.getUsername()) != 0) {
                 // Credentials belong to other Account ??
                 ok = false;
                 credentialsOfOtherUser = true;
@@ -437,8 +437,8 @@ public final class MyAccount implements Comparable<MyAccount> {
                     // Now we know the name (or proper case of the name) of this Account!
                     // We don't recreate MyAccount object for the new name
                     //   in order to preserve credentials.
-                    myAccount.oAccountName = AccountName.fromOriginAndUserName(
-                            myAccount.oAccountName.getOrigin(), actor.getActorName());
+                    myAccount.oAccountName = AccountName.fromOriginAndUsername(
+                            myAccount.oAccountName.getOrigin(), actor.getUsername());
                     myAccount.connection.save(myAccount.accountData);
                     setConnection();
                     save();
@@ -458,7 +458,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                 throw new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_USER, actor.getNamePreferablyWebFingerId());
             }
             if (errorSettingUsername) {
-                String msg = myContext.context().getText(R.string.error_set_username) + actor.getActorName();
+                String msg = myContext.context().getText(R.string.error_set_username) + actor.getUsername();
                 MyLog.e(TAG, msg);
                 throw new ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg);
             }
@@ -496,7 +496,7 @@ public final class MyAccount implements Comparable<MyAccount> {
         }
 
         private void assignUserId() {
-            myAccount.actor.actorId = MyQuery.actorNameToId(myAccount.getOriginId(), myAccount.getUsername());
+            myAccount.actor.actorId = MyQuery.usernameToId(myAccount.getOriginId(), myAccount.getUsername());
             if (myAccount.actor.actorId == 0) {
                 DataUpdater di = new DataUpdater(myAccount);
                 try {
@@ -707,7 +707,7 @@ public final class MyAccount implements Comparable<MyAccount> {
         oAccountName = accountName;
         actor = Actor.fromOriginAndActorOid(accountName.getOrigin(), accountData.getDataString(KEY_ACTOR_OID, ""));
         actor.actorId = accountData.getDataLong(KEY_ACTOR_ID, 0L);
-        actor.setActorName(oAccountName.getUsername());
+        actor.setUsername(oAccountName.getUsername());
         actor.setWebFingerId(MyQuery.actorIdToWebfingerId(actor.actorId));
         this.version = accountData.getDataInt(KEY_VERSION, ACCOUNT_VERSION);
 
@@ -732,7 +732,7 @@ public final class MyAccount implements Comparable<MyAccount> {
     }
 
     public String getUsername() {
-        return actor.getActorName();
+        return actor.getUsername();
     }
 
     /**
@@ -893,7 +893,7 @@ public final class MyAccount implements Comparable<MyAccount> {
     public JSONObject toJson() throws JSONException {
         JSONObject jso = new JSONObject();
         jso.put(KEY_ACCOUNT, getAccountName());  
-        jso.put(KEY_USERNAME, getUsername());  
+        jso.put(KEY_USERNAME, getUsername());
         jso.put(KEY_ACTOR_OID, actor.oid);
         jso.put(Origin.KEY_ORIGIN_NAME, oAccountName.getOriginName());
         credentialsVerified.put(jso);

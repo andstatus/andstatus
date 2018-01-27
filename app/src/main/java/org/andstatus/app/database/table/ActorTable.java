@@ -47,7 +47,7 @@ public final class ActorTable implements BaseColumns {
      */
     public static final String ACTOR_OID = "user_oid";
     /** This is called "screen_name" in Twitter API, "login" or "username" in others */
-    public static final String ACTORNAME = "username";
+    public static final String USERNAME = "username";
     /** It looks like an email address with your nickname then "@" then your server */
     public static final String WEBFINGER_ID = "webfinger_id";
     /** This is called "name" in Twitter API */
@@ -102,7 +102,7 @@ public final class ActorTable implements BaseColumns {
     public static final String ACCOUNT_ID = "account_id";
     /**
      * Derived from {@link ActivityTable#ACTOR_ID}
-     * Whether this (and other similar...) is {@link #ACTORNAME} or {@link #REAL_NAME}, depends on settings
+     * Whether this (and other similar...) is {@link #USERNAME} or {@link #REAL_NAME}, depends on settings
      *
      * Derived from {@link ActivityTable#ACTOR_ID} */
     public static final String ACTIVITY_ACTOR_NAME = "activity_actor_name";
@@ -113,14 +113,14 @@ public final class ActorTable implements BaseColumns {
     /** Derived from {@link AudienceTable#USER_ID} */
     public static final String RECIPIENT_NAME = "recipient_name";
 
-    public static final String DEFAULT_SORT_ORDER = ACTORNAME + " ASC";
+    public static final String DEFAULT_SORT_ORDER = USERNAME + " ASC";
 
     public static void create(SQLiteDatabase db) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + ORIGIN_ID + " INTEGER NOT NULL,"
                 + ACTOR_OID + " TEXT NOT NULL,"
-                + ACTORNAME + " TEXT NOT NULL,"
+                + USERNAME + " TEXT NOT NULL,"
                 + WEBFINGER_ID + " TEXT NOT NULL,"
                 + REAL_NAME + " TEXT,"
                 + DESCRIPTION + " TEXT,"

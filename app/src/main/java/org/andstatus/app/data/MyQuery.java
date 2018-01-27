@@ -56,16 +56,16 @@ public class MyQuery {
 
     static String userNameField(ActorInTimeline actorInTimeline) {
         switch (actorInTimeline) {
-            case AT_ACTORNAME:
-                return "('@' || " + ActorTable.ACTORNAME + ")";
+            case AT_USERNAME:
+                return "('@' || " + ActorTable.USERNAME + ")";
             case WEBFINGER_ID:
                 return ActorTable.WEBFINGER_ID;
             case REAL_NAME:
                 return ActorTable.REAL_NAME;
-            case REAL_NAME_AT_ACTORNAME:
-                return "(" + ActorTable.REAL_NAME + " || ' @' || " + ActorTable.ACTORNAME + ")";
+            case REAL_NAME_AT_USERNAME:
+                return "(" + ActorTable.REAL_NAME + " || ' @' || " + ActorTable.USERNAME + ")";
             default:
-                return ActorTable.ACTORNAME;
+                return ActorTable.USERNAME;
         }
     }
 
@@ -629,15 +629,15 @@ public class MyQuery {
     }
     
     /**
-     * Lookup the Actor's id based on the actorName in the Originating system
+     * Lookup the Actor's id based on the username in the Originating system
      * 
      * @param originId - see {@link NoteTable#ORIGIN_ID}
-     * @param userName - see {@link ActorTable#ACTORNAME}
+     * @param username - see {@link ActorTable#USERNAME}
      * @return - id in our System (i.e. in the table, e.g.
      *         {@link ActorTable#_ID} ), 0 if not found
      */
-    public static long actorNameToId(long originId, String userName) {
-        return actorColumnValueToId(originId, ActorTable.ACTORNAME, userName);
+    public static long usernameToId(long originId, String username) {
+        return actorColumnValueToId(originId, ActorTable.USERNAME, username);
     }
 
     private static long actorColumnValueToId(long originId, String columnName, String columnValue) {

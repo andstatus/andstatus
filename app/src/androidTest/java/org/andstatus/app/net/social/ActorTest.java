@@ -40,18 +40,18 @@ public class ActorTest {
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.GNUSOCIAL_TEST_ORIGIN_NAME);
         String webFingerId2 = "anotherUser@somedomain.org";
         String shortUsername3 = "shortusername";
-        String body = "@" + demoData.GNUSOCIAL_TEST_ACCOUNT_ACTORNAME
-                + " @" + demoData.GNUSOCIAL_TEST_ACCOUNT2_ACTORNAME
+        String body = "@" + demoData.GNUSOCIAL_TEST_ACCOUNT_USERNAME
+                + " @" + demoData.GNUSOCIAL_TEST_ACCOUNT2_USERNAME
                 + " Please take this into account\n@" + webFingerId2
-                + " @" + demoData.GNUSOCIAL_TEST_ACCOUNT2_ACTORNAME
+                + " @" + demoData.GNUSOCIAL_TEST_ACCOUNT2_USERNAME
                 + " And let me mention: @" + shortUsername3;
         List<Actor> users = Actor.fromOriginAndActorOid(origin, "").extractActorsFromBodyText(body, false);
         String msgLog = body + " ->\n" + users;
         assertEquals(msgLog, 4, users.size());
-        assertEquals(msgLog, demoData.GNUSOCIAL_TEST_ACCOUNT_ACTORNAME, users.get(0).getActorName());
-        assertEquals(msgLog, demoData.GNUSOCIAL_TEST_ACCOUNT2_ACTORNAME, users.get(1).getActorName());
+        assertEquals(msgLog, demoData.GNUSOCIAL_TEST_ACCOUNT_USERNAME, users.get(0).getUsername());
+        assertEquals(msgLog, demoData.GNUSOCIAL_TEST_ACCOUNT2_USERNAME, users.get(1).getUsername());
         assertEquals(msgLog, webFingerId2, users.get(2).getWebFingerId());
-        assertEquals(msgLog, shortUsername3, users.get(3).getActorName());
+        assertEquals(msgLog, shortUsername3, users.get(3).getUsername());
     }
 
     @Test
@@ -69,11 +69,11 @@ public class ActorTest {
         List<Actor> users = Actor.fromOriginAndActorOid(origin, "").extractActorsFromBodyText(body, false);
         String msgLog = body + " -> " + users;
         assertEquals(msgLog, 2, users.size());
-        assertEquals(msgLog, USERNAME1, users.get(0).getActorName());
+        assertEquals(msgLog, USERNAME1, users.get(0).getUsername());
         assertFalse(msgLog, users.get(0).isOidReal());
         assertFalse(msgLog, users.get(0).hasAltTempOid());
 
-        assertEquals(msgLog, USERNAME4, users.get(1).getActorName());
+        assertEquals(msgLog, USERNAME4, users.get(1).getUsername());
     }
 
     @Test
@@ -102,12 +102,12 @@ public class ActorTest {
         Origin origin = MyContextHolder.get().persistentOrigins().fromId(18);
         Actor user1 = Actor.fromOriginAndActorOid(origin, "acct:fourthWithoutAvatar@pump.example.com");
         user1.actorId = 11;
-        user1.setActorName("fourthWithoutAvatar@pump.example.com");
+        user1.setUsername("fourthWithoutAvatar@pump.example.com");
         user1.setRealName("Real fourthWithoutAvatar@pump.example.com");
         user1.setProfileUrl("http://pump.example.com/fourthWithoutAvatar");
 
         Actor user2 = Actor.fromOriginAndActorId(origin, 11);
-        user2.setActorName("fourthWithoutAvatar@pump.example.com");
+        user2.setUsername("fourthWithoutAvatar@pump.example.com");
 
         assertEquals(user1, user2);
         assertEquals(user1.toString() + " vs " + user2, user1.hashCode(), user2.hashCode());

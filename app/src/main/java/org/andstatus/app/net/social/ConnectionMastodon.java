@@ -300,7 +300,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             throw ConnectionException.loggedJsonException(this, "Id or username is empty", null, jso);
         }
         Actor actor = Actor.fromOriginAndActorOid(data.getOrigin(), oid);
-        actor.setActorName(userName);
+        actor.setUsername(userName);
         actor.setRealName(jso.optString("display_name"));
         actor.setWebFingerId(jso.optString("acct"));
         if (!SharedPreferencesUtil.isEmpty(actor.getRealName())) {
@@ -411,10 +411,10 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     }
 
     @Override
-    public Actor getActor(String actorOid, String actorName) throws ConnectionException {
+    public Actor getActor(String actorOid, String username) throws ConnectionException {
         JSONObject jso = http.getRequest(getApiPathWithUserId(ApiRoutineEnum.GET_ACTOR, actorOid));
         Actor actor = actorFromJson(jso);
-        MyLog.v(this, "getUser oid='" + actorOid + "', userName='" + actorName + "' -> " + actor.getRealName());
+        MyLog.v(this, "getUser oid='" + actorOid + "', userName='" + username + "' -> " + actor.getRealName());
         return actor;
     }
 

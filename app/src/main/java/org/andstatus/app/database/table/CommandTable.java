@@ -47,7 +47,7 @@ public final class CommandTable implements BaseColumns {
     public static final String ACCOUNT_ID = TimelineTable.ACCOUNT_ID;
     public static final String USER_ID = TimelineTable.USER_ID;
     /** This is used e.g. when a {@link #USER_ID} is not known */
-    public static final String USERNAME = ActorTable.ACTORNAME;
+    public static final String USERNAME = ActorTable.USERNAME;
     public static final String ORIGIN_ID = TimelineTable.ORIGIN_ID;
     public static final String SEARCH_QUERY = TimelineTable.SEARCH_QUERY;
 

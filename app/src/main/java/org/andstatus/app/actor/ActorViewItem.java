@@ -128,13 +128,13 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
         return newEmpty("");
     }
 
-    public String getWebFingerIdOrActorName() {
+    public String getWebFingerIdOrUsername() {
         return actor.getNamePreferablyWebFingerId();
     }
 
     @Override
     public int compareTo(@NonNull ActorViewItem o) {
-        return getWebFingerIdOrActorName().compareTo(o.getWebFingerIdOrActorName());
+        return getWebFingerIdOrUsername().compareTo(o.getWebFingerIdOrUsername());
     }
 
     public void setAvatarFile(AvatarFile avatarFile) {
@@ -155,7 +155,7 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
                 DbUtils.getString(cursor, ActorTable.ACTOR_OID)
         );
         actor.actorId = DbUtils.getLong(cursor, BaseColumns._ID);
-        actor.setActorName(DbUtils.getString(cursor, ActorTable.ACTORNAME));
+        actor.setUsername(DbUtils.getString(cursor, ActorTable.USERNAME));
         actor.setWebFingerId(DbUtils.getString(cursor, ActorTable.WEBFINGER_ID));
         actor.setRealName(DbUtils.getString(cursor, ActorTable.REAL_NAME));
         actor.setDescription(DbUtils.getString(cursor, ActorTable.DESCRIPTION));

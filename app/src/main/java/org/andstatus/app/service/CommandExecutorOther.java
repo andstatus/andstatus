@@ -81,10 +81,10 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 getStatus(execContext.getCommandData().itemId);
                 break;
             case GET_ACTOR:
-                getActor(execContext.getCommandData().getUserId(), execContext.getCommandData().getActorName());
+                getActor(execContext.getCommandData().getUserId(), execContext.getCommandData().getUsername());
                 break;
             case SEARCH_ACTORS:
-                searchActors(execContext.getCommandData().getActorName());
+                searchActors(execContext.getCommandData().getUsername());
                 break;
             case REBLOG:
                 reblog(execContext.getCommandData().itemId);

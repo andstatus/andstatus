@@ -46,7 +46,7 @@ public class Actor implements Comparable<Actor> {
     public static final String WEBFINGER_ID_REGEX = "^[_A-Za-z0-9-+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
     @NonNull
     public final String oid;
-    private String actorName = "";
+    private String username = "";
 
     private String webFingerId = "";
     private boolean isWebFingerIdValid = false;
@@ -121,12 +121,12 @@ public class Actor implements Comparable<Actor> {
 
     public boolean isEmpty() {
         return this == EMPTY || !origin.isValid() || (actorId == 0 && UriUtils.nonRealOid(oid)
-                && TextUtils.isEmpty(webFingerId) && TextUtils.isEmpty(actorName));
+                && TextUtils.isEmpty(webFingerId) && TextUtils.isEmpty(username));
     }
 
     public boolean isPartiallyDefined() {
         return !origin.isValid() || UriUtils.nonRealOid(oid) || TextUtils.isEmpty(webFingerId)
-                || TextUtils.isEmpty(actorName);
+                || TextUtils.isEmpty(username);
     }
 
     public boolean isIdentified() {
@@ -147,8 +147,8 @@ public class Actor implements Comparable<Actor> {
         if (actorId != 0) {
             members += "; id=" + actorId;
         }
-        if (!TextUtils.isEmpty(actorName)) {
-            members += "; username=" + actorName;
+        if (!TextUtils.isEmpty(username)) {
+            members += "; username=" + username;
         }
         if (!TextUtils.isEmpty(webFingerId)) {
             members += "; webFingerId=" + webFingerId;
@@ -165,15 +165,15 @@ public class Actor implements Comparable<Actor> {
         return str + "{" + members + "}";
     }
 
-    public String getActorName() {
-        return actorName;
+    public String getUsername() {
+        return username;
     }
 
-    public Actor setActorName(String actorName) {
+    public Actor setUsername(String username) {
         if (this == EMPTY) {
-            throw new IllegalStateException("Cannot set actorName of EMPTY Actor");
+            throw new IllegalStateException("Cannot set username of EMPTY Actor");
         }
-        this.actorName = SharedPreferencesUtil.isEmpty(actorName) ? "" : actorName.trim();
+        this.username = SharedPreferencesUtil.isEmpty(username) ? "" : username.trim();
         fixWebFingerId();
         return this;
     }
@@ -208,7 +208,7 @@ public class Actor implements Comparable<Actor> {
         if (!TextUtils.isEmpty(getWebFingerId()) || !TextUtils.isEmpty(that.getWebFingerId())) {
             return getWebFingerId().equals(that.getWebFingerId());
         }
-        return getActorName().equals(that.getActorName());
+        return getUsername().equals(that.getUsername());
     }
 
     @Override
@@ -223,7 +223,7 @@ public class Actor implements Comparable<Actor> {
         if (!TextUtils.isEmpty(getWebFingerId())) {
             return 31 * result + getWebFingerId().hashCode();
         }
-        return 31 * result + getActorName().hashCode();
+        return 31 * result + getUsername().hashCode();
     }
 
     /** Doesn't take origin into account */
@@ -248,14 +248,14 @@ public class Actor implements Comparable<Actor> {
     }
 
     private void fixWebFingerId() {
-        if (TextUtils.isEmpty(actorName)) return;
-        if (actorName.contains("@")) {
-            setWebFingerId(actorName);
+        if (TextUtils.isEmpty(username)) return;
+        if (username.contains("@")) {
+            setWebFingerId(username);
         } else if (!UriUtils.isEmpty(profileUri)){
             if(origin.isValid()) {
-                setWebFingerId(actorName + "@" + origin.fixUriforPermalink(profileUri).getHost());
+                setWebFingerId(username + "@" + origin.fixUriforPermalink(profileUri).getHost());
             } else {
-                setWebFingerId(actorName + "@" + profileUri.getHost());
+                setWebFingerId(username + "@" + profileUri.getHost());
             }
         }
     }
@@ -274,7 +274,7 @@ public class Actor implements Comparable<Actor> {
     public String getNamePreferablyWebFingerId() {
         String name = getWebFingerId();
         if (TextUtils.isEmpty(name)) {
-            name = getActorName();
+            name = getUsername();
         }
         if (TextUtils.isEmpty(name)) {
             name = realName;
@@ -309,8 +309,8 @@ public class Actor implements Comparable<Actor> {
         if (actorId == 0 && isWebFingerIdValid()) {
             actorId = MyQuery.webFingerIdToId(origin.getId(), webFingerId);
         }
-        if (actorId == 0 && !isWebFingerIdValid() && !TextUtils.isEmpty(actorName)) {
-            actorId = MyQuery.actorNameToId(origin.getId(), actorName);
+        if (actorId == 0 && !isWebFingerIdValid() && !TextUtils.isEmpty(username)) {
+            actorId = MyQuery.usernameToId(origin.getId(), username);
         }
         if (actorId == 0) {
             actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(), getTempOid());
@@ -322,7 +322,7 @@ public class Actor implements Comparable<Actor> {
     }
 
     public boolean hasAltTempOid() {
-        return !getTempOid().equals(getAltTempOid()) && !TextUtils.isEmpty(actorName);
+        return !getTempOid().equals(getAltTempOid()) && !TextUtils.isEmpty(username);
     }
 
     public boolean hasLatestMessage() {
@@ -330,11 +330,11 @@ public class Actor implements Comparable<Actor> {
     }
 
     public String getTempOid() {
-        return getTempOid(webFingerId, actorName);
+        return getTempOid(webFingerId, username);
     }
 
     public String getAltTempOid() {
-        return getTempOid("", actorName);
+        return getTempOid("", username);
     }
 
     public static String getTempOid(String webFingerId, String validUserName) {
@@ -395,7 +395,7 @@ public class Actor implements Comparable<Actor> {
                 }
             }
         }
-        actor.setActorName(validUserName);
+        actor.setUsername(validUserName);
         actor.lookupActorId();
         if (!actors.contains(actor)) {
             actors.add(actor);
@@ -486,8 +486,8 @@ public class Actor implements Comparable<Actor> {
         StringBuilder builder = new StringBuilder();
         if (showWebFingerId && !TextUtils.isEmpty(getWebFingerId())) {
             builder.append(getWebFingerId());
-        } else if (!TextUtils.isEmpty(getActorName())) {
-            builder.append("@" + getActorName());
+        } else if (!TextUtils.isEmpty(getUsername())) {
+            builder.append("@" + getUsername());
         }
         if (!TextUtils.isEmpty(getRealName())) {
             I18n.appendWithSpace(builder, "(" + getRealName() + ")");
@@ -495,7 +495,7 @@ public class Actor implements Comparable<Actor> {
         return builder.toString();
     }
 
-    public String getTimelineActorName() {
+    public String getTimelineUsername() {
         return MyQuery.actorIdToWebfingerId(actorId);
     }
 }

@@ -25,12 +25,12 @@ import org.andstatus.app.database.table.FriendshipTable;
  */
 public class FollowersListLoader extends ActorListLoader {
     private long actorId;
-    private final String actorName;
+    private final String username;
 
     public FollowersListLoader(ActorListType actorListType, MyAccount ma, long centralItemId, String searchQuery) {
         super(actorListType, ma, ma.getOrigin(), centralItemId, searchQuery);
         actorId = centralItemId;
-        actorName = MyQuery.actorIdToWebfingerId(actorId);
+        username = MyQuery.actorIdToWebfingerId(actorId);
     }
 
     protected String getSqlActorIds() {
@@ -53,6 +53,6 @@ public class FollowersListLoader extends ActorListLoader {
 
     @Override
     protected String getTitle() {
-        return actorName;
+        return username;
     }
 }
