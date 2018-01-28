@@ -255,7 +255,7 @@ public class NoteContextMenu extends MyContextMenu {
     }
 
     private void addMessageLinksSubmenu(ContextMenu menu, View v, int order) {
-        URLSpan[] links = MyUrlSpan.getUrlSpans(v.findViewById(R.id.message_body));
+        URLSpan[] links = MyUrlSpan.getUrlSpans(v.findViewById(R.id.note_body));
         switch (links.length) {
             case 0:
                 break;

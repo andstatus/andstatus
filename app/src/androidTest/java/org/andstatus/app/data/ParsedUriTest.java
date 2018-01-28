@@ -50,7 +50,7 @@ public class ParsedUriTest {
         assertEquals(msgLog, ActorListType.ACTORS_OF_NOTE, parsedUri.getUserListType());
         assertEquals(msgLog, actorId, parsedUri.getAccountUserId());
         assertEquals(msgLog, originId, parsedUri.getOriginId());
-        assertEquals(msgLog, msgId, parsedUri.getMessageId());
+        assertEquals(msgLog, msgId, parsedUri.getNoteId());
         assertEquals(msgLog, msgId, parsedUri.getItemId());
         assertEquals(msgLog, 0, parsedUri.getActorId());
     }

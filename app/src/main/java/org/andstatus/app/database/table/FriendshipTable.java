@@ -44,11 +44,11 @@ public final class FriendshipTable {
     public static final String FOLLOWED = "followed";
 
     /**
-     * Derived column: if the Author of the message is followed by the Actor
+     * Derived column: if the Author of the note is followed by the Actor
      */
     public static final String AUTHOR_FOLLOWED = "author_followed";
     /**
-     * Derived column: if the Sender of the message is followed by the Actor
+     * Derived column: if the Sender of the note is followed by the Actor
      */
     public static final String ACTOR_FOLLOWED = "actor_followed";
 

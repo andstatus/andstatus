@@ -35,14 +35,14 @@ import org.andstatus.app.util.MyUrlSpan;
 public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
     private ActivityContextMenu contextMenu;
     private final ActorAdapter actorAdapter;
-    private final NoteAdapter messageAdapter;
+    private final NoteAdapter noteAdapter;
     private final ActorAdapter objActorAdapter;
 
     public ActivityAdapter(ActivityContextMenu contextMenu, TimelineData<ActivityViewItem> listData) {
-        super(contextMenu.message.getMyContext(), listData);
+        super(contextMenu.note.getMyContext(), listData);
         this.contextMenu = contextMenu;
         actorAdapter = new ActorAdapter(contextMenu.actor, new TimelineDataActorWrapper(listData));
-        messageAdapter = new NoteAdapter(contextMenu.message, new TimelineDataNoteWrapper(listData));
+        noteAdapter = new NoteAdapter(contextMenu.note, new TimelineDataNoteWrapper(listData));
         objActorAdapter = new ActorAdapter(contextMenu.objActor, new TimelineDataObjActorWrapper(listData));
     }
 
@@ -53,16 +53,16 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
         setPosition(view, position);
         ActivityViewItem item = getItem(position);
         showActor(view, item);
-        final ViewGroup messageView = view.findViewById(R.id.message_wrapper);
+        final ViewGroup noteView = view.findViewById(R.id.note_wrapper);
         if (item.noteViewItem.getId() == 0) {
-            messageView.setVisibility(View.GONE);
+            noteView.setVisibility(View.GONE);
         } else {
-            messageAdapter.populateView(view, item.noteViewItem, position);
-            messageView.setOnCreateContextMenuListener(contextMenu.message);
-            messageView.setOnClickListener(messageAdapter);
-            messageView.setVisibility(View.VISIBLE);
+            noteAdapter.populateView(view, item.noteViewItem, position);
+            noteView.setOnCreateContextMenuListener(contextMenu.note);
+            noteView.setOnClickListener(noteAdapter);
+            noteView.setVisibility(View.VISIBLE);
         }
-        final ViewGroup userView = view.findViewById(R.id.user_wrapper);
+        final ViewGroup userView = view.findViewById(R.id.actor_wrapper);
         if (item.getObjActorItem().getId() == 0) {
             userView.setVisibility(View.GONE);
         } else {
@@ -76,14 +76,14 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
 
     private ViewGroup getEmptyView(View convertView) {
         if (convertView == null) {
-            final ViewGroup viewGroup = (ViewGroup) LayoutInflater.from(contextMenu.message.getActivity())
+            final ViewGroup viewGroup = (ViewGroup) LayoutInflater.from(contextMenu.note.getActivity())
                     .inflate(R.layout.activity, null);
-            messageAdapter.setupButtons(viewGroup);
+            noteAdapter.setupButtons(viewGroup);
             return viewGroup;
         }
         convertView.setBackgroundResource(0);
-        View messageIndented = convertView.findViewById(R.id.message_indented);
-        messageIndented.setBackgroundResource(0);
+        View noteIndented = convertView.findViewById(R.id.note_indented);
+        noteIndented.setBackgroundResource(0);
         if (showAvatars) {
             convertView.findViewById(R.id.actor_avatar_image).setVisibility(View.GONE);
             convertView.findViewById(R.id.avatar_image).setVisibility(View.GONE);

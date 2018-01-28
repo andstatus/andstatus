@@ -39,8 +39,8 @@ import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.view.MyContextMenu;
 
 /**
- *  List of users for different contexts 
- *  e.g. "Users of the message", "Followers of my account(s)" etc.
+ *  List of actors for different contexts
+ *  e.g. "Actors of the note", "Followers of my account(s)" etc.
  *  @author yvolk@yurivolkov.com
  */
 public class ActorList extends NoteEditorListActivity {
@@ -65,7 +65,7 @@ public class ActorList extends NoteEditorListActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.userlist, menu);
+        getMenuInflater().inflate(R.menu.actor_list, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -91,7 +91,7 @@ public class ActorList extends NoteEditorListActivity {
         if (getParsedUri().isSearch()) {
             showSyncing(method, getText(R.string.options_menu_sync));
             MyServiceManager.sendManualForegroundCommand(
-                    CommandData.newSearch(SearchObjects.USERS, getMyContext(),
+                    CommandData.newSearch(SearchObjects.ACTORS, getMyContext(),
                             getParsedUri().getOrigin(getMyContext()), getParsedUri().getSearchQuery()));
         } else {
             showList(WhichPage.CURRENT);

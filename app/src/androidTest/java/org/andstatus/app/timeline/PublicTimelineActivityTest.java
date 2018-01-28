@@ -145,7 +145,7 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
                 break;
             }
         }
-        assertTrue("Messages found", msgCount > 0);
+        assertTrue("Notes found", msgCount > 0);
     }
 
     private int oneAttempt(TimelineActivity timelineActivity, String publicMessageText) {
@@ -153,14 +153,14 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
         int msgCount = 0;
         for (int index = 0; index < list.getChildCount(); index++) {
             View messageView = list.getChildAt(index);
-            TextView bodyView = messageView.findViewById(R.id.message_body);
+            TextView bodyView = messageView.findViewById(R.id.note_body);
             final BaseNoteViewItem viewItem = ListActivityTestHelper.toBaseMessageViewItem(
                     timelineActivity.getListAdapter().getItem(messageView));
             if (bodyView != null) {
-                assertTrue("Message #" + viewItem.getId() + " '" + viewItem.getBody()
+                assertTrue("Note #" + viewItem.getId() + " '" + viewItem.getBody()
                                 + "' contains '" + publicMessageText + "'\n" + viewItem,
                         String.valueOf(viewItem.getBody()).contains(publicMessageText));
-                assertNotEquals("Message #" + viewItem.getId() + " '" + viewItem.getBody()
+                assertNotEquals("Note #" + viewItem.getId() + " '" + viewItem.getBody()
                         + "' is private" + "\n" + viewItem, TriState.TRUE,
                         MyQuery.msgIdToTriState(NoteTable.PRIVATE, viewItem.getId()));
                 msgCount++;

@@ -29,7 +29,7 @@ public class TimelineFilter {
 
     TimelineFilter(Timeline timeline) {
         keywordsFilter = new KeywordsFilter(
-                SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
+                SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_NOTES_BASED_ON_KEYWORDS, ""));
         hideRepliesNotToMeOrFriends = timeline.getTimelineType() == TimelineType.HOME
                 && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS, false);
         searchQuery = new KeywordsFilter(timeline.getSearchQuery());

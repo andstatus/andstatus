@@ -61,7 +61,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
 
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            menu.menuContainer.getNoteEditor().startEditingMessage(editorData);
+            menu.menuContainer.getNoteEditor().startEditingNote(editorData);
         }
     },
     EDIT(true) {
@@ -72,7 +72,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
 
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            menu.menuContainer.getNoteEditor().startEditingMessage(editorData);
+            menu.menuContainer.getNoteEditor().startEditingNote(editorData);
         }
     },
     RESEND(true) {
@@ -95,7 +95,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
 
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            menu.menuContainer.getNoteEditor().startEditingMessage(editorData);
+            menu.menuContainer.getNoteEditor().startEditingNote(editorData);
         }
     },
     REPLY_TO_MENTIONED_ACTORS(true) {
@@ -108,7 +108,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
 
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            menu.menuContainer.getNoteEditor().startEditingMessage(editorData);
+            menu.menuContainer.getNoteEditor().startEditingNote(editorData);
         }
     },
     PRIVATE_NOTE {
@@ -116,7 +116,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData_unused) {
             NoteEditorData editorData = NoteEditorData.newEmpty(menu.getMyActor())
                     .addRecipientId(menu.getAuthorId()).setPrivate(TriState.TRUE);
-            menu.menuContainer.getNoteEditor().startEditingMessage(editorData);
+            menu.menuContainer.getNoteEditor().startEditingNote(editorData);
         }
     },
     FAVORITE {

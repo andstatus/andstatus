@@ -22,7 +22,7 @@ import org.andstatus.app.util.UriUtils;
 
 /**
  * Since introducing support for Pump.Io it appeared that 
- * Position in the Timeline and Id of the Message may be different things.
+ * Position in the Timeline and Id of the Note may be different things.
  * @author yvolk@yurivolkov.com
  */
 public class TimelinePosition {

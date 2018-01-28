@@ -73,8 +73,8 @@ public class DataUpdaterTest {
     public void testFriends() throws ConnectionException {
         MyAccount ma = demoData.getConversationMyAccount();
         Actor accountActor = ma.getActor();
-        String messageOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB";
-        DemoNoteInserter.deleteOldMessage(accountActor.origin, messageOid);
+        String noteOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB";
+        DemoNoteInserter.deleteOldNote(accountActor.origin, noteOid);
 
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 CommandData.newAccountCommand(CommandEnum.EMPTY, ma));
@@ -91,35 +91,35 @@ public class DataUpdaterTest {
         assertTrue("Actor " + username + " added", somebody.actorId != 0);
         DemoConversationInserter.assertIfUserIsMyFriend(somebody, false, ma);
 
-        AActivity activity = AActivity.newPartialMessage(accountActor, messageOid, System.currentTimeMillis() , DownloadStatus.LOADED);
+        AActivity activity = AActivity.newPartialNote(accountActor, noteOid, System.currentTimeMillis() , DownloadStatus.LOADED);
         activity.setActor(somebody);
-        Note message = activity.getMessage();
-        message.setBody("The test message by Somebody at run " + demoData.TESTRUN_UID);
-        message.via = "MyCoolClient";
-        message.url = "http://identi.ca/somebody/comment/dasdjfdaskdjlkewjz1EhSrTRB";
+        Note note = activity.getNote();
+        note.setBody("The test note by Somebody at run " + demoData.TESTRUN_UID);
+        note.via = "MyCoolClient";
+        note.url = "http://identi.ca/somebody/comment/dasdjfdaskdjlkewjz1EhSrTRB";
 
         TestSuite.clearAssertionData();
-        long messageId = di.onActivity(activity).getMessage().msgId;
-        assertNotEquals("Message added", 0, messageId);
+        long noteId = di.onActivity(activity).getNote().noteId;
+        assertNotEquals("Note added", 0, noteId);
         assertNotEquals("Activity added", 0, activity.getId());
         AssertionData data = TestSuite.getMyContextForTest().takeDataByKey(DataUpdater.MSG_ASSERTION_KEY);
         assertFalse("Data put", data.isEmpty());
-        assertEquals("Message Oid", messageOid, data.getValues()
+        assertEquals("Note Oid", noteOid, data.getValues()
                 .getAsString(NoteTable.NOTE_OID));
-        assertEquals("Message is loaded", DownloadStatus.LOADED,
+        assertEquals("Note is loaded", DownloadStatus.LOADED,
                 DownloadStatus.load(data.getValues().getAsInteger(NoteTable.NOTE_STATUS)));
-        assertEquals("Message permalink before storage", message.url,
+        assertEquals("Note permalink before storage", note.url,
                 data.getValues().getAsString(NoteTable.URL));
-        assertEquals("Message permalink", message.url, accountActor.origin.messagePermalink(messageId));
+        assertEquals("Note permalink", note.url, accountActor.origin.notePermalink(noteId));
 
-        assertEquals("Message stored as loaded", DownloadStatus.LOADED, DownloadStatus.load(
-                MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, messageId)));
-        long authorId = MyQuery.msgIdToLongColumnValue(ActivityTable.AUTHOR_ID, messageId);
-        assertEquals("Author of the message", somebody.actorId, authorId);
-        String url = MyQuery.msgIdToStringColumnValue(NoteTable.URL, messageId);
-        assertEquals("Url of the message", message.url, url);
-        long senderId = MyQuery.msgIdToLongColumnValue(ActivityTable.ACTOR_ID, messageId);
-        assertEquals("Sender of the message", somebody.actorId, senderId);
+        assertEquals("Note stored as loaded", DownloadStatus.LOADED, DownloadStatus.load(
+                MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)));
+        long authorId = MyQuery.msgIdToLongColumnValue(ActivityTable.AUTHOR_ID, noteId);
+        assertEquals("Author of the note", somebody.actorId, authorId);
+        String url = MyQuery.msgIdToStringColumnValue(NoteTable.URL, noteId);
+        assertEquals("Url of the note", note.url, url);
+        long senderId = MyQuery.msgIdToLongColumnValue(ActivityTable.ACTOR_ID, noteId);
+        assertEquals("Sender of the note", somebody.actorId, senderId);
         url = MyQuery.userIdToStringColumnValue(ActorTable.PROFILE_URL, senderId);
         assertEquals("Url of the author " + somebody.getUsername(), somebody.getProfileUrl(), url);
         assertEquals("Latest activity of " + somebody, activity.getId(),
@@ -134,7 +134,7 @@ public class DataUpdaterTest {
         };
         Cursor cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection,
                 sa.selectionArgs, sortOrder);
-        assertTrue("No messages of this actor in the Friends timeline", cursor != null && cursor.getCount() == 0);
+        assertTrue("No notes of this actor in the Friends timeline", cursor != null && cursor.getCount() == 0);
         cursor.close();
 
         somebody.followedByMe = TriState.TRUE;
@@ -149,17 +149,17 @@ public class DataUpdaterTest {
 
         cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection,
                 sa.selectionArgs, sortOrder);
-        assertTrue("Message by actor=" + somebody + " is not in the Friends timeline of " + ma,
+        assertTrue("Note by actor=" + somebody + " is not in the Friends timeline of " + ma,
                 cursor != null && cursor.getCount() > 0);
         cursor.close();
     }
 
     @Test
-    public void testPrivateMessageToMyAccount() throws ConnectionException {
+    public void testPrivateNoteToMyAccount() throws ConnectionException {
         MyAccount ma = demoData.getConversationMyAccount();
         Actor accountActor = ma.getActor();
 
-        String messageOid = "https://pumpity.net/api/comment/sa23wdi78dhgjerdfddajDSQ-" + demoData.TESTRUN_UID;
+        String noteOid = "https://pumpity.net/api/comment/sa23wdi78dhgjerdfddajDSQ-" + demoData.TESTRUN_UID;
 
         String username = "t131t@pumpity.net";
         Actor author = Actor.fromOriginAndActorOid(accountActor.origin, "acct:"
@@ -168,21 +168,21 @@ public class DataUpdaterTest {
 
         AActivity activity = new DemoNoteInserter(accountActor).buildActivity(
                 author,
-                "Hello, this is a test Direct message by your namesake from http://pumpity.net",
-                null, messageOid, DownloadStatus.LOADED);
-        final Note message = activity.getMessage();
-        message.via = "AnyOtherClient";
-        message.addRecipient(accountActor);
-        message.setPrivate(TriState.TRUE);
-        final long messageId = new DataUpdater(ma).onActivity(activity).getMessage().msgId;
-        assertNotEquals("Message added", 0, messageId);
+                "Hello, this is a test Private note by your namesake from http://pumpity.net",
+                null, noteOid, DownloadStatus.LOADED);
+        final Note note = activity.getNote();
+        note.via = "AnyOtherClient";
+        note.addRecipient(accountActor);
+        note.setPrivate(TriState.TRUE);
+        final long noteId = new DataUpdater(ma).onActivity(activity).getNote().noteId;
+        assertNotEquals("Note added", 0, noteId);
         assertNotEquals("Activity added", 0, activity.getId());
 
-        assertEquals("Message should be private", TriState.TRUE,
-                MyQuery.msgIdToTriState(NoteTable.PRIVATE, messageId));
+        assertEquals("Note should be private", TriState.TRUE,
+                MyQuery.msgIdToTriState(NoteTable.PRIVATE, noteId));
         DemoNoteInserter.assertNotified(activity, TriState.TRUE);
 
-        Audience audience = Audience.fromMsgId(accountActor.origin, messageId);
+        Audience audience = Audience.fromMsgId(accountActor.origin, noteId);
         assertNotEquals("No recipients for " + activity, 0, audience.getRecipients().size());
         assertEquals("Recipient " + ma.getAccountName() + "; " + audience.getRecipients(),
                 ma.getActorId(), audience.getFirst().actorId);
@@ -190,7 +190,7 @@ public class DataUpdaterTest {
     }
 
     @Test
-    public void testMessageFavoritedByOtherUser() throws ConnectionException {
+    public void testNoteFavoritedByOtherUser() throws ConnectionException {
         MyAccount ma = demoData.getConversationMyAccount();
         Actor accountActor = ma.getActor();
 
@@ -199,12 +199,12 @@ public class DataUpdaterTest {
                 + authorUserName);
         author.setUsername(authorUserName);
 
-        AActivity activity = AActivity.newPartialMessage(accountActor,
+        AActivity activity = AActivity.newPartialNote(accountActor,
                 "https://pumpity.net/api/comment/sdajklsdkiewwpdsldkfsdasdjWED" +  demoData.TESTRUN_UID,
                 13312697000L, DownloadStatus.LOADED);
         activity.setActor(author);
-        Note note = activity.getMessage();
-        note.setBody("This test message will be favorited by First Reader from http://pumpity.net");
+        Note note = activity.getNote();
+        note.setBody("This test note will be favorited by First Reader from http://pumpity.net");
         note.via = "SomeOtherClient";
 
         String otherUserName = "firstreader@identi.ca";
@@ -213,12 +213,12 @@ public class DataUpdaterTest {
         AActivity likeActivity = AActivity.fromInner(otherUser, ActivityType.LIKE, activity);
 
         DataUpdater di = new DataUpdater(ma);
-        long messageId = di.onActivity(likeActivity).getMessage().msgId;
-        assertNotEquals("Message added", 0, messageId);
+        long noteId = di.onActivity(likeActivity).getNote().noteId;
+        assertNotEquals("Note added", 0, noteId);
         assertNotEquals("First activity added", 0, activity.getId());
         assertNotEquals("LIKE activity added", 0, likeActivity.getId());
 
-        List<Actor> stargazers = MyQuery.getStargazers(myContext.getDatabase(), accountActor.origin, note.msgId);
+        List<Actor> stargazers = MyQuery.getStargazers(myContext.getDatabase(), accountActor.origin, note.noteId);
         boolean favoritedByOtherUser = false;
         for (Actor actor : stargazers) {
             if (actor.equals(accountActor)) {
@@ -234,18 +234,18 @@ public class DataUpdaterTest {
         assertEquals("Note is not favorited by " + otherUser + ": " + stargazers,
                 true, favoritedByOtherUser);
         assertNotEquals("Note is favorited (by some my account)", TriState.TRUE,
-                MyQuery.msgIdToTriState(NoteTable.FAVORITED, messageId));
+                MyQuery.msgIdToTriState(NoteTable.FAVORITED, noteId));
         assertEquals("Activity is subscribed " + likeActivity, TriState.UNKNOWN,
                 MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, likeActivity.getId()));
         DemoNoteInserter.assertNotified(likeActivity, TriState.UNKNOWN);
         assertEquals("Note is reblogged", TriState.UNKNOWN,
-                MyQuery.msgIdToTriState(NoteTable.REBLOGGED, messageId));
+                MyQuery.msgIdToTriState(NoteTable.REBLOGGED, noteId));
 
         // TODO: Below is actually a timeline query test, so maybe expand / move...
         Uri contentUri = Timeline.getTimeline(TimelineType.EVERYTHING, null, 0, ma.getOrigin()).getUri();
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = ActivityTable.getTimeSortOrder(TimelineType.EVERYTHING, false);
-        sa.addSelection(NoteTable.NOTE_ID + " = ?", Long.toString(messageId));
+        sa.addSelection(NoteTable.NOTE_ID + " = ?", Long.toString(noteId));
         String[] PROJECTION = new String[] {
                 ActivityTable.ACTIVITY_ID,
                 ActivityTable.ACTOR_ID,
@@ -259,27 +259,27 @@ public class DataUpdaterTest {
         Cursor cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection,
                 sa.selectionArgs, sortOrder);
         assertTrue("Cursor returned", cursor != null);
-        boolean messageFound = false;
+        boolean noteFound = false;
         while (cursor.moveToNext()) {
-            assertEquals("Message with other id returned", messageId, DbUtils.getLong(cursor, NoteTable.NOTE_ID));
-            messageFound = true;
-            assertNotEquals("Message is favorited", TriState.TRUE, DbUtils.getTriState(cursor, NoteTable.FAVORITED));
+            assertEquals("Note with other id returned", noteId, DbUtils.getLong(cursor, NoteTable.NOTE_ID));
+            noteFound = true;
+            assertNotEquals("Note is favorited", TriState.TRUE, DbUtils.getTriState(cursor, NoteTable.FAVORITED));
             assertNotEquals("Activity is subscribed", TriState.TRUE,
                     DbUtils.getTriState(cursor, ActivityTable.SUBSCRIBED));
         }
         cursor.close();
-        assertTrue("Message is not in Everything timeline, msgId=" + messageId, messageFound);
+        assertTrue("Note is not in Everything timeline, msgId=" + noteId, noteFound);
 
     }
 
     @Test
-    public void testReplyMessageFavoritedByMyActor() throws ConnectionException {
-        oneReplyMessageFavoritedByMyActor("_it1", true);
-        oneReplyMessageFavoritedByMyActor("_it2", false);
-        oneReplyMessageFavoritedByMyActor("_it2", true);
+    public void testReplyNoteFavoritedByMyActor() throws ConnectionException {
+        oneReplyNoteFavoritedByMyActor("_it1", true);
+        oneReplyNoteFavoritedByMyActor("_it2", false);
+        oneReplyNoteFavoritedByMyActor("_it2", true);
     }
 
-    private void oneReplyMessageFavoritedByMyActor(String iterationId, boolean favorited) {
+    private void oneReplyNoteFavoritedByMyActor(String iterationId, boolean favorited) {
         MyAccount ma = demoData.getConversationMyAccount();
         Actor accountActor = ma.getActor();
 
@@ -287,58 +287,58 @@ public class DataUpdaterTest {
         Actor author = Actor.fromOriginAndActorOid(accountActor.origin, "acct:" + authorUserName);
         author.setUsername(authorUserName);
 
-        AActivity activity = AActivity.newPartialMessage(accountActor,
+        AActivity activity = AActivity.newPartialNote(accountActor,
                 "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123" + iterationId + demoData.TESTRUN_UID,
                 13312795000L, DownloadStatus.LOADED);
         activity.setActor(author);
-        Note message = activity.getMessage();
-        message.setBody("The test message by Example from the http://pumpity.net " +  iterationId);
-        message.via = "UnknownClient";
-        if (favorited) message.addFavoriteBy(accountActor, TriState.TRUE);
+        Note note = activity.getNote();
+        note.setBody("The test note by Example from the http://pumpity.net " +  iterationId);
+        note.via = "UnknownClient";
+        if (favorited) note.addFavoriteBy(accountActor, TriState.TRUE);
 
         String inReplyToOid = "https://identi.ca/api/comment/dfjklzdfSf28skdkfgloxWB" + iterationId  + demoData.TESTRUN_UID;
-        AActivity inReplyTo = AActivity.newPartialMessage(accountActor, inReplyToOid,
+        AActivity inReplyTo = AActivity.newPartialNote(accountActor, inReplyToOid,
                 0, DownloadStatus.UNKNOWN);
         inReplyTo.setActor(Actor.fromOriginAndActorOid(accountActor.origin,
                 "irtUser" +  iterationId + demoData.TESTRUN_UID).setUsername("irt" + authorUserName +  iterationId));
-        message.setInReplyTo(inReplyTo);
+        note.setInReplyTo(inReplyTo);
 
         DataUpdater di = new DataUpdater(ma);
-        long messageId = di.onActivity(activity).getMessage().msgId;
-        assertNotEquals("Message added " + activity.getMessage(), 0, messageId);
+        long noteId = di.onActivity(activity).getNote().noteId;
+        assertNotEquals("Note added " + activity.getNote(), 0, noteId);
         assertNotEquals("Activity added " + accountActor, 0, activity.getId());
         if (!favorited) {
-            assertNotEquals("In reply to message added " + inReplyTo.getMessage(), 0, inReplyTo.getMessage().msgId);
+            assertNotEquals("In reply to note added " + inReplyTo.getNote(), 0, inReplyTo.getNote().noteId);
             assertNotEquals("In reply to activity added " + inReplyTo, 0, inReplyTo.getId());
         }
 
-        List<Actor> stargazers = MyQuery.getStargazers(myContext.getDatabase(), accountActor.origin, message.msgId);
+        List<Actor> stargazers = MyQuery.getStargazers(myContext.getDatabase(), accountActor.origin, note.noteId);
         boolean favoritedByMe = false;
         for (Actor actor : stargazers) {
             if (actor.equals(accountActor)) {
                 favoritedByMe = true;
             } else if (actor.equals(author)) {
-                fail("Note is favorited by my author " + message);
+                fail("Note is favorited by my author " + note);
             } else {
-                fail("Note is favorited by unexpected actor " + actor + " - " + message);
+                fail("Note is favorited by unexpected actor " + actor + " - " + note);
             }
         }
         if (favorited) {
-            assertEquals("Note " + message.msgId + " is not favorited by " + accountActor + ": "
+            assertEquals("Note " + note.noteId + " is not favorited by " + accountActor + ": "
                             + stargazers + "\n" + activity,
                     true, favoritedByMe);
             assertEquals("Note should be favorited (by some my account) " + activity, TriState.TRUE,
-                    MyQuery.msgIdToTriState(NoteTable.FAVORITED, messageId));
+                    MyQuery.msgIdToTriState(NoteTable.FAVORITED, noteId));
         }
         assertEquals("Activity is subscribed", TriState.UNKNOWN,
                 MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, activity.getId()));
         DemoNoteInserter.assertNotified(activity, TriState.UNKNOWN);
         assertEquals("Note is reblogged", TriState.UNKNOWN,
-                MyQuery.msgIdToTriState(NoteTable.REBLOGGED, messageId));
+                MyQuery.msgIdToTriState(NoteTable.REBLOGGED, noteId));
         assertEquals("Note stored as loaded", DownloadStatus.LOADED, DownloadStatus.load(
-                MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, messageId)));
+                MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)));
 
-        long inReplyToId = MyQuery.oidToId(OidEnum.MSG_OID, accountActor.origin.getId(),
+        long inReplyToId = MyQuery.oidToId(OidEnum.NOTE_OID, accountActor.origin.getId(),
                 inReplyToOid);
         assertTrue("In reply to note added", inReplyToId != 0);
         assertEquals("Note reply status is unknown", DownloadStatus.UNKNOWN, DownloadStatus.load(
@@ -347,64 +347,64 @@ public class DataUpdaterTest {
 
     @Test
     public void testNoteWithAttachment() throws Exception {
-        AActivity activity = ConnectionGnuSocialTest.getMessageWithAttachment(
+        AActivity activity = ConnectionGnuSocialTest.getNoteWithAttachment(
                 InstrumentationRegistry.getInstrumentation().getContext());
 
         MyAccount ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(activity.getActor().origin);
         assertTrue("Account is valid " + ma, ma.isValid());
         DataUpdater di = new DataUpdater(ma);
-        long messageId = di.onActivity(activity).getMessage().msgId;
-        assertNotEquals("Message added " + activity.getMessage(), 0, messageId);
+        long noteId = di.onActivity(activity).getNote().noteId;
+        assertNotEquals("Note added " + activity.getNote(), 0, noteId);
         assertNotEquals("Activity added " + activity, 0, activity.getId());
 
-        DownloadData dd = DownloadData.getSingleForMessage(messageId,
-                activity.getMessage().attachments.get(0).contentType, null);
-        assertEquals("Image URI stored", activity.getMessage().attachments.get(0).getUri(), dd.getUri());
+        DownloadData dd = DownloadData.getSingleForNote(noteId,
+                activity.getNote().attachments.get(0).contentType, null);
+        assertEquals("Image URI stored", activity.getNote().attachments.get(0).getUri(), dd.getUri());
     }
 
     @Test
-    public void testUnsentMessageWithAttachment() throws Exception {
-        final String method = "testUnsentMessageWithAttachment";
+    public void testUnsentNoteWithAttachment() throws Exception {
+        final String method = "testUnsentNoteWithAttachment";
         MyAccount ma = MyContextHolder.get().persistentAccounts().getFirstSucceeded();
         Actor accountActor = ma.getActor();
-        AActivity activity = AActivity.newPartialMessage(accountActor, "", System.currentTimeMillis(), DownloadStatus.SENDING);
+        AActivity activity = AActivity.newPartialNote(accountActor, "", System.currentTimeMillis(), DownloadStatus.SENDING);
         activity.setActor(accountActor);
-        Note message = activity.getMessage();
-        message.setBody("Unsent message with an attachment " + demoData.TESTRUN_UID);
-        message.attachments.add(Attachment.fromUriAndContentType(demoData.LOCAL_IMAGE_TEST_URI,
+        Note note = activity.getNote();
+        note.setBody("Unsent note with an attachment " + demoData.TESTRUN_UID);
+        note.attachments.add(Attachment.fromUriAndContentType(demoData.LOCAL_IMAGE_TEST_URI,
                 MyContentType.IMAGE));
         new DataUpdater(ma).onActivity(activity);
-        assertNotEquals("Message added " + activity, 0, message.msgId);
+        assertNotEquals("Note added " + activity, 0, note.noteId);
         assertNotEquals("Activity added " + activity, 0, activity.getId());
-        assertEquals("Status of unsent message", DownloadStatus.SENDING, DownloadStatus.load(
-                MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, message.msgId)));
+        assertEquals("Status of unsent note", DownloadStatus.SENDING, DownloadStatus.load(
+                MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, note.noteId)));
 
-        DownloadData dd = DownloadData.getSingleForMessage(message.msgId,
-                message.attachments.get(0).contentType, null);
-        assertEquals("Image URI stored", message.attachments.get(0).getUri(), dd.getUri());
+        DownloadData dd = DownloadData.getSingleForNote(note.noteId,
+                note.attachments.get(0).contentType, null);
+        assertEquals("Image URI stored", note.attachments.get(0).getUri(), dd.getUri());
         assertEquals("Local image immediately loaded " + dd, DownloadStatus.LOADED, dd.getStatus());
 
         DbUtils.waitMs(method, 1000);
 
-        // Emulate receiving of message
+        // Emulate receiving of note
         final String oid = "sentMsgOid" + demoData.TESTRUN_UID;
-        AActivity activity2 = AActivity.newPartialMessage(accountActor, oid, System.currentTimeMillis(), DownloadStatus.LOADED);
+        AActivity activity2 = AActivity.newPartialNote(accountActor, oid, System.currentTimeMillis(), DownloadStatus.LOADED);
         activity2.setActor(activity.getAuthor());
-        Note message2 = activity2.getMessage();
-        message2.setBody("Just sent: " + message.getBody());
-        message2.attachments.add(Attachment.fromUriAndContentType(demoData.IMAGE1_URL, MyContentType.IMAGE));
-        message2.msgId = message.msgId;
+        Note note2 = activity2.getNote();
+        note2.setBody("Just sent: " + note.getBody());
+        note2.attachments.add(Attachment.fromUriAndContentType(demoData.IMAGE1_URL, MyContentType.IMAGE));
+        note2.noteId = note.noteId;
         new DataUpdater(ma).onActivity(activity2);
 
-        assertEquals("Row id didn't change", message.msgId, message2.msgId);
-        assertEquals("Message body updated", message2.getBody(),
-                MyQuery.msgIdToStringColumnValue(NoteTable.BODY, message.msgId));
-        assertEquals("Status of loaded message", DownloadStatus.LOADED, DownloadStatus.load(
-                MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, message.msgId)));
+        assertEquals("Row id didn't change", note.noteId, note2.noteId);
+        assertEquals("Note body updated", note2.getBody(),
+                MyQuery.msgIdToStringColumnValue(NoteTable.BODY, note.noteId));
+        assertEquals("Status of loaded note", DownloadStatus.LOADED, DownloadStatus.load(
+                MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, note.noteId)));
 
-        DownloadData dd2 = DownloadData.getSingleForMessage(message2.msgId,
-                message2.attachments.get(0).contentType, null);
-        assertEquals("New image URI stored", message2.attachments.get(0).getUri(), dd2.getUri());
+        DownloadData dd2 = DownloadData.getSingleForNote(note2.noteId,
+                note2.attachments.get(0).contentType, null);
+        assertEquals("New image URI stored", note2.attachments.get(0).getUri(), dd2.getUri());
 
         assertEquals("Not loaded yet. " + dd2, DownloadStatus.ABSENT, dd2.getStatus());
         AttachmentDownloaderTest.loadAndAssertStatusForRow(dd2.getDownloadId(), DownloadStatus.LOADED, false);
@@ -490,7 +490,7 @@ public class DataUpdaterTest {
                 MyQuery.userIdToStringColumnValue(ActorTable.WEBFINGER_ID, id));
         assertEquals("Description", actor.getDescription(),
                 MyQuery.userIdToStringColumnValue(ActorTable.DESCRIPTION, id));
-        assertEquals("Messages count", actor.msgCount,
+        assertEquals("Notes count", actor.notesCount,
                 MyQuery.userIdToLongColumnValue(ActorTable.MSG_COUNT, id));
         assertEquals("Favorites count", actor.favoritesCount,
                 MyQuery.userIdToLongColumnValue(ActorTable.FAVORITES_COUNT, id));
@@ -508,11 +508,11 @@ public class DataUpdaterTest {
     public void testReplyInBody() {
         MyAccount ma = demoData.getConversationMyAccount();
         String buddyUserName = "buddy" +  demoData.TESTRUN_UID + "@example.com";
-        String body = "@" + buddyUserName + " I'm replying to you in a message body."
+        String body = "@" + buddyUserName + " I'm replying to you in a note's body."
                 + " Hope you will see this as a real reply!";
-        addOneMessage4testReplyInBody(buddyUserName, body, true);
+        addOneNote4testReplyInBody(buddyUserName, body, true);
 
-        addOneMessage4testReplyInBody(buddyUserName, "Oh, " + body, false);
+        addOneNote4testReplyInBody(buddyUserName, "Oh, " + body, false);
 
         long userId1 = MyQuery.webFingerIdToId(ma.getOriginId(), buddyUserName);
         assertEquals("Actor has temp Oid", Actor.getTempOid(buddyUserName, ""), MyQuery.idToOid(OidEnum.ACTOR_OID, userId1, 0));
@@ -525,15 +525,15 @@ public class DataUpdaterTest {
         assertEquals(userId1, userId2);
         assertEquals("TempOid replaced with real", realBuddyOid, MyQuery.idToOid(OidEnum.ACTOR_OID, userId1, 0));
 
-        body = "<a href=\"http://example.com/a\">@" + buddyUserName + "</a>, this is an HTML <i>formatted</i> message";
-        addOneMessage4testReplyInBody(buddyUserName, body, true);
+        body = "<a href=\"http://example.com/a\">@" + buddyUserName + "</a>, this is an HTML <i>formatted</i> note";
+        addOneNote4testReplyInBody(buddyUserName, body, true);
 
         buddyUserName = demoData.CONVERSATION_AUTHOR_THIRD_USERNAME;
         body = "@" + buddyUserName + " I know you are already in our cache";
-        addOneMessage4testReplyInBody(buddyUserName, body, true);
+        addOneNote4testReplyInBody(buddyUserName, body, true);
     }
 
-    private void addOneMessage4testReplyInBody(String buddyUserName, String body, boolean isReply) {
+    private void addOneNote4testReplyInBody(String buddyUserName, String body, boolean isReply) {
         MyAccount ma = demoData.getConversationMyAccount();
         Actor accountActor = ma.getActor();
 
@@ -544,14 +544,14 @@ public class DataUpdaterTest {
         somebody.setUsername(username);
         somebody.setProfileUrl("https://somewhere.net/" + username);
 
-        AActivity activity = AActivity.newPartialMessage(accountActor, String.valueOf(System.nanoTime()),
+        AActivity activity = AActivity.newPartialNote(accountActor, String.valueOf(System.nanoTime()),
                 System.currentTimeMillis(), DownloadStatus.LOADED);
         activity.setActor(somebody);
-        Note message = activity.getMessage();
-        message.setBody(body);
-        message.via = "MyCoolClient";
+        Note note = activity.getNote();
+        note.setBody(body);
+        note.via = "MyCoolClient";
 
-        long messageId = di.onActivity(activity).getMessage().msgId;
+        long noteId = di.onActivity(activity).getNote().noteId;
         Actor buddy = Actor.EMPTY;
         for (Actor actor : activity.recipients().getRecipients()) {
             if (actor.getUsername().equals(buddyUserName)) {
@@ -559,14 +559,14 @@ public class DataUpdaterTest {
                 break;
             }
         }
-        assertTrue("Message added", messageId != 0);
+        assertTrue("Note added", noteId != 0);
         if (isReply) {
             assertTrue("'" + buddyUserName + "' should be a recipient " + activity.recipients().getRecipients(),
                     buddy.nonEmpty());
             assertNotEquals("'" + buddyUserName + "' is not added " + buddy, 0, buddy.actorId);
         } else {
-            assertTrue("Don't treat this message as a reply:'"
-                    + message.getBody() + "'", buddy.isEmpty());
+            assertTrue("Don't treat this note as a reply:'"
+                    + note.getBody() + "'", buddy.isEmpty());
         }
     }
 
@@ -579,19 +579,19 @@ public class DataUpdaterTest {
         Actor author1 = Actor.fromOriginAndActorOid(accountActor.origin, "sam" + demoData.TESTRUN_UID);
         author1.setUsername("samBrook");
 
-        AActivity activity1 = AActivity.newPartialMessage(accountActor, String.valueOf(System.nanoTime()),
+        AActivity activity1 = AActivity.newPartialNote(accountActor, String.valueOf(System.nanoTime()),
                 System.currentTimeMillis(), DownloadStatus.LOADED);
         activity1.setActor(author1);
-        Note message = activity1.getMessage();
-        message.setBody("@" + myMentionedUser.getUsername() + " I mention your another account");
-        message.via = "AndStatus";
+        Note note = activity1.getNote();
+        note.setBody("@" + myMentionedUser.getUsername() + " I mention your another account");
+        note.via = "AndStatus";
 
         AActivity activity2 = AActivity.from(accountActor, ActivityType.UPDATE);
         activity2.setActor(author1);
         activity2.setActivity(activity1);
 
         DataUpdater di = new DataUpdater(ma);
-        long messageId = di.onActivity(activity2).getMessage().msgId;
-        assertTrue("Message added", messageId != 0);
+        long noteId = di.onActivity(activity2).getNote().noteId;
+        assertTrue("Note added", noteId != 0);
     }
 }

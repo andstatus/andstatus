@@ -28,8 +28,8 @@ import java.util.Date;
 
 
 /**
- * Manages minimal information about the latest downloaded message by one Actor (or a User represented by the Actor).
- * We count messages where the Actor is either a Sender or an Author
+ * Manages minimal information about the latest downloaded note by one Actor (or a User represented by the Actor).
+ * We count notes where the Actor is either a Actor or an Author
  */
 public final class ActorActivity {
     private static final String TAG = ActorActivity.class.getSimpleName();
@@ -37,7 +37,7 @@ public final class ActorActivity {
     private long actorId = 0;
     
     /**
-     * The id of the latest downloaded Message by this Actor
+     * The id of the latest downloaded Note by this Actor
      * 0 - none were downloaded
      */
     private long lastActivityId = 0;
@@ -78,20 +78,20 @@ public final class ActorActivity {
     }
     
     /**
-     * @return Id of the last downloaded message by this Actor
+     * @return Id of the last downloaded note by this Actor
      */
     public long getLastActivityId() {
         return lastActivityId;
     }
 
     /**
-     * @return Sent Date of the last downloaded message by this Actor
+     * @return Sent Date of the last downloaded note by this Actor
      */
     public long getLastActivityDate() {
         return lastActivityDate;
     }
 
-    /** If this message is newer than any we got earlier, remember it
+    /** If this note is newer than any we got earlier, remember it
      * @param updatedDateIn may be 0 (will be retrieved here)
      */
     public void onNewActivity(long activityId, long updatedDateIn) {

@@ -39,39 +39,6 @@ import static org.junit.Assert.assertTrue;
 public class MyServiceTest1 extends MyServiceTest {
 
     @Test
-    public void testRepeatingFailingCommand() throws MalformedURLException {
-        final String method = "testRepeatingFailingCommand";
-        MyLog.i(this, method + " started");
-
-        String urlString = "http://andstatus.org/nonexistent2_avatar_" + System.currentTimeMillis() +  ".png";
-        AvatarDownloaderTest.changeAvatarUrl(ma, urlString);
-        
-        mService.setListenedCommand(CommandData.newActorCommand(
-                CommandEnum.FETCH_AVATAR,
-                null, ma.getOrigin(),
-                ma.getActorId(),
-                ""));
-
-        long startCount = mService.executionStartCount;
-        long endCount = mService.executionEndCount;
-
-        mService.sendListenedToCommand();
-        mService.assertCommandExecutionStarted("First command", startCount, TriState.TRUE);
-        mService.sendListenedToCommand();
-        assertTrue("First command didn't end", mService.waitForCommandExecutionEnded(endCount));
-        assertEquals(mService.getHttp().toString(), 1, mService.getHttp().getRequestsCounter());
-        mService.sendListenedToCommand();
-        mService.assertCommandExecutionStarted("Duplicated command started", startCount + 1, TriState.FALSE);
-        mService.getListenedCommand().setManuallyLaunched(true);
-        mService.sendListenedToCommand();
-        mService.assertCommandExecutionStarted("Manually launched duplicated command didn't start", startCount + 1,
-                TriState.TRUE);
-        assertTrue("The third command didn't end", mService.waitForCommandExecutionEnded(endCount+1));
-        assertTrue("Service didn't stop", mService.waitForServiceStopped(true));
-        MyLog.i(this, method + " ended");
-    }
-
-    @Test
     public void testAccountSync() {
         final String method = "testAccountSync";
         MyLog.i(this, method + " started");

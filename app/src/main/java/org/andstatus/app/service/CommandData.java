@@ -82,7 +82,7 @@ public class CommandData implements Comparable<CommandData> {
 
     public static CommandData newSearch(SearchObjects searchObjects,
                                         MyContext myContext, Origin origin, String queryString) {
-        if (searchObjects == SearchObjects.MESSAGES) {
+        if (searchObjects == SearchObjects.NOTES) {
             Timeline timeline =  Timeline.getTimeline(myContext, 0, TimelineType.SEARCH, null, 0, origin, queryString);
             return new CommandData(0, CommandEnum.GET_TIMELINE, timeline, 0);
         } else {

@@ -74,7 +74,7 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
         int ind=0;
         do {
             long msgId = DbUtils.getLong(cursor, ActivityTable.MSG_ID);
-            if (msgId != getMsgId()) {
+            if (msgId != getNoteId()) {
                 if (ind > 0) {
                     cursor.moveToPrevious();
                 }
@@ -83,18 +83,18 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
 
             authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID);
             super.load(cursor);
-            msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
+            noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
             authorName = TimelineSql.userColumnNameToNameAtTimeline(cursor, ActorTable.AUTHOR_NAME, false);
             setBody(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.BODY)));
             String via = DbUtils.getString(cursor, NoteTable.VIA);
             if (!TextUtils.isEmpty(via)) {
-                messageSource = Html.fromHtml(via).toString().trim();
+                noteSource = Html.fromHtml(via).toString().trim();
             }
             avatarFile = AvatarFile.fromCursor(authorId, cursor, DownloadTable.AVATAR_FILE_NAME);
             if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
                 attachedImageFile = AttachedImageFile.fromCursor(cursor);
             }
-            inReplyToMsgId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
+            inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
             inReplyToUserId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID);
             inReplyToName = TimelineSql.userColumnNameToNameAtTimeline(cursor, ActorTable.IN_REPLY_TO_NAME, false);
             //TODO:  recipientName = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.RECIPIENT_NAME, false);
@@ -109,7 +109,7 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
             ind++;
         } while (cursor.moveToNext());
 
-        for (Actor actor : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getMsgId())) {
+        for (Actor actor : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getNoteId())) {
             rebloggers.put(actor.actorId, actor.getWebFingerId());
         }
     }

@@ -79,7 +79,7 @@ public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable 
     public @NonNull View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         final View view;
         if (convertView == null) {
-            view = mInflater.inflate(R.layout.user_lookup, parent, false);
+            view = mInflater.inflate(R.layout.actor_lookup, parent, false);
         } else {
             view = convertView;
         }

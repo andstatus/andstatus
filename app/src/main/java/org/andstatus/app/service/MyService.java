@@ -719,7 +719,7 @@ public class MyService extends Service {
             if (commandDataExecuted.getResult().hasError()
                     || commandDataExecuted.getCommand() != CommandEnum.UPDATE_NOTE
                     || !SharedPreferencesUtil.getBoolean(
-                            MyPreferences.KEY_SYNC_AFTER_MESSAGE_WAS_SENT, false)) {
+                            MyPreferences.KEY_SYNC_AFTER_NOTE_WAS_SENT, false)) {
                 return;
             }
             addToMainQueue(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,

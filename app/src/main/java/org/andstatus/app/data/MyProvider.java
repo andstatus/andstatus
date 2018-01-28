@@ -111,16 +111,16 @@ public class MyProvider extends ContentProvider {
         return count;
     }
 
-    /** @return Number of deleted activities of this message */
-    public static int deleteMessage(Context context, long msgId) {
-        if (context == null || msgId == 0) return 0;
+    /** @return Number of deleted activities of this note */
+    public static int deleteNote(Context context, long noteId) {
+        if (context == null || noteId == 0) return 0;
         try {
             return context.getContentResolver().delete(MatchedUri.ACTIVITY_CONTENT_URI,
-                    ActivityTable.TABLE_NAME + "." + ActivityTable.MSG_ID + "=" + msgId,
+                    ActivityTable.TABLE_NAME + "." + ActivityTable.MSG_ID + "=" + noteId,
                     new String[]{});
 
         } catch (Exception e) {
-            MyLog.e(TAG, "Error destroying message locally", e);
+            MyLog.e(TAG, "Error destroying note locally", e);
         }
         return 0;
     }
@@ -138,7 +138,7 @@ public class MyProvider extends ContentProvider {
             sqlDesc = selection + descSuffix;
             count += db.delete(ActivityTable.TABLE_NAME, selection, selectionArgs);
 
-            // Messages, which don't have any activities
+            // Notes, which don't have any activities
             String sqlMsgIds = "SELECT msgA." + NoteTable._ID +
                     " FROM " + NoteTable.TABLE_NAME + " AS msgA" +
                     " WHERE NOT EXISTS" +
@@ -157,7 +157,7 @@ public class MyProvider extends ContentProvider {
                 DownloadData.deleteAllOfThisMsg(db, msgId);
             }
 
-            // Messages
+            // Notes
             selectionG = " EXISTS (" + sqlMsgIds +
                     " AND (msgA." + NoteTable._ID +
                     "=" + NoteTable.TABLE_NAME + "." + NoteTable._ID + "))";
@@ -193,26 +193,26 @@ public class MyProvider extends ContentProvider {
         long originId = MyQuery.activityIdToLongColumnValue(ActivityTable.ORIGIN_ID, activityId);
         if (originId == 0) return 0;
         Origin origin = MyContextHolder.get().persistentOrigins().fromId(originId);
-        // Was this the last activity for this message?
+        // Was this the last activity for this note?
         final long activityId2 = MyQuery.conditionToLongColumnValue(db, null, ActivityTable.TABLE_NAME,
                 BaseColumns._ID, ActivityTable.MSG_ID + "=" + msgId +
                         " AND " + ActivityTable.TABLE_NAME + "." + ActivityTable._ID + "!=" + activityId);
         long count;
         if (msgId != 0 && activityId2 == 0) {
-            // Delete related message if no more its activities left
+            // Delete related note if no more its activities left
             count = deleteActivities(db, ActivityTable.TABLE_NAME + "." + ActivityTable._ID +
                     "=" + activityId, new String[]{}, inTransaction);
         } else {
             // Delete this activity only
             count = db.delete(ActivityTable.TABLE_NAME, BaseColumns._ID + "=" + activityId, null);
-            updateMessageFavorited(myContext, origin, msgId);
-            updateMessageReblogged(myContext, origin, msgId);
+            updateNoteFavorited(myContext, origin, msgId);
+            updateNoteReblogged(myContext, origin, msgId);
         }
         return count;
     }
 
-    public static void updateMessageReblogged(MyContext myContext, Origin origin, long msgId) {
-        final String method = "updateMessageReblogged-" + msgId;
+    public static void updateNoteReblogged(MyContext myContext, Origin origin, long msgId) {
+        final String method = "updateNoteReblogged-" + msgId;
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
             MyLog.v(MyProvider.TAG, method + "; Database is null");
@@ -230,8 +230,8 @@ public class MyProvider extends ContentProvider {
         }
     }
 
-    public static void updateMessageFavorited(MyContext myContext, @NonNull Origin origin, long msgId) {
-        final String method = "updateMessageFavorited-" + msgId;
+    public static void updateNoteFavorited(MyContext myContext, @NonNull Origin origin, long msgId) {
+        final String method = "updateNoteFavorited-" + msgId;
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
             MyLog.v(MyProvider.TAG, method + "; Database is null");
@@ -266,8 +266,8 @@ public class MyProvider extends ContentProvider {
         }
     }
 
-    public static void setUnsentMessageNotification(@NonNull MyContext myContext, long msgId) {
-        final String method = "setUnsentMessageNotification for msgId=" + msgId;
+    public static void setUnsentNoteNotification(@NonNull MyContext myContext, long msgId) {
+        final String method = "setUnsentNoteNotification for msgId=" + msgId;
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
             MyLog.v(MyProvider.TAG, method + "; Database is null");
@@ -415,7 +415,7 @@ public class MyProvider extends ContentProvider {
                 qb.setTables(TimelineSql.tablesForTimeline(uri, projection));
                 qb.setProjectionMap(ProjectionMap.MSG);
                 qb.appendWhere(ProjectionMap.ACTIVITY_TABLE_ALIAS + "."
-                        + ActivityTable.MSG_ID + "=" + uriParser.getMessageId());
+                        + ActivityTable.MSG_ID + "=" + uriParser.getNoteId());
                 break;
 
             case TIMELINE_SEARCH:
@@ -565,7 +565,7 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case MSG_ITEM:
-                long rowId = uriParser.getMessageId();
+                long rowId = uriParser.getNoteId();
                 if (values.size() > 0) {
                     count = db.update(NoteTable.TABLE_NAME, values, BaseColumns._ID + "=" + rowId
                             + (StringUtils.nonEmpty(selection) ? " AND (" + selection + ')' : ""),

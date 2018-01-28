@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 
 /**
  * Clean database from outdated information
- * old Messages, log files...
+ * old Notes, log files...
  */
 public class DataPruner {
     private MyContext mMyContext;
@@ -139,19 +139,19 @@ public class DataPruner {
             MyLog.v(this,
                     method + " " + (pruned ? "succeeded" : "failed") + "; History time=" + maxDays + " days; deleted " + nDeletedTime
                     + " , before " + new Date(latestTimestamp).toString());
-            MyLog.v(this, method + "; History size=" + maxSize + " messages; deleted "
-                    + nDeletedSize + " of " + nActivities + " messages, before " + new Date(latestTimestampSize).toString());
+            MyLog.v(this, method + "; History size=" + maxSize + " notes; deleted "
+                    + nDeletedSize + " of " + nActivities + " notes, before " + new Date(latestTimestampSize).toString());
         }
         return pruned;
     }
 
     long pruneAttachments() {
         final String method = "pruneAttachments";
-        String sql = "SELECT DISTINCT " + DownloadTable.MSG_ID + " FROM " + DownloadTable.TABLE_NAME
-                + " WHERE " + DownloadTable.MSG_ID + " NOT NULL"
+        String sql = "SELECT DISTINCT " + DownloadTable.NOTE_ID + " FROM " + DownloadTable.TABLE_NAME
+                + " WHERE " + DownloadTable.NOTE_ID + " NOT NULL"
                 + " AND NOT EXISTS (" 
                 + "SELECT * FROM " + NoteTable.TABLE_NAME
-                + " WHERE " + NoteTable.TABLE_NAME + "." + NoteTable._ID + "=" + DownloadTable.MSG_ID
+                + " WHERE " + NoteTable.TABLE_NAME + "." + NoteTable._ID + "=" + DownloadTable.NOTE_ID
                 + ")";
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
@@ -174,7 +174,7 @@ public class DataPruner {
             nDeleted++;
         }
         if (nDeleted > 0) {
-            MyLog.v(this, method + "; Attachments deleted for " + nDeleted + " messages");
+            MyLog.v(this, method + "; Attachments deleted for " + nDeleted + " notes");
         }
         return nDeleted;
     }
@@ -231,7 +231,7 @@ public class DataPruner {
     }
 
     /**
-     * @return number of Messages deleted
+     * @return number of notes deleted
      */
     public long getDeleted() {
         return mDeleted;

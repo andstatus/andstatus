@@ -2,13 +2,13 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/message_wrapper"
+    android:id="@+id/note_wrapper"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     tools:showIn="@layout/activity">
 
     <LinearLayout
-        android:id="@+id/message_indented"
+        android:id="@+id/note_indented"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
@@ -21,11 +21,11 @@
         <include layout="@layout/author_and_rebloggers"/>
 
         <TextView
-            android:id="@+id/message_body"
+            android:id="@+id/note_body"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             style="@style/messageBodyAppearance"
-            tools:text="This is a sample message body, which is long enough to fill more than one line on a phone. It looks like I need it a bit longer.\nThis should be at least the second line"/>
+            tools:text="This is a sample note's body, which is long enough to fill more than one line on a phone. It looks like I need it a bit longer.\nThis should be at least the second line"/>
 
         <org.andstatus.app.graphics.AttachedImageView
             android:id="@+id/attached_image"
@@ -42,7 +42,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/message_details"
+                android:id="@+id/note_details"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
@@ -50,7 +50,7 @@
                 tools:text="sent 5 minutes ago from AndStatus"/>
 
             <ImageView
-                android:id="@+id/message_favorited"
+                android:id="@+id/note_favorited"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_alignParentRight="true"
@@ -60,7 +60,7 @@
                 android:src="?attr/favoriteIcon"/>
         </RelativeLayout>
 
-        <include layout="@layout/message_buttons"/>
+        <include layout="@layout/note_buttons"/>
     </LinearLayout>
 
     <org.andstatus.app.graphics.AvatarView

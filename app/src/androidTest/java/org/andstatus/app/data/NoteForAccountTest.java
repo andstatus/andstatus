@@ -29,11 +29,11 @@ public class NoteForAccountTest {
         assertTrue(ma.isValid());
         DemoNoteInserter mi = new DemoNoteInserter(ma);
         Actor accountActor = ma.getActor();
-        AActivity activity1 = mi.buildActivity(accountActor, "My testing message", null,
+        AActivity activity1 = mi.buildActivity(accountActor, "My testing note", null,
                 null, DownloadStatus.LOADED);
         mi.onActivity(activity1);
         
-        NoteForAccount mfa = new NoteForAccount(ma.getOrigin(), activity1.getId(), activity1.getMessage().msgId, ma);
+        NoteForAccount mfa = new NoteForAccount(ma.getOrigin(), activity1.getId(), activity1.getNote().noteId, ma);
         assertTrue(mfa.isAuthor);
         assertTrue(mfa.isActor);
         assertTrue(mfa.isSubscribed);
@@ -44,10 +44,10 @@ public class NoteForAccountTest {
         Actor author2 = mi.buildActorFromOid("acct:a2." + demoData.TESTRUN_UID + "@pump.example.com");
         final AActivity replyTo1 = mi.buildActivity(author2, "@" + accountActor.getUsername()
                 + " Replying to you", activity1, null, DownloadStatus.LOADED);
-        replyTo1.getMessage().setPrivate(FALSE);
+        replyTo1.getNote().setPrivate(FALSE);
         mi.onActivity(replyTo1);
         
-        mfa = new NoteForAccount(ma.getOrigin(), replyTo1.getId(), replyTo1.getMessage().msgId, ma);
+        mfa = new NoteForAccount(ma.getOrigin(), replyTo1.getId(), replyTo1.getNote().noteId, ma);
         assertFalse(mfa.isAuthor);
         assertFalse(mfa.isActor);
         assertFalse(mfa.isPrivate());
@@ -58,10 +58,10 @@ public class NoteForAccountTest {
         Actor author3 = mi.buildActorFromOid("acct:b3." + demoData.TESTRUN_UID + "@pumpity.example.com");
         AActivity replyTo2 = mi.buildActivity(author3, "@" + author2.getUsername()
                 + " Replying to the second author", replyTo1, null, DownloadStatus.LOADED);
-        replyTo2.getMessage().setPrivate(FALSE);
+        replyTo2.getNote().setPrivate(FALSE);
         mi.onActivity(replyTo2);
         
-        mfa = new NoteForAccount(ma.getOrigin(), 0, replyTo2.getMessage().msgId, ma);
+        mfa = new NoteForAccount(ma.getOrigin(), 0, replyTo2.getNote().noteId, ma);
         assertFalse(mfa.isAuthor);
         assertFalse(mfa.isActor);
         assertFalse(mfa.isPrivate());
@@ -81,7 +81,7 @@ public class NoteForAccountTest {
         activity4.setUpdatedDate(System.currentTimeMillis());
         mi.onActivity(activity4);
 
-        mfa = new NoteForAccount(ma.getOrigin(), 0, reblogged1.getMessage().msgId, ma);
+        mfa = new NoteForAccount(ma.getOrigin(), 0, reblogged1.getNote().noteId, ma);
         assertFalse(mfa.isAuthor);
         assertFalse(mfa.isActor);
         assertFalse(mfa.isSubscribed);

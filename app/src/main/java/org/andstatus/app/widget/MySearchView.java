@@ -195,7 +195,7 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
 
     private void onSearchObjectsChange() {
         searchText.setAdapter(new SuggestionsAdapter(parentActivity, getSearchObjects()));
-        searchText.setHint(getSearchObjects() == SearchObjects.MESSAGES ? R.string.search_timeline_hint
+        searchText.setHint(getSearchObjects() == SearchObjects.NOTES ? R.string.search_timeline_hint
                 : R.string.search_userlist_hint );
         onSearchContextChanged();
     }
@@ -208,7 +208,7 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
         Intent intent = new Intent(Intent.ACTION_SEARCH, getUri(), getContext(), getSearchObjects().getActivityClass());
         intent.putExtra(IntentExtra.SEARCH_QUERY.key, query);
         if (timeline.hasSearchQuery()
-                && getSearchObjects() == SearchObjects.MESSAGES
+                && getSearchObjects() == SearchObjects.NOTES
                 && !parentActivity.getMyContext().persistentTimelines().getDefault().equals(timeline)) {
             // Send intent to existing activity
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -227,7 +227,7 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
     }
 
     private Uri getUri() {
-        if (getSearchObjects() == SearchObjects.MESSAGES) {
+        if (getSearchObjects() == SearchObjects.NOTES) {
             return timeline.fromSearch(parentActivity.getMyContext(), isInternetSearch())
                                     .fromIsCombined(parentActivity.getMyContext(), isCombined()).getUri();
         }

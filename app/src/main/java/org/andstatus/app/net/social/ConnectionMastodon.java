@@ -125,7 +125,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     @NonNull
     @Override
     protected Uri.Builder getTimelineUriBuilder(ApiRoutineEnum apiRoutine, int limit, String actorId) throws ConnectionException {
-        String url = this.getApiPathWithUserId(apiRoutine, actorId);
+        String url = this.getApiPathWithActorId(apiRoutine, actorId);
         return Uri.parse(url).buildUpon().appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
     }
 
@@ -136,21 +136,21 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             activity.setTimelinePosition(timelineItem.optString("id"));
             activity.setUpdatedDate(dateFromJson(timelineItem, "created_at"));
             activity.setActor(actorFromJson(timelineItem.optJSONObject("account")));
-            AActivity messageActivity = activityFromJson2(timelineItem.optJSONObject("status"));
+            AActivity noteActivity = activityFromJson2(timelineItem.optJSONObject("status"));
 
             switch (activity.type) {
                 case LIKE:
                 case UNDO_LIKE:
                 case ANNOUNCE:
                 case UNDO_ANNOUNCE:
-                    activity.setActivity(messageActivity);
+                    activity.setActivity(noteActivity);
                     break;
                 case FOLLOW:
                 case UNDO_FOLLOW:
                     activity.setObjActor(data.getAccountActor());
                     break;
                 default:
-                    activity.setMessage(messageActivity.getMessage());
+                    activity.setNote(noteActivity.getNote());
                     break;
             }
             return activity;
@@ -230,7 +230,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         if (TextUtils.isEmpty(conversationOid)) {
             return timeline;
         }
-        String url = getApiPathWithMessageId(ApiRoutineEnum.GET_CONVERSATION, conversationOid);
+        String url = getApiPathWithNoteId(ApiRoutineEnum.GET_CONVERSATION, conversationOid);
         JSONObject mastodonContext = http.getRequest(url);
         try {
             if (mastodonContext.has("ancestors")) {
@@ -250,11 +250,11 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
 
     @Override
-    public AActivity updateNote(String message, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
+    public AActivity updateNote(String note, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         JSONObject mediaObject = null;
         try {
-            formParams.put("status", message);
+            formParams.put("status", note);
             if ( !TextUtils.isEmpty(inReplyToOid)) {
                 formParams.put("in_reply_to_id", inReplyToOid);
             }
@@ -265,7 +265,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 }
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, "Error posting message '" + mediaUri + "'", e, mediaObject);
+            throw ConnectionException.loggedJsonException(this, "Error updating note '" + mediaUri + "'", e, mediaObject);
         }
         JSONObject jso = postRequest(ApiRoutineEnum.UPDATE_NOTE, formParams);
         return activityFromJson(jso);
@@ -310,7 +310,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         actor.bannerUrl = UriUtils.fromJson(jso, "header").toString();
         actor.setDescription(jso.optString("note"));
         actor.setProfileUrl(jso.optString("url"));
-        actor.msgCount = jso.optLong("statuses_count");
+        actor.notesCount = jso.optLong("statuses_count");
         actor.followingCount = jso.optLong("following_count");
         actor.followersCount = jso.optLong("followers_count");
         actor.setCreatedDate(dateFromJson(jso, "created_at"));
@@ -333,23 +333,23 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 activity.setActor(actorFromJson(actor));
             }
 
-            Note message =  activity.getMessage();
-            message.setBody(jso.optString("content"));
-            message.url = jso.optString("url");
+            Note note =  activity.getNote();
+            note.setBody(jso.optString("content"));
+            note.url = jso.optString("url");
             if (jso.has("recipient")) {
                 JSONObject recipient = jso.getJSONObject("recipient");
-                message.addRecipient(actorFromJson(recipient));
+                note.addRecipient(actorFromJson(recipient));
             }
             if (!jso.isNull("application")) {
                 JSONObject application = jso.getJSONObject("application");
-                message.via = application.optString("name");
+                note.via = application.optString("name");
             }
             if (!jso.isNull("favourited")) {
-                message.addFavoriteBy(data.getAccountActor(),
+                note.addFavoriteBy(data.getAccountActor(),
                         TriState.fromBoolean(SharedPreferencesUtil.isTrue(jso.getString("favourited"))));
             }
 
-            // If the Msg is a Reply to other message
+            // If the Msg is a Reply to other note
             String inReplyToActorOid = "";
             if (jso.has("in_reply_to_account_id")) {
                 inReplyToActorOid = jso.getString("in_reply_to_account_id");
@@ -358,15 +358,15 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 inReplyToActorOid = "";
             }
             if (!SharedPreferencesUtil.isEmpty(inReplyToActorOid)) {
-                String inReplyToMessageOid = "";
+                String inReplyToNoteOid = "";
                 if (jso.has("in_reply_to_id")) {
-                    inReplyToMessageOid = jso.getString("in_reply_to_id");
+                    inReplyToNoteOid = jso.getString("in_reply_to_id");
                 }
-                if (!SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
-                    // Construct Related message from available info
-                    AActivity inReplyTo = AActivity.newPartialMessage(data.getAccountActor(), inReplyToMessageOid);
+                if (!SharedPreferencesUtil.isEmpty(inReplyToNoteOid)) {
+                    // Construct Related note from available info
+                    AActivity inReplyTo = AActivity.newPartialNote(data.getAccountActor(), inReplyToNoteOid);
                     inReplyTo.setActor(Actor.fromOriginAndActorOid(data.getOrigin(), inReplyToActorOid));
-                    message.setInReplyTo(inReplyTo);
+                    note.setInReplyTo(inReplyTo);
                 }
             }
 
@@ -382,7 +382,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                         }
                         Attachment mbAttachment =  Attachment.fromUrlAndContentType(url, MyContentType.fromUrl(url, attachment.optString("type")));
                         if (mbAttachment.isValid()) {
-                            message.attachments.add(mbAttachment);
+                            note.attachments.add(mbAttachment);
                         } else {
                             MyLog.d(this, method + "; invalid attachment #" + ind + "; " + jArr.toString());
                         }
@@ -392,16 +392,16 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 }
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, "Parsing message", e, jso);
+            throw ConnectionException.loggedJsonException(this, "Parsing note", e, jso);
         } catch (Exception e) {
-            MyLog.e(this, "messageFromJson", e);
+            MyLog.e(this, method, e);
             return AActivity.EMPTY;
         }
         return activity;
     }
 
     @Override
-    AActivity rebloggedMessageFromJson(@NonNull JSONObject jso) throws ConnectionException {
+    AActivity rebloggedNoteFromJson(@NonNull JSONObject jso) throws ConnectionException {
         return  activityFromJson2(jso.optJSONObject("reblog"));
     }
 
@@ -412,7 +412,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     @Override
     public Actor getActor(String actorOid, String username) throws ConnectionException {
-        JSONObject jso = http.getRequest(getApiPathWithUserId(ApiRoutineEnum.GET_ACTOR, actorOid));
+        JSONObject jso = http.getRequest(getApiPathWithActorId(ApiRoutineEnum.GET_ACTOR, actorOid));
         Actor actor = actorFromJson(jso);
         MyLog.v(this, "getUser oid='" + actorOid + "', userName='" + username + "' -> " + actor.getRealName());
         return actor;
@@ -420,7 +420,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     @Override
     public AActivity follow(String actorOid, Boolean follow) throws ConnectionException {
-        JSONObject relationship = postRequest(getApiPathWithUserId(follow ? ApiRoutineEnum.FOLLOW :
+        JSONObject relationship = postRequest(getApiPathWithActorId(follow ? ApiRoutineEnum.FOLLOW :
                 ApiRoutineEnum.UNDO_FOLLOW, actorOid), new JSONObject());
         Actor actor = Actor.fromOriginAndActorOid(data.getOrigin(), actorOid);
         if (relationship == null || relationship.isNull("following")) {
@@ -434,7 +434,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     @Override
     public boolean undoAnnounce(String noteOid) throws ConnectionException {
-        JSONObject jso = http.postRequest(getApiPathWithMessageId(ApiRoutineEnum.UNDO_ANNOUNCE, noteOid));
+        JSONObject jso = http.postRequest(getApiPathWithNoteId(ApiRoutineEnum.UNDO_ANNOUNCE, noteOid));
         if (jso != null && MyLog.isVerboseEnabled()) {
             try {
                 MyLog.v(this, "destroyReblog response: " + jso.toString(2));
@@ -447,7 +447,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     }
 
     List<Actor> getActors(String actorId, ApiRoutineEnum apiRoutine) throws ConnectionException {
-        String url = this.getApiPathWithUserId(apiRoutine, actorId);
+        String url = this.getApiPathWithActorId(apiRoutine, actorId);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
         int limit = 400;

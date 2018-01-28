@@ -83,7 +83,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
                 ConversationActivity.class);
         long msgId = helper.getListItemIdOfLoadedReply();
         helper.selectListPosition(method, helper.getPositionOfListItemId(msgId));
-        helper.invokeContextMenuAction4ListItemId(method, msgId, NoteContextMenuItem.OPEN_CONVERSATION, R.id.message_wrapper);
+        helper.invokeContextMenuAction4ListItemId(method, msgId, NoteContextMenuItem.OPEN_CONVERSATION, R.id.note_wrapper);
         Activity nextActivity = helper.waitForNextActivity(method, 40000);
         DbUtils.waitMs(method, 500);
         nextActivity.finish();
@@ -226,14 +226,14 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
         String logMsg = "msgId:" + msgId
                 + "; text:'" + MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId) + "'";
         assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId,
-                NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT, R.id.message_wrapper));
+                NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT, R.id.note_wrapper));
         MyAccount actor1 = getActivity().getContextMenu().getMyActor();
         logMsg += "; actor1:" + actor1;
         assertTrue(logMsg, actor1.isValid());
 
         ActivityTestHelper.closeContextMenu(getActivity());
 
-        helper.invokeContextMenuAction4ListItemId(method, msgId, NoteContextMenuItem.ACT_AS, R.id.message_wrapper);
+        helper.invokeContextMenuAction4ListItemId(method, msgId, NoteContextMenuItem.ACT_AS, R.id.note_wrapper);
 
         MyAccount actor2 = actor1.firstOtherAccountOfThisOrigin();
         logMsg += ", actor2:" + actor2.getAccountName();

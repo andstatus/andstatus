@@ -67,20 +67,20 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest {
                 ListActivityTestHelper.newForSelectorDialog(getActivity(), AccountSelector.getDialogTag());
         listActivityTestHelper.selectIdFromSelectorDialog(method, ma.getActorId());
 
-        View editorView = getActivity().findViewById(R.id.message_editor);
+        View editorView = getActivity().findViewById(R.id.note_editor);
         ActivityTestHelper.waitViewVisible(method, editorView);
-        TextView details = (TextView) editorView.findViewById(R.id.messageEditDetails);
+        TextView details = (TextView) editorView.findViewById(R.id.noteEditDetails);
         String textToFind = MyContextHolder.get().context().getText(R.string.label_with_media).toString();
         ActivityTestHelper.waitTextInAView(method, details, textToFind);
 
         String body = "Test message with a shared image " + demoData.TESTRUN_UID;
         TestSuite.waitForIdleSync();
-        onView(withId(R.id.messageBodyEditText)).perform(new TypeTextAction(body));
+        onView(withId(R.id.noteBodyEditText)).perform(new TypeTextAction(body));
         TestSuite.waitForIdleSync();
 
         mService.serviceStopped = false;
         ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
-        helper.clickMenuItem(method, R.id.messageSendButton);
+        helper.clickMenuItem(method, R.id.noteSendButton);
         ActivityTestHelper.waitViewInvisible(method, editorView);
 
         mService.waitForServiceStopped(false);
@@ -97,7 +97,7 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest {
         assertEquals("Status of unsent message", DownloadStatus.SENDING, DownloadStatus.load(
                 MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)));
 
-        DownloadData dd = DownloadData.getSingleForMessage(unsentMsgId,
+        DownloadData dd = DownloadData.getSingleForNote(unsentMsgId,
                 MyContentType.IMAGE, null);
         MyLog.v(this, method + "; " + dd);
         assertEquals("Image URI stored", demoData.LOCAL_IMAGE_TEST_URI2, dd.getUri());

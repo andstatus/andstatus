@@ -73,8 +73,8 @@ public class MyAppWidgetData {
     /**  Value of {@link #dateLastChecked} before counters were cleared */
     long dateSince = 0;
     /**
-     *  Date and time, when a server was successfully checked for new messages/tweets.
-     *  If there was some new messages on the server, they were loaded at that time.
+     *  Date and time, when a server was successfully checked for new notes/tweets.
+     *  If there was some new notes on the server, they were loaded at that time.
      */
     long dateLastChecked = 0;
     

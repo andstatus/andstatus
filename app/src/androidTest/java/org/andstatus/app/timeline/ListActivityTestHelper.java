@@ -246,9 +246,9 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
 
     public long getListItemIdOfLoadedReply() {
         return findListItemId("Loaded reply", item -> {
-            if (item.inReplyToMsgId != 0 && item.msgStatus == DownloadStatus.LOADED) {
+            if (item.inReplyToNoteId != 0 && item.noteStatus == DownloadStatus.LOADED) {
                 DownloadStatus statusOfReplied = DownloadStatus.load(
-                        MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, item.inReplyToMsgId));
+                        MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, item.inReplyToNoteId));
                 if (statusOfReplied == DownloadStatus.LOADED) {
                     return true;
                 }

@@ -42,13 +42,13 @@ public class RecursiveConversationLoader<T extends ConversationItem<T>> extends 
     @Override
     protected void load2(T oMsg) {
         cacheConversation(oMsg);
-        findPreviousMessagesRecursively(getOMsg(oMsg.getMsgId(), 0));
+        findPreviousMessagesRecursively(getOMsg(oMsg.getNoteId(), 0));
     }
 
     private void cacheConversation(T oMsg) {
-        long conversationId = MyQuery.msgIdToLongColumnValue(NoteTable.CONVERSATION_ID, oMsg.getMsgId());
+        long conversationId = MyQuery.msgIdToLongColumnValue(NoteTable.CONVERSATION_ID, oMsg.getNoteId());
         String selection = (conversationId == 0
-                ? ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.MSG_ID + "=" + oMsg.getMsgId()
+                ? ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.MSG_ID + "=" + oMsg.getNoteId()
                 : ProjectionMap.MSG_TABLE_ALIAS + "." + NoteTable.CONVERSATION_ID + "=" + conversationId);
         Uri uri = Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null).getUri();
 
@@ -58,35 +58,35 @@ public class RecursiveConversationLoader<T extends ConversationItem<T>> extends 
                 while (cursor.moveToNext()) {
                     T oMsg2 = newOMsg(DbUtils.getLong(cursor, ActivityTable.MSG_ID));
                     oMsg2.load(cursor);
-                    cachedMessages.put(oMsg2.getMsgId(), oMsg2);
+                    cachedMessages.put(oMsg2.getNoteId(), oMsg2);
                 }
             }
         }
     }
 
     private void findPreviousMessagesRecursively(T oMsg) {
-        if (!addMessageIdToFind(oMsg.getMsgId())) {
+        if (!addMessageIdToFind(oMsg.getNoteId())) {
             return;
         }
         findRepliesRecursively(oMsg);
-        MyLog.v(this, "findPreviousMessages id=" + oMsg.getMsgId() + " replies:" + oMsg.mNReplies);
+        MyLog.v(this, "findPreviousMessages id=" + oMsg.getNoteId() + " replies:" + oMsg.mNReplies);
         loadMessageFromDatabase(oMsg);
         if (oMsg.isLoaded()) {
             if (addMessageToList(oMsg)) {
-                if (oMsg.inReplyToMsgId != 0) {
-                    findPreviousMessagesRecursively(getOMsg(oMsg.inReplyToMsgId,
+                if (oMsg.inReplyToNoteId != 0) {
+                    findPreviousMessagesRecursively(getOMsg(oMsg.inReplyToNoteId,
                             oMsg.replyLevel - 1));
                 }
             }
         } else if (mAllowLoadingFromInternet) {
-            loadFromInternet(oMsg.getMsgId());
+            loadFromInternet(oMsg.getNoteId());
         }
     }
 
     public void findRepliesRecursively(T oMsg) {
-        MyLog.v(this, "findReplies for id=" + oMsg.getMsgId());
+        MyLog.v(this, "findReplies for id=" + oMsg.getNoteId());
         for (T oMsgReply : cachedMessages.values()) {
-            if (oMsgReply.inReplyToMsgId == oMsg.getMsgId()) {
+            if (oMsgReply.inReplyToNoteId == oMsg.getNoteId()) {
                 oMsg.mNReplies++;
                 oMsgReply.replyLevel = oMsg.replyLevel + 1;
                 findPreviousMessagesRecursively(oMsgReply);

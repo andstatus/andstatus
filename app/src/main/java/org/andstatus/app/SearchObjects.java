@@ -22,8 +22,8 @@ import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.actor.ActorList;
 
 public enum SearchObjects {
-    MESSAGES(TimelineActivity.class),
-    USERS(ActorList.class);
+    NOTES(TimelineActivity.class),
+    ACTORS(ActorList.class);
 
     private final Class<?> aClass;
 
@@ -36,7 +36,7 @@ public enum SearchObjects {
     }
 
     public static SearchObjects fromSpinner(Spinner spinner) {
-        SearchObjects obj = MESSAGES;
+        SearchObjects obj = NOTES;
         if (spinner != null) {
             for (SearchObjects val : values()) {
                 if (val.ordinal() == spinner.getSelectedItemPosition()) {

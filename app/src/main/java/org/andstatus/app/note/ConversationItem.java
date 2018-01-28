@@ -56,10 +56,10 @@ public abstract class ConversationItem<T extends ConversationItem<T>> extends Ba
         int compared = mListOrder - another.mListOrder;
         if (compared == 0) {
             if (updatedDate == another.updatedDate) {
-                if ( getMsgId() == another.getMsgId()) {
+                if ( getNoteId() == another.getNoteId()) {
                     compared = 0;
                 } else {
-                    compared = (another.getMsgId() - getMsgId() > 0 ? 1 : -1);
+                    compared = (another.getNoteId() - getNoteId() > 0 ? 1 : -1);
                 }
             } else {
                 compared = (another.updatedDate - updatedDate > 0 ? 1 : -1);
@@ -82,18 +82,18 @@ public abstract class ConversationItem<T extends ConversationItem<T>> extends Ba
             return false;
         }
         final ConversationItem other = (ConversationItem) o;
-        return getMsgId() == other.getMsgId();
+        return getNoteId() == other.getNoteId();
     }
 
     @Override
     public final int hashCode() {
-        return Long.valueOf(getMsgId()).hashCode();
+        return Long.valueOf(getNoteId()).hashCode();
     }
 
     abstract String[] getProjection();
     
     void load(Cursor cursor) {
-        inReplyToMsgId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
+        inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
         updatedDate = DbUtils.getLong(cursor, NoteTable.UPDATED_DATE);
     }
 

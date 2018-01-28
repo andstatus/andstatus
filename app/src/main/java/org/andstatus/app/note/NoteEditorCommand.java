@@ -69,7 +69,7 @@ public class NoteEditorCommand {
             return currentData.getMsgId();
         }
         if (currentMsgId == null) {
-            currentMsgId = SharedPreferencesUtil.getLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID);
+            currentMsgId = SharedPreferencesUtil.getLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID);
         }
         return currentMsgId;
     }

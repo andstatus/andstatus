@@ -75,9 +75,9 @@ public class HtmlContentInserter {
                 + "<br /><i>This is italics</i>. <b>And this is bold</b> <u>The text is underlined</u>.</p>"
                 + "<p>A separate paragraph.</p>";
         assertFalse("HTML removed", MyHtml.fromHtml(bodyString).contains("<"));
-        assertHtmlMessage(author1, bodyString, null);
+        assertHtmlNote(author1, bodyString, null);
 
-        assertHtmlMessage(author1, HTML_BODY_IMG_STRING, demoData.HTML_NOTE_OID);
+        assertHtmlNote(author1, HTML_BODY_IMG_STRING, demoData.HTML_NOTE_OID);
         
         setHtmlContentAllowed(isHtmlContentAllowedStored);
     }
@@ -90,19 +90,19 @@ public class HtmlContentInserter {
         assertEquals(allowed, origin.isHtmlContentAllowed());
     }
     
-    private void assertHtmlMessage(Actor author, String bodyString, String messageOid) {
-        assertHtmlMessageContentAllowed(author, bodyString, messageOid, true);
-        assertHtmlMessageContentAllowed(author, bodyString + " no HTML", 
-        		TextUtils.isEmpty(messageOid) ? null : messageOid + "-noHtml", false);
+    private void assertHtmlNote(Actor author, String bodyString, String noteOid) {
+        assertHtmlNoteContentAllowed(author, bodyString, noteOid, true);
+        assertHtmlNoteContentAllowed(author, bodyString + " no HTML",
+        		TextUtils.isEmpty(noteOid) ? null : noteOid + "-noHtml", false);
     }
 
-	private DemoNoteInserter assertHtmlMessageContentAllowed(Actor author,
-                                                             String bodyString, String messageOid, boolean htmlContentAllowed) {
+	private DemoNoteInserter assertHtmlNoteContentAllowed(Actor author,
+                                                          String bodyString, String noteOid, boolean htmlContentAllowed) {
 		setHtmlContentAllowed(htmlContentAllowed);
         DemoNoteInserter mi = new DemoNoteInserter(ma);
-        final AActivity activity = mi.buildActivity(author, bodyString, null, messageOid, DownloadStatus.LOADED);
+        final AActivity activity = mi.buildActivity(author, bodyString, null, noteOid, DownloadStatus.LOADED);
         mi.onActivity(activity);
-        long msgId1 = activity.getMessage().msgId;
+        long msgId1 = activity.getNote().noteId;
         String body = MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId1);
         if (htmlContentAllowed) {
             assertEquals("HTML preserved", bodyString, body);

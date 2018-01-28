@@ -27,12 +27,12 @@ import org.andstatus.app.view.MyContextMenu;
 
 public class ActivityContextMenu {
     public final org.andstatus.app.activity.ActorContextMenu actor;
-    public final NoteContextMenu message;
+    public final NoteContextMenu note;
     public final ActorContextMenu objActor;
 
     public ActivityContextMenu(NoteContextMenuContainer container) {
         actor = new org.andstatus.app.activity.ActorContextMenu(container);
-        message = new NoteContextMenu(container);
+        note = new NoteContextMenu(container);
         objActor = new ActorContextMenu(container, MyContextMenu.MENU_GROUP_OBJACTOR);
     }
 
@@ -42,7 +42,7 @@ public class ActivityContextMenu {
                 actor.onContextItemSelected(item);
                 break;
             case MyContextMenu.MENU_GROUP_NOTE:
-                message.onContextItemSelected(item);
+                note.onContextItemSelected(item);
                 break;
             case MyContextMenu.MENU_GROUP_OBJACTOR:
                 objActor.onContextItemSelected(item);
@@ -53,10 +53,10 @@ public class ActivityContextMenu {
     }
 
     public void setMyActor(MyAccount myActor) {
-        message.setMyActor(myActor);
+        note.setMyActor(myActor);
     }
 
     public void saveState(Bundle outState) {
-        message.saveState(outState);
+        note.saveState(outState);
     }
 }

@@ -28,16 +28,14 @@ public enum ActorListType {
      * The type is unknown
      */
     UNKNOWN("unknown", R.string.unknown_userlist, false),
-    /**
-     * Users, related to the selected message, including mentioned users
-     */
+    /** Actors, related to the selected note, including mentioned actors */
     ACTORS_OF_NOTE("users_of_message", R.string.users_of_message, true),
     FOLLOWERS("followers", R.string.followers, true),
     FRIENDS("friends", R.string.friends, true),
     USERS("users", R.string.user_list, true);
 
     /**
-     * code of the enum that is used in messages
+     * code of the enum that is used in notes
      */
     private final String code;
     /**

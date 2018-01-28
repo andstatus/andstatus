@@ -167,20 +167,20 @@ public class ParsedUri {
         return myContext.persistentOrigins().fromId(getOriginId());
     }
 
-    public long getMessageId() {
-        long messageId = 0;
+    public long getNoteId() {
+        long noteId = 0;
         try {
             switch (matchedUri) {
                 case TIMELINE_ITEM:
-                    messageId = Long.parseLong(uri.getPathSegments().get(9));
+                    noteId = Long.parseLong(uri.getPathSegments().get(9));
                     break;
                 case MSG_ITEM:
-                    messageId = Long.parseLong(uri.getPathSegments().get(3));
+                    noteId = Long.parseLong(uri.getPathSegments().get(3));
                     break;
                 case ACTORLIST:
                 case ACTORLIST_SEARCH:
                     if (getUserListType() == ActorListType.ACTORS_OF_NOTE) {
-                        messageId = getItemId();
+                        noteId = getItemId();
                     }
                     break;
                 default:
@@ -189,7 +189,7 @@ public class ParsedUri {
         } catch (Exception e) {
             MyLog.d(this, toString(), e);
         }
-        return messageId;        
+        return noteId;
     }
 
     public boolean isSearch() {
@@ -222,7 +222,7 @@ public class ParsedUri {
                     case UNKNOWN:
                         return 0;
                     default:
-                        return getMessageId();
+                        return getNoteId();
                 }
             default:
                 return Long.parseLong(uri.getPathSegments().get(7));

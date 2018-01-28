@@ -63,7 +63,7 @@ class SearchIndexUpdate extends DataChecker {
                 if (logger.loggedMoreSecondsAgoThan(PROGRESS_REPORT_PERIOD_SECONDS)) {
                     logger.logProgress("Updating search index"
                             + (changedCount == 0 ? ". " : ", changed " + changedCount + " of ")
-                            + rowsCount + " messages"
+                            + rowsCount + " notes"
                     );
                     MyServiceManager.setServiceUnavailable();
                 }
@@ -74,8 +74,8 @@ class SearchIndexUpdate extends DataChecker {
             MyLog.e(this, logMsg, e);
         }
         logger.logProgress(changedCount == 0
-                ? "No changes to search index were needed. " + rowsCount + " messages"
-                : "Changed search index for " + changedCount + " of " + rowsCount + " messages");
+                ? "No changes to search index were needed. " + rowsCount + " notes"
+                : "Changed search index for " + changedCount + " of " + rowsCount + " notes");
         return changedCount;
     }
 

@@ -107,7 +107,7 @@ public class NoteForAccount {
         }
         Audience recipients = Audience.fromMsgId(origin, msgId);
         isRecipient = recipients.contains(accountActorId);
-        DownloadData downloadData = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY);
+        DownloadData downloadData = DownloadData.getSingleForNote(msgId, MyContentType.IMAGE, Uri.EMPTY);
         imageFilename = downloadData.getStatus() == DownloadStatus.LOADED ? downloadData.getFilename() : "";
         ActorToNote actorToNote = MyQuery.favoritedAndReblogged(db, msgId, accountActorId);
         favorited = actorToNote.favorited;

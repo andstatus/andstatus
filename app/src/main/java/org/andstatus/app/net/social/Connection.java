@@ -303,7 +303,7 @@ public abstract class Connection {
      * Update user status by posting to the Server's API
      * Updates the authenticating user's status, also known as tweeting/blogging.
      *
-     * @param message       Text of the "status"
+     * @param note       Text of the "status"
      * @param noteOid      id is not empty, if we are updating existing "status"
      * @param inReplyToOid   The ID of an existing status that the update is in reply to.
      * @param mediaUri   @throws ConnectionException
@@ -312,17 +312,17 @@ public abstract class Connection {
      *      href="https://dev.twitter.com/docs/api/1/post/statuses/update">Twitter
      *      POST statuses/update</a>
      */
-    public abstract AActivity updateNote(String message, String noteOid, String inReplyToOid, Uri mediaUri)
+    public abstract AActivity updateNote(String note, String noteOid, String inReplyToOid, Uri mediaUri)
             throws ConnectionException;
 
     /**
-     * Post Private ("direct") message
+     * Post Private ("direct") note
      * @see <a href="https://dev.twitter.com/docs/api/1/post/direct_messages/new">POST direct_messages/new</a>
      *
-     * @param actorOid {@link ActorTable#ACTOR_OID} - The ID of the user who should receive the private message
-     * @return The sent message if successful (empty message if not)
+     * @param actorOid {@link ActorTable#ACTOR_OID} - The ID of the user who should receive the private note
+     * @return The sent note if successful (empty note if not)
      */
-    public abstract AActivity updatePrivateNote(String message, String noteOid, String actorOid, Uri mediaUri)
+    public abstract AActivity updatePrivateNote(String note, String noteOid, String actorOid, Uri mediaUri)
             throws ConnectionException;
 
     /**

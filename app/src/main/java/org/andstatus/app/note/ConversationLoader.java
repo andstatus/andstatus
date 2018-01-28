@@ -130,16 +130,16 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
     protected T newOMsg(long msgId) {
         T oMsg = tFactory.getNew();
         oMsg.setMyContext(myContext);
-        oMsg.setMsgId(msgId);
+        oMsg.setNoteId(msgId);
         return oMsg;
     }
 
     protected void loadMessageFromDatabase(T oMsg) {
-        if (oMsg.isLoaded() || oMsg.getMsgId() == 0 || cachedMessages.containsKey(oMsg.getMsgId())) {
+        if (oMsg.isLoaded() || oMsg.getNoteId() == 0 || cachedMessages.containsKey(oMsg.getNoteId())) {
             return;
         }
         Uri uri = MatchedUri.getTimelineItemUri(
-                Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null), oMsg.getMsgId());
+                Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null), oMsg.getNoteId());
         boolean loaded = false;
         try (Cursor cursor = myContext.context().getContentResolver()
                 .query(uri, oMsg.getProjection(), null, null, null)) {
@@ -148,13 +148,13 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
                 loaded = true;
             }
         }
-        MyLog.v(this, (loaded ? "Loaded (" + oMsg.isLoaded() + ")"  : "Couldn't load") + " from a database msgId=" + oMsg.getMsgId());
+        MyLog.v(this, (loaded ? "Loaded (" + oMsg.isLoaded() + ")"  : "Couldn't load") + " from a database msgId=" + oMsg.getNoteId());
     }
 
     protected boolean addMessageToList(T oMsg) {
         boolean added = false;
         if (msgList.contains(oMsg)) {
-            MyLog.v(this, "Message id=" + oMsg.getMsgId() + " is in the list already");
+            MyLog.v(this, "Note id=" + oMsg.getNoteId() + " is in the list already");
         } else {
             msgList.add(oMsg);
             if (mProgress != null) {
@@ -169,7 +169,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
         if (requestConversationSync(msgId)) {
             return;
         }
-        MyLog.v(this, "Message id=" + msgId + " will be loaded from the Internet");
+        MyLog.v(this, "Note id=" + msgId + " will be loaded from the Internet");
         MyServiceManager.sendForegroundCommand(
                 CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, msgId));
     }
@@ -205,10 +205,10 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
             int compared = rhs.replyLevel - lhs.replyLevel;
             if (compared == 0) {
                 if (lhs.updatedDate == rhs.updatedDate) {
-                    if ( lhs.getMsgId() == rhs.getMsgId()) {
+                    if ( lhs.getNoteId() == rhs.getNoteId()) {
                         compared = 0;
                     } else {
-                        compared = (rhs.getMsgId() - lhs.getMsgId() > 0 ? 1 : -1);
+                        compared = (rhs.getNoteId() - lhs.getNoteId() > 0 ? 1 : -1);
                     }
                 } else {
                     compared = (rhs.updatedDate - lhs.updatedDate > 0 ? 1 : -1);
@@ -240,7 +240,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
     }
 
     private void enumerateBranch(ConversationItem oMsg, OrderCounters order, int indent) {
-        if (!addMessageIdToFind(oMsg.getMsgId())) {
+        if (!addMessageIdToFind(oMsg.getNoteId())) {
             return;
         }
         int indentNext = indent;
@@ -253,7 +253,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
         }
         for (int ind = msgList.size() - 1; ind >= 0; ind--) {
            ConversationItem reply = msgList.get(ind);
-           if (reply.inReplyToMsgId == oMsg.getMsgId()) {
+           if (reply.inReplyToNoteId == oMsg.getNoteId()) {
                reply.mNParentReplies = oMsg.mNReplies;
                enumerateBranch(reply, order, indentNext);
            }

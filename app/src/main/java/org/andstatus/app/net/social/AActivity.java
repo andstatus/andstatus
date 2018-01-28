@@ -82,18 +82,18 @@ public class AActivity extends AObject {
     }
 
     @NonNull
-    public static AActivity newPartialMessage(@NonNull Actor accountActor, String msgOid) {
-        return newPartialMessage(accountActor, msgOid, 0, DownloadStatus.UNKNOWN);
+    public static AActivity newPartialNote(@NonNull Actor accountActor, String msgOid) {
+        return newPartialNote(accountActor, msgOid, 0, DownloadStatus.UNKNOWN);
     }
 
     @NonNull
-    public static AActivity newPartialMessage(@NonNull Actor accountActor, String msgOid,
-                                              long updatedDate, DownloadStatus status) {
+    public static AActivity newPartialNote(@NonNull Actor accountActor, String msgOid,
+                                           long updatedDate, DownloadStatus status) {
         AActivity activity = from(accountActor, ActivityType.UPDATE);
         activity.setTimelinePosition(msgOid);
-        final Note message = Note.fromOriginAndOid(activity.accountActor.origin, msgOid, status);
-        activity.setMessage(message);
-        message.setUpdatedDate(updatedDate);
+        final Note note = Note.fromOriginAndOid(activity.accountActor.origin, msgOid, status);
+        activity.setNote(note);
+        note.setUpdatedDate(updatedDate);
         activity.setUpdatedDate(updatedDate);
         return activity;
     }
@@ -190,7 +190,7 @@ public class AActivity extends AObject {
         return UriUtils.TEMP_OID_PREFIX
                 + (StringUtils.nonEmpty(actor.oid) ?  actor.oid + "-" : "")
                 + type.name().toLowerCase() + "-"
-                + (StringUtils.nonEmpty(getMessage().oid) ? getMessage().oid + "-" : "")
+                + (StringUtils.nonEmpty(getNote().oid) ? getNote().oid + "-" : "")
                 + MyLog.uniqueDateTimeFormatted();
     }
 
@@ -203,14 +203,14 @@ public class AActivity extends AObject {
     }
 
     @NonNull
-    public Note getMessage() {
-        return Optional.ofNullable(note).filter(msg -> msg != Note.EMPTY).orElse(getNestedMessage());
+    public Note getNote() {
+        return Optional.ofNullable(note).filter(msg -> msg != Note.EMPTY).orElse(getNestedNote());
     }
 
     @NonNull
-    private Note getNestedMessage() {
-        /* Referring to the nested message allows to implement an activity, which has both Actor and Author.
-            Actor of the nested message is an Author.
+    private Note getNestedNote() {
+        /* Referring to the nested note allows to implement an activity, which has both Actor and Author.
+            Actor of the nested note is an Author.
             In a database we will have 2 activities: one for each actor! */
         switch (type) {
             case ANNOUNCE:
@@ -220,15 +220,17 @@ public class AActivity extends AObject {
             case UPDATE:
             case UNDO_ANNOUNCE:
             case UNDO_LIKE:
-                return Optional.ofNullable(getActivity().getMessage()).orElse(Note.EMPTY);
+                // Check for null even though it looks like result couldn't be null.
+                // May be needed for AActivity.EMPTY activity...
+                return Optional.ofNullable(getActivity().getNote()).orElse(Note.EMPTY);
             default:
                 return Note.EMPTY;
         }
     }
 
-    public void setMessage(Note note) {
+    public void setNote(Note note) {
         if (this == EMPTY && Note.EMPTY != note) {
-            throw new IllegalStateException("Cannot set Message of EMPTY Activity");
+            throw new IllegalStateException("Cannot set Note of EMPTY Activity");
         }
         this.note = note == null ? Note.EMPTY : note;
     }
@@ -246,7 +248,7 @@ public class AActivity extends AObject {
     }
 
     public Audience recipients() {
-        return getMessage().audience();
+        return getNote().audience();
     }
 
     @NonNull
@@ -279,7 +281,7 @@ public class AActivity extends AObject {
                 + (notified.known() ? (notified == TriState.TRUE ? ", notified" : ", NOT notified") : "" )
                 + (notificationEventType.isEmpty() ? "" : ", " + notificationEventType)
                 + (actor.isEmpty() ? "" : ", \nactor:" + actor)
-                + (note.isEmpty() ? "" : ", \nmessage:" + note)
+                + (note.isEmpty() ? "" : ", \nnote:" + note)
                 + (getActivity().isEmpty() ? "" : ", \nactivity:" + getActivity())
                 + (objActor.isEmpty() ? "" : ", objActor:" + objActor)
                 + '}';
@@ -369,7 +371,7 @@ public class AActivity extends AObject {
                 case LIKE:
                 case UNDO_LIKE:
                     final Pair<Long, ActivityType> favAndType = MyQuery.msgIdToLastFavoriting(myContext.getDatabase(),
-                            getMessage().msgId, accountActor.actorId);
+                            getNote().noteId, accountActor.actorId);
                     if ((favAndType.second.equals(ActivityType.LIKE) && type == ActivityType.LIKE)
                             || (favAndType.second.equals(ActivityType.UNDO_LIKE) && type == ActivityType.UNDO_LIKE)
                             ) {
@@ -380,7 +382,7 @@ public class AActivity extends AObject {
                 case ANNOUNCE:
                 case UNDO_ANNOUNCE:
                     final Pair<Long, ActivityType> reblAndType = MyQuery.msgIdToLastReblogging(myContext.getDatabase(),
-                            getMessage().msgId, accountActor.actorId);
+                            getNote().noteId, accountActor.actorId);
                     if ((reblAndType.second.equals(ActivityType.ANNOUNCE) && type == ActivityType.ANNOUNCE)
                             || (reblAndType.second.equals(ActivityType.UNDO_ANNOUNCE) && type == ActivityType.UNDO_ANNOUNCE)
                             ) {
@@ -407,9 +409,9 @@ public class AActivity extends AObject {
         if (id != 0) {
             return;
         }
-        if (getMessage().msgId != 0 && (type == ActivityType.UPDATE || type == ActivityType.CREATE)) {
+        if (getNote().noteId != 0 && (type == ActivityType.UPDATE || type == ActivityType.CREATE)) {
             id = MyQuery.conditionToLongColumnValue(myContext.getDatabase(),"", ActivityTable.TABLE_NAME,
-                    ActivityTable._ID, ActivityTable.MSG_ID + "=" + getMessage().msgId + " AND "
+                    ActivityTable._ID, ActivityTable.MSG_ID + "=" + getNote().noteId + " AND "
             + ActivityTable.ACTIVITY_TYPE + "=" + type.id);
         }
     }
@@ -420,7 +422,7 @@ public class AActivity extends AObject {
                 || myContext.persistentAccounts().contains(getActor())) return;
         final NotificationEventType event;
         if(myContext.getNotifier().isEnabled(NotificationEventType.MENTION)
-                && getMessage().audience().containsMe(myContext)
+                && getNote().audience().containsMe(myContext)
                 && !isMyActorOrAuthor(myContext)) {
             event = NotificationEventType.MENTION;
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.ANNOUNCE)
@@ -436,7 +438,7 @@ public class AActivity extends AObject {
                 && myContext.persistentAccounts().contains(getObjActor())) {
             event = NotificationEventType.FOLLOW;
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.PRIVATE)
-                && getMessage().isPrivate()) {
+                && getNote().isPrivate()) {
             event = NotificationEventType.PRIVATE;
         } else {
             return;
@@ -449,7 +451,7 @@ public class AActivity extends AObject {
         values.put(ActivityTable.ORIGIN_ID, accountActor.origin.getId());
         values.put(ActivityTable.ACCOUNT_ID, accountActor.actorId);
         values.put(ActivityTable.ACTOR_ID, getActor().actorId);
-        values.put(ActivityTable.MSG_ID, getMessage().msgId);
+        values.put(ActivityTable.MSG_ID, getNote().noteId);
         values.put(ActivityTable.USER_ID, getObjActor().actorId);
         values.put(ActivityTable.OBJ_ACTIVITY_ID, getActivity().id);
         if (subscribedByMe.known()) {
@@ -481,8 +483,8 @@ public class AActivity extends AObject {
                 final MyAccount myActorAccount = myContext.persistentAccounts().fromUser(actor);
                 if (myActorAccount.isValid()) {
                     MyLog.v(this, myActorAccount + " " + type
-                            + " '" + getMessage().oid + "' " + I18n.trimTextAt(getMessage().getBody(), 80));
-                    MyProvider.updateMessageFavorited(myContext, accountActor.origin, getMessage().msgId);
+                            + " '" + getNote().oid + "' " + I18n.trimTextAt(getNote().getBody(), 80));
+                    MyProvider.updateNoteFavorited(myContext, accountActor.origin, getNote().noteId);
                 }
                 break;
             default:

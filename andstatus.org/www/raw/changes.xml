@@ -46,7 +46,7 @@
                 Pump.io fully supports <i>activities</i>; Mastodon sends activities in its "Notifications" timeline only.<br/>
                 For legacy server timelines that contain messages only, AndStatus also presents Reblogs as activities,
                 because a "Reblog" _is_ an action even in "Twitter-like" implementations.
-                "Messages" from legacy timelines are interpreted as
+                "Notes" from legacy timelines are interpreted as
                 <a href="https://www.w3.org/TR/activitystreams-vocabulary/#dfn-update" target="_blank">Update actions</a>
                 of these messages.<br/>
                 Please note that an Actor on separate line also has a separate context menu, related to him.

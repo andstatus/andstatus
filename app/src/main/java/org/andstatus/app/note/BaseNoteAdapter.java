@@ -41,8 +41,8 @@ import java.util.Set;
  * @author yvolk@yurivolkov.com
  */
 public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends BaseTimelineAdapter<T> {
-    protected final boolean showButtonsBelowMessages =
-            SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SHOW_BUTTONS_BELOW_MESSAGE, true);
+    protected final boolean showButtonsBelowNotes =
+            SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SHOW_BUTTONS_BELOW_NOTE, true);
     protected final NoteContextMenu contextMenu;
     protected Set<Long> preloadedImages = new HashSet<>(100);
 
@@ -64,9 +64,9 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
 
     public void populateView(ViewGroup view, T item, int position) {
         showRebloggers(view, item);
-        MyUrlSpan.showText(view, R.id.message_author, item.authorName, false, false);
-        showMessageBody(view, item);
-        MyUrlSpan.showText(view, R.id.message_details, item.getDetails(contextMenu.getActivity()).toString(), false, false);
+        MyUrlSpan.showText(view, R.id.note_author, item.authorName, false, false);
+        showNoteBody(view, item);
+        MyUrlSpan.showText(view, R.id.note_details, item.getDetails(contextMenu.getActivity()).toString(), false, false);
 
         showAvatarEtc(view, item);
 
@@ -76,33 +76,33 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
         if (markReplies) {
             showMarkReplies(view, item);
         }
-        if (showButtonsBelowMessages) {
-            showButtonsBelowMessage(view, item);
+        if (showButtonsBelowNotes) {
+            showButtonsBelowNote(view, item);
         } else {
             showFavorited(view, item);
         }
-        showMessageNumberEtc(view, item, position);
+        showNoteNumberEtc(view, item, position);
     }
 
     protected abstract void showAvatarEtc(ViewGroup view, T item);
 
-    protected abstract void showMessageNumberEtc(ViewGroup view, T item, int position);
+    protected abstract void showNoteNumberEtc(ViewGroup view, T item, int position);
 
     protected ViewGroup getEmptyView(View convertView) {
         if (convertView == null) return newView();
         convertView.setBackgroundResource(0);
-        View messageIndented = convertView.findViewById(R.id.message_indented);
-        messageIndented.setBackgroundResource(0);
+        View noteIndented = convertView.findViewById(R.id.note_indented);
+        noteIndented.setBackgroundResource(0);
         return (ViewGroup) convertView;
     }
 
     @Override
     public long getItemId(int position) {
-        return getItem(position).getMsgId();
+        return getItem(position).getNoteId();
     }
 
     protected ViewGroup newView() {
-        ViewGroup view = (ViewGroup) LayoutInflater.from(contextMenu.getActivity()).inflate(R.layout.message, null);
+        ViewGroup view = (ViewGroup) LayoutInflater.from(contextMenu.getActivity()).inflate(R.layout.note, null);
         setupButtons(view);
         return view;
     }
@@ -123,8 +123,8 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
         }
     }
 
-    protected void showMessageBody(View view, T item) {
-        TextView body = view.findViewById(R.id.message_body);
+    protected void showNoteBody(View view, T item) {
+        TextView body = view.findViewById(R.id.note_body);
         MyUrlSpan.showText(body, item.getBody(), true, true);
     }
 
@@ -134,7 +134,7 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
     }
 
     protected void showAttachedImage(View view, T item) {
-        preloadedImages.add(item.getMsgId());
+        preloadedImages.add(item.getNoteId());
         item.getAttachedImageFile().showImage(contextMenu.getActivity(), view.findViewById(R.id.attached_image));
     }
 
@@ -146,7 +146,7 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
             view.removeView(oldView);
         }
         if (show) {
-            View referencedView = view.findViewById(R.id.message_indented);
+            View referencedView = view.findViewById(R.id.note_indented);
             ImageView indentView = new ConversationIndentImageView(myContext.context(), referencedView, dpToPixes(6),
                     R.drawable.reply_timeline_marker_light, R.drawable.reply_timeline_marker);
             indentView.setId(R.id.reply_timeline_marker);
@@ -157,8 +157,8 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
     }
 
     public void setupButtons(View view) {
-        if (showButtonsBelowMessages) {
-            View buttons = view.findViewById(R.id.message_buttons);
+        if (showButtonsBelowNotes) {
+            View buttons = view.findViewById(R.id.note_buttons);
             if (buttons != null) {
                 buttons.setVisibility(View.VISIBLE);
                 setOnButtonClick(buttons, R.id.reply_button, NoteContextMenuItem.REPLY);
@@ -185,18 +185,18 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
 
     private void onButtonClick(View v, NoteContextMenuItem contextMenuItemIn) {
         T item = getItem(v);
-        if (item != null && item.msgStatus == DownloadStatus.LOADED) {
+        if (item != null && item.noteStatus == DownloadStatus.LOADED) {
             contextMenu.onCreateContextMenu(null, v, null, (contextMenu) -> {
-                contextMenu.onContextItemSelected(contextMenuItemIn, item.getMsgId());
+                contextMenu.onContextItemSelected(contextMenuItemIn, item.getNoteId());
             });
         }
     }
 
-    protected void showButtonsBelowMessage(View view, T item) {
-        View viewGroup = view.findViewById(R.id.message_buttons);
+    protected void showButtonsBelowNote(View view, T item) {
+        View viewGroup = view.findViewById(R.id.note_buttons);
         if (viewGroup == null) {
             return;
-        } else if (showButtonsBelowMessages && item.msgStatus == DownloadStatus.LOADED) {
+        } else if (showButtonsBelowNotes && item.noteStatus == DownloadStatus.LOADED) {
             viewGroup.setVisibility(View.VISIBLE);
             tintIcon(viewGroup, item.reblogged, R.id.reblog_button, R.id.reblog_button_tinted);
             tintIcon(viewGroup, item.favorited, R.id.favorite_button, R.id.favorite_button_tinted);
@@ -213,7 +213,7 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
     }
 
     protected void showFavorited(View view, T item) {
-        View favorited = view.findViewById(R.id.message_favorited);
+        View favorited = view.findViewById(R.id.note_favorited);
         favorited.setVisibility(item.favorited ? View.VISIBLE : View.GONE );
     }
 }

@@ -43,7 +43,7 @@ public class NoteAdapter extends BaseNoteAdapter<NoteViewItem> {
         if (showAvatars) {
             showAvatar(view, item);
         } else {
-            View message = view.findViewById(R.id.message_indented);
+            View message = view.findViewById(R.id.note_indented);
             if (message != null) {
                 message.setPadding(dpToPixes(2), 0, dpToPixes(6), dpToPixes(2));
             }
@@ -61,8 +61,8 @@ public class NoteAdapter extends BaseNoteAdapter<NoteViewItem> {
                 break;
             }
             NoteViewItem item = getItem(positionToPreload);
-            if (!preloadedImages.contains(item.getMsgId())) {
-                preloadedImages.add(item.getMsgId());
+            if (!preloadedImages.contains(item.getNoteId())) {
+                preloadedImages.add(item.getNoteId());
                 item.getAttachedImageFile().preloadImageAsync();
                 break;
             }
@@ -70,7 +70,7 @@ public class NoteAdapter extends BaseNoteAdapter<NoteViewItem> {
     }
 
     @Override
-    protected void showMessageNumberEtc(ViewGroup view, NoteViewItem item, int position) {
+    protected void showNoteNumberEtc(ViewGroup view, NoteViewItem item, int position) {
         preloadAttachments(position);
         String text;
         switch (position) {
@@ -85,7 +85,7 @@ public class NoteAdapter extends BaseNoteAdapter<NoteViewItem> {
                 text = itemNumberShownCounter < 3 ? Integer.toString(position + 1) : "";
                 break;
         }
-        MyUrlSpan.showText(view, R.id.message_number, text, false, false);
+        MyUrlSpan.showText(view, R.id.note_number, text, false, false);
         itemNumberShownCounter++;
         positionPrev = position;
     }

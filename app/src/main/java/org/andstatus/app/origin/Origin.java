@@ -151,19 +151,19 @@ public class Origin {
     }
 
     /**
-     * Calculates number of Characters left for this message taking shortened
+     * Calculates number of Characters left for this note taking shortened
      * URL's length into account.
      * 
      * @author yvolk@yurivolkov.com
      */
-    public int charactersLeftForMessage(String message) {
+    public int charactersLeftForNote(String note) {
         int messageLength = 0;
-        if (!TextUtils.isEmpty(message)) {
-            messageLength = message.length();
+        if (!TextUtils.isEmpty(note)) {
+            messageLength = note.length();
 
             if (shortUrlLength > 0) {
                 // Now try to adjust the length taking links into account
-                SpannableString ss = SpannableString.valueOf(message);
+                SpannableString ss = SpannableString.valueOf(note);
                 Linkify.addLinks(ss, Linkify.WEB_URLS);
                 URLSpan[] spans = ss.getSpans(0, messageLength, URLSpan.class);
                 long nLinks = spans.length;
@@ -181,7 +181,7 @@ public class Origin {
         return resId;
     }
 
-    public final String messagePermalink(long messageId) {
+    public final String notePermalink(long messageId) {
         String msgUrl = MyQuery.msgIdToStringColumnValue(NoteTable.URL, messageId);
         if (!TextUtils.isEmpty(msgUrl)) {
             try {

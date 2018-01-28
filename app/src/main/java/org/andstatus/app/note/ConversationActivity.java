@@ -43,7 +43,7 @@ import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.TriState;
 
 /**
- * One selected message and, optionally, the whole conversation
+ * One selected note and, optionally, the whole conversation
  * 
  * @author yvolk@yurivolkov.com
  */
@@ -53,7 +53,7 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
     DrawerLayout mDrawerLayout;
     ActionBarDrawerToggle mDrawerToggle;
     private boolean showThreadsOfConversation;
-    private boolean oldMessagesFirstInConversation;
+    private boolean oldNotesFirstInConversation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +66,7 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
         mContextMenu = new NoteContextMenu(this);
 
         showThreadsOfConversation = MyPreferences.isShowThreadsOfConversation();
-        oldMessagesFirstInConversation = MyPreferences.areOldMessagesFirstInConversation();
+        oldNotesFirstInConversation = MyPreferences.areOldNotesFirstInConversation();
 
         initializeDrawer();
     }
@@ -142,11 +142,11 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
                         onShowThreadsOfConversationChanged(buttonView, isChecked);
                     }
                 });
-        MyCheckBox.set(drawerView, R.id.oldMessagesFirstInConversation,
-                oldMessagesFirstInConversation, new CompoundButton.OnCheckedChangeListener() {
+        MyCheckBox.set(drawerView, R.id.oldNotesFirstInConversation,
+                oldNotesFirstInConversation, new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        onOldMessagesFirstInConversationChanged(buttonView, isChecked);
+                        onOldNotesFirstInConversationChanged(buttonView, isChecked);
                     }
                 });
     }
@@ -173,10 +173,10 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
         updateList(TriState.UNKNOWN, 0, true);
     }
 
-    public void onOldMessagesFirstInConversationChanged(View v, boolean isChecked) {
+    public void onOldNotesFirstInConversationChanged(View v, boolean isChecked) {
         closeDrawer();
-        oldMessagesFirstInConversation = isChecked;
-        MyPreferences.setOldMessagesFirstInConversation(isChecked);
+        oldNotesFirstInConversation = isChecked;
+        MyPreferences.setOldNotesFirstInConversation(isChecked);
         updateList(TriState.UNKNOWN, 0, true);
     }
 
@@ -206,7 +206,7 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
     @Override
     protected BaseTimelineAdapter newListAdapter() {
         return new ConversationAdapter(mContextMenu, centralItemId, getListLoader().getList(),
-                showThreadsOfConversation, oldMessagesFirstInConversation);
+                showThreadsOfConversation, oldNotesFirstInConversation);
     }
 
     @Override

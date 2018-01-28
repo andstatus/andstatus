@@ -471,7 +471,7 @@ public class MyLog {
     }
 
     private static void onSendingMessageEvent(boolean start) {
-        if (!SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SENDING_MESSAGES_LOG_ENABLED, false) ||
+        if (!SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SENDING_NOTES_LOG_ENABLED, false) ||
                 MyPreferences.isLogEverythingToFile()) {
             return;
         }

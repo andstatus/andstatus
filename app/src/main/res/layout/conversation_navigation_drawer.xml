@@ -17,7 +17,7 @@ android:orientation="vertical">
     <View style="@style/Divider"/>
 
     <CheckBox
-        android:id="@+id/oldMessagesFirstInConversation"
+        android:id="@+id/oldNotesFirstInConversation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="?android:attr/listPreferredItemHeightSmall"

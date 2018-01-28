@@ -74,7 +74,7 @@ class ActivitySender {
         return this;
     }
     
-    AActivity sendMessage(PActivityType activityType) throws ConnectionException {
+    AActivity sendNote(PActivityType activityType) throws ConnectionException {
         return connection.activityFromJson(sendMe(activityType));
     }
 

@@ -56,7 +56,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
             NoteEditorData editorData = NoteEditorData.newEmpty(menu.getMyActor())
                     .addRecipientId(menu.getViewItem().getActorId());
             if (editorData.recipients.nonEmpty()) {
-                menu.menuContainer.getNoteEditor().startEditingMessage(editorData);
+                menu.menuContainer.getNoteEditor().startEditingNote(editorData);
             }
         }
     },
@@ -66,7 +66,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
             // TODO
         }
     },
-    ACTOR_MESSAGES() {
+    ACTOR_NOTES() {
         @Override
         void executeOnUiThread(ActorContextMenu menu, MyAccount ma) {
             TimelineActivity.startForTimeline(menu.getActivity().getMyContext(),

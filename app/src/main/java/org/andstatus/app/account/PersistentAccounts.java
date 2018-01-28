@@ -318,14 +318,14 @@ public class PersistentAccounts {
     }
 
     /** Should not be called from UI thread
-     * Find MyAccount, which may be linked to a message in this origin.
+     * Find MyAccount, which may be linked to a note in this origin.
      * First try two supplied accounts, then try any other existing account
      * @return Invalid account if nothing suitable found
      */
     @NonNull
-    public MyAccount getAccountForThisMessage(Origin origin, MyAccount firstAccount, MyAccount preferredAccount,
-                                              boolean succeededOnly)  {
-        final String method = "getAccountForThisMessage";
+    public MyAccount getAccountForThisNote(Origin origin, MyAccount firstAccount, MyAccount preferredAccount,
+                                           boolean succeededOnly)  {
+        final String method = "getAccountForThisNote";
         MyAccount ma = firstAccount == null ? MyAccount.EMPTY : firstAccount;
         if (!accountFits(ma, origin, succeededOnly)) {
             ma = betterFit(ma, preferredAccount == null ? MyAccount.EMPTY : preferredAccount, origin, succeededOnly);

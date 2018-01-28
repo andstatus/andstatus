@@ -778,8 +778,8 @@ public final class MyAccount implements Comparable<MyAccount> {
         return order;
     }
 
-    public int charactersLeftForMessage(String message) {
-        return oAccountName.getOrigin().charactersLeftForMessage(message);
+    public int charactersLeftForNote(String note) {
+        return oAccountName.getOrigin().charactersLeftForNote(note);
     }
 
     /**
@@ -809,7 +809,7 @@ public final class MyAccount implements Comparable<MyAccount> {
     }
 
     public boolean isSearchSupported(SearchObjects searchObjects) {
-        return getConnection().isApiSupported(searchObjects == SearchObjects.MESSAGES
+        return getConnection().isApiSupported(searchObjects == SearchObjects.NOTES
                 ? ApiRoutineEnum.SEARCH_NOTES : ApiRoutineEnum.SEARCH_ACTORS);
     }
 

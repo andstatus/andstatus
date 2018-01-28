@@ -62,18 +62,18 @@ public class ActorListTest extends TimelineActivityTest {
     }
 
     @Test
-    public void testUsersOfMessage() throws InterruptedException {
-        final String method = "testUsersOfMessage";
+    public void testActorsOfNote() throws InterruptedException {
+        final String method = "testActorsOfNote";
         TestSuite.waitForListLoaded(getActivity(), 2);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(), ActorList.class);
-        long msgId = MyQuery.oidToId(OidEnum.MSG_OID, demoData.getConversationOriginId(),
+        long msgId = MyQuery.oidToId(OidEnum.NOTE_OID, demoData.getConversationOriginId(),
                 demoData.CONVERSATION_MENTIONS_NOTE_OID);
         String body = MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId);
         String logMsg = MyQuery.msgInfoForLog(msgId);
 
-        List<Actor> users = Actor.fromOriginAndActorOid(demoData.getConversationMyAccount().getOrigin(), "").extractActorsFromBodyText(body, false);
-        assertEquals(logMsg, 3, users.size());
-        assertEquals(logMsg, "unknownUser@example.com", users.get(2).getUsername());
+        List<Actor> actors = Actor.fromOriginAndActorOid(demoData.getConversationMyAccount().getOrigin(), "").extractActorsFromBodyText(body, false);
+        assertEquals(logMsg, 3, actors.size());
+        assertEquals(logMsg, "unknownUser@example.com", actors.get(2).getUsername());
 
         ActivityViewItem item = ActivityViewItem.EMPTY;
         TimelineData<ActivityViewItem> timelineData = getActivity().getListData();
@@ -84,24 +84,24 @@ public class ActorListTest extends TimelineActivityTest {
                 break;
             }
         }
-        boolean messageWasFound = !item.equals(ActivityViewItem.EMPTY);
-        if (!messageWasFound) {
+        boolean noteWasFound = !item.equals(ActivityViewItem.EMPTY);
+        if (!noteWasFound) {
             item = timelineData.getItem(0);
-            String logMsg1 = "The message was not found in the timeline " + timelineData +
+            String logMsg1 = "The note was not found in the timeline " + timelineData +
                     " new item: " + item;
             logMsg += "\n" + logMsg1;
             MyLog.i(method, logMsg1);
         }
 
         assertTrue("Invoked Context menu for " + logMsg, helper.invokeContextMenuAction4ListItemId(method,
-                item.getId(), NoteContextMenuItem.ACTORS_OF_NOTE, R.id.message_wrapper));
+                item.getId(), NoteContextMenuItem.ACTORS_OF_NOTE, R.id.note_wrapper));
 
         ActorList actorList = (ActorList) helper.waitForNextActivity(method, 15000);
         TestSuite.waitForListLoaded(actorList, 1);
 
         List<ActorViewItem> listItems = actorList.getListLoader().getList();
 
-        if (messageWasFound) {
+        if (noteWasFound) {
             assertEquals(listItems.toString(), 5, listItems.size());
 
             Actor userE = DemoConversationInserter.getUsers().get(demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
@@ -130,7 +130,7 @@ public class ActorListTest extends TimelineActivityTest {
             assertEquals("Avatar URL", expected.avatarUrl, actual.avatarUrl);
             assertEquals("Banner URL", expected.bannerUrl, actual.bannerUrl);
         }
-        assertEquals("Messages count", expected.msgCount, actual.msgCount);
+        assertEquals("Notes count", expected.notesCount, actual.notesCount);
         assertEquals("Favorites count", expected.favoritesCount, actual.favoritesCount);
         assertEquals("Following (friends) count", expected.followingCount, actual.followingCount);
         assertEquals("Followers count", expected.followersCount, actual.followersCount);

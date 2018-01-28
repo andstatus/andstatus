@@ -27,7 +27,7 @@ public class LatestActorActivities {
     private final Map<Long, ActorActivity> actorActivities = new HashMap<>();
 
     /**
-     * Add information about new/updated message by the Actor
+     * Add information about new Actor's activity
      */
     public void onNewActorActivity(ActorActivity uaIn) {
         // On different implementations see 

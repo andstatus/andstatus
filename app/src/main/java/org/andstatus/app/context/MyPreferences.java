@@ -52,20 +52,20 @@ public class MyPreferences {
     public static final String KEY_SHOW_AVATARS = "show_avatars";
     public static final String KEY_SHOW_ORIGIN = "show_origin";
     public static final String KEY_MARK_REPLIES_IN_TIMELINE = "mark_replies_in_timeline";
-    public static final String KEY_SHOW_BUTTONS_BELOW_MESSAGE = "show_buttons_below_message";
-    public static final String KEY_OLD_MESSAGES_FIRST_IN_CONVERSATION = "old_messages_first_in_conversation";
+    public static final String KEY_SHOW_BUTTONS_BELOW_NOTE = "show_buttons_below_message";
+    public static final String KEY_OLD_NOTES_FIRST_IN_CONVERSATION = "old_messages_first_in_conversation";
     public static final String KEY_REFRESH_TIMELINE_AUTOMATICALLY = "refresh_timeline_automatically";
     public static final String KEY_SHOW_THREADS_OF_CONVERSATION = "show_threads_of_conversation";
 
     // ----------------------------------------------------------
     // Gestures
     public static final String KEY_LONG_PRESS_TO_OPEN_CONTEXT_MENU = "long_press_to_open_context_menu";
-    public static final String KEY_ENTER_SENDS_MESSAGE = "enter_sends_message";
+    public static final String KEY_ENTER_SENDS_NOTE = "enter_sends_message";
 
     // ----------------------------------------------------------
     // Attachments
     public static final String KEY_DOWNLOAD_AND_DISPLAY_ATTACHED_IMAGES = "show_attached_images";
-    public static final String KEY_ATTACH_IMAGES_TO_MY_MESSAGES = "attach_images";
+    public static final String KEY_ATTACH_IMAGES_TO_MY_NOTES = "attach_images";
     public static final String KEY_DOWNLOAD_ATTACHMENTS_OVER_WIFI_ONLY = "download_attachments_over_wifi_only";
     public static final String KEY_MODERN_INTERFACE_TO_SELECT_AN_ATTACHMENT = "use_kitkat_media_chooser";
 
@@ -76,14 +76,14 @@ public class MyPreferences {
     public static final String KEY_SYNC_OVER_WIFI_ONLY = "sync_over_wifi_only";
     public static final String KEY_SYNC_WHILE_USING_APPLICATION = "sync_while_using_application";
     public static final String KEY_SYNC_INDICATOR_ON_TIMELINE = "sync_indicator_on_timeline";
-    public static final String KEY_SYNC_AFTER_MESSAGE_WAS_SENT = "sync_after_message_was_sent";
-    public static final String KEY_DONT_SYNCHRONIZE_OLD_MESSAGES = "dont_synchronize_old_messages";
+    public static final String KEY_SYNC_AFTER_NOTE_WAS_SENT = "sync_after_message_was_sent";
+    public static final String KEY_DONT_SYNCHRONIZE_OLD_NOTES = "dont_synchronize_old_messages";
     public static final String KEY_CONNECTION_TIMEOUT_SECONDS = "connection_timeout";
     private static final long CONNECTION_TIMEOUT_DEFAULT_SECONDS = 30;
 
     // ----------------------------------------------------------
     // Filters
-    public static final String KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS = "hide_messages_based_on_keywords";
+    public static final String KEY_FILTER_HIDE_NOTES_BASED_ON_KEYWORDS = "hide_messages_based_on_keywords";
     public static final String KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS = "hide_replies_not_to_me_or_friends";
 
     // ----------------------------------------------------------
@@ -110,7 +110,7 @@ public class MyPreferences {
     /** Minimum logging level for the whole application (i.e. for any tag) */
     public static final String KEY_MIN_LOG_LEVEL = "min_log_level";
     public static final String KEY_DEBUGGING_INFO_IN_UI = "debugging_info_in_ui";
-    public static final String KEY_SENDING_MESSAGES_LOG_ENABLED = "sending_messages_log_enabled";
+    public static final String KEY_SENDING_NOTES_LOG_ENABLED = "sending_messages_log_enabled";
     public static final String KEY_LOG_NETWORK_LEVEL_MESSAGES = "log_network_level_messages";
     public static final String KEY_LOG_EVERYTHING_TO_FILE = "log_everything_to_file";
 
@@ -121,7 +121,7 @@ public class MyPreferences {
     public static final String KEY_DATA_PRUNED_DATE = "data_pruned_date";
     /** Version code of last opened application (int) */
     public static final String KEY_VERSION_CODE_LAST = "version_code_last";
-    public static final String KEY_BEING_EDITED_MESSAGE_ID = "draft_message_id";
+    public static final String KEY_BEING_EDITED_NOTE_ID = "draft_message_id";
 
     private static final boolean COLLAPSE_DUPLICATES_DEFAULT_VALUE = true;
 
@@ -129,8 +129,8 @@ public class MyPreferences {
         // Non instantiable
     }
 
-    public static long getDontSynchronizeOldMessages() {
-        return SharedPreferencesUtil.getLongStoredAsString(KEY_DONT_SYNCHRONIZE_OLD_MESSAGES, 0);
+    public static long getDontSynchronizeOldNotes() {
+        return SharedPreferencesUtil.getLongStoredAsString(KEY_DONT_SYNCHRONIZE_OLD_NOTES, 0);
     }
 
     public static int getConnectionTimeoutMs() {
@@ -235,12 +235,12 @@ public class MyPreferences {
         SharedPreferencesUtil.putBoolean(KEY_SHOW_THREADS_OF_CONVERSATION, v);
     }
 
-    public static void setOldMessagesFirstInConversation(boolean v) {
-        SharedPreferencesUtil.putBoolean(KEY_OLD_MESSAGES_FIRST_IN_CONVERSATION, v);
+    public static void setOldNotesFirstInConversation(boolean v) {
+        SharedPreferencesUtil.putBoolean(KEY_OLD_NOTES_FIRST_IN_CONVERSATION, v);
     }
 
-    public static boolean areOldMessagesFirstInConversation() {
-        return SharedPreferencesUtil.getBoolean(KEY_OLD_MESSAGES_FIRST_IN_CONVERSATION, false);
+    public static boolean areOldNotesFirstInConversation() {
+        return SharedPreferencesUtil.getBoolean(KEY_OLD_NOTES_FIRST_IN_CONVERSATION, false);
     }
 
     public static boolean isLogEverythingToFile() {

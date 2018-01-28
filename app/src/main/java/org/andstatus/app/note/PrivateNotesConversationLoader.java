@@ -45,8 +45,8 @@ public class PrivateNotesConversationLoader<T extends ConversationItem<T>> exten
 
     @Override
     protected void load2(T oMsg) {
-        long actorId = MyQuery.msgIdToLongColumnValue(ActivityTable.ACTOR_ID, oMsg.getMsgId());
-        Audience recipients = Audience.fromMsgId(ma.getOrigin(), oMsg.getMsgId());
+        long actorId = MyQuery.msgIdToLongColumnValue(ActivityTable.ACTOR_ID, oMsg.getNoteId());
+        Audience recipients = Audience.fromMsgId(ma.getOrigin(), oMsg.getNoteId());
         String selection = getSelectionForActorAndRecipient("=" + Long.toString(actorId),
                 SqlActorIds.fromUsers(recipients.getRecipients()).getSql());
         Uri uri = Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null).getUri();

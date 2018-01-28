@@ -79,7 +79,7 @@ public class NoteEditorTest extends TimelineActivityTest {
         TestSuite.initializeWithData(this);
 
         if (editingStep.get() == 0) {
-            SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, 0);
+            SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID, 0);
         }
 
         final MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
@@ -94,7 +94,7 @@ public class NoteEditorTest extends TimelineActivityTest {
 
     private NoteEditorData getStaticData(MyAccount ma) {
         return NoteEditorData.newEmpty(ma)
-                .setInReplyToMsgId(MyQuery.oidToId(OidEnum.MSG_OID, ma.getOrigin().getId(),
+                .setInReplyToMsgId(MyQuery.oidToId(OidEnum.NOTE_OID, ma.getOrigin().getId(),
                         demoData.CONVERSATION_ENTRY_NOTE_OID))
                 .addRecipientId(MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOrigin().getId(),
                         demoData.CONVERSATION_ENTRY_AUTHOR_OID))
@@ -130,14 +130,14 @@ public class NoteEditorTest extends TimelineActivityTest {
 
     private void openEditor() throws InterruptedException {
         final String method = "openEditor";
-        MenuItem createMessageButton = getActivity().getOptionsMenu().findItem(R.id.createMessageButton);
+        MenuItem createMessageButton = getActivity().getOptionsMenu().findItem(R.id.createNoteButton);
         assertTrue(createMessageButton != null);
-        View editorView = getActivity().findViewById(R.id.message_editor);
+        View editorView = getActivity().findViewById(R.id.note_editor);
         assertTrue(editorView != null);
         if (editorView.getVisibility() != android.view.View.VISIBLE) {
             assertTrue("Blog button is visible", createMessageButton.isVisible());
             ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
-            helper.clickMenuItem(method + " opening editor", R.id.createMessageButton);
+            helper.clickMenuItem(method + " opening editor", R.id.createNoteButton);
         }
         assertEquals("Editor appeared", android.view.View.VISIBLE, editorView.getVisibility());
     }
@@ -148,11 +148,11 @@ public class NoteEditorTest extends TimelineActivityTest {
 
         ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
         helper.clickMenuItem(method + " hiding editor", R.id.saveDraftButton);
-        View editorView = getActivity().findViewById(R.id.message_editor);
+        View editorView = getActivity().findViewById(R.id.note_editor);
         ActivityTestHelper.waitViewInvisible(method, editorView);
 
         final NoteEditor editor = getActivity().getNoteEditor();
-        getInstrumentation().runOnMainSync(() -> editor.startEditingMessage(data));
+        getInstrumentation().runOnMainSync(() -> editor.startEditingNote(data));
         TestSuite.waitForIdleSync();
 
         ActivityTestHelper.waitViewVisible(method, editorView);
@@ -165,12 +165,12 @@ public class NoteEditorTest extends TimelineActivityTest {
         final String method = "editingStep2";
         MyLog.v(this, method + " started");
         ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
-        View editorView = getActivity().findViewById(R.id.message_editor);
+        View editorView = getActivity().findViewById(R.id.note_editor);
         ActivityTestHelper.waitViewVisible(method + "; Restored message is visible", editorView);
-        assertInitialText("Message restored");
+        assertInitialText("Note restored");
         helper.clickMenuItem(method + " hide editor", R.id.saveDraftButton);
         ActivityTestHelper.waitViewInvisible(method + "; Editor is hidden again", editorView);
-        helper.clickMenuItem(method + " clicker 5", R.id.createMessageButton);
+        helper.clickMenuItem(method + " clicker 5", R.id.createNoteButton);
         ActivityTestHelper.waitViewVisible(method + "; Editor appeared", editorView);
         assertTextCleared();
         helper.clickMenuItem(method + " click Discard", R.id.discardButton);
@@ -183,15 +183,15 @@ public class NoteEditorTest extends TimelineActivityTest {
         final String method = "testAttachImage";
         MyLog.v(this, method + " started");
 
-        View editorView = getActivity().findViewById(R.id.message_editor);
+        View editorView = getActivity().findViewById(R.id.note_editor);
         ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
-        helper.clickMenuItem(method + " clicker createMessageButton", R.id.createMessageButton);
+        helper.clickMenuItem(method + " clicker createMessageButton", R.id.createNoteButton);
         ActivityTestHelper.waitViewVisible(method + "; Editor appeared", editorView);
         assertTextCleared();
 
-        String body = "Message with attachment " + demoData.TESTRUN_UID;
+        String body = "Note with attachment " + demoData.TESTRUN_UID;
         TestSuite.waitForIdleSync();
-        onView(withId(R.id.messageBodyEditText)).perform(new TypeTextAction(body));
+        onView(withId(R.id.noteBodyEditText)).perform(new TypeTextAction(body));
         TestSuite.waitForIdleSync();
 
         getActivity().setSelectorActivityMock(helper);
@@ -232,7 +232,7 @@ public class NoteEditorTest extends TimelineActivityTest {
             }
         }
         assertEquals("Image attached", demoData.LOCAL_IMAGE_TEST_URI2, editor.getData().getMediaUri());
-        onView(withId(R.id.messageBodyEditText)).check(matches(withText(body + " ")));
+        onView(withId(R.id.noteBodyEditText)).check(matches(withText(body + " ")));
         helper.clickMenuItem(method + " clicker save draft", R.id.saveDraftButton);
 
         MyLog.v(this, method + " ended");
@@ -240,7 +240,7 @@ public class NoteEditorTest extends TimelineActivityTest {
 
     private void assertInitialText(final String description) throws InterruptedException {
         final NoteEditor editor = getActivity().getNoteEditor();
-        TextView textView = (TextView) getActivity().findViewById(R.id.messageBodyEditText);
+        TextView textView = (TextView) getActivity().findViewById(R.id.noteBodyEditText);
         ActivityTestHelper.waitTextInAView(description, textView, data.body);
         MyLog.v(this, description + " text:'" + editor.getData().body + "'");
         assertEquals(description, data, editor.getData());
@@ -266,10 +266,10 @@ public class NoteEditorTest extends TimelineActivityTest {
         logMsg += ", msgId=" + msgId;
 
         String body = MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId);
-        helper.invokeContextMenuAction4ListItemId(method, listItemId, NoteContextMenuItem.COPY_TEXT, R.id.message_wrapper);
+        helper.invokeContextMenuAction4ListItemId(method, listItemId, NoteContextMenuItem.COPY_TEXT, R.id.note_wrapper);
         assertEquals(logMsg, body, getClipboardText(method));
 
-        helper.invokeContextMenuAction4ListItemId(method, listItemId, NoteContextMenuItem.COPY_AUTHOR, R.id.message_wrapper);
+        helper.invokeContextMenuAction4ListItemId(method, listItemId, NoteContextMenuItem.COPY_AUTHOR, R.id.note_wrapper);
         String text = getClipboardText(method);
         assertThat(text, CoreMatchers.startsWith("@"));
         assertTrue(logMsg + "; Text: '" + text + "'", text.startsWith("@") && text.lastIndexOf("@") > 1);
@@ -309,19 +309,19 @@ public class NoteEditorTest extends TimelineActivityTest {
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(),
                 ConversationActivity.class);
         long listItemId = helper.findListItemId("My loaded message",
-                item -> item.authorId == data.getMyAccount().getActorId() && item.msgStatus == DownloadStatus.LOADED);
+                item -> item.authorId == data.getMyAccount().getActorId() && item.noteStatus == DownloadStatus.LOADED);
 
         long msgId = MyQuery.activityIdToLongColumnValue(ActivityTable.MSG_ID, listItemId);
         String logMsg = "itemId=" + listItemId + ", msgId=" + msgId + " text='"
                 + MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId) + "'";
 
         boolean invoked = helper.invokeContextMenuAction4ListItemId(method, listItemId,
-                NoteContextMenuItem.EDIT, R.id.message_wrapper);
+                NoteContextMenuItem.EDIT, R.id.note_wrapper);
         logMsg += ";" + (invoked ? "" : " failed to invoke Edit menu item," );
         assertTrue(logMsg, invoked);
         ActivityTestHelper.closeContextMenu(getActivity());
 
-        View editorView = getActivity().findViewById(R.id.message_editor);
+        View editorView = getActivity().findViewById(R.id.note_editor);
         ActivityTestHelper.waitViewVisible(method + " " + logMsg, editorView);
 
         assertEquals("Loaded message should be in DRAFT state on Edit start: " + logMsg, DownloadStatus.DRAFT,

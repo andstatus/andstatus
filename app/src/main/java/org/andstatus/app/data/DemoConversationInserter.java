@@ -89,8 +89,8 @@ public class DemoConversationInserter {
 
         Actor author4 = buildUserFromOid("acct:fourthWithoutAvatar@pump.example.com");
         
-        AActivity minus1 = buildActivity(author2, "Older one message", null, null);
-        AActivity selected = buildActivity(getAuthor1(), "Selected message from Home timeline", minus1,
+        AActivity minus1 = buildActivity(author2, "Older one note", null, null);
+        AActivity selected = buildActivity(getAuthor1(), "Selected note from Home timeline", minus1,
                 iteration == 1 ? demoData.CONVERSATION_ENTRY_NOTE_OID : null);
         selected.setSubscribedByMe(TriState.TRUE);
         AActivity reply1 = buildActivity(author3, "Reply 1 to selected", selected, null);
@@ -99,12 +99,12 @@ public class DemoConversationInserter {
         AActivity reply1Copy = buildActivity(accountActor,
                 Actor.fromOriginAndActorOid(reply1.accountActor.origin, reply1.getAuthor().oid),
                 "", AActivity.EMPTY,
-                reply1.getMessage().oid, DownloadStatus.UNKNOWN);
+                reply1.getNote().oid, DownloadStatus.UNKNOWN);
         AActivity reply12 = buildActivity(author2, "Reply 12 to 1 in Replies", reply1Copy, null);
-        reply1.getMessage().replies.add(reply12);
+        reply1.getNote().replies.add(reply12);
 
         AActivity reply2 = buildActivity(author2, "Reply 2 to selected is private", selected, null);
-        addPrivateMessage(reply2, TriState.TRUE);
+        addPrivateNote(reply2, TriState.TRUE);
         assertNotificationEvent(reply2, NotificationEventType.PRIVATE);
         assertNotificationEvent(selected, NotificationEventType.EMPTY);
         if (iteration == 1) {
@@ -113,7 +113,7 @@ public class DemoConversationInserter {
         }
 
         AActivity reply3 = buildActivity(getAuthor1(), "Reply 3 to selected by the same author", selected, null);
-        reply3.getMessage().attachments.add(Attachment
+        reply3.getNote().attachments.add(Attachment
             .fromUrlAndContentType(UrlUtils.fromString(
                     "http://www.publicdomainpictures.net/pictures/100000/nahled/broadcasting-tower-14081029181fC.jpg"),
                     MyContentType.IMAGE));
@@ -125,35 +125,35 @@ public class DemoConversationInserter {
         addActivity(reply4);
 
         DemoNoteInserter.increaseUpdateDate(reply4);
-        addPrivateMessage(reply4, TriState.FALSE);
+        addPrivateNote(reply4, TriState.FALSE);
 
         DemoConversationInserter.assertIfUserIsMyFriend(author3, true, ma);
 
-        final String BODY_OF_MENTIONS_MESSAGE = "@fourthWithoutAvatar@pump.example.com Reply 5 to Reply 4\n"
+        final String MENTIONS_NOTE_BODY = "@fourthWithoutAvatar@pump.example.com Reply 5 to Reply 4\n"
                 + "@" + author3.getUsername()
                 + " @unknownUser@example.com";
-        AActivity reply5 = buildActivity(author2, BODY_OF_MENTIONS_MESSAGE, reply4,
+        AActivity reply5 = buildActivity(author2, MENTIONS_NOTE_BODY, reply4,
                 iteration == 1 ? demoData.CONVERSATION_MENTIONS_NOTE_OID : null);
         addActivity(reply5);
 
         Actor reblogger1 = buildUserFromOid("acct:reblogger@" + demoData.PUMPIO_MAIN_HOST);
         reblogger1.avatarUrl = "http://www.avatarsdb.com/avatars/cow_face.jpg";
         AActivity reblogOf5 = buildActivity(reblogger1, ActivityType.ANNOUNCE);
-        reblogOf5.setMessage(reply5.getMessage().shallowCopy());
+        reblogOf5.setNote(reply5.getNote().shallowCopy());
         reblogOf5.setSubscribedByMe(TriState.TRUE);
         addActivity(reblogOf5);
 
         final AActivity reply6 = buildActivity(author3, "Reply 6 to Reply 4 - the second", reply4, null);
-        reply6.getMessage().addFavoriteBy(accountActor, TriState.TRUE);
+        reply6.getNote().addFavoriteBy(accountActor, TriState.TRUE);
         addActivity(reply6);
 
         AActivity likeOf6 = buildActivity(author2, ActivityType.LIKE);
-        likeOf6.setMessage(reply6.getMessage().shallowCopy());
+        likeOf6.setNote(reply6.getNote().shallowCopy());
         addActivity(likeOf6);
 
         AActivity reply7 = buildActivity(getAuthor1(), "Reply 7 to Reply 2 is about "
         + demoData.PUBLIC_NOTE_TEXT + " and something else", reply2, null);
-        addPrivateMessage(reply7, TriState.FALSE);
+        addPrivateNote(reply7, TriState.FALSE);
         
         AActivity reply8 = buildActivity(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
         AActivity reblogOfNewActivity8 = buildActivity(author3, ActivityType.ANNOUNCE);
@@ -162,28 +162,28 @@ public class DemoConversationInserter {
 
         AActivity reply9 = buildActivity(author2, "Reply 9 to Reply 7", reply7, null);
         reply9.setSubscribedByMe(TriState.TRUE);
-        reply9.getMessage().attachments
+        reply9.getNote().attachments
                 .add(Attachment
                         .fromUrlAndContentType( UrlUtils.fromString(
                                 "http://www.publicdomainpictures.net/pictures/100000/nahled/autumn-tree-in-a-park.jpg"),
                                 MyContentType.IMAGE));
         addActivity(reply9);
-        final AActivity duplicateOfReply9 = buildActivity(author4, "A duplicate of " + reply9.getMessage().getBody(),
+        final AActivity duplicateOfReply9 = buildActivity(author4, "A duplicate of " + reply9.getNote().getBody(),
                 null, null);
         duplicateOfReply9.setSubscribedByMe(TriState.TRUE);
         addActivity(duplicateOfReply9);
 
         AActivity myLikeOf9 =  AActivity.from(accountActor, ActivityType.LIKE) ;
         myLikeOf9.setActor(accountActor);
-        myLikeOf9.setMessage(reply9.getMessage().shallowCopy());
+        myLikeOf9.setNote(reply9.getNote().shallowCopy());
         addActivity(myLikeOf9);
 
-        // Message downloaded by another account
+        // Note downloaded by another account
         final MyAccount ma2 = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT2_NAME);
         author3.followedByMe = TriState.TRUE;
         AActivity reply10 = buildActivity(ma2.getActor(), author3, "Reply 10 to Reply 8", reply8,
                 null, DownloadStatus.LOADED);
-        assertEquals("The third is a message Author", author3,  reply10.getAuthor());
+        assertEquals("The third is a note Author", author3,  reply10.getAuthor());
         addActivity(reply10);
         author3.followedByMe = TriState.UNKNOWN;
 
@@ -194,11 +194,11 @@ public class DemoConversationInserter {
 
         AActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7, " + demoData.GLOBAL_PUBLIC_NOTE_TEXT
                 + " text", reply7, null);
-        addPrivateMessage(reply11, TriState.FALSE);
+        addPrivateNote(reply11, TriState.FALSE);
         DemoNoteInserter.assertNotified(reply11, TriState.UNKNOWN);
 
         AActivity myReply13 = buildActivity(accountActor, "My reply to Reply 2", reply2, null);
-        AActivity reply14 = buildActivity(author3, "Reply to my message 13", myReply13, null);
+        AActivity reply14 = buildActivity(author3, "Reply to my note 13", myReply13, null);
         addActivity(reply14);
         assertNotificationEvent(reply14, NotificationEventType.MENTION);
 
@@ -222,7 +222,7 @@ public class DemoConversationInserter {
         addActivity(followOf3);
         assertNotificationEvent(followOf3, NotificationEventType.EMPTY);
 
-        AActivity notLoaded1 = AActivity.newPartialMessage(accountActor, MyLog.uniqueDateTimeFormatted());
+        AActivity notLoaded1 = AActivity.newPartialNote(accountActor, MyLog.uniqueDateTimeFormatted());
         Actor notLoadedUser = Actor.fromOriginAndActorOid(accountActor.origin, "acct:notloaded@someother.host"
         + demoData.TEST_ORIGIN_PARENT_HOST);
         notLoaded1.setActor(notLoadedUser);
@@ -251,12 +251,12 @@ public class DemoConversationInserter {
         return author1;
     }
     
-    private void addPrivateMessage(AActivity activity, TriState isPrivate) {
-        activity.getMessage().setPrivate(isPrivate);
+    private void addPrivateNote(AActivity activity, TriState isPrivate) {
+        activity.getNote().setPrivate(isPrivate);
         addActivity(activity);
-        TriState storedPrivate = MyQuery.msgIdToTriState(NoteTable.PRIVATE, activity.getMessage().msgId);
-        assertEquals("Message is " + (isPrivate.equals(TriState.TRUE) ? "private" :
-                        isPrivate.equals(TriState.FALSE) ? "non private" : "") + ": " + activity.getMessage().getBody(),
+        TriState storedPrivate = MyQuery.msgIdToTriState(NoteTable.PRIVATE, activity.getNote().noteId);
+        assertEquals("Note is " + (isPrivate.equals(TriState.TRUE) ? "private" :
+                        isPrivate.equals(TriState.FALSE) ? "non private" : "") + ": " + activity.getNote().getBody(),
                 isPrivate, storedPrivate);
     }
 
@@ -268,15 +268,15 @@ public class DemoConversationInserter {
         return new DemoNoteInserter(accountActor).buildActivity(actor, type, "");
     }
 
-    private AActivity buildActivity(Actor author, String body, AActivity inReplyTo, String messageOidIn) {
-        return buildActivity(accountActor, author, body, inReplyTo, messageOidIn, DownloadStatus.LOADED);
+    private AActivity buildActivity(Actor author, String body, AActivity inReplyTo, String noteOidIn) {
+        return buildActivity(accountActor, author, body, inReplyTo, noteOidIn, DownloadStatus.LOADED);
     }
 
     private AActivity buildActivity(Actor accountActor, Actor author, String body, AActivity inReplyTo,
-                                    String messageOidIn, DownloadStatus status) {
+                                    String noteOidIn, DownloadStatus status) {
         return new DemoNoteInserter(accountActor).buildActivity(author, body
                         + (inReplyTo != null ? " it" + iteration : "") + bodySuffix,
-                inReplyTo, messageOidIn, status);
+                inReplyTo, noteOidIn, status);
     }
 
     private void addActivity(AActivity activity) {

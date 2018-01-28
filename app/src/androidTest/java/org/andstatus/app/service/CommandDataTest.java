@@ -49,7 +49,7 @@ public class CommandDataTest {
         CommandData commandData = CommandData.newUpdateStatus(demoData.getConversationMyAccount(), 1);
         testQueueOneCommandData(commandData, time0);
 
-        long msgId = MyQuery.oidToId(OidEnum.MSG_OID, MyContextHolder.get().persistentOrigins()
+        long msgId = MyQuery.oidToId(OidEnum.NOTE_OID, MyContextHolder.get().persistentOrigins()
                 .fromName(demoData.CONVERSATION_ORIGIN_NAME).getId(),
                 demoData.CONVERSATION_ENTRY_NOTE_OID);
         long downloadDataRowId = 23;
@@ -100,8 +100,8 @@ public class CommandDataTest {
 
     @Test
     public void testEquals() {
-        CommandData data1 = CommandData.newSearch(SearchObjects.MESSAGES, MyContextHolder.get(), null, "andstatus");
-        CommandData data2 = CommandData.newSearch(SearchObjects.MESSAGES, MyContextHolder.get(), null, "mustard");
+        CommandData data1 = CommandData.newSearch(SearchObjects.NOTES, MyContextHolder.get(), null, "andstatus");
+        CommandData data2 = CommandData.newSearch(SearchObjects.NOTES, MyContextHolder.get(), null, "mustard");
         assertTrue("Hashcodes: " + data1.hashCode() + " and " + data2.hashCode(), data1.hashCode() != data2.hashCode());
         assertFalse(data1.equals(data2));
         
@@ -109,7 +109,7 @@ public class CommandDataTest {
         data1.getResult().incrementNumIoExceptions();
         data1.getResult().afterExecutionEnded();
         assertFalse(data1.getResult().shouldWeRetry());
-        CommandData data3 = CommandData.newSearch(SearchObjects.MESSAGES, MyContextHolder.get(), null, "andstatus");
+        CommandData data3 = CommandData.newSearch(SearchObjects.NOTES, MyContextHolder.get(), null, "andstatus");
         assertTrue(data1.equals(data3));
         assertTrue(data1.hashCode() == data3.hashCode());
         assertEquals(data1, data3);
@@ -121,7 +121,7 @@ public class CommandDataTest {
         final MyAccount ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         queue.add(CommandData.newCommand(CommandEnum.GET_FRIENDS));
         queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.ACTOR, ma.getActorId(), ma.getOrigin()));
-        queue.add(CommandData.newSearch(SearchObjects.MESSAGES, MyContextHolder.get(), ma.getOrigin(), "q1"));
+        queue.add(CommandData.newSearch(SearchObjects.NOTES, MyContextHolder.get(), ma.getOrigin(), "q1"));
         queue.add(CommandData.newUpdateStatus(null, 2));
         queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.MENTIONS));
         queue.add(CommandData.newUpdateStatus(null, 3));

@@ -51,7 +51,7 @@ public class NoteViewItemTest {
         item2.setBody("Some other text");
         assertDuplicates(item1, DuplicationLink.DUPLICATES, item2);
 
-        item2.setMsgId(2);
+        item2.setNoteId(2);
         assertDuplicates(item1, DuplicationLink.NONE, item2);
 
         item2.setBody(THIS_USER_FAVORITED_SOMETHING_BY_THAT_USER + item1.getBody());

@@ -58,7 +58,7 @@ public class LargeImageTest {
         MyAccount ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         DemoNoteInserter mi = new DemoNoteInserter(ma);
         AActivity activity = mi.buildActivity(mi.buildUser(), body, null, null, DownloadStatus.LOADED);
-        activity.getMessage().attachments
+        activity.getNote().attachments
                 .add(Attachment
                         .fromUrlAndContentType(
                                 new URL(
@@ -66,9 +66,9 @@ public class LargeImageTest {
                                 MyContentType.IMAGE));
         mi.onActivity(activity);
         
-        DownloadData dd = DownloadData.getSingleForMessage(activity.getMessage().msgId,
-                activity.getMessage().attachments.get(0).contentType, null);
-        assertEquals("Image URI stored", activity.getMessage().attachments.get(0).getUri(), dd.getUri());
+        DownloadData dd = DownloadData.getSingleForNote(activity.getNote().noteId,
+                activity.getNote().attachments.get(0).contentType, null);
+        assertEquals("Image URI stored", activity.getNote().attachments.get(0).getUri(), dd.getUri());
 
         CommandData commandData = CommandData.newCommand(CommandEnum.FETCH_AVATAR);
         AttachmentDownloader loader = new AttachmentDownloader(dd);

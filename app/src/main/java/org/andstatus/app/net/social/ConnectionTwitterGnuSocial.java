@@ -110,10 +110,10 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     }
 
     @Override
-    public AActivity updateNote(String message, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
+    public AActivity updateNote(String note, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
-            formParams.put("status", message);
+            formParams.put("status", note);
             
             // This parameter was removed from Twitter API, but it still is in GNUsocial
             formParams.put("source", HttpConnection.USER_AGENT);
@@ -157,21 +157,21 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
         if (TextUtils.isEmpty(conversationOid)) {
             return new ArrayList<>();
         } else {
-            String url = getApiPathWithMessageId(ApiRoutineEnum.GET_CONVERSATION, conversationOid);
+            String url = getApiPathWithNoteId(ApiRoutineEnum.GET_CONVERSATION, conversationOid);
             JSONArray jArr = http.getRequestAsArray(url);
             return jArrToTimeline(jArr, ApiRoutineEnum.GET_CONVERSATION, url);
         }
     }
 
     @Override
-    protected void setMessageBodyFromJson(Note message, JSONObject jso) throws JSONException {
+    protected void setNoteBodyFromJson(Note note, JSONObject jso) throws JSONException {
         boolean bodyFound = false;
         if (data.getOrigin().isHtmlContentAllowed() && !jso.isNull(HTML_BODY_FIELD_NAME)) {
-            message.setBody(jso.getString(HTML_BODY_FIELD_NAME));
+            note.setBody(jso.getString(HTML_BODY_FIELD_NAME));
             bodyFound = true;
         }
         if (!bodyFound) {
-            super.setMessageBodyFromJson(message, jso);
+            super.setNoteBodyFromJson(note, jso);
         }
     }
 
@@ -183,9 +183,9 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
         }
         final String method = "activityFromJson2";
         AActivity activity = super.activityFromJson2(jso);
-        Note message = activity.getMessage();
-        message.url = jso.optString("external_url");
-        message.setConversationOid(jso.optString(CONVERSATION_ID_FIELD_NAME));
+        Note note = activity.getNote();
+        note.url = jso.optString("external_url");
+        note.setConversationOid(jso.optString(CONVERSATION_ID_FIELD_NAME));
         if (!jso.isNull(ATTACHMENTS_FIELD_NAME)) {
             try {
                 JSONArray jArr = jso.getJSONArray(ATTACHMENTS_FIELD_NAME);
@@ -197,7 +197,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
                     }
                     Attachment mbAttachment =  Attachment.fromUrlAndContentType(url, MyContentType.fromUrl(url, attachment.optString("mimetype")));
                     if (mbAttachment.isValid()) {
-                        message.attachments.add(mbAttachment);
+                        note.attachments.add(mbAttachment);
                     } else {
                         MyLog.d(this, method + "; invalid attachment #" + ind + "; " + jArr.toString());
                     }

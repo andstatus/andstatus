@@ -76,18 +76,18 @@ public class NoteEditor {
     public NoteEditor(NoteEditorContainer editorContainer) {
         this.editorContainer = editorContainer;
         editorView = getEditorView();
-        mCharsLeftText = editorView.findViewById(R.id.messageEditCharsLeftTextView);
+        mCharsLeftText = editorView.findViewById(R.id.noteEditCharsLeftTextView);
         setupEditText();
         setupFullscreenToggle();
         hide();
     }
 
     private ViewGroup getEditorView() {
-        ViewGroup editorView = getActivity().findViewById(R.id.message_editor);
+        ViewGroup editorView = getActivity().findViewById(R.id.note_editor);
         if (editorView == null) {
             ViewGroup layoutParent = getActivity().findViewById(R.id.relative_list_parent);
             LayoutInflater inflater = LayoutInflater.from(getActivity());
-            editorView = (ViewGroup) inflater.inflate(R.layout.message_editor, null);
+            editorView = (ViewGroup) inflater.inflate(R.layout.note_editor, null);
 
             RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -99,13 +99,13 @@ public class NoteEditor {
     }
 
     private void setupEditText() {
-        bodyView = editorView.findViewById(R.id.messageBodyEditText);
+        bodyView = editorView.findViewById(R.id.noteBodyEditText);
         bodyView.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
                 editorData.setBody(s.toString());
                 MyLog.v(NoteEditorData.TAG, "Body updated to '" + editorData.body + "'");
-                mCharsLeftText.setText(String.valueOf(editorData.getMyAccount().charactersLeftForMessage(editorData.body)));
+                mCharsLeftText.setText(String.valueOf(editorData.getMyAccount().charactersLeftForNote(editorData.body)));
             }
 
             @Override
@@ -139,7 +139,7 @@ public class NoteEditor {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (event != null && (event.isAltPressed() ||
-                        !SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ENTER_SENDS_MESSAGE, false))) {
+                        !SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ENTER_SENDS_NOTE, false))) {
                     return false;
                 }
                 sendAndHide();
@@ -168,8 +168,8 @@ public class NoteEditor {
     }
 
     private void setupFullscreenToggle() {
-        setupFullscreenToggleFor(R.id.message_editor_above_body);
-        setupFullscreenToggleFor(R.id.message_editor_below_body);
+        setupFullscreenToggleFor(R.id.note_editor_above_body);
+        setupFullscreenToggleFor(R.id.note_editor_below_body);
     }
 
     private void setupFullscreenToggleFor(int id) {
@@ -187,7 +187,7 @@ public class NoteEditor {
     }
 
     public void onCreateOptionsMenu(Menu menu) {
-        getActivity().getMenuInflater().inflate(R.menu.message_editor, menu);
+        getActivity().getMenuInflater().inflate(R.menu.note_editor, menu);
         createCreateMessageButton(menu);
         createAttachButton(menu);
         createSendButton(menu);
@@ -196,7 +196,7 @@ public class NoteEditor {
     }
 
     private void createCreateMessageButton(Menu menu) {
-        MenuItem item = menu.findItem(R.id.createMessageButton);
+        MenuItem item = menu.findItem(R.id.createNoteButton);
         if (item != null) {
             item.setOnMenuItemClickListener(
                     new MenuItem.OnMenuItemClickListener() {
@@ -204,7 +204,7 @@ public class NoteEditor {
                         public boolean onMenuItemClick(MenuItem item) {
                             MyAccount accountForButton = accountForCreateMessageButton();
                             if (accountForButton != null) {
-                                startEditingMessage(NoteEditorData.newEmpty(accountForButton));
+                                startEditingNote(NoteEditorData.newEmpty(accountForButton));
                             }
                             return false;
                         }
@@ -227,7 +227,7 @@ public class NoteEditor {
     }
 
     private void createSendButton(Menu menu) {
-        MenuItem item = menu.findItem(R.id.messageSendButton);
+        MenuItem item = menu.findItem(R.id.noteSendButton);
         if (item != null) {
             item.setOnMenuItemClickListener(
                     new MenuItem.OnMenuItemClickListener() {
@@ -277,7 +277,7 @@ public class NoteEditor {
     }
 
     private void prepareCreateMessageButton(Menu menu) {
-        MenuItem item = menu.findItem(R.id.createMessageButton);
+        MenuItem item = menu.findItem(R.id.createNoteButton);
         if (item != null) {
             item.setVisible(!isVisible() && accountForCreateMessageButton().isValidAndSucceeded());
         }
@@ -295,7 +295,7 @@ public class NoteEditor {
         MenuItem item = menu.findItem(R.id.attach_menu_id);
         if (item != null) {
             boolean enableAttach = isVisible()
-                    && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ATTACH_IMAGES_TO_MY_MESSAGES, true)
+                    && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ATTACH_IMAGES_TO_MY_NOTES, true)
                     && (editorData.nonPrivate() || editorData.getMyAccount().getOrigin().getOriginType()
                     .allowAttachmentForDirectMessage());
             item.setEnabled(enableAttach);
@@ -304,7 +304,7 @@ public class NoteEditor {
     }
 
     private void prepareSendButton(Menu menu) {
-        MenuItem item = menu.findItem(R.id.messageSendButton);
+        MenuItem item = menu.findItem(R.id.noteSendButton);
         if (item != null) {
             item.setEnabled(isVisible());
             item.setVisible(isVisible());
@@ -382,7 +382,7 @@ public class NoteEditor {
         saveData(command);
     }
 
-    public void startEditingMessage(NoteEditorData data) {
+    public void startEditingNote(NoteEditorData data) {
         if (!data.isValid()) {
             MyLog.v(NoteEditorData.TAG, "Not a valid data " + data);
             return;
@@ -426,12 +426,12 @@ public class NoteEditor {
             bodyView.setText(body);
             bodyView.setSelection(bodyView.getText().toString().length());
         }
-        showIfNotEmpty(R.id.message_author,
+        showIfNotEmpty(R.id.note_author,
                 shouldShowAccountName() ? editorData.getMyAccount().getAccountName() : "");
         showMessageDetails();
         showIfNotEmpty(R.id.inReplyToBody, editorData.inReplyToBody);
         mCharsLeftText.setText(String.valueOf(editorData.getMyAccount()
-                .charactersLeftForMessage(body)));
+                .charactersLeftForNote(body)));
         showAttachedImage();
     }
 
@@ -480,7 +480,7 @@ public class NoteEditor {
                     + ", " + editorData.getImageFileSize()/1024 + "K" +
                     ")";
         }
-        showIfNotEmpty(R.id.messageEditDetails, messageDetails);
+        showIfNotEmpty(R.id.noteEditDetails, messageDetails);
     }
 
     private boolean shouldShowAccountName() {
@@ -504,7 +504,7 @@ public class NoteEditor {
         } else if (TextUtils.isEmpty(editorData.body.trim())) {
             Toast.makeText(getActivity(), R.string.cannot_send_empty_message,
                     Toast.LENGTH_SHORT).show();
-        } else if (editorData.getMyAccount().charactersLeftForMessage(editorData.body) < 0) {
+        } else if (editorData.getMyAccount().charactersLeftForNote(editorData.body) < 0) {
             Toast.makeText(getActivity(), R.string.message_is_too_long,
                     Toast.LENGTH_SHORT).show();
         } else {
@@ -543,7 +543,7 @@ public class NoteEditor {
 
     private void saveData(NoteEditorCommand command) {
         command.acquireLock(false);
-        SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID,
+        SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID,
                 command.beingEdited ? command.getCurrentMsgId() : 0);
         hide();
         if (!command.isEmpty()) {
@@ -564,7 +564,7 @@ public class NoteEditor {
             show();
             return;
         }
-        long msgId = SharedPreferencesUtil.getLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID);
+        long msgId = SharedPreferencesUtil.getLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID);
         if (msgId == 0) {
             MyLog.v(NoteEditorData.TAG, "loadCurrentDraft: no current draft");
             return;
@@ -591,7 +591,7 @@ public class NoteEditor {
                             return data;
                         } else {
                             MyLog.v(NoteEditorData.TAG, "Cannot be edited " + data);
-                            SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID, 0);
+                            SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID, 0);
                             return NoteEditorData.EMPTY;
                         }
                     }

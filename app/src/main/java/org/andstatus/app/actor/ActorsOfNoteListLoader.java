@@ -30,18 +30,18 @@ import java.util.List;
  * @author yvolk@yurivolkov.com
  */
 public class ActorsOfNoteListLoader extends ActorListLoader {
-    private final long selectedMessageId;
-    private final Origin originOfSelectedMessage;
-    final String messageBody;
+    private final long selectedNoteId;
+    private final Origin originOfSelectedNote;
+    final String noteBody;
     private boolean mentionedOnly = false;
 
     public ActorsOfNoteListLoader(ActorListType actorListType, MyAccount ma, long centralItemId, String searchQuery) {
         super(actorListType, ma, ma.getOrigin(), centralItemId, searchQuery);
 
-        selectedMessageId = centralItemId;
-        messageBody = MyQuery.msgIdToStringColumnValue(NoteTable.BODY, selectedMessageId);
-        originOfSelectedMessage = MyContextHolder.get().persistentOrigins().fromId(
-                MyQuery.msgIdToOriginId(selectedMessageId));
+        selectedNoteId = centralItemId;
+        noteBody = MyQuery.msgIdToStringColumnValue(NoteTable.BODY, selectedNoteId);
+        originOfSelectedNote = MyContextHolder.get().persistentOrigins().fromId(
+                MyQuery.msgIdToOriginId(selectedNoteId));
     }
 
     public ActorsOfNoteListLoader setMentionedOnly(boolean mentionedOnly) {
@@ -51,30 +51,30 @@ public class ActorsOfNoteListLoader extends ActorListLoader {
 
     @Override
     protected void loadInternal() {
-        addFromMessageRow();
+        addFromNoteRow();
         if (!mentionedOnly) {
             super.loadInternal();
         }
     }
 
-    private void addFromMessageRow() {
-        final long authorId = MyQuery.msgIdToLongColumnValue(NoteTable.AUTHOR_ID, selectedMessageId);
+    private void addFromNoteRow() {
+        final long authorId = MyQuery.msgIdToLongColumnValue(NoteTable.AUTHOR_ID, selectedNoteId);
         if (mentionedOnly) {
-            addUsersFromMessageBody(Actor.fromOriginAndActorId(originOfSelectedMessage, authorId));
+            addActorsFromNoteBody(Actor.fromOriginAndActorId(originOfSelectedNote, authorId));
         } else {
-            Actor author = addActorIdToList(originOfSelectedMessage, authorId).actor;
-            addActorIdToList(originOfSelectedMessage,
-                    MyQuery.msgIdToLongColumnValue(ActivityTable.ACTOR_ID, selectedMessageId));
-            addActorIdToList(originOfSelectedMessage,
-                    MyQuery.msgIdToLongColumnValue(NoteTable.IN_REPLY_TO_ACTOR_ID, selectedMessageId));
+            Actor author = addActorIdToList(originOfSelectedNote, authorId).actor;
+            addActorIdToList(originOfSelectedNote,
+                    MyQuery.msgIdToLongColumnValue(ActivityTable.ACTOR_ID, selectedNoteId));
+            addActorIdToList(originOfSelectedNote,
+                    MyQuery.msgIdToLongColumnValue(NoteTable.IN_REPLY_TO_ACTOR_ID, selectedNoteId));
             // TODO: Add recipients
-            addUsersFromMessageBody(author);
+            addActorsFromNoteBody(author);
             addRebloggers();
         }
     }
 
-    private void addUsersFromMessageBody(Actor author) {
-        List<Actor> actors = author.extractActorsFromBodyText(messageBody, false);
+    private void addActorsFromNoteBody(Actor author) {
+        List<Actor> actors = author.extractActorsFromBodyText(noteBody, false);
         for (Actor actor: actors) {
             addActorToList(ActorViewItem.fromActor(actor));
         }
@@ -82,13 +82,13 @@ public class ActorsOfNoteListLoader extends ActorListLoader {
 
     private void addRebloggers() {
         for (Actor reblogger : MyQuery.getRebloggers(
-                MyContextHolder.get().getDatabase(), origin, selectedMessageId)) {
-            addActorIdToList(originOfSelectedMessage, reblogger.actorId);
+                MyContextHolder.get().getDatabase(), origin, selectedNoteId)) {
+            addActorIdToList(originOfSelectedNote, reblogger.actorId);
         }
     }
 
     @Override
     protected String getTitle() {
-        return messageBody;
+        return noteBody;
     }
 }

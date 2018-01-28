@@ -25,7 +25,7 @@
         android:visible="false">
     </item>
     <item
-        android:id="@+id/messageSendButton"
+        android:id="@+id/noteSendButton"
         android:icon="?attr/sendIcon"
         app:showAsAction="always"
         android:title="@string/button_send"

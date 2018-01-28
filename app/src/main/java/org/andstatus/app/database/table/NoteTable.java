@@ -64,7 +64,7 @@ public final class NoteTable implements BaseColumns {
      */
     public static final String URL = "url";
     /**
-     * Text of the message ("TEXT" may be reserved word so it was renamed here)
+     * Text of the note ("TEXT" may be reserved word so it was renamed here)
      */
     public static final String BODY = "body";
     /**
@@ -72,7 +72,7 @@ public final class NoteTable implements BaseColumns {
      */
     public static final String BODY_TO_SEARCH = "body_to_search";
     /**
-     * String generally describing Client's software used to post this message
+     * String generally describing Client's software used to post this note
      * It's like "User Agent" string in the browsers?!: "via ..."
      * (This is "source" field in tweets)
      */
@@ -82,23 +82,23 @@ public final class NoteTable implements BaseColumns {
      */
     public static final String IN_REPLY_TO_NOTE_ID = "in_reply_to_msg_id";
     /**
-     * Date and time when the message was created or updated in the originating system.
+     * Date and time when the note was created or updated in the originating system.
      * We store it as long milliseconds.
      */
     public static final String UPDATED_DATE = "msg_updated_date";
     /** Date and time the row was inserted into this database */
     public static final String INS_DATE = "msg_ins_date";
-    /** The Msg is definitely private (e.g. "Direct message")
-     *  Absence of this flag means that we don't know for sure, if the message is private */
+    /** The Note is definitely private (e.g. "Direct message")
+     *  Absence of this flag means that we don't know for sure, if the note is private */
     public static final String PRIVATE = "private";
-    /** Some of my accounts favorited this message */
+    /** Some of my accounts favorited this note */
     public static final String FAVORITED = "favorited";
     /** The Msg is reblogged by some of my accounts
      * In some sense REBLOGGED is like FAVORITED.
      * Main difference: visibility. REBLOGGED are shown for all followers in their Home timelines.
      */
     public static final String REBLOGGED = "reblogged";
-    /** Some of my accounts is mentioned in this message, is a recipient (in TO or CC)
+    /** Some of my accounts are mentioned in this note, is a recipient (in TO or CC)
      *     or this is a reply to my account */
     public static final String MENTIONED = "mentioned";
 
@@ -109,7 +109,7 @@ public final class NoteTable implements BaseColumns {
     // Columns, which duplicate other existing info. Here to speed up data retrieval
     public static final String AUTHOR_ID = "msg_author_id";
     /**
-     * If not null: to which Sender this message is a reply = Actor._ID
+     * If not null: to which Sender this note is a reply = Actor._ID
      * This field is not necessary but speeds up IN_REPLY_TO_NAME calculation
      */
     public static final String IN_REPLY_TO_ACTOR_ID = "in_reply_to_user_id";

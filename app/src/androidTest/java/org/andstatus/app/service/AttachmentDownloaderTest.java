@@ -59,14 +59,14 @@ public class AttachmentDownloaderTest {
         String body = "A message with an image attachment";
         DemoNoteInserter mi = new DemoNoteInserter(ma);
         AActivity activity = mi.buildActivity(mi.buildUser(), body, null, null, DownloadStatus.LOADED);
-        activity.getMessage().attachments.add(Attachment.fromUrlAndContentType(
+        activity.getNote().attachments.add(Attachment.fromUrlAndContentType(
                 new URL("http://www.publicdomainpictures.net/pictures/60000/nahled/landscape-1376582205Yno.jpg"),
                 MyContentType.IMAGE));
         mi.onActivity(activity);
         
-        DownloadData dd = DownloadData.getSingleForMessage(activity.getMessage().msgId,
-                activity.getMessage().attachments.get(0).contentType, null);
-        assertEquals("Image URI stored", activity.getMessage().attachments.get(0).getUri(), dd.getUri());
+        DownloadData dd = DownloadData.getSingleForNote(activity.getNote().noteId,
+                activity.getNote().attachments.get(0).contentType, null);
+        assertEquals("Image URI stored", activity.getNote().attachments.get(0).getUri(), dd.getUri());
         
         loadAndAssertStatusForRow(dd.getDownloadId(), DownloadStatus.ABSENT, true);
 

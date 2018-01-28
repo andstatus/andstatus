@@ -41,10 +41,10 @@ import static org.junit.Assert.assertTrue;
 public class ConnectionGnuSocialTest {
     private ConnectionTwitterGnuSocialMock connection;
 
-    public static AActivity getMessageWithAttachment(Context context) throws Exception {
+    public static AActivity getNoteWithAttachment(Context context) throws Exception {
         ConnectionGnuSocialTest test = new ConnectionGnuSocialTest();
         test.setUp();
-        return test.privateGetMessageWithAttachment(context, true);
+        return test.privateGetNoteWithAttachment(context, true);
     }
 
     @Before
@@ -67,12 +67,12 @@ public class ConnectionGnuSocialTest {
         assertEquals("Number of items in the Timeline", size, timeline.size());
 
         int ind = 0;
-        assertEquals("Posting message", AObjectType.NOTE, timeline.get(ind).getObjectType());
+        assertEquals("Posting note", AObjectType.NOTE, timeline.get(ind).getObjectType());
         AActivity activity = timeline.get(ind);
         assertEquals("Timeline position", "2663077", activity.getTimelinePosition().getPosition());
-        assertEquals("Message Oid", "2663077", activity.getMessage().oid);
-        assertEquals("conversationOid", "2218650", activity.getMessage().conversationOid);
-        assertEquals("Favorited " + activity, TriState.TRUE, activity.getMessage().getFavoritedBy(activity.accountActor));
+        assertEquals("Note Oid", "2663077", activity.getNote().oid);
+        assertEquals("conversationOid", "2218650", activity.getNote().conversationOid);
+        assertEquals("Favorited " + activity, TriState.TRUE, activity.getNote().getFavoritedBy(activity.accountActor));
         assertEquals("Oid", "116387", activity.getAuthor().oid);
         assertEquals("Username", "aru", activity.getAuthor().getUsername());
         assertEquals("WebFinger ID", "aru@status.vinilox.eu", activity.getAuthor().getWebFingerId());
@@ -83,7 +83,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("Homepage", "", activity.getAuthor().getHomepage());
         assertEquals("Avatar URL", "http://quitter.se/avatar/116387-48-20140609172839.png", activity.getAuthor().avatarUrl);
         assertEquals("Banner URL", "", activity.getAuthor().bannerUrl);
-        assertEquals("Messages count", 523, activity.getAuthor().msgCount);
+        assertEquals("Notes count", 523, activity.getAuthor().notesCount);
         assertEquals("Favorites count", 11, activity.getAuthor().favoritesCount);
         assertEquals("Following (friends) count", 23, activity.getAuthor().followingCount);
         assertEquals("Followers count", 21, activity.getAuthor().followersCount);
@@ -93,30 +93,30 @@ public class ConnectionGnuSocialTest {
         ind++;
         activity = timeline.get(ind);
         assertEquals("Timeline position", "2664346", activity.getTimelinePosition().getPosition());
-        assertEquals("Message Oid", "2664346", activity.getMessage().oid);
-        assertEquals("conversationOid", "2218650", activity.getMessage().conversationOid);
+        assertEquals("Note Oid", "2664346", activity.getNote().oid);
+        assertEquals("conversationOid", "2218650", activity.getNote().conversationOid);
         assertTrue("Does not have a recipient", activity.recipients().isEmpty());
         assertNotEquals("Is a reblog", ActivityType.ANNOUNCE,  activity.type);
 
-        final AActivity inReplyTo = activity.getMessage().getInReplyTo();
+        final AActivity inReplyTo = activity.getNote().getInReplyTo();
         assertTrue("Is a reply", inReplyTo.nonEmpty());
-        assertEquals("Reply to the message id", "2663833", inReplyTo.getMessage().oid);
-        assertEquals("Reply to the message by actorOid", "114973", inReplyTo.getActor().oid);
-        assertEquals("Updated date should be 0 for inReplyTo message", 0, inReplyTo.getMessage().getUpdatedDate());
+        assertEquals("Reply to the note id", "2663833", inReplyTo.getNote().oid);
+        assertEquals("Reply to the note by actorOid", "114973", inReplyTo.getActor().oid);
+        assertEquals("Updated date should be 0 for inReplyTo note", 0, inReplyTo.getNote().getUpdatedDate());
         assertEquals("Updated date should be 0 for inReplyTo activity", 0, inReplyTo.getUpdatedDate());
 
-        assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountActor));
+        assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
         String startsWith = "@<span class=\"vcard\">";
-        assertEquals("Body of this message starts with", startsWith, activity.getMessage().getBody().substring(0, startsWith.length()));
+        assertEquals("Body of this note starts with", startsWith, activity.getNote().getBody().substring(0, startsWith.length()));
         assertEquals("Username", "andstatus", activity.getAuthor().getUsername());
         assertEquals("Display name", "AndStatus@quitter.se", activity.getAuthor().getRealName());
         assertEquals("Banner URL", "https://quitter.se/file/3fd65c6088ea02dc3a5ded9798a865a8ff5425b13878da35ad894cd084d015fc.png", activity.getAuthor().bannerUrl);
 
         ind++;
         activity = timeline.get(ind);
-        assertEquals("conversationOid", "2218650", activity.getMessage().conversationOid);
-        assertEquals("Message not private", TriState.UNKNOWN, activity.getMessage().getPrivate());
-        assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountActor));
+        assertEquals("conversationOid", "2218650", activity.getNote().conversationOid);
+        assertEquals("Note not private", TriState.UNKNOWN, activity.getNote().getPrivate());
+        assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
         assertEquals("MyAccount", accountActorOid, activity.accountActor.oid);
         assertEquals("Actor", activity.getAuthor().oid, activity.getActor().oid);
         assertEquals("Oid", "114973", activity.getAuthor().oid);
@@ -129,7 +129,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("Homepage", "http://blog.mmn-o.se/", activity.getAuthor().getHomepage());
         assertEquals("Avatar URL", "http://quitter.se/avatar/114973-48-20140702161520.jpeg", activity.getAuthor().avatarUrl);
         assertEquals("Banner URL", "", activity.getAuthor().bannerUrl);
-        assertEquals("Messages count", 1889, activity.getAuthor().msgCount);
+        assertEquals("Notes count", 1889, activity.getAuthor().notesCount);
         assertEquals("Favorites count", 31, activity.getAuthor().favoritesCount);
         assertEquals("Following (friends) count", 17, activity.getAuthor().followingCount);
         assertEquals("Followers count", 31, activity.getAuthor().followersCount);
@@ -153,56 +153,56 @@ public class ConnectionGnuSocialTest {
     @Test
     public void testPostWithMedia() throws IOException {
         String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
+                org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
         connection.getHttpMock().setResponse(jso);
         
-        AActivity activity = connection.updateNote("Test post message with media", "", "", demoData.LOCAL_IMAGE_TEST_URI);
-        activity.getMessage().setPrivate(TriState.FALSE);
-        assertEquals("Message returned", privateGetMessageWithAttachment(
-                InstrumentationRegistry.getInstrumentation().getContext(), false).getMessage(), activity.getMessage());
+        AActivity activity = connection.updateNote("Test post note with media", "", "", demoData.LOCAL_IMAGE_TEST_URI);
+        activity.getNote().setPrivate(TriState.FALSE);
+        assertEquals("Note returned", privateGetNoteWithAttachment(
+                InstrumentationRegistry.getInstrumentation().getContext(), false).getNote(), activity.getNote());
     }
 
     @Test
-    public void testGetMessageWithAttachment() throws IOException {
-        privateGetMessageWithAttachment(InstrumentationRegistry.getInstrumentation().getContext(), true);
+    public void getNoteWithAttachment() throws IOException {
+        privateGetNoteWithAttachment(InstrumentationRegistry.getInstrumentation().getContext(), true);
     }
 
-    private AActivity privateGetMessageWithAttachment(Context context, boolean uniqueUid) throws IOException {
-        final String MESSAGE_OID = "2215662";
+    private AActivity privateGetNoteWithAttachment(Context context, boolean uniqueUid) throws IOException {
+        final String NOTE_OID = "2215662";
         // Originally downloaded from https://quitter.se/api/statuses/show.json?id=2215662
-        String jso = RawResourceUtils.getString(context, org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
+        String jso = RawResourceUtils.getString(context, org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
         connection.getHttpMock().setResponse(jso);
-        AActivity activity = connection.getNote(MESSAGE_OID);
+        AActivity activity = connection.getNote(NOTE_OID);
         if (uniqueUid) {
-            activity.setMessage(activity.getMessage().copy(activity.getMessage().oid + "_" + demoData.TESTRUN_UID));
+            activity.setNote(activity.getNote().copy(activity.getNote().oid + "_" + demoData.TESTRUN_UID));
         }
-        assertNotNull("message returned", activity);
-        assertEquals("conversationOid", "1956322", activity.getMessage().conversationOid);
+        assertNotNull("note returned", activity);
+        assertEquals("conversationOid", "1956322", activity.getNote().conversationOid);
         assertEquals("Author", "mcscx", activity.getAuthor().getUsername());
         assertEquals("null Homepage (url) should be treated as blank", "", activity.getAuthor().getHomepage());
 
-        assertEquals("has attachment", activity.getMessage().attachments.size(), 1);
+        assertEquals("has attachment", activity.getNote().attachments.size(), 1);
         Attachment attachment = Attachment.fromUrlAndContentType(new URL(
                 "https://quitter.se/file/mcscx-20131110T222250-427wlgn.png")
                 , MyContentType.IMAGE);
-        assertEquals("attachment", attachment, activity.getMessage().attachments.get(0));
+        assertEquals("attachment", attachment, activity.getNote().attachments.get(0));
         return activity;
     }
 
     @Test
     public void testReblog() throws IOException {
-        final String MESSAGE_OID = "10341561";
+        final String NOTE_OID = "10341561";
         String jString = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.loadaverage_repost_response);
         connection.getHttpMock().setResponse(jString);
-        AActivity activity = connection.announce(MESSAGE_OID);
+        AActivity activity = connection.announce(NOTE_OID);
         assertEquals(ActivityType.ANNOUNCE, activity.type);
-        Note message = activity.getMessage();
-        assertEquals("Message oid" + message, MESSAGE_OID, message.oid);
-        assertEquals("conversationOid", "9118253", message.conversationOid);
+        Note note = activity.getNote();
+        assertEquals("Note oid" + note, NOTE_OID, note.oid);
+        assertEquals("conversationOid", "9118253", note.conversationOid);
         assertEquals(1, connection.getHttpMock().getRequestsCounter());
         HttpReadResult result = connection.getHttpMock().getResults().get(0);
-        assertTrue("URL doesn't contain message oid: " + result.getUrl(), result.getUrl().contains(MESSAGE_OID));
+        assertTrue("URL doesn't contain note oid: " + result.getUrl(), result.getUrl().contains(NOTE_OID));
         assertEquals("Activity oid; " + activity, "10341833", activity.getTimelinePosition().getPosition());
         assertEquals("Actor; " + activity, "andstatus@loadaverage.org", activity.getActor().getWebFingerId());
         assertEquals("Author; " + activity, "igor@herds.eu", activity.getAuthor().getWebFingerId());

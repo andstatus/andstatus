@@ -41,7 +41,7 @@ import static org.andstatus.app.util.UriUtils.isRealOid;
 import static org.andstatus.app.util.UriUtils.nonRealOid;
 
 /**
- * Message of a Social Network
+ * Note ("Tweet", "toot" etc.) of a Social Network
  * @author yvolk@yurivolkov.com
  */
 public class Note extends AObject {
@@ -68,17 +68,17 @@ public class Note extends AObject {
 
     // In our system
     public final Origin origin;
-    public long msgId = 0L;
+    public long noteId = 0L;
     private long conversationId = 0L;
 
     @NonNull
     public static Note fromOriginAndOid(@NonNull Origin origin, String oid, DownloadStatus status) {
-        Note message = new Note(origin, isEmptyOid(oid) ? getTempOid() : oid);
-        message.status = status;
+        Note note = new Note(origin, isEmptyOid(oid) ? getTempOid() : oid);
+        note.status = status;
         if (TextUtils.isEmpty(oid) && status == DownloadStatus.LOADED) {
-            message.status = DownloadStatus.UNKNOWN;
+            note.status = DownloadStatus.UNKNOWN;
         }
-        return message;
+        return note;
     }
 
     private static String getTempOid() {
@@ -99,7 +99,7 @@ public class Note extends AObject {
     public AActivity act(Actor accountActor, @NonNull Actor actor, @NonNull ActivityType activityType) {
         AActivity mbActivity = AActivity.from(accountActor, activityType);
         mbActivity.setActor(actor);
-        mbActivity.setMessage(this);
+        mbActivity.setNote(this);
         return mbActivity;
     }
 
@@ -143,21 +143,21 @@ public class Note extends AObject {
         if (conversationId == 0  && !TextUtils.isEmpty(conversationOid)) {
             conversationId = MyQuery.conversationOidToId(origin.getId(), conversationOid);
         }
-        if (conversationId == 0 && msgId != 0) {
-            conversationId = MyQuery.msgIdToLongColumnValue(NoteTable.CONVERSATION_ID, msgId);
+        if (conversationId == 0 && noteId != 0) {
+            conversationId = MyQuery.msgIdToLongColumnValue(NoteTable.CONVERSATION_ID, noteId);
         }
         if (conversationId == 0 && getInReplyTo().nonEmpty()) {
-            if (getInReplyTo().getMessage().msgId != 0) {
+            if (getInReplyTo().getNote().noteId != 0) {
                 conversationId = MyQuery.msgIdToLongColumnValue(NoteTable.CONVERSATION_ID,
-                        getInReplyTo().getMessage().msgId);
+                        getInReplyTo().getNote().noteId);
             }
         }
         return setConversationIdFromMsgId();
     }
 
     public long setConversationIdFromMsgId() {
-        if (conversationId == 0 && msgId != 0) {
-            conversationId = msgId;
+        if (conversationId == 0 && noteId != 0) {
+            conversationId = noteId;
         }
         return conversationId;
     }
@@ -204,10 +204,10 @@ public class Note extends AObject {
         if (isEmpty()) {
             builder.append("empty,");
         }
-        if(msgId != 0) {
-            builder.append("id:" + msgId + ",");
+        if(noteId != 0) {
+            builder.append("id:" + noteId + ",");
         }
-        if(conversationId != msgId) {
+        if(conversationId != noteId) {
             builder.append("conversation_id:" + conversationId + ",");
         }
         builder.append("status:" + status + ",");
@@ -309,30 +309,30 @@ public class Note extends AObject {
     }
 
     public Note shallowCopy() {
-        Note message = fromOriginAndOid(origin, oid, status);
-        message.msgId = msgId;
-        message.setUpdatedDate(updatedDate);
-        return message;
+        Note note = fromOriginAndOid(origin, oid, status);
+        note.noteId = noteId;
+        note.setUpdatedDate(updatedDate);
+        return note;
     }
 
     public Note copy(String oidNew) {
-        Note message = fromOriginAndOid(origin, oidNew, status);
-        message.msgId = msgId;
-        message.setUpdatedDate(updatedDate);
+        Note note = fromOriginAndOid(origin, oidNew, status);
+        note.noteId = noteId;
+        note.setUpdatedDate(updatedDate);
 
-        message.recipients.addAll(recipients);
-        message.setBody(body);
-        message.inReplyTo = getInReplyTo();
-        message.replies.addAll(replies);
-        message.setConversationOid(conversationOid);
-        message.via = via;
-        message.url = url;
+        note.recipients.addAll(recipients);
+        note.setBody(body);
+        note.inReplyTo = getInReplyTo();
+        note.replies.addAll(replies);
+        note.setConversationOid(conversationOid);
+        note.via = via;
+        note.url = url;
 
-        message.attachments.addAll(attachments);
-        message.isPrivate = getPrivate();
+        note.attachments.addAll(attachments);
+        note.isPrivate = getPrivate();
 
-        message.conversationId = conversationId;
-        return message;
+        note.conversationId = conversationId;
+        return note;
     }
 
     public void addFavoriteBy(@NonNull Actor accountActor, @NonNull TriState favoritedByMe) {
@@ -342,23 +342,23 @@ public class Note extends AObject {
         AActivity favorite = AActivity.from(accountActor, ActivityType.LIKE);
         favorite.setActor(accountActor);
         favorite.setUpdatedDate(getUpdatedDate());
-        favorite.setMessage(shallowCopy());
+        favorite.setNote(shallowCopy());
         replies.add(favorite);
     }
 
     @NonNull
     public TriState getFavoritedBy(Actor accountActor) {
-        if (msgId == 0) {
+        if (noteId == 0) {
             for (AActivity reply : replies) {
                 if (reply.type == ActivityType.LIKE && reply.getActor().equals(accountActor)
-                        && reply.getMessage().oid.equals(oid) ) {
+                        && reply.getNote().oid.equals(oid) ) {
                     return TriState.TRUE;
                 }
             }
             return TriState.UNKNOWN;
         } else {
             final Pair<Long, ActivityType> favAndType = MyQuery.msgIdToLastFavoriting(MyContextHolder.get().getDatabase(),
-                    msgId, accountActor.actorId);
+                    noteId, accountActor.actorId);
             switch (favAndType.second) {
                 case LIKE:
                     return TriState.TRUE;

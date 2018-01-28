@@ -214,7 +214,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
             broadcastProgress(String.valueOf(count) + ". " + execContext.getContext().getText(R.string.button_save)
                     + ": " + actor.getNamePreferablyWebFingerId(), true);
             di.onActivity(actor.update(execContext.getMyAccount().getActor()), false);
-            if (!actor.hasLatestMessage()) {
+            if (!actor.hasLatestNote()) {
                 allMessagesLoaded = false;
             }
         }
@@ -222,7 +222,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         if (!allMessagesLoaded) {
             count = 0;
             for (Actor actor : actorsNew) {
-                if (actor.hasLatestMessage()) {
+                if (actor.hasLatestNote()) {
                     continue;
                 }
                 count++;

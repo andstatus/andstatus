@@ -115,7 +115,7 @@ public abstract class ConnectionTwitterLike extends Connection {
 
     @Override
     public boolean deleteNote(String noteOid) throws ConnectionException {
-        JSONObject jso = http.postRequest(getApiPathWithMessageId(ApiRoutineEnum.DELETE_NOTE, noteOid));
+        JSONObject jso = http.postRequest(getApiPathWithNoteId(ApiRoutineEnum.DELETE_NOTE, noteOid));
         if (jso != null && MyLog.isVerboseEnabled()) {
             try {
                 MyLog.v(TAG, "destroyStatus response: " + jso.toString(2));
@@ -202,8 +202,8 @@ public abstract class ConnectionTwitterLike extends Connection {
      */
     @Override
     public AActivity getNote1(String noteOid) throws ConnectionException {
-        JSONObject message = http.getRequest(getApiPathWithMessageId(ApiRoutineEnum.GET_NOTE, noteOid));
-        return activityFromJson(message);
+        JSONObject note = http.getRequest(getApiPathWithNoteId(ApiRoutineEnum.GET_NOTE, noteOid));
+        return activityFromJson(note);
     }
 
     @NonNull
@@ -239,7 +239,7 @@ public abstract class ConnectionTwitterLike extends Connection {
             return AActivity.EMPTY;
         }
         final AActivity mainActivity = activityFromJson2(jso);
-        final AActivity rebloggedActivity = rebloggedMessageFromJson(jso);
+        final AActivity rebloggedActivity = rebloggedNoteFromJson(jso);
         if (rebloggedActivity.isEmpty()) {
             return mainActivity;
         } else {
@@ -251,7 +251,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     private AActivity makeReblog(Actor accountActor, @NonNull AActivity mainActivity,
                                  AActivity rebloggedActivity) {
         AActivity reblog = AActivity.from(accountActor, ActivityType.ANNOUNCE);
-        reblog.setTimelinePosition(mainActivity.getMessage().oid);
+        reblog.setTimelinePosition(mainActivity.getNote().oid);
         reblog.setUpdatedDate(mainActivity.getUpdatedDate());
         reblog.setActor(mainActivity.getActor());
         reblog.setActivity(rebloggedActivity);
@@ -260,11 +260,11 @@ public abstract class ConnectionTwitterLike extends Connection {
 
     @NonNull
     AActivity newLoadedUpdateActivity(String oid, long updatedDate) throws ConnectionException {
-        return AActivity.newPartialMessage(data.getAccountActor(), oid, updatedDate,
+        return AActivity.newPartialNote(data.getAccountActor(), oid, updatedDate,
                 DownloadStatus.LOADED );
     }
 
-    AActivity rebloggedMessageFromJson(@NonNull JSONObject jso) throws ConnectionException {
+    AActivity rebloggedNoteFromJson(@NonNull JSONObject jso) throws ConnectionException {
         return activityFromJson2(jso.optJSONObject("retweeted_status"));
     }
 
@@ -302,17 +302,17 @@ public abstract class ConnectionTwitterLike extends Connection {
             }
             activity.setActor(author);
 
-            Note message = activity.getMessage();
-            setMessageBodyFromJson(message, jso);
+            Note note = activity.getNote();
+            setNoteBodyFromJson(note, jso);
             if (jso.has("recipient")) {
                 JSONObject recipient = jso.getJSONObject("recipient");
-                message.addRecipient(actorFromJson(recipient));
+                note.addRecipient(actorFromJson(recipient));
             }
             if (jso.has("source")) {
-                message.via = jso.getString("source");
+                note.via = jso.getString("source");
             }
 
-            // If the Msg is a Reply to other message
+            // If the Msg is a Reply to other note
             String inReplyToActorOid = "";
             if (jso.has("in_reply_to_user_id_str")) {
                 inReplyToActorOid = jso.getString("in_reply_to_user_id_str");
@@ -324,41 +324,41 @@ public abstract class ConnectionTwitterLike extends Connection {
                 inReplyToActorOid = "";
             }
             if (!SharedPreferencesUtil.isEmpty(inReplyToActorOid)) {
-                String inReplyToMessageOid = "";
+                String inReplyToNoteOid = "";
                 if (jso.has("in_reply_to_status_id_str")) {
-                    inReplyToMessageOid = jso.getString("in_reply_to_status_id_str");
+                    inReplyToNoteOid = jso.getString("in_reply_to_status_id_str");
                 } else if (jso.has("in_reply_to_status_id")) {
                     // This is for StatusNet
-                    inReplyToMessageOid = jso.getString("in_reply_to_status_id");
+                    inReplyToNoteOid = jso.getString("in_reply_to_status_id");
                 }
-                if (!SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
-                    // Construct Related message from available info
+                if (!SharedPreferencesUtil.isEmpty(inReplyToNoteOid)) {
+                    // Construct Related note from available info
                     Actor inReplyToUser = Actor.fromOriginAndActorOid(data.getOrigin(), inReplyToActorOid);
                     if (jso.has("in_reply_to_screen_name")) {
                         inReplyToUser.setUsername(jso.getString("in_reply_to_screen_name"));
                     }
-                    AActivity inReplyTo = AActivity.newPartialMessage(data.getAccountActor(), inReplyToMessageOid);
+                    AActivity inReplyTo = AActivity.newPartialNote(data.getAccountActor(), inReplyToNoteOid);
                     inReplyTo.setActor(inReplyToUser);
-                    message.setInReplyTo(inReplyTo);
+                    note.setInReplyTo(inReplyTo);
                 }
             }
 
             if (!jso.isNull("favorited")) {
-                message.addFavoriteBy(data.getAccountActor(),
+                note.addFavoriteBy(data.getAccountActor(),
                         TriState.fromBoolean(SharedPreferencesUtil.isTrue(jso.getString("favorited"))));
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, "Parsing message", e, jso);
+            throw ConnectionException.loggedJsonException(this, "Parsing note", e, jso);
         } catch (Exception e) {
-            MyLog.e(this, "messageFromJson", e);
+            MyLog.e(this, "activityFromJson2", e);
             return AActivity.EMPTY;
         }
         return activity;
     }
 
-    protected void setMessageBodyFromJson(Note message, JSONObject jso) throws JSONException {
+    protected void setNoteBodyFromJson(Note note, JSONObject jso) throws JSONException {
         if (jso.has("text")) {
-            message.setBody(jso.getString("text"));
+            note.setBody(jso.getString("text"));
         }
     }
     
@@ -396,7 +396,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         actor.setHomepage(jso.optString("url"));
         // Hack for twitter.com
         actor.setProfileUrl(http.pathToUrlString("/").replace("/api.", "/") + userName);
-        actor.msgCount = jso.optLong("statuses_count");
+        actor.notesCount = jso.optLong("statuses_count");
         actor.favoritesCount = jso.optLong("favourites_count");
         actor.followingCount = jso.optLong("friends_count");
         actor.followersCount = jso.optLong("followers_count");
@@ -464,16 +464,16 @@ public abstract class ConnectionTwitterLike extends Connection {
             }
         }
         if (apiRoutine.isNotePrivate()) {
-            setMessagesPrivate(timeline);
+            setNotesPrivate(timeline);
         }
         MyLog.d(this, apiRoutine + " '" + url + "' " + timeline.size() + " items");
         return timeline;
     }
 
-    void setMessagesPrivate(List<AActivity> timeline) {
+    void setNotesPrivate(List<AActivity> timeline) {
         for (AActivity item : timeline) {
             if (item.getObjectType() == AObjectType.NOTE) {
-                item.getMessage().setPrivate(TriState.TRUE);
+                item.getNote().setPrivate(TriState.TRUE);
             }
         }
     }
@@ -514,10 +514,10 @@ public abstract class ConnectionTwitterLike extends Connection {
     }
     
     @Override
-    public AActivity updatePrivateNote(String message, String noteOid, String actorOid, Uri mediaUri) throws ConnectionException {
+    public AActivity updatePrivateNote(String note, String noteOid, String actorOid, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
-            formParams.put("text", message);
+            formParams.put("text", note);
             if ( !TextUtils.isEmpty(actorOid)) {
                 formParams.put("user_id", actorOid);
             }
@@ -530,7 +530,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     
     @Override
     public AActivity announce(String rebloggedNoteOid) throws ConnectionException {
-        JSONObject jso = http.postRequest(getApiPathWithMessageId(ApiRoutineEnum.ANNOUNCE, rebloggedNoteOid));
+        JSONObject jso = http.postRequest(getApiPathWithNoteId(ApiRoutineEnum.ANNOUNCE, rebloggedNoteOid));
         return activityFromJson(jso);
     }
 
@@ -574,10 +574,10 @@ public abstract class ConnectionTwitterLike extends Connection {
     }
     
     @Override
-    public AActivity updateNote(String message, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
+    public AActivity updateNote(String note, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
-            formParams.put("status", message);
+            formParams.put("status", note);
             if ( !TextUtils.isEmpty(inReplyToOid)) {
                 formParams.put("in_reply_to_status_id", inReplyToOid);
             }
@@ -603,11 +603,11 @@ public abstract class ConnectionTwitterLike extends Connection {
         return postRequest(getApiPath(apiRoutine), formParams);
     }
 
-    String getApiPathWithMessageId(ApiRoutineEnum routineEnum, String noteId) throws ConnectionException {
+    String getApiPathWithNoteId(ApiRoutineEnum routineEnum, String noteId) throws ConnectionException {
         return getApiPath(routineEnum).replace("%noteId%", noteId);
     }
 
-    String getApiPathWithUserId(ApiRoutineEnum routineEnum, String actorId) throws ConnectionException {
+    String getApiPathWithActorId(ApiRoutineEnum routineEnum, String actorId) throws ConnectionException {
         return getApiPath(routineEnum).replace("%actorId%", actorId);
     }
 
@@ -627,13 +627,13 @@ public abstract class ConnectionTwitterLike extends Connection {
 
     @Override
     public AActivity like(String noteOid) throws ConnectionException {
-        JSONObject jso = http.postRequest(getApiPathWithMessageId(ApiRoutineEnum.LIKE, noteOid));
+        JSONObject jso = http.postRequest(getApiPathWithNoteId(ApiRoutineEnum.LIKE, noteOid));
         return activityFromJson(jso);
     }
 
     @Override
     public AActivity undoLike(String noteOid) throws ConnectionException {
-        JSONObject jso = http.postRequest(getApiPathWithMessageId(ApiRoutineEnum.UNDO_LIKE, noteOid));
+        JSONObject jso = http.postRequest(getApiPathWithNoteId(ApiRoutineEnum.UNDO_LIKE, noteOid));
         return activityFromJson(jso);
     }
 

@@ -25,14 +25,14 @@ import android.text.TextUtils;
 public class Server {
     public final String name;
     public final String urlString;
-    public final long usersCount;
-    public final long messagesCount;
+    public final long actorsCount;
+    public final long notesCount;
 
-    public Server(String name, String urlString, long usersCount, long messagesCount) {
+    public Server(String name, String urlString, long actorsCount, long notesCount) {
         this.name = name;
         this.urlString = urlString;
-        this.usersCount = usersCount;
-        this.messagesCount = messagesCount;
+        this.actorsCount = actorsCount;
+        this.notesCount = notesCount;
     }
     
     public boolean isEmpty() {

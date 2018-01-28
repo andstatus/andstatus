@@ -55,7 +55,7 @@
 
             <include layout="@layout/sync_indicator"/>
 
-            <include layout="@layout/message_editor" />
+            <include layout="@layout/note_editor" />
         </RelativeLayout>
 		<android.support.design.widget.NavigationView
 			android:id="@+id/navigation_drawer"

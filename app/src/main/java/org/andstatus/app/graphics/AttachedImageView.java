@@ -63,7 +63,7 @@ public class AttachedImageView extends IdentifiableImageView {
             return;
         }
         if (referencedView == null) {
-            referencedView =  ((View)getParent()).findViewById(R.id.message_body);
+            referencedView =  ((View)getParent()).findViewById(R.id.note_body);
         }
         if (referencedView == null) {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);

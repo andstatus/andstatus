@@ -46,7 +46,7 @@ import org.andstatus.app.util.UriUtils;
 
 import java.util.List;
 
-import static org.andstatus.app.data.MyProvider.deleteMessage;
+import static org.andstatus.app.data.MyProvider.deleteNote;
 
 class CommandExecutorOther extends CommandExecutorStrategy{
 
@@ -188,7 +188,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 } else {
                     activity = execContext.getMyAccount().getConnection().undoLike(oid);
                 }
-                logIfEmptyMessage(method, msgId, activity.getMessage());
+                logIfEmptyMessage(method, msgId, activity.getNote());
             } catch (ConnectionException e) {
                 logConnectionException(e, method + "; " + MyQuery.msgInfoForLog(msgId));
             }
@@ -205,7 +205,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 if (create) {
                     // For the case we created favorite, let's
                     // change the flag manually.
-                    activity = activity.getMessage().act(activity.accountActor, activity.getActor(), ActivityType.LIKE);
+                    activity = activity.getNote().act(activity.accountActor, activity.getActor(), ActivityType.LIKE);
 
                     MyLog.d(this, method + "; Favorited flag didn't change yet.");
                     // Let's try to assume that everything was OK
@@ -229,7 +229,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
 
     @NonNull
     private String getMsgOid(String method, long msgId, boolean required) {
-        String oid = MyQuery.idToOid(OidEnum.MSG_OID, msgId, 0);
+        String oid = MyQuery.idToOid(OidEnum.NOTE_OID, msgId, 0);
         if (required && TextUtils.isEmpty(oid)) {
             logExecutionError(true, method + "; no Message ID in the Social Network " + MyQuery.msgInfoForLog(msgId));
         }
@@ -317,7 +317,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             }
         }
         if (ok && msgId != 0) {
-            deleteMessage(execContext.getContext(), msgId);
+            deleteNote(execContext.getContext(), msgId);
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }
@@ -394,7 +394,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         String oid = getMsgOid(method, msgId, false);
         TriState isPrivate = MyQuery.msgIdToTriState(NoteTable.PRIVATE, msgId);
         Audience recipients = Audience.fromMsgId(execContext.getMyAccount().getOrigin(), msgId);
-        Uri mediaUri = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY).
+        Uri mediaUri = DownloadData.getSingleForNote(msgId, MyContentType.IMAGE, Uri.EMPTY).
                 mediaUriToBePosted();
         String msgLog = "text:'" + MyLog.trimmedString(status, 40) + "'"
                 + (mediaUri.equals(Uri.EMPTY) ? "" : "; mediaUri:'" + mediaUri + "'");
@@ -420,14 +420,14 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 activity = execContext.getMyAccount().getConnection()
                         .updatePrivateNote(status.trim(), oid, recipientOid, mediaUri);
             }
-            logIfEmptyMessage(method, msgId, activity.getMessage());
+            logIfEmptyMessage(method, msgId, activity.getNote());
         } catch (ConnectionException e) {
             logConnectionException(e, method + "; " + msgLog);
         }
         if (noErrors() && activity != null) {
             // The message was sent successfully, so now update unsent message
             // New Actor's message should be put into the Account's Home timeline.
-            activity.getMessage().msgId = msgId;
+            activity.getNote().noteId = msgId;
             new DataUpdater(execContext).onActivity(activity);
             execContext.getResult().setItemId(msgId);
         } else {
@@ -449,7 +449,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         if (noErrors()) {
             try {
                 activity = execContext.getMyAccount().getConnection().announce(oid);
-                logIfEmptyMessage(method, rebloggedMessageId, activity.getMessage());
+                logIfEmptyMessage(method, rebloggedMessageId, activity.getNote());
             } catch (ConnectionException e) {
                 logConnectionException(e, "Reblog " + oid);
             }
@@ -458,7 +458,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             // The tweet was sent successfully
             // Reblog should be put into the Account's Home timeline!
             new DataUpdater(execContext).onActivity(activity);
-            MyProvider.updateMessageReblogged(execContext.getMyContext(), activity.accountActor.origin, rebloggedMessageId);
+            MyProvider.updateNoteReblogged(execContext.getMyContext(), activity.accountActor.origin, rebloggedMessageId);
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }

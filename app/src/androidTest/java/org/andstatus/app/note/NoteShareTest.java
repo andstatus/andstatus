@@ -49,7 +49,7 @@ public class NoteShareTest {
         
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.CONVERSATION_ORIGIN_NAME);
         assertTrue(demoData.CONVERSATION_ORIGIN_NAME + " exists", origin != null);
-        long msgId = MyQuery.oidToId(OidEnum.MSG_OID, origin.getId(), demoData.HTML_NOTE_OID);
+        long msgId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), demoData.HTML_NOTE_OID);
         assertTrue("origin=" + origin.getId() + "; oid=" + demoData.HTML_NOTE_OID, msgId != 0);
         NoteShare noteShare = new NoteShare(origin, msgId, null);
         Intent intent = noteShare.intentToViewAndShare(true);
@@ -69,9 +69,9 @@ public class NoteShareTest {
     public void testSharePlainText() {
         String body = "Posting as a plain Text " + demoData.TESTRUN_UID;
         final MyAccount myAccount = demoData.getMyAccount(demoData.TWITTER_TEST_ACCOUNT_NAME);
-        AActivity activity = DemoNoteInserter.addMessageForAccount(myAccount, body,
+        AActivity activity = DemoNoteInserter.addNoteForAccount(myAccount, body,
                 demoData.PLAIN_TEXT_NOTE_OID, DownloadStatus.LOADED);
-        NoteShare noteShare = new NoteShare(myAccount.getOrigin(), activity.getMessage().msgId, null);
+        NoteShare noteShare = new NoteShare(myAccount.getOrigin(), activity.getNote().noteId, null);
         Intent intent = noteShare.intentToViewAndShare(true);
         assertTrue(intent.getExtras().containsKey(Intent.EXTRA_TEXT));
         assertTrue(

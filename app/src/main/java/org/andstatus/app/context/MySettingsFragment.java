@@ -102,7 +102,7 @@ public class MySettingsFragment extends PreferenceFragment implements
     protected void showAllPreferences() {
         showManageAccounts();
         showFrequency();
-        showDontSynchronizeOldMessages();
+        showDontSynchronizeOldNotes();
         showConnectionTimeout();
         showHistorySize();
         showHistoryTime();
@@ -118,7 +118,7 @@ public class MySettingsFragment extends PreferenceFragment implements
         showActionBarTextColor();
         showBackgroundColor();
         showThemeSize();
-        showFilterHideMessagesBasedOnKeywords();
+        showFilterHideNotesBasedOnKeywords();
         showManageTimelines();
     }
 
@@ -151,9 +151,9 @@ public class MySettingsFragment extends PreferenceFragment implements
         }
     }
 
-    private void showDontSynchronizeOldMessages() {
-        long hours = MyPreferences.getDontSynchronizeOldMessages();
-        Preference preference = findPreference(MyPreferences.KEY_DONT_SYNCHRONIZE_OLD_MESSAGES);
+    private void showDontSynchronizeOldNotes() {
+        long hours = MyPreferences.getDontSynchronizeOldNotes();
+        Preference preference = findPreference(MyPreferences.KEY_DONT_SYNCHRONIZE_OLD_NOTES);
         if (preference != null) {
             preference.setSummary( hours > 0 ?
                     String.format(getText(R.string.dont_synchronize_old_messages_summary).toString(),
@@ -238,8 +238,8 @@ public class MySettingsFragment extends PreferenceFragment implements
         }
     }
 
-    private void showFilterHideMessagesBasedOnKeywords() {
-        EditTextPreference preference = (EditTextPreference) findPreference(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS);
+    private void showFilterHideNotesBasedOnKeywords() {
+        EditTextPreference preference = (EditTextPreference) findPreference(MyPreferences.KEY_FILTER_HIDE_NOTES_BASED_ON_KEYWORDS);
         if (preference != null) {
             KeywordsFilter filter = new KeywordsFilter(preference.getText());
             if (filter.isEmpty()) {
@@ -391,8 +391,8 @@ public class MySettingsFragment extends PreferenceFragment implements
                     showActionBarTextColor();
                     MySettingsActivity.restartMe(getActivity());
                     break;
-                case MyPreferences.KEY_DONT_SYNCHRONIZE_OLD_MESSAGES:
-                    showDontSynchronizeOldMessages();
+                case MyPreferences.KEY_DONT_SYNCHRONIZE_OLD_NOTES:
+                    showDontSynchronizeOldNotes();
                     break;
                 case MyPreferences.KEY_SYNC_FREQUENCY_SECONDS:
                     MyContextHolder.get().persistentAccounts().onDefaultSyncFrequencyChanged();
@@ -419,8 +419,8 @@ public class MySettingsFragment extends PreferenceFragment implements
                 case MyPreferences.KEY_TAP_ON_A_TIMELINE_TITLE_BEHAVIOUR:
                     showTapOnATimelineTitleBehaviour();
                     break;
-                case MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS:
-                    showFilterHideMessagesBasedOnKeywords();
+                case MyPreferences.KEY_FILTER_HIDE_NOTES_BASED_ON_KEYWORDS:
+                    showFilterHideNotesBasedOnKeywords();
                     break;
                 case MyPreferences.KEY_DEFAULT_TIMELINE:
                     showManageTimelines();

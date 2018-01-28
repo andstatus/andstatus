@@ -70,11 +70,11 @@ public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorDa
     private void saveCurrentData() {
         MyLog.v(NoteEditorData.TAG, "Saving current data:" + command.currentData);
         if (command.currentData.status == DownloadStatus.DELETED) {
-            MyProvider.deleteMessage(MyContextHolder.get().context(), command.currentData.getMsgId());
+            MyProvider.deleteNote(MyContextHolder.get().context(), command.currentData.getMsgId());
         } else {
             command.currentData.save(command.getMediaUri());
             if (command.beingEdited) {
-                SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_MESSAGE_ID,
+                SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID,
                         command.currentData.getMsgId());
             }
             if (command.currentData.status == DownloadStatus.SENDING) {

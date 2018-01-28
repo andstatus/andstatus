@@ -20,8 +20,8 @@ package org.andstatus.app.data;
  * ids in originating system
  */
 public enum OidEnum {
-    /** oid of this message */
-    MSG_OID,
+    /** oid of this note */
+    NOTE_OID,
     /** If a note was reblogged by an Actor, then this is oid of an "announce" ("reblog") note,
      * else oid of the reblogged note (the first note which was reblogged)
      */

@@ -54,17 +54,17 @@ import static org.andstatus.app.util.UriUtils.nonEmptyOid;
 import static org.andstatus.app.util.UriUtils.nonRealOid;
 
 /**
- * Stores (updates) messages and users
+ * Stores (updates) notes and actors
  *  from a Social network into a database.
  * 
  * @author yvolk@yurivolkov.com
  */
 public class DataUpdater {
-    static final String MSG_ASSERTION_KEY = "updateMessage";
+    static final String MSG_ASSERTION_KEY = "updateNote";
     private final CommandExecutionContext execContext;
     private LatestActorActivities lum = new LatestActorActivities();
     private KeywordsFilter keywordsFilter = new KeywordsFilter(
-            SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_MESSAGES_BASED_ON_KEYWORDS, ""));
+            SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_NOTES_BASED_ON_KEYWORDS, ""));
 
     public static void onActivities(CommandExecutionContext execContext, List<AActivity> activities) {
         DataUpdater dataUpdater = new DataUpdater(execContext);
@@ -95,7 +95,7 @@ public class DataUpdater {
                 onActivity(activity.getActivity(), false);
                 break;
             case NOTE:
-                updateMessage(activity, true);
+                updateNote(activity, true);
                 break;
             case ACTOR:
                 updateObjActor(activity);
@@ -114,7 +114,7 @@ public class DataUpdater {
         if (!activity.isSubscribedByMe().equals(TriState.FALSE)
             && activity.getUpdatedDate() > 0
             && (activity.isMyActorOrAuthor(execContext.myContext)
-                || activity.getMessage().audience().containsMe(execContext.myContext))) {
+                || activity.getNote().audience().containsMe(execContext.myContext))) {
             activity.setSubscribedByMe(TriState.TRUE);
         }
         activity.save(execContext.getMyContext());
@@ -129,135 +129,135 @@ public class DataUpdater {
         lum.save();
     }
 
-    private void updateMessage(@NonNull AActivity activity, boolean updateUsers) {
-        updateMessage1(activity, updateUsers);
-        DataUpdater.onActivities(execContext, activity.getMessage().replies);
+    private void updateNote(@NonNull AActivity activity, boolean updateActors) {
+        updateNote1(activity, updateActors);
+        DataUpdater.onActivities(execContext, activity.getNote().replies);
     }
 
-    private void updateMessage1(@NonNull AActivity activity, boolean updateUsers) {
-        final String method = "updateMessage";
-        final Note message = activity.getMessage();
+    private void updateNote1(@NonNull AActivity activity, boolean updateActors) {
+        final String method = "updateNote1";
+        final Note note = activity.getNote();
         try {
             MyAccount me = execContext.getMyContext().persistentAccounts().fromUserOfSameOrigin(activity.accountActor);
             if (!me.isValid()) {
                 MyLog.w(this, method +"; my account is invalid, skipping: " + activity.toString());
                 return;
             }
-            if (updateUsers) {
+            if (updateActors) {
                 if (activity.isAuthorActor()) {
                     activity.setAuthor(activity.getActor());
                 } else {
                     updateObjActor(activity.getAuthor().update(activity.accountActor, activity.getActor()));
                 }
             }
-            if (message.msgId == 0) {
-                message.msgId = MyQuery.oidToId(OidEnum.MSG_OID, message.origin.getId(), message.oid);
+            if (note.noteId == 0) {
+                note.noteId = MyQuery.oidToId(OidEnum.NOTE_OID, note.origin.getId(), note.oid);
             }
 
             /*
              * Is the row first time retrieved from a Social Network?
-             * Message can already exist in this these cases:
+             * Note can already exist in this these cases:
              * 1. There was only "a stub" stored (without a sent date and a body)
-             * 2. Message was "unsent"
+             * 2. Note was "unsent"
              */
-            boolean isFirstTimeLoaded = message.getStatus() == DownloadStatus.LOADED || message.msgId == 0;
+            boolean isFirstTimeLoaded = note.getStatus() == DownloadStatus.LOADED || note.noteId == 0;
             boolean isDraftUpdated = !isFirstTimeLoaded
-                    && (message.getStatus() == DownloadStatus.SENDING || message.getStatus() == DownloadStatus.DRAFT);
+                    && (note.getStatus() == DownloadStatus.SENDING || note.getStatus() == DownloadStatus.DRAFT);
 
             long updatedDateStored = 0;
-            if (message.msgId != 0) {
+            if (note.noteId != 0) {
                 DownloadStatus statusStored = DownloadStatus.load(
-                        MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, message.msgId));
-                updatedDateStored = MyQuery.msgIdToLongColumnValue(NoteTable.UPDATED_DATE, message.msgId);
+                        MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, note.noteId));
+                updatedDateStored = MyQuery.msgIdToLongColumnValue(NoteTable.UPDATED_DATE, note.noteId);
                 if (isFirstTimeLoaded) {
                     isFirstTimeLoaded = statusStored != DownloadStatus.LOADED;
                 }
             }
 
-            boolean isNewerThanInDatabase = message.getUpdatedDate() > updatedDateStored;
+            boolean isNewerThanInDatabase = note.getUpdatedDate() > updatedDateStored;
             if (!isFirstTimeLoaded && !isDraftUpdated && !isNewerThanInDatabase) {
-                MyLog.v("MbMessage", "Skipped as not younger " + message);
+                MyLog.v("Note", "Skipped as not younger " + note);
                 return;
             }
 
-            // TODO: move as toContentValues() into MbMessage
+            // TODO: move as toContentValues() into Note
             ContentValues values = new ContentValues();
-            values.put(NoteTable.NOTE_STATUS, message.getStatus().save());
-            values.put(NoteTable.UPDATED_DATE, message.getUpdatedDate());
+            values.put(NoteTable.NOTE_STATUS, note.getStatus().save());
+            values.put(NoteTable.UPDATED_DATE, note.getUpdatedDate());
 
             if (activity.getAuthor().actorId != 0) {
                 values.put(NoteTable.AUTHOR_ID, activity.getAuthor().actorId);
             }
-            values.put(NoteTable.NOTE_OID, message.oid);
-            values.put(NoteTable.ORIGIN_ID, message.origin.getId());
-            if (nonEmptyOid(message.conversationOid)) {
-                values.put(NoteTable.CONVERSATION_OID, message.conversationOid);
+            values.put(NoteTable.NOTE_OID, note.oid);
+            values.put(NoteTable.ORIGIN_ID, note.origin.getId());
+            if (nonEmptyOid(note.conversationOid)) {
+                values.put(NoteTable.CONVERSATION_OID, note.conversationOid);
             }
-            values.put(NoteTable.BODY, message.getBody());
-            values.put(NoteTable.BODY_TO_SEARCH, message.getBodyToSearch());
+            values.put(NoteTable.BODY, note.getBody());
+            values.put(NoteTable.BODY_TO_SEARCH, note.getBodyToSearch());
 
-            activity.getMessage().addRecipientsFromBodyText(activity.getActor());
+            activity.getNote().addRecipientsFromBodyText(activity.getActor());
             updateInReplyTo(activity, values);
-            for ( Actor actor : message.audience().getRecipients()) {
+            for ( Actor actor : note.audience().getRecipients()) {
                 updateObjActor(actor.update(activity.accountActor, activity.getActor()));
             }
-            if (activity.getMessage().audience().containsMe(execContext.getMyContext())
+            if (activity.getNote().audience().containsMe(execContext.getMyContext())
                     && !activity.isMyActorOrAuthor(execContext.myContext)) {
                 values.put(NoteTable.MENTIONED, TriState.TRUE.id);
             }
 
-            if (!TextUtils.isEmpty(message.via)) {
-                values.put(NoteTable.VIA, message.via);
+            if (!TextUtils.isEmpty(note.via)) {
+                values.put(NoteTable.VIA, note.via);
             }
-            if (!TextUtils.isEmpty(message.url)) {
-                values.put(NoteTable.URL, message.url);
+            if (!TextUtils.isEmpty(note.url)) {
+                values.put(NoteTable.URL, note.url);
             }
-            if (message.getPrivate().known()) {
-                values.put(NoteTable.PRIVATE, message.getPrivate().id);
+            if (note.getPrivate().known()) {
+                values.put(NoteTable.PRIVATE, note.getPrivate().id);
             }
 
-            if (message.lookupConversationId() != 0) {
-                values.put(NoteTable.CONVERSATION_ID, message.getConversationId());
+            if (note.lookupConversationId() != 0) {
+                values.put(NoteTable.CONVERSATION_ID, note.getConversationId());
             }
 
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, ((message.msgId==0) ? "insertMsg" : "updateMsg " + message.msgId)
-                        + ":" + message.getStatus()
+                MyLog.v(this, ((note.noteId ==0) ? "insertMsg" : "updateMsg " + note.noteId)
+                        + ":" + note.getStatus()
                         + (isFirstTimeLoaded ? " new;" : "")
                         + (isDraftUpdated ? " draft updated;" : "")
-                        + (isNewerThanInDatabase ? " newer, updated at " + new Date(message.getUpdatedDate()) + ";"
+                        + (isNewerThanInDatabase ? " newer, updated at " + new Date(note.getUpdatedDate()) + ";"
                         : "") );
             }
 
             if (MyContextHolder.get().isTestRun()) {
                 MyContextHolder.get().put(new AssertionData(MSG_ASSERTION_KEY, values));
             }
-            if (message.msgId == 0) {
+            if (note.noteId == 0) {
                 Uri msgUri = execContext.getContext().getContentResolver().insert(
                         MatchedUri.getMsgUri(me.getActorId(), 0), values);
-                message.msgId = ParsedUri.fromUri(msgUri).getMessageId();
+                note.noteId = ParsedUri.fromUri(msgUri).getNoteId();
 
-                if (message.getConversationId() == 0) {
+                if (note.getConversationId() == 0) {
                     ContentValues values2 = new ContentValues();
-                    values2.put(NoteTable.CONVERSATION_ID, message.setConversationIdFromMsgId());
+                    values2.put(NoteTable.CONVERSATION_ID, note.setConversationIdFromMsgId());
                     execContext.getContext().getContentResolver().update(msgUri, values2, null, null);
                 }
-                MyLog.v("MbMessage", "Added " + message);
+                MyLog.v("Note", "Added " + note);
             } else {
-                Uri msgUri = MatchedUri.getMsgUri(me.getActorId(), message.msgId);
+                Uri msgUri = MatchedUri.getMsgUri(me.getActorId(), note.noteId);
                 execContext.getContext().getContentResolver().update(msgUri, values, null, null);
-                MyLog.v("MbMessage", "Updated " + message);
+                MyLog.v("Note", "Updated " + note);
             }
-            message.audience().save(execContext.getMyContext(), message.origin, message.msgId);
+            note.audience().save(execContext.getMyContext(), note.origin, note.noteId);
 
             if (isFirstTimeLoaded || isDraftUpdated) {
-                saveAttachments(message);
+                saveAttachments(note);
             }
 
-            if (keywordsFilter.matchedAny(message.getBodyToSearch())) {
+            if (keywordsFilter.matchedAny(note.getBodyToSearch())) {
                 activity.setNotified(TriState.FALSE);
             } else {
-                if (message.getStatus() == DownloadStatus.LOADED) {
+                if (note.getStatus() == DownloadStatus.LOADED) {
                     execContext.getResult().incrementDownloadedCount();
                     execContext.getResult().incrementNewCount();
                 }
@@ -268,15 +268,15 @@ public class DataUpdater {
     }
 
     private void updateInReplyTo(AActivity activity, ContentValues values) {
-        final AActivity inReply = activity.getMessage().getInReplyTo();
-        if (StringUtils.nonEmpty(inReply.getMessage().oid)) {
-            if (nonRealOid(inReply.getMessage().conversationOid)) {
-                inReply.getMessage().setConversationOid(activity.getMessage().conversationOid);
+        final AActivity inReply = activity.getNote().getInReplyTo();
+        if (StringUtils.nonEmpty(inReply.getNote().oid)) {
+            if (nonRealOid(inReply.getNote().conversationOid)) {
+                inReply.getNote().setConversationOid(activity.getNote().conversationOid);
             }
             new DataUpdater(execContext).onActivity(inReply);
-            if (inReply.getMessage().msgId != 0) {
-                activity.getMessage().addRecipient(inReply.getAuthor());
-                values.put(NoteTable.IN_REPLY_TO_NOTE_ID, inReply.getMessage().msgId);
+            if (inReply.getNote().noteId != 0) {
+                activity.getNote().addRecipient(inReply.getAuthor());
+                values.put(NoteTable.IN_REPLY_TO_NOTE_ID, inReply.getNote().noteId);
                 if (inReply.getAuthor().actorId != 0) {
                     values.put(NoteTable.IN_REPLY_TO_ACTOR_ID, inReply.getAuthor().actorId);
                 }
@@ -284,10 +284,10 @@ public class DataUpdater {
         }
     }
 
-    private void saveAttachments(Note message) {
+    private void saveAttachments(Note note) {
         List<Long> downloadIds = new ArrayList<>();
-        for (Attachment attachment : message.attachments) {
-            DownloadData dd = DownloadData.getThisForMessage(message.msgId, attachment.contentType, attachment.getUri());
+        for (Attachment attachment : note.attachments) {
+            DownloadData dd = DownloadData.getThisForNote(note.noteId, attachment.contentType, attachment.getUri());
             dd.saveToDatabase();
             downloadIds.add(dd.getDownloadId());
             switch (dd.getStatus()) {
@@ -305,7 +305,7 @@ public class DataUpdater {
                     break;
             }
         }
-        DownloadData.deleteOtherOfThisMsg(message.msgId, downloadIds);
+        DownloadData.deleteOtherOfThisMsg(note.noteId, downloadIds);
     }
 
     private void updateObjActor(AActivity activity) {
@@ -387,8 +387,8 @@ public class DataUpdater {
             if (!SharedPreferencesUtil.isEmpty(objActor.location)) {
                 values.put(ActorTable.LOCATION, objActor.location);
             }
-            if (objActor.msgCount > 0) {
-                values.put(ActorTable.MSG_COUNT, objActor.msgCount);
+            if (objActor.notesCount > 0) {
+                values.put(ActorTable.MSG_COUNT, objActor.notesCount);
             }
             if (objActor.favoritesCount > 0) {
                 values.put(ActorTable.FAVORITES_COUNT, objActor.favoritesCount);
@@ -425,8 +425,8 @@ public class DataUpdater {
                 execContext.getContext().getContentResolver().update(actorUri, values, null, null);
             }
             objActor.actorId = actorId;
-            if (objActor.hasLatestMessage()) {
-                updateMessage(objActor.getLatestActivity(), false);
+            if (objActor.hasLatestNote()) {
+                updateNote(objActor.getLatestActivity(), false);
             }
         } catch (Exception e) {
             MyLog.e(this, method + "; actorId=" + actorId + "; oid=" + actorOid, e);

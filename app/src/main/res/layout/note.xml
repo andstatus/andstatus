@@ -29,11 +29,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <include layout="@layout/message_wrapper"/>
+        <include layout="@layout/note_wrapper"/>
     </LinearLayout>
 
     <TextView
-        android:id="@+id/message_number"
+        android:id="@+id/note_number"
         android:layout_marginTop="4dp"
         android:layout_marginRight="4dp"
         android:layout_width="wrap_content"

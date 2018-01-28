@@ -24,7 +24,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.DownloadType;
 import org.andstatus.app.data.MyContentType;
 
-/** Avatar, Message attachment...
+/** Avatar, Note's attachment...
  */
 public final class DownloadTable implements BaseColumns {
     public static final String TABLE_NAME = "download";
@@ -34,8 +34,8 @@ public final class DownloadTable implements BaseColumns {
     public static final String DOWNLOAD_TYPE = "download_type";
     /** Avatar is connected to exactly one actor */
     public static final String ACTOR_ID = ActorTable.ACTOR_ID;
-    /** Attachment is connected to a message */
-    public static final String MSG_ID =  NoteTable.NOTE_ID;
+    /** Attachment is connected to a note */
+    public static final String NOTE_ID =  NoteTable.NOTE_ID;
     /** See {@link MyContentType} */
     public static final String CONTENT_TYPE = "content_type";
     /**
@@ -72,7 +72,7 @@ public final class DownloadTable implements BaseColumns {
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + DOWNLOAD_TYPE + " INTEGER NOT NULL,"
                 + ACTOR_ID + " INTEGER NOT NULL DEFAULT 0,"
-                + MSG_ID + " INTEGER NOT NULL DEFAULT 0,"
+                + NOTE_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + CONTENT_TYPE + " INTEGER NOT NULL,"
                 + VALID_FROM + " INTEGER NOT NULL,"
                 + URI + " TEXT NOT NULL,"
@@ -87,7 +87,7 @@ public final class DownloadTable implements BaseColumns {
                 + ")");
 
         DbUtils.execSQL(db, "CREATE INDEX idx_download_msg ON " + TABLE_NAME + " ("
-                + MSG_ID + ", "
+                + NOTE_ID + ", "
                 + CONTENT_TYPE  + ", "
                 + DOWNLOAD_STATUS
                 + ")");

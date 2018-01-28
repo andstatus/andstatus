@@ -25,7 +25,7 @@ import org.andstatus.app.timeline.meta.TimelineType;
 
 /**
  * Names of extras are used in the Intent-messaging 
- * (e.g. to notify Widget of new Messages)
+ * (e.g. to notify Widget of a new Notes)
  */
 public enum IntentExtra{
     /**
@@ -47,8 +47,8 @@ public enum IntentExtra{
     SERVICE_STATE("SERVICE_STATE"),
     SERVICE_EVENT("SERVICE_EVENT"),
     PROGRESS_TEXT("PROGRESS_TEXT"),
-    /** Text of the message/"tweet" */
-    MESSAGE_TEXT("MESSAGE_TEXT"),
+    /** Text of the note/"tweet" */
+    NOTE_TEXT("NOTE_TEXT"),
     MEDIA_URI("MEDIA_URI"),
     /** Account name, see {@link MyAccount#getAccountName()} */
     ACCOUNT_NAME("ACCOUNT_NAME"),
@@ -68,7 +68,7 @@ public enum IntentExtra{
      */
     IN_REPLY_TO_ID("IN_REPLY_TO_ID"),
     /**
-     * Recipient of a (usually private) message
+     * Recipient of a (usually private) note
      */
     RECIPIENT_ID("RECIPIENT_ID"),
     SEARCH_QUERY("SEARCH_QUERY"),

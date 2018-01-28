@@ -22,10 +22,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    tools:showIn="@layout/message">
+    tools:showIn="@layout/note">
 
     <TextView
-        android:id="@+id/message_author"
+        android:id="@+id/note_author"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         style="@style/messageUsernameAppearance"

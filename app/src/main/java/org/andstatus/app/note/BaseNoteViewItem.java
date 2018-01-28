@@ -47,9 +47,9 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     long updatedDate = 0;
     long activityUpdatedDate = 0;
 
-    public DownloadStatus msgStatus = DownloadStatus.UNKNOWN;
+    public DownloadStatus noteStatus = DownloadStatus.UNKNOWN;
 
-    private long mMsgId;
+    private long noteId;
     private Origin origin = Origin.EMPTY;
 
     String authorName = "";
@@ -57,11 +57,11 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     String recipientName = "";
 
-    public long inReplyToMsgId = 0;
+    public long inReplyToNoteId = 0;
     long inReplyToUserId = 0;
     String inReplyToName = "";
 
-    String messageSource = "";
+    String noteSource = "";
 
     private String body = "";
     String cleanedBody = "";
@@ -89,12 +89,12 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         this.myContext = myContext;
     }
 
-    public long getMsgId() {
-        return mMsgId;
+    public long getNoteId() {
+        return noteId;
     }
 
-    void setMsgId(long mMsgId) {
-        this.mMsgId = mMsgId;
+    void setNoteId(long noteId) {
+        this.noteId = noteId;
     }
 
     public Origin getOrigin() {
@@ -114,9 +114,9 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         return linkedMyAccount;
     }
 
-    private void setCollapsedStatus(StringBuilder messageDetails) {
+    private void setCollapsedStatus(StringBuilder noteDetails) {
         if (isCollapsed()) {
-            I18n.appendWithSpace(messageDetails, "(+" + getChildrenCount() + ")");
+            I18n.appendWithSpace(noteDetails, "(+" + getChildrenCount() + ")");
         }
     }
 
@@ -124,7 +124,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     @NonNull
     public DuplicationLink duplicates(@NonNull T other) {
         if (isEmpty() || other.isEmpty()) return DuplicationLink.NONE;
-        return (getMsgId() == other.getMsgId()) ? duplicatesByFavoritedAndReblogged(other) : duplicatesByOther(other);
+        return (getNoteId() == other.getNoteId()) ? duplicatesByFavoritedAndReblogged(other) : duplicatesByOther(other);
     }
 
     @NonNull
@@ -174,45 +174,45 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         StringBuilder builder = new StringBuilder(RelativeTime.getDifference(context, updatedDate));
         setInReplyTo(context, builder);
         setRecipientName(context, builder);
-        setMessageSource(context, builder);
-        setMessageStatus(context, builder);
+        setNoteSource(context, builder);
+        setNoteStatus(context, builder);
         setCollapsedStatus(builder);
         if (MyPreferences.isShowDebuggingInfoInUi()) {
-            I18n.appendWithSpace(builder, "(msgId=" + getMsgId() + ")");
+            I18n.appendWithSpace(builder, "(noteId=" + getNoteId() + ")");
         }
         return builder;
     }
 
-    protected void setInReplyTo(Context context, StringBuilder messageDetails) {
-        if (inReplyToMsgId != 0 && TextUtils.isEmpty(inReplyToName)) {
+    protected void setInReplyTo(Context context, StringBuilder noteDetails) {
+        if (inReplyToNoteId != 0 && TextUtils.isEmpty(inReplyToName)) {
             inReplyToName = "...";
         }
         if (!TextUtils.isEmpty(inReplyToName)) {
-            messageDetails.append(" ").append(String.format(
+            noteDetails.append(" ").append(String.format(
                     context.getText(R.string.message_source_in_reply_to).toString(),
                     inReplyToName));
         }
     }
 
-    private void setRecipientName(Context context, StringBuilder messageDetails) {
+    private void setRecipientName(Context context, StringBuilder noteDetails) {
         if (!TextUtils.isEmpty(recipientName)) {
-            messageDetails.append(" " + String.format(
+            noteDetails.append(" " + String.format(
                     context.getText(R.string.message_source_to).toString(),
                     recipientName));
         }
     }
 
-    private void setMessageSource(Context context, StringBuilder messageDetails) {
-        if (!SharedPreferencesUtil.isEmpty(messageSource) && !"ostatus".equals(messageSource)
-                && !"unknown".equals(messageSource)) {
-            messageDetails.append(" " + String.format(
-                    context.getText(R.string.message_source_from).toString(), messageSource));
+    private void setNoteSource(Context context, StringBuilder noteDetails) {
+        if (!SharedPreferencesUtil.isEmpty(noteSource) && !"ostatus".equals(noteSource)
+                && !"unknown".equals(noteSource)) {
+            noteDetails.append(" " + String.format(
+                    context.getText(R.string.message_source_from).toString(), noteSource));
         }
     }
 
-    private void setMessageStatus(Context context, StringBuilder messageDetails) {
-        if (msgStatus != DownloadStatus.LOADED) {
-            messageDetails.append(" (").append(msgStatus.getTitle(context)).append(")");
+    private void setNoteStatus(Context context, StringBuilder noteDetails) {
+        if (noteStatus != DownloadStatus.LOADED) {
+            noteDetails.append(" (").append(noteStatus.getTitle(context)).append(")");
         }
     }
 
@@ -233,7 +233,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     @Override
     public long getId() {
-        return getMsgId();
+        return getNoteId();
     }
 
     @Override
@@ -255,7 +255,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     @Override
     public String toString() {
-        return "Message " + body;
+        return "Note " + body;
     }
 
     public void hideActor(long actorId) {

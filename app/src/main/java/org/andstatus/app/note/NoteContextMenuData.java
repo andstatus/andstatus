@@ -52,8 +52,8 @@ class NoteContextMenuData {
         final NoteContextMenuContainer menuContainer = noteContextMenu.menuContainer;
         NoteContextMenuData data = new NoteContextMenuData(viewItem);
 
-        if (menuContainer != null && view != null && viewItem != null && viewItem.getMsgId() != 0) {
-            final long msgId = viewItem.getMsgId();
+        if (menuContainer != null && view != null && viewItem != null && viewItem.getNoteId() != 0) {
+            final long msgId = viewItem.getNoteId();
             data.loader = new MyAsyncTask<Void, Void, NoteForAccount>(
                     NoteContextMenuData.class.getSimpleName() + msgId, MyAsyncTask.PoolEnum.QUICK_UI) {
 
@@ -63,7 +63,7 @@ class NoteContextMenuData {
                     final MyContext myContext = menuContainer.getActivity().getMyContext();
                     final Origin origin = myContext.persistentOrigins().fromId(MyQuery.msgIdToOriginId(msgId));
                     MyAccount ma1 = myContext.persistentAccounts()
-                            .getAccountForThisMessage(origin, myActor, viewItem.getLinkedMyAccount(), false);
+                            .getAccountForThisNote(origin, myActor, viewItem.getLinkedMyAccount(), false);
                     NoteForAccount msgNew = new NoteForAccount(origin, 0, msgId, ma1);
                     boolean changedToCurrent = !ma1.equals(currentMyAccount) && !myActor.isValid() && ma1.isValid()
                             && !msgNew.isTiedToThisAccount()
@@ -110,7 +110,7 @@ class NoteContextMenuData {
     }
 
     public long getMsgId() {
-        return viewItem == null ? 0 : viewItem.getMsgId();
+        return viewItem == null ? 0 : viewItem.getNoteId();
     }
 
     StateForSelectedViewItem getStateFor(BaseNoteViewItem currentItem) {
@@ -120,7 +120,7 @@ class NoteContextMenuData {
         if (loader.isReallyWorking()) {
             return StateForSelectedViewItem.LOADING;
         }
-        return currentItem.getMsgId() == msg.msgId ? StateForSelectedViewItem.READY : StateForSelectedViewItem.NEW;
+        return currentItem.getNoteId() == msg.msgId ? StateForSelectedViewItem.READY : StateForSelectedViewItem.NEW;
     }
 
     boolean isFor(long msgId) {

@@ -88,7 +88,7 @@ public class MyQuery {
         String msgLog = "oidToId; " + oidEnum + ", origin=" + originId + ", oid=" + oid;
         String sql;
         switch (oidEnum) {
-            case MSG_OID:
+            case NOTE_OID:
                 sql = "SELECT " + BaseColumns._ID + " FROM " + NoteTable.TABLE_NAME
                         + " WHERE " + NoteTable.ORIGIN_ID + "=" + originId + " AND " + NoteTable.NOTE_OID
                         + "=" + quoteIfNotQuoted(oid);
@@ -202,7 +202,7 @@ public class MyQuery {
         if (entityId > 0) {
             try {
                 switch (oe) {
-                    case MSG_OID:
+                    case NOTE_OID:
                         sql = "SELECT " + NoteTable.NOTE_OID + " FROM "
                                 + NoteTable.TABLE_NAME + " WHERE " + BaseColumns._ID + "=" + entityId;
                         break;
@@ -231,8 +231,8 @@ public class MyQuery {
                 oid = prog.simpleQueryForString();
                 
                 if (TextUtils.isEmpty(oid) && oe == OidEnum.REBLOG_OID) {
-                    // This not reblogged message
-                    oid = idToOid(db, OidEnum.MSG_OID, entityId, 0);
+                    // This not reblogged note
+                    oid = idToOid(db, OidEnum.NOTE_OID, entityId, 0);
                 }
                 
             } catch (SQLiteDoneException e) {
@@ -380,10 +380,10 @@ public class MyQuery {
         return actorToNote;
     }
 
-    public static String msgIdToUsername(String userIdColumnName, long messageId, ActorInTimeline actorInTimeline) {
+    public static String msgIdToUsername(String userIdColumnName, long noteId, ActorInTimeline actorInTimeline) {
         final String method = "msgIdToUsername";
         String userName = "";
-        if (messageId != 0) {
+        if (noteId != 0) {
             SQLiteStatement prog = null;
             String sql = "";
             try {
@@ -395,7 +395,7 @@ public class MyQuery {
                     sql = "SELECT " + userNameField(actorInTimeline) + " FROM " + ActorTable.TABLE_NAME
                             + " INNER JOIN " + NoteTable.TABLE_NAME + " ON "
                             + NoteTable.TABLE_NAME + "." + userIdColumnName + "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID
-                            + " WHERE " + NoteTable.TABLE_NAME + "." + BaseColumns._ID + "=" + messageId;
+                            + " WHERE " + NoteTable.TABLE_NAME + "." + BaseColumns._ID + "=" + noteId;
                 } else {
                     throw new IllegalArgumentException( method + "; Unknown name \"" + userIdColumnName + "\"");
                 }
@@ -416,7 +416,7 @@ public class MyQuery {
                 DbUtils.closeSilently(prog);
             }
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(TAG, method + "; " + userIdColumnName + ": " + messageId + " -> " + userName );
+                MyLog.v(TAG, method + "; " + userIdColumnName + ": " + noteId + " -> " + userName );
             }
         }
         return userName;
@@ -587,8 +587,8 @@ public class MyQuery {
         }
     }
 
-    /** Data from the latest activity for this message... */
-    public static long msgIdToLongActivityColumnValue(SQLiteDatabase databaseIn, String columnNameIn, long msgId) {
+    /** Data from the latest activity for this note... */
+    public static long msgIdToLongActivityColumnValue(SQLiteDatabase databaseIn, String columnNameIn, long noteId) {
         final String method = "msgId2activity" + columnNameIn;
         final String columnName;
         final String condition;
@@ -620,7 +620,7 @@ public class MyQuery {
                 throw new IllegalArgumentException( method + "; Illegal column '" + columnNameIn + "'");
         }
         return MyQuery.conditionToLongColumnValue(databaseIn, method, ActivityTable.TABLE_NAME, columnName,
-                ActivityTable.MSG_ID + "=" + msgId +  " AND " + condition
+                ActivityTable.MSG_ID + "=" + noteId +  " AND " + condition
                         + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC LIMIT 1");
     }
 
@@ -756,7 +756,7 @@ public class MyQuery {
     public static String msgInfoForLog(long msgId) {
         StringBuilder builder = new StringBuilder();
         I18n.appendWithComma(builder, "msgId:" + msgId);
-        String oid = idToOid(OidEnum.MSG_OID, msgId, 0);
+        String oid = idToOid(OidEnum.NOTE_OID, msgId, 0);
         I18n.appendWithComma(builder, "oid" + (TextUtils.isEmpty(oid) ? " is empty" : ":'" + oid + "'"));
         String body = MyHtml.fromHtml(msgIdToStringColumnValue(NoteTable.BODY, msgId));
         I18n.appendAtNewLine(builder, "text:'" + body + "'");
@@ -782,12 +782,12 @@ public class MyQuery {
         }
         long conversationId = MyQuery.msgIdToLongColumnValue(NoteTable.CONVERSATION_ID, msgId);
         if (conversationId == 0) {
-            return idToOid(OidEnum.MSG_OID, msgId, 0);
+            return idToOid(OidEnum.NOTE_OID, msgId, 0);
         }
         oid = msgIdToStringColumnValue(NoteTable.CONVERSATION_OID, conversationId);
         if (!TextUtils.isEmpty(oid)) {
             return oid;
         }
-        return idToOid(OidEnum.MSG_OID, conversationId, 0);
+        return idToOid(OidEnum.NOTE_OID, conversationId, 0);
     }
 }

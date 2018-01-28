@@ -154,21 +154,21 @@ public class ConnectionPumpio extends Connection {
     
     @Override
     public AActivity undoLike(String noteOid) throws ConnectionException {
-        return actOnMessage(PActivityType.UNFAVORITE, noteOid);
+        return actOnNote(PActivityType.UNFAVORITE, noteOid);
     }
 
     @Override
     public AActivity like(String noteOid) throws ConnectionException {
-        return actOnMessage(PActivityType.FAVORITE, noteOid);
+        return actOnNote(PActivityType.FAVORITE, noteOid);
     }
 
     @Override
     public boolean deleteNote(String noteOid) throws ConnectionException {
-        return !actOnMessage(PActivityType.DELETE, noteOid).isEmpty();
+        return !actOnNote(PActivityType.DELETE, noteOid).isEmpty();
     }
 
-    private AActivity actOnMessage(PActivityType activityType, String messageId) throws ConnectionException {
-        return ActivitySender.fromId(this, messageId).sendMessage(activityType);
+    private AActivity actOnNote(PActivityType activityType, String messageId) throws ConnectionException {
+        return ActivitySender.fromId(this, messageId).sendNote(activityType);
     }
 
     @Override
@@ -212,16 +212,16 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public AActivity updateNote(String messageIn, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
-        String message = toHtmlIfAllowed(messageIn);
-        ActivitySender sender = ActivitySender.fromContent(this, noteOid, message);
+    public AActivity updateNote(String note, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
+        String body = toHtmlIfAllowed(note);
+        ActivitySender sender = ActivitySender.fromContent(this, noteOid, body);
         sender.setInReplyTo(inReplyToOid);
         sender.setMediaUri(mediaUri);
         return activityFromJson(sender.sendMe(PActivityType.POST));
     }
     
-    private String toHtmlIfAllowed(String message) {
-        return data.getOrigin().isHtmlContentAllowed() ? MyHtml.htmlify(message) : message;
+    private String toHtmlIfAllowed(String body) {
+        return data.getOrigin().isHtmlContentAllowed() ? MyHtml.htmlify(body) : body;
     }
 
     String oidToObjectType(String oid) {
@@ -305,9 +305,9 @@ public class ConnectionPumpio extends Connection {
     }
     
     @Override
-    public AActivity updatePrivateNote(String messageIn, String noteOid, String actorOid, Uri mediaUri) throws ConnectionException {
-        String message = toHtmlIfAllowed(messageIn);
-        ActivitySender sender = ActivitySender.fromContent(this, noteOid, message);
+    public AActivity updatePrivateNote(String note, String noteOid, String actorOid, Uri mediaUri) throws ConnectionException {
+        String body = toHtmlIfAllowed(note);
+        ActivitySender sender = ActivitySender.fromContent(this, noteOid, body);
         sender.setRecipient(actorOid);
         sender.setMediaUri(mediaUri);
         return activityFromJson(sender.sendMe(PActivityType.POST));
@@ -315,7 +315,7 @@ public class ConnectionPumpio extends Connection {
 
     @Override
     public AActivity announce(String rebloggedNoteOid) throws ConnectionException {
-        return actOnMessage(PActivityType.SHARE, rebloggedNoteOid);
+        return actOnNote(PActivityType.SHARE, rebloggedNoteOid);
     }
 
     @NonNull
@@ -327,7 +327,7 @@ public class ConnectionPumpio extends Connection {
         Uri sUri = Uri.parse(conu.url);
         Uri.Builder builder = sUri.buildUpon();
         if (youngestPosition.nonEmpty()) {
-            // The "since" should point to the "Activity" on the timeline, not to the message
+            // The "since" should point to the "Activity" on the timeline, not to the note
             // Otherwise we will always get "not found"
             builder.appendQueryParameter("since", youngestPosition.getPosition());
         } else if (oldestPosition.nonEmpty()) {
@@ -348,7 +348,7 @@ public class ConnectionPumpio extends Connection {
                 }
             }
         }
-        MyLog.d(TAG, "getTimeline '" + url + "' " + activities.size() + " messages");
+        MyLog.d(TAG, "getTimeline '" + url + "' " + activities.size() + " notes");
         return activities;
     }
 
@@ -388,7 +388,7 @@ public class ConnectionPumpio extends Connection {
                     // Simplified dealing with nested activities
                     AActivity innerActivity = activityFromJson(objectOfActivity);
                     activity.setObjActor(innerActivity.getObjActor());
-                    activity.setMessage(innerActivity.getMessage());
+                    activity.setNote(innerActivity.getNote());
                 } else {
                     parseObjectOfActivity(activity, objectOfActivity);
                 }
@@ -396,7 +396,7 @@ public class ConnectionPumpio extends Connection {
                     if (jsoActivity.has("to")) {
                         JSONObject to = jsoActivity.optJSONObject("to");
                         if ( to != null) {
-                            activity.getMessage().addRecipient(actorFromJson(to));
+                            activity.getNote().addRecipient(actorFromJson(to));
                         } else {
                             JSONArray arrayOfTo = jsoActivity.optJSONArray("to");
                             if (arrayOfTo != null && arrayOfTo.length() > 0) {
@@ -404,12 +404,12 @@ public class ConnectionPumpio extends Connection {
                                 to = arrayOfTo.optJSONObject(0);
                                 Actor recipient = actorFromJson(to);
                                 if (!recipient.isEmpty()) {
-                                    activity.getMessage().addRecipient(recipient);
+                                    activity.getNote().addRecipient(recipient);
                                 }
                             }
                         }
                     }
-                    setVia(activity.getMessage(), jsoActivity);
+                    setVia(activity.getNote(), jsoActivity);
                     if(activity.getAuthor().isEmpty()) {
                         activity.setAuthor(activity.getActor());
                     }
@@ -427,15 +427,15 @@ public class ConnectionPumpio extends Connection {
         if (PObjectType.PERSON.isTypeOf(objectOfActivity)) {
             activity.setObjActor(actorFromJson(objectOfActivity));
         } else if (PObjectType.compatibleWith(objectOfActivity) == PObjectType.COMMENT) {
-            messageFromJsonComment(activity, objectOfActivity);
+            noteFromJsonComment(activity, objectOfActivity);
         }
     }
 
-    private void setVia(Note message, JSONObject activity) throws JSONException {
-        if (TextUtils.isEmpty(message.via) && activity.has(Properties.GENERATOR.code)) {
+    private void setVia(Note note, JSONObject activity) throws JSONException {
+        if (TextUtils.isEmpty(note.via) && activity.has(Properties.GENERATOR.code)) {
             JSONObject generator = activity.getJSONObject(Properties.GENERATOR.code);
             if (generator.has("displayName")) {
-                message.via = generator.getString("displayName");
+                note.via = generator.getString("displayName");
             }
         }
     }
@@ -448,7 +448,7 @@ public class ConnectionPumpio extends Connection {
         return null;
     }
     
-    private void messageFromJsonComment(AActivity parentActivity, JSONObject jso) throws ConnectionException {
+    private void noteFromJsonComment(AActivity parentActivity, JSONObject jso) throws ConnectionException {
         try {
             String oid = jso.optString("id");
             if (TextUtils.isEmpty(oid)) {
@@ -459,10 +459,10 @@ public class ConnectionPumpio extends Connection {
             if (updatedDate == 0) {
                 updatedDate = dateFromJson(jso, "published");
             }
-            final AActivity messageActivity = AActivity.newPartialMessage(data.getAccountActor(), oid,
+            final AActivity noteActivity = AActivity.newPartialNote(data.getAccountActor(), oid,
                     updatedDate, DownloadStatus.LOADED);
             if (jso.has("author")) {
-                messageActivity.setActor(actorFromJson(jso.getJSONObject("author")));
+                noteActivity.setActor(actorFromJson(jso.getJSONObject("author")));
             }
 
             final AActivity activity;
@@ -471,25 +471,25 @@ public class ConnectionPumpio extends Connection {
                 case CREATE:
                 case DELETE:
                     activity = parentActivity;
-                    activity.setMessage(messageActivity.getMessage());
+                    activity.setNote(noteActivity.getNote());
                     if (activity.getActor().isEmpty()) {
                         MyLog.d(this, "No Actor in outer activity " + activity);
-                        activity.setActor(messageActivity.getActor());
+                        activity.setActor(noteActivity.getActor());
                     }
                     break;
                 default:
-                    activity = messageActivity;
-                    parentActivity.setActivity(messageActivity);
+                    activity = noteActivity;
+                    parentActivity.setActivity(noteActivity);
                     break;
             }
 
-            Note message =  activity.getMessage();
+            Note note =  activity.getNote();
             if (jso.has("content")) {
-                message.setBody(jso.getString("content"));
+                note.setBody(jso.getString("content"));
             }
 
-            setVia(message, jso);
-            message.url = jso.optString("url");
+            setVia(note, jso);
+            note.url = jso.optString("url");
 
             if (jso.has("fullImage") || jso.has("image")) {
                 URL url = getImageUrl(jso, "fullImage");
@@ -498,15 +498,15 @@ public class ConnectionPumpio extends Connection {
                 }
                 Attachment mbAttachment =  Attachment.fromUrlAndContentType(url, MyContentType.IMAGE);
                 if (mbAttachment.isValid()) {
-                    message.attachments.add(mbAttachment);
+                    note.attachments.add(mbAttachment);
                 } else {
                     MyLog.d(this, "Invalid attachment; " + jso.toString());
                 }
             }
 
-            // If the Msg is a Reply to other message
+            // If the Msg is a Reply to other note
             if (jso.has("inReplyTo")) {
-                message.setInReplyTo(activityFromJson(jso.getJSONObject("inReplyTo")));
+                note.setInReplyTo(activityFromJson(jso.getJSONObject("inReplyTo")));
             }
 
             if (jso.has("replies")) {
@@ -516,7 +516,7 @@ public class ConnectionPumpio extends Connection {
                     for (int index = 0; index < jArr.length(); index++) {
                         try {
                             AActivity item = activityFromJson(jArr.getJSONObject(index));
-                            message.replies.add(item);
+                            note.replies.add(item);
                         } catch (JSONException e) {
                             throw ConnectionException.loggedJsonException(this,
                                     "Parsing list of replies", e, null);

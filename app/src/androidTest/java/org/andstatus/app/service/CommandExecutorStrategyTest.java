@@ -75,12 +75,12 @@ public class CommandExecutorStrategyTest {
 
     @Test
     public void testSearch() {
-        CommandData commandData = CommandData.newSearch(SearchObjects.MESSAGES,
+        CommandData commandData = CommandData.newSearch(SearchObjects.NOTES,
                 MyContextHolder.get(), null, demoData.GLOBAL_PUBLIC_NOTE_TEXT);
         CommandExecutorStrategy strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(CommandExecutorStrategy.class, strategy.getClass());
 
-        commandData = CommandData.newSearch(SearchObjects.MESSAGES,
+        commandData = CommandData.newSearch(SearchObjects.NOTES,
                 MyContextHolder.get(), ma.getOrigin(), demoData.GLOBAL_PUBLIC_NOTE_TEXT);
         strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(TimelineDownloaderOther.class, strategy.getClass());
@@ -94,7 +94,7 @@ public class CommandExecutorStrategyTest {
         CommandData commandData = getCommandDataForUnsentMessage("1");
         httpConnectionMock.setResponse(
                 RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                        org.andstatus.app.tests.R.raw.quitter_update_status_response));
+                        org.andstatus.app.tests.R.raw.quitter_update_note_response));
         assertEquals(0, commandData.getResult().getExecutionCount());
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertEquals(1, commandData.getResult().getExecutionCount());
@@ -156,9 +156,9 @@ public class CommandExecutorStrategyTest {
 
     private CommandData getCommandDataForUnsentMessage(String suffix) {
         String body = "Some text " + suffix + " to send " + System.currentTimeMillis() + "ms";
-        AActivity activity = DemoNoteInserter.addMessageForAccount(
+        AActivity activity = DemoNoteInserter.addNoteForAccount(
                 ma, body, "", DownloadStatus.SENDING);
-        return CommandData.newUpdateStatus(ma, activity.getMessage().msgId);
+        return CommandData.newUpdateStatus(ma, activity.getNote().noteId);
     }
 
     @Test

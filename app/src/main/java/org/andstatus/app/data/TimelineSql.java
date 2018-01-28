@@ -77,7 +77,7 @@ public class TimelineSql {
                     fUserIdColumnName = FriendshipTable.ACTOR_ID;
                     fUserLinkedUserIdColumnName = FriendshipTable.FRIEND_ID;
                 }
-                // Select only the latest message from each Friend's timeline
+                // Select only the latest note from each Friend's timeline
                 String activityIds = "SELECT " + ActorTable.ACTOR_ACTIVITY_ID
                         + " FROM " + ActorTable.TABLE_NAME + " AS u1"
                         + " INNER JOIN " + FriendshipTable.TABLE_NAME
@@ -162,17 +162,17 @@ public class TimelineSql {
             tables = "(" + tables + ") LEFT OUTER JOIN (" +
                     "SELECT "
                     + DownloadTable._ID + ", "
-                    + DownloadTable.MSG_ID + ", "
+                    + DownloadTable.NOTE_ID + ", "
                     + DownloadTable.CONTENT_TYPE + ", "
                     + (columns.contains(DownloadTable.IMAGE_URL) ? DownloadTable.URI + ", " : "")
                     + DownloadTable.FILE_NAME
                     + " FROM " + DownloadTable.TABLE_NAME
-                    + " WHERE " + DownloadTable.MSG_ID + "!=0"
+                    + " WHERE " + DownloadTable.NOTE_ID + "!=0"
                     + ") AS " + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS
                     +  " ON "
                     + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.CONTENT_TYPE
                     + "=" + MyContentType.IMAGE.save() + " AND " 
-                    + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.MSG_ID
+                    + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.NOTE_ID
                     + "=" + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.MSG_ID;
         }
         if (columns.contains(ActorTable.IN_REPLY_TO_NAME)) {
@@ -200,7 +200,7 @@ public class TimelineSql {
     }
 
     /** 
-     * Table columns to use for messages content
+     * Table columns to use for notes' content
      */
     public static Set<String> getTimelineProjection() {
         Set<String> columnNames = getBaseProjection();

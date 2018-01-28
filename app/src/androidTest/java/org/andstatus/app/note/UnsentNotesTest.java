@@ -61,18 +61,18 @@ public class UnsentNotesTest extends TimelineActivityTest {
         String step = "Start editing a message";
         MyLog.v(this, method + " started");
         ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
-        View editorView = getActivity().findViewById(R.id.message_editor);
-        helper.clickMenuItem(method + "; " + step, R.id.createMessageButton);
+        View editorView = getActivity().findViewById(R.id.note_editor);
+        helper.clickMenuItem(method + "; " + step, R.id.createNoteButton);
         ActivityTestHelper.waitViewVisible(method + "; " + step, editorView);
 
         String body = "Test unsent message, which we will try to edit " + demoData.TESTRUN_UID;
         TestSuite.waitForIdleSync();
-        onView(withId(R.id.messageBodyEditText)).perform(new TypeTextAction(body));
+        onView(withId(R.id.noteBodyEditText)).perform(new TypeTextAction(body));
         TestSuite.waitForIdleSync();
 
         mService.serviceStopped = false;
         step = "Sending message";
-        helper.clickMenuItem(method + "; " + step, R.id.messageSendButton);
+        helper.clickMenuItem(method + "; " + step, R.id.noteSendButton);
         ActivityTestHelper.waitViewInvisible(method + "; " + step, editorView);
 
         mService.waitForServiceStopped(false);
@@ -85,7 +85,7 @@ public class UnsentNotesTest extends TimelineActivityTest {
                 MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)));
 
         step = "Start editing unsent message" + unsentMsgId ;
-        getActivity().getNoteEditor().startEditingMessage(NoteEditorData.load(unsentMsgId));
+        getActivity().getNoteEditor().startEditingNote(NoteEditorData.load(unsentMsgId));
         ActivityTestHelper.waitViewVisible(method + "; " + step, editorView);
         TestSuite.waitForIdleSync();
 
@@ -107,10 +107,10 @@ public class UnsentNotesTest extends TimelineActivityTest {
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity());
         long itemId = helper.getListItemIdOfLoadedReply();
         long msgId = MyQuery.activityIdToLongColumnValue(ActivityTable.MSG_ID, itemId);
-        String msgOid = MyQuery.idToOid(OidEnum.MSG_OID, msgId, 0);
+        String msgOid = MyQuery.idToOid(OidEnum.NOTE_OID, msgId, 0);
         String logMsg = MyQuery.msgInfoForLog(msgId);
         assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, itemId, NoteContextMenuItem.REBLOG,
-                R.id.message_wrapper));
+                R.id.note_wrapper));
         mService.serviceStopped = false;
         TestSuite.waitForIdleSync();
         mService.waitForServiceStopped(false);

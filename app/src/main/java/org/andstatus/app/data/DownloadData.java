@@ -51,16 +51,16 @@ public class DownloadData {
     /**
      * Currently we assume that there is no more than one attachment of a message
      */
-    public static DownloadData getSingleForMessage(long msgIdIn, MyContentType contentTypeIn, Uri uriIn) {
+    public static DownloadData getSingleForNote(long msgIdIn, MyContentType contentTypeIn, Uri uriIn) {
         DownloadData data = new DownloadData(0, msgIdIn, contentTypeIn, Uri.EMPTY);
         if (!UriUtils.isEmpty(uriIn) && !data.getUri().equals(uriIn)) {
             deleteAllOfThisMsg(MyContextHolder.get().getDatabase(), msgIdIn);
-            data = getThisForMessage(msgIdIn, contentTypeIn, uriIn);
+            data = getThisForNote(msgIdIn, contentTypeIn, uriIn);
         }
         return data;
     }
 
-    public static DownloadData getThisForMessage(long msgIdIn, MyContentType contentTypeIn, Uri uriIn) {
+    public static DownloadData getThisForNote(long msgIdIn, MyContentType contentTypeIn, Uri uriIn) {
         return new DownloadData(0, msgIdIn, contentTypeIn, uriIn);
     }
 
@@ -95,7 +95,7 @@ public class DownloadData {
                 + DownloadTable.FILE_NAME
                 + (downloadType == DownloadType.UNKNOWN ? ", " + DownloadTable.DOWNLOAD_TYPE : "")
                 + (actorId == 0 ? ", " + DownloadTable.ACTOR_ID : "")
-                + (msgId == 0 ? ", " + DownloadTable.MSG_ID : "")
+                + (msgId == 0 ? ", " + DownloadTable.NOTE_ID : "")
                 + (contentType == MyContentType.UNKNOWN ? ", " + DownloadTable.CONTENT_TYPE : "")
                 + (downloadId == 0 ? ", " + DownloadTable._ID : "")
                 + (uri.equals(Uri.EMPTY) ? ", " + DownloadTable.URI : "")
@@ -120,7 +120,7 @@ public class DownloadData {
                     actorId = DbUtils.getLong(cursor, DownloadTable.ACTOR_ID);
                 }
                 if (msgId == 0) {
-                    msgId = DbUtils.getLong(cursor, DownloadTable.MSG_ID);
+                    msgId = DbUtils.getLong(cursor, DownloadTable.NOTE_ID);
                 }
                 if (contentType == MyContentType.UNKNOWN) {
                     contentType = MyContentType.load(DbUtils.getLong(cursor, DownloadTable.CONTENT_TYPE));
@@ -149,7 +149,7 @@ public class DownloadData {
         if (actorId != 0) {
             builder.append(DownloadTable.ACTOR_ID + "=" + actorId);
         } else if (msgId != 0) {
-            builder.append(DownloadTable.MSG_ID + "=" + msgId);
+            builder.append(DownloadTable.NOTE_ID + "=" + msgId);
         } else {
             builder.append(DownloadTable._ID + "=" + downloadId);
         }
@@ -226,7 +226,7 @@ public class DownloadData {
            values.put(DownloadTable.ACTOR_ID, actorId);
        }
        if (msgId != 0) {
-           values.put(DownloadTable.MSG_ID, msgId);
+           values.put(DownloadTable.NOTE_ID, msgId);
        }
        values.put(DownloadTable.CONTENT_TYPE, contentType.save());
        values.put(DownloadTable.VALID_FROM, loadTimeNew);
@@ -348,7 +348,7 @@ public class DownloadData {
 
     public static void deleteAllOfThisMsg(SQLiteDatabase db, long msgId) {
         final String method = "deleteAllOfThisMsg msgId=" + msgId;
-        deleteSelected(method, db, DownloadTable.MSG_ID + "=" + msgId);
+        deleteSelected(method, db, DownloadTable.NOTE_ID + "=" + msgId);
     }
 
     public static void deleteOtherOfThisMsg(long msgId, List<Long> downloadIds) {
@@ -356,7 +356,7 @@ public class DownloadData {
             return;
         }
         final String method = "deleteOtherOfThisMsg msgId=" + msgId + ", rowIds:" + toSqlList(downloadIds);
-        String where = DownloadTable.MSG_ID + "=" + msgId
+        String where = DownloadTable.NOTE_ID + "=" + msgId
                 + " AND " + DownloadTable._ID + " NOT IN(" + toSqlList(downloadIds) + ")" ;
         deleteSelected(method, MyContextHolder.get().getDatabase(), where);
     }

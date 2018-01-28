@@ -47,7 +47,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
         }
 
         TimelineSyncTracker syncTracker = new TimelineSyncTracker(getTimeline(), isSyncYounger());
-        long hours = MyPreferences.getDontSynchronizeOldMessages();
+        long hours = MyPreferences.getDontSynchronizeOldNotes();
         boolean downloadingLatest = false;
         if (hours > 0 && RelativeTime.moreSecondsAgoThan(syncTracker.getPreviousSyncedDate(),
                 TimeUnit.HOURS.toSeconds(hours))) {

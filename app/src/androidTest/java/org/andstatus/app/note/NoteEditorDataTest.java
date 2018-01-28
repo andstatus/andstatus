@@ -30,7 +30,7 @@ public class NoteEditorDataTest {
         MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         final Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.CONVERSATION_ORIGIN_NAME);
         assertEquals(origin, ma.getOrigin());
-        long entryMsgId = MyQuery.oidToId(OidEnum.MSG_OID, origin.getId(),
+        long entryMsgId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(),
                 demoData.CONVERSATION_ENTRY_NOTE_OID);
         long entryUserId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(),
                 demoData.CONVERSATION_ENTRY_AUTHOR_OID);

@@ -205,7 +205,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                     (TimelineData<ActivityViewItem>) getListData());
         }
         return (BaseTimelineAdapter<T>) new NoteAdapter(
-                contextMenu.message, (TimelineData<NoteViewItem>) getListData());
+                contextMenu.note, (TimelineData<NoteViewItem>) getListData());
     }
 
     @Override
@@ -231,7 +231,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     private void restoreActivityState(@NonNull Bundle savedInstanceState) {
             if (getParamsNew().restoreState(savedInstanceState)) {
-                contextMenu.message.loadState(savedInstanceState);
+                contextMenu.note.loadState(savedInstanceState);
             }
             getListData().collapseDuplicates(savedInstanceState.getBoolean(
                     IntentExtra.COLLAPSE_DUPLICATES.key, MyPreferences.isCollapseDuplicates()), 0);
@@ -391,7 +391,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.create_message, menu);
+        getMenuInflater().inflate(R.menu.create_note, menu);
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.timeline, menu);
         return true;
@@ -490,7 +490,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     public void onItemClick(NoteViewItem item) {
-        MyAccount ma = myContext.persistentAccounts().getAccountForThisMessage(item.getOrigin(),
+        MyAccount ma = myContext.persistentAccounts().getAccountForThisNote(item.getOrigin(),
                 getParamsNew().getMyAccount(), item.getLinkedMyAccount(), false);
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this,
@@ -498,12 +498,12 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                             + "; " + item
                             + " account=" + ma.getAccountName());
         }
-        if (item.getMsgId() <= 0) {
+        if (item.getNoteId() <= 0) {
             return;
         }
         Uri uri = MatchedUri.getTimelineItemUri(
                 Timeline.getTimeline(TimelineType.EVERYTHING, null, 0, item.getOrigin()),
-                item.getMsgId());
+                item.getNoteId());
 
         String action = getIntent().getAction();
         if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
@@ -637,7 +637,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     /**
-     * Strips e.g. "Message - " or "Message:"
+     * Strips e.g. "Note - " or "Note:"
      */
     static String stripBeginning(String textIn) {
         if (TextUtils.isEmpty(textIn)) {
@@ -695,7 +695,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     NoteContextMenu getContextMenu() {
-        return contextMenu.message;
+        return contextMenu.note;
     }
 
     /** Parameters of currently shown Timeline */
@@ -1065,7 +1065,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
         if (ma.isValid()) {
             contextMenu.setMyActor(ma);
-            contextMenu.message.showContextMenu();
+            contextMenu.note.showContextMenu();
         }
     }
 

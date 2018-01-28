@@ -60,7 +60,7 @@ public class Actor implements Comparable<Actor> {
     public String avatarUrl = "";
     public String bannerUrl = "";
 
-    public long msgCount = 0;
+    public long notesCount = 0;
     public long favoritesCount = 0;
     public long followingCount = 0;
     public long followersCount = 0;
@@ -159,8 +159,8 @@ public class Actor implements Comparable<Actor> {
         if (!Uri.EMPTY.equals(profileUri)) {
             members += "; profileUri=" + profileUri.toString();
         }
-        if (hasLatestMessage()) {
-            members += "; latest message present";
+        if (hasLatestNote()) {
+            members += "; latest note present";
         }
         return str + "{" + members + "}";
     }
@@ -325,7 +325,7 @@ public class Actor implements Comparable<Actor> {
         return !getTempOid().equals(getAltTempOid()) && !TextUtils.isEmpty(username);
     }
 
-    public boolean hasLatestMessage() {
+    public boolean hasLatestNote() {
         return latestActivity != null && !latestActivity.isEmpty() ;
     }
 

@@ -99,46 +99,46 @@ public class DemoNoteInserter {
         actor.avatarUrl = actor.getHomepage() + "avatar.jpg";
         actor.bannerUrl = actor.getHomepage() + "banner.png";
         long rand = InstanceId.next();
-        actor.msgCount = rand * 2 + 3;
+        actor.notesCount = rand * 2 + 3;
         actor.favoritesCount = rand + 11;
         actor.followingCount = rand + 17;
         actor.followersCount = rand;
         return actor;
     }
 
-    public AActivity buildActivity(Actor author, String body, AActivity inReplyToActivity, String messageOidIn,
-                                   DownloadStatus messageStatus) {
+    public AActivity buildActivity(Actor author, String body, AActivity inReplyToActivity, String noteOidIn,
+                                   DownloadStatus noteStatus) {
         final String method = "buildActivity";
-        String messageOid = messageOidIn;
-        if (TextUtils.isEmpty(messageOid) && messageStatus != DownloadStatus.SENDING) {
+        String noteOid = noteOidIn;
+        if (TextUtils.isEmpty(noteOid) && noteStatus != DownloadStatus.SENDING) {
             if (origin.getOriginType() == OriginType.PUMPIO) {
-                messageOid = (UrlUtils.hasHost(UrlUtils.fromString(author.getProfileUrl()))
+                noteOid = (UrlUtils.hasHost(UrlUtils.fromString(author.getProfileUrl()))
                           ? author.getProfileUrl()
                           : "http://pumpiotest" + origin.getId() + ".example.com/user/" + author.oid)
                         + "/" + (inReplyToActivity == null ? "note" : "comment")
                         + "/thisisfakeuri" + System.nanoTime();
             } else {
-                messageOid = MyLog.uniqueDateTimeFormatted();
+                noteOid = MyLog.uniqueDateTimeFormatted();
             }
         }
-        AActivity activity = buildActivity(author, ActivityType.UPDATE, messageOid);
-        Note message = Note.fromOriginAndOid(origin, messageOid, messageStatus);
-        activity.setMessage(message);
-        message.setUpdatedDate(activity.getUpdatedDate());
-        message.setBody(body);
-        message.via = "AndStatus";
-        message.setInReplyTo(inReplyToActivity);
+        AActivity activity = buildActivity(author, ActivityType.UPDATE, noteOid);
+        Note note = Note.fromOriginAndOid(origin, noteOid, noteStatus);
+        activity.setNote(note);
+        note.setUpdatedDate(activity.getUpdatedDate());
+        note.setBody(body);
+        note.via = "AndStatus";
+        note.setInReplyTo(inReplyToActivity);
         if (origin.getOriginType() == OriginType.PUMPIO) {
-            message.url = message.oid;
+            note.url = note.oid;
         }
         DbUtils.waitMs(method, 10);
         return activity;
     }
 
-    public AActivity buildActivity(@NonNull Actor actor, @NonNull ActivityType type, String messageOid) {
+    public AActivity buildActivity(@NonNull Actor actor, @NonNull ActivityType type, String noteOid) {
         AActivity activity = AActivity.from(accountActor, type);
         activity.setTimelinePosition(
-                (TextUtils.isEmpty(messageOid) ?  MyLog.uniqueDateTimeFormatted() : messageOid)
+                (TextUtils.isEmpty(noteOid) ?  MyLog.uniqueDateTimeFormatted() : noteOid)
                 + "-" + activity.type.name().toLowerCase());
         activity.setActor(actor);
         activity.setUpdatedDate(System.currentTimeMillis());
@@ -150,15 +150,15 @@ public class DemoNoteInserter {
     }
 
     static void increaseUpdateDate(AActivity activity) {
-        // In order for a message not to be ignored
+        // In order for a note not to be ignored
         activity.setUpdatedDate(activity.getUpdatedDate() + 1);
-        activity.getMessage().setUpdatedDate(activity.getMessage().getUpdatedDate() + 1);
+        activity.getNote().setUpdatedDate(activity.getNote().getUpdatedDate() + 1);
     }
 
     public void onActivity(final AActivity activity) {
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromActorId(accountActor.actorId);
         assertTrue("Persistent account exists for " + accountActor + " " + activity, ma.isValid());
-        final TimelineType timelineType = activity.getMessage().isPrivate() ? TimelineType.PRIVATE : TimelineType.HOME;
+        final TimelineType timelineType = activity.getNote().isPrivate() ? TimelineType.PRIVATE : TimelineType.HOME;
         DataUpdater di = new DataUpdater(new CommandExecutionContext(
                         CommandData.newTimelineCommand(CommandEnum.EMPTY, ma, timelineType)));
         di.onActivity(activity);
@@ -179,32 +179,32 @@ public class DemoNoteInserter {
             assertNotEquals( "Actor id not set for " + actor + " in activity " + activity, 0, actor.actorId);
         }
 
-        Note message = activity.getMessage();
-        if (message.nonEmpty()) {
-            assertNotEquals( "Message was not added at level " + level + " " + activity, 0, message.msgId);
+        Note note = activity.getNote();
+        if (note.nonEmpty()) {
+            assertNotEquals( "Note was not added at level " + level + " " + activity, 0, note.noteId);
 
-            String permalink = origin.messagePermalink(message.msgId);
+            String permalink = origin.notePermalink(note.noteId);
             URL urlPermalink = UrlUtils.fromString(permalink);
-            assertNotNull("Message permalink is a valid URL '" + permalink + "',\n" + message.toString()
+            assertNotNull("Note permalink is a valid URL '" + permalink + "',\n" + note.toString()
                     + "\n origin: " + origin
                     + "\n author: " + activity.getAuthor().toString(), urlPermalink);
             if (origin.getUrl() != null && origin.getOriginType() != OriginType.TWITTER) {
-                assertEquals("Message permalink has the same host as origin, " + message.toString(),
+                assertEquals("Note permalink has the same host as origin, " + note.toString(),
                         origin.getUrl().getHost(), urlPermalink.getHost());
             }
-            if (!TextUtils.isEmpty(message.url)) {
-                assertEquals("Message permalink", message.url, origin.messagePermalink(message.msgId));
+            if (!TextUtils.isEmpty(note.url)) {
+                assertEquals("Note permalink", note.url, origin.notePermalink(note.noteId));
             }
 
             Actor author = activity.getAuthor();
             if (author.nonEmpty()) {
-                assertNotEquals( "Author id for " + author + " not set in message " + message + " in activity " + activity, 0,
-                        MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, message.msgId));
+                assertNotEquals( "Author id for " + author + " not set in note " + note + " in activity " + activity, 0,
+                        MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, note.noteId));
             }
         }
 
         if (activity.type == ActivityType.LIKE) {
-            List<Actor> stargazers = MyQuery.getStargazers(MyContextHolder.get().getDatabase(), accountActor.origin, message.msgId);
+            List<Actor> stargazers = MyQuery.getStargazers(MyContextHolder.get().getDatabase(), accountActor.origin, note.noteId);
             boolean found = false;
             for (Actor stargazer : stargazers) {
                 if (stargazer.actorId == actor.actorId) {
@@ -217,7 +217,7 @@ public class DemoNoteInserter {
         }
 
         if (activity.type == ActivityType.ANNOUNCE) {
-            List<Actor> rebloggers = MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), accountActor.origin, message.msgId);
+            List<Actor> rebloggers = MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), accountActor.origin, note.noteId);
             boolean found = false;
             for (Actor stargazer : rebloggers) {
                 if (stargazer.actorId == actor.actorId) {
@@ -229,8 +229,8 @@ public class DemoNoteInserter {
                     + "\nrebloggers: " + rebloggers, found);
         }
 
-        if (!message.replies.isEmpty()) {
-            for (AActivity replyActivity : message.replies) {
+        if (!note.replies.isEmpty()) {
+            for (AActivity replyActivity : note.replies) {
                 if (replyActivity.nonEmpty()) {
                     assertNotEquals("Reply added at level " + level + " " + replyActivity, 0, replyActivity.getId());
                     checkActivityRecursively(replyActivity, level + 1);
@@ -246,19 +246,19 @@ public class DemoNoteInserter {
         }
     }
 
-    static void deleteOldMessage(@NonNull Origin origin, String messageOid) {
-        long messageIdOld = MyQuery.oidToId(OidEnum.MSG_OID, origin.getId(), messageOid);
-        if (messageIdOld != 0) {
-            int deleted = MyProvider.deleteMessage(MyContextHolder.get().context(), messageIdOld);
-            assertTrue( "Activities of Old message id=" + messageIdOld + " deleted: " + deleted, deleted > 0);
+    static void deleteOldNote(@NonNull Origin origin, String messageOid) {
+        long noteIdOld = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), messageOid);
+        if (noteIdOld != 0) {
+            int deleted = MyProvider.deleteNote(MyContextHolder.get().context(), noteIdOld);
+            assertTrue( "Activities of Old note id=" + noteIdOld + " deleted: " + deleted, deleted > 0);
         }
     }
     
-    public static AActivity addMessageForAccount(MyAccount ma, String body, String messageOid, DownloadStatus messageStatus) {
+    public static AActivity addNoteForAccount(MyAccount ma, String body, String noteOid, DownloadStatus noteStatus) {
         assertTrue("Is not valid: " + ma, ma.isValid());
         Actor accountActor = ma.getActor();
         DemoNoteInserter mi = new DemoNoteInserter(accountActor);
-        AActivity activity = mi.buildActivity(accountActor, body, null, messageOid, messageStatus);
+        AActivity activity = mi.buildActivity(accountActor, body, null, noteOid, noteStatus);
         mi.onActivity(activity);
         return activity;
     }

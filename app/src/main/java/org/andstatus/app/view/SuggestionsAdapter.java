@@ -168,6 +168,6 @@ public class SuggestionsAdapter extends BaseAdapter implements Filterable {
 
     @NonNull
     private static List<String> getAllSuggestions(SearchObjects searchObjects) {
-        return SearchObjects.MESSAGES.equals(searchObjects) ? messagesSuggestions : usersSuggestions;
+        return SearchObjects.NOTES.equals(searchObjects) ? messagesSuggestions : usersSuggestions;
     }
 }

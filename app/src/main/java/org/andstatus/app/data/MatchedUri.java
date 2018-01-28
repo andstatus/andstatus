@@ -42,7 +42,7 @@ public enum MatchedUri {
     TIMELINE(1),
     TIMELINE_SEARCH(3),
     /**
-     * The Timeline URI contains Message id 
+     * The Timeline URI contains Note (item) id
      */
     TIMELINE_ITEM(4),
     /**
@@ -112,7 +112,7 @@ public enum MatchedUri {
          * 1. MyAccount USER_ID is the first parameter (this is his timeline of the type specified below!)
          * 2 - 3. LISTTYPE_SEGMENT + actual type
          * 4 - 5. ORIGIN_SEGMENT +  0 or 1  (1 for combined timeline)
-         * 6 - 7. MyDatabase.MSG_TABLE_NAME + "/" + MSG_ID  (optional, used to access specific Message)
+         * 6 - 7. MyDatabase.NOTE_TABLE_NAME + "/" + NOTE_ID  (optional, used to access specific Note)
          */
         URI_MATCHER.addURI(AUTHORITY, NoteTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + ACTOR_SEGMENT + "/#/" + CONTENT_ITEM_SEGMENT + "/#", TIMELINE_ITEM.code);
         URI_MATCHER.addURI(AUTHORITY, NoteTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + ACTOR_SEGMENT + "/#/" + SEARCH_SEGMENT + "/*", TIMELINE_SEARCH.code);
@@ -171,7 +171,7 @@ public enum MatchedUri {
         return type;
     }
 
-    /** Uri for the message in the account's timeline */
+    /** Uri for the note in the account's timeline */
     public static Uri getTimelineItemUri(Timeline timeline, long msgId) {
         Uri uri = timeline.getUri();
         uri = Uri.withAppendedPath(uri,  CONTENT_ITEM_SEGMENT);

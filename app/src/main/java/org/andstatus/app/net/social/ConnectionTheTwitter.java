@@ -108,18 +108,18 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     }
 
     @Override
-    public AActivity updateNote(String message, String noteOid, String inReplyToOid, Uri mediaUri)
+    public AActivity updateNote(String note, String noteOid, String inReplyToOid, Uri mediaUri)
             throws ConnectionException {
         if (UriUtils.isEmpty(mediaUri)) {
-            return super.updateNote(message, noteOid, inReplyToOid, mediaUri);
+            return super.updateNote(note, noteOid, inReplyToOid, mediaUri);
         }
-        return updateWithMedia(message, inReplyToOid, mediaUri);
+        return updateWithMedia(note, inReplyToOid, mediaUri);
     }
 
-    private AActivity updateWithMedia(String message, String inReplyToId, Uri mediaUri) throws ConnectionException {
+    private AActivity updateWithMedia(String note, String inReplyToId, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
-            formParams.put("status", message);
+            formParams.put("status", note);
             if (!TextUtils.isEmpty(inReplyToId)) {
                 formParams.put("in_reply_to_status_id", inReplyToId);
             }
@@ -209,7 +209,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
                     Uri uri = UriUtils.fromAlternativeTags(attachment, "media_url_https", "media_url_http");
                     Attachment mbAttachment =  Attachment.fromUriAndContentType(uri, MyContentType.IMAGE);
                     if (mbAttachment.isValid()) {
-                        activity.getMessage().attachments.add(mbAttachment);
+                        activity.getNote().attachments.add(mbAttachment);
                     } else {
                         MyLog.d(this, method + "; invalid attachment #" + ind + "; " + jArr.toString());
                     }
@@ -222,14 +222,14 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     }
 
     @Override
-    protected void setMessageBodyFromJson(Note message, JSONObject jso) throws JSONException {
+    protected void setNoteBodyFromJson(Note note, JSONObject jso) throws JSONException {
         boolean bodyFound = false;
         if (!jso.isNull("full_text")) {
-            message.setBody(jso.getString("full_text"));
+            note.setBody(jso.getString("full_text"));
             bodyFound = true;
         }
         if (!bodyFound) {
-            super.setMessageBodyFromJson(message, jso);
+            super.setNoteBodyFromJson(note, jso);
         }
     }
 

@@ -175,7 +175,7 @@ public class Notifier {
 
     public void onUnsentMessage(long msgId) {
         if (msgId == 0 || !events.isEnabled(NotificationEventType.OUTBOX)) return;
-        MyProvider.setUnsentMessageNotification(events.myContext, msgId);
+        MyProvider.setUnsentNoteNotification(events.myContext, msgId);
         update();
     }
 }

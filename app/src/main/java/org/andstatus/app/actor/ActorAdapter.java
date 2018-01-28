@@ -41,7 +41,7 @@ public class ActorAdapter extends BaseTimelineAdapter<ActorViewItem> {
     public ActorAdapter(@NonNull ActorContextMenu contextMenu, TimelineData<ActorViewItem> listData) {
         super(contextMenu.getActivity().getMyContext(), listData);
         this.contextMenu = contextMenu;
-        this.listItemLayoutId = R.id.user_wrapper;
+        this.listItemLayoutId = R.id.actor_wrapper;
     }
 
     ActorAdapter(@NonNull ActorContextMenu contextMenu, int listItemLayoutId, List<ActorViewItem> items,
@@ -75,7 +75,7 @@ public class ActorAdapter extends BaseTimelineAdapter<ActorViewItem> {
         MyUrlSpan.showText(view, R.id.location, item.actor.location, false, false);
         MyUrlSpan.showText(view, R.id.profile_url, item.actor.getProfileUrl(), true, false);
 
-        showCounter(view, R.id.msg_count, item.actor.msgCount);
+        showCounter(view, R.id.msg_count, item.actor.notesCount);
         showCounter(view, R.id.favorites_count, item.actor.favoritesCount);
         showCounter(view, R.id.following_count, item.actor.followingCount);
         showCounter(view, R.id.followers_count, item.actor.followersCount);

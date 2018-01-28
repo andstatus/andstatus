@@ -166,7 +166,7 @@ public class ConnectionPumpioTest {
         String sinceId = "https%3A%2F%2F" + originUrl.getHost() + "%2Fapi%2Factivity%2Ffrefq3232sf";
 
         String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.pumpio_user_t131t_inbox);
+                org.andstatus.app.tests.R.raw.pumpio_actor_t131t_inbox);
         httpConnectionMock.setResponse(jso);
         
         List<AActivity> timeline = connection.getTimeline(ApiRoutineEnum.HOME_TIMELINE,
@@ -178,9 +178,9 @@ public class ConnectionPumpioTest {
         int ind = 0;
         assertEquals("Posting image", AObjectType.NOTE, timeline.get(ind).getObjectType());
         AActivity activity = timeline.get(ind);
-        Note note = activity.getMessage();
-        assertThat("Message body " + note, note.getBody(), startsWith("Wow! Fantastic wheel stand at #DragWeek2013 today."));
-        assertEquals("Message updated at " + TestSuite.utcTime(activity.getUpdatedDate()),
+        Note note = activity.getNote();
+        assertThat("Note body " + note, note.getBody(), startsWith("Wow! Fantastic wheel stand at #DragWeek2013 today."));
+        assertEquals("Note updated at " + TestSuite.utcTime(activity.getUpdatedDate()),
                 TestSuite.utcTime(2013, Calendar.SEPTEMBER, 13, 1, 8, 38),
                 TestSuite.utcTime(activity.getUpdatedDate()));
         Actor actor = activity.getActor();
@@ -192,7 +192,7 @@ public class ConnectionPumpioTest {
         assertEquals("Sender's Homepage", "https://io.jpope.org/jpope", actor.getHomepage());
         assertEquals("Sender's WebFinger ID", "jpope@io.jpope.org", actor.getWebFingerId());
         assertEquals("Description", "Does the Pope shit in the woods?", actor.getDescription());
-        assertEquals("Messages count", 0, actor.msgCount);
+        assertEquals("Notes count", 0, actor.notesCount);
         assertEquals("Favorites count", 0, actor.favoritesCount);
         assertEquals("Following (friends) count", 0, actor.followingCount);
         assertEquals("Followers count", 0, actor.followersCount);
@@ -202,7 +202,7 @@ public class ConnectionPumpioTest {
                 TestSuite.utcTime(actor.getUpdatedDate()));
         assertEquals("Actor is an Author", actor, activity.getAuthor());
         assertNotEquals("Is a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);
-        assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getMessage().getFavoritedBy(activity.accountActor));
+        assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
 
         ind++;
         activity = timeline.get(ind);
@@ -232,24 +232,24 @@ public class ConnectionPumpioTest {
         assertEquals("Activity updated " + activity,
                 TestSuite.utcTime(2013, Calendar.SEPTEMBER, 20, 22, 20, 25),
                 TestSuite.utcTime(activity.getUpdatedDate()));
-        note = activity.getMessage();
+        note = activity.getNote();
         assertEquals("Author " + activity, "acct:lostson@fmrl.me", activity.getAuthor().oid);
         assertTrue("Does not have a recipient", note.audience().isEmpty());
-        assertEquals("Message oid " + note, "https://fmrl.me/api/note/Dp-njbPQSiOfdclSOuAuFw", note.oid);
-        assertEquals("Url of the message " + note, "https://fmrl.me/lostson/note/Dp-njbPQSiOfdclSOuAuFw", note.url);
-        assertThat("Message body " + note, note.getBody(), startsWith("My new <b>Firefox</b> OS phone arrived today"));
-        assertEquals("Message updated " + note,
+        assertEquals("Note oid " + note, "https://fmrl.me/api/note/Dp-njbPQSiOfdclSOuAuFw", note.oid);
+        assertEquals("Url of the note " + note, "https://fmrl.me/lostson/note/Dp-njbPQSiOfdclSOuAuFw", note.url);
+        assertThat("Note body " + note, note.getBody(), startsWith("My new <b>Firefox</b> OS phone arrived today"));
+        assertEquals("Note updated " + note,
                 TestSuite.utcTime(2013, Calendar.SEPTEMBER, 20, 20, 4, 22),
                 TestSuite.utcTime(note.getUpdatedDate()));
 
         ind++;
-        note = timeline.get(ind).getMessage();
+        note = timeline.get(ind).getNote();
         assertTrue("Have a recipient", note.audience().nonEmpty());
         assertEquals("Directed to yvolk", "acct:yvolk@identi.ca" , note.audience().getFirst().oid);
 
         ind++;
         activity = timeline.get(ind);
-        note = activity.getMessage();
+        note = activity.getNote();
         assertEquals(activity.isSubscribedByMe(), TriState.UNKNOWN);
         assertTrue("Is a reply", note.getInReplyTo().nonEmpty());
         assertEquals("Is not a reply to this actor " + activity, "jankusanagi@identi.ca", note.getInReplyTo().getAuthor().getUsername());
@@ -259,7 +259,7 @@ public class ConnectionPumpioTest {
     @Test
     public void testGetUsersFollowedBy() throws IOException {
         String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.pumpio_user_t131t_following);
+                org.andstatus.app.tests.R.raw.pumpio_actor_t131t_following);
         httpConnectionMock.setResponse(jso);
         
         assertTrue(connection.isApiSupported(ApiRoutineEnum.GET_FRIENDS));        
@@ -286,7 +286,7 @@ public class ConnectionPumpioTest {
         JSONObject activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         JSONObject obj = activity.getJSONObject("object");
-        assertEquals("Message content", body, MyHtml.fromHtml(obj.getString("content")));
+        assertEquals("Note content", body, MyHtml.fromHtml(obj.getString("content")));
         assertEquals("Reply is comment", PObjectType.COMMENT.id(), obj.getString("objectType"));
         
         assertTrue("InReplyTo is present", obj.has("inReplyTo"));
@@ -299,8 +299,8 @@ public class ConnectionPumpioTest {
         activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         obj = activity.getJSONObject("object");
-        assertEquals("Message content", body, MyHtml.fromHtml(obj.getString("content")));
-        assertEquals("Message without reply is a note", PObjectType.NOTE.id(), obj.getString("objectType"));
+        assertEquals("Note content", body, MyHtml.fromHtml(obj.getString("content")));
+        assertEquals("Note without reply is a note", PObjectType.NOTE.id(), obj.getString("objectType"));
 
         JSONArray recipients = activity.optJSONArray("to");
         assertEquals("To Public collection", ActivitySender.PUBLIC_COLLECTION_ID, ((JSONObject) recipients.get(0)).get("id"));
@@ -369,22 +369,22 @@ public class ConnectionPumpioTest {
         httpConnectionMock.setResponse(jso);
         
         connection.getData().setAccountActor(demoData.getAccountUserByOid(demoData.CONVERSATION_ACCOUNT_ACTOR_OID));
-        AActivity activity = connection.updateNote("Test post message with media", "", "", demoData.LOCAL_IMAGE_TEST_URI);
-        activity.getMessage().setPrivate(TriState.FALSE);
-        assertEquals("Message returned", privateGetMessageWithAttachment(
-                InstrumentationRegistry.getInstrumentation().getContext(), false), activity.getMessage());
+        AActivity activity = connection.updateNote("Test post note with media", "", "", demoData.LOCAL_IMAGE_TEST_URI);
+        activity.getNote().setPrivate(TriState.FALSE);
+        assertEquals("Note returned", privateGetNoteWithAttachment(
+                InstrumentationRegistry.getInstrumentation().getContext(), false), activity.getNote());
     }
     
-    private Note privateGetMessageWithAttachment(Context context, boolean uniqueUid) throws IOException {
+    private Note privateGetNoteWithAttachment(Context context, boolean uniqueUid) throws IOException {
         String jso = RawResourceUtils.getString(context,
                 org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
         httpConnectionMock.setResponse(jso);
 
-        Note msg = connection.getNote("w9wME-JVQw2GQe6POK7FSQ").getMessage();
+        Note msg = connection.getNote("w9wME-JVQw2GQe6POK7FSQ").getNote();
         if (uniqueUid) {
             msg = msg.copy(msg.oid + "_" + demoData.TESTRUN_UID);
         }
-        assertNotNull("message returned", msg);
+        assertNotNull("note returned", msg);
         assertEquals("has attachment", msg.attachments.size(), 1);
         Attachment attachment = Attachment.fromUrlAndContentType(new URL(
                 "https://io.jpope.org/uploads/jpope/2014/8/18/m1o1bw.jpg"), MyContentType.IMAGE);
@@ -394,24 +394,24 @@ public class ConnectionPumpioTest {
     }
 
     @Test
-    public void testGetMessageWithAttachment() throws IOException {
-        privateGetMessageWithAttachment(InstrumentationRegistry.getInstrumentation().getContext(), true);
+    public void getNoteWithAttachment() throws IOException {
+        privateGetNoteWithAttachment(InstrumentationRegistry.getInstrumentation().getContext(), true);
     }
 
     @Test
-    public void testGetMessageWithReplies() throws IOException {
+    public void getNoteWithReplies() throws IOException {
         String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.pumpio_note_self);
         httpConnectionMock.setResponse(jso);
 
         final String msgOid = "https://identi.ca/api/note/Z-x96Q8rTHSxTthYYULRHA";
         final AActivity activity = connection.getNote(msgOid);
-        Note message = activity.getMessage();
-        assertNotNull("message returned", message);
-        assertEquals("Message oid", msgOid, message.oid);
-        assertEquals("Number of replies", 2, message.replies.size());
-        Note reply = message.replies.get(0).getMessage();
+        Note note = activity.getNote();
+        assertNotNull("note returned", note);
+        assertEquals("Note oid", msgOid, note.oid);
+        assertEquals("Number of replies", 2, note.replies.size());
+        Note reply = note.replies.get(0).getNote();
         assertEquals("Reply oid", "https://identi.ca/api/comment/cJdi4cGWQT-Z9Rn3mjr5Bw", reply.oid);
-        assertEquals("Is not a Reply " + activity, msgOid, reply.getInReplyTo().getMessage().oid);
+        assertEquals("Is not a Reply " + activity, msgOid, reply.getInReplyTo().getNote().oid);
     }
 }

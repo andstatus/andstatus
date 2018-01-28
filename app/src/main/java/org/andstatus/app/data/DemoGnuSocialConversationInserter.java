@@ -68,12 +68,12 @@ public class DemoGnuSocialConversationInserter {
                 "http://www.large-icons.com/stock-icons/free-large-android/48x48/happy-robot.gif");
         Actor author4 = actorFromOidAndAvatar("4", "");
 
-        AActivity minus1 = buildActivity(author2, "Older one message", null, null);
-        AActivity selected = buildActivity(author1, "Selected message", minus1,null);
+        AActivity minus1 = buildActivity(author2, "Older one note", null, null);
+        AActivity selected = buildActivity(author1, "Selected note", minus1,null);
         selected.setSubscribedByMe(TriState.TRUE);
         AActivity reply1 = buildActivity(author3, "Reply 1 to selected", selected, null);
         AActivity reply2 = buildActivity(author2, "Reply 2 to selected is non-private", selected, null);
-        addPrivateMessage(reply2, TriState.FALSE);
+        addPrivateNote(reply2, TriState.FALSE);
         AActivity reply3 = buildActivity(author1, "Reply 3 to selected by the same author", selected, null);
         addActivity(selected);
         addActivity(reply3);
@@ -83,14 +83,14 @@ public class DemoGnuSocialConversationInserter {
         AActivity reply4 = buildActivity(author4, "Reply 4 to Reply 1, " + demoData.PUBLIC_NOTE_TEXT + " other author", reply1, null);
         addActivity(reply4);
         DemoNoteInserter.increaseUpdateDate(reply4);
-        addPrivateMessage(reply4, TriState.TRUE);
+        addPrivateNote(reply4, TriState.TRUE);
 
         addActivity(buildActivity(author2, "Reply 5 to Reply 4", reply4, null));
         addActivity(buildActivity(author3, "Reply 6 to Reply 4 - the second", reply4, null));
 
         AActivity reply7 = buildActivity(author1, "Reply 7 to Reply 2 is about "
         + demoData.PUBLIC_NOTE_TEXT + " and something else", reply2, null);
-        addPrivateMessage(reply7, TriState.FALSE);
+        addPrivateNote(reply7, TriState.FALSE);
         
         AActivity reply8 = buildActivity(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
         AActivity reply9 = buildActivity(author2, "Reply 9 to Reply 7", reply7, null);
@@ -98,7 +98,7 @@ public class DemoGnuSocialConversationInserter {
         AActivity reply10 = buildActivity(author3, "Reply 10 to Reply 8", reply8, null);
         addActivity(reply10);
         AActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7 with " + demoData.GLOBAL_PUBLIC_NOTE_TEXT + " text", reply7, null);
-        addPrivateMessage(reply11, TriState.FALSE);
+        addPrivateNote(reply11, TriState.FALSE);
 
         AActivity reply12 = buildActivity(author2, "Reply 12 to Reply 7 reblogged by author1", reply7, null);
         DemoNoteInserter.onActivityS(reply12);
@@ -124,12 +124,12 @@ public class DemoGnuSocialConversationInserter {
         addActivity(reply13);
     }
 
-    private void addPrivateMessage(AActivity activity, TriState isPrivate) {
-        activity.getMessage().setPrivate(isPrivate);
+    private void addPrivateNote(AActivity activity, TriState isPrivate) {
+        activity.getNote().setPrivate(isPrivate);
         addActivity(activity);
-        assertEquals("Message is " + (isPrivate.equals(TriState.TRUE) ? "private" :
-                        isPrivate.equals(TriState.FALSE) ? "non private" : "") + ": " + activity.getMessage().getBody(),
-                isPrivate, MyQuery.msgIdToTriState(NoteTable.PRIVATE, activity.getMessage().msgId));
+        assertEquals("Note is " + (isPrivate.equals(TriState.TRUE) ? "private" :
+                        isPrivate.equals(TriState.FALSE) ? "non private" : "") + ": " + activity.getNote().getBody(),
+                isPrivate, MyQuery.msgIdToTriState(NoteTable.PRIVATE, activity.getNote().noteId));
     }
 
     private Actor actorFromOidAndAvatar(String actorOid, @Nullable String avatarUrl) {
@@ -143,11 +143,11 @@ public class DemoGnuSocialConversationInserter {
         return actor;
     }
     
-    private AActivity buildActivity(Actor author, String body, AActivity inReplyToMessage, String messageOidIn) {
+    private AActivity buildActivity(Actor author, String body, AActivity inReplyToNote, String noteOidIn) {
         final AActivity activity = new DemoNoteInserter(accountActor).buildActivity(author, body
-                        + (inReplyToMessage != null ? " it" + iteration : ""),
-                inReplyToMessage, messageOidIn, DownloadStatus.LOADED);
-        activity.getMessage().setConversationOid(conversationOid);
+                        + (inReplyToNote != null ? " it" + iteration : ""),
+                inReplyToNote, noteOidIn, DownloadStatus.LOADED);
+        activity.getNote().setConversationOid(conversationOid);
         return activity;
     }
     

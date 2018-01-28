@@ -64,20 +64,20 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
     public NoteViewItem fromCursorRow(MyContext myContext, Cursor cursor) {
         long startTime = System.currentTimeMillis();
         setMyContext(myContext);
-        setMsgId(DbUtils.getLong(cursor, ActivityTable.MSG_ID));
+        setNoteId(DbUtils.getLong(cursor, ActivityTable.MSG_ID));
         setOrigin(myContext.persistentOrigins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)));
         setLinkedAccount(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID));
 
         authorName = TimelineSql.userColumnIndexToNameAtTimeline(cursor,
                 cursor.getColumnIndex(ActorTable.AUTHOR_NAME), MyPreferences.getShowOrigin());
         setBody(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.BODY)));
-        inReplyToMsgId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
+        inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
         inReplyToUserId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID);
         inReplyToName = DbUtils.getString(cursor, ActorTable.IN_REPLY_TO_NAME);
         recipientName = DbUtils.getString(cursor, ActorTable.RECIPIENT_NAME);
         activityUpdatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
         updatedDate = DbUtils.getLong(cursor, NoteTable.UPDATED_DATE);
-        msgStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
+        noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
 
         authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID);
 
@@ -86,7 +86,7 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
 
         String via = DbUtils.getString(cursor, NoteTable.VIA);
         if (!TextUtils.isEmpty(via)) {
-            messageSource = Html.fromHtml(via).toString().trim();
+            noteSource = Html.fromHtml(via).toString().trim();
         }
 
         avatarFile = AvatarFile.fromCursor(authorId, cursor, DownloadTable.AVATAR_FILE_NAME);
@@ -97,7 +97,7 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
         }
 
         long beforeRebloggers = System.currentTimeMillis();
-        for (Actor actor : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getMsgId())) {
+        for (Actor actor : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getNoteId())) {
             rebloggers.put(actor.actorId, actor.getWebFingerId());
         }
         if (MyLog.isVerboseEnabled()) {

@@ -158,7 +158,7 @@ public class NoteEditorData {
             data.activityId = MyQuery.msgIdToLongColumnValue(ActivityTable.LAST_UPDATE_ID, msgId);
             data.status = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, msgId));
             data.setBody(MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId));
-            data.downloadData = DownloadData.getSingleForMessage(msgId, MyContentType.IMAGE, Uri.EMPTY);
+            data.downloadData = DownloadData.getSingleForNote(msgId, MyContentType.IMAGE, Uri.EMPTY);
             if (data.downloadData.getStatus() == LOADED) {
                 AttachedImageFile imageFile = new AttachedImageFile(data.downloadData.getDownloadId(),
                         data.downloadData.getFilename());
@@ -198,16 +198,16 @@ public class NoteEditorData {
     }
 
     public void save(Uri imageUriToSave) {
-        AActivity activity = AActivity.newPartialMessage(getMyAccount().getActor(), msgOid,
+        AActivity activity = AActivity.newPartialNote(getMyAccount().getActor(), msgOid,
                 System.currentTimeMillis(), status);
         activity.setActor(activity.accountActor);
-        Note message = activity.getMessage();
-        message.msgId = getMsgId();
+        Note message = activity.getNote();
+        message.noteId = getMsgId();
         message.setBody(body);
         message.addRecipients(recipients);
         if (inReplyToMsgId != 0) {
-            final AActivity inReplyTo = AActivity.newPartialMessage(getMyAccount().getActor(),
-                    MyQuery.idToOid(OidEnum.MSG_OID, inReplyToMsgId, 0), 0, UNKNOWN);
+            final AActivity inReplyTo = AActivity.newPartialNote(getMyAccount().getActor(),
+                    MyQuery.idToOid(OidEnum.NOTE_OID, inReplyToMsgId, 0), 0, UNKNOWN);
             if (inReplyToUserId == 0) {
                 inReplyToUserId = MyQuery.msgIdToLongColumnValue(NoteTable.AUTHOR_ID, inReplyToMsgId);
             }
@@ -220,7 +220,7 @@ public class NoteEditorData {
                     Attachment.fromUriAndContentType(mediaUri, MyContentType.IMAGE));
         }
         DataUpdater di = new DataUpdater(getMyAccount());
-        setMsgId(di.onActivity(activity).getMessage().msgId);
+        setMsgId(di.onActivity(activity).getNote().noteId);
         if (activity.getId() != 0 && activityId != activity.getId()) {
             if (activityId != 0 && status != LOADED) {
                 MyProvider.deleteActivity(MyContextHolder.get(), activityId, msgId, false);

@@ -36,7 +36,7 @@ public class MbActivityTest {
         assertEquals(Actor.EMPTY, empty.getActor());
         assertEquals(Actor.EMPTY, empty.getAuthor());
         assertEquals(empty.toString(), Actor.EMPTY, empty.getObjActor());
-        assertEquals(Note.EMPTY, empty.getMessage());
+        assertEquals(Note.EMPTY, empty.getNote());
         assertEquals(AActivity.EMPTY, empty.getActivity());
         assertEquals(AObjectType.EMPTY, empty.getObjectType());
     }

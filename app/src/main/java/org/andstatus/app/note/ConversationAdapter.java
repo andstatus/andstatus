@@ -69,11 +69,11 @@ public class ConversationAdapter extends BaseNoteAdapter<ConversationViewItem> {
     }
 
     private void setInReplyToViewItem(List<ConversationViewItem> oMsgs, ConversationItem viewItem) {
-        if (viewItem.inReplyToMsgId == 0) {
+        if (viewItem.inReplyToNoteId == 0) {
             return;
         }
         for (ConversationViewItem oMsg : oMsgs) {
-            if (oMsg.getMsgId() == viewItem.inReplyToMsgId ) {
+            if (oMsg.getNoteId() == viewItem.inReplyToNoteId) {
                 viewItem.inReplyToViewItem = oMsg;
                 break;
             }
@@ -97,8 +97,8 @@ public class ConversationAdapter extends BaseNoteAdapter<ConversationViewItem> {
     }
 
     private void showCentralItem(View view, ConversationViewItem item) {
-        if (item.getMsgId() == selectedMessageId  && getCount() > 1) {
-            view.findViewById(R.id.message_indented).setBackground(
+        if (item.getNoteId() == selectedMessageId  && getCount() > 1) {
+            view.findViewById(R.id.note_indented).setBackground(
                     ImageCaches.getStyledImage(
                             R.drawable.current_message_background_light,
                             R.drawable.current_message_background).getDrawable());
@@ -106,7 +106,7 @@ public class ConversationAdapter extends BaseNoteAdapter<ConversationViewItem> {
     }
 
     private void showIndentImage(View view, int indentPixels) {
-        View referencedView = view.findViewById(R.id.message_indented);
+        View referencedView = view.findViewById(R.id.note_indented);
         ViewGroup parentView = ((ViewGroup) referencedView.getParent());
         ImageView oldView = parentView.findViewById(R.id.indent_image);
         if (oldView != null) {
@@ -145,14 +145,14 @@ public class ConversationAdapter extends BaseNoteAdapter<ConversationViewItem> {
     }
 
     private void indentMessage(View view, int indentPixels) {
-        View msgView = view.findViewById(R.id.message_indented);
+        View msgView = view.findViewById(R.id.note_indented);
         msgView.setPadding(indentPixels + 6, msgView.getPaddingTop(), msgView.getPaddingRight(),
                 msgView.getPaddingBottom());
     }
 
     @Override
-    protected void showMessageNumberEtc(ViewGroup view, ConversationViewItem item, int position) {
-        TextView number = view.findViewById(R.id.message_number);
+    protected void showNoteNumberEtc(ViewGroup view, ConversationViewItem item, int position) {
+        TextView number = view.findViewById(R.id.note_number);
         number.setText(Integer.toString(item.historyOrder));
     }
 }

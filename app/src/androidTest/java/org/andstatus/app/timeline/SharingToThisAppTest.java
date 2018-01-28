@@ -9,7 +9,7 @@ public class SharingToThisAppTest {
     public void testInputSharedContent() {
         String part1 = "This is a long a long post";
         String text = part1 + " that doesn't fit into subject";
-        String prefix = "Message - ";
+        String prefix = "Note - ";
         String ellipsis = "…";
         oneInputSharedContent(prefix, part1, text, ellipsis, false);
         oneInputSharedContent(prefix, "Another text for a subject", text, ellipsis, true);

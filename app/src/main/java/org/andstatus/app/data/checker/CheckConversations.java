@@ -91,13 +91,13 @@ public class CheckConversations extends DataChecker {
 
     @Override
     long fixInternal(boolean countOnly) {
-        loadMessages();
+        loadNotes();
         fixConversationsUsingReplies();
         fixConversationsUsingConversationOid();
         return saveChanges(countOnly);
     }
 
-    private void loadMessages() {
+    private void loadNotes() {
         items.clear();
         replies.clear();
         String sql = "SELECT " + NoteTable._ID
@@ -134,7 +134,7 @@ public class CheckConversations extends DataChecker {
         } finally {
             DbUtils.closeSilently(c);
         }
-        logger.logProgress(Long.toString(rowsCount) + " messages loaded");
+        logger.logProgress(Long.toString(rowsCount) + " notes loaded");
     }
 
     private void fixConversationsUsingReplies() {
@@ -155,7 +155,7 @@ public class CheckConversations extends DataChecker {
             }
             counter++;
             if (logger.loggedMoreSecondsAgoThan(PROGRESS_REPORT_PERIOD_SECONDS)) {
-                logger.logProgress("Checked replies for " + counter + " messages of " + items.size());
+                logger.logProgress("Checked replies for " + counter + " notes of " + items.size());
             }
         }
     }
@@ -182,7 +182,7 @@ public class CheckConversations extends DataChecker {
             }
             counter++;
             if (logger.loggedMoreSecondsAgoThan(PROGRESS_REPORT_PERIOD_SECONDS)) {
-                logger.logProgress("Checked conversations for " + counter + " messages of " + items.size());
+                logger.logProgress("Checked conversations for " + counter + " notes of " + items.size());
             }
         }
     }
@@ -231,7 +231,7 @@ public class CheckConversations extends DataChecker {
                     }
                     changedCount++;
                     if (logger.loggedMoreSecondsAgoThan(PROGRESS_REPORT_PERIOD_SECONDS)) {
-                        logger.logProgress("Saved changes for " + changedCount + " messages");
+                        logger.logProgress("Saved changes for " + changedCount + " notes");
                         MyServiceManager.setServiceUnavailable();
                     }
                 } catch (Exception e) {
