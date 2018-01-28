@@ -261,14 +261,14 @@ public abstract class Connection {
     public abstract boolean deleteNote(String noteOid) throws ConnectionException;
 
     /**
-     * Returns a list of users the specified user is following.
+     * Returns a list of actors the specified actor is following.
      */
     public List<Actor> getFriends(String actorOid) throws ConnectionException {
         throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFriends for actorOid=" + actorOid);
     }
     
     /**
-     * Returns a list of IDs for every user the specified user is following.
+     * Returns a list of IDs for every actor the specified actor is following.
      */
     public List<String> getFriendsIds(String actorOid) throws ConnectionException {
         throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFriendsIds for actorOid=" + actorOid);
@@ -300,8 +300,8 @@ public abstract class Connection {
     }
 
     /**
-     * Update user status by posting to the Server's API
-     * Updates the authenticating user's status, also known as tweeting/blogging.
+     * Update Actor's status by posting to the Server's API
+     * Updates the authenticating actor's status, also known as tweeting/blogging.
      *
      * @param note       Text of the "status"
      * @param noteOid      id is not empty, if we are updating existing "status"
@@ -319,10 +319,10 @@ public abstract class Connection {
      * Post Private ("direct") note
      * @see <a href="https://dev.twitter.com/docs/api/1/post/direct_messages/new">POST direct_messages/new</a>
      *
-     * @param actorOid {@link ActorTable#ACTOR_OID} - The ID of the user who should receive the private note
+     * @param recipientOid {@link ActorTable#ACTOR_OID} - The ID of the actor who should receive the private note
      * @return The sent note if successful (empty note if not)
      */
-    public abstract AActivity updatePrivateNote(String note, String noteOid, String actorOid, Uri mediaUri)
+    public abstract AActivity updatePrivateNote(String note, String noteOid, String recipientOid, Uri mediaUri)
             throws ConnectionException;
 
     /**

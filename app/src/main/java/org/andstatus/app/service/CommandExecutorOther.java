@@ -48,7 +48,7 @@ import java.util.List;
 
 class CommandExecutorOther extends CommandExecutorStrategy{
 
-    public static final int USERS_LIMIT = 400;
+    public static final int ACTORS_LIMIT = 400;
 
     @Override
     public void execute() {
@@ -60,7 +60,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 break;
             case FOLLOW:
             case UNDO_FOLLOW:
-                followOrStopFollowingActor(execContext.getCommandData().getUserId(),
+                followOrStopFollowingActor(execContext.getCommandData().getActorId(),
                         execContext.getCommandData().getCommand() == CommandEnum.FOLLOW);
                 break;
             case UPDATE_NOTE:
@@ -79,7 +79,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 getNote(execContext.getCommandData().itemId);
                 break;
             case GET_ACTOR:
-                getActor(execContext.getCommandData().getUserId(), execContext.getCommandData().getUsername());
+                getActor(execContext.getCommandData().getActorId(), execContext.getCommandData().getUsername());
                 break;
             case SEARCH_ACTORS:
                 searchActors(execContext.getCommandData().getUsername());
@@ -94,7 +94,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 FileDownloader.newForDownloadRow(execContext.getCommandData().itemId).load(execContext.getCommandData());
                 break;
             case GET_AVATAR:
-                (new AvatarDownloader(execContext.getCommandData().getUserId())).load(execContext.getCommandData());
+                (new AvatarDownloader(execContext.getCommandData().getActorId())).load(execContext.getCommandData());
                 break;
             case CLEAR_NOTIFICATIONS:
                 execContext.getMyContext().clearNotification(execContext.getCommandData().getTimeline());
@@ -108,11 +108,11 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     private void searchActors(String searchQuery) {
         final String method = "searchActors";
         String msgLog = method + "; query='" + searchQuery + "'";
-        List<Actor> users = null;
+        List<Actor> actors = null;
         if (StringUtils.nonEmpty(searchQuery)) {
             try {
-                users = execContext.getMyAccount().getConnection().searchActors(USERS_LIMIT, searchQuery);
-                for (Actor actor : users) {
+                actors = execContext.getMyAccount().getConnection().searchActors(ACTORS_LIMIT, searchQuery);
+                for (Actor actor : actors) {
                     new DataUpdater(execContext).onActivity(actor.update(execContext.getMyAccount().getActor()));
                 }
             } catch (ConnectionException e) {
@@ -150,21 +150,21 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }
 
-    private void getActor(long actorId, String userName) {
+    private void getActor(long actorId, String username) {
         final String method = "getUser";
         String oid = getActorOid(method, actorId, false);
-        String msgLog = method + "; userName='" + userName + "'";
+        String msgLog = method + "; username='" + username + "'";
         Actor actor = null;
-        if (UriUtils.isRealOid(oid) || !TextUtils.isEmpty(userName)) {
+        if (UriUtils.isRealOid(oid) || !TextUtils.isEmpty(username)) {
             try {
-                actor = execContext.getMyAccount().getConnection().getActor(oid, userName);
+                actor = execContext.getMyAccount().getConnection().getActor(oid, username);
                 logIfActorIsEmpty(msgLog, actorId, actor);
             } catch (ConnectionException e) {
-                logConnectionException(e, msgLog + userInfoLogged(actorId));
+                logConnectionException(e, msgLog + actorInfoLogged(actorId));
             }
         } else {
             msgLog += ", invalid actor IDs";
-            logExecutionError(true, msgLog + userInfoLogged(actorId));
+            logExecutionError(true, msgLog + actorInfoLogged(actorId));
         }
         if (noErrors() && actor != null) {
             new DataUpdater(execContext).onActivity(actor.update(execContext.getMyAccount().getActor()));
@@ -248,7 +248,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 activity = execContext.getMyAccount().getConnection().follow(oid, follow);
                 logIfActorIsEmpty(method, actorId, activity.getObjActor());
             } catch (ConnectionException e) {
-                logConnectionException(e, method + userInfoLogged(actorId));
+                logConnectionException(e, method + actorInfoLogged(actorId));
             }
         }
         if (activity != null && noErrors()) {
@@ -259,7 +259,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                     MyLog.d(this, "Follow an Actor. 'following' flag didn't change yet.");
                     // Let's try to assume that everything was OK:
                 } else {
-                    logExecutionError(false, "'following' flag didn't change yet, " + method + userInfoLogged(actorId));
+                    logExecutionError(false, "'following' flag didn't change yet, " + method + actorInfoLogged(actorId));
                 }
             }
             if (noErrors()) {
@@ -271,7 +271,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
 
     private void logIfActorIsEmpty(String method, long actorId, Actor actor) {
         if (actor == null || actor.isEmpty()) {
-            logExecutionError(false, "Received Actor is empty, " + method + userInfoLogged(actorId));
+            logExecutionError(false, "Received Actor is empty, " + method + actorInfoLogged(actorId));
         }
     }
 
@@ -279,13 +279,13 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     private String getActorOid(String method, long actorId, boolean required) {
         String oid = MyQuery.idToOid(OidEnum.ACTOR_OID, actorId, 0);
         if (required && TextUtils.isEmpty(oid)) {
-            logExecutionError(true, method + "; no Actor ID in the Social Network " + userInfoLogged(actorId));
+            logExecutionError(true, method + "; no Actor ID in the Social Network " + actorInfoLogged(actorId));
         }
         return oid;
     }
 
-    private String userInfoLogged(long actorId) {
-        String oid = getActorOid("userInfoLogged", actorId, false);
+    private String actorInfoLogged(long actorId) {
+        String oid = getActorOid("actorInfoLogged", actorId, false);
         return " actorId=" + actorId + ", oid" + (TextUtils.isEmpty(oid) ? " is empty" : "'" + oid + "'" +
                 ", webFingerId:'" + MyQuery.actorIdToWebfingerId(actorId) + "'");
     }

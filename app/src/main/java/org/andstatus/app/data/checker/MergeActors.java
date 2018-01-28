@@ -50,7 +50,7 @@ class MergeActors extends DataChecker {
     }
 
     private Set<AActivity> getActorsToMerge() {
-        final String method = "getUsersToMerge";
+        final String method = "getActorsToMerge";
 
         Set<AActivity> mergeActivities = new ConcurrentSkipListSet<>();
         String sql = "SELECT " + ActorTable._ID
@@ -72,7 +72,7 @@ class MergeActors extends DataChecker {
                         c.getString(2));
                 actor.actorId = c.getLong(0);
                 actor.setWebFingerId(c.getString(3));
-                if (isTheSameUser(prev, actor)) {
+                if (isTheSameActor(prev, actor)) {
                     AActivity activity = whomToMerge(prev, actor);
                     mergeActivities.add(activity);
                     prev = activity.getActor();
@@ -84,11 +84,11 @@ class MergeActors extends DataChecker {
             DbUtils.closeSilently(c);
         }
 
-        logger.logProgress(method + " ended, " + rowsCount + " users, " + mergeActivities.size() + " to be merged");
+        logger.logProgress(method + " ended, " + rowsCount + " actors, " + mergeActivities.size() + " to be merged");
         return mergeActivities;
     }
 
-    private boolean isTheSameUser(Actor prev, Actor actor) {
+    private boolean isTheSameActor(Actor prev, Actor actor) {
         if (prev == null || actor == null) {
             return false;
         }

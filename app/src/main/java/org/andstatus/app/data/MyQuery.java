@@ -54,7 +54,7 @@ public class MyQuery {
         // Empty
     }
 
-    static String userNameField(ActorInTimeline actorInTimeline) {
+    static String usernameField(ActorInTimeline actorInTimeline) {
         switch (actorInTimeline) {
             case AT_USERNAME:
                 return "('@' || " + ActorTable.USERNAME + ")";
@@ -302,12 +302,12 @@ public class MyQuery {
             SQLiteDatabase db, @NonNull Origin origin, long noteId, ActivityType typeToReturn, ActivityType undoType) {
         String method = "noteIdToLastOfTypes";
         final List<Long> foundActors = new ArrayList<>();
-        final List<Actor> users = new ArrayList<>();
+        final List<Actor> actors = new ArrayList<>();
         if (db == null || !origin.isValid() || noteId == 0) {
-            return users;
+            return actors;
         }
         String sql = "SELECT " + ActivityTable.ACTIVITY_TYPE + ", " + ActivityTable.ACTOR_ID + ", "
-                + ActorTable.WEBFINGER_ID + ", " + TimelineSql.userNameField() + " AS " + ActorTable.ACTIVITY_ACTOR_NAME
+                + ActorTable.WEBFINGER_ID + ", " + TimelineSql.usernameField() + " AS " + ActorTable.ACTIVITY_ACTOR_NAME
                 + " FROM " + ActivityTable.TABLE_NAME + " INNER JOIN " + ActorTable.TABLE_NAME
                 + " ON " + ActivityTable.ACTOR_ID + "=" + ActorTable.TABLE_NAME + "." + ActorTable._ID
                 + " WHERE " + ActivityTable.NOTE_ID + "=" + noteId + " AND "
@@ -323,14 +323,14 @@ public class MyQuery {
                         Actor actor = Actor.fromOriginAndActorId(origin, actorId);
                         actor.setRealName(DbUtils.getString(cursor, ActorTable.ACTIVITY_ACTOR_NAME));
                         actor.setWebFingerId(DbUtils.getString(cursor, ActorTable.WEBFINGER_ID));
-                        users.add(actor);
+                        actors.add(actor);
                     }
                 }
             }
         } catch (Exception e) {
             MyLog.w(TAG, method + "; SQL:'" + sql + "'", e);
         }
-        return users;
+        return actors;
     }
 
     @NonNull
@@ -380,24 +380,24 @@ public class MyQuery {
         return actorToNote;
     }
 
-    public static String noteIdToUsername(String userIdColumnName, long noteId, ActorInTimeline actorInTimeline) {
+    public static String noteIdToUsername(String actorIdColumnName, long noteId, ActorInTimeline actorInTimeline) {
         final String method = "noteIdToUsername";
-        String userName = "";
+        String username = "";
         if (noteId != 0) {
             SQLiteStatement prog = null;
             String sql = "";
             try {
-                if (userIdColumnName.contentEquals(ActivityTable.ACTOR_ID)) {
+                if (actorIdColumnName.contentEquals(ActivityTable.ACTOR_ID)) {
                     // TODO:
-                    throw new IllegalArgumentException( method + "; Not implemented \"" + userIdColumnName + "\"");
-                } else if(userIdColumnName.contentEquals(NoteTable.AUTHOR_ID) ||
-                        userIdColumnName.contentEquals(NoteTable.IN_REPLY_TO_ACTOR_ID)) {
-                    sql = "SELECT " + userNameField(actorInTimeline) + " FROM " + ActorTable.TABLE_NAME
+                    throw new IllegalArgumentException( method + "; Not implemented \"" + actorIdColumnName + "\"");
+                } else if(actorIdColumnName.contentEquals(NoteTable.AUTHOR_ID) ||
+                        actorIdColumnName.contentEquals(NoteTable.IN_REPLY_TO_ACTOR_ID)) {
+                    sql = "SELECT " + usernameField(actorInTimeline) + " FROM " + ActorTable.TABLE_NAME
                             + " INNER JOIN " + NoteTable.TABLE_NAME + " ON "
-                            + NoteTable.TABLE_NAME + "." + userIdColumnName + "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID
+                            + NoteTable.TABLE_NAME + "." + actorIdColumnName + "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID
                             + " WHERE " + NoteTable.TABLE_NAME + "." + BaseColumns._ID + "=" + noteId;
                 } else {
-                    throw new IllegalArgumentException( method + "; Unknown name \"" + userIdColumnName + "\"");
+                    throw new IllegalArgumentException( method + "; Unknown name \"" + actorIdColumnName + "\"");
                 }
                 SQLiteDatabase db = MyContextHolder.get().getDatabase();
                 if (db == null) {
@@ -405,21 +405,21 @@ public class MyQuery {
                     return "";
                 }
                 prog = db.compileStatement(sql);
-                userName = prog.simpleQueryForString();
+                username = prog.simpleQueryForString();
             } catch (SQLiteDoneException e) {
                 MyLog.ignored(TAG, e);
-                userName = "";
+                username = "";
             } catch (Exception e) {
                 MyLog.e(TAG, method, e);
-                userName = "";
+                username = "";
             } finally {
                 DbUtils.closeSilently(prog);
             }
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(TAG, method + "; " + userIdColumnName + ": " + noteId + " -> " + userName );
+                MyLog.v(TAG, method + "; " + actorIdColumnName + ": " + noteId + " -> " + username );
             }
         }
-        return userName;
+        return username;
     }
 
     public static String actorIdToWebfingerId(long actorId) {
@@ -427,7 +427,7 @@ public class MyQuery {
     }
 
     public static String actorIdToName(long actorId, ActorInTimeline actorInTimeline) {
-        return idToStringColumnValue(ActorTable.TABLE_NAME, userNameField(actorInTimeline), actorId);
+        return idToStringColumnValue(ActorTable.TABLE_NAME, usernameField(actorInTimeline), actorId);
     }
 
     /**
@@ -436,7 +436,7 @@ public class MyQuery {
      * @param systemId {@link ActorTable#ACTOR_ID}
      * @return 0 in case not found or error
      */
-    public static long userIdToLongColumnValue(String columnName, long systemId) {
+    public static long actorIdToLongColumnValue(String columnName, long systemId) {
         return idToLongColumnValue(null, ActorTable.TABLE_NAME, columnName, systemId);
     }
 
@@ -481,7 +481,7 @@ public class MyQuery {
     }
 
     @NonNull
-    public static String userIdToStringColumnValue(String columnName, long systemId) {
+    public static String actorIdToStringColumnValue(String columnName, long systemId) {
         return idToStringColumnValue(ActorTable.TABLE_NAME, columnName, systemId);
     }
 

@@ -26,8 +26,8 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 
 public class AvatarDownloader extends FileDownloader {
-    public AvatarDownloader(long userIdIn) {
-        this(AvatarData.getForUser(userIdIn));
+    public AvatarDownloader(long actorIdIn) {
+        this(AvatarData.getForActor(actorIdIn));
     }
 
     protected AvatarDownloader(DownloadData data) {
@@ -37,13 +37,13 @@ public class AvatarDownloader extends FileDownloader {
     @Override
     protected MyAccount findBestAccountForDownload() {
         final Origin origin = MyContextHolder.get().persistentOrigins().fromId(
-                MyQuery.userIdToLongColumnValue(ActorTable.ORIGIN_ID, data.actorId));
+                MyQuery.actorIdToLongColumnValue(ActorTable.ORIGIN_ID, data.actorId));
         return MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(origin);
     }
 
     @Override
     protected void onSuccessfulLoad() {
-        data.deleteOtherOfThisUser();
+        data.deleteOtherOfThisActor();
         MyLog.v(this, "Loaded avatar actorId:" + data.actorId + "; uri:'" + data.getUri() + "'");
     }
 }

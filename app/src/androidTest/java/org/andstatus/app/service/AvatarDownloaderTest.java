@@ -68,10 +68,10 @@ public class AvatarDownloaderTest {
     }
     
     private void loadForOneMyAccount(String urlStringInitial) throws IOException {
-        String urlString1 = MyQuery.userIdToStringColumnValue(ActorTable.AVATAR_URL, ma.getActorId());
+        String urlString1 = MyQuery.actorIdToStringColumnValue(ActorTable.AVATAR_URL, ma.getActorId());
         assertEquals(urlStringInitial, urlString1);
         
-        AvatarData.deleteAllOfThisUser(ma.getActorId());
+        AvatarData.deleteAllOfThisActor(ma.getActorId());
         
         FileDownloader loader = new AvatarDownloader(ma.getActorId());
         assertEquals("Not loaded yet", DownloadStatus.ABSENT, loader.getStatus());
@@ -108,7 +108,7 @@ public class AvatarDownloaderTest {
     }
 
     private void deleteMaAvatar() {
-        DownloadData data = AvatarData.getForUser(ma.getActorId());
+        DownloadData data = AvatarData.getForActor(ma.getActorId());
         assertTrue("Loaded avatar file deleted", data.getFile().delete());
     }
 
@@ -117,20 +117,20 @@ public class AvatarDownloaderTest {
         ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         
         changeMaAvatarUrl(demoData.CONVERSATION_ACCOUNT_AVATAR_URL);
-        String urlString = MyQuery.userIdToStringColumnValue(ActorTable.AVATAR_URL, ma.getActorId());
+        String urlString = MyQuery.actorIdToStringColumnValue(ActorTable.AVATAR_URL, ma.getActorId());
         assertEquals(demoData.CONVERSATION_ACCOUNT_AVATAR_URL, urlString);
         
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
-        DownloadData data = AvatarData.getForUser(ma.getActorId());
+        DownloadData data = AvatarData.getForActor(ma.getActorId());
         assertTrue("Existence of " + data.getFilename(), data.getFile().exists());
         assertTrue("Is File" + data.getFilename(), data.getFile().getFile().isFile());
 
         DownloadFile avatarFile = data.getFile();
-        AvatarData.deleteAllOfThisUser(ma.getActorId());
+        AvatarData.deleteAllOfThisActor(ma.getActorId());
         assertFalse(avatarFile.exists());
 
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
-        data = AvatarData.getForUser(ma.getActorId());
+        data = AvatarData.getForActor(ma.getActorId());
         assertTrue(data.getFile().exists());
     }
     
@@ -162,7 +162,7 @@ public class AvatarDownloaderTest {
         CommandData commandData = CommandData.newCommand(CommandEnum.GET_AVATAR);
         loader.load(commandData);
 
-        DownloadData data = AvatarData.getForUser(ma.getActorId());
+        DownloadData data = AvatarData.getForActor(ma.getActorId());
         if (DownloadStatus.LOADED.equals(status)) {
             assertFalse("Loaded " + data + ", error message:" + commandData.getResult().getMessage(),
                     commandData.getResult()

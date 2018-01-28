@@ -211,14 +211,14 @@
         <item>3</item>
         <item>20</item>
     </string-array>
-    <string-array name="user_in_timeline_entries">
+    <string-array name="actor_in_timeline_entries">
         <item>@string/user_in_timeline_entries_username</item>
         <item>@string/user_in_timeline_entries_at_username</item>
         <item>@string/user_in_timeline_entries_webfingerid</item>
         <item>@string/user_in_timeline_entries_real_name</item>
         <item>@string/user_in_timeline_entries_real_name_at_username</item>
     </string-array>
-    <string-array name="user_in_timeline_values">
+    <string-array name="actor_in_timeline_values">
         <item>1</item>
         <item>2</item>
         <item>3</item>

@@ -271,7 +271,7 @@ public final class DemoData {
     }
 
     @NonNull
-    public Actor getAccountUserByOid(String actorOid) {
+    public Actor getAccountActorByOid(String actorOid) {
         for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
             if (ma.getActorOid().equals(actorOid)) {
                 return ma.getActor();

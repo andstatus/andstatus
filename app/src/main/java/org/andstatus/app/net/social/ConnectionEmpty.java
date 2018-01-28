@@ -67,7 +67,7 @@ public class ConnectionEmpty extends Connection {
     }
 
     @Override
-    public AActivity updatePrivateNote(String note, String noteOid, String actorOid, Uri mediaUri) throws ConnectionException {
+    public AActivity updatePrivateNote(String note, String noteOid, String recipientOid, Uri mediaUri) throws ConnectionException {
         return AActivity.EMPTY;
     }
 

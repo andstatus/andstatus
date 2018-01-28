@@ -78,7 +78,7 @@ class ActivitySender {
         return connection.activityFromJson(sendMe(activityType));
     }
 
-    AActivity sendUser(PActivityType activityType) throws ConnectionException {
+    AActivity sendActor(PActivityType activityType) throws ConnectionException {
         return connection.activityFromJson(sendMe(activityType));
     }
 

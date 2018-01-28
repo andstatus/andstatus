@@ -62,7 +62,7 @@ public class VerifyCredentialsTest {
                 MyContextHolder.get().persistentOrigins().fromName(demoData.TWITTER_TEST_ORIGIN_NAME),
                 demoData.TWITTER_TEST_ACCOUNT_USERNAME),
                 TriState.UNKNOWN);
-        connectionData.setAccountActor(demoData.getAccountUserByOid(demoData.TWITTER_TEST_ACCOUNT_ACTOR_OID));
+        connectionData.setAccountActor(demoData.getAccountActorByOid(demoData.TWITTER_TEST_ACCOUNT_ACTOR_OID));
         connectionData.setDataReader(new AccountDataReaderEmpty());
         connection = connectionData.newConnection();
         httpConnection = (HttpConnectionMock) connection.http;
@@ -110,8 +110,8 @@ public class VerifyCredentialsTest {
         String noteOid = "383296535213002752";
         long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), noteOid) ;
         assertTrue("Note not found", noteId != 0);
-        long userIdM = MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, noteId);
-        assertEquals("Note not by " + actor.getUsername() + " found", actorId, userIdM);
+        long actorIdM = MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, noteId);
+        assertEquals("Note not by " + actor.getUsername() + " found", actorId, actorIdM);
 
         assertEquals("Note permalink at twitter",
                 "https://" + origin.fixUriforPermalink(UriUtils.fromUrl(origin.getUrl())).getHost()

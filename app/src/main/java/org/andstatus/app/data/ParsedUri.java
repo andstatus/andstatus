@@ -64,8 +64,8 @@ public class ParsedUri {
         return uri == Uri.EMPTY;
     }
 
-    public long getAccountUserId() {
-        long accountUserId = 0;
+    public long getAccountActorId() {
+        long accountActorId = 0;
         try {
             switch (matchedUri) {
                 case TIMELINE:
@@ -76,7 +76,7 @@ public class ParsedUri {
                 case ACTORLIST:
                 case ACTORLIST_SEARCH:
                 case ACTOR_ITEM:
-                    accountUserId = Long.parseLong(uri.getPathSegments().get(1));
+                    accountActorId = Long.parseLong(uri.getPathSegments().get(1));
                     break;
                 default:
                     break;
@@ -84,7 +84,7 @@ public class ParsedUri {
         } catch (Exception e) {
             MyLog.d(this, toString(), e);
         }
-        return accountUserId;        
+        return accountActorId;
     }
     
     public long getActorId() {
@@ -101,7 +101,7 @@ public class ParsedUri {
                     break;
                 case ACTORLIST:
                 case ACTORLIST_SEARCH:
-                    if (getUserListType() == ActorListType.FOLLOWERS) {
+                    if (getActorListType() == ActorListType.FOLLOWERS) {
                         actorId = getItemId();
                     }
                     break;
@@ -135,7 +135,7 @@ public class ParsedUri {
         return tt;        
     }
 
-    public ActorListType getUserListType() {
+    public ActorListType getActorListType() {
         try {
             switch (matchedUri) {
                 case ACTORLIST:
@@ -179,7 +179,7 @@ public class ParsedUri {
                     break;
                 case ACTORLIST:
                 case ACTORLIST_SEARCH:
-                    if (getUserListType() == ActorListType.ACTORS_OF_NOTE) {
+                    if (getActorListType() == ActorListType.ACTORS_OF_NOTE) {
                         noteId = getItemId();
                     }
                     break;
@@ -216,7 +216,7 @@ public class ParsedUri {
     }
 
     public long getItemId() {
-        switch (getUserListType()) {
+        switch (getActorListType()) {
             case UNKNOWN:
                 switch (getTimelineType()) {
                     case UNKNOWN:

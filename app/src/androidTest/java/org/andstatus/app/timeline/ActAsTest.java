@@ -60,8 +60,8 @@ public class ActAsTest extends TimelineActivityTest {
     }
 
     @Test
-    public void actAsUser() throws InterruptedException {
-        final String method = "actAsUser";
+    public void actAsActor() throws InterruptedException {
+        final String method = "actAsActor";
         TestSuite.waitForListLoaded(getActivity(), 2);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(),
                 ConversationActivity.class);

@@ -31,9 +31,9 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
@@ -83,7 +83,7 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
             authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID);
             super.load(cursor);
             noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
-            authorName = TimelineSql.userColumnNameToNameAtTimeline(cursor, ActorTable.AUTHOR_NAME, false);
+            authorName = TimelineSql.actorColumnNameToNameAtTimeline(cursor, ActorTable.AUTHOR_NAME, false);
             setBody(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.BODY)));
             String via = DbUtils.getString(cursor, NoteTable.VIA);
             if (!TextUtils.isEmpty(via)) {
@@ -94,9 +94,8 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
                 attachedImageFile = AttachedImageFile.fromCursor(cursor);
             }
             inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
-            inReplyToUserId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID);
-            inReplyToName = TimelineSql.userColumnNameToNameAtTimeline(cursor, ActorTable.IN_REPLY_TO_NAME, false);
-            //TODO:  recipientName = TimelineSql.userColumnNameToNameAtTimeline(cursor, UserTable.RECIPIENT_NAME, false);
+            inReplyToActorId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID);
+            inReplyToName = TimelineSql.actorColumnNameToNameAtTimeline(cursor, ActorTable.IN_REPLY_TO_NAME, false);
 
             if (DbUtils.getTriState(cursor, NoteTable.REBLOGGED) == TriState.TRUE) {
                 reblogged = true;

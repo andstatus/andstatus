@@ -138,7 +138,7 @@ public class DataUpdater {
         final String method = "updateNote1";
         final Note note = activity.getNote();
         try {
-            MyAccount me = execContext.getMyContext().persistentAccounts().fromUserOfSameOrigin(activity.accountActor);
+            MyAccount me = execContext.getMyContext().persistentAccounts().fromActorOfSameOrigin(activity.accountActor);
             if (!me.isValid()) {
                 MyLog.w(this, method +"; my account is invalid, skipping: " + activity.toString());
                 return;
@@ -315,7 +315,7 @@ public class DataUpdater {
             MyLog.v(this, method + "; objActor is empty");
             return;
         }
-        MyAccount me = execContext.getMyContext().persistentAccounts().fromUserOfSameOrigin(activity.accountActor);
+        MyAccount me = execContext.getMyContext().persistentAccounts().fromActorOfSameOrigin(activity.accountActor);
         if (!me.isValid()) {
             if (activity.accountActor.equals(objActor)) {
                 MyLog.d(this, method +"; adding my account " + activity.accountActor);
@@ -351,19 +351,19 @@ public class DataUpdater {
                 }
 
                 // Substitute required empty values with some temporary for a new entry only!
-                String userName = objActor.getUsername();
-                if (SharedPreferencesUtil.isEmpty(userName)) {
-                    userName = "id:" + actorOid;
+                String username = objActor.getUsername();
+                if (SharedPreferencesUtil.isEmpty(username)) {
+                    username = "id:" + actorOid;
                 }
-                values.put(ActorTable.USERNAME, userName);
+                values.put(ActorTable.USERNAME, username);
                 String webFingerId = objActor.getWebFingerId();
                 if (SharedPreferencesUtil.isEmpty(webFingerId)) {
-                    webFingerId = userName;
+                    webFingerId = username;
                 }
                 values.put(ActorTable.WEBFINGER_ID, webFingerId);
                 String realName = objActor.getRealName();
                 if (SharedPreferencesUtil.isEmpty(realName)) {
-                    realName = userName;
+                    realName = username;
                 }
                 values.put(ActorTable.REAL_NAME, realName);
                 // End of required attributes

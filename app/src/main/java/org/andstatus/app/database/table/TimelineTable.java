@@ -36,8 +36,8 @@ public class TimelineTable implements BaseColumns {
     public static final String TIMELINE_ID = "timeline_id";
     public static final String TIMELINE_TYPE = "timeline_type";
     public static final String ACCOUNT_ID = ActorTable.ACCOUNT_ID;
-    public static final String USER_ID = ActorTable.ACTOR_ID;
-    public static final String USER_IN_TIMELINE = "user_in_timeline";
+    public static final String ACTOR_ID = ActorTable.ACTOR_ID;
+    public static final String ACTOR_IN_TIMELINE = "user_in_timeline";
     public static final String ORIGIN_ID =  OriginTable.ORIGIN_ID;
     public static final String SEARCH_QUERY = "search_query";
 
@@ -97,8 +97,8 @@ public class TimelineTable implements BaseColumns {
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + TIMELINE_TYPE + " TEXT NOT NULL,"
                 + ACCOUNT_ID + " INTEGER NOT NULL DEFAULT 0,"
-                + USER_ID + " INTEGER NOT NULL DEFAULT 0,"
-                + USER_IN_TIMELINE + " TEXT,"
+                + ACTOR_ID + " INTEGER NOT NULL DEFAULT 0,"
+                + ACTOR_IN_TIMELINE + " TEXT,"
                 + ORIGIN_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + SEARCH_QUERY + " TEXT,"
 

@@ -70,7 +70,7 @@ public class Timeline implements Comparable<Timeline> {
      * timeline may be fetched by any authenticated user of this Social Network */
     private final Origin origin;
     /** Pre-fetched string to be used to present in UI */
-    private String userInTimeline = "";
+    private String actorInTimeline = "";
     /** This may be used e.g. to search {@link TimelineType#PUBLIC} timeline */
     @NonNull
     private final String searchQuery;
@@ -180,7 +180,7 @@ public class Timeline implements Comparable<Timeline> {
         Objects.requireNonNull(timelineType);
         this.id = id;
         this.myAccount = fixedMyAccount(myContext, timelineType, myAccount, actorId);
-        this.actorId = fixedUserId(timelineType, actorId);
+        this.actorId = fixedActorId(timelineType, actorId);
         this.origin = fixedOrigin(myContext, timelineType, myAccount, actorId, origin);
         this.searchQuery = TextUtils.isEmpty(searchQuery) ? "" : searchQuery.trim();
         this.timelineType = fixedTimelineType(timelineType);
@@ -236,12 +236,12 @@ public class Timeline implements Comparable<Timeline> {
                 0, TimelineType.load(DbUtils.getString(cursor, TimelineTable.TIMELINE_TYPE)),
                 myContext.persistentAccounts()
                         .fromActorId(DbUtils.getLong(cursor, TimelineTable.ACCOUNT_ID)),
-                DbUtils.getLong(cursor, TimelineTable.USER_ID),
+                DbUtils.getLong(cursor, TimelineTable.ACTOR_ID),
                 myContext.persistentOrigins().fromId(DbUtils.getLong(cursor, TimelineTable.ORIGIN_ID)),
                 DbUtils.getString(cursor, TimelineTable.SEARCH_QUERY));
 
         timeline.id = DbUtils.getLong(cursor, TimelineTable._ID);
-        timeline.userInTimeline = DbUtils.getString(cursor, TimelineTable.USER_IN_TIMELINE);
+        timeline.actorInTimeline = DbUtils.getString(cursor, TimelineTable.ACTOR_IN_TIMELINE);
         timeline.setSyncedAutomatically(DbUtils.getBoolean(cursor, TimelineTable.IS_SYNCED_AUTOMATICALLY));
         timeline.isDisplayedInSelector = DisplayedInSelector.load(DbUtils.getString(cursor, TimelineTable.DISPLAYED_IN_SELECTOR));
         timeline.selectorOrder = DbUtils.getLong(cursor, TimelineTable.SELECTOR_ORDER);
@@ -280,7 +280,7 @@ public class Timeline implements Comparable<Timeline> {
                 DbUtils.getLong(cursor, CommandTable.TIMELINE_ID),
                 TimelineType.load(DbUtils.getString(cursor, CommandTable.TIMELINE_TYPE)),
                 myContext.persistentAccounts().fromActorId(DbUtils.getLong(cursor, CommandTable.ACCOUNT_ID)),
-                DbUtils.getLong(cursor, CommandTable.USER_ID),
+                DbUtils.getLong(cursor, CommandTable.ACTOR_ID),
                 myContext.persistentOrigins().fromId(DbUtils.getLong(cursor, CommandTable.ORIGIN_ID)),
                 DbUtils.getString(cursor, CommandTable.SEARCH_QUERY)
         );
@@ -314,7 +314,7 @@ public class Timeline implements Comparable<Timeline> {
         }
         Timeline timeline = getTimeline(myContext, 0,
                 parsedUri.getTimelineType(),
-                myContext.persistentAccounts().fromActorId(parsedUri.getAccountUserId()),
+                myContext.persistentAccounts().fromActorId(parsedUri.getAccountActorId()),
                 parsedUri.getActorId(),
                 parsedUri.getOrigin(myContext),
                 searchQuery);
@@ -347,7 +347,7 @@ public class Timeline implements Comparable<Timeline> {
         return myAccount;
     }
 
-    private long fixedUserId(TimelineType timelineType, long actorId) {
+    private long fixedActorId(TimelineType timelineType, long actorId) {
         if (!timelineType.isForActor()) return 0;
         if (actorId == 0 && myAccount.isValid()) return myAccount.getActorId();
         return actorId;
@@ -445,8 +445,8 @@ public class Timeline implements Comparable<Timeline> {
         ContentValuesUtils.putNotZero(values, TimelineTable._ID, id);
         values.put(TimelineTable.TIMELINE_TYPE, timelineType.save());
         values.put(TimelineTable.ACCOUNT_ID, myAccount.getActorId());
-        values.put(TimelineTable.USER_ID, actorId);
-        values.put(TimelineTable.USER_IN_TIMELINE, userInTimeline);
+        values.put(TimelineTable.ACTOR_ID, actorId);
+        values.put(TimelineTable.ACTOR_IN_TIMELINE, actorInTimeline);
         values.put(TimelineTable.ORIGIN_ID, origin.getId());
         values.put(TimelineTable.SEARCH_QUERY, searchQuery);
 
@@ -484,7 +484,7 @@ public class Timeline implements Comparable<Timeline> {
         values.put(CommandTable.TIMELINE_ID, id);
         values.put(CommandTable.TIMELINE_TYPE, timelineType.save());
         values.put(CommandTable.ACCOUNT_ID, myAccount.getActorId());
-        values.put(CommandTable.USER_ID, actorId);
+        values.put(CommandTable.ACTOR_ID, actorId);
         values.put(CommandTable.ORIGIN_ID, origin.getId());
         values.put(CommandTable.SEARCH_QUERY, searchQuery);
     }
@@ -522,7 +522,7 @@ public class Timeline implements Comparable<Timeline> {
         }
         long actorId = this.actorId;
         Origin origin = this.origin;
-        if (!isUserDifferentFromAccount()) {
+        if (!isActorDifferentFromAccount()) {
             actorId = 0;
         }
         if (!this.myAccount.getOrigin().equals(myAccount.getOrigin())) {
@@ -591,7 +591,7 @@ public class Timeline implements Comparable<Timeline> {
         if (MyAsyncTask.isUiThread()) {
             throw new IllegalStateException("Saving a timeline on the Main thread " + toString());
         }
-        if (needToLoadUserInTimeline()) {
+        if (needToLoadActorInTimeline()) {
             changed = true;
         }
         if (timelineType.isPersistable() && (id == 0 || changed) && myContext.isReady()) {
@@ -616,7 +616,7 @@ public class Timeline implements Comparable<Timeline> {
         where.append(TimelineTable.TIMELINE_TYPE + "='" + timelineType.save() + "'");
         where.append(TimelineTable.ACCOUNT_ID + "=" + myAccount.getActorId());
         where.append(TimelineTable.ORIGIN_ID + "=" + origin.getId());
-        where.append(TimelineTable.USER_ID + "=" + actorId);
+        where.append(TimelineTable.ACTOR_ID + "=" + actorId);
         where.append(TimelineTable.SEARCH_QUERY + "='" + searchQuery + "'");
         return MyQuery.conditionToLongColumnValue(
                 myContext.getDatabase(),
@@ -627,8 +627,8 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     private long saveInternal(MyContext myContext) {
-        if (needToLoadUserInTimeline()) {
-            userInTimeline = MyQuery.actorIdToName(actorId, MyPreferences.getActorInTimeline());
+        if (needToLoadActorInTimeline()) {
+            actorInTimeline = MyQuery.actorIdToName(actorId, MyPreferences.getActorInTimeline());
         }
         ContentValues contentValues = new ContentValues();
         toContentValues(contentValues);
@@ -641,8 +641,8 @@ public class Timeline implements Comparable<Timeline> {
         return getId();
     }
 
-    public boolean needToLoadUserInTimeline() {
-        return actorId != 0 && isUserDifferentFromAccount() && TextUtils.isEmpty(userInTimeline);
+    public boolean needToLoadActorInTimeline() {
+        return actorId != 0 && isActorDifferentFromAccount() && TextUtils.isEmpty(actorInTimeline);
     }
 
     public void delete() {
@@ -684,8 +684,8 @@ public class Timeline implements Comparable<Timeline> {
         if (timelineType != TimelineType.UNKNOWN) {
             builder.append(", type:" + timelineType.save());
         }
-        if (!TextUtils.isEmpty(userInTimeline)) {
-            builder.append(", user:'" + userInTimeline + "'");
+        if (!TextUtils.isEmpty(actorInTimeline)) {
+            builder.append(", user:'" + actorInTimeline + "'");
         } else if (actorId != 0) {
             builder.append(", actorId:" + actorId);
         }
@@ -767,7 +767,7 @@ public class Timeline implements Comparable<Timeline> {
         BundleUtils.putNotEmpty(bundle, IntentExtra.SEARCH_QUERY, searchQuery);
     }
 
-    public boolean isUserDifferentFromAccount() {
+    public boolean isActorDifferentFromAccount() {
         return actorId != 0 && myAccount.getActorId() != actorId;
     }
 
@@ -1025,15 +1025,15 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     @NonNull
-    public String getUserInTimeline() {
-        if (TextUtils.isEmpty(userInTimeline)) {
-            if (needToLoadUserInTimeline()) {
+    public String getActorInTimeline() {
+        if (TextUtils.isEmpty(actorInTimeline)) {
+            if (needToLoadActorInTimeline()) {
                 return "...";
             } else {
                 return "";
             }
         } else {
-            return userInTimeline;
+            return actorInTimeline;
         }
     }
 

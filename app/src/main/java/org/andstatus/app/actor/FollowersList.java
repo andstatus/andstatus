@@ -33,7 +33,7 @@ public class FollowersList extends ActorList {
         super.onCreate(savedInstanceState);
     }
 
-    private long getFollowedUserId() {
+    private long getFollowedActorId() {
         return centralItemId;
     }
 
@@ -43,13 +43,13 @@ public class FollowersList extends ActorList {
         CommandEnum command = mActorListType == ActorListType.FOLLOWERS ?
                 CommandEnum.GET_FOLLOWERS : CommandEnum.GET_FRIENDS;
         MyServiceManager.sendForegroundCommand(
-                (CommandData.newActorCommand(command, null, getCurrentMyAccount().getOrigin(), getFollowedUserId(), ""))
+                (CommandData.newActorCommand(command, null, getCurrentMyAccount().getOrigin(), getFollowedActorId(), ""))
                         .setManuallyLaunched(manuallyLaunched));
     }
 
     @Override
     protected ActorListLoader newSyncLoader(Bundle args) {
-        return new FollowersListLoader(mActorListType, getCurrentMyAccount(), getFollowedUserId(),
+        return new FollowersListLoader(mActorListType, getCurrentMyAccount(), getFollowedActorId(),
                 getParsedUri().getSearchQuery());
     }
 }

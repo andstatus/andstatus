@@ -44,7 +44,7 @@ public enum TimelineType implements SelectableEnum {
     /** Almost like {@link #ACTOR}, but for an Actor, who is one of my accounts. */
     SENT("sent", R.string.sent, Connection.ApiRoutineEnum.ACTOR_TIMELINE),
     /** Latest notes of every Friend of this Actor
-     * (i.e of every user, followed by this Actor).
+     * (i.e of every actor, followed by this Actor).
      * So this is essentially a list of "Friends". See {@link FriendshipTable} */
     FRIENDS("friends", R.string.friends, Connection.ApiRoutineEnum.GET_FRIENDS),
     /** Same as {@link #FRIENDS} but for my accounts only */

@@ -64,10 +64,10 @@ public class DownloadData {
         return new DownloadData(0, msgIdIn, contentTypeIn, uriIn);
     }
 
-    protected DownloadData(long userIdIn, long msgIdIn, MyContentType contentTypeIn, Uri uriIn) {
+    protected DownloadData(long actorIdIn, long msgIdIn, MyContentType contentTypeIn, Uri uriIn) {
         switch (contentTypeIn) {
         case IMAGE:
-            downloadType = (userIdIn == 0) ? DownloadType.IMAGE : DownloadType.AVATAR;
+            downloadType = (actorIdIn == 0) ? DownloadType.IMAGE : DownloadType.AVATAR;
             break;
         case TEXT:
             downloadType = DownloadType.TEXT;
@@ -77,7 +77,7 @@ public class DownloadData {
             hardError = true;
             break;
         }
-        actorId = userIdIn;
+        actorId = actorIdIn;
         noteId = msgIdIn;
         contentType = contentTypeIn;
         uri = UriUtils.notNull(uriIn);
@@ -238,7 +238,7 @@ public class DownloadData {
        if (downloadId == -1) {
            softError = true;
        } else {
-           MyLog.v(this, "Added " + userMsgUriToString());
+           MyLog.v(this, "Added " + actorNoteUriToString());
        }
     }
 
@@ -266,14 +266,14 @@ public class DownloadData {
         if (DbUtils.updateRowWithRetry(MyContextHolder.get(), DownloadTable.TABLE_NAME, downloadId, values, 3) != 1) {
             softError = true;
         } else {
-            MyLog.v(this, "Updated " + userMsgUriToString());
+            MyLog.v(this, "Updated " + actorNoteUriToString());
         }
         if (!isError() && changeFile) {
             fileStored.delete();
         }
     }
 
-    public String userMsgUriToString() {
+    public String actorNoteUriToString() {
         StringBuilder builder = new StringBuilder();
         if (actorId != 0) {
             builder.append("actorId=" + actorId + "; ");
@@ -296,20 +296,20 @@ public class DownloadData {
     }
 
     private void logError(String message, Exception e) {
-        errorMessage = (e == null ? "" : e.toString() + ", ") + message + "; " + userMsgUriToString();
-        MyLog.v(this, message + "; " + userMsgUriToString(), e);
+        errorMessage = (e == null ? "" : e.toString() + ", ") + message + "; " + actorNoteUriToString();
+        MyLog.v(this, message + "; " + actorNoteUriToString(), e);
     }
     
-    public void deleteOtherOfThisUser() {
-        deleteOtherOfThisUser(actorId, downloadId);
+    public void deleteOtherOfThisActor() {
+        deleteOtherOfThisActor(actorId, downloadId);
     }
 
-    public static void deleteAllOfThisUser(long actorId) {
-        deleteOtherOfThisUser(actorId, 0);
+    public static void deleteAllOfThisActor(long actorId) {
+        deleteOtherOfThisActor(actorId, 0);
     }
     
-    public static void deleteOtherOfThisUser(long actorId, long rowId) {
-        final String method = "deleteOtherOfThisUser actorId=" + actorId + (rowId != 0 ? ", downloadId=" + rowId : "");
+    public static void deleteOtherOfThisActor(long actorId, long rowId) {
+        final String method = "deleteOtherOfThisActor actorId=" + actorId + (rowId != 0 ? ", downloadId=" + rowId : "");
         String where = DownloadTable.ACTOR_ID + "=" + actorId
                 + (rowId != 0 ? " AND " + DownloadTable._ID + "<>" + Long.toString(rowId) : "") ;
         deleteSelected(method, MyContextHolder.get().getDatabase(), where);

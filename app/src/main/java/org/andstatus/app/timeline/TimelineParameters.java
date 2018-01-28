@@ -141,7 +141,7 @@ public class TimelineParameters {
         return MyLog.formatKeyValue(this,
                 toSummary()
                 + ", account=" + timeline.getMyAccount().getAccountName()
-                + (timeline.getActorId() == 0 ? "" : ", selectedUserId=" + timeline.getActorId())
+                + (timeline.getActorId() == 0 ? "" : ", selectedActorId=" + timeline.getActorId())
             //    + ", projection=" + Arrays.toString(mProjection)
                 + (minDate > 0 ? ", minDate=" + MyLog.formatDateTime(minDate) : "")
                 + (maxDate > 0 ? ", maxDate=" + MyLog.formatDateTime(maxDate) : "")
@@ -165,7 +165,7 @@ public class TimelineParameters {
         return timeline.getTimelineType();
     }
 
-    public long getSelectedUserId() {
+    public long getSelectedActorId() {
         return timeline.getActorId();
     }
 

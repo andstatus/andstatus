@@ -34,11 +34,11 @@ public class ActivityLoader extends TimelineLoader<ActivityViewItem> {
 
     @Override
     protected void filter(List<ActivityViewItem> items) {
-        super.filter(loadUsers(items));
+        super.filter(loadActors(items));
     }
 
-    private List<ActivityViewItem> loadUsers(List<ActivityViewItem> items) {
-        ActorListLoader loader = new ActorListLoader(ActorListType.USERS, getParams().getMyAccount(),
+    private List<ActivityViewItem> loadActors(List<ActivityViewItem> items) {
+        ActorListLoader loader = new ActorListLoader(ActorListType.ACTORS, getParams().getMyAccount(),
                 getParams().getTimeline().getOrigin(), 0, "");
         for (ActivityViewItem item: items) {
             if (item.activityType != ActivityType.CREATE && item.activityType != ActivityType.UPDATE) {

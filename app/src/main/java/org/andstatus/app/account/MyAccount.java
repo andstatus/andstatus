@@ -226,9 +226,9 @@ public final class MyAccount implements Comparable<MyAccount> {
             boolean changed = false;
             if (isPersistent() && myAccount.actor.actorId == 0) {
                 changed = true;
-                assignUserId();
+                assignActorId();
                 MyLog.e(TAG, "MyAccount '" + myAccount.getAccountName()
-                        + "' was not connected to the Actorr table. actorId=" + myAccount.actor.actorId);
+                        + "' was not connected to the Actor table. actorId=" + myAccount.actor.actorId);
             }
             if (!myAccount.getCredentialsPresent()
                     && myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
@@ -414,14 +414,14 @@ public final class MyAccount implements Comparable<MyAccount> {
                     && actor.origin.isUsernameValid(actor.getUsername());
             boolean errorSettingUsername = !ok;
 
-            boolean credentialsOfOtherUser = false;
+            boolean credentialsOfOtherAccount = false;
             // We are comparing actor names ignoring case, but we fix correct case
             // as the Originating system tells us. 
             if (ok && !TextUtils.isEmpty(myAccount.getUsername())
                     && myAccount.getUsername().compareToIgnoreCase(actor.getUsername()) != 0) {
                 // Credentials belong to other Account ??
                 ok = false;
-                credentialsOfOtherUser = true;
+                credentialsOfOtherAccount = true;
             }
 
             if (ok) {
@@ -452,10 +452,10 @@ public final class MyAccount implements Comparable<MyAccount> {
             if (ce != null) {
                 throw ce;
             }
-            if (credentialsOfOtherUser) {
+            if (credentialsOfOtherAccount) {
                 MyLog.e(TAG, myContext.context().getText(R.string.error_credentials_of_other_user) + ": "
                         + actor.getNamePreferablyWebFingerId());
-                throw new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_USER, actor.getNamePreferablyWebFingerId());
+                throw new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_ACCOUNT, actor.getNamePreferablyWebFingerId());
             }
             if (errorSettingUsername) {
                 String msg = myContext.context().getText(R.string.error_set_username) + actor.getUsername();
@@ -495,7 +495,7 @@ public final class MyAccount implements Comparable<MyAccount> {
             }
         }
 
-        private void assignUserId() {
+        private void assignActorId() {
             myAccount.actor.actorId = MyQuery.usernameToId(myAccount.getOriginId(), myAccount.getUsername());
             if (myAccount.actor.actorId == 0) {
                 DataUpdater di = new DataUpdater(myAccount);

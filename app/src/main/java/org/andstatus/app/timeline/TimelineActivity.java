@@ -433,9 +433,9 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         if (ViewUtils.showView(drawerView, R.id.combinedTimelineToggle,
                 // Show the "Combined" toggle even for one account to see notes,
                 // which are not on the timeline.
-                // E.g. notes by users, downloaded on demand.
-                getParamsNew().getSelectedUserId() == 0 ||
-                        getParamsNew().getSelectedUserId() == getParamsNew().getMyAccount().getActorId())) {
+                // E.g. notes by actors, downloaded on demand.
+                getParamsNew().getSelectedActorId() == 0 ||
+                        getParamsNew().getSelectedActorId() == getParamsNew().getMyAccount().getActorId())) {
             MyCheckBox.setEnabled(drawerView, R.id.combinedTimelineToggle,
                     getParamsLoaded().getTimeline().isCombined());
         }

@@ -35,20 +35,20 @@ public class ParsedUriTest {
     }
 
     @Test
-    public void testUserList() {
-        assertOneUserList(demoData.getConversationOriginId());
-        assertOneUserList(0);
+    public void testActorList() {
+        assertOneActorList(demoData.getConversationOriginId());
+        assertOneActorList(0);
     }
 
-    private void assertOneUserList(long originId) {
+    private void assertOneActorList(long originId) {
         long actorId = 5;
         long noteId = 2;
         Uri uri = MatchedUri.getActorListUri(actorId, ActorListType.ACTORS_OF_NOTE, originId, noteId, "");
         ParsedUri parsedUri = ParsedUri.fromUri(uri);
         String msgLog = parsedUri.toString();
         assertEquals(TimelineType.UNKNOWN, parsedUri.getTimelineType());
-        assertEquals(msgLog, ActorListType.ACTORS_OF_NOTE, parsedUri.getUserListType());
-        assertEquals(msgLog, actorId, parsedUri.getAccountUserId());
+        assertEquals(msgLog, ActorListType.ACTORS_OF_NOTE, parsedUri.getActorListType());
+        assertEquals(msgLog, actorId, parsedUri.getAccountActorId());
         assertEquals(msgLog, originId, parsedUri.getOriginId());
         assertEquals(msgLog, noteId, parsedUri.getNoteId());
         assertEquals(msgLog, noteId, parsedUri.getItemId());

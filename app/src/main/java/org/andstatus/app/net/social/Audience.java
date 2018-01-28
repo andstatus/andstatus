@@ -142,7 +142,7 @@ public class Audience {
         try {
             if (!toDelete.isEmpty()) {
                 db.delete(AudienceTable.TABLE_NAME, AudienceTable.NOTE_ID + "=" + noteId
-                        + " AND " + AudienceTable.ACTOR_ID + SqlActorIds.fromUsers(toDelete).getSql(), null);
+                        + " AND " + AudienceTable.ACTOR_ID + SqlActorIds.fromActors(toDelete).getSql(), null);
             }
             for (Actor actor : toAdd) {
                 ContentValues values = new ContentValues();

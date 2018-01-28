@@ -45,8 +45,8 @@ public final class CommandTable implements BaseColumns {
     public static final String TIMELINE_ID = TimelineTable.TIMELINE_ID;
     public static final String TIMELINE_TYPE = TimelineTable.TIMELINE_TYPE;
     public static final String ACCOUNT_ID = TimelineTable.ACCOUNT_ID;
-    public static final String USER_ID = TimelineTable.USER_ID;
-    /** This is used e.g. when a {@link #USER_ID} is not known */
+    public static final String ACTOR_ID = TimelineTable.ACTOR_ID;
+    /** This is used e.g. when a {@link #ACTOR_ID} is not known */
     public static final String USERNAME = ActorTable.USERNAME;
     public static final String ORIGIN_ID = TimelineTable.ORIGIN_ID;
     public static final String SEARCH_QUERY = TimelineTable.SEARCH_QUERY;
@@ -78,7 +78,7 @@ public final class CommandTable implements BaseColumns {
                 + TIMELINE_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + TIMELINE_TYPE + " TEXT NOT NULL,"
                 + ACCOUNT_ID + " INTEGER NOT NULL DEFAULT 0,"
-                + USER_ID + " INTEGER NOT NULL DEFAULT 0,"
+                + ACTOR_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + ORIGIN_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + SEARCH_QUERY + " TEXT,"
 

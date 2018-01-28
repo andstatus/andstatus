@@ -78,7 +78,7 @@ public class DemoNoteInserter {
             profileUrl = "http://" + connection.usernameToHost(username) + "/"
                     + connection.usernameToNickname(username);
         } else {
-            username = "userOf" + origin.getName() + actorOid;
+            username = "actorOf" + origin.getName() + actorOid;
             profileUrl = "https://" + demoData.GNUSOCIAL_TEST_ORIGIN_NAME
                     + ".example.com/profiles/" + username;
         }
@@ -100,7 +100,7 @@ public class DemoNoteInserter {
 
     private String nextActorUid() {
         if (origin.getOriginType() == OriginType.PUMPIO) {
-            return "acct:userOf" + origin.getName() + demoData.TESTRUN_UID + InstanceId.next();
+            return "acct:actorOf" + origin.getName() + demoData.TESTRUN_UID + InstanceId.next();
         }
         return String.valueOf(demoData.TESTRUN_UID) + InstanceId.next();
     }
@@ -113,7 +113,7 @@ public class DemoNoteInserter {
             if (origin.getOriginType() == OriginType.PUMPIO) {
                 noteOid = (UrlUtils.hasHost(UrlUtils.fromString(author.getProfileUrl()))
                           ? author.getProfileUrl()
-                          : "http://pumpiotest" + origin.getId() + ".example.com/user/" + author.oid)
+                          : "http://pumpiotest" + origin.getId() + ".example.com/actor/" + author.oid)
                         + "/" + (inReplyToActivity == null ? "note" : "comment")
                         + "/thisisfakeuri" + System.nanoTime();
             } else {

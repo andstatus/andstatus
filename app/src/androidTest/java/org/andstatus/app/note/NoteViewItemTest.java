@@ -35,8 +35,8 @@ public class NoteViewItemTest {
             "title=\"https://github.com/andstatus/andstatus/issues/83\" class=\"attachment\" id=\"attachment-15180\" " +
             "rel=\"nofollow external\">https://github.com/andstatus/andstatus/issues/83</a><br />\n" +
             "Sorry if I misunderstood your post :-)";
-    private static final String THIS_USER_FAVORITED_SOMETHING_BY_THAT_USER =
-            "thisUser favorited something by thatUser: ";
+    private static final String THIS_ACTOR_FAVORITED_SOMETHING_BY_THAT_ACTOR =
+            "thisActor favorited something by thatActor: ";
 
     @Before
     public void setUp() throws Exception {
@@ -54,12 +54,12 @@ public class NoteViewItemTest {
         item2.setNoteId(2);
         assertDuplicates(item1, DuplicationLink.NONE, item2);
 
-        item2.setBody(THIS_USER_FAVORITED_SOMETHING_BY_THAT_USER + item1.getBody());
+        item2.setBody(THIS_ACTOR_FAVORITED_SOMETHING_BY_THAT_ACTOR + item1.getBody());
         assertTrue("Is not favoriting action: " + item2.getBody(), item2.isFavoritingAction);
         assertDuplicates(item1, DuplicationLink.IS_DUPLICATED, item2);
         assertDuplicates(item2, DuplicationLink.DUPLICATES, item1);
 
-        item2.setBody("@<a href=\"https://bsdnode.xyz/user/2\" class=\"h-card mention\">username</a> On duplicated posts, sent by AndStatus, please read <a href=\"https://github.com/andstatus/andstatus/issues/83\" title=\"https://github.com/andstatus/andstatus/issues/83\" class=\"attachment\" rel=\"nofollow\">https://github.com/andstatus/andstatus/issues/83</a><br /> Sorry if I misunderstood your post :-)");
+        item2.setBody("@<a href=\"https://bsdnode.xyz/actor/2\" class=\"h-card mention\">username</a> On duplicated posts, sent by AndStatus, please read <a href=\"https://github.com/andstatus/andstatus/issues/83\" title=\"https://github.com/andstatus/andstatus/issues/83\" class=\"attachment\" rel=\"nofollow\">https://github.com/andstatus/andstatus/issues/83</a><br /> Sorry if I misunderstood your post :-)");
         assertDuplicates(item1, DuplicationLink.DUPLICATES, item2);
 
         item1.setBody("&quot;Interactions&quot; timeline in Twidere is the same or close to existing &quot;Mentions&quot; timeline in AndStatus");

@@ -68,7 +68,7 @@ public class ConnectionTwitterTest {
         connectionData = OriginConnectionData.fromAccountName(
                 AccountName.fromOriginAndUsername(origin, demoData.TWITTER_TEST_ACCOUNT_USERNAME),
                 TriState.UNKNOWN);
-        connectionData.setAccountActor(demoData.getAccountUserByOid(demoData.TWITTER_TEST_ACCOUNT_ACTOR_OID));
+        connectionData.setAccountActor(demoData.getAccountActorByOid(demoData.TWITTER_TEST_ACCOUNT_ACTOR_OID));
         connectionData.setDataReader(new AccountDataReaderEmpty());
         connection = connectionData.newConnection();
         httpConnection = (HttpConnectionMock) connection.http;

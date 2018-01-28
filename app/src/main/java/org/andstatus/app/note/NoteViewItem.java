@@ -68,11 +68,11 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
         setOrigin(myContext.persistentOrigins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)));
         setLinkedAccount(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID));
 
-        authorName = TimelineSql.userColumnIndexToNameAtTimeline(cursor,
+        authorName = TimelineSql.actorColumnIndexToNameAtTimeline(cursor,
                 cursor.getColumnIndex(ActorTable.AUTHOR_NAME), MyPreferences.getShowOrigin());
         setBody(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.BODY)));
         inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
-        inReplyToUserId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID);
+        inReplyToActorId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID);
         inReplyToName = DbUtils.getString(cursor, ActorTable.IN_REPLY_TO_NAME);
         recipientName = DbUtils.getString(cursor, ActorTable.RECIPIENT_NAME);
         activityUpdatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);

@@ -231,7 +231,7 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
             return timeline.fromSearch(parentActivity.getMyContext(), isInternetSearch())
                                     .fromIsCombined(parentActivity.getMyContext(), isCombined()).getUri();
         }
-        return MatchedUri.getActorListUri(parentActivity.getCurrentMyAccount().getActorId(), ActorListType.USERS,
+        return MatchedUri.getActorListUri(parentActivity.getCurrentMyAccount().getActorId(), ActorListType.ACTORS,
                         isCombined() ? 0 : getOrigin().getId(), 0, "");
     }
 

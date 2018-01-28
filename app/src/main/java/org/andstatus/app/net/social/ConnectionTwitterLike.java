@@ -170,7 +170,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     }
 
     /**
-     * Returns a cursored collection of user IDs for every user following the specified user.
+     * Returns a cursored collection of actor IDs for every actor following the specified actor.
      * @see <a
      *      href="https://dev.twitter.com/rest/reference/get/followers/ids">GET followers/ids</a>
      */
@@ -333,12 +333,12 @@ public abstract class ConnectionTwitterLike extends Connection {
                 }
                 if (!SharedPreferencesUtil.isEmpty(inReplyToNoteOid)) {
                     // Construct Related note from available info
-                    Actor inReplyToUser = Actor.fromOriginAndActorOid(data.getOrigin(), inReplyToActorOid);
+                    Actor inReplyToActor = Actor.fromOriginAndActorOid(data.getOrigin(), inReplyToActorOid);
                     if (jso.has("in_reply_to_screen_name")) {
-                        inReplyToUser.setUsername(jso.getString("in_reply_to_screen_name"));
+                        inReplyToActor.setUsername(jso.getString("in_reply_to_screen_name"));
                     }
                     AActivity inReplyTo = AActivity.newPartialNote(data.getAccountActor(), inReplyToNoteOid);
-                    inReplyTo.setActor(inReplyToUser);
+                    inReplyTo.setActor(inReplyToActor);
                     note.setInReplyTo(inReplyTo);
                 }
             }
@@ -375,15 +375,15 @@ public abstract class ConnectionTwitterLike extends Connection {
         if (SharedPreferencesUtil.isEmpty(oid)) {
             oid = "";
         }
-        String userName = "";
+        String username = "";
         if (jso.has("screen_name")) {
-            userName = jso.optString("screen_name");
-            if (SharedPreferencesUtil.isEmpty(userName)) {
-                userName = "";
+            username = jso.optString("screen_name");
+            if (SharedPreferencesUtil.isEmpty(username)) {
+                username = "";
             }
         }
         Actor actor = Actor.fromOriginAndActorOid(data.getOrigin(), oid);
-        actor.setUsername(userName);
+        actor.setUsername(username);
         actor.setRealName(jso.optString("name"));
         if (!SharedPreferencesUtil.isEmpty(actor.getRealName())) {
             actor.setProfileUrl(data.getOriginUrl());
@@ -395,7 +395,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         actor.setDescription(jso.optString("description"));
         actor.setHomepage(jso.optString("url"));
         // Hack for twitter.com
-        actor.setProfileUrl(http.pathToUrlString("/").replace("/api.", "/") + userName);
+        actor.setProfileUrl(http.pathToUrlString("/").replace("/api.", "/") + username);
         actor.notesCount = jso.optLong("statuses_count");
         actor.favoritesCount = jso.optLong("favourites_count");
         actor.followingCount = jso.optLong("friends_count");
@@ -410,7 +410,7 @@ public abstract class ConnectionTwitterLike extends Connection {
                 activity.setActor(actor);
                 actor.setLatestActivity(activity);
             } catch (JSONException e) {
-                throw ConnectionException.loggedJsonException(this, "getting status from user", e, jso);
+                throw ConnectionException.loggedJsonException(this, "getting status from actor", e, jso);
             }
         }
         return actor;
@@ -478,21 +478,21 @@ public abstract class ConnectionTwitterLike extends Connection {
         }
     }
 
-    List<Actor> jArrToUsers(JSONArray jArr, ApiRoutineEnum apiRoutine, String url) throws ConnectionException {
-        List<Actor> users = new ArrayList<>();
+    List<Actor> jArrToActors(JSONArray jArr, ApiRoutineEnum apiRoutine, String url) throws ConnectionException {
+        List<Actor> actors = new ArrayList<>();
         if (jArr != null) {
             for (int index = 0; index < jArr.length(); index++) {
                 try {
                     JSONObject jso = jArr.getJSONObject(index);
                     Actor item = actorFromJson(jso);
-                    users.add(item);
+                    actors.add(item);
                 } catch (JSONException e) {
                     throw ConnectionException.loggedJsonException(this, "Parsing " + apiRoutine, e, null);
                 }
             }
         }
-        MyLog.d(this, apiRoutine + " '" + url + "' " + users.size() + " items");
-        return users;
+        MyLog.d(this, apiRoutine + " '" + url + "' " + actors.size() + " items");
+        return actors;
     }
 
     /**
@@ -514,12 +514,12 @@ public abstract class ConnectionTwitterLike extends Connection {
     }
     
     @Override
-    public AActivity updatePrivateNote(String note, String noteOid, String actorOid, Uri mediaUri) throws ConnectionException {
+    public AActivity updatePrivateNote(String note, String noteOid, String recipientOid, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put("text", note);
-            if ( !TextUtils.isEmpty(actorOid)) {
-                formParams.put("user_id", actorOid);
+            if ( !TextUtils.isEmpty(recipientOid)) {
+                formParams.put("user_id", recipientOid);
             }
         } catch (JSONException e) {
             MyLog.e(this, e);

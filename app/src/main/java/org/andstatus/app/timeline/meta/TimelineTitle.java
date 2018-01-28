@@ -76,10 +76,10 @@ public class TimelineTitle {
         if (timeline.hasSearchQuery()) {
             I18n.appendWithSpace(title, "'" + timeline.getSearchQuery() + "'");
         }
-        if (timeline.getActorId() != 0 && (timeline.isUserDifferentFromAccount() ||
+        if (timeline.getActorId() != 0 && (timeline.isActorDifferentFromAccount() ||
                 timeline.getTimelineType().isAtOrigin())) {
-            if (timeline.isUserDifferentFromAccount()) {
-                I18n.appendWithSpace(title, timeline.getUserInTimeline());
+            if (timeline.isActorDifferentFromAccount()) {
+                I18n.appendWithSpace(title, timeline.getActorInTimeline());
             } else {
                 I18n.appendWithSpace(title, timeline.getMyAccount().toAccountButtonText(myContext));
             }

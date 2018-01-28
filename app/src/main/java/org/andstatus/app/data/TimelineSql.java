@@ -70,20 +70,20 @@ public class TimelineSql {
             case MY_FOLLOWERS:
             case FRIENDS:
             case MY_FRIENDS:
-                String fUserIdColumnName = FriendshipTable.FRIEND_ID;
-                String fUserLinkedUserIdColumnName = FriendshipTable.ACTOR_ID;
+                String fActorIdColumnName = FriendshipTable.FRIEND_ID;
+                String fActorLinkedActorIdColumnName = FriendshipTable.ACTOR_ID;
                 if (timeline.getTimelineType() == TimelineType.FOLLOWERS ||
                         timeline.getTimelineType() == TimelineType.MY_FOLLOWERS) {
-                    fUserIdColumnName = FriendshipTable.ACTOR_ID;
-                    fUserLinkedUserIdColumnName = FriendshipTable.FRIEND_ID;
+                    fActorIdColumnName = FriendshipTable.ACTOR_ID;
+                    fActorLinkedActorIdColumnName = FriendshipTable.FRIEND_ID;
                 }
                 // Select only the latest note from each Friend's timeline
                 String activityIds = "SELECT " + ActorTable.ACTOR_ACTIVITY_ID
                         + " FROM " + ActorTable.TABLE_NAME + " AS u1"
                         + " INNER JOIN " + FriendshipTable.TABLE_NAME
-                        + " ON (" + FriendshipTable.TABLE_NAME + "." + fUserIdColumnName + "=u1." + BaseColumns._ID
+                        + " ON (" + FriendshipTable.TABLE_NAME + "." + fActorIdColumnName + "=u1." + BaseColumns._ID
                         + " AND " + FriendshipTable.TABLE_NAME + "."
-                        + fUserLinkedUserIdColumnName + selectedAccounts.getSql()
+                        + fActorLinkedActorIdColumnName + selectedAccounts.getSql()
                         + " AND " + FriendshipTable.FOLLOWED + "=1"
                         + ")";
                 activityWhere.append(BaseColumns._ID + " IN (" + activityIds + ")");
@@ -140,7 +140,7 @@ public class TimelineSql {
         if (columns.contains(ActorTable.AUTHOR_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
                     + BaseColumns._ID + ", " 
-                    + TimelineSql.userNameField() + " AS " + ActorTable.AUTHOR_NAME
+                    + TimelineSql.usernameField() + " AS " + ActorTable.AUTHOR_NAME
                     + " FROM " + ActorTable.TABLE_NAME + ") AS author ON "
                     + ProjectionMap.MSG_TABLE_ALIAS + "." + NoteTable.AUTHOR_ID + "=author."
                     + BaseColumns._ID;
@@ -177,7 +177,7 @@ public class TimelineSql {
         }
         if (columns.contains(ActorTable.IN_REPLY_TO_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
-                    + TimelineSql.userNameField() + " AS " + ActorTable.IN_REPLY_TO_NAME
+                    + TimelineSql.usernameField() + " AS " + ActorTable.IN_REPLY_TO_NAME
                     + " FROM " + ActorTable.TABLE_NAME + ") AS prevAuthor ON "
                     + ProjectionMap.MSG_TABLE_ALIAS + "." + NoteTable.IN_REPLY_TO_ACTOR_ID
                     + "=prevAuthor." + BaseColumns._ID;
@@ -251,39 +251,39 @@ public class TimelineSql {
     }
 
     @NonNull
-    public static String userColumnNameToNameAtTimeline(Cursor cursor, String columnName, boolean showOrigin) {
-        return userColumnIndexToNameAtTimeline(cursor, cursor.getColumnIndex(columnName), showOrigin);
+    public static String actorColumnNameToNameAtTimeline(Cursor cursor, String columnName, boolean showOrigin) {
+        return actorColumnIndexToNameAtTimeline(cursor, cursor.getColumnIndex(columnName), showOrigin);
     }
 
     @NonNull
-    public static String userColumnIndexToNameAtTimeline(Cursor cursor, int columnIndex, boolean showOrigin) {
-        String userName = "";
+    public static String actorColumnIndexToNameAtTimeline(Cursor cursor, int columnIndex, boolean showOrigin) {
+        String username = "";
         if (columnIndex >= 0) {
-            userName = cursor.getString(columnIndex);
-            if (TextUtils.isEmpty(userName)) {
-                userName = "";
+            username = cursor.getString(columnIndex);
+            if (TextUtils.isEmpty(username)) {
+                username = "";
             }
         }
         if (showOrigin) {
             long originId = DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID);
             if (originId != 0) {
                 Origin origin = MyContextHolder.get().persistentOrigins().fromId(originId);
-                userName += " / " + origin.getName();
+                username += " / " + origin.getName();
                 if (origin.getOriginType() == OriginType.GNUSOCIAL &&
                         MyPreferences.isShowDebuggingInfoInUi()) {
                     long authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID);
                     if (authorId != 0) {
-                        userName += " id:" + MyQuery.idToOid(OidEnum.ACTOR_OID, authorId, 0);
+                        username += " id:" + MyQuery.idToOid(OidEnum.ACTOR_OID, authorId, 0);
                     }
                 }
             }
         }
-        return userName;
+        return username;
     }
 
-    public static String userNameField() {
+    public static String usernameField() {
         ActorInTimeline actorInTimeline = MyPreferences.getActorInTimeline();
-        return MyQuery.userNameField(actorInTimeline);
+        return MyQuery.usernameField(actorInTimeline);
     }
     
 }

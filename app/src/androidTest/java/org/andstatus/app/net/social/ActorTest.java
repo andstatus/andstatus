@@ -45,13 +45,13 @@ public class ActorTest {
                 + " Please take this into account\n@" + webFingerId2
                 + " @" + demoData.GNUSOCIAL_TEST_ACCOUNT2_USERNAME
                 + " And let me mention: @" + shortUsername3;
-        List<Actor> users = Actor.fromOriginAndActorOid(origin, "").extractActorsFromBodyText(body, false);
-        String msgLog = body + " ->\n" + users;
-        assertEquals(msgLog, 4, users.size());
-        assertEquals(msgLog, demoData.GNUSOCIAL_TEST_ACCOUNT_USERNAME, users.get(0).getUsername());
-        assertEquals(msgLog, demoData.GNUSOCIAL_TEST_ACCOUNT2_USERNAME, users.get(1).getUsername());
-        assertEquals(msgLog, webFingerId2, users.get(2).getWebFingerId());
-        assertEquals(msgLog, shortUsername3, users.get(3).getUsername());
+        List<Actor> actors = Actor.fromOriginAndActorOid(origin, "").extractActorsFromBodyText(body, false);
+        String msgLog = body + " ->\n" + actors;
+        assertEquals(msgLog, 4, actors.size());
+        assertEquals(msgLog, demoData.GNUSOCIAL_TEST_ACCOUNT_USERNAME, actors.get(0).getUsername());
+        assertEquals(msgLog, demoData.GNUSOCIAL_TEST_ACCOUNT2_USERNAME, actors.get(1).getUsername());
+        assertEquals(msgLog, webFingerId2, actors.get(2).getWebFingerId());
+        assertEquals(msgLog, shortUsername3, actors.get(3).getUsername());
     }
 
     @Test
@@ -66,14 +66,14 @@ public class ActorTest {
                 + " by @" + USERNAME1 + " @@" + SKIPPED_USERNAME2 + " @#" + SKIPPED_USERNAME3
                 + " &amp; @" + USERNAME4
                 + " https://t.co/djkdfeowefPh";
-        List<Actor> users = Actor.fromOriginAndActorOid(origin, "").extractActorsFromBodyText(body, false);
-        String msgLog = body + " -> " + users;
-        assertEquals(msgLog, 2, users.size());
-        assertEquals(msgLog, USERNAME1, users.get(0).getUsername());
-        assertFalse(msgLog, users.get(0).isOidReal());
-        assertFalse(msgLog, users.get(0).hasAltTempOid());
+        List<Actor> actors = Actor.fromOriginAndActorOid(origin, "").extractActorsFromBodyText(body, false);
+        String msgLog = body + " -> " + actors;
+        assertEquals(msgLog, 2, actors.size());
+        assertEquals(msgLog, USERNAME1, actors.get(0).getUsername());
+        assertFalse(msgLog, actors.get(0).isOidReal());
+        assertFalse(msgLog, actors.get(0).hasAltTempOid());
 
-        assertEquals(msgLog, USERNAME4, users.get(1).getUsername());
+        assertEquals(msgLog, USERNAME4, actors.get(1).getUsername());
     }
 
     @Test
@@ -92,25 +92,25 @@ public class ActorTest {
         checkWebFingerId("AndStatus@datamost.com", true);
     }
 
-    private void checkWebFingerId(String userName, boolean valid) {
-        assertEquals("Username '" + userName + "' " + (valid ? "is valid" : "invalid"), valid,
-                Actor.isWebFingerIdValid(userName));
+    private void checkWebFingerId(String username, boolean valid) {
+        assertEquals("Username '" + username + "' " + (valid ? "is valid" : "invalid"), valid,
+                Actor.isWebFingerIdValid(username));
     }
 
     @Test
     public void testEquals() {
         Origin origin = MyContextHolder.get().persistentOrigins().fromId(18);
-        Actor user1 = Actor.fromOriginAndActorOid(origin, "acct:fourthWithoutAvatar@pump.example.com");
-        user1.actorId = 11;
-        user1.setUsername("fourthWithoutAvatar@pump.example.com");
-        user1.setRealName("Real fourthWithoutAvatar@pump.example.com");
-        user1.setProfileUrl("http://pump.example.com/fourthWithoutAvatar");
+        Actor actor1 = Actor.fromOriginAndActorOid(origin, "acct:fourthWithoutAvatar@pump.example.com");
+        actor1.actorId = 11;
+        actor1.setUsername("fourthWithoutAvatar@pump.example.com");
+        actor1.setRealName("Real fourthWithoutAvatar@pump.example.com");
+        actor1.setProfileUrl("http://pump.example.com/fourthWithoutAvatar");
 
-        Actor user2 = Actor.fromOriginAndActorId(origin, 11);
-        user2.setUsername("fourthWithoutAvatar@pump.example.com");
+        Actor actor2 = Actor.fromOriginAndActorId(origin, 11);
+        actor2.setUsername("fourthWithoutAvatar@pump.example.com");
 
-        assertEquals(user1, user2);
-        assertEquals(user1.toString() + " vs " + user2, user1.hashCode(), user2.hashCode());
+        assertEquals(actor1, actor2);
+        assertEquals(actor1.toString() + " vs " + actor2, actor1.hashCode(), actor2.hashCode());
 
     }
 }

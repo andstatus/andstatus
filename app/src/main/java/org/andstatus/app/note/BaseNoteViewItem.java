@@ -58,7 +58,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     String recipientName = "";
 
     public long inReplyToNoteId = 0;
-    long inReplyToUserId = 0;
+    long inReplyToActorId = 0;
     String inReplyToName = "";
 
     String noteSource = "";
@@ -105,8 +105,8 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         this.origin = origin;
     }
 
-    void setLinkedAccount(long linkedUserId) {
-        linkedMyAccount = getMyContext().persistentAccounts().fromActorId(linkedUserId);
+    void setLinkedAccount(long linkedActorId) {
+        linkedMyAccount = getMyContext().persistentAccounts().fromActorId(linkedActorId);
     }
 
     @NonNull
@@ -248,8 +248,8 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
             if (filter.keywordsFilter.matchedAny(bodyToSearch)) return false;
             if (!filter.searchQuery.isEmpty() && !filter.searchQuery.matchedAll(bodyToSearch)) return false;
         }
-        if (filter.hideRepliesNotToMeOrFriends && inReplyToUserId != 0
-                && !MyContextHolder.get().persistentAccounts().isMeOrMyFriend(inReplyToUserId)) return false;
+        if (filter.hideRepliesNotToMeOrFriends && inReplyToActorId != 0
+                && !MyContextHolder.get().persistentAccounts().isMeOrMyFriend(inReplyToActorId)) return false;
         return true;
     }
 

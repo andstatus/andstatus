@@ -117,7 +117,7 @@ public class MyHtmlTest {
         String body = "";
         String expected = "the favorited note";
 
-        body = "Somebody favorited something by anotheruser: " + expected;
+        body = "Somebody favorited something by anotheractor: " + expected;
         assertEquals(expected, MyHtml.getCleanedBody(body));
         assertTrue(body, MyHtml.isFavoritingAction(body));
         assertFalse(HTMLIFIED_STRING, MyHtml.isFavoritingAction(HTMLIFIED_STRING));

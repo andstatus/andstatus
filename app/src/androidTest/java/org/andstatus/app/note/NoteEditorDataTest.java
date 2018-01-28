@@ -32,18 +32,18 @@ public class NoteEditorDataTest {
         assertEquals(origin, ma.getOrigin());
         long entryMsgId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(),
                 demoData.CONVERSATION_ENTRY_NOTE_OID);
-        long entryUserId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(),
+        long entryActorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(),
                 demoData.CONVERSATION_ENTRY_AUTHOR_OID);
-        long memberUserId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(),
+        long memberActorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(),
                 demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
-        assertData(ma, entryMsgId, entryUserId, 0, memberUserId, false);
-        assertData(ma, entryMsgId, entryUserId, 0, memberUserId, true);
-        assertData(ma,          0,           0, memberUserId, 0, false);
-        assertData(ma,          0,           0, memberUserId, 0, true);
+        assertData(ma, entryMsgId, entryActorId, 0, memberActorId, false);
+        assertData(ma, entryMsgId, entryActorId, 0, memberActorId, true);
+        assertData(ma,          0,           0, memberActorId, 0, false);
+        assertData(ma,          0,           0, memberActorId, 0, true);
     }
 
-    private void assertData(MyAccount ma, long inReplyToMsgId, long inReplyToUserId, long recipientId,
-            long memberUserId, boolean replyAll) {
+    private void assertData(MyAccount ma, long inReplyToMsgId, long inReplyToActorId, long recipientId,
+            long memberActorId, boolean replyAll) {
         Uri uri = Uri.parse("http://example.com/" + demoData.TESTRUN_UID + "/some.png");
         NoteEditorData data = NoteEditorData.newEmpty(ma)
                 .setInReplyToNoteId(inReplyToMsgId)
@@ -53,18 +53,18 @@ public class NoteEditorDataTest {
         assertFalse(data.toString(), data.body.contains("@"));
         data.addMentionsToText();
         assertEquals(recipientId, data.recipients.getFirst().actorId);
-        assertMentionedUser(data, inReplyToUserId, true);
-        assertMentionedUser(data, memberUserId, replyAll);
+        assertMentionedActor(data, inReplyToActorId, true);
+        assertMentionedActor(data, memberActorId, replyAll);
         assertEquals(data.toString(), Uri.EMPTY, data.getMediaUri());
     }
 
-    private void assertMentionedUser(NoteEditorData data, long mentionedUserId, boolean isMentioned_in) {
-        if (mentionedUserId == 0) {
+    private void assertMentionedActor(NoteEditorData data, long mentionedActorId, boolean isMentioned_in) {
+        if (mentionedActorId == 0) {
             return;
         }
-        String expectedName = MyQuery.userIdToStringColumnValue(
+        String expectedName = MyQuery.actorIdToStringColumnValue(
                 data.ma.getOrigin().isMentionAsWebFingerId() ? ActorTable.WEBFINGER_ID
-                        : ActorTable.USERNAME, mentionedUserId);
+                        : ActorTable.USERNAME, mentionedActorId);
         assertTrue(!TextUtils.isEmpty(expectedName));
         boolean isMentioned = data.body.contains("@" + expectedName);
         assertEquals(data.toString() + "; expected name:" + expectedName, isMentioned_in, isMentioned);

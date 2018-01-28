@@ -147,7 +147,7 @@
                   android:label="@string/user_list"
                   android:parentActivityName=".timeline.TimelineActivity">
             <intent-filter>
-                <action android:name="org.andstatus.app.action.VIEW_USERS" />
+                <action android:name="org.andstatus.app.action.VIEW_ACTORS" />
                 <category android:name="android.intent.category.DEFAULT"/>
                 <data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.user"/>
             </intent-filter>

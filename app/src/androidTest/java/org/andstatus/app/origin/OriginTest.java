@@ -185,8 +185,8 @@ public class OriginTest {
         checkUsernameIsValid(origin, "AndStatus@datamost.com", true);
     }
 
-    private void checkUsernameIsValid(Origin origin, String userName, boolean valid) {
-        assertEquals("Username '" + userName + "' " + (valid ? "is not valid" : "is valid"), valid,
-                origin.isUsernameValid(userName));
+    private void checkUsernameIsValid(Origin origin, String username, boolean valid) {
+        assertEquals("Username '" + username + "' " + (valid ? "is not valid" : "is valid"), valid,
+                origin.isUsernameValid(username));
     }
 }

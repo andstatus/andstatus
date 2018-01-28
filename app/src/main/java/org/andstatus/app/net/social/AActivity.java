@@ -480,7 +480,7 @@ public class AActivity extends AObject {
         switch (type) {
             case LIKE:
             case UNDO_LIKE:
-                final MyAccount myActorAccount = myContext.persistentAccounts().fromUser(actor);
+                final MyAccount myActorAccount = myContext.persistentAccounts().fromActor(actor);
                 if (myActorAccount.isValid()) {
                     MyLog.v(this, myActorAccount + " " + type
                             + " '" + getNote().oid + "' " + I18n.trimTextAt(getNote().getBody(), 80));

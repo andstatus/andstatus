@@ -77,7 +77,7 @@ public class DemoAccountInserter {
         MyLog.v(this, "Adding account " + accountName);
         assertTrue("Name '" + accountNameString + "' is valid for " + originType, accountName.isValid());
         assertEquals("Origin for '" + accountNameString + "' account created", accountName.getOrigin().getOriginType(), originType);
-        long accountUserId_existing = MyQuery.oidToId(myContext.getDatabase(), OidEnum.ACTOR_OID,
+        long accountActorId_existing = MyQuery.oidToId(myContext.getDatabase(), OidEnum.ACTOR_OID,
                 accountName.getOrigin().getId(), actorOid);
         Actor actor = Actor.fromOriginAndActorOid(accountName.getOrigin(), actorOid);
         actor.setUsername(accountName.getUsername());
@@ -86,12 +86,12 @@ public class DemoAccountInserter {
             actor.setWebFingerId(actor.getUsername() + "@" + actor.origin.getUrl().getHost());
         }
         MyAccount ma = addAccountFromActor(actor);
-        long accountUserId = ma.getActorId();
+        long accountActorId = ma.getActorId();
         String msg = "AccountUserId for '" + accountNameString + ", (first: '" + firstAccountActorOid + "')";
-        if (accountUserId_existing == 0 && !actorOid.contains(firstAccountActorOid)) {
-            assertTrue(msg + " != 1", accountUserId != 1);
+        if (accountActorId_existing == 0 && !actorOid.contains(firstAccountActorOid)) {
+            assertTrue(msg + " != 1", accountActorId != 1);
         } else {
-            assertTrue(msg + " != 0", accountUserId != 0);
+            assertTrue(msg + " != 0", accountActorId != 0);
         }
         assertTrue("Account " + actorOid + " is persistent", ma.isValid());
         assertTrue("Account actorOid", ma.getActorOid().equalsIgnoreCase(actorOid));

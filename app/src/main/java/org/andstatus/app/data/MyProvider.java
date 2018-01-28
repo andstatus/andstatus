@@ -98,11 +98,11 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case ACTOR:
-                count = deleteUsers(db, selection, selectionArgs);
+                count = deleteActors(db, selection, selectionArgs);
                 break;
 
             case ACTOR_ITEM:
-                count = deleteUsers(db, BaseColumns._ID + "=" + uriParser.getActorId(), null);
+                count = deleteActors(db, BaseColumns._ID + "=" + uriParser.getActorId(), null);
                 break;
 
             default:
@@ -177,7 +177,7 @@ public class MyProvider extends ContentProvider {
         return count;
     }
 
-    private int deleteUsers(SQLiteDatabase db, String selection, String[] selectionArgs) {
+    private int deleteActors(SQLiteDatabase db, String selection, String[] selectionArgs) {
         int count;
         // TODO: Delete related records also... 
         count = db.delete(ActorTable.TABLE_NAME, selection, selectionArgs);
@@ -297,7 +297,7 @@ public class MyProvider extends ContentProvider {
 
         ContentValues values;
         FriendshipValues friendshipValues = null;
-        long accountUserId = 0;
+        long accountActorId = 0;
         
         long rowId;
         Uri newUri = null;
@@ -319,7 +319,7 @@ public class MyProvider extends ContentProvider {
             ParsedUri uriParser = ParsedUri.fromUri(uri);
             switch (uriParser.matched()) {
                 case MSG_ITEM:
-                    accountUserId = uriParser.getAccountUserId();
+                    accountActorId = uriParser.getAccountActorId();
                     
                     table = NoteTable.TABLE_NAME;
                     if (!values.containsKey(NoteTable.BODY)) {
@@ -339,8 +339,8 @@ public class MyProvider extends ContentProvider {
                 case ACTOR_ITEM:
                     table = ActorTable.TABLE_NAME;
                     values.put(ActorTable.INS_DATE, MyLog.uniqueCurrentTimeMS());
-                    accountUserId = uriParser.getAccountUserId();
-                    friendshipValues = FriendshipValues.valueOf(accountUserId, 0, values);
+                    accountActorId = uriParser.getAccountActorId();
+                    friendshipValues = FriendshipValues.valueOf(accountActorId, 0, values);
                     break;
                     
                 default:
@@ -362,13 +362,13 @@ public class MyProvider extends ContentProvider {
 
             switch (uriParser.matched()) {
                 case MSG_ITEM:
-                    newUri = MatchedUri.getMsgUri(accountUserId, rowId);
+                    newUri = MatchedUri.getMsgUri(accountActorId, rowId);
                     break;
                 case ORIGIN_ITEM:
                     newUri = MatchedUri.getOriginUri(rowId);
                     break;
                 case ACTOR_ITEM:
-                    newUri = MatchedUri.getActorUri(accountUserId, rowId);
+                    newUri = MatchedUri.getActorUri(accountActorId, rowId);
                     break;
                 default:
                     break;
@@ -381,7 +381,7 @@ public class MyProvider extends ContentProvider {
 
     private void optionallyLoadAvatar(long actorId, ContentValues values) {
         if (MyPreferences.getShowAvatars() && values.containsKey(ActorTable.AVATAR_URL)) {
-            AvatarData.getForUser(actorId).requestDownload();
+            AvatarData.getForActor(actorId).requestDownload();
         }
     }
     
@@ -558,7 +558,7 @@ public class MyProvider extends ContentProvider {
         }
         int count = 0;
         ParsedUri uriParser = ParsedUri.fromUri(uri);
-        long accountUserId;
+        long accountActorId;
         switch (uriParser.matched()) {
             case ACTIVITY:
                 count = db.update(NoteTable.TABLE_NAME, values, selection, selectionArgs);
@@ -578,16 +578,16 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case ACTOR_ITEM:
-                accountUserId = uriParser.getAccountUserId();
-                long selectedUserId = uriParser.getActorId();
-                FriendshipValues friendshipValues = FriendshipValues.valueOf(accountUserId, selectedUserId, values);
+                accountActorId = uriParser.getAccountActorId();
+                long selectedActorId = uriParser.getActorId();
+                FriendshipValues friendshipValues = FriendshipValues.valueOf(accountActorId, selectedActorId, values);
                 if (values.size() > 0) {
-                    count = db.update(ActorTable.TABLE_NAME, values, BaseColumns._ID + "=" + selectedUserId
+                    count = db.update(ActorTable.TABLE_NAME, values, BaseColumns._ID + "=" + selectedActorId
                                     + (StringUtils.nonEmpty(selection) ? " AND (" + selection + ')' : ""),
                             selectionArgs);
                 }
                 friendshipValues.update(db);
-                optionallyLoadAvatar(selectedUserId, values);
+                optionallyLoadAvatar(selectedActorId, values);
                 break;
 
             default:

@@ -77,7 +77,7 @@ public class DataPruner {
         final SqlActorIds accountIds = SqlActorIds.fromIds(MyContextHolder.get().persistentAccounts().list().stream()
                 .map(MyAccount::getActorId).collect(Collectors.toList()));
         String sqlNotMyActivity = ActivityTable.TABLE_NAME + "." + ActivityTable.ACTOR_ID + accountIds.getNotSql();
-        String sqlNotLatestActivityByUser = ActivityTable.TABLE_NAME + "." + ActivityTable._ID + " NOT IN("
+        String sqlNotLatestActivityByActor = ActivityTable.TABLE_NAME + "." + ActivityTable._ID + " NOT IN("
                 + " SELECT " + ActorTable.ACTOR_ACTIVITY_ID + " FROM " + ActorTable.TABLE_NAME + ")";
 
         long maxDays = Integer.parseInt(sp.getString(MyPreferences.KEY_HISTORY_TIME, "3"));
@@ -96,7 +96,7 @@ public class DataPruner {
                 sa.addSelection(ActivityTable.TABLE_NAME + "." + ActivityTable.INS_DATE + " <  ?",
                         Long.toString(latestTimestamp));
                 sa.addSelection(sqlNotMyActivity);
-                sa.addSelection(sqlNotLatestActivityByUser);
+                sa.addSelection(sqlNotLatestActivityByActor);
                 nDeletedTime = mContentResolver.delete(MatchedUri.ACTIVITY_CONTENT_URI, sa.selection, sa.selectionArgs);
             }
 
@@ -117,7 +117,7 @@ public class DataPruner {
                         sa.addSelection(ActivityTable.TABLE_NAME + "." + ActivityTable.INS_DATE + " <=  ?",
                                 Long.toString(latestTimestampSize));
                         sa.addSelection(sqlNotMyActivity);
-                        sa.addSelection(sqlNotLatestActivityByUser);
+                        sa.addSelection(sqlNotLatestActivityByActor);
                         nDeletedSize = mContentResolver.delete(MatchedUri.ACTIVITY_CONTENT_URI, sa.selection,
                                 sa.selectionArgs);
                     }

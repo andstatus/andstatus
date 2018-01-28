@@ -223,9 +223,9 @@ public class DemoConversationInserter {
         assertNotificationEvent(followOf3, NotificationEventType.EMPTY);
 
         AActivity notLoaded1 = AActivity.newPartialNote(accountActor, MyLog.uniqueDateTimeFormatted());
-        Actor notLoadedUser = Actor.fromOriginAndActorOid(accountActor.origin, "acct:notloaded@someother.host"
+        Actor notLoadedActor = Actor.fromOriginAndActorOid(accountActor.origin, "acct:notloaded@someother.host"
         + demoData.TEST_ORIGIN_PARENT_HOST);
-        notLoaded1.setActor(notLoadedUser);
+        notLoaded1.setActor(notLoadedActor);
         AActivity reply15 = buildActivity(author4, "Reply 15 to not loaded 1", notLoaded1, null);
         addActivity(reply15);
 
@@ -285,6 +285,6 @@ public class DemoConversationInserter {
 
     static void assertIfActorIsMyFriend(Actor actor, boolean isFriendOf, MyAccount ma) {
         Set<Long> friendsIds = MyQuery.getFriendsIds(ma.getActorId());
-        assertEquals("User " + actor + " is a friend of " + ma, isFriendOf, friendsIds.contains(actor.actorId));
+        assertEquals("Actor " + actor + " is a friend of " + ma, isFriendOf, friendsIds.contains(actor.actorId));
     }
 }

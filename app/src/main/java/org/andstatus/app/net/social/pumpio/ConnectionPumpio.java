@@ -173,16 +173,16 @@ public class ConnectionPumpio extends Connection {
 
     @Override
     public List<Actor> getFollowers(String actorOid) throws ConnectionException {
-        return getUsers(actorOid, ApiRoutineEnum.GET_FOLLOWERS);
+        return getActors(actorOid, ApiRoutineEnum.GET_FOLLOWERS);
     }
 
     @Override
     public List<Actor> getFriends(String actorOid) throws ConnectionException {
-        return getUsers(actorOid, ApiRoutineEnum.GET_FRIENDS);
+        return getActors(actorOid, ApiRoutineEnum.GET_FRIENDS);
     }
 
     @NonNull
-    private List<Actor> getUsers(String actorId, ApiRoutineEnum apiRoutine) throws ConnectionException {
+    private List<Actor> getActors(String actorId, ApiRoutineEnum apiRoutine) throws ConnectionException {
         int limit = 200;
         ConnectionAndUrl conu = getConnectionAndUrl(apiRoutine, actorId);
         Uri sUri = Uri.parse(conu.url);
@@ -190,20 +190,20 @@ public class ConnectionPumpio extends Connection {
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
         String url = builder.build().toString();
         JSONArray jArr = conu.httpConnection.getRequestAsArray(url);
-        List<Actor> users = new ArrayList<>();
+        List<Actor> actors = new ArrayList<>();
         if (jArr != null) {
             for (int index = 0; index < jArr.length(); index++) {
                 try {
                     JSONObject jso = jArr.getJSONObject(index);
                     Actor item = actorFromJson(jso);
-                    users.add(item);
+                    actors.add(item);
                 } catch (JSONException e) {
-                    throw ConnectionException.loggedJsonException(this, "Parsing list of users", e, null);
+                    throw ConnectionException.loggedJsonException(this, "Parsing list of actors", e, null);
                 }
             }
         }
-        MyLog.d(TAG, apiRoutine + " '" + url + "' " + users.size() + " users");
-        return users;
+        MyLog.d(TAG, apiRoutine + " '" + url + "' " + actors.size() + " actors");
+        return actors;
     }
 
     @Override
@@ -280,7 +280,8 @@ public class ConnectionPumpio extends Connection {
         String host = usernameToHost(username);
         conu.httpConnection = http;
         if (TextUtils.isEmpty(host)) {
-            throw new ConnectionException(StatusCode.BAD_REQUEST, apiRoutine + ": host is empty for the userName='" + username + "'");
+            throw new ConnectionException(StatusCode.BAD_REQUEST, apiRoutine + ": host is empty for the username='"
+                    + username + "'");
         } else if (http.data.originUrl == null || host.compareToIgnoreCase(http.data.originUrl.getHost()) != 0) {
             MyLog.v(this, "Requesting data from the host: " + host);
             HttpConnectionData connectionData1 = http.data.copy();
@@ -292,7 +293,8 @@ public class ConnectionPumpio extends Connection {
         if (!conu.httpConnection.data.areOAuthClientKeysPresent()) {
             conu.httpConnection.registerClient(getApiPath(ApiRoutineEnum.REGISTER_CLIENT));
             if (!conu.httpConnection.getCredentialsPresent()) {
-                throw ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST, "No credentials", conu.httpConnection.data.originUrl);
+                throw ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST,
+                        "No credentials", conu.httpConnection.data.originUrl);
             }
         }
         conu.url = conu.url.replace("%nickname%", nickname);
@@ -305,10 +307,10 @@ public class ConnectionPumpio extends Connection {
     }
     
     @Override
-    public AActivity updatePrivateNote(String note, String noteOid, String actorOid, Uri mediaUri) throws ConnectionException {
+    public AActivity updatePrivateNote(String note, String noteOid, String recipientOid, Uri mediaUri) throws ConnectionException {
         String body = toHtmlIfAllowed(note);
         ActivitySender sender = ActivitySender.fromContent(this, noteOid, body);
-        sender.setRecipient(actorOid);
+        sender.setRecipient(recipientOid);
         sender.setMediaUri(mediaUri);
         return activityFromJson(sender.sendMe(PActivityType.POST));
     }
@@ -581,7 +583,7 @@ public class ConnectionPumpio extends Connection {
     }
 
     private AActivity actOnActor(PActivityType activityType, String actorId) throws ConnectionException {
-        return ActivitySender.fromId(this, actorId).sendUser(activityType);
+        return ActivitySender.fromId(this, actorId).sendActor(activityType);
     }
     
     @Override

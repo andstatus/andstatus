@@ -351,19 +351,19 @@ public class Actor implements Comparable<Actor> {
             if (atPos < 0 || (atPos > 0 && replyOnly)) {
                 break;
             }
-            String validUserName = "";
+            String validUsername = "";
             String validWebFingerId = "";
             int ind=atPos+1;
             for (; ind < text.length(); ind++) {
                 if (SEPARATORS.indexOf(text.charAt(ind)) >= 0) {
                     break;
                 }
-                String userName = text.substring(atPos+1, ind + 1);
-                if (origin.isUsernameValid(userName)) {
-                    validUserName = userName;
+                String username = text.substring(atPos+1, ind + 1);
+                if (origin.isUsernameValid(username)) {
+                    validUsername = username;
                 }
-                if (isWebFingerIdValid(userName)) {
-                    validWebFingerId = userName;
+                if (isWebFingerIdValid(username)) {
+                    validWebFingerId = username;
                 }
             }
             if (ind < text.length()) {
@@ -371,14 +371,14 @@ public class Actor implements Comparable<Actor> {
             } else {
                 text = "";
             }
-            if (StringUtils.nonEmpty(validWebFingerId) || StringUtils.nonEmpty(validUserName)) {
-                addExtractedUser(actors, validWebFingerId, validUserName);
+            if (StringUtils.nonEmpty(validWebFingerId) || StringUtils.nonEmpty(validUsername)) {
+                addExtractedActor(actors, validWebFingerId, validUsername);
             }
         }
         return actors;
     }
 
-    private void addExtractedUser(List<Actor> actors, String webFingerId, String validUserName) {
+    private void addExtractedActor(List<Actor> actors, String webFingerId, String validUsername) {
         Actor actor = Actor.fromOriginAndActorOid(origin, "");
         if (Actor.isWebFingerIdValid(webFingerId)) {
             actor.setWebFingerId(webFingerId);
@@ -386,7 +386,7 @@ public class Actor implements Comparable<Actor> {
             // Try a host of the Author, next - a host of this Social network
             for (String host : Arrays.asList(getHost(), origin.getHost())) {
                 if (UrlUtils.hostIsValid(host)) {
-                    final String possibleWebFingerId = validUserName + "@" + host;
+                    final String possibleWebFingerId = validUsername + "@" + host;
                     actor.actorId = MyQuery.webFingerIdToId(origin.getId(), possibleWebFingerId);
                     if (actor.actorId != 0) {
                         actor.setWebFingerId(possibleWebFingerId);
@@ -395,7 +395,7 @@ public class Actor implements Comparable<Actor> {
                 }
             }
         }
-        actor.setUsername(validUserName);
+        actor.setUsername(validUsername);
         actor.lookupActorId();
         if (!actors.contains(actor)) {
             actors.add(actor);
@@ -482,7 +482,7 @@ public class Actor implements Comparable<Actor> {
         }
     }
 
-    public String toUserTitle(boolean showWebFingerId) {
+    public String toActorTitle(boolean showWebFingerId) {
         StringBuilder builder = new StringBuilder();
         if (showWebFingerId && !TextUtils.isEmpty(getWebFingerId())) {
             builder.append(getWebFingerId());

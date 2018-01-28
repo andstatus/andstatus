@@ -28,8 +28,8 @@
         android:defaultValue="3"
         android:title="@string/tap_on_a_timeline_title_behaviour" />
     <org.andstatus.app.context.MultilineListPreference android:key="user_in_timeline"
-        android:entries="@array/user_in_timeline_entries"
-        android:entryValues="@array/user_in_timeline_values"
+        android:entries="@array/actor_in_timeline_entries"
+        android:entryValues="@array/actor_in_timeline_values"
         android:defaultValue="3"
         android:title="@string/title_preference_user_in_timeline"
         android:summary="@string/summary_preference_user_in_timeline"

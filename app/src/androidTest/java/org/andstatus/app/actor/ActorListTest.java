@@ -104,15 +104,15 @@ public class ActorListTest extends TimelineActivityTest {
         if (noteWasFound) {
             assertEquals(listItems.toString(), 5, listItems.size());
 
-            Actor userE = DemoConversationInserter.getActors().get(demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
-            assertTrue("Found " + demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID + " cached ", userE != null);
-            Actor userA = getByActorOid(listItems, demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
-            assertTrue("Found " + demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID + ", " + logMsg, userA != null);
-            compareAttributes(userE, userA, true);
+            Actor actorE = DemoConversationInserter.getActors().get(demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
+            assertTrue("Found " + demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID + " cached ", actorE != null);
+            Actor actorA = getByActorOid(listItems, demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
+            assertTrue("Found " + demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID + ", " + logMsg, actorA != null);
+            compareAttributes(actorE, actorA, true);
         }
 
-        ListActivityTestHelper<ActorList> userListHelper = new ListActivityTestHelper<>(actorList);
-        userListHelper.clickListAtPosition(method, userListHelper.getPositionOfListItemId(listItems.get(
+        ListActivityTestHelper<ActorList> actorListHelper = new ListActivityTestHelper<>(actorList);
+        actorListHelper.clickListAtPosition(method, actorListHelper.getPositionOfListItemId(listItems.get(
                 listItems.size() > 2 ? 2 : 0).getActorId()));
         DbUtils.waitMs(method, 500);
     }

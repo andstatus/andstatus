@@ -72,7 +72,7 @@ public class CommandData implements Comparable<CommandData> {
     /** This is: 1. Generally: Note ID ({@link NoteTable#NOTE_ID} of the {@link NoteTable})...
      */
     protected long itemId = 0;
-    /** Sometimes we don't know {@link #timeline#getUserId} yet...
+    /** Sometimes we don't know {@link #timeline#getActorId} yet...
      * Used for Actor search also
      */
     private String username = "";
@@ -188,7 +188,7 @@ public class CommandData implements Comparable<CommandData> {
                         Timeline.fromBundle(myContext, bundle),
                         bundle.getLong(IntentExtra.CREATED_DATE.key));
                 commandData.itemId = bundle.getLong(IntentExtra.ITEM_ID.key);
-                commandData.setUsername(BundleUtils.getString(bundle, IntentExtra.ACTOR_NAME));
+                commandData.setUsername(BundleUtils.getString(bundle, IntentExtra.USERNAME));
                 commandData.description = BundleUtils.getString(bundle, IntentExtra.COMMAND_DESCRIPTION);
                 commandData.mInForeground = bundle.getBoolean(IntentExtra.IN_FOREGROUND.key);
                 commandData.mManuallyLaunched = bundle.getBoolean(IntentExtra.MANUALLY_LAUNCHED.key);
@@ -215,7 +215,7 @@ public class CommandData implements Comparable<CommandData> {
         BundleUtils.putNotEmpty(bundle, IntentExtra.COMMAND, command.save());
         timeline.toBundle(bundle);
         BundleUtils.putNotZero(bundle, IntentExtra.ITEM_ID, itemId);
-        BundleUtils.putNotEmpty(bundle, IntentExtra.ACTOR_NAME, username);
+        BundleUtils.putNotEmpty(bundle, IntentExtra.USERNAME, username);
         BundleUtils.putNotEmpty(bundle, IntentExtra.COMMAND_DESCRIPTION, description);
         bundle.putBoolean(IntentExtra.IN_FOREGROUND.key, mInForeground);
         bundle.putBoolean(IntentExtra.MANUALLY_LAUNCHED.key, mManuallyLaunched);
@@ -395,7 +395,7 @@ public class CommandData implements Comparable<CommandData> {
                         myContext.context().getText(R.string.combined_timeline_off_account));
                 I18n.appendWithSpace(builder, MyQuery.actorIdToWebfingerId(timeline.getActorId()));
                 if (myContext.persistentAccounts().getDistinctOriginsCount() > 1) {
-                    long originId = MyQuery.userIdToLongColumnValue(ActorTable.ORIGIN_ID,
+                    long originId = MyQuery.actorIdToLongColumnValue(ActorTable.ORIGIN_ID,
                             timeline.getActorId());
                     I18n.appendWithSpace(builder, 
                             myContext.context().getText(R.string.combined_timeline_off_origin));
@@ -535,7 +535,7 @@ public class CommandData implements Comparable<CommandData> {
         return timeline;
     }
 
-    public long getUserId() {
+    public long getActorId() {
         return timeline.getActorId();
     }
 

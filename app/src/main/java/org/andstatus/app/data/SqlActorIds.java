@@ -53,8 +53,8 @@ public class SqlActorIds {
         return new SqlActorIds();
     }
 
-    public static SqlActorIds fromUsers(@NonNull Collection<Actor> users) {
-        return new SqlActorIds(users.stream().map(user -> user.actorId).collect(toList()));
+    public static SqlActorIds fromActors(@NonNull Collection<Actor> actors) {
+        return new SqlActorIds(actors.stream().map(actor -> actor.actorId).collect(toList()));
     }
 
     public static SqlActorIds fromIds(@NonNull Collection<Long> ids) {

@@ -121,7 +121,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         myServiceReceiver = new MyServiceEventsReceiver(myContext, this);
 
         mParsedUri = ParsedUri.fromIntent(getIntent());
-        setCurrentMyAccount(getParsedUri().getAccountUserId(), getParsedUri().getOriginId());
+        setCurrentMyAccount(getParsedUri().getAccountActorId(), getParsedUri().getOriginId());
         centralItemId = getParsedUri().getItemId();
     }
 

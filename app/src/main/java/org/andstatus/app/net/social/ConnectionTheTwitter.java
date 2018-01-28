@@ -187,7 +187,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
             builder.appendQueryParameter("q", searchQuery);
         }
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
-        return jArrToUsers(http.getRequestAsArray(builder.build().toString()), apiRoutine, url);
+        return jArrToActors(http.getRequestAsArray(builder.build().toString()), apiRoutine, url);
     }
 
     private static final String ATTACHMENTS_FIELD_NAME = "media";
@@ -242,7 +242,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
             builder.appendQueryParameter("user_id", actorId);
         }
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
-        return jArrToUsers(http.getRequestAsArray(builder.build().toString()), apiRoutine, url);
+        return jArrToActors(http.getRequestAsArray(builder.build().toString()), apiRoutine, url);
     }
 
 }

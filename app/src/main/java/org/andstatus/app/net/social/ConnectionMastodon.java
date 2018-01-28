@@ -217,7 +217,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         builder.appendQueryParameter("resolve", "true");
         builder.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
         JSONArray jArr = http.getRequestAsArray(builder.build().toString());
-        return jArrToUsers(jArr, apiRoutine, url);
+        return jArrToActors(jArr, apiRoutine, url);
     }
 
     protected String getApiPathWithTag(ApiRoutineEnum routineEnum, String tag) throws ConnectionException {
@@ -295,12 +295,12 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             return Actor.EMPTY;
         }
         String oid = jso.optString("id");
-        String userName = jso.optString("username");
-        if (TextUtils.isEmpty(oid) || TextUtils.isEmpty(userName)) {
+        String username = jso.optString("username");
+        if (TextUtils.isEmpty(oid) || TextUtils.isEmpty(username)) {
             throw ConnectionException.loggedJsonException(this, "Id or username is empty", null, jso);
         }
         Actor actor = Actor.fromOriginAndActorOid(data.getOrigin(), oid);
-        actor.setUsername(userName);
+        actor.setUsername(username);
         actor.setRealName(jso.optString("display_name"));
         actor.setWebFingerId(jso.optString("acct"));
         if (!SharedPreferencesUtil.isEmpty(actor.getRealName())) {
@@ -414,7 +414,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     public Actor getActor(String actorOid, String username) throws ConnectionException {
         JSONObject jso = http.getRequest(getApiPathWithActorId(ApiRoutineEnum.GET_ACTOR, actorOid));
         Actor actor = actorFromJson(jso);
-        MyLog.v(this, "getUser oid='" + actorOid + "', userName='" + username + "' -> " + actor.getRealName());
+        MyLog.v(this, "getActor oid='" + actorOid + "', username='" + username + "' -> " + actor.getRealName());
         return actor;
     }
 
@@ -452,7 +452,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         Uri.Builder builder = sUri.buildUpon();
         int limit = 400;
         builder.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
-        return jArrToUsers(http.getRequestAsArray(builder.build().toString()), apiRoutine, url);
+        return jArrToActors(http.getRequestAsArray(builder.build().toString()), apiRoutine, url);
     }
 
 }

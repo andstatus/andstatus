@@ -124,7 +124,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
 
     @NonNull
     private String getActorOid() throws ConnectionException {
-        long actorId = execContext.getCommandData().getUserId();
+        long actorId = execContext.getCommandData().getActorId();
         if (actorId == 0) {
             if (getTimeline().getMyAccount().isValid()) {
                 return getTimeline().getMyAccount().getActorOid();

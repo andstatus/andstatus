@@ -26,30 +26,30 @@ import org.andstatus.app.util.UriUtils;
 public class AvatarData extends DownloadData {
     public static final String TAG = AvatarData.class.getSimpleName();
 
-    public static void asyncRequestDownload(final long userIdIn) {
+    public static void asyncRequestDownload(final long actorIdIn) {
         AsyncTaskLauncher.execute(TAG, false,
-                new MyAsyncTask<Void, Void, Void>(TAG + userIdIn, MyAsyncTask.PoolEnum.FILE_DOWNLOAD) {
+                new MyAsyncTask<Void, Void, Void>(TAG + actorIdIn, MyAsyncTask.PoolEnum.FILE_DOWNLOAD) {
                     @Override
                     protected Void doInBackground2(Void... params) {
-                        getForUser(userIdIn).requestDownload();
+                        getForActor(actorIdIn).requestDownload();
                         return null;
                     }
                 }
         );
     }
     
-    public static AvatarData getForUser(long userIdIn) {
-        Uri avatarUriNew = UriUtils.fromString(MyQuery.userIdToStringColumnValue(ActorTable.AVATAR_URL, userIdIn));
-        AvatarData data = new AvatarData(userIdIn, Uri.EMPTY);
+    public static AvatarData getForActor(long actorIdIn) {
+        Uri avatarUriNew = UriUtils.fromString(MyQuery.actorIdToStringColumnValue(ActorTable.AVATAR_URL, actorIdIn));
+        AvatarData data = new AvatarData(actorIdIn, Uri.EMPTY);
         if (!data.getUri().equals(avatarUriNew)) {
-            deleteAllOfThisUser(userIdIn);
-            data = new AvatarData(userIdIn, avatarUriNew);
+            deleteAllOfThisActor(actorIdIn);
+            data = new AvatarData(actorIdIn, avatarUriNew);
         }
         return data;
     }
     
-    private AvatarData(long userIdIn, Uri avatarUriNew) {
-        super(userIdIn, 0, MyContentType.IMAGE, avatarUriNew);
+    private AvatarData(long actorIdIn, Uri avatarUriNew) {
+        super(actorIdIn, 0, MyContentType.IMAGE, avatarUriNew);
     }
     
 }

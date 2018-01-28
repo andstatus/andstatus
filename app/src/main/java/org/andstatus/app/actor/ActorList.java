@@ -58,7 +58,7 @@ public class ActorList extends NoteEditorListActivity {
             return;
         }
 
-        mActorListType = getParsedUri().getUserListType();
+        mActorListType = getParsedUri().getActorListType();
         contextMenu = new ActorContextMenu(this, MyContextMenu.MENU_GROUP_OBJACTOR);
     }
 

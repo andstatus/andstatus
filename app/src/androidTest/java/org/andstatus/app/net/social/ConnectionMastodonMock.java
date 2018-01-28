@@ -27,7 +27,7 @@ public class ConnectionMastodonMock extends ConnectionMastodon {
         OriginConnectionData connectionData = OriginConnectionData.fromAccountName(
                 AccountName.fromOriginAndUsername(origin, demoData.MASTODON_TEST_ACCOUNT_USERNAME),
                 TriState.UNKNOWN);
-        connectionData.setAccountActor(demoData.getAccountUserByOid(demoData.MASTODON_TEST_ACCOUNT_ACTOR_OID));
+        connectionData.setAccountActor(demoData.getAccountActorByOid(demoData.MASTODON_TEST_ACCOUNT_ACTOR_OID));
         connectionData.setDataReader(new AccountDataReaderEmpty());
         enrichConnectionData(connectionData);
         try {

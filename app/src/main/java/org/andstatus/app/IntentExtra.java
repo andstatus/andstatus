@@ -36,7 +36,7 @@ public enum IntentExtra{
     COMMAND_DESCRIPTION("COMMAND_DESCRIPTION"),
     REQUEST_CODE("REQUEST_CODE"),
     /**
-     * Command parameter: long - ID of the Tweet (or Msg) / User / Origin
+     * Command parameter: long - ID of the Tweet (or Note) / Actor / Origin
      */
     ITEM_ID("ITEM_ID"),
     INSTANCE_ID("INSTANCE_ID"),
@@ -54,7 +54,7 @@ public enum IntentExtra{
     ACCOUNT_NAME("ACCOUNT_NAME"),
     /** Selected Actor. E.g. the Actor whose notes we are seeing */
     ACTOR_ID("ACTOR_ID"),
-    ACTOR_NAME("ACTOR_NAME"),
+    USERNAME("ACTOR_NAME"),
     ORIGIN_ID("ORIGIN_ID"),
     ORIGIN_NAME("ORIGIN_NAME"),
     ORIGIN_TYPE("ORIGIN_TYPE"),

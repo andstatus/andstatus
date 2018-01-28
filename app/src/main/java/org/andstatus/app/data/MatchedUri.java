@@ -80,7 +80,7 @@ public enum MatchedUri {
     private static final String COUNT_SEGMENT = "count";
     private static final String CONTENT_SEGMENT = "content";
     private static final String CONTENT_ITEM_SEGMENT = "item";
-    private static final String ACTOR_SEGMENT = "user";
+    private static final String ACTOR_SEGMENT = "actor";
     private static final String CENTRAL_ITEM_SEGMENT = "cnt";
 
     private static final String CONTENT_URI_PREFIX = "content://" + AUTHORITY + "/";
@@ -109,7 +109,7 @@ public enum MatchedUri {
     static {
         /** 
          * The order of PathSegments (parameters of timelines) in the URI
-         * 1. MyAccount USER_ID is the first parameter (this is his timeline of the type specified below!)
+         * 1. MyAccount ACTOR_ID is the first parameter (this is his timeline of the type specified below!)
          * 2 - 3. LISTTYPE_SEGMENT + actual type
          * 4 - 5. ORIGIN_SEGMENT +  0 or 1  (1 for combined timeline)
          * 6 - 7. MyDatabase.NOTE_TABLE_NAME + "/" + NOTE_ID  (optional, used to access specific Note)
@@ -215,8 +215,8 @@ public enum MatchedUri {
         return uri;
     }
 
-    public static Uri getActorListItemUri(long accountUserId, ActorListType actorListType, long originId, long actorId) {
-        Uri uri = getBaseAccountUri(accountUserId, ActorTable.TABLE_NAME);
+    public static Uri getActorListItemUri(long accountActorId, ActorListType actorListType, long originId, long actorId) {
+        Uri uri = getBaseAccountUri(accountActorId, ActorTable.TABLE_NAME);
         uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + actorListType.save());
         uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + originId);
         uri = Uri.withAppendedPath(uri, CONTENT_ITEM_SEGMENT);
@@ -233,19 +233,19 @@ public enum MatchedUri {
     }
 
     /**
-     * @param accountUserId actorId of MyAccount or 0 if not needed
+     * @param accountActorId actorId of MyAccount or 0 if not needed
      * @param tableName name in the {@link DatabaseHolder}
      * @param itemId ID or 0 - if the Item doesn't exist
      */
-    private static Uri getContentItemUri(long accountUserId, String tableName, long itemId) {
-        Uri uri = getBaseAccountUri(accountUserId, tableName); 
+    private static Uri getContentItemUri(long accountActorId, String tableName, long itemId) {
+        Uri uri = getBaseAccountUri(accountActorId, tableName);
         uri = Uri.withAppendedPath(uri, CONTENT_ITEM_SEGMENT);
         uri = ContentUris.withAppendedId(uri, itemId);
         return uri;
     }
     
-    private static Uri getBaseAccountUri(long accountUserId, String tableName) {
+    private static Uri getBaseAccountUri(long accountActorId, String tableName) {
         return ContentUris.withAppendedId(Uri.parse(CONTENT_URI_PREFIX + tableName), 
-                accountUserId);
+                accountActorId);
     }
 }

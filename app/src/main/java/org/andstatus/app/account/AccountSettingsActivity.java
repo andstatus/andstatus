@@ -98,7 +98,7 @@ public class AccountSettingsActivity extends MyActivity {
     private static final int MSG_ACCOUNT_VALID = 2;
     private static final int MSG_ACCOUNT_INVALID = 3;
     private static final int MSG_CONNECTION_EXCEPTION = 5;
-    private static final int MSG_CREDENTIALS_OF_OTHER_USER = 7;
+    private static final int MSG_CREDENTIALS_OF_OTHER_ACCOUNT = 7;
 
     private enum ActivityOnFinish {
         NONE,
@@ -1235,8 +1235,8 @@ public class AccountSettingsActivity extends MyActivity {
                         case AUTHENTICATION_ERROR:
                             what = MSG_ACCOUNT_INVALID;
                             break;
-                        case CREDENTIALS_OF_OTHER_USER:
-                            what = MSG_CREDENTIALS_OF_OTHER_USER;
+                        case CREDENTIALS_OF_OTHER_ACCOUNT:
+                            what = MSG_CREDENTIALS_OF_OTHER_ACCOUNT;
                             break;
                         default:
                             what = MSG_CONNECTION_EXCEPTION;
@@ -1280,7 +1280,7 @@ public class AccountSettingsActivity extends MyActivity {
                         case MSG_ACCOUNT_INVALID:
                             errorMessage = getText(R.string.dialog_summary_authentication_failed);
                             break;
-                        case MSG_CREDENTIALS_OF_OTHER_USER:
+                        case MSG_CREDENTIALS_OF_OTHER_ACCOUNT:
                             errorMessage = getText(R.string.error_credentials_of_other_user);
                             break;
                         case MSG_CONNECTION_EXCEPTION:

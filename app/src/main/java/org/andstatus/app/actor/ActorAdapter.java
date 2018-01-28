@@ -64,7 +64,7 @@ public class ActorAdapter extends BaseTimelineAdapter<ActorViewItem> {
 
     public void populateView(View view, ActorViewItem item, int position) {
         MyUrlSpan.showText(view, R.id.username,
-                item.actor.toUserTitle(showWebFingerId) + ( isCombined() ?
+                item.actor.toActorTitle(showWebFingerId) + ( isCombined() ?
                         " / " + item.actor.origin.getName() : ""),
                 false, false);
         if (showAvatars) {

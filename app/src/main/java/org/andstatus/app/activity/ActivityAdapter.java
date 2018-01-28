@@ -62,14 +62,14 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
             noteView.setOnClickListener(noteAdapter);
             noteView.setVisibility(View.VISIBLE);
         }
-        final ViewGroup userView = view.findViewById(R.id.actor_wrapper);
+        final ViewGroup actorView = view.findViewById(R.id.actor_wrapper);
         if (item.getObjActorItem().getId() == 0) {
-            userView.setVisibility(View.GONE);
+            actorView.setVisibility(View.GONE);
         } else {
-            objActorAdapter.populateView(userView, item.getObjActorItem(), position);
-            userView.setOnCreateContextMenuListener(contextMenu.objActor);
-            userView.setOnClickListener(objActorAdapter);
-            userView.setVisibility(View.VISIBLE);
+            objActorAdapter.populateView(actorView, item.getObjActorItem(), position);
+            actorView.setOnCreateContextMenuListener(contextMenu.objActor);
+            actorView.setOnClickListener(objActorAdapter);
+            actorView.setVisibility(View.VISIBLE);
         }
         return view;
     }

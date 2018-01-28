@@ -43,9 +43,9 @@ public class FriendshipValues {
      * @return
      */
     public static FriendshipValues valueOf(long actorId, long friendId, ContentValues values) {
-        FriendshipValues userValues = new FriendshipValues(actorId, friendId);
-        ContentValuesUtils.moveBooleanKey(FriendshipTable.FOLLOWED, "", values, userValues.contentValues);
-        return userValues;
+        FriendshipValues values2 = new FriendshipValues(actorId, friendId);
+        ContentValuesUtils.moveBooleanKey(FriendshipTable.FOLLOWED, "", values, values2.contentValues);
+        return values2;
     }
 
     public static void setFollowed(long followerId, long friendId) {

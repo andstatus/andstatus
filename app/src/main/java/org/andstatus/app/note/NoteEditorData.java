@@ -75,10 +75,10 @@ public class NoteEditorData {
      * -1 - is non-existent id.
      */
     public long inReplyToNoteId = 0;
-    private long inReplyToUserId = 0;
+    private long inReplyToActorId = 0;
     String inReplyToBody = "";
     private boolean replyToConversationParticipants = false;
-    private boolean replyToMentionedUsers = false;
+    private boolean replyToMentionedActors = false;
     public Audience recipients = new Audience();
     public MyAccount ma = MyAccount.EMPTY;
 
@@ -135,7 +135,7 @@ public class NoteEditorData {
             builder.append("downloadData:" + downloadData + ",");
         }
         if(inReplyToNoteId != 0) {
-            builder.append("inReplyTo:" + inReplyToNoteId + " by " + inReplyToUserId + ",");
+            builder.append("inReplyTo:" + inReplyToNoteId + " by " + inReplyToActorId + ",");
         }
         if(replyToConversationParticipants) {
             builder.append("ReplyAll,");
@@ -165,7 +165,7 @@ public class NoteEditorData {
                 data.image = imageFile.loadAndGetImage();
             }
             data.inReplyToNoteId = MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, noteId);
-            data.inReplyToUserId = MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_ACTOR_ID, noteId);
+            data.inReplyToActorId = MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_ACTOR_ID, noteId);
             data.inReplyToBody = MyQuery.noteIdToStringColumnValue(NoteTable.BODY, data.inReplyToNoteId);
             data.recipients = Audience.fromNoteId(ma.getOrigin(), noteId);
             data.isPrivate = MyQuery.noteIdToTriState(NoteTable.PRIVATE, noteId);
@@ -187,7 +187,7 @@ public class NoteEditorData {
             data.downloadData = downloadData;
             data.image = image;
             data.inReplyToNoteId = inReplyToNoteId;
-            data.inReplyToUserId = inReplyToUserId;
+            data.inReplyToActorId = inReplyToActorId;
             data.inReplyToBody = inReplyToBody;
             data.replyToConversationParticipants = replyToConversationParticipants;
             data.recipients.addAll(recipients);
@@ -208,10 +208,10 @@ public class NoteEditorData {
         if (inReplyToNoteId != 0) {
             final AActivity inReplyTo = AActivity.newPartialNote(getMyAccount().getActor(),
                     MyQuery.idToOid(OidEnum.NOTE_OID, inReplyToNoteId, 0), 0, UNKNOWN);
-            if (inReplyToUserId == 0) {
-                inReplyToUserId = MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, inReplyToNoteId);
+            if (inReplyToActorId == 0) {
+                inReplyToActorId = MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, inReplyToNoteId);
             }
-            inReplyTo.setActor(Actor.fromOriginAndActorId(getMyAccount().getOrigin(), inReplyToUserId));
+            inReplyTo.setActor(Actor.fromOriginAndActorId(getMyAccount().getOrigin(), inReplyToActorId));
             note.setInReplyTo(inReplyTo);
         }
         Uri mediaUri = imageUriToSave.equals(Uri.EMPTY) ? downloadData.getUri() : imageUriToSave;
@@ -281,8 +281,8 @@ public class NoteEditorData {
         return this;
     }
 
-    public NoteEditorData setReplyToMentionedUsers(boolean replyToMentionedUsers) {
-        this.replyToMentionedUsers = replyToMentionedUsers;
+    public NoteEditorData setReplyToMentionedActors(boolean replyToMentionedUsers) {
+        this.replyToMentionedActors = replyToMentionedUsers;
         return this;
     }
 
@@ -290,10 +290,10 @@ public class NoteEditorData {
         if (ma.isValid() && inReplyToNoteId != 0) {
             if (replyToConversationParticipants) {
                 addConversationParticipantsBeforeText();
-            } else if (replyToMentionedUsers) {
-                addMentionedUsersBeforeText();
+            } else if (replyToMentionedActors) {
+                addMentionedActorsBeforeText();
             } else {
-                addUsersBeforeText(new ArrayList<Long>());
+                addActorsBeforeText(new ArrayList<Long>());
             }
         }
         return this;
@@ -310,10 +310,10 @@ public class NoteEditorData {
                 toMention.add(item.authorId);
             }
         }
-        addUsersBeforeText(toMention);
+        addActorsBeforeText(toMention);
     }
 
-    private void addMentionedUsersBeforeText() {
+    private void addMentionedActorsBeforeText() {
         ActorsOfNoteListLoader loader = new ActorsOfNoteListLoader(ActorListType.ACTORS_OF_NOTE, ma, inReplyToNoteId
                 , "").setMentionedOnly(true);
         loader.load(null);
@@ -321,10 +321,10 @@ public class NoteEditorData {
         for(ActorViewItem item : loader.getList()) {
             toMention.add(item.getActorId());
         }
-        addUsersBeforeText(toMention);
+        addActorsBeforeText(toMention);
     }
 
-    private void addUsersBeforeText(List<Long> toMention) {
+    private void addActorsBeforeText(List<Long> toMention) {
         toMention.add(0, MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, inReplyToNoteId));
         List<Long> mentioned = new ArrayList<>();
         mentioned.add(ma.getActorId());  // Don't mention an author of this note
@@ -346,8 +346,8 @@ public class NoteEditorData {
         }
     }
 
-    public NoteEditorData appendMentionedUserToText(long mentionedUserId) {
-        String name = MyQuery.actorIdToName(mentionedUserId, getActorInTimeline());
+    public NoteEditorData appendMentionedActorToText(long mentionedActorId) {
+        String name = MyQuery.actorIdToName(mentionedActorId, getActorInTimeline());
         if (!TextUtils.isEmpty(name)) {
             String bodyText2 = "@" + name + " ";
             if (!TextUtils.isEmpty(body) && !(body + " ").contains(bodyText2)) {

@@ -54,7 +54,7 @@ public class ActorContextMenu extends MyContextMenu {
         int order = 0;
         try {
             new ContextMenuHeader(getActivity(), menu)
-                    .setTitle(getViewItem().actor.toUserTitle(false))
+                    .setTitle(getViewItem().actor.toActorTitle(false))
                     .setSubtitle(getMyActor().getAccountName());
             String shortName = getViewItem().actor.getUsername();
             if (getViewItem().actor.isIdentified()) {
@@ -66,7 +66,7 @@ public class ActorContextMenu extends MyContextMenu {
                 ActorContextMenuItem.FOLLOWERS.addTo(menu, menuGroup, order++,
                         String.format(
                                 getActivity().getText(R.string.followers_of).toString(), shortName));
-                if (getViewItem().userIsFollowedBy(getMyActor())) {
+                if (getViewItem().actorIsFollowedBy(getMyActor())) {
                     ActorContextMenuItem.STOP_FOLLOWING.addTo(menu, menuGroup, order++,
                             String.format(
                                     getActivity().getText(R.string.menu_item_stop_following_user).toString(), shortName));

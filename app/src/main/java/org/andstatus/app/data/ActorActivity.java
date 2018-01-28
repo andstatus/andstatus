@@ -54,21 +54,21 @@ public final class ActorActivity {
     /**
      * Retrieve from the database information about the last downloaded activity by this Actor
      */
-    public ActorActivity(long userIdIn) {
-        actorId = userIdIn;
+    public ActorActivity(long actorIdIn) {
+        actorId = actorIdIn;
         if (actorId == 0) {
             throw new IllegalArgumentException(TAG + ": actorId==0");
         }
-        lastActivityId = MyQuery.userIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, actorId);
-        lastActivityDate = MyQuery.userIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_DATE, actorId);
+        lastActivityId = MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, actorId);
+        lastActivityDate = MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_DATE, actorId);
     }
 
     /**
      * All information is supplied in this constructor, so it doesn't lookup anything in the database
      */
-    public ActorActivity(long userIdIn, long activityId, long activityDate) {
-        if (userIdIn != 0 && activityId != 0) {
-            actorId = userIdIn;
+    public ActorActivity(long actorIdIn, long activityId, long activityDate) {
+        if (actorIdIn != 0 && activityId != 0) {
+            actorId = actorIdIn;
             onNewActivity(activityId, activityDate);
         }
     }
@@ -125,10 +125,10 @@ public final class ActorActivity {
         }
 
         // As a precaution compare with stored values ones again
-        long activityDate = MyQuery.userIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_DATE, actorId);
+        long activityDate = MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_DATE, actorId);
         if (activityDate > lastActivityDate) {
             lastActivityDate = activityDate;
-            lastActivityId = MyQuery.userIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, actorId);
+            lastActivityId = MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, actorId);
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, "There is newer information in the database. Actor " + actorId + ": "
                         + MyQuery.actorIdToWebfingerId(actorId)

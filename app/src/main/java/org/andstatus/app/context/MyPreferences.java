@@ -48,7 +48,7 @@ public class MyPreferences {
     // Timeline
     public static final String KEY_DEFAULT_TIMELINE = "default_timeline";
     public static final String KEY_TAP_ON_A_TIMELINE_TITLE_BEHAVIOUR = "tap_on_a_timeline_title";
-    public static final String KEY_USER_IN_TIMELINE = "user_in_timeline";
+    public static final String KEY_ACTOR_IN_TIMELINE = "user_in_timeline";
     public static final String KEY_SHOW_AVATARS = "show_avatars";
     public static final String KEY_SHOW_ORIGIN = "show_origin";
     public static final String KEY_MARK_REPLIES_IN_TIMELINE = "mark_replies_in_timeline";
@@ -189,7 +189,7 @@ public class MyPreferences {
     }
 
     public static ActorInTimeline getActorInTimeline() {
-        return ActorInTimeline.load(SharedPreferencesUtil.getString(KEY_USER_IN_TIMELINE, ""));
+        return ActorInTimeline.load(SharedPreferencesUtil.getString(KEY_ACTOR_IN_TIMELINE, ""));
     }
 
     public static boolean isShowDebuggingInfoInUi() {

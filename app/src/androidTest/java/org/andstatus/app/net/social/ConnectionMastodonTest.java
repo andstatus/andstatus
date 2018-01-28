@@ -66,7 +66,7 @@ public class ConnectionMastodonTest {
         assertEquals("Timeline position", "22", activity.getTimelinePosition().getPosition());
         assertEquals("Note Oid", "22", activity.getNote().oid);
         assertEquals("Account unknown " + activity, true, MyContextHolder.get().persistentAccounts()
-                .fromUserOfSameOrigin(activity.accountActor).isValid());
+                .fromActorOfSameOrigin(activity.accountActor).isValid());
         Note note = activity.getNote();
         assertEquals("Is not a note " + activity, AObjectType.NOTE, activity.getObjectType());
         assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));

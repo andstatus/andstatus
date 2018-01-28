@@ -172,31 +172,31 @@ public class PersistentAccounts {
     }
 
     @NonNull
-    public MyAccount fromUserOfSameOrigin(@NonNull Actor actor) {
-        return fromUser(actor, true);
+    public MyAccount fromActorOfSameOrigin(@NonNull Actor actor) {
+        return fromActor(actor, true);
     }
 
     /** Doesn't take origin into account */
     @NonNull
-    public MyAccount fromUser(@NonNull Actor actor) {
-        return fromUser(actor, false);
+    public MyAccount fromActor(@NonNull Actor actor) {
+        return fromActor(actor, false);
     }
 
     @NonNull
-    public MyAccount fromUser(@NonNull Actor other, boolean sameOriginOnly) {
+    public MyAccount fromActor(@NonNull Actor other, boolean sameOriginOnly) {
         return myAccounts.stream().filter(ma -> ma.getActor().isSame(other, sameOriginOnly))
                 .findFirst().orElse(MyAccount.EMPTY);
     }
 
-    public boolean contains(@NonNull Collection<Actor> users) {
-        for (Actor actor : users) {
-            if (fromUser(actor).isValid()) return true;
+    public boolean contains(@NonNull Collection<Actor> actors) {
+        for (Actor actor : actors) {
+            if (fromActor(actor).isValid()) return true;
         }
         return false;
     }
 
     public boolean contains(@NonNull Actor actor) {
-      return fromUser(actor).isValid();
+      return fromActor(actor).isValid();
     }
 
     public boolean isMyActorId(long actorId) {
@@ -338,8 +338,8 @@ public class PersistentAccounts {
         }
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, method + "; origin=" + origin.getName()
-                    + "; user1=" + ma
-                    + (ma.equals(preferredAccount) ? "" : "; user2=" + preferredAccount)
+                    + "; account1=" + ma
+                    + (ma.equals(preferredAccount) ? "" : "; account2=" + preferredAccount)
                     + (succeededOnly ? "; succeeded only" : ""));
         }
         return ma;

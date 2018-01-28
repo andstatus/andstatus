@@ -108,7 +108,7 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
         return actor.isEmpty();
     }
 
-    public boolean userIsFollowedBy(MyAccount ma) {
+    public boolean actorIsFollowedBy(MyAccount ma) {
         return myFollowers.contains(ma.getActorId());
     }
 

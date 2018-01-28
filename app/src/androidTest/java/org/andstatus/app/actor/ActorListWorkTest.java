@@ -72,16 +72,16 @@ public class ActorListWorkTest extends ActivityTest<ActorList> {
         List<ActorViewItem> listItems = getActivity().getListLoader().getList();
         assertEquals(listItems.toString(), 5, listItems.size());
 
-        Actor userA = ActorListTest.getByActorOid(listItems, demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
+        Actor actor = ActorListTest.getByActorOid(listItems, demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
 
-        assertTrue("Invoked Context menu for " + userA, helper.invokeContextMenuAction4ListItemId(
-                method, userA.actorId, ActorContextMenuItem.FOLLOWERS, 0));
+        assertTrue("Invoked Context menu for " + actor, helper.invokeContextMenuAction4ListItemId(
+                method, actor.actorId, ActorContextMenuItem.FOLLOWERS, 0));
 
-        FollowersList userList = (FollowersList) helper.waitForNextActivity(method, 15000);
-        TestSuite.waitForListLoaded(userList, 1);
+        FollowersList actorList = (FollowersList) helper.waitForNextActivity(method, 15000);
+        TestSuite.waitForListLoaded(actorList, 1);
 
-        List<ActorViewItem> followersItems = userList.getListLoader().getList();
-        ListActivityTestHelper<FollowersList> followersHelper = new ListActivityTestHelper<>(userList);
+        List<ActorViewItem> followersItems = actorList.getListLoader().getList();
+        ListActivityTestHelper<FollowersList> followersHelper = new ListActivityTestHelper<>(actorList);
         followersHelper.clickListAtPosition(method,
                 followersHelper.getPositionOfListItemId(followersItems.get(0).getActorId()));
         DbUtils.waitMs(method, 500);

@@ -102,7 +102,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
             return NoteEditorData.newEmpty(menu.getMyActor()).
-                    setInReplyToNoteId(menu.getNoteId()).setReplyToMentionedUsers(true).
+                    setInReplyToNoteId(menu.getNoteId()).setReplyToMentionedActors(true).
                     addMentionsToText();
         }
 
@@ -177,7 +177,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         NoteEditorData executeAsync(NoteContextMenu menu) {
             final long authorId = MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, menu.getNoteId());
             MyLog.v(this, "noteId:" + menu.getNoteId() + " -> authorId:" + authorId);
-            return NoteEditorData.newEmpty(menu.getMyActor()).appendMentionedUserToText(authorId);
+            return NoteEditorData.newEmpty(menu.getMyActor()).appendMentionedActorToText(authorId);
         }
 
         @Override

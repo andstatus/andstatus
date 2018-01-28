@@ -251,8 +251,8 @@ public class MySettingsFragment extends PreferenceFragment implements
     }
 
     private void showAuthorInTimeline() {
-        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_USER_IN_TIMELINE,
-                R.array.user_in_timeline_values, R.array.user_in_timeline_entries,
+        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_ACTOR_IN_TIMELINE,
+                R.array.actor_in_timeline_values, R.array.actor_in_timeline_entries,
                 R.string.summary_preference_user_in_timeline);
     }
 
@@ -413,7 +413,7 @@ public class MySettingsFragment extends PreferenceFragment implements
                 case MyPreferences.KEY_MIN_LOG_LEVEL:
                     showMinLogLevel();
                     break;
-                case MyPreferences.KEY_USER_IN_TIMELINE:
+                case MyPreferences.KEY_ACTOR_IN_TIMELINE:
                     showAuthorInTimeline();
                     break;
                 case MyPreferences.KEY_TAP_ON_A_TIMELINE_TITLE_BEHAVIOUR:
