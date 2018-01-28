@@ -94,7 +94,7 @@ public class NoteEditorTest extends TimelineActivityTest {
 
     private NoteEditorData getStaticData(MyAccount ma) {
         return NoteEditorData.newEmpty(ma)
-                .setInReplyToMsgId(MyQuery.oidToId(OidEnum.NOTE_OID, ma.getOrigin().getId(),
+                .setInReplyToNoteId(MyQuery.oidToId(OidEnum.NOTE_OID, ma.getOrigin().getId(),
                         demoData.CONVERSATION_ENTRY_NOTE_OID))
                 .addRecipientId(MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOrigin().getId(),
                         demoData.CONVERSATION_ENTRY_AUTHOR_OID))
@@ -130,12 +130,12 @@ public class NoteEditorTest extends TimelineActivityTest {
 
     private void openEditor() throws InterruptedException {
         final String method = "openEditor";
-        MenuItem createMessageButton = getActivity().getOptionsMenu().findItem(R.id.createNoteButton);
-        assertTrue(createMessageButton != null);
+        MenuItem createNoteButton = getActivity().getOptionsMenu().findItem(R.id.createNoteButton);
+        assertTrue(createNoteButton != null);
         View editorView = getActivity().findViewById(R.id.note_editor);
         assertTrue(editorView != null);
         if (editorView.getVisibility() != android.view.View.VISIBLE) {
-            assertTrue("Blog button is visible", createMessageButton.isVisible());
+            assertTrue("Blog button is visible", createNoteButton.isVisible());
             ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
             helper.clickMenuItem(method + " opening editor", R.id.createNoteButton);
         }
@@ -166,7 +166,7 @@ public class NoteEditorTest extends TimelineActivityTest {
         MyLog.v(this, method + " started");
         ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
         View editorView = getActivity().findViewById(R.id.note_editor);
-        ActivityTestHelper.waitViewVisible(method + "; Restored message is visible", editorView);
+        ActivityTestHelper.waitViewVisible(method + "; Restored note is visible", editorView);
         assertInitialText("Note restored");
         helper.clickMenuItem(method + " hide editor", R.id.saveDraftButton);
         ActivityTestHelper.waitViewInvisible(method + "; Editor is hidden again", editorView);
@@ -185,7 +185,7 @@ public class NoteEditorTest extends TimelineActivityTest {
 
         View editorView = getActivity().findViewById(R.id.note_editor);
         ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
-        helper.clickMenuItem(method + " clicker createMessageButton", R.id.createNoteButton);
+        helper.clickMenuItem(method + " clicker createNoteButton", R.id.createNoteButton);
         ActivityTestHelper.waitViewVisible(method + "; Editor appeared", editorView);
         assertTextCleared();
 
@@ -261,11 +261,11 @@ public class NoteEditorTest extends TimelineActivityTest {
                 new ListActivityTestHelper<>(getActivity(), ConversationActivity.class);
         long listItemId = helper.getListItemIdOfLoadedReply();
         String logMsg = "listItemId=" + listItemId;
-        long msgId = TimelineType.HOME.showsActivities() ?
-                MyQuery.activityIdToLongColumnValue(ActivityTable.MSG_ID, listItemId) : listItemId;
-        logMsg += ", msgId=" + msgId;
+        long noteId = TimelineType.HOME.showsActivities() ?
+                MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId) : listItemId;
+        logMsg += ", noteId=" + noteId;
 
-        String body = MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId);
+        String body = MyQuery.noteIdToStringColumnValue(NoteTable.BODY, noteId);
         helper.invokeContextMenuAction4ListItemId(method, listItemId, NoteContextMenuItem.COPY_TEXT, R.id.note_wrapper);
         assertEquals(logMsg, body, getClipboardText(method));
 
@@ -303,17 +303,17 @@ public class NoteEditorTest extends TimelineActivityTest {
     }
 
     @Test
-    public void editLoadedMessage() throws InterruptedException {
-        final String method = "editLoadedMessage";
+    public void editLoadedNote() throws InterruptedException {
+        final String method = "editLoadedNote";
         TestSuite.waitForListLoaded(getActivity(), 2);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(),
                 ConversationActivity.class);
-        long listItemId = helper.findListItemId("My loaded message",
+        long listItemId = helper.findListItemId("My loaded note",
                 item -> item.authorId == data.getMyAccount().getActorId() && item.noteStatus == DownloadStatus.LOADED);
 
-        long msgId = MyQuery.activityIdToLongColumnValue(ActivityTable.MSG_ID, listItemId);
-        String logMsg = "itemId=" + listItemId + ", msgId=" + msgId + " text='"
-                + MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId) + "'";
+        long noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId);
+        String logMsg = "itemId=" + listItemId + ", noteId=" + noteId + " text='"
+                + MyQuery.noteIdToStringColumnValue(NoteTable.BODY, noteId) + "'";
 
         boolean invoked = helper.invokeContextMenuAction4ListItemId(method, listItemId,
                 NoteContextMenuItem.EDIT, R.id.note_wrapper);
@@ -324,15 +324,15 @@ public class NoteEditorTest extends TimelineActivityTest {
         View editorView = getActivity().findViewById(R.id.note_editor);
         ActivityTestHelper.waitViewVisible(method + " " + logMsg, editorView);
 
-        assertEquals("Loaded message should be in DRAFT state on Edit start: " + logMsg, DownloadStatus.DRAFT,
-                DownloadStatus.load(MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, msgId)));
+        assertEquals("Loaded note should be in DRAFT state on Edit start: " + logMsg, DownloadStatus.DRAFT,
+                DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)));
 
         ActivityTestHelper<TimelineActivity> helper2 = new ActivityTestHelper<>(getActivity());
         helper2.clickMenuItem(method + " clicker Discard " + logMsg, R.id.discardButton);
         ActivityTestHelper.waitViewInvisible(method + " " + logMsg, editorView);
 
-        assertEquals("Loaded message should be unchanged after Discard: " + logMsg, DownloadStatus.LOADED,
-                DownloadStatus.load(MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, msgId)));
+        assertEquals("Loaded note should be unchanged after Discard: " + logMsg, DownloadStatus.LOADED,
+                DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)));
     }
 
 }

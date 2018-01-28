@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2014-2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,9 +32,9 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.OriginTable;
-import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
@@ -46,8 +46,8 @@ import java.net.URL;
 import java.util.regex.Pattern;
 
 /**
- * Microblogging system (twitter.com, identi.ca, ... ) where messages are being
- * created (it's the "Origin" of the messages)
+ * Social network (twitter.com, identi.ca, ... ) where notes are being
+ * created (it's the "Origin" of the notes)
  * 
  * @author yvolk@yurivolkov.com
  */
@@ -82,7 +82,7 @@ public class Origin {
     private boolean allowHtml = false;
 
     /**
-     * Maximum number of characters in the message
+     * Maximum number of characters in a note
      */
     private int textLimit = OriginType.TEXT_LIMIT_MAXIMUM;
 
@@ -157,32 +157,32 @@ public class Origin {
      * @author yvolk@yurivolkov.com
      */
     public int charactersLeftForNote(String note) {
-        int messageLength = 0;
+        int noteLength = 0;
         if (!TextUtils.isEmpty(note)) {
-            messageLength = note.length();
+            noteLength = note.length();
 
             if (shortUrlLength > 0) {
                 // Now try to adjust the length taking links into account
                 SpannableString ss = SpannableString.valueOf(note);
                 Linkify.addLinks(ss, Linkify.WEB_URLS);
-                URLSpan[] spans = ss.getSpans(0, messageLength, URLSpan.class);
+                URLSpan[] spans = ss.getSpans(0, noteLength, URLSpan.class);
                 long nLinks = spans.length;
                 for (int ind1 = 0; ind1 < nLinks; ind1++) {
                     int start = ss.getSpanStart(spans[ind1]);
                     int end = ss.getSpanEnd(spans[ind1]);
-                    messageLength += shortUrlLength - (end - start);
+                    noteLength += shortUrlLength - (end - start);
                 }
             }
         }
-        return textLimit - messageLength;
+        return textLimit - noteLength;
     }
 
     public int alternativeTermForResourceId(@StringRes int resId) {
         return resId;
     }
 
-    public final String notePermalink(long messageId) {
-        String msgUrl = MyQuery.msgIdToStringColumnValue(NoteTable.URL, messageId);
+    public final String notePermalink(long noteId) {
+        String msgUrl = MyQuery.noteIdToStringColumnValue(NoteTable.URL, noteId);
         if (!TextUtils.isEmpty(msgUrl)) {
             try {
                 return new URL(msgUrl).toExternalForm();
@@ -190,11 +190,11 @@ public class Origin {
                 MyLog.d(this, "Malformed URL from '" + msgUrl + "'", e);
             }
         }
-        return alternativeMessagePermalink(messageId);
+        return alternativeNotePermalink(noteId);
     }
 
-    protected String alternativeMessagePermalink(long messageId) {
-        return "";
+    protected String alternativeNotePermalink(long noteId) {
+        return notePermalink(noteId);
     }
 
     public boolean canSetUrlOfOrigin() {

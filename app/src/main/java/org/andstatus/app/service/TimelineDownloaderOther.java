@@ -36,9 +36,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 class TimelineDownloaderOther extends TimelineDownloader {
-    private static final int YOUNGER_MESSAGES_TO_DOWNLOAD_MAX = 200;
-    private static final int OLDER_MESSAGES_TO_DOWNLOAD_MAX = 40;
-    private static final int LATEST_MESSAGES_TO_DOWNLOAD_MAX = 20;
+    private static final int YOUNGER_NOTES_TO_DOWNLOAD_MAX = 200;
+    private static final int OLDER_NOTES_TO_DOWNLOAD_MAX = 40;
+    private static final int LATEST_NOTES_TO_DOWNLOAD_MAX = 20;
 
     @Override
     public void download() throws ConnectionException {
@@ -68,8 +68,8 @@ class TimelineDownloaderOther extends TimelineDownloader {
             MyLog.d(this, strLog);
         }
         String actorOid = getActorOid();
-        int toDownload = downloadingLatest ? LATEST_MESSAGES_TO_DOWNLOAD_MAX :
-                (isSyncYounger() ? YOUNGER_MESSAGES_TO_DOWNLOAD_MAX : OLDER_MESSAGES_TO_DOWNLOAD_MAX);
+        int toDownload = downloadingLatest ? LATEST_NOTES_TO_DOWNLOAD_MAX :
+                (isSyncYounger() ? YOUNGER_NOTES_TO_DOWNLOAD_MAX : OLDER_NOTES_TO_DOWNLOAD_MAX);
         TimelinePosition previousPosition = syncTracker.getPreviousPosition();
         syncTracker.onTimelineDownloaded();
 

@@ -66,10 +66,10 @@ public class ActorListTest extends TimelineActivityTest {
         final String method = "testActorsOfNote";
         TestSuite.waitForListLoaded(getActivity(), 2);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(), ActorList.class);
-        long msgId = MyQuery.oidToId(OidEnum.NOTE_OID, demoData.getConversationOriginId(),
+        long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, demoData.getConversationOriginId(),
                 demoData.CONVERSATION_MENTIONS_NOTE_OID);
-        String body = MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId);
-        String logMsg = MyQuery.msgInfoForLog(msgId);
+        String body = MyQuery.noteIdToStringColumnValue(NoteTable.BODY, noteId);
+        String logMsg = MyQuery.noteInfoForLog(noteId);
 
         List<Actor> actors = Actor.fromOriginAndActorOid(demoData.getConversationMyAccount().getOrigin(), "").extractActorsFromBodyText(body, false);
         assertEquals(logMsg, 3, actors.size());
@@ -79,7 +79,7 @@ public class ActorListTest extends TimelineActivityTest {
         TimelineData<ActivityViewItem> timelineData = getActivity().getListData();
         for (int position=0; position < timelineData.size(); position++) {
             ActivityViewItem item2 = timelineData.getItem(position);
-            if (item2.noteViewItem.getId() == msgId) {
+            if (item2.noteViewItem.getId() == noteId) {
                 item = item2;
                 break;
             }

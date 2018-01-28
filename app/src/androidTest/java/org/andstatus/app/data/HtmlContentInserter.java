@@ -37,7 +37,7 @@ import static org.junit.Assert.assertTrue;
 public class HtmlContentInserter {
     private MyAccount ma;
     private Origin origin;
-    public static final String HTML_BODY_IMG_STRING = "A message with <b>HTML</b> <i>img</i> tag: " 
+    public static final String HTML_BODY_IMG_STRING = "A note with <b>HTML</b> <i>img</i> tag: "
             + "<img src='http://static.fsf.org/dbd/hollyweb.jpeg' alt='Stop DRM in HTML5' />"
             + ", <a href='http://www.fsf.org/'>the link in 'a' tag</a> <br/>" 
             + "and a plain text link to the issue 60: https://github.com/andstatus/andstatus/issues/60";
@@ -70,7 +70,7 @@ public class HtmlContentInserter {
         Actor author1 = buildActorFromOid("acct:html@example.com");
         author1.avatarUrl = "http://png-5.findicons.com/files/icons/2198/dark_glass/128/html.png";
 
-        String bodyString = "<h4>This is a message with HTML content</h4>" 
+        String bodyString = "<h4>This is a note with HTML content</h4>"
                 + "<p>This is a second line, <b>Bold</b> formatting." 
                 + "<br /><i>This is italics</i>. <b>And this is bold</b> <u>The text is underlined</u>.</p>"
                 + "<p>A separate paragraph.</p>";
@@ -103,13 +103,13 @@ public class HtmlContentInserter {
         final AActivity activity = mi.buildActivity(author, bodyString, null, noteOid, DownloadStatus.LOADED);
         mi.onActivity(activity);
         long msgId1 = activity.getNote().noteId;
-        String body = MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId1);
+        String body = MyQuery.noteIdToStringColumnValue(NoteTable.BODY, msgId1);
         if (htmlContentAllowed) {
             assertEquals("HTML preserved", bodyString, body);
         } else {
             assertEquals("HTML removed", MyHtml.fromHtml(bodyString), body);
         }
-        String bodyToSearch = MyQuery.msgIdToStringColumnValue(NoteTable.BODY_TO_SEARCH, msgId1);
+        String bodyToSearch = MyQuery.noteIdToStringColumnValue(NoteTable.BODY_TO_SEARCH, msgId1);
         assertEquals("Body to search", MyHtml.getBodyToSearch(body), bodyToSearch);
 		return mi;
 	}

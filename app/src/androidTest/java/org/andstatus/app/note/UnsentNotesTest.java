@@ -58,20 +58,20 @@ public class UnsentNotesTest extends TimelineActivityTest {
     @Test
     public void testEditUnsentNote() throws InterruptedException {
         final String method = "testEditUnsentNote";
-        String step = "Start editing a message";
+        String step = "Start editing a note";
         MyLog.v(this, method + " started");
         ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
         View editorView = getActivity().findViewById(R.id.note_editor);
         helper.clickMenuItem(method + "; " + step, R.id.createNoteButton);
         ActivityTestHelper.waitViewVisible(method + "; " + step, editorView);
 
-        String body = "Test unsent message, which we will try to edit " + demoData.TESTRUN_UID;
+        String body = "Test unsent note, which we will try to edit " + demoData.TESTRUN_UID;
         TestSuite.waitForIdleSync();
         onView(withId(R.id.noteBodyEditText)).perform(new TypeTextAction(body));
         TestSuite.waitForIdleSync();
 
         mService.serviceStopped = false;
-        step = "Sending message";
+        step = "Sending note";
         helper.clickMenuItem(method + "; " + step, R.id.noteSendButton);
         ActivityTestHelper.waitViewInvisible(method + "; " + step, editorView);
 
@@ -79,22 +79,22 @@ public class UnsentNotesTest extends TimelineActivityTest {
 
         String condition = "BODY='" + body + "'";
         long unsentMsgId = MyQuery.conditionToLongColumnValue(NoteTable.TABLE_NAME, BaseColumns._ID, condition);
-        step = "Unsent message " + unsentMsgId;
+        step = "Unsent note " + unsentMsgId;
         assertTrue(method + "; " + step + ": " + condition, unsentMsgId != 0);
         assertEquals(method + "; " + step, DownloadStatus.SENDING, DownloadStatus.load(
-                MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)));
+                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)));
 
-        step = "Start editing unsent message" + unsentMsgId ;
+        step = "Start editing unsent note " + unsentMsgId ;
         getActivity().getNoteEditor().startEditingNote(NoteEditorData.load(unsentMsgId));
         ActivityTestHelper.waitViewVisible(method + "; " + step, editorView);
         TestSuite.waitForIdleSync();
 
-        step = "Saving previously unsent message " + unsentMsgId + " as a draft";
+        step = "Saving previously unsent note " + unsentMsgId + " as a draft";
         helper.clickMenuItem(method + "; " + step, R.id.saveDraftButton);
         ActivityTestHelper.waitViewInvisible(method + "; " + step, editorView);
 
         assertEquals(method + "; " + step, DownloadStatus.DRAFT, DownloadStatus.load(
-                MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)));
+                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)));
 
         MyLog.v(this, method + " ended");
     }
@@ -106,10 +106,10 @@ public class UnsentNotesTest extends TimelineActivityTest {
         TestSuite.waitForListLoaded(getActivity(), 1);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity());
         long itemId = helper.getListItemIdOfLoadedReply();
-        long msgId = MyQuery.activityIdToLongColumnValue(ActivityTable.MSG_ID, itemId);
-        String msgOid = MyQuery.idToOid(OidEnum.NOTE_OID, msgId, 0);
-        String logMsg = MyQuery.msgInfoForLog(msgId);
-        assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, itemId, NoteContextMenuItem.REBLOG,
+        long noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, itemId);
+        String noteOid = MyQuery.idToOid(OidEnum.NOTE_OID, noteId, 0);
+        String logMsg = MyQuery.noteInfoForLog(noteId);
+        assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, itemId, NoteContextMenuItem.ANNOUNCE,
                 R.id.note_wrapper));
         mService.serviceStopped = false;
         TestSuite.waitForIdleSync();
@@ -121,12 +121,12 @@ public class UnsentNotesTest extends TimelineActivityTest {
         for (HttpReadResult result : results) {
             if (result.getUrl().contains("retweet")) {
                 urlFound = result.getUrl();
-                if (result.getUrl().contains(msgOid)) {
+                if (result.getUrl().contains(noteOid)) {
                     break;
                 }
             }
         }
-        assertTrue("URL '" + urlFound + "' doesn't contain message oid " + logMsg, urlFound.contains(msgOid));
+        assertTrue("URL '" + urlFound + "' doesn't contain note oid " + logMsg, urlFound.contains(noteOid));
 
         MyLog.v(this, method + " ended");
     }

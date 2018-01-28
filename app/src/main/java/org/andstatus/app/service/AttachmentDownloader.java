@@ -35,11 +35,11 @@ public class AttachmentDownloader extends FileDownloader {
     protected MyAccount findBestAccountForDownload() {
         boolean subscribedFound = false;
         final MyContext myContext = MyContextHolder.get();
-        final Origin origin = myContext.persistentOrigins().fromId(MyQuery.msgIdToOriginId(data.msgId));
+        final Origin origin = myContext.persistentOrigins().fromId(MyQuery.noteIdToOriginId(data.noteId));
         MyAccount bestAccount = myContext.persistentAccounts().getFirstSucceededForOrigin(origin);
         for( MyAccount ma : myContext.persistentAccounts().list()) {
             if(ma.getOrigin().equals(origin) && ma.isValidAndSucceeded()) {
-                NoteForAccount msg = new NoteForAccount(origin, 0, data.msgId, ma);
+                NoteForAccount msg = new NoteForAccount(origin, 0, data.noteId, ma);
                 if(msg.hasPrivateAccess()) {
                     bestAccount = ma;
                     break;

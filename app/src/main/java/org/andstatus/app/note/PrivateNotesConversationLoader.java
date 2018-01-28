@@ -39,14 +39,14 @@ import org.andstatus.app.util.TriState;
  */
 public class PrivateNotesConversationLoader<T extends ConversationItem<T>> extends ConversationLoader<T> {
     public PrivateNotesConversationLoader(T emptyItem, MyContext myContext, MyAccount ma,
-                                          long selectedMessageId, boolean sync) {
-        super(emptyItem, myContext, ma, selectedMessageId, sync);
+                                          long selectedNoteId, boolean sync) {
+        super(emptyItem, myContext, ma, selectedNoteId, sync);
     }
 
     @Override
     protected void load2(T oMsg) {
-        long actorId = MyQuery.msgIdToLongColumnValue(ActivityTable.ACTOR_ID, oMsg.getNoteId());
-        Audience recipients = Audience.fromMsgId(ma.getOrigin(), oMsg.getNoteId());
+        long actorId = MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, oMsg.getNoteId());
+        Audience recipients = Audience.fromNoteId(ma.getOrigin(), oMsg.getNoteId());
         String selection = getSelectionForActorAndRecipient("=" + Long.toString(actorId),
                 SqlActorIds.fromUsers(recipients.getRecipients()).getSql());
         Uri uri = Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null).getUri();
@@ -56,9 +56,9 @@ public class PrivateNotesConversationLoader<T extends ConversationItem<T>> exten
                     selection, null, null);
             if (cursor != null) {
                 while (cursor.moveToNext()) {
-                    T oMsg2 = newOMsg(DbUtils.getLong(cursor, BaseColumns._ID));
+                    T oMsg2 = newONote(DbUtils.getLong(cursor, BaseColumns._ID));
                     oMsg2.load(cursor);
-                    addMessageToList(oMsg2);
+                    addNoteToList(oMsg2);
                 }
             }
         } finally {

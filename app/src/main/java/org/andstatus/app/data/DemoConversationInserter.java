@@ -254,7 +254,7 @@ public class DemoConversationInserter {
     private void addPrivateNote(AActivity activity, TriState isPrivate) {
         activity.getNote().setPrivate(isPrivate);
         addActivity(activity);
-        TriState storedPrivate = MyQuery.msgIdToTriState(NoteTable.PRIVATE, activity.getNote().noteId);
+        TriState storedPrivate = MyQuery.noteIdToTriState(NoteTable.PRIVATE, activity.getNote().noteId);
         assertEquals("Note is " + (isPrivate.equals(TriState.TRUE) ? "private" :
                         isPrivate.equals(TriState.FALSE) ? "non private" : "") + ": " + activity.getNote().getBody(),
                 isPrivate, storedPrivate);

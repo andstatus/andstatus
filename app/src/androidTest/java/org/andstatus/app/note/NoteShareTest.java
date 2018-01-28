@@ -49,9 +49,9 @@ public class NoteShareTest {
         
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.CONVERSATION_ORIGIN_NAME);
         assertTrue(demoData.CONVERSATION_ORIGIN_NAME + " exists", origin != null);
-        long msgId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), demoData.HTML_NOTE_OID);
-        assertTrue("origin=" + origin.getId() + "; oid=" + demoData.HTML_NOTE_OID, msgId != 0);
-        NoteShare noteShare = new NoteShare(origin, msgId, null);
+        long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), demoData.HTML_NOTE_OID);
+        assertTrue("origin=" + origin.getId() + "; oid=" + demoData.HTML_NOTE_OID, noteId != 0);
+        NoteShare noteShare = new NoteShare(origin, noteId, null);
         Intent intent = noteShare.intentToViewAndShare(true);
         assertTrue(intent.getExtras().containsKey(Intent.EXTRA_TEXT));
         assertTrue(

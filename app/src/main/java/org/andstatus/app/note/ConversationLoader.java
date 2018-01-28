@@ -49,148 +49,142 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
     
     protected final MyContext myContext;
     protected final MyAccount ma;
-    private final long selectedMessageId;
+    private final long selectedNoteId;
     private boolean sync = false;
     private boolean conversationSyncRequested = false;
     protected boolean mAllowLoadingFromInternet = false;
     private final ReplyLevelComparator<T> replyLevelComparator = new ReplyLevelComparator<>();
     private final T tFactory;
 
-    final Map<Long, T> cachedMessages = new ConcurrentHashMap<>();
-    final List<T> msgList = new ArrayList<>();
+    final Map<Long, T> cachedItems = new ConcurrentHashMap<>();
     LoadableListActivity.ProgressPublisher mProgress;
 
-    public List<T> getList() {
-        return msgList;
-    }
+    final List<Long> idsOfItemsToFind = new ArrayList<>();
 
-    final List<Long> idsOfTheMessagesToFind = new ArrayList<>();
-
-    public ConversationLoader(T emptyItem, MyContext myContext, MyAccount ma, long selectedMessageId, boolean sync) {
+    public ConversationLoader(T emptyItem, MyContext myContext, MyAccount ma, long selectedNoteId, boolean sync) {
         tFactory = emptyItem;
         this.myContext = myContext;
         this.ma = ma;
-        this.selectedMessageId = selectedMessageId;
+        this.selectedNoteId = selectedNoteId;
         this.sync = sync;
     }
     
     @Override
     public void load(ProgressPublisher publisher) {
         mProgress = publisher;
-        cachedMessages.clear();
-        idsOfTheMessagesToFind.clear();
-        msgList.clear();
+        cachedItems.clear();
+        idsOfItemsToFind.clear();
+        items.clear();
         if (sync) {
-            requestConversationSync(selectedMessageId);
+            requestConversationSync(selectedNoteId);
         }
-        load2(newOMsg(selectedMessageId));
+        load2(newONote(selectedNoteId));
         addMissedFromCache();
-        Collections.sort(msgList, replyLevelComparator);
-        enumerateMessages();
+        Collections.sort(items, replyLevelComparator);
+        enumerateNotes();
     }
 
     protected abstract void load2(T oMsg);
 
     private void addMissedFromCache() {
-        if (cachedMessages.isEmpty()) return;
-        for (ConversationItem oMsg : msgList) {
-            cachedMessages.remove(oMsg.getId());
-            if (cachedMessages.isEmpty()) return;
+        if (cachedItems.isEmpty()) return;
+        for (ConversationItem item : items) {
+            cachedItems.remove(item.getId());
+            if (cachedItems.isEmpty()) return;
         }
-        MyLog.v(this, cachedMessages.size() + " cached messages are not connected to selected");
-        for (T oMsg : cachedMessages.values()) {
-            addMessageToList(oMsg);
+        MyLog.v(this, cachedItems.size() + " cached notes are not connected to selected");
+        for (T oNote : cachedItems.values()) {
+            addNoteToList(oNote);
         }
     }
 
-    /** Returns true if message was added
-     *          false in a case the message existed already 
-     * */
-    protected boolean addMessageIdToFind(long msgId) {
-        if (msgId == 0) {
+    /** Returns true if note was added false in a case the note existed already */
+    protected boolean addNoteIdToFind(long noteId) {
+        if (noteId == 0) {
             return false;
-        } else if (idsOfTheMessagesToFind.contains(msgId)) {
-            MyLog.v(this, "findMessages cycled on the id=" + msgId);
+        } else if (idsOfItemsToFind.contains(noteId)) {
+            MyLog.v(this, "find cycled on the id=" + noteId);
             return false;
         }
-        idsOfTheMessagesToFind.add(msgId);
+        idsOfItemsToFind.add(noteId);
         return true;
     }
 
     @NonNull
-    protected T getOMsg(long msgId, int replyLevel) {
-        T oMsg = cachedMessages.get(msgId);
-        if (oMsg == null) {
-            oMsg = newOMsg(msgId);
+    protected T getItem(long noteId, int replyLevel) {
+        T item = cachedItems.get(noteId);
+        if (item == null) {
+            item = newONote(noteId);
         }
-        oMsg.replyLevel = replyLevel;
-        return oMsg;
+        item.replyLevel = replyLevel;
+        return item;
     }
 
-    protected T newOMsg(long msgId) {
+    protected T newONote(long noteId) {
         T oMsg = tFactory.getNew();
         oMsg.setMyContext(myContext);
-        oMsg.setNoteId(msgId);
+        oMsg.setNoteId(noteId);
         return oMsg;
     }
 
-    protected void loadMessageFromDatabase(T oMsg) {
-        if (oMsg.isLoaded() || oMsg.getNoteId() == 0 || cachedMessages.containsKey(oMsg.getNoteId())) {
+    protected void loadItemFromDatabase(T item) {
+        if (item.isLoaded() || item.getNoteId() == 0 || cachedItems.containsKey(item.getNoteId())) {
             return;
         }
         Uri uri = MatchedUri.getTimelineItemUri(
-                Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null), oMsg.getNoteId());
+                Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null), item.getNoteId());
         boolean loaded = false;
         try (Cursor cursor = myContext.context().getContentResolver()
-                .query(uri, oMsg.getProjection(), null, null, null)) {
+                .query(uri, item.getProjection(), null, null, null)) {
             if (cursor != null && cursor.moveToFirst()) {
-                oMsg.load(cursor);
+                item.load(cursor);
                 loaded = true;
             }
         }
-        MyLog.v(this, (loaded ? "Loaded (" + oMsg.isLoaded() + ")"  : "Couldn't load") + " from a database msgId=" + oMsg.getNoteId());
+        MyLog.v(this, (loaded ? "Loaded (" + item.isLoaded() + ")"  : "Couldn't load")
+                + " from a database noteId=" + item.getNoteId());
     }
 
-    protected boolean addMessageToList(T oMsg) {
+    protected boolean addNoteToList(T oMsg) {
         boolean added = false;
-        if (msgList.contains(oMsg)) {
+        if (items.contains(oMsg)) {
             MyLog.v(this, "Note id=" + oMsg.getNoteId() + " is in the list already");
         } else {
-            msgList.add(oMsg);
+            items.add(oMsg);
             if (mProgress != null) {
-                mProgress.publish(Integer.toString(msgList.size()));
+                mProgress.publish(Integer.toString(items.size()));
             }
             added = true;
         }
         return added;
     }
 
-    protected void loadFromInternet(long msgId) {
-        if (requestConversationSync(msgId)) {
+    protected void loadFromInternet(long noteId) {
+        if (requestConversationSync(noteId)) {
             return;
         }
-        MyLog.v(this, "Note id=" + msgId + " will be loaded from the Internet");
+        MyLog.v(this, "Note id=" + noteId + " will be loaded from the Internet");
         MyServiceManager.sendForegroundCommand(
-                CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, msgId));
+                CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, noteId));
     }
 
-    private boolean requestConversationSync(long msgId_in) {
+    private boolean requestConversationSync(long noteId_in) {
         if (conversationSyncRequested) {
             return true;
         }
         if (ma.getConnection().isApiSupported(Connection.ApiRoutineEnum.GET_CONVERSATION)) {
-            long msgId = selectedMessageId;
-            String conversationOid = MyQuery.msgIdToConversationOid(msgId);
-            if (TextUtils.isEmpty(conversationOid) && msgId_in != msgId) {
-                msgId = msgId_in;
-                conversationOid = MyQuery.msgIdToConversationOid(msgId);
+            long noteId = selectedNoteId;
+            String conversationOid = MyQuery.noteIdToConversationOid(noteId);
+            if (TextUtils.isEmpty(conversationOid) && noteId_in != noteId) {
+                noteId = noteId_in;
+                conversationOid = MyQuery.noteIdToConversationOid(noteId);
             }
             if (!TextUtils.isEmpty(conversationOid)) {
                 conversationSyncRequested = true;
-                MyLog.v(this, "Conversation oid=" +  conversationOid + " for message id=" + msgId
+                MyLog.v(this, "Conversation oid=" +  conversationOid + " for noteId=" + noteId
                         + " will be loaded from the Internet");
                 MyServiceManager.sendForegroundCommand(
-                        CommandData.newItemCommand(CommandEnum.GET_CONVERSATION, ma, msgId));
+                        CommandData.newItemCommand(CommandEnum.GET_CONVERSATION, ma, noteId));
                 return true;
             }
         }
@@ -223,15 +217,15 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
         int history = 1;
     }
     
-    private void enumerateMessages() {
-        idsOfTheMessagesToFind.clear();
-        for (ConversationItem oMsg : msgList) {
-            oMsg.mListOrder = 0;
-            oMsg.historyOrder = 0;
+    private void enumerateNotes() {
+        idsOfItemsToFind.clear();
+        for (ConversationItem item : items) {
+            item.mListOrder = 0;
+            item.historyOrder = 0;
         }
         OrderCounters order = new OrderCounters();
-        for (int ind = msgList.size()-1; ind >= 0; ind--) {
-            ConversationItem oMsg = msgList.get(ind);
+        for (int ind = items.size()-1; ind >= 0; ind--) {
+            ConversationItem oMsg = items.get(ind);
             if (oMsg.mListOrder < 0 ) {
                 continue;
             }
@@ -240,7 +234,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
     }
 
     private void enumerateBranch(ConversationItem oMsg, OrderCounters order, int indent) {
-        if (!addMessageIdToFind(oMsg.getNoteId())) {
+        if (!addNoteIdToFind(oMsg.getNoteId())) {
             return;
         }
         int indentNext = indent;
@@ -251,8 +245,8 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
                 && indentNext < MAX_INDENT_LEVEL) {
             indentNext++;
         }
-        for (int ind = msgList.size() - 1; ind >= 0; ind--) {
-           ConversationItem reply = msgList.get(ind);
+        for (int ind = items.size() - 1; ind >= 0; ind--) {
+           ConversationItem reply = items.get(ind);
            if (reply.inReplyToNoteId == oMsg.getNoteId()) {
                reply.mNParentReplies = oMsg.mNReplies;
                enumerateBranch(reply, order, indentNext);
@@ -263,10 +257,4 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
     public void allowLoadingFromInternet() {
         this.mAllowLoadingFromInternet = true;
     }
-
-    @Override
-    public int size() {
-        return msgList.size();
-    }
-
 }

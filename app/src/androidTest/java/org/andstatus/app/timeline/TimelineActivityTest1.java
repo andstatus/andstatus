@@ -81,9 +81,9 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
         assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(),
                 ConversationActivity.class);
-        long msgId = helper.getListItemIdOfLoadedReply();
-        helper.selectListPosition(method, helper.getPositionOfListItemId(msgId));
-        helper.invokeContextMenuAction4ListItemId(method, msgId, NoteContextMenuItem.OPEN_CONVERSATION, R.id.note_wrapper);
+        long noteId = helper.getListItemIdOfLoadedReply();
+        helper.selectListPosition(method, helper.getPositionOfListItemId(noteId));
+        helper.invokeContextMenuAction4ListItemId(method, noteId, NoteContextMenuItem.OPEN_CONVERSATION, R.id.note_wrapper);
         Activity nextActivity = helper.waitForNextActivity(method, 40000);
         DbUtils.waitMs(method, 500);
         nextActivity.finish();
@@ -162,7 +162,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
                 }
             } else {
                 if (attempt == 3) {
-                    MyLog.v(this, "New messages were not loaded, repeating broadcast command executed");
+                    MyLog.v(this, "New notes were not loaded, repeating broadcast command executed");
                     broadcastCommandExecuted();
                 }
                 if (DbUtils.waitMs(method, 2000 * (attempt + 1))) {
@@ -197,7 +197,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
     }
 
     private void broadcastCommandExecuted() {
-        CommandData commandData = CommandData.newAccountCommand(CommandEnum.CREATE_FAVORITE,
+        CommandData commandData = CommandData.newAccountCommand(CommandEnum.LIKE,
                 demoData.getConversationMyAccount());
         MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND)
@@ -222,10 +222,10 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
         TestSuite.waitForListLoaded(getActivity(), 2);
         ListActivityTestHelper<TimelineActivity> helper =
                 ListActivityTestHelper.newForSelectorDialog(getActivity(), AccountSelector.getDialogTag());
-        long msgId = helper.getListItemIdOfLoadedReply();
-        String logMsg = "msgId:" + msgId
-                + "; text:'" + MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId) + "'";
-        assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, msgId,
+        long noteId = helper.getListItemIdOfLoadedReply();
+        String logMsg = "noteId:" + noteId
+                + "; text:'" + MyQuery.noteIdToStringColumnValue(NoteTable.BODY, noteId) + "'";
+        assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, noteId,
                 NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT, R.id.note_wrapper));
         MyAccount actor1 = getActivity().getContextMenu().getMyActor();
         logMsg += "; actor1:" + actor1;
@@ -233,7 +233,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
 
         ActivityTestHelper.closeContextMenu(getActivity());
 
-        helper.invokeContextMenuAction4ListItemId(method, msgId, NoteContextMenuItem.ACT_AS, R.id.note_wrapper);
+        helper.invokeContextMenuAction4ListItemId(method, noteId, NoteContextMenuItem.ACT_AS, R.id.note_wrapper);
 
         MyAccount actor2 = actor1.firstOtherAccountOfThisOrigin();
         logMsg += ", actor2:" + actor2.getAccountName();

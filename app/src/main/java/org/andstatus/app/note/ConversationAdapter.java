@@ -38,14 +38,14 @@ import java.util.List;
 
 public class ConversationAdapter extends BaseNoteAdapter<ConversationViewItem> {
     private final MyActivity context;
-    private final long selectedMessageId;
+    private final long selectedNoteId;
     private final boolean showThreads;
 
     ConversationAdapter(NoteContextMenu contextMenu,
-                               long selectedMessageId,
+                               long selectedNoteId,
                                List<ConversationViewItem> oMsgs,
                                boolean showThreads,
-                               boolean oldMessagesFirst) {
+                               boolean oldNotesFirst) {
         super(contextMenu,
                 new TimelineData<>(
                         null,
@@ -59,10 +59,10 @@ public class ConversationAdapter extends BaseNoteAdapter<ConversationViewItem> {
                 )
         );
         this.context = this.contextMenu.getActivity();
-        this.selectedMessageId = selectedMessageId;
+        this.selectedNoteId = selectedNoteId;
         this.showThreads = showThreads;
         for (ConversationItem oMsg : oMsgs) {
-            oMsg.setReversedListOrder(oldMessagesFirst);
+            oMsg.setReversedListOrder(oldNotesFirst);
             setInReplyToViewItem(oMsgs, oMsg);
         }
         Collections.sort(oMsgs);
@@ -87,7 +87,7 @@ public class ConversationAdapter extends BaseNoteAdapter<ConversationViewItem> {
         if (showAvatars) {
             indentPixels = showAvatar(view, item, indentPixels);
         }
-        indentMessage(view, indentPixels);
+        indentedNote(view, indentPixels);
         showCentralItem(view, item);
     }
 
@@ -97,7 +97,7 @@ public class ConversationAdapter extends BaseNoteAdapter<ConversationViewItem> {
     }
 
     private void showCentralItem(View view, ConversationViewItem item) {
-        if (item.getNoteId() == selectedMessageId  && getCount() > 1) {
+        if (item.getNoteId() == selectedNoteId && getCount() > 1) {
             view.findViewById(R.id.note_indented).setBackground(
                     ImageCaches.getStyledImage(
                             R.drawable.current_message_background_light,
@@ -144,7 +144,7 @@ public class ConversationAdapter extends BaseNoteAdapter<ConversationViewItem> {
         }
     }
 
-    private void indentMessage(View view, int indentPixels) {
+    private void indentedNote(View view, int indentPixels) {
         View msgView = view.findViewById(R.id.note_indented);
         msgView.setPadding(indentPixels + 6, msgView.getPaddingTop(), msgView.getPaddingRight(),
                 msgView.getPaddingBottom());

@@ -86,9 +86,9 @@ public class Notifier {
     }
 
     public Notification getAndroidNotification(@NonNull NotificationData data) {
-        String messageText = (data.myAccount.isValid() ? data.myAccount.getAccountName() :
+        String noteText = (data.myAccount.isValid() ? data.myAccount.getAccountName() :
                 getContext().getText(data.event.titleResId)) + ": " + data.count;
-        MyLog.v(this,  messageText);
+        MyLog.v(this,  noteText);
 
         Notification.Builder builder = new Notification.Builder(getContext());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -111,7 +111,7 @@ public class Notifier {
                         ? R.drawable.notification_icon_circle
                         : R.drawable.notification_icon)
                 .setContentTitle(getContext().getText(data.event.titleResId))
-                .setContentText(messageText)
+                .setContentText(noteText)
                 .setWhen(data.updatedDate)
                 .setShowWhen(true);
         }
@@ -173,9 +173,9 @@ public class Notifier {
         return events.isEnabled(eventType);
     }
 
-    public void onUnsentMessage(long msgId) {
-        if (msgId == 0 || !events.isEnabled(NotificationEventType.OUTBOX)) return;
-        MyProvider.setUnsentNoteNotification(events.myContext, msgId);
+    public void onUnsentNote(long noteId) {
+        if (noteId == 0 || !events.isEnabled(NotificationEventType.OUTBOX)) return;
+        MyProvider.setUnsentNoteNotification(events.myContext, noteId);
         update();
     }
 }

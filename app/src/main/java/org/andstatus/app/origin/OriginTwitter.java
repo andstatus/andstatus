@@ -23,7 +23,6 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 
@@ -62,17 +61,17 @@ class OriginTwitter extends Origin {
     }
 
     @Override
-    protected String alternativeMessagePermalink(long messageId) {
+    protected String alternativeNotePermalink(long noteId) {
         if (url == null) {
             return "";
         }
         final Uri uri = fixUriforPermalink(UriUtils.fromUrl(url));
-        if (Audience.fromMsgId(this, messageId).isEmpty()) {
-            String userName = MyQuery.msgIdToUsername(NoteTable.AUTHOR_ID, messageId, ActorInTimeline.USERNAME);
-            final String oid = MyQuery.msgIdToStringColumnValue(NoteTable.NOTE_OID, messageId);
-            return Uri.withAppendedPath(uri, userName + "/status/" + oid).toString();
-        } else {
+        if (MyQuery.noteIdToTriState(NoteTable.PRIVATE, noteId).toBoolean(false)) {
             return Uri.withAppendedPath(uri, "messages").toString();
+        } else {
+            String username = MyQuery.noteIdToUsername(NoteTable.AUTHOR_ID, noteId, ActorInTimeline.USERNAME);
+            final String oid = MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId);
+            return Uri.withAppendedPath(uri, username + "/status/" + oid).toString();
         }
     }
 

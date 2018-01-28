@@ -46,8 +46,6 @@ import org.andstatus.app.util.UriUtils;
 
 import java.util.List;
 
-import static org.andstatus.app.data.MyProvider.deleteNote;
-
 class CommandExecutorOther extends CommandExecutorStrategy{
 
     public static final int USERS_LIMIT = 400;
@@ -55,30 +53,30 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     @Override
     public void execute() {
         switch (execContext.getCommandData().getCommand()) {
-            case CREATE_FAVORITE:
-            case DESTROY_FAVORITE:
+            case LIKE:
+            case UNDO_LIKE:
                 createOrDestroyFavorite(execContext.getCommandData().itemId, 
-                        execContext.getCommandData().getCommand() == CommandEnum.CREATE_FAVORITE);
+                        execContext.getCommandData().getCommand() == CommandEnum.LIKE);
                 break;
-            case FOLLOW_ACTOR:
-            case STOP_FOLLOWING_ACTOR:
+            case FOLLOW:
+            case UNDO_FOLLOW:
                 followOrStopFollowingActor(execContext.getCommandData().getUserId(),
-                        execContext.getCommandData().getCommand() == CommandEnum.FOLLOW_ACTOR);
+                        execContext.getCommandData().getCommand() == CommandEnum.FOLLOW);
                 break;
             case UPDATE_NOTE:
-                updateStatus(execContext.getCommandData().itemId);
+                updateNote(execContext.getCommandData().itemId);
                 break;
             case DELETE_NOTE:
-                destroyStatus(execContext.getCommandData().itemId);
+                deleteNote(execContext.getCommandData().itemId);
                 break;
-            case DELETE_REBLOG:
-                destroyReblog(execContext.getCommandData().itemId);
+            case UNDO_ANNOUNCE:
+                undoAnnounce(execContext.getCommandData().itemId);
                 break;
             case GET_CONVERSATION:
                 getConversation(execContext.getCommandData().itemId);
                 break;
             case GET_NOTE:
-                getStatus(execContext.getCommandData().itemId);
+                getNote(execContext.getCommandData().itemId);
                 break;
             case GET_ACTOR:
                 getActor(execContext.getCommandData().getUserId(), execContext.getCommandData().getUsername());
@@ -86,16 +84,16 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             case SEARCH_ACTORS:
                 searchActors(execContext.getCommandData().getUsername());
                 break;
-            case REBLOG:
+            case ANNOUNCE:
                 reblog(execContext.getCommandData().itemId);
                 break;
             case RATE_LIMIT_STATUS:
                 rateLimitStatus();
                 break;
-            case FETCH_ATTACHMENT:
+            case GET_ATTACHMENT:
                 FileDownloader.newForDownloadRow(execContext.getCommandData().itemId).load(execContext.getCommandData());
                 break;
-            case FETCH_AVATAR:
+            case GET_AVATAR:
                 (new AvatarDownloader(execContext.getCommandData().getUserId())).load(execContext.getCommandData());
                 break;
             case CLEAR_NOTIFICATIONS:
@@ -127,14 +125,14 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         MyLog.d(this, (msgLog + (noErrors() ? " succeeded" : " failed") ));
     }
 
-    private void getConversation(long msgId) {
+    private void getConversation(long noteId) {
         final String method = "getConversation";
-        String conversationOid = MyQuery.msgIdToConversationOid(msgId);
+        String conversationOid = MyQuery.noteIdToConversationOid(noteId);
         if (TextUtils.isEmpty(conversationOid)) {
-            logExecutionError(true, method + " empty conversationId " + MyQuery.msgInfoForLog(msgId));
+            logExecutionError(true, method + " empty conversationId " + MyQuery.noteInfoForLog(noteId));
         } else {
             onActivities(method, () -> execContext.getMyAccount().getConnection().getConversation(conversationOid),
-                    () -> MyQuery.msgInfoForLog(msgId));
+                    () -> MyQuery.noteInfoForLog(noteId));
         }
     }
 
@@ -177,9 +175,9 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     /**
      * @param create true - create, false - destroy
      */
-    private void createOrDestroyFavorite(long msgId, boolean create) {
+    private void createOrDestroyFavorite(long noteId, boolean create) {
         final String method = (create ? "create" : "destroy") + "Favorite";
-        String oid = getMsgOid(method, msgId, true);
+        String oid = getNoteOid(method, noteId, true);
         AActivity activity = null;
         if (noErrors()) {
             try {
@@ -188,9 +186,9 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 } else {
                     activity = execContext.getMyAccount().getConnection().undoLike(oid);
                 }
-                logIfEmptyMessage(method, msgId, activity.getNote());
+                logIfEmptyNote(method, noteId, activity.getNote());
             } catch (ConnectionException e) {
-                logConnectionException(e, method + "; " + MyQuery.msgInfoForLog(msgId));
+                logConnectionException(e, method + "; " + MyQuery.noteInfoForLog(noteId));
             }
         }
         if (noErrors()) {
@@ -215,12 +213,12 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                     // so let's try another time...
                     // This is safe, because "delete favorite"
                     // works even for the "Unfavorited" tweet :-)
-                    logExecutionError(false, method + "; Favorited flag didn't change yet. " + MyQuery.msgInfoForLog(msgId));
+                    logExecutionError(false, method + "; Favorited flag didn't change yet. " + MyQuery.noteInfoForLog(noteId));
                 }
             }
 
             if (noErrors()) {
-                // Please note that the Favorited message may be NOT in the Account's Home timeline!
+                // Please note that the Favorited note may be NOT in the Account's Home timeline!
                 new DataUpdater(execContext).onActivity(activity);
             }
         }
@@ -228,10 +226,11 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     }
 
     @NonNull
-    private String getMsgOid(String method, long msgId, boolean required) {
-        String oid = MyQuery.idToOid(OidEnum.NOTE_OID, msgId, 0);
+    private String getNoteOid(String method, long noteId, boolean required) {
+        String oid = MyQuery.idToOid(OidEnum.NOTE_OID, noteId, 0);
         if (required && TextUtils.isEmpty(oid)) {
-            logExecutionError(true, method + "; no Message ID in the Social Network " + MyQuery.msgInfoForLog(msgId));
+            logExecutionError(true, method + "; no note ID in the Social Network "
+                    + MyQuery.noteInfoForLog(noteId));
         }
         return oid;
     }
@@ -291,18 +290,15 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 ", webFingerId:'" + MyQuery.actorIdToWebfingerId(actorId) + "'");
     }
 
-    /**
-     * @param msgId ID of the message to destroy
-     */
-    private void destroyStatus(long msgId) {
-        final String method = "destroyStatus";
+    private void deleteNote(long noteId) {
+        final String method = "deleteNote";
         boolean ok = false;
-        String oid = getMsgOid(method, msgId, false);
-        DownloadStatus statusStored = DownloadStatus.load(MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, msgId));
+        String oid = getNoteOid(method, noteId, false);
+        DownloadStatus statusStored = DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId));
         try {
-            if (msgId == 0 || TextUtils.isEmpty(oid) || statusStored != DownloadStatus.LOADED) {
+            if (noteId == 0 || TextUtils.isEmpty(oid) || statusStored != DownloadStatus.LOADED) {
                 ok = true;
-                MyLog.i(this, method + "; OID='" + oid + "', status='" + statusStored + "' for msgId=" + msgId);
+                MyLog.i(this, method + "; OID='" + oid + "', status='" + statusStored + "' for noteId=" + noteId);
             } else {
                 ok = execContext.getMyAccount().getConnection().deleteNote(oid);
                 logOk(ok);
@@ -316,42 +312,39 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 logConnectionException(e, method + "; " + oid);
             }
         }
-        if (ok && msgId != 0) {
-            deleteNote(execContext.getContext(), msgId);
+        if (ok && noteId != 0) {
+            MyProvider.deleteNote(execContext.getContext(), noteId);
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }
 
-    /**
-     * @param msgId ID of the message to destroy
-     */
-    private void destroyReblog(long msgId) {
+    private void undoAnnounce(long noteId) {
         final String method = "destroyReblog";
         final long actorId = execContext.getMyAccount().getActorId();
-        final Pair<Long, ActivityType> reblogAndType = MyQuery.msgIdToLastReblogging(
-                execContext.getMyContext().getDatabase(), msgId, actorId);
+        final Pair<Long, ActivityType> reblogAndType = MyQuery.noteIdToLastReblogging(
+                execContext.getMyContext().getDatabase(), noteId, actorId);
         if (reblogAndType.second != ActivityType.ANNOUNCE) {
             logExecutionError(true, "No local Reblog of "
-                    + MyQuery.msgInfoForLog(msgId) + " by " + execContext.getMyAccount() );
+                    + MyQuery.noteInfoForLog(noteId) + " by " + execContext.getMyAccount() );
             return;
         }
-        String reblogOid = MyQuery.idToOid(OidEnum.REBLOG_OID, msgId, actorId);
+        String reblogOid = MyQuery.idToOid(OidEnum.REBLOG_OID, noteId, actorId);
         try {
             if (!execContext.getMyAccount().getConnection().undoAnnounce(reblogOid)) {
                 logExecutionError(false, "Connection returned 'false' " + method
-                        + MyQuery.msgInfoForLog(msgId));
+                        + MyQuery.noteInfoForLog(noteId));
             }
         } catch (ConnectionException e) {
             // "Not found" means that there is no such "Status", so we may
             // assume that it's Ok!
             if (e.getStatusCode() != StatusCode.NOT_FOUND) {
-                logConnectionException(e, method + "; reblogOid:" + reblogOid + ", " + MyQuery.msgInfoForLog(msgId));
+                logConnectionException(e, method + "; reblogOid:" + reblogOid + ", " + MyQuery.noteInfoForLog(noteId));
             }
         }
         if (noErrors()) {
             try {
                 // And delete the reblog from local storage
-                MyProvider.deleteActivity(execContext.getMyContext(), reblogAndType.first, msgId, false);
+                MyProvider.deleteActivity(execContext.getMyContext(), reblogAndType.first, noteId, false);
             } catch (Exception e) {
                 MyLog.e(this, "Error destroying reblog locally", e);
             }
@@ -359,20 +352,21 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }
 
-    private void getStatus(long msgId) {
-        final String method = "getStatus";
-        String oid = getMsgOid(method, msgId, true);
+    private void getNote(long noteId) {
+        final String method = "getNote";
+        String oid = getNoteOid(method, noteId, true);
         if (noErrors()) {
             try {
                 AActivity activity = execContext.getMyAccount().getConnection().getNote(oid);
                 if (activity.isEmpty()) {
-                    logExecutionError(false, "Received Message is empty, " + MyQuery.msgInfoForLog(msgId));
+                    logExecutionError(false, "Received Note is empty, "
+                            + MyQuery.noteInfoForLog(noteId));
                 } else {
                     try {
                         new DataUpdater(execContext).onActivity(activity);
                     } catch (Exception e) {
                         logExecutionError(false, "Error while saving to the local cache,"
-                                + MyQuery.msgInfoForLog(msgId) + ", " + e.getMessage());
+                                + MyQuery.noteInfoForLog(noteId) + ", " + e.getMessage());
                     }
                 }
             } catch (ConnectionException e) {
@@ -381,20 +375,20 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                     // This means that there is no such "Status"
                     // TODO: so we don't need to retry this command
                 }
-                logConnectionException(e, method + MyQuery.msgInfoForLog(msgId));
+                logConnectionException(e, method + MyQuery.noteInfoForLog(noteId));
             }
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }
 
-    private void updateStatus(long msgId) {
-        final String method = "updateStatus";
+    private void updateNote(long noteId) {
+        final String method = "updateNote";
         AActivity activity = null;
-        String status = MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId);
-        String oid = getMsgOid(method, msgId, false);
-        TriState isPrivate = MyQuery.msgIdToTriState(NoteTable.PRIVATE, msgId);
-        Audience recipients = Audience.fromMsgId(execContext.getMyAccount().getOrigin(), msgId);
-        Uri mediaUri = DownloadData.getSingleForNote(msgId, MyContentType.IMAGE, Uri.EMPTY).
+        String status = MyQuery.noteIdToStringColumnValue(NoteTable.BODY, noteId);
+        String oid = getNoteOid(method, noteId, false);
+        TriState isPrivate = MyQuery.noteIdToTriState(NoteTable.PRIVATE, noteId);
+        Audience recipients = Audience.fromNoteId(execContext.getMyAccount().getOrigin(), noteId);
+        Uri mediaUri = DownloadData.getSingleForNote(noteId, MyContentType.IMAGE, Uri.EMPTY).
                 mediaUriToBePosted();
         String msgLog = "text:'" + MyLog.trimmedString(status, 40) + "'"
                 + (mediaUri.equals(Uri.EMPTY) ? "" : "; mediaUri:'" + mediaUri + "'");
@@ -403,15 +397,15 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 MyLog.v(this, method + ";" + msgLog);
             }
             DownloadStatus statusStored = DownloadStatus.load(
-                    MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, msgId));
+                    MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId));
             if (!statusStored.mayBeSent()) {
                 throw ConnectionException.hardConnectionException(
-                        "Wrong message status: " + statusStored, null);
+                        "Wrong note status: " + statusStored, null);
             }
             if (recipients.isEmpty() || isPrivate != TriState.TRUE) {
-                long replyToMsgId = MyQuery.msgIdToLongColumnValue(
-                        NoteTable.IN_REPLY_TO_NOTE_ID, msgId);
-                String replyToMsgOid = getMsgOid(method, replyToMsgId, false);
+                long replyToMsgId = MyQuery.noteIdToLongColumnValue(
+                        NoteTable.IN_REPLY_TO_NOTE_ID, noteId);
+                String replyToMsgOid = getNoteOid(method, replyToMsgId, false);
                 activity = execContext.getMyAccount().getConnection()
                         .updateNote(status.trim(), oid, replyToMsgOid, mediaUri);
             } else {
@@ -420,36 +414,37 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 activity = execContext.getMyAccount().getConnection()
                         .updatePrivateNote(status.trim(), oid, recipientOid, mediaUri);
             }
-            logIfEmptyMessage(method, msgId, activity.getNote());
+            logIfEmptyNote(method, noteId, activity.getNote());
         } catch (ConnectionException e) {
             logConnectionException(e, method + "; " + msgLog);
         }
         if (noErrors() && activity != null) {
-            // The message was sent successfully, so now update unsent message
-            // New Actor's message should be put into the Account's Home timeline.
-            activity.getNote().noteId = msgId;
+            // The note was sent successfully, so now update unsent message
+            // New Actor's note should be put into the Account's Home timeline.
+            activity.getNote().noteId = noteId;
             new DataUpdater(execContext).onActivity(activity);
-            execContext.getResult().setItemId(msgId);
+            execContext.getResult().setItemId(noteId);
         } else {
-            execContext.getMyContext().getNotifier().onUnsentMessage(msgId);
+            execContext.getMyContext().getNotifier().onUnsentNote(noteId);
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }
 
-    private void logIfEmptyMessage(String method, long msgId, Note message) {
-        if (message == null || message.isEmpty()) {
-            logExecutionError(false, method + "; Received Message is empty, " + MyQuery.msgInfoForLog(msgId));
+    private void logIfEmptyNote(String method, long noteId, Note note) {
+        if (note == null || note.isEmpty()) {
+            logExecutionError(false, method + "; Received note is empty, "
+                    + MyQuery.noteInfoForLog(noteId));
         }
     }
 
-    private void reblog(long rebloggedMessageId) {
+    private void reblog(long rebloggedNoteId) {
         final String method = "Reblog";
-        String oid = getMsgOid(method, rebloggedMessageId, true);
+        String oid = getNoteOid(method, rebloggedNoteId, true);
         AActivity activity = AActivity.EMPTY;
         if (noErrors()) {
             try {
                 activity = execContext.getMyAccount().getConnection().announce(oid);
-                logIfEmptyMessage(method, rebloggedMessageId, activity.getNote());
+                logIfEmptyNote(method, rebloggedNoteId, activity.getNote());
             } catch (ConnectionException e) {
                 logConnectionException(e, "Reblog " + oid);
             }
@@ -458,7 +453,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             // The tweet was sent successfully
             // Reblog should be put into the Account's Home timeline!
             new DataUpdater(execContext).onActivity(activity);
-            MyProvider.updateNoteReblogged(execContext.getMyContext(), activity.accountActor.origin, rebloggedMessageId);
+            MyProvider.updateNoteReblogged(execContext.getMyContext(), activity.accountActor.origin, rebloggedNoteId);
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }

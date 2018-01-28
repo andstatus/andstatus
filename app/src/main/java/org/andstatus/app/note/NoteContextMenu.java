@@ -88,14 +88,14 @@ public class NoteContextMenu extends MyContextMenu {
 
     private void createContextMenu(ContextMenu menu, View v, BaseNoteViewItem viewItem) {
         final String method = "createContextMenu";
-        NoteForAccount msg = menuData.msg;
+        NoteForAccount noteForAccount = menuData.noteForAccount;
         int order = 0;
         try {
-            new ContextMenuHeader(getActivity(), menu).setTitle(msg.getBodyTrimmed())
-                    .setSubtitle(msg.getMyAccount().getAccountName());
+            new ContextMenuHeader(getActivity(), menu).setTitle(noteForAccount.getBodyTrimmed())
+                    .setSubtitle(noteForAccount.getMyAccount().getAccountName());
             if (((AccessibilityManager) getMyContext().context().
                     getSystemService(ACCESSIBILITY_SERVICE)).isTouchExplorationEnabled()) {
-                addMessageLinksSubmenu(menu, v, order++);
+                addNoteLinksSubmenu(menu, v, order++);
             }
             if (!ConversationActivity.class.isAssignableFrom(getActivity().getClass())) {
                 NoteContextMenuItem.OPEN_CONVERSATION.addTo(menu, order++, R.string.menu_item_open_conversation);
@@ -107,10 +107,11 @@ public class NoteContextMenu extends MyContextMenu {
             }
             NoteContextMenuItem.ACTORS_OF_NOTE.addTo(menu, order++, R.string.users_of_message);
 
-            if (msg.isAuthorSucceededMyAccount() && Note.mayBeEdited(msg.origin.getOriginType(), msg.status)) {
+            if (noteForAccount.isAuthorSucceededMyAccount() && Note.mayBeEdited(noteForAccount.origin.getOriginType(),
+                    noteForAccount.status)) {
                 NoteContextMenuItem.EDIT.addTo(menu, order++, R.string.menu_item_edit);
             }
-            if (msg.status.mayBeSent()) {
+            if (noteForAccount.status.mayBeSent()) {
                 NoteContextMenuItem.RESEND.addTo(menu, order++, R.string.menu_item_resend);
             }
 
@@ -119,51 +120,52 @@ public class NoteContextMenu extends MyContextMenu {
                 NoteContextMenuItem.COPY_AUTHOR.addTo(menu, order++, R.string.menu_item_copy_author);
             }
 
-            // "Actor" is about an Activity, not about a Message
-            if (menuContainer.getTimeline().getActorId() != msg.actorId) {
+            // "Actor" is about an Activity, not about a note
+            if (menuContainer.getTimeline().getActorId() != noteForAccount.actorId) {
                 // Notes, where an Actor of this note is an Actor ("Actor timeline" of that actor)
-                NoteContextMenuItem.ACTOR_MESSAGES.addTo(menu, order++,
+                NoteContextMenuItem.ACTOR_ACTIONS.addTo(menu, order++,
                         String.format(
                                 getActivity().getText(R.string.menu_item_user_messages).toString(),
-                                MyQuery.actorIdToWebfingerId(msg.actorId)));
-                if (!msg.isActor) {
-                    if (msg.actorFollowed) {
-                        NoteContextMenuItem.STOP_FOLLOWING_ACTOR.addTo(menu, order++,
+                                MyQuery.actorIdToWebfingerId(noteForAccount.actorId)));
+                if (!noteForAccount.isActor) {
+                    if (noteForAccount.actorFollowed) {
+                        NoteContextMenuItem.UNDO_FOLLOW_ACTOR.addTo(menu, order++,
                                 String.format(
                                         getActivity().getText(R.string.menu_item_stop_following_user).toString(),
-                                        MyQuery.actorIdToWebfingerId(msg.actorId)));
+                                        MyQuery.actorIdToWebfingerId(noteForAccount.actorId)));
                     } else {
                         NoteContextMenuItem.FOLLOW_ACTOR.addTo(menu, order++,
                                 String.format(
                                         getActivity().getText(R.string.menu_item_follow_user).toString(),
-                                        MyQuery.actorIdToWebfingerId(msg.actorId)));
+                                        MyQuery.actorIdToWebfingerId(noteForAccount.actorId)));
                     }
                 }
             }
 
-            if (menuContainer.getTimeline().getActorId() != msg.authorId && msg.actorId != msg.authorId) {
-                // Messages by an Author of this message ("Actor timeline" of that actor)
-                NoteContextMenuItem.AUTHOR_MESSAGES.addTo(menu, order++,
+            if (menuContainer.getTimeline().getActorId() != noteForAccount.authorId
+                    && noteForAccount.actorId != noteForAccount.authorId) {
+                // "Actor timeline" of that actor
+                NoteContextMenuItem.AUTHOR_ACTIONS.addTo(menu, order++,
                         String.format(
                                 getActivity().getText(R.string.menu_item_user_messages).toString(),
-                                MyQuery.actorIdToWebfingerId(msg.authorId)));
-                if (!msg.isAuthor) {
-                    if (msg.authorFollowed) {
-                        NoteContextMenuItem.STOP_FOLLOWING_AUTHOR.addTo(menu, order++,
+                                MyQuery.actorIdToWebfingerId(noteForAccount.authorId)));
+                if (!noteForAccount.isAuthor) {
+                    if (noteForAccount.authorFollowed) {
+                        NoteContextMenuItem.UNDO_FOLLOW_AUTHOR.addTo(menu, order++,
                                 String.format(
                                         getActivity().getText(R.string.menu_item_stop_following_user).toString(),
-                                        MyQuery.actorIdToWebfingerId(msg.authorId)));
+                                        MyQuery.actorIdToWebfingerId(noteForAccount.authorId)));
                     } else {
                         NoteContextMenuItem.FOLLOW_AUTHOR.addTo(menu, order++,
                                 String.format(
                                         getActivity().getText(R.string.menu_item_follow_user).toString(),
-                                        MyQuery.actorIdToWebfingerId(msg.authorId)));
+                                        MyQuery.actorIdToWebfingerId(noteForAccount.authorId)));
                     }
                 }
             }
 
-            if (msg.isLoaded() && (!msg.isPrivate() ||
-                    msg.origin.getOriginType().isDirectMessageAllowsReply()) && !isEditorVisible()) {
+            if (noteForAccount.isLoaded() && (!noteForAccount.isPrivate() ||
+                    noteForAccount.origin.getOriginType().isPrivateNoteAllowsReply()) && !isEditorVisible()) {
                 NoteContextMenuItem.REPLY.addTo(menu, order++, R.string.menu_item_reply);
                 NoteContextMenuItem.REPLY_TO_CONVERSATION_PARTICIPANTS.addTo(menu, order++,
                         R.string.menu_item_reply_to_conversation_participants);
@@ -181,35 +183,35 @@ public class NoteContextMenu extends MyContextMenu {
                         R.string.menu_item_private_message);
             }
 
-            if (msg.isLoaded() && !msg.isPrivate()) {
-                if (msg.favorited) {
-                    NoteContextMenuItem.DESTROY_FAVORITE.addTo(menu, order++,
+            if (noteForAccount.isLoaded() && !noteForAccount.isPrivate()) {
+                if (noteForAccount.favorited) {
+                    NoteContextMenuItem.UNDO_LIKE.addTo(menu, order++,
                             R.string.menu_item_destroy_favorite);
                 } else {
-                    NoteContextMenuItem.FAVORITE.addTo(menu, order++,
+                    NoteContextMenuItem.LIKE.addTo(menu, order++,
                             R.string.menu_item_favorite);
                 }
-                if (msg.reblogged) {
-                    NoteContextMenuItem.DELETE_REBLOG.addTo(menu, order++,
-                            msg.getMyAccount().alternativeTermForResourceId(R.string.menu_item_destroy_reblog));
+                if (noteForAccount.reblogged) {
+                    NoteContextMenuItem.UNDO_ANNOUNCE.addTo(menu, order++,
+                            noteForAccount.getMyAccount().alternativeTermForResourceId(R.string.menu_item_destroy_reblog));
                 } else {
                     // Don't allow an Actor to reblog himself
-                    if (getMyActor().getActorId() != msg.actorId) {
-                        NoteContextMenuItem.REBLOG.addTo(menu, order++,
-                                msg.getMyAccount().alternativeTermForResourceId(R.string.menu_item_reblog));
+                    if (getMyActor().getActorId() != noteForAccount.actorId) {
+                        NoteContextMenuItem.ANNOUNCE.addTo(menu, order++,
+                                noteForAccount.getMyAccount().alternativeTermForResourceId(R.string.menu_item_reblog));
                     }
                 }
             }
 
-            if (msg.isLoaded()) {
+            if (noteForAccount.isLoaded()) {
                 NoteContextMenuItem.OPEN_NOTE_PERMALINK.addTo(menu, order++, R.string.menu_item_open_message_permalink);
             }
 
-            if (msg.isAuthorSucceededMyAccount()) {
-                if (msg.isLoaded()) {
-                    if (msg.isPrivate()) {
-                        // TODO: Delete private (direct) message
-                    } else if (!msg.reblogged && msg.getMyAccount().getConnection()
+            if (noteForAccount.isAuthorSucceededMyAccount()) {
+                if (noteForAccount.isLoaded()) {
+                    if (noteForAccount.isPrivate()) {
+                        // TODO: Delete private note
+                    } else if (!noteForAccount.reblogged && noteForAccount.getMyAccount().getConnection()
                             .isApiSupported(Connection.ApiRoutineEnum.DELETE_NOTE)) {
                         NoteContextMenuItem.DELETE_NOTE.addTo(menu, order++,
                                 R.string.menu_item_destroy_status);
@@ -219,8 +221,8 @@ public class NoteContextMenu extends MyContextMenu {
                 }
             }
 
-            if (msg.isLoaded()) {
-                switch (msg.getMyAccount().numberOfAccountsOfThisOrigin()) {
+            if (noteForAccount.isLoaded()) {
+                switch (noteForAccount.getMyAccount().numberOfAccountsOfThisOrigin()) {
                     case 0:
                     case 1:
                         break;
@@ -228,7 +230,7 @@ public class NoteContextMenu extends MyContextMenu {
                         NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT.addTo(menu, order++,
                                 String.format(
                                         getActivity().getText(R.string.menu_item_act_as_user).toString(),
-                                        msg.getMyAccount().firstOtherAccountOfThisOrigin().getShortestUniqueAccountName(getMyContext())));
+                                        noteForAccount.getMyAccount().firstOtherAccountOfThisOrigin().getShortestUniqueAccountName(getMyContext())));
                         break;
                     default:
                         NoteContextMenuItem.ACT_AS.addTo(menu, order++, R.string.menu_item_act_as);
@@ -254,7 +256,7 @@ public class NoteContextMenu extends MyContextMenu {
         return NoteViewItem.EMPTY;
     }
 
-    private void addMessageLinksSubmenu(ContextMenu menu, View v, int order) {
+    private void addNoteLinksSubmenu(ContextMenu menu, View v, int order) {
         URLSpan[] links = MyUrlSpan.getUrlSpans(v.findViewById(R.id.note_body));
         switch (links.length) {
             case 0:
@@ -280,7 +282,7 @@ public class NoteContextMenu extends MyContextMenu {
 
     @Override
     public void setMyActor(@NonNull MyAccount myAccount) {
-        if (!myAccount.equals(menuData.msg.getMyAccount())) {
+        if (!myAccount.equals(menuData.noteForAccount.getMyAccount())) {
             menuData = NoteContextMenuData.EMPTY;
         }
         super.setMyActor(myAccount);
@@ -288,7 +290,7 @@ public class NoteContextMenu extends MyContextMenu {
 
     @NonNull
     String getImageFilename() {
-        return StringUtils.notNull(menuData.msg.imageFilename);
+        return StringUtils.notNull(menuData.noteForAccount.imageFilename);
     }
 
     private boolean isEditorVisible() {
@@ -298,12 +300,12 @@ public class NoteContextMenu extends MyContextMenu {
     public void onContextItemSelected(MenuItem item) {
         if (item != null) {
             this.selectedMenuItemTitle = StringUtils.notNull(String.valueOf(item.getTitle()));
-            onContextItemSelected(NoteContextMenuItem.fromId(item.getItemId()), getMsgId());
+            onContextItemSelected(NoteContextMenuItem.fromId(item.getItemId()), getNoteId());
         }
     }
 
-    void onContextItemSelected(NoteContextMenuItem contextMenuItem, long msgId) {
-        if (menuData.isFor(msgId)) {
+    void onContextItemSelected(NoteContextMenuItem contextMenuItem, long noteId) {
+        if (menuData.isFor(noteId)) {
             contextMenuItem.execute(this);
         }
     }
@@ -325,24 +327,24 @@ public class NoteContextMenu extends MyContextMenu {
     }
 
     public void saveState(Bundle outState) {
-        outState.putString(IntentExtra.ACCOUNT_NAME.key, menuData.msg.getMyAccount().getAccountName());
+        outState.putString(IntentExtra.ACCOUNT_NAME.key, menuData.noteForAccount.getMyAccount().getAccountName());
     }
 
-    public long getMsgId() {
+    public long getNoteId() {
         return menuData.getMsgId();
     }
 
     @NonNull
     public Origin getOrigin() {
-        return menuData.msg.origin;
+        return menuData.noteForAccount.origin;
     }
 
     public long getActorId() {
-        return menuData.msg.actorId;
+        return menuData.noteForAccount.actorId;
     }
 
     public long getAuthorId() {
-        return menuData.msg.authorId;
+        return menuData.noteForAccount.authorId;
     }
 
     @NonNull
@@ -352,6 +354,6 @@ public class NoteContextMenu extends MyContextMenu {
 
     void setMenuData(NoteContextMenuData menuData) {
         this.menuData = menuData;
-        setMyActor(menuData.msg.getMyAccount());
+        setMyActor(menuData.noteForAccount.getMyAccount());
     }
 }

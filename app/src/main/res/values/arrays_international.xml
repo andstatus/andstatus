@@ -252,7 +252,7 @@
         <item>@string/users</item>
     </string-array>
     <string-array name="search_objects_values">
-        <item>MESSAGES</item>
-        <item>USERS</item>
+        <item>NOTES</item>
+        <item>ACTORS</item>
     </string-array>
 </resources>

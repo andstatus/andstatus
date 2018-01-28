@@ -41,7 +41,7 @@ public class NoteForAccount {
     @NonNull
     public final Origin origin;
     private final long activityId;
-    public final long msgId;
+    public final long noteId;
     public DownloadStatus status = DownloadStatus.UNKNOWN;
     private String body = "";
     public long authorId = 0;
@@ -61,10 +61,10 @@ public class NoteForAccount {
     public boolean actorFollowed = false;
     public boolean authorFollowed = false;
 
-    public NoteForAccount(@NonNull Origin origin, long activityId, long msgId, MyAccount myAccount) {
+    public NoteForAccount(@NonNull Origin origin, long activityId, long noteId, MyAccount myAccount) {
         this.origin = origin;
         this.activityId = activityId;
-        this.msgId = msgId;
+        this.noteId = noteId;
         this.myAccount = calculateMyAccount(origin, myAccount);
         this.accountActorId = this.myAccount.getActorId();
         if (this.myAccount.isValid()) {
@@ -87,7 +87,7 @@ public class NoteForAccount {
                 + NoteTable.AUTHOR_ID + ","
                 + NoteTable.PRIVATE
                 + " FROM " + NoteTable.TABLE_NAME
-                + " WHERE " + NoteTable._ID + "=" + msgId;
+                + " WHERE " + NoteTable._ID + "=" + noteId;
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
             MyLog.v(this, method + "; Database is null");
@@ -105,11 +105,11 @@ public class NoteForAccount {
         } catch (Exception e) {
             MyLog.i(this, method + "; SQL:'" + sql + "'", e);
         }
-        Audience recipients = Audience.fromMsgId(origin, msgId);
+        Audience recipients = Audience.fromNoteId(origin, noteId);
         isRecipient = recipients.contains(accountActorId);
-        DownloadData downloadData = DownloadData.getSingleForNote(msgId, MyContentType.IMAGE, Uri.EMPTY);
+        DownloadData downloadData = DownloadData.getSingleForNote(noteId, MyContentType.IMAGE, Uri.EMPTY);
         imageFilename = downloadData.getStatus() == DownloadStatus.LOADED ? downloadData.getFilename() : "";
-        ActorToNote actorToNote = MyQuery.favoritedAndReblogged(db, msgId, accountActorId);
+        ActorToNote actorToNote = MyQuery.favoritedAndReblogged(db, noteId, accountActorId);
         favorited = actorToNote.favorited;
         reblogged = actorToNote.reblogged;
         isSubscribed = actorToNote.subscribed;

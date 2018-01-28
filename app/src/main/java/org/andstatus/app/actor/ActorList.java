@@ -150,10 +150,10 @@ public class ActorList extends NoteEditorListActivity {
             case GET_ACTOR:
             case GET_FOLLOWERS:
             case GET_FRIENDS:
-            case FOLLOW_ACTOR:
-            case STOP_FOLLOWING_ACTOR:
+            case FOLLOW:
+            case UNDO_FOLLOW:
             case SEARCH_ACTORS:
-            case FETCH_AVATAR:
+            case GET_AVATAR:
                 return true;
             default:
                 return false;
@@ -163,8 +163,8 @@ public class ActorList extends NoteEditorListActivity {
     @Override
     protected boolean isRefreshNeededAfterExecuting(CommandData commandData) {
         switch(commandData.getCommand()) {
-            case FOLLOW_ACTOR:
-            case STOP_FOLLOWING_ACTOR:
+            case FOLLOW:
+            case UNDO_FOLLOW:
             case SEARCH_ACTORS:
                 return true;
             default:

@@ -43,7 +43,7 @@ public class RepeatingFailingCommandTest extends MyServiceTest {
 
         mService.setListenedCommand(
                 CommandData.newActorCommand(
-                        CommandEnum.FETCH_AVATAR, null, actor.origin, actor.actorId, ""));
+                        CommandEnum.GET_AVATAR, null, actor.origin, actor.actorId, ""));
 
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;

@@ -26,7 +26,7 @@ public class DownloadData {
 
     private DownloadType downloadType = DownloadType.UNKNOWN;
     public long actorId = 0;
-    public long msgId = 0;
+    public long noteId = 0;
     private MyContentType contentType = MyContentType.UNKNOWN;
     private DownloadStatus status = DownloadStatus.UNKNOWN; 
     private long downloadId = 0;
@@ -54,7 +54,7 @@ public class DownloadData {
     public static DownloadData getSingleForNote(long msgIdIn, MyContentType contentTypeIn, Uri uriIn) {
         DownloadData data = new DownloadData(0, msgIdIn, contentTypeIn, Uri.EMPTY);
         if (!UriUtils.isEmpty(uriIn) && !data.getUri().equals(uriIn)) {
-            deleteAllOfThisMsg(MyContextHolder.get().getDatabase(), msgIdIn);
+            deleteAllOfThisNote(MyContextHolder.get().getDatabase(), msgIdIn);
             data = getThisForNote(msgIdIn, contentTypeIn, uriIn);
         }
         return data;
@@ -78,7 +78,7 @@ public class DownloadData {
             break;
         }
         actorId = userIdIn;
-        msgId = msgIdIn;
+        noteId = msgIdIn;
         contentType = contentTypeIn;
         uri = UriUtils.notNull(uriIn);
         loadOtherFields();
@@ -95,7 +95,7 @@ public class DownloadData {
                 + DownloadTable.FILE_NAME
                 + (downloadType == DownloadType.UNKNOWN ? ", " + DownloadTable.DOWNLOAD_TYPE : "")
                 + (actorId == 0 ? ", " + DownloadTable.ACTOR_ID : "")
-                + (msgId == 0 ? ", " + DownloadTable.NOTE_ID : "")
+                + (noteId == 0 ? ", " + DownloadTable.NOTE_ID : "")
                 + (contentType == MyContentType.UNKNOWN ? ", " + DownloadTable.CONTENT_TYPE : "")
                 + (downloadId == 0 ? ", " + DownloadTable._ID : "")
                 + (uri.equals(Uri.EMPTY) ? ", " + DownloadTable.URI : "")
@@ -119,8 +119,8 @@ public class DownloadData {
                 if (actorId == 0) {
                     actorId = DbUtils.getLong(cursor, DownloadTable.ACTOR_ID);
                 }
-                if (msgId == 0) {
-                    msgId = DbUtils.getLong(cursor, DownloadTable.NOTE_ID);
+                if (noteId == 0) {
+                    noteId = DbUtils.getLong(cursor, DownloadTable.NOTE_ID);
                 }
                 if (contentType == MyContentType.UNKNOWN) {
                     contentType = MyContentType.load(DbUtils.getLong(cursor, DownloadTable.CONTENT_TYPE));
@@ -136,8 +136,8 @@ public class DownloadData {
     }
 
     private boolean checkHardErrorBeforeLoad() {
-        if ((actorId != 0) && (msgId != 0)
-                || (actorId == 0 && msgId == 0 && downloadId == 0)
+        if ((actorId != 0) && (noteId != 0)
+                || (actorId == 0 && noteId == 0 && downloadId == 0)
                 || (actorId != 0 && downloadType != DownloadType.AVATAR)) {
             hardError = true;
         }
@@ -148,8 +148,8 @@ public class DownloadData {
         StringBuilder builder = new StringBuilder();
         if (actorId != 0) {
             builder.append(DownloadTable.ACTOR_ID + "=" + actorId);
-        } else if (msgId != 0) {
-            builder.append(DownloadTable.NOTE_ID + "=" + msgId);
+        } else if (noteId != 0) {
+            builder.append(DownloadTable.NOTE_ID + "=" + noteId);
         } else {
             builder.append(DownloadTable._ID + "=" + downloadId);
         }
@@ -163,7 +163,7 @@ public class DownloadData {
     }
 
     private void fixFieldsAfterLoad() {
-        if ((actorId == 0) && (msgId == 0) || UriUtils.isEmpty(uri)) {
+        if ((actorId == 0) && (noteId == 0) || UriUtils.isEmpty(uri)) {
             hardError = true;
         }
         if (fileStored == null) {
@@ -225,8 +225,8 @@ public class DownloadData {
        if (actorId != 0) {
            values.put(DownloadTable.ACTOR_ID, actorId);
        }
-       if (msgId != 0) {
-           values.put(DownloadTable.NOTE_ID, msgId);
+       if (noteId != 0) {
+           values.put(DownloadTable.NOTE_ID, noteId);
        }
        values.put(DownloadTable.CONTENT_TYPE, contentType.save());
        values.put(DownloadTable.VALID_FROM, loadTimeNew);
@@ -278,8 +278,8 @@ public class DownloadData {
         if (actorId != 0) {
             builder.append("actorId=" + actorId + "; ");
         }
-        if (msgId != 0) {
-            builder.append("msgId=" + msgId + "; ");
+        if (noteId != 0) {
+            builder.append("noteId=" + noteId + "; ");
         }
         builder.append("uri=" + (uri == Uri.EMPTY ? "(empty)" : uri.toString()) + "; ");
         return builder.toString();
@@ -346,17 +346,17 @@ public class DownloadData {
         }
     }
 
-    public static void deleteAllOfThisMsg(SQLiteDatabase db, long msgId) {
-        final String method = "deleteAllOfThisMsg msgId=" + msgId;
-        deleteSelected(method, db, DownloadTable.NOTE_ID + "=" + msgId);
+    public static void deleteAllOfThisNote(SQLiteDatabase db, long noteId) {
+        final String method = "deleteAllOfThisNote noteId=" + noteId;
+        deleteSelected(method, db, DownloadTable.NOTE_ID + "=" + noteId);
     }
 
-    public static void deleteOtherOfThisMsg(long msgId, List<Long> downloadIds) {
-        if (msgId == 0 || downloadIds == null || downloadIds.isEmpty()) {
+    public static void deleteOtherOfThisNote(long noteId, List<Long> downloadIds) {
+        if (noteId == 0 || downloadIds == null || downloadIds.isEmpty()) {
             return;
         }
-        final String method = "deleteOtherOfThisMsg msgId=" + msgId + ", rowIds:" + toSqlList(downloadIds);
-        String where = DownloadTable.NOTE_ID + "=" + msgId
+        final String method = "deleteOtherOfThisNote noteId=" + noteId + ", rowIds:" + toSqlList(downloadIds);
+        String where = DownloadTable.NOTE_ID + "=" + noteId
                 + " AND " + DownloadTable._ID + " NOT IN(" + toSqlList(downloadIds) + ")" ;
         deleteSelected(method, MyContextHolder.get().getDatabase(), where);
     }
@@ -406,8 +406,8 @@ public class DownloadData {
         if (!DownloadStatus.LOADED.equals(status) && !hardError) {
             MyServiceManager.sendCommand(
                     actorId != 0 ?
-                            CommandData.newActorCommand(CommandEnum.FETCH_AVATAR, null, null, actorId, "")
-                            : CommandData.newFetchAttachment(msgId, downloadId));
+                            CommandData.newActorCommand(CommandEnum.GET_AVATAR, null, null, actorId, "")
+                            : CommandData.newFetchAttachment(noteId, downloadId));
         }
     }
 
@@ -422,8 +422,8 @@ public class DownloadData {
         if(actorId != 0) {
             builder.append("actorId:" + actorId + ",");
         }
-        if(msgId != 0) {
-            builder.append("msgId:" + msgId + ",");
+        if(noteId != 0) {
+            builder.append("msgId:" + noteId + ",");
         }
         builder.append("status:" + getStatus() + ",");
         if(!TextUtils.isEmpty(errorMessage)) {

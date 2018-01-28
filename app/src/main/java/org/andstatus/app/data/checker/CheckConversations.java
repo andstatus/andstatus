@@ -197,7 +197,7 @@ public class CheckConversations extends DataChecker {
                 if (level > 0) {
                     changeConversationOfReplies(item, level - 1);
                 } else {
-                    logger.logProgress("Too long conversation, couldn't fix msgId=" + item.id);
+                    logger.logProgress("Too long conversation, couldn't fix noteId=" + item.id);
                 }
             }
         }
@@ -210,13 +210,13 @@ public class CheckConversations extends DataChecker {
                 String sql = "";
                 try {
                     if (changedCount < 5 && MyLog.isVerboseEnabled()) {
-                        MyLog.v(this, "msgId=" + item.id + "; "
+                        MyLog.v(this, "noteId=" + item.id + "; "
                             + (item.isInReplyToIdChanged() ? "inReplyToId changed from "
                                 + item.inReplyToId_initial + " to " + item.inReplyToId : "")
                             + (item.isInReplyToIdChanged() && item.isConversationIdChanged() ? " and " : "")
                             + (item.isConversationIdChanged() ? "conversationId changed from "
                                 + item.conversationId_initial + " to " + item.conversationId : "")
-                            + ", Body:'" + MyQuery.msgIdToStringColumnValue(NoteTable.BODY, item.id) + "'");
+                            + ", Body:'" + MyQuery.noteIdToStringColumnValue(NoteTable.BODY, item.id) + "'");
                     }
                     if (!countOnly) {
                         sql = "UPDATE " + NoteTable.TABLE_NAME

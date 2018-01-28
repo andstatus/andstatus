@@ -248,7 +248,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
         return findListItemId("Loaded reply", item -> {
             if (item.inReplyToNoteId != 0 && item.noteStatus == DownloadStatus.LOADED) {
                 DownloadStatus statusOfReplied = DownloadStatus.load(
-                        MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, item.inReplyToNoteId));
+                        MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, item.inReplyToNoteId));
                 if (statusOfReplied == DownloadStatus.LOADED) {
                     return true;
                 }
@@ -261,7 +261,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
         final String method = "findListItemId";
         for (int ind = 0; ind < getListAdapter().getCount(); ind++) {
             final ViewItem viewItem = (ViewItem) getListAdapter().getItem(ind);
-            BaseNoteViewItem item = toBaseMessageViewItem(viewItem);
+            BaseNoteViewItem item = toBaseNoteViewItem(viewItem);
             if (!item.isEmpty()) {
                 if (predicate.test(item)) {
                     MyLog.v(this, method + ": found " + description + " : " + item);
@@ -274,7 +274,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
     }
 
     @NonNull
-    static BaseNoteViewItem toBaseMessageViewItem(Object objItem) {
+    static BaseNoteViewItem toBaseNoteViewItem(Object objItem) {
         if (ActivityViewItem.class.isAssignableFrom(objItem.getClass())) {
             return ((ActivityViewItem) objItem).noteViewItem;
         } else if (BaseNoteViewItem.class.isAssignableFrom(objItem.getClass())) {

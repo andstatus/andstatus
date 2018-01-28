@@ -167,8 +167,8 @@ public class DataUpdater {
             long updatedDateStored = 0;
             if (note.noteId != 0) {
                 DownloadStatus statusStored = DownloadStatus.load(
-                        MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, note.noteId));
-                updatedDateStored = MyQuery.msgIdToLongColumnValue(NoteTable.UPDATED_DATE, note.noteId);
+                        MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, note.noteId));
+                updatedDateStored = MyQuery.noteIdToLongColumnValue(NoteTable.UPDATED_DATE, note.noteId);
                 if (isFirstTimeLoaded) {
                     isFirstTimeLoaded = statusStored != DownloadStatus.LOADED;
                 }
@@ -305,7 +305,7 @@ public class DataUpdater {
                     break;
             }
         }
-        DownloadData.deleteOtherOfThisMsg(note.noteId, downloadIds);
+        DownloadData.deleteOtherOfThisNote(note.noteId, downloadIds);
     }
 
     private void updateObjActor(AActivity activity) {

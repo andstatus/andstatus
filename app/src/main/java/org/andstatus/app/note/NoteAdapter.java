@@ -43,9 +43,9 @@ public class NoteAdapter extends BaseNoteAdapter<NoteViewItem> {
         if (showAvatars) {
             showAvatar(view, item);
         } else {
-            View message = view.findViewById(R.id.note_indented);
-            if (message != null) {
-                message.setPadding(dpToPixes(2), 0, dpToPixes(6), dpToPixes(2));
+            View noteView = view.findViewById(R.id.note_indented);
+            if (noteView != null) {
+                noteView.setPadding(dpToPixes(2), 0, dpToPixes(6), dpToPixes(2));
             }
         }
     }

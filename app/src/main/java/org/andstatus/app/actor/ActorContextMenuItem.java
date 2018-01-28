@@ -78,13 +78,13 @@ public enum ActorContextMenuItem implements ContextMenuItem {
     FOLLOW() {
         @Override
         void executeOnUiThread(ActorContextMenu menu, MyAccount ma) {
-            sendUserCommand(CommandEnum.FOLLOW_ACTOR, ma, menu);
+            sendUserCommand(CommandEnum.FOLLOW, ma, menu);
         }
     },
     STOP_FOLLOWING() {
         @Override
         void executeOnUiThread(ActorContextMenu menu, MyAccount ma) {
-            sendUserCommand(CommandEnum.STOP_FOLLOWING_ACTOR, ma, menu);
+            sendUserCommand(CommandEnum.UNDO_FOLLOW, ma, menu);
         }
     },
     ACT_AS_FIRST_OTHER_ACCOUNT() {

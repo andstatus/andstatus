@@ -466,11 +466,11 @@ public class MyLog {
         return key + ":{" + out + "}";
     }
 
-    public static void onSendingMessageStart() {
-        onSendingMessageEvent(true);
+    public static void onSendingNoteStart() {
+        onSendingNoteEvent(true);
     }
 
-    private static void onSendingMessageEvent(boolean start) {
+    private static void onSendingNoteEvent(boolean start) {
         if (!SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SENDING_NOTES_LOG_ENABLED, false) ||
                 MyPreferences.isLogEverythingToFile()) {
             return;
@@ -478,8 +478,8 @@ public class MyLog {
         setLogToFile(start);
     }
 
-    public static void onSendingMessageEnd() {
-        onSendingMessageEvent(false);
+    public static void onSendingNoteEnd() {
+        onSendingNoteEvent(false);
     }
     
     public static void setNextLogFileName() {

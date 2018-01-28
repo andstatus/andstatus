@@ -90,24 +90,24 @@ public class CommandData implements Comparable<CommandData> {
         }
     }
 
-    public static CommandData newUpdateStatus(MyAccount myAccount, long unsentMessageId) {
+    public static CommandData newUpdateStatus(MyAccount myAccount, long unsentNoteId) {
         CommandData commandData = newAccountCommand(CommandEnum.UPDATE_NOTE, myAccount);
-        commandData.itemId = unsentMessageId;
-        commandData.setTrimmedMessageBodyAsDescription(unsentMessageId);
+        commandData.itemId = unsentNoteId;
+        commandData.setTrimmedNoteBodyAsDescription(unsentNoteId);
         return commandData;
     }
 
-    public static CommandData newFetchAttachment(long msgId, long downloadDataRowId) {
-        CommandData commandData = newOriginCommand(CommandEnum.FETCH_ATTACHMENT, null);
+    public static CommandData newFetchAttachment(long noteId, long downloadDataRowId) {
+        CommandData commandData = newOriginCommand(CommandEnum.GET_ATTACHMENT, null);
         commandData.itemId = downloadDataRowId;
-        commandData.setTrimmedMessageBodyAsDescription(msgId);
+        commandData.setTrimmedNoteBodyAsDescription(noteId);
         return commandData;
     }
 
-    private void setTrimmedMessageBodyAsDescription(long msgId) {
-        if (msgId != 0) {
+    private void setTrimmedNoteBodyAsDescription(long noteId) {
+        if (noteId != 0) {
             description = trimConditionally(
-                            MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId), true)
+                            MyQuery.noteIdToStringColumnValue(NoteTable.BODY, noteId), true)
                             .toString();
         }
     }
@@ -390,7 +390,7 @@ public class CommandData implements Comparable<CommandData> {
             }
         }
         switch (command) {
-            case FETCH_AVATAR:
+            case GET_AVATAR:
                 I18n.appendWithSpace(builder, 
                         myContext.context().getText(R.string.combined_timeline_off_account));
                 I18n.appendWithSpace(builder, MyQuery.actorIdToWebfingerId(timeline.getActorId()));
@@ -403,7 +403,7 @@ public class CommandData implements Comparable<CommandData> {
                             myContext.persistentOrigins().fromId(originId).getName());
                 }
                 break;
-            case FETCH_ATTACHMENT:
+            case GET_ATTACHMENT:
             case UPDATE_NOTE:
                 I18n.appendWithSpace(builder, "\"");
                 builder.append(trimConditionally(description, summaryOnly));
@@ -417,8 +417,8 @@ public class CommandData implements Comparable<CommandData> {
                 builder.append(" ");
                 builder.append(TimelineTitle.load(myContext, timeline, null).toString());
                 break;
-            case FOLLOW_ACTOR:
-            case STOP_FOLLOWING_ACTOR:
+            case FOLLOW:
+            case UNDO_FOLLOW:
             case GET_FOLLOWERS:
             case GET_FRIENDS:
                 I18n.appendWithSpace(builder, MyQuery.actorIdToWebfingerId(timeline.getActorId()));

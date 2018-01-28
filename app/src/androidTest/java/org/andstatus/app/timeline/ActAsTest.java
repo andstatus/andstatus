@@ -66,9 +66,9 @@ public class ActAsTest extends TimelineActivityTest {
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(),
                 ConversationActivity.class);
         long listItemId = helper.getListItemIdOfLoadedReply();
-        long msgId = MyQuery.activityIdToLongColumnValue(ActivityTable.MSG_ID, listItemId);
-        String logMsg = "itemId=" + listItemId + ", msgId=" + msgId + " text='"
-                + MyQuery.msgIdToStringColumnValue(NoteTable.BODY, msgId) + "'";
+        long noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId);
+        String logMsg = "itemId=" + listItemId + ", noteId=" + noteId + " text='"
+                + MyQuery.noteIdToStringColumnValue(NoteTable.BODY, noteId) + "'";
         assertEquals("Default actor", MyAccount.EMPTY, getActivity().getContextMenu().getMyActor());
 
         boolean invoked = helper.invokeContextMenuAction4ListItemId(method, listItemId,

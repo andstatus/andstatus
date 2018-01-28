@@ -70,8 +70,8 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
         updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
         actor = ActorViewItem.fromActor(Actor.fromOriginAndActorId(origin,
                 DbUtils.getLong(cursor, ActivityTable.ACTOR_ID)));
-        noteId = DbUtils.getLong(cursor, ActivityTable.MSG_ID);
-        objActorId = DbUtils.getLong(cursor, ActivityTable.USER_ID);
+        noteId = DbUtils.getLong(cursor, ActivityTable.NOTE_ID);
+        objActorId = DbUtils.getLong(cursor, ActivityTable.OBJ_ACTOR_ID);
         if (objActorId != 0) {
             objActorItem = ActorViewItem.fromActorId(origin, objActorId);
         }

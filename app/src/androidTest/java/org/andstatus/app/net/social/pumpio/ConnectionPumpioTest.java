@@ -404,14 +404,14 @@ public class ConnectionPumpioTest {
                 org.andstatus.app.tests.R.raw.pumpio_note_self);
         httpConnectionMock.setResponse(jso);
 
-        final String msgOid = "https://identi.ca/api/note/Z-x96Q8rTHSxTthYYULRHA";
-        final AActivity activity = connection.getNote(msgOid);
+        final String noteOid = "https://identi.ca/api/note/Z-x96Q8rTHSxTthYYULRHA";
+        final AActivity activity = connection.getNote(noteOid);
         Note note = activity.getNote();
         assertNotNull("note returned", note);
-        assertEquals("Note oid", msgOid, note.oid);
+        assertEquals("Note oid", noteOid, note.oid);
         assertEquals("Number of replies", 2, note.replies.size());
         Note reply = note.replies.get(0).getNote();
         assertEquals("Reply oid", "https://identi.ca/api/comment/cJdi4cGWQT-Z9Rn3mjr5Bw", reply.oid);
-        assertEquals("Is not a Reply " + activity, msgOid, reply.getInReplyTo().getNote().oid);
+        assertEquals("Is not a Reply " + activity, noteOid, reply.getInReplyTo().getNote().oid);
     }
 }

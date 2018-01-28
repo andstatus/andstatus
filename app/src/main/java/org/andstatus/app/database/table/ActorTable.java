@@ -110,7 +110,7 @@ public final class ActorTable implements BaseColumns {
     public static final String AUTHOR_NAME = "author_name";
     /** Derived from {@link NoteTable#IN_REPLY_TO_ACTOR_ID} */
     public static final String IN_REPLY_TO_NAME = "in_reply_to_name";
-    /** Derived from {@link AudienceTable#USER_ID} */
+    /** Derived from {@link AudienceTable#ACTOR_ID} */
     public static final String RECIPIENT_NAME = "recipient_name";
 
     public static final String DEFAULT_SORT_ORDER = USERNAME + " ASC";

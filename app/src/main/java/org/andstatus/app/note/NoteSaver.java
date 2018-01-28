@@ -56,7 +56,7 @@ public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorDa
             command.loadCurrent();
         }
         saveCurrentData();
-        return command.showAfterSave ? NoteEditorData.load(command.currentData.getMsgId()) : NoteEditorData.EMPTY;
+        return command.showAfterSave ? NoteEditorData.load(command.currentData.getNoteId()) : NoteEditorData.EMPTY;
     }
 
     private void savePreviousData() {
@@ -70,17 +70,17 @@ public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorDa
     private void saveCurrentData() {
         MyLog.v(NoteEditorData.TAG, "Saving current data:" + command.currentData);
         if (command.currentData.status == DownloadStatus.DELETED) {
-            MyProvider.deleteNote(MyContextHolder.get().context(), command.currentData.getMsgId());
+            MyProvider.deleteNote(MyContextHolder.get().context(), command.currentData.getNoteId());
         } else {
             command.currentData.save(command.getMediaUri());
             if (command.beingEdited) {
                 SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID,
-                        command.currentData.getMsgId());
+                        command.currentData.getNoteId());
             }
             if (command.currentData.status == DownloadStatus.SENDING) {
                 CommandData commandData = CommandData.newUpdateStatus(
                         command.currentData.getMyAccount(),
-                        command.currentData.getMsgId());
+                        command.currentData.getNoteId());
                 MyServiceManager.sendManualForegroundCommand(commandData);
             }
         }
@@ -92,8 +92,8 @@ public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorDa
             return;
         }
         CommandData commandData = data.status == DownloadStatus.DELETED ?
-                CommandData.newItemCommand(CommandEnum.DELETE_NOTE, data.getMyAccount(), data.getMsgId()) :
-                CommandData.newUpdateStatus(data.getMyAccount(), data.getMsgId());
+                CommandData.newItemCommand(CommandEnum.DELETE_NOTE, data.getMyAccount(), data.getNoteId()) :
+                CommandData.newUpdateStatus(data.getMyAccount(), data.getNoteId());
         MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.UNKNOWN)
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
     }

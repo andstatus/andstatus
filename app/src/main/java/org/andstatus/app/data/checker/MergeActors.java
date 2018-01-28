@@ -120,13 +120,13 @@ class MergeActors extends DataChecker {
         logger.logProgress(logMsg);
         // TODO: clean the code!
         updateColumn(logMsg, activity, ActivityTable.TABLE_NAME, ActivityTable.ACTOR_ID, false);
-        updateColumn(logMsg, activity, ActivityTable.TABLE_NAME, ActivityTable.USER_ID, false);
+        updateColumn(logMsg, activity, ActivityTable.TABLE_NAME, ActivityTable.OBJ_ACTOR_ID, false);
 
         updateColumn(logMsg, activity, NoteTable.TABLE_NAME, NoteTable.AUTHOR_ID, false);
         updateColumn(logMsg, activity, NoteTable.TABLE_NAME, NoteTable.IN_REPLY_TO_ACTOR_ID, false);
 
-        updateColumn(logMsg, activity, AudienceTable.TABLE_NAME, AudienceTable.USER_ID, true);
-        deleteRows(logMsg, actor, AudienceTable.TABLE_NAME, AudienceTable.USER_ID);
+        updateColumn(logMsg, activity, AudienceTable.TABLE_NAME, AudienceTable.ACTOR_ID, true);
+        deleteRows(logMsg, actor, AudienceTable.TABLE_NAME, AudienceTable.ACTOR_ID);
 
         deleteRows(logMsg, actor, FriendshipTable.TABLE_NAME, FriendshipTable.ACTOR_ID);
         deleteRows(logMsg, actor, FriendshipTable.TABLE_NAME, FriendshipTable.FRIEND_ID);

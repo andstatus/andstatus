@@ -162,10 +162,10 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
             if (buttons != null) {
                 buttons.setVisibility(View.VISIBLE);
                 setOnButtonClick(buttons, R.id.reply_button, NoteContextMenuItem.REPLY);
-                setOnButtonClick(buttons, R.id.reblog_button, NoteContextMenuItem.REBLOG);
-                setOnButtonClick(buttons, R.id.reblog_button_tinted, NoteContextMenuItem.DELETE_REBLOG);
-                setOnButtonClick(buttons, R.id.favorite_button, NoteContextMenuItem.FAVORITE);
-                setOnButtonClick(buttons, R.id.favorite_button_tinted, NoteContextMenuItem.DESTROY_FAVORITE);
+                setOnButtonClick(buttons, R.id.reblog_button, NoteContextMenuItem.ANNOUNCE);
+                setOnButtonClick(buttons, R.id.reblog_button_tinted, NoteContextMenuItem.UNDO_ANNOUNCE);
+                setOnButtonClick(buttons, R.id.favorite_button, NoteContextMenuItem.LIKE);
+                setOnButtonClick(buttons, R.id.favorite_button_tinted, NoteContextMenuItem.UNDO_LIKE);
                 setOnButtonClick(buttons, R.id.more_button, NoteContextMenuItem.UNKNOWN);
             }
         }

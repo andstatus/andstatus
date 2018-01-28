@@ -66,7 +66,7 @@ public class NoteEditorCommand {
     
     public long getCurrentMsgId() {
         if (currentData.isValid()) {
-            return currentData.getMsgId();
+            return currentData.getNoteId();
         }
         if (currentMsgId == null) {
             currentMsgId = SharedPreferencesUtil.getLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID);
@@ -93,7 +93,7 @@ public class NoteEditorCommand {
 
     public boolean needToSavePreviousData() {
         return previousData.isValid() && !previousData.isEmpty()
-                && (previousData.getMsgId() == 0 || currentData.getMsgId() != previousData.getMsgId());
+                && (previousData.getNoteId() == 0 || currentData.getNoteId() != previousData.getNoteId());
     }
 
     @Override

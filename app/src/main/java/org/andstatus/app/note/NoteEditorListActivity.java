@@ -119,7 +119,7 @@ abstract public class NoteEditorListActivity<T extends ViewItem<T>> extends Load
     }
 
     @Override
-    public void onMessageEditorVisibilityChange() {
+    public void onNoteEditorVisibilityChange() {
         invalidateOptionsMenu();
     }
 }

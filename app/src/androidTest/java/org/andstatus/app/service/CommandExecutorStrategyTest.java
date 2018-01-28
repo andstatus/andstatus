@@ -91,7 +91,7 @@ public class CommandExecutorStrategyTest {
 
     @Test
     public void testUpdateDestroyStatus() throws IOException {
-        CommandData commandData = getCommandDataForUnsentMessage("1");
+        CommandData commandData = getCommandDataForUnsentNote("1");
         httpConnectionMock.setResponse(
                 RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                         org.andstatus.app.tests.R.raw.quitter_update_note_response));
@@ -101,10 +101,10 @@ public class CommandExecutorStrategyTest {
         assertEquals(commandData.toString(), CommandResult.INITIAL_NUMBER_OF_RETRIES - 1, commandData.getResult().getRetriesLeft());
         assertFalse(commandData.toString(), commandData.getResult().hasSoftError());
         assertFalse(commandData.toString(), commandData.getResult().hasHardError());
-        long msgId = commandData.getResult().getItemId();
-        assertTrue(msgId != 0);
+        long noteId = commandData.getResult().getItemId();
+        assertTrue(noteId != 0);
 
-        commandData = getCommandDataForUnsentMessage("2");
+        commandData = getCommandDataForUnsentNote("2");
         String errorMessage = "Request was bad";
         httpConnectionMock.setException(new ConnectionException(StatusCode.UNKNOWN, errorMessage));
         CommandExecutorStrategy.executeCommand(commandData, null);
@@ -139,7 +139,7 @@ public class CommandExecutorStrategyTest {
         commandData = CommandData.newItemCommand(
                 CommandEnum.DELETE_NOTE,
                 demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME),
-                msgId);
+                noteId);
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertFalse(commandData.toString(), commandData.getResult().hasError());
 
@@ -154,7 +154,7 @@ public class CommandExecutorStrategyTest {
         httpConnectionMock.setException(null);
     }
 
-    private CommandData getCommandDataForUnsentMessage(String suffix) {
+    private CommandData getCommandDataForUnsentNote(String suffix) {
         String body = "Some text " + suffix + " to send " + System.currentTimeMillis() + "ms";
         AActivity activity = DemoNoteInserter.addNoteForAccount(
                 ma, body, "", DownloadStatus.SENDING);

@@ -188,21 +188,21 @@ public class NoteEditor {
 
     public void onCreateOptionsMenu(Menu menu) {
         getActivity().getMenuInflater().inflate(R.menu.note_editor, menu);
-        createCreateMessageButton(menu);
+        createCreateNoteButton(menu);
         createAttachButton(menu);
         createSendButton(menu);
         createSaveDraftButton(menu);
         createDiscardButton(menu);
     }
 
-    private void createCreateMessageButton(Menu menu) {
+    private void createCreateNoteButton(Menu menu) {
         MenuItem item = menu.findItem(R.id.createNoteButton);
         if (item != null) {
             item.setOnMenuItemClickListener(
                     new MenuItem.OnMenuItemClickListener() {
                         @Override
                         public boolean onMenuItemClick(MenuItem item) {
-                            MyAccount accountForButton = accountForCreateMessageButton();
+                            MyAccount accountForButton = accountForCreateNoteButton();
                             if (accountForButton != null) {
                                 startEditingNote(NoteEditorData.newEmpty(accountForButton));
                             }
@@ -269,21 +269,21 @@ public class NoteEditor {
     }
 
     public void onPrepareOptionsMenu(Menu menu) {
-        prepareCreateMessageButton(menu);
+        prepareCreateNoteButton(menu);
         prepareAttachButton(menu);
         prepareSendButton(menu);
         prepareSaveDraftButton(menu);
         prepareDiscardButton(menu);
     }
 
-    private void prepareCreateMessageButton(Menu menu) {
+    private void prepareCreateNoteButton(Menu menu) {
         MenuItem item = menu.findItem(R.id.createNoteButton);
         if (item != null) {
-            item.setVisible(!isVisible() && accountForCreateMessageButton().isValidAndSucceeded());
+            item.setVisible(!isVisible() && accountForCreateNoteButton().isValidAndSucceeded());
         }
     }
 
-    private MyAccount accountForCreateMessageButton() {
+    private MyAccount accountForCreateNoteButton() {
         if (isVisible()) {
             return editorData.getMyAccount();
         } else {
@@ -297,7 +297,7 @@ public class NoteEditor {
             boolean enableAttach = isVisible()
                     && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ATTACH_IMAGES_TO_MY_NOTES, true)
                     && (editorData.nonPrivate() || editorData.getMyAccount().getOrigin().getOriginType()
-                    .allowAttachmentForDirectMessage());
+                    .allowAttachmentForPrivateNote());
             item.setEnabled(enableAttach);
             item.setVisible(enableAttach);
         }
@@ -332,7 +332,7 @@ public class NoteEditor {
             if (!isHardwareKeyboardAttached()) {
                 openSoftKeyboard();
             }
-            editorContainer.onMessageEditorVisibilityChange();
+            editorContainer.onNoteEditorVisibilityChange();
         }
     }
     
@@ -358,7 +358,7 @@ public class NoteEditor {
         if (isVisible()) {
             editorView.setVisibility(View.GONE);
             closeSoftKeyboard();
-            editorContainer.onMessageEditorVisibilityChange();
+            editorContainer.onNoteEditorVisibilityChange();
         }
     }
 
@@ -428,7 +428,7 @@ public class NoteEditor {
         }
         showIfNotEmpty(R.id.note_author,
                 shouldShowAccountName() ? editorData.getMyAccount().getAccountName() : "");
-        showMessageDetails();
+        showNoteDetails();
         showIfNotEmpty(R.id.inReplyToBody, editorData.inReplyToBody);
         mCharsLeftText.setText(String.valueOf(editorData.getMyAccount()
                 .charactersLeftForNote(body)));
@@ -459,28 +459,28 @@ public class NoteEditor {
         }
     }
 
-    private void showMessageDetails() {
-        String messageDetails = "";
-        if (editorData.inReplyToMsgId != 0) {
-            String replyToName = MyQuery.msgIdToUsername(NoteTable.AUTHOR_ID, editorData.inReplyToMsgId,
-                    MyPreferences.getUserInTimeline());
-            messageDetails += " " + String.format(
+    private void showNoteDetails() {
+        String noteDetails = "";
+        if (editorData.inReplyToNoteId != 0) {
+            String replyToName = MyQuery.noteIdToUsername(NoteTable.AUTHOR_ID, editorData.inReplyToNoteId,
+                    MyPreferences.getActorInTimeline());
+            noteDetails += " " + String.format(
                     getActivity().getText(R.string.message_source_in_reply_to).toString(), replyToName);
         }
         if (editorData.recipients.nonEmpty()) {
-            String recipientName = editorData.recipients.getUserNames();
+            String recipientName = editorData.recipients.getUsernames();
             if (!TextUtils.isEmpty(recipientName)) {
-                messageDetails += " " + String.format(
+                noteDetails += " " + String.format(
                         getActivity().getText(R.string.message_source_to).toString(), recipientName);
             }
         }
         if (!UriUtils.isEmpty(editorData.getMediaUri())) {
-            messageDetails += " (" + getActivity().getText(R.string.label_with_media).toString()
+            noteDetails += " (" + getActivity().getText(R.string.label_with_media).toString()
                     + " " + editorData.getImageSize().x + "x" + editorData.getImageSize().y
                     + ", " + editorData.getImageFileSize()/1024 + "K" +
                     ")";
         }
-        showIfNotEmpty(R.id.noteEditDetails, messageDetails);
+        showIfNotEmpty(R.id.noteEditDetails, noteDetails);
     }
 
     private boolean shouldShowAccountName() {
@@ -510,7 +510,7 @@ public class NoteEditor {
         } else {
             NoteEditorCommand command = new NoteEditorCommand(editorData.copy());
             command.currentData.status = DownloadStatus.SENDING;
-            MyLog.onSendingMessageStart();
+            MyLog.onSendingNoteStart();
             saveData(command);
         }
     }
@@ -521,7 +521,7 @@ public class NoteEditor {
 
     private void discardAndHide() {
         NoteEditorCommand command = new NoteEditorCommand(editorData.copy());
-        command.currentData.status = UriUtils.isRealOid(command.currentData.msgOid) ?
+        command.currentData.status = UriUtils.isRealOid(command.currentData.noteOid) ?
                 DownloadStatus.LOADED : DownloadStatus.DELETED;
         saveData(command);
     }
@@ -564,12 +564,12 @@ public class NoteEditor {
             show();
             return;
         }
-        long msgId = SharedPreferencesUtil.getLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID);
-        if (msgId == 0) {
+        long noteId = SharedPreferencesUtil.getLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID);
+        if (noteId == 0) {
             MyLog.v(NoteEditorData.TAG, "loadCurrentDraft: no current draft");
             return;
         }
-        MyLog.v(NoteEditorData.TAG, "loadCurrentDraft requested, msgId=" + msgId);
+        MyLog.v(NoteEditorData.TAG, "loadCurrentDraft requested, noteId=" + noteId);
         new AsyncTaskLauncher<Long>().execute(this, true,
                 new MyAsyncTask<Long, Void, NoteEditorData>(NoteEditor.this.toString(),
                         MyAsyncTask.PoolEnum.QUICK_UI) {
@@ -577,16 +577,16 @@ public class NoteEditor {
 
                     @Override
                     protected NoteEditorData doInBackground2(Long... params) {
-                        long msgId = params[0];
-                        MyLog.v(NoteEditorData.TAG, "loadCurrentDraft started, msgId=" + msgId);
-                        NoteEditorLock potentialLock = new NoteEditorLock(false, msgId);
+                        long noteId = params[0];
+                        MyLog.v(NoteEditorData.TAG, "loadCurrentDraft started, noteId=" + noteId);
+                        NoteEditorLock potentialLock = new NoteEditorLock(false, noteId);
                         if (!potentialLock.acquire(true)) {
                             return NoteEditorData.EMPTY;
                         }
                         lock = potentialLock;
                         MyLog.v(NoteEditorData.TAG, "loadCurrentDraft acquired lock");
 
-                        final NoteEditorData data = NoteEditorData.load(msgId);
+                        final NoteEditorData data = NoteEditorData.load(noteId);
                         if (data.mayBeEdited()) {
                             return data;
                         } else {
@@ -614,7 +614,7 @@ public class NoteEditor {
                         lock.release();
                     }
                 }
-                , msgId);
+                , noteId);
     }
 
     public void onAttach() {

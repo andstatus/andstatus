@@ -43,7 +43,7 @@ public class ConversationMemberItem extends ConversationItem<ConversationMemberI
     @Override
     String[] getProjection() {
         List<String> columnNames = new ArrayList<>();
-        columnNames.add(ActivityTable.MSG_ID);
+        columnNames.add(ActivityTable.NOTE_ID);
         columnNames.add(NoteTable.UPDATED_DATE);
         columnNames.add(NoteTable.IN_REPLY_TO_NOTE_ID);
         columnNames.add(NoteTable.AUTHOR_ID);

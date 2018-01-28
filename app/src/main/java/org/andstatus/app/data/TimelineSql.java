@@ -134,7 +134,7 @@ public class TimelineSql {
                 + (msgWhere.isEmpty() ? " LEFT" : " INNER") + " JOIN "
                 + NoteTable.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS
                 + " ON (" + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID + "="
-                    + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.MSG_ID
+                    + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.NOTE_ID
                     + msgWhere.getAndWhere() + ")";
 
         if (columns.contains(ActorTable.AUTHOR_NAME)) {
@@ -173,7 +173,7 @@ public class TimelineSql {
                     + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.CONTENT_TYPE
                     + "=" + MyContentType.IMAGE.save() + " AND " 
                     + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.NOTE_ID
-                    + "=" + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.MSG_ID;
+                    + "=" + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.NOTE_ID;
         }
         if (columns.contains(ActorTable.IN_REPLY_TO_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
@@ -194,8 +194,8 @@ public class TimelineSql {
         columnNames.add(ActivityTable.UPDATED_DATE);
         columnNames.add(ActivityTable.ACTIVITY_TYPE);
         columnNames.add(ActivityTable.ACTOR_ID);
-        columnNames.add(ActivityTable.MSG_ID);
-        columnNames.add(ActivityTable.USER_ID);
+        columnNames.add(ActivityTable.NOTE_ID);
+        columnNames.add(ActivityTable.OBJ_ACTOR_ID);
         return columnNames;
     }
 
@@ -214,7 +214,7 @@ public class TimelineSql {
 
     private static Set<String> getBaseProjection() {
         Set<String> columnNames = new HashSet<>();
-        columnNames.add(ActivityTable.MSG_ID);
+        columnNames.add(ActivityTable.NOTE_ID);
         columnNames.add(ActivityTable.ORIGIN_ID);
         columnNames.add(ActorTable.AUTHOR_NAME);
         columnNames.add(NoteTable.BODY);
@@ -282,7 +282,7 @@ public class TimelineSql {
     }
 
     public static String userNameField() {
-        ActorInTimeline actorInTimeline = MyPreferences.getUserInTimeline();
+        ActorInTimeline actorInTimeline = MyPreferences.getActorInTimeline();
         return MyQuery.userNameField(actorInTimeline);
     }
     

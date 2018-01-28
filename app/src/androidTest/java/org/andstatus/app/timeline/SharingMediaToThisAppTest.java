@@ -73,7 +73,7 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest {
         String textToFind = MyContextHolder.get().context().getText(R.string.label_with_media).toString();
         ActivityTestHelper.waitTextInAView(method, details, textToFind);
 
-        String body = "Test message with a shared image " + demoData.TESTRUN_UID;
+        String body = "Test note with a shared image " + demoData.TESTRUN_UID;
         TestSuite.waitForIdleSync();
         onView(withId(R.id.noteBodyEditText)).perform(new TypeTextAction(body));
         TestSuite.waitForIdleSync();
@@ -93,9 +93,9 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest {
 
         String condition = "BODY='" + body + "'";
         long unsentMsgId = MyQuery.conditionToLongColumnValue(NoteTable.TABLE_NAME, BaseColumns._ID, condition);
-        assertTrue("Unsent message found: " + condition, unsentMsgId != 0);
-        assertEquals("Status of unsent message", DownloadStatus.SENDING, DownloadStatus.load(
-                MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)));
+        assertTrue("Unsent note found: " + condition, unsentMsgId != 0);
+        assertEquals("Status of unsent note", DownloadStatus.SENDING, DownloadStatus.load(
+                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)));
 
         DownloadData dd = DownloadData.getSingleForNote(unsentMsgId,
                 MyContentType.IMAGE, null);

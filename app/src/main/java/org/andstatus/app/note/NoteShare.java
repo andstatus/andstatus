@@ -35,15 +35,15 @@ import org.andstatus.app.util.MyLog;
 
 public class NoteShare {
     private final Origin origin;
-    private final long messageId;
+    private final long noteId;
     private final String imageFilename;
     
-    public NoteShare(Origin origin, long messageId, String imageFilename) {
+    public NoteShare(Origin origin, long noteId, String imageFilename) {
         this.origin = origin;
-        this.messageId = messageId;
+        this.noteId = noteId;
         this.imageFilename = imageFilename;
         if (origin == null) {
-            MyLog.v(this, "Origin not found for messageId=" + messageId);
+            MyLog.v(this, "Origin not found for noteId=" + noteId);
         }
     }
 
@@ -66,7 +66,7 @@ public class NoteShare {
 
     Intent intentToViewAndShare(boolean share) {
         StringBuilder subject = new StringBuilder();
-        String msgBody = MyQuery.msgIdToStringColumnValue(NoteTable.BODY, messageId);
+        String msgBody = MyQuery.noteIdToStringColumnValue(NoteTable.BODY, noteId);
         String msgBodyPlainText = msgBody;
         if (origin.isHtmlContentAllowed()) {
             msgBodyPlainText = MyHtml.fromHtml(msgBody);
@@ -104,12 +104,12 @@ public class NoteShare {
                         String.format(
                                 html ? SIGNATURE_FORMAT_HTML
                                         : SIGNATURE_PLAIN_TEXT,
-                                MyQuery.msgIdToUsername(
+                                MyQuery.noteIdToUsername(
                                         NoteTable.AUTHOR_ID,
-                                        messageId,
+                                        noteId,
                                         origin.isMentionAsWebFingerId() ? ActorInTimeline.WEBFINGER_ID
                                                 : ActorInTimeline.USERNAME),
-                                origin.notePermalink(messageId)
+                                origin.notePermalink(noteId)
                                 )).toString();
     }
 
@@ -117,7 +117,7 @@ public class NoteShare {
      * @return true if succeeded
      */
     public boolean openPermalink(Context context) {
-        return origin == null ? false : openLink(context, origin.notePermalink(messageId));
+        return origin == null ? false : openLink(context, origin.notePermalink(noteId));
     }
 
     public static boolean openLink(Context context, String urlString) {

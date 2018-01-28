@@ -551,13 +551,13 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
                 break;
             case GET_ACTOR:
             case UPDATE_NOTE:
-            case CREATE_FAVORITE:
-            case DESTROY_FAVORITE:
-            case REBLOG:
-            case DELETE_REBLOG:
+            case LIKE:
+            case UNDO_LIKE:
+            case ANNOUNCE:
+            case UNDO_ANNOUNCE:
             case DELETE_NOTE:
-            case FETCH_ATTACHMENT:
-            case FETCH_AVATAR:
+            case GET_ATTACHMENT:
+            case GET_AVATAR:
                 if (!commandData.getResult().hasError()) {
                     needed = true;
                 }

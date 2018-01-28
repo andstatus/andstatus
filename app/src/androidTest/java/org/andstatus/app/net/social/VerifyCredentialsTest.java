@@ -107,16 +107,16 @@ public class VerifyCredentialsTest {
                 actor.oid,
                 MyQuery.idToOid(OidEnum.ACTOR_OID, actorId, 0));
 
-        String msgOid = "383296535213002752";
-        long msgId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), msgOid) ;
-        assertTrue("Note not found", msgId != 0);
-        long userIdM = MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, msgId);
+        String noteOid = "383296535213002752";
+        long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), noteOid) ;
+        assertTrue("Note not found", noteId != 0);
+        long userIdM = MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, noteId);
         assertEquals("Note not by " + actor.getUsername() + " found", actorId, userIdM);
 
         assertEquals("Note permalink at twitter",
                 "https://" + origin.fixUriforPermalink(UriUtils.fromUrl(origin.getUrl())).getHost()
                         + "/"
-                        + builder.getAccount().getUsername() + "/status/" + msgOid,
-                origin.notePermalink(msgId));
+                        + builder.getAccount().getUsername() + "/status/" + noteOid,
+                origin.notePermalink(noteId));
     }
 }

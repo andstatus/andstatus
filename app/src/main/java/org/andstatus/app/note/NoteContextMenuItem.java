@@ -56,7 +56,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
             return NoteEditorData.newEmpty(menu.getMyActor()).
-                    setInReplyToMsgId(menu.getMsgId()).addMentionsToText();
+                    setInReplyToNoteId(menu.getNoteId()).addMentionsToText();
         }
 
         @Override
@@ -67,7 +67,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     EDIT(true) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
-            return NoteEditorData.load(menu.getMsgId());
+            return NoteEditorData.load(menu.getNoteId());
         }
 
         @Override
@@ -79,8 +79,8 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
             MyAccount ma = MyContextHolder.get().persistentAccounts().fromActorId(
-                    MyQuery.msgIdToLongColumnValue(ActivityTable.ACTOR_ID, menu.getMsgId()));
-            CommandData commandData = CommandData.newUpdateStatus(ma, menu.getMsgId());
+                    MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, menu.getNoteId()));
+            CommandData commandData = CommandData.newUpdateStatus(ma, menu.getNoteId());
             MyServiceManager.sendManualForegroundCommand(commandData);
             return null;
         }
@@ -89,7 +89,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
             return NoteEditorData.newEmpty(menu.getMyActor()).
-                    setInReplyToMsgId(menu.getMsgId()).setReplyToConversationParticipants(true).
+                    setInReplyToNoteId(menu.getNoteId()).setReplyToConversationParticipants(true).
                     addMentionsToText();
         }
 
@@ -102,7 +102,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
             return NoteEditorData.newEmpty(menu.getMyActor()).
-                    setInReplyToMsgId(menu.getMsgId()).setReplyToMentionedUsers(true).
+                    setInReplyToNoteId(menu.getNoteId()).setReplyToMentionedUsers(true).
                     addMentionsToText();
         }
 
@@ -119,28 +119,28 @@ public enum NoteContextMenuItem implements ContextMenuItem {
             menu.menuContainer.getNoteEditor().startEditingNote(editorData);
         }
     },
-    FAVORITE {
+    LIKE {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            sendNoteCommand(CommandEnum.CREATE_FAVORITE, editorData);
+            sendNoteCommand(CommandEnum.LIKE, editorData);
         }
     },
-    DESTROY_FAVORITE {
+    UNDO_LIKE {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            sendNoteCommand(CommandEnum.DESTROY_FAVORITE, editorData);
+            sendNoteCommand(CommandEnum.UNDO_LIKE, editorData);
         }
     },
-    REBLOG {
+    ANNOUNCE {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            sendNoteCommand(CommandEnum.REBLOG, editorData);
+            sendNoteCommand(CommandEnum.ANNOUNCE, editorData);
         }
     },
-    DELETE_REBLOG {
+    UNDO_ANNOUNCE {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            sendNoteCommand(CommandEnum.DELETE_REBLOG, editorData);
+            sendNoteCommand(CommandEnum.UNDO_ANNOUNCE, editorData);
         }
     },
     DELETE_NOTE {
@@ -152,7 +152,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     SHARE {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            NoteShare noteShare = new NoteShare(menu.getOrigin(), menu.getMsgId(),
+            NoteShare noteShare = new NoteShare(menu.getOrigin(), menu.getNoteId(),
                     menu.getImageFilename());
             noteShare.share(menu.getActivity());
         }
@@ -160,7 +160,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     COPY_TEXT(true) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
-            String body = MyQuery.msgIdToStringColumnValue(NoteTable.BODY, menu.getMsgId());
+            String body = MyQuery.noteIdToStringColumnValue(NoteTable.BODY, menu.getNoteId());
             if (menu.getOrigin().isHtmlContentAllowed()) {
                 body = MyHtml.fromHtml(body);
             }
@@ -169,23 +169,23 @@ public enum NoteContextMenuItem implements ContextMenuItem {
 
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            copyMessageText(editorData);
+            copyNoteText(editorData);
         }
     },
     COPY_AUTHOR(true) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
-            final long authorId = MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, menu.getMsgId());
-            MyLog.v(this, "msgId:" + menu.getMsgId() + " -> authorId:" + authorId);
+            final long authorId = MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, menu.getNoteId());
+            MyLog.v(this, "noteId:" + menu.getNoteId() + " -> authorId:" + authorId);
             return NoteEditorData.newEmpty(menu.getMyActor()).appendMentionedUserToText(authorId);
         }
 
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            copyMessageText(editorData);
+            copyNoteText(editorData);
         }
     },
-    ACTOR_MESSAGES {
+    ACTOR_ACTIONS {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
             menu.switchTimelineActivityView(
@@ -193,7 +193,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
                     null, menu.getActorId(), menu.getOrigin(), ""));
         }
     },
-    AUTHOR_MESSAGES {
+    AUTHOR_ACTIONS {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
             menu.switchTimelineActivityView(
@@ -204,25 +204,25 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     FOLLOW_ACTOR {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            sendActorCommand(CommandEnum.FOLLOW_ACTOR, menu.getOrigin(), menu.getActorId());
+            sendActorCommand(CommandEnum.FOLLOW, menu.getOrigin(), menu.getActorId());
         }
     },
-    STOP_FOLLOWING_ACTOR {
+    UNDO_FOLLOW_ACTOR {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            sendActorCommand(CommandEnum.STOP_FOLLOWING_ACTOR, menu.getOrigin(), menu.getActorId());
+            sendActorCommand(CommandEnum.UNDO_FOLLOW, menu.getOrigin(), menu.getActorId());
         }
     },
     FOLLOW_AUTHOR {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            sendActorCommand(CommandEnum.FOLLOW_ACTOR, menu.getOrigin(), menu.getAuthorId());
+            sendActorCommand(CommandEnum.FOLLOW, menu.getOrigin(), menu.getAuthorId());
         }
     },
-    STOP_FOLLOWING_AUTHOR {
+    UNDO_FOLLOW_AUTHOR {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            sendActorCommand(CommandEnum.STOP_FOLLOWING_ACTOR, menu.getOrigin(), menu.getAuthorId());
+            sendActorCommand(CommandEnum.UNDO_FOLLOW, menu.getOrigin(), menu.getAuthorId());
         }
     },
     PROFILE,
@@ -244,7 +244,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     OPEN_NOTE_PERMALINK {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            NoteShare noteShare = new NoteShare(menu.getOrigin(), menu.getMsgId(),
+            NoteShare noteShare = new NoteShare(menu.getOrigin(), menu.getNoteId(),
                     menu.getImageFilename());
             noteShare.openPermalink(menu.getActivity());
         }
@@ -252,7 +252,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     VIEW_IMAGE {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            NoteShare noteShare = new NoteShare(menu.getOrigin(), menu.getMsgId(),
+            NoteShare noteShare = new NoteShare(menu.getOrigin(), menu.getNoteId(),
                     menu.getImageFilename());
             noteShare.viewImage(menu.getActivity());
         }
@@ -262,7 +262,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
             Uri uri = MatchedUri.getTimelineItemUri(
                     Timeline.getTimeline(TimelineType.EVERYTHING, null, 0, menu.getOrigin()),
-                    menu.getMsgId());
+                    menu.getNoteId());
             String action = menu.getActivity().getIntent().getAction();
             if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
                 if (MyLog.isLoggable(this, MyLog.DEBUG)) {
@@ -282,7 +282,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
             Uri uri = MatchedUri.getActorListUri(editorData.ma.getActorId(),
                     ActorListType.ACTORS_OF_NOTE, menu.getOrigin().getId(),
-                    menu.getMsgId(), "");
+                    menu.getNoteId(), "");
             if (MyLog.isLoggable(this, MyLog.DEBUG)) {
                 MyLog.d(this, "onItemClick, startActivity=" + uri);
             }
@@ -306,7 +306,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
             MyServiceManager.sendManualForegroundCommand(
                     CommandData.newItemCommand(CommandEnum.GET_NOTE, menu.getMyActor(),
-                    menu.getMsgId())
+                    menu.getNoteId())
             );
         }
     },
@@ -353,7 +353,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         return UNKNOWN;
     }
 
-    protected void copyMessageText(NoteEditorData editorData) {
+    protected void copyNoteText(NoteEditorData editorData) {
         MyLog.v(this, "text='" + editorData.body + "'");
         if (!TextUtils.isEmpty(editorData.body)) {
             // http://developer.android.com/guide/topics/text/copy-paste.html
@@ -379,7 +379,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
             executeAsync1(menu);
         } else {
             executeOnUiThread(menu, NoteEditorData.newEmpty(menu.getMyActor()).
-                    setMsgId(menu.getMsgId()));
+                    setNoteId(menu.getNoteId()));
         }
         return false;
     }
@@ -390,7 +390,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
                     @Override
                     protected NoteEditorData doInBackground2(Void... params) {
                         MyLog.v(NoteContextMenuItem.this,
-                                "execute async started. msgId=" + menu.getMsgId());
+                                "execute async started. noteId=" + menu.getNoteId());
                         return executeAsync(menu);
                     }
 
@@ -418,6 +418,6 @@ public enum NoteContextMenuItem implements ContextMenuItem {
 
     void sendNoteCommand(CommandEnum command, NoteEditorData editorData) {
         MyServiceManager.sendManualForegroundCommand(
-                CommandData.newItemCommand(command, editorData.ma, editorData.getMsgId()));
+                CommandData.newItemCommand(command, editorData.ma, editorData.getNoteId()));
     }
 }

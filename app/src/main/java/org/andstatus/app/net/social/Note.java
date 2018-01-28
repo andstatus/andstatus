@@ -144,11 +144,11 @@ public class Note extends AObject {
             conversationId = MyQuery.conversationOidToId(origin.getId(), conversationOid);
         }
         if (conversationId == 0 && noteId != 0) {
-            conversationId = MyQuery.msgIdToLongColumnValue(NoteTable.CONVERSATION_ID, noteId);
+            conversationId = MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID, noteId);
         }
         if (conversationId == 0 && getInReplyTo().nonEmpty()) {
             if (getInReplyTo().getNote().noteId != 0) {
-                conversationId = MyQuery.msgIdToLongColumnValue(NoteTable.CONVERSATION_ID,
+                conversationId = MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID,
                         getInReplyTo().getNote().noteId);
             }
         }
@@ -357,7 +357,7 @@ public class Note extends AObject {
             }
             return TriState.UNKNOWN;
         } else {
-            final Pair<Long, ActivityType> favAndType = MyQuery.msgIdToLastFavoriting(MyContextHolder.get().getDatabase(),
+            final Pair<Long, ActivityType> favAndType = MyQuery.noteIdToLastFavoriting(MyContextHolder.get().getDatabase(),
                     noteId, accountActor.actorId);
             switch (favAndType.second) {
                 case LIKE:

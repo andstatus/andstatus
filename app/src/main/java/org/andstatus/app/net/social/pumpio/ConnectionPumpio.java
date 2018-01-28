@@ -167,8 +167,8 @@ public class ConnectionPumpio extends Connection {
         return !actOnNote(PActivityType.DELETE, noteOid).isEmpty();
     }
 
-    private AActivity actOnNote(PActivityType activityType, String messageId) throws ConnectionException {
-        return ActivitySender.fromId(this, messageId).sendNote(activityType);
+    private AActivity actOnNote(PActivityType activityType, String noteId) throws ConnectionException {
+        return ActivitySender.fromId(this, noteId).sendNote(activityType);
     }
 
     @Override

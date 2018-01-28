@@ -129,7 +129,7 @@ public class DemoGnuSocialConversationInserter {
         addActivity(activity);
         assertEquals("Note is " + (isPrivate.equals(TriState.TRUE) ? "private" :
                         isPrivate.equals(TriState.FALSE) ? "non private" : "") + ": " + activity.getNote().getBody(),
-                isPrivate, MyQuery.msgIdToTriState(NoteTable.PRIVATE, activity.getNote().noteId));
+                isPrivate, MyQuery.noteIdToTriState(NoteTable.PRIVATE, activity.getNote().noteId));
     }
 
     private Actor actorFromOidAndAvatar(String actorOid, @Nullable String avatarUrl) {

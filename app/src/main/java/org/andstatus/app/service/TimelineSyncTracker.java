@@ -21,7 +21,7 @@ import org.andstatus.app.timeline.meta.Timeline;
 
 /**
  * Retrieves and saves information about times and positions in a Timeline of the youngest/oldest downloaded timeline items.
- * The "timeline item" is e.g. a "message" for Twitter and an "Activity" for Pump.Io.
+ * The "timeline item" is e.g. a "note" for Twitter and an "Activity" for Pump.Io.
  */
 public class TimelineSyncTracker {
     private static final String TAG = TimelineSyncTracker.class.getSimpleName();
@@ -39,7 +39,7 @@ public class TimelineSyncTracker {
     }
 
     /**
-     * @return Sent Date of the last downloaded message from this timeline
+     * @return Sent Date of the last downloaded note from this timeline
      */
     public long getPreviousItemDate() {
         return isSyncYounger ? timeline.getYoungestItemDate() : timeline.getOldestItemDate();

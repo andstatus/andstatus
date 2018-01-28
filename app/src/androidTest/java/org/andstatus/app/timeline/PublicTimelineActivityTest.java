@@ -81,7 +81,7 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
         oneSearchTest("testSearch", demoData.PUBLIC_NOTE_TEXT, false);
     }
 
-    private void oneSearchTest(String method, String messageText, boolean internetSearch) throws InterruptedException {
+    private void oneSearchTest(String method, String noteText, boolean internetSearch) throws InterruptedException {
         int menu_id = R.id.search_menu_id;
         assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         TestSuite.waitForListLoaded(getActivity(), 2);
@@ -94,11 +94,11 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
         helper.clickMenuItem(method, menu_id);
 
         onView(withId(R.id.internet_search)).perform(setChecked(internetSearch));
-        onView(withResourceName("search_text")).perform(new TypeTextAction(messageText),
+        onView(withResourceName("search_text")).perform(new TypeTextAction(noteText),
                 pressImeActionButton());
         TimelineActivity nextActivity = (TimelineActivity) helper.waitForNextActivity(method, 40000);
-        waitForButtonClickedEvidence(nextActivity, method, messageText);
-        assertMessagesArePublic(nextActivity, messageText);
+        waitForButtonClickedEvidence(nextActivity, method, noteText);
+        assertNotesArePublic(nextActivity, noteText);
         nextActivity.finish();
     }
 
@@ -135,12 +135,12 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
         assertTrue(caption + " '" + (sb.toString()) + "'", found);
     }
 
-    private void assertMessagesArePublic(TimelineActivity timelineActivity, String publicMessageText) throws InterruptedException {
-        final String method = "assertMessagesArePublic";
+    private void assertNotesArePublic(TimelineActivity timelineActivity, String publicNoteText) throws InterruptedException {
+        final String method = "assertNotesArePublic";
         int msgCount = 0;
         for (int attempt=0; attempt < 3; attempt++) {
             TestSuite.waitForIdleSync();
-            msgCount = oneAttempt(timelineActivity, publicMessageText);
+            msgCount = oneAttempt(timelineActivity, publicNoteText);
             if (msgCount > 0 || DbUtils.waitMs(method, 2000 * (attempt + 1))) {
                 break;
             }
@@ -148,25 +148,25 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
         assertTrue("Notes found", msgCount > 0);
     }
 
-    private int oneAttempt(TimelineActivity timelineActivity, String publicMessageText) {
+    private int oneAttempt(TimelineActivity timelineActivity, String publicNoteText) {
         final ViewGroup list = timelineActivity.findViewById(android.R.id.list);
         int msgCount = 0;
         for (int index = 0; index < list.getChildCount(); index++) {
-            View messageView = list.getChildAt(index);
-            TextView bodyView = messageView.findViewById(R.id.note_body);
-            final BaseNoteViewItem viewItem = ListActivityTestHelper.toBaseMessageViewItem(
-                    timelineActivity.getListAdapter().getItem(messageView));
+            View noteView = list.getChildAt(index);
+            TextView bodyView = noteView.findViewById(R.id.note_body);
+            final BaseNoteViewItem viewItem = ListActivityTestHelper.toBaseNoteViewItem(
+                    timelineActivity.getListAdapter().getItem(noteView));
             if (bodyView != null) {
                 assertTrue("Note #" + viewItem.getId() + " '" + viewItem.getBody()
-                                + "' contains '" + publicMessageText + "'\n" + viewItem,
-                        String.valueOf(viewItem.getBody()).contains(publicMessageText));
+                                + "' contains '" + publicNoteText + "'\n" + viewItem,
+                        String.valueOf(viewItem.getBody()).contains(publicNoteText));
                 assertNotEquals("Note #" + viewItem.getId() + " '" + viewItem.getBody()
                         + "' is private" + "\n" + viewItem, TriState.TRUE,
-                        MyQuery.msgIdToTriState(NoteTable.PRIVATE, viewItem.getId()));
+                        MyQuery.noteIdToTriState(NoteTable.PRIVATE, viewItem.getId()));
                 msgCount++;
             }
         }
-        MyLog.v(this, "Public messages with '" + publicMessageText + "' found: " + msgCount);
+        MyLog.v(this, "Public notes with '" + publicNoteText + "' found: " + msgCount);
         return msgCount;
     }
 }

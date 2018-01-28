@@ -68,13 +68,12 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
 
     @Override
     void load(Cursor cursor) {
-        /* IDs of all known senders of this message except for the Author
-         * These "senders" reblogged the message
-         */
+        /* IDs of all known senders of this note except for the Author
+         * These "senders" reblogged the note */
         int ind=0;
         do {
-            long msgId = DbUtils.getLong(cursor, ActivityTable.MSG_ID);
-            if (msgId != getNoteId()) {
+            long noteId = DbUtils.getLong(cursor, ActivityTable.NOTE_ID);
+            if (noteId != getNoteId()) {
                 if (ind > 0) {
                     cursor.moveToPrevious();
                 }

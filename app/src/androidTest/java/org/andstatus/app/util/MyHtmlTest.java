@@ -28,11 +28,11 @@ import static org.junit.Assert.assertTrue;
 
 public class MyHtmlTest {
 
-    private static final String THIS_MESSAGE_HAS_NEWLINE = "This message\nhas newline";
-    private static final String THIS_MESSAGE_HAS_NEWLINE_PREPARED_FOR_VIEW =
-            "This message<br>\nhas newline";
-    private static final String THIS_MESSAGE_HAS_NEWLINE_HTML = "<p dir=\"ltr\">" +
-            THIS_MESSAGE_HAS_NEWLINE_PREPARED_FOR_VIEW + "</p>";
+    private static final String THIS_NOTE_HAS_NEWLINE = "This note\nhas newline";
+    private static final String THIS_NOTE_HAS_NEWLINE_PREPARED_FOR_VIEW =
+            "This note<br>\nhas newline";
+    private static final String THIS_NOTE_HAS_NEWLINE_HTML = "<p dir=\"ltr\">" +
+            THIS_NOTE_HAS_NEWLINE_PREPARED_FOR_VIEW + "</p>";
     private static final String HTMLIFIED_STRING_PREPARED_FOR_VIEW = "@auser@example.com This is a link " +
             "<a href=\"https://example.com/page1.html#something\">https://example.com/page1.html#something</a><br>\n" +
             "The second line";
@@ -46,8 +46,8 @@ public class MyHtmlTest {
 
     @Test
     public void testPrepareForView() {
-        assertEquals(THIS_MESSAGE_HAS_NEWLINE_PREPARED_FOR_VIEW,
-                MyHtml.prepareForView(THIS_MESSAGE_HAS_NEWLINE_HTML));
+        assertEquals(THIS_NOTE_HAS_NEWLINE_PREPARED_FOR_VIEW,
+                MyHtml.prepareForView(THIS_NOTE_HAS_NEWLINE_HTML));
         assertEquals(HTMLIFIED_STRING_PREPARED_FOR_VIEW, MyHtml.prepareForView(HTMLIFIED_STRING));
     }
 
@@ -56,8 +56,8 @@ public class MyHtmlTest {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
             return; // It's a bit different for that versions...
         }
-        String string2 = THIS_MESSAGE_HAS_NEWLINE_HTML;
-        assertEquals(string2, MyHtml.htmlify(THIS_MESSAGE_HAS_NEWLINE));
+        String string2 = THIS_NOTE_HAS_NEWLINE_HTML;
+        assertEquals(string2, MyHtml.htmlify(THIS_NOTE_HAS_NEWLINE));
         assertEquals(string2, MyHtml.htmlify(string2));
         assertEquals(HTMLIFIED_STRING,
                 MyHtml.htmlify("@auser@example.com This is a link https://example.com/page1.html#something\nThe second line"));
@@ -87,27 +87,27 @@ public class MyHtmlTest {
 
     @Test
     public void testHasHtmlMarkup() {
-        assertFalse(MyHtml.hasHtmlMarkup(THIS_MESSAGE_HAS_NEWLINE));
-        assertTrue(MyHtml.hasHtmlMarkup(THIS_MESSAGE_HAS_NEWLINE_HTML));
+        assertFalse(MyHtml.hasHtmlMarkup(THIS_NOTE_HAS_NEWLINE));
+        assertTrue(MyHtml.hasHtmlMarkup(THIS_NOTE_HAS_NEWLINE_HTML));
     }
 
     @Test
     public void testFromHtml() {
         String string = "";
-        String expected = "This message\nhas \nnewline";
+        String expected = "This note\nhas \nnewline";
         
-        string = "This message<br >has <br>newline ";
+        string = "This note<br >has <br>newline ";
         assertEquals(expected, MyHtml.fromHtml(string));
-        string = "This message<br />has <p>newline</p>";
+        string = "This note<br />has <p>newline</p>";
         assertEquals(expected, MyHtml.fromHtml(string));
         assertEquals(expected, MyHtml.fromHtml(expected));
-        string = "This <a href='#as'>message</a><br />has <br><br>newline";
+        string = "This <a href='#as'>note</a><br />has <br><br>newline";
         assertEquals(expected, MyHtml.fromHtml(string));
-        string = "<p>This <a href='#as'>message</a></p><br />has <p>newline</p>";
+        string = "<p>This <a href='#as'>note</a></p><br />has <p>newline</p>";
         assertEquals(expected, MyHtml.fromHtml(string));
-        string = "<p>This <a href='#as'>message</a></p>has <p>newline</p>";
+        string = "<p>This <a href='#as'>note</a></p>has <p>newline</p>";
         assertEquals(expected, MyHtml.fromHtml(string));
-        string = "<p>This <a href='#as'>message</a></p>   has <p>newline</p> ";
+        string = "<p>This <a href='#as'>note</a></p>   has <p>newline</p> ";
         assertEquals(expected, MyHtml.fromHtml(string));
         assertEquals("I'm working", MyHtml.fromHtml("I&apos;m working"));
     }
@@ -115,7 +115,7 @@ public class MyHtmlTest {
     @Test
     public void testGetCleanedBody() {
         String body = "";
-        String expected = "the favorited message";
+        String expected = "the favorited note";
 
         body = "Somebody favorited something by anotheruser: " + expected;
         assertEquals(expected, MyHtml.getCleanedBody(body));

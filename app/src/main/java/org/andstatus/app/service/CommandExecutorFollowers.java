@@ -127,7 +127,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         broadcastProgress(execContext.getContext().getText(R.string.followers).toString()
                 + ": " + userIdsOld.size() + " -> " + actorsNew.size(), false);
 
-        if (updateNewUsersAndTheirLatestMessages(actorsNew)) return;
+        if (updateNewActorsAndTheirLatestActions(actorsNew)) return;
 
         for (Actor actor : actorsNew) {
             userIdsOld.remove(actor.actorId);
@@ -158,7 +158,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         broadcastProgress(execContext.getContext().getText(R.string.friends).toString()
                 + ": " + userIdsOld.size() + " -> " + actorsNew.size(), false);
 
-        if (updateNewUsersAndTheirLatestMessages(actorsNew)) return;
+        if (updateNewActorsAndTheirLatestActions(actorsNew)) return;
 
         for (Actor actor : actorsNew) {
             userIdsOld.remove(actor.actorId);
@@ -205,9 +205,9 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
     /**
      * @return true if we need to interrupt process
      */
-    private boolean updateNewUsersAndTheirLatestMessages(List<Actor> actorsNew) {
+    private boolean updateNewActorsAndTheirLatestActions(List<Actor> actorsNew) {
         DataUpdater di = new DataUpdater(execContext);
-        boolean allMessagesLoaded = true;
+        boolean allNotesLoaded = true;
         long count = 0;
         for (Actor actor : actorsNew) {
             count++;
@@ -215,11 +215,11 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                     + ": " + actor.getNamePreferablyWebFingerId(), true);
             di.onActivity(actor.update(execContext.getMyAccount().getActor()), false);
             if (!actor.hasLatestNote()) {
-                allMessagesLoaded = false;
+                allNotesLoaded = false;
             }
         }
         di.saveLum();
-        if (!allMessagesLoaded) {
+        if (!allNotesLoaded) {
             count = 0;
             for (Actor actor : actorsNew) {
                 if (actor.hasLatestNote()) {

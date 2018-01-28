@@ -42,16 +42,16 @@ public class ParsedUriTest {
 
     private void assertOneUserList(long originId) {
         long actorId = 5;
-        long msgId = 2;
-        Uri uri = MatchedUri.getActorListUri(actorId, ActorListType.ACTORS_OF_NOTE, originId, msgId, "");
+        long noteId = 2;
+        Uri uri = MatchedUri.getActorListUri(actorId, ActorListType.ACTORS_OF_NOTE, originId, noteId, "");
         ParsedUri parsedUri = ParsedUri.fromUri(uri);
         String msgLog = parsedUri.toString();
         assertEquals(TimelineType.UNKNOWN, parsedUri.getTimelineType());
         assertEquals(msgLog, ActorListType.ACTORS_OF_NOTE, parsedUri.getUserListType());
         assertEquals(msgLog, actorId, parsedUri.getAccountUserId());
         assertEquals(msgLog, originId, parsedUri.getOriginId());
-        assertEquals(msgLog, msgId, parsedUri.getNoteId());
-        assertEquals(msgLog, msgId, parsedUri.getItemId());
+        assertEquals(msgLog, noteId, parsedUri.getNoteId());
+        assertEquals(msgLog, noteId, parsedUri.getItemId());
         assertEquals(msgLog, 0, parsedUri.getActorId());
     }
 }

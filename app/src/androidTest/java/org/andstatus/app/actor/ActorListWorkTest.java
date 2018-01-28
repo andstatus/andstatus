@@ -54,13 +54,13 @@ public class ActorListWorkTest extends ActivityTest<ActorList> {
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
-        long msgId = MyQuery.oidToId(OidEnum.NOTE_OID, demoData.getConversationOriginId(),
+        long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, demoData.getConversationOriginId(),
                 demoData.CONVERSATION_MENTIONS_NOTE_OID);
-        assertTrue(msgId > 0);
+        assertTrue(noteId > 0);
         MyLog.i(this, "setUp ended");
 
         return new Intent(MyAction.VIEW_ACTORS.getAction(),
-                MatchedUri.getActorListUri(ma.getActorId(), ActorListType.ACTORS_OF_NOTE, ma.getOriginId(), msgId, ""));
+                MatchedUri.getActorListUri(ma.getActorId(), ActorListType.ACTORS_OF_NOTE, ma.getOriginId(), noteId, ""));
     }
 
     @Test

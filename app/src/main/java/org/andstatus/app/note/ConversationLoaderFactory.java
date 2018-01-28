@@ -28,16 +28,16 @@ import org.andstatus.app.util.TriState;
 public class ConversationLoaderFactory<T extends ConversationItem<T>> {
 
     public ConversationLoader<T> getLoader(T emptyItem, MyContext myContext, MyAccount ma,
-            long messageId, boolean sync) {
+            long noteId, boolean sync) {
         // TODO: to clarify...
-        boolean recursiveLoader = ma.getOrigin().getOriginType().isDirectMessageAllowsReply();
+        boolean recursiveLoader = ma.getOrigin().getOriginType().isPrivateNoteAllowsReply();
         if (!recursiveLoader) {
-            recursiveLoader = MyQuery.msgIdToTriState(NoteTable.PRIVATE, messageId) != TriState.TRUE;
+            recursiveLoader = MyQuery.noteIdToTriState(NoteTable.PRIVATE, noteId) != TriState.TRUE;
         }
         if (recursiveLoader) {
-            return new RecursiveConversationLoader<>(emptyItem, myContext, ma, messageId, sync);
+            return new RecursiveConversationLoader<>(emptyItem, myContext, ma, noteId, sync);
         }  else {
-            return new PrivateNotesConversationLoader<>(emptyItem, myContext, ma, messageId, sync);
+            return new PrivateNotesConversationLoader<>(emptyItem, myContext, ma, noteId, sync);
         }
     }
 }

@@ -36,7 +36,7 @@ public class ActorAdapter extends BaseTimelineAdapter<ActorViewItem> {
     private final ActorContextMenu contextMenu;
     private final int listItemLayoutId;
     private final boolean showWebFingerId =
-            MyPreferences.getUserInTimeline().equals(ActorInTimeline.WEBFINGER_ID);
+            MyPreferences.getActorInTimeline().equals(ActorInTimeline.WEBFINGER_ID);
 
     public ActorAdapter(@NonNull ActorContextMenu contextMenu, TimelineData<ActorViewItem> listData) {
         super(contextMenu.getActivity().getMyContext(), listData);

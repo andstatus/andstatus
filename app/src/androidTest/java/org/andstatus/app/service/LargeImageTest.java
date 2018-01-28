@@ -49,11 +49,11 @@ public class LargeImageTest {
 
     @Test
     public void testLargeImageAttachmentLoad() throws IOException {
-        DownloadData dd = insertMessage();
+        DownloadData dd = insertNote();
         loadingTest(dd);
     }
 
-    private DownloadData insertMessage() throws IOException {
+    private DownloadData insertNote() throws IOException {
         String body = "Large image attachment";
         MyAccount ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
         DemoNoteInserter inserter = new DemoNoteInserter(ma);
@@ -71,7 +71,7 @@ public class LargeImageTest {
                 activity.getNote().attachments.get(0).contentType, null);
         assertEquals("Image URI stored", activity.getNote().attachments.get(0).getUri(), dd.getUri());
 
-        CommandData commandData = CommandData.newCommand(CommandEnum.FETCH_AVATAR);
+        CommandData commandData = CommandData.newCommand(CommandEnum.GET_AVATAR);
         AttachmentDownloader loader = new AttachmentDownloader(dd);
         ConnectionTwitterGnuSocialMock connection = new ConnectionTwitterGnuSocialMock();
         InputStream inputStream = InstrumentationRegistry.getInstrumentation().getContext().getResources()

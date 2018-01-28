@@ -27,12 +27,12 @@ class NoteEditorLock {
     static final AtomicReference<NoteEditorLock> lock = new AtomicReference<>(NoteEditorLock.EMPTY);
 
     final boolean isSave;
-    final long msgId;
+    final long noteId;
     long startedAt;
 
-    NoteEditorLock(boolean isSave, long msgId) {
+    NoteEditorLock(boolean isSave, long noteId) {
         this.isSave = isSave;
-        this.msgId = msgId;
+        this.noteId = noteId;
     }
 
     boolean isEmpty() {
@@ -57,7 +57,7 @@ class NoteEditorLock {
                     break;
                 }
             } else {
-                if (lockPrevious.isSave == isSave && lockPrevious.msgId == msgId) {
+                if (lockPrevious.isSave == isSave && lockPrevious.noteId == noteId) {
                     MyLog.v(this, "The same operation in progress: " + lockPrevious);
                     acquired = false;
                     break;
@@ -93,8 +93,8 @@ class NoteEditorLock {
         if (isSave) {
             builder.append("save,");
         }
-        if (msgId != 0) {
-            builder.append("msgId:" + msgId + ",");
+        if (noteId != 0) {
+            builder.append("msgId:" + noteId + ",");
         }
         builder.append("started:" + new Date(startedAt));
         return MyLog.formatKeyValue(this, builder.toString());

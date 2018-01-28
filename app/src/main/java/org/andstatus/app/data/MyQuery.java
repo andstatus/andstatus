@@ -219,7 +219,7 @@ public class MyQuery {
                         }
                         sql = "SELECT " + ActivityTable.ACTIVITY_OID + " FROM "
                                 + ActivityTable.TABLE_NAME + " WHERE "
-                                + ActivityTable.MSG_ID + "=" + entityId + " AND "
+                                + ActivityTable.NOTE_ID + "=" + entityId + " AND "
                                 + ActivityTable.ACTIVITY_TYPE + "=" + ActivityType.ANNOUNCE.id + " AND "
                                 + ActivityTable.ACTOR_ID + "=" + rebloggerActorId;
                         break;
@@ -252,27 +252,27 @@ public class MyQuery {
     }
 
     /** @return ID of the Reblog/Undo reblog activity and the type of the Activity */
-    public static Pair<Long, ActivityType> msgIdToLastReblogging(SQLiteDatabase db, long msgId, long actorId) {
-        return msgIdToLastOfTypes(db, msgId, actorId, ActivityType.ANNOUNCE, ActivityType.UNDO_ANNOUNCE);
+    public static Pair<Long, ActivityType> noteIdToLastReblogging(SQLiteDatabase db, long noteId, long actorId) {
+        return noteIdToLastOfTypes(db, noteId, actorId, ActivityType.ANNOUNCE, ActivityType.UNDO_ANNOUNCE);
     }
 
     /** @return ID of the last LIKE/UNDO_LIKE activity and the type of the activity */
     @NonNull
-    public static Pair<Long, ActivityType> msgIdToLastFavoriting(SQLiteDatabase db, long msgId, long actorId) {
-        return msgIdToLastOfTypes(db, msgId, actorId, ActivityType.LIKE, ActivityType.UNDO_LIKE);
+    public static Pair<Long, ActivityType> noteIdToLastFavoriting(SQLiteDatabase db, long noteId, long actorId) {
+        return noteIdToLastOfTypes(db, noteId, actorId, ActivityType.LIKE, ActivityType.UNDO_LIKE);
     }
 
     /** @return ID of the last type1 or type2 activity and the type of the activity for the selected actor */
     @NonNull
-    public static Pair<Long, ActivityType> msgIdToLastOfTypes(
-            SQLiteDatabase db, long msgId, long actorId, ActivityType type1, ActivityType type2) {
-        String method = "msgIdToLastOfTypes";
-        if (db == null || msgId == 0 || actorId == 0) {
+    public static Pair<Long, ActivityType> noteIdToLastOfTypes(
+            SQLiteDatabase db, long noteId, long actorId, ActivityType type1, ActivityType type2) {
+        String method = "noteIdIdToLastOfTypes";
+        if (db == null || noteId == 0 || actorId == 0) {
             return new Pair<>(0L, ActivityType.EMPTY);
         }
         String sql = "SELECT " + ActivityTable.ACTIVITY_TYPE + ", " + ActivityTable._ID
                 + " FROM " + ActivityTable.TABLE_NAME
-                + " WHERE " + ActivityTable.MSG_ID + "=" + msgId + " AND "
+                + " WHERE " + ActivityTable.NOTE_ID + "=" + noteId + " AND "
                 + ActivityTable.ACTIVITY_TYPE
                 + " IN(" + type1.id + "," + type2.id + ") AND "
                 + ActivityTable.ACTOR_ID + "=" + actorId
@@ -287,30 +287,30 @@ public class MyQuery {
         return new Pair<>(0L, ActivityType.EMPTY);
     }
 
-    public static List<Actor> getStargazers(SQLiteDatabase db, @NonNull Origin origin, long msgId) {
-        return msgIdToActors(db, origin, msgId, ActivityType.LIKE, ActivityType.UNDO_LIKE);
+    public static List<Actor> getStargazers(SQLiteDatabase db, @NonNull Origin origin, long noteId) {
+        return noteIdToActors(db, origin, noteId, ActivityType.LIKE, ActivityType.UNDO_LIKE);
     }
 
-    public static List<Actor> getRebloggers(SQLiteDatabase db, @NonNull Origin origin, long msgId) {
-        return msgIdToActors(db, origin, msgId, ActivityType.ANNOUNCE, ActivityType.UNDO_ANNOUNCE);
+    public static List<Actor> getRebloggers(SQLiteDatabase db, @NonNull Origin origin, long noteId) {
+        return noteIdToActors(db, origin, noteId, ActivityType.ANNOUNCE, ActivityType.UNDO_ANNOUNCE);
     }
 
     /** @return for each actor (actorId is a key): ID of the last type1 or type2 activity
      *  and the type of the activity */
     @NonNull
-    public static List<Actor> msgIdToActors(
-            SQLiteDatabase db, @NonNull Origin origin, long msgId, ActivityType typeToReturn, ActivityType undoType) {
-        String method = "msgIdToLastOfTypes";
+    public static List<Actor> noteIdToActors(
+            SQLiteDatabase db, @NonNull Origin origin, long noteId, ActivityType typeToReturn, ActivityType undoType) {
+        String method = "noteIdToLastOfTypes";
         final List<Long> foundActors = new ArrayList<>();
         final List<Actor> users = new ArrayList<>();
-        if (db == null || !origin.isValid() || msgId == 0) {
+        if (db == null || !origin.isValid() || noteId == 0) {
             return users;
         }
         String sql = "SELECT " + ActivityTable.ACTIVITY_TYPE + ", " + ActivityTable.ACTOR_ID + ", "
                 + ActorTable.WEBFINGER_ID + ", " + TimelineSql.userNameField() + " AS " + ActorTable.ACTIVITY_ACTOR_NAME
                 + " FROM " + ActivityTable.TABLE_NAME + " INNER JOIN " + ActorTable.TABLE_NAME
                 + " ON " + ActivityTable.ACTOR_ID + "=" + ActorTable.TABLE_NAME + "." + ActorTable._ID
-                + " WHERE " + ActivityTable.MSG_ID + "=" + msgId + " AND "
+                + " WHERE " + ActivityTable.NOTE_ID + "=" + noteId + " AND "
                 + ActivityTable.ACTIVITY_TYPE + " IN(" + typeToReturn.id + "," + undoType.id + ")"
                 + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC";
         try (Cursor cursor = db.rawQuery(sql, null)) {
@@ -335,18 +335,18 @@ public class MyQuery {
 
     @NonNull
     public static ActorToNote favoritedAndReblogged(
-            SQLiteDatabase db, long msgId, long actorId) {
+            SQLiteDatabase db, long noteId, long actorId) {
         String method = "favoritedAndReblogged";
         boolean favoriteFound = false;
         boolean reblogFound = false;
         ActorToNote actorToNote = new ActorToNote();
-        if (db == null || msgId == 0 || actorId == 0) {
+        if (db == null || noteId == 0 || actorId == 0) {
             return actorToNote;
         }
         String sql = "SELECT " + ActivityTable.ACTIVITY_TYPE + ", " + ActivityTable.SUBSCRIBED
                 + " FROM " + ActivityTable.TABLE_NAME + " INNER JOIN " + ActorTable.TABLE_NAME
                 + " ON " + ActivityTable.ACTOR_ID + "=" + ActorTable.TABLE_NAME + "." + ActorTable._ID
-                + " WHERE " + ActivityTable.MSG_ID + "=" + msgId + " AND "
+                + " WHERE " + ActivityTable.NOTE_ID + "=" + noteId + " AND "
                 + ActivityTable.ACTOR_ID + "=" + actorId
                 + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC";
         try (Cursor cursor = db.rawQuery(sql, null)) {
@@ -380,8 +380,8 @@ public class MyQuery {
         return actorToNote;
     }
 
-    public static String msgIdToUsername(String userIdColumnName, long noteId, ActorInTimeline actorInTimeline) {
-        final String method = "msgIdToUsername";
+    public static String noteIdToUsername(String userIdColumnName, long noteId, ActorInTimeline actorInTimeline) {
+        final String method = "noteIdToUsername";
         String userName = "";
         if (noteId != 0) {
             SQLiteStatement prog = null;
@@ -476,7 +476,7 @@ public class MyQuery {
     }
 
     @NonNull
-    public static String msgIdToStringColumnValue(String columnName, long systemId) {
+    public static String noteIdToStringColumnValue(String columnName, long systemId) {
         return idToStringColumnValue(NoteTable.TABLE_NAME, columnName, systemId);
     }
 
@@ -530,25 +530,25 @@ public class MyQuery {
         return TextUtils.isEmpty(columnValue) ? "" : columnValue;
     }
 
-    public static long noteIdToActorId(String msgUserIdColumnName, long systemId) {
+    public static long noteIdToActorId(String noteActorIdColumnName, long systemId) {
         long actorId = 0;
         try {
-            if (msgUserIdColumnName.contentEquals(ActivityTable.ACTOR_ID) ||
-                    msgUserIdColumnName.contentEquals(NoteTable.AUTHOR_ID) ||
-                    msgUserIdColumnName.contentEquals(NoteTable.IN_REPLY_TO_ACTOR_ID)) {
-                actorId = msgIdToLongColumnValue(msgUserIdColumnName, systemId);
+            if (noteActorIdColumnName.contentEquals(ActivityTable.ACTOR_ID) ||
+                    noteActorIdColumnName.contentEquals(NoteTable.AUTHOR_ID) ||
+                    noteActorIdColumnName.contentEquals(NoteTable.IN_REPLY_TO_ACTOR_ID)) {
+                actorId = noteIdToLongColumnValue(noteActorIdColumnName, systemId);
             } else {
-                throw new IllegalArgumentException("msgIdToUserId; Illegal column '" + msgUserIdColumnName + "'");
+                throw new IllegalArgumentException("noteIdToActorId; Illegal column '" + noteActorIdColumnName + "'");
             }
         } catch (Exception e) {
-            MyLog.e(TAG, "msgIdToUserId", e);
+            MyLog.e(TAG, "noteIdToActorId", e);
             return 0;
         }
         return actorId;
     }
 
-    public static long msgIdToOriginId(long systemId) {
-        return msgIdToLongColumnValue(NoteTable.ORIGIN_ID, systemId);
+    public static long noteIdToOriginId(long systemId) {
+        return noteIdToLongColumnValue(NoteTable.ORIGIN_ID, systemId);
     }
 
     public static TriState activityIdToTriState(String columnName, long systemId) {
@@ -558,38 +558,38 @@ public class MyQuery {
     /**
      * Convenience method to get column value from {@link ActivityTable} table
      * @param columnName without table name
-     * @param systemId  MyDatabase.MSG_TABLE_NAME + "." + Msg._ID
+     * @param systemId  MyDatabase.NOTE_TABLE_NAME + "." + Note._ID
      * @return 0 in case not found or error
      */
     public static long activityIdToLongColumnValue(String columnName, long systemId) {
         return idToLongColumnValue(null, ActivityTable.TABLE_NAME, columnName, systemId);
     }
 
-    public static TriState msgIdToTriState(String columnName, long systemId) {
-        return TriState.fromId(msgIdToLongColumnValue(columnName, systemId));
+    public static TriState noteIdToTriState(String columnName, long systemId) {
+        return TriState.fromId(noteIdToLongColumnValue(columnName, systemId));
     }
 
     /**
      * Convenience method to get column value from {@link NoteTable} table
      * @param columnName without table name
-     * @param systemId  MyDatabase.MSG_TABLE_NAME + "." + Msg._ID
+     * @param systemId  NoteTable._ID
      * @return 0 in case not found or error
      */
-    public static long msgIdToLongColumnValue(String columnName, long systemId) {
+    public static long noteIdToLongColumnValue(String columnName, long systemId) {
         switch (columnName) {
             case ActivityTable.ACTOR_ID:
             case ActivityTable.AUTHOR_ID:
             case ActivityTable.UPDATED_DATE:
             case ActivityTable.LAST_UPDATE_ID:
-                return msgIdToLongActivityColumnValue(null, columnName, systemId);
+                return noteIdToLongActivityColumnValue(null, columnName, systemId);
             default:
                 return idToLongColumnValue(null, NoteTable.TABLE_NAME, columnName, systemId);
         }
     }
 
     /** Data from the latest activity for this note... */
-    public static long msgIdToLongActivityColumnValue(SQLiteDatabase databaseIn, String columnNameIn, long noteId) {
-        final String method = "msgId2activity" + columnNameIn;
+    public static long noteIdToLongActivityColumnValue(SQLiteDatabase databaseIn, String columnNameIn, long noteId) {
+        final String method = "noteId2activity" + columnNameIn;
         final String columnName;
         final String condition;
         switch (columnNameIn) {
@@ -620,7 +620,7 @@ public class MyQuery {
                 throw new IllegalArgumentException( method + "; Illegal column '" + columnNameIn + "'");
         }
         return MyQuery.conditionToLongColumnValue(databaseIn, method, ActivityTable.TABLE_NAME, columnName,
-                ActivityTable.MSG_ID + "=" + noteId +  " AND " + condition
+                ActivityTable.NOTE_ID + "=" + noteId +  " AND " + condition
                         + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC LIMIT 1");
     }
 
@@ -753,14 +753,14 @@ public class MyQuery {
         return !getLongs(sql).isEmpty();
     }
 
-    public static String msgInfoForLog(long msgId) {
+    public static String noteInfoForLog(long noteId) {
         StringBuilder builder = new StringBuilder();
-        I18n.appendWithComma(builder, "msgId:" + msgId);
-        String oid = idToOid(OidEnum.NOTE_OID, msgId, 0);
+        I18n.appendWithComma(builder, "noteId:" + noteId);
+        String oid = idToOid(OidEnum.NOTE_OID, noteId, 0);
         I18n.appendWithComma(builder, "oid" + (TextUtils.isEmpty(oid) ? " is empty" : ":'" + oid + "'"));
-        String body = MyHtml.fromHtml(msgIdToStringColumnValue(NoteTable.BODY, msgId));
+        String body = MyHtml.fromHtml(noteIdToStringColumnValue(NoteTable.BODY, noteId));
         I18n.appendAtNewLine(builder, "text:'" + body + "'");
-        Origin origin = MyContextHolder.get().persistentOrigins().fromId(msgIdToLongColumnValue(NoteTable.ORIGIN_ID, msgId));
+        Origin origin = MyContextHolder.get().persistentOrigins().fromId(noteIdToLongColumnValue(NoteTable.ORIGIN_ID, noteId));
         I18n.appendAtNewLine(builder, origin.toString());
         return builder.toString();
     }
@@ -772,19 +772,19 @@ public class MyQuery {
     }
 
     @NonNull
-    public static String msgIdToConversationOid(long msgId) {
-        if (msgId == 0) {
+    public static String noteIdToConversationOid(long noteId) {
+        if (noteId == 0) {
             return "";
         }
-        String oid = msgIdToStringColumnValue(NoteTable.CONVERSATION_OID, msgId);
+        String oid = noteIdToStringColumnValue(NoteTable.CONVERSATION_OID, noteId);
         if (!TextUtils.isEmpty(oid)) {
             return oid;
         }
-        long conversationId = MyQuery.msgIdToLongColumnValue(NoteTable.CONVERSATION_ID, msgId);
+        long conversationId = MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID, noteId);
         if (conversationId == 0) {
-            return idToOid(OidEnum.NOTE_OID, msgId, 0);
+            return idToOid(OidEnum.NOTE_OID, noteId, 0);
         }
-        oid = msgIdToStringColumnValue(NoteTable.CONVERSATION_OID, conversationId);
+        oid = noteIdToStringColumnValue(NoteTable.CONVERSATION_OID, conversationId);
         if (!TextUtils.isEmpty(oid)) {
             return oid;
         }

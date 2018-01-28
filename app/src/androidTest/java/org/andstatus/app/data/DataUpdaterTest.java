@@ -113,12 +113,12 @@ public class DataUpdaterTest {
         assertEquals("Note permalink", note.url, accountActor.origin.notePermalink(noteId));
 
         assertEquals("Note stored as loaded", DownloadStatus.LOADED, DownloadStatus.load(
-                MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)));
-        long authorId = MyQuery.msgIdToLongColumnValue(ActivityTable.AUTHOR_ID, noteId);
+                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)));
+        long authorId = MyQuery.noteIdToLongColumnValue(ActivityTable.AUTHOR_ID, noteId);
         assertEquals("Author of the note", somebody.actorId, authorId);
-        String url = MyQuery.msgIdToStringColumnValue(NoteTable.URL, noteId);
+        String url = MyQuery.noteIdToStringColumnValue(NoteTable.URL, noteId);
         assertEquals("Url of the note", note.url, url);
-        long senderId = MyQuery.msgIdToLongColumnValue(ActivityTable.ACTOR_ID, noteId);
+        long senderId = MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, noteId);
         assertEquals("Sender of the note", somebody.actorId, senderId);
         url = MyQuery.userIdToStringColumnValue(ActorTable.PROFILE_URL, senderId);
         assertEquals("Url of the author " + somebody.getUsername(), somebody.getProfileUrl(), url);
@@ -179,10 +179,10 @@ public class DataUpdaterTest {
         assertNotEquals("Activity added", 0, activity.getId());
 
         assertEquals("Note should be private", TriState.TRUE,
-                MyQuery.msgIdToTriState(NoteTable.PRIVATE, noteId));
+                MyQuery.noteIdToTriState(NoteTable.PRIVATE, noteId));
         DemoNoteInserter.assertNotified(activity, TriState.TRUE);
 
-        Audience audience = Audience.fromMsgId(accountActor.origin, noteId);
+        Audience audience = Audience.fromNoteId(accountActor.origin, noteId);
         assertNotEquals("No recipients for " + activity, 0, audience.getRecipients().size());
         assertEquals("Recipient " + ma.getAccountName() + "; " + audience.getRecipients(),
                 ma.getActorId(), audience.getFirst().actorId);
@@ -234,12 +234,12 @@ public class DataUpdaterTest {
         assertEquals("Note is not favorited by " + otherUser + ": " + stargazers,
                 true, favoritedByOtherUser);
         assertNotEquals("Note is favorited (by some my account)", TriState.TRUE,
-                MyQuery.msgIdToTriState(NoteTable.FAVORITED, noteId));
+                MyQuery.noteIdToTriState(NoteTable.FAVORITED, noteId));
         assertEquals("Activity is subscribed " + likeActivity, TriState.UNKNOWN,
                 MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, likeActivity.getId()));
         DemoNoteInserter.assertNotified(likeActivity, TriState.UNKNOWN);
         assertEquals("Note is reblogged", TriState.UNKNOWN,
-                MyQuery.msgIdToTriState(NoteTable.REBLOGGED, noteId));
+                MyQuery.noteIdToTriState(NoteTable.REBLOGGED, noteId));
 
         // TODO: Below is actually a timeline query test, so maybe expand / move...
         Uri contentUri = Timeline.getTimeline(TimelineType.EVERYTHING, null, 0, ma.getOrigin()).getUri();
@@ -268,7 +268,7 @@ public class DataUpdaterTest {
                     DbUtils.getTriState(cursor, ActivityTable.SUBSCRIBED));
         }
         cursor.close();
-        assertTrue("Note is not in Everything timeline, msgId=" + noteId, noteFound);
+        assertTrue("Note is not in Everything timeline, noteId=" + noteId, noteFound);
 
     }
 
@@ -328,21 +328,21 @@ public class DataUpdaterTest {
                             + stargazers + "\n" + activity,
                     true, favoritedByMe);
             assertEquals("Note should be favorited (by some my account) " + activity, TriState.TRUE,
-                    MyQuery.msgIdToTriState(NoteTable.FAVORITED, noteId));
+                    MyQuery.noteIdToTriState(NoteTable.FAVORITED, noteId));
         }
         assertEquals("Activity is subscribed", TriState.UNKNOWN,
                 MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, activity.getId()));
         DemoNoteInserter.assertNotified(activity, TriState.UNKNOWN);
         assertEquals("Note is reblogged", TriState.UNKNOWN,
-                MyQuery.msgIdToTriState(NoteTable.REBLOGGED, noteId));
+                MyQuery.noteIdToTriState(NoteTable.REBLOGGED, noteId));
         assertEquals("Note stored as loaded", DownloadStatus.LOADED, DownloadStatus.load(
-                MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)));
+                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)));
 
         long inReplyToId = MyQuery.oidToId(OidEnum.NOTE_OID, accountActor.origin.getId(),
                 inReplyToOid);
         assertTrue("In reply to note added", inReplyToId != 0);
         assertEquals("Note reply status is unknown", DownloadStatus.UNKNOWN, DownloadStatus.load(
-                MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, inReplyToId)));
+                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, inReplyToId)));
     }
 
     @Test
@@ -377,7 +377,7 @@ public class DataUpdaterTest {
         assertNotEquals("Note added " + activity, 0, note.noteId);
         assertNotEquals("Activity added " + activity, 0, activity.getId());
         assertEquals("Status of unsent note", DownloadStatus.SENDING, DownloadStatus.load(
-                MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, note.noteId)));
+                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, note.noteId)));
 
         DownloadData dd = DownloadData.getSingleForNote(note.noteId,
                 note.attachments.get(0).contentType, null);
@@ -398,9 +398,9 @@ public class DataUpdaterTest {
 
         assertEquals("Row id didn't change", note.noteId, note2.noteId);
         assertEquals("Note body updated", note2.getBody(),
-                MyQuery.msgIdToStringColumnValue(NoteTable.BODY, note.noteId));
+                MyQuery.noteIdToStringColumnValue(NoteTable.BODY, note.noteId));
         assertEquals("Status of loaded note", DownloadStatus.LOADED, DownloadStatus.load(
-                MyQuery.msgIdToLongColumnValue(NoteTable.NOTE_STATUS, note.noteId)));
+                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, note.noteId)));
 
         DownloadData dd2 = DownloadData.getSingleForNote(note2.noteId,
                 note2.attachments.get(0).contentType, null);

@@ -41,7 +41,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
 
     private static void logLaunch(CommandExecutorStrategy strategy) {
         if (strategy.execContext.getCommandData().getCommand() == CommandEnum.UPDATE_NOTE) {
-            MyLog.onSendingMessageStart();
+            MyLog.onSendingNoteStart();
         }
         MyLog.d(strategy, "Launching " + strategy.execContext);
     }
@@ -60,7 +60,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
     private static void logEnd(CommandExecutorStrategy strategy) {
         MyLog.d(strategy, "Executed " + strategy.execContext);
         if (strategy.execContext.getCommandData().getCommand() == CommandEnum.UPDATE_NOTE) {
-            MyLog.onSendingMessageEnd();
+            MyLog.onSendingNoteEnd();
         }
     }
 
@@ -85,8 +85,8 @@ class CommandExecutorStrategy implements CommandExecutorParent {
     static CommandExecutorStrategy getStrategy(CommandExecutionContext execContext) {
         CommandExecutorStrategy strategy;
         switch (execContext.getCommandData().getCommand()) {
-            case FETCH_ATTACHMENT:
-            case FETCH_AVATAR:
+            case GET_ATTACHMENT:
+            case GET_AVATAR:
                 strategy = new CommandExecutorOther();
                 break;
             case GET_OPEN_INSTANCES:

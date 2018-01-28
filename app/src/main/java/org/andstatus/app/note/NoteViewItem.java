@@ -64,7 +64,7 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
     public NoteViewItem fromCursorRow(MyContext myContext, Cursor cursor) {
         long startTime = System.currentTimeMillis();
         setMyContext(myContext);
-        setNoteId(DbUtils.getLong(cursor, ActivityTable.MSG_ID));
+        setNoteId(DbUtils.getLong(cursor, ActivityTable.NOTE_ID));
         setOrigin(myContext.persistentOrigins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)));
         setLinkedAccount(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID));
 

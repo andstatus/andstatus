@@ -37,10 +37,10 @@ public final class ActivityTable implements BaseColumns {
     /** ID of {@link ActivityType} */
     public static final String ACTIVITY_TYPE = "activity_type";
     public static final String ACTOR_ID = "actor_id";
-    /** Message as Object */
-    public static final String MSG_ID = "activity_" + NoteTable.NOTE_ID;
-    /** Us as Object */
-    public static final String USER_ID = "activity_" + ActorTable.ACTOR_ID;
+    /** Note as Object */
+    public static final String NOTE_ID = "activity_" + NoteTable.NOTE_ID;
+    /** Actor as Object */
+    public static final String OBJ_ACTOR_ID = "activity_" + ActorTable.ACTOR_ID;
     /** Inner Activity as Object */
     public static final String OBJ_ACTIVITY_ID = "obj_activity_id";
 
@@ -83,8 +83,8 @@ public final class ActivityTable implements BaseColumns {
                 + ACCOUNT_ID + " INTEGER NOT NULL,"
                 + ACTIVITY_TYPE + " INTEGER NOT NULL,"
                 + ACTOR_ID + " INTEGER NOT NULL,"
-                + MSG_ID + " INTEGER NOT NULL,"
-                + USER_ID + " INTEGER NOT NULL,"
+                + NOTE_ID + " INTEGER NOT NULL,"
+                + OBJ_ACTOR_ID + " INTEGER NOT NULL,"
                 + OBJ_ACTIVITY_ID + " INTEGER NOT NULL,"
                 + SUBSCRIBED + " INTEGER NOT NULL DEFAULT 0,"
                 + NOTIFIED + " INTEGER NOT NULL DEFAULT 0,"
@@ -100,12 +100,12 @@ public final class ActivityTable implements BaseColumns {
         );
 
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_message ON " + TABLE_NAME + " ("
-                + MSG_ID
+                + NOTE_ID
                 + ")"
         );
 
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_user ON " + TABLE_NAME + " ("
-                + USER_ID
+                + OBJ_ACTOR_ID
                 + ")"
         );
 

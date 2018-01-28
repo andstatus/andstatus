@@ -40,7 +40,7 @@ class NoteContextMenuData {
     }
 
     private final BaseNoteViewItem viewItem;
-    NoteForAccount msg = NoteForAccount.EMPTY;
+    NoteForAccount noteForAccount = NoteForAccount.EMPTY;
     private MyAsyncTask<Void, Void, NoteForAccount> loader;
 
     static void loadAsync(@NonNull final NoteContextMenu noteContextMenu,
@@ -53,24 +53,24 @@ class NoteContextMenuData {
         NoteContextMenuData data = new NoteContextMenuData(viewItem);
 
         if (menuContainer != null && view != null && viewItem != null && viewItem.getNoteId() != 0) {
-            final long msgId = viewItem.getNoteId();
+            final long noteId = viewItem.getNoteId();
             data.loader = new MyAsyncTask<Void, Void, NoteForAccount>(
-                    NoteContextMenuData.class.getSimpleName() + msgId, MyAsyncTask.PoolEnum.QUICK_UI) {
+                    NoteContextMenuData.class.getSimpleName() + noteId, MyAsyncTask.PoolEnum.QUICK_UI) {
 
                 @Override
                 protected NoteForAccount doInBackground2(Void... params) {
                     MyAccount currentMyAccount = menuContainer.getCurrentMyAccount();
                     final MyContext myContext = menuContainer.getActivity().getMyContext();
-                    final Origin origin = myContext.persistentOrigins().fromId(MyQuery.msgIdToOriginId(msgId));
+                    final Origin origin = myContext.persistentOrigins().fromId(MyQuery.noteIdToOriginId(noteId));
                     MyAccount ma1 = myContext.persistentAccounts()
                             .getAccountForThisNote(origin, myActor, viewItem.getLinkedMyAccount(), false);
-                    NoteForAccount msgNew = new NoteForAccount(origin, 0, msgId, ma1);
+                    NoteForAccount msgNew = new NoteForAccount(origin, 0, noteId, ma1);
                     boolean changedToCurrent = !ma1.equals(currentMyAccount) && !myActor.isValid() && ma1.isValid()
                             && !msgNew.isTiedToThisAccount()
                             && !menuContainer.getTimeline().getTimelineType().isForAccount()
                             && currentMyAccount.isValid() && ma1.getOrigin().equals(currentMyAccount.getOrigin());
                     if (changedToCurrent) {
-                        msgNew = new NoteForAccount(origin, 0, msgId, currentMyAccount);
+                        msgNew = new NoteForAccount(origin, 0, noteId, currentMyAccount);
                     }
                     if (MyLog.isVerboseEnabled()) {
                         MyLog.v(noteContextMenu, "actor:" + msgNew.getMyAccount()
@@ -79,16 +79,16 @@ class NoteContextMenuData {
                                 + (myActor.equals(viewItem.getLinkedMyAccount())
                                     || !viewItem.getLinkedMyAccount().isValid() ? "" : " <- linked:"
                                     + viewItem.getLinkedMyAccount())
-                                + "; msgId:" + msgId);
+                                + "; noteId:" + noteId);
                     }
                     return msgNew.getMyAccount().isValid() ? msgNew : NoteForAccount.EMPTY;
                 }
 
                 @Override
                 protected void onFinish(NoteForAccount noteForAccount, boolean success) {
-                    data.msg = noteForAccount == null ? NoteForAccount.EMPTY : noteForAccount;
+                    data.noteForAccount = noteForAccount == null ? NoteForAccount.EMPTY : noteForAccount;
                     noteContextMenu.setMenuData(data);
-                    if (data.msg.msgId != 0 && viewItem.equals(noteContextMenu.getViewItem())) {
+                    if (data.noteForAccount.noteId != 0 && viewItem.equals(noteContextMenu.getViewItem())) {
                         if (next != null) {
                             next.accept(noteContextMenu);
                         } else {
@@ -120,10 +120,10 @@ class NoteContextMenuData {
         if (loader.isReallyWorking()) {
             return StateForSelectedViewItem.LOADING;
         }
-        return currentItem.getNoteId() == msg.msgId ? StateForSelectedViewItem.READY : StateForSelectedViewItem.NEW;
+        return currentItem.getNoteId() == noteForAccount.noteId ? StateForSelectedViewItem.READY : StateForSelectedViewItem.NEW;
     }
 
-    boolean isFor(long msgId) {
-        return msgId != 0 && loader != null && !loader.needsBackgroundWork() && msgId == msg.msgId;
+    boolean isFor(long noteId) {
+        return noteId != 0 && loader != null && !loader.needsBackgroundWork() && noteId == noteForAccount.noteId;
     }
 }

@@ -26,7 +26,7 @@ public class NoteEditorDataTest {
     }
 
     @Test
-    public void testMessageEditorDataConversation() {
+    public void noteEditorDataConversation() {
         MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         final Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.CONVERSATION_ORIGIN_NAME);
         assertEquals(origin, ma.getOrigin());
@@ -46,7 +46,7 @@ public class NoteEditorDataTest {
             long memberUserId, boolean replyAll) {
         Uri uri = Uri.parse("http://example.com/" + demoData.TESTRUN_UID + "/some.png");
         NoteEditorData data = NoteEditorData.newEmpty(ma)
-                .setInReplyToMsgId(inReplyToMsgId)
+                .setInReplyToNoteId(inReplyToMsgId)
                 .addRecipientId(recipientId)
                 .setReplyToConversationParticipants(replyAll)
                 .setBody("Some text here " + demoData.TESTRUN_UID);

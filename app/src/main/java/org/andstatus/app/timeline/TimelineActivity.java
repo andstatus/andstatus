@@ -431,9 +431,9 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     private void prepareCombinedTimelineToggle(View drawerView) {
         if (ViewUtils.showView(drawerView, R.id.combinedTimelineToggle,
-                // Show the "Combined" toggle even for one account to see messages,
+                // Show the "Combined" toggle even for one account to see notes,
                 // which are not on the timeline.
-                // E.g. messages by users, downloaded on demand.
+                // E.g. notes by users, downloaded on demand.
                 getParamsNew().getSelectedUserId() == 0 ||
                         getParamsNew().getSelectedUserId() == getParamsNew().getMyAccount().getActorId())) {
             MyCheckBox.setEnabled(drawerView, R.id.combinedTimelineToggle,
@@ -755,8 +755,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     /**
-     * Prepare a query to the ContentProvider (to the database) and load the visible List of
-     * messages with this data
+     * Prepare a query to the ContentProvider (to the database) and load the visible List of notes with this data
      * This is done asynchronously.
      * This method should be called from UI thread only.
      */
@@ -1084,16 +1083,16 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         switch (commandData.getCommand()) {
             case GET_TIMELINE:
             case GET_OLDER_TIMELINE:
-            case FETCH_ATTACHMENT:
-            case FETCH_AVATAR:
+            case GET_ATTACHMENT:
+            case GET_AVATAR:
             case UPDATE_NOTE:
             case DELETE_NOTE:
-            case CREATE_FAVORITE:
-            case DESTROY_FAVORITE:
-            case FOLLOW_ACTOR:
-            case STOP_FOLLOWING_ACTOR:
-            case REBLOG:
-            case DELETE_REBLOG:
+            case LIKE:
+            case UNDO_LIKE:
+            case FOLLOW:
+            case UNDO_FOLLOW:
+            case ANNOUNCE:
+            case UNDO_ANNOUNCE:
                 return true;
             default:
                 return false;
@@ -1159,9 +1158,9 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     @Override
-    public void onMessageEditorVisibilityChange() {
-        hideSyncing("onMessageEditorVisibilityChange");
-        super.onMessageEditorVisibilityChange();
+    public void onNoteEditorVisibilityChange() {
+        hideSyncing("onNoteEditorVisibilityChange");
+        super.onNoteEditorVisibilityChange();
     }
 
     @Override

@@ -34,9 +34,9 @@ import java.util.Set;
 public class Audience {
     private final Set<Actor> recipients = new HashSet<>();
 
-    public static Audience fromMsgId(@NonNull Origin origin, long msgId) {
-        String where = AudienceTable.MSG_ID + "=" + msgId;
-        String sql = "SELECT " + AudienceTable.USER_ID
+    public static Audience fromNoteId(@NonNull Origin origin, long noteId) {
+        String where = AudienceTable.NOTE_ID + "=" + noteId;
+        String sql = "SELECT " + AudienceTable.ACTOR_ID
                 + " FROM " + AudienceTable.TABLE_NAME
                 + " WHERE " + where;
         Audience audience = new Audience();
@@ -53,7 +53,7 @@ public class Audience {
         return recipients.iterator().next();
     }
 
-    public String getUserNames() {
+    public String getUsernames() {
         StringBuilder sb = new StringBuilder();
         for (Actor actor : recipients) {
             if (sb.length() > 0) {
@@ -117,12 +117,12 @@ public class Audience {
         return false;
     }
 
-    public void save(@NonNull MyContext myContext, @NonNull Origin origin, long msgId) {
+    public void save(@NonNull MyContext myContext, @NonNull Origin origin, long noteId) {
         SQLiteDatabase db = myContext.getDatabase();
-        if (db == null || !origin.isValid() || msgId == 0) {
+        if (db == null || !origin.isValid() || noteId == 0) {
             return;
         }
-        Audience prevAudience = Audience.fromMsgId(origin, msgId);
+        Audience prevAudience = Audience.fromNoteId(origin, noteId);
         Set<Actor> toDelete = new HashSet<>();
         Set<Actor> toAdd = new HashSet<>();
         for (Actor recipient : prevAudience.getRecipients()) {
@@ -141,20 +141,20 @@ public class Audience {
         }
         try {
             if (!toDelete.isEmpty()) {
-                db.delete(AudienceTable.TABLE_NAME, AudienceTable.MSG_ID + "=" + msgId
-                        + " AND " + AudienceTable.USER_ID + SqlActorIds.fromUsers(toDelete).getSql(), null);
+                db.delete(AudienceTable.TABLE_NAME, AudienceTable.NOTE_ID + "=" + noteId
+                        + " AND " + AudienceTable.ACTOR_ID + SqlActorIds.fromUsers(toDelete).getSql(), null);
             }
             for (Actor actor : toAdd) {
                 ContentValues values = new ContentValues();
-                values.put(AudienceTable.MSG_ID, msgId);
-                values.put(AudienceTable.USER_ID, actor.actorId);
+                values.put(AudienceTable.NOTE_ID, noteId);
+                values.put(AudienceTable.ACTOR_ID, actor.actorId);
                 long rowId = db.insert(AudienceTable.TABLE_NAME, null, values);
                 if (rowId == -1) {
                     throw new SQLException("Failed to insert " + actor);
                 }
             }
         } catch (Exception e) {
-            MyLog.e(this, "save, msgId:" + msgId + "; " + recipients, e);
+            MyLog.e(this, "save, noteId:" + noteId + "; " + recipients, e);
         }
     }
 

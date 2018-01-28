@@ -27,15 +27,15 @@ public class CommandExecutionContextTest {
                 CommandData.newTimelineCommand( CommandEnum.GET_TIMELINE, ma, TimelineType.MENTIONS));
         assertEquals(TimelineType.MENTIONS, execContext.getTimeline().getTimelineType());
         
-        final int messageCount = 4;
+        final int noteCount = 4;
         final int mentionCount = 2;
-        for (int ind=0; ind < messageCount; ind++) {
+        for (int ind=0; ind < noteCount; ind++) {
             execContext.getResult().incrementNewCount();
         }
         for (int ind=0; ind < mentionCount; ind++) {
             execContext.getResult().onNotificationEvent(NotificationEventType.MENTION);
         }
-        assertEquals(messageCount, execContext.getResult().getNewCount());
+        assertEquals(noteCount, execContext.getResult().getNewCount());
         assertEquals(mentionCount, execContext.getResult().notificationEventCounts.get(NotificationEventType.MENTION).get());
         assertEquals(0, execContext.getResult().notificationEventCounts.getOrDefault(
                 NotificationEventType.PRIVATE, new AtomicLong(0)).get());

@@ -27,12 +27,12 @@ import java.net.URL;
 class OriginGnuSocial extends Origin {
 
     @Override
-    protected String alternativeMessagePermalink(long messageId) {
+    protected String alternativeNotePermalink(long noteId) {
         try {
             return new URL(url,
-                    (Audience.fromMsgId(this, messageId).isEmpty() ?
+                    (Audience.fromNoteId(this, noteId).isEmpty() ?
                     "notice" : "message") + "/"
-                    + MyQuery.msgIdToStringColumnValue(NoteTable.NOTE_OID, messageId)).toExternalForm();
+                    + MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId)).toExternalForm();
         } catch (MalformedURLException e) {
             MyLog.d(this, "Malformed URL from '" + url.toExternalForm() + "'", e);
         }

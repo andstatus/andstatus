@@ -188,7 +188,7 @@ public class MyPreferences {
                 SharedPreferencesUtil.getString(KEY_TAP_ON_A_TIMELINE_TITLE_BEHAVIOUR, ""));
     }
 
-    public static ActorInTimeline getUserInTimeline() {
+    public static ActorInTimeline getActorInTimeline() {
         return ActorInTimeline.load(SharedPreferencesUtil.getString(KEY_USER_IN_TIMELINE, ""));
     }
 

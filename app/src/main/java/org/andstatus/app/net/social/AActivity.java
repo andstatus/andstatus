@@ -82,16 +82,16 @@ public class AActivity extends AObject {
     }
 
     @NonNull
-    public static AActivity newPartialNote(@NonNull Actor accountActor, String msgOid) {
-        return newPartialNote(accountActor, msgOid, 0, DownloadStatus.UNKNOWN);
+    public static AActivity newPartialNote(@NonNull Actor accountActor, String noteOid) {
+        return newPartialNote(accountActor, noteOid, 0, DownloadStatus.UNKNOWN);
     }
 
     @NonNull
-    public static AActivity newPartialNote(@NonNull Actor accountActor, String msgOid,
+    public static AActivity newPartialNote(@NonNull Actor accountActor, String noteOid,
                                            long updatedDate, DownloadStatus status) {
         AActivity activity = from(accountActor, ActivityType.UPDATE);
-        activity.setTimelinePosition(msgOid);
-        final Note note = Note.fromOriginAndOid(activity.accountActor.origin, msgOid, status);
+        activity.setTimelinePosition(noteOid);
+        final Note note = Note.fromOriginAndOid(activity.accountActor.origin, noteOid, status);
         activity.setNote(note);
         note.setUpdatedDate(updatedDate);
         activity.setUpdatedDate(updatedDate);
@@ -318,7 +318,7 @@ public class AActivity extends AObject {
                 DbUtils.getLong(cursor, ActivityTable.ACTOR_ID));
         activity.note = Note.fromOriginAndOid(activity.accountActor.origin, "", DownloadStatus.UNKNOWN);
         activity.objActor = Actor.fromOriginAndActorId(activity.accountActor.origin,
-                DbUtils.getLong(cursor, ActivityTable.USER_ID));
+                DbUtils.getLong(cursor, ActivityTable.OBJ_ACTOR_ID));
         activity.aActivity = AActivity.from(activity.accountActor, ActivityType.EMPTY);
         activity.aActivity.id =  DbUtils.getLong(cursor, ActivityTable.OBJ_ACTIVITY_ID);
         activity.subscribedByMe = DbUtils.getTriState(cursor, ActivityTable.SUBSCRIBED);
@@ -370,7 +370,7 @@ public class AActivity extends AObject {
             switch (type) {
                 case LIKE:
                 case UNDO_LIKE:
-                    final Pair<Long, ActivityType> favAndType = MyQuery.msgIdToLastFavoriting(myContext.getDatabase(),
+                    final Pair<Long, ActivityType> favAndType = MyQuery.noteIdToLastFavoriting(myContext.getDatabase(),
                             getNote().noteId, accountActor.actorId);
                     if ((favAndType.second.equals(ActivityType.LIKE) && type == ActivityType.LIKE)
                             || (favAndType.second.equals(ActivityType.UNDO_LIKE) && type == ActivityType.UNDO_LIKE)
@@ -381,7 +381,7 @@ public class AActivity extends AObject {
                     break;
                 case ANNOUNCE:
                 case UNDO_ANNOUNCE:
-                    final Pair<Long, ActivityType> reblAndType = MyQuery.msgIdToLastReblogging(myContext.getDatabase(),
+                    final Pair<Long, ActivityType> reblAndType = MyQuery.noteIdToLastReblogging(myContext.getDatabase(),
                             getNote().noteId, accountActor.actorId);
                     if ((reblAndType.second.equals(ActivityType.ANNOUNCE) && type == ActivityType.ANNOUNCE)
                             || (reblAndType.second.equals(ActivityType.UNDO_ANNOUNCE) && type == ActivityType.UNDO_ANNOUNCE)
@@ -411,7 +411,7 @@ public class AActivity extends AObject {
         }
         if (getNote().noteId != 0 && (type == ActivityType.UPDATE || type == ActivityType.CREATE)) {
             id = MyQuery.conditionToLongColumnValue(myContext.getDatabase(),"", ActivityTable.TABLE_NAME,
-                    ActivityTable._ID, ActivityTable.MSG_ID + "=" + getNote().noteId + " AND "
+                    ActivityTable._ID, ActivityTable.NOTE_ID + "=" + getNote().noteId + " AND "
             + ActivityTable.ACTIVITY_TYPE + "=" + type.id);
         }
     }
@@ -451,8 +451,8 @@ public class AActivity extends AObject {
         values.put(ActivityTable.ORIGIN_ID, accountActor.origin.getId());
         values.put(ActivityTable.ACCOUNT_ID, accountActor.actorId);
         values.put(ActivityTable.ACTOR_ID, getActor().actorId);
-        values.put(ActivityTable.MSG_ID, getNote().noteId);
-        values.put(ActivityTable.USER_ID, getObjActor().actorId);
+        values.put(ActivityTable.NOTE_ID, getNote().noteId);
+        values.put(ActivityTable.OBJ_ACTOR_ID, getObjActor().actorId);
         values.put(ActivityTable.OBJ_ACTIVITY_ID, getActivity().id);
         if (subscribedByMe.known()) {
             values.put(ActivityTable.SUBSCRIBED, subscribedByMe.id);

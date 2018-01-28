@@ -29,7 +29,7 @@ public class OriginTest {
     @Test
     public void testTextLimit() {
         String urlString = "https://github.com/andstatus/andstatus/issues/41";
-        String message = "I set \"Shorten URL with: QTTR_AT\" URL longer than 25 Text longer than 140. Will this be shortened: "
+        String body = "I set \"Shorten URL with: QTTR_AT\" URL longer than 25 Text longer than 140. Will this be shortened: "
                 + urlString;
 
         Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.ORIGIN_TYPE_DEFAULT);
@@ -40,7 +40,7 @@ public class OriginTest {
         int textLimit = 280;
         assertEquals("Textlimit", textLimit, origin.getTextLimit());
         assertEquals("Short URL length", 23, origin.shortUrlLength);
-        int charactersLeft = origin.charactersLeftForNote(message);
+        int charactersLeft = origin.charactersLeftForNote(body);
         // Depending on number of spans!
         assertTrue("Characters left " + charactersLeft, charactersLeft == 158
                 || charactersLeft == 142);
@@ -52,8 +52,8 @@ public class OriginTest {
         assertEquals("Textlimit", textLimit, origin.getTextLimit());
         assertEquals("Short URL length", 0, origin.shortUrlLength);
         assertEquals("Characters left",
-                origin.getTextLimit() - message.length(),
-                origin.charactersLeftForNote(message));
+                origin.getTextLimit() - body.length(),
+                origin.charactersLeftForNote(body));
         assertTrue(origin.isMentionAsWebFingerId());
 
         origin = MyContextHolder.get().persistentOrigins()
@@ -70,8 +70,8 @@ public class OriginTest {
         origin = new Origin.Builder(origin).save(config).build();
         assertEquals("Textlimit", textLimit, origin.getTextLimit());
         assertEquals("Short URL length", 0, origin.shortUrlLength);
-        assertEquals("Characters left", textLimit - message.length(),
-                origin.charactersLeftForNote(message));
+        assertEquals("Characters left", textLimit - body.length(),
+                origin.charactersLeftForNote(body));
         assertFalse(origin.isMentionAsWebFingerId());
 
         textLimit = 0;
@@ -82,9 +82,9 @@ public class OriginTest {
         assertEquals("Textlimit", OriginType.TEXT_LIMIT_MAXIMUM, origin.getTextLimit());
         assertEquals("Short URL length", config.shortUrlLength, origin.shortUrlLength);
         assertEquals("Characters left",
-                origin.getTextLimit() - message.length()
+                origin.getTextLimit() - body.length()
                         - config.shortUrlLength + urlString.length(),
-                origin.charactersLeftForNote(message));
+                origin.charactersLeftForNote(body));
         assertTrue(origin.isMentionAsWebFingerId());
     }
 
@@ -121,18 +121,18 @@ public class OriginTest {
         Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
         assertEquals(origin.getOriginType(), OriginType.TWITTER);
         String body = "Posting to Twitter " + demoData.TESTRUN_UID;
-        String messageOid = "2578909845023" + demoData.TESTRUN_UID;
+        String noteOid = "2578909845023" + demoData.TESTRUN_UID;
         AActivity activity = DemoNoteInserter.addNoteForAccount(
                 demoData.getMyAccount(demoData.TWITTER_TEST_ACCOUNT_NAME),
-                body, messageOid, DownloadStatus.LOADED);
-        final long msgId = activity.getNote().noteId;
-        assertNotEquals(0, msgId);
-        String userName = MyQuery.msgIdToUsername(NoteTable.AUTHOR_ID, msgId,
+                body, noteOid, DownloadStatus.LOADED);
+        final long noteId = activity.getNote().noteId;
+        assertNotEquals(0, noteId);
+        String userName = MyQuery.noteIdToUsername(NoteTable.AUTHOR_ID, noteId,
                 ActorInTimeline.USERNAME);
-        String permalink = origin.notePermalink(msgId);
-        String desc = "Permalink of Twitter message '" + messageOid + "' by '" + userName
+        String permalink = origin.notePermalink(noteId);
+        String desc = "Permalink of Twitter note '" + noteOid + "' by '" + userName
                 + "' at " + origin.toString() + " is " + permalink;
-        assertTrue(desc, permalink.contains(userName + "/status/" + messageOid));
+        assertTrue(desc, permalink.contains(userName + "/status/" + noteOid));
         assertFalse(desc, permalink.contains("://api."));
     }
 

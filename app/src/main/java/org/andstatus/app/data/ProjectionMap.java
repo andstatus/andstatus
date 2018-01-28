@@ -46,8 +46,8 @@ public class ProjectionMap {
         MSG.put(ActivityTable.ACTIVITY_TYPE, ActivityTable.ACTIVITY_TYPE);
         MSG.put(ActivityTable.ACTOR_ID, ActivityTable.ACTOR_ID);
         MSG.put(ActivityTable.AUTHOR_ID, ActivityTable.AUTHOR_ID);
-        MSG.put(ActivityTable.MSG_ID, ActivityTable.MSG_ID);
-        MSG.put(ActivityTable.USER_ID, ActivityTable.USER_ID);
+        MSG.put(ActivityTable.NOTE_ID, ActivityTable.NOTE_ID);
+        MSG.put(ActivityTable.OBJ_ACTOR_ID, ActivityTable.OBJ_ACTOR_ID);
         MSG.put(ActivityTable.SUBSCRIBED, ActivityTable.SUBSCRIBED);
         MSG.put(ActivityTable.NOTIFIED, ActivityTable.NOTIFIED);
         MSG.put(ActivityTable.INS_DATE, ActivityTable.INS_DATE);

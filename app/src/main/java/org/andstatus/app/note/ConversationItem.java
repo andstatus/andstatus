@@ -31,7 +31,7 @@ public abstract class ConversationItem<T extends ConversationItem<T>> extends Ba
     int mListOrder = 0;
     /**
      * This order is reverse to the {@link #mListOrder}. 
-     * First message in the conversation has it == 1.
+     * First note in the conversation has order == 1.
      * The number is visible to a User.
      */
     int historyOrder = 0;

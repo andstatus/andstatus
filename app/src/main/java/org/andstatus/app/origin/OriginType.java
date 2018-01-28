@@ -114,19 +114,19 @@ public enum OriginType implements SelectableEnum {
     protected boolean canChangeSsl = false;
 
     protected boolean allowHtmlDefault = true;
-    /** Maximum number of characters in the message */
+    /** Maximum number of characters in a note */
     protected int textLimitDefault = 0;
     private URL urlDefault = null;
     private String basicPath = BASIC_PATH_DEFAULT;
     private String oauthPath = OAUTH_PATH_DEFAULT;
-    private final boolean mAllowAttachmentForDirectMessage;
+    private final boolean mAllowAttachmentForPrivateNote;
 
     private boolean isPublicTimeLineSyncable = false;
     private boolean isSearchTimelineSyncable = true;
     private boolean isPrivateTimelineSyncable = true;
     private boolean isMentionsTimelineSyncable = true;
     private boolean isNotificationsTimeLineSyncable = false;
-    private final boolean isDirectMessageAllowsReply;
+    private final boolean isPrivateNoteAllowsReply;
     private final boolean isSelectable;
 
     OriginType(long id, String title, ApiEnum api) {
@@ -152,9 +152,9 @@ public enum OriginType implements SelectableEnum {
                 connectionClass = ConnectionTheTwitter.class;
                 httpConnectionClassOauth = HttpConnectionOAuthApache.class;
                 httpConnectionClassBasic = HttpConnectionBasic.class;
-                mAllowAttachmentForDirectMessage = false;
+                mAllowAttachmentForPrivateNote = false;
                 allowEditing = false;
-                isDirectMessageAllowsReply = false;
+                isPrivateNoteAllowsReply = false;
                 isSelectable = true;
                 break;
             case PUMPIO:
@@ -173,12 +173,12 @@ public enum OriginType implements SelectableEnum {
                 connectionClass = ConnectionPumpio.class;
                 httpConnectionClassOauth = HttpConnectionOAuthJavaNet.class;
                 httpConnectionClassBasic = HttpConnectionEmpty.class;
-                mAllowAttachmentForDirectMessage = true;
+                mAllowAttachmentForPrivateNote = true;
                 isSearchTimelineSyncable = false;
                 isPrivateTimelineSyncable = false;
                 isMentionsTimelineSyncable = false;
                 allowEditing = true;
-                isDirectMessageAllowsReply = true;
+                isPrivateNoteAllowsReply = true;
                 isSelectable = true;
                 break;
             case GNUSOCIAL_TWITTER:
@@ -196,10 +196,10 @@ public enum OriginType implements SelectableEnum {
                 connectionClass = ConnectionTwitterGnuSocial.class;
                 httpConnectionClassOauth = HttpConnectionOAuthApache.class;
                 httpConnectionClassBasic = HttpConnectionBasic.class;
-                mAllowAttachmentForDirectMessage = false;
+                mAllowAttachmentForPrivateNote = false;
                 isPublicTimeLineSyncable = true;
                 allowEditing = false;
-                isDirectMessageAllowsReply = false;
+                isPrivateNoteAllowsReply = false;
                 isSelectable = true;
                 break;
             case MASTODON:
@@ -217,14 +217,14 @@ public enum OriginType implements SelectableEnum {
                 connectionClass = ConnectionMastodon.class;
                 httpConnectionClassOauth = HttpConnectionOAuthMastodon.class;
                 httpConnectionClassBasic = HttpConnectionEmpty.class;
-                mAllowAttachmentForDirectMessage = false;
+                mAllowAttachmentForPrivateNote = false;
                 isSearchTimelineSyncable = true;
                 isPrivateTimelineSyncable = false;
                 isMentionsTimelineSyncable = false;
                 isPublicTimeLineSyncable = true;
                 isNotificationsTimeLineSyncable = true;
                 allowEditing = false;
-                isDirectMessageAllowsReply = false;
+                isPrivateNoteAllowsReply = false;
                 isSelectable = true;
                 break;
             default:
@@ -233,9 +233,9 @@ public enum OriginType implements SelectableEnum {
                 connectionClass = ConnectionEmpty.class;
                 httpConnectionClassOauth = HttpConnectionEmpty.class;
                 httpConnectionClassBasic = HttpConnectionEmpty.class;
-                mAllowAttachmentForDirectMessage = false;
+                mAllowAttachmentForPrivateNote = false;
                 allowEditing = false;
-                isDirectMessageAllowsReply = false;
+                isPrivateNoteAllowsReply = false;
                 validUsernameExamples = USERNAME_EXAMPLES_SIMPLE;
                 isSelectable = false;
                 break;
@@ -307,8 +307,8 @@ public enum OriginType implements SelectableEnum {
         return fixed;
     }
     
-    public boolean allowAttachmentForDirectMessage() {
-        return mAllowAttachmentForDirectMessage;
+    public boolean allowAttachmentForPrivateNote() {
+        return mAllowAttachmentForPrivateNote;
     }
     
     public static OriginType fromId( long id) {
@@ -369,8 +369,8 @@ public enum OriginType implements SelectableEnum {
         return allowEditing;
     }
 
-    public boolean isDirectMessageAllowsReply() {
-        return isDirectMessageAllowsReply;
+    public boolean isPrivateNoteAllowsReply() {
+        return isPrivateNoteAllowsReply;
     }
 
     public boolean isUsernameNeededToStartAddingNewAccount(boolean isOAuth) {

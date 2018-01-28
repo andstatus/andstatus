@@ -43,8 +43,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * For now Timeline suggestions are taken from Search timelines, user suggestions are not persistent
  */
 public class SuggestionsAdapter extends BaseAdapter implements Filterable {
-    private static final List<String> messagesSuggestions = new CopyOnWriteArrayList<>();
-    private static final List<String> usersSuggestions = new CopyOnWriteArrayList<>();
+    private static final List<String> notesSuggestions = new CopyOnWriteArrayList<>();
+    private static final List<String> actorsSuggestions = new CopyOnWriteArrayList<>();
     private final LayoutInflater mInflater;
 
     private final SearchObjects searchObjects;
@@ -55,8 +55,8 @@ public class SuggestionsAdapter extends BaseAdapter implements Filterable {
         mInflater = LayoutInflater.from(activity);
         this.searchObjects = searchObjects;
         for (Timeline timeline : activity.getMyContext().persistentTimelines().values()) {
-            if (timeline.hasSearchQuery() && !messagesSuggestions.contains(timeline.getSearchQuery())) {
-                messagesSuggestions.add(timeline.getSearchQuery());
+            if (timeline.hasSearchQuery() && !notesSuggestions.contains(timeline.getSearchQuery())) {
+                notesSuggestions.add(timeline.getSearchQuery());
             }
         }
     }
@@ -168,6 +168,6 @@ public class SuggestionsAdapter extends BaseAdapter implements Filterable {
 
     @NonNull
     private static List<String> getAllSuggestions(SearchObjects searchObjects) {
-        return SearchObjects.NOTES.equals(searchObjects) ? messagesSuggestions : usersSuggestions;
+        return SearchObjects.NOTES.equals(searchObjects) ? notesSuggestions : actorsSuggestions;
     }
 }

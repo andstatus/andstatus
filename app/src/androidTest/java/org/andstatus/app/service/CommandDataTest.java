@@ -49,11 +49,11 @@ public class CommandDataTest {
         CommandData commandData = CommandData.newUpdateStatus(demoData.getConversationMyAccount(), 1);
         testQueueOneCommandData(commandData, time0);
 
-        long msgId = MyQuery.oidToId(OidEnum.NOTE_OID, MyContextHolder.get().persistentOrigins()
+        long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, MyContextHolder.get().persistentOrigins()
                 .fromName(demoData.CONVERSATION_ORIGIN_NAME).getId(),
                 demoData.CONVERSATION_ENTRY_NOTE_OID);
         long downloadDataRowId = 23;
-        commandData = CommandData.newFetchAttachment(msgId, downloadDataRowId);
+        commandData = CommandData.newFetchAttachment(noteId, downloadDataRowId);
         testQueueOneCommandData(commandData, time0);
     }
 
@@ -152,8 +152,8 @@ public class CommandDataTest {
 
     @Test
     public void testSummary() {
-        followUnfollowSummary(CommandEnum.FOLLOW_ACTOR);
-        followUnfollowSummary(CommandEnum.STOP_FOLLOWING_ACTOR);
+        followUnfollowSummary(CommandEnum.FOLLOW);
+        followUnfollowSummary(CommandEnum.UNDO_FOLLOW);
     }
 
     private void followUnfollowSummary(CommandEnum command) {

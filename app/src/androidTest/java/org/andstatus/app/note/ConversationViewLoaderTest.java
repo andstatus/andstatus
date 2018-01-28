@@ -17,7 +17,7 @@ import static org.junit.Assert.assertTrue;
 
 public class ConversationViewLoaderTest implements ProgressPublisher {
     private MyAccount ma;
-    private long selectedMessageId;
+    private long selectedNoteId;
     private long progressCounter = 0;
 
     @Before
@@ -26,8 +26,8 @@ public class ConversationViewLoaderTest implements ProgressPublisher {
         TestSuite.initializeWithData(this);
         ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma.isValid());
-        selectedMessageId = MyQuery.oidToId(OidEnum.NOTE_OID, ma.getOriginId(), demoData.CONVERSATION_ENTRY_NOTE_OID);
-        assertTrue("Selected message exists", selectedMessageId != 0);
+        selectedNoteId = MyQuery.oidToId(OidEnum.NOTE_OID, ma.getOriginId(), demoData.CONVERSATION_ENTRY_NOTE_OID);
+        assertTrue("Selected note exists", selectedNoteId != 0);
         MyLog.i(this, "setUp ended");
     }
 
@@ -35,7 +35,7 @@ public class ConversationViewLoaderTest implements ProgressPublisher {
     public void testLoad() {
         ConversationLoader<ConversationViewItem> loader =
                 new ConversationLoaderFactory<ConversationViewItem>().getLoader(
-                ConversationViewItem.EMPTY, MyContextHolder.get(), ma, selectedMessageId, false);
+                ConversationViewItem.EMPTY, MyContextHolder.get(), ma, selectedNoteId, false);
         progressCounter = 0;
         loader.load(this);
         List<ConversationViewItem> list = loader.getList();
@@ -50,8 +50,8 @@ public class ConversationViewLoaderTest implements ProgressPublisher {
                 orderFound = true;
             }
         }
-        assertTrue("Indented message found in " + list, indentFound);
-        assertTrue("Ordered message found in " + list, orderFound);
+        assertTrue("Indented note found in " + list, indentFound);
+        assertTrue("Ordered note found in " + list, orderFound);
         assertTrue(progressCounter > 0);
     }
 
