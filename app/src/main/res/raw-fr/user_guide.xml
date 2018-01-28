@@ -49,7 +49,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
     <title>
         <p>Introduction</p>
     </title>
-    <p>AndStatus est un client de réseaux sociaaux Open Source ayant une faible consommation de bande passante et avec des conversations en arborescence.
+    <p>AndStatus est un client pour réseaux sociaux Open Source ayant une faible consommation de bande passante et avec des conversations en arborescence.
          Il prend en charge plusieurs protocoles, y compris GNU social, Twitter Mastodon et Pump.io.
          AndStatus combine vos comptes de tous les réseaux dans une seule timeline et vous permet de lire et poster alors même que vous êtes hors connexion.</p>
     <p>Un lien vers ce guide est disponible dans la barre d'action-&gt;Aide.</p>
@@ -59,25 +59,12 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
     <title>
         <p>1. Mise en route</p>
     </title>
-    <p>
+    <p>Cliquez sur le bouton Commencer ci-dessous, la fenêtre pour ajouter un nouveau compte s'ouvrira.
     </p>
-    <p>
+    <p>Tout d'abord, il vous sera demandé de sélectionner un réseau social dans une liste. Twitter, Pump.io et divers types de systèmes "GNU social" (Quitter, LoadAverage et Vinilox) sont préconfigurés.
     </p>
-    <p></p>
-    <p></p>
-    <p>
-    </p>
-    <p>
-    </p>
-    <p>
-    </p>
-</section>
-<section>
-    <title>
-        <p></p>
-    </title>
-    <p>
-    </p>
+    <p>Dans le cas où votre système de type GNU social n’est pas répertorié, appuyez sur menu "Découvrez les instances ouvertes" pour choisir un système dans une liste en ligne mise à jour régulièrement, maintenue par la communauté sociale de GNU ; ou cliquez sur "Ajouter un nouveau système" manuellement avant d’ajouter le nouveau compte.</p>
+    <p>Pour Twitter, vous pouvez appuyer directement "Ajouter un compte". Pour d’autres systèmes, on vous demandera de taper votre nom d’utilisateur et votre mot de passe avant que vous puissiez "Ajouter ce compte".</p>
     <p>
     </p>
     <p>
@@ -97,17 +84,30 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
     </p>
     <p>
     </p>
+</section>
+<section>
+    <title>
+        <p>3. Envoyer et Répondre</p>
+    </title>
+    <p>
+    </p>
+    <p>
+    </p>
+    <p>
+    </p>
+    <p>
+    </p>
     <p>
     </p>
     <p></p>
 </section>
 <section>
     <title>
-        <p></p>
+        <p>4. Images jointes : en envoyer et les afficher</p>
     </title>
     <section>
         <title>
-            <p></p>
+            <p>4.1. Envoyer des images</p>
         </title>
         <p>
         </p>

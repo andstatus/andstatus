@@ -1,0 +1,22 @@
+Ang AndStatus ay isang Open Source na mababang trapik na kliyente sa pang-social networking na may parang-puno na mga nakahiblang konbersasyon.
+Ito ay sumusuporta sa magkakaibang mga Social network, kasama na ang
+GNU social, Mastodon, Twitter at Pump.io.
+Maaaring pagsamahin ng AndStatus ang iyong mga feed mula sa lahat ng mga network sa iisang Timeline,
+at ito ay pumapayag sa iyo na makapagbasa at makag-post kahit ikaw ay naka-offline.
+
+Para sa mga device na Android v.7.0+.
+
+Ang mga magkakaibang tampok ng AndStatus:
+
+1. Maraming mga account sa mga magkakaibang mga Social network. Maaaring ikaw ay mayroong mga account sa bawat, pagsulat/pagtugon bilang anumang "Ikaw" at pagbabahagi sa pagitan ng mga account at mga sistema.
+2. Hindi mo kailangan mag-online para makapagbasa ng mga timeline at makapag-poste sa iyong mga updeyt: mga draft at mga post na hindi naipadala ay pinapanatili kahit sa pagkatapos ng pag-reboot. Iyon ay maipapadala sa iyong device kapag ikaw ay nag-Online na.
+3. Maluwag na parang-puno na "View ng Konbersasyon".
+4. Ang "Pandaigdigang paghahanap" ay pumapayag sa iyo na makapaghanap sa mga mensaheng pampubliko sa lahat ng mga network sa iisang katanungan.
+5. Mga listahan ng mga Kaibigan at mga Tagapagsubaybay, iprenesenta bilang mga Listahan ng Gumagamit at bilang mga Timeline (kasama na ang mensaheng pinakabago ng bawat gumagamit)
+6. Mga tweet/mga mensahe/mga avatar/nakalakip na mga imahe ay sini-sync sa isang background, kapag ang iyong device ay nagkakaroon ng isang koneksyong mabuti. Sa pagkaka-default, ang mga nakalakip ay mada-download lamang sa pamamagitan ng WiFi.
+7. Ang naka-cache na data ay maaaring mai-imbak sa loob ng ilang mga taon o sa loob ng iilang mga araw lamang - ito ay iyong kagustuhan.
+8. Sa pagitan ng iyong mga device i-back up at i-restore ang mga account at mga mensahe. Pagmay-arian mo ang iyong data!
+9. Libre at walang mga ad, sinusuportahan ng komunidad.
+
+Tingnan ang Log sa Pagbabago para sa mga deskripsyon sa lahat ng mga tampok na AndStatus na may link sa kani-kanilang mga diskusyon:
+http://andstatus.org/changelog.html

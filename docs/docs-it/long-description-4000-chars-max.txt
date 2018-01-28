@@ -1,0 +1,23 @@
+AndStatus ed' un Open Source social network client di basso livello traffico con gerarchica (tree-like) organizzati conversazioni.
+Supporta differenti sociale networks, incluso:
+GNU social, Mastodon, Twitter and Pump. io
+AndStatus app puo unire i suoi feeds da tutto networks per un Timeline e consente di leggere e di post (fare) se Lei e' offline.
+ 
+ 
+
+Per Android v.7.0+devices
+
+Diverse caratteristiche:
+
+1. Tanti accounts delle diverse Sociale networks . Lei puo avere diversi account in ognuno, scrivere / rispondere come qualsiasi "Tu" e condividere tra accounts e le sisteme.
+2. Non e' necessario essere online per leggere timelines e per pubblicare i suoi aggiornamenti: drafts and gli aggiornamenti non inviati vengono mantenuti dopo il riavvio. Verranno inviati quanto il suo dispositivo e' online.
+3. "Conversation view" e' molto comoda e' organizzata in una vista gerarchica (tree-like).
+4. "Global search" consente di cercare i messaggi pubblici in tutte le reti con una sola richiesta.
+5. Lists of Friends and Followers, presented as User Lists and as Timelines (with the latest message of each user)
+6. Tweets/messages/avatars/attached images are being synced in a background, when your device has a good connection. By default, attachments are downloaded via WiFi only.
+7. Cached data may be stored for years or for several days only - it's your choice.
+8. Backup and restore accounts and messages between your devices. Own your data!
+9. Free and without ads, community supported.
+
+Cerco il Change Log per le descripzione delle caratteristiche di AndStatus con links delle loro conversazione: http://andstatus.org/changelog.html
+http://andstatus.org/changelog.html

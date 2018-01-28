@@ -28,6 +28,8 @@
   <string name="appwidget_nodata">Aucune donnée.</string>
   <string name="acquiring_a_request_token_failed">La demande d\'identification a échoué</string>
   <string name="acquiring_an_access_token_failed">L\'accès à l\'identifiant a échoué</string>
+  <string name="attach_images_summary_off">Le bouton \"Trombone\", utilisé pour joindre des images à vos messages, est caché</string>
+  <string name="attach_images_summary_on">Utilisez le bouton avec un trombone (Élément du menu \"Attacher\") pour joindre des images à votre message. Vous pouvez également partager une image vers AndStatus depuis une autre application</string>
   <string name="attach_images_title">Joindre des images à mes messages</string>
   <string name="attachments">Pièces jointes</string>
   <string name="authentication_never">Pas de dernière authentification</string>
@@ -131,6 +133,7 @@
   <string name="displayed_in_selector_abbreviated">Affic.</string>
   <string name="database_disk_io_error">Attention ! Il y a eu %1$s erreur(s) lors de l’accès à la base de données du cache local, ce qui a provoqué un dysfonctionnement de AndStatus. \nCela signifie habituellement que la carte SD de votre appareil ne fonctionne pas correctement.</string>
   <string name="dont_synchronize_old_messages">Ne pas synchroniser les anciens messages si la dernière synchronisation a été faite il y a plus de ... heures</string>
+  <string name="dont_synchronize_old_messages_summary">Après %s heures depuis la précédente synchronisation, AndStatus n\'essayera pas de synchroniser tous les messages depuis le dernier message téléchargé, mais seulement les 200 messages les plus récents. Si le nombre de nouveaux messages est supérieure à 200, vous ne verrez pas les plus anciens messages dans la timeline.</string>
   <string name="download_status_draft">brouillon</string>
   <string name="download_status_unsent">non envoyé</string>
   <string name="drawer_close">Fermer le volet de navigation</string>
@@ -161,9 +164,11 @@
   <string name="followed_by">Suivi par</string>
   <string name="followers">Abonnés</string>
   <string name="followers_of">Abonnés de \"%1s\"</string>
+  <string name="forget_sync_events">Oublier les dates et les événements de synchronisation</string>
   <string name="friends">Amis</string>
   <string name="friends_of">Amis de \"%1s\"</string>
   <string name="gestures">Gestes</string>
+  <string name="gestures_summary">Mécanique des interactions. Comment un utilisateur interagit avec l’application</string>
   <string name="get_conversation">Afficher la conversation</string>
   <string name="get_followers">Obtenez des abonnés</string>
   <string name="get_friends">Obtenez des amis</string>
@@ -201,6 +206,7 @@
      social.tchncs.de</string>
   <string name="id_of_this_message_was_not_specified">Id du message non spécifié</string>
   <string name="in_combined_global_search_label">Inclure dans \"Recherche globale\" quand la timeline combinée est sélectionnée</string>
+  <string name="in_combined_public_reload_label">Inclure dans \"Synchronisation\" quand la Timeline Publique Combinée est sélectionnée</string>
   <string name="in_context">Dans le contexte</string>
   <string name="joined">rejoint</string>
   <string name="label_accountselector">Choisir un compte</string>
@@ -294,6 +300,7 @@
   <string name="notification_icon_alternative_on">Icône circulaire</string>
   <string name="notification_in_notification_area">Afficher dans les Notifications</string>
   <string name="notification_sound">Son de Notification</string>
+  <string name="notifications_summary">Ce qu’il faut inclure dans les notifications et la manière de vous les montrer</string>
   <string name="notifications_title">Notifications</string>
   <string name="oauth_activity_label">OAuth</string>
   <string name="off">désactivé</string>
@@ -315,6 +322,10 @@
   <string name="page_empty">vide</string>
   <string name="page_new">nouveau</string>
   <string name="page_older">plus ancien</string>
+  <string name="page_the_same">la même</string>
+  <string name="page_top_of">au début</string>
+  <string name="page_younger">plus jeune</string>
+  <string name="page_youngest">plus récent</string>
   <string name="preference_ssl_mode_title">Mode SSL et sécurité</string>
   <string name="preference_ssl_mode_secure_summary">Vous êtes en sécurité : seules les connexions SSL sécurisées sont autorisées</string>
   <string name="preference_ssl_mode_insecure_summary">AVERTISSEMENT : Vos connexions ne sont pas sécurisées. Demandez à votre administrateur de corriger ce problème puis revenez à un mode sécurisé</string>
@@ -352,16 +363,22 @@
   <string name="remove_account_dialog_title">Supprimer le compte ?</string>
   <string name="remove_account_dialog_text">Supprimer le compte supprimera toutes ses données de l\'appareil. Continuer ?</string>
   <string name="reset_counters">Réinitialiser les compteurs</string>
+  <string name="reset_timelines_order">Réinitialiser l\'ordre de la timeline</string>
   <string name="resolve_view">Voir le message</string>
   <string name="rounded_avatars">Avatars arrondis</string>
   <string name="search_timeline_label">Rechercher des messages, utilisateurs, ou hashtags</string>
+  <string name="search_timeline_hint">Entrez des mots-clés/#hashtags</string>
+  <string name="search_userlist_hint">Entrez le nom/ID Webfinger</string>
   <string name="search_users">Rechercher des utilisateurs</string>
+  <string name="select_backup_folder">Sélectionnez le dossier de sauvegarde</string>
   <string name="select_displayed_in_selector">Choisir si et quand cette timeline est affichée</string>
   <string name="sent">Envoyé</string>
   <string name="select_social_network">Sélection du réseau social</string>
   <string name="settings_action">Paramétrages</string>
   <string name="settings_activity_title">Paramétrages</string>
+  <string name="show_buttons_below_message">Afficher les boutons de Réponse, Repost et Favoris sous le message</string>
   <string name="show_duplicates">Montrer les doublons</string>
+  <string name="show_threads_of_conversation">Afficher les conversations</string>
   <string name="show_timeline_messages">Montrer les messages de la Timeline</string>
   <string name="since">Depuis %s</string>
   <string name="splash_button_learn_more">En savoir plus</string>
@@ -403,10 +420,15 @@
   <string name="summary_preference_theme_size">Sélectionnez la taille du texte</string>
   <string name="summary_preference_user_in_timeline">L\'utilisateur sera affiché comme \"{0}\"</string>
   <string name="summary_preference_username">Votre nom d\'utilisateur sur le réseau social %1$s : p.ex. : %2$s</string>
+  <string name="summary_preference_username_webfinger_id">Votre ID pour %1$s. Cela ressemble à une adresse mail, avec votre nom d’utilisateur puis \"@\" puis votre serveur, par exemple : %2$s</string>
   <string name="summary_preference_verify_credentials">Ce Compte est vérifié et activé. Appuyez sur le bouton Retour pour continuer
     ou sur le bouton ci-dessous pour vérifier à nouveau les identifiants.</string>
+  <string name="summary_preference_verify_credentials_failed">La vérification a échoué. Appuyez sur le bouton ci-dessous pour vérifier les informations d’identification et activer ce compte utilisateur</string>
   <string name="summary_preference_vibration_off">Vibration désactivée</string>
   <string name="summary_preference_vibration_on">Vibration activée</string>
+  <string name="switch_to_default_timeline">Utiliser la Timeline par défaut</string>
+  <string name="sync_younger_messages">Synchronisé il y a %1$s . Messages synchronisés depuis %2$s</string>
+  <string name="sync_older_messages">Synchroniser les messages d\'avant %1$s</string>
   <string name="sync_over_wifi_only">Synchroniser via Wi-Fi uniquement</string>
   <string name="sync_failed">Échec de la synchronisation</string>
   <string name="sync_frequency_minutes">Fréquence de la synchronisation en minutes. Laissez-le vide pour utiliser la valeur par défaut : </string>
@@ -426,6 +448,7 @@
   <string name="theme_size_entries_smaller">Plus petit</string>
   <string name="theme_size_entries_standard">Standard</string>
   <string name="this_option_is_turned_off">(désactivé)</string>
+  <string name="timeline_is_combined_by_default">La Timeline est Combinée par défaut</string>
   <string name="timeline_reloaded">La timeline a été rafraîchie.</string>
   <string name="timeline_title_all">Tout</string>
   <string name="timeline_title_drafts">Brouillons</string>
@@ -485,7 +508,11 @@
   <string name="title_preference_vibration">Vibration</string>
   <string name="title_sending_messages_log_enabled">Journaliser les messages envoyés dans un fichier</string>
   <string name="title_timeline">Timeline</string>
+  <string name="top">Haut</string>
+  <string name="total_counters">Compteurs totaux</string>
   <string name="translator_credits">Crédits de traduction</string>
+  <string name="undid_reblog">reblog annulé</string>
+  <string name="undid_like">like annulé</string>
   <string name="unimplemented">Non implémenté.</string>
   <string name="unknown_in_parenthesis">(inconnu)</string>
   <string name="unknown_userlist">(Liste d\'utilisateurs inconnue)</string>
