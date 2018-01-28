@@ -104,7 +104,7 @@ public class ActorListTest extends TimelineActivityTest {
         if (noteWasFound) {
             assertEquals(listItems.toString(), 5, listItems.size());
 
-            Actor userE = DemoConversationInserter.getUsers().get(demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
+            Actor userE = DemoConversationInserter.getActors().get(demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
             assertTrue("Found " + demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID + " cached ", userE != null);
             Actor userA = getByActorOid(listItems, demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
             assertTrue("Found " + demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID + ", " + logMsg, userA != null);

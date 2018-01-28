@@ -56,15 +56,16 @@ public class LargeImageTest {
     private DownloadData insertMessage() throws IOException {
         String body = "Large image attachment";
         MyAccount ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
-        DemoNoteInserter mi = new DemoNoteInserter(ma);
-        AActivity activity = mi.buildActivity(mi.buildUser(), body, null, null, DownloadStatus.LOADED);
+        DemoNoteInserter inserter = new DemoNoteInserter(ma);
+        AActivity activity = inserter.buildActivity(inserter.buildActor(), body, null, null,
+                DownloadStatus.LOADED);
         activity.getNote().attachments
                 .add(Attachment
                         .fromUrlAndContentType(
                                 new URL(
                                         "http://www.example.com/pictures/large_image.png"),
                                 MyContentType.IMAGE));
-        mi.onActivity(activity);
+        inserter.onActivity(activity);
         
         DownloadData dd = DownloadData.getSingleForNote(activity.getNote().noteId,
                 activity.getNote().attachments.get(0).contentType, null);

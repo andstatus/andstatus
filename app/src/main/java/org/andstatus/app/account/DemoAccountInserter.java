@@ -153,7 +153,7 @@ public class DemoAccountInserter {
                 MyQuery.idToOid(myContext.getDatabase(), OidEnum.ACTOR_OID, actorId, 0));
         assertEquals("Account name", actor.getUsername() + "/" + actor.origin.getName(), ma.getAccountName());
         MyLog.v(this, ma.getAccountName() + " added, id=" + ma.getActorId());
-        DemoConversationInserter.getUsers().put(actor.oid, actor);
+        DemoConversationInserter.getActors().put(actor.oid, actor);
         return ma;
     }
 

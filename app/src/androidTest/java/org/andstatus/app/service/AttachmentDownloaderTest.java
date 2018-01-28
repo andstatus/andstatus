@@ -57,12 +57,13 @@ public class AttachmentDownloaderTest {
     @Test
     public void testImageAttachmentLoad() throws IOException {
         String body = "A message with an image attachment";
-        DemoNoteInserter mi = new DemoNoteInserter(ma);
-        AActivity activity = mi.buildActivity(mi.buildUser(), body, null, null, DownloadStatus.LOADED);
+        DemoNoteInserter inserter = new DemoNoteInserter(ma);
+        AActivity activity = inserter.buildActivity(inserter.buildActor(), body, null, null,
+                DownloadStatus.LOADED);
         activity.getNote().attachments.add(Attachment.fromUrlAndContentType(
                 new URL("http://www.publicdomainpictures.net/pictures/60000/nahled/landscape-1376582205Yno.jpg"),
                 MyContentType.IMAGE));
-        mi.onActivity(activity);
+        inserter.onActivity(activity);
         
         DownloadData dd = DownloadData.getSingleForNote(activity.getNote().noteId,
                 activity.getNote().attachments.get(0).contentType, null);

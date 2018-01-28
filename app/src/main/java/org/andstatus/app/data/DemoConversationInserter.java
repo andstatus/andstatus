@@ -43,7 +43,7 @@ import static org.junit.Assert.assertTrue;
 
 public class DemoConversationInserter {
     private static AtomicInteger iterationCounter = new AtomicInteger(0);
-    private static final Map<String, Actor> users = new ConcurrentHashMap<>();
+    private static final Map<String, Actor> actors = new ConcurrentHashMap<>();
 
     private int iteration = 0;
     private MyAccount ma;
@@ -52,11 +52,11 @@ public class DemoConversationInserter {
 
     public static void onNewDemoData() {
         iterationCounter.set(0);
-        users.clear();
+        actors.clear();
     }
 
-    public static Map<String, Actor> getUsers() {
-        return users;
+    public static Map<String, Actor> getActors() {
+        return actors;
     }
 
     public void insertConversation(String bodySuffixIn) {
@@ -75,19 +75,19 @@ public class DemoConversationInserter {
     private void insertAndTestConversation() {
         assertEquals("Only PumpIo supported in this test", OriginType.PUMPIO, demoData.CONVERSATION_ORIGIN_TYPE  );
 
-        Actor author2 = buildUserFromOid(demoData.CONVERSATION_AUTHOR_SECOND_ACTOR_OID);
+        Actor author2 = buildActorFromOid(demoData.CONVERSATION_AUTHOR_SECOND_ACTOR_OID);
         author2.avatarUrl = "http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png";
 
-        Actor author3 = buildUserFromOid(demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
+        Actor author3 = buildActorFromOid(demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
         author3.setRealName("John Smith");
         author3.setUsername(demoData.CONVERSATION_AUTHOR_THIRD_USERNAME);
         author3.setHomepage("http://johnsmith.com/welcome");
         author3.setCreatedDate(new GregorianCalendar(2011,5,12).getTimeInMillis());
         author3.setDescription("I am an ordinary guy, interested in computer science");
         author3.avatarUrl = "http://www.large-icons.com/stock-icons/free-large-android/48x48/happy-robot.gif";
-        users.put(author3.oid, author3);
+        actors.put(author3.oid, author3);
 
-        Actor author4 = buildUserFromOid("acct:fourthWithoutAvatar@pump.example.com");
+        Actor author4 = buildActorFromOid("acct:fourthWithoutAvatar@pump.example.com");
         
         AActivity minus1 = buildActivity(author2, "Older one note", null, null);
         AActivity selected = buildActivity(getAuthor1(), "Selected note from Home timeline", minus1,
@@ -127,7 +127,7 @@ public class DemoConversationInserter {
         DemoNoteInserter.increaseUpdateDate(reply4);
         addPrivateNote(reply4, TriState.FALSE);
 
-        DemoConversationInserter.assertIfUserIsMyFriend(author3, true, ma);
+        DemoConversationInserter.assertIfActorIsMyFriend(author3, true, ma);
 
         final String MENTIONS_NOTE_BODY = "@fourthWithoutAvatar@pump.example.com Reply 5 to Reply 4\n"
                 + "@" + author3.getUsername()
@@ -136,7 +136,7 @@ public class DemoConversationInserter {
                 iteration == 1 ? demoData.CONVERSATION_MENTIONS_NOTE_OID : null);
         addActivity(reply5);
 
-        Actor reblogger1 = buildUserFromOid("acct:reblogger@" + demoData.PUMPIO_MAIN_HOST);
+        Actor reblogger1 = buildActorFromOid("acct:reblogger@" + demoData.PUMPIO_MAIN_HOST);
         reblogger1.avatarUrl = "http://www.avatarsdb.com/avatars/cow_face.jpg";
         AActivity reblogOf5 = buildActivity(reblogger1, ActivityType.ANNOUNCE);
         reblogOf5.setNote(reply5.getNote().shallowCopy());
@@ -187,7 +187,7 @@ public class DemoConversationInserter {
         addActivity(reply10);
         author3.followedByMe = TriState.UNKNOWN;
 
-        DemoConversationInserter.assertIfUserIsMyFriend(author3, true, ma2);
+        DemoConversationInserter.assertIfActorIsMyFriend(author3, true, ma2);
 
         AActivity anonymousReply = buildActivity(Actor.EMPTY, "Anonymous reply to Reply 10", reply10, null);
         addActivity(anonymousReply);
@@ -246,7 +246,7 @@ public class DemoConversationInserter {
     }
 
     private Actor getAuthor1() {
-        Actor author1 = buildUserFromOid(demoData.CONVERSATION_ENTRY_AUTHOR_OID);
+        Actor author1 = buildActorFromOid(demoData.CONVERSATION_ENTRY_AUTHOR_OID);
         author1.avatarUrl = "https://raw.github.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png";
         return author1;
     }
@@ -260,7 +260,7 @@ public class DemoConversationInserter {
                 isPrivate, storedPrivate);
     }
 
-    private Actor buildUserFromOid(String actorOid) {
+    private Actor buildActorFromOid(String actorOid) {
         return new DemoNoteInserter(accountActor).buildActorFromOid(actorOid);
     }
 
@@ -283,7 +283,7 @@ public class DemoConversationInserter {
         DemoNoteInserter.onActivityS(activity);
     }
 
-    static void assertIfUserIsMyFriend(Actor actor, boolean isFriendOf, MyAccount ma) {
+    static void assertIfActorIsMyFriend(Actor actor, boolean isFriendOf, MyAccount ma) {
         Set<Long> friendsIds = MyQuery.getFriendsIds(ma.getActorId());
         assertEquals("User " + actor + " is a friend of " + ma, isFriendOf, friendsIds.contains(actor.actorId));
     }

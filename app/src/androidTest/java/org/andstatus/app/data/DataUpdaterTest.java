@@ -89,7 +89,7 @@ public class DataUpdaterTest {
 
         somebody.actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, accountActor.origin.getId(), actorOid);
         assertTrue("Actor " + username + " added", somebody.actorId != 0);
-        DemoConversationInserter.assertIfUserIsMyFriend(somebody, false, ma);
+        DemoConversationInserter.assertIfActorIsMyFriend(somebody, false, ma);
 
         AActivity activity = AActivity.newPartialNote(accountActor, noteOid, System.currentTimeMillis() , DownloadStatus.LOADED);
         activity.setActor(somebody);
@@ -139,7 +139,7 @@ public class DataUpdaterTest {
 
         somebody.followedByMe = TriState.TRUE;
         di.onActivity(somebody.update(accountActor, accountActor));
-        DemoConversationInserter.assertIfUserIsMyFriend(somebody, true, ma);
+        DemoConversationInserter.assertIfActorIsMyFriend(somebody, true, ma);
 
         Set<Long> friendsIds = MyQuery.getFriendsIds(ma.getActorId());
         MyContextHolder.get().persistentAccounts().initialize();

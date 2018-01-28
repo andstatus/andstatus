@@ -25,8 +25,8 @@ import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
-import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
@@ -63,20 +63,12 @@ public class DemoNoteInserter {
         assertTrue("Origin exists for " + accountActor, origin.isValid());
     }
 
-    public Actor buildUser() {
-        if (origin.getOriginType() == OriginType.PUMPIO) {
-            return buildActorFromOid("acct:userOf" + origin.getName() + demoData.TESTRUN_UID);
-        }
-        return buildActorFromOid(demoData.TESTRUN_UID);
+    public Actor buildActor() {
+        return buildActorFromOid(nextActorUid());
     }
 
-    public Actor buildActorFromOidAndAvatar(String actorOid, String avatarUrlString) {
-        Actor actor = buildActorFromOid(actorOid);
-        actor.avatarUrl = avatarUrlString;
-        return actor;
-    }
-    
     final Actor buildActorFromOid(String actorOid) {
+        if (TextUtils.isEmpty(actorOid)) throw  new IllegalArgumentException("Actor oid cannot be empty");
         Actor actor = Actor.fromOriginAndActorOid(origin, actorOid);
         String username;
         String profileUrl;
@@ -104,6 +96,13 @@ public class DemoNoteInserter {
         actor.followingCount = rand + 17;
         actor.followersCount = rand;
         return actor;
+    }
+
+    private String nextActorUid() {
+        if (origin.getOriginType() == OriginType.PUMPIO) {
+            return "acct:userOf" + origin.getName() + demoData.TESTRUN_UID + InstanceId.next();
+        }
+        return String.valueOf(demoData.TESTRUN_UID) + InstanceId.next();
     }
 
     public AActivity buildActivity(Actor author, String body, AActivity inReplyToActivity, String noteOidIn,
@@ -166,7 +165,8 @@ public class DemoNoteInserter {
     }
 
     private void checkActivityRecursively(AActivity activity, int level) {
-        if (level == 1) {
+        Note note = activity.getNote();
+        if (level == 1 && note.nonEmpty()) {
             assertNotEquals( "Activity was not added: " + activity, 0, activity.getId());
         }
         if (level > 10 || activity.getId() == 0) {
@@ -179,7 +179,6 @@ public class DemoNoteInserter {
             assertNotEquals( "Actor id not set for " + actor + " in activity " + activity, 0, actor.actorId);
         }
 
-        Note note = activity.getNote();
         if (note.nonEmpty()) {
             assertNotEquals( "Note was not added at level " + level + " " + activity, 0, note.noteId);
 
