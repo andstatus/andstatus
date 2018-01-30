@@ -29,6 +29,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
 import org.andstatus.app.util.MyLog;
 import org.junit.Before;
@@ -135,14 +136,14 @@ public class AvatarDownloaderTest {
     }
     
     private int changeMaAvatarUrl(String urlString) {
-        return changeAvatarUrl(ma, urlString);
+        return changeAvatarUrl(ma.getActor(), urlString);
     }
 
-    static int changeAvatarUrl(MyAccount myAccount, String urlString) {
+    static int changeAvatarUrl(Actor actor, String urlString) {
         ContentValues values = new ContentValues();
         values.put(ActorTable.AVATAR_URL, urlString);
         return MyContextHolder.get().getDatabase()
-                .update(ActorTable.TABLE_NAME, values, ActorTable._ID + "=" + myAccount.getActorId(), null);
+                .update(ActorTable.TABLE_NAME, values, ActorTable._ID + "=" + actor.actorId, null);
     }
 
     private int changeMaAvatarStatus(String urlString, DownloadStatus status) throws MalformedURLException {

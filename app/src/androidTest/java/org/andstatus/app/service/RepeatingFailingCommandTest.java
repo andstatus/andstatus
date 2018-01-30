@@ -24,14 +24,18 @@ import org.junit.Test;
 
 import java.net.MalformedURLException;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class RepeatingFailingCommandTest extends MyServiceTest {
+    private static final int ITERATIONS_NUMBER = 2;
 
     @Test
     public void repeatingFailingCommand() throws MalformedURLException {
-        final String method = "repeatingFailingCommand";
+        for (int iteration = 0; iteration < ITERATIONS_NUMBER; iteration++) oneIteration(iteration);
+    }
+
+    private void oneIteration(int iteration) {
+        final String method = "repeatingFailingCommand" + iteration;
         MyLog.i(this, method + " started");
 
         final DemoNoteInserter inserter = new DemoNoteInserter(ma);
@@ -39,30 +43,38 @@ public class RepeatingFailingCommandTest extends MyServiceTest {
         inserter.onActivity(actor.update(ma.getActor()));
 
         String urlString = "http://andstatus.org/nonexistent2_avatar_" + System.currentTimeMillis() +  ".png";
-        AvatarDownloaderTest.changeAvatarUrl(ma, urlString);
-
-        mService.setListenedCommand(
-                CommandData.newActorCommand(
-                        CommandEnum.GET_AVATAR, null, actor.origin, actor.actorId, ""));
+        AvatarDownloaderTest.changeAvatarUrl(actor, urlString);
 
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
+        final int requestsCounter0 = mService.getHttp().getRequestsCounter();
 
-        mService.sendListenedToCommand();
+        setAndSendGetAvatarCommand(actor, false);
         mService.assertCommandExecutionStarted("First command " + actor, startCount, TriState.TRUE);
-        mService.sendListenedToCommand();
+        setAndSendGetAvatarCommand(actor, false);
         assertTrue("First command didn't end " + actor, mService.waitForCommandExecutionEnded(endCount));
-        assertEquals(mService.getHttp().toString(), 1, mService.getHttp().getRequestsCounter());
-        mService.sendListenedToCommand();
-        mService.assertCommandExecutionStarted("Duplicated command started " + actor, startCount + 1,
-                TriState.FALSE);
-        mService.getListenedCommand().setManuallyLaunched(true);
-        mService.sendListenedToCommand();
-        mService.assertCommandExecutionStarted("Manually launched duplicated command didn't start " + actor,
-                startCount + 1, TriState.TRUE);
-        assertTrue("The third command didn't end " + actor,
+        assertTrue("Request for the command wasn't sent: " + mService.getListenedCommand() + "\n" +
+                mService.getHttp().toString(), mService.getHttp().getRequestsCounter() > requestsCounter0);
+        setAndSendGetAvatarCommand(actor, false);
+        mService.assertCommandExecutionStarted("Duplicated command started "
+                        + mService.getListenedCommand() + "\n" + actor, startCount + 1, TriState.FALSE);
+        setAndSendGetAvatarCommand(actor, true);
+        mService.assertCommandExecutionStarted("Manually launched duplicated command didn't start "
+                        + mService.getListenedCommand() + "\n" + actor, startCount + 1, TriState.TRUE);
+        assertTrue("The third command didn't end " + mService.getListenedCommand() + "\n" + actor,
                 mService.waitForCommandExecutionEnded(endCount+1));
         assertTrue("Service didn't stop", mService.waitForServiceStopped(true));
         MyLog.i(this, method + " ended, " + actor);
+    }
+
+    // We need to generate new command in order to have new unique ID for it. This is how it works in app itself
+    private void setAndSendGetAvatarCommand(Actor actor, boolean manuallyLaunched) {
+        final CommandData command = CommandData.newActorCommand(
+                CommandEnum.GET_AVATAR, null, actor.origin, actor.actorId, "");
+        if (manuallyLaunched) {
+            command.setManuallyLaunched(true);
+        }
+        mService.setListenedCommand(command);
+        mService.sendListenedToCommand();
     }
 }
