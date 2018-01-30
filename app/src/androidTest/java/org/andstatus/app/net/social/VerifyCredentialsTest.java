@@ -59,10 +59,10 @@ public class VerifyCredentialsTest {
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
         OriginConnectionData connectionData = OriginConnectionData.fromAccountName(AccountName.fromOriginAndUsername(
-                MyContextHolder.get().persistentOrigins().fromName(demoData.TWITTER_TEST_ORIGIN_NAME),
-                demoData.TWITTER_TEST_ACCOUNT_USERNAME),
+                MyContextHolder.get().persistentOrigins().fromName(demoData.twitterTestOriginName),
+                demoData.twitterTestAccountUsername),
                 TriState.UNKNOWN);
-        connectionData.setAccountActor(demoData.getAccountActorByOid(demoData.TWITTER_TEST_ACCOUNT_ACTOR_OID));
+        connectionData.setAccountActor(demoData.getAccountActorByOid(demoData.twitterTestAccountActorOid));
         connectionData.setDataReader(new AccountDataReaderEmpty());
         connection = connectionData.newConnection();
         httpConnection = (HttpConnectionMock) connection.http;
@@ -92,11 +92,11 @@ public class VerifyCredentialsTest {
         httpConnection.setResponse(jso);
 
         Actor actor = connection.verifyCredentials();
-        assertEquals("Actor's oid is actorOid of this account", demoData.TWITTER_TEST_ACCOUNT_ACTOR_OID, actor.oid);
+        assertEquals("Actor's oid is actorOid of this account", demoData.twitterTestAccountActorOid, actor.oid);
 
         Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(
-                MyContextHolder.get(), demoData.TWITTER_TEST_ACCOUNT_NAME +
+                MyContextHolder.get(), demoData.twitterTestAccountName +
                 "/" + origin.getName(), TriState.TRUE);
         builder.onCredentialsVerified(actor, null);
         assertTrue("Account is persistent", builder.isPersistent());

@@ -25,7 +25,7 @@ public class NoteForAccountTest {
 
     @Test
     public void testAReply() {
-        MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
+        MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(ma.isValid());
         DemoNoteInserter mi = new DemoNoteInserter(ma);
         Actor accountActor = ma.getActor();
@@ -41,7 +41,7 @@ public class NoteForAccountTest {
         assertTrue(mfa.isTiedToThisAccount());
         assertTrue(mfa.hasPrivateAccess());
         
-        Actor author2 = mi.buildActorFromOid("acct:a2." + demoData.TESTRUN_UID + "@pump.example.com");
+        Actor author2 = mi.buildActorFromOid("acct:a2." + demoData.testRunUid + "@pump.example.com");
         final AActivity replyTo1 = mi.buildActivity(author2, "@" + accountActor.getUsername()
                 + " Replying to you", activity1, null, DownloadStatus.LOADED);
         replyTo1.getNote().setPrivate(FALSE);
@@ -55,7 +55,7 @@ public class NoteForAccountTest {
         assertTrue(mfa.isTiedToThisAccount());
         assertTrue(mfa.hasPrivateAccess());
 
-        Actor author3 = mi.buildActorFromOid("acct:b3." + demoData.TESTRUN_UID + "@pumpity.example.com");
+        Actor author3 = mi.buildActorFromOid("acct:b3." + demoData.testRunUid + "@pumpity.example.com");
         AActivity replyTo2 = mi.buildActivity(author3, "@" + author2.getUsername()
                 + " Replying to the second author", replyTo1, null, DownloadStatus.LOADED);
         replyTo2.getNote().setPrivate(FALSE);
@@ -72,8 +72,8 @@ public class NoteForAccountTest {
 
         AActivity reblogged1 = mi.buildActivity(author3, "@" + author2.getUsername()
                 + " This reply is reblogged by anotherMan", replyTo1, null, DownloadStatus.LOADED);
-        Actor anotherMan = mi.buildActorFromOid("acct:c4." + demoData.TESTRUN_UID + "@pump.example.com");
-        anotherMan.setUsername("anotherMan" + demoData.TESTRUN_UID);
+        Actor anotherMan = mi.buildActorFromOid("acct:c4." + demoData.testRunUid + "@pump.example.com");
+        anotherMan.setUsername("anotherMan" + demoData.testRunUid);
         AActivity activity4 = AActivity.from(accountActor, ActivityType.ANNOUNCE);
         activity4.setActor(anotherMan);
         activity4.setActivity(reblogged1);

@@ -41,10 +41,10 @@ public class ActorTimelineTest extends TimelineActivityTest {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        final MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
+        final MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
-        long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOriginId(), demoData.CONVERSATION_AUTHOR_SECOND_ACTOR_OID);
+        long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOriginId(), demoData.conversationAuthorSecondActorOid);
 
         MyLog.i(this, "setUp ended");
         final Timeline timeline = Timeline.getTimeline(TimelineType.ACTOR, ma, actorId, ma.getOrigin());
@@ -64,7 +64,7 @@ public class ActorTimelineTest extends TimelineActivityTest {
                 followItem = item;
             }
         }
-        assertNotEquals("No follow action by " + demoData.CONVERSATION_AUTHOR_SECOND_ACTOR_OID
+        assertNotEquals("No follow action by " + demoData.conversationAuthorSecondActorOid
                 + " in " + timelineData,
                 ActivityViewItem.EMPTY, followItem);
     }

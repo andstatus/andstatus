@@ -20,7 +20,7 @@ public class ContentTypeTest {
 
     @Test
     public void testMyContentType() {
-        assertEquals("image/png", MyContentType.uri2MimeType(demoData.IMAGE1_URL, null));
+        assertEquals("image/png", MyContentType.uri2MimeType(demoData.image1Url, null));
         assertEquals("image/jpeg", MyContentType.filename2MimeType("http://www.publicdomainpictures.net/pictures/100000/nahled/autumn-tree-in-a-park.jpg", null));
     }
 }

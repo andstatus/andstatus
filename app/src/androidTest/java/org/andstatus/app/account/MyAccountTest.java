@@ -62,8 +62,8 @@ public class MyAccountTest {
 
     @Test
     public void testUser() {
-        MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
-        assertTrue(demoData.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
+        MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
+        assertTrue(demoData.conversationAccountName + " exists", ma.isValid());
         Actor accountActor = ma.getActor();
         assertFalse("Actor is partial " + accountActor, accountActor.isPartiallyDefined());
     }

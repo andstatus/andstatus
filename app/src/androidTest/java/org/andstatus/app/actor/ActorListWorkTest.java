@@ -50,12 +50,12 @@ public class ActorListWorkTest extends ActivityTest<ActorList> {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
+        MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
         long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, demoData.getConversationOriginId(),
-                demoData.CONVERSATION_MENTIONS_NOTE_OID);
+                demoData.conversationMentionsNoteOid);
         assertTrue(noteId > 0);
         MyLog.i(this, "setUp ended");
 
@@ -72,7 +72,7 @@ public class ActorListWorkTest extends ActivityTest<ActorList> {
         List<ActorViewItem> listItems = getActivity().getListLoader().getList();
         assertEquals(listItems.toString(), 5, listItems.size());
 
-        Actor actor = ActorListTest.getByActorOid(listItems, demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
+        Actor actor = ActorListTest.getByActorOid(listItems, demoData.conversationAuthorThirdActorOid);
 
         assertTrue("Invoked Context menu for " + actor, helper.invokeContextMenuAction4ListItemId(
                 method, actor.actorId, ActorContextMenuItem.FOLLOWERS, 0));

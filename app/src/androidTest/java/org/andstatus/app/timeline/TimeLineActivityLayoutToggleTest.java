@@ -22,7 +22,6 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -68,7 +67,7 @@ public class TimeLineActivityLayoutToggleTest extends TimelineActivityTest {
         setPreferences();
         logStartStop("setUp started");
 
-        MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
+        MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 

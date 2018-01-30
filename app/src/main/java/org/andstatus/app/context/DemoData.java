@@ -29,6 +29,7 @@ import org.andstatus.app.data.DemoGnuSocialConversationInserter;
 import org.andstatus.app.data.checker.CheckConversations;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.DemoOriginInserter;
+import org.andstatus.app.origin.OriginPumpio;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
@@ -49,61 +50,63 @@ import static org.junit.Assert.fail;
 public final class DemoData {
     public static volatile DemoData demoData = new DemoData();
     private static final String TAG = DemoData.class.getSimpleName();
+    private static final String HTTP = "http://";
 
-    public final String TESTRUN_UID = String.valueOf(System.currentTimeMillis());
+    public final String testRunUid = String.valueOf(System.currentTimeMillis());
 
-    public final String TEST_ORIGIN_PARENT_HOST = "example.com";
-    public final String PUMPIO_ORIGIN_NAME = "PumpioTest";
-    public final String PUMPIO_MAIN_HOST = "pump1." + TEST_ORIGIN_PARENT_HOST;
-    public final String PUMPIO_TEST_ACCOUNT_USERNAME = "t131t@" + PUMPIO_MAIN_HOST;
-    public final String PUMPIO_TEST_ACCOUNT_NAME = PUMPIO_TEST_ACCOUNT_USERNAME + "/" + PUMPIO_ORIGIN_NAME;
-    public final String PUMPIO_TEST_ACCOUNT_ACTOR_OID = "acct:" + PUMPIO_TEST_ACCOUNT_USERNAME;
+    public final String testOriginParentHost = "example.com";
+    public final String pumpioOriginName = "PumpioTest";
+    public final String pumpioMainHost = "pump1." + testOriginParentHost;
+    public final String pumpioTestAccountUsername = "t131t@" + pumpioMainHost;
+    public final String pumpioTestAccountName = pumpioTestAccountUsername + "/" + pumpioOriginName;
+    public final String pumpioTestAccountActorOid = OriginPumpio.ACCOUNT_PREFIX + pumpioTestAccountUsername;
 
-    public final String GNUSOCIAL_TEST_ORIGIN_NAME = "GNUsocialTest";
-    public final String GNUSOCIAL_TEST_ACCOUNT_USERNAME = "t131t";
-    public final String GNUSOCIAL_TEST_ACCOUNT_NAME = GNUSOCIAL_TEST_ACCOUNT_USERNAME + "/" + GNUSOCIAL_TEST_ORIGIN_NAME;
-    public final String GNUSOCIAL_TEST_ACCOUNT_ACTOR_OID = "115391";
-    public final String GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL = "https://findicons.com/files/icons/2036/farm/48/rabbit.png";
-    public final String GNUSOCIAL_TEST_ACCOUNT2_USERNAME = "gtester2";
-    public final String GNUSOCIAL_TEST_ACCOUNT2_NAME = GNUSOCIAL_TEST_ACCOUNT2_USERNAME + "/" + GNUSOCIAL_TEST_ORIGIN_NAME;
-    public final String GNUSOCIAL_TEST_ACCOUNT2_ACTOR_OID = "8902454";
+    public final String gnusocialTestOriginName = "GNUsocialTest";
+    public final String gnusocialTestAccountUsername = "t131t";
+    public final String gnusocialTestAccountName = gnusocialTestAccountUsername + "/" + gnusocialTestOriginName;
+    public final String gnusocialTestAccountActorOid = "115391";
+    public final String gnusocialTestAccountAvatarUrl = "https://findicons.com/files/icons/2036/farm/48/rabbit.png";
+    public final String gnusocialTestAccount2Username = "gtester2";
+    public final String gnusocialTestAccount2Name = gnusocialTestAccount2Username + "/" + gnusocialTestOriginName;
+    public final String gnusocialTestAccount2ActorOid = "8902454";
 
-    public final String TWITTER_TEST_ORIGIN_NAME = "TwitterTest";
-    public final String TWITTER_TEST_ACCOUNT_USERNAME = "t131t";
-    public final String TWITTER_TEST_ACCOUNT_ACTOR_OID = "144771645";
-    public final String TWITTER_TEST_ACCOUNT_NAME = TWITTER_TEST_ACCOUNT_USERNAME + "/" + TWITTER_TEST_ORIGIN_NAME;
+    public final String twitterTestOriginName = "TwitterTest";
+    public final String twitterTestAccountUsername = "t131t";
+    public final String twitterTestAccountActorOid = "144771645";
+    public final String twitterTestAccountName = twitterTestAccountUsername + "/" + twitterTestOriginName;
 
-    public final String MASTODON_TEST_ORIGIN_NAME = "MastodonTest";
-    public final String MASTODON_TEST_ACCOUNT_USERNAME = "t131t1";
-    public final String MASTODON_TEST_ACCOUNT_NAME = MASTODON_TEST_ACCOUNT_USERNAME + "/" + MASTODON_TEST_ORIGIN_NAME;
-    public final String MASTODON_TEST_ACCOUNT_ACTOR_OID = "37";
+    public final String mastodonTestOriginName = "MastodonTest";
+    public final String mastodonTestAccountUsername = "t131t1";
+    public final String mastodonTestAccountName = mastodonTestAccountUsername + "/" + mastodonTestOriginName;
+    public final String mastodonTestAccountActorOid = "37";
 
-    public final OriginType CONVERSATION_ORIGIN_TYPE = OriginType.PUMPIO;
-    public final String CONVERSATION_ORIGIN_NAME = PUMPIO_ORIGIN_NAME;
-    private final String CONVERSATION_ACCOUNT_USERNAME = "testerofandstatus@" + PUMPIO_MAIN_HOST;
-    public final String CONVERSATION_ACCOUNT_NAME = CONVERSATION_ACCOUNT_USERNAME + "/" + CONVERSATION_ORIGIN_NAME;
-    public final String CONVERSATION_ACCOUNT_ACTOR_OID = "acct:" + CONVERSATION_ACCOUNT_USERNAME;
-    public final String CONVERSATION_ACCOUNT_AVATAR_URL = "http://andstatus.org/images/andstatus-logo.png";
-    public final String CONVERSATION_ENTRY_NOTE_OID = "http://" + PUMPIO_MAIN_HOST + "/testerofandstatus/comment/thisisfakeuri" + TESTRUN_UID;
-    public final String CONVERSATION_ENTRY_AUTHOR_OID = "acct:first@pumpentry.example.com";
-    public final String CONVERSATION_AUTHOR_SECOND_USERNAME = "second@" + PUMPIO_MAIN_HOST;
-    public final String CONVERSATION_AUTHOR_SECOND_ACTOR_OID = "acct:" + CONVERSATION_AUTHOR_SECOND_USERNAME;
-    public final String CONVERSATION_AUTHOR_THIRD_USERNAME = "third@pump3.example.com";
-    public final String CONVERSATION_AUTHOR_THIRD_ACTOR_OID = "acct:" + CONVERSATION_AUTHOR_THIRD_USERNAME;
-    public final String CONVERSATION_MENTIONS_NOTE_OID = "http://" + PUMPIO_MAIN_HOST + "/second/comment/replywithmentions" + TESTRUN_UID;
-    public final String CONVERSATION_MENTION_OF_AUTHOR3_OID = "http://" + PUMPIO_MAIN_HOST + "/second/comment/mention3" + TESTRUN_UID;
-    public final String HTML_NOTE_OID = "http://" + PUMPIO_MAIN_HOST + "/testerofandstatus/comment/htmlfakeuri" + TESTRUN_UID;
-    public final String CONVERSATION_ACCOUNT2_USERNAME = "tester2ofandstatus@" + PUMPIO_MAIN_HOST;
-    public final String CONVERSATION_ACCOUNT2_NAME = CONVERSATION_ACCOUNT2_USERNAME + "/" + CONVERSATION_ORIGIN_NAME;
-    public final String CONVERSATION_ACCOUNT2_ACTOR_OID = "acct:" + CONVERSATION_ACCOUNT2_USERNAME;
+    public final OriginType conversationOriginType = OriginType.PUMPIO;
+    public final String conversationOriginName = pumpioOriginName;
+    private final String conversationAccountUsername = "testerofandstatus@" + pumpioMainHost;
+    public final String conversationAccountName = conversationAccountUsername + "/" + conversationOriginName;
+    public final String conversationAccountActorOid = OriginPumpio.ACCOUNT_PREFIX + conversationAccountUsername;
+    public final String conversationAccountAvatarUrl = "http://andstatus.org/images/andstatus-logo.png";
+    public final String conversationEntryNoteOid = HTTP + pumpioMainHost
+            + "/testerofandstatus/comment/thisisfakeuri" + testRunUid;
+    public final String conversationEntryAuthorOid = "acct:first@pumpentry.example.com";
+    public final String conversationAuthorSecondUsername = "second@" + pumpioMainHost;
+    public final String conversationAuthorSecondActorOid = OriginPumpio.ACCOUNT_PREFIX + conversationAuthorSecondUsername;
+    public final String conversationAuthorThirdUsername = "third@pump3.example.com";
+    public final String conversationAuthorThirdActorOid = OriginPumpio.ACCOUNT_PREFIX + conversationAuthorThirdUsername;
+    public final String conversationMentionsNoteOid = HTTP + pumpioMainHost + "/second/comment/replywithmentions" + testRunUid;
+    public final String conversationMentionOfAuthor3Oid = HTTP + pumpioMainHost + "/second/comment/mention3" + testRunUid;
+    public final String htmlNoteOid = HTTP + pumpioMainHost + "/testerofandstatus/comment/htmlfakeuri" + testRunUid;
+    public final String conversationAccount2Username = "tester2ofandstatus@" + pumpioMainHost;
+    public final String conversationAccount2Name = conversationAccount2Username + "/" + conversationOriginName;
+    public final String conversationAccount2ActorOid = OriginPumpio.ACCOUNT_PREFIX + conversationAccount2Username;
 
-    public final String PLAIN_TEXT_NOTE_OID = "2167283" + TESTRUN_UID;
-    public final String PUBLIC_NOTE_TEXT = "UniqueText" + TESTRUN_UID;
-    public final String GLOBAL_PUBLIC_NOTE_TEXT = "Public_in_AndStatus_" + TESTRUN_UID;
+    public final String plainTextNoteOid = "2167283" + testRunUid;
+    public final String publicNoteText = "UniqueText" + testRunUid;
+    public final String globalPublicNoteText = "Public_in_AndStatus_" + testRunUid;
     /** See http://stackoverflow.com/questions/6602417/get-the-uri-of-an-image-stored-in-drawable */
-    public final Uri LOCAL_IMAGE_TEST_URI = Uri.parse("android.resource://org.andstatus.app.tests/drawable/icon");
-    public final Uri LOCAL_IMAGE_TEST_URI2 = Uri.parse("android.resource://org.andstatus.app/drawable/splash_logo");
-    public final Uri IMAGE1_URL = Uri.parse("https://raw.githubusercontent.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png");
+    public final Uri localImageTestUri = Uri.parse("android.resource://org.andstatus.app.tests/drawable/icon");
+    public final Uri localImageTestUri2 = Uri.parse("android.resource://org.andstatus.app/drawable/splash_logo");
+    public final Uri image1Url = Uri.parse("https://raw.githubusercontent.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png");
 
     private volatile String dataPath = "";
 
@@ -116,8 +119,8 @@ public final class DemoData {
     }
 
     public String getTestOriginHost(String testOriginName) {
-        String host = testOriginName.toLowerCase(Locale.US) + "." + TEST_ORIGIN_PARENT_HOST;
-        if (testOriginName.equalsIgnoreCase(TWITTER_TEST_ORIGIN_NAME)) {
+        String host = testOriginName.toLowerCase(Locale.US) + "." + testOriginParentHost;
+        if (testOriginName.equalsIgnoreCase(twitterTestOriginName)) {
             host = "api." + host;
         }
         return host;
@@ -259,7 +262,7 @@ public final class DemoData {
     }
 
     public MyAccount getConversationMyAccount() {
-        return getMyAccount(CONVERSATION_ACCOUNT_NAME);
+        return getMyAccount(conversationAccountName);
     }
 
     @NonNull

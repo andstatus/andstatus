@@ -66,21 +66,21 @@ public class DemoConversationInserter {
             bodySuffix = " " + bodySuffixIn;
         }
         iteration = iterationCounter.incrementAndGet();
-        ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
-        assertTrue(demoData.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
+        ma = demoData.getMyAccount(demoData.conversationAccountName);
+        assertTrue(demoData.conversationAccountName + " exists", ma.isValid());
         accountActor = ma.getActor();
         insertAndTestConversation();
     }
 
     private void insertAndTestConversation() {
-        assertEquals("Only PumpIo supported in this test", OriginType.PUMPIO, demoData.CONVERSATION_ORIGIN_TYPE  );
+        assertEquals("Only PumpIo supported in this test", OriginType.PUMPIO, demoData.conversationOriginType);
 
-        Actor author2 = buildActorFromOid(demoData.CONVERSATION_AUTHOR_SECOND_ACTOR_OID);
+        Actor author2 = buildActorFromOid(demoData.conversationAuthorSecondActorOid);
         author2.avatarUrl = "http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png";
 
-        Actor author3 = buildActorFromOid(demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
+        Actor author3 = buildActorFromOid(demoData.conversationAuthorThirdActorOid);
         author3.setRealName("John Smith");
-        author3.setUsername(demoData.CONVERSATION_AUTHOR_THIRD_USERNAME);
+        author3.setUsername(demoData.conversationAuthorThirdUsername);
         author3.setHomepage("http://johnsmith.com/welcome");
         author3.setCreatedDate(new GregorianCalendar(2011,5,12).getTimeInMillis());
         author3.setDescription("I am an ordinary guy, interested in computer science");
@@ -91,7 +91,7 @@ public class DemoConversationInserter {
         
         AActivity minus1 = buildActivity(author2, "Older one note", null, null);
         AActivity selected = buildActivity(getAuthor1(), "Selected note from Home timeline", minus1,
-                iteration == 1 ? demoData.CONVERSATION_ENTRY_NOTE_OID : null);
+                iteration == 1 ? demoData.conversationEntryNoteOid : null);
         selected.setSubscribedByMe(TriState.TRUE);
         AActivity reply1 = buildActivity(author3, "Reply 1 to selected", selected, null);
         author3.followedByMe = TriState.TRUE;
@@ -133,10 +133,10 @@ public class DemoConversationInserter {
                 + "@" + author3.getUsername()
                 + " @unknownUser@example.com";
         AActivity reply5 = buildActivity(author2, MENTIONS_NOTE_BODY, reply4,
-                iteration == 1 ? demoData.CONVERSATION_MENTIONS_NOTE_OID : null);
+                iteration == 1 ? demoData.conversationMentionsNoteOid : null);
         addActivity(reply5);
 
-        Actor reblogger1 = buildActorFromOid("acct:reblogger@" + demoData.PUMPIO_MAIN_HOST);
+        Actor reblogger1 = buildActorFromOid("acct:reblogger@" + demoData.pumpioMainHost);
         reblogger1.avatarUrl = "http://www.avatarsdb.com/avatars/cow_face.jpg";
         AActivity reblogOf5 = buildActivity(reblogger1, ActivityType.ANNOUNCE);
         reblogOf5.setNote(reply5.getNote().shallowCopy());
@@ -152,7 +152,7 @@ public class DemoConversationInserter {
         addActivity(likeOf6);
 
         AActivity reply7 = buildActivity(getAuthor1(), "Reply 7 to Reply 2 is about "
-        + demoData.PUBLIC_NOTE_TEXT + " and something else", reply2, null);
+        + demoData.publicNoteText + " and something else", reply2, null);
         addPrivateNote(reply7, TriState.FALSE);
         
         AActivity reply8 = buildActivity(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
@@ -179,7 +179,7 @@ public class DemoConversationInserter {
         addActivity(myLikeOf9);
 
         // Note downloaded by another account
-        final MyAccount ma2 = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT2_NAME);
+        final MyAccount ma2 = demoData.getMyAccount(demoData.conversationAccount2Name);
         author3.followedByMe = TriState.TRUE;
         AActivity reply10 = buildActivity(ma2.getActor(), author3, "Reply 10 to Reply 8", reply8,
                 null, DownloadStatus.LOADED);
@@ -192,7 +192,7 @@ public class DemoConversationInserter {
         AActivity anonymousReply = buildActivity(Actor.EMPTY, "Anonymous reply to Reply 10", reply10, null);
         addActivity(anonymousReply);
 
-        AActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7, " + demoData.GLOBAL_PUBLIC_NOTE_TEXT
+        AActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7, " + demoData.globalPublicNoteText
                 + " text", reply7, null);
         addPrivateNote(reply11, TriState.FALSE);
         DemoNoteInserter.assertNotified(reply11, TriState.UNKNOWN);
@@ -214,7 +214,7 @@ public class DemoConversationInserter {
         assertNotificationEvent(reblogOfMy13, NotificationEventType.ANNOUNCE);
 
         AActivity mentionOfAuthor3 = buildActivity(reblogger1, "@" + author3.getUsername() + " mention in reply to 4",
-                reply4, iteration == 1 ? demoData.CONVERSATION_MENTION_OF_AUTHOR3_OID : null);
+                reply4, iteration == 1 ? demoData.conversationMentionOfAuthor3Oid : null);
         addActivity(mentionOfAuthor3);
 
         AActivity followOf3 = buildActivity(author2, ActivityType.FOLLOW);
@@ -224,7 +224,7 @@ public class DemoConversationInserter {
 
         AActivity notLoaded1 = AActivity.newPartialNote(accountActor, MyLog.uniqueDateTimeFormatted());
         Actor notLoadedActor = Actor.fromOriginAndActorOid(accountActor.origin, "acct:notloaded@someother.host"
-        + demoData.TEST_ORIGIN_PARENT_HOST);
+        + demoData.testOriginParentHost);
         notLoaded1.setActor(notLoadedActor);
         AActivity reply15 = buildActivity(author4, "Reply 15 to not loaded 1", notLoaded1, null);
         addActivity(reply15);
@@ -246,7 +246,7 @@ public class DemoConversationInserter {
     }
 
     private Actor getAuthor1() {
-        Actor author1 = buildActorFromOid(demoData.CONVERSATION_ENTRY_AUTHOR_OID);
+        Actor author1 = buildActorFromOid(demoData.conversationEntryAuthorOid);
         author1.avatarUrl = "https://raw.github.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png";
         return author1;
     }

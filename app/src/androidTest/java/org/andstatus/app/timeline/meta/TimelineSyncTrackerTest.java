@@ -27,12 +27,12 @@ public class TimelineSyncTrackerTest {
 
     @Test
     public void testGnuSocialTimeline() {
-        testTimelineForAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        testTimelineForAccount(demoData.gnusocialTestAccountName);
     }
 
     @Test
     public void testTwitterTimeline() {
-        testTimelineForAccount(demoData.TWITTER_TEST_ACCOUNT_NAME);
+        testTimelineForAccount(demoData.twitterTestAccountName);
     }
 
     private void testTimelineForAccount(String accountName) {

@@ -55,7 +55,7 @@ public class LargeImageTest {
 
     private DownloadData insertNote() throws IOException {
         String body = "Large image attachment";
-        MyAccount ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        MyAccount ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
         DemoNoteInserter inserter = new DemoNoteInserter(ma);
         AActivity activity = inserter.buildActivity(inserter.buildActor(), body, null, null,
                 DownloadStatus.LOADED);

@@ -49,7 +49,7 @@ public class ActAsTest extends TimelineActivityTest {
         TestSuite.initializeWithData(this);
 
         final MyAccount ma = MyContextHolder.get().persistentAccounts()
-                .fromAccountName(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+                .fromAccountName(demoData.gnusocialTestAccountName);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 

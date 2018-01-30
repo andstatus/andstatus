@@ -52,7 +52,7 @@ public class ActorListTest extends TimelineActivityTest {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        final MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
+        final MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
@@ -67,7 +67,7 @@ public class ActorListTest extends TimelineActivityTest {
         TestSuite.waitForListLoaded(getActivity(), 2);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(), ActorList.class);
         long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, demoData.getConversationOriginId(),
-                demoData.CONVERSATION_MENTIONS_NOTE_OID);
+                demoData.conversationMentionsNoteOid);
         String body = MyQuery.noteIdToStringColumnValue(NoteTable.BODY, noteId);
         String logMsg = MyQuery.noteInfoForLog(noteId);
 
@@ -104,10 +104,10 @@ public class ActorListTest extends TimelineActivityTest {
         if (noteWasFound) {
             assertEquals(listItems.toString(), 5, listItems.size());
 
-            Actor actorE = DemoConversationInserter.getActors().get(demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
-            assertTrue("Found " + demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID + " cached ", actorE != null);
-            Actor actorA = getByActorOid(listItems, demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
-            assertTrue("Found " + demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID + ", " + logMsg, actorA != null);
+            Actor actorE = DemoConversationInserter.getActors().get(demoData.conversationAuthorThirdActorOid);
+            assertTrue("Found " + demoData.conversationAuthorThirdActorOid + " cached ", actorE != null);
+            Actor actorA = getByActorOid(listItems, demoData.conversationAuthorThirdActorOid);
+            assertTrue("Found " + demoData.conversationAuthorThirdActorOid + ", " + logMsg, actorA != null);
             compareAttributes(actorE, actorA, true);
         }
 

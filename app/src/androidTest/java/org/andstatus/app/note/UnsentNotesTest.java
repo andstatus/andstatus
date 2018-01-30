@@ -42,7 +42,7 @@ public class UnsentNotesTest extends TimelineActivityTest {
         TestSuite.initializeWithData(this);
 
         mService.setUp(null);
-        MyAccount ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        MyAccount ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
@@ -65,7 +65,7 @@ public class UnsentNotesTest extends TimelineActivityTest {
         helper.clickMenuItem(method + "; " + step, R.id.createNoteButton);
         ActivityTestHelper.waitViewVisible(method + "; " + step, editorView);
 
-        String body = "Test unsent note, which we will try to edit " + demoData.TESTRUN_UID;
+        String body = "Test unsent note, which we will try to edit " + demoData.testRunUid;
         TestSuite.waitForIdleSync();
         onView(withId(R.id.noteBodyEditText)).perform(new TypeTextAction(body));
         TestSuite.waitForIdleSync();

@@ -22,12 +22,12 @@ public class ConnectionMastodonMock extends ConnectionMastodon {
 
     public ConnectionMastodonMock() {
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.MASTODON_TEST_ORIGIN_NAME);
+        Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.mastodonTestOriginName);
 
         OriginConnectionData connectionData = OriginConnectionData.fromAccountName(
-                AccountName.fromOriginAndUsername(origin, demoData.MASTODON_TEST_ACCOUNT_USERNAME),
+                AccountName.fromOriginAndUsername(origin, demoData.mastodonTestAccountUsername),
                 TriState.UNKNOWN);
-        connectionData.setAccountActor(demoData.getAccountActorByOid(demoData.MASTODON_TEST_ACCOUNT_ACTOR_OID));
+        connectionData.setAccountActor(demoData.getAccountActorByOid(demoData.mastodonTestAccountActorOid));
         connectionData.setDataReader(new AccountDataReaderEmpty());
         enrichConnectionData(connectionData);
         try {

@@ -41,14 +41,14 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest {
         TestSuite.initializeWithData(this);
 
         mService = new MyServiceTestHelper();
-        mService.setUp(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
-        ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        mService.setUp(demoData.gnusocialTestAccountName);
+        ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("image/png");
-        Uri mediaUri = demoData.LOCAL_IMAGE_TEST_URI2;
+        Uri mediaUri = demoData.localImageTestUri2;
         assertTrue(mediaUri != null);
         MyLog.i(this, "setUp ended");
         intent.putExtra(Intent.EXTRA_STREAM, mediaUri);
@@ -73,7 +73,7 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest {
         String textToFind = MyContextHolder.get().context().getText(R.string.label_with_media).toString();
         ActivityTestHelper.waitTextInAView(method, details, textToFind);
 
-        String body = "Test note with a shared image " + demoData.TESTRUN_UID;
+        String body = "Test note with a shared image " + demoData.testRunUid;
         TestSuite.waitForIdleSync();
         onView(withId(R.id.noteBodyEditText)).perform(new TypeTextAction(body));
         TestSuite.waitForIdleSync();
@@ -100,7 +100,7 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest {
         DownloadData dd = DownloadData.getSingleForNote(unsentMsgId,
                 MyContentType.IMAGE, null);
         MyLog.v(this, method + "; " + dd);
-        assertEquals("Image URI stored", demoData.LOCAL_IMAGE_TEST_URI2, dd.getUri());
+        assertEquals("Image URI stored", demoData.localImageTestUri2, dd.getUri());
         assertEquals("Loaded '" + dd.getUri() + "'; " + dd, DownloadStatus.LOADED, dd.getStatus());
     }
 }

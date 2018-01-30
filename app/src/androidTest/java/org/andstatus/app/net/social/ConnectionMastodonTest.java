@@ -45,7 +45,7 @@ public class ConnectionMastodonTest {
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
-        accountActorOid = demoData.MASTODON_TEST_ACCOUNT_ACTOR_OID;
+        accountActorOid = demoData.mastodonTestAccountActorOid;
         connection = new ConnectionMastodonMock();
     }
 

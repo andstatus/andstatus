@@ -44,10 +44,10 @@ public class HtmlContentInserter {
 
     private void mySetup() {
         TestSuite.initializeWithData(this);
-        origin = MyContextHolder.get().persistentOrigins().fromName(demoData.CONVERSATION_ORIGIN_NAME);
-        assertTrue(demoData.CONVERSATION_ORIGIN_NAME + " exists", origin.getOriginType() != OriginType.UNKNOWN);
-        ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
-        assertTrue(demoData.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
+        origin = MyContextHolder.get().persistentOrigins().fromName(demoData.conversationOriginName);
+        assertTrue(demoData.conversationOriginName + " exists", origin.getOriginType() != OriginType.UNKNOWN);
+        ma = demoData.getMyAccount(demoData.conversationAccountName);
+        assertTrue(demoData.conversationAccountName + " exists", ma.isValid());
     }
     
     @Before
@@ -77,7 +77,7 @@ public class HtmlContentInserter {
         assertFalse("HTML removed", MyHtml.fromHtml(bodyString).contains("<"));
         assertHtmlNote(author1, bodyString, null);
 
-        assertHtmlNote(author1, HTML_BODY_IMG_STRING, demoData.HTML_NOTE_OID);
+        assertHtmlNote(author1, HTML_BODY_IMG_STRING, demoData.htmlNoteOid);
         
         setHtmlContentAllowed(isHtmlContentAllowedStored);
     }

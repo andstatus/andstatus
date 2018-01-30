@@ -63,12 +63,12 @@ public class ConnectionTwitterTest {
         TestSuite.initializeWithData(this);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.TWITTER_TEST_ORIGIN_NAME);
+        Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.twitterTestOriginName);
 
         connectionData = OriginConnectionData.fromAccountName(
-                AccountName.fromOriginAndUsername(origin, demoData.TWITTER_TEST_ACCOUNT_USERNAME),
+                AccountName.fromOriginAndUsername(origin, demoData.twitterTestAccountUsername),
                 TriState.UNKNOWN);
-        connectionData.setAccountActor(demoData.getAccountActorByOid(demoData.TWITTER_TEST_ACCOUNT_ACTOR_OID));
+        connectionData.setAccountActor(demoData.getAccountActorByOid(demoData.twitterTestAccountActorOid));
         connectionData.setDataReader(new AccountDataReaderEmpty());
         connection = connectionData.newConnection();
         httpConnection = (HttpConnectionMock) connection.http;
@@ -96,7 +96,7 @@ public class ConnectionTwitterTest {
 
         int ind = 0;
         AActivity activity = timeline.get(ind);
-        String hostName = demoData.getTestOriginHost(demoData.TWITTER_TEST_ORIGIN_NAME).replace("api.", "");
+        String hostName = demoData.getTestOriginHost(demoData.twitterTestOriginName).replace("api.", "");
         assertEquals("Posting note", AObjectType.NOTE, activity.getObjectType());
         assertEquals("Timeline position", "381172771428257792", activity.getTimelinePosition().getPosition());
         assertEquals("Note Oid", "381172771428257792", activity.getNote().oid);
@@ -129,7 +129,7 @@ public class ConnectionTwitterTest {
         assertNotEquals("Is a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);
         assertTrue("Is a reply", note.getInReplyTo().nonEmpty());
         assertEquals("Reply to the note id", "17176774678", note.getInReplyTo().getNote().oid);
-        assertEquals("Reply to the note by actorOid", demoData.TWITTER_TEST_ACCOUNT_ACTOR_OID, note.getInReplyTo().getAuthor().oid);
+        assertEquals("Reply to the note by actorOid", demoData.twitterTestAccountActorOid, note.getInReplyTo().getAuthor().oid);
         assertTrue("Reply status is unknown", note.getInReplyTo().getNote().getStatus() == DownloadStatus.UNKNOWN);
         assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
         String startsWith = "@t131t";

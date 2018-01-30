@@ -27,15 +27,15 @@ public class NoteEditorDataTest {
 
     @Test
     public void noteEditorDataConversation() {
-        MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
-        final Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.CONVERSATION_ORIGIN_NAME);
+        MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
+        final Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.conversationOriginName);
         assertEquals(origin, ma.getOrigin());
         long entryMsgId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(),
-                demoData.CONVERSATION_ENTRY_NOTE_OID);
+                demoData.conversationEntryNoteOid);
         long entryActorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(),
-                demoData.CONVERSATION_ENTRY_AUTHOR_OID);
+                demoData.conversationEntryAuthorOid);
         long memberActorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(),
-                demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
+                demoData.conversationAuthorThirdActorOid);
         assertData(ma, entryMsgId, entryActorId, 0, memberActorId, false);
         assertData(ma, entryMsgId, entryActorId, 0, memberActorId, true);
         assertData(ma,          0,           0, memberActorId, 0, false);
@@ -44,12 +44,12 @@ public class NoteEditorDataTest {
 
     private void assertData(MyAccount ma, long inReplyToMsgId, long inReplyToActorId, long recipientId,
             long memberActorId, boolean replyAll) {
-        Uri uri = Uri.parse("http://example.com/" + demoData.TESTRUN_UID + "/some.png");
+        Uri uri = Uri.parse("http://example.com/" + demoData.testRunUid + "/some.png");
         NoteEditorData data = NoteEditorData.newEmpty(ma)
                 .setInReplyToNoteId(inReplyToMsgId)
                 .addRecipientId(recipientId)
                 .setReplyToConversationParticipants(replyAll)
-                .setBody("Some text here " + demoData.TESTRUN_UID);
+                .setBody("Some text here " + demoData.testRunUid);
         assertFalse(data.toString(), data.body.contains("@"));
         data.addMentionsToText();
         assertEquals(recipientId, data.recipients.getFirst().actorId);

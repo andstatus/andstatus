@@ -74,13 +74,13 @@ public class ConnectionPumpioTest {
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
-        originUrl = UrlUtils.fromString("https://" + demoData.PUMPIO_MAIN_HOST);
+        originUrl = UrlUtils.fromString("https://" + demoData.pumpioMainHost);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
         OriginConnectionData connectionData = OriginConnectionData.fromAccountName(AccountName.fromOriginAndUsername(
-                MyContextHolder.get().persistentOrigins().fromName(demoData.PUMPIO_ORIGIN_NAME), ""),
+                MyContextHolder.get().persistentOrigins().fromName(demoData.pumpioOriginName), ""),
                 TriState.UNKNOWN);
-        connectionData.setAccountActor(demoData.getAccountActorByOid(demoData.PUMPIO_TEST_ACCOUNT_ACTOR_OID));
+        connectionData.setAccountActor(demoData.getAccountActorByOid(demoData.pumpioTestAccountActorOid));
         connectionData.setDataReader(new AccountDataReaderEmpty());
         connection = (ConnectionPumpio) connectionData.newConnection();
         httpConnectionMock = connection.getHttpMock();
@@ -149,11 +149,11 @@ public class ConnectionPumpioTest {
 
     @Test
     public void testGetConnectionAndUrl() throws ConnectionException {
-        String actorOids[] = {"acct:t131t@" + demoData.PUMPIO_MAIN_HOST,
-                "somebody@" + demoData.PUMPIO_MAIN_HOST};
+        String actorOids[] = {"acct:t131t@" + demoData.pumpioMainHost,
+                "somebody@" + demoData.pumpioMainHost};
         String urls[] = {"api/user/t131t/profile", 
                 "api/user/somebody/profile"};
-        String hosts[] = {demoData.PUMPIO_MAIN_HOST, demoData.PUMPIO_MAIN_HOST};
+        String hosts[] = {demoData.pumpioMainHost, demoData.pumpioMainHost};
         for (int ind=0; ind < actorOids.length; ind++) {
             ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.GET_ACTOR, actorOids[ind]);
             assertEquals("Expecting '" + urls[ind] + "'", urls[ind], conu.url);
@@ -281,7 +281,7 @@ public class ConnectionPumpioTest {
         String body = "@peter Do you think it's true?";
         String inReplyToId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
         httpConnectionMock.setResponse("");
-        connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.CONVERSATION_ACCOUNT_ACTOR_OID));
+        connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.conversationAccountActorOid));
         connection.updateNote(body, "", inReplyToId, null);
         JSONObject activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
@@ -312,7 +312,7 @@ public class ConnectionPumpioTest {
     public void testReblog() throws ConnectionException, JSONException {
         String rebloggedId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
         httpConnectionMock.setResponse("");
-        connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.CONVERSATION_ACCOUNT_ACTOR_OID));
+        connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.conversationAccountActorOid));
         connection.announce(rebloggedId);
         JSONObject activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
@@ -327,7 +327,7 @@ public class ConnectionPumpioTest {
         String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.unfollow_pumpio);
         httpConnectionMock.setResponse(jso);
-        connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.CONVERSATION_ACCOUNT_ACTOR_OID));
+        connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.conversationAccountActorOid));
         String actorOid = "acct:evan@e14n.com";
         AActivity activity = connection.follow(actorOid, false);
         assertEquals("Not unfollow action", ActivityType.UNDO_FOLLOW, activity.type);
@@ -348,8 +348,8 @@ public class ConnectionPumpioTest {
         String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.pumpio_delete_comment_response);
         httpConnectionMock.setResponse(jso);
-        connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.CONVERSATION_ACCOUNT_ACTOR_OID));
-        assertTrue("Success", connection.deleteNote("https://" + demoData.PUMPIO_MAIN_HOST
+        connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.conversationAccountActorOid));
+        assertTrue("Success", connection.deleteNote("https://" + demoData.pumpioMainHost
                 + "/api/comment/xf0WjLeEQSlyi8jwHJ0ttre"));
 
         boolean thrown = false;
@@ -368,8 +368,8 @@ public class ConnectionPumpioTest {
                 org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
         httpConnectionMock.setResponse(jso);
         
-        connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.CONVERSATION_ACCOUNT_ACTOR_OID));
-        AActivity activity = connection.updateNote("Test post note with media", "", "", demoData.LOCAL_IMAGE_TEST_URI);
+        connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.conversationAccountActorOid));
+        AActivity activity = connection.updateNote("Test post note with media", "", "", demoData.localImageTestUri);
         activity.getNote().setPrivate(TriState.FALSE);
         assertEquals("Note returned", privateGetNoteWithAttachment(
                 InstrumentationRegistry.getInstrumentation().getContext(), false), activity.getNote());
@@ -382,7 +382,7 @@ public class ConnectionPumpioTest {
 
         Note msg = connection.getNote("w9wME-JVQw2GQe6POK7FSQ").getNote();
         if (uniqueUid) {
-            msg = msg.copy(msg.oid + "_" + demoData.TESTRUN_UID);
+            msg = msg.copy(msg.oid + "_" + demoData.testRunUid);
         }
         assertNotNull("note returned", msg);
         assertEquals("has attachment", msg.attachments.size(), 1);

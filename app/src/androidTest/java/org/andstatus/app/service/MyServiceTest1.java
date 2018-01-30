@@ -30,8 +30,6 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 import org.junit.Test;
 
-import java.net.MalformedURLException;
-
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -118,7 +116,7 @@ public class MyServiceTest1 extends MyServiceTest {
 
         mService.setListenedCommand(CommandData.newAccountCommand(
                 CommandEnum.RATE_LIMIT_STATUS,
-                demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME)));
+                demoData.getMyAccount(demoData.gnusocialTestAccountName)));
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
 
@@ -139,7 +137,7 @@ public class MyServiceTest1 extends MyServiceTest {
 
         mService.setListenedCommand(CommandData.newAccountCommand(
                 CommandEnum.RATE_LIMIT_STATUS,
-                demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME)));
+                demoData.getMyAccount(demoData.gnusocialTestAccountName)));
         mService.getHttp().setRuntimeException(new SQLiteDiskIOException(method));
         long startCount = mService.executionStartCount;
         mService.sendListenedToCommand();

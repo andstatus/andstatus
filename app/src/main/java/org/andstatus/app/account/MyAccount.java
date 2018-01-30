@@ -453,12 +453,13 @@ public final class MyAccount implements Comparable<MyAccount> {
                 throw ce;
             }
             if (credentialsOfOtherAccount) {
-                MyLog.e(TAG, myContext.context().getText(R.string.error_credentials_of_other_user) + ": "
-                        + actor.getNamePreferablyWebFingerId());
-                throw new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_ACCOUNT, actor.getNamePreferablyWebFingerId());
+                MyLog.e(TAG, myContext.context().getText(R.string.error_credentials_of_other_user) + ": " + actor.getNamePreferablyWebFingerId());
+                throw new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_ACCOUNT,
+                        actor.getNamePreferablyWebFingerId());
             }
             if (errorSettingUsername) {
-                String msg = myContext.context().getText(R.string.error_set_username) + actor.getUsername();
+                String msg = myContext.context().getText(R.string.error_set_username)
+                        + " " + (actor == null ? "null" : actor.getUsername());
                 MyLog.e(TAG, msg);
                 throw new ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg);
             }

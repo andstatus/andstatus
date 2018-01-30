@@ -59,7 +59,7 @@ public class ConnectionGnuSocialTest {
                 org.andstatus.app.tests.R.raw.quitter_home);
         connection.getHttpMock().setResponse(jso);
 
-        String accountActorOid = demoData.GNUSOCIAL_TEST_ACCOUNT_ACTOR_OID;
+        String accountActorOid = demoData.gnusocialTestAccountActorOid;
         List<AActivity> timeline = connection.getTimeline(ApiRoutineEnum.PUBLIC_TIMELINE,
                 new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountActorOid);
         assertNotNull("timeline returned", timeline);
@@ -144,7 +144,7 @@ public class ConnectionGnuSocialTest {
         connection.getHttpMock().setResponse(jso);
         
         List<AActivity> timeline = connection.searchNotes(new TimelinePosition(""), TimelinePosition.EMPTY, 20,
-                demoData.GLOBAL_PUBLIC_NOTE_TEXT);
+                demoData.globalPublicNoteText);
         assertNotNull("timeline returned", timeline);
         int size = 4;
         assertEquals("Number of items in the Timeline", size, timeline.size());
@@ -156,7 +156,7 @@ public class ConnectionGnuSocialTest {
                 org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
         connection.getHttpMock().setResponse(jso);
         
-        AActivity activity = connection.updateNote("Test post note with media", "", "", demoData.LOCAL_IMAGE_TEST_URI);
+        AActivity activity = connection.updateNote("Test post note with media", "", "", demoData.localImageTestUri);
         activity.getNote().setPrivate(TriState.FALSE);
         assertEquals("Note returned", privateGetNoteWithAttachment(
                 InstrumentationRegistry.getInstrumentation().getContext(), false).getNote(), activity.getNote());
@@ -174,7 +174,7 @@ public class ConnectionGnuSocialTest {
         connection.getHttpMock().setResponse(jso);
         AActivity activity = connection.getNote(NOTE_OID);
         if (uniqueUid) {
-            activity.setNote(activity.getNote().copy(activity.getNote().oid + "_" + demoData.TESTRUN_UID));
+            activity.setNote(activity.getNote().copy(activity.getNote().oid + "_" + demoData.testRunUid));
         }
         assertNotNull("note returned", activity);
         assertEquals("conversationOid", "1956322", activity.getNote().conversationOid);

@@ -61,7 +61,7 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
         TestSuite.initializeWithData(this);
 
         ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(
-                MyContextHolder.get().persistentOrigins().fromName(demoData.GNUSOCIAL_TEST_ORIGIN_NAME));
+                MyContextHolder.get().persistentOrigins().fromName(demoData.gnusocialTestOriginName));
         assertTrue(ma.isValidAndSucceeded());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
@@ -73,12 +73,12 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
 
     @Test
     public void testGlobalSearchInOptionsMenu() throws InterruptedException {
-        oneSearchTest("testGlobalSearchInOptionsMenu", demoData.GLOBAL_PUBLIC_NOTE_TEXT, true);
+        oneSearchTest("testGlobalSearchInOptionsMenu", demoData.globalPublicNoteText, true);
     }
 
     @Test
     public void testSearch() throws InterruptedException {
-        oneSearchTest("testSearch", demoData.PUBLIC_NOTE_TEXT, false);
+        oneSearchTest("testSearch", demoData.publicNoteText, false);
     }
 
     private void oneSearchTest(String method, String noteText, boolean internetSearch) throws InterruptedException {

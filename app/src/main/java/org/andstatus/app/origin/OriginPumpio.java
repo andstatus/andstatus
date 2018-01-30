@@ -20,7 +20,9 @@ import android.support.annotation.StringRes;
 
 import org.andstatus.app.R;
 
-class OriginPumpio extends Origin {
+public class OriginPumpio extends Origin {
+    public static final String ACCOUNT_PREFIX = "acct:";
+
     @Override
     public int alternativeTermForResourceId(@StringRes int resId) {
         int resIdOut;

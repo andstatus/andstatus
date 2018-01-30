@@ -24,9 +24,9 @@ public class ConversationViewLoaderTest implements ProgressPublisher {
     public void setUp() throws Exception {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
-        ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
+        ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(ma.isValid());
-        selectedNoteId = MyQuery.oidToId(OidEnum.NOTE_OID, ma.getOriginId(), demoData.CONVERSATION_ENTRY_NOTE_OID);
+        selectedNoteId = MyQuery.oidToId(OidEnum.NOTE_OID, ma.getOriginId(), demoData.conversationEntryNoteOid);
         assertTrue("Selected note exists", selectedNoteId != 0);
         MyLog.i(this, "setUp ended");
     }

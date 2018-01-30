@@ -58,7 +58,7 @@ public class MyBackupAgentTest {
         PersistentAccounts accountsBefore = PersistentAccounts.newEmpty(MyContextHolder.get());
         accountsBefore.initialize();
         assertEquals("Compare Persistent accounts with copy", MyContextHolder.get().persistentAccounts(), accountsBefore);
-        compareOneAccount(MyContextHolder.get().persistentAccounts(), accountsBefore, demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        compareOneAccount(MyContextHolder.get().persistentAccounts(), accountsBefore, demoData.gnusocialTestAccountName);
         
         File outputFolder = MyContextHolder.get().context().getCacheDir();
         File dataFolder = testBackup(outputFolder);
@@ -71,7 +71,7 @@ public class MyBackupAgentTest {
         assertEquals("Number of persistent accounts", accountsBefore.size(), MyContextHolder.get().persistentAccounts().size());
         
         assertEquals("Persistent accounts", accountsBefore, MyContextHolder.get().persistentAccounts());
-        compareOneAccount(accountsBefore, MyContextHolder.get().persistentAccounts(), demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        compareOneAccount(accountsBefore, MyContextHolder.get().persistentAccounts(), demoData.gnusocialTestAccountName);
         demoData.assertConversations();
         TestSuite.initializeWithData(this);
 

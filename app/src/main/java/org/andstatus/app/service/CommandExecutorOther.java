@@ -191,7 +191,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 logConnectionException(e, method + "; " + MyQuery.noteInfoForLog(noteId));
             }
         }
-        if (noErrors()) {
+        if (noErrors() && activity != null) {
             if (!activity.type.equals(create ? ActivityType.LIKE : ActivityType.UNDO_LIKE)) {
                 /*
                  * yvolk: 2011-09-27 Twitter docs state that

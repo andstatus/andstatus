@@ -79,7 +79,7 @@ public class DemoNoteInserter {
                     + connection.usernameToNickname(username);
         } else {
             username = "actorOf" + origin.getName() + actorOid;
-            profileUrl = "https://" + demoData.GNUSOCIAL_TEST_ORIGIN_NAME
+            profileUrl = "https://" + demoData.gnusocialTestOriginName
                     + ".example.com/profiles/" + username;
         }
         actor.setUsername(username);
@@ -87,7 +87,7 @@ public class DemoNoteInserter {
         actor.setRealName("Real " + username);
         actor.setDescription("This is about " + username);
         actor.setHomepage("https://example.com/home/" + username + "/start/");
-        actor.location = "Faraway place #" + demoData.TESTRUN_UID;
+        actor.location = "Faraway place #" + demoData.testRunUid;
         actor.avatarUrl = actor.getHomepage() + "avatar.jpg";
         actor.bannerUrl = actor.getHomepage() + "banner.png";
         long rand = InstanceId.next();
@@ -100,9 +100,9 @@ public class DemoNoteInserter {
 
     private String nextActorUid() {
         if (origin.getOriginType() == OriginType.PUMPIO) {
-            return "acct:actorOf" + origin.getName() + demoData.TESTRUN_UID + InstanceId.next();
+            return "acct:actorOf" + origin.getName() + demoData.testRunUid + InstanceId.next();
         }
-        return String.valueOf(demoData.TESTRUN_UID) + InstanceId.next();
+        return String.valueOf(demoData.testRunUid) + InstanceId.next();
     }
 
     public AActivity buildActivity(Actor author, String body, AActivity inReplyToActivity, String noteOidIn,

@@ -38,14 +38,14 @@ public class PersistentAccountsTest {
     public void test() {
         PersistentAccounts accounts = MyContextHolder.get().persistentAccounts();
 
-        assertNotEquals(accounts.toString(), MyAccount.EMPTY, accounts.fromWebFingerId(demoData.PUMPIO_TEST_ACCOUNT_USERNAME));
-        assertNotEquals(accounts.toString(), MyAccount.EMPTY, accounts.fromWebFingerId(demoData.CONVERSATION_ACCOUNT2_USERNAME));
-        assertEquals(accounts.toString(), MyAccount.EMPTY, accounts.fromWebFingerId(demoData.CONVERSATION_AUTHOR_SECOND_USERNAME));
+        assertNotEquals(accounts.toString(), MyAccount.EMPTY, accounts.fromWebFingerId(demoData.pumpioTestAccountUsername));
+        assertNotEquals(accounts.toString(), MyAccount.EMPTY, accounts.fromWebFingerId(demoData.conversationAccount2Username));
+        assertEquals(accounts.toString(), MyAccount.EMPTY, accounts.fromWebFingerId(demoData.conversationAuthorSecondUsername));
 
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.CONVERSATION_ORIGIN_NAME);
-        assertEquals(demoData.CONVERSATION_ORIGIN_NAME, origin.getName());
+        Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.conversationOriginName);
+        assertEquals(demoData.conversationOriginName, origin.getName());
 
-        long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(), demoData.CONVERSATION_ACCOUNT2_ACTOR_OID);
+        long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(), demoData.conversationAccount2ActorOid);
         assertEquals(accounts.toString(), accounts.isMeOrMyFriend(actorId), true);
         assertEquals(accounts.toString(), accounts.isMeOrMyFriend(-1), false);
     }

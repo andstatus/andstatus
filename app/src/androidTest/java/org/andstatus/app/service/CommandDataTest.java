@@ -50,8 +50,8 @@ public class CommandDataTest {
         testQueueOneCommandData(commandData, time0);
 
         long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, MyContextHolder.get().persistentOrigins()
-                .fromName(demoData.CONVERSATION_ORIGIN_NAME).getId(),
-                demoData.CONVERSATION_ENTRY_NOTE_OID);
+                .fromName(demoData.conversationOriginName).getId(),
+                demoData.conversationEntryNoteOid);
         long downloadDataRowId = 23;
         commandData = CommandData.newFetchAttachment(noteId, downloadDataRowId);
         testQueueOneCommandData(commandData, time0);
@@ -118,7 +118,7 @@ public class CommandDataTest {
     @Test
     public void testPriority() {
         Queue<CommandData> queue = new PriorityBlockingQueue<>(100);
-        final MyAccount ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        final MyAccount ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
         queue.add(CommandData.newCommand(CommandEnum.GET_FRIENDS));
         queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.ACTOR, ma.getActorId(), ma.getOrigin()));
         queue.add(CommandData.newSearch(SearchObjects.NOTES, MyContextHolder.get(), ma.getOrigin(), "q1"));
@@ -157,10 +157,10 @@ public class CommandDataTest {
     }
 
     private void followUnfollowSummary(CommandEnum command) {
-        MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
+        MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(ma.isValid());
         long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOrigin().getId(),
-                demoData.CONVERSATION_AUTHOR_THIRD_ACTOR_OID);
+                demoData.conversationAuthorThirdActorOid);
         CommandData data = CommandData.newActorCommand(
                 command, null, demoData.getConversationMyAccount().getOrigin(), actorId, "");
         String summary = data.toCommandSummary(MyContextHolder.get());

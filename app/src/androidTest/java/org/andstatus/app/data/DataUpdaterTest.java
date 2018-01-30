@@ -36,6 +36,7 @@ import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.origin.OriginPumpio;
 import org.andstatus.app.service.AttachmentDownloaderTest;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -79,8 +80,8 @@ public class DataUpdaterTest {
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 CommandData.newAccountCommand(CommandEnum.EMPTY, ma));
         DataUpdater di = new DataUpdater(executionContext);
-        String username = "somebody" + demoData.TESTRUN_UID + "@identi.ca";
-        String actorOid = "acct:" + username;
+        String username = "somebody" + demoData.testRunUid + "@identi.ca";
+        String actorOid = OriginPumpio.ACCOUNT_PREFIX + username;
         Actor somebody = Actor.fromOriginAndActorOid(accountActor.origin, actorOid);
         somebody.setUsername(username);
         somebody.followedByMe = TriState.FALSE;
@@ -94,7 +95,7 @@ public class DataUpdaterTest {
         AActivity activity = AActivity.newPartialNote(accountActor, noteOid, System.currentTimeMillis() , DownloadStatus.LOADED);
         activity.setActor(somebody);
         Note note = activity.getNote();
-        note.setBody("The test note by Somebody at run " + demoData.TESTRUN_UID);
+        note.setBody("The test note by Somebody at run " + demoData.testRunUid);
         note.via = "MyCoolClient";
         note.url = "http://identi.ca/somebody/comment/dasdjfdaskdjlkewjz1EhSrTRB";
 
@@ -159,11 +160,11 @@ public class DataUpdaterTest {
         MyAccount ma = demoData.getConversationMyAccount();
         Actor accountActor = ma.getActor();
 
-        String noteOid = "https://pumpity.net/api/comment/sa23wdi78dhgjerdfddajDSQ-" + demoData.TESTRUN_UID;
+        String noteOid = "https://pumpity.net/api/comment/sa23wdi78dhgjerdfddajDSQ-" + demoData.testRunUid;
 
         String username = "t131t@pumpity.net";
-        Actor author = Actor.fromOriginAndActorOid(accountActor.origin, "acct:"
-                + username);
+        Actor author = Actor.fromOriginAndActorOid(accountActor.origin,
+                OriginPumpio.ACCOUNT_PREFIX + username);
         author.setUsername(username);
 
         AActivity activity = new DemoNoteInserter(accountActor).buildActivity(
@@ -195,12 +196,12 @@ public class DataUpdaterTest {
         Actor accountActor = ma.getActor();
 
         String authorUsername = "anybody@pumpity.net";
-        Actor author = Actor.fromOriginAndActorOid(accountActor.origin, "acct:"
-                + authorUsername);
+        Actor author = Actor.fromOriginAndActorOid(accountActor.origin,
+                OriginPumpio.ACCOUNT_PREFIX + authorUsername);
         author.setUsername(authorUsername);
 
         AActivity activity = AActivity.newPartialNote(accountActor,
-                "https://pumpity.net/api/comment/sdajklsdkiewwpdsldkfsdasdjWED" +  demoData.TESTRUN_UID,
+                "https://pumpity.net/api/comment/sdajklsdkiewwpdsldkfsdasdjWED" +  demoData.testRunUid,
                 13312697000L, DownloadStatus.LOADED);
         activity.setActor(author);
         Note note = activity.getNote();
@@ -208,7 +209,8 @@ public class DataUpdaterTest {
         note.via = "SomeOtherClient";
 
         String otherUsername = "firstreader@identi.ca";
-        Actor otherActor = Actor.fromOriginAndActorOid(accountActor.origin, "acct:" + otherUsername);
+        Actor otherActor = Actor.fromOriginAndActorOid(accountActor.origin,
+                OriginPumpio.ACCOUNT_PREFIX + otherUsername);
         otherActor.setUsername(otherUsername);
         AActivity likeActivity = AActivity.fromInner(otherActor, ActivityType.LIKE, activity);
 
@@ -284,11 +286,12 @@ public class DataUpdaterTest {
         Actor accountActor = ma.getActor();
 
         String authorUsername = "example@pumpity.net";
-        Actor author = Actor.fromOriginAndActorOid(accountActor.origin, "acct:" + authorUsername);
+        Actor author = Actor.fromOriginAndActorOid(accountActor.origin,
+                OriginPumpio.ACCOUNT_PREFIX + authorUsername);
         author.setUsername(authorUsername);
 
         AActivity activity = AActivity.newPartialNote(accountActor,
-                "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123" + iterationId + demoData.TESTRUN_UID,
+                "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123" + iterationId + demoData.testRunUid,
                 13312795000L, DownloadStatus.LOADED);
         activity.setActor(author);
         Note note = activity.getNote();
@@ -296,11 +299,11 @@ public class DataUpdaterTest {
         note.via = "UnknownClient";
         if (favorited) note.addFavoriteBy(accountActor, TriState.TRUE);
 
-        String inReplyToOid = "https://identi.ca/api/comment/dfjklzdfSf28skdkfgloxWB" + iterationId  + demoData.TESTRUN_UID;
+        String inReplyToOid = "https://identi.ca/api/comment/dfjklzdfSf28skdkfgloxWB" + iterationId  + demoData.testRunUid;
         AActivity inReplyTo = AActivity.newPartialNote(accountActor, inReplyToOid,
                 0, DownloadStatus.UNKNOWN);
         inReplyTo.setActor(Actor.fromOriginAndActorOid(accountActor.origin,
-                "irtUser" +  iterationId + demoData.TESTRUN_UID).setUsername("irt" + authorUsername +  iterationId));
+                "irtUser" +  iterationId + demoData.testRunUid).setUsername("irt" + authorUsername +  iterationId));
         note.setInReplyTo(inReplyTo);
 
         DataUpdater di = new DataUpdater(ma);
@@ -370,8 +373,8 @@ public class DataUpdaterTest {
         AActivity activity = AActivity.newPartialNote(accountActor, "", System.currentTimeMillis(), DownloadStatus.SENDING);
         activity.setActor(accountActor);
         Note note = activity.getNote();
-        note.setBody("Unsent note with an attachment " + demoData.TESTRUN_UID);
-        note.attachments.add(Attachment.fromUriAndContentType(demoData.LOCAL_IMAGE_TEST_URI,
+        note.setBody("Unsent note with an attachment " + demoData.testRunUid);
+        note.attachments.add(Attachment.fromUriAndContentType(demoData.localImageTestUri,
                 MyContentType.IMAGE));
         new DataUpdater(ma).onActivity(activity);
         assertNotEquals("Note added " + activity, 0, note.noteId);
@@ -387,12 +390,12 @@ public class DataUpdaterTest {
         DbUtils.waitMs(method, 1000);
 
         // Emulate receiving of note
-        final String oid = "sentMsgOid" + demoData.TESTRUN_UID;
+        final String oid = "sentMsgOid" + demoData.testRunUid;
         AActivity activity2 = AActivity.newPartialNote(accountActor, oid, System.currentTimeMillis(), DownloadStatus.LOADED);
         activity2.setActor(activity.getAuthor());
         Note note2 = activity2.getNote();
         note2.setBody("Just sent: " + note.getBody());
-        note2.attachments.add(Attachment.fromUriAndContentType(demoData.IMAGE1_URL, MyContentType.IMAGE));
+        note2.attachments.add(Attachment.fromUriAndContentType(demoData.image1Url, MyContentType.IMAGE));
         note2.noteId = note.noteId;
         new DataUpdater(ma).onActivity(activity2);
 
@@ -412,12 +415,12 @@ public class DataUpdaterTest {
 
     @Test
     public void testUsernameChanged() {
-        MyAccount ma = TestSuite.getMyContextForTest().persistentAccounts().fromAccountName(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        MyAccount ma = TestSuite.getMyContextForTest().persistentAccounts().fromAccountName(demoData.gnusocialTestAccountName);
         Actor accountActor = ma.getActor();
-        String username = "peter" + demoData.TESTRUN_UID;
-        Actor actor1 = new DemoNoteInserter(ma).buildActorFromOid("34804" + demoData.TESTRUN_UID);
+        String username = "peter" + demoData.testRunUid;
+        Actor actor1 = new DemoNoteInserter(ma).buildActorFromOid("34804" + demoData.testRunUid);
         actor1.setUsername(username);
-        actor1.setProfileUrl("https://" + demoData.GNUSOCIAL_TEST_ORIGIN_NAME + ".example.com/");
+        actor1.setProfileUrl("https://" + demoData.gnusocialTestOriginName + ".example.com/");
         
         DataUpdater di = new DataUpdater(ma);
         long actorId1 = di.onActivity(actor1.update(accountActor)).getObjActor().actorId;
@@ -443,7 +446,7 @@ public class DataUpdaterTest {
                 MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1));
 
         Actor actor2SameOldUsername = new DemoNoteInserter(ma).buildActorFromOid("34805"
-                + demoData.TESTRUN_UID);
+                + demoData.testRunUid);
         actor2SameOldUsername.setUsername(username);
         long actorId2 = di.onActivity(actor2SameOldUsername.update(accountActor)).getObjActor().actorId;
         assertTrue("Other Actor with the same Actor name as old name of Actor", actorId1 != actorId2);
@@ -451,9 +454,9 @@ public class DataUpdaterTest {
                 MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId2));
 
         Actor actor3SameNewUsername = new DemoNoteInserter(ma).buildActorFromOid("34806"
-                + demoData.TESTRUN_UID);
+                + demoData.testRunUid);
         actor3SameNewUsername.setUsername(actor1.getUsername());
-        actor3SameNewUsername.setProfileUrl("https://" + demoData.GNUSOCIAL_TEST_ORIGIN_NAME + ".other.example.com/");
+        actor3SameNewUsername.setProfileUrl("https://" + demoData.gnusocialTestOriginName + ".other.example.com/");
         long actorId3 = di.onActivity(actor3SameNewUsername.update(accountActor)).getObjActor().actorId;
         assertTrue("Actor added " + actor3SameNewUsername, actorId3 != 0);
         assertTrue("Other Actor with the same username as the new name of actor1, but different WebFingerId", actorId1 != actorId3);
@@ -463,8 +466,8 @@ public class DataUpdaterTest {
 
     @Test
     public void testInsertActor() {
-        MyAccount ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
-        Actor actor = new DemoNoteInserter(ma).buildActorFromOid("34807" + demoData.TESTRUN_UID);
+        MyAccount ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
+        Actor actor = new DemoNoteInserter(ma).buildActorFromOid("34807" + demoData.testRunUid);
         Actor accountActor = ma.getActor();
 
         DataUpdater di = new DataUpdater(ma);
@@ -507,7 +510,7 @@ public class DataUpdaterTest {
     @Test
     public void testReplyInBody() {
         MyAccount ma = demoData.getConversationMyAccount();
-        String buddyUsername = "buddy" +  demoData.TESTRUN_UID + "@example.com";
+        String buddyUsername = "buddy" +  demoData.testRunUid + "@example.com";
         String body = "@" + buddyUsername + " I'm replying to you in a note's body."
                 + " Hope you will see this as a real reply!";
         addOneNote4testReplyInBody(buddyUsername, body, true);
@@ -528,7 +531,7 @@ public class DataUpdaterTest {
         body = "<a href=\"http://example.com/a\">@" + buddyUsername + "</a>, this is an HTML <i>formatted</i> note";
         addOneNote4testReplyInBody(buddyUsername, body, true);
 
-        buddyUsername = demoData.CONVERSATION_AUTHOR_THIRD_USERNAME;
+        buddyUsername = demoData.conversationAuthorThirdUsername;
         body = "@" + buddyUsername + " I know you are already in our cache";
         addOneNote4testReplyInBody(buddyUsername, body, true);
     }
@@ -538,8 +541,8 @@ public class DataUpdaterTest {
         Actor accountActor = ma.getActor();
 
         DataUpdater di = new DataUpdater(ma);
-        String username = "somebody" + demoData.TESTRUN_UID + "@somewhere.net";
-        String actorOid = "acct:" + username;
+        String username = "somebody" + demoData.testRunUid + "@somewhere.net";
+        String actorOid = OriginPumpio.ACCOUNT_PREFIX + username;
         Actor somebody = Actor.fromOriginAndActorOid(accountActor.origin, actorOid);
         somebody.setUsername(username);
         somebody.setProfileUrl("https://somewhere.net/" + username);
@@ -572,11 +575,11 @@ public class DataUpdaterTest {
 
     @Test
     public void testMention() {
-        MyAccount ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
+        MyAccount ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
         Actor accountActor = ma.getActor();
-        MyAccount myMentionedAccount = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT2_NAME);
+        MyAccount myMentionedAccount = demoData.getMyAccount(demoData.gnusocialTestAccount2Name);
         Actor myMentionedUser = myMentionedAccount.getActor().setUsername(myMentionedAccount.getUsername());
-        Actor author1 = Actor.fromOriginAndActorOid(accountActor.origin, "sam" + demoData.TESTRUN_UID);
+        Actor author1 = Actor.fromOriginAndActorOid(accountActor.origin, "sam" + demoData.testRunUid);
         author1.setUsername("samBrook");
 
         AActivity activity1 = AActivity.newPartialNote(accountActor, String.valueOf(System.nanoTime()),

@@ -56,16 +56,16 @@ public class AvatarDownloaderTest {
 
     @Test
     public void testLoadPumpio() throws IOException {
-        ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
-        assertTrue(demoData.CONVERSATION_ACCOUNT_NAME + " exists", ma.isValid());
-        loadForOneMyAccount(demoData.CONVERSATION_ACCOUNT_AVATAR_URL);
+        ma = demoData.getMyAccount(demoData.conversationAccountName);
+        assertTrue(demoData.conversationAccountName + " exists", ma.isValid());
+        loadForOneMyAccount(demoData.conversationAccountAvatarUrl);
     }
 
     @Test
     public void testLoadBasicAuth() throws IOException {
-        ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
-        assertTrue(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
-        loadForOneMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL);
+        ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
+        assertTrue(demoData.gnusocialTestAccountName + " exists", ma.isValid());
+        loadForOneMyAccount(demoData.gnusocialTestAccountAvatarUrl);
     }
     
     private void loadForOneMyAccount(String urlStringInitial) throws IOException {
@@ -115,11 +115,11 @@ public class AvatarDownloaderTest {
 
     @Test
     public void testDeletedFile() throws IOException {
-        ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
+        ma = demoData.getMyAccount(demoData.conversationAccountName);
         
-        changeMaAvatarUrl(demoData.CONVERSATION_ACCOUNT_AVATAR_URL);
+        changeMaAvatarUrl(demoData.conversationAccountAvatarUrl);
         String urlString = MyQuery.actorIdToStringColumnValue(ActorTable.AVATAR_URL, ma.getActorId());
-        assertEquals(demoData.CONVERSATION_ACCOUNT_AVATAR_URL, urlString);
+        assertEquals(demoData.conversationAccountAvatarUrl, urlString);
         
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
         DownloadData data = AvatarData.getForActor(ma.getActorId());

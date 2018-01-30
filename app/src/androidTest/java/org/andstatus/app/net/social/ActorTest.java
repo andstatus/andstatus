@@ -37,19 +37,19 @@ public class ActorTest {
 
     @Test
     public void testFromBodyText1() {
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.GNUSOCIAL_TEST_ORIGIN_NAME);
+        Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.gnusocialTestOriginName);
         String webFingerId2 = "anotherUser@somedomain.org";
         String shortUsername3 = "shortusername";
-        String body = "@" + demoData.GNUSOCIAL_TEST_ACCOUNT_USERNAME
-                + " @" + demoData.GNUSOCIAL_TEST_ACCOUNT2_USERNAME
+        String body = "@" + demoData.gnusocialTestAccountUsername
+                + " @" + demoData.gnusocialTestAccount2Username
                 + " Please take this into account\n@" + webFingerId2
-                + " @" + demoData.GNUSOCIAL_TEST_ACCOUNT2_USERNAME
+                + " @" + demoData.gnusocialTestAccount2Username
                 + " And let me mention: @" + shortUsername3;
         List<Actor> actors = Actor.fromOriginAndActorOid(origin, "").extractActorsFromBodyText(body, false);
         String msgLog = body + " ->\n" + actors;
         assertEquals(msgLog, 4, actors.size());
-        assertEquals(msgLog, demoData.GNUSOCIAL_TEST_ACCOUNT_USERNAME, actors.get(0).getUsername());
-        assertEquals(msgLog, demoData.GNUSOCIAL_TEST_ACCOUNT2_USERNAME, actors.get(1).getUsername());
+        assertEquals(msgLog, demoData.gnusocialTestAccountUsername, actors.get(0).getUsername());
+        assertEquals(msgLog, demoData.gnusocialTestAccount2Username, actors.get(1).getUsername());
         assertEquals(msgLog, webFingerId2, actors.get(2).getWebFingerId());
         assertEquals(msgLog, shortUsername3, actors.get(3).getUsername());
     }
@@ -61,7 +61,7 @@ public class ActorTest {
         final String SKIPPED_USERNAME3 = "kauiwoeieurt";
         final String USERNAME4 = "djjerekwerwewer";
 
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.TWITTER_TEST_ORIGIN_NAME);
+        Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.twitterTestOriginName);
         String body = "Starting post @ #ThisIsTagofsome-event-and entertainment"
                 + " by @" + USERNAME1 + " @@" + SKIPPED_USERNAME2 + " @#" + SKIPPED_USERNAME3
                 + " &amp; @" + USERNAME4

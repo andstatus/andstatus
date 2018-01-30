@@ -120,10 +120,10 @@ public class OriginTest {
     public void testPermalink() {
         Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
         assertEquals(origin.getOriginType(), OriginType.TWITTER);
-        String body = "Posting to Twitter " + demoData.TESTRUN_UID;
-        String noteOid = "2578909845023" + demoData.TESTRUN_UID;
+        String body = "Posting to Twitter " + demoData.testRunUid;
+        String noteOid = "2578909845023" + demoData.testRunUid;
         AActivity activity = DemoNoteInserter.addNoteForAccount(
-                demoData.getMyAccount(demoData.TWITTER_TEST_ACCOUNT_NAME),
+                demoData.getMyAccount(demoData.twitterTestAccountName),
                 body, noteOid, DownloadStatus.LOADED);
         final long noteId = activity.getNote().noteId;
         assertNotEquals(0, noteId);
@@ -162,7 +162,7 @@ public class OriginTest {
 
     @Test
     public void testUsernameIsValid() {
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.GNUSOCIAL_TEST_ORIGIN_NAME);
+        Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.gnusocialTestOriginName);
         checkUsernameIsValid(origin, "", false);
         checkUsernameIsValid(origin, "someUser.", false);
         checkUsernameIsValid(origin, "someUser ", false);
@@ -171,7 +171,7 @@ public class OriginTest {
         checkUsernameIsValid(origin, "some.user/GnuSocial", false);
         checkUsernameIsValid(origin, "some@user", false);
 
-        origin = MyContextHolder.get().persistentOrigins().fromName(demoData.PUMPIO_ORIGIN_NAME);
+        origin = MyContextHolder.get().persistentOrigins().fromName(demoData.pumpioOriginName);
         checkUsernameIsValid(origin, "", false);
         checkUsernameIsValid(origin, "someUser.", false);
         checkUsernameIsValid(origin, "someUser ", false);

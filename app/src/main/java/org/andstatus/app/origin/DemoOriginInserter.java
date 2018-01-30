@@ -25,22 +25,22 @@ public final class DemoOriginInserter {
 
     public void insert() {
         demoData.checkDataPath();
-        createOneOrigin(OriginType.TWITTER, demoData.TWITTER_TEST_ORIGIN_NAME,
-                demoData.getTestOriginHost(demoData.TWITTER_TEST_ORIGIN_NAME),
+        createOneOrigin(OriginType.TWITTER, demoData.twitterTestOriginName,
+                demoData.getTestOriginHost(demoData.twitterTestOriginName),
                 true, SslModeEnum.SECURE, false, true, true);
         createOneOrigin(OriginType.PUMPIO,
-                demoData.PUMPIO_ORIGIN_NAME,
-                demoData.getTestOriginHost(demoData.PUMPIO_ORIGIN_NAME),
+                demoData.pumpioOriginName,
+                demoData.getTestOriginHost(demoData.pumpioOriginName),
                 true, SslModeEnum.SECURE, true, true, true);
-        createOneOrigin(OriginType.GNUSOCIAL, demoData.GNUSOCIAL_TEST_ORIGIN_NAME,
-                demoData.getTestOriginHost(demoData.GNUSOCIAL_TEST_ORIGIN_NAME),
+        createOneOrigin(OriginType.GNUSOCIAL, demoData.gnusocialTestOriginName,
+                demoData.getTestOriginHost(demoData.gnusocialTestOriginName),
                 true, SslModeEnum.SECURE, true, true, true);
-        String additionalOriginName = demoData.GNUSOCIAL_TEST_ORIGIN_NAME + "ins";
+        String additionalOriginName = demoData.gnusocialTestOriginName + "ins";
         createOneOrigin(OriginType.GNUSOCIAL, additionalOriginName,
                 demoData.getTestOriginHost(additionalOriginName),
                 true, SslModeEnum.INSECURE, true, false, true);
-        createOneOrigin(OriginType.MASTODON, demoData.MASTODON_TEST_ORIGIN_NAME,
-                demoData.getTestOriginHost(demoData.MASTODON_TEST_ORIGIN_NAME),
+        createOneOrigin(OriginType.MASTODON, demoData.mastodonTestOriginName,
+                demoData.getTestOriginHost(demoData.mastodonTestOriginName),
                 true, SslModeEnum.SECURE, true, true, true);
         myContext.persistentOrigins().initialize();
     }
@@ -103,7 +103,7 @@ public final class DemoOriginInserter {
         final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
         final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());
         if (connectionData.originUrl == null) {
-            connectionData.originUrl = UrlUtils.fromString("https://" + demoData.PUMPIO_MAIN_HOST);
+            connectionData.originUrl = UrlUtils.fromString("https://" + demoData.pumpioMainHost);
         }
         OAuthClientKeys keys1 = OAuthClientKeys.fromConnectionData(connectionData);
         if (!keys1.areKeysPresent()) {

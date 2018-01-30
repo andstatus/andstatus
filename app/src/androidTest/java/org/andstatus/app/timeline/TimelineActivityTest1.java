@@ -66,7 +66,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
+        ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 

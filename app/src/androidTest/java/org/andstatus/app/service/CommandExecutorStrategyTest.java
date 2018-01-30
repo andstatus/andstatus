@@ -57,7 +57,7 @@ public class CommandExecutorStrategyTest {
         MyContextHolder.get().persistentAccounts().initialize();
         MyContextHolder.get().persistentTimelines().initialize();
         ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(
-                MyContextHolder.get().persistentOrigins().fromName(demoData.GNUSOCIAL_TEST_ORIGIN_NAME));
+                MyContextHolder.get().persistentOrigins().fromName(demoData.gnusocialTestOriginName));
         assertTrue(ma.toString(), ma.isValidAndSucceeded());
         httpConnectionMock = ma.getConnection().getHttpMock();
     }
@@ -76,17 +76,17 @@ public class CommandExecutorStrategyTest {
     @Test
     public void testSearch() {
         CommandData commandData = CommandData.newSearch(SearchObjects.NOTES,
-                MyContextHolder.get(), null, demoData.GLOBAL_PUBLIC_NOTE_TEXT);
+                MyContextHolder.get(), null, demoData.globalPublicNoteText);
         CommandExecutorStrategy strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(CommandExecutorStrategy.class, strategy.getClass());
 
         commandData = CommandData.newSearch(SearchObjects.NOTES,
-                MyContextHolder.get(), ma.getOrigin(), demoData.GLOBAL_PUBLIC_NOTE_TEXT);
+                MyContextHolder.get(), ma.getOrigin(), demoData.globalPublicNoteText);
         strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(TimelineDownloaderOther.class, strategy.getClass());
         strategy.execute();
         assertTrue("Requested '" + Arrays.toString(httpConnectionMock.getResults().toArray()) + "'",
-                httpConnectionMock.getResults().get(0).getUrl().contains(demoData.GLOBAL_PUBLIC_NOTE_TEXT) );
+                httpConnectionMock.getResults().get(0).getUrl().contains(demoData.globalPublicNoteText) );
     }
 
     @Test
@@ -138,7 +138,7 @@ public class CommandExecutorStrategyTest {
         httpConnectionMock.setException(null);
         commandData = CommandData.newItemCommand(
                 CommandEnum.DELETE_NOTE,
-                demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME),
+                demoData.getMyAccount(demoData.gnusocialTestAccountName),
                 noteId);
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertFalse(commandData.toString(), commandData.getResult().hasError());
@@ -146,7 +146,7 @@ public class CommandExecutorStrategyTest {
         final long INEXISTENT_MSG_ID = -1;
         commandData = CommandData.newItemCommand(
                 CommandEnum.DELETE_NOTE,
-                demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME),
+                demoData.getMyAccount(demoData.gnusocialTestAccountName),
                 INEXISTENT_MSG_ID);
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertFalse(commandData.toString(), commandData.getResult().hasError());
@@ -169,7 +169,7 @@ public class CommandExecutorStrategyTest {
         TestSuite.setHttpConnectionMockInstance(http);
         CommandData commandData = CommandData.newItemCommand(
                 CommandEnum.GET_OPEN_INSTANCES,
-                demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME),
+                demoData.getMyAccount(demoData.gnusocialTestAccountName),
                 OriginType.GNUSOCIAL.getId());
         DiscoveredOrigins.clear();
         CommandExecutorStrategy.executeCommand(commandData, null);

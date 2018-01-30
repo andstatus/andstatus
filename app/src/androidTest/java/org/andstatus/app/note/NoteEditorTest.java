@@ -82,7 +82,7 @@ public class NoteEditorTest extends TimelineActivityTest {
             SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID, 0);
         }
 
-        final MyAccount ma = demoData.getMyAccount(demoData.CONVERSATION_ACCOUNT_NAME);
+        final MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(ma.isValid());
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
 
@@ -95,11 +95,11 @@ public class NoteEditorTest extends TimelineActivityTest {
     private NoteEditorData getStaticData(MyAccount ma) {
         return NoteEditorData.newEmpty(ma)
                 .setInReplyToNoteId(MyQuery.oidToId(OidEnum.NOTE_OID, ma.getOrigin().getId(),
-                        demoData.CONVERSATION_ENTRY_NOTE_OID))
+                        demoData.conversationEntryNoteOid))
                 .addRecipientId(MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOrigin().getId(),
-                        demoData.CONVERSATION_ENTRY_AUTHOR_OID))
+                        demoData.conversationEntryAuthorOid))
                 .addMentionsToText()
-                .setBody("Some static text " + demoData.TESTRUN_UID);
+                .setBody("Some static text " + demoData.testRunUid);
     }
 
     @Test
@@ -189,7 +189,7 @@ public class NoteEditorTest extends TimelineActivityTest {
         ActivityTestHelper.waitViewVisible(method + "; Editor appeared", editorView);
         assertTextCleared();
 
-        String body = "Note with attachment " + demoData.TESTRUN_UID;
+        String body = "Note with attachment " + demoData.testRunUid;
         TestSuite.waitForIdleSync();
         onView(withId(R.id.noteBodyEditText)).perform(new TypeTextAction(body));
         TestSuite.waitForIdleSync();
@@ -215,7 +215,7 @@ public class NoteEditorTest extends TimelineActivityTest {
 
         MyLog.i(method, "Callback from a selector");
         Intent data = new Intent();
-        data.setData(demoData.LOCAL_IMAGE_TEST_URI2);
+        data.setData(demoData.localImageTestUri2);
         getActivity().runOnUiThread(() -> {
             getActivity().onActivityResult(ActivityRequestCode.ATTACH.id, Activity.RESULT_OK, data);
         });
@@ -224,14 +224,14 @@ public class NoteEditorTest extends TimelineActivityTest {
         for (int attempt=0; attempt < 4; attempt++) {
             ActivityTestHelper.waitViewVisible(method, editorView);
             // Due to a race the editor may open before this change first.
-            if (demoData.LOCAL_IMAGE_TEST_URI2.equals(editor.getData().getMediaUri())) {
+            if (demoData.localImageTestUri2.equals(editor.getData().getMediaUri())) {
                 break;
             }
             if (DbUtils.waitMs(method, 2000)) {
                 break;
             }
         }
-        assertEquals("Image attached", demoData.LOCAL_IMAGE_TEST_URI2, editor.getData().getMediaUri());
+        assertEquals("Image attached", demoData.localImageTestUri2, editor.getData().getMediaUri());
         onView(withId(R.id.noteBodyEditText)).check(matches(withText(body + " ")));
         helper.clickMenuItem(method + " clicker save draft", R.id.saveDraftButton);
 

@@ -50,8 +50,8 @@ public class AttachmentDownloaderTest {
     public void setUp() throws Exception {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
-        ma = demoData.getMyAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME);
-        assertTrue(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma.isValid());
+        ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
+        assertTrue(demoData.gnusocialTestAccountName + " exists", ma.isValid());
     }
 
     @Test

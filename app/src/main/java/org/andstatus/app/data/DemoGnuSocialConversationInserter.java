@@ -50,9 +50,9 @@ public class DemoGnuSocialConversationInserter {
     private void mySetup() {
         iteration = iterationCounter.incrementAndGet();
         conversationOid = Long.toString(MyLog.uniqueCurrentTimeMS());
-        origin = MyContextHolder.get().persistentOrigins().fromName(demoData.GNUSOCIAL_TEST_ORIGIN_NAME);
-        assertTrue(demoData.GNUSOCIAL_TEST_ORIGIN_NAME + " exists", origin.isValid());
-        accountActor = MyContextHolder.get().persistentAccounts().fromAccountName(demoData.GNUSOCIAL_TEST_ACCOUNT_NAME)
+        origin = MyContextHolder.get().persistentOrigins().fromName(demoData.gnusocialTestOriginName);
+        assertTrue(demoData.gnusocialTestOriginName + " exists", origin.isValid());
+        accountActor = MyContextHolder.get().persistentAccounts().fromAccountName(demoData.gnusocialTestAccountName)
                 .getActor();
         assertFalse( "Account actor is not defined " + accountActor,
                 accountActor.isEmpty() || accountActor.isPartiallyDefined());
@@ -80,7 +80,7 @@ public class DemoGnuSocialConversationInserter {
         addActivity(reply1);
         addActivity(reply2);
 
-        AActivity reply4 = buildActivity(author4, "Reply 4 to Reply 1, " + demoData.PUBLIC_NOTE_TEXT + " other author", reply1, null);
+        AActivity reply4 = buildActivity(author4, "Reply 4 to Reply 1, " + demoData.publicNoteText + " other author", reply1, null);
         addActivity(reply4);
         DemoNoteInserter.increaseUpdateDate(reply4);
         addPrivateNote(reply4, TriState.TRUE);
@@ -89,7 +89,7 @@ public class DemoGnuSocialConversationInserter {
         addActivity(buildActivity(author3, "Reply 6 to Reply 4 - the second", reply4, null));
 
         AActivity reply7 = buildActivity(author1, "Reply 7 to Reply 2 is about "
-        + demoData.PUBLIC_NOTE_TEXT + " and something else", reply2, null);
+        + demoData.publicNoteText + " and something else", reply2, null);
         addPrivateNote(reply7, TriState.FALSE);
         
         AActivity reply8 = buildActivity(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
@@ -97,7 +97,7 @@ public class DemoGnuSocialConversationInserter {
         addActivity(reply9);
         AActivity reply10 = buildActivity(author3, "Reply 10 to Reply 8", reply8, null);
         addActivity(reply10);
-        AActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7 with " + demoData.GLOBAL_PUBLIC_NOTE_TEXT + " text", reply7, null);
+        AActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7 with " + demoData.globalPublicNoteText + " text", reply7, null);
         addPrivateNote(reply11, TriState.FALSE);
 
         AActivity reply12 = buildActivity(author2, "Reply 12 to Reply 7 reblogged by author1", reply7, null);

@@ -36,6 +36,7 @@ import org.andstatus.app.net.social.RateLimitStatus;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.origin.OriginConnectionData;
+import org.andstatus.app.origin.OriginPumpio;
 import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
@@ -228,7 +229,7 @@ public class ConnectionPumpio extends Connection {
         String objectType = "";
         if (oid.contains("/comment/")) {
             objectType = "comment";
-        } else if (oid.startsWith("acct:")) {
+        } else if (oid.startsWith(OriginPumpio.ACCOUNT_PREFIX)) {
             objectType = "person";
         } else if (oid.contains("/note/")) {
             objectType = "note";

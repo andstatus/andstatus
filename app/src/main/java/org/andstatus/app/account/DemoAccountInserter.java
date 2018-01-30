@@ -52,20 +52,20 @@ public class DemoAccountInserter {
     }
 
     public void insert() {
-        addAccount(demoData.PUMPIO_TEST_ACCOUNT_ACTOR_OID, demoData.PUMPIO_TEST_ACCOUNT_NAME,
+        addAccount(demoData.pumpioTestAccountActorOid, demoData.pumpioTestAccountName,
                 "", OriginType.PUMPIO);
-        addAccount(demoData.TWITTER_TEST_ACCOUNT_ACTOR_OID, demoData.TWITTER_TEST_ACCOUNT_NAME,
+        addAccount(demoData.twitterTestAccountActorOid, demoData.twitterTestAccountName,
                 "", OriginType.TWITTER);
-        addAccount(demoData.GNUSOCIAL_TEST_ACCOUNT_ACTOR_OID, demoData.GNUSOCIAL_TEST_ACCOUNT_NAME,
-                demoData.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL, OriginType.GNUSOCIAL);
-        addAccount(demoData.GNUSOCIAL_TEST_ACCOUNT2_ACTOR_OID, demoData.GNUSOCIAL_TEST_ACCOUNT2_NAME,
+        addAccount(demoData.gnusocialTestAccountActorOid, demoData.gnusocialTestAccountName,
+                demoData.gnusocialTestAccountAvatarUrl, OriginType.GNUSOCIAL);
+        addAccount(demoData.gnusocialTestAccount2ActorOid, demoData.gnusocialTestAccount2Name,
                 "", OriginType.GNUSOCIAL);
-        addAccount(demoData.MASTODON_TEST_ACCOUNT_ACTOR_OID, demoData.MASTODON_TEST_ACCOUNT_NAME,
-                demoData.GNUSOCIAL_TEST_ACCOUNT_AVATAR_URL, OriginType.MASTODON);
-        addAccount(demoData.CONVERSATION_ACCOUNT_ACTOR_OID, demoData.CONVERSATION_ACCOUNT_NAME,
-                demoData.CONVERSATION_ACCOUNT_AVATAR_URL, demoData.CONVERSATION_ORIGIN_TYPE);
-        addAccount(demoData.CONVERSATION_ACCOUNT2_ACTOR_OID, demoData.CONVERSATION_ACCOUNT2_NAME,
-                "", demoData.CONVERSATION_ORIGIN_TYPE);
+        addAccount(demoData.mastodonTestAccountActorOid, demoData.mastodonTestAccountName,
+                demoData.gnusocialTestAccountAvatarUrl, OriginType.MASTODON);
+        addAccount(demoData.conversationAccountActorOid, demoData.conversationAccountName,
+                demoData.conversationAccountAvatarUrl, demoData.conversationOriginType);
+        addAccount(demoData.conversationAccount2ActorOid, demoData.conversationAccount2Name,
+                "", demoData.conversationOriginType);
     }
 
     private MyAccount addAccount(String actorOid, String accountNameString, String avatarUrl, OriginType originType) {

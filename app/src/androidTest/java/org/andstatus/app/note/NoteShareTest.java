@@ -47,10 +47,10 @@ public class NoteShareTest {
     public void testShareHtml() throws Exception {
         new HtmlContentInserter().insertHtml();
         
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.CONVERSATION_ORIGIN_NAME);
-        assertTrue(demoData.CONVERSATION_ORIGIN_NAME + " exists", origin != null);
-        long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), demoData.HTML_NOTE_OID);
-        assertTrue("origin=" + origin.getId() + "; oid=" + demoData.HTML_NOTE_OID, noteId != 0);
+        Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.conversationOriginName);
+        assertTrue(demoData.conversationOriginName + " exists", origin != null);
+        long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), demoData.htmlNoteOid);
+        assertTrue("origin=" + origin.getId() + "; oid=" + demoData.htmlNoteOid, noteId != 0);
         NoteShare noteShare = new NoteShare(origin, noteId, null);
         Intent intent = noteShare.intentToViewAndShare(true);
         assertTrue(intent.getExtras().containsKey(Intent.EXTRA_TEXT));
@@ -67,10 +67,10 @@ public class NoteShareTest {
 
     @Test
     public void testSharePlainText() {
-        String body = "Posting as a plain Text " + demoData.TESTRUN_UID;
-        final MyAccount myAccount = demoData.getMyAccount(demoData.TWITTER_TEST_ACCOUNT_NAME);
+        String body = "Posting as a plain Text " + demoData.testRunUid;
+        final MyAccount myAccount = demoData.getMyAccount(demoData.twitterTestAccountName);
         AActivity activity = DemoNoteInserter.addNoteForAccount(myAccount, body,
-                demoData.PLAIN_TEXT_NOTE_OID, DownloadStatus.LOADED);
+                demoData.plainTextNoteOid, DownloadStatus.LOADED);
         NoteShare noteShare = new NoteShare(myAccount.getOrigin(), activity.getNote().noteId, null);
         Intent intent = noteShare.intentToViewAndShare(true);
         assertTrue(intent.getExtras().containsKey(Intent.EXTRA_TEXT));
