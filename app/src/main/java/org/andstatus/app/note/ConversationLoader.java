@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2013-2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +23,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.list.SyncLoader;
@@ -38,7 +39,6 @@ import org.andstatus.app.util.MyLog;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +52,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
     private final long selectedNoteId;
     private boolean sync = false;
     private boolean conversationSyncRequested = false;
-    protected boolean mAllowLoadingFromInternet = false;
+    boolean mAllowLoadingFromInternet = false;
     private final ReplyLevelComparator<T> replyLevelComparator = new ReplyLevelComparator<>();
     private final T tFactory;
 
@@ -66,7 +66,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
         this.myContext = myContext;
         this.ma = ma;
         this.selectedNoteId = selectedNoteId;
-        this.sync = sync;
+        this.sync = sync || MyPreferences.isSyncWhileUsingApplicationEnabled();
     }
     
     @Override
@@ -80,7 +80,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
         }
         load2(newONote(selectedNoteId));
         addMissedFromCache();
-        Collections.sort(items, replyLevelComparator);
+        items.sort(replyLevelComparator);
         enumerateNotes();
     }
 
