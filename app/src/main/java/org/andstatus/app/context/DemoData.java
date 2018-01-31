@@ -50,6 +50,7 @@ import static org.junit.Assert.fail;
 public final class DemoData {
     public static volatile DemoData demoData = new DemoData();
     private static final String TAG = DemoData.class.getSimpleName();
+    private static final String TAG_ASYNC = TAG + "Async";
     private static final String HTTP = "http://";
 
     public final String testRunUid = String.valueOf(System.currentTimeMillis());
@@ -136,15 +137,12 @@ public final class DemoData {
             boolean completedWork = asyncTask.completedBackgroundWork();
             MyLog.v(method, (completedWork ? "Task completed " : "Waiting for task completion ") + count + " "
                     + asyncTask.getStatus());
-            if (completedWork) {
+            if (completedWork || DbUtils.waitMs(method, 5000)) {
                 break;
             }
             count--;
-            if (DbUtils.waitMs(method, 5000)) {
-                break;
-            }
         }
-        assertEquals("Demo data inserters failed to complete, count=" + count + ", status=" + asyncTask.getStatus()
+        assertEquals("Demo data creation failed, count=" + count + ", status=" + asyncTask.getStatus()
                 + ", " + asyncTask.toString(), true, asyncTask.completedBackgroundWork());
         assertTrue("Error during Demo data creation: " + asyncTask.getFirstError(), asyncTask.getFirstError().isEmpty());
         MyLog.v(TAG, method + ": ended");
@@ -157,15 +155,15 @@ public final class DemoData {
                 = new MyAsyncTask<Void, Void, Void>(method, MyAsyncTask.PoolEnum.QUICK_UI) {
             @Override
             protected Void doInBackground2(Void... params) {
-                MyLog.i(TAG + "Async", method + ": started");
+                MyLog.i(TAG_ASYNC, method + ": started");
                 if (progressCallback != null) {
-                    DbUtils.waitMs(TAG, 3000);
+                    DbUtils.waitMs(TAG_ASYNC, 3000);
                     progressCallback.onProgressMessage("Generating demo data...");
-                    DbUtils.waitMs(TAG, 1000);
+                    DbUtils.waitMs(TAG_ASYNC, 1000);
                 }
-                MyLog.v(TAG + "Async", "Before initialize 1");
+                MyLog.v(TAG_ASYNC, "Before initialize 1");
                 MyContextHolder.initialize(myContext.context(), method);
-                MyLog.v(TAG + "Async", "After initialize 1");
+                MyLog.v(TAG_ASYNC, "After initialize 1");
                 MyServiceManager.setServiceUnavailable();
                 DemoOriginInserter originInserter = new DemoOriginInserter(myContext);
                 originInserter.insert();
@@ -175,13 +173,13 @@ public final class DemoData {
 
                 MyPreferences.onPreferencesChanged();
                 MyContextHolder.setExpiredIfConfigChanged();
-                MyLog.v(TAG + "Async", "Before initialize 2");
+                MyLog.v(TAG_ASYNC, "Before initialize 2");
                 MyContextHolder.initialize(myContext.context(), method);
-                MyLog.v(TAG + "Async", "After initialize 2");
+                MyLog.v(TAG_ASYNC, "After initialize 2");
                 MyServiceManager.setServiceUnavailable();
                 if (progressCallback != null) {
                     progressCallback.onProgressMessage("Demo accounts added...");
-                    DbUtils.waitMs(TAG, 1000);
+                    DbUtils.waitMs(TAG_ASYNC, 1000);
                 }
                 assertTrue("Context is not ready", MyContextHolder.get().isReady());
                 checkDataPath();
@@ -194,7 +192,7 @@ public final class DemoData {
                 new DemoGnuSocialConversationInserter().insertConversation();
                 if (progressCallback != null) {
                     progressCallback.onProgressMessage("Demo notes added...");
-                    DbUtils.waitMs(TAG, 1000);
+                    DbUtils.waitMs(TAG_ASYNC, 1000);
                 }
                 if (MyContextHolder.get().persistentAccounts().size() == 0) {
                     fail("No persistent accounts");
@@ -205,15 +203,15 @@ public final class DemoData {
                         MyContextHolder.get().persistentAccounts().getCurrentAccount().getOrigin()).get(0);
                 assertThat(defaultTimeline.getTimelineType(), is(TimelineType.EVERYTHING));
                 MyContextHolder.get().persistentTimelines().setDefault(defaultTimeline);
-                MyLog.v(TAG + "Async", "Before initialize 3");
+                MyLog.v(TAG_ASYNC, "Before initialize 3");
                 MyContextHolder.initialize(myContext.context(), method);
                 assertConversations();
-                MyLog.v(TAG + "Async", "After initialize 3");
+                MyLog.v(TAG_ASYNC, "After initialize 3");
                 if (progressCallback != null) {
                     progressCallback.onProgressMessage("Demo data is ready");
-                    DbUtils.waitMs(TAG, 1000);
+                    DbUtils.waitMs(TAG_ASYNC, 1000);
                 }
-                MyLog.i(TAG + "Async", method + ": ended");
+                MyLog.i(TAG_ASYNC, method + ": ended");
                 return null;
             }
 
