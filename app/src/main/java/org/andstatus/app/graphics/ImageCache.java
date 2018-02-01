@@ -124,11 +124,9 @@ public class ImageCache extends LruCache<String, CachedImage> {
         } else if (brokenBitmaps.contains(path)) {
             hits.incrementAndGet();
             return CachedImage.BROKEN;
-        } else if (!(new File(path)).exists()) {
-            misses.incrementAndGet();
         } else {
             misses.incrementAndGet();
-            if (!fromCacheOnly) {
+            if (!fromCacheOnly && (new File(path)).exists()) {
                 image = loadImage(objTag, imageId, path);
                 if (image != null) {
                     if (currentCacheSize > 0) {
