@@ -451,7 +451,7 @@ public class MyLog {
     }
 
     /** Strips value from leading and trailing commas */
-    public static String formatKeyValue(String key, String value) {
+    public static String formatKeyValue(Object key, String value) {
         String out = "";
         if (!TextUtils.isEmpty(value)) {
             out = value.trim();
@@ -463,7 +463,7 @@ public class MyLog {
                 out = out.substring(0, ind);
             }
         }
-        return key + ":{" + out + "}";
+        return objToTag(key) + ":{" + out + "}";
     }
 
     public static void onSendingNoteStart() {

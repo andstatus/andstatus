@@ -86,11 +86,10 @@ public class QueueViewer extends LoadableListActivity {
                 return true;
             case R.id.menuItemResend:
                 queueData.commandData.resetRetries();
-                queueData.commandData.setManuallyLaunched(true);
-                MyServiceManager.sendForegroundCommand(queueData.commandData);
+                MyServiceManager.sendManualForegroundCommand(queueData.commandData);
                 return true;
             case R.id.menuItemDelete:
-                MyServiceManager.sendForegroundCommand(
+                MyServiceManager.sendManualForegroundCommand(
                         CommandData.newItemCommand(
                                 CommandEnum.DELETE_COMMAND,
                                 null,

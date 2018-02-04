@@ -3,20 +3,23 @@ package org.andstatus.app.service;
 import android.support.annotation.NonNull;
 
 public enum QueueType {
-    CURRENT("current", "C", true),
-    RETRY("retry", "R", true),
-    ERROR("error", "E", false),
-    TEST("test", "T", false),
-    UNKNOWN("unknown", "U", false);
+    CURRENT("current", "C", true, true),
+    RETRY("retry", "R", true, true),
+    ERROR("error", "E", false, true),
+    TEST("test", "T", false, true),
+    PRE("pre", "P", true, false),
+    UNKNOWN("unknown", "U", false, false);
 
-    private String code;
-    private String acronym;
-    private boolean executable;
+    final private String code;
+    final private String acronym;
+    final private boolean executable;
+    public final boolean createQueue;
 
-    QueueType(String code, String acronym, boolean executable) {
+    QueueType(String code, String acronym, boolean executable, boolean createQueue) {
         this.code = code;
         this.acronym = acronym;
         this.executable = executable;
+        this.createQueue = createQueue;
     }
 
     /** Returns the enum or UNKNOWN */

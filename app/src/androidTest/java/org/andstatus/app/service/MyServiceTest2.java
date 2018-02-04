@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2014-2018 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 
 package org.andstatus.app.service;
+
+import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
@@ -103,32 +105,59 @@ public class MyServiceTest2 extends MyServiceTest {
         assertTrue("command id=" + idFound, idFound >= 0);
         
         assertFalse("Foreground command is not in main queue", queue.contains(cd3));
-        new CommandQueue().clear();
         MyLog.i(this, method + " ended");
+
         myTestDeleteCommand(cd2);
+
+        new CommandQueue().clear();
     }
     
-    private void myTestDeleteCommand(CommandData cd2) {
+    private void myTestDeleteCommand(CommandData commandIn) {
         MyLog.i(this, "myTestDeleteCommand started");
+        assertTrue("Service stopped", mService.waitForServiceStopped(false));
 
-        CommandData cdDelete = CommandData.newItemCommand(
+        final CommandQueue cq1 = new CommandQueue().load();
+        assertEquals("Didn't find input command in any queue", commandIn, getFromAnyQueue(cq1, commandIn));
+
+        CommandData commandDelete = CommandData.newItemCommand(
                 CommandEnum.DELETE_COMMAND,
                 null,
-                cd2.getCommandId());
-        cdDelete.setInForeground(true);
-        mService.setListenedCommand(cdDelete);
-
-        assertEquals(cd2.getCommandId(), mService.getListenedCommand().itemId);
+                commandIn.getCommandId());
+        commandDelete.setInForeground(true);
+        mService.setListenedCommand(commandDelete);
+        assertEquals(commandIn.getCommandId(), mService.getListenedCommand().itemId);
         
         long endCount = mService.executionEndCount;
 
         mService.sendListenedToCommand();
         assertTrue("Delete command ended executing", mService.waitForCommandExecutionEnded(endCount));
-
         assertTrue("Service stopped", mService.waitForServiceStopped(false));
 
-        Queue<CommandData> queue = new CommandQueue().load().get(QueueType.CURRENT);
-        assertFalse("The second command was deleted from the main queue", queue.contains(cd2));
+        final CommandQueue cq2 = new CommandQueue().load();
+        Queue<CommandData> queue = cq2.get(QueueType.CURRENT);
+        assertEquals("The command was not deleted from some queue",
+                CommandData.EMPTY, getFromAnyQueue(cq2, commandIn));
+        assertEquals("The DELETE command was not deleted from some queue",
+                CommandData.EMPTY, getFromAnyQueue(cq2, commandDelete));
         MyLog.i(this, "myTestDeleteCommand ended");
+    }
+
+    @NonNull
+    private CommandData getFromAnyQueue(CommandQueue commandQueue, CommandData dataIn) {
+        for (QueueType queueType : QueueType.values()) {
+            CommandData dataOut = getFromQueue(commandQueue, queueType, dataIn);
+            if (dataOut != CommandData.EMPTY) return dataOut;
+        }
+        return CommandData.EMPTY;
+    }
+
+    @NonNull
+    private CommandData getFromQueue(CommandQueue commandQueue, QueueType queueType, CommandData dataIn) {
+        Queue queue = commandQueue.get(queueType);
+        if (queue == null) return CommandData.EMPTY;
+        for (Object data : queue) {
+            if (dataIn.equals(data)) return (CommandData) data;
+        }
+        return CommandData.EMPTY;
     }
 }

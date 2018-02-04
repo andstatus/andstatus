@@ -116,7 +116,7 @@ public class CommandQueue {
     CommandQueue(Context context) {
         this.context = context;
         for (QueueType queueType : QueueType.values()) {
-            queues.put(queueType, new OneQueue());
+            if (queueType.createQueue) queues.put(queueType, new OneQueue());
         }
     }
 
@@ -125,7 +125,14 @@ public class CommandQueue {
     }
 
     public Queue<CommandData> get(QueueType queueType) {
-        return queues.get(queueType).queue;
+        switch (queueType) {
+            case PRE:
+                return preQueue;
+            case UNKNOWN:
+                return null;
+            default:
+                return queues.get(queueType).queue;
+        }
     }
 
     public synchronized CommandQueue load() {
@@ -288,8 +295,9 @@ public class CommandQueue {
     void deleteCommand(CommandData commandData) {
         moveCommandsFromPreToMainQueue();
         for (OneQueue oneQueue : queues.values()) {
-            commandData.deleteCommandInTheQueue(oneQueue.queue);
+            commandData.deleteCommandFromQueue(oneQueue.queue);
         }
+        commandData.getResult().afterExecutionEnded();
     }
 
     int totalSizeToExecute() {

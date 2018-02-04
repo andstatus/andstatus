@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010-2016 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,9 +33,9 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.ContentValuesUtils;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.CommandTable;
 import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.WhichPage;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -56,6 +56,7 @@ import java.util.Queue;
  * @author yvolk@yurivolkov.com
  */
 public class CommandData implements Comparable<CommandData> {
+    public final static CommandData EMPTY = newCommand(CommandEnum.EMPTY);
     private final long commandId;
     private final CommandEnum command;
     private final long createdDate;
@@ -285,6 +286,7 @@ public class CommandData implements Comparable<CommandData> {
      */
     @Override
     public String toString() {
+        if (this == EMPTY) return MyLog.formatKeyValue(this, "EMPTY");
         StringBuilder builder = new StringBuilder();
         builder.append("command:" + command.save());
         if (mInForeground) {
@@ -310,7 +312,7 @@ public class CommandData implements Comparable<CommandData> {
         }
         builder.append(",hashCode:" + hashCode());
         builder.append("," + CommandResult.toString(commandResult));
-        return MyLog.formatKeyValue("CommandData", builder);
+        return MyLog.formatKeyValue(this, builder);
     }
 
     @Override
@@ -493,8 +495,8 @@ public class CommandData implements Comparable<CommandData> {
         return builder.toString();
     }
 
-    void deleteCommandInTheQueue(Queue<CommandData> queue) {
-        String method = "deleteCommandInTheQueue: ";
+    void deleteCommandFromQueue(Queue<CommandData> queue) {
+        String method = "deleteCommandFromQueue: ";
         for (CommandData cd : queue) {
             if (cd.getCommandId() == itemId) {
                 queue.remove(cd);
