@@ -84,7 +84,7 @@ public class LargeImageTest {
 
         DownloadData data = DownloadData.fromId(dd.getDownloadId());
         assertFalse("Loaded " + data.getUri(), commandData.getResult().hasError());
-        assertTrue("File exists " + data.getUri(), data.getFile().exists());
+        assertTrue("File exists " + data.getUri(), data.getFile().existed);
 
         demoData.assertConversations();
         return data;

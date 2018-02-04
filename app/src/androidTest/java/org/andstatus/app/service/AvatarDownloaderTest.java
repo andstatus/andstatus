@@ -123,16 +123,16 @@ public class AvatarDownloaderTest {
         
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
         DownloadData data = AvatarData.getForActor(ma.getActorId());
-        assertTrue("Existence of " + data.getFilename(), data.getFile().exists());
+        assertTrue("Existence of " + data.getFilename(), data.getFile().existed);
         assertTrue("Is File" + data.getFilename(), data.getFile().getFile().isFile());
 
         DownloadFile avatarFile = data.getFile();
         AvatarData.deleteAllOfThisActor(ma.getActorId());
-        assertFalse(avatarFile.exists());
+        assertFalse(avatarFile.existsNow());
 
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
         data = AvatarData.getForActor(ma.getActorId());
-        assertTrue(data.getFile().exists());
+        assertTrue(data.getFile().existed);
     }
     
     private int changeMaAvatarUrl(String urlString) {
@@ -175,9 +175,9 @@ public class AvatarDownloaderTest {
         }
         
         if (DownloadStatus.LOADED.equals(status)) {
-            assertTrue("Exists avatar " + data.getUri(), data.getFile().exists());
+            assertTrue("Exists avatar " + data.getUri(), data.getFile().existed);
         } else {
-            assertFalse("Doesn't exist avatar " + data.getUri(), data.getFile().exists());
+            assertFalse("Doesn't exist avatar " + data.getUri(), data.getFile().existed);
         }
 
         assertEquals("Loaded '" + data.getUri() + "'", status, loader.getStatus());

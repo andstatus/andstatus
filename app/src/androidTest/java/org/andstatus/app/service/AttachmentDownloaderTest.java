@@ -27,9 +27,9 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
-import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.Attachment;
+import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
 import org.andstatus.app.util.MyLog;
 import org.junit.Before;
 import org.junit.Test;
@@ -78,7 +78,7 @@ public class AttachmentDownloaderTest {
     
     private void testFileProvider(long downloadRowId) throws IOException {
         DownloadData data = DownloadData.fromId(downloadRowId);
-        assertTrue(data.getFilename(), data.getFile().exists());
+        assertTrue(data.getFilename(), data.getFile().existed);
 
         Uri uri = FileProvider.downloadFilenameToUri(data.getFile().getFilename());
         InputStream in = MyContextHolder.get().context().getContentResolver().openInputStream(uri);
@@ -105,9 +105,9 @@ public class AttachmentDownloaderTest {
         }
         
         if (DownloadStatus.LOADED.equals(status)) {
-            assertTrue("File exists " + data.getUri(), data.getFile().exists());
+            assertTrue("File exists " + data.getUri(), data.getFile().existed);
         } else {
-            assertFalse("File doesn't exist " + data.getUri(), data.getFile().exists());
+            assertFalse("File doesn't exist " + data.getUri(), data.getFile().existed);
         }
 
         assertEquals("Loaded " + data.getUri(), status, loader.getStatus());

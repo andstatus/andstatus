@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
@@ -30,6 +31,7 @@ public class DownloadData {
     private MyContentType contentType = MyContentType.UNKNOWN;
     private DownloadStatus status = DownloadStatus.UNKNOWN; 
     private long downloadId = 0;
+    @NonNull
     private DownloadFile fileStored = DownloadFile.EMPTY;
     protected Uri uri = Uri.EMPTY;
 
@@ -38,6 +40,7 @@ public class DownloadData {
     private String errorMessage = "";
 
     private long loadTimeNew = 0;
+    @NonNull
     private DownloadFile fileNew = DownloadFile.EMPTY;
 
     public static DownloadData fromId(long downloadId) {
@@ -166,16 +169,12 @@ public class DownloadData {
         if ((actorId == 0) && (noteId == 0) || UriUtils.isEmpty(uri)) {
             hardError = true;
         }
-        if (fileStored == null) {
-            fileStored = DownloadFile.EMPTY;
-        }
         fileNew = fileStored;
         if (hardError) {
             status = DownloadStatus.HARD_ERROR;
-        } else if (DownloadStatus.LOADED.equals(status) 
-                && !fileStored.exists()) {
+        } else if (DownloadStatus.LOADED == status && !fileStored.existsNow()) {
            status = DownloadStatus.ABSENT;
-        } else if (DownloadStatus.HARD_ERROR.equals(status)) {
+        } else if (DownloadStatus.HARD_ERROR == status) {
             hardError = true;
         }
     }
@@ -198,7 +197,7 @@ public class DownloadData {
     public void saveToDatabase() {
         if (hardError) {
             status = DownloadStatus.HARD_ERROR;
-        } else if (!fileNew.exists()) {
+        } else if (!fileNew.existsNow()) {
             status = DownloadStatus.ABSENT;
         } else if (softError) {
             status = DownloadStatus.SOFT_ERROR;
@@ -257,7 +256,7 @@ public class DownloadData {
     private void update() {
         ContentValues values = new ContentValues();
         values.put(DownloadTable.DOWNLOAD_STATUS, status.save());
-        boolean changeFile = !isError() && fileNew.exists() && fileStored != fileNew;
+        boolean changeFile = !isError() && fileNew.existsNow() && fileStored != fileNew;
         if (changeFile) {
             values.put(DownloadTable.FILE_NAME, fileNew.getFilename());
             values.put(DownloadTable.VALID_FROM, loadTimeNew);

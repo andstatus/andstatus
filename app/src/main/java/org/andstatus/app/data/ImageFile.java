@@ -40,13 +40,9 @@ public abstract class ImageFile {
     }
 
     public void showImage(@NonNull MyActivity myActivity, IdentifiableImageView imageView) {
-        if (imageView == null) {
-            return;
-        }
+        if (imageView == null) return;
         imageView.setImageId(getId());
-        if (!myActivity.isMyResumed()) {
-            return;
-        }
+        if (!myActivity.isMyResumed()) return;
         if (isEmpty()) {
             onNoImage(imageView);
             return;
@@ -55,28 +51,25 @@ public abstract class ImageFile {
             ((AttachedImageView) imageView).setMeasuresLocked(false);
         }
         final String taskSuffix = "-sync-" + imageView.myViewId;
-        CachedImage image = getImageFromCache();
-        if (image == CachedImage.BROKEN) {
-            logResult("Broken", taskSuffix);
-            onNoImage(imageView);
-            return;
-        } else if (image != null && !image.isExpired()) {
-            logResult("Set", taskSuffix);
-            imageView.setLoaded();
-            imageView.setImageDrawable(image.getDrawable());
-            imageView.setVisibility(View.VISIBLE);
-            return;
-        }
-        if (downloadFile.exists()) {
+        if (downloadFile.existed) {
+            CachedImage cachedImage = getImageFromCache();
+            if (cachedImage == CachedImage.BROKEN) {
+                logResult("Broken", taskSuffix);
+                onNoImage(imageView);
+                return;
+            } else if (cachedImage != null && !cachedImage.isExpired()) {
+                logResult("Set", taskSuffix);
+                imageView.setLoaded();
+                imageView.setImageDrawable(cachedImage.getDrawable());
+                imageView.setVisibility(View.VISIBLE);
+                return;
+            }
             logResult("Show blank", taskSuffix);
             showBlankImage(imageView);
+            showImageAsync(myActivity, imageView);
         } else {
             logResult("No image", taskSuffix);
             onNoImage(imageView);
-        }
-        if (downloadFile.exists()) {
-            showImageAsync(myActivity, imageView);
-        } else {
             requestAsyncDownload();
         }
     }
@@ -109,13 +102,13 @@ public abstract class ImageFile {
         if (image != null) {
             return;
         }
-        if (downloadFile.exists()) {
+        if (downloadFile.existed) {
             preloadAsync();
         }
     }
 
     public CachedImage loadAndGetImage() {
-        if (downloadFile.exists()) {
+        if (downloadFile.existed) {
             return ImageCaches.loadAndGetImage(getCacheName(), this, getId(), downloadFile.getFilePath());
         }
         requestAsyncDownload();
@@ -232,7 +225,7 @@ public abstract class ImageFile {
     }
 
     public Point getSize() {
-        if (size == null && downloadFile.exists()) {
+        if (size == null && downloadFile.existed) {
             size = ImageCaches.getImageSize(getCacheName(), getId(), downloadFile.getFilePath());
         }
         return size == null ? new Point() : size;

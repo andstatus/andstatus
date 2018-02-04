@@ -27,22 +27,25 @@ import java.io.File;
 public class DownloadFile {
     private final String filename;
     private final File file;
+    /** Existence is checked at the moment of the object creation */
+    public final boolean existed;
     public static final DownloadFile EMPTY = new DownloadFile(null);
 
     public DownloadFile(String filename) {
         this.filename = filename;
-        if (!TextUtils.isEmpty(filename)) {
-            file = new File(MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS), filename);
-        } else {
+        if (TextUtils.isEmpty(filename)) {
             file = null;
+        } else {
+            file = new File(MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS), filename);
         }
+        existed = existsNow();
     }
 
-    public boolean isEmpty() {
+    public final boolean isEmpty() {
         return file == null;
     }
 
-    public boolean exists() {
+    public final boolean existsNow() {
         return !isEmpty() && file.exists() && file.isFile();
     }
     
@@ -56,10 +59,7 @@ public class DownloadFile {
     }
 
     public long getSize() {
-        if (exists()) {
-            return file.length();
-        }
-        return 0;
+        return existsNow() ? file.length() : 0;
     }
 
     public String getFilename() {
@@ -73,7 +73,7 @@ public class DownloadFile {
     
     private boolean deleteFileLogged(File file) {
         boolean deleted = false;
-        if(exists()) {
+        if(existsNow()) {
             deleted = file.delete();
             if (deleted) {
                 MyLog.v(this, "Deleted file " + file.toString());

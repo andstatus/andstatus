@@ -36,7 +36,7 @@ public class FileProvider extends ContentProvider {
     @Override
     public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
         DownloadFile downloadFile = new DownloadFile(uriToFilename(uri));
-        if(!downloadFile.exists()) {
+        if(!downloadFile.existed) {
             throw new FileNotFoundException(downloadFile.getFilename());
         }
         return ParcelFileDescriptor.open(downloadFile.getFile(), ParcelFileDescriptor.MODE_READ_ONLY);        
