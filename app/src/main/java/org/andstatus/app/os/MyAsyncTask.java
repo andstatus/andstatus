@@ -37,10 +37,10 @@ import static org.andstatus.app.os.ExceptionsCounter.onDiskIoException;
  */
 public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Params, Progress, Result>
         implements IdentifiableInstance {
-    public static final long MAX_WAITING_BEFORE_EXECUTION_SECONDS = 600;
-    public static final long MAX_COMMAND_EXECUTION_SECONDS = 600;
-    public static final long MAX_EXECUTION_AFTER_CANCEL_SECONDS = 300;
-    protected static final long DELAY_AFTER_EXECUTOR_ENDED_SECONDS = 1;
+    private static final long MAX_WAITING_BEFORE_EXECUTION_SECONDS = 600;
+    static final long MAX_COMMAND_EXECUTION_SECONDS = 600;
+    private static final long MAX_EXECUTION_AFTER_CANCEL_SECONDS = 600;
+    private static final long DELAY_AFTER_EXECUTOR_ENDED_SECONDS = 1;
     private long maxCommandExecutionSeconds = MAX_COMMAND_EXECUTION_SECONDS;
 
     private final String taskId;
@@ -53,22 +53,25 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
     /** This allows to control execution time of single steps/commands by this AsyncTask */
     protected volatile long currentlyExecutingSince = 0;
 
-    protected volatile long cancelledAt = 0;
+    private volatile long cancelledAt = 0;
     private volatile String firstError = "";
+    volatile boolean hasExecutor = true;
 
     public enum PoolEnum {
-        SYNC(2, MAX_COMMAND_EXECUTION_SECONDS),
-        FILE_DOWNLOAD(1, MAX_COMMAND_EXECUTION_SECONDS),
-        QUICK_UI(1, 20),
-        LONG_UI(1, MAX_COMMAND_EXECUTION_SECONDS),
-        DEFAULT(0, MAX_COMMAND_EXECUTION_SECONDS);
+        SYNC(2, MAX_COMMAND_EXECUTION_SECONDS, true),
+        FILE_DOWNLOAD(1, MAX_COMMAND_EXECUTION_SECONDS, true),
+        QUICK_UI(1, 20, false),
+        LONG_UI(1, MAX_COMMAND_EXECUTION_SECONDS, true),
+        DEFAULT(0, MAX_COMMAND_EXECUTION_SECONDS, false);
 
         protected final int corePoolSize;
         final long maxCommandExecutionSeconds;
+        final boolean mayBeShutDown;
 
-        PoolEnum(int corePoolSize, long maxCommandExecutionSeconds) {
+        PoolEnum(int corePoolSize, long maxCommandExecutionSeconds, boolean mayBeShutDown) {
             this.corePoolSize = corePoolSize;
             this.maxCommandExecutionSeconds = maxCommandExecutionSeconds;
+            this.mayBeShutDown = mayBeShutDown;
         }
     }
 
@@ -97,6 +100,7 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
 
     @Override
     protected void onCancelled() {
+        rememberWhenCancelled();
         ExceptionsCounter.showErrorDialogIfErrorsPresent();
         super.onCancelled();
     }
@@ -220,24 +224,27 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
                 break;
         }
         if (isCancelled()) {
-            if (cancelledAt == 0) {
-                cancelledAt = System.currentTimeMillis();
-            }
-            summary += ", cancelled " + RelativeTime.secondsAgo(cancelledAt) + "sec ago";
+            rememberWhenCancelled();
+            summary += ", cancelled " + RelativeTime.secondsAgo(cancelledAt) + " sec ago";
         }
+        if (!hasExecutor) summary += ", no executor";
         return summary;
     }
 
     public boolean isReallyWorking() {
-        return needsBackgroundWork() && !isStalled();
+        return needsBackgroundWork() && !expectedToBeFinishedNow();
     }
 
-    private boolean isStalled() {
+    private boolean expectedToBeFinishedNow() {
         return RelativeTime.wasButMoreSecondsAgoThan(backgroundEndedAt, DELAY_AFTER_EXECUTOR_ENDED_SECONDS)
                 || RelativeTime.wasButMoreSecondsAgoThan(currentlyExecutingSince, maxCommandExecutionSeconds)
-                || RelativeTime.wasButMoreSecondsAgoThan(cancelledAt, MAX_EXECUTION_AFTER_CANCEL_SECONDS)
+                || cancelledLongAgo()
                 || (getStatus() == Status.PENDING
                     && RelativeTime.wasButMoreSecondsAgoThan(createdAt, MAX_WAITING_BEFORE_EXECUTION_SECONDS));
+    }
+
+    public boolean cancelledLongAgo() {
+        return RelativeTime.wasButMoreSecondsAgoThan(cancelledAt, MAX_EXECUTION_AFTER_CANCEL_SECONDS);
     }
 
     /** If yes, the task may be not in FINISHED state yet: during execution of onPostExecute */
@@ -257,10 +264,14 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
     }
 
     public boolean cancelLogged(boolean mayInterruptIfRunning) {
+        rememberWhenCancelled();
+        return super.cancel(mayInterruptIfRunning);
+    }
+
+    private void rememberWhenCancelled() {
         if (cancelledAt == 0) {
             cancelledAt = System.currentTimeMillis();
         }
-        return super.cancel(mayInterruptIfRunning);
     }
 
     public String getFirstError() {

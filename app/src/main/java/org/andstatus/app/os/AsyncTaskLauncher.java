@@ -20,11 +20,9 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.util.MyLog;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -73,29 +71,33 @@ public class AsyncTaskLauncher<Params> {
                         + executor );
                 executor.shutdownNow();
             }
-            removePoolTasks(pool);
             executor = null;
         }
         if (executor == null) {
             MyLog.v(TAG, "Creating pool " + pool.name());
             executor = new ThreadPoolExecutor(pool.corePoolSize, pool.corePoolSize + 1,
                     1, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(128));
-            switch (pool) {
-                case QUICK_UI:
-                    QUICK_UI_POOL_EXECUTOR = executor;
-                    break;
-                case LONG_UI:
-                    LONG_UI_POOL_EXECUTOR = executor;
-                    break;
-                case FILE_DOWNLOAD:
-                    FILE_DOWNLOAD_EXECUTOR = executor;
-                    break;
-                case SYNC:
-                    SYNC_POOL_EXECUTOR = executor;
-                    break;
-            }
+            setExecutor(pool, executor);
         }
         return executor;
+    }
+
+    private static void setExecutor(MyAsyncTask.PoolEnum pool, ThreadPoolExecutor executor) {
+        onExecutorRemoval(pool);
+        switch (pool) {
+            case QUICK_UI:
+                QUICK_UI_POOL_EXECUTOR = executor;
+                break;
+            case LONG_UI:
+                LONG_UI_POOL_EXECUTOR = executor;
+                break;
+            case FILE_DOWNLOAD:
+                FILE_DOWNLOAD_EXECUTOR = executor;
+                break;
+            case SYNC:
+                SYNC_POOL_EXECUTOR = executor;
+                break;
+        }
     }
 
     public static boolean execute(Object objTag, boolean throwOnFail, MyAsyncTask<Void, ?, ?> asyncTask) {
@@ -110,7 +112,7 @@ public class AsyncTaskLauncher<Params> {
         }
         boolean launched = false;
         try {
-            checkForStalledTasks();
+            cancelStalledTasks();
             if (asyncTask.isSingleInstance() && foundUnfinished(asyncTask)) {
                 skippedCount.incrementAndGet();
             } else {
@@ -132,15 +134,19 @@ public class AsyncTaskLauncher<Params> {
         return launched;
     }
 
-    private void checkForStalledTasks() {
-        Set<MyAsyncTask.PoolEnum> stalledPools = new HashSet<>();
+    private static void cancelStalledTasks() {
+        Set<MyAsyncTask.PoolEnum> poolsToShutDown = new HashSet<>();
         for (MyAsyncTask<?, ?, ?> launched : launchedTasks) {
             if (launched.needsBackgroundWork() && !launched.isReallyWorking()) {
-                MyLog.v(this, "Found stalled task at " + launched.pool + ": " + launched);
-                stalledPools.add(launched.pool);
+                MyLog.v(TAG, "Found stalled task at " + launched.pool + ": " + launched);
+                if (launched.cancelledLongAgo() && launched.pool.mayBeShutDown && launched.hasExecutor) {
+                    poolsToShutDown.add(launched.pool);
+                } else {
+                    launched.cancelLogged(true);
+                }
             }
         }
-        shutdownExecutors(stalledPools);
+        shutdownExecutors(poolsToShutDown);
     }
 
     private boolean foundUnfinished(MyAsyncTask<Params, ?, ?> asyncTask) {
@@ -165,16 +171,10 @@ public class AsyncTaskLauncher<Params> {
         }
     }
 
-    private static void removePoolTasks(MyAsyncTask.PoolEnum pool) {
-        MyLog.v(TAG, "Removing tasks for pool " + pool.name());
-        long count = 0;
+    private static void onExecutorRemoval(MyAsyncTask.PoolEnum pool) {
+        MyLog.v(TAG, "On removing executor for pool " + pool.name());
         for (MyAsyncTask<?, ?, ?> launched : launchedTasks) {
-            if (launched.pool == pool) {
-                if (MyLog.isVerboseEnabled()) {
-                    MyLog.v(TAG, Long.toString(++count) + ". " + launched);
-                }
-                launchedTasks.remove(launched);
-            }
+            if (launched.pool == pool) launched.hasExecutor = false;
         }
     }
 
@@ -237,54 +237,32 @@ public class AsyncTaskLauncher<Params> {
         return builder2;
     }
 
-    public static void shutdownExecutors(@NonNull Collection<MyAsyncTask.PoolEnum> pools) {
-        for (MyAsyncTask.PoolEnum pool : getPoolsThatMayBeShutdown(pools)) {
+    private static void shutdownExecutors(@NonNull Collection<MyAsyncTask.PoolEnum> pools) {
+        for (MyAsyncTask.PoolEnum pool : pools) {
             ThreadPoolExecutor executor = getExecutor(pool);
-            if (executor == null)  {
-                continue;
-            }
+            if (executor == null) continue;
             MyLog.v(TAG, "Shutting down executor " + pool + ":" + executor);
-            executor.shutdown();
-        }
-        long waitTill = TimeUnit.SECONDS.toMillis(5) + System.currentTimeMillis();
-        for (MyAsyncTask.PoolEnum pool : getPoolsThatMayBeShutdown(pools)) {
-            ThreadPoolExecutor executor = getExecutor(pool);
-            if (executor == null)  {
-                continue;
-            }
-            try {
-                long timeout = waitTill - System.currentTimeMillis();
-                if (timeout > 0 && !executor.isTerminated() && executor.getActiveCount() > 0) {
-                    executor.awaitTermination(timeout, TimeUnit.MILLISECONDS);
-                }
-            } catch (InterruptedException e) {
-                MyLog.d(TAG, "Interrupted: Shutting down executor " + pool + ":" + executor, e);
-                Thread.currentThread().interrupt();
-            } finally {
-                if (!executor.isTerminated() && executor.getActiveCount() > 0) {
-                    MyLog.d(TAG, "Cancelling unfinished tasks in executor " + pool + ":" + executor);
-                    executor.shutdownNow();
-                }
-                MyLog.v(TAG, "Shut down finished. Executor " + pool + ":" + executor);
-                removePoolTasks(pool);
-            }
+            executor.shutdownNow();
+            setExecutor(pool, null);
         }
     }
 
     public static void forget() {
-        shutdownExecutors(getPoolsThatMayBeShutdown(null));
+        Arrays.asList(MyAsyncTask.PoolEnum.values()).forEach(AsyncTaskLauncher::cancelPoolTasks);
+        cancelStalledTasks();
+        removeFinishedTasks();
     }
 
-    @NonNull
-    private static List<MyAsyncTask.PoolEnum> getPoolsThatMayBeShutdown(Collection<MyAsyncTask.PoolEnum> poolsIn) {
-        List<MyAsyncTask.PoolEnum> pools = new ArrayList<>();
-        for (MyAsyncTask.PoolEnum pool : (poolsIn == null ? Arrays.asList(MyAsyncTask.PoolEnum.values()) : poolsIn)) {
-            // Don't shut down these pools
-            if (!pool.equals(MyAsyncTask.PoolEnum.QUICK_UI)
-                    && !pool.equals(MyAsyncTask.PoolEnum.DEFAULT)) {
-                pools.add(pool);
+    public static void cancelPoolTasks(MyAsyncTask.PoolEnum pool) {
+        MyLog.v(TAG, "Cancelling tasks for pool " + pool.name());
+        for (MyAsyncTask<?, ?, ?> launched : launchedTasks) {
+            if (launched.pool == pool) {
+                try {
+                    launched.cancelLogged(true);
+                } catch (Throwable tr){
+                    // Ignore
+                }
             }
         }
-        return pools;
     }
 }

@@ -44,7 +44,6 @@ import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 
-import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.andstatus.app.service.CommandEnum.DELETE_COMMAND;
@@ -449,7 +448,7 @@ public class MyService extends Service {
                 mHeartBeat = null;
             }
         }
-        AsyncTaskLauncher.shutdownExecutors(Collections.singleton(MyAsyncTask.PoolEnum.SYNC));
+        AsyncTaskLauncher.cancelPoolTasks(MyAsyncTask.PoolEnum.SYNC);
         releaseWakeLock();
         stopSelfResult(latestProcessedStartId);
         myContext.getNotifier().clearAndroidNotification(NotificationEventType.SERVICE_RUNNING);
