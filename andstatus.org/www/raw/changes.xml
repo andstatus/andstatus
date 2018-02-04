@@ -29,12 +29,13 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="36.08" android:versionCode="242"
-             versionDate="2018-02-03"
+    <release android:versionName="36.09" android:versionCode="243"
+             versionDate="2018-02-04"
              versionTitle="Bugfixes and smoother scrolling">
         <changes>
             <change>Fixed two causes of application slowdowns.
-                This resulted in a noticeably smoother timeline scrolling.</change>
+                This resulted in a noticeably smoother timeline scrolling.
+                <a href="https://github.com/andstatus/andstatus/issues/478">#478</a></change>
             <change>Filipino and French translations updated.</change>
         </changes>
     </release>
