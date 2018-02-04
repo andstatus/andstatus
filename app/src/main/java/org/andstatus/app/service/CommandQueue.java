@@ -243,8 +243,7 @@ public class CommandQueue {
                 }
             }
         } catch (Exception e) {
-            String msgLog = method + "; " + count + " saved, " + queue.size() + " left.\n"
-                    + MyContextHolder.getSystemInfo(context, true);
+            String msgLog = method + "; " + count + " saved, " + queue.size() + " left.";
             MyLog.e(context, msgLog, e);
             if (SQLiteDiskIOException.class.isAssignableFrom(e.getClass())) {
                 throw e;
@@ -256,7 +255,7 @@ public class CommandQueue {
         return count;
     }
 
-    public synchronized void clearQueuesInDatabase() {
+    private synchronized void clearQueuesInDatabase() {
         final String method = "clearQueuesInDatabase";
         try {
             SQLiteDatabase db = myContext.getDatabase();
@@ -266,12 +265,11 @@ public class CommandQueue {
             String sql = "DELETE FROM " + CommandTable.TABLE_NAME;
             DbUtils.execSQL(db, sql);
         } catch (Exception e) {
-            String msgLog = method + MyContextHolder.getSystemInfo(context, true);
-            MyLog.e(context, msgLog, e);
+            MyLog.e(context, method, e);
             if (SQLiteDiskIOException.class.isAssignableFrom(e.getClass())) {
                 throw e;
             } else {
-                throw new IllegalStateException(msgLog, e);
+                throw new IllegalStateException(method, e);
             }
         }
     }
@@ -282,6 +280,7 @@ public class CommandQueue {
         for ( Map.Entry<QueueType, OneQueue> entry : queues.entrySet()) {
             entry.getValue().clear();
         }
+        preQueue.clear();
         clearQueuesInDatabase();
         MyLog.v(this, "Queues cleared");
     }

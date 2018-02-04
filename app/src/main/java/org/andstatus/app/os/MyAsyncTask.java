@@ -23,6 +23,7 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import org.acra.ACRA;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.IdentifiableInstance;
 import org.andstatus.app.util.InstanceId;
@@ -109,21 +110,25 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
                 return doInBackground2(params);
             }
         } catch (SQLiteDiskIOException e) {
-            String msgLog = MyContextHolder.getSystemInfo(MyContextHolder.get().context(), true);
-            logError(msgLog, e);
+            logSystemInfo(e);
             onDiskIoException();
         } catch (SQLiteDatabaseLockedException e) {
             // see also https://github.com/greenrobot/greenDAO/issues/191
-            String msgLog = "Database lock error, probably related to the application re-initialization";
-            logError(msgLog, e);
+            logError("Database lock error, probably related to the application re-initialization", e);
         } catch (AssertionError e) {
-            logError("", e);
+            logSystemInfo(e);
         } catch (Exception e) {
-            String msgLog = MyContextHolder.getSystemInfo(MyContextHolder.get().context(), true);
-            logError(msgLog, e);
-            throw new IllegalStateException(msgLog, e);
+            logSystemInfo(e);
+            throw new IllegalStateException("Unexpected exception", e);
         }
         return null;
+    }
+
+    @NonNull
+    private void logSystemInfo(Throwable throwable) {
+        final String systemInfo = MyContextHolder.getSystemInfo(MyContextHolder.get().context(), true);
+        ACRA.getErrorReporter().putCustomData("systemInfo", systemInfo);
+        logError(systemInfo, throwable);
     }
 
     protected abstract Result doInBackground2(Params... params);

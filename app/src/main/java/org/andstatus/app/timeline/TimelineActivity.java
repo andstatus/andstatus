@@ -48,6 +48,7 @@ import org.andstatus.app.activity.ActivityAdapter;
 import org.andstatus.app.activity.ActivityContextMenu;
 import org.andstatus.app.activity.ActivityLoader;
 import org.andstatus.app.activity.ActivityViewItem;
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -358,7 +359,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         }
         hideLoading(method);
         hideSyncing(method);
-        crashTest();
+        DemoData.crashTest(() -> getNoteEditor() != null
+                && getNoteEditor().getData().body.startsWith("Crash me on pause 2015-04-10"));
         saveTimelinePosition();
         myContext.persistentTimelines().saveChanged();
         super.onPause();
@@ -1001,15 +1003,6 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         outState.putBoolean(IntentExtra.COLLAPSE_DUPLICATES.key,
                 getListData().isCollapseDuplicates());
         contextMenu.saveState(outState);
-    }
-
-    protected void crashTest() {
-        final String CRASH_TEST_STRING = "Crash test 2015-04-10";
-        if (MyLog.isVerboseEnabled() && getNoteEditor() != null &&
-                getNoteEditor().getData().body.contains(CRASH_TEST_STRING)) {
-            MyLog.e(this, "Initiating crash test exception");
-            throw new NullPointerException("This is a test crash event");
-        }
     }
 
     @Override

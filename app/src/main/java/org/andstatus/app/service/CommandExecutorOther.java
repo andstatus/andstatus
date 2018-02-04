@@ -21,6 +21,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
 import android.text.TextUtils;
 
+import org.andstatus.app.context.DemoData;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
@@ -385,6 +386,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         final String method = "updateNote";
         AActivity activity = null;
         String status = MyQuery.noteIdToStringColumnValue(NoteTable.BODY, noteId);
+        DemoData.crashTest(() -> status.startsWith("Crash me on sending 2015-04-10"));
         String oid = getNoteOid(method, noteId, false);
         TriState isPrivate = MyQuery.noteIdToTriState(NoteTable.PRIVATE, noteId);
         Audience recipients = Audience.fromNoteId(execContext.getMyAccount().getOrigin(), noteId);

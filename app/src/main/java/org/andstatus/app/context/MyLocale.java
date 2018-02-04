@@ -19,6 +19,7 @@ package org.andstatus.app.context;
 import android.content.ContextWrapper;
 import android.content.res.Configuration;
 
+import org.acra.ACRA;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
@@ -29,7 +30,7 @@ import java.util.Locale;
  */
 public class MyLocale {
     private static final String TAG = MyLocale.class.getSimpleName();
-    public static final String CUSTOM_LOCALE_DEFAULT = "default";
+    private static final String CUSTOM_LOCALE_DEFAULT = "default";
 
     private static volatile Locale mLocale = null;
     private static volatile Locale mDefaultLocale = null;
@@ -46,9 +47,9 @@ public class MyLocale {
         return  locale == null || locale.getLanguage().isEmpty() || locale.getLanguage().startsWith("en");
     }
 
-    public static void setLocale(ContextWrapper contextWrapper) {
+    static void setLocale(ContextWrapper contextWrapper) {
         if (mDefaultLocale == null) {
-            mDefaultLocale = contextWrapper.getBaseContext().getResources().getConfiguration().locale;
+            mDefaultLocale = contextWrapper.getBaseContext().getResources().getConfiguration().getLocales().get(0);
         }
         String strLocale = SharedPreferencesUtil.getString(MyPreferences.KEY_CUSTOM_LOCALE, CUSTOM_LOCALE_DEFAULT);
         if (!strLocale.equals(CUSTOM_LOCALE_DEFAULT) || mLocale != null) {
@@ -61,9 +62,13 @@ public class MyLocale {
                 customizeConfig(contextWrapper, config, mLocale);
             }
         }
+        ACRA.getErrorReporter().putCustomData("locale",
+                strLocale + ", " +
+                (mLocale == null ? "" :  mLocale.getDisplayName() + ", default=") +
+                    (mDefaultLocale == null ? "(null)" : mDefaultLocale.getDisplayName()));
     }
 
-    public static Configuration onConfigurationChanged(ContextWrapper contextWrapper, Configuration newConfig) {
+    static Configuration onConfigurationChanged(ContextWrapper contextWrapper, Configuration newConfig) {
         if (mLocale == null || mDefaultLocale == null) {
             mDefaultLocale = newConfig.locale;
         }

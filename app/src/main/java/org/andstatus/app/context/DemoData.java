@@ -40,6 +40,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
 import java.util.Locale;
+import java.util.function.BooleanSupplier;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
@@ -283,5 +284,12 @@ public final class DemoData {
 
     public long getConversationOriginId() {
         return getConversationMyAccount().getOriginId();
+    }
+
+    public static void crashTest(BooleanSupplier supplier) {
+        if (MyLog.isVerboseEnabled() && supplier.getAsBoolean()) {
+            MyLog.e(supplier, "Initiating crash test exception");
+            throw new NullPointerException("This is a test crash event");
+        }
     }
 }

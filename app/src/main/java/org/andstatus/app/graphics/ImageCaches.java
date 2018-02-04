@@ -163,8 +163,7 @@ public class ImageCaches {
         }
         Context context = MyContextHolder.get().context();
         if (context != null) {
-            builder.append("Memory. App total: "
-                    + I18n.formatBytes(getTotalAppMemory(context)));
+            builder.append("Memory. App total: " + I18n.formatBytes(getTotalAppMemory(context)));
             ActivityManager.MemoryInfo memInfo = getMemoryInfo(context);
             builder.append("; Device: available " + I18n.formatBytes(memInfo.availMem) + " of "
                     + I18n.formatBytes(memInfo.totalMem) + "\n");
