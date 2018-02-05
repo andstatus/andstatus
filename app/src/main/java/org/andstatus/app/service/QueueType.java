@@ -6,7 +6,6 @@ public enum QueueType {
     CURRENT("current", "C", true, true),
     RETRY("retry", "R", true, true),
     ERROR("error", "E", false, true),
-    TEST("test", "T", false, true),
     PRE("pre", "P", true, false),
     UNKNOWN("unknown", "U", false, false);
 

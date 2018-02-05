@@ -98,7 +98,7 @@ public class MyServiceTest1 extends MyServiceTest {
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
 
-        mService.sendListenedToCommand();
+        mService.sendListenedCommand();
         
         mService.assertCommandExecutionStarted("First command", startCount, TriState.TRUE);
         assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount));
@@ -120,7 +120,7 @@ public class MyServiceTest1 extends MyServiceTest {
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
 
-        mService.sendListenedToCommand();
+        mService.sendListenedCommand();
         mService.assertCommandExecutionStarted("First command", startCount, TriState.TRUE);
         assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount));
         assertTrue(mService.getHttp().toString(),
@@ -140,7 +140,7 @@ public class MyServiceTest1 extends MyServiceTest {
                 demoData.getMyAccount(demoData.gnusocialTestAccountName)));
         mService.getHttp().setRuntimeException(new SQLiteDiskIOException(method));
         long startCount = mService.executionStartCount;
-        mService.sendListenedToCommand();
+        mService.sendListenedCommand();
 
         mService.assertCommandExecutionStarted("First command", startCount, TriState.TRUE);
         assertTrue("Service stopped", mService.waitForServiceStopped(true));

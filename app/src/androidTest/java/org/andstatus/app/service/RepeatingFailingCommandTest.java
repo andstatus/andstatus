@@ -75,6 +75,6 @@ public class RepeatingFailingCommandTest extends MyServiceTest {
             command.setManuallyLaunched(true);
         }
         mService.setListenedCommand(command);
-        mService.sendListenedToCommand();
+        mService.sendListenedCommand();
     }
 }

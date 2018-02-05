@@ -79,11 +79,14 @@ public class CommandDataTest {
         
         CommandQueue queues = new CommandQueue();
         queues.clear();
-        queues.get(QueueType.TEST).add(commandData);
-        assertEquals(1, queues.save(QueueType.TEST));
-        assertEquals(1, queues.load(QueueType.TEST));
+        queues.get(QueueType.ERROR).add(commandData);
+        queues.save();
+        assertEquals(0, queues.get(QueueType.ERROR).size());
+        queues.load();
+        assertEquals(1, queues.get(QueueType.ERROR).size());
+        assertEquals(commandData, MyServiceTest2.getFromQueue(queues, QueueType.ERROR, commandData));
 
-        CommandData commandData2 = queues.get(QueueType.TEST).poll();
+        CommandData commandData2 = queues.get(QueueType.ERROR).poll();
 
         assertEquals(commandData, commandData2);
         // Below fields are not included in equals

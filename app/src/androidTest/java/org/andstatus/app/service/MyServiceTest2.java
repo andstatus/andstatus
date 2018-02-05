@@ -48,7 +48,7 @@ public class MyServiceTest2 extends MyServiceTest {
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
 
-        mService.sendListenedToCommand();
+        mService.sendListenedCommand();
         mService.assertCommandExecutionStarted("First command didn't start", startCount, TriState.TRUE);
         assertTrue("First command didn't end executing", mService.waitForCommandExecutionEnded(endCount));
         assertEquals(cd1.toString() + " " + mService.getHttp().toString(),
@@ -63,7 +63,7 @@ public class MyServiceTest2 extends MyServiceTest {
         mService.setListenedCommand(cd2);
 
         startCount = mService.executionStartCount;
-        mService.sendListenedToCommand();
+        mService.sendListenedCommand();
         mService.assertCommandExecutionStarted("Second command started execution", startCount, TriState.FALSE);
         MyLog.i(this, method + "; After waiting for the second command");
         assertTrue("Service stopped", mService.waitForServiceStopped(false));
@@ -85,7 +85,7 @@ public class MyServiceTest2 extends MyServiceTest {
 
         startCount = mService.executionStartCount;
         endCount = mService.executionEndCount;
-        mService.sendListenedToCommand();
+        mService.sendListenedCommand();
 
         mService.assertCommandExecutionStarted("Foreground command", startCount, TriState.TRUE);
         assertTrue("Foreground command ended executing", mService.waitForCommandExecutionEnded(endCount));
@@ -129,7 +129,7 @@ public class MyServiceTest2 extends MyServiceTest {
         
         long endCount = mService.executionEndCount;
 
-        mService.sendListenedToCommand();
+        mService.sendListenedCommand();
         assertTrue("Delete command ended executing", mService.waitForCommandExecutionEnded(endCount));
         assertTrue("Service stopped", mService.waitForServiceStopped(false));
 
@@ -143,7 +143,7 @@ public class MyServiceTest2 extends MyServiceTest {
     }
 
     @NonNull
-    private CommandData getFromAnyQueue(CommandQueue commandQueue, CommandData dataIn) {
+    private static CommandData getFromAnyQueue(CommandQueue commandQueue, CommandData dataIn) {
         for (QueueType queueType : QueueType.values()) {
             CommandData dataOut = getFromQueue(commandQueue, queueType, dataIn);
             if (dataOut != CommandData.EMPTY) return dataOut;
@@ -152,7 +152,7 @@ public class MyServiceTest2 extends MyServiceTest {
     }
 
     @NonNull
-    private CommandData getFromQueue(CommandQueue commandQueue, QueueType queueType, CommandData dataIn) {
+    static CommandData getFromQueue(CommandQueue commandQueue, QueueType queueType, CommandData dataIn) {
         Queue queue = commandQueue.get(queueType);
         if (queue == null) return CommandData.EMPTY;
         for (Object data : queue) {

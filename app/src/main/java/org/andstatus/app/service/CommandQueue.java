@@ -151,7 +151,7 @@ public class CommandQueue {
     }
 
     /** @return Number of items loaded */
-    protected int load(@NonNull QueueType queueType) {
+    private int load(@NonNull QueueType queueType) {
         final String method = "loadQueue-" + queueType.save();
         OneQueue oneQueue = queues.get(queueType);
         Queue<CommandData> queue = oneQueue.queue;
@@ -192,13 +192,16 @@ public class CommandQueue {
         return count;
     }
 
-    public synchronized void save() {
-        if (loaded) {
-            clearQueuesInDatabase();
+    synchronized void save() {
+        SQLiteDatabase db = myContext.getDatabase();
+        if (db == null) {
+            MyLog.d(context, "save; Database is unavailable");
+            return;
         }
+        if (loaded) clearQueuesInDatabase(db);
         moveCommandsFromPreToMainQueue();
-        int count = save(QueueType.CURRENT) + save(QueueType.RETRY);
-        int countError = save(QueueType.ERROR);
+        int count = save(db, QueueType.CURRENT) + save(db, QueueType.RETRY);
+        int countError = save(db, QueueType.ERROR);
         MyLog.d(this, (loaded ? "Queues saved" : "Saved new queued commands only") + ", "
                 + (count > 0 ? Integer.toString(count) : "no") + " commands"
                 + (countError > 0 ? ", including " + Integer.toString(countError) + " in Error queue" : "")
@@ -208,24 +211,16 @@ public class CommandQueue {
     }
 
     /** @return Number of items persisted */
-    public int save(@NonNull QueueType queueType) {
+    private int save(@NonNull SQLiteDatabase db, @NonNull QueueType queueType) {
         final String method = "saveQueue-" + queueType.save();
         OneQueue oneQueue = queues.get(queueType);
         Queue<CommandData> queue = oneQueue.queue;
         int count = 0;
         try {
-            SQLiteDatabase db = myContext.getDatabase();
-            if (db == null) {
-                MyLog.d(context, method + "; Database is unavailable");
-                return 0;
-            }
             if (loaded) {
                 oneQueue.savedCount = 0;
                 oneQueue.savedForegroundTasks = false;
-                String sql = "DELETE FROM " + CommandTable.TABLE_NAME + " WHERE " + CommandTable.QUEUE_TYPE + "='" + queueType.save() + "'";
-                DbUtils.execSQL(db, sql);
             }
-
             if (!queue.isEmpty()) {
                 while (!queue.isEmpty() && count < 300) {
                     CommandData cd = queue.poll();
@@ -262,13 +257,9 @@ public class CommandQueue {
         return count;
     }
 
-    private synchronized void clearQueuesInDatabase() {
+    private synchronized void clearQueuesInDatabase(@NonNull SQLiteDatabase db) {
         final String method = "clearQueuesInDatabase";
         try {
-            SQLiteDatabase db = myContext.getDatabase();
-            if (db == null) {
-                MyLog.d(context, method + "; Database is unavailable");
-            }
             String sql = "DELETE FROM " + CommandTable.TABLE_NAME;
             DbUtils.execSQL(db, sql);
         } catch (Exception e) {
@@ -281,14 +272,14 @@ public class CommandQueue {
         }
     }
 
-    public void clear() {
+    void clear() {
         loaded = true;
         // MyLog.v(this, MyLog.getStackTrace(new IllegalStateException("CommandQueue#clear called")));
         for ( Map.Entry<QueueType, OneQueue> entry : queues.entrySet()) {
             entry.getValue().clear();
         }
         preQueue.clear();
-        clearQueuesInDatabase();
+        save();
         MyLog.v(this, "Queues cleared");
     }
 

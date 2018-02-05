@@ -80,7 +80,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
         new CommandQueue().clear();
     }
 
-    void sendListenedToCommand() {
+    void sendListenedCommand() {
         MyServiceManager.sendCommandEvenForUnavailable(getListenedCommand());
     }
     
