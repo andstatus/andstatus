@@ -78,7 +78,14 @@ public class MyContextForTest implements MyContext {
 
     @Override
     public MyContext newInitialized(Object initializer) {
-        return new MyContextForTest().setContext(myContext.newInitialized(initializer));
+        MyContextForTest context = new MyContextForTest();
+        context.dataSet.addAll(dataSet);
+        context.httpConnectionMockClass = httpConnectionMockClass;
+        context.httpConnectionMockInstance = httpConnectionMockInstance;
+        context.mockedConnectionState = mockedConnectionState;
+        context.androidNotifications.putAll(androidNotifications);
+        context.setContext(myContext.newInitialized(initializer));
+        return context;
     }
 
     @Override
