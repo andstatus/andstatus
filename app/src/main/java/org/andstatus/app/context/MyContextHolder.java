@@ -48,9 +48,8 @@ public final class MyContextHolder {
 
     private static final Object CONTEXT_LOCK = new Object();
     @GuardedBy("CONTEXT_LOCK")
-    private static volatile MyContext contextCreator = MyContextImpl.newEmpty("static");
-    @GuardedBy("CONTEXT_LOCK")
-    private static volatile MyFutureContext myFutureContext = new MyEmptyFutureContext(contextCreator);
+    @NonNull
+    private static volatile MyFutureContext myFutureContext = new MyEmptyFutureContext(MyContext.EMPTY);
     private static volatile boolean onRestore = false;
     @NonNull
     private static volatile ExecutionMode executionMode = ExecutionMode.UNKNOWN;
@@ -66,17 +65,11 @@ public final class MyContextHolder {
         return myFutureContext.getNow();
     }
     
-    /**
-     * This is mainly for mocking / testing
-     * @return previous MyContext
-     */
-    public static MyContext replaceCreator(@NonNull MyContext contextCreatorNew) {
+    /** This is mainly for mocking / testing */
+    static void setCreator(@NonNull MyContext contextCreatorNew) {
         synchronized (CONTEXT_LOCK) {
-            MyContext myContextOld = get();
             release();
-            contextCreator = contextCreatorNew;
-            myFutureContext = new MyEmptyFutureContext(contextCreator);
-            return myContextOld;
+            myFutureContext = new MyEmptyFutureContext(contextCreatorNew);
         }
     }
 
@@ -119,24 +112,24 @@ public final class MyContextHolder {
         storeContextIfNotPresent(context, calledBy);
         if (isShuttingDown) {
             MyLog.d(TAG, "Skipping initialization: device is shutting down (called by: " + calledBy + ")");
-            return new MyEmptyFutureContext(contextCreator);
+            return new MyEmptyFutureContext(myFutureContext.getNow());
         }
         if (!duringUpgrade && DatabaseConverterController.isUpgrading()) {
             MyLog.d(TAG, "Skipping initialization: upgrade in progress (called by: " + calledBy + ")");
-            return new MyEmptyFutureContext(contextCreator);
+            return new MyEmptyFutureContext(myFutureContext.getNow());
         }
         if (needToInitialize()) {
             MyLog.v(TAG, "myFutureContext " + (myFutureContext.isEmpty() ? "isEmpty " : "") + get());
             boolean launchExecution = false;
             synchronized(CONTEXT_LOCK) {
                 if (needToInitialize()) {
-                    myFutureContext = new MyFutureContext(contextCreator, myFutureContext.getNow(), calledBy);
+                    myFutureContext = new MyFutureContext(myFutureContext.getNow());
                     launchExecution = true;
                 }
             }
             if (launchExecution) {
                 MyLog.v(TAG, "myFutureContext launch " + (myFutureContext.isEmpty() ? "isEmpty " : "") + get());
-                myFutureContext.executeOnNonUiThread();
+                myFutureContext.executeOnNonUiThread(calledBy);
             }
         }
         return myFutureContext;
@@ -167,34 +160,36 @@ public final class MyContextHolder {
     }
 
     /**
-     *  Quickly return, providing context for the deferred initialization
+     * This allows to refer to the context even before myInitializedContext is initialized.
+     * Quickly returns, providing context for the deferred initialization
      */
     public static void storeContextIfNotPresent(Context context, Object calledBy) {
-        if (contextCreator.context() == null) {
+        if (myFutureContext.getNow().context() == null) {
             synchronized(CONTEXT_LOCK) {
-                if (contextCreator.context() == null) {
-                    String callerName = MyLog.objToTag(calledBy) ;
-                    if (context == null) {
-                        throw new IllegalStateException(TAG + ": context is unknown yet, called by " + callerName);
-                    }
-                    // This allows to refer to the context
-                    // even before myInitializedContext is initialized
-                    contextCreator = contextCreator.newCreator(context, callerName);
-                    if (contextCreator.context() == null) {
-                        throw new IllegalStateException(TAG + ": no compatible context, called by " + callerName);
-                    }
+                if (myFutureContext.getNow().context() == null) {
+                    requireNonNullContext(context, calledBy, "context is unknown yet");
+                    MyContext contextCreator = myFutureContext.getNow().newCreator(context, calledBy);
+                    requireNonNullContext(contextCreator.context(), calledBy, "no compatible context");
                     myFutureContext = new MyEmptyFutureContext(contextCreator);
                 }
             }
         }
     }
-    
+
+    private static void requireNonNullContext(Context context, Object calledBy, String message) {
+        if (context == null) {
+            throw new IllegalStateException(TAG + ": " + message + ", called by " + MyLog.objToTag(calledBy));
+        }
+    }
+
     public static void release() {
-        if (!get().isExpired()) {
+        final MyContext myContext = get();
+        if (!myContext.isExpired()) {
             synchronized(CONTEXT_LOCK) {
-                get().setExpired();
+                myContext.setExpired();
             }
         }
+        myContext.release();
     }
 
     public static void upgradeIfNeeded(Activity upgradeRequestor) {

@@ -21,6 +21,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -53,108 +54,123 @@ import java.util.Locale;
  * @author yvolk@yurivolkov.com
  */
 @ThreadSafe
-public final class MyContextImpl implements MyContext {
-    private static volatile boolean mInForeground = false;
-    private static volatile long mInForegroundChangedAt = 0;
+public class MyContextImpl implements MyContext {
+    private static volatile boolean inForeground = false;
+    private static volatile long inForegroundChangedAt = 0;
     private static final long CONSIDER_IN_BACKGROUND_AFTER_SECONDS = 20;
 
     final long instanceId = InstanceId.next();
 
-    private volatile MyContextState mState = MyContextState.EMPTY;
-    /**
-     * Single context object for which we will request SharedPreferences
-     */
-    private volatile Context mContext = null;
-    /**
-     * Name of the object that initialized the class
-     */
-    private final String mInitializedBy;
+    private volatile MyContextState state = MyContextState.EMPTY;
+    private final Context context;
+    private final String initializedBy;
     /**
      * When preferences, loaded into this class, were changed
      */
-    private volatile long mPreferencesChangeTime = 0;
+    private volatile long preferencesChangeTime = 0;
 
-    private volatile DatabaseHolder mDb = null;
+    private volatile DatabaseHolder db = null;
     private volatile String lastDatabaseError = "";
 
-    private final PersistentAccounts mPersistentAccounts = PersistentAccounts.newEmpty(this);
-    private final PersistentOrigins mPersistentOrigins = PersistentOrigins.newEmpty(this);
+    private final PersistentAccounts persistentAccounts = PersistentAccounts.newEmpty(this);
+    private final PersistentOrigins persistentOrigins = PersistentOrigins.newEmpty(this);
     private final PersistentTimelines persistentTimelines = PersistentTimelines.newEmpty(this);
 
-    private volatile boolean mExpired = false;
+    private volatile boolean expired = false;
 
-    private final Locale mLocale = Locale.getDefault();
+    private final Locale locale = Locale.getDefault();
 
     private final Notifier notifier = new Notifier(this);
 
-    private MyContextImpl(Object initializerName) {
-        mInitializedBy = MyLog.objToTag(initializerName);
+    MyContextImpl(MyContextImpl parent, Context context, Object initializer) {
+        initializedBy = MyLog.objToTag(initializer);
+        this.context = calcContextToUse(parent, context);
+        if (parent != null) {
+            lastDatabaseError = parent.getLastDatabaseError();
+        }
     }
+
+    @Nullable
+    private Context calcContextToUse(MyContextImpl parent, Context contextIn) {
+        Context context = contextIn == null ? (parent == null ? null : parent.context()) : contextIn;
+        if (context == null) return null;
+
+        Context contextToUse = context.getApplicationContext();
+        if ( contextToUse == null) {
+            MyLog.w(parent, "getApplicationContext is null, trying the context itself: "
+                    + context.getClass().getName());
+            contextToUse = context;
+        }
+        // TODO: Maybe we need to determine if the context is compatible, using some Interface...
+        // ...but we don't have any yet.
+        if (!contextToUse.getClass().getName().contains(ClassInApplicationPackage.PACKAGE_NAME)) {
+            MyLog.w(parent, "Incompatible context: " + contextToUse.getClass().getName());
+            contextToUse = null;
+        }
+        return contextToUse;
+    }
+
 
     @Override
     public MyContext newInitialized(Object initializer) {
-        final String method = "newInitialized";
-        MyContextImpl myContext = newNotInitialized(context(), initializer);
-        if ( myContext.mContext == null) {
-            // Nothing to do
-        } else if (!Permissions.checkPermission(myContext.mContext,
-                Permissions.PermissionType.GET_ACCOUNTS)) {
-            myContext.mState = MyContextState.NO_PERMISSIONS;
-        } else {
-            MyLog.v(this, method + " Starting initialization of " + myContext.instanceId + " by " + myContext.mInitializedBy);
-            myContext.initialize2();
-        }
-        MyLog.v(this, method + " " + myContext.toString());
-        return myContext;
+        return new MyContextImpl(this, context(), initializer).initialize();
     }
 
-    private void initialize2() {
-        final String method = "initialize2";
+    MyContextImpl initialize() {
+        final String method = "initialize";
+        if ( context == null) return this;
+        if (!Permissions.checkPermission(context, Permissions.PermissionType.GET_ACCOUNTS)) {
+            state = MyContextState.NO_PERMISSIONS;
+            return this;
+        }
+        MyLog.v(this, "Starting initialization of " + instanceId + " by " + initializedBy);
+
         boolean createApplicationData = MyStorage.isApplicationDataCreated().not().toBoolean(false);
         if (createApplicationData) {
             MyLog.i(this, method + " Creating application data");
             MyPreferencesGroupsEnum.setDefaultValues();
             tryToSetExternalStorageOnDataCreation();
         }
-        mPreferencesChangeTime = MyPreferences.getPreferencesChangeTime();
+        preferencesChangeTime = MyPreferences.getPreferencesChangeTime();
         initializeDatabase(createApplicationData);
 
-        switch (mState) {
+        switch (state) {
             case DATABASE_READY:
-                mPersistentOrigins.initialize();
+                persistentOrigins.initialize();
                 if (MyContextHolder.isOnRestore()) {
-                    mState = MyContextState.RESTORING;
+                    state = MyContextState.RESTORING;
                 } else {
                     // Accounts are not restored yet
-                    mPersistentAccounts.initialize();
+                    persistentAccounts.initialize();
                     persistentTimelines.initialize();
                     ImageCaches.initialize(context());
-                    mState = MyContextState.READY;
+                    state = MyContextState.READY;
                 }
                 break;
             default:
                 break;
         }
         notifier.load();
+        return this;
     }
 
     private void initializeDatabase(boolean createApplicationData) {
         final String method = "initializeDatabase";
-        DatabaseHolder newDb = new DatabaseHolder(mContext, createApplicationData);
+        DatabaseHolder newDb = new DatabaseHolder(context, createApplicationData);
         try {
-            mState = newDb.checkState();
+            state = newDb.checkState();
             if (state() == MyContextState.DATABASE_READY
                     && MyStorage.isApplicationDataCreated() != TriState.TRUE) {
-                mState = MyContextState.ERROR;
+                state = MyContextState.ERROR;
             }
         } catch (SQLiteException | IllegalStateException e) {
             logDatabaseError(method, e);
-            mState = MyContextState.ERROR;
+            state = MyContextState.ERROR;
             newDb.close();
-            mDb = null;
+            db = null;
         }
         if (state() == MyContextState.DATABASE_READY) {
-            mDb = newDb;
+            db = newDb;
 
           /* For testing:
             final SQLiteDatabase db = mDb.getWritableDatabase();
@@ -187,89 +203,64 @@ public final class MyContextImpl implements MyContext {
 
     @Override
     public String toString() {
-        return  MyLog.getInstanceTag(this) + " by " + mInitializedBy + "; state=" + mState +
-                "; " + (isExpired() && (mState != MyContextState.EXPIRED) ? "expired" : "") +
+        return  MyLog.getInstanceTag(this) + " by " + initializedBy + "; state=" + state +
+                "; " + (isExpired() && (state != MyContextState.EXPIRED) ? "expired" : "") +
                 persistentAccounts().size() + " accounts, " +
-                (mContext == null ? "no context" : "context=" + mContext.getClass().getName());
+                (context == null ? "no context" : "context=" + context.getClass().getName());
     }
 
     @Override
     public MyContext newCreator(Context context, Object initializer) {
-        return newNotInitialized(context, initializer);
-    }
-
-    private MyContextImpl newNotInitialized(Context context, Object initializer) {
-        MyContextImpl newMyContext = newEmpty(initializer);
-        newMyContext.lastDatabaseError = getLastDatabaseError();
-        if (context != null) {
-            Context contextToUse = context.getApplicationContext();
-        
-            if ( contextToUse == null) {
-                MyLog.w(this, "getApplicationContext is null, trying the context itself: " + context.getClass().getName());
-                contextToUse = context;
-            }
-            // TODO: Maybe we need to determine if the context is compatible, using some Interface...
-            // ...but we don't have any yet.
-            if (!context.getClass().getName().contains(ClassInApplicationPackage.PACKAGE_NAME)) {
-                MyLog.w(this, "Incompatible context: " + contextToUse.getClass().getName());
-                contextToUse = null;
-            }
-            newMyContext.mContext = contextToUse;
-        }
-        return newMyContext;
-    }
-    
-    public static MyContextImpl newEmpty(Object initializerName) {
-        return new MyContextImpl(initializerName);
+        return new MyContextImpl(null, context, initializer);
     }
 
     @Override
     public boolean initialized() {
-        return mState != MyContextState.EMPTY;
+        return state != MyContextState.EMPTY;
     }
 
     @Override
     public boolean isReady() {
-        return mState == MyContextState.READY && !DatabaseConverterController.isUpgrading();
+        return state == MyContextState.READY && !DatabaseConverterController.isUpgrading();
     }
 
     @Override
     public MyContextState state() {
-        return mState;
+        return state;
     }
     
     @Override
     public Context context() {
-        return mContext;
+        return context;
     }
 
     @Override
     public String initializedBy() {
-        return mInitializedBy;
+        return initializedBy;
     }
     
     @Override
     public long preferencesChangeTime() {
-        return mPreferencesChangeTime;
+        return preferencesChangeTime;
     }
     
     @Override
     public DatabaseHolder getMyDatabase() {
-        return mDb;
+        return db;
     }
 
     @Override
     public SQLiteDatabase getDatabase() {
-        if (mDb == null) {
+        if (db == null) {
             return null;
         }
-        SQLiteDatabase db = null;
+        SQLiteDatabase sqLiteDatabase = null;
         try {
-            db = mDb.getWritableDatabase();
+            sqLiteDatabase = this.db.getWritableDatabase();
         } catch (Exception e) {
             MyLog.e(this, "getDatabase", e);
         }
-        return db;
+        return sqLiteDatabase;
     }
 
     @Override
@@ -278,13 +269,13 @@ public final class MyContextImpl implements MyContext {
      * and reading Internet, I decided NOT to db.close here.
      */
     public void release() {
-        // Nothing to do here
+        db = null;
     }
 
     @Override
     @NonNull
     public PersistentAccounts persistentAccounts() {
-        return mPersistentAccounts;
+        return persistentAccounts;
     }
 
     @Override
@@ -293,30 +284,30 @@ public final class MyContextImpl implements MyContext {
     }
 
     @Override
-    public void put(AssertionData data) {
+    public void put(@NonNull AssertionData data) {
         // Noop for this implementation
     }
 
     @Override
     public boolean isExpired() {
-        return mExpired;
+        return expired;
     }
 
     @Override
     public void setExpired() {
         MyLog.i(this, "setExpired");
-        mExpired = true;
-        mState = MyContextState.EXPIRED;
+        expired = true;
+        state = MyContextState.EXPIRED;
     }
 
     @Override
     public Locale getLocale() {
-        return mLocale;
+        return locale;
     }
 
     @Override
     public PersistentOrigins persistentOrigins() {
-        return mPersistentOrigins;
+        return persistentOrigins;
     }
 
     @NonNull
@@ -332,17 +323,17 @@ public final class MyContextImpl implements MyContext {
 
     @Override
     public ConnectionState getConnectionState() {
-        return UriUtils.getConnectionState(mContext);
+        return UriUtils.getConnectionState(context);
     }
 
     @Override
     public boolean isInForeground() {
-        if (!mInForeground
-                && !RelativeTime.moreSecondsAgoThan(mInForegroundChangedAt,
+        if (!inForeground
+                && !RelativeTime.moreSecondsAgoThan(inForegroundChangedAt,
                         CONSIDER_IN_BACKGROUND_AFTER_SECONDS)) {
             return true;
         }
-        return mInForeground;
+        return inForeground;
     }
 
     @Override
@@ -354,10 +345,10 @@ public final class MyContextImpl implements MyContext {
      *  On static members in interfaces: http://stackoverflow.com/questions/512877/why-cant-i-define-a-static-method-in-a-java-interface
      * */
     private static void setInForegroundStatic(boolean inForeground) {
-        if (mInForeground != inForeground) {
-            mInForegroundChangedAt = System.currentTimeMillis();
+        if (MyContextImpl.inForeground != inForeground) {
+            inForegroundChangedAt = System.currentTimeMillis();
         }
-        mInForeground = inForeground;
+        MyContextImpl.inForeground = inForeground;
     }
 
     @Override

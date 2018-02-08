@@ -332,7 +332,7 @@ public class NoteEditorData {
         for(Long actorId : toMention) {
             if (actorId != 0 && !mentioned.contains(actorId)) {
                 mentioned.add(actorId);
-                String name = MyQuery.actorIdToName(actorId, getActorInTimeline());
+                String name = MyQuery.actorIdToName(null, actorId, getActorInTimeline());
                 if (!TextUtils.isEmpty(name)) {
                     String mentionText = "@" + name + " ";
                     if (TextUtils.isEmpty(body) || !(body + " ").contains(mentionText)) {
@@ -347,7 +347,7 @@ public class NoteEditorData {
     }
 
     public NoteEditorData appendMentionedActorToText(long mentionedActorId) {
-        String name = MyQuery.actorIdToName(mentionedActorId, getActorInTimeline());
+        String name = MyQuery.actorIdToName(null, mentionedActorId, getActorInTimeline());
         if (!TextUtils.isEmpty(name)) {
             String bodyText2 = "@" + name + " ";
             if (!TextUtils.isEmpty(body) && !(body + " ").contains(bodyText2)) {

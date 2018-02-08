@@ -628,7 +628,7 @@ public class Timeline implements Comparable<Timeline> {
 
     private long saveInternal(MyContext myContext) {
         if (needToLoadActorInTimeline()) {
-            actorInTimeline = MyQuery.actorIdToName(actorId, MyPreferences.getActorInTimeline());
+            actorInTimeline = MyQuery.actorIdToName(null, actorId, MyPreferences.getActorInTimeline());
         }
         ContentValues contentValues = new ContentValues();
         toContentValues(contentValues);

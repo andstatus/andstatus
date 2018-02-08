@@ -99,11 +99,11 @@ public class DataUpdaterTest {
         note.via = "MyCoolClient";
         note.url = "http://identi.ca/somebody/comment/dasdjfdaskdjlkewjz1EhSrTRB";
 
-        TestSuite.clearAssertionData();
+        TestSuite.clearAssertions();
         long noteId = di.onActivity(activity).getNote().noteId;
         assertNotEquals("Note added", 0, noteId);
         assertNotEquals("Activity added", 0, activity.getId());
-        AssertionData data = TestSuite.getMyContextForTest().takeDataByKey(DataUpdater.MSG_ASSERTION_KEY);
+        AssertionData data = TestSuite.getMyContextForTest().getAssertionData(DataUpdater.MSG_ASSERTION_KEY);
         assertFalse("Data put", data.isEmpty());
         assertEquals("Note Oid", noteOid, data.getValues()
                 .getAsString(NoteTable.NOTE_OID));

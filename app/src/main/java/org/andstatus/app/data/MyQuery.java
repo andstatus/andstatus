@@ -25,12 +25,12 @@ import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
 import android.text.TextUtils;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.ActorInTimeline;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.notification.NotificationEventType;
@@ -422,12 +422,14 @@ public class MyQuery {
         return username;
     }
 
+    @NonNull
     public static String actorIdToWebfingerId(long actorId) {
-        return actorIdToName(actorId, ActorInTimeline.WEBFINGER_ID);
+        return actorIdToName(null, actorId, ActorInTimeline.WEBFINGER_ID);
     }
 
-    public static String actorIdToName(long actorId, ActorInTimeline actorInTimeline) {
-        return idToStringColumnValue(ActorTable.TABLE_NAME, usernameField(actorInTimeline), actorId);
+    @NonNull
+    public static String actorIdToName(SQLiteDatabase db, long actorId, ActorInTimeline actorInTimeline) {
+        return idToStringColumnValue(db, ActorTable.TABLE_NAME, usernameField(actorInTimeline), actorId);
     }
 
     /**
@@ -477,33 +479,32 @@ public class MyQuery {
 
     @NonNull
     public static String noteIdToStringColumnValue(String columnName, long systemId) {
-        return idToStringColumnValue(NoteTable.TABLE_NAME, columnName, systemId);
+        return idToStringColumnValue(null, NoteTable.TABLE_NAME, columnName, systemId);
     }
 
     @NonNull
     public static String actorIdToStringColumnValue(String columnName, long systemId) {
-        return idToStringColumnValue(ActorTable.TABLE_NAME, columnName, systemId);
+        return idToStringColumnValue(null, ActorTable.TABLE_NAME, columnName, systemId);
     }
 
     /**
      * Convenience method to get String column value from the 'tableName' table
+     *
+     * @param db
      * @param tableName e.g. {@link NoteTable#TABLE_NAME}
      * @param columnName without table name
      * @param systemId tableName._id
      * @return not null; "" in a case not found or error or systemId==0
      */
     @NonNull
-    private static String idToStringColumnValue(String tableName, String columnName, long systemId) {
-        if (systemId == 0) {
-            return "";
-        }
-        return conditionToStringColumnValue(tableName, columnName, "_id=" + systemId);
+    private static String idToStringColumnValue(SQLiteDatabase db, String tableName, String columnName, long systemId) {
+        return (systemId == 0) ? "" : conditionToStringColumnValue(db, tableName, columnName, "_id=" + systemId);
     }
 
     @NonNull
-    public static String conditionToStringColumnValue(String tableName, String columnName, String condition) {
+    public static String conditionToStringColumnValue(SQLiteDatabase dbIn, String tableName, String columnName, String condition) {
         String method = "cond2str";
-        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        SQLiteDatabase db = dbIn == null ? MyContextHolder.get().getDatabase() : dbIn;
         if (db == null) {
             MyLog.v(TAG, method + "; Database is null");
             return "";

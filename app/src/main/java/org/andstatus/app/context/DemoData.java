@@ -40,6 +40,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
 import java.util.Locale;
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -185,7 +186,11 @@ public final class DemoData {
                 assertTrue("Context is not ready", MyContextHolder.get().isReady());
                 checkDataPath();
                 int size = MyContextHolder.get().persistentAccounts().size();
-                assertTrue("Only " + size + " accounts added: " + MyContextHolder.get().persistentAccounts(), size > 5);
+                assertTrue("Only " + size + " accounts added: " + MyContextHolder.get().persistentAccounts(),
+                        size > 5);
+                assertEquals("No WebfingerId", Optional.empty(), MyContextHolder.get().persistentAccounts()
+                        .list().stream().filter(ma -> !ma.getActor().isWebFingerIdValid()).findFirst());
+
                 originInserter.checkDefaultTimelinesForOrigins();
                 accountInserter.checkDefaultTimelinesForAccounts();
 

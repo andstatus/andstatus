@@ -76,15 +76,17 @@ public class DemoAccountInserter {
         AccountName accountName = AccountName.fromAccountName(myContext, accountNameString);
         MyLog.v(this, "Adding account " + accountName);
         assertTrue("Name '" + accountNameString + "' is valid for " + originType, accountName.isValid());
-        assertEquals("Origin for '" + accountNameString + "' account created", accountName.getOrigin().getOriginType(), originType);
+        assertEquals("Origin for '" + accountNameString + "' account created",
+                accountName.getOrigin().getOriginType(), originType);
         long accountActorId_existing = MyQuery.oidToId(myContext.getDatabase(), OidEnum.ACTOR_OID,
                 accountName.getOrigin().getId(), actorOid);
         Actor actor = Actor.fromOriginAndActorOid(accountName.getOrigin(), actorOid);
         actor.setUsername(accountName.getUsername());
         actor.avatarUrl = avatarUrl;
         if (!actor.isWebFingerIdValid() && UrlUtils.hasHost(actor.origin.getUrl())) {
-            actor.setWebFingerId(actor.getUsername() + "@" + actor.origin.getUrl().getHost());
+            actor.setWebFingerId(actor.getUsername() + "@" + actor.origin.getHost());
         }
+        assertTrue("No WebfingerId " + actor, actor.isWebFingerIdValid());
         MyAccount ma = addAccountFromActor(actor);
         long accountActorId = ma.getActorId();
         String msg = "AccountUserId for '" + accountNameString + ", (first: '" + firstAccountActorOid + "')";
@@ -95,8 +97,10 @@ public class DemoAccountInserter {
         }
         assertTrue("Account " + actorOid + " is persistent", ma.isValid());
         assertTrue("Account actorOid", ma.getActorOid().equalsIgnoreCase(actorOid));
-        assertTrue("Account is successfully verified", ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED);
-
+        assertEquals("No WebFingerId stored " + actor,
+                actor.getWebFingerId(), MyQuery.actorIdToWebfingerId(actor.actorId));
+        assertEquals("Account is not successfully verified",
+                CredentialsVerificationStatus.SUCCEEDED, ma.getCredentialsVerified());
         assertAccountIsAddedToAccountManager(ma);
 
         assertEquals("Oid: " + ma.getActor(), actor.oid, ma.getActor().oid);

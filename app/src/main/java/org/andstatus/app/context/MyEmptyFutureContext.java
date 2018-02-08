@@ -22,16 +22,14 @@ import android.support.annotation.NonNull;
  * @author yvolk@yurivolkov.com
  */
 public class MyEmptyFutureContext extends MyFutureContext {
-    private final MyContext myContextCreator;
 
-    public MyEmptyFutureContext(@NonNull MyContext myContextCreator) {
-        super(myContextCreator, null, MyEmptyFutureContext.class);
-        this.myContextCreator = myContextCreator;
+    public MyEmptyFutureContext(@NonNull MyContext previousContext) {
+        super(previousContext);
     }
 
     @Override
-    protected MyContext doInBackground2(Void... params) {
-        return myContextCreator;
+    protected MyContext doInBackground2(Object... params) {
+        return previousContext;
     }
 
     @Override
@@ -42,12 +40,12 @@ public class MyEmptyFutureContext extends MyFutureContext {
     @NonNull
     @Override
     public MyContext getNow() {
-        return myContextCreator;
+        return previousContext;
     }
 
     @NonNull
     @Override
     public MyContext getBlocking() {
-        return myContextCreator;
+        return previousContext;
     }
 }

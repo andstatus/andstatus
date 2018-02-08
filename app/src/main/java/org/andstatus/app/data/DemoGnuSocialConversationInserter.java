@@ -18,6 +18,7 @@ package org.andstatus.app.data;
 
 import android.support.annotation.Nullable;
 
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.AActivity;
@@ -32,6 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
 public class DemoGnuSocialConversationInserter {
@@ -52,9 +54,11 @@ public class DemoGnuSocialConversationInserter {
         conversationOid = Long.toString(MyLog.uniqueCurrentTimeMS());
         origin = MyContextHolder.get().persistentOrigins().fromName(demoData.gnusocialTestOriginName);
         assertTrue(demoData.gnusocialTestOriginName + " exists", origin.isValid());
-        accountActor = MyContextHolder.get().persistentAccounts().fromAccountName(demoData.gnusocialTestAccountName)
-                .getActor();
-        assertFalse( "Account actor is not defined " + accountActor,
+        assertNotSame( "No host URL: " + origin, "", origin.getHost());
+        final MyAccount myAccount = MyContextHolder.get().persistentAccounts()
+                .fromAccountName(demoData.gnusocialTestAccountName);
+        accountActor = myAccount.getActor();
+        assertFalse( "Account actor is not defined " + myAccount + ", actor:" + accountActor,
                 accountActor.isEmpty() || accountActor.isPartiallyDefined());
         assertEquals( "Inconsistent origin for " + accountActor + "\n and " + origin, accountActor.origin, origin);
     }

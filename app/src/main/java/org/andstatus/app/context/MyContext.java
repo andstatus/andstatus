@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+/*
+ * Copyright (C) 2013-2018 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,8 +35,10 @@ import org.andstatus.app.util.IdentifiableInstance;
 import java.util.Locale;
 
 public interface MyContext extends IdentifiableInstance {
-    MyContext newInitialized(Object initializerName);
-    MyContext newCreator(Context context, Object initializerName);
+    MyContext EMPTY = new MyContextImpl(null, null, "static");
+
+    MyContext newInitialized(Object initializer);
+    MyContext newCreator(Context context, Object initializer);
     boolean initialized();
     boolean isReady();
     Locale getLocale();
@@ -53,7 +55,7 @@ public interface MyContext extends IdentifiableInstance {
     PersistentOrigins persistentOrigins();
     @NonNull
     PersistentTimelines persistentTimelines();
-    void put(AssertionData data);
+    void put(@NonNull AssertionData data);
     void release();
     boolean isExpired();
     void setExpired();

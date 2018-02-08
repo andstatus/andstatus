@@ -36,11 +36,9 @@ import java.util.function.Consumer;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
+public class MyFutureContext extends MyAsyncTask<Object, Void, MyContext> {
     @NonNull
-    private final MyContext contextCreator;
-    private volatile MyContext myPreviousContext = null;
-    private final String callerName;
+    final MyContext previousContext;
 
     private volatile FirstActivity firstActivity = null;
     private volatile Intent activityIntentPostRun = null;
@@ -55,35 +53,34 @@ public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
         }
     }
 
-    MyFutureContext(@NonNull MyContext contextCreator, MyContext myPreviousContext, @NonNull Object calledBy) {
+    MyFutureContext(@NonNull MyContext previousContext) {
         super(MyFutureContext.class.getSimpleName(), PoolEnum.QUICK_UI);
-        this.contextCreator = contextCreator;
-        this.myPreviousContext = myPreviousContext;
-        callerName = MyLog.objToTag(calledBy);
+        this.previousContext = previousContext;
     }
 
-    void executeOnNonUiThread() {
+    void executeOnNonUiThread(Object initializer) {
         if (isUiThread()) {
-            execute();
+            execute(initializer);
         } else {
-            executeOnExecutor(new DirectExecutor());
+            executeOnExecutor(new DirectExecutor(), initializer);
         }
     }
 
     @Override
-    protected MyContext doInBackground2(Void... params) {
-        MyLog.d(this, "Starting initialization by " + callerName);
+    protected MyContext doInBackground2(Object... params) {
+        MyLog.d(this, "Starting initialization by " + params[0]);
         releaseGlobal();
-        return contextCreator.newInitialized(callerName);
+        return previousContext.newInitialized(params[0]);
     }
 
     private void releaseGlobal() {
-        SyncInitiator.unregister(myPreviousContext);
+        SyncInitiator.unregister(previousContext);
         TlsSniSocketFactory.forget();
         AsyncTaskLauncher.forget();
         ExceptionsCounter.forget();
         MyLog.forget();
         SharedPreferencesUtil.forget();
+        previousContext.release();
         MyLog.d(this, "releaseGlobal completed");
     }
 
@@ -189,25 +186,15 @@ public class MyFutureContext extends MyAsyncTask<Void, Void, MyContext> {
         if (completedBackgroundWork()) {
             return getBlocking();
         }
-        return getMyContext();
-    }
-
-    @NonNull
-    private MyContext getMyContext() {
-        if(myPreviousContext == null) {
-            return contextCreator;
-        }
-        return myPreviousContext;
+        return previousContext;
     }
 
     @NonNull
     public MyContext getBlocking() {
         try {
-            MyContext myContext = get();
-            myPreviousContext = null;
-            return myContext;
+            return get();
         } catch (Exception e) {
-            return getMyContext();
+            return previousContext;
         }
     }
 

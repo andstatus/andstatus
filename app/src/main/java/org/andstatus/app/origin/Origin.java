@@ -225,6 +225,7 @@ public class Origin {
         }
     }
 
+    @NonNull
     public String getHost() {
         return UrlUtils.hasHost(url) ? url.getHost() : "";
     }

@@ -43,6 +43,7 @@ import java.util.TimeZone;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -90,8 +91,7 @@ public class TestSuite {
             }
             MyLog.d(TAG, "Before MyContextHolder.initialize " + iter);
             try {
-                MyContextForTest myContextForTest = new MyContextForTest();
-                myContextForTest.setContext(MyContextHolder.replaceCreator(myContextForTest));
+                MyContextHolder.setCreator(new MyContextForTest(null, context, testCase));
                 MyContextHolder.initialize(context, testCase);
                 MyLog.d(TAG, "After MyContextHolder.initialize " + iter);
                 break;
@@ -103,7 +103,8 @@ public class TestSuite {
         MyLog.d(TAG, "After Initializing Test Suite loop");
         MyContextHolder.setExecutionMode(
                 ExecutionMode.load(InstrumentationRegistry.getArguments().getString("executionMode")));
-        assertTrue("MyContext state=" + MyContextHolder.get().state(), MyContextHolder.get().state() != MyContextState.EMPTY);
+        final MyContext myContext = MyContextHolder.get();
+        assertNotEquals("MyContext state " + myContext, MyContextState.EMPTY, myContext.state());
 
         SharedPreferencesUtil.putString(MyPreferences.KEY_MIN_LOG_LEVEL, Integer.toString(MyLog.VERBOSE));
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_DOWNLOAD_AND_DISPLAY_ATTACHED_IMAGES, true);
@@ -167,8 +168,8 @@ public class TestSuite {
         DbUtils.waitMs(method, 2000);
     }
 
-    public static void clearAssertionData() {
-        getMyContextForTest().getData().clear();
+    public static void clearAssertions() {
+        getMyContextForTest().getAssertions().clear();
     }
     
     public static MyContextForTest getMyContextForTest() {

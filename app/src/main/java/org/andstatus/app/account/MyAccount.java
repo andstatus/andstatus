@@ -29,24 +29,24 @@ import android.text.TextUtils;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.SearchObjects;
+import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyContextImpl;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.converter.DatabaseConverterController;
-import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.database.table.ActorTable;
+import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.OAuthService;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
-import org.andstatus.app.origin.OriginConfig;
-import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineSaver;
@@ -68,7 +68,7 @@ import java.util.concurrent.TimeUnit;
  */
 public final class MyAccount implements Comparable<MyAccount> {
     private static final String TAG = MyAccount.class.getSimpleName();
-    public static final MyAccount EMPTY = Builder.getEmptyAccount(MyContextImpl.newEmpty(TAG),"(empty)");
+    public static final MyAccount EMPTY = Builder.getEmptyAccount(MyContext.EMPTY,"(empty)");
 
     //------------------------------------------------------------
     // Key names for MyAccount preferences are below:
@@ -694,7 +694,7 @@ public final class MyAccount implements Comparable<MyAccount> {
     }
 
     private MyAccount(MyContext myContext, AccountData accountDataIn, String accountName) {
-        this(
+        this(   myContext,
                 accountDataIn == null ? AccountData.fromJson(null, false) : accountDataIn,
                 accountDataIn == null ? AccountName.fromAccountName(myContext, accountName)
                         : AccountName.fromOriginAndUserNames(myContext,
@@ -703,13 +703,13 @@ public final class MyAccount implements Comparable<MyAccount> {
         );
     }
 
-    private MyAccount(@NonNull AccountData accountData, @NonNull AccountName accountName) {
+    private MyAccount(MyContext myContext, @NonNull AccountData accountData, @NonNull AccountName accountName) {
         this.accountData = accountData;
         oAccountName = accountName;
         actor = Actor.fromOriginAndActorOid(accountName.getOrigin(), accountData.getDataString(KEY_ACTOR_OID, ""));
         actor.actorId = accountData.getDataLong(KEY_ACTOR_ID, 0L);
         actor.setUsername(oAccountName.getUsername());
-        actor.setWebFingerId(MyQuery.actorIdToWebfingerId(actor.actorId));
+        actor.setWebFingerId(MyQuery.actorIdToName(myContext.getDatabase(), actor.actorId, ActorInTimeline.WEBFINGER_ID));
         this.version = accountData.getDataInt(KEY_VERSION, ACCOUNT_VERSION);
 
         deleted = accountData.getDataBoolean(KEY_DELETED, false);
@@ -854,6 +854,9 @@ public final class MyAccount implements Comparable<MyAccount> {
             }
             if (!TextUtils.isEmpty(actor.oid)) {
                 members += "oid:" + actor.oid + ",";
+            }
+            if (actor.isWebFingerIdValid()) {
+                members += actor.getWebFingerId() + ",";
             }
             if (!isPersistent()) {
                 members += "not persistent,";
