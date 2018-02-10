@@ -50,6 +50,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
         final MyContext myContext = MyContextHolder.initialize(mContext, this);
         new MyServiceCommandsRunner(myContext).autoSyncAccount(
-                myContext.persistentAccounts().fromAccountName(account.name), syncResult);
+                myContext.accounts().fromAccountName(account.name), syncResult);
     }
 }

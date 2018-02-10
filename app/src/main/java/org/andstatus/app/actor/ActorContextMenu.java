@@ -47,7 +47,7 @@ public class ActorContextMenu extends MyContextMenu {
         }
         MyAccount myActor = getMyActor();
         if (!myActor.isValid() || !myActor.getOrigin().equals(getOrigin())) {
-            setMyActor(getMyContext().persistentAccounts().getFirstSucceededForOrigin(
+            setMyActor(getMyContext().accounts().getFirstSucceededForOrigin(
                     getOrigin()));
         }
 

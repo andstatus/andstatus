@@ -63,7 +63,7 @@ public class ManageTimelines extends LoadableListActivity {
 
     @Override
     protected void onPause() {
-        myContext.persistentTimelines().saveChanged();
+        myContext.timelines().saveChanged();
         super.onPause();
     }
 
@@ -157,7 +157,7 @@ public class ManageTimelines extends LoadableListActivity {
             public void load(ProgressPublisher publisher) {
                 // TODO: Implement filter parameters in this activity
                 countersSince = 0;
-                for (Timeline timeline : myContext.persistentTimelines().
+                for (Timeline timeline : myContext.timelines().
                         getFiltered(false, TriState.UNKNOWN, TimelineType.UNKNOWN, null, null)) {
                     ManageTimelinesViewItem viewItem = new ManageTimelinesViewItem(myContext, timeline);
                     if (viewItem.timeline.getCountSince() > 0 &&
@@ -179,7 +179,7 @@ public class ManageTimelines extends LoadableListActivity {
         return new BaseTimelineAdapter<ManageTimelinesViewItem>(myContext,
                 Timeline.getTimeline(TimelineType.MANAGE_TIMELINES, MyAccount.EMPTY, 0, Origin.EMPTY),
                 getLoaded().getList()) {
-            Timeline defaultTimeline = myContext.persistentTimelines().getDefault();
+            Timeline defaultTimeline = myContext.timelines().getDefault();
 
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
@@ -269,11 +269,11 @@ public class ManageTimelines extends LoadableListActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.reset_counters_menu_item:
-                myContext.persistentTimelines().resetCounters(isTotal);
+                myContext.timelines().resetCounters(isTotal);
                 showList(WhichPage.CURRENT);
                 break;
             case R.id.reset_timelines_order:
-                myContext.persistentTimelines().resetDefaultSelectorOrder();
+                myContext.timelines().resetDefaultSelectorOrder();
                 sortBy(R.id.displayedInSelector);
                 break;
             case R.id.total_counters:

@@ -42,7 +42,7 @@ public final class DemoOriginInserter {
         createOneOrigin(OriginType.MASTODON, demoData.mastodonTestOriginName,
                 demoData.getTestOriginHost(demoData.mastodonTestOriginName),
                 true, SslModeEnum.SECURE, true, true, true);
-        myContext.persistentOrigins().initialize();
+        myContext.origins().initialize();
     }
 
     Origin createOneOrigin(OriginType originType,
@@ -64,8 +64,8 @@ public final class DemoOriginInserter {
         checkAttributes(origin, originName, hostOrUrl, isSsl, sslMode, allowHtml,
                 inCombinedGlobalSearch, inCombinedPublicReload);
 
-        MyContextHolder.get().persistentOrigins().initialize();
-        Origin origin2 = MyContextHolder.get().persistentOrigins().fromId(origin.getId());
+        MyContextHolder.get().origins().initialize();
+        Origin origin2 = MyContextHolder.get().origins().fromId(origin.getId());
         checkAttributes(origin2, originName, hostOrUrl, isSsl, sslMode, allowHtml,
                 inCombinedGlobalSearch, inCombinedPublicReload);
         return origin;
@@ -117,12 +117,12 @@ public final class DemoOriginInserter {
     }
 
     public void checkDefaultTimelinesForOrigins() {
-        for (Origin origin : MyContextHolder.get().persistentOrigins().collection()) {
-            MyAccount myAccount = MyContextHolder.get().persistentAccounts().
+        for (Origin origin : MyContextHolder.get().origins().collection()) {
+            MyAccount myAccount = MyContextHolder.get().accounts().
                     getFirstSucceededForOrigin(origin);
             for (TimelineType timelineType : TimelineType.getDefaultOriginTimelineTypes()) {
                 int count = 0;
-                for (Timeline timeline : MyContextHolder.get().persistentTimelines().values()) {
+                for (Timeline timeline : MyContextHolder.get().timelines().values()) {
                     if (timeline.getOrigin().equals(origin) &&
                             timeline.getTimelineType().equals(timelineType) &&
                             timeline.getSearchQuery().isEmpty()) {

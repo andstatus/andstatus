@@ -54,10 +54,10 @@ public class CommandExecutorStrategyTest {
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
         // In order for the the mocked connection to have effect:
-        MyContextHolder.get().persistentAccounts().initialize();
-        MyContextHolder.get().persistentTimelines().initialize();
-        ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(
-                MyContextHolder.get().persistentOrigins().fromName(demoData.gnusocialTestOriginName));
+        MyContextHolder.get().accounts().initialize();
+        MyContextHolder.get().timelines().initialize();
+        ma = MyContextHolder.get().accounts().getFirstSucceededForOrigin(
+                MyContextHolder.get().origins().fromName(demoData.gnusocialTestOriginName));
         assertTrue(ma.toString(), ma.isValidAndSucceeded());
         httpConnectionMock = ma.getConnection().getHttpMock();
     }
@@ -183,6 +183,6 @@ public class CommandExecutorStrategyTest {
     public void tearDown() throws Exception {
         TestSuite.setHttpConnectionMockInstance(null);
         TestSuite.setHttpConnectionMockClass(null);
-        MyContextHolder.get().persistentAccounts().initialize();
+        MyContextHolder.get().accounts().initialize();
     }
 }

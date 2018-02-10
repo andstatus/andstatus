@@ -91,7 +91,7 @@ public class AccountName {
 
     protected static AccountName fromOriginAndUserNames(MyContext myContext, String originName,
                                                         String username) {
-        return fromOriginAndUsername(myContext.persistentOrigins().fromName(fixOriginName(originName)), username);
+        return fromOriginAndUsername(myContext.origins().fromName(fixOriginName(originName)), username);
     }
 
     public static AccountName fromOriginAndUsername(@NonNull Origin origin, String username) {
@@ -112,7 +112,7 @@ public class AccountName {
     @NonNull
     public static AccountName fromAccountName(MyContext myContext, String accountNameString) {
         AccountName accountName = new AccountName();
-        accountName.origin = myContext.persistentOrigins().fromName(accountNameToOriginName(accountNameString));
+        accountName.origin = myContext.origins().fromName(accountNameToOriginName(accountNameString));
         accountName.username = accountName.accountNameToUsername(accountNameString);
         return accountName;
     }

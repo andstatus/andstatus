@@ -41,11 +41,11 @@ public class MyServiceTest1 extends MyServiceTest {
         final String method = "testAccountSync";
         MyLog.i(this, method + " started");
 
-        MyAccount myAccount = MyContextHolder.get().persistentAccounts().getFirstSucceeded();
+        MyAccount myAccount = MyContextHolder.get().accounts().getFirstSucceeded();
         assertTrue("No successful account", myAccount.isValidAndSucceeded());
 
         MyContext myContext = MyContextHolder.get();
-        for (Timeline timeline : myContext.persistentTimelines().getFiltered(false, TriState.FALSE,
+        for (Timeline timeline : myContext.timelines().getFiltered(false, TriState.FALSE,
                 TimelineType.UNKNOWN, MyAccount.EMPTY, myAccount.getOrigin())) {
             if (timeline.isSyncedAutomatically()) {
                 if (timeline.isTimeToAutoSync()) {
@@ -53,7 +53,7 @@ public class MyServiceTest1 extends MyServiceTest {
                 }
             }
         }
-        myContext.persistentTimelines().saveChanged();
+        myContext.timelines().saveChanged();
         SyncResult syncResult = new SyncResult();
         MyServiceCommandsRunner runner = new MyServiceCommandsRunner(myContext);
         runner.setIgnoreServiceAvailability(true);
@@ -65,7 +65,7 @@ public class MyServiceTest1 extends MyServiceTest {
 
         myContext = MyContextHolder.get();
         Timeline timelineToSync = null;
-        for (Timeline timeline : myContext.persistentTimelines().getFiltered(false, TriState.FALSE,
+        for (Timeline timeline : myContext.timelines().getFiltered(false, TriState.FALSE,
                 TimelineType.UNKNOWN, myAccount, null)) {
             if (timeline.isSyncedAutomatically()) {
                 timelineToSync = timeline;

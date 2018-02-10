@@ -171,7 +171,7 @@ public final class DemoData {
                 originInserter.insert();
                 final DemoAccountInserter accountInserter = new DemoAccountInserter(myContext);
                 accountInserter.insert();
-                myContext.persistentTimelines().saveChanged();
+                myContext.timelines().saveChanged();
 
                 MyPreferences.onPreferencesChanged();
                 MyContextHolder.setExpiredIfConfigChanged();
@@ -185,10 +185,10 @@ public final class DemoData {
                 }
                 assertTrue("Context is not ready", MyContextHolder.get().isReady());
                 checkDataPath();
-                int size = MyContextHolder.get().persistentAccounts().size();
-                assertTrue("Only " + size + " accounts added: " + MyContextHolder.get().persistentAccounts(),
+                int size = MyContextHolder.get().accounts().size();
+                assertTrue("Only " + size + " accounts added: " + MyContextHolder.get().accounts(),
                         size > 5);
-                assertEquals("No WebfingerId", Optional.empty(), MyContextHolder.get().persistentAccounts()
+                assertEquals("No WebfingerId", Optional.empty(), MyContextHolder.get().accounts()
                         .list().stream().filter(ma -> !ma.getActor().isWebFingerIdValid()).findFirst());
 
                 originInserter.checkDefaultTimelinesForOrigins();
@@ -200,15 +200,15 @@ public final class DemoData {
                     progressCallback.onProgressMessage("Demo notes added...");
                     DbUtils.waitMs(TAG_ASYNC, 1000);
                 }
-                if (MyContextHolder.get().persistentAccounts().size() == 0) {
+                if (MyContextHolder.get().accounts().size() == 0) {
                     fail("No persistent accounts");
                 }
                 setSuccessfulAccountAsCurrent();
-                Timeline defaultTimeline = MyContextHolder.get().persistentTimelines().getFiltered(
+                Timeline defaultTimeline = MyContextHolder.get().timelines().getFiltered(
                         false, TriState.TRUE, TimelineType.EVERYTHING, null,
-                        MyContextHolder.get().persistentAccounts().getCurrentAccount().getOrigin()).get(0);
+                        MyContextHolder.get().accounts().getCurrentAccount().getOrigin()).get(0);
                 assertThat(defaultTimeline.getTimelineType(), is(TimelineType.EVERYTHING));
-                MyContextHolder.get().persistentTimelines().setDefault(defaultTimeline);
+                MyContextHolder.get().timelines().setDefault(defaultTimeline);
                 MyLog.v(TAG_ASYNC, "Before initialize 3");
                 MyContextHolder.initialize(myContext.context(), method);
                 assertConversations();
@@ -238,23 +238,23 @@ public final class DemoData {
     }
 
     private void setSuccessfulAccountAsCurrent() {
-        MyLog.i(TAG, "Persistent accounts: " + MyContextHolder.get().persistentAccounts().size());
-        boolean found = (MyContextHolder.get().persistentAccounts().getCurrentAccount().getCredentialsVerified()
+        MyLog.i(TAG, "Persistent accounts: " + MyContextHolder.get().accounts().size());
+        boolean found = (MyContextHolder.get().accounts().getCurrentAccount().getCredentialsVerified()
                 == MyAccount.CredentialsVerificationStatus.SUCCEEDED);
         if (!found) {
-            for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
+            for (MyAccount ma : MyContextHolder.get().accounts().list()) {
                 MyLog.i(TAG, ma.toString());
                 if (ma.getCredentialsVerified()
                 == MyAccount.CredentialsVerificationStatus.SUCCEEDED) {
                     found = true;
-                    MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
+                    MyContextHolder.get().accounts().setCurrentAccount(ma);
                     break;
                 }
             }
         }
         assertTrue("Found account, which is successfully verified", found);
         assertTrue("Current account is successfully verified",
-                MyContextHolder.get().persistentAccounts().getCurrentAccount().getCredentialsVerified()
+                MyContextHolder.get().accounts().getCurrentAccount().getCredentialsVerified()
                 == MyAccount.CredentialsVerificationStatus.SUCCEEDED);
     }
 
@@ -271,7 +271,7 @@ public final class DemoData {
 
     @NonNull
     public MyAccount getMyAccount(String accountName) {
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
+        MyAccount ma = MyContextHolder.get().accounts().fromAccountName(accountName);
         assertTrue(accountName + " exists", ma.isValid());
         assertTrue("Origin for " + accountName + " doesn't exist", ma.getOrigin().isValid());
         return ma;
@@ -279,7 +279,7 @@ public final class DemoData {
 
     @NonNull
     public Actor getAccountActorByOid(String actorOid) {
-        for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
+        for (MyAccount ma : MyContextHolder.get().accounts().list()) {
             if (ma.getActorOid().equals(actorOid)) {
                 return ma.getActor();
             }

@@ -68,7 +68,7 @@ class MergeActors extends DataChecker {
             c = myContext.getDatabase().rawQuery(sql, null);
             while (c.moveToNext()) {
                 rowsCount++;
-                Actor actor = Actor.fromOriginAndActorOid(myContext.persistentOrigins().fromId(c.getLong(1)),
+                Actor actor = Actor.fromOriginAndActorOid(myContext.origins().fromId(c.getLong(1)),
                         c.getString(2));
                 actor.actorId = c.getLong(0);
                 actor.setWebFingerId(c.getString(3));
@@ -106,7 +106,7 @@ class MergeActors extends DataChecker {
         AActivity activity = AActivity.from(Actor.EMPTY, ActivityType.UPDATE);
         activity.setObjActor(actor);
         Actor mergeWith = prev;
-        if (myContext.persistentAccounts().fromActorId(actor.actorId).isValid()) {
+        if (myContext.accounts().fromActorId(actor.actorId).isValid()) {
             mergeWith = actor;
             activity.setObjActor(prev);
         }

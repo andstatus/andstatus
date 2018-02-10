@@ -78,7 +78,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     RESEND(true) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
-            MyAccount ma = MyContextHolder.get().persistentAccounts().fromActorId(
+            MyAccount ma = MyContextHolder.get().accounts().fromActorId(
                     MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, menu.getNoteId()));
             CommandData commandData = CommandData.newUpdateStatus(ma, menu.getNoteId());
             MyServiceManager.sendManualForegroundCommand(commandData);

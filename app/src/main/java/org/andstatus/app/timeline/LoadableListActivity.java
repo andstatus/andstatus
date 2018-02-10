@@ -216,8 +216,8 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
     }
 
     protected void setCurrentMyAccount(long accountId, long originId) {
-        setCurrentMyAccount(myContext.persistentAccounts().fromActorId(accountId),
-                myContext.persistentOrigins().fromId(originId));
+        setCurrentMyAccount(myContext.accounts().fromActorId(accountId),
+                myContext.origins().fromId(originId));
     }
 
     public void setCurrentMyAccount(MyAccount ma, Origin origin) {
@@ -226,10 +226,10 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         } else {
             if (origin != null && origin.isValid()) {
                 if (!this.ma.isValid() || !this.ma.getOrigin().equals(origin)) {
-                    this.ma = myContext.persistentAccounts().getFirstSucceededForOrigin(origin);
+                    this.ma = myContext.accounts().getFirstSucceededForOrigin(origin);
                 }
             } else if (!getCurrentMyAccount().isValid()) {
-                this.ma = myContext.persistentAccounts().getCurrentAccount();
+                this.ma = myContext.accounts().getCurrentAccount();
             }
         }
     }

@@ -267,7 +267,7 @@ public class TimelineSql {
         if (showOrigin) {
             long originId = DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID);
             if (originId != 0) {
-                Origin origin = MyContextHolder.get().persistentOrigins().fromId(originId);
+                Origin origin = MyContextHolder.get().origins().fromId(originId);
                 username += " / " + origin.getName();
                 if (origin.getOriginType() == OriginType.GNUSOCIAL &&
                         MyPreferences.isShowDebuggingInfoInUi()) {

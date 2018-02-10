@@ -162,14 +162,14 @@ public class DemoAccountInserter {
     }
 
     public void checkDefaultTimelinesForAccounts() {
-        for (MyAccount myAccount : MyContextHolder.get().persistentAccounts().list()) {
+        for (MyAccount myAccount : MyContextHolder.get().accounts().list()) {
             for (TimelineType timelineType : TimelineType.getDefaultMyAccountTimelineTypes()) {
                 if (!myAccount.getConnection().isApiSupported(timelineType.getConnectionApiRoutine())) continue;
 
                 long count = 0;
                 StringBuilder logMsg =new StringBuilder(myAccount.toString());
                 I18n.appendWithSpace(logMsg, timelineType.toString());
-                for (Timeline timeline : MyContextHolder.get().persistentTimelines().values()) {
+                for (Timeline timeline : MyContextHolder.get().timelines().values()) {
                     if (timeline.getMyAccount().equals(myAccount) && timeline.getTimelineType().equals(timelineType)
                             && !timeline.hasSearchQuery()) {
                         count++;

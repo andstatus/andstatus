@@ -54,7 +54,7 @@ public class SuggestionsAdapter extends BaseAdapter implements Filterable {
     public SuggestionsAdapter(@NonNull LoadableListActivity activity, @NonNull SearchObjects searchObjects) {
         mInflater = LayoutInflater.from(activity);
         this.searchObjects = searchObjects;
-        for (Timeline timeline : activity.getMyContext().persistentTimelines().values()) {
+        for (Timeline timeline : activity.getMyContext().timelines().values()) {
             if (timeline.hasSearchQuery() && !notesSuggestions.contains(timeline.getSearchQuery())) {
                 notesSuggestions.add(timeline.getSearchQuery());
             }

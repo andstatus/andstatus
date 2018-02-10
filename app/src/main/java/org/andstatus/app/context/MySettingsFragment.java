@@ -126,11 +126,11 @@ public class MySettingsFragment extends PreferenceFragment implements
         Preference preference = findPreference(KEY_MANAGE_ACCOUNTS);
         if (preference != null) {
             CharSequence summary;
-            if (MyContextHolder.get().persistentAccounts().isEmpty()) {
+            if (MyContextHolder.get().accounts().isEmpty()) {
                 summary = getText(R.string.summary_preference_accounts_absent);
             } else {
                 summary = getText(R.string.summary_preference_accounts_present) + ": "
-                        + MyContextHolder.get().persistentAccounts().size();
+                        + MyContextHolder.get().accounts().size();
             }
             preference.setSummary(summary);
         }
@@ -229,7 +229,7 @@ public class MySettingsFragment extends PreferenceFragment implements
         Preference preference = findPreference(KEY_BACKUP_RESTORE);
         if (preference != null) {
             CharSequence title;
-            if (MyContextHolder.get().persistentAccounts().isEmpty()) {
+            if (MyContextHolder.get().accounts().isEmpty()) {
                 title = getText(R.string.label_restore);
             } else {
                 title = getText(R.string.label_backup);
@@ -285,7 +285,7 @@ public class MySettingsFragment extends PreferenceFragment implements
     }
 
     private void showManageTimelines() {
-        Timeline timeline = MyContextHolder.get().persistentTimelines().getDefault();
+        Timeline timeline = MyContextHolder.get().timelines().getDefault();
         Preference preference = findPreference(KEY_MANAGE_TIMELINES);
         if (preference != null) {
             preference.setSummary(String.format(getText(R.string.default_timeline_summary).toString(),
@@ -326,7 +326,7 @@ public class MySettingsFragment extends PreferenceFragment implements
                 startActivity(intent);
                 break;
             case KEY_BACKUP_RESTORE:
-                if (MyContextHolder.get().persistentAccounts().isEmpty()) {
+                if (MyContextHolder.get().accounts().isEmpty()) {
                     startActivity(new Intent(getActivity(), RestoreActivity.class));
                 } else {
                     startActivity(new Intent(getActivity(), BackupActivity.class));
@@ -395,7 +395,7 @@ public class MySettingsFragment extends PreferenceFragment implements
                     showDontSynchronizeOldNotes();
                     break;
                 case MyPreferences.KEY_SYNC_FREQUENCY_SECONDS:
-                    MyContextHolder.get().persistentAccounts().onDefaultSyncFrequencyChanged();
+                    MyContextHolder.get().accounts().onDefaultSyncFrequencyChanged();
                     showFrequency();
                     break;
                 case MyPreferences.KEY_CONNECTION_TIMEOUT_SECONDS:

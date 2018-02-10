@@ -65,7 +65,7 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
         long startTime = System.currentTimeMillis();
         setMyContext(myContext);
         setNoteId(DbUtils.getLong(cursor, ActivityTable.NOTE_ID));
-        setOrigin(myContext.persistentOrigins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)));
+        setOrigin(myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)));
         setLinkedAccount(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID));
 
         authorName = TimelineSql.actorColumnIndexToNameAtTimeline(cursor,

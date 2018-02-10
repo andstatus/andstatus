@@ -121,11 +121,11 @@ public class AuthenticatorService extends Service {
                 Account account) throws NetworkErrorException {
             
             MyAccount ma = MyContextHolder.getMyFutureContext(null).getBlocking()
-                    .persistentAccounts().fromAccountName(account.name);
+                    .accounts().fromAccountName(account.name);
             boolean deleted = true;
             if (ma.isValid()) {
-                MyContextHolder.get().persistentTimelines().onAccountDelete(ma);
-                deleted = MyContextHolder.get().persistentAccounts().delete(ma);
+                MyContextHolder.get().timelines().onAccountDelete(ma);
+                deleted = MyContextHolder.get().accounts().delete(ma);
             }
             MyPreferences.onPreferencesChanged();
             

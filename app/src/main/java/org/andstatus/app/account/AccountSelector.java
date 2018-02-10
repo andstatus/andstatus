@@ -72,7 +72,7 @@ public class AccountSelector extends SelectorDialog {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 long actorId = Long.parseLong(((TextView) view.findViewById(R.id.id)).getText()
                         .toString());
-                returnSelectedAccount(MyContextHolder.get().persistentAccounts().fromActorId(actorId));
+                returnSelectedAccount(MyContextHolder.get().accounts().fromActorId(actorId));
             }
         });
     }
@@ -80,7 +80,7 @@ public class AccountSelector extends SelectorDialog {
     private List<MyAccount> newListData() {
         long originId = getArguments().getLong(IntentExtra.ORIGIN_ID.key, 0);
         List<MyAccount> listData = new ArrayList<>();
-        for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
+        for (MyAccount ma : MyContextHolder.get().accounts().list()) {
             if (originId==0 || ma.getOriginId() == originId) {
                 listData.add(ma);
             }

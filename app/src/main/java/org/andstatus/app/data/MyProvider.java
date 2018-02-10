@@ -192,7 +192,7 @@ public class MyProvider extends ContentProvider {
         }
         long originId = MyQuery.activityIdToLongColumnValue(ActivityTable.ORIGIN_ID, activityId);
         if (originId == 0) return 0;
-        Origin origin = MyContextHolder.get().persistentOrigins().fromId(originId);
+        Origin origin = MyContextHolder.get().origins().fromId(originId);
         // Was this the last activity for this note?
         final long activityId2 = MyQuery.conditionToLongColumnValue(db, null, ActivityTable.TABLE_NAME,
                 BaseColumns._ID, ActivityTable.NOTE_ID + "=" + noteId +
@@ -219,7 +219,7 @@ public class MyProvider extends ContentProvider {
             return;
         }
         TriState reblogged = TriState.fromBoolean(
-                myContext.persistentAccounts().contains(MyQuery.getRebloggers(db, origin, noteId))
+                myContext.accounts().contains(MyQuery.getRebloggers(db, origin, noteId))
         );
         String sql = "UPDATE " + NoteTable.TABLE_NAME + " SET " + NoteTable.REBLOGGED + "=" + reblogged.id
                 + " WHERE " + NoteTable._ID + "=" + noteId;
@@ -238,7 +238,7 @@ public class MyProvider extends ContentProvider {
             return;
         }
         TriState favorited = TriState.fromBoolean(
-                myContext.persistentAccounts().contains(MyQuery.getStargazers(db, origin, noteId))
+                myContext.accounts().contains(MyQuery.getStargazers(db, origin, noteId))
         );
         String sql = "UPDATE " + NoteTable.TABLE_NAME + " SET " + NoteTable.FAVORITED + "=" + favorited.id
                 + " WHERE " + NoteTable._ID + "=" + noteId;

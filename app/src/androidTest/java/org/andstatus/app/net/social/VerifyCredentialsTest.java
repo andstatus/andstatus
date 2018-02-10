@@ -59,7 +59,7 @@ public class VerifyCredentialsTest {
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
         OriginConnectionData connectionData = OriginConnectionData.fromAccountName(AccountName.fromOriginAndUsername(
-                MyContextHolder.get().persistentOrigins().fromName(demoData.twitterTestOriginName),
+                MyContextHolder.get().origins().fromName(demoData.twitterTestOriginName),
                 demoData.twitterTestAccountUsername),
                 TriState.UNKNOWN);
         connectionData.setAccountActor(demoData.getAccountActorByOid(demoData.twitterTestAccountActorOid));
@@ -94,7 +94,7 @@ public class VerifyCredentialsTest {
         Actor actor = connection.verifyCredentials();
         assertEquals("Actor's oid is actorOid of this account", demoData.twitterTestAccountActorOid, actor.oid);
 
-        Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
+        Origin origin = MyContextHolder.get().origins().firstOfType(OriginType.TWITTER);
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(
                 MyContextHolder.get(), demoData.twitterTestAccountName +
                 "/" + origin.getName(), TriState.TRUE);

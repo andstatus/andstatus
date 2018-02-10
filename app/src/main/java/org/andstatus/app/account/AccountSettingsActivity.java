@@ -211,7 +211,7 @@ public class AccountSettingsActivity extends MyActivity {
         }
         if (!mFinishing) {
             MyLog.v(this, "Switching to the selected account");
-            MyContextHolder.get().persistentAccounts().setCurrentAccount(state.builder.getAccount());
+            MyContextHolder.get().accounts().setCurrentAccount(state.builder.getAccount());
             state.setAccountAction(Intent.ACTION_EDIT);
             updateScreen();
         } else {
@@ -225,7 +225,7 @@ public class AccountSettingsActivity extends MyActivity {
         if (resultCode == RESULT_OK) {
             originType = OriginType.fromCode(data.getStringExtra(IntentExtra.SELECTABLE_ENUM.key));
             if (originType.isSelectable()) {
-                List<Origin> origins = MyContextHolder.get().persistentOrigins().originsOfType(originType);
+                List<Origin> origins = MyContextHolder.get().origins().originsOfType(originType);
                 switch(origins.size()) {
                     case 0:
                         originType = OriginType.UNKNOWN;
@@ -255,7 +255,7 @@ public class AccountSettingsActivity extends MyActivity {
     private void onOriginSelected(int resultCode, Intent data) {
         Origin origin = Origin.EMPTY;
         if (resultCode == RESULT_OK) {
-            origin = MyContextHolder.get().persistentOrigins()
+            origin = MyContextHolder.get().origins()
                     .fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key));
             if (origin.isPersistent()) {
                 onOriginSelected(origin);
@@ -541,7 +541,7 @@ public class AccountSettingsActivity extends MyActivity {
     }
     
     private void showIsDefaultAccount() {
-        boolean isDefaultAccount = state.getAccount().equals(MyContextHolder.get().persistentAccounts().getDefaultAccount());
+        boolean isDefaultAccount = state.getAccount().equals(MyContextHolder.get().accounts().getDefaultAccount());
         View view= findFragmentViewById(R.id.is_default_account);
         if (view != null) {
             view.setVisibility(isDefaultAccount ? View.VISIBLE : View.GONE);
@@ -734,16 +734,16 @@ public class AccountSettingsActivity extends MyActivity {
     private void returnToOurActivity() {
         MyContextHolder.getMyFutureContext(this, this, false).thenRun( myContext -> {
             MyLog.v(this, "Returning to " + activityOnFinish);
-            MyAccount myAccount = myContext.persistentAccounts().
+            MyAccount myAccount = myContext.accounts().
                     fromAccountName(getState().getAccount().getAccountName());
             if (myAccount.isValid()) {
-                myContext.persistentAccounts().setCurrentAccount(myAccount);
+                myContext.accounts().setCurrentAccount(myAccount);
             }
             if (activityOnFinish == ActivityOnFinish.HOME) {
                 Timeline home = Timeline.getTimeline(TimelineType.HOME, myAccount, 0, null);
                 TimelineActivity.startForTimeline(myContext, AccountSettingsActivity.this, home, myAccount, true);
             } else {
-                if (myContext.persistentAccounts().size() > 1) {
+                if (myContext.accounts().size() > 1) {
                     Intent intent = new Intent(myContext.context(), MySettingsActivity.class);
                     // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -891,8 +891,8 @@ public class AccountSettingsActivity extends MyActivity {
 
                     if (succeeded) {
                         String accountName = state.getAccount().getAccountName();
-                        MyContextHolder.get().persistentAccounts().initialize();
-                        MyContextHolder.get().persistentTimelines().initialize();
+                        MyContextHolder.get().accounts().initialize();
+                        MyContextHolder.get().timelines().initialize();
                         state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                                 MyContextHolder.get(), accountName, TriState.TRUE);
                         updateScreen();

@@ -106,7 +106,7 @@ public class FirstActivity extends AppCompatActivity {
         if (!myContext.isReady()) {
             MyLog.i(context, "Context is not ready: " + myContext.toString());
             needToStart = NeedToStart.HELP;
-        } else if (myContext.persistentAccounts().isEmpty()) {
+        } else if (myContext.accounts().isEmpty()) {
             MyLog.i(context, "No AndStatus Accounts yet");
             needToStart = NeedToStart.HELP;
         }

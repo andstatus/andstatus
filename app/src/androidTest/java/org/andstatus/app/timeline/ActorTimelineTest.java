@@ -43,7 +43,7 @@ public class ActorTimelineTest extends TimelineActivityTest {
 
         final MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(ma.isValid());
-        MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
+        MyContextHolder.get().accounts().setCurrentAccount(ma);
         long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOriginId(), demoData.conversationAuthorSecondActorOid);
 
         MyLog.i(this, "setUp ended");

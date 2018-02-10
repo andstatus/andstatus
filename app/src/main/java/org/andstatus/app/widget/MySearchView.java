@@ -186,7 +186,7 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
     }
 
     private void launchInternetSearch(String query) {
-        for (Origin origin : parentActivity.getMyContext().persistentOrigins().originsForInternetSearch(
+        for (Origin origin : parentActivity.getMyContext().origins().originsForInternetSearch(
                 getSearchObjects(), getOrigin(), isCombined())) {
             MyServiceManager.sendManualForegroundCommand(
                     CommandData.newSearch(getSearchObjects(), parentActivity.getMyContext(), origin, query));
@@ -209,7 +209,7 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
         intent.putExtra(IntentExtra.SEARCH_QUERY.key, query);
         if (timeline.hasSearchQuery()
                 && getSearchObjects() == SearchObjects.NOTES
-                && !parentActivity.getMyContext().persistentTimelines().getDefault().equals(timeline)) {
+                && !parentActivity.getMyContext().timelines().getDefault().equals(timeline)) {
             // Send intent to existing activity
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         }
@@ -218,7 +218,7 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
 
     private void onSearchContextChanged() {
         isInternetSearchEnabled = parentActivity.getMyContext()
-                .persistentOrigins().isSearchSupported(
+                .origins().isSearchSupported(
                         getSearchObjects(), getOrigin(), isCombined());
         internetSearch.setEnabled(isInternetSearchEnabled);
         if (!isInternetSearchEnabled && internetSearch.isChecked()) {

@@ -102,7 +102,7 @@ public class MyBackupAgent extends BackupAgent {
                 throw new FileNotFoundException("No BackupDataOutput");
             } else if (!MyContextHolder.get().isReady()) {
                 throw new FileNotFoundException("Application context is not initialized");
-            } else if (MyContextHolder.get().persistentAccounts().isEmpty()) {
+            } else if (MyContextHolder.get().accounts().isEmpty()) {
                 throw new FileNotFoundException("Nothing to backup - No accounts yet");
             } else {
                 boolean isServiceAvailableStored = checkAndSetServiceUnavailable();
@@ -141,7 +141,7 @@ public class MyBackupAgent extends BackupAgent {
         databasesBackedUp = backupFile(data,
                 DATABASE_KEY + "_" + DatabaseHolder.DATABASE_NAME,
                 MyStorage.getDatabasePath(DatabaseHolder.DATABASE_NAME));
-        accountsBackedUp = MyContextHolder.get().persistentAccounts().onBackup(data, backupDescriptor);
+        accountsBackedUp = MyContextHolder.get().accounts().onBackup(data, backupDescriptor);
     }
     
     private long backupFile(MyBackupDataOutput data, String key, File dataFile) throws IOException {
@@ -240,7 +240,7 @@ public class MyBackupAgent extends BackupAgent {
         MyContextHolder.initialize(this, this);
         if (!MyContextHolder.get().isReady()) {
             throw new FileNotFoundException("Application context is not initialized");
-        } else if (!MyContextHolder.get().persistentAccounts().isEmpty()) {
+        } else if (!MyContextHolder.get().accounts().isEmpty()) {
             throw new FileNotFoundException("Cannot restore: AndStatus accounts are present. Please reinstall application before restore");
         }
 
@@ -264,7 +264,7 @@ public class MyBackupAgent extends BackupAgent {
         
         data.setMyContext(MyContextHolder.get());
         assertNextHeader(data, PersistentAccounts.KEY_ACCOUNT);
-        accountsRestored += data.getMyContext().persistentAccounts().onRestore(data, backupDescriptor);
+        accountsRestored += data.getMyContext().accounts().onRestore(data, backupDescriptor);
 
         MyContextHolder.release();
         MyContextHolder.setOnRestore(false);

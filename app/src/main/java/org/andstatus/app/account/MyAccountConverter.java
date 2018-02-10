@@ -46,7 +46,7 @@ public class MyAccountConverter {
         try {
             MyLog.i(TAG, "Accounts upgrading step from version " + oldVersion + " to version " + versionTo );
             MyContext myContext = MyContextHolder.get();
-            myContext.persistentOrigins().initialize(db);
+            myContext.origins().initialize(db);
             
             android.accounts.AccountManager am = AccountManager.get(myContext.context());
             Collection<android.accounts.Account> accountsToRemove = new ArrayList<android.accounts.Account>();
@@ -68,7 +68,7 @@ public class MyAccountConverter {
                     androidAccountData.moveStringKeyTo(MyAccount.KEY_ACTOR_OID, accountData);
                     androidAccountData.moveLongKeyTo(MyAccount.KEY_ACTOR_ID, accountData);
                     
-                    Origin origin = myContext.persistentOrigins().fromName(accountData.getDataString(Origin.KEY_ORIGIN_NAME, ""));
+                    Origin origin = myContext.origins().fromName(accountData.getDataString(Origin.KEY_ORIGIN_NAME, ""));
                     
                     boolean isOauth = androidAccountData.getDataBoolean(MyAccount.KEY_OAUTH, origin.isOAuthDefault());
                     accountData.setDataBoolean(MyAccount.KEY_OAUTH, isOauth);

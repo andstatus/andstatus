@@ -53,7 +53,7 @@ public class CommandExecutorGetOpenInstances extends CommandExecutorStrategy {
                         .setHostOrUrl(mbOrigin.urlString)
                         .build();
                 if (origin.isValid()
-                        && !MyContextHolder.get().persistentOrigins().fromName(origin.getName())
+                        && !MyContextHolder.get().origins().fromName(origin.getName())
                                 .isValid()
                         && !haveOriginsWithThisHostName(origin.getUrl())) {
                     newOrigins.add(origin);
@@ -69,7 +69,7 @@ public class CommandExecutorGetOpenInstances extends CommandExecutorStrategy {
         if (url == null) {
             return true;
         }
-        for (Origin origin : MyContextHolder.get().persistentOrigins().collection()) {
+        for (Origin origin : MyContextHolder.get().origins().collection()) {
             if ( origin.getUrl() != null && origin.getUrl().getHost().equals(url.getHost())) {
                 return true;
             }

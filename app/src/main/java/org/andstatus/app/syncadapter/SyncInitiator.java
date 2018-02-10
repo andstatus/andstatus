@@ -87,8 +87,8 @@ public class SyncInitiator extends BroadcastReceiver {
         final ConnectionState connectionState = UriUtils.getConnectionState(myContext.context());
         MyLog.v(this, "syncIfNeeded " + UriUtils.getConnectionState(myContext.context()));
         if (!ConnectionRequired.SYNC.isConnectionStateOk(connectionState)) return false;
-        for (MyAccount myAccount: myContext.persistentAccounts().accountsToSync()) {
-            if (!myContext.persistentTimelines().toAutoSyncForAccount(myAccount).isEmpty()) {
+        for (MyAccount myAccount: myContext.accounts().accountsToSync()) {
+            if (!myContext.timelines().toAutoSyncForAccount(myAccount).isEmpty()) {
                 myAccount.requestSync();
             }
         }
@@ -101,7 +101,7 @@ public class SyncInitiator extends BroadcastReceiver {
     }
 
     private static void scheduleRepeatingAlarm(@NonNull MyContext myContext) {
-        long minSyncIntervalMillis = myContext.persistentAccounts().minSyncIntervalMillis();
+        long minSyncIntervalMillis = myContext.accounts().minSyncIntervalMillis();
         if (minSyncIntervalMillis > 0) {
             final AlarmManager alarmManager = myContext.context().getSystemService(AlarmManager.class);
             if (alarmManager == null) {
@@ -120,7 +120,7 @@ public class SyncInitiator extends BroadcastReceiver {
     }
 
     private static void registerBroadcastReceiver(MyContext myContext) {
-        if (myContext != null && myContext.persistentAccounts().hasSyncedAutomatically()) myContext.context()
+        if (myContext != null && myContext.accounts().hasSyncedAutomatically()) myContext.context()
                 .registerReceiver(BROADCAST_RECEIVER, new IntentFilter(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED));
     }
 

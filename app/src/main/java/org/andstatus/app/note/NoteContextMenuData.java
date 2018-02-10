@@ -61,8 +61,8 @@ class NoteContextMenuData {
                 protected NoteForAccount doInBackground2(Void... params) {
                     MyAccount currentMyAccount = menuContainer.getCurrentMyAccount();
                     final MyContext myContext = menuContainer.getActivity().getMyContext();
-                    final Origin origin = myContext.persistentOrigins().fromId(MyQuery.noteIdToOriginId(noteId));
-                    MyAccount ma1 = myContext.persistentAccounts()
+                    final Origin origin = myContext.origins().fromId(MyQuery.noteIdToOriginId(noteId));
+                    MyAccount ma1 = myContext.accounts()
                             .getAccountForThisNote(origin, myActor, viewItem.getLinkedMyAccount(), false);
                     NoteForAccount msgNew = new NoteForAccount(origin, 0, noteId, ma1);
                     boolean changedToCurrent = !ma1.equals(currentMyAccount) && !myActor.isValid() && ma1.isValid()

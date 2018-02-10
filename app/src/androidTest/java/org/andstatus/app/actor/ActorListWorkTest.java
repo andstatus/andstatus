@@ -52,7 +52,7 @@ public class ActorListWorkTest extends ActivityTest<ActorList> {
 
         MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(ma.isValid());
-        MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
+        MyContextHolder.get().accounts().setCurrentAccount(ma);
 
         long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, demoData.getConversationOriginId(),
                 demoData.conversationMentionsNoteOid);

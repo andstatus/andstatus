@@ -40,7 +40,7 @@ abstract class MyServiceTest {
             TestSuite.initializeWithData(this);
             mService = new MyServiceTestHelper();
             mService.setUp(null);
-            ma = MyContextHolder.get().persistentAccounts().getFirstSucceeded();
+            ma = MyContextHolder.get().accounts().getFirstSucceeded();
             assertTrue("No successfully verified accounts", ma.isValidAndSucceeded());
             mService.waitForServiceStopped(true);
             ok = true;

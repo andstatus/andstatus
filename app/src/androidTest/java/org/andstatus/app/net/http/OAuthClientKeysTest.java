@@ -41,7 +41,7 @@ public class OAuthClientKeysTest {
         HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(
                 OriginConnectionData.fromAccountName(
                         AccountName.fromOriginAndUsername(
-                                MyContextHolder.get().persistentOrigins().
+                                MyContextHolder.get().origins().
                                         firstOfType(OriginType.PUMPIO), ""), TriState.UNKNOWN)
         );
         final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());

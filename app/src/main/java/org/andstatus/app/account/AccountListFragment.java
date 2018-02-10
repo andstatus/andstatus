@@ -67,7 +67,7 @@ public class AccountListFragment extends Fragment {
         mDragListView = (DragListView) view.findViewById(R.id.drag_list_view);
         mDragListView.getRecyclerView().setVerticalScrollBarEnabled(true);
 
-        mItems = new CopyOnWriteArrayList<>(MyContextHolder.get().persistentAccounts().list());
+        mItems = new CopyOnWriteArrayList<>(MyContextHolder.get().accounts().list());
         setupListRecyclerView();
         return view;
     }
@@ -87,7 +87,7 @@ public class AccountListFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        MyContextHolder.get().persistentAccounts().reorderAccounts(mItems);
+        MyContextHolder.get().accounts().reorderAccounts(mItems);
     }
 
     private void setupListRecyclerView() {
@@ -164,7 +164,7 @@ public class AccountListFragment extends Fragment {
             public void onItemClicked(View view) {
                 Intent intent = new Intent(getActivity(), AccountSettingsActivity.class);
                 intent.putExtra(IntentExtra.ACCOUNT_NAME.key,
-                        MyContextHolder.get().persistentAccounts().fromActorId(mItemId).getAccountName());
+                        MyContextHolder.get().accounts().fromActorId(mItemId).getAccountName());
                 getActivity().startActivity(intent);
             }
 

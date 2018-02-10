@@ -106,7 +106,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     }
 
     void setLinkedAccount(long linkedActorId) {
-        linkedMyAccount = getMyContext().persistentAccounts().fromActorId(linkedActorId);
+        linkedMyAccount = getMyContext().accounts().fromActorId(linkedActorId);
     }
 
     @NonNull
@@ -249,7 +249,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
             if (!filter.searchQuery.isEmpty() && !filter.searchQuery.matchedAll(bodyToSearch)) return false;
         }
         if (filter.hideRepliesNotToMeOrFriends && inReplyToActorId != 0
-                && !MyContextHolder.get().persistentAccounts().isMeOrMyFriend(inReplyToActorId)) return false;
+                && !MyContextHolder.get().accounts().isMeOrMyFriend(inReplyToActorId)) return false;
         return true;
     }
 

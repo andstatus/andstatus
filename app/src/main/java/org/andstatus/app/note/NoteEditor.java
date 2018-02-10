@@ -484,7 +484,7 @@ public class NoteEditor {
     }
 
     private boolean shouldShowAccountName() {
-        return getActivity().getMyContext().persistentAccounts().size() > 1;
+        return getActivity().getMyContext().accounts().size() > 1;
     }
 
     private void showAttachedImage() {

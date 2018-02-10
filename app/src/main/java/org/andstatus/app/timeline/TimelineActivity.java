@@ -121,7 +121,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     @NonNull
     private static Intent getIntentForTimeline(MyContext myContext, Timeline timeline, MyAccount newCurrentMyAccount, boolean clearTask) {
         if (newCurrentMyAccount != null && newCurrentMyAccount.isValid()) {
-            myContext.persistentAccounts().setCurrentAccount(newCurrentMyAccount);
+            myContext.accounts().setCurrentAccount(newCurrentMyAccount);
         }
         Intent intent = new Intent(myContext.context(), clearTask ? FirstActivity.class : TimelineActivity.class);
         intent.setData(timeline.getUri());
@@ -164,7 +164,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             return;
         }
 
-        getParamsNew().setTimeline(myContext.persistentTimelines().getDefault());
+        getParamsNew().setTimeline(myContext.timelines().getDefault());
         contextMenu = new ActivityContextMenu(this);
 
         initializeDrawer();
@@ -313,7 +313,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     /** View.OnClickListener */
     public void onSelectAccountButtonClick(View item) {
-        if (myContext.persistentAccounts().size() > 1) {
+        if (myContext.accounts().size() > 1) {
             AccountSelector.selectAccount(TimelineActivity.this, ActivityRequestCode.SELECT_ACCOUNT, 0);
         }
         closeDrawer();
@@ -362,7 +362,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         DemoData.crashTest(() -> getNoteEditor() != null
                 && getNoteEditor().getData().body.startsWith("Crash me on pause 2015-04-10"));
         saveTimelinePosition();
-        myContext.persistentTimelines().saveChanged();
+        myContext.timelines().saveChanged();
         super.onPause();
     }
 
@@ -401,7 +401,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        MyAccount ma = myContext.persistentAccounts().getCurrentAccount();
+        MyAccount ma = myContext.accounts().getCurrentAccount();
         boolean enableSync = (getParamsLoaded().getTimeline().isCombined() || ma.isValidAndSucceeded())
                 && getParamsLoaded().getTimeline().isSynableSomehow();
         MenuItem item = menu.findItem(R.id.sync_menu_item);
@@ -492,7 +492,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     public void onItemClick(NoteViewItem item) {
-        MyAccount ma = myContext.persistentAccounts().getAccountForThisNote(item.getOrigin(),
+        MyAccount ma = myContext.accounts().getAccountForThisNote(item.getOrigin(),
                 getParamsNew().getMyAccount(), item.getLinkedMyAccount(), false);
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this,
@@ -596,7 +596,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 intentNew.getStringExtra(IntentExtra.WHICH_PAGE.key), WhichPage.CURRENT);
         String searchQuery = intentNew.getStringExtra(IntentExtra.SEARCH_QUERY.key);
         if (!getParamsNew().parseUri(intentNew.getData(), searchQuery)) {
-            getParamsNew().setTimeline(myContext.persistentTimelines().getDefault());
+            getParamsNew().setTimeline(myContext.timelines().getDefault());
         }
         setCurrentMyAccount(getParamsNew().getTimeline().getMyAccount(), getParamsNew().getTimeline().getOrigin());
 
@@ -962,14 +962,14 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     private void syncForAllOrigins(Timeline timelineToSync, boolean syncYounger, boolean manuallyLaunched) {
-        for (Origin origin : myContext.persistentOrigins().originsToSync(
+        for (Origin origin : myContext.origins().originsToSync(
                 timelineToSync.getMyAccount().getOrigin(), true, timelineToSync.hasSearchQuery())) {
             syncOneTimeline(timelineToSync.cloneForOrigin(myContext, origin), syncYounger, manuallyLaunched);
         }
     }
 
     private void syncForAllAccounts(Timeline timelineToSync, boolean syncYounger, boolean manuallyLaunched) {
-        for (MyAccount ma : myContext.persistentAccounts().accountsToSync()) {
+        for (MyAccount ma : myContext.accounts().accountsToSync()) {
             if (timelineToSync.getTimelineType() == TimelineType.EVERYTHING) {
                 ma.requestSync();
             } else {
@@ -1031,7 +1031,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 accountToShareViaSelected(data);
                 break;
             case SELECT_TIMELINE:
-                Timeline timeline = myContext.persistentTimelines()
+                Timeline timeline = myContext.timelines()
                         .fromId(data.getLongExtra(IntentExtra.TIMELINE_ID.key, 0));
                 if (timeline.isValid()) {
                     switchView(timeline, null);
@@ -1044,7 +1044,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     private void accountSelected(Intent data) {
-        MyAccount ma = myContext.persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
+        MyAccount ma = myContext.accounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
         if (ma.isValid()) {
             switchView(getParamsLoaded().getTimeline().isCombined() ?
                     getParamsLoaded().getTimeline() :
@@ -1053,7 +1053,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     private void accountToActAsSelected(Intent data) {
-        MyAccount ma = myContext.persistentAccounts().fromAccountName(
+        MyAccount ma = myContext.accounts().fromAccountName(
                 data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
         if (ma.isValid()) {
             contextMenu.setMyActor(ma);
@@ -1062,7 +1062,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     private void accountToShareViaSelected(Intent data) {
-        MyAccount ma = myContext.persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
+        MyAccount ma = myContext.accounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
         getNoteEditor().startEditingSharedData(ma, mTextToShareViaThisApp, mMediaToShareViaThisApp);
     }
 
@@ -1170,7 +1170,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         }
         if (currentMyAccountToSet.isValid()) {
             setCurrentMyAccount(currentMyAccountToSet, currentMyAccountToSet.getOrigin());
-            myContext.persistentAccounts().setCurrentAccount(currentMyAccountToSet);
+            myContext.accounts().setCurrentAccount(currentMyAccountToSet);
         }
         if (isFinishing() || !timeline.equals(getParamsLoaded().getTimeline())) {
             if (MyLog.isVerboseEnabled()) {

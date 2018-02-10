@@ -396,13 +396,13 @@ public class CommandData implements Comparable<CommandData> {
                 I18n.appendWithSpace(builder, 
                         myContext.context().getText(R.string.combined_timeline_off_account));
                 I18n.appendWithSpace(builder, MyQuery.actorIdToWebfingerId(timeline.getActorId()));
-                if (myContext.persistentAccounts().getDistinctOriginsCount() > 1) {
+                if (myContext.accounts().getDistinctOriginsCount() > 1) {
                     long originId = MyQuery.actorIdToLongColumnValue(ActorTable.ORIGIN_ID,
                             timeline.getActorId());
                     I18n.appendWithSpace(builder, 
                             myContext.context().getText(R.string.combined_timeline_off_origin));
                     I18n.appendWithSpace(builder, 
-                            myContext.persistentOrigins().fromId(originId).getName());
+                            myContext.origins().fromId(originId).getName());
                 }
                 break;
             case GET_ATTACHMENT:

@@ -36,13 +36,13 @@ public class PersistentAccountsTest {
 
     @Test
     public void test() {
-        PersistentAccounts accounts = MyContextHolder.get().persistentAccounts();
+        PersistentAccounts accounts = MyContextHolder.get().accounts();
 
         assertNotEquals(accounts.toString(), MyAccount.EMPTY, accounts.fromWebFingerId(demoData.pumpioTestAccountUsername));
         assertNotEquals(accounts.toString(), MyAccount.EMPTY, accounts.fromWebFingerId(demoData.conversationAccount2Username));
         assertEquals(accounts.toString(), MyAccount.EMPTY, accounts.fromWebFingerId(demoData.conversationAuthorSecondUsername));
 
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.conversationOriginName);
+        Origin origin = MyContextHolder.get().origins().fromName(demoData.conversationOriginName);
         assertEquals(demoData.conversationOriginName, origin.getName());
 
         long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(), demoData.conversationAccount2ActorOid);

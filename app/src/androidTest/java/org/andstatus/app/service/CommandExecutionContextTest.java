@@ -18,7 +18,7 @@ public class CommandExecutionContextTest {
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
-        ma = MyContextHolder.get().persistentAccounts().getFirstSucceeded();
+        ma = MyContextHolder.get().accounts().getFirstSucceeded();
     }
 
     @Test

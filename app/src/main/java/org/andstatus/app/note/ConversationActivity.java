@@ -97,7 +97,7 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
         switch (ActivityRequestCode.fromId(requestCode)) {
             case SELECT_ACCOUNT_TO_ACT_AS:
                 if (resultCode == RESULT_OK) {
-                    MyAccount myAccount = MyContextHolder.get().persistentAccounts().fromAccountName(
+                    MyAccount myAccount = MyContextHolder.get().accounts().fromAccountName(
                             data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
                     if (myAccount.isValid()) {
                         mContextMenu.setMyActor(myAccount);

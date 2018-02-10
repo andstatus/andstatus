@@ -158,7 +158,7 @@ public final class MyAccount implements Comparable<MyAccount> {
          * If MyAccount with this name didn't exist yet, new temporary MyAccount will be created.
          */
         public static Builder newOrExistingFromAccountName(MyContext myContext, String accountName, TriState isOAuthTriState) {
-            MyAccount persistentAccount = myContext.persistentAccounts().fromAccountName(accountName);
+            MyAccount persistentAccount = myContext.accounts().fromAccountName(accountName);
             if (persistentAccount.isValid()) {
                 return fromMyAccount(myContext, persistentAccount, "newOrExistingFromAccountName", false);
             } else {
@@ -608,7 +608,7 @@ public final class MyAccount implements Comparable<MyAccount> {
 
     public static MyAccount fromBundle(Bundle bundle) {
         return bundle == null ? EMPTY :
-                MyContextHolder.get().persistentAccounts().fromAccountName(
+                MyContextHolder.get().accounts().fromAccountName(
                         bundle.getString(IntentExtra.ACCOUNT_NAME.key));
     }
 
@@ -652,7 +652,7 @@ public final class MyAccount implements Comparable<MyAccount> {
 
         boolean found = false;
         String possiblyUnique = getUsername();
-        for (MyAccount persistentAccount : myContext.persistentAccounts().list()) {
+        for (MyAccount persistentAccount : myContext.accounts().list()) {
             if (!persistentAccount.toString().equalsIgnoreCase(toString())
                     && persistentAccount.getUsername().equalsIgnoreCase(possiblyUnique)) {
                 found = true;
@@ -664,7 +664,7 @@ public final class MyAccount implements Comparable<MyAccount> {
             int indAt = uniqueName.indexOf('@');
             if (indAt > 0) {
                 possiblyUnique = uniqueName.substring(0, indAt);
-                for (MyAccount persistentAccount : myContext.persistentAccounts().list()) {
+                for (MyAccount persistentAccount : myContext.accounts().list()) {
                     if (!persistentAccount.toString().equalsIgnoreCase(toString())) {
                         String toCompareWith = persistentAccount.getUsername();
                         indAt = toCompareWith.indexOf('@');
@@ -924,7 +924,7 @@ public final class MyAccount implements Comparable<MyAccount> {
 
     public int numberOfAccountsOfThisOrigin() {
         int count = 0;
-        for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().list()) {
+        for (MyAccount persistentAccount : MyContextHolder.get().accounts().list()) {
             if (persistentAccount.getOrigin().equals(this.getOrigin())) {
                 count++;
             }
@@ -937,7 +937,7 @@ public final class MyAccount implements Comparable<MyAccount> {
      */
     @NonNull
     public MyAccount firstOtherAccountOfThisOrigin() {
-        for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().list()) {
+        for (MyAccount persistentAccount : MyContextHolder.get().accounts().list()) {
             if (persistentAccount.getOrigin().equals(this.getOrigin()) && !persistentAccount.equals(this)) {
                 return persistentAccount;
             }
@@ -977,7 +977,7 @@ public final class MyAccount implements Comparable<MyAccount> {
     public long getLastSyncSucceededDate(MyContext myContext) {
         long lastSyncedDate = 0;
         if (isValid() && isPersistent()) {
-            for (Timeline timeline : myContext.persistentTimelines().getFiltered(
+            for (Timeline timeline : myContext.timelines().getFiltered(
                     false, TriState.UNKNOWN, TimelineType.UNKNOWN, this, null)) {
                 if (timeline.getSyncSucceededDate() > lastSyncedDate) {
                     lastSyncedDate = timeline.getSyncSucceededDate();
@@ -988,7 +988,7 @@ public final class MyAccount implements Comparable<MyAccount> {
     }
 
     public boolean hasAnyTimelines(MyContext myContext) {
-        for (Timeline timeline : myContext.persistentTimelines().values()) {
+        for (Timeline timeline : myContext.timelines().values()) {
             if (timeline.getMyAccount().equals(this)) {
                 return true;
             }

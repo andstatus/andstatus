@@ -78,7 +78,7 @@ public class ConnectionPumpioTest {
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
         OriginConnectionData connectionData = OriginConnectionData.fromAccountName(AccountName.fromOriginAndUsername(
-                MyContextHolder.get().persistentOrigins().fromName(demoData.pumpioOriginName), ""),
+                MyContextHolder.get().origins().fromName(demoData.pumpioOriginName), ""),
                 TriState.UNKNOWN);
         connectionData.setAccountActor(demoData.getAccountActorByOid(demoData.pumpioTestAccountActorOid));
         connectionData.setDataReader(new AccountDataReaderEmpty());

@@ -52,7 +52,7 @@ public class ManageTimelinesContextMenu extends MyContextMenu {
             if (!getViewItem().timeline.isRequired()) {
                 ManageTimelinesContextMenuItem.DELETE.addTo(menu, ++order, R.string.button_delete);
             }
-            if (!getMyContext().persistentTimelines().getDefault().equals(getViewItem().timeline)) {
+            if (!getMyContext().timelines().getDefault().equals(getViewItem().timeline)) {
                 ManageTimelinesContextMenuItem.MAKE_DEFAULT.addTo(menu, ++order, R.string.set_as_default_timeline);
             }
             ManageTimelinesContextMenuItem.FORGET_SYNC_EVENTS.addTo(menu, ++order, R.string.forget_sync_events);

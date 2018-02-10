@@ -85,7 +85,7 @@ public class OriginEditor extends MyActivity {
             @Override
             public void onClick(View v) {
                 if (builder.delete()) {
-                    MyContextHolder.get().persistentOrigins().initialize();
+                    MyContextHolder.get().origins().initialize();
                     setResult(RESULT_OK);
                     finish();
                 }
@@ -124,7 +124,7 @@ public class OriginEditor extends MyActivity {
             buttonSave.setOnClickListener(new SaveOrigin());
             spinnerOriginType.setEnabled(false);
             editTextOriginName.setEnabled(false);
-            Origin origin = MyContextHolder.get().persistentOrigins().fromName(
+            Origin origin = MyContextHolder.get().origins().fromName(
                     intentNew.getStringExtra(IntentExtra.ORIGIN_NAME.key));
             builder = new Origin.Builder(origin);
         }
@@ -269,7 +269,7 @@ public class OriginEditor extends MyActivity {
                 .save();
         MyLog.v(this, (builder.isSaved() ? "Saved" : "Not saved") + ": " + builder.build().toString());
         if (builder.isSaved()) {
-            MyContextHolder.get().persistentOrigins().initialize();
+            MyContextHolder.get().origins().initialize();
             setResult(RESULT_OK);
             finish();
         } else {

@@ -107,7 +107,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
             MyUrlSpan.showText(this, R.id.system_info, MyContextHolder.getSystemInfo(this, false), false, false);
         }
 
-        if (!MyContextHolder.get().persistentAccounts().getCurrentAccount().isValid() &&
+        if (!MyContextHolder.get().accounts().getCurrentAccount().isValid() &&
                 MyContextHolder.getExecutionMode() == ExecutionMode.ROBO_TEST) {
             if (!generatingDemoData) {
                 generatingDemoData = true;
@@ -169,7 +169,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
     private void showRestoreButton() {
         Button restoreButton = (Button) findViewById(R.id.button_restore);
         if (!generatingDemoData
-                && MyContextHolder.get().isReady() && MyContextHolder.get().persistentAccounts().isEmpty()) {
+                && MyContextHolder.get().isReady() && MyContextHolder.get().accounts().isEmpty()) {
             restoreButton.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -192,7 +192,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
                 switch (MyContextHolder.get().state()) {
                     case READY:
                         FirstActivity.checkAndUpdateLastOpenedAppVersion(HelpActivity.this, true);
-                        if (MyContextHolder.get().persistentAccounts().getCurrentAccount().isValid()) {
+                        if (MyContextHolder.get().accounts().getCurrentAccount().isValid()) {
                             startActivity(new Intent(HelpActivity.this, TimelineActivity.class));
                             finish();
                         } else {
@@ -216,7 +216,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
                 }
             }
         });
-        if (MyContextHolder.get().persistentAccounts().getCurrentAccount().isValid()) {
+        if (MyContextHolder.get().accounts().getCurrentAccount().isValid()) {
             getStarted.setText(R.string.button_skip);
         }
     }
@@ -288,7 +288,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
         super.onResume();
         MyContextHolder.upgradeIfNeeded(this);
         if ( wasPaused && mIsFirstActivity
-                &&  MyContextHolder.get().persistentAccounts().getCurrentAccount().isValid() ) {
+                &&  MyContextHolder.get().accounts().getCurrentAccount().isValid() ) {
             // We assume that user pressed back after adding first account
             Intent intent = new Intent(this, TimelineActivity.class);
             startActivity(intent);

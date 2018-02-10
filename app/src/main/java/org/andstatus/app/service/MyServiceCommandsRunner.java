@@ -49,7 +49,7 @@ public class MyServiceCommandsRunner {
             MyLog.d(this, method + "; Credentials failed, skipping");
             return;
         }
-        final List<Timeline> timelines = myContext.persistentTimelines().toAutoSyncForAccount(ma);
+        final List<Timeline> timelines = myContext.timelines().toAutoSyncForAccount(ma);
         if (timelines.isEmpty()) {
             MyLog.d(this, method + "; No timelines to sync");
             return;

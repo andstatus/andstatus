@@ -59,12 +59,12 @@ public class TimelineSelector extends SelectorDialog {
         super.onActivityCreated(savedInstanceState);
 
         setTitle(R.string.dialog_title_select_timeline);
-        Timeline timeline = myContext.persistentTimelines().fromId(getArguments().
+        Timeline timeline = myContext.timelines().fromId(getArguments().
                 getLong(IntentExtra.TIMELINE_ID.key, 0));
-        MyAccount currentMyAccount = myContext.persistentAccounts().fromAccountName(
+        MyAccount currentMyAccount = myContext.accounts().fromAccountName(
                 getArguments().getString(IntentExtra.ACCOUNT_NAME.key));
 
-        List<Timeline> timelines = myContext.persistentTimelines().getFiltered(
+        List<Timeline> timelines = myContext.timelines().getFiltered(
                 true,
                 TriState.fromBoolean(timeline.isCombined()),
                 TimelineType.UNKNOWN, currentMyAccount,
@@ -92,7 +92,7 @@ public class TimelineSelector extends SelectorDialog {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 long timelineId = Long.parseLong(((TextView) view.findViewById(R.id.id)).getText()
                         .toString());
-                returnSelectedTimeline(myContext.persistentTimelines().fromId(timelineId));
+                returnSelectedTimeline(myContext.timelines().fromId(timelineId));
             }
         });
     }

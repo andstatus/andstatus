@@ -53,7 +53,7 @@ public class MyAccountTest {
         MyContext myContext = MyContextHolder.get();
         String logMsg = "Creating account '" + userName + "' for '" + originType + "'";
         MyLog.v(this, logMsg);
-        Origin origin = myContext.persistentOrigins().firstOfType(originType);
+        Origin origin = myContext.origins().firstOfType(originType);
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(myContext,
                 userName + AccountName.ORIGIN_SEPARATOR + origin.getName(), TriState.UNKNOWN);
         assertEquals(logMsg, origin, builder.getAccount().getOrigin());
@@ -69,13 +69,13 @@ public class MyAccountTest {
     }
 
     public static void fixPersistentAccounts(MyContext myContext) {
-        for (MyAccount ma : myContext.persistentAccounts().list()) {
+        for (MyAccount ma : myContext.accounts().list()) {
             fixAccountByName(myContext, ma.getAccountName());
         }
     }
     
     private static void fixAccountByName(MyContext myContext, String accountName) {
-        MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
+        MyAccount ma = myContext.accounts().fromAccountName(accountName);
         assertTrue("Account " + accountName + " is valid", ma.isValid());
         if (ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED ) {
             return;

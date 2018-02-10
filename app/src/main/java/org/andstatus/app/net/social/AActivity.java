@@ -152,7 +152,7 @@ public class AActivity extends AObject {
     }
 
     public boolean isMyActorOrAuthor(@NonNull MyContext myContext) {
-        return myContext.persistentAccounts().contains(getActor()) || myContext.persistentAccounts().contains(getAuthor());
+        return myContext.accounts().contains(getActor()) || myContext.accounts().contains(getAuthor());
     }
 
     @NonNull
@@ -309,7 +309,7 @@ public class AActivity extends AObject {
 
     public static AActivity fromCursor(MyContext myContext, Cursor cursor) {
         AActivity activity = from(
-                myContext.persistentAccounts().fromActorId(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID)).getActor(),
+                myContext.accounts().fromActorId(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID)).getActor(),
                 ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE)));
 
         activity.id = DbUtils.getLong(cursor, ActivityTable._ID);
@@ -419,7 +419,7 @@ public class AActivity extends AObject {
     private void calculateNotification(MyContext myContext) {
         if (getUpdatedDate() < 1
                 || isNotified().equals(TriState.FALSE)
-                || myContext.persistentAccounts().contains(getActor())) return;
+                || myContext.accounts().contains(getActor())) return;
         final NotificationEventType event;
         if(myContext.getNotifier().isEnabled(NotificationEventType.MENTION)
                 && getNote().audience().containsMe(myContext)
@@ -427,15 +427,15 @@ public class AActivity extends AObject {
             event = NotificationEventType.MENTION;
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.ANNOUNCE)
                 && type == ActivityType.ANNOUNCE
-                && myContext.persistentAccounts().contains(getAuthor())) {
+                && myContext.accounts().contains(getAuthor())) {
             event = NotificationEventType.ANNOUNCE;
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.LIKE)
                 && (type == ActivityType.LIKE || type == ActivityType.UNDO_LIKE)
-                && myContext.persistentAccounts().contains(getAuthor())) {
+                && myContext.accounts().contains(getAuthor())) {
             event = NotificationEventType.LIKE;
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.FOLLOW)
                 && (type == ActivityType.FOLLOW || type == ActivityType.UNDO_FOLLOW)
-                && myContext.persistentAccounts().contains(getObjActor())) {
+                && myContext.accounts().contains(getObjActor())) {
             event = NotificationEventType.FOLLOW;
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.PRIVATE)
                 && getNote().isPrivate()) {
@@ -480,7 +480,7 @@ public class AActivity extends AObject {
         switch (type) {
             case LIKE:
             case UNDO_LIKE:
-                final MyAccount myActorAccount = myContext.persistentAccounts().fromActor(actor);
+                final MyAccount myActorAccount = myContext.accounts().fromActor(actor);
                 if (myActorAccount.isValid()) {
                     MyLog.v(this, myActorAccount + " " + type
                             + " '" + getNote().oid + "' " + I18n.trimTextAt(getNote().getBody(), 80));

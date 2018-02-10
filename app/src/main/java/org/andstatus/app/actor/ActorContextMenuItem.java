@@ -221,9 +221,9 @@ public enum ActorContextMenuItem implements ContextMenuItem {
             return;
         }
         if (!params.ma.isValid() || !params.ma.getOrigin().equals(origin)) {
-            params.ma = params.menu.getActivity().getMyContext().persistentAccounts().fromActorId(actorId);
+            params.ma = params.menu.getActivity().getMyContext().accounts().fromActorId(actorId);
             if (!params.ma.isValid()) {
-                params.ma = params.menu.getActivity().getMyContext().persistentAccounts().
+                params.ma = params.menu.getActivity().getMyContext().accounts().
                         getFirstSucceededForOrigin(origin);
             }
         }

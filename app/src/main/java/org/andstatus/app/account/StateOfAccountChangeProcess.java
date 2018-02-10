@@ -111,7 +111,7 @@ class StateOfAccountChangeProcess {
         }
 
         if (state.builder == null && !state.getAccountAction().equals(Intent.ACTION_INSERT)) {
-            switch (MyContextHolder.get().persistentAccounts().size()) {
+            switch (MyContextHolder.get().accounts().size()) {
                 case 0:
                     state.setAccountAction(Intent.ACTION_INSERT);
                     break;
@@ -119,7 +119,7 @@ class StateOfAccountChangeProcess {
                     state.builder = MyAccount.Builder.fromMyAccount(
                             MyContextHolder.get(),
                             MyContextHolder.get()
-                            .persistentAccounts().getCurrentAccount(), "fromIntent", false);
+                            .accounts().getCurrentAccount(), "fromIntent", false);
                     break;
                 default:
                     state.accountShouldBeSelected = true;
@@ -131,7 +131,7 @@ class StateOfAccountChangeProcess {
             if (state.getAccountAction().equals(Intent.ACTION_INSERT)) {
                 Origin origin = MyContextHolder
                         .get()
-                        .persistentOrigins()
+                        .origins()
                         .firstOfType(OriginType.UNKNOWN);
                 state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                         MyContextHolder.get(),
@@ -140,7 +140,7 @@ class StateOfAccountChangeProcess {
             } else {
                 state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                         MyContextHolder.get(),
-                        MyContextHolder.get().persistentAccounts().getCurrentAccountName(), TriState.UNKNOWN);
+                        MyContextHolder.get().accounts().getCurrentAccountName(), TriState.UNKNOWN);
             }
             if (!state.builder.isPersistent()) {
                 state.setAccountAction(Intent.ACTION_INSERT);

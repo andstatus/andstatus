@@ -143,9 +143,9 @@ public class DataUpdaterTest {
         DemoConversationInserter.assertIfActorIsMyFriend(somebody, true, ma);
 
         Set<Long> friendsIds = MyQuery.getFriendsIds(ma.getActorId());
-        MyContextHolder.get().persistentAccounts().initialize();
+        MyContextHolder.get().accounts().initialize();
         for (long id : friendsIds) {
-            assertTrue("isFriend: " + id, MyContextHolder.get().persistentAccounts().isMeOrMyFriend(id));
+            assertTrue("isFriend: " + id, MyContextHolder.get().accounts().isMeOrMyFriend(id));
         }
 
         cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection,
@@ -353,7 +353,7 @@ public class DataUpdaterTest {
         AActivity activity = ConnectionGnuSocialTest.getNoteWithAttachment(
                 InstrumentationRegistry.getInstrumentation().getContext());
 
-        MyAccount ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(activity.getActor().origin);
+        MyAccount ma = MyContextHolder.get().accounts().getFirstSucceededForOrigin(activity.getActor().origin);
         assertTrue("Account is valid " + ma, ma.isValid());
         DataUpdater di = new DataUpdater(ma);
         long noteId = di.onActivity(activity).getNote().noteId;
@@ -368,7 +368,7 @@ public class DataUpdaterTest {
     @Test
     public void testUnsentNoteWithAttachment() throws Exception {
         final String method = "testUnsentNoteWithAttachment";
-        MyAccount ma = MyContextHolder.get().persistentAccounts().getFirstSucceeded();
+        MyAccount ma = MyContextHolder.get().accounts().getFirstSucceeded();
         Actor accountActor = ma.getActor();
         AActivity activity = AActivity.newPartialNote(accountActor, "", System.currentTimeMillis(), DownloadStatus.SENDING);
         activity.setActor(accountActor);
@@ -415,7 +415,7 @@ public class DataUpdaterTest {
 
     @Test
     public void testUsernameChanged() {
-        MyAccount ma = TestSuite.getMyContextForTest().persistentAccounts().fromAccountName(demoData.gnusocialTestAccountName);
+        MyAccount ma = TestSuite.getMyContextForTest().accounts().fromAccountName(demoData.gnusocialTestAccountName);
         Actor accountActor = ma.getActor();
         String username = "peter" + demoData.testRunUid;
         Actor actor1 = new DemoNoteInserter(ma).buildActorFromOid("34804" + demoData.testRunUid);

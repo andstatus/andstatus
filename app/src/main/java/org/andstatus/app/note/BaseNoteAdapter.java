@@ -139,7 +139,7 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
     }
 
     protected void showMarkReplies(ViewGroup view, T item) {
-        boolean show = item.inReplyToActorId != 0 && myContext.persistentAccounts().
+        boolean show = item.inReplyToActorId != 0 && myContext.accounts().
                 fromActorId(item.inReplyToActorId).isValid();
         View oldView = view.findViewById(R.id.reply_timeline_marker);
         if (oldView != null) {

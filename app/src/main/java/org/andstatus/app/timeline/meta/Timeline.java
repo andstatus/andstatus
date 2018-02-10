@@ -170,7 +170,7 @@ public class Timeline implements Comparable<Timeline> {
                                        String searchQuery) {
         Timeline timeline = new Timeline(myContext, id, timelineType, myAccount, actorId, origin, searchQuery);
         if (timeline.isValid()) {
-            return myContext.persistentTimelines().fromNewTimeLine(timeline);
+            return myContext.timelines().fromNewTimeLine(timeline);
         }
         return timeline;
     }
@@ -212,7 +212,7 @@ public class Timeline implements Comparable<Timeline> {
         if (!myAccount.isValid()) {
             Origin origin = getOrigin();
             if (origin.isValid()) {
-                myAccount = myContext.persistentAccounts().getFirstSucceededForOrigin(origin);
+                myAccount = myContext.accounts().getFirstSucceededForOrigin(origin);
             }
         }
         return myAccount;
@@ -221,23 +221,23 @@ public class Timeline implements Comparable<Timeline> {
     private boolean calcIsSyncableForAccounts(MyContext myContext) {
         return isCombined &&
                 timelineType.isSyncable() && timelineType.canBeCombinedForMyAccounts() &&
-                myContext.persistentAccounts().getFirstSucceeded().isValidAndSucceeded();
+                myContext.accounts().getFirstSucceeded().isValidAndSucceeded();
     }
 
     private boolean calcIsSyncableForOrigins(MyContext myContext) {
         return isCombined &&
                 timelineType.isSyncable() && timelineType.canBeCombinedForOrigins() &&
-                myContext.persistentAccounts().getFirstSucceeded().isValidAndSucceeded();
+                myContext.accounts().getFirstSucceeded().isValidAndSucceeded();
     }
 
     public static Timeline fromCursor(MyContext myContext, Cursor cursor) {
         Timeline timeline = new Timeline(
                 myContext,
                 0, TimelineType.load(DbUtils.getString(cursor, TimelineTable.TIMELINE_TYPE)),
-                myContext.persistentAccounts()
+                myContext.accounts()
                         .fromActorId(DbUtils.getLong(cursor, TimelineTable.ACCOUNT_ID)),
                 DbUtils.getLong(cursor, TimelineTable.ACTOR_ID),
-                myContext.persistentOrigins().fromId(DbUtils.getLong(cursor, TimelineTable.ORIGIN_ID)),
+                myContext.origins().fromId(DbUtils.getLong(cursor, TimelineTable.ORIGIN_ID)),
                 DbUtils.getString(cursor, TimelineTable.SEARCH_QUERY));
 
         timeline.id = DbUtils.getLong(cursor, TimelineTable._ID);
@@ -279,9 +279,9 @@ public class Timeline implements Comparable<Timeline> {
                 myContext,
                 DbUtils.getLong(cursor, CommandTable.TIMELINE_ID),
                 TimelineType.load(DbUtils.getString(cursor, CommandTable.TIMELINE_TYPE)),
-                myContext.persistentAccounts().fromActorId(DbUtils.getLong(cursor, CommandTable.ACCOUNT_ID)),
+                myContext.accounts().fromActorId(DbUtils.getLong(cursor, CommandTable.ACCOUNT_ID)),
                 DbUtils.getLong(cursor, CommandTable.ACTOR_ID),
-                myContext.persistentOrigins().fromId(DbUtils.getLong(cursor, CommandTable.ORIGIN_ID)),
+                myContext.origins().fromId(DbUtils.getLong(cursor, CommandTable.ORIGIN_ID)),
                 DbUtils.getString(cursor, CommandTable.SEARCH_QUERY)
         );
     }
@@ -294,13 +294,13 @@ public class Timeline implements Comparable<Timeline> {
         MyAccount myAccount = MyAccount.fromBundle(bundle);
         Timeline timeline = getEmpty(myAccount);
         if (bundle != null) {
-            timeline = myContext.persistentTimelines().fromId(
+            timeline = myContext.timelines().fromId(
                     bundle.getLong(IntentExtra.TIMELINE_ID.key));
             if (timeline.isEmpty()) {
                 timeline = getTimeline(myContext, 0,
                         TimelineType.load(bundle.getString(IntentExtra.TIMELINE_TYPE.key)),
                         myAccount, bundle.getLong(IntentExtra.ACTOR_ID.key),
-                        myContext.persistentOrigins().fromId(BundleUtils.fromBundle(bundle, IntentExtra.ORIGIN_ID)),
+                        myContext.origins().fromId(BundleUtils.fromBundle(bundle, IntentExtra.ORIGIN_ID)),
                         BundleUtils.getString(bundle, IntentExtra.SEARCH_QUERY));
             }
         }
@@ -314,7 +314,7 @@ public class Timeline implements Comparable<Timeline> {
         }
         Timeline timeline = getTimeline(myContext, 0,
                 parsedUri.getTimelineType(),
-                myContext.persistentAccounts().fromActorId(parsedUri.getAccountActorId()),
+                myContext.accounts().fromActorId(parsedUri.getAccountActorId()),
                 parsedUri.getActorId(),
                 parsedUri.getOrigin(myContext),
                 searchQuery);
@@ -335,12 +335,12 @@ public class Timeline implements Comparable<Timeline> {
         }
         MyAccount myAccount = myAccountIn == null ? MyAccount.EMPTY : myAccountIn;
         long actorId = timelineType.isForActor() ? actorIdIn : 0;
-        if (myContext.persistentAccounts().isMyActorId(actorId)) {
-            myAccount = myContext.persistentAccounts().fromActorId(actorId);
+        if (myContext.accounts().isMyActorId(actorId)) {
+            myAccount = myContext.accounts().fromActorId(actorId);
         }
         if (timelineType.isAtOrigin() &&
                 !timelineType.isForActor() &&
-                actorId == 0 || (actorId != 0 && !myContext.persistentAccounts().isMyActorId(actorId))
+                actorId == 0 || (actorId != 0 && !myContext.accounts().isMyActorId(actorId))
                 ) {
             return MyAccount.EMPTY;
         }
@@ -356,7 +356,7 @@ public class Timeline implements Comparable<Timeline> {
     @NonNull
     private Origin fixedOrigin(MyContext myContext, TimelineType timelineType, MyAccount myAccountIn, long actorId, Origin origin) {
         Origin fixedOrigin = origin == null ? Origin.EMPTY : origin;
-        MyAccount ma = myContext.persistentAccounts().fromActorId(actorId);
+        MyAccount ma = myContext.accounts().fromActorId(actorId);
         if (!ma.isValid() && myAccountIn != null) {
             ma = myAccountIn;
         }
@@ -509,8 +509,8 @@ public class Timeline implements Comparable<Timeline> {
             origin = Origin.EMPTY;
             myAccount = MyAccount.EMPTY;
         } else {
-            origin = myContext.persistentAccounts().getCurrentAccount().getOrigin();
-            myAccount = myContext.persistentAccounts().getCurrentAccount();
+            origin = myContext.accounts().getCurrentAccount().getOrigin();
+            myAccount = myContext.accounts().getCurrentAccount();
         }
         return getTimeline(myContext, 0, timelineType, myAccount, 0, origin, searchQuery);
     }
@@ -605,7 +605,7 @@ public class Timeline implements Comparable<Timeline> {
             }
             saveInternal(myContext);
             if (isNew && id != 0) {
-                myContext.persistentTimelines().addNew(this);
+                myContext.timelines().addNew(this);
             }
         }
         return id;

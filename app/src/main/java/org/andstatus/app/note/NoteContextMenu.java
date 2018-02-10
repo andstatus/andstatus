@@ -320,7 +320,7 @@ public class NoteContextMenu extends MyContextMenu {
 
     public void loadState(Bundle savedInstanceState) {
         if (savedInstanceState != null && savedInstanceState.containsKey(IntentExtra.ACCOUNT_NAME.key)) {
-            setMyActor(menuContainer.getActivity().getMyContext().persistentAccounts().fromAccountName(
+            setMyActor(menuContainer.getActivity().getMyContext().accounts().fromAccountName(
                     savedInstanceState.getString(IntentExtra.ACCOUNT_NAME.key,
                             menuContainer.getCurrentMyAccount().getAccountName())));
         }

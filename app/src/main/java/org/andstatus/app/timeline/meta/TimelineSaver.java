@@ -109,7 +109,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
     }
 
     private void addDefaultTimelinesIfNoneFound() {
-        for (MyAccount ma : myContext.persistentAccounts().list()) {
+        for (MyAccount ma : myContext.accounts().list()) {
             addDefaultMyAccountTimelinesIfNoneFound(ma);
         }
     }
@@ -197,7 +197,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
 
     @NonNull
     private PersistentTimelines timelines() {
-        return myContext.persistentTimelines();
+        return myContext.timelines();
     }
 
 }

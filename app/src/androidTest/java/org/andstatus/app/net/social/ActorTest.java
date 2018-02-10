@@ -37,7 +37,7 @@ public class ActorTest {
 
     @Test
     public void testFromBodyText1() {
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.gnusocialTestOriginName);
+        Origin origin = MyContextHolder.get().origins().fromName(demoData.gnusocialTestOriginName);
         String webFingerId2 = "anotherUser@somedomain.org";
         String shortUsername3 = "shortusername";
         String body = "@" + demoData.gnusocialTestAccountUsername
@@ -61,7 +61,7 @@ public class ActorTest {
         final String SKIPPED_USERNAME3 = "kauiwoeieurt";
         final String USERNAME4 = "djjerekwerwewer";
 
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.twitterTestOriginName);
+        Origin origin = MyContextHolder.get().origins().fromName(demoData.twitterTestOriginName);
         String body = "Starting post @ #ThisIsTagofsome-event-and entertainment"
                 + " by @" + USERNAME1 + " @@" + SKIPPED_USERNAME2 + " @#" + SKIPPED_USERNAME3
                 + " &amp; @" + USERNAME4
@@ -99,7 +99,7 @@ public class ActorTest {
 
     @Test
     public void testEquals() {
-        Origin origin = MyContextHolder.get().persistentOrigins().fromId(18);
+        Origin origin = MyContextHolder.get().origins().fromId(18);
         Actor actor1 = Actor.fromOriginAndActorOid(origin, "acct:fourthWithoutAvatar@pump.example.com");
         actor1.actorId = 11;
         actor1.setUsername("fourthWithoutAvatar@pump.example.com");

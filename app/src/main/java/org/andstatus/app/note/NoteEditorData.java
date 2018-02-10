@@ -150,7 +150,7 @@ public class NoteEditorData {
     static NoteEditorData load(Long noteId) {
         NoteEditorData data;
         if (noteId != 0) {
-            MyAccount ma = MyContextHolder.get().persistentAccounts().fromActorId(
+            MyAccount ma = MyContextHolder.get().accounts().fromActorId(
                     MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, noteId));
             data = new NoteEditorData(ma);
             data.noteId = noteId;
@@ -171,7 +171,7 @@ public class NoteEditorData {
             data.isPrivate = MyQuery.noteIdToTriState(NoteTable.PRIVATE, noteId);
             MyLog.v(TAG, "Loaded " + data);
         } else {
-            data = new NoteEditorData(MyContextHolder.get().persistentAccounts().getCurrentAccount());
+            data = new NoteEditorData(MyContextHolder.get().accounts().getCurrentAccount());
             MyLog.v(TAG, "Empty data created");
         }
         return data;

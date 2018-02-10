@@ -191,8 +191,8 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
         TestSuite.setHttpConnectionMockInstance(null);
         TestSuite.getMyContextForTest().setConnectionState(ConnectionState.UNKNOWN);
         if (myContext != null) {
-            myContext.persistentAccounts().initialize();
-            myContext.persistentTimelines().initialize();
+            myContext.accounts().initialize();
+            myContext.timelines().initialize();
         }
         MyServiceManager.setServiceAvailable();
         MyLog.v(this, "tearDown ended");

@@ -44,7 +44,7 @@ public class UnsentNotesTest extends TimelineActivityTest {
         mService.setUp(null);
         MyAccount ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
         assertTrue(ma.isValid());
-        MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
+        MyContextHolder.get().accounts().setCurrentAccount(ma);
 
         return new Intent(Intent.ACTION_VIEW,
                 Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, ma.getOrigin()).getUri());

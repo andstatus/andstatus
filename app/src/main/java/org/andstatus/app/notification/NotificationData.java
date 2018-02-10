@@ -73,7 +73,7 @@ public class NotificationData {
         Timeline timeline;
         switch(timeLineType) {
             case UNKNOWN:
-                timeline = MyContextHolder.get().persistentTimelines().getDefault();
+                timeline = MyContextHolder.get().timelines().getDefault();
                 break;
             default:
                 timeline = Timeline.getTimeline(timeLineType, myAccount, 0, null);

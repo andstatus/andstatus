@@ -151,7 +151,7 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
     @NonNull
     public ActorViewItem fromCursor(@NonNull Cursor cursor) {
         Actor actor = Actor.fromOriginAndActorOid(
-                MyContextHolder.get().persistentOrigins().fromId(DbUtils.getLong(cursor, ActorTable.ORIGIN_ID)),
+                MyContextHolder.get().origins().fromId(DbUtils.getLong(cursor, ActorTable.ORIGIN_ID)),
                 DbUtils.getString(cursor, ActorTable.ACTOR_OID)
         );
         actor.actorId = DbUtils.getLong(cursor, BaseColumns._ID);

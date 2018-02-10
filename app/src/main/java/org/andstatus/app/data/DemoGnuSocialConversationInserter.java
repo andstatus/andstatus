@@ -52,10 +52,10 @@ public class DemoGnuSocialConversationInserter {
     private void mySetup() {
         iteration = iterationCounter.incrementAndGet();
         conversationOid = Long.toString(MyLog.uniqueCurrentTimeMS());
-        origin = MyContextHolder.get().persistentOrigins().fromName(demoData.gnusocialTestOriginName);
+        origin = MyContextHolder.get().origins().fromName(demoData.gnusocialTestOriginName);
         assertTrue(demoData.gnusocialTestOriginName + " exists", origin.isValid());
         assertNotSame( "No host URL: " + origin, "", origin.getHost());
-        final MyAccount myAccount = MyContextHolder.get().persistentAccounts()
+        final MyAccount myAccount = MyContextHolder.get().accounts()
                 .fromAccountName(demoData.gnusocialTestAccountName);
         accountActor = myAccount.getActor();
         assertFalse( "Account actor is not defined " + myAccount + ", actor:" + accountActor,

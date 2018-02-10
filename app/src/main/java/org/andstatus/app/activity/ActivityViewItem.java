@@ -65,7 +65,7 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
         super(false);
         long startTime = System.currentTimeMillis();
         id = DbUtils.getLong(cursor, ActivityTable.ACTIVITY_ID);
-        origin = MyContextHolder.get().persistentOrigins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID));
+        origin = MyContextHolder.get().origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID));
         activityType = ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
         updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
         actor = ActorViewItem.fromActor(Actor.fromOriginAndActorId(origin,

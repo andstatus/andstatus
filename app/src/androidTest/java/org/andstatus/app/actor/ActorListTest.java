@@ -54,7 +54,7 @@ public class ActorListTest extends TimelineActivityTest {
 
         final MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(ma.isValid());
-        MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
+        MyContextHolder.get().accounts().setCurrentAccount(ma);
 
         MyLog.i(this, "setUp ended");
         return new Intent(Intent.ACTION_VIEW,

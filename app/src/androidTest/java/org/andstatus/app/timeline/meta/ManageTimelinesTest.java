@@ -41,7 +41,7 @@ public class ManageTimelinesTest extends ActivityTest<ManageTimelines> {
 
     @Test
     public void testActivityOpened() throws InterruptedException {
-        int expectedCount = MyContextHolder.get().persistentTimelines().values().size();
+        int expectedCount = MyContextHolder.get().timelines().values().size();
         TestSuite.waitForListLoaded(getActivity(), expectedCount);
         assertTrue("Timelines shown: " + getActivity().getListAdapter().getCount(),
                 getActivity().getListAdapter().getCount() ==  expectedCount);

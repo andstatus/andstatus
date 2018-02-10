@@ -164,7 +164,7 @@ public class ParsedUri {
     }
 
     public Origin getOrigin(MyContext myContext) {
-        return myContext.persistentOrigins().fromId(getOriginId());
+        return myContext.origins().fromId(getOriginId());
     }
 
     public long getNoteId() {

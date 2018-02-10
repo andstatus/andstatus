@@ -553,7 +553,7 @@ public class Origin {
                 return this;
             }
             if (origin.id == 0) {
-                Origin existing = MyContextHolder.get().persistentOrigins()
+                Origin existing = MyContextHolder.get().origins()
                         .fromName(origin.getName());
                 if (existing.isPersistent()) {
                     if (origin.originType != existing.originType) {

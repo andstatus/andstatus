@@ -32,10 +32,10 @@ public class OriginTest {
         String body = "I set \"Shorten URL with: QTTR_AT\" URL longer than 25 Text longer than 140. Will this be shortened: "
                 + urlString;
 
-        Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.ORIGIN_TYPE_DEFAULT);
+        Origin origin = MyContextHolder.get().origins().firstOfType(OriginType.ORIGIN_TYPE_DEFAULT);
         assertEquals(origin.getOriginType(), OriginType.TWITTER);
 
-        origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
+        origin = MyContextHolder.get().origins().firstOfType(OriginType.TWITTER);
         assertEquals(origin.getOriginType(), OriginType.TWITTER);
         int textLimit = 280;
         assertEquals("Textlimit", textLimit, origin.getTextLimit());
@@ -46,7 +46,7 @@ public class OriginTest {
                 || charactersLeft == 142);
         assertFalse(origin.isMentionAsWebFingerId());
 
-        origin = MyContextHolder.get().persistentOrigins()
+        origin = MyContextHolder.get().origins()
                 .firstOfType(OriginType.PUMPIO);
         textLimit = 5000;
         assertEquals("Textlimit", textLimit, origin.getTextLimit());
@@ -56,7 +56,7 @@ public class OriginTest {
                 origin.charactersLeftForNote(body));
         assertTrue(origin.isMentionAsWebFingerId());
 
-        origin = MyContextHolder.get().persistentOrigins()
+        origin = MyContextHolder.get().origins()
                 .firstOfType(OriginType.GNUSOCIAL);
         textLimit = Origin.TEXT_LIMIT_FOR_WEBFINGER_ID;
         int uploadLimit = 0;
@@ -118,7 +118,7 @@ public class OriginTest {
 
     @Test
     public void testPermalink() {
-        Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
+        Origin origin = MyContextHolder.get().origins().firstOfType(OriginType.TWITTER);
         assertEquals(origin.getOriginType(), OriginType.TWITTER);
         String body = "Posting to Twitter " + demoData.testRunUid;
         String noteOid = "2578909845023" + demoData.testRunUid;
@@ -162,7 +162,7 @@ public class OriginTest {
 
     @Test
     public void testUsernameIsValid() {
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.gnusocialTestOriginName);
+        Origin origin = MyContextHolder.get().origins().fromName(demoData.gnusocialTestOriginName);
         checkUsernameIsValid(origin, "", false);
         checkUsernameIsValid(origin, "someUser.", false);
         checkUsernameIsValid(origin, "someUser ", false);
@@ -171,7 +171,7 @@ public class OriginTest {
         checkUsernameIsValid(origin, "some.user/GnuSocial", false);
         checkUsernameIsValid(origin, "some@user", false);
 
-        origin = MyContextHolder.get().persistentOrigins().fromName(demoData.pumpioOriginName);
+        origin = MyContextHolder.get().origins().fromName(demoData.pumpioOriginName);
         checkUsernameIsValid(origin, "", false);
         checkUsernameIsValid(origin, "someUser.", false);
         checkUsernameIsValid(origin, "someUser ", false);

@@ -108,7 +108,7 @@ public class ActorAdapter extends BaseTimelineAdapter<ActorViewItem> {
                 } else {
                     builder.append(", ");
                 }
-                builder.append(myContext.persistentAccounts().fromActorId(actorId).getAccountName());
+                builder.append(myContext.accounts().fromActorId(actorId).getAccountName());
                 count++;
             }
         }

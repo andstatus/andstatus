@@ -92,7 +92,7 @@ public class OriginEditorTest extends ActivityTest<OriginEditor> {
             throws InterruptedException {
         final String method = "OriginEditorTest";
 
-        final Origin originOld = MyContextHolder.get().persistentOrigins().fromName(originName);
+        final Origin originOld = MyContextHolder.get().origins().fromName(originName);
         final Intent intent = new Intent();
         if (originOld.isPersistent()) {
             intent.setAction(Intent.ACTION_EDIT);
@@ -153,7 +153,7 @@ public class OriginEditorTest extends ActivityTest<OriginEditor> {
         getInstrumentation().waitForIdleSync();
         DbUtils.waitMs(method, 200);
 
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(originName);
+        Origin origin = MyContextHolder.get().origins().fromName(originName);
         assertEquals("Origin '" + originName + "' added", originName, origin.getName());
         assertEquals(originType, origin.getOriginType());
         if (hostOrUrl.contains("bad")) {

@@ -40,7 +40,7 @@ public class ActorsOfNoteListLoader extends ActorListLoader {
 
         selectedNoteId = centralItemId;
         noteBody = MyQuery.noteIdToStringColumnValue(NoteTable.BODY, selectedNoteId);
-        originOfSelectedNote = MyContextHolder.get().persistentOrigins().fromId(
+        originOfSelectedNote = MyContextHolder.get().origins().fromId(
                 MyQuery.noteIdToOriginId(selectedNoteId));
     }
 

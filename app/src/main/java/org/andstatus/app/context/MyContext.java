@@ -48,11 +48,11 @@ public interface MyContext extends IdentifiableInstance {
     String getLastDatabaseError();
     SQLiteDatabase getDatabase();
     @NonNull
-    PersistentAccounts persistentAccounts();
+    PersistentAccounts accounts();
     @NonNull
-    PersistentOrigins persistentOrigins();
+    PersistentOrigins origins();
     @NonNull
-    PersistentTimelines persistentTimelines();
+    PersistentTimelines timelines();
     default void putAssertionData(@NonNull String key, @NonNull ContentValues contentValues) {}
     void release();
     boolean isExpired();

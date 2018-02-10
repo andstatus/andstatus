@@ -44,7 +44,7 @@ public class HtmlContentInserter {
 
     private void mySetup() {
         TestSuite.initializeWithData(this);
-        origin = MyContextHolder.get().persistentOrigins().fromName(demoData.conversationOriginName);
+        origin = MyContextHolder.get().origins().fromName(demoData.conversationOriginName);
         assertTrue(demoData.conversationOriginName + " exists", origin.getOriginType() != OriginType.UNKNOWN);
         ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(demoData.conversationAccountName + " exists", ma.isValid());

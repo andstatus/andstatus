@@ -190,7 +190,7 @@ public class ActorList extends NoteEditorListActivity {
     }
 
     private void accountToActAsSelected(Intent data) {
-        MyAccount ma = myContext.persistentAccounts().fromAccountName(
+        MyAccount ma = myContext.accounts().fromAccountName(
                 data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
         if (ma.isValid()) {
             contextMenu.setMyActor(ma);

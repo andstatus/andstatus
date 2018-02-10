@@ -48,10 +48,10 @@ public class ActAsTest extends TimelineActivityTest {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        final MyAccount ma = MyContextHolder.get().persistentAccounts()
+        final MyAccount ma = MyContextHolder.get().accounts()
                 .fromAccountName(demoData.gnusocialTestAccountName);
         assertTrue(ma.isValid());
-        MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
+        MyContextHolder.get().accounts().setCurrentAccount(ma);
 
         MyLog.i(this, "setUp ended");
         final Timeline timeline = Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null);

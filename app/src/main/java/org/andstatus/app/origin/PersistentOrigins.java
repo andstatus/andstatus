@@ -152,7 +152,7 @@ public class PersistentOrigins {
     public List<Origin> originsForInternetSearch(SearchObjects searchObjects, Origin originIn, boolean forAllOrigins) {
         List<Origin> origins = new ArrayList<>();
         if (forAllOrigins) {
-            for (MyAccount account : myContext.persistentAccounts().list()) {
+            for (MyAccount account : myContext.accounts().list()) {
                 if (account.getOrigin().isInCombinedGlobalSearch() &&
                         account.isValidAndSucceeded() && account.isSearchSupported(searchObjects)
                         && !origins.contains(account.getOrigin())) {
@@ -160,7 +160,7 @@ public class PersistentOrigins {
                 }
             }
         } else if (originIn != null && originIn.isValid()) {
-            MyAccount account = myContext.persistentAccounts().getFirstSucceededForOrigin(originIn);
+            MyAccount account = myContext.accounts().getFirstSucceededForOrigin(originIn);
             if (account.isValidAndSucceeded() && account.isSearchSupported(searchObjects)) {
                 origins.add(originIn);
             }

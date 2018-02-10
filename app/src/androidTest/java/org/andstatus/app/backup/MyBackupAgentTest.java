@@ -57,8 +57,8 @@ public class MyBackupAgentTest {
         
         PersistentAccounts accountsBefore = PersistentAccounts.newEmpty(MyContextHolder.get());
         accountsBefore.initialize();
-        assertEquals("Compare Persistent accounts with copy", MyContextHolder.get().persistentAccounts(), accountsBefore);
-        compareOneAccount(MyContextHolder.get().persistentAccounts(), accountsBefore, demoData.gnusocialTestAccountName);
+        assertEquals("Compare Persistent accounts with copy", MyContextHolder.get().accounts(), accountsBefore);
+        compareOneAccount(MyContextHolder.get().accounts(), accountsBefore, demoData.gnusocialTestAccountName);
         
         File outputFolder = MyContextHolder.get().context().getCacheDir();
         File dataFolder = testBackup(outputFolder);
@@ -68,10 +68,10 @@ public class MyBackupAgentTest {
         TestSuite.forget();
         TestSuite.initialize(this);
 
-        assertEquals("Number of persistent accounts", accountsBefore.size(), MyContextHolder.get().persistentAccounts().size());
+        assertEquals("Number of persistent accounts", accountsBefore.size(), MyContextHolder.get().accounts().size());
         
-        assertEquals("Persistent accounts", accountsBefore, MyContextHolder.get().persistentAccounts());
-        compareOneAccount(accountsBefore, MyContextHolder.get().persistentAccounts(), demoData.gnusocialTestAccountName);
+        assertEquals("Persistent accounts", accountsBefore, MyContextHolder.get().accounts());
+        compareOneAccount(accountsBefore, MyContextHolder.get().accounts(), demoData.gnusocialTestAccountName);
         demoData.assertConversations();
         TestSuite.initializeWithData(this);
 
@@ -98,7 +98,7 @@ public class MyBackupAgentTest {
         assertEquals("Shared preferences backed up", 1, backupManager.getBackupAgent().getSharedPreferencesBackedUp());
         assertEquals("Databases backed up", 1, backupManager.getBackupAgent().getDatabasesBackedUp());
         assertEquals("Accounts backed up", backupManager.getBackupAgent().getAccountsBackedUp(), MyContextHolder.get()
-                .persistentAccounts().size());
+                .accounts().size());
         
         assertTrue("Descriptor file was filled: " + backupManager.getDescriptorFile().getAbsolutePath(), backupManager.getDescriptorFile().length() > 10);
         JSONObject jso = FileUtils.getJSONObject(backupManager.getDescriptorFile());

@@ -44,7 +44,7 @@ public enum ManageTimelinesContextMenuItem implements ContextMenuItem {
     DELETE() {
         @Override
         public boolean execute(ManageTimelinesContextMenu menu, ManageTimelinesViewItem viewItem) {
-            menu.getActivity().getMyContext().persistentTimelines().delete(viewItem.timeline);
+            menu.getActivity().getMyContext().timelines().delete(viewItem.timeline);
             menu.getActivity().showList(WhichPage.CURRENT);
             return true;
         }
@@ -52,7 +52,7 @@ public enum ManageTimelinesContextMenuItem implements ContextMenuItem {
     MAKE_DEFAULT() {
         @Override
         public boolean execute(ManageTimelinesContextMenu menu, ManageTimelinesViewItem viewItem) {
-            menu.getActivity().getMyContext().persistentTimelines().setDefault(viewItem.timeline);
+            menu.getActivity().getMyContext().timelines().setDefault(viewItem.timeline);
             menu.getActivity().showList(WhichPage.CURRENT);
             return true;
         }

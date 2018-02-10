@@ -44,7 +44,7 @@ public class SqlActorIds {
                 return new SqlActorIds(timeline.getActorId());
             }
         } else if (timeline.isCombined() || timeline.getTimelineType().isAtOrigin()) {
-            return new SqlActorIds(MyContextHolder.get().persistentAccounts().list().stream()
+            return new SqlActorIds(MyContextHolder.get().accounts().list().stream()
                     .filter(ma -> !timeline.getOrigin().isValid() || timeline.getOrigin().equals(ma.getOrigin()))
                     .map(MyAccount::getActorId).collect(toList()));
         } else if (timeline.getMyAccount().isValid()) {

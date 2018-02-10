@@ -761,7 +761,7 @@ public class MyQuery {
         I18n.appendWithComma(builder, "oid" + (TextUtils.isEmpty(oid) ? " is empty" : ":'" + oid + "'"));
         String body = MyHtml.fromHtml(noteIdToStringColumnValue(NoteTable.BODY, noteId));
         I18n.appendAtNewLine(builder, "text:'" + body + "'");
-        Origin origin = MyContextHolder.get().persistentOrigins().fromId(noteIdToLongColumnValue(NoteTable.ORIGIN_ID, noteId));
+        Origin origin = MyContextHolder.get().origins().fromId(noteIdToLongColumnValue(NoteTable.ORIGIN_ID, noteId));
         I18n.appendAtNewLine(builder, origin.toString());
         return builder.toString();
     }

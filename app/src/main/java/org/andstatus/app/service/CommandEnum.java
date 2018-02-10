@@ -135,7 +135,7 @@ public enum CommandEnum {
             return this.code;
         }
         int resId = titleResId;
-        MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
+        MyAccount ma = myContext.accounts().fromAccountName(accountName);
         if (ma.isValid()) {
             resId = ma.getOrigin().alternativeTermForResourceId(titleResId);
         }

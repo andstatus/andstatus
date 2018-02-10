@@ -84,7 +84,7 @@ public class NoteEditorTest extends TimelineActivityTest {
 
         final MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(ma.isValid());
-        MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
+        MyContextHolder.get().accounts().setCurrentAccount(ma);
 
         data = getStaticData(ma);
 

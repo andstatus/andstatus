@@ -155,7 +155,7 @@ public class DemoNoteInserter {
     }
 
     public void onActivity(final AActivity activity) {
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromActorId(accountActor.actorId);
+        MyAccount ma = MyContextHolder.get().accounts().fromActorId(accountActor.actorId);
         assertTrue("Persistent account exists for " + accountActor + " " + activity, ma.isValid());
         final TimelineType timelineType = activity.getNote().isPrivate() ? TimelineType.PRIVATE : TimelineType.HOME;
         DataUpdater di = new DataUpdater(new CommandExecutionContext(

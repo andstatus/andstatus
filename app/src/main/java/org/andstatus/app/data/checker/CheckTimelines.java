@@ -32,7 +32,7 @@ class CheckTimelines extends DataChecker {
         long changedCount = 0;
         try {
             changedCount += new TimelineSaver(myContext).addDefaultCombined().size();
-            for (MyAccount myAccount: myContext.persistentAccounts().list()) {
+            for (MyAccount myAccount: myContext.accounts().list()) {
                 changedCount += new TimelineSaver(myContext).addDefaultForAccount(myContext, myAccount).size();
             }
         } catch (Exception e) {
@@ -40,10 +40,10 @@ class CheckTimelines extends DataChecker {
             logger.logProgress(logMsg);
             MyLog.e(this, logMsg, e);
         }
-        myContext.persistentTimelines().saveChanged();
+        myContext.timelines().saveChanged();
         logger.logProgress(changedCount == 0
                 ? "No changes to timelines were needed. " + rowsCount + " timelines"
-                : "Changed " + changedCount + " of " + myContext.persistentTimelines().values().size() + " timelines");
+                : "Changed " + changedCount + " of " + myContext.timelines().values().size() + " timelines");
         DbUtils.waitMs(this, changedCount == 0 ? 1000 : 3000);
         return changedCount;
     }

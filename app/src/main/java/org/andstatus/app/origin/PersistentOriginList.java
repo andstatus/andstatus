@@ -31,7 +31,7 @@ import org.andstatus.app.util.MyLog;
 public class PersistentOriginList extends OriginList {
 
     protected Iterable<Origin> getOrigins() {
-        return MyContextHolder.get().persistentOrigins().collection();
+        return MyContextHolder.get().origins().collection();
     }
     
     @Override

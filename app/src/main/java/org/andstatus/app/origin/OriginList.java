@@ -135,7 +135,7 @@ public abstract class OriginList extends MyListActivity {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             String name = ((TextView)view.findViewById(R.id.name)).getText().toString();
-            Origin origin = MyContextHolder.get().persistentOrigins().fromName(name);
+            Origin origin = MyContextHolder.get().origins().fromName(name);
             if (origin.isPersistent()) {
                 Intent intent = new Intent(OriginList.this, OriginEditor.class);
                 intent.setAction(Intent.ACTION_EDIT);

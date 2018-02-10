@@ -47,7 +47,7 @@ public class NoteShareTest {
     public void testShareHtml() throws Exception {
         new HtmlContentInserter().insertHtml();
         
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.conversationOriginName);
+        Origin origin = MyContextHolder.get().origins().fromName(demoData.conversationOriginName);
         assertTrue(demoData.conversationOriginName + " exists", origin != null);
         long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), demoData.htmlNoteOid);
         assertTrue("origin=" + origin.getId() + "; oid=" + demoData.htmlNoteOid, noteId != 0);

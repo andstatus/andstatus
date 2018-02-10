@@ -63,7 +63,7 @@ public class ConnectionTwitterTest {
         TestSuite.initializeWithData(this);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(demoData.twitterTestOriginName);
+        Origin origin = MyContextHolder.get().origins().fromName(demoData.twitterTestOriginName);
 
         connectionData = OriginConnectionData.fromAccountName(
                 AccountName.fromOriginAndUsername(origin, demoData.twitterTestAccountUsername),

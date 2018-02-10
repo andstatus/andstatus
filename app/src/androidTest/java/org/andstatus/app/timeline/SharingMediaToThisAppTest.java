@@ -44,7 +44,7 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest {
         mService.setUp(demoData.gnusocialTestAccountName);
         ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
         assertTrue(ma.isValid());
-        MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
+        MyContextHolder.get().accounts().setCurrentAccount(ma);
 
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("image/png");

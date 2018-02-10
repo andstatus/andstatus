@@ -49,7 +49,7 @@ public class CommandDataTest {
         CommandData commandData = CommandData.newUpdateStatus(demoData.getConversationMyAccount(), 1);
         testQueueOneCommandData(commandData, time0);
 
-        long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, MyContextHolder.get().persistentOrigins()
+        long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, MyContextHolder.get().origins()
                 .fromName(demoData.conversationOriginName).getId(),
                 demoData.conversationEntryNoteOid);
         long downloadDataRowId = 23;

@@ -203,7 +203,7 @@ public class MyContextImpl implements MyContext {
     public String toString() {
         return  MyLog.getInstanceTag(this) + " by " + initializedBy + "; state=" + state +
                 "; " + (isExpired() && (state != MyContextState.EXPIRED) ? "expired" : "") +
-                persistentAccounts().size() + " accounts, " +
+                accounts().size() + " accounts, " +
                 (context == null ? "no context" : "context=" + context.getClass().getName());
     }
 
@@ -267,7 +267,7 @@ public class MyContextImpl implements MyContext {
 
     @Override
     @NonNull
-    public PersistentAccounts persistentAccounts() {
+    public PersistentAccounts accounts() {
         return persistentAccounts;
     }
 
@@ -284,13 +284,13 @@ public class MyContextImpl implements MyContext {
     }
 
     @Override
-    public PersistentOrigins persistentOrigins() {
+    public PersistentOrigins origins() {
         return persistentOrigins;
     }
 
     @NonNull
     @Override
-    public PersistentTimelines persistentTimelines() {
+    public PersistentTimelines timelines() {
         return persistentTimelines;
     }
 

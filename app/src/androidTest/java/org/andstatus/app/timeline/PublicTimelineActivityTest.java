@@ -60,12 +60,12 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        ma = MyContextHolder.get().persistentAccounts().getFirstSucceededForOrigin(
-                MyContextHolder.get().persistentOrigins().fromName(demoData.gnusocialTestOriginName));
+        ma = MyContextHolder.get().accounts().getFirstSucceededForOrigin(
+                MyContextHolder.get().origins().fromName(demoData.gnusocialTestOriginName));
         assertTrue(ma.isValidAndSucceeded());
-        MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
+        MyContextHolder.get().accounts().setCurrentAccount(ma);
 
-        assertEquals(ma.getActorId(), MyContextHolder.get().persistentAccounts().getCurrentAccountActorId());
+        assertEquals(ma.getActorId(), MyContextHolder.get().accounts().getCurrentAccountActorId());
         MyLog.i(this, "setUp ended");
 
         return new Intent(Intent.ACTION_VIEW, Timeline.getTimeline(TimelineType.PUBLIC, ma, 0, null).getUri());
