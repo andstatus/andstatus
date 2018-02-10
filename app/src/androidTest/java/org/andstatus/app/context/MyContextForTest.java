@@ -16,6 +16,7 @@
 
 package org.andstatus.app.context;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
@@ -83,8 +84,8 @@ public class MyContextForTest extends MyContextImpl {
     }
 
     @Override
-    public void put(@NonNull AssertionData data) {
-        assertionData.put(data.getKey(), data);
+    public void putAssertionData(@NonNull String key, @NonNull ContentValues contentValues) {
+        assertionData.put(key, new AssertionData(key, contentValues));
     }
     
     public Collection<AssertionData> getAssertions() {

@@ -27,11 +27,9 @@ import net.jcip.annotations.ThreadSafe;
 
 import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.account.PersistentAccounts;
-import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.data.converter.DatabaseConverterController;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.graphics.ImageCaches;
-import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.notification.NotificationData;
 import org.andstatus.app.notification.Notifier;
 import org.andstatus.app.origin.PersistentOrigins;
@@ -235,11 +233,6 @@ public class MyContextImpl implements MyContext {
     }
 
     @Override
-    public String initializedBy() {
-        return initializedBy;
-    }
-    
-    @Override
     public long preferencesChangeTime() {
         return preferencesChangeTime;
     }
@@ -279,16 +272,6 @@ public class MyContextImpl implements MyContext {
     }
 
     @Override
-    public boolean isTestRun() {
-        return false;
-    }
-
-    @Override
-    public void put(@NonNull AssertionData data) {
-        // Noop for this implementation
-    }
-
-    @Override
     public boolean isExpired() {
         return expired;
     }
@@ -301,11 +284,6 @@ public class MyContextImpl implements MyContext {
     }
 
     @Override
-    public Locale getLocale() {
-        return locale;
-    }
-
-    @Override
     public PersistentOrigins persistentOrigins() {
         return persistentOrigins;
     }
@@ -314,11 +292,6 @@ public class MyContextImpl implements MyContext {
     @Override
     public PersistentTimelines persistentTimelines() {
         return persistentTimelines;
-    }
-
-    @Override
-    public HttpConnection getHttpConnectionMock() {
-        return null;
     }
 
     @Override

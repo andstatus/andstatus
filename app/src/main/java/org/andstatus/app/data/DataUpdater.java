@@ -230,7 +230,7 @@ public class DataUpdater {
             }
 
             if (MyContextHolder.get().isTestRun()) {
-                MyContextHolder.get().put(new AssertionData(MSG_ASSERTION_KEY, values));
+                MyContextHolder.get().putAssertionData(MSG_ASSERTION_KEY, values);
             }
             if (note.noteId == 0) {
                 Uri msgUri = execContext.getContext().getContentResolver().insert(

@@ -16,12 +16,12 @@
 
 package org.andstatus.app.context;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.PersistentAccounts;
-import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.notification.NotificationData;
@@ -41,10 +41,8 @@ public interface MyContext extends IdentifiableInstance {
     MyContext newCreator(Context context, Object initializer);
     boolean initialized();
     boolean isReady();
-    Locale getLocale();
     MyContextState state();
     Context context();
-    String initializedBy();
     long preferencesChangeTime();
     DatabaseHolder getMyDatabase();
     String getLastDatabaseError();
@@ -55,7 +53,7 @@ public interface MyContext extends IdentifiableInstance {
     PersistentOrigins persistentOrigins();
     @NonNull
     PersistentTimelines persistentTimelines();
-    void put(@NonNull AssertionData data);
+    default void putAssertionData(@NonNull String key, @NonNull ContentValues contentValues) {}
     void release();
     boolean isExpired();
     void setExpired();
@@ -66,8 +64,10 @@ public interface MyContext extends IdentifiableInstance {
     Notifier getNotifier();
     void notify(NotificationData data);
     void clearNotification(@NonNull Timeline timeline);
-
-    // For testing
-    boolean isTestRun();
-    HttpConnection getHttpConnectionMock();
+    default boolean isTestRun() {
+        return false;
+    }
+    default HttpConnection getHttpConnectionMock() {
+        return null;
+    }
 }
