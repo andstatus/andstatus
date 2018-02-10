@@ -43,16 +43,12 @@ public class AsyncTaskLauncher<Params> {
     private static final Queue<MyAsyncTask<?, ?, ?>> launchedTasks = new ConcurrentLinkedQueue<>();
 
     private static volatile ThreadPoolExecutor SYNC_POOL_EXECUTOR = null;
-    private static volatile ThreadPoolExecutor QUICK_UI_POOL_EXECUTOR = null;
     private static volatile ThreadPoolExecutor LONG_UI_POOL_EXECUTOR = null;
     private static volatile ThreadPoolExecutor FILE_DOWNLOAD_EXECUTOR = null;
 
     private static ThreadPoolExecutor getExecutor(MyAsyncTask.PoolEnum pool) {
         ThreadPoolExecutor executor;
         switch (pool) {
-            case QUICK_UI:
-                executor = QUICK_UI_POOL_EXECUTOR;
-                break;
             case LONG_UI:
                 executor = LONG_UI_POOL_EXECUTOR;
                 break;
@@ -85,9 +81,6 @@ public class AsyncTaskLauncher<Params> {
     private static void setExecutor(MyAsyncTask.PoolEnum pool, ThreadPoolExecutor executor) {
         onExecutorRemoval(pool);
         switch (pool) {
-            case QUICK_UI:
-                QUICK_UI_POOL_EXECUTOR = executor;
-                break;
             case LONG_UI:
                 LONG_UI_POOL_EXECUTOR = executor;
                 break;
@@ -96,6 +89,8 @@ public class AsyncTaskLauncher<Params> {
                 break;
             case SYNC:
                 SYNC_POOL_EXECUTOR = executor;
+                break;
+            default:
                 break;
         }
     }
@@ -139,7 +134,7 @@ public class AsyncTaskLauncher<Params> {
         for (MyAsyncTask<?, ?, ?> launched : launchedTasks) {
             if (launched.needsBackgroundWork() && !launched.isReallyWorking()) {
                 MyLog.v(TAG, "Found stalled task at " + launched.pool + ": " + launched);
-                if (launched.cancelledLongAgo() && launched.pool.mayBeShutDown && launched.hasExecutor) {
+                if (launched.pool.mayBeShutDown && launched.cancelledLongAgo() && launched.hasExecutor) {
                     poolsToShutDown.add(launched.pool);
                 } else {
                     launched.cancelLogged(true);

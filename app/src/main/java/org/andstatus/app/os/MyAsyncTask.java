@@ -60,9 +60,8 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
     public enum PoolEnum {
         SYNC(2, MAX_COMMAND_EXECUTION_SECONDS, true),
         FILE_DOWNLOAD(1, MAX_COMMAND_EXECUTION_SECONDS, true),
-        QUICK_UI(1, 20, false),
-        LONG_UI(1, MAX_COMMAND_EXECUTION_SECONDS, true),
-        DEFAULT(0, MAX_COMMAND_EXECUTION_SECONDS, false);
+        QUICK_UI(0, 20, false),
+        LONG_UI(1, MAX_COMMAND_EXECUTION_SECONDS, true);
 
         protected final int corePoolSize;
         final long maxCommandExecutionSeconds;
