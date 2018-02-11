@@ -16,7 +16,7 @@
 
 package org.andstatus.app.data.converter;
 
-import org.andstatus.app.account.PersistentAccounts;
+import org.andstatus.app.account.MyAccounts;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.SqlActorIds;
 
@@ -151,7 +151,7 @@ class Convert26 extends ConvertOneStep {
                 "WHERE reblogged=1 AND reblog_oid IS NOT NULL AND actor_id IS NOT NULL AND actor_id != 0) ON msg_id=oldmsg._id";
         DbUtils.execSQL(db, sql);
 
-        SqlActorIds myAccountIds = PersistentAccounts.myAccountIds();
+        SqlActorIds myAccountIds = MyAccounts.myAccountIds();
 
         progressLogger.logProgress(stepTitle + ": Adding Favorite activities, linked to Update activities");
         sql = "INSERT INTO activity (" +

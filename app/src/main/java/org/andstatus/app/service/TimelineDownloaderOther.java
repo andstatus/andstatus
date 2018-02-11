@@ -136,7 +136,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
             }
             return actorOid;
         }
-        if (getTimeline().getTimelineType().isForActor()) {
+        if (getTimeline().getTimelineType().isForUser()) {
             throw new ConnectionException("No actor for the timeline:" + getTimeline());
         }
         return "";

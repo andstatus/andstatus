@@ -29,6 +29,14 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="37.00" android:versionCode="244"
+             versionDate="2018-02-11"
+             versionTitle="Merging actors of Users from different Social Networks">
+        <changes>
+            <change>Actors having the same WebFingerId in different social networks are merged logically.
+            This allows to select activities of one actor via different instances of GNU Social and Mastodon.</change>
+        </changes>
+    </release>
     <release android:versionName="36.09" android:versionCode="243"
              versionDate="2018-02-04"
              versionTitle="Bugfixes and smoother scrolling">

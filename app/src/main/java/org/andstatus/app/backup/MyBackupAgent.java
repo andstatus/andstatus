@@ -23,7 +23,7 @@ import android.content.Context;
 import android.os.ParcelFileDescriptor;
 
 import org.andstatus.app.R;
-import org.andstatus.app.account.PersistentAccounts;
+import org.andstatus.app.account.MyAccounts;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MyPreferencesGroupsEnum;
@@ -263,7 +263,7 @@ public class MyBackupAgent extends BackupAgent {
         DataPruner.setDataPrunedNow();
         
         data.setMyContext(MyContextHolder.get());
-        assertNextHeader(data, PersistentAccounts.KEY_ACCOUNT);
+        assertNextHeader(data, MyAccounts.KEY_ACCOUNT);
         accountsRestored += data.getMyContext().accounts().onRestore(data, backupDescriptor);
 
         MyContextHolder.release();

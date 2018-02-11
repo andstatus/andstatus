@@ -28,7 +28,7 @@ import java.util.Map;
 
 public class ProjectionMap {
     public static final String ACTIVITY_TABLE_ALIAS = "act1";
-    public static final String MSG_TABLE_ALIAS = "msg1";
+    public static final String NOTE_TABLE_ALIAS = "msg1";
     public static final String ATTACHMENT_IMAGE_TABLE_ALIAS = "img";
     public static final String ACTOR_AVATAR_IMAGE_TABLE_ALIAS = "acav";
     public static final String AVATAR_IMAGE_TABLE_ALIAS = "av";
@@ -53,8 +53,8 @@ public class ProjectionMap {
         MSG.put(ActivityTable.INS_DATE, ActivityTable.INS_DATE);
         MSG.put(ActivityTable.UPDATED_DATE, ActivityTable.UPDATED_DATE);
 
-        MSG.put(BaseColumns._ID, MSG_TABLE_ALIAS + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
-        MSG.put(NoteTable.NOTE_ID, MSG_TABLE_ALIAS + "." + BaseColumns._ID + " AS " + NoteTable.NOTE_ID);
+        MSG.put(BaseColumns._ID, NOTE_TABLE_ALIAS + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
+        MSG.put(NoteTable.NOTE_ID, NOTE_TABLE_ALIAS + "." + BaseColumns._ID + " AS " + NoteTable.NOTE_ID);
         MSG.put(NoteTable.ORIGIN_ID, NoteTable.ORIGIN_ID);
         MSG.put(NoteTable.NOTE_OID, NoteTable.NOTE_OID);
         MSG.put(NoteTable.AUTHOR_ID, NoteTable.AUTHOR_ID);
@@ -104,7 +104,7 @@ public class ProjectionMap {
         ACTOR.put(DownloadTable.AVATAR_FILE_NAME, AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.FILE_NAME + " AS " + DownloadTable.AVATAR_FILE_NAME);
         ACTOR.put(ActorTable.BANNER_URL, ActorTable.BANNER_URL);
 
-        ACTOR.put(ActorTable.MSG_COUNT, ActorTable.MSG_COUNT);
+        ACTOR.put(ActorTable.NOTES_COUNT, ActorTable.NOTES_COUNT);
         ACTOR.put(ActorTable.FAVORITES_COUNT, ActorTable.FAVORITES_COUNT);
         ACTOR.put(ActorTable.FOLLOWING_COUNT, ActorTable.FOLLOWING_COUNT);
         ACTOR.put(ActorTable.FOLLOWERS_COUNT, ActorTable.FOLLOWERS_COUNT);

@@ -122,7 +122,7 @@
                 <action android:name="android.intent.action.PICK"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.msg"/>
+                <data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.note"/>
                 <data android:scheme="http" android:host="timeline.app.andstatus.org" />
             </intent-filter>
             <intent-filter>
@@ -140,7 +140,7 @@
             <intent-filter android:label="@string/resolve_view">
                 <action android:name="org.andstatus.app.action.VIEW_CONVERSATION" />
                 <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="vnd.android.cursor.item/org.andstatus.app.provider.msg"/>
+                <data android:mimeType="vnd.android.cursor.item/org.andstatus.app.provider.note"/>
             </intent-filter>
         </activity>
         <activity android:name=".actor.ActorList"
@@ -149,7 +149,7 @@
             <intent-filter>
                 <action android:name="org.andstatus.app.action.VIEW_ACTORS" />
                 <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.user"/>
+                <data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.actor"/>
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH"/>
@@ -161,7 +161,7 @@
             <intent-filter>
                 <action android:name="org.andstatus.app.action.VIEW_FOLLOWERS" />
                 <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.user"/>
+                <data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.actor"/>
             </intent-filter>
         </activity>
         <activity android:name=".context.MySettingsActivity"

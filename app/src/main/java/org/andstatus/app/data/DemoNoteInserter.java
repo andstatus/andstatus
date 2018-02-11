@@ -176,7 +176,8 @@ public class DemoNoteInserter {
 
         Actor actor = activity.getActor();
         if (actor.nonEmpty()) {
-            assertNotEquals( "Actor id not set for " + actor + " in activity " + activity, 0, actor.actorId);
+            assertNotEquals( "Actor id not set for " + actor + " in " + activity, 0, actor.actorId);
+            assertNotEquals( "User id not set for " + actor + " in " + activity, 0, actor.userId);
         }
 
         if (note.nonEmpty()) {
@@ -197,7 +198,7 @@ public class DemoNoteInserter {
 
             Actor author = activity.getAuthor();
             if (author.nonEmpty()) {
-                assertNotEquals( "Author id for " + author + " not set in note " + note + " in activity " + activity, 0,
+                assertNotEquals( "Author id for " + author + " not set in note " + note + " in " + activity, 0,
                         MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, note.noteId));
             }
         }

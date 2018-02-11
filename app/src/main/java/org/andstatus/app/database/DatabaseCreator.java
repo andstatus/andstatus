@@ -21,6 +21,7 @@ import android.provider.BaseColumns;
 
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.database.table.CommandTable;
 import org.andstatus.app.database.table.DownloadTable;
@@ -28,7 +29,7 @@ import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.database.table.TimelineTable;
-import org.andstatus.app.database.table.ActorTable;
+import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -39,6 +40,7 @@ public class DatabaseCreator {
      * Current database scheme version, defined by AndStatus developers.
      * This is used to check (and upgrade if necessary) existing database after application update.
      *
+     * v.28 2018-02-10 app.v.37 UserTable added, one-to-many linked to ActorTable
      * v.27 2017-11-04 app.v.36 Moving to ActivityStreams data model.
      *                 ActivityTable and AudienceTable added, MsOfUserTable dropped. Others refactored.
      * v.26 2016-11-27 app.v.31 Conversation ID added to MsgTable, see https://github.com/andstatus/andstatus/issues/361
@@ -64,7 +66,7 @@ public class DatabaseCreator {
      *      All messages are in the same table.
      *      Allows to have multiple User Accounts in different Originating systems (twitter.com etc. )
      */
-    public static final int DATABASE_VERSION = 27;
+    public static final int DATABASE_VERSION = 28;
     public static final long ORIGIN_ID_TWITTER =  1L;
 
     private final SQLiteDatabase db;
@@ -79,15 +81,16 @@ public class DatabaseCreator {
      */
     public DatabaseCreator create() {
         MyLog.i(this, "Creating tables");
+        OriginTable.create(db);
         NoteTable.create(db);
-        AudienceTable.create(db);
+        UserTable.create(db);
         ActorTable.create(db);
+        AudienceTable.create(db);
         FriendshipTable.create(db);
         DownloadTable.create(db);
-        OriginTable.create(db);
         TimelineTable.create(db);
-        CommandTable.create(db);
         ActivityTable.create(db);
+        CommandTable.create(db);
         return this;
     }
 

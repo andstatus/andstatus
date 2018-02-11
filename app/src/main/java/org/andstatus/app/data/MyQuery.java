@@ -632,7 +632,7 @@ public class MyQuery {
     /**
      * Lookup the Actor's id based on the username in the Originating system
      * 
-     * @param originId - see {@link NoteTable#ORIGIN_ID}
+     * @param originId - see {@link NoteTable#ORIGIN_ID}, 0 - for all Origin-s
      * @param username - see {@link ActorTable#USERNAME}
      * @return - id in our System (i.e. in the table, e.g.
      *         {@link ActorTable#_ID} ), 0 if not found
@@ -653,8 +653,9 @@ public class MyQuery {
         String sql = "";
         try {
             sql = "SELECT " + BaseColumns._ID + " FROM " + ActorTable.TABLE_NAME
-                    + " WHERE " + ActorTable.ORIGIN_ID + "=" + originId + " AND " + columnName + "='"
-                    + columnValue + "'";
+                    + " WHERE "
+                    + (originId == 0 ? "" : ActorTable.ORIGIN_ID + "=" + originId + " AND ")
+                    + columnName + "='" + columnValue + "'";
             prog = db.compileStatement(sql);
             id = prog.simpleQueryForLong();
         } catch (SQLiteDoneException e) {
@@ -694,6 +695,16 @@ public class MyQuery {
 
     public static long getNumberOfNotificationEvents(@NonNull NotificationEventType event) {
         return getCountOfActivities(ActivityTable.NEW_NOTIFICATION_EVENT + "=" + event.id);
+    }
+
+    @NonNull
+    static Set<Long> getActorsOfSameUser(SQLiteDatabase db, long actorId) {
+        return getLongs(db, "SELECT " + ActorTable.ACTOR_ID
+                + " FROM " + ActorTable.TABLE_NAME
+                + " WHERE " + ActorTable.USER_ID + "="
+                + "(SELECT " + ActorTable.USER_ID
+                + " FROM " + ActorTable.TABLE_NAME
+                + " WHERE " + ActorTable.ACTOR_ID + "=" + actorId + ")");
     }
 
     public static long getCountOfActivities(@NonNull String condition) {

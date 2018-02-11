@@ -249,7 +249,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
             if (!filter.searchQuery.isEmpty() && !filter.searchQuery.matchedAll(bodyToSearch)) return false;
         }
         if (filter.hideRepliesNotToMeOrFriends && inReplyToActorId != 0
-                && !MyContextHolder.get().accounts().isMeOrMyFriend(inReplyToActorId)) return false;
+                && !MyContextHolder.get().users().isMeOrMyFriend(inReplyToActorId)) return false;
         return true;
     }
 

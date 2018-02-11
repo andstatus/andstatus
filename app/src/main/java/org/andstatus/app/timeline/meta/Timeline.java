@@ -330,25 +330,17 @@ public class Timeline implements Comparable<Timeline> {
 
     @NonNull
     private MyAccount fixedMyAccount(MyContext myContext, TimelineType timelineType, MyAccount myAccountIn, long actorIdIn) {
-        if (timelineType == null) {
+        if (timelineType == null || (timelineType.isAtOrigin() && !timelineType.isForUser())) {
             return MyAccount.EMPTY;
         }
-        MyAccount myAccount = myAccountIn == null ? MyAccount.EMPTY : myAccountIn;
-        long actorId = timelineType.isForActor() ? actorIdIn : 0;
-        if (myContext.accounts().isMyActorId(actorId)) {
-            myAccount = myContext.accounts().fromActorId(actorId);
-        }
-        if (timelineType.isAtOrigin() &&
-                !timelineType.isForActor() &&
-                actorId == 0 || (actorId != 0 && !myContext.accounts().isMyActorId(actorId))
-                ) {
-            return MyAccount.EMPTY;
-        }
-        return myAccount;
+        long actorId = timelineType.isForUser() ? actorIdIn : 0;
+        MyAccount myAccountFromActorId = myContext.accounts().fromActorId(actorId);
+        return myAccountFromActorId.isValid() ? myAccountFromActorId :
+                (myAccountIn == null ? MyAccount.EMPTY : myAccountIn);
     }
 
     private long fixedActorId(TimelineType timelineType, long actorId) {
-        if (!timelineType.isForActor()) return 0;
+        if (!timelineType.isForUser()) return 0;
         if (actorId == 0 && myAccount.isValid()) return myAccount.getActorId();
         return actorId;
     }
@@ -386,7 +378,7 @@ public class Timeline implements Comparable<Timeline> {
                 isCombined = true;
             }
         }
-        if (timelineType.isForActor() && actorId == 0) {
+        if (timelineType.isForUser() && actorId == 0) {
             isCombined = true;
         }
         if (isCombined != calcIsCombined(timelineType, origin, myAccount)) {
@@ -404,10 +396,10 @@ public class Timeline implements Comparable<Timeline> {
             }
         }
 
-        if (timelineType.isForActor()) {
+        if (timelineType.isForUser()) {
             if (myAccount.getActorId() == actorId) {
                 switch (timelineType) {
-                    case ACTOR:
+                    case USER:
                         return TimelineType.SENT;
                     case FRIENDS:
                         return TimelineType.MY_FRIENDS;
@@ -419,7 +411,7 @@ public class Timeline implements Comparable<Timeline> {
             } else {
                 switch (timelineType) {
                     case SENT:
-                        return TimelineType.ACTOR;
+                        return TimelineType.USER;
                     case MY_FRIENDS:
                         return TimelineType.FRIENDS;
                     case MY_FOLLOWERS:

@@ -231,9 +231,7 @@ public abstract class Connection {
         return http.getCredentialsPresent();
     }
     
-    /**
-     * Verify the account's credentials.
-     */
+    @NonNull
     public abstract Actor verifyCredentials() throws ConnectionException;
 
     public abstract AActivity undoLike(String noteOid) throws ConnectionException;

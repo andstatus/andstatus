@@ -238,9 +238,9 @@ public class DemoConversationInserter {
         addActivity(reply16);
     }
 
-    private void assertNotificationEvent(AActivity activity, NotificationEventType event) {
+    private void assertNotificationEvent(AActivity activity, NotificationEventType expectedEvent) {
         assertEquals("Notification event assertion failed for activity:\n" + activity,
-                event,
+                expectedEvent,
                 NotificationEventType.fromId(
                         MyQuery.activityIdToLongColumnValue(ActivityTable.NEW_NOTIFICATION_EVENT, activity.getId())));
     }

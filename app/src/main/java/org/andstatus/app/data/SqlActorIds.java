@@ -36,13 +36,14 @@ import static java.util.stream.Collectors.toList;
  * @author yvolk@yurivolkov.com
  */
 public class SqlActorIds {
+    public static final SqlActorIds EMPTY = new SqlActorIds();
     private final Set<Long> ids;
 
     public static SqlActorIds fromTimeline(@NonNull Timeline timeline) {
-        if (timeline.getTimelineType() == TimelineType.ACTOR) {
-            if ( timeline.getActorId() != 0) {
-                return new SqlActorIds(timeline.getActorId());
-            }
+        if (timeline.getTimelineType() == TimelineType.SENT) {
+            return MyContextHolder.get().users().myActorIdsFor(timeline.getActorId());
+        } else if (timeline.getTimelineType() == TimelineType.USER) {
+            return new SqlActorIds(MyQuery.getActorsOfSameUser(MyContextHolder.get().getDatabase(), timeline.getActorId()));
         } else if (timeline.isCombined() || timeline.getTimelineType().isAtOrigin()) {
             return new SqlActorIds(MyContextHolder.get().accounts().list().stream()
                     .filter(ma -> !timeline.getOrigin().isValid() || timeline.getOrigin().equals(ma.getOrigin()))
@@ -50,7 +51,7 @@ public class SqlActorIds {
         } else if (timeline.getMyAccount().isValid()) {
             return new SqlActorIds(timeline.getMyAccount().getActorId());
         }
-        return new SqlActorIds();
+        return EMPTY;
     }
 
     public static SqlActorIds fromActors(@NonNull Collection<Actor> actors) {

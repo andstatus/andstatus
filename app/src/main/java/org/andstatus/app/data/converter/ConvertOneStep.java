@@ -63,6 +63,11 @@ abstract class ConvertOneStep {
         return lastError;
     }
 
+    void dropOldIndex(String indexName) {
+        sql = "DROP INDEX IF EXISTS " + indexName;
+        DbUtils.execSQL(db, sql);
+    }
+
     void dropOldTable(String tableName) {
         sql = "DROP TABLE IF EXISTS " + tableName;
         DbUtils.execSQL(db, sql);

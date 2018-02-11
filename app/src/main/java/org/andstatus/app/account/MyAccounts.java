@@ -3,8 +3,6 @@ package org.andstatus.app.account;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -17,7 +15,6 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.SqlActorIds;
-import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.CollectionsUtil;
@@ -32,16 +29,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
-public class PersistentAccounts {
+public class MyAccounts {
     /**
      * Name of "current" account: it is not stored when application is killed
      */
@@ -50,9 +45,8 @@ public class PersistentAccounts {
     private final MyContext myContext;
     private final List<MyAccount> myAccounts = new CopyOnWriteArrayList<>();
     private int distinctOriginsCount = 0;
-    private final Set<Long> myFriends = new ConcurrentSkipListSet<>();
 
-    private PersistentAccounts(MyContext myContext) {
+    private MyAccounts(MyContext myContext) {
         this.myContext = myContext;
     }
 
@@ -75,7 +69,7 @@ public class PersistentAccounts {
         return myAccounts.size();
     }
     
-    public PersistentAccounts initialize() {
+    public MyAccounts initialize() {
         List<MyAccount> myAccounts = new ArrayList<>();
         for (android.accounts.Account account : getAccounts(myContext.context())) {
             MyAccount ma = Builder.fromAndroidAccount(myContext, account).getAccount();
@@ -90,7 +84,6 @@ public class PersistentAccounts {
         this.myAccounts.addAll(myAccounts);
         calculateDistinctOriginsCount();
         MyLog.v(this, "Account list initialized, " + this.myAccounts.size() + " accounts in " + distinctOriginsCount + " origins");
-        initializeMyFriends();
         return this;
     }
 
@@ -110,8 +103,8 @@ public class PersistentAccounts {
         distinctOriginsCount = origins.size();
     }
     
-    public static PersistentAccounts newEmpty(MyContext myContext) {
-        return new PersistentAccounts(myContext);
+    public static MyAccounts newEmpty(MyContext myContext) {
+        return new MyAccounts(myContext);
     }
     
     /**
@@ -186,21 +179,6 @@ public class PersistentAccounts {
     public MyAccount fromActor(@NonNull Actor other, boolean sameOriginOnly) {
         return myAccounts.stream().filter(ma -> ma.getActor().isSame(other, sameOriginOnly))
                 .findFirst().orElse(MyAccount.EMPTY);
-    }
-
-    public boolean contains(@NonNull Collection<Actor> actors) {
-        for (Actor actor : actors) {
-            if (fromActor(actor).isValid()) return true;
-        }
-        return false;
-    }
-
-    public boolean contains(@NonNull Actor actor) {
-      return fromActor(actor).isValid();
-    }
-
-    public boolean isMyActorId(long actorId) {
-        return fromActorId(actorId).isValid();
     }
 
     /**
@@ -479,32 +457,8 @@ public class PersistentAccounts {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        PersistentAccounts other = (PersistentAccounts) o;
+        MyAccounts other = (MyAccounts) o;
         return myAccounts.equals(other.myAccounts);
-    }
-
-    public boolean isMeOrMyFriend(long actorId) {
-        return isMyActorId(actorId) || isMyFriend(actorId);
-    }
-
-    private boolean isMyFriend(long actorId) {
-        return myFriends.contains(actorId);
-    }
-
-    private void initializeMyFriends() {
-        myFriends.clear();
-        SQLiteDatabase db = myContext.getDatabase();
-        if (db == null) return;
-        String sql = "SELECT DISTINCT " + FriendshipTable.FRIEND_ID + " FROM " + FriendshipTable.TABLE_NAME
-            + " WHERE " + FriendshipTable.FOLLOWED + "=1" + " AND " + FriendshipTable.ACTOR_ID
-            + SqlActorIds.fromIds(myAccounts.stream().map(MyAccount::getActorId).collect(Collectors.toList())).getSql();
-        try (Cursor cursor = db.rawQuery(sql, null)) {
-            while (cursor.moveToNext()) {
-                myFriends.add(cursor.getLong(0));
-            }
-        } catch (Exception e) {
-            MyLog.i(this, "SQL:'" + sql + "'", e);
-        }
     }
 
     public void reorderAccounts(List<MyAccount> reorderedItems) {

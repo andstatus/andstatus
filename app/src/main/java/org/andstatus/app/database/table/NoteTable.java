@@ -28,7 +28,7 @@ import org.andstatus.app.data.DownloadStatus;
  * and also for "direct messages", "direct dents" etc.
  */
 public final class NoteTable implements BaseColumns {
-    public static final String TABLE_NAME = "msg";
+    public static final String TABLE_NAME = "note";
 
     private NoteTable() {
     }
@@ -49,11 +49,11 @@ public final class NoteTable implements BaseColumns {
      * The id is not unique for this table, because we have IDs from different systems in one column
      * and IDs from different systems may overlap.
      */
-    public static final String NOTE_OID = "msg_oid";
+    public static final String NOTE_OID = "note_oid";
     /**
      * See {@link DownloadStatus}. Defaults to {@link DownloadStatus#UNKNOWN}
      */
-    public static final String NOTE_STATUS = "msg_status";
+    public static final String NOTE_STATUS = "note_status";
     /** Conversation ID, internal to AndStatus */
     public static final String CONVERSATION_ID = "conversation_id";
     /** ID of the conversation in the originating system (if the system supports this) */
@@ -78,22 +78,22 @@ public final class NoteTable implements BaseColumns {
      */
     public static final String VIA = "via";
     /**
-     * If not null: Link to the Msg._ID in this table
+     * If not null: Link to the #_ID in this table
      */
-    public static final String IN_REPLY_TO_NOTE_ID = "in_reply_to_msg_id";
+    public static final String IN_REPLY_TO_NOTE_ID = "in_reply_to_note_id";
     /**
      * Date and time when the note was created or updated in the originating system.
      * We store it as long milliseconds.
      */
-    public static final String UPDATED_DATE = "msg_updated_date";
+    public static final String UPDATED_DATE = "note_updated_date";
     /** Date and time the row was inserted into this database */
-    public static final String INS_DATE = "msg_ins_date";
+    public static final String INS_DATE = "note_ins_date";
     /** The Note is definitely private (e.g. "Direct message")
      *  Absence of this flag means that we don't know for sure, if the note is private */
     public static final String PRIVATE = "private";
     /** Some of my accounts favorited this note */
     public static final String FAVORITED = "favorited";
-    /** The Msg is reblogged by some of my accounts
+    /** The Note is reblogged by some of my actors
      * In some sense REBLOGGED is like FAVORITED.
      * Main difference: visibility. REBLOGGED are shown for all followers in their Home timelines.
      */
@@ -107,17 +107,17 @@ public final class NoteTable implements BaseColumns {
     public static final String REPLY_COUNT = "reply_count";  // To be calculated locally?!
 
     // Columns, which duplicate other existing info. Here to speed up data retrieval
-    public static final String AUTHOR_ID = "msg_author_id";
+    public static final String AUTHOR_ID = "note_author_id";
     /**
      * If not null: to which Sender this note is a reply = Actor._ID
      * This field is not necessary but speeds up IN_REPLY_TO_NAME calculation
      */
-    public static final String IN_REPLY_TO_ACTOR_ID = "in_reply_to_user_id";
+    public static final String IN_REPLY_TO_ACTOR_ID = "in_reply_to_actor_id";
 
     // Derived columns (they are not stored in this table but are result of joins and aliasing)
 
     /** Alias for the primary key */
-    public static final String NOTE_ID =  "msg_id";
+    public static final String NOTE_ID =  "note_id";
 
     public static void create(SQLiteDatabase db) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
@@ -145,19 +145,19 @@ public final class NoteTable implements BaseColumns {
                 + UPDATED_DATE + " INTEGER NOT NULL DEFAULT 0"
                 + ")");
 
-        DbUtils.execSQL(db, "CREATE UNIQUE INDEX idx_msg_origin ON " + TABLE_NAME + " ("
+        DbUtils.execSQL(db, "CREATE UNIQUE INDEX idx_note_origin ON " + TABLE_NAME + " ("
                 + ORIGIN_ID + ", "
                 + NOTE_OID
                 + ")"
         );
 
         // Index not null rows only, see https://www.sqlite.org/partialindex.html
-        DbUtils.execSQL(db, "CREATE INDEX idx_msg_in_reply_to_msg_id ON " + TABLE_NAME + " ("
+        DbUtils.execSQL(db, "CREATE INDEX idx_note_in_reply_to_note_id ON " + TABLE_NAME + " ("
                 + IN_REPLY_TO_NOTE_ID
                 + ")"
         );
 
-        DbUtils.execSQL(db, "CREATE INDEX idx_msg_conversation_id ON " + TABLE_NAME + " ("
+        DbUtils.execSQL(db, "CREATE INDEX idx_note_conversation_id ON " + TABLE_NAME + " ("
                 + CONVERSATION_ID
                 + ")"
         );

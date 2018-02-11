@@ -143,9 +143,9 @@ public class DataUpdaterTest {
         DemoConversationInserter.assertIfActorIsMyFriend(somebody, true, ma);
 
         Set<Long> friendsIds = MyQuery.getFriendsIds(ma.getActorId());
-        MyContextHolder.get().accounts().initialize();
+        MyContextHolder.get().users().initialize();
         for (long id : friendsIds) {
-            assertTrue("isFriend: " + id, MyContextHolder.get().accounts().isMeOrMyFriend(id));
+            assertTrue("isFriend: " + id, MyContextHolder.get().users().isMeOrMyFriend(id));
         }
 
         cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection,
@@ -494,7 +494,7 @@ public class DataUpdaterTest {
         assertEquals("Description", actor.getDescription(),
                 MyQuery.actorIdToStringColumnValue(ActorTable.DESCRIPTION, id));
         assertEquals("Notes count", actor.notesCount,
-                MyQuery.actorIdToLongColumnValue(ActorTable.MSG_COUNT, id));
+                MyQuery.actorIdToLongColumnValue(ActorTable.NOTES_COUNT, id));
         assertEquals("Favorites count", actor.favoritesCount,
                 MyQuery.actorIdToLongColumnValue(ActorTable.FAVORITES_COUNT, id));
         assertEquals("Following (friends) count", actor.followingCount,

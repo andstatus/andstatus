@@ -16,15 +16,21 @@
 
 package org.andstatus.app.net.social;
 
+import android.content.ContentValues;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import org.andstatus.app.context.MyContext;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.database.table.ActorTable;
+import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -77,6 +83,9 @@ public class Actor implements Comparable<Actor> {
     @NonNull
     public final Origin origin;
     public long actorId = 0L;
+
+    public long userId = 0L;
+    private TriState isMyUser = TriState.UNKNOWN;
 
     @NonNull
     public static Actor fromOriginAndActorOid(@NonNull Origin origin, String actorOid) {
@@ -296,15 +305,10 @@ public class Actor implements Comparable<Actor> {
         return StringUtils.nonEmpty(webFingerId) && webFingerId.matches(WEBFINGER_ID_REGEX);
     }
 
-    /**
-     * Lookup the System's (AndStatus) id from the Originated system's id
-     * @return actorId
-     */
-    public long lookupActorId() {
-        if (actorId == 0) {
-            if (isOidReal()) {
-                actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(), oid);
-            }
+    /** Lookup the application's id from other IDs */
+    public void lookupActorId() {
+        if (actorId == 0 && isOidReal()) {
+            actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(), oid);
         }
         if (actorId == 0 && isWebFingerIdValid()) {
             actorId = MyQuery.webFingerIdToId(origin.getId(), webFingerId);
@@ -318,7 +322,15 @@ public class Actor implements Comparable<Actor> {
         if (actorId == 0 && hasAltTempOid()) {
             actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(), getAltTempOid());
         }
-        return actorId;
+    }
+
+    public void lookupUserId() {
+        if (userId == 0 && actorId != 0) {
+            userId = MyQuery.actorIdToLongColumnValue(ActorTable.USER_ID, actorId);
+        }
+        if (userId == 0 && isWebFingerIdValid()) {
+            userId = MyQuery.webFingerIdToId(0, webFingerId);
+        }
     }
 
     public boolean hasAltTempOid() {
@@ -497,5 +509,29 @@ public class Actor implements Comparable<Actor> {
 
     public String getTimelineUsername() {
         return MyQuery.actorIdToWebfingerId(actorId);
+    }
+
+    public void saveUser(MyContext myContext) {
+        if (userId == 0) {
+            userId = DbUtils.addRowWithRetry(myContext, UserTable.TABLE_NAME, toUserContentValues(myContext), 3);
+            MyLog.v(this, "Added " + this);
+        } else {
+            DbUtils.updateRowWithRetry(myContext, UserTable.TABLE_NAME, userId, toUserContentValues(myContext), 3);
+            MyLog.v(this, "Updated " + this);
+        }
+    }
+
+    private ContentValues toUserContentValues(MyContext myContext) {
+        ContentValues values = new ContentValues();
+        if (userId == 0) {
+            values.put(UserTable.KNOWN_AS, getNamePreferablyWebFingerId());
+        }
+        values.put(UserTable.IS_MY, isMyUser.known() ? isMyUser.toBoolean(false)
+                : myContext.users().contains(this));
+        return values;
+    }
+
+    public void setIsMyUser(@NonNull TriState isMyUser) {
+        this.isMyUser = isMyUser;
     }
 }

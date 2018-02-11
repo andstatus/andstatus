@@ -104,7 +104,7 @@ public final class ActivityTable implements BaseColumns {
                 + ")"
         );
 
-        DbUtils.execSQL(db, "CREATE INDEX idx_activity_user ON " + TABLE_NAME + " ("
+        DbUtils.execSQL(db, "CREATE INDEX idx_activity_actor ON " + TABLE_NAME + " ("
                 + OBJ_ACTOR_ID
                 + ")"
         );

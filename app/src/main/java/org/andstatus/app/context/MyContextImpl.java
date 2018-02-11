@@ -26,7 +26,7 @@ import android.support.annotation.Nullable;
 import net.jcip.annotations.ThreadSafe;
 
 import org.andstatus.app.ClassInApplicationPackage;
-import org.andstatus.app.account.PersistentAccounts;
+import org.andstatus.app.account.MyAccounts;
 import org.andstatus.app.data.converter.DatabaseConverterController;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.graphics.ImageCaches;
@@ -36,6 +36,7 @@ import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionState;
 import org.andstatus.app.timeline.meta.PersistentTimelines;
 import org.andstatus.app.timeline.meta.Timeline;
+import org.andstatus.app.user.MyUsers;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.Permissions;
@@ -43,8 +44,6 @@ import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
-
-import java.util.Locale;
 
 /**
  * Contains global state of the application
@@ -70,14 +69,12 @@ public class MyContextImpl implements MyContext {
     private volatile DatabaseHolder db = null;
     private volatile String lastDatabaseError = "";
 
-    private final PersistentAccounts persistentAccounts = PersistentAccounts.newEmpty(this);
-    private final PersistentOrigins persistentOrigins = PersistentOrigins.newEmpty(this);
-    private final PersistentTimelines persistentTimelines = PersistentTimelines.newEmpty(this);
+    private final MyUsers users = MyUsers.newEmpty(this);
+    private final MyAccounts accounts = MyAccounts.newEmpty(this);
+    private final PersistentOrigins origins = PersistentOrigins.newEmpty(this);
+    private final PersistentTimelines timelines = PersistentTimelines.newEmpty(this);
 
     private volatile boolean expired = false;
-
-    private final Locale locale = Locale.getDefault();
-
     private final Notifier notifier = new Notifier(this);
 
     MyContextImpl(MyContextImpl parent, Context context, Object initializer) {
@@ -134,13 +131,14 @@ public class MyContextImpl implements MyContext {
 
         switch (state) {
             case DATABASE_READY:
-                persistentOrigins.initialize();
+                origins.initialize();
                 if (MyContextHolder.isOnRestore()) {
                     state = MyContextState.RESTORING;
                 } else {
                     // Accounts are not restored yet
-                    persistentAccounts.initialize();
-                    persistentTimelines.initialize();
+                    accounts.initialize();
+                    users.initialize();
+                    timelines.initialize();
                     ImageCaches.initialize(context());
                     state = MyContextState.READY;
                 }
@@ -256,19 +254,25 @@ public class MyContextImpl implements MyContext {
         return sqLiteDatabase;
     }
 
-    @Override
     /**
      * 2013-12-09 After getting the error "java.lang.IllegalStateException: attempt to re-open an already-closed object: SQLiteDatabase"
      * and reading Internet, I decided NOT to db.close here.
      */
+    @Override
     public void release() {
         db = null;
     }
 
     @Override
     @NonNull
-    public PersistentAccounts accounts() {
-        return persistentAccounts;
+    public MyUsers users() {
+        return users;
+    }
+
+    @Override
+    @NonNull
+    public MyAccounts accounts() {
+        return accounts;
     }
 
     @Override
@@ -285,13 +289,13 @@ public class MyContextImpl implements MyContext {
 
     @Override
     public PersistentOrigins origins() {
-        return persistentOrigins;
+        return origins;
     }
 
     @NonNull
     @Override
     public PersistentTimelines timelines() {
-        return persistentTimelines;
+        return timelines;
     }
 
     @Override

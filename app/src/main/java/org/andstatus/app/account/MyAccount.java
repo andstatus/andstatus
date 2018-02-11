@@ -402,15 +402,14 @@ public final class MyAccount implements Comparable<MyAccount> {
                 return true;
             }
             try {
-                Actor actor = myAccount.getConnection().verifyCredentials();
-                return onCredentialsVerified(actor, null);
+                return onCredentialsVerified(myAccount.getConnection().verifyCredentials(), null);
             } catch (ConnectionException e) {
-                return onCredentialsVerified(null, e);
+                return onCredentialsVerified(Actor.EMPTY, e);
             }
         }
 
-        public boolean onCredentialsVerified(Actor actor, ConnectionException ce) throws ConnectionException {
-            boolean ok = ce == null && actor != null && !actor.isEmpty() && StringUtils.nonEmpty(actor.oid)
+        public boolean onCredentialsVerified(@NonNull Actor actor, ConnectionException ce) throws ConnectionException {
+            boolean ok = ce == null && !actor.isEmpty() && StringUtils.nonEmpty(actor.oid)
                     && actor.origin.isUsernameValid(actor.getUsername());
             boolean errorSettingUsername = !ok;
 
@@ -426,6 +425,7 @@ public final class MyAccount implements Comparable<MyAccount> {
 
             if (ok) {
                 setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
+                actor.setIsMyUser(TriState.TRUE);
                 myAccount.actor = actor;
                 if (DatabaseConverterController.isUpgrading()) {
                     MyLog.v(TAG, "Upgrade in progress");
@@ -710,6 +710,7 @@ public final class MyAccount implements Comparable<MyAccount> {
         actor.actorId = accountData.getDataLong(KEY_ACTOR_ID, 0L);
         actor.setUsername(oAccountName.getUsername());
         actor.setWebFingerId(MyQuery.actorIdToName(myContext.getDatabase(), actor.actorId, ActorInTimeline.WEBFINGER_ID));
+        actor.setIsMyUser(TriState.TRUE);
         this.version = accountData.getDataInt(KEY_VERSION, ACCOUNT_VERSION);
 
         deleted = accountData.getDataBoolean(KEY_DELETED, false);
@@ -821,7 +822,7 @@ public final class MyAccount implements Comparable<MyAccount> {
     }
 
     Account getExistingAndroidAccount() {
-        for (android.accounts.Account account : PersistentAccounts.getAccounts(MyContextHolder.get().context())) {
+        for (android.accounts.Account account : MyAccounts.getAccounts(MyContextHolder.get().context())) {
             if (getAccountName().equals(account.name)) {
                 return account;
             }

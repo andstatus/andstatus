@@ -29,13 +29,15 @@ import org.andstatus.app.net.social.Connection;
  * see {@link MyAccount#getActorId()}
  */
 public final class ActorTable implements BaseColumns {
-    public static final String TABLE_NAME = "user";
+    public static final String TABLE_NAME = "actor";
 
     private ActorTable() {
     }
 
     // Table columns
     /* {@link BaseColumns#_ID} is primary key in this database  */
+
+    public static final String USER_ID = UserTable.USER_ID;
 
     /**
      * ID of the originating (source) system (twitter.com, identi.ca, ... ) where the row was created
@@ -45,7 +47,7 @@ public final class ActorTable implements BaseColumns {
      * ID in the originating system
      * The id is not unique for this table, because we have IDs from different systems in one column.
      */
-    public static final String ACTOR_OID = "user_oid";
+    public static final String ACTOR_OID = "actor_oid";
     /** This is called "screen_name" in Twitter API, "login" or "username" in others */
     public static final String USERNAME = "username";
     /** It looks like an email address with your nickname then "@" then your server */
@@ -53,7 +55,7 @@ public final class ActorTable implements BaseColumns {
     /** This is called "name" in Twitter API */
     public static final String REAL_NAME = "real_name";
     /** Actor's description / "About myself" */
-    public static final String DESCRIPTION = "user_description";
+    public static final String DESCRIPTION = "actor_description";
     /** Location string */
     public static final String LOCATION = "location";
     /**
@@ -68,7 +70,7 @@ public final class ActorTable implements BaseColumns {
     public static final String AVATAR_URL = "avatar_url";
     public static final String BANNER_URL = "banner_url";
 
-    public static final String MSG_COUNT = "msg_count";
+    public static final String NOTES_COUNT = "notes_count";
     public static final String FAVORITES_COUNT = "favorited_count";
     public static final String FOLLOWING_COUNT = "following_count";
     public static final String FOLLOWERS_COUNT = "followers_count";
@@ -79,25 +81,25 @@ public final class ActorTable implements BaseColumns {
      * NULL means the row was not retrieved from the Internet yet
      * (And maybe there is no such an Actor in the originating system...)
      */
-    public static final String CREATED_DATE = "user_created_date";
-    public static final String UPDATED_DATE = "user_updated_date";
+    public static final String CREATED_DATE = "actor_created_date";
+    public static final String UPDATED_DATE = "actor_updated_date";
     /** Date and time the row was inserted into this database */
-    public static final String INS_DATE = "user_ins_date";
+    public static final String INS_DATE = "actor_ins_date";
 
     /**
      * Id of the latest activity where this actor was an Actor or an Author
      */
-    public static final String ACTOR_ACTIVITY_ID = "user_activity_id";
+    public static final String ACTOR_ACTIVITY_ID = "actor_activity_id";
     /**
      * Date of the latest activity of this Actor (were he was an Actor)
      */
-    public static final String ACTOR_ACTIVITY_DATE = "user_activity_date";
+    public static final String ACTOR_ACTIVITY_DATE = "actor_activity_date";
 
     /*
      * Derived columns (they are not stored in this table but are result of joins)
      */
     /** Alias for the primary key */
-    public static final String ACTOR_ID = "user_id";
+    public static final String ACTOR_ID = "actor_id";
     /** Alias for the primary key used for accounts */
     public static final String ACCOUNT_ID = "account_id";
     /**
@@ -118,6 +120,7 @@ public final class ActorTable implements BaseColumns {
     public static void create(SQLiteDatabase db) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + USER_ID + " INTEGER NOT NULL,"
                 + ORIGIN_ID + " INTEGER NOT NULL,"
                 + ACTOR_OID + " TEXT NOT NULL,"
                 + USERNAME + " TEXT NOT NULL,"
@@ -129,7 +132,7 @@ public final class ActorTable implements BaseColumns {
                 + HOMEPAGE + " TEXT,"
                 + AVATAR_URL + " TEXT,"
                 + BANNER_URL + " TEXT,"
-                + MSG_COUNT + " INTEGER NOT NULL DEFAULT 0,"
+                + NOTES_COUNT + " INTEGER NOT NULL DEFAULT 0,"
                 + FAVORITES_COUNT + " INTEGER NOT NULL DEFAULT 0,"
                 + FOLLOWING_COUNT + " INTEGER NOT NULL DEFAULT 0,"
                 + FOLLOWERS_COUNT + " INTEGER NOT NULL DEFAULT 0,"
@@ -140,9 +143,17 @@ public final class ActorTable implements BaseColumns {
                 + ACTOR_ACTIVITY_DATE + " INTEGER NOT NULL DEFAULT 0"
                 + ")");
 
-        DbUtils.execSQL(db, "CREATE UNIQUE INDEX idx_user_origin ON " + TABLE_NAME + " ("
+        DbUtils.execSQL(db, "CREATE UNIQUE INDEX idx_actor_origin ON " + TABLE_NAME + " ("
                 + ORIGIN_ID + ", "
                 + ACTOR_OID
+                + ")");
+
+        DbUtils.execSQL(db, "CREATE INDEX idx_actor_user ON " + TABLE_NAME + " ("
+                + USER_ID
+                + ")");
+
+        DbUtils.execSQL(db, "CREATE INDEX idx_actor_webfinger ON " + TABLE_NAME + " ("
+                + WEBFINGER_ID
                 + ")");
     }
 }

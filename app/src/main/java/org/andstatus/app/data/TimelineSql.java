@@ -23,14 +23,14 @@ import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -90,31 +90,29 @@ public class TimelineSql {
                 break;
             case HOME:
                 activityWhere.append(ActivityTable.SUBSCRIBED + "=" + TriState.TRUE.id);
-                msgWhere.append(ProjectionMap.MSG_TABLE_ALIAS + "." + NoteTable.PRIVATE + "!=" + TriState.TRUE.id);
+                msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.PRIVATE + "!=" + TriState.TRUE.id);
                 break;
             case PRIVATE:
-                msgWhere.append(ProjectionMap.MSG_TABLE_ALIAS + "." + NoteTable.PRIVATE + "=" + TriState.TRUE.id);
+                msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.PRIVATE + "=" + TriState.TRUE.id);
                 break;
             case FAVORITES:
-                msgWhere.append(ProjectionMap.MSG_TABLE_ALIAS + "." + NoteTable.FAVORITED + "=" + TriState.TRUE.id);
+                msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.FAVORITED + "=" + TriState.TRUE.id);
                 break;
             case MENTIONS:
-                msgWhere.append(ProjectionMap.MSG_TABLE_ALIAS + "." + NoteTable.MENTIONED + "=" + TriState.TRUE.id);
+                msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.MENTIONED + "=" + TriState.TRUE.id);
                 break;
             case PUBLIC:
-                msgWhere.append(ProjectionMap.MSG_TABLE_ALIAS + "." + NoteTable.PRIVATE + "!=" + TriState.TRUE.id);
+                msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.PRIVATE + "!=" + TriState.TRUE.id);
                 break;
             case DRAFTS:
-                msgWhere.append(ProjectionMap.MSG_TABLE_ALIAS + "." + NoteTable.NOTE_STATUS + "=" + DownloadStatus.DRAFT.save());
+                msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.NOTE_STATUS + "=" + DownloadStatus.DRAFT.save());
                 break;
             case OUTBOX:
-                msgWhere.append(ProjectionMap.MSG_TABLE_ALIAS + "." + NoteTable.NOTE_STATUS + "=" + DownloadStatus.SENDING.save());
+                msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.NOTE_STATUS + "=" + DownloadStatus.SENDING.save());
                 break;
-            case ACTOR:
+            case USER:
             case SENT:
-                SqlActorIds sqlActorIds = SqlActorIds.fromTimeline(timeline);
-                // All actions by this Actor(s)
-                activityWhere.append(ActivityTable.ACTOR_ID + sqlActorIds.getSql());
+                activityWhere.append(ActivityTable.ACTOR_ID + SqlActorIds.fromTimeline(timeline).getSql());
                 break;
             case NOTIFICATIONS:
                 activityWhere.append(ActivityTable.NOTIFIED + "=" + TriState.TRUE.id);
@@ -132,8 +130,8 @@ public class TimelineSql {
         String  tables = "(SELECT * FROM " + ActivityTable.TABLE_NAME + activityWhere.getWhere()
                 + ") AS " + ProjectionMap.ACTIVITY_TABLE_ALIAS
                 + (msgWhere.isEmpty() ? " LEFT" : " INNER") + " JOIN "
-                + NoteTable.TABLE_NAME + " AS " + ProjectionMap.MSG_TABLE_ALIAS
-                + " ON (" + ProjectionMap.MSG_TABLE_ALIAS + "." + BaseColumns._ID + "="
+                + NoteTable.TABLE_NAME + " AS " + ProjectionMap.NOTE_TABLE_ALIAS
+                + " ON (" + ProjectionMap.NOTE_TABLE_ALIAS + "." + BaseColumns._ID + "="
                     + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.NOTE_ID
                     + msgWhere.getAndWhere() + ")";
 
@@ -142,20 +140,19 @@ public class TimelineSql {
                     + BaseColumns._ID + ", " 
                     + TimelineSql.usernameField() + " AS " + ActorTable.AUTHOR_NAME
                     + " FROM " + ActorTable.TABLE_NAME + ") AS author ON "
-                    + ProjectionMap.MSG_TABLE_ALIAS + "." + NoteTable.AUTHOR_ID + "=author."
+                    + ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.AUTHOR_ID + "=author."
                     + BaseColumns._ID;
 
             if (columns.contains(DownloadTable.AVATAR_FILE_NAME)) {
                 tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
-                        + DownloadTable.ACTOR_ID + ", "
+                        + DownloadTable.ACTOR_ID + " AS DownloadActorId, "
                         + DownloadTable.DOWNLOAD_STATUS + ", "
                         + DownloadTable.FILE_NAME
                         + " FROM " + DownloadTable.TABLE_NAME + ") AS " + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS
                         + " ON "
                         + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_STATUS
                         + "=" + DownloadStatus.LOADED.save() + " AND "
-                        + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.ACTOR_ID
-                        + "=" + ProjectionMap.MSG_TABLE_ALIAS + "." + NoteTable.AUTHOR_ID;
+                        + "DownloadActorId=" + ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.AUTHOR_ID;
             }
         }
         if (columns.contains(DownloadTable.IMAGE_FILE_NAME)) {
@@ -179,7 +176,7 @@ public class TimelineSql {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
                     + TimelineSql.usernameField() + " AS " + ActorTable.IN_REPLY_TO_NAME
                     + " FROM " + ActorTable.TABLE_NAME + ") AS prevAuthor ON "
-                    + ProjectionMap.MSG_TABLE_ALIAS + "." + NoteTable.IN_REPLY_TO_ACTOR_ID
+                    + ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.IN_REPLY_TO_ACTOR_ID
                     + "=prevAuthor." + BaseColumns._ID;
         }
         return tables;

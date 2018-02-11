@@ -49,7 +49,7 @@ public class RecursiveConversationLoader<T extends ConversationItem<T>> extends 
         long conversationId = MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID, oMsg.getNoteId());
         String selection = (conversationId == 0
                 ? ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.NOTE_ID + "=" + oMsg.getNoteId()
-                : ProjectionMap.MSG_TABLE_ALIAS + "." + NoteTable.CONVERSATION_ID + "=" + conversationId);
+                : ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.CONVERSATION_ID + "=" + conversationId);
         Uri uri = Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null).getUri();
 
         try (Cursor cursor = myContext.context().getContentResolver().query(uri, oMsg.getProjection(),

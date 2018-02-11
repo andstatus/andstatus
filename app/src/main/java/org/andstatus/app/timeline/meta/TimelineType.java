@@ -40,8 +40,8 @@ public enum TimelineType implements SelectableEnum {
     /** Notes by the selected Actor (where he is an Author or an Actor only (e.g. for Reblog/Retweet).
      * This Actor is NOT one of our Accounts.
      * Hence this timeline type requires the Actor parameter. */
-    ACTOR("user", R.string.timeline_title_user, Connection.ApiRoutineEnum.ACTOR_TIMELINE),
-    /** Almost like {@link #ACTOR}, but for an Actor, who is one of my accounts. */
+    USER("user", R.string.timeline_title_user, Connection.ApiRoutineEnum.ACTOR_TIMELINE),
+    /** Almost like {@link #USER}, but for an Actor, who is one of my accounts. */
     SENT("sent", R.string.sent, Connection.ApiRoutineEnum.ACTOR_TIMELINE),
     /** Latest notes of every Friend of this Actor
      * (i.e of every actor, followed by this Actor).
@@ -152,7 +152,7 @@ public enum TimelineType implements SelectableEnum {
             case FRIENDS:
             case MANAGE_TIMELINES:
             case UNKNOWN:
-            case ACTOR:
+            case USER:
             case ACTORS:
                 return false;
             default:
@@ -182,12 +182,8 @@ public enum TimelineType implements SelectableEnum {
         switch (this) {
             case CONVERSATION:
             case EVERYTHING:
-            case FRIENDS:
-            case FOLLOWERS:
             case PUBLIC:
             case SEARCH:
-            case SENT:
-            case ACTOR:
             case ACTORS:
                 return true;
             default:
@@ -196,17 +192,17 @@ public enum TimelineType implements SelectableEnum {
     }
 
     public boolean isForAccount() {
-        return !isAtOrigin();
+        return !isAtOrigin() && !isForUser();
     }
 
-    public boolean isForActor() {
+    public boolean isForUser() {
         switch (this) {
             case FOLLOWERS:
             case FRIENDS:
             case MY_FOLLOWERS:
             case MY_FRIENDS:
             case SENT:
-            case ACTOR:
+            case USER:
                 return true;
             default:
                 return false;
@@ -280,7 +276,7 @@ public enum TimelineType implements SelectableEnum {
             case PUBLIC:
             case SEARCH:
             case SENT:
-            case ACTOR:
+            case USER:
                 return true;
             case FAVORITES:
             default:

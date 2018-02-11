@@ -190,6 +190,10 @@ public final class DemoData {
                         size > 5);
                 assertEquals("No WebfingerId", Optional.empty(), MyContextHolder.get().accounts()
                         .list().stream().filter(ma -> !ma.getActor().isWebFingerIdValid()).findFirst());
+                int size2 = MyContextHolder.get().users().size();
+                assertTrue("Only " + size2 + " users added: " + MyContextHolder.get().users()
+                        + " accounts: " + MyContextHolder.get().accounts(),
+                        size2 >= size);
 
                 originInserter.checkDefaultTimelinesForOrigins();
                 accountInserter.checkDefaultTimelinesForAccounts();

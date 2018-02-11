@@ -122,11 +122,13 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
+    @NonNull
     public Actor verifyCredentials() throws ConnectionException {
         JSONObject actor = http.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
         return actorFromJson(actor);
     }
 
+    @NonNull
     private Actor actorFromJson(JSONObject jso) throws ConnectionException {
         if (!PObjectType.PERSON.isTypeOf(jso)) {
             return Actor.EMPTY;

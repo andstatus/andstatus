@@ -50,7 +50,7 @@ public class MyAccountConverter {
             
             android.accounts.AccountManager am = AccountManager.get(myContext.context());
             Collection<android.accounts.Account> accountsToRemove = new ArrayList<android.accounts.Account>();
-            for (android.accounts.Account androidAccount : PersistentAccounts.getAccounts(myContext.context())) {
+            for (android.accounts.Account androidAccount : MyAccounts.getAccounts(myContext.context())) {
                 DatabaseConverterController.stillUpgrading();
                 AndroidAccountData androidAccountData = new AndroidAccountData(am, androidAccount);
                 int versionOldBefore16 = androidAccountData.getDataInt(MyAccount.KEY_VERSION, 0);

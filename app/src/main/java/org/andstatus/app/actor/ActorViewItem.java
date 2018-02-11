@@ -164,7 +164,7 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
         actor.setProfileUrl(DbUtils.getString(cursor, ActorTable.PROFILE_URL));
         actor.setHomepage(DbUtils.getString(cursor, ActorTable.HOMEPAGE));
 
-        actor.notesCount = DbUtils.getLong(cursor, ActorTable.MSG_COUNT);
+        actor.notesCount = DbUtils.getLong(cursor, ActorTable.NOTES_COUNT);
         actor.favoritesCount = DbUtils.getLong(cursor, ActorTable.FAVORITES_COUNT);
         actor.followingCount = DbUtils.getLong(cursor, ActorTable.FOLLOWING_COUNT);
         actor.followersCount = DbUtils.getLong(cursor, ActorTable.FOLLOWERS_COUNT);

@@ -37,6 +37,7 @@ public class ConnectionEmpty extends Connection {
     }
 
     @Override
+    @NonNull
     public Actor verifyCredentials() throws ConnectionException {
         return Actor.EMPTY;
     }

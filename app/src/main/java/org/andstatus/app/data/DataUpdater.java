@@ -24,17 +24,17 @@ import android.text.TextUtils;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.database.table.ActorTable;
-import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Note;
-import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.TimelinePosition;
+import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.service.AttachmentDownloader;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -309,15 +309,15 @@ public class DataUpdater {
     }
 
     private void updateObjActor(AActivity activity) {
-        Actor objActor = activity.getObjActor();
+        Actor actor = activity.getObjActor();
         final String method = "updateObjActor";
-        if (objActor.isEmpty()) {
+        if (actor.isEmpty()) {
             MyLog.v(this, method + "; objActor is empty");
             return;
         }
         MyAccount me = execContext.getMyContext().accounts().fromActorOfSameOrigin(activity.accountActor);
         if (!me.isValid()) {
-            if (activity.accountActor.equals(objActor)) {
+            if (activity.accountActor.equals(actor)) {
                 MyLog.d(this, method +"; adding my account " + activity.accountActor);
             } else {
                 MyLog.w(this, method +"; my account is invalid, skipping: " + activity.toString());
@@ -328,40 +328,41 @@ public class DataUpdater {
         TriState followedByMe = TriState.UNKNOWN;
         TriState followedByActor = activity.type.equals(ActivityType.FOLLOW) ? TriState.TRUE :
                 activity.type.equals(ActivityType.UNDO_FOLLOW) ? TriState.FALSE : TriState.UNKNOWN;
-        if (objActor.followedByMe.known()) {
-            followedByMe = objActor.followedByMe;
+        if (actor.followedByMe.known()) {
+            followedByMe = actor.followedByMe;
         } else if (activity.getActor().actorId == me.getActorId() && me.getActorId() != 0) {
             followedByMe = followedByActor;
         }
 
-        long actorId = objActor.lookupActorId();
-        if (actorId != 0 && objActor.isPartiallyDefined() && followedByMe.unknown()) {
+        actor.lookupActorId();
+        if (actor.actorId != 0 && actor.isPartiallyDefined() && followedByMe.unknown()) {
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, method + "; Skipping partially defined: " + objActor.toString());
+                MyLog.v(this, method + "; Skipping partially defined: " + actor.toString());
             }
             return;
         }
+        actor.lookupUserId();
 
-        String actorOid = (actorId == 0 && !objActor.isOidReal()) ? objActor.getTempOid() : objActor.oid;
+        String actorOid = (actor.actorId == 0 && !actor.isOidReal()) ? actor.getTempOid() : actor.oid;
         try {
             ContentValues values = new ContentValues();
-            if (actorId == 0 || !objActor.isPartiallyDefined()) {
-                if (actorId == 0 || objActor.isOidReal()) {
+            if (actor.actorId == 0 || !actor.isPartiallyDefined()) {
+                if (actor.actorId == 0 || actor.isOidReal()) {
                     values.put(ActorTable.ACTOR_OID, actorOid);
                 }
 
                 // Substitute required empty values with some temporary for a new entry only!
-                String username = objActor.getUsername();
+                String username = actor.getUsername();
                 if (SharedPreferencesUtil.isEmpty(username)) {
                     username = "id:" + actorOid;
                 }
                 values.put(ActorTable.USERNAME, username);
-                String webFingerId = objActor.getWebFingerId();
+                String webFingerId = actor.getWebFingerId();
                 if (SharedPreferencesUtil.isEmpty(webFingerId)) {
                     webFingerId = username;
                 }
                 values.put(ActorTable.WEBFINGER_ID, webFingerId);
-                String realName = objActor.getRealName();
+                String realName = actor.getRealName();
                 if (SharedPreferencesUtil.isEmpty(realName)) {
                     realName = username;
                 }
@@ -369,75 +370,74 @@ public class DataUpdater {
                 // End of required attributes
             }
 
-            if (!SharedPreferencesUtil.isEmpty(objActor.avatarUrl)) {
-                values.put(ActorTable.AVATAR_URL, objActor.avatarUrl);
+            if (!SharedPreferencesUtil.isEmpty(actor.avatarUrl)) {
+                values.put(ActorTable.AVATAR_URL, actor.avatarUrl);
             }
-            if (!SharedPreferencesUtil.isEmpty(objActor.getDescription())) {
-                values.put(ActorTable.DESCRIPTION, objActor.getDescription());
+            if (!SharedPreferencesUtil.isEmpty(actor.getDescription())) {
+                values.put(ActorTable.DESCRIPTION, actor.getDescription());
             }
-            if (!SharedPreferencesUtil.isEmpty(objActor.getHomepage())) {
-                values.put(ActorTable.HOMEPAGE, objActor.getHomepage());
+            if (!SharedPreferencesUtil.isEmpty(actor.getHomepage())) {
+                values.put(ActorTable.HOMEPAGE, actor.getHomepage());
             }
-            if (!SharedPreferencesUtil.isEmpty(objActor.getProfileUrl())) {
-                values.put(ActorTable.PROFILE_URL, objActor.getProfileUrl());
+            if (!SharedPreferencesUtil.isEmpty(actor.getProfileUrl())) {
+                values.put(ActorTable.PROFILE_URL, actor.getProfileUrl());
             }
-            if (!SharedPreferencesUtil.isEmpty(objActor.bannerUrl)) {
-                values.put(ActorTable.BANNER_URL, objActor.bannerUrl);
+            if (!SharedPreferencesUtil.isEmpty(actor.bannerUrl)) {
+                values.put(ActorTable.BANNER_URL, actor.bannerUrl);
             }
-            if (!SharedPreferencesUtil.isEmpty(objActor.location)) {
-                values.put(ActorTable.LOCATION, objActor.location);
+            if (!SharedPreferencesUtil.isEmpty(actor.location)) {
+                values.put(ActorTable.LOCATION, actor.location);
             }
-            if (objActor.notesCount > 0) {
-                values.put(ActorTable.MSG_COUNT, objActor.notesCount);
+            if (actor.notesCount > 0) {
+                values.put(ActorTable.NOTES_COUNT, actor.notesCount);
             }
-            if (objActor.favoritesCount > 0) {
-                values.put(ActorTable.FAVORITES_COUNT, objActor.favoritesCount);
+            if (actor.favoritesCount > 0) {
+                values.put(ActorTable.FAVORITES_COUNT, actor.favoritesCount);
             }
-            if (objActor.followingCount > 0) {
-                values.put(ActorTable.FOLLOWING_COUNT, objActor.followingCount);
+            if (actor.followingCount > 0) {
+                values.put(ActorTable.FOLLOWING_COUNT, actor.followingCount);
             }
-            if (objActor.followersCount > 0) {
-                values.put(ActorTable.FOLLOWERS_COUNT, objActor.followersCount);
+            if (actor.followersCount > 0) {
+                values.put(ActorTable.FOLLOWERS_COUNT, actor.followersCount);
             }
-            if (objActor.getCreatedDate() > 0) {
-                values.put(ActorTable.CREATED_DATE, objActor.getCreatedDate());
+            if (actor.getCreatedDate() > 0) {
+                values.put(ActorTable.CREATED_DATE, actor.getCreatedDate());
             }
-            if (objActor.getUpdatedDate() > 0) {
-                values.put(ActorTable.UPDATED_DATE, objActor.getUpdatedDate());
+            if (actor.getUpdatedDate() > 0) {
+                values.put(ActorTable.UPDATED_DATE, actor.getUpdatedDate());
             }
 
             if (followedByMe.known()) {
                 values.put(FriendshipTable.FOLLOWED, followedByMe.toBoolean(false));
                 MyLog.v(this, "Account '" + me.getAccountName() + "' "
                                 + (followedByMe.toBoolean(false) ? "follows" : "stop following ")
-                                + objActor.getUsername());
+                                + actor.getUsername());
             }
             
             // Construct the Uri to the Actor
-            Uri actorUri = MatchedUri.getActorUri(me.getActorId(), actorId);
-            if (actorId == 0) {
-                // There was no such row so add new one
-                values.put(ActorTable.ORIGIN_ID, objActor.origin.getId());
-                actorId = ParsedUri.fromUri(
+            Uri actorUri = MatchedUri.getActorUri(me.getActorId(), actor.actorId);
+            actor.saveUser(execContext.myContext);
+            if (actor.actorId == 0) {
+                values.put(ActorTable.ORIGIN_ID, actor.origin.getId());
+                values.put(ActorTable.USER_ID, actor.userId);
+                actor.actorId = ParsedUri.fromUri(
                         execContext.getContext().getContentResolver().insert(actorUri, values))
                         .getActorId();
             } else if (values.size() > 0) {
                 execContext.getContext().getContentResolver().update(actorUri, values, null, null);
             }
-            objActor.actorId = actorId;
-            if (objActor.hasLatestNote()) {
-                updateNote(objActor.getLatestActivity(), false);
+            if (actor.hasLatestNote()) {
+                updateNote(actor.getLatestActivity(), false);
             }
         } catch (Exception e) {
-            MyLog.e(this, method + "; actorId=" + actorId + "; oid=" + actorOid, e);
+            MyLog.e(this, method + "; actorId=" + actor.actorId + "; oid=" + actorOid, e);
         }
-        MyLog.v(this, method + "; actorId=" + actorId + "; oid=" + actorOid);
-        return;
+        MyLog.v(this, method + "; actorId=" + actor.actorId + "; oid=" + actorOid);
     }
 
     public void downloadOneNoteBy(String actorOid) throws ConnectionException {
         List<AActivity> activities = execContext.getConnection().getTimeline(
-                TimelineType.ACTOR.getConnectionApiRoutine(), TimelinePosition.EMPTY,
+                TimelineType.USER.getConnectionApiRoutine(), TimelinePosition.EMPTY,
                 TimelinePosition.EMPTY, 1, actorOid);
         for (AActivity item : activities) {
             onActivity(item, false);

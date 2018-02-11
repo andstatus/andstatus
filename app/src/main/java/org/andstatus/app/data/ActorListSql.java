@@ -82,7 +82,7 @@ public class ActorListSql {
             columnNames.add(DownloadTable.AVATAR_FILE_NAME);
         }
 
-        columnNames.add(ActorTable.MSG_COUNT);
+        columnNames.add(ActorTable.NOTES_COUNT);
         columnNames.add(ActorTable.FAVORITES_COUNT);
         columnNames.add(ActorTable.FOLLOWING_COUNT);
         columnNames.add(ActorTable.FOLLOWERS_COUNT);

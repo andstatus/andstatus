@@ -189,7 +189,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
             menu.switchTimelineActivityView(
-                    Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.ACTOR,
+                    Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER,
                     null, menu.getActorId(), menu.getOrigin(), ""));
         }
     },
@@ -197,7 +197,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
             menu.switchTimelineActivityView(
-                    Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.ACTOR,
+                    Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER,
                     null, menu.getAuthorId(), menu.getOrigin(), ""));
         }
     },

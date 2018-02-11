@@ -152,7 +152,7 @@ public class AActivity extends AObject {
     }
 
     public boolean isMyActorOrAuthor(@NonNull MyContext myContext) {
-        return myContext.accounts().contains(getActor()) || myContext.accounts().contains(getAuthor());
+        return myContext.users().contains(getActor()) || myContext.users().contains(getAuthor());
     }
 
     @NonNull
@@ -270,7 +270,7 @@ public class AActivity extends AObject {
         if (this == EMPTY) {
             return "EMPTY";
         }
-        return "MbActivity{"
+        return "AActivity{"
                 + (isEmpty() ? "(empty), " : "")
                 + type
                 + ", id:" + id
@@ -419,7 +419,7 @@ public class AActivity extends AObject {
     private void calculateNotification(MyContext myContext) {
         if (getUpdatedDate() < 1
                 || isNotified().equals(TriState.FALSE)
-                || myContext.accounts().contains(getActor())) return;
+                || myContext.users().contains(getActor())) return;
         final NotificationEventType event;
         if(myContext.getNotifier().isEnabled(NotificationEventType.MENTION)
                 && getNote().audience().containsMe(myContext)
@@ -427,15 +427,15 @@ public class AActivity extends AObject {
             event = NotificationEventType.MENTION;
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.ANNOUNCE)
                 && type == ActivityType.ANNOUNCE
-                && myContext.accounts().contains(getAuthor())) {
+                && myContext.users().contains(getAuthor())) {
             event = NotificationEventType.ANNOUNCE;
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.LIKE)
                 && (type == ActivityType.LIKE || type == ActivityType.UNDO_LIKE)
-                && myContext.accounts().contains(getAuthor())) {
+                && myContext.users().contains(getAuthor())) {
             event = NotificationEventType.LIKE;
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.FOLLOW)
                 && (type == ActivityType.FOLLOW || type == ActivityType.UNDO_FOLLOW)
-                && myContext.accounts().contains(getObjActor())) {
+                && myContext.users().contains(getObjActor())) {
             event = NotificationEventType.FOLLOW;
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.PRIVATE)
                 && getNote().isPrivate()) {

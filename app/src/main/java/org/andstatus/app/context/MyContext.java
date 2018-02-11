@@ -21,7 +21,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.account.PersistentAccounts;
+import org.andstatus.app.account.MyAccounts;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.notification.NotificationData;
@@ -30,9 +30,8 @@ import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionState;
 import org.andstatus.app.timeline.meta.PersistentTimelines;
 import org.andstatus.app.timeline.meta.Timeline;
+import org.andstatus.app.user.MyUsers;
 import org.andstatus.app.util.IdentifiableInstance;
-
-import java.util.Locale;
 
 public interface MyContext extends IdentifiableInstance {
     MyContext EMPTY = new MyContextImpl(null, null, "static");
@@ -48,7 +47,9 @@ public interface MyContext extends IdentifiableInstance {
     String getLastDatabaseError();
     SQLiteDatabase getDatabase();
     @NonNull
-    PersistentAccounts accounts();
+    MyUsers users();
+    @NonNull
+    MyAccounts accounts();
     @NonNull
     PersistentOrigins origins();
     @NonNull

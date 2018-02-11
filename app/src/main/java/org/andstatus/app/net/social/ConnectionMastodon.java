@@ -290,6 +290,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     }
 
     @Override
+    @NonNull
     protected Actor actorFromJson(JSONObject jso) throws ConnectionException {
         if (jso == null) {
             return Actor.EMPTY;

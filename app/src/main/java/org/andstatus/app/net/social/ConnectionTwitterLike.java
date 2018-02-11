@@ -361,7 +361,8 @@ public abstract class ConnectionTwitterLike extends Connection {
             note.setBody(jso.getString("text"));
         }
     }
-    
+
+    @NonNull
     protected Actor actorFromJson(JSONObject jso) throws ConnectionException {
         if (jso == null) {
             return Actor.EMPTY;
@@ -594,6 +595,7 @@ public abstract class ConnectionTwitterLike extends Connection {
      *      REST API Method: account verify_credentials</a>
      */
     @Override
+    @NonNull
     public Actor verifyCredentials() throws ConnectionException {
         JSONObject actor = http.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
         return actorFromJson(actor);

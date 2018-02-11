@@ -210,6 +210,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     }
 
     @Override
+    @NonNull
     protected Actor actorFromJson(JSONObject jso) throws ConnectionException {
         Actor actor = super.actorFromJson(jso);
         if (jso != null) {

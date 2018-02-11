@@ -11,7 +11,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.support.test.rule.GrantPermissionRule;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.account.PersistentAccounts;
+import org.andstatus.app.account.MyAccounts;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.context.TestSuite;
@@ -55,7 +55,7 @@ public class MyBackupAgentTest {
         TestSuite.initialize(this);
         demoData.assertConversations();
         
-        PersistentAccounts accountsBefore = PersistentAccounts.newEmpty(MyContextHolder.get());
+        MyAccounts accountsBefore = MyAccounts.newEmpty(MyContextHolder.get());
         accountsBefore.initialize();
         assertEquals("Compare Persistent accounts with copy", MyContextHolder.get().accounts(), accountsBefore);
         compareOneAccount(MyContextHolder.get().accounts(), accountsBefore, demoData.gnusocialTestAccountName);
@@ -78,7 +78,7 @@ public class MyBackupAgentTest {
         deleteBackup(dataFolder);
     }
 
-    private void compareOneAccount(PersistentAccounts accountsExpected, PersistentAccounts accountsActual, String accountName) throws JSONException {
+    private void compareOneAccount(MyAccounts accountsExpected, MyAccounts accountsActual, String accountName) throws JSONException {
         MyAccount oldAccount = accountsExpected.fromAccountName(accountName);
         MyAccount newAccount = accountsActual.fromAccountName(accountName);
         String message = "Compare accounts " +
@@ -137,7 +137,7 @@ public class MyBackupAgentTest {
 
     private void deleteAccounts() throws IOException {
         android.accounts.AccountManager am = AccountManager.get(MyContextHolder.get().context());
-        List<Account> aa = PersistentAccounts.getAccounts(MyContextHolder.get().context());
+        List<Account> aa = MyAccounts.getAccounts(MyContextHolder.get().context());
         for (android.accounts.Account androidAccount : aa) {
             String logMsg = "Removing old account: " + androidAccount.name;
             MyLog.i(this, logMsg);

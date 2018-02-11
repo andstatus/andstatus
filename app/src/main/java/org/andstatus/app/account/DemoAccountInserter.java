@@ -109,7 +109,7 @@ public class DemoAccountInserter {
     }
 
     private void assertAccountIsAddedToAccountManager(MyAccount maExpected) {
-        List<Account> aa = PersistentAccounts.getAccounts(myContext.context());
+        List<Account> aa = MyAccounts.getAccounts(myContext.context());
         MyAccount ma = null;
         for (android.accounts.Account account : aa) {
             ma = MyAccount.Builder.fromAndroidAccount(myContext, account).getAccount();
