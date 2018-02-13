@@ -16,21 +16,17 @@
 
 package org.andstatus.app.net.social;
 
-import android.content.ContentValues;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.ActorTable;
-import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
-import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -43,7 +39,6 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * 'Mb' stands for "Microblogging system" 
  * @author yvolk@yurivolkov.com
  */
 public class Actor implements Comparable<Actor> {
@@ -84,8 +79,7 @@ public class Actor implements Comparable<Actor> {
     public final Origin origin;
     public long actorId = 0L;
 
-    public long userId = 0L;
-    private TriState isMyUser = TriState.UNKNOWN;
+    public User user = new User();
 
     @NonNull
     public static Actor fromOriginAndActorOid(@NonNull Origin origin, String actorOid) {
@@ -152,7 +146,7 @@ public class Actor implements Comparable<Actor> {
             return "Actor:EMPTY";
         }
         String str = Actor.class.getSimpleName();
-        String members = "oid=" + oid + "; origin=" + origin.getName();
+        String members = (TextUtils.isEmpty(oid) ? "" : "oid=" + oid + "; ") + " origin=" + origin.getName();
         if (actorId != 0) {
             members += "; id=" + actorId;
         }
@@ -325,11 +319,11 @@ public class Actor implements Comparable<Actor> {
     }
 
     public void lookupUserId() {
-        if (userId == 0 && actorId != 0) {
-            userId = MyQuery.actorIdToLongColumnValue(ActorTable.USER_ID, actorId);
+        if (user.userId == 0 && actorId != 0) {
+            user.userId = MyQuery.actorIdToLongColumnValue(ActorTable.USER_ID, actorId);
         }
-        if (userId == 0 && isWebFingerIdValid()) {
-            userId = MyQuery.webFingerIdToId(0, webFingerId);
+        if (user.userId == 0 && isWebFingerIdValid()) {
+            user.userId = MyQuery.webFingerIdToId(0, webFingerId);
         }
     }
 
@@ -512,26 +506,10 @@ public class Actor implements Comparable<Actor> {
     }
 
     public void saveUser(MyContext myContext) {
-        if (userId == 0) {
-            userId = DbUtils.addRowWithRetry(myContext, UserTable.TABLE_NAME, toUserContentValues(myContext), 3);
-            MyLog.v(this, "Added " + this);
-        } else {
-            DbUtils.updateRowWithRetry(myContext, UserTable.TABLE_NAME, userId, toUserContentValues(myContext), 3);
-            MyLog.v(this, "Updated " + this);
+        if (user.getIsMyUser().unknown() && myContext.users().contains(this)) {
+            user.setIsMyUser(TriState.TRUE);
         }
-    }
-
-    private ContentValues toUserContentValues(MyContext myContext) {
-        ContentValues values = new ContentValues();
-        if (userId == 0) {
-            values.put(UserTable.KNOWN_AS, getNamePreferablyWebFingerId());
-        }
-        values.put(UserTable.IS_MY, isMyUser.known() ? isMyUser.toBoolean(false)
-                : myContext.users().contains(this));
-        return values;
-    }
-
-    public void setIsMyUser(@NonNull TriState isMyUser) {
-        this.isMyUser = isMyUser;
+        if (user.userId == 0) user.setKnownAs(getNamePreferablyWebFingerId());
+        user.save(myContext);
     }
 }

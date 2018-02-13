@@ -419,7 +419,7 @@ public class DataUpdater {
             actor.saveUser(execContext.myContext);
             if (actor.actorId == 0) {
                 values.put(ActorTable.ORIGIN_ID, actor.origin.getId());
-                values.put(ActorTable.USER_ID, actor.userId);
+                values.put(ActorTable.USER_ID, actor.user.userId);
                 actor.actorId = ParsedUri.fromUri(
                         execContext.getContext().getContentResolver().insert(actorUri, values))
                         .getActorId();

@@ -177,7 +177,7 @@ public class DemoNoteInserter {
         Actor actor = activity.getActor();
         if (actor.nonEmpty()) {
             assertNotEquals( "Actor id not set for " + actor + " in " + activity, 0, actor.actorId);
-            assertNotEquals( "User id not set for " + actor + " in " + activity, 0, actor.userId);
+            assertNotEquals( "User id not set for " + actor + " in " + activity, 0, actor.user.userId);
         }
 
         if (note.nonEmpty()) {

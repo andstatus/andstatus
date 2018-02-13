@@ -20,6 +20,8 @@ import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.net.social.AActivity;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
@@ -75,7 +77,7 @@ public abstract class DataChecker {
             return;
         }
         MyLog.i(DataChecker.class, "fixData started" + (includeLong ? ", including long tasks" : ""));
-        for(DataChecker checker : new DataChecker[]{new MergeActors(),
+        for(DataChecker checker : new DataChecker[]{new MergeActors(), new CheckUsers(),
                 new CheckConversations(), new CheckTimelines(), new SearchIndexUpdate()}) {
             if (includeLong || checker.notLong()) checker.setMyContext(myContext).setLogger(logger).fix();
         }

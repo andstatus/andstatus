@@ -228,5 +228,43 @@ class Convert27 extends ConvertOneStep {
         DbUtils.execSQL(db, sql);
 
         dropOldTable("oldtimeline");
+
+        progressLogger.logProgress(stepTitle + ": Converting command");
+
+        sql = "ALTER TABLE command RENAME TO oldcommand";
+        DbUtils.execSQL(db, sql);
+
+        sql = "CREATE TABLE command (_id INTEGER PRIMARY KEY NOT NULL,queue_type TEXT NOT NULL,command_code TEXT NOT NULL,command_created_date INTEGER NOT NULL,command_description TEXT,in_foreground BOOLEAN NOT NULL DEFAULT 0,manually_launched BOOLEAN NOT NULL DEFAULT 0,timeline_id INTEGER NOT NULL DEFAULT 0,timeline_type TEXT NOT NULL,account_id INTEGER NOT NULL DEFAULT 0,actor_id INTEGER NOT NULL DEFAULT 0,origin_id INTEGER NOT NULL DEFAULT 0,search_query TEXT,item_id INTEGER NOT NULL DEFAULT 0,username TEXT,last_executed_date INTEGER NOT NULL DEFAULT 0,execution_count INTEGER NOT NULL DEFAULT 0,retries_left INTEGER NOT NULL DEFAULT 0,num_auth_exceptions INTEGER NOT NULL DEFAULT 0,num_io_exceptions INTEGER NOT NULL DEFAULT 0,num_parse_exceptions INTEGER NOT NULL DEFAULT 0,error_message TEXT,downloaded_count INTEGER NOT NULL DEFAULT 0,progress_text TEXT)";
+        DbUtils.execSQL(db, sql);
+
+        sql = "INSERT INTO command (" +
+                "_id,queue_type,command_code,command_created_date,command_description,in_foreground,manually_launched,timeline_id,timeline_type,account_id,actor_id,origin_id,search_query,item_id,username,last_executed_date,execution_count,retries_left,num_auth_exceptions,num_io_exceptions,num_parse_exceptions,error_message,downloaded_count,progress_text" +
+                ") SELECT " +
+                "_id,queue_type,command_code,command_created_date,command_description,in_foreground,manually_launched,timeline_id,timeline_type,account_id, user_id,origin_id,search_query,item_id,username,last_executed_date,execution_count,retries_left,num_auth_exceptions,num_io_exceptions,num_parse_exceptions,error_message,downloaded_count,progress_text" +
+                " FROM oldcommand";
+        DbUtils.execSQL(db, sql);
+
+        dropOldTable("oldcommand");
+
+        progressLogger.logProgress(stepTitle + ": Converting friendship");
+
+        dropOldIndex("idx_followers");
+
+        sql = "ALTER TABLE friendship RENAME TO oldfriendship";
+        DbUtils.execSQL(db, sql);
+
+        sql = "CREATE TABLE friendship (actor_id INTEGER NOT NULL,friend_id INTEGER NOT NULL,followed BOOLEAN NOT NULL, CONSTRAINT pk_friendship PRIMARY KEY (actor_id, friend_id))";
+        DbUtils.execSQL(db, sql);
+        sql = "CREATE INDEX idx_followers ON friendship (friend_id, actor_id)";
+        DbUtils.execSQL(db, sql);
+
+        sql = "INSERT INTO friendship (" +
+                "actor_id,friend_id,followed" +
+                ") SELECT " +
+                "user_id,friend_id,followed" +
+                " FROM oldfriendship";
+        DbUtils.execSQL(db, sql);
+
+        dropOldTable("oldfriendship");
     }
 }

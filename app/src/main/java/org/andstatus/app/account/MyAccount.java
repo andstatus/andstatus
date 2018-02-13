@@ -425,7 +425,7 @@ public final class MyAccount implements Comparable<MyAccount> {
 
             if (ok) {
                 setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
-                actor.setIsMyUser(TriState.TRUE);
+                actor.user.setIsMyUser(TriState.TRUE);
                 myAccount.actor = actor;
                 if (DatabaseConverterController.isUpgrading()) {
                     MyLog.v(TAG, "Upgrade in progress");
@@ -710,7 +710,9 @@ public final class MyAccount implements Comparable<MyAccount> {
         actor.actorId = accountData.getDataLong(KEY_ACTOR_ID, 0L);
         actor.setUsername(oAccountName.getUsername());
         actor.setWebFingerId(MyQuery.actorIdToName(myContext.getDatabase(), actor.actorId, ActorInTimeline.WEBFINGER_ID));
-        actor.setIsMyUser(TriState.TRUE);
+        actor.user.userId = MyQuery.idToLongColumnValue(myContext.getDatabase(), ActorTable.TABLE_NAME,
+                ActorTable.USER_ID,actor.actorId);
+        actor.user.setIsMyUser(TriState.TRUE);
         this.version = accountData.getDataInt(KEY_VERSION, ACCOUNT_VERSION);
 
         deleted = accountData.getDataBoolean(KEY_DELETED, false);

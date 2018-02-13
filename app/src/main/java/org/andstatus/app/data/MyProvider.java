@@ -32,12 +32,12 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.OriginTable;
-import org.andstatus.app.database.table.ActorTable;
-import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.net.social.ActivityType;
+import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -184,6 +184,25 @@ public class MyProvider extends ContentProvider {
         return count;
     }
 
+    public static void delete(@NonNull MyContext myContext, @NonNull String tableName, @NonNull String column, Object value) {
+        if (value == null) return;
+        delete(myContext, tableName, column + "=" + value);
+    }
+
+    public static void delete(@NonNull MyContext myContext, @NonNull String tableName, String where) {
+        final String method = "delete";
+        SQLiteDatabase db = myContext.getDatabase();
+        if (db == null) {
+            MyLog.v(MyProvider.TAG, method + "; Database is null");
+            return;
+        }
+        try {
+            db.delete(tableName, where, null);
+        } catch (Exception e) {
+            MyLog.w(TAG, method + "; table:'" + tableName + "', where:'" + where + "'", e);
+        }
+    }
+
     public static long deleteActivity(MyContext myContext, long activityId, long noteId, boolean inTransaction) {
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
@@ -212,73 +231,43 @@ public class MyProvider extends ContentProvider {
     }
 
     public static void updateNoteReblogged(MyContext myContext, Origin origin, long noteId) {
-        final String method = "updateNoteReblogged-" + noteId;
-        SQLiteDatabase db = MyContextHolder.get().getDatabase();
-        if (db == null) {
-            MyLog.v(MyProvider.TAG, method + "; Database is null");
-            return;
-        }
         TriState reblogged = TriState.fromBoolean(
-                myContext.users().contains(MyQuery.getRebloggers(db, origin, noteId))
+                myContext.users().contains(MyQuery.getRebloggers(myContext.getDatabase(), origin, noteId))
         );
-        String sql = "UPDATE " + NoteTable.TABLE_NAME + " SET " + NoteTable.REBLOGGED + "=" + reblogged.id
-                + " WHERE " + NoteTable._ID + "=" + noteId;
-        try {
-            db.execSQL(sql);
-        } catch (Exception e) {
-            MyLog.w(TAG, method + "; SQL:'" + sql + "'", e);
-        }
+        update(myContext, NoteTable.TABLE_NAME, NoteTable.REBLOGGED + "=" + reblogged.id,
+                NoteTable._ID + "=" + noteId);
     }
 
-    public static void updateNoteFavorited(MyContext myContext, @NonNull Origin origin, long noteId) {
-        final String method = "updateNoteFavorited-" + noteId;
-        SQLiteDatabase db = myContext.getDatabase();
-        if (db == null) {
-            MyLog.v(MyProvider.TAG, method + "; Database is null");
-            return;
-        }
+    public static void updateNoteFavorited(@NonNull MyContext myContext, @NonNull Origin origin, long noteId) {
         TriState favorited = TriState.fromBoolean(
-                myContext.users().contains(MyQuery.getStargazers(db, origin, noteId))
+                myContext.users().contains(MyQuery.getStargazers(myContext.getDatabase(), origin, noteId))
         );
-        String sql = "UPDATE " + NoteTable.TABLE_NAME + " SET " + NoteTable.FAVORITED + "=" + favorited.id
-                + " WHERE " + NoteTable._ID + "=" + noteId;
-        try {
-            db.execSQL(sql);
-        } catch (Exception e) {
-            MyLog.w(TAG, method + "; SQL:'" + sql + "'", e);
-        }
+        update(myContext, NoteTable.TABLE_NAME, NoteTable.FAVORITED + "=" + favorited.id,
+                NoteTable._ID + "=" + noteId);
     }
 
     public static void clearNotification(@NonNull MyContext myContext, @NonNull Timeline timeline) {
-        final String method = "clearNotification for" + timeline;
-        SQLiteDatabase db = myContext.getDatabase();
-        if (db == null) {
-            MyLog.v(MyProvider.TAG, method + "; Database is null");
-            return;
-        }
-        String sql = "UPDATE " + ActivityTable.TABLE_NAME + " SET " + ActivityTable.NEW_NOTIFICATION_EVENT + "=0" +
-                (timeline.isEmpty() ? "" : " WHERE " + ActivityTable.NEW_NOTIFICATION_EVENT +
+        update(myContext, ActivityTable.TABLE_NAME, ActivityTable.NEW_NOTIFICATION_EVENT + "=0",
+                timeline.isEmpty() ? "" : ActivityTable.NEW_NOTIFICATION_EVENT +
                         SqlActorIds.fromIds(NotificationEventType.idsOfShownOn(timeline.getTimelineType())).getSql());
-        try {
-            db.execSQL(sql);
-        } catch (Exception e) {
-            MyLog.w(TAG, method + "; SQL:'" + sql + "'", e);
-        }
     }
 
     public static void setUnsentNoteNotification(@NonNull MyContext myContext, long noteId) {
-        final String method = "setUnsentNoteNotification for noteId=" + noteId;
+        update(myContext, ActivityTable.TABLE_NAME,
+                ActivityTable.NEW_NOTIFICATION_EVENT + "=" + NotificationEventType.OUTBOX.id +
+                        ", " + ActivityTable.NOTIFIED + "=" + TriState.TRUE.id,
+                ActivityTable.ACTIVITY_TYPE + "=" + ActivityType.UPDATE.id +
+                        " AND " + ActivityTable.NOTE_ID + "=" + noteId);
+    }
+
+    public static void update(@NonNull MyContext myContext, @NonNull String tableName, @NonNull String set, String where) {
+        final String method = "update";
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
             MyLog.v(MyProvider.TAG, method + "; Database is null");
             return;
         }
-        String sql = "UPDATE " + ActivityTable.TABLE_NAME + " SET " +
-                ActivityTable.NEW_NOTIFICATION_EVENT + "=" + NotificationEventType.OUTBOX.id +
-                ", " + ActivityTable.NOTIFIED + "=" + TriState.TRUE.id +
-                " WHERE " +
-                ActivityTable.ACTIVITY_TYPE + "=" + ActivityType.UPDATE.id +
-                " AND " + ActivityTable.NOTE_ID + "=" + noteId;
+        String sql = "UPDATE " + tableName + " SET " + set + (TextUtils.isEmpty(where) ? "" : " WHERE " + where);
         try {
             db.execSQL(sql);
         } catch (Exception e) {

@@ -19,13 +19,13 @@ package org.andstatus.app.data.checker;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
@@ -61,11 +61,9 @@ class MergeActors extends DataChecker {
                 + " ORDER BY " + ActorTable.ORIGIN_ID
                 + ", " + ActorTable.ACTOR_OID
                 ;
-        Cursor c = null;
         long rowsCount = 0;
-        try {
+        try (Cursor c = myContext.getDatabase().rawQuery(sql, null)) {
             Actor prev = null;
-            c = myContext.getDatabase().rawQuery(sql, null);
             while (c.moveToNext()) {
                 rowsCount++;
                 Actor actor = Actor.fromOriginAndActorOid(myContext.origins().fromId(c.getLong(1)),
@@ -80,8 +78,6 @@ class MergeActors extends DataChecker {
                     prev = actor;
                 }
             }
-        } finally {
-            DbUtils.closeSilently(c);
         }
 
         logger.logProgress(method + " ended, " + rowsCount + " actors, " + mergeActivities.size() + " to be merged");
@@ -118,7 +114,6 @@ class MergeActors extends DataChecker {
         Actor actor = activity.getObjActor();
         String logMsg = "Merging " + actor + " with " + activity.getActor();
         logger.logProgress(logMsg);
-        // TODO: clean the code!
         updateColumn(logMsg, activity, ActivityTable.TABLE_NAME, ActivityTable.ACTOR_ID, false);
         updateColumn(logMsg, activity, ActivityTable.TABLE_NAME, ActivityTable.OBJ_ACTOR_ID, false);
 
@@ -126,21 +121,19 @@ class MergeActors extends DataChecker {
         updateColumn(logMsg, activity, NoteTable.TABLE_NAME, NoteTable.IN_REPLY_TO_ACTOR_ID, false);
 
         updateColumn(logMsg, activity, AudienceTable.TABLE_NAME, AudienceTable.ACTOR_ID, true);
-        deleteRows(logMsg, actor, AudienceTable.TABLE_NAME, AudienceTable.ACTOR_ID);
 
-        deleteRows(logMsg, actor, FriendshipTable.TABLE_NAME, FriendshipTable.ACTOR_ID);
-        deleteRows(logMsg, actor, FriendshipTable.TABLE_NAME, FriendshipTable.FRIEND_ID);
-
-        deleteRows(logMsg, actor, DownloadTable.TABLE_NAME, DownloadTable.ACTOR_ID);
-
-        deleteRows(logMsg, actor, ActorTable.TABLE_NAME, ActorTable._ID);
+        MyProvider.delete(myContext, AudienceTable.TABLE_NAME, AudienceTable.ACTOR_ID, actor.actorId);
+        MyProvider.delete(myContext, FriendshipTable.TABLE_NAME, FriendshipTable.ACTOR_ID, actor.actorId);
+        MyProvider.delete(myContext, FriendshipTable.TABLE_NAME, FriendshipTable.FRIEND_ID, actor.actorId);
+        MyProvider.delete(myContext, DownloadTable.TABLE_NAME, DownloadTable.ACTOR_ID, actor.actorId);
+        MyProvider.delete(myContext, ActorTable.TABLE_NAME, ActorTable._ID, actor.actorId);
     }
 
-    private void updateColumn(String logMsg, AActivity activity, String table, String column, boolean ignoreError) {
+    private void updateColumn(String logMsg, AActivity activity, String tableName, String column, boolean ignoreError) {
         String sql = "";
         try {
             sql = "UPDATE "
-                    + table
+                    + tableName
                     + " SET "
                     + column + "=" + activity.getActor().actorId
                     + " WHERE "
@@ -151,17 +144,6 @@ class MergeActors extends DataChecker {
                 logger.logProgress("Error: " + e.getMessage() + ", SQL:" + sql);
                 MyLog.e(this, logMsg + ", SQL:" + sql, e);
             }
-        }
-    }
-
-    private void deleteRows(String logMsg, Actor actor, String table, String column) {
-        String sql = "";
-        try {
-            sql = "DELETE FROM " + table + " WHERE " + column + "=" + actor.actorId;
-            myContext.getDatabase().execSQL(sql);
-        } catch (Exception e) {
-            logger.logProgress("Error: " + e.getMessage() + ", SQL:" + sql);
-            MyLog.e(this, logMsg + ", SQL:" + sql, e);
         }
     }
 }

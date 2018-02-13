@@ -195,7 +195,7 @@ public class MyAccounts {
 
     /** Doesn't take origin into account */
     @NonNull
-    MyAccount fromWebFingerId(String webFingerId) {
+    public MyAccount fromWebFingerId(String webFingerId) {
         if (TextUtils.isEmpty(webFingerId)) return MyAccount.EMPTY;
         return myAccounts.stream().filter(myAccount -> myAccount.getWebFingerId().equals(webFingerId)).findFirst()
                 .orElse(MyAccount.EMPTY);
