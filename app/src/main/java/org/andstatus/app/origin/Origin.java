@@ -194,7 +194,7 @@ public class Origin {
     }
 
     protected String alternativeNotePermalink(long noteId) {
-        return notePermalink(noteId);
+        return "";
     }
 
     public boolean canSetUrlOfOrigin() {
