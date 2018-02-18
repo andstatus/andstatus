@@ -23,8 +23,8 @@ import android.text.TextUtils;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.user.User;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -36,6 +36,7 @@ import org.andstatus.app.util.UrlUtils;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -79,7 +80,7 @@ public class Actor implements Comparable<Actor> {
     public final Origin origin;
     public long actorId = 0L;
 
-    public User user = new User();
+    public User user = User.EMPTY;
 
     @NonNull
     public static Actor fromOriginAndActorOid(@NonNull Origin origin, String actorOid) {
@@ -318,15 +319,6 @@ public class Actor implements Comparable<Actor> {
         }
     }
 
-    public void lookupUserId() {
-        if (user.userId == 0 && actorId != 0) {
-            user.userId = MyQuery.actorIdToLongColumnValue(ActorTable.USER_ID, actorId);
-        }
-        if (user.userId == 0 && isWebFingerIdValid()) {
-            user.userId = MyQuery.webFingerIdToId(0, webFingerId);
-        }
-    }
-
     public boolean hasAltTempOid() {
         return !getTempOid().equals(getAltTempOid()) && !TextUtils.isEmpty(username);
     }
@@ -505,8 +497,20 @@ public class Actor implements Comparable<Actor> {
         return MyQuery.actorIdToWebfingerId(actorId);
     }
 
+    public void lookupUser(MyContext myContext) {
+        if (user == User.EMPTY && actorId != 0) {
+            user = User.load(myContext, actorId);
+        }
+        if (user == User.EMPTY && isWebFingerIdValid()) {
+            user = User.load(myContext, MyQuery.webFingerIdToId(0, webFingerId));
+        }
+        if (user == User.EMPTY) {
+            user = new User(0, "", TriState.UNKNOWN, new HashSet<>());
+        }
+    }
+
     public void saveUser(MyContext myContext) {
-        if (user.getIsMyUser().unknown() && myContext.users().contains(this)) {
+        if (user.isMyUser().unknown() && myContext.users().contains(this)) {
             user.setIsMyUser(TriState.TRUE);
         }
         if (user.userId == 0) user.setKnownAs(getNamePreferablyWebFingerId());

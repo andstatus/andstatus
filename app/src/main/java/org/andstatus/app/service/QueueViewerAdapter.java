@@ -34,7 +34,7 @@ class QueueViewerAdapter extends BaseTimelineAdapter<QueueData> {
 
     QueueViewerAdapter(QueueViewer container, List<QueueData> items) {
         super(container.getMyContext(),
-                Timeline.getTimeline(TimelineType.COMMANDS_QUEUE, container.getCurrentMyAccount(), 0,
+                Timeline.getTimeline(TimelineType.COMMANDS_QUEUE, 0,
                         container.getCurrentMyAccount().getOrigin()),
                 items);
         this.container = container;

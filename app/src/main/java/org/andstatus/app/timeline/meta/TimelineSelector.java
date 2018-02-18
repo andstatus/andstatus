@@ -28,6 +28,7 @@ import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.view.MySimpleAdapter;
 import org.andstatus.app.view.SelectorDialog;
@@ -37,6 +38,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -57,23 +60,28 @@ public class TimelineSelector extends SelectorDialog {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
+        Objects.requireNonNull(getArguments());
         setTitle(R.string.dialog_title_select_timeline);
         Timeline timeline = myContext.timelines().fromId(getArguments().
                 getLong(IntentExtra.TIMELINE_ID.key, 0));
         MyAccount currentMyAccount = myContext.accounts().fromAccountName(
                 getArguments().getString(IntentExtra.ACCOUNT_NAME.key));
 
-        List<Timeline> timelines = myContext.timelines().getFiltered(
+        Set<Timeline> timelines = myContext.timelines().filter(
                 true,
                 TriState.fromBoolean(timeline.isCombined()),
-                TimelineType.UNKNOWN, currentMyAccount,
-                timeline.getOrigin());
+                TimelineType.UNKNOWN, currentMyAccount, Origin.EMPTY);
+        if (!timeline.isCombined() && currentMyAccount.isValid()) {
+            timelines.addAll(myContext.timelines().filter(
+                    true,
+                    TriState.fromBoolean(timeline.isCombined()),
+                    TimelineType.UNKNOWN, MyAccount.EMPTY, currentMyAccount.getOrigin()));
+        }
         if (timelines.isEmpty()) {
             returnSelectedTimeline(Timeline.EMPTY);
             return;
         } else if (timelines.size() == 1) {
-            returnSelectedTimeline(timelines.get(0));
+            returnSelectedTimeline(timelines.iterator().next());
             return;
         }
 

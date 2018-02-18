@@ -31,7 +31,9 @@ import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -105,6 +107,16 @@ public class PersistentTimelines {
         }
     }
 
+    public Timeline get(@NonNull TimelineType timelineType, long actorId, @NonNull Origin origin, String searchQuery) {
+        return get(0, timelineType, actorId, origin, searchQuery);
+    }
+
+    public Timeline get(long id, @NonNull TimelineType timelineType,
+                        long actorId, @NonNull Origin origin, String searchQuery) {
+        Timeline timeline = new Timeline(myContext, id, timelineType, actorId, origin, searchQuery);
+        return timeline.isValid() ? fromNewTimeLine(timeline) : timeline;
+    }
+
     @NonNull
     Timeline fromNewTimeLine(Timeline newTimeline) {
         Timeline found = newTimeline;
@@ -143,30 +155,31 @@ public class PersistentTimelines {
     }
 
     @NonNull
-    public List<Timeline> getFiltered(boolean isForSelector,
-                                      TriState isTimelineCombined,
-                                      @NonNull TimelineType timelineType,
-                                      MyAccount myAccount,
-                                      Origin origin) {
-        List<Timeline> timelines = new ArrayList<>();
+    public Set<Timeline> filter(boolean isForSelector,
+                                 TriState isTimelineCombined,
+                                 @NonNull TimelineType timelineType,
+                                 @NonNull MyAccount myAccount,
+                                 @NonNull Origin origin) {
+        Set<Timeline> timelines = new HashSet<>();
         for (Timeline timeline : values()) {
             boolean include;
             if (isForSelector && timeline.isDisplayedInSelector() == DisplayedInSelector.ALWAYS) {
                 include = true;
             } else if (isForSelector && timeline.isDisplayedInSelector() == DisplayedInSelector.NEVER) {
                 include = false;
+            } else if (timelineType != TimelineType.UNKNOWN && timelineType != timeline.getTimelineType()) {
+                include = false;
+            } else if (isTimelineCombined == TriState.TRUE) {
+                include = timeline.isCombined();
+            } else if (isTimelineCombined == TriState.FALSE && timeline.isCombined()) {
+                include = false;
+            } else if (timelineType == TimelineType.UNKNOWN) {
+                include = (!myAccount.isValid() || myAccount.equals(timeline.getMyAccount()))
+                && (origin.isEmpty() || origin.equals(timeline.getOrigin())) ;
+            } else if (timelineType.isAtOrigin()) {
+                include = origin.isEmpty() || origin.equals(timeline.getOrigin());
             } else {
-                include = isTimelineCombined.isBoolean(timeline.isCombined())
-                    && (timelineType.isAtOrigin() || myAccount == null || !myAccount.isValid() ||
-                            timeline.isCombined() ||
-                            timeline.getMyAccount().equals(myAccount) ||
-                            (isForSelector && timeline.getTimelineType().isAtOrigin() &&
-                                    myAccount.getOrigin().equals(timeline.getOrigin()))
-                    )
-                    && (!timelineType.isAtOrigin() || origin == null || !origin.isValid() ||
-                            timeline.isCombined() || timeline.getOrigin().equals(origin)
-                    )
-                    && (timelineType == TimelineType.UNKNOWN || timelineType == timeline.getTimelineType()) ;
+                include = !myAccount.isValid() || myAccount.equals(timeline.getMyAccount());
             }
             if (include) {
                 timelines.add(timeline);

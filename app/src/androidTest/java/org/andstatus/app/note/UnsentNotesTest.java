@@ -47,7 +47,7 @@ public class UnsentNotesTest extends TimelineActivityTest {
         MyContextHolder.get().accounts().setCurrentAccount(ma);
 
         return new Intent(Intent.ACTION_VIEW,
-                Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, ma.getOrigin()).getUri());
+                Timeline.getTimeline(TimelineType.EVERYTHING, 0, ma.getOrigin()).getUri());
     }
 
     @After

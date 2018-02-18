@@ -43,15 +43,6 @@ public final class FriendshipTable {
      */
     public static final String FOLLOWED = "followed";
 
-    /**
-     * Derived column: if the Author of the note is followed by the Actor
-     */
-    public static final String AUTHOR_FOLLOWED = "author_followed";
-    /**
-     * Derived column: if the Sender of the note is followed by the Actor
-     */
-    public static final String ACTOR_FOLLOWED = "actor_followed";
-
     public static void create(SQLiteDatabase db) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + ACTOR_ID + " INTEGER NOT NULL,"

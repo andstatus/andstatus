@@ -33,7 +33,6 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.TimelineActivity;
-import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 
@@ -71,8 +70,8 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         void executeOnUiThread(ActorContextMenu menu, MyAccount ma) {
             TimelineActivity.startForTimeline(menu.getActivity().getMyContext(),
                     menu.getActivity(),
-                    Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER,
-                            null, menu.getViewItem().getActorId(), menu.getOrigin(), ""), ma, false);
+                    menu.getActivity().getMyContext().timelines().get( TimelineType.SENT,
+                            menu.getViewItem().getActorId(), menu.getOrigin(), ""), ma, false);
         }
     },
     FOLLOW() {

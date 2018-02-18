@@ -42,14 +42,14 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
     private static final AtomicBoolean executing = new AtomicBoolean(false);
     private final MyContext myContext;
     private boolean addDefaults = false;
-    private MyAccount myAccount = null;
+    private MyAccount myAccount = MyAccount.EMPTY;
 
-    public TimelineSaver(MyContext myContext) {
+    public TimelineSaver(@NonNull MyContext myContext) {
         super(PoolEnum.QUICK_UI);
         this.myContext = myContext;
     }
 
-    public TimelineSaver setAccount(MyAccount myAccount) {
+    public TimelineSaver setAccount(@NonNull MyAccount myAccount) {
         this.myAccount = myAccount;
         return this;
     }
@@ -94,7 +94,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
     private void executingLockReceived() {
         try {
             if (addDefaults) {
-               if (myAccount == null) {
+               if (myAccount == MyAccount.EMPTY) {
                    addDefaultTimelinesIfNoneFound();
                } else {
                    addDefaultMyAccountTimelinesIfNoneFound(myAccount);
@@ -115,23 +115,22 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
     }
 
     private void addDefaultMyAccountTimelinesIfNoneFound(MyAccount ma) {
-        if (ma.isValid() && timelines().getFiltered(false, TriState.FALSE, TimelineType.UNKNOWN, ma, null).isEmpty()) {
+        if (ma.isValid() && timelines().filter(false, TriState.FALSE, TimelineType.UNKNOWN, ma,
+                Origin.EMPTY).isEmpty()) {
             addDefaultCombinedTimelinesIfNoneFound();
             addDefaultOriginTimelinesIfNoneFound(ma.getOrigin());
 
             long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
-                    TimelineTable._ID, TimelineTable.ACCOUNT_ID + "=" + ma.getActorId());
-            if (timelineId == 0) {
-                addDefaultForAccount(myContext, ma);
-            }
+                    TimelineTable._ID, TimelineTable.ACTOR_ID + "=" + ma.getActorId());
+            if (timelineId == 0) addDefaultForAccount(myContext, ma);
         }
     }
 
     private void addDefaultCombinedTimelinesIfNoneFound() {
-        if (timelines().getFiltered(false, TriState.TRUE, TimelineType.UNKNOWN, null, null).isEmpty()) {
+        if (timelines().filter(false, TriState.TRUE, TimelineType.UNKNOWN, MyAccount.EMPTY,
+                Origin.EMPTY).isEmpty()) {
             long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
-                    TimelineTable._ID,
-                    TimelineTable.ACCOUNT_ID + "=0 AND " + TimelineTable.ORIGIN_ID + "=0");
+                    TimelineTable._ID, TimelineTable.ACTOR_ID + "=0 AND " + TimelineTable.ORIGIN_ID + "=0");
             if (timelineId == 0) addDefaultCombined();
         }
     }
@@ -152,7 +151,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
     public List<Timeline> addDefaultForAccount(MyContext myContext, MyAccount myAccount) {
         List<Timeline> timelines = new ArrayList<>();
         for (TimelineType timelineType : TimelineType.getDefaultMyAccountTimelineTypes()) {
-            final Timeline timeline = Timeline.getTimeline(myContext, 0, timelineType, myAccount, 0, null, "");
+            final Timeline timeline = myContext.timelines().get(0, timelineType, myAccount.getActorId(), Origin.EMPTY, "");
             if (timeline.getId() == 0) {
                 saveNewDefaultTimeline(timeline);
                 timelines.add(timeline);
@@ -166,7 +165,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
         for (TimelineType timelineType : TimelineType.getDefaultOriginTimelineTypes()) {
             if (origin.getOriginType().isTimelineTypeSyncable(timelineType)
                     || timelineType.equals(TimelineType.EVERYTHING)) {
-                saveNewDefaultTimeline(Timeline.getTimeline(myContext, 0, timelineType, null, 0, origin, ""));
+                saveNewDefaultTimeline(myContext.timelines().get(0, timelineType, 0, origin, ""));
             }
         }
         return timelines;
@@ -179,7 +178,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
         List<Timeline> timelines = new ArrayList<>();
         for (TimelineType timelineType : TimelineType.values()) {
             if (timelineType.isSelectable()) {
-                final Timeline timeline = Timeline.getTimeline(myContext, 0, timelineType, null, 0, null, "");
+                final Timeline timeline = myContext.timelines().get(0, timelineType, 0, Origin.EMPTY, "");
                 if (timeline.getId() == 0) {
                     saveNewDefaultTimeline(timeline);
                     timelines.add(timeline);

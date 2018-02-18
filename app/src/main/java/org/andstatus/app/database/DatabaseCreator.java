@@ -40,7 +40,7 @@ public class DatabaseCreator {
      * Current database scheme version, defined by AndStatus developers.
      * This is used to check (and upgrade if necessary) existing database after application update.
      *
-     * v.28 2018-02-10 app.v.37 UserTable added, one-to-many linked to ActorTable
+     * v.28 2018-02-18 app.v.37 UserTable added, one-to-many linked to ActorTable
      * v.27 2017-11-04 app.v.36 Moving to ActivityStreams data model.
      *                 ActivityTable and AudienceTable added, MsOfUserTable dropped. Others refactored.
      * v.26 2016-11-27 app.v.31 Conversation ID added to MsgTable, see https://github.com/andstatus/andstatus/issues/361

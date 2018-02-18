@@ -740,7 +740,7 @@ public class AccountSettingsActivity extends MyActivity {
                 myContext.accounts().setCurrentAccount(myAccount);
             }
             if (activityOnFinish == ActivityOnFinish.HOME) {
-                Timeline home = Timeline.getTimeline(TimelineType.HOME, myAccount, 0, null);
+                Timeline home = Timeline.getTimeline(TimelineType.HOME, myAccount.getActorId(), Origin.EMPTY);
                 TimelineActivity.startForTimeline(myContext, AccountSettingsActivity.this, home, myAccount, true);
             } else {
                 if (myContext.accounts().size() > 1) {

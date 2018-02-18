@@ -35,7 +35,6 @@ public class TimelineTable implements BaseColumns {
     /** Alias for #_ID */
     public static final String TIMELINE_ID = "timeline_id";
     public static final String TIMELINE_TYPE = "timeline_type";
-    public static final String ACCOUNT_ID = ActorTable.ACCOUNT_ID;
     public static final String ACTOR_ID = ActorTable.ACTOR_ID;
     public static final String ACTOR_IN_TIMELINE = "actor_in_timeline";
     public static final String ORIGIN_ID =  OriginTable.ORIGIN_ID;
@@ -96,7 +95,6 @@ public class TimelineTable implements BaseColumns {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + TIMELINE_TYPE + " TEXT NOT NULL,"
-                + ACCOUNT_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + ACTOR_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + ACTOR_IN_TIMELINE + " TEXT,"
                 + ORIGIN_ID + " INTEGER NOT NULL DEFAULT 0,"

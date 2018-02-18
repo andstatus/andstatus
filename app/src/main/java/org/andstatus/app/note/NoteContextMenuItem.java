@@ -189,16 +189,16 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
             menu.switchTimelineActivityView(
-                    Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER,
-                    null, menu.getActorId(), menu.getOrigin(), ""));
+                    menu.getActivity().getMyContext().timelines().get(TimelineType.SENT,
+                            menu.getActorId(), menu.getOrigin(), ""));
         }
     },
     AUTHOR_ACTIONS {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
             menu.switchTimelineActivityView(
-                    Timeline.getTimeline(menu.getActivity().getMyContext(), 0, TimelineType.USER,
-                    null, menu.getAuthorId(), menu.getOrigin(), ""));
+                    menu.getActivity().getMyContext().timelines().get(TimelineType.SENT,
+                            menu.getAuthorId(), menu.getOrigin(), ""));
         }
     },
     FOLLOW_ACTOR {
@@ -261,7 +261,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
             Uri uri = MatchedUri.getTimelineItemUri(
-                    Timeline.getTimeline(TimelineType.EVERYTHING, null, 0, menu.getOrigin()),
+                    Timeline.getTimeline(TimelineType.EVERYTHING, 0, menu.getOrigin()),
                     menu.getNoteId());
             String action = menu.getActivity().getIntent().getAction();
             if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
@@ -413,7 +413,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     
     void sendActorCommand(CommandEnum command, Origin origin, long actorId) {
         MyServiceManager.sendManualForegroundCommand(
-                CommandData.newActorCommand(command, null, origin, actorId, ""));
+                CommandData.newActorCommand(command, MyAccount.EMPTY, origin, actorId, ""));
     }
 
     void sendNoteCommand(CommandEnum command, NoteEditorData editorData) {

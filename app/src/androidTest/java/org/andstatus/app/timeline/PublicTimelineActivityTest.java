@@ -31,6 +31,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.note.BaseNoteViewItem;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -68,7 +69,7 @@ public class PublicTimelineActivityTest extends TimelineActivityTest {
         assertEquals(ma.getActorId(), MyContextHolder.get().accounts().getCurrentAccountActorId());
         MyLog.i(this, "setUp ended");
 
-        return new Intent(Intent.ACTION_VIEW, Timeline.getTimeline(TimelineType.PUBLIC, ma, 0, null).getUri());
+        return new Intent(Intent.ACTION_VIEW, Timeline.getTimeline(TimelineType.PUBLIC, 0, ma.getOrigin()).getUri());
     }
 
     @Test

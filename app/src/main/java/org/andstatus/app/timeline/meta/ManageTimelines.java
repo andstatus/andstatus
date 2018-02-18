@@ -158,7 +158,8 @@ public class ManageTimelines extends LoadableListActivity {
                 // TODO: Implement filter parameters in this activity
                 countersSince = 0;
                 for (Timeline timeline : myContext.timelines().
-                        getFiltered(false, TriState.UNKNOWN, TimelineType.UNKNOWN, null, null)) {
+                        filter(false, TriState.UNKNOWN, TimelineType.UNKNOWN, MyAccount.EMPTY,
+                                Origin.EMPTY)) {
                     ManageTimelinesViewItem viewItem = new ManageTimelinesViewItem(myContext, timeline);
                     if (viewItem.timeline.getCountSince() > 0 &&
                             (viewItem.timeline.getCountSince() < countersSince || countersSince == 0)) {
@@ -177,7 +178,7 @@ public class ManageTimelines extends LoadableListActivity {
     protected BaseTimelineAdapter newListAdapter() {
 
         return new BaseTimelineAdapter<ManageTimelinesViewItem>(myContext,
-                Timeline.getTimeline(TimelineType.MANAGE_TIMELINES, MyAccount.EMPTY, 0, Origin.EMPTY),
+                Timeline.getTimeline(TimelineType.MANAGE_TIMELINES, 0, Origin.EMPTY),
                 getLoaded().getList()) {
             Timeline defaultTimeline = myContext.timelines().getDefault();
 

@@ -38,8 +38,8 @@ public final class UserTable implements BaseColumns {
     public static void create(SQLiteDatabase db) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + KNOWN_AS + " TEXT NOT NULL,"
-                + IS_MY + " BOOLEAN NOT NULL DEFAULT 0"
+                + KNOWN_AS + " TEXT NOT NULL DEFAULT '',"
+                + IS_MY + " INTEGER NOT NULL DEFAULT 0"
                 + ")");
 
         DbUtils.execSQL(db, "CREATE INDEX idx_my_user ON " + TABLE_NAME + " ("

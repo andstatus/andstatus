@@ -25,6 +25,7 @@ import org.andstatus.app.FirstActivity;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 
@@ -76,7 +77,7 @@ public class NotificationData {
                 timeline = MyContextHolder.get().timelines().getDefault();
                 break;
             default:
-                timeline = Timeline.getTimeline(timeLineType, myAccount, 0, null);
+                timeline = Timeline.getTimeline(timeLineType, myAccount.getActorId(), Origin.EMPTY);
                 break;
         }
 

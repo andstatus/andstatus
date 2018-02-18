@@ -33,7 +33,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collectors;
 
 public class MyAccounts {
@@ -43,7 +43,7 @@ public class MyAccounts {
     private volatile String currentAccountName = "";
 
     private final MyContext myContext;
-    private final List<MyAccount> myAccounts = new CopyOnWriteArrayList<>();
+    private final Set<MyAccount> myAccounts = new ConcurrentSkipListSet<>();
     private int distinctOriginsCount = 0;
 
     private MyAccounts(MyContext myContext) {
@@ -58,7 +58,7 @@ public class MyAccounts {
      * @return not null 
      */
     public List<MyAccount> list() {
-        return myAccounts;
+        return new ArrayList<>(myAccounts);
     }
     
     public boolean isEmpty() {
@@ -156,7 +156,6 @@ public class MyAccounts {
             if (accountName.toString().equals(androidAccount.name)) {
                 MyAccount myAccount = Builder.fromAndroidAccount(myContext, androidAccount).getAccount();
                 myAccounts.add(myAccount);
-                CollectionsUtil.sort(myAccounts);
                 MyPreferences.onPreferencesChanged();
                 return myAccount;
             }
@@ -189,8 +188,13 @@ public class MyAccounts {
     @NonNull
     public MyAccount fromActorId(long actorId) {
         if (actorId == 0) return MyAccount.EMPTY;
-        return myAccounts.stream().filter(ma -> ma.getActorId() == actorId).findFirst()
-                .orElse(MyAccount.EMPTY);
+        return myAccounts.stream().filter(ma -> ma.getActorId() == actorId).findFirst().orElse(fromFriendsActorId(actorId));
+    }
+
+    private MyAccount fromFriendsActorId(long actorId) {
+        return myAccounts.stream().filter(ma -> myContext.users().myFriends.getOrDefault(actorId, Actor.EMPTY)
+                    .user.actors.contains(ma.getActorId()))
+                .findFirst().orElse(MyAccount.EMPTY);
     }
 
     /** Doesn't take origin into account */
@@ -474,7 +478,6 @@ public class MyAccounts {
             }
         }
         if (changed) {
-            CollectionsUtil.sort(myAccounts);
             MyPreferences.onPreferencesChanged();
         }
     }
@@ -497,5 +500,9 @@ public class MyAccounts {
             return Arrays.asList(am.getAccountsByType(AuthenticatorService.ANDROID_ACCOUNT_TYPE));
         }
         return Collections.emptyList();
+    }
+
+    void addIfNew(@NonNull MyAccount myAccount) {
+        if (!myAccounts.contains(myAccount)) myAccounts.add(myAccount);
     }
 }

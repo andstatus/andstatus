@@ -41,9 +41,9 @@ public class SqlActorIds {
 
     public static SqlActorIds fromTimeline(@NonNull Timeline timeline) {
         if (timeline.getTimelineType() == TimelineType.SENT) {
-            return MyContextHolder.get().users().myActorIdsFor(timeline.getActorId());
-        } else if (timeline.getTimelineType() == TimelineType.USER) {
-            return new SqlActorIds(MyQuery.getActorsOfSameUser(MyContextHolder.get().getDatabase(), timeline.getActorId()));
+            return timeline.isCombined()
+                    ? MyContextHolder.get().users().myActorIds()
+                    : new SqlActorIds(timeline.user.actors);
         } else if (timeline.isCombined() || timeline.getTimelineType().isAtOrigin()) {
             return new SqlActorIds(MyContextHolder.get().accounts().list().stream()
                     .filter(ma -> !timeline.getOrigin().isValid() || timeline.getOrigin().equals(ma.getOrigin()))

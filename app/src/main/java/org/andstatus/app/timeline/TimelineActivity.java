@@ -504,7 +504,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             return;
         }
         Uri uri = MatchedUri.getTimelineItemUri(
-                Timeline.getTimeline(TimelineType.EVERYTHING, null, 0, item.getOrigin()),
+                Timeline.getTimeline(TimelineType.EVERYTHING, 0, item.getOrigin()),
                 item.getNoteId());
 
         String action = getIntent().getAction();

@@ -40,10 +40,12 @@ import org.andstatus.app.database.table.TimelineTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandResult;
+import org.andstatus.app.user.User;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.TriState;
 
 import java.util.Date;
 import java.util.Objects;
@@ -53,11 +55,12 @@ import java.util.concurrent.TimeUnit;
  * @author yvolk@yurivolkov.com
  */
 public class Timeline implements Comparable<Timeline> {
-    public static final Timeline EMPTY = new Timeline(MyAccount.EMPTY);
+    public static final Timeline EMPTY = new Timeline();
     private static final long MIN_RETRY_PERIOD_MS = TimeUnit.SECONDS.toMillis(30);
     private volatile long id;
 
     private final TimelineType timelineType;
+    public final User user;
     /** "Authenticated User" used to retrieve/post to... this Timeline */
     private final MyAccount myAccount;
     /** An Actor as a parameter of this timeline.
@@ -148,99 +151,19 @@ public class Timeline implements Comparable<Timeline> {
 
     private volatile boolean changed = false;
 
-    private Timeline(MyAccount myAccount) {
-        timelineType = TimelineType.UNKNOWN;
-        this.myAccount = myAccount;
-        actorId = 0;
-        origin = myAccount.getOrigin();
-        searchQuery = "";
-        isCombined = calcIsCombined(timelineType, origin, myAccount);
-        isSyncable = false;
-        isSyncableAutomatically = false;
-        isSyncableForAccounts = false;
-        isSyncableForOrigins = false;
-    }
-
-    public static Timeline getTimeline(@NonNull TimelineType timelineType, MyAccount myAccount, long actorId, Origin origin) {
-        return getTimeline(MyContextHolder.get(), 0, timelineType, myAccount, actorId, origin, "");
-    }
-
-    public static Timeline getTimeline(MyContext myContext, long id, @NonNull TimelineType timelineType,
-                                       MyAccount myAccount, long actorId, Origin origin,
-                                       String searchQuery) {
-        Timeline timeline = new Timeline(myContext, id, timelineType, myAccount, actorId, origin, searchQuery);
-        if (timeline.isValid()) {
-            return myContext.timelines().fromNewTimeLine(timeline);
-        }
-        return timeline;
-    }
-
-    private Timeline(MyContext myContext, long id, @NonNull TimelineType timelineType, MyAccount myAccount,
-                     long actorId, Origin origin, String searchQuery) {
-        Objects.requireNonNull(timelineType);
-        this.id = id;
-        this.myAccount = fixedMyAccount(myContext, timelineType, myAccount, actorId);
-        this.actorId = fixedActorId(timelineType, actorId);
-        this.origin = fixedOrigin(myContext, timelineType, myAccount, actorId, origin);
-        this.searchQuery = TextUtils.isEmpty(searchQuery) ? "" : searchQuery.trim();
-        this.timelineType = fixedTimelineType(timelineType);
-        this.isCombined = calcIsCombined(this.timelineType, this.origin, this.myAccount);
-        MyAccount myAccountToSync = getMyAccountToSync(myContext);
-        this.isSyncable = calcIsSyncable(myAccountToSync);
-        this.isSyncableAutomatically = this.isSyncable && myAccountToSync.isSyncedAutomatically();
-        this.isSyncableForAccounts = calcIsSyncableForAccounts(myContext);
-        this.isSyncableForOrigins = calcIsSyncableForOrigins(myContext);
-        this.setDefaultSelectorOrder();
-    }
-
-    protected void setDefaultSelectorOrder() {
-        setSelectorOrder((timelineType.ordinal() + 1L) * 2 + (isCombined ? 1 : 0));
-    }
-
-    private boolean calcIsSyncable(MyAccount myAccountToSync) {
-        if (isCombined() || !timelineType.isSyncable()) {
-            return false;
-        }
-        return myAccountToSync.isValidAndSucceeded()
-                && myAccountToSync.getOrigin().getOriginType().isTimelineTypeSyncable(timelineType);
-    }
-
-    /** Returns the best MyAccount to be used to sync this Timeline */
-    @NonNull
-    public MyAccount getMyAccountToSync(MyContext myContext) {
-        MyAccount myAccount = getMyAccount();
-        if (!myAccount.isValid()) {
-            Origin origin = getOrigin();
-            if (origin.isValid()) {
-                myAccount = myContext.accounts().getFirstSucceededForOrigin(origin);
-            }
-        }
-        return myAccount;
-    }
-
-    private boolean calcIsSyncableForAccounts(MyContext myContext) {
-        return isCombined &&
-                timelineType.isSyncable() && timelineType.canBeCombinedForMyAccounts() &&
-                myContext.accounts().getFirstSucceeded().isValidAndSucceeded();
-    }
-
-    private boolean calcIsSyncableForOrigins(MyContext myContext) {
-        return isCombined &&
-                timelineType.isSyncable() && timelineType.canBeCombinedForOrigins() &&
-                myContext.accounts().getFirstSucceeded().isValidAndSucceeded();
+    public static Timeline getTimeline(@NonNull TimelineType timelineType, long actorId, @NonNull Origin origin) {
+        return MyContextHolder.get().timelines().get(timelineType, actorId, origin, "");
     }
 
     public static Timeline fromCursor(MyContext myContext, Cursor cursor) {
         Timeline timeline = new Timeline(
                 myContext,
-                0, TimelineType.load(DbUtils.getString(cursor, TimelineTable.TIMELINE_TYPE)),
-                myContext.accounts()
-                        .fromActorId(DbUtils.getLong(cursor, TimelineTable.ACCOUNT_ID)),
+                DbUtils.getLong(cursor, TimelineTable._ID),
+                TimelineType.load(DbUtils.getString(cursor, TimelineTable.TIMELINE_TYPE)),
                 DbUtils.getLong(cursor, TimelineTable.ACTOR_ID),
                 myContext.origins().fromId(DbUtils.getLong(cursor, TimelineTable.ORIGIN_ID)),
                 DbUtils.getString(cursor, TimelineTable.SEARCH_QUERY));
 
-        timeline.id = DbUtils.getLong(cursor, TimelineTable._ID);
         timeline.actorInTimeline = DbUtils.getString(cursor, TimelineTable.ACTOR_IN_TIMELINE);
         timeline.setSyncedAutomatically(DbUtils.getBoolean(cursor, TimelineTable.IS_SYNCED_AUTOMATICALLY));
         timeline.isDisplayedInSelector = DisplayedInSelector.load(DbUtils.getString(cursor, TimelineTable.DISPLAYED_IN_SELECTOR));
@@ -275,153 +198,131 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public static Timeline fromCommandCursor(MyContext myContext, Cursor cursor) {
-        return getTimeline(
-                myContext,
+        return myContext.timelines().get(
                 DbUtils.getLong(cursor, CommandTable.TIMELINE_ID),
                 TimelineType.load(DbUtils.getString(cursor, CommandTable.TIMELINE_TYPE)),
-                myContext.accounts().fromActorId(DbUtils.getLong(cursor, CommandTable.ACCOUNT_ID)),
                 DbUtils.getLong(cursor, CommandTable.ACTOR_ID),
                 myContext.origins().fromId(DbUtils.getLong(cursor, CommandTable.ORIGIN_ID)),
                 DbUtils.getString(cursor, CommandTable.SEARCH_QUERY)
         );
     }
 
-    public static Timeline getEmpty(MyAccount myAccount) {
-        return new Timeline(myAccount);
-    }
-
     public static Timeline fromBundle(MyContext myContext, Bundle bundle) {
-        MyAccount myAccount = MyAccount.fromBundle(bundle);
-        Timeline timeline = getEmpty(myAccount);
-        if (bundle != null) {
-            timeline = myContext.timelines().fromId(
-                    bundle.getLong(IntentExtra.TIMELINE_ID.key));
-            if (timeline.isEmpty()) {
-                timeline = getTimeline(myContext, 0,
-                        TimelineType.load(bundle.getString(IntentExtra.TIMELINE_TYPE.key)),
-                        myAccount, bundle.getLong(IntentExtra.ACTOR_ID.key),
-                        myContext.origins().fromId(BundleUtils.fromBundle(bundle, IntentExtra.ORIGIN_ID)),
-                        BundleUtils.getString(bundle, IntentExtra.SEARCH_QUERY));
-            }
-        }
-        return timeline;
+        if (bundle == null) return EMPTY;
+        Timeline timeline = myContext.timelines().fromId(bundle.getLong(IntentExtra.TIMELINE_ID.key));
+        if (timeline.nonEmpty()) return timeline;
+        return myContext.timelines().get(
+                TimelineType.load(bundle.getString(IntentExtra.TIMELINE_TYPE.key)),
+                bundle.getLong(IntentExtra.ACTOR_ID.key),
+                myContext.origins().fromId(BundleUtils.fromBundle(bundle, IntentExtra.ORIGIN_ID)),
+                BundleUtils.getString(bundle, IntentExtra.SEARCH_QUERY));
     }
 
     public static Timeline fromParsedUri(MyContext myContext, ParsedUri parsedUri, String searchQueryIn) {
-        String searchQuery = searchQueryIn;
-        if (TextUtils.isEmpty(searchQuery)) {
-            searchQuery = parsedUri.getSearchQuery();
-        }
-        Timeline timeline = getTimeline(myContext, 0,
+        Timeline timeline = myContext.timelines().get(
                 parsedUri.getTimelineType(),
-                myContext.accounts().fromActorId(parsedUri.getAccountActorId()),
                 parsedUri.getActorId(),
                 parsedUri.getOrigin(myContext),
-                searchQuery);
+                TextUtils.isEmpty(searchQueryIn) ? parsedUri.getSearchQuery() : searchQueryIn
+        );
         if (timeline.getTimelineType() == TimelineType.UNKNOWN) {
             MyLog.e(Timeline.class, "fromParsedUri; uri:" + parsedUri.getUri() + "; " + timeline);
         }
         return timeline;
     }
 
-    private boolean calcIsCombined(TimelineType timelineType, Origin origin, MyAccount myAccount) {
-        return timelineType.isAtOrigin() ? !origin.isValid() : !myAccount.isValid();
+    private Timeline() {
+        timelineType = TimelineType.UNKNOWN;
+        user = User.EMPTY;
+        this.myAccount = MyAccount.EMPTY;
+        actorId = 0;
+        origin = myAccount.getOrigin();
+        searchQuery = "";
+        isCombined = calcIsCombined(timelineType, origin);
+        isSyncable = false;
+        isSyncableAutomatically = false;
+        isSyncableForAccounts = false;
+        isSyncableForOrigins = false;
+    }
+
+    Timeline(MyContext myContext, long id, @NonNull TimelineType timelineType,
+             long actorId, @NonNull Origin origin, String searchQuery) {
+        Objects.requireNonNull(timelineType);
+        Objects.requireNonNull(origin);
+        this.id = id;
+        this.actorId = fixedActorId(timelineType, actorId);
+        user = User.fromActorId(myContext, this.actorId);
+        this.myAccount = calcMyAccount(myContext, timelineType, actorId);
+        this.origin = fixedOrigin(timelineType, origin);
+        this.searchQuery = TextUtils.isEmpty(searchQuery) ? "" : searchQuery.trim();
+        this.isCombined = calcIsCombined(timelineType, this.origin);
+        this.timelineType = fixedTimelineType(timelineType);
+        MyAccount myAccountToSync = getMyAccountToSync(myContext);
+        this.isSyncable = calcIsSyncable(myAccountToSync);
+        this.isSyncableAutomatically = this.isSyncable && myAccountToSync.isSyncedAutomatically();
+        this.isSyncableForAccounts = calcIsSyncableForAccounts(myContext);
+        this.isSyncableForOrigins = calcIsSyncableForOrigins(myContext);
+        this.setDefaultSelectorOrder();
+    }
+
+    protected void setDefaultSelectorOrder() {
+        setSelectorOrder((timelineType.ordinal() + 1L) * 2 + (isCombined ? 1 : 0));
+    }
+
+    private boolean calcIsSyncable(MyAccount myAccountToSync) {
+        return !isCombined() && timelineType.isSyncable()
+                && myAccountToSync.isValidAndSucceeded()
+                && myAccountToSync.getOrigin().getOriginType().isTimelineTypeSyncable(timelineType);
+    }
+
+    /** Returns the best MyAccount to be used to sync this Timeline */
+    @NonNull
+    public MyAccount getMyAccountToSync(MyContext myContext) {
+        // TODO: to fix, may be more than one...
+        MyAccount myAccount = getMyAccount();
+        if (!myAccount.isValid()) {
+            Origin origin = getOrigin();
+            if (origin.isValid()) {
+                myAccount = myContext.accounts().getFirstSucceededForOrigin(origin);
+            }
+        }
+        return myAccount;
+    }
+
+    private boolean calcIsSyncableForAccounts(MyContext myContext) {
+        return isCombined &&
+                timelineType.isSyncable() && timelineType.canBeCombinedForMyAccounts() &&
+                myContext.accounts().getFirstSucceeded().isValidAndSucceeded();
+    }
+
+    private boolean calcIsSyncableForOrigins(MyContext myContext) {
+        return isCombined &&
+                timelineType.isSyncable() && timelineType.canBeCombinedForOrigins() &&
+                myContext.accounts().getFirstSucceeded().isValidAndSucceeded();
+    }
+
+    private boolean calcIsCombined(TimelineType timelineType, Origin origin) {
+        return timelineType.isAtOrigin() ? origin.isEmpty() : actorId == 0;
     }
 
     @NonNull
-    private MyAccount fixedMyAccount(MyContext myContext, TimelineType timelineType, MyAccount myAccountIn, long actorIdIn) {
-        if (timelineType == null || (timelineType.isAtOrigin() && !timelineType.isForUser())) {
-            return MyAccount.EMPTY;
-        }
-        long actorId = timelineType.isForUser() ? actorIdIn : 0;
-        MyAccount myAccountFromActorId = myContext.accounts().fromActorId(actorId);
-        return myAccountFromActorId.isValid() ? myAccountFromActorId :
-                (myAccountIn == null ? MyAccount.EMPTY : myAccountIn);
+    private MyAccount calcMyAccount(MyContext myContext, TimelineType timelineType, long actorId) {
+        return timelineType.isAtOrigin() ? MyAccount.EMPTY : myContext.accounts().fromActorId(actorId);
     }
 
     private long fixedActorId(TimelineType timelineType, long actorId) {
-        if (!timelineType.isForUser()) return 0;
-        if (actorId == 0 && myAccount.isValid()) return myAccount.getActorId();
-        return actorId;
+        return timelineType.isForUser() ? actorId : 0;
     }
 
     @NonNull
-    private Origin fixedOrigin(MyContext myContext, TimelineType timelineType, MyAccount myAccountIn, long actorId, Origin origin) {
-        Origin fixedOrigin = origin == null ? Origin.EMPTY : origin;
-        MyAccount ma = myContext.accounts().fromActorId(actorId);
-        if (!ma.isValid() && myAccountIn != null) {
-            ma = myAccountIn;
-        }
-        if (ma.isValid()) {
-            if (fixedOrigin.isValid() && fixedOrigin != ma.getOrigin()) {
-                fixedOrigin = Origin.EMPTY;
-            }
-            if (timelineType.isAtOrigin() || !fixedOrigin.isValid()) {
-                fixedOrigin = ma.getOrigin();
-            }
-        }
-        return fixedOrigin;
+    private Origin fixedOrigin(TimelineType timelineType, Origin origin) {
+        return timelineType.isAtOrigin() ? origin : Origin.EMPTY;
     }
 
-    private TimelineType fixedTimelineType(TimelineType timelineTypeIn) {
-        TimelineType timelineType = timelineTypeIn;
-        if (timelineType == null) {
-            return TimelineType.UNKNOWN;
-        }
-        boolean isCombined = false;
-        if (timelineType.isAtOrigin()) {
-            if (!origin.isValid()) {
-                isCombined = true;
-            }
-        } else {
-            if (!myAccount.isValid()) {
-                isCombined = true;
-            }
-        }
-        if (timelineType.isForUser() && actorId == 0) {
-            isCombined = true;
-        }
-        if (isCombined != calcIsCombined(timelineType, origin, myAccount)) {
-            return TimelineType.UNKNOWN;
-        }
-        if (timelineType.isForSearchQuery() && !hasSearchQuery()) {
-            if (timelineType == TimelineType.SEARCH) {
-                timelineType = TimelineType.EVERYTHING;
-            } else {
-                return TimelineType.UNKNOWN;
-            }
-        } else if (!timelineType.isForSearchQuery() && hasSearchQuery()) {
-            if (timelineType == TimelineType.EVERYTHING) {
-                timelineType = TimelineType.SEARCH;
-            }
-        }
-
-        if (timelineType.isForUser()) {
-            if (myAccount.getActorId() == actorId) {
-                switch (timelineType) {
-                    case USER:
-                        return TimelineType.SENT;
-                    case FRIENDS:
-                        return TimelineType.MY_FRIENDS;
-                    case FOLLOWERS:
-                        return TimelineType.MY_FOLLOWERS;
-                    default:
-                        break;
-                }
-            } else {
-                switch (timelineType) {
-                    case SENT:
-                        return TimelineType.USER;
-                    case MY_FRIENDS:
-                        return TimelineType.FRIENDS;
-                    case MY_FOLLOWERS:
-                        return TimelineType.FOLLOWERS;
-                    default:
-                        break;
-                }
-            }
-        }
-        return timelineType;
+    private TimelineType fixedTimelineType(TimelineType timelineType) {
+        return isCombined || (timelineType.isAtOrigin() ? origin.isValid() : actorId != 0)
+                ? timelineType
+                : TimelineType.UNKNOWN;
     }
 
     @Override
@@ -436,7 +337,6 @@ public class Timeline implements Comparable<Timeline> {
     public void toContentValues(ContentValues values) {
         ContentValuesUtils.putNotZero(values, TimelineTable._ID, id);
         values.put(TimelineTable.TIMELINE_TYPE, timelineType.save());
-        values.put(TimelineTable.ACCOUNT_ID, myAccount.getActorId());
         values.put(TimelineTable.ACTOR_ID, actorId);
         values.put(TimelineTable.ACTOR_IN_TIMELINE, actorInTimeline);
         values.put(TimelineTable.ORIGIN_ID, origin.getId());
@@ -484,43 +384,32 @@ public class Timeline implements Comparable<Timeline> {
     public Timeline fromSearch(MyContext myContext, boolean globalSearch) {
         Timeline timeline = this;
         if (globalSearch) {
-            timeline = getTimeline(myContext, 0, TimelineType.SEARCH,
-                    this.getMyAccount(), this.getActorId(), this.getOrigin(),
+            timeline = myContext.timelines().get(TimelineType.SEARCH, this.getActorId(), this.getOrigin(),
                     this.getSearchQuery());
         }
         return timeline;
     }
 
-    public Timeline fromIsCombined(MyContext myContext, boolean isCombined) {
-        if (this.isCombined() == isCombined) {
-            return this;
-        }
-        Origin origin;
-        MyAccount myAccount;
-        if (isCombined) {
-            origin = Origin.EMPTY;
-            myAccount = MyAccount.EMPTY;
-        } else {
-            origin = myContext.accounts().getCurrentAccount().getOrigin();
-            myAccount = myContext.accounts().getCurrentAccount();
-        }
-        return getTimeline(myContext, 0, timelineType, myAccount, 0, origin, searchQuery);
+    public Timeline fromIsCombined(MyContext myContext, boolean isCombinedNew) {
+        if (isCombined == isCombinedNew
+                || (!isCombined && timelineType.isForUser() && user.isMyUser() != TriState.TRUE) ) return this;
+        return myContext.timelines().get(timelineType,
+                isCombinedNew ? 0 : myContext.accounts().getCurrentAccount().getActorId(),
+                isCombinedNew ? Origin.EMPTY : myContext.accounts().getCurrentAccount().getOrigin(),
+                searchQuery);
     }
 
-    public Timeline fromMyAccount(MyContext myContext, MyAccount myAccount) {
-        if (this.myAccount.equals(myAccount) ||
-                (isCombined() && !this.myAccount.isValid())) {
-            return this;
-        }
-        long actorId = this.actorId;
-        Origin origin = this.origin;
-        if (!isActorDifferentFromAccount()) {
-            actorId = 0;
-        }
-        if (!this.myAccount.getOrigin().equals(myAccount.getOrigin())) {
-            origin = Origin.EMPTY;
-        }
-        return getTimeline(myContext, 0, getTimelineType(), myAccount, actorId, origin, searchQuery);
+    public Timeline fromMyAccount(MyContext myContext, MyAccount myAccountNew) {
+        if (isCombined() || myAccount.equals(myAccountNew)
+                || (timelineType.isForUser() && user.isMyUser() != TriState.TRUE)) return this;
+        return myContext.timelines().get(
+                timelineType,
+                myAccountNew.getActorId(),
+                myAccountNew.getOrigin(), searchQuery);
+    }
+
+    public boolean nonEmpty() {
+        return !isEmpty();
     }
 
     public boolean isEmpty() {
@@ -606,7 +495,6 @@ public class Timeline implements Comparable<Timeline> {
     private long findDuplicateInDatabase(MyContext myContext) {
         SqlWhere where = new SqlWhere();
         where.append(TimelineTable.TIMELINE_TYPE + "='" + timelineType.save() + "'");
-        where.append(TimelineTable.ACCOUNT_ID + "=" + myAccount.getActorId());
         where.append(TimelineTable.ORIGIN_ID + "=" + origin.getId());
         where.append(TimelineTable.ACTOR_ID + "=" + actorId);
         where.append(TimelineTable.SEARCH_QUERY + "='" + searchQuery + "'");
@@ -926,11 +814,11 @@ public class Timeline implements Comparable<Timeline> {
 
     public Timeline cloneForAccount(MyContext myContext, MyAccount ma) {
         long actorId = getMyAccount().getActorId() != getActorId() ? getActorId() : 0;
-        return getTimeline(myContext, 0, getTimelineType(), ma, actorId, null, getSearchQuery());
+        return myContext.timelines().get(0, getTimelineType(), actorId, Origin.EMPTY, getSearchQuery());
     }
 
     public Timeline cloneForOrigin(MyContext myContext, Origin origin) {
-        return getTimeline(myContext, 0, getTimelineType(), null, 0, origin, getSearchQuery());
+        return myContext.timelines().get(0, getTimelineType(), 0, origin, getSearchQuery());
     }
 
     public void onSyncEnded(CommandResult result) {

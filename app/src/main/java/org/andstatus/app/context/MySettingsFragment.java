@@ -40,6 +40,7 @@ import org.andstatus.app.HelpActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.account.ManageAccountsActivity;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.backup.BackupActivity;
 import org.andstatus.app.backup.RestoreActivity;
 import org.andstatus.app.data.MatchedUri;
@@ -289,7 +290,7 @@ public class MySettingsFragment extends PreferenceFragment implements
         Preference preference = findPreference(KEY_MANAGE_TIMELINES);
         if (preference != null) {
             preference.setSummary(String.format(getText(R.string.default_timeline_summary).toString(),
-                    TimelineTitle.load(MyContextHolder.get(), timeline, null).toString()));
+                    TimelineTitle.load(MyContextHolder.get(), timeline, MyAccount.EMPTY).toString()));
         }
     }
 

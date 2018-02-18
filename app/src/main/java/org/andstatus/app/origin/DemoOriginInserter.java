@@ -58,7 +58,8 @@ public final class DemoOriginInserter {
         assertTrue(builder.toString(), builder.isSaved());
         Origin origin = builder.build();
         if (origin.isOAuthDefault() || origin.canChangeOAuth()) {
-            insertTestKeys(origin);
+            insertTestKeys(origin, demoData.pumpioMainHost);
+            insertTestKeys(origin, demoData.pumpioSecondHost);
         }
 
         checkAttributes(origin, originName, hostOrUrl, isSsl, sslMode, allowHtml,
@@ -95,7 +96,7 @@ public final class DemoOriginInserter {
     }
 
 
-    private void insertTestKeys(Origin origin) {
+    private void insertTestKeys(Origin origin, String host) {
         HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(
                 OriginConnectionData.fromAccountName(
                         AccountName.fromOriginAndUsername(origin, ""), TriState.UNKNOWN)
@@ -103,7 +104,7 @@ public final class DemoOriginInserter {
         final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
         final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());
         if (connectionData.originUrl == null) {
-            connectionData.originUrl = UrlUtils.fromString("https://" + demoData.pumpioMainHost);
+            connectionData.originUrl = UrlUtils.fromString("https://" + host);
         }
         OAuthClientKeys keys1 = OAuthClientKeys.fromConnectionData(connectionData);
         if (!keys1.areKeysPresent()) {
@@ -130,7 +131,8 @@ public final class DemoOriginInserter {
                     }
                 }
                 if (myAccount.isValid() && origin.getOriginType().isTimelineTypeSyncable(timelineType)) {
-                    assertTrue(origin.toString() + " " + timelineType, count > 0);
+                    assertTrue("No " + timelineType + " at " + origin + "\n"
+                            + MyContextHolder.get().timelines().values(), count > 0);
                 }
             }
         }

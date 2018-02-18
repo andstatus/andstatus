@@ -26,7 +26,7 @@ import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.User;
+import org.andstatus.app.user.User;
 import org.andstatus.app.util.TriState;
 
 import java.util.HashSet;
@@ -52,7 +52,7 @@ class CheckUsers extends DataChecker {
         }
         for (User user : results.myUsers) {
             if (MyQuery.idToLongColumnValue(myContext.getDatabase(), UserTable.TABLE_NAME, UserTable.IS_MY, user.userId)
-                    == 0) {
+                    != TriState.TRUE.id) {
                 user.save(myContext);
                 changedCount++;
             }
@@ -78,7 +78,8 @@ class CheckUsers extends DataChecker {
                 rowsCount++;
                 final Actor actor = Actor.fromOriginAndActorId(myContext.origins().fromId(c.getLong(1)),
                         c.getLong(0));
-                actor.user.userId = c.getLong(2);
+                actor.user = User.load(myContext, c.getLong(2));
+                if (actor.user == User.EMPTY) actor.lookupUser(myContext);
                 actor.setWebFingerId(c.getString(3));
                 if (shouldMergeUsers(prev, actor)) {
                     AActivity activity = whomToMerge(prev, actor);
@@ -129,6 +130,6 @@ class CheckUsers extends DataChecker {
         );
         MyProvider.delete(myContext, UserTable.TABLE_NAME, UserTable._ID + "=" + actor.user.userId);
         actor.user.userId = activity.getActor().user.userId;
-        actor.user.setIsMyUser(activity.getActor().user.getIsMyUser());
+        actor.user.setIsMyUser(activity.getActor().user.isMyUser());
     }
 }

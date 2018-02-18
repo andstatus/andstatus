@@ -91,28 +91,33 @@ public class TimelineSql {
             case HOME:
                 activityWhere.append(ActivityTable.SUBSCRIBED + "=" + TriState.TRUE.id);
                 msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.PRIVATE + "!=" + TriState.TRUE.id);
+                addConditionForAccount(timeline, activityWhere);
                 break;
             case PRIVATE:
                 msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.PRIVATE + "=" + TriState.TRUE.id);
+                addConditionForAccount(timeline, activityWhere);
                 break;
             case FAVORITES:
                 msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.FAVORITED + "=" + TriState.TRUE.id);
+                addConditionForActor(timeline, activityWhere);
                 break;
             case MENTIONS:
                 msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.MENTIONED + "=" + TriState.TRUE.id);
+                addConditionForAccount(timeline, activityWhere);
                 break;
             case PUBLIC:
                 msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.PRIVATE + "!=" + TriState.TRUE.id);
                 break;
             case DRAFTS:
                 msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.NOTE_STATUS + "=" + DownloadStatus.DRAFT.save());
+                addConditionForActor(timeline, activityWhere);
                 break;
             case OUTBOX:
                 msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.NOTE_STATUS + "=" + DownloadStatus.SENDING.save());
+                addConditionForActor(timeline, activityWhere);
                 break;
-            case USER:
             case SENT:
-                activityWhere.append(ActivityTable.ACTOR_ID + SqlActorIds.fromTimeline(timeline).getSql());
+                addConditionForActor(timeline, activityWhere);
                 break;
             case NOTIFICATIONS:
                 activityWhere.append(ActivityTable.NOTIFIED + "=" + TriState.TRUE.id);
@@ -123,9 +128,6 @@ public class TimelineSql {
 
         if (timeline.getTimelineType().isAtOrigin() && !timeline.isCombined()) {
             activityWhere.append(ActivityTable.ORIGIN_ID + "=" + timeline.getOrigin().getId());
-        }
-        if (timeline.getTimelineType().isForAccount() && !timeline.isCombined()) {
-            activityWhere.append(ActivityTable.ACCOUNT_ID + "=" + timeline.getMyAccount().getActorId());
         }
         String  tables = "(SELECT * FROM " + ActivityTable.TABLE_NAME + activityWhere.getWhere()
                 + ") AS " + ProjectionMap.ACTIVITY_TABLE_ALIAS
@@ -180,6 +182,16 @@ public class TimelineSql {
                     + "=prevAuthor." + BaseColumns._ID;
         }
         return tables;
+    }
+
+    private static void addConditionForAccount(Timeline timeline, SqlWhere activityWhere) {
+        if (!timeline.isCombined() && timeline.user.isMyUser() == TriState.TRUE) {
+            activityWhere.append(ActivityTable.ACCOUNT_ID + SqlActorIds.fromIds(timeline.user.actors).getSql());
+        }
+    }
+
+    private static void addConditionForActor(Timeline timeline, SqlWhere activityWhere) {
+        activityWhere.append(ActivityTable.ACTOR_ID + SqlActorIds.fromTimeline(timeline).getSql());
     }
 
     /**

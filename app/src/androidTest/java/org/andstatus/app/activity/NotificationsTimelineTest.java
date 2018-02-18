@@ -43,7 +43,7 @@ public class NotificationsTimelineTest extends TimelineActivityTest {
 
         MyLog.i(this, "setUp ended");
         return new Intent(Intent.ACTION_VIEW,
-                Timeline.getTimeline(TimelineType.NOTIFICATIONS, ma, 0, ma.getOrigin()).getUri());
+                Timeline.getTimeline(TimelineType.NOTIFICATIONS, ma.getActorId(), ma.getOrigin()).getUri());
     }
 
     @Test

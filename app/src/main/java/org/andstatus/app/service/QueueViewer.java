@@ -25,6 +25,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import org.andstatus.app.R;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.LoadableListActivity;
@@ -92,7 +93,7 @@ public class QueueViewer extends LoadableListActivity {
                 MyServiceManager.sendManualForegroundCommand(
                         CommandData.newItemCommand(
                                 CommandEnum.DELETE_COMMAND,
-                                null,
+                                MyAccount.EMPTY,
                                 queueData.commandData.getCommandId()));
                 return true;
             default:

@@ -19,10 +19,12 @@ package org.andstatus.app.service;
 import android.content.SyncResult;
 import android.database.sqlite.SQLiteDiskIOException;
 
+import org.andstatus.app.account.DemoAccountInserter;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.ExceptionsCounter;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -45,8 +47,8 @@ public class MyServiceTest1 extends MyServiceTest {
         assertTrue("No successful account", myAccount.isValidAndSucceeded());
 
         MyContext myContext = MyContextHolder.get();
-        for (Timeline timeline : myContext.timelines().getFiltered(false, TriState.FALSE,
-                TimelineType.UNKNOWN, MyAccount.EMPTY, myAccount.getOrigin())) {
+        for (Timeline timeline : myContext.timelines().filter(false, TriState.FALSE,
+                TimelineType.UNKNOWN, MyAccount.EMPTY, Origin.EMPTY)) {
             if (timeline.isSyncedAutomatically()) {
                 if (timeline.isTimeToAutoSync()) {
                     timeline.onSyncEnded(new CommandResult());
@@ -64,15 +66,7 @@ public class MyServiceTest1 extends MyServiceTest {
                 0, mService.getHttp().getRequestsCounter());
 
         myContext = MyContextHolder.get();
-        Timeline timelineToSync = null;
-        for (Timeline timeline : myContext.timelines().getFiltered(false, TriState.FALSE,
-                TimelineType.UNKNOWN, myAccount, null)) {
-            if (timeline.isSyncedAutomatically()) {
-                timelineToSync = timeline;
-                break;
-            }
-        }
-        assertTrue("No synced automatically timeline for " + myAccount, timelineToSync != null);
+        Timeline timelineToSync = DemoAccountInserter.getAutomaticallySyncableTimeline(myContext, myAccount);
         timelineToSync.setSyncSucceededDate(0);
 
         runner = new MyServiceCommandsRunner(myContext);

@@ -123,8 +123,12 @@ public class Origin {
         return getId() != 0;
     }
 
+    public boolean isEmpty() {
+        return this == EMPTY || originType == OriginType.UNKNOWN;   // TODO avoid second case
+    }
+
     public boolean isValid() {
-        return originType != OriginType.UNKNOWN
+        return !isEmpty()
                 && isNameValid()
                 && urlIsValid()
                 && (isSsl() == originType.sslDefault || originType.canChangeSsl);

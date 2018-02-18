@@ -44,7 +44,7 @@ public final class CommandTable implements BaseColumns {
      * Timeline here may have ID=0 for non-persistent timelines */
     public static final String TIMELINE_ID = TimelineTable.TIMELINE_ID;
     public static final String TIMELINE_TYPE = TimelineTable.TIMELINE_TYPE;
-    public static final String ACCOUNT_ID = TimelineTable.ACCOUNT_ID;
+    public static final String ACCOUNT_ID = ActorTable.ACCOUNT_ID;
     public static final String ACTOR_ID = TimelineTable.ACTOR_ID;
     /** This is used e.g. when a {@link #ACTOR_ID} is not known */
     public static final String USERNAME = ActorTable.USERNAME;

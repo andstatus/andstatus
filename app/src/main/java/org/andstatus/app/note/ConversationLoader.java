@@ -28,6 +28,7 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
@@ -132,7 +133,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
             return;
         }
         Uri uri = MatchedUri.getTimelineItemUri(
-                Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null), item.getNoteId());
+                Timeline.getTimeline(TimelineType.EVERYTHING, 0, ma.getOrigin()), item.getNoteId());
         boolean loaded = false;
         try (Cursor cursor = myContext.context().getContentResolver()
                 .query(uri, item.getProjection(), null, null, null)) {

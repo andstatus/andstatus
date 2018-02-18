@@ -84,10 +84,10 @@ public class CommandData implements Comparable<CommandData> {
     public static CommandData newSearch(SearchObjects searchObjects,
                                         MyContext myContext, Origin origin, String queryString) {
         if (searchObjects == SearchObjects.NOTES) {
-            Timeline timeline =  Timeline.getTimeline(myContext, 0, TimelineType.SEARCH, null, 0, origin, queryString);
+            Timeline timeline =  myContext.timelines().get(TimelineType.SEARCH, 0, origin, queryString);
             return new CommandData(0, CommandEnum.GET_TIMELINE, timeline, 0);
         } else {
-            return newActorCommand(CommandEnum.SEARCH_ACTORS, null, origin, 0, queryString);
+            return newActorCommand(CommandEnum.SEARCH_ACTORS, MyAccount.EMPTY, origin, 0, queryString);
         }
     }
 
@@ -99,7 +99,7 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public static CommandData newFetchAttachment(long noteId, long downloadDataRowId) {
-        CommandData commandData = newOriginCommand(CommandEnum.GET_ATTACHMENT, null);
+        CommandData commandData = newOriginCommand(CommandEnum.GET_ATTACHMENT, Origin.EMPTY);
         commandData.itemId = downloadDataRowId;
         commandData.setTrimmedNoteBodyAsDescription(noteId);
         return commandData;
@@ -116,7 +116,7 @@ public class CommandData implements Comparable<CommandData> {
     @NonNull
     public static CommandData newActorCommand(CommandEnum command, MyAccount myActor,
                                               Origin origin, long actorId, String username) {
-        CommandData commandData = newTimelineCommand(command, myActor, TimelineType.USER, actorId, origin);
+        CommandData commandData = newTimelineCommand(command, myActor, TimelineType.SENT, actorId, origin);
         commandData.setUsername(username);
         commandData.description = commandData.getUsername();
         return commandData;
@@ -127,31 +127,32 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public static CommandData newCommand(CommandEnum command) {
-        return newOriginCommand(command, null);
+        return newOriginCommand(command, Origin.EMPTY);
     }
 
-    public static CommandData newItemCommand(CommandEnum command, MyAccount myAccount, long itemId) {
-        CommandData commandData = newAccountCommand(command, myAccount);
+    public static CommandData newItemCommand(CommandEnum command, @NonNull MyAccount myAccount, long itemId) {
+        CommandData commandData = myAccount.isValid() ? newAccountCommand(command, myAccount)
+                : newOriginCommand(command, Origin.EMPTY);
         commandData.itemId = itemId;
         return commandData;
     }
 
-    public static CommandData newAccountCommand(CommandEnum command, MyAccount myAccount) {
-        return newTimelineCommand(command, Timeline.getTimeline(TimelineType.OUTBOX, myAccount, 0, null));
+    public static CommandData newAccountCommand(CommandEnum command, @NonNull MyAccount myAccount) {
+        return newTimelineCommand(command, Timeline.getTimeline(TimelineType.OUTBOX, myAccount.getActorId(), Origin.EMPTY));
     }
 
-    public static CommandData newOriginCommand(CommandEnum command, Origin origin) {
-        return newTimelineCommand(command, Timeline.getTimeline(TimelineType.EVERYTHING, null, 0, origin));
+    public static CommandData newOriginCommand(CommandEnum command, @NonNull Origin origin) {
+        return newTimelineCommand(command, Timeline.getTimeline(TimelineType.EVERYTHING, 0, origin));
     }
 
-    public static CommandData newTimelineCommand(CommandEnum command, MyAccount myAccount,
+    public static CommandData newTimelineCommand(CommandEnum command, @NonNull MyAccount myAccount,
                                                  TimelineType timelineType) {
-        return newTimelineCommand(command, Timeline.getTimeline(timelineType, myAccount, 0, null));
+        return newTimelineCommand(command, Timeline.getTimeline(timelineType, myAccount.getActorId(), Origin.EMPTY));
     }
 
-    public static CommandData newTimelineCommand(CommandEnum command, MyAccount myAccount,
+    public static CommandData newTimelineCommand(CommandEnum command, @NonNull MyAccount myAccount,
                                                  TimelineType timelineType, long actorId, Origin origin) {
-        return newTimelineCommand(command, Timeline.getTimeline(timelineType, myAccount, actorId, origin));
+        return newTimelineCommand(command, Timeline.getTimeline(timelineType, actorId, origin));
     }
 
     public static CommandData newTimelineCommand(CommandEnum command, Timeline timeline) {
@@ -412,12 +413,12 @@ public class CommandData implements Comparable<CommandData> {
                 builder.append("\"");
                 break;
             case GET_TIMELINE:
-                builder.append(TimelineTitle.load(myContext, timeline, null).toString());
+                builder.append(TimelineTitle.load(myContext, timeline, MyAccount.EMPTY).toString());
                 break;
             case GET_OLDER_TIMELINE:
                 builder.append(WhichPage.OLDER.getTitle(myContext.context()));
                 builder.append(" ");
-                builder.append(TimelineTitle.load(myContext, timeline, null).toString());
+                builder.append(TimelineTitle.load(myContext, timeline, MyAccount.EMPTY).toString());
                 break;
             case FOLLOW:
             case UNDO_FOLLOW:

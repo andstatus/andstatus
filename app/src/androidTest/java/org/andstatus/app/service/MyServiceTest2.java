@@ -18,6 +18,7 @@ package org.andstatus.app.service;
 
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -121,7 +122,7 @@ public class MyServiceTest2 extends MyServiceTest {
 
         CommandData commandDelete = CommandData.newItemCommand(
                 CommandEnum.DELETE_COMMAND,
-                null,
+                MyAccount.EMPTY,
                 commandIn.getCommandId());
         commandDelete.setInForeground(true);
         mService.setListenedCommand(commandDelete);
@@ -134,10 +135,9 @@ public class MyServiceTest2 extends MyServiceTest {
         assertTrue("Service stopped", mService.waitForServiceStopped(false));
 
         final CommandQueue cq2 = new CommandQueue().load();
-        Queue<CommandData> queue = cq2.get(QueueType.CURRENT);
-        assertEquals("The command was not deleted from some queue",
+        assertEquals("The command was not deleted from some queue: " + commandIn,
                 CommandData.EMPTY, getFromAnyQueue(cq2, commandIn));
-        assertEquals("The DELETE command was not deleted from some queue",
+        assertEquals("The DELETE command was not deleted from some queue: " + commandDelete,
                 CommandData.EMPTY, getFromAnyQueue(cq2, commandDelete));
         MyLog.i(this, "myTestDeleteCommand ended");
     }

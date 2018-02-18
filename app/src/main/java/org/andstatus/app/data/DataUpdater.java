@@ -341,7 +341,7 @@ public class DataUpdater {
             }
             return;
         }
-        actor.lookupUserId();
+        actor.lookupUser(execContext.getMyContext());
 
         String actorOid = (actor.actorId == 0 && !actor.isOidReal()) ? actor.getTempOid() : actor.oid;
         try {
@@ -414,9 +414,8 @@ public class DataUpdater {
                                 + actor.getUsername());
             }
             
-            // Construct the Uri to the Actor
-            Uri actorUri = MatchedUri.getActorUri(me.getActorId(), actor.actorId);
             actor.saveUser(execContext.myContext);
+            Uri actorUri = MatchedUri.getActorUri(me.getActorId(), actor.actorId);
             if (actor.actorId == 0) {
                 values.put(ActorTable.ORIGIN_ID, actor.origin.getId());
                 values.put(ActorTable.USER_ID, actor.user.userId);
@@ -437,7 +436,7 @@ public class DataUpdater {
 
     public void downloadOneNoteBy(String actorOid) throws ConnectionException {
         List<AActivity> activities = execContext.getConnection().getTimeline(
-                TimelineType.USER.getConnectionApiRoutine(), TimelinePosition.EMPTY,
+                TimelineType.SENT.getConnectionApiRoutine(), TimelinePosition.EMPTY,
                 TimelinePosition.EMPTY, 1, actorOid);
         for (AActivity item : activities) {
             onActivity(item, false);

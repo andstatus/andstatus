@@ -22,6 +22,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -72,7 +73,8 @@ public class TimeLineActivityLayoutToggleTest extends TimelineActivityTest {
         MyContextHolder.get().accounts().setCurrentAccount(ma);
 
         logStartStop("setUp ended");
-        return new Intent(Intent.ACTION_VIEW, Timeline.getTimeline(TimelineType.HOME, ma, 0, null).getUri());
+        return new Intent(Intent.ACTION_VIEW, Timeline.getTimeline(TimelineType.HOME, ma.getActorId(),
+                Origin.EMPTY).getUri());
     }
 
     private void logStartStop(String text) {

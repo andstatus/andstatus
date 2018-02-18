@@ -28,6 +28,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -40,6 +41,7 @@ import java.util.List;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -105,7 +107,24 @@ public class DemoAccountInserter {
 
         assertEquals("Oid: " + ma.getActor(), actor.oid, ma.getActor().oid);
         assertEquals("Partially defined: " + ma.getActor(), false, ma.getActor().isPartiallyDefined());
+
+        assertNotEquals(Timeline.EMPTY, getAutomaticallySyncableTimeline(myContext, ma));
         return ma;
+    }
+
+    @NonNull
+    public static Timeline getAutomaticallySyncableTimeline(MyContext myContext, MyAccount myAccount) {
+        Timeline timelineToSync = Timeline.EMPTY;
+        for (Timeline timeline : myContext.timelines().filter(false, TriState.FALSE,
+                TimelineType.UNKNOWN, myAccount, Origin.EMPTY)) {
+            if (timeline.isSyncedAutomatically()) {
+                timelineToSync = timeline;
+                break;
+            }
+        }
+        assertTrue("No syncable automatically timeline for " + myAccount + "\n"
+                + myContext.timelines().values(), timelineToSync.isSyncableAutomatically());
+        return timelineToSync;
     }
 
     private void assertAccountIsAddedToAccountManager(MyAccount maExpected) {
@@ -176,7 +195,7 @@ public class DemoAccountInserter {
                         I18n.appendWithSpace(logMsg, timeline.toString());
                     }
                 }
-                assertEquals(logMsg.toString(), 1, count);
+                assertEquals(logMsg.toString() + "\n" + MyContextHolder.get().timelines().values(), 1, count);
             }
         }
     }

@@ -52,9 +52,9 @@ public class DiscoveredOriginList extends OriginList implements MyServiceEventsL
     private void manualSync() {
         MyServiceManager.setServiceAvailable();
         MyServiceManager.sendForegroundCommand(
-                CommandData.newItemCommand(CommandEnum.GET_OPEN_INSTANCES,
-                        null,
-                        OriginType.GNUSOCIAL.getId()));
+                CommandData.newOriginCommand(CommandEnum.GET_OPEN_INSTANCES,
+                        MyContextHolder.get().origins().firstOfType(OriginType.GNUSOCIAL)
+                        ));
     }
 
     @Override

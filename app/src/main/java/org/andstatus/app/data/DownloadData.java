@@ -8,8 +8,10 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.DownloadTable;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
@@ -403,10 +405,9 @@ public class DownloadData {
             saveToDatabase();
         }
         if (!DownloadStatus.LOADED.equals(status) && !hardError) {
-            MyServiceManager.sendCommand(
-                    actorId != 0 ?
-                            CommandData.newActorCommand(CommandEnum.GET_AVATAR, null, null, actorId, "")
-                            : CommandData.newFetchAttachment(noteId, downloadId));
+            MyServiceManager.sendCommand(actorId != 0
+                    ? CommandData.newActorCommand(CommandEnum.GET_AVATAR, MyAccount.EMPTY, Origin.EMPTY, actorId, "")
+                    : CommandData.newFetchAttachment(noteId, downloadId));
         }
     }
 

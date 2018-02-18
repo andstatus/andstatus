@@ -16,6 +16,7 @@
 
 package org.andstatus.app.timeline.meta;
 
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.MyActivity;
@@ -24,6 +25,8 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
+
+import java.util.Objects;
 
 /**
  * Data to show on UI. May be create on UI thread
@@ -57,7 +60,8 @@ public class TimelineTitle {
         return builder.toString();
     }
 
-    public static TimelineTitle load(MyContext myContext, Timeline timeline, MyAccount currentMyAccount) {
+    public static TimelineTitle load(MyContext myContext, Timeline timeline, @NonNull MyAccount currentMyAccount) {
+        Objects.requireNonNull(currentMyAccount);
         TimelineTitle timelineTitle = new TimelineTitle();
         timelineTitle.title = toTimelineTitle(myContext, timeline);
         timelineTitle.subTitle = toTimelineSubtitle(myContext, timeline, currentMyAccount);
@@ -91,7 +95,7 @@ public class TimelineTitle {
         return title.toString();
     }
 
-    private static String toTimelineSubtitle(MyContext myContext, Timeline timeline, MyAccount currentMyAccount) {
+    private static String toTimelineSubtitle(MyContext myContext, Timeline timeline, @NonNull MyAccount currentMyAccount) {
         final StringBuilder subTitle = new StringBuilder();
         boolean nameAdded = false;
         if (!timeline.isCombined()) {
@@ -100,12 +104,9 @@ public class TimelineTitle {
             if (timeline.getTimelineType().isAtOrigin()) {
                 I18n.appendWithSpace(subTitle, timeline.getOrigin().getName());
                 nameAdded = true;
-            } else if (!timeline.getMyAccount().equals(currentMyAccount)) {
-                I18n.appendWithSpace(subTitle, timeline.getMyAccount().toAccountButtonText(myContext));
-                nameAdded = true;
             }
         }
-        if (currentMyAccount != null && currentMyAccount.isValid()) {
+        if (currentMyAccount.isValid()) {
             if (nameAdded) {
                 subTitle.append(";");
             }

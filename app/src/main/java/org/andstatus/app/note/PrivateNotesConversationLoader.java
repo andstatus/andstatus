@@ -30,6 +30,7 @@ import org.andstatus.app.data.SqlActorIds;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Audience;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.TriState;
@@ -49,7 +50,7 @@ public class PrivateNotesConversationLoader<T extends ConversationItem<T>> exten
         Audience recipients = Audience.fromNoteId(ma.getOrigin(), oMsg.getNoteId());
         String selection = getSelectionForActorAndRecipient("=" + Long.toString(actorId),
                 SqlActorIds.fromActors(recipients.getRecipients()).getSql());
-        Uri uri = Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null).getUri();
+        Uri uri = Timeline.getTimeline(TimelineType.EVERYTHING, 0, ma.getOrigin()).getUri();
         Cursor cursor = null;
         try {
             cursor = myContext.context().getContentResolver().query(uri, oMsg.getProjection(),

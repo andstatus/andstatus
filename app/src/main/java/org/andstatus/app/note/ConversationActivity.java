@@ -187,8 +187,8 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
 
     @Override
     public Timeline getTimeline() {
-        return Timeline.getTimeline(myContext, 0, TimelineType.EVERYTHING,
-                getCurrentMyAccount(), 0, getCurrentMyAccount().getOrigin(), "");
+        return myContext.timelines().get(TimelineType.EVERYTHING,
+                0, getCurrentMyAccount().getOrigin(), "");
     }
 
     @SuppressWarnings("unchecked")

@@ -46,7 +46,7 @@ public class CommandExecutorGetOpenInstances extends CommandExecutorStrategy {
             logConnectionException(e, "");
         }
         if (ok) {
-            List<Origin> newOrigins = new ArrayList<Origin>();
+            List<Origin> newOrigins = new ArrayList<>();
             for (Server mbOrigin : result) {
                 execContext.getResult().incrementDownloadedCount();
                 Origin origin = new Origin.Builder(execOrigin.getOriginType()).setName(mbOrigin.name)

@@ -42,6 +42,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.ListActivityTestHelper;
 import org.andstatus.app.timeline.TimelineActivity;
@@ -89,7 +90,8 @@ public class NoteEditorTest extends TimelineActivityTest {
         data = getStaticData(ma);
 
         MyLog.i(this, "setUp ended");
-        return new Intent(Intent.ACTION_VIEW, Timeline.getTimeline(TimelineType.HOME, ma, 0, null).getUri());
+        return new Intent(Intent.ACTION_VIEW, Timeline.getTimeline(TimelineType.HOME, ma.getActorId(),
+                Origin.EMPTY).getUri());
     }
 
     private NoteEditorData getStaticData(MyAccount ma) {

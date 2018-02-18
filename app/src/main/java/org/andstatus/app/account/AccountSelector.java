@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -78,7 +79,8 @@ public class AccountSelector extends SelectorDialog {
     }
 
     private List<MyAccount> newListData() {
-        long originId = getArguments().getLong(IntentExtra.ORIGIN_ID.key, 0);
+        long originId = Optional.ofNullable(getArguments())
+                .map(bundle -> bundle.getLong(IntentExtra.ORIGIN_ID.key)).orElse(0L);
         List<MyAccount> listData = new ArrayList<>();
         for (MyAccount ma : MyContextHolder.get().accounts().list()) {
             if (originId==0 || ma.getOriginId() == originId) {

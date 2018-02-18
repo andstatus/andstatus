@@ -28,8 +28,9 @@ import org.andstatus.app.data.DemoConversationInserter;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.note.NoteContextMenuItem;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.note.NoteContextMenuItem;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.ListActivityTestHelper;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.timeline.TimelineActivityTest;
@@ -58,7 +59,7 @@ public class ActorListTest extends TimelineActivityTest {
 
         MyLog.i(this, "setUp ended");
         return new Intent(Intent.ACTION_VIEW,
-                Timeline.getTimeline(TimelineType.HOME, ma, 0, null).getUri());
+                Timeline.getTimeline(TimelineType.HOME, ma.getActorId(), Origin.EMPTY).getUri());
     }
 
     @Test

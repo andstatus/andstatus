@@ -60,6 +60,7 @@ public final class DemoData {
     public final String testOriginParentHost = "example.com";
     public final String pumpioOriginName = "PumpioTest";
     public final String pumpioMainHost = "pump1." + testOriginParentHost;
+    public final String pumpioSecondHost = "pump2." + testOriginParentHost;
     public final String pumpioTestAccountUsername = "t131t@" + pumpioMainHost;
     public final String pumpioTestAccountName = pumpioTestAccountUsername + "/" + pumpioOriginName;
     public final String pumpioTestAccountActorOid = OriginPumpio.ACCOUNT_PREFIX + pumpioTestAccountUsername;
@@ -99,7 +100,7 @@ public final class DemoData {
     public final String conversationMentionsNoteOid = HTTP + pumpioMainHost + "/second/comment/replywithmentions" + testRunUid;
     public final String conversationMentionOfAuthor3Oid = HTTP + pumpioMainHost + "/second/comment/mention3" + testRunUid;
     public final String htmlNoteOid = HTTP + pumpioMainHost + "/testerofandstatus/comment/htmlfakeuri" + testRunUid;
-    public final String conversationAccount2Username = "tester2ofandstatus@" + pumpioMainHost;
+    public final String conversationAccount2Username = "tester2ofandstatus@" + pumpioSecondHost;
     public final String conversationAccount2Name = conversationAccount2Username + "/" + conversationOriginName;
     public final String conversationAccount2ActorOid = OriginPumpio.ACCOUNT_PREFIX + conversationAccount2Username;
 
@@ -192,7 +193,7 @@ public final class DemoData {
                         .list().stream().filter(ma -> !ma.getActor().isWebFingerIdValid()).findFirst());
                 int size2 = MyContextHolder.get().users().size();
                 assertTrue("Only " + size2 + " users added: " + MyContextHolder.get().users()
-                        + " accounts: " + MyContextHolder.get().accounts(),
+                        + "\nAccounts: " + MyContextHolder.get().accounts(),
                         size2 >= size);
 
                 originInserter.checkDefaultTimelinesForOrigins();
@@ -208,9 +209,9 @@ public final class DemoData {
                     fail("No persistent accounts");
                 }
                 setSuccessfulAccountAsCurrent();
-                Timeline defaultTimeline = MyContextHolder.get().timelines().getFiltered(
-                        false, TriState.TRUE, TimelineType.EVERYTHING, null,
-                        MyContextHolder.get().accounts().getCurrentAccount().getOrigin()).get(0);
+                Timeline defaultTimeline = MyContextHolder.get().timelines().filter(
+                        false, TriState.TRUE, TimelineType.EVERYTHING, MyAccount.EMPTY,
+                        MyContextHolder.get().accounts().getCurrentAccount().getOrigin()).iterator().next();
                 assertThat(defaultTimeline.getTimelineType(), is(TimelineType.EVERYTHING));
                 MyContextHolder.get().timelines().setDefault(defaultTimeline);
                 MyLog.v(TAG_ASYNC, "Before initialize 3");

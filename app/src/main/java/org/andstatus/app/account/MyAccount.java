@@ -332,6 +332,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                 }
                 MyLog.v(this, (result.savedToAccountManager ? " Saved "
                         : (result.changed ? " Didn't save?! " : " Didn't change ")) + this.toString());
+                myContext.accounts().addIfNew(myAccount);
                 if (myContext.isReady() && !myAccount.hasAnyTimelines(myContext)) {
                     new TimelineSaver(myContext).setAddDefaults(true).setAccount(myAccount).executeNotOnUiThread();
                 }
@@ -425,6 +426,7 @@ public final class MyAccount implements Comparable<MyAccount> {
 
             if (ok) {
                 setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
+                actor.lookupUser(myContext);
                 actor.user.setIsMyUser(TriState.TRUE);
                 myAccount.actor = actor;
                 if (DatabaseConverterController.isUpgrading()) {
@@ -710,9 +712,7 @@ public final class MyAccount implements Comparable<MyAccount> {
         actor.actorId = accountData.getDataLong(KEY_ACTOR_ID, 0L);
         actor.setUsername(oAccountName.getUsername());
         actor.setWebFingerId(MyQuery.actorIdToName(myContext.getDatabase(), actor.actorId, ActorInTimeline.WEBFINGER_ID));
-        actor.user.userId = MyQuery.idToLongColumnValue(myContext.getDatabase(), ActorTable.TABLE_NAME,
-                ActorTable.USER_ID,actor.actorId);
-        actor.user.setIsMyUser(TriState.TRUE);
+        actor.user = myContext.users().fromActorId(actor.actorId);
         this.version = accountData.getDataInt(KEY_VERSION, ACCOUNT_VERSION);
 
         deleted = accountData.getDataBoolean(KEY_DELETED, false);
@@ -980,8 +980,8 @@ public final class MyAccount implements Comparable<MyAccount> {
     public long getLastSyncSucceededDate(MyContext myContext) {
         long lastSyncedDate = 0;
         if (isValid() && isPersistent()) {
-            for (Timeline timeline : myContext.timelines().getFiltered(
-                    false, TriState.UNKNOWN, TimelineType.UNKNOWN, this, null)) {
+            for (Timeline timeline : myContext.timelines().filter(
+                    false, TriState.UNKNOWN, TimelineType.UNKNOWN, this, Origin.EMPTY)) {
                 if (timeline.getSyncSucceededDate() > lastSyncedDate) {
                     lastSyncedDate = timeline.getSyncSucceededDate();
                 }

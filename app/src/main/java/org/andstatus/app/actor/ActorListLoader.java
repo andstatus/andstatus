@@ -97,7 +97,7 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
         MyServiceManager.sendForegroundCommand(
                 CommandData.newActorCommand(
                         CommandEnum.GET_ACTOR,
-                        null, viewItem.actor.origin,
+                        MyAccount.EMPTY, viewItem.actor.origin,
                         viewItem.getActorId(),
                         viewItem.actor.getUsername()));
     }

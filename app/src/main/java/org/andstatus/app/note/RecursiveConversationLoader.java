@@ -26,6 +26,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.ProjectionMap;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
@@ -50,7 +51,7 @@ public class RecursiveConversationLoader<T extends ConversationItem<T>> extends 
         String selection = (conversationId == 0
                 ? ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.NOTE_ID + "=" + oMsg.getNoteId()
                 : ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.CONVERSATION_ID + "=" + conversationId);
-        Uri uri = Timeline.getTimeline(TimelineType.EVERYTHING, ma, 0, null).getUri();
+        Uri uri = Timeline.getTimeline(TimelineType.EVERYTHING, 0, ma.getOrigin()).getUri();
 
         try (Cursor cursor = myContext.context().getContentResolver().query(uri, oMsg.getProjection(),
                 selection, null, null)) {

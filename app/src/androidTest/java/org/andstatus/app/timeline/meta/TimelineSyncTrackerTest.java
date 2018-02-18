@@ -7,6 +7,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.social.TimelinePosition;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.TimelineSyncTracker;
 import org.junit.Before;
 import org.junit.Test;
@@ -87,6 +88,6 @@ public class TimelineSyncTrackerTest {
 
     @NonNull
     private Timeline getTimeline(MyContext myContext, TimelineType timelineType, MyAccount ma) {
-        return Timeline.getTimeline(myContext, 0, timelineType, ma, 0, null, "");
+        return myContext.timelines().get(0, timelineType, ma.getActorId(), Origin.EMPTY, "");
     }
 }

@@ -23,6 +23,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.junit.Before;
@@ -103,8 +104,8 @@ public class CommandDataTest {
 
     @Test
     public void testEquals() {
-        CommandData data1 = CommandData.newSearch(SearchObjects.NOTES, MyContextHolder.get(), null, "andstatus");
-        CommandData data2 = CommandData.newSearch(SearchObjects.NOTES, MyContextHolder.get(), null, "mustard");
+        CommandData data1 = CommandData.newSearch(SearchObjects.NOTES, MyContextHolder.get(), Origin.EMPTY, "andstatus");
+        CommandData data2 = CommandData.newSearch(SearchObjects.NOTES, MyContextHolder.get(), Origin.EMPTY, "mustard");
         assertTrue("Hashcodes: " + data1.hashCode() + " and " + data2.hashCode(), data1.hashCode() != data2.hashCode());
         assertFalse(data1.equals(data2));
         
@@ -112,7 +113,7 @@ public class CommandDataTest {
         data1.getResult().incrementNumIoExceptions();
         data1.getResult().afterExecutionEnded();
         assertFalse(data1.getResult().shouldWeRetry());
-        CommandData data3 = CommandData.newSearch(SearchObjects.NOTES, MyContextHolder.get(), null, "andstatus");
+        CommandData data3 = CommandData.newSearch(SearchObjects.NOTES, MyContextHolder.get(), Origin.EMPTY              , "andstatus");
         assertTrue(data1.equals(data3));
         assertTrue(data1.hashCode() == data3.hashCode());
         assertEquals(data1, data3);
@@ -123,11 +124,11 @@ public class CommandDataTest {
         Queue<CommandData> queue = new PriorityBlockingQueue<>(100);
         final MyAccount ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
         queue.add(CommandData.newCommand(CommandEnum.GET_FRIENDS));
-        queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.USER, ma.getActorId(), ma.getOrigin()));
+        queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.SENT, ma.getActorId(), ma.getOrigin()));
         queue.add(CommandData.newSearch(SearchObjects.NOTES, MyContextHolder.get(), ma.getOrigin(), "q1"));
-        queue.add(CommandData.newUpdateStatus(null, 2));
+        queue.add(CommandData.newUpdateStatus(MyAccount.EMPTY, 2));
         queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.MENTIONS));
-        queue.add(CommandData.newUpdateStatus(null, 3));
+        queue.add(CommandData.newUpdateStatus(MyAccount.EMPTY, 3));
         queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME).setInForeground(true));
         queue.add(CommandData.newCommand(CommandEnum.GET_NOTE));
 
@@ -165,7 +166,7 @@ public class CommandDataTest {
         long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOrigin().getId(),
                 demoData.conversationAuthorThirdActorOid);
         CommandData data = CommandData.newActorCommand(
-                command, null, demoData.getConversationMyAccount().getOrigin(), actorId, "");
+                command, MyAccount.EMPTY, demoData.getConversationMyAccount().getOrigin(), actorId, "");
         String summary = data.toCommandSummary(MyContextHolder.get());
         String msgLog = command.name() + "; Summary:'" + summary + "'";
         MyLog.v(this, msgLog);

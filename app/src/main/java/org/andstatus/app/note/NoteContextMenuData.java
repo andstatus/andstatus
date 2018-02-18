@@ -67,7 +67,7 @@ class NoteContextMenuData {
                     NoteForAccount msgNew = new NoteForAccount(origin, 0, noteId, ma1);
                     boolean changedToCurrent = !ma1.equals(currentMyAccount) && !myActor.isValid() && ma1.isValid()
                             && !msgNew.isTiedToThisAccount()
-                            && !menuContainer.getTimeline().getTimelineType().isForAccount()
+                            && !menuContainer.getTimeline().getTimelineType().isForUser()
                             && currentMyAccount.isValid() && ma1.getOrigin().equals(currentMyAccount.getOrigin());
                     if (changedToCurrent) {
                         msgNew = new NoteForAccount(origin, 0, noteId, currentMyAccount);

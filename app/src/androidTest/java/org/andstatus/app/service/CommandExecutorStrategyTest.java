@@ -29,7 +29,7 @@ import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.origin.DiscoveredOrigins;
-import org.andstatus.app.origin.OriginType;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.RawResourceUtils;
 import org.junit.After;
@@ -64,7 +64,7 @@ public class CommandExecutorStrategyTest {
 
     @Test
     public void testFetchTimeline() {
-        CommandData commandData = CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, null, TimelineType.HOME);
+        CommandData commandData = CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, MyAccount.EMPTY, TimelineType.HOME);
         CommandExecutorStrategy strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(CommandExecutorStrategy.class, strategy.getClass());
 
@@ -76,7 +76,7 @@ public class CommandExecutorStrategyTest {
     @Test
     public void testSearch() {
         CommandData commandData = CommandData.newSearch(SearchObjects.NOTES,
-                MyContextHolder.get(), null, demoData.globalPublicNoteText);
+                MyContextHolder.get(), Origin.EMPTY, demoData.globalPublicNoteText);
         CommandExecutorStrategy strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(CommandExecutorStrategy.class, strategy.getClass());
 
@@ -167,10 +167,9 @@ public class CommandExecutorStrategyTest {
         http.setResponse(RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
                 org.andstatus.app.tests.R.raw.get_open_instances));
         TestSuite.setHttpConnectionMockInstance(http);
-        CommandData commandData = CommandData.newItemCommand(
+        CommandData commandData = CommandData.newOriginCommand(
                 CommandEnum.GET_OPEN_INSTANCES,
-                demoData.getMyAccount(demoData.gnusocialTestAccountName),
-                OriginType.GNUSOCIAL.getId());
+                demoData.getMyAccount(demoData.gnusocialTestAccountName).getOrigin());
         DiscoveredOrigins.clear();
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertEquals(1, commandData.getResult().getExecutionCount());

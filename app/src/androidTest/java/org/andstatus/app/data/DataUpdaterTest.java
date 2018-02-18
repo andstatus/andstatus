@@ -36,6 +36,7 @@ import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginPumpio;
 import org.andstatus.app.service.AttachmentDownloaderTest;
 import org.andstatus.app.service.CommandData;
@@ -126,7 +127,7 @@ public class DataUpdaterTest {
         assertEquals("Latest activity of " + somebody, activity.getId(),
                 MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, somebody.actorId));
 
-        Uri contentUri = Timeline.getTimeline(TimelineType.MY_FRIENDS, ma, 0, null).getUri();
+        Uri contentUri = Timeline.getTimeline(TimelineType.MY_FRIENDS, ma.getActorId(), Origin.EMPTY).getUri();
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = ActivityTable.getTimeSortOrder(TimelineType.MY_FRIENDS, false);
         sa.addSelection(ActivityTable.ACTOR_ID + "=?", Long.toString(somebody.actorId));
@@ -244,7 +245,7 @@ public class DataUpdaterTest {
                 MyQuery.noteIdToTriState(NoteTable.REBLOGGED, noteId));
 
         // TODO: Below is actually a timeline query test, so maybe expand / move...
-        Uri contentUri = Timeline.getTimeline(TimelineType.EVERYTHING, null, 0, ma.getOrigin()).getUri();
+        Uri contentUri = Timeline.getTimeline(TimelineType.EVERYTHING, 0, ma.getOrigin()).getUri();
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = ActivityTable.getTimeSortOrder(TimelineType.EVERYTHING, false);
         sa.addSelection(NoteTable.NOTE_ID + " = ?", Long.toString(noteId));

@@ -26,6 +26,7 @@ import android.support.v4.util.Pair;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.ActorInTimeline;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
@@ -35,6 +36,7 @@ import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
@@ -43,9 +45,11 @@ import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 public class MyQuery {
     private static final String TAG = MyQuery.class.getSimpleName();
@@ -497,7 +501,7 @@ public class MyQuery {
      * @return not null; "" in a case not found or error or systemId==0
      */
     @NonNull
-    private static String idToStringColumnValue(SQLiteDatabase db, String tableName, String columnName, long systemId) {
+    public static String idToStringColumnValue(SQLiteDatabase db, String tableName, String columnName, long systemId) {
         return (systemId == 0) ? "" : conditionToStringColumnValue(db, tableName, columnName, "_id=" + systemId);
     }
 
@@ -697,16 +701,6 @@ public class MyQuery {
         return getCountOfActivities(ActivityTable.NEW_NOTIFICATION_EVENT + "=" + event.id);
     }
 
-    @NonNull
-    static Set<Long> getActorsOfSameUser(SQLiteDatabase db, long actorId) {
-        return getLongs(db, "SELECT " + ActorTable.ACTOR_ID
-                + " FROM " + ActorTable.TABLE_NAME
-                + " WHERE " + ActorTable.USER_ID + "="
-                + "(SELECT " + ActorTable.USER_ID
-                + " FROM " + ActorTable.TABLE_NAME
-                + " WHERE " + ActorTable.ACTOR_ID + "=" + actorId + ")");
-    }
-
     public static long getCountOfActivities(@NonNull String condition) {
         String sql = "SELECT COUNT(*) FROM " + ActivityTable.TABLE_NAME
                 + (TextUtils.isEmpty(condition) ? "" : " WHERE " + condition);
@@ -716,25 +710,35 @@ public class MyQuery {
 
     @NonNull
     public static Set<Long> getLongs(String sql) {
-        return getLongs(MyContextHolder.get().getDatabase(), sql);
+        return getLongs(MyContextHolder.get(), sql);
     }
 
     @NonNull
-    public static Set<Long> getLongs(SQLiteDatabase db, String sql) {
-        final String method = "getLongs";
-        Set<Long> ids = new HashSet<>();
-        if (db == null) {
+    public static Set<Long> getLongs(MyContext myContext, String sql) {
+        return get(myContext, sql, cursor -> cursor.getLong(0));
+    }
+
+    /**
+     * @return Empty set on UI thread
+     */
+    @NonNull
+    public static <T> Set<T> get(@NonNull MyContext myContext, @NonNull String sql, Function<Cursor, T> f) {
+        final String method = "get";
+        if (myContext.getDatabase() == null) {
             MyLog.v(TAG, method + "; Database is null");
-            return ids;
+            return Collections.emptySet();
         }
-        try (Cursor c = db.rawQuery(sql, null)) {
-            while (c.moveToNext()) {
-                ids.add(c.getLong(0));
-            }
+        if (MyAsyncTask.isUiThread()) {
+            MyLog.v(TAG, method + "; Is UI thread");
+            return Collections.emptySet();
+        }
+        Set<T> set = new HashSet<>();
+        try (Cursor c = myContext.getDatabase().rawQuery(sql, null)) {
+            while (c.moveToNext()) set.add(f.apply(c));
         } catch (Exception e) {
             MyLog.i(TAG, method + "; SQL:'" + sql + "'", e);
         }
-        return ids;
+        return set;
     }
 
     /**
