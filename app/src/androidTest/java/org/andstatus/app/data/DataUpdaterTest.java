@@ -127,9 +127,9 @@ public class DataUpdaterTest {
         assertEquals("Latest activity of " + somebody, activity.getId(),
                 MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, somebody.actorId));
 
-        Uri contentUri = Timeline.getTimeline(TimelineType.MY_FRIENDS, ma.getActorId(), Origin.EMPTY).getUri();
+        Uri contentUri = Timeline.getTimeline(TimelineType.FRIENDS, ma.getActorId(), Origin.EMPTY).getUri();
         SelectionAndArgs sa = new SelectionAndArgs();
-        String sortOrder = ActivityTable.getTimeSortOrder(TimelineType.MY_FRIENDS, false);
+        String sortOrder = ActivityTable.getTimeSortOrder(TimelineType.FRIENDS, false);
         sa.addSelection(ActivityTable.ACTOR_ID + "=?", Long.toString(somebody.actorId));
         String[] PROJECTION = new String[] {
                 NoteTable._ID

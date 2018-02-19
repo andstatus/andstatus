@@ -44,11 +44,7 @@ public enum TimelineType implements SelectableEnum {
      * (i.e of every actor, followed by this Actor).
      * So this is essentially a list of "Friends". See {@link FriendshipTable} */
     FRIENDS(Scope.USER, "friends", R.string.friends, Connection.ApiRoutineEnum.GET_FRIENDS),
-    /** Same as {@link #FRIENDS} but for my accounts only */
-    MY_FRIENDS(Scope.USER, "my_friends", R.string.friends, Connection.ApiRoutineEnum.GET_FRIENDS),
     FOLLOWERS(Scope.USER, "followers", R.string.followers, Connection.ApiRoutineEnum.GET_FOLLOWERS),
-    /** Same as {@link #FOLLOWERS} but for my accounts only */
-    MY_FOLLOWERS(Scope.USER, "my_followers", R.string.followers, Connection.ApiRoutineEnum.GET_FOLLOWERS),
     DRAFTS(Scope.USER, "drafts", R.string.timeline_title_drafts, Connection.ApiRoutineEnum.DUMMY),
     OUTBOX(Scope.USER, "outbox", R.string.timeline_title_outbox, Connection.ApiRoutineEnum.DUMMY),
     ACTORS(Scope.ORIGIN, "users", R.string.user_list, Connection.ApiRoutineEnum.DUMMY),
@@ -169,8 +165,8 @@ public enum TimelineType implements SelectableEnum {
             FAVORITES,
             HOME,
             MENTIONS,
-            MY_FOLLOWERS,
-            MY_FRIENDS,
+            FOLLOWERS,
+            FRIENDS,
             NOTIFICATIONS,
             OUTBOX,
             SENT,
@@ -205,10 +201,10 @@ public enum TimelineType implements SelectableEnum {
             case PRIVATE:
             case DRAFTS:
             case FAVORITES:
+            case FOLLOWERS:
+            case FRIENDS:
             case HOME:
             case MENTIONS:
-            case MY_FRIENDS:
-            case MY_FOLLOWERS:
             case NOTIFICATIONS:
             case OUTBOX:
             case SENT:
@@ -239,8 +235,6 @@ public enum TimelineType implements SelectableEnum {
             case FRIENDS:
             case HOME:
             case MENTIONS:
-            case MY_FOLLOWERS:
-            case MY_FRIENDS:
             case NOTIFICATIONS:
             case OUTBOX:
             case PRIVATE:
@@ -258,9 +252,9 @@ public enum TimelineType implements SelectableEnum {
         switch (this) {
             case PRIVATE:
             case FAVORITES:
+            case FRIENDS:
             case HOME:
             case MENTIONS:
-            case MY_FRIENDS:
             case NOTIFICATIONS:
             case SENT:
                 return true;

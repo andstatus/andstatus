@@ -91,6 +91,8 @@ public class TimelineTable implements BaseColumns {
     public static final String VISIBLE_Y = "visible_y";
     public static final String VISIBLE_OLDEST_DATE = "visible_oldest_date";
 
+    public static final String LAST_CHANGED_DATE = "last_changed_date";
+
     public static void create(SQLiteDatabase db) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -129,7 +131,9 @@ public class TimelineTable implements BaseColumns {
 
                 + VISIBLE_ITEM_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + VISIBLE_Y + " INTEGER NOT NULL DEFAULT 0,"
-                + VISIBLE_OLDEST_DATE + " INTEGER NOT NULL DEFAULT 0"
+                + VISIBLE_OLDEST_DATE + " INTEGER NOT NULL DEFAULT 0,"
+
+                + LAST_CHANGED_DATE + " INTEGER NOT NULL DEFAULT 0"
 
                 + ")");
     }

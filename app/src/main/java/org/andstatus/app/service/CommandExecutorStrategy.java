@@ -99,9 +99,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                             if (execContext.getCommandData().getTimeline().isSyncable()) {
                                 switch (execContext.getCommandData().getTimelineType()) {
                                     case FOLLOWERS:
-                                    case MY_FOLLOWERS:
                                     case FRIENDS:
-                                    case MY_FRIENDS:
                                         strategy = new TimelineDownloaderFollowers();
                                         break;
                                     default:

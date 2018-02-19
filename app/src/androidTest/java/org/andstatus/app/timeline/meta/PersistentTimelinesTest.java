@@ -99,17 +99,17 @@ public class PersistentTimelinesTest {
     private void ensureAtLeastOneNotDisplayedTimeline() {
         Collection<Timeline> timelines = myContext.timelines().values();
         boolean found = false;
-        Timeline timeline1 = null;
+        Timeline timeline1 = Timeline.EMPTY;
         for (Timeline timeline : timelines) {
             if (timeline.isDisplayedInSelector().equals(DisplayedInSelector.NEVER)) {
                 found = true;
                 break;
             }
-            if (timeline1 == null && timeline.getTimelineType().equals(TimelineType.MY_FOLLOWERS)) {
+            if (timeline1 == Timeline.EMPTY && timeline.getTimelineType().equals(TimelineType.FOLLOWERS)) {
                 timeline1 = timeline;
             }
         }
-        if (!found && timeline1 != null) {
+        if (!found && timeline1.nonEmpty()) {
             timeline1.setDisplayedInSelector(DisplayedInSelector.NEVER);
             myContext.timelines().saveChanged();
         }

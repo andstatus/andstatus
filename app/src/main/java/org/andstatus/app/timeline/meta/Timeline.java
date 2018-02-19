@@ -151,6 +151,8 @@ public class Timeline implements Comparable<Timeline> {
 
     private volatile boolean changed = false;
 
+    private volatile long lastChangedDate = 0;
+
     public static Timeline getTimeline(@NonNull TimelineType timelineType, long actorId, @NonNull Origin origin) {
         return MyContextHolder.get().timelines().get(timelineType, actorId, origin, "");
     }
@@ -193,6 +195,8 @@ public class Timeline implements Comparable<Timeline> {
         timeline.visibleItemId = DbUtils.getLong(cursor, TimelineTable.VISIBLE_ITEM_ID);
         timeline.visibleY = DbUtils.getInt(cursor, TimelineTable.VISIBLE_Y);
         timeline.visibleOldestDate = DbUtils.getLong(cursor, TimelineTable.VISIBLE_OLDEST_DATE);
+
+        timeline.lastChangedDate = DbUtils.getLong(cursor, TimelineTable.LAST_CHANGED_DATE);
 
         return timeline;
     }
@@ -370,6 +374,8 @@ public class Timeline implements Comparable<Timeline> {
         values.put(TimelineTable.VISIBLE_ITEM_ID, visibleItemId);
         values.put(TimelineTable.VISIBLE_Y, visibleY);
         values.put(TimelineTable.VISIBLE_OLDEST_DATE, visibleOldestDate);
+
+        if (lastChangedDate > 0) values.put(TimelineTable.LAST_CHANGED_DATE, lastChangedDate);
     }
 
     public void toCommandContentValues(ContentValues values) {
@@ -453,7 +459,7 @@ public class Timeline implements Comparable<Timeline> {
     public void setDisplayedInSelector(DisplayedInSelector displayedInSelector) {
         if (this.isDisplayedInSelector != displayedInSelector) {
             this.isDisplayedInSelector = displayedInSelector;
-            changed = true;
+            setChanged();
         }
     }
 
@@ -463,7 +469,7 @@ public class Timeline implements Comparable<Timeline> {
 
     public void setSelectorOrder(long selectorOrder) {
         if (this.selectorOrder != selectorOrder) {
-            changed = true;
+            setChanged();
             this.selectorOrder = selectorOrder;
         }
     }
@@ -473,7 +479,7 @@ public class Timeline implements Comparable<Timeline> {
             throw new IllegalStateException("Saving a timeline on the Main thread " + toString());
         }
         if (needToLoadActorInTimeline()) {
-            changed = true;
+            setChanged();
         }
         if (timelineType.isPersistable() && (id == 0 || changed) && myContext.isReady()) {
             boolean isNew = id == 0;
@@ -677,34 +683,34 @@ public class Timeline implements Comparable<Timeline> {
     public void forgetPositionsAndDates() {
         if (!TextUtils.isEmpty(youngestPosition)) {
             youngestPosition = "";
-            changed = true;
+            setChanged();
         }
         if (youngestItemDate > 0) {
             youngestItemDate = 0;
-            changed = true;
+            setChanged();
         }
         if (youngestSyncedDate > 0) {
             youngestSyncedDate = 0;
-            changed = true;
+            setChanged();
         }
 
         if (!TextUtils.isEmpty(oldestPosition)) {
             oldestPosition = "";
-            changed = true;
+            setChanged();
         }
         if (oldestItemDate > 0) {
             oldestItemDate = 0;
-            changed = true;
+            setChanged();
         }
         if (oldestSyncedDate > 0) {
             oldestSyncedDate = 0;
-            changed = true;
+            setChanged();
         }
 
         setSyncSucceededDate(0);
         if (syncFailedDate > 0) {
             syncFailedDate = 0;
-            changed = true;
+            setChanged();
         }
     }
 
@@ -716,13 +722,13 @@ public class Timeline implements Comparable<Timeline> {
                 ( youngestItemDate == newDate && StringUtils.isNewFilledValue(youngestPosition, newPosition))) {
             youngestItemDate = newDate;
             youngestPosition = newPosition;
-            changed = true;
+            setChanged();
         }
         if (oldestItemDate == 0 || oldestItemDate > newDate ||
                 (oldestItemDate == newDate && StringUtils.isNewFilledValue(oldestPosition, newPosition))) {
             oldestItemDate = newDate;
             oldestPosition = newPosition;
-            changed = true;
+            setChanged();
         }
     }
 
@@ -741,7 +747,7 @@ public class Timeline implements Comparable<Timeline> {
     public void setYoungestSyncedDate(long newDate) {
         if (youngestSyncedDate < newDate) {
             youngestSyncedDate = newDate;
-            changed = true;
+            setChanged();
         }
     }
 
@@ -760,7 +766,7 @@ public class Timeline implements Comparable<Timeline> {
     public void setOldestSyncedDate(long newDate) {
         if (oldestSyncedDate < newDate) {
             oldestSyncedDate = newDate;
-            changed = true;
+            setChanged();
         }
     }
 
@@ -770,7 +776,7 @@ public class Timeline implements Comparable<Timeline> {
 
     public void setVisibleItemId(long visibleItemId) {
         if (this.visibleItemId != visibleItemId) {
-            changed = true;
+            setChanged();
             this.visibleItemId = visibleItemId;
         }
     }
@@ -781,7 +787,7 @@ public class Timeline implements Comparable<Timeline> {
 
     public void setVisibleY(int visibleY) {
         if (this.visibleY != visibleY) {
-            changed = true;
+            setChanged();
             this.visibleY = visibleY;
         }
     }
@@ -792,7 +798,7 @@ public class Timeline implements Comparable<Timeline> {
 
     public void setVisibleOldestDate(long visibleOldestDate) {
         if (this.visibleOldestDate != visibleOldestDate) {
-            changed = true;
+            setChanged();
             this.visibleOldestDate = visibleOldestDate;
         }
     }
@@ -804,7 +810,7 @@ public class Timeline implements Comparable<Timeline> {
     public void setSyncedAutomatically(boolean isSyncedAutomatically) {
         if (this.isSyncedAutomatically != isSyncedAutomatically && isSyncableAutomatically()) {
             this.isSyncedAutomatically = isSyncedAutomatically;
-            changed = true;
+            setChanged();
         }
     }
 
@@ -842,7 +848,7 @@ public class Timeline implements Comparable<Timeline> {
             downloadedItemsCount += result.getDownloadedCount();
             downloadedItemsCountTotal += result.getDownloadedCount();
         }
-        changed = true;
+        setChanged();
     }
 
     public long getSyncSucceededDate() {
@@ -852,7 +858,7 @@ public class Timeline implements Comparable<Timeline> {
     public void setSyncSucceededDate(long syncSucceededDate) {
         if(this.syncSucceededDate != syncSucceededDate) {
             this.syncSucceededDate = syncSucceededDate;
-            changed = true;
+            setChanged();
         }
     }
 
@@ -930,7 +936,7 @@ public class Timeline implements Comparable<Timeline> {
         downloadedItemsCount = 0;
         newItemsCount = 0;
         countSince = System.currentTimeMillis();
-        changed = true;
+        setChanged();
     }
 
     public long getCountSince() {
@@ -939,5 +945,14 @@ public class Timeline implements Comparable<Timeline> {
 
     public Uri getUri() {
         return MatchedUri.getTimelineUri(this);
+    }
+
+    private void setChanged() {
+        changed = true;
+        lastChangedDate = System.currentTimeMillis();
+    }
+
+    public long getLastChangedDate() {
+        return lastChangedDate;
     }
 }

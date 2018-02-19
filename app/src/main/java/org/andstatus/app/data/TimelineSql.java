@@ -67,13 +67,10 @@ public class TimelineSql {
 
         switch (timeline.getTimelineType()) {
             case FOLLOWERS:
-            case MY_FOLLOWERS:
             case FRIENDS:
-            case MY_FRIENDS:
                 String fActorIdColumnName = FriendshipTable.FRIEND_ID;
                 String fActorLinkedActorIdColumnName = FriendshipTable.ACTOR_ID;
-                if (timeline.getTimelineType() == TimelineType.FOLLOWERS ||
-                        timeline.getTimelineType() == TimelineType.MY_FOLLOWERS) {
+                if (timeline.getTimelineType() == TimelineType.FOLLOWERS) {
                     fActorIdColumnName = FriendshipTable.ACTOR_ID;
                     fActorLinkedActorIdColumnName = FriendshipTable.FRIEND_ID;
                 }

@@ -57,11 +57,9 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
             if (lookupActor()) return;
             switch (timelineType) {
                 case FOLLOWERS:
-                case MY_FOLLOWERS:
                     syncFollowers();
                     break;
                 case FRIENDS:
-                case MY_FRIENDS:
                     syncFriends();
                     break;
                 default:
