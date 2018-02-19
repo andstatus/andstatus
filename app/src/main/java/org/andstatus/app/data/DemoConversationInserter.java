@@ -23,8 +23,8 @@ import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
-import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
@@ -42,7 +42,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class DemoConversationInserter {
-    private static AtomicInteger iterationCounter = new AtomicInteger(0);
+    private static final AtomicInteger iterationCounter = new AtomicInteger(0);
     private static final Map<String, Actor> actors = new ConcurrentHashMap<>();
 
     private int iteration = 0;
@@ -51,7 +51,6 @@ public class DemoConversationInserter {
     private String bodySuffix = "";
 
     public static void onNewDemoData() {
-        iterationCounter.set(0);
         actors.clear();
     }
 
@@ -60,11 +59,9 @@ public class DemoConversationInserter {
     }
 
     public void insertConversation(String bodySuffixIn) {
-        if (TextUtils.isEmpty(bodySuffixIn)) {
-            bodySuffix = "";
-        } else {
-            bodySuffix = " " + bodySuffixIn;
-        }
+        bodySuffix = TextUtils.isEmpty(bodySuffixIn)
+                ? ""
+                : " " + bodySuffixIn;
         iteration = iterationCounter.incrementAndGet();
         ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(demoData.conversationAccountName + " exists", ma.isValid());
