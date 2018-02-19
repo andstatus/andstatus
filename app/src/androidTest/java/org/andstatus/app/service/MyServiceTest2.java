@@ -135,10 +135,10 @@ public class MyServiceTest2 extends MyServiceTest {
         assertTrue("Service stopped", mService.waitForServiceStopped(false));
 
         final CommandQueue cq2 = new CommandQueue().load();
-        assertEquals("The command was not deleted from some queue: " + commandIn,
-                CommandData.EMPTY, getFromAnyQueue(cq2, commandIn));
         assertEquals("The DELETE command was not deleted from some queue: " + commandDelete,
                 CommandData.EMPTY, getFromAnyQueue(cq2, commandDelete));
+        assertEquals("The command was not deleted from some queue: " + commandIn,
+                CommandData.EMPTY, getFromAnyQueue(cq2, commandIn));
         MyLog.i(this, "myTestDeleteCommand ended");
     }
 

@@ -288,6 +288,10 @@ public class CommandQueue {
         for (OneQueue oneQueue : queues.values()) {
             commandData.deleteCommandFromQueue(oneQueue.queue);
         }
+        if (commandData.getResult().getDownloadedCount() == 0) {
+            commandData.getResult().incrementParseExceptions();
+            commandData.getResult().setMessage("Didn't delete command #" + commandData.itemId);
+        }
         commandData.getResult().afterExecutionEnded();
     }
 

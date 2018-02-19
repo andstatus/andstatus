@@ -527,14 +527,15 @@ public class MyService extends Service {
                     break;
                 }
                 ConnectionState connectionState = myContext.getConnectionState();
-                if (commandData.getCommand() == DELETE_COMMAND) {
-                    commandQueue.deleteCommand(commandData);
-                } else if (commandData.getCommand().getConnectionRequired()
-                        .isConnectionStateOk(connectionState)) {
+                if (commandData.getCommand().getConnectionRequired().isConnectionStateOk(connectionState)) {
                     MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
                             .setCommandData(commandData)
                             .setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
-                    CommandExecutorStrategy.executeCommand(commandData, this);
+                    if (commandData.getCommand() == DELETE_COMMAND) {
+                        commandQueue.deleteCommand(commandData);
+                    } else {
+                        CommandExecutorStrategy.executeCommand(commandData, this);
+                    }
                 } else {
                     commandData.getResult().incrementNumIoExceptions();
                     commandData.getResult().setMessage("Expected '"
