@@ -64,6 +64,7 @@ public class AActivity extends AObject {
     /** Some additional attributes may appear from "My account's" (authenticated User's) point of view */
     private TriState subscribedByMe = TriState.UNKNOWN;
     private TriState notified = TriState.UNKNOWN;
+    private Actor notifiedActor = Actor.EMPTY;
     private NotificationEventType notificationEventType = NotificationEventType.EMPTY;
 
     @NonNull
@@ -323,6 +324,8 @@ public class AActivity extends AObject {
         activity.aActivity.id =  DbUtils.getLong(cursor, ActivityTable.OBJ_ACTIVITY_ID);
         activity.subscribedByMe = DbUtils.getTriState(cursor, ActivityTable.SUBSCRIBED);
         activity.notified = DbUtils.getTriState(cursor, ActivityTable.NOTIFIED);
+        activity.notifiedActor = Actor.fromOriginAndActorId(activity.accountActor.origin,
+                DbUtils.getLong(cursor, ActivityTable.NOTIFIED_ACTOR_ID));
         activity.setNotificationEventType(NotificationEventType.fromId(
                 DbUtils.getLong(cursor, ActivityTable.NEW_NOTIFICATION_EVENT)));
         activity.updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
@@ -422,24 +425,30 @@ public class AActivity extends AObject {
                 || myContext.users().contains(getActor())) return;
         final NotificationEventType event;
         if(myContext.getNotifier().isEnabled(NotificationEventType.MENTION)
-                && getNote().audience().containsMe(myContext)
+                && myContext.users().contains(getNote().audience().getRecipients())
                 && !isMyActorOrAuthor(myContext)) {
             event = NotificationEventType.MENTION;
+            notifiedActor = myContext.users().myActors.values().stream()
+                    .filter(actor -> getNote().audience().contains(actor)).findFirst().orElse(Actor.EMPTY);
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.ANNOUNCE)
                 && type == ActivityType.ANNOUNCE
                 && myContext.users().contains(getAuthor())) {
             event = NotificationEventType.ANNOUNCE;
+            notifiedActor = getAuthor();
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.LIKE)
                 && (type == ActivityType.LIKE || type == ActivityType.UNDO_LIKE)
                 && myContext.users().contains(getAuthor())) {
             event = NotificationEventType.LIKE;
+            notifiedActor = getAuthor();
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.FOLLOW)
                 && (type == ActivityType.FOLLOW || type == ActivityType.UNDO_FOLLOW)
                 && myContext.users().contains(getObjActor())) {
             event = NotificationEventType.FOLLOW;
+            notifiedActor = getObjActor();
         } else if (myContext.getNotifier().isEnabled(NotificationEventType.PRIVATE)
                 && getNote().isPrivate()) {
             event = NotificationEventType.PRIVATE;
+            notifiedActor = accountActor;
         } else {
             return;
         }
@@ -459,6 +468,9 @@ public class AActivity extends AObject {
         }
         if (notified.known()) {
             values.put(ActivityTable.NOTIFIED, notified.id);
+        }
+        if (notifiedActor.nonEmpty()) {
+            values.put(ActivityTable.NOTIFIED_ACTOR_ID, notifiedActor.actorId);
         }
         values.put(ActivityTable.NEW_NOTIFICATION_EVENT, notificationEventType.id);
         values.put(ActivityTable.UPDATED_DATE, updatedDate);
@@ -499,5 +511,9 @@ public class AActivity extends AObject {
 
     public NotificationEventType getNotificationEventType() {
         return notificationEventType;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 }

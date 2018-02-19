@@ -47,7 +47,7 @@ public class CommandDataTest {
     @Test
     public void testQueue() throws InterruptedException {
         long time0 = System.currentTimeMillis(); 
-        CommandData commandData = CommandData.newUpdateStatus(demoData.getConversationMyAccount(), 1);
+        CommandData commandData = CommandData.newUpdateStatus(demoData.getConversationMyAccount(), 1, 4);
         testQueueOneCommandData(commandData, time0);
 
         long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, MyContextHolder.get().origins()
@@ -126,9 +126,9 @@ public class CommandDataTest {
         queue.add(CommandData.newCommand(CommandEnum.GET_FRIENDS));
         queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.SENT, ma.getActorId(), ma.getOrigin()));
         queue.add(CommandData.newSearch(SearchObjects.NOTES, MyContextHolder.get(), ma.getOrigin(), "q1"));
-        queue.add(CommandData.newUpdateStatus(MyAccount.EMPTY, 2));
+        queue.add(CommandData.newUpdateStatus(MyAccount.EMPTY, 2, 5));
         queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.MENTIONS));
-        queue.add(CommandData.newUpdateStatus(MyAccount.EMPTY, 3));
+        queue.add(CommandData.newUpdateStatus(MyAccount.EMPTY, 3, 6));
         queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME).setInForeground(true));
         queue.add(CommandData.newCommand(CommandEnum.GET_NOTE));
 

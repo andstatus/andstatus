@@ -156,9 +156,8 @@ public class CommandExecutorStrategyTest {
 
     private CommandData getCommandDataForUnsentNote(String suffix) {
         String body = "Some text " + suffix + " to send " + System.currentTimeMillis() + "ms";
-        AActivity activity = DemoNoteInserter.addNoteForAccount(
-                ma, body, "", DownloadStatus.SENDING);
-        return CommandData.newUpdateStatus(ma, activity.getNote().noteId);
+        AActivity activity = DemoNoteInserter.addNoteForAccount(ma, body, "", DownloadStatus.SENDING);
+        return CommandData.newUpdateStatus(ma, activity.getId(), activity.getNote().noteId);
     }
 
     @Test

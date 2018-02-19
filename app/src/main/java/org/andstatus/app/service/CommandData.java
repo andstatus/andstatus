@@ -91,10 +91,10 @@ public class CommandData implements Comparable<CommandData> {
         }
     }
 
-    public static CommandData newUpdateStatus(MyAccount myAccount, long unsentNoteId) {
+    public static CommandData newUpdateStatus(MyAccount myAccount, long unsentActivityId, long noteId) {
         CommandData commandData = newAccountCommand(CommandEnum.UPDATE_NOTE, myAccount);
-        commandData.itemId = unsentNoteId;
-        commandData.setTrimmedNoteBodyAsDescription(unsentNoteId);
+        commandData.itemId = unsentActivityId;
+        commandData.setTrimmedNoteBodyAsDescription(noteId);
         return commandData;
     }
 

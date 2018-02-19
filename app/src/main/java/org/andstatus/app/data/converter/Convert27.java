@@ -20,13 +20,13 @@ import org.andstatus.app.data.DbUtils;
 
 class Convert27 extends ConvertOneStep {
     Convert27() {
-        versionTo = 28;
+        versionTo = 37;
     }
 
     @Override
     protected void execute2() {
 
-        // Table creation statements for v.28
+        // Table creation statements for v.37
         sql = "CREATE TABLE origin (_id INTEGER PRIMARY KEY AUTOINCREMENT,origin_type_id INTEGER NOT NULL,origin_name TEXT NOT NULL,origin_url TEXT NOT NULL,ssl BOOLEAN NOT NULL DEFAULT 1,ssl_mode INTEGER NOT NULL DEFAULT 1,allow_html BOOLEAN NOT NULL DEFAULT 1,text_limit INTEGER NOT NULL,short_url_length INTEGER NOT NULL DEFAULT 0,mention_as_webfinger_id INTEGER NOT NULL DEFAULT 3,use_legacy_http INTEGER NOT NULL DEFAULT 3,in_combined_global_search BOOLEAN NOT NULL DEFAULT 1,in_combined_public_reload BOOLEAN NOT NULL DEFAULT 1)";
         sql = "CREATE TABLE note (_id INTEGER PRIMARY KEY AUTOINCREMENT,origin_id INTEGER NOT NULL,note_oid TEXT NOT NULL,note_status INTEGER NOT NULL DEFAULT 0,conversation_id INTEGER NOT NULL DEFAULT 0,conversation_oid TEXT,url TEXT,body TEXT,body_to_search TEXT,via TEXT,note_author_id INTEGER NOT NULL DEFAULT 0,in_reply_to_note_id INTEGER,in_reply_to_actor_id INTEGER,private INTEGER NOT NULL DEFAULT 0,favorited INTEGER NOT NULL DEFAULT 0,reblogged INTEGER NOT NULL DEFAULT 0,mentioned INTEGER NOT NULL DEFAULT 0,favorite_count INTEGER NOT NULL DEFAULT 0,reblog_count INTEGER NOT NULL DEFAULT 0,reply_count INTEGER NOT NULL DEFAULT 0,note_ins_date INTEGER NOT NULL,note_updated_date INTEGER NOT NULL DEFAULT 0)";
         sql = "CREATE UNIQUE INDEX idx_note_origin ON note (origin_id, note_oid)";
@@ -48,7 +48,7 @@ class Convert27 extends ConvertOneStep {
         sql = "CREATE INDEX idx_download_actor ON download (actor_id, download_status)";
         sql = "CREATE INDEX idx_download_note ON download (note_id, content_type, download_status)";
         sql = "CREATE TABLE timeline (_id INTEGER PRIMARY KEY AUTOINCREMENT,timeline_type TEXT NOT NULL,actor_id INTEGER NOT NULL DEFAULT 0,actor_in_timeline TEXT,origin_id INTEGER NOT NULL DEFAULT 0,search_query TEXT,is_synced_automatically BOOLEAN NOT NULL DEFAULT 0,displayed_in_selector INTEGER NOT NULL DEFAULT 0,selector_order INTEGER NOT NULL DEFAULT 0,sync_succeeded_date INTEGER NOT NULL DEFAULT 0,sync_failed_date INTEGER NOT NULL DEFAULT 0,error_message TEXT,synced_times_count INTEGER NOT NULL DEFAULT 0,sync_failed_times_count INTEGER NOT NULL DEFAULT 0,downloaded_items_count INTEGER NOT NULL DEFAULT 0,new_items_count INTEGER NOT NULL DEFAULT 0,count_since INTEGER NOT NULL DEFAULT 0,synced_times_count_total INTEGER NOT NULL DEFAULT 0,sync_failed_times_count_total INTEGER NOT NULL DEFAULT 0,downloaded_items_count_total INTEGER NOT NULL DEFAULT 0,new_items_count_total INTEGER NOT NULL DEFAULT 0,youngest_position TEXT,youngest_item_date INTEGER NOT NULL DEFAULT 0,youngest_synced_date INTEGER NOT NULL DEFAULT 0,oldest_position TEXT,oldest_item_date INTEGER NOT NULL DEFAULT 0,oldest_synced_date INTEGER NOT NULL DEFAULT 0,visible_item_id INTEGER NOT NULL DEFAULT 0,visible_y INTEGER NOT NULL DEFAULT 0,visible_oldest_date INTEGER NOT NULL DEFAULT 0,last_changed_date INTEGER NOT NULL DEFAULT 0)";
-        sql = "CREATE TABLE activity (_id INTEGER PRIMARY KEY AUTOINCREMENT,activity_origin_id INTEGER NOT NULL,activity_oid TEXT NOT NULL,account_id INTEGER NOT NULL,activity_type INTEGER NOT NULL,actor_id INTEGER NOT NULL,activity_note_id INTEGER NOT NULL,activity_actor_id INTEGER NOT NULL,obj_activity_id INTEGER NOT NULL,subscribed INTEGER NOT NULL DEFAULT 0,notified INTEGER NOT NULL DEFAULT 0,new_notification_event INTEGER NOT NULL DEFAULT 0,activity_ins_date INTEGER NOT NULL,activity_updated_date INTEGER NOT NULL DEFAULT 0)";
+        sql = "CREATE TABLE activity (_id INTEGER PRIMARY KEY AUTOINCREMENT,activity_origin_id INTEGER NOT NULL,activity_oid TEXT NOT NULL,account_id INTEGER NOT NULL,activity_type INTEGER NOT NULL,actor_id INTEGER NOT NULL,activity_note_id INTEGER NOT NULL,activity_actor_id INTEGER NOT NULL,obj_activity_id INTEGER NOT NULL,subscribed INTEGER NOT NULL DEFAULT 0,notified INTEGER NOT NULL DEFAULT 0,notified_actor_id INTEGER NOT NULL DEFAULT 0,new_notification_event INTEGER NOT NULL DEFAULT 0,activity_ins_date INTEGER NOT NULL,activity_updated_date INTEGER NOT NULL DEFAULT 0)";
         sql = "CREATE UNIQUE INDEX idx_activity_origin ON activity (activity_origin_id, activity_oid)";
         sql = "CREATE INDEX idx_activity_message ON activity (activity_note_id)";
         sql = "CREATE INDEX idx_activity_actor ON activity (activity_actor_id)";
@@ -57,6 +57,7 @@ class Convert27 extends ConvertOneStep {
         sql = "CREATE INDEX idx_activity_actor_timeline ON activity (actor_id, activity_updated_date)";
         sql = "CREATE INDEX idx_activity_subscribed_timeline ON activity (subscribed, activity_updated_date)";
         sql = "CREATE INDEX idx_activity_notified_timeline ON activity (notified, activity_updated_date)";
+        sql = "CREATE INDEX idx_activity_notified_actor ON activity (notified, notified_actor_id)";
         sql = "CREATE INDEX idx_activity_new_notification ON activity (new_notification_event)";
         sql = "CREATE TABLE command (_id INTEGER PRIMARY KEY NOT NULL,queue_type TEXT NOT NULL,command_code TEXT NOT NULL,command_created_date INTEGER NOT NULL,command_description TEXT,in_foreground BOOLEAN NOT NULL DEFAULT 0,manually_launched BOOLEAN NOT NULL DEFAULT 0,timeline_id INTEGER NOT NULL DEFAULT 0,timeline_type TEXT NOT NULL,account_id INTEGER NOT NULL DEFAULT 0,actor_id INTEGER NOT NULL DEFAULT 0,origin_id INTEGER NOT NULL DEFAULT 0,search_query TEXT,item_id INTEGER NOT NULL DEFAULT 0,username TEXT,last_executed_date INTEGER NOT NULL DEFAULT 0,execution_count INTEGER NOT NULL DEFAULT 0,retries_left INTEGER NOT NULL DEFAULT 0,num_auth_exceptions INTEGER NOT NULL DEFAULT 0,num_io_exceptions INTEGER NOT NULL DEFAULT 0,num_parse_exceptions INTEGER NOT NULL DEFAULT 0,error_message TEXT,downloaded_count INTEGER NOT NULL DEFAULT 0,progress_text TEXT)";
 
@@ -182,7 +183,7 @@ class Convert27 extends ConvertOneStep {
         sql = "ALTER TABLE activity RENAME TO oldactivity";
         DbUtils.execSQL(db, sql);
 
-        sql = "CREATE TABLE activity (_id INTEGER PRIMARY KEY AUTOINCREMENT,activity_origin_id INTEGER NOT NULL,activity_oid TEXT NOT NULL,account_id INTEGER NOT NULL,activity_type INTEGER NOT NULL,actor_id INTEGER NOT NULL,activity_note_id INTEGER NOT NULL,activity_actor_id INTEGER NOT NULL,obj_activity_id INTEGER NOT NULL,subscribed INTEGER NOT NULL DEFAULT 0,notified INTEGER NOT NULL DEFAULT 0,new_notification_event INTEGER NOT NULL DEFAULT 0,activity_ins_date INTEGER NOT NULL,activity_updated_date INTEGER NOT NULL DEFAULT 0)";
+        sql = "CREATE TABLE activity (_id INTEGER PRIMARY KEY AUTOINCREMENT,activity_origin_id INTEGER NOT NULL,activity_oid TEXT NOT NULL,account_id INTEGER NOT NULL,activity_type INTEGER NOT NULL,actor_id INTEGER NOT NULL,activity_note_id INTEGER NOT NULL,activity_actor_id INTEGER NOT NULL,obj_activity_id INTEGER NOT NULL,subscribed INTEGER NOT NULL DEFAULT 0,notified INTEGER NOT NULL DEFAULT 0,notified_actor_id INTEGER NOT NULL DEFAULT 0,new_notification_event INTEGER NOT NULL DEFAULT 0,activity_ins_date INTEGER NOT NULL,activity_updated_date INTEGER NOT NULL DEFAULT 0)";
         DbUtils.execSQL(db, sql);
         sql = "CREATE UNIQUE INDEX idx_activity_origin ON activity (activity_origin_id, activity_oid)";
         DbUtils.execSQL(db, sql);
@@ -199,6 +200,8 @@ class Convert27 extends ConvertOneStep {
         sql = "CREATE INDEX idx_activity_subscribed_timeline ON activity (subscribed, activity_updated_date)";
         DbUtils.execSQL(db, sql);
         sql = "CREATE INDEX idx_activity_notified_timeline ON activity (notified, activity_updated_date)";
+        DbUtils.execSQL(db, sql);
+        sql = "CREATE INDEX idx_activity_notified_actor ON activity (notified, notified_actor_id)";
         DbUtils.execSQL(db, sql);
         sql = "CREATE INDEX idx_activity_new_notification ON activity (new_notification_event)";
         DbUtils.execSQL(db, sql);

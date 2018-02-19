@@ -36,7 +36,6 @@ import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.OriginTable;
-import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.Origin;
@@ -252,12 +251,12 @@ public class MyProvider extends ContentProvider {
                         SqlActorIds.fromIds(NotificationEventType.idsOfShownOn(timeline.getTimelineType())).getSql());
     }
 
-    public static void setUnsentNoteNotification(@NonNull MyContext myContext, long noteId) {
+    public static void setUnsentActivityNotification(@NonNull MyContext myContext, long activityId) {
         update(myContext, ActivityTable.TABLE_NAME,
-                ActivityTable.NEW_NOTIFICATION_EVENT + "=" + NotificationEventType.OUTBOX.id +
-                        ", " + ActivityTable.NOTIFIED + "=" + TriState.TRUE.id,
-                ActivityTable.ACTIVITY_TYPE + "=" + ActivityType.UPDATE.id +
-                        " AND " + ActivityTable.NOTE_ID + "=" + noteId);
+                ActivityTable.NEW_NOTIFICATION_EVENT + "=" + NotificationEventType.OUTBOX.id
+                + ", " + ActivityTable.NOTIFIED + "=" + TriState.TRUE.id
+                + ", " + ActivityTable.NOTIFIED_ACTOR_ID + "=" + ActivityTable.ACTOR_ID,
+                ActivityTable._ID + "=" + activityId);
     }
 
     public static void update(@NonNull MyContext myContext, @NonNull String tableName, @NonNull String set, String where) {

@@ -100,7 +100,7 @@ public class TimelineSql {
                 break;
             case MENTIONS:
                 msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.MENTIONED + "=" + TriState.TRUE.id);
-                addConditionForAccount(timeline, activityWhere);
+                addConditionForNotifiedActor(timeline, activityWhere);
                 break;
             case PUBLIC:
                 msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.PRIVATE + "!=" + TriState.TRUE.id);
@@ -118,6 +118,7 @@ public class TimelineSql {
                 break;
             case NOTIFICATIONS:
                 activityWhere.append(ActivityTable.NOTIFIED + "=" + TriState.TRUE.id);
+                addConditionForNotifiedActor(timeline, activityWhere);
                 break;
             default:
                 break;
@@ -189,6 +190,10 @@ public class TimelineSql {
 
     private static void addConditionForActor(Timeline timeline, SqlWhere activityWhere) {
         activityWhere.append(ActivityTable.ACTOR_ID + SqlActorIds.fromTimeline(timeline).getSql());
+    }
+
+    private static void addConditionForNotifiedActor(Timeline timeline, SqlWhere activityWhere) {
+        activityWhere.append(ActivityTable.NOTIFIED_ACTOR_ID + SqlActorIds.fromTimeline(timeline).getSql());
     }
 
     /**

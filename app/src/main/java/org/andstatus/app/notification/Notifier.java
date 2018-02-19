@@ -173,9 +173,9 @@ public class Notifier {
         return events.isEnabled(eventType);
     }
 
-    public void onUnsentNote(long noteId) {
-        if (noteId == 0 || !events.isEnabled(NotificationEventType.OUTBOX)) return;
-        MyProvider.setUnsentNoteNotification(events.myContext, noteId);
+    public void onUnsentActivity(long activityId) {
+        if (activityId == 0 || !events.isEnabled(NotificationEventType.OUTBOX)) return;
+        MyProvider.setUnsentActivityNotification(events.myContext, activityId);
         update();
     }
 }

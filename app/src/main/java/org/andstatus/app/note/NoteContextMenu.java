@@ -331,7 +331,7 @@ public class NoteContextMenu extends MyContextMenu {
     }
 
     public long getNoteId() {
-        return menuData.getMsgId();
+        return menuData.getNoteId();
     }
 
     @NonNull

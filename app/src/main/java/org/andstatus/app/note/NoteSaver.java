@@ -80,7 +80,7 @@ public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorDa
             if (command.currentData.status == DownloadStatus.SENDING) {
                 CommandData commandData = CommandData.newUpdateStatus(
                         command.currentData.getMyAccount(),
-                        command.currentData.getNoteId());
+                        command.currentData.getActivityId(), command.currentData.getNoteId());
                 MyServiceManager.sendManualForegroundCommand(commandData);
             }
         }
@@ -93,7 +93,7 @@ public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorDa
         }
         CommandData commandData = data.status == DownloadStatus.DELETED ?
                 CommandData.newItemCommand(CommandEnum.DELETE_NOTE, data.getMyAccount(), data.getNoteId()) :
-                CommandData.newUpdateStatus(data.getMyAccount(), data.getNoteId());
+                CommandData.newUpdateStatus(data.getMyAccount(), data.getActivityId(), data.getNoteId());
         MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.UNKNOWN)
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
     }

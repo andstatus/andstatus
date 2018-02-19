@@ -109,7 +109,7 @@ class NoteContextMenuData {
         this.viewItem = viewItem;
     }
 
-    public long getMsgId() {
+    public long getNoteId() {
         return viewItem == null ? 0 : viewItem.getNoteId();
     }
 

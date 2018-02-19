@@ -29,15 +29,16 @@ import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
-import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
+import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.RateLimitStatus;
-import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.support.java.util.function.Supplier;
 import org.andstatus.app.support.java.util.function.SupplierWithException;
 import org.andstatus.app.util.MyLog;
@@ -382,17 +383,18 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }
 
-    private void updateNote(long noteId) {
+    private void updateNote(long activityId) {
         final String method = "updateNote";
-        AActivity activity = null;
-        String status = MyQuery.noteIdToStringColumnValue(NoteTable.BODY, noteId);
-        DemoData.crashTest(() -> status.startsWith("Crash me on sending 2015-04-10"));
+        AActivity activity = AActivity.EMPTY;
+        long noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, activityId);
+        String body = MyQuery.noteIdToStringColumnValue(NoteTable.BODY, noteId);
+        DemoData.crashTest(() -> body.startsWith("Crash me on sending 2015-04-10"));
         String oid = getNoteOid(method, noteId, false);
         TriState isPrivate = MyQuery.noteIdToTriState(NoteTable.PRIVATE, noteId);
         Audience recipients = Audience.fromNoteId(execContext.getMyAccount().getOrigin(), noteId);
         Uri mediaUri = DownloadData.getSingleForNote(noteId, MyContentType.IMAGE, Uri.EMPTY).
                 mediaUriToBePosted();
-        String msgLog = "text:'" + MyLog.trimmedString(status, 40) + "'"
+        String msgLog = "text:'" + MyLog.trimmedString(body, 40) + "'"
                 + (mediaUri.equals(Uri.EMPTY) ? "" : "; mediaUri:'" + mediaUri + "'");
         try {
             if (MyLog.isVerboseEnabled()) {
@@ -409,25 +411,26 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                         NoteTable.IN_REPLY_TO_NOTE_ID, noteId);
                 String replyToMsgOid = getNoteOid(method, replyToMsgId, false);
                 activity = execContext.getMyAccount().getConnection()
-                        .updateNote(status.trim(), oid, replyToMsgOid, mediaUri);
+                        .updateNote(body.trim(), oid, replyToMsgOid, mediaUri);
             } else {
                 String recipientOid = getActorOid(method, recipients.getFirst().actorId, true);
                 // Currently we don't use Screen Name, I guess id is enough.
                 activity = execContext.getMyAccount().getConnection()
-                        .updatePrivateNote(status.trim(), oid, recipientOid, mediaUri);
+                        .updatePrivateNote(body.trim(), oid, recipientOid, mediaUri);
             }
             logIfEmptyNote(method, noteId, activity.getNote());
         } catch (ConnectionException e) {
             logConnectionException(e, method + "; " + msgLog);
         }
-        if (noErrors() && activity != null) {
+        if (noErrors() && activity.nonEmpty()) {
             // The note was sent successfully, so now update unsent message
             // New Actor's note should be put into the Account's Home timeline.
+            activity.setId(activityId);
             activity.getNote().noteId = noteId;
             new DataUpdater(execContext).onActivity(activity);
             execContext.getResult().setItemId(noteId);
         } else {
-            execContext.getMyContext().getNotifier().onUnsentNote(noteId);
+            execContext.getMyContext().getNotifier().onUnsentActivity(activityId);
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }

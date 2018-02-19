@@ -80,7 +80,8 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         NoteEditorData executeAsync(NoteContextMenu menu) {
             MyAccount ma = MyContextHolder.get().accounts().fromActorId(
                     MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, menu.getNoteId()));
-            CommandData commandData = CommandData.newUpdateStatus(ma, menu.getNoteId());
+            long activityId = MyQuery.noteIdToLongColumnValue(ActivityTable.LAST_UPDATE_ID, menu.getNoteId());
+            CommandData commandData = CommandData.newUpdateStatus(ma, activityId, menu.getNoteId());
             MyServiceManager.sendManualForegroundCommand(commandData);
             return null;
         }

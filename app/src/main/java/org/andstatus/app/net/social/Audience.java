@@ -98,7 +98,6 @@ public class Audience {
         return myContext.users().contains(recipients);
     }
 
-    @NonNull
     public boolean contains(Actor actor) {
         for (Actor recipient : recipients) {
             if (recipient.equals(actor)) {

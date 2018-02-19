@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 public class MyUsers {
     private final MyContext myContext;
-    private final Map<Long, Actor> myActors = new ConcurrentHashMap<>();
+    public final Map<Long, Actor> myActors = new ConcurrentHashMap<>();
     public final Map<Long, Actor> myFriends = new ConcurrentHashMap<>();
     private final Map<Long, User> myUsers = new ConcurrentHashMap<>();
 

@@ -22,8 +22,11 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.actor.ActorListType;
+import org.andstatus.app.actor.ActorViewItem;
+import org.andstatus.app.actor.ActorsOfNoteListLoader;
 import org.andstatus.app.context.ActorInTimeline;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadData;
@@ -35,14 +38,11 @@ import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.graphics.CachedImage;
-import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.AActivity;
-import org.andstatus.app.net.social.Attachment;
-import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.actor.ActorListType;
-import org.andstatus.app.actor.ActorViewItem;
-import org.andstatus.app.actor.ActorsOfNoteListLoader;
+import org.andstatus.app.net.social.Attachment;
+import org.andstatus.app.net.social.Audience;
+import org.andstatus.app.net.social.Note;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
@@ -269,6 +269,10 @@ public class NoteEditorData {
 
     public long getNoteId() {
         return noteId;
+    }
+
+    public long getActivityId() {
+        return activityId;
     }
 
     public NoteEditorData setInReplyToNoteId(long noteId) {

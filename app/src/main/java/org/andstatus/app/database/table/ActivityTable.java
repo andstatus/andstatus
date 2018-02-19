@@ -48,6 +48,7 @@ public final class ActivityTable implements BaseColumns {
     public static final String SUBSCRIBED = "subscribed";
     /** {@link #ACCOUNT_ID} should be notified of this action */
     public static final String NOTIFIED = "notified";
+    public static final String NOTIFIED_ACTOR_ID = "notified_actor_id";
     // TODO: Add "is mine" flag/ID... to easily make "SENT/ACTOR" timelines
     /** {@link NotificationEventType}, is not 0, if the notification is active */
     public static final String NEW_NOTIFICATION_EVENT = "new_notification_event";
@@ -88,6 +89,7 @@ public final class ActivityTable implements BaseColumns {
                 + OBJ_ACTIVITY_ID + " INTEGER NOT NULL,"
                 + SUBSCRIBED + " INTEGER NOT NULL DEFAULT 0,"
                 + NOTIFIED + " INTEGER NOT NULL DEFAULT 0,"
+                + NOTIFIED_ACTOR_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + NEW_NOTIFICATION_EVENT + " INTEGER NOT NULL DEFAULT 0,"
                 + INS_DATE + " INTEGER NOT NULL,"
                 + UPDATED_DATE + " INTEGER NOT NULL DEFAULT 0"
@@ -134,6 +136,12 @@ public final class ActivityTable implements BaseColumns {
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_notified_timeline ON " + TABLE_NAME + " ("
                 + NOTIFIED + ", "
                 + UPDATED_DATE
+                + ")"
+        );
+
+        DbUtils.execSQL(db, "CREATE INDEX idx_activity_notified_actor ON " + TABLE_NAME + " ("
+                + NOTIFIED + ", "
+                + NOTIFIED_ACTOR_ID
                 + ")"
         );
 
