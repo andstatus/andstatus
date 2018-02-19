@@ -211,7 +211,7 @@ public class AccountSettingsActivity extends MyActivity {
         }
         if (!mFinishing) {
             MyLog.v(this, "Switching to the selected account");
-            MyContextHolder.get().accounts().setCurrentAccount(state.builder.getAccount());
+            state.builder.myContext.accounts().setCurrentAccount(state.builder.getAccount());
             state.setAccountAction(Intent.ACTION_EDIT);
             updateScreen();
         } else {
@@ -225,7 +225,7 @@ public class AccountSettingsActivity extends MyActivity {
         if (resultCode == RESULT_OK) {
             originType = OriginType.fromCode(data.getStringExtra(IntentExtra.SELECTABLE_ENUM.key));
             if (originType.isSelectable()) {
-                List<Origin> origins = MyContextHolder.get().origins().originsOfType(originType);
+                List<Origin> origins = state.builder.myContext.origins().originsOfType(originType);
                 switch(origins.size()) {
                     case 0:
                         originType = OriginType.UNKNOWN;
@@ -255,7 +255,7 @@ public class AccountSettingsActivity extends MyActivity {
     private void onOriginSelected(int resultCode, Intent data) {
         Origin origin = Origin.EMPTY;
         if (resultCode == RESULT_OK) {
-            origin = MyContextHolder.get().origins()
+            origin = state.builder.myContext.origins()
                     .fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key));
             if (origin.isPersistent()) {
                 onOriginSelected(origin);
@@ -541,7 +541,7 @@ public class AccountSettingsActivity extends MyActivity {
     }
     
     private void showIsDefaultAccount() {
-        boolean isDefaultAccount = state.getAccount().equals(MyContextHolder.get().accounts().getDefaultAccount());
+        boolean isDefaultAccount = state.getAccount().equals(state.builder.myContext.accounts().getDefaultAccount());
         View view= findFragmentViewById(R.id.is_default_account);
         if (view != null) {
             view.setVisibility(isDefaultAccount ? View.VISIBLE : View.GONE);
@@ -595,7 +595,7 @@ public class AccountSettingsActivity extends MyActivity {
     }
 
     private void showLastSyncSucceededDate() {
-        long lastSyncSucceededDate = state.getAccount().getLastSyncSucceededDate(MyContextHolder.get());
+        long lastSyncSucceededDate = state.getAccount().getLastSyncSucceededDate(state.builder.myContext);
         MyUrlSpan.showText((TextView) findFragmentViewById(R.id.last_synced),
                 lastSyncSucceededDate == 0 ? getText(R.string.never).toString() :
                         RelativeTime.getDifference(this, lastSyncSucceededDate), false, false);
@@ -845,23 +845,28 @@ public class AccountSettingsActivity extends MyActivity {
         protected JSONObject doInBackground2(Void... arg0) {
             JSONObject jso = null;
 
-            boolean requestSucceeded = false;
-            String stepErrorMessage = "";
+            boolean succeeded = false;
             String connectionErrorMessage = "";
-
             try {
                 state.builder.getOriginConfig();
                 if (!state.getAccount().areClientKeysPresent()) {
                     state.builder.registerClient();
                 } 
-                requestSucceeded = state.getAccount().areClientKeysPresent();
+                succeeded = state.getAccount().areClientKeysPresent();
+
+                if (succeeded) {
+                    state.builder.myContext.users().initialize();
+                    state.builder.myContext.accounts().initialize();
+                    state.builder.myContext.timelines().initialize();
+                }
             } catch (ConnectionException e) {
                 connectionErrorMessage = e.getMessage();
                 MyLog.e(this, e);
             }
             
             try {
-                if (!requestSucceeded) {
+                String stepErrorMessage = "";
+                if (!succeeded) {
                     stepErrorMessage = AccountSettingsActivity.this
                             .getString(R.string.client_registration_failed);
                     if (!TextUtils.isEmpty(connectionErrorMessage)) {
@@ -871,7 +876,7 @@ public class AccountSettingsActivity extends MyActivity {
                 }
 
                 jso = new JSONObject();
-                jso.put("succeeded", requestSucceeded);
+                jso.put("succeeded", succeeded);
                 jso.put("message", stepErrorMessage);
             } catch (JSONException e) {
                 MyLog.e(this, e);
@@ -891,8 +896,6 @@ public class AccountSettingsActivity extends MyActivity {
 
                     if (succeeded) {
                         String accountName = state.getAccount().getAccountName();
-                        MyContextHolder.get().accounts().initialize();
-                        MyContextHolder.get().timelines().initialize();
                         state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                                 MyContextHolder.get(), accountName, TriState.TRUE);
                         updateScreen();

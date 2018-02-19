@@ -32,7 +32,7 @@ class CheckTimelines extends DataChecker {
         long changedCount = 0;
         try {
             changedCount += new TimelineSaver(myContext).addDefaultCombined().size();
-            for (MyAccount myAccount: myContext.accounts().list()) {
+            for (MyAccount myAccount: myContext.accounts().get()) {
                 changedCount += new TimelineSaver(myContext).addDefaultForAccount(myContext, myAccount).size();
             }
         } catch (Exception e) {

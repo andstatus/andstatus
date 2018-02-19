@@ -17,7 +17,6 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.SqlActorIds;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.Permissions;
@@ -27,7 +26,6 @@ import org.json.JSONObject;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -50,15 +48,9 @@ public class MyAccounts {
         this.myContext = myContext;
     }
 
-    /**
-     * Get list of all persistent accounts
-     * for the purpose of using these "accounts" elsewhere. Value of
-     * {@link MyAccount#getCredentialsVerified()} is the main differentiator.
-     * 
-     * @return not null 
-     */
-    public List<MyAccount> list() {
-        return new ArrayList<>(myAccounts);
+    @NonNull
+    public Set<MyAccount> get() {
+        return myAccounts;
     }
     
     public boolean isEmpty() {
@@ -70,25 +62,22 @@ public class MyAccounts {
     }
     
     public MyAccounts initialize() {
-        List<MyAccount> myAccounts = new ArrayList<>();
+        this.myAccounts.clear();
         for (android.accounts.Account account : getAccounts(myContext.context())) {
             MyAccount ma = Builder.fromAndroidAccount(myContext, account).getAccount();
             if (ma.isValid()) {
                 myAccounts.add(ma);
             } else {
-                MyLog.e(this, "The account is not valid: " + ma);
+                MyLog.e(this, "The account is invalid: " + ma);
             }
         }
-        CollectionsUtil.sort(myAccounts);
-        this.myAccounts.clear();
-        this.myAccounts.addAll(myAccounts);
         calculateDistinctOriginsCount();
-        MyLog.v(this, "Account list initialized, " + this.myAccounts.size() + " accounts in " + distinctOriginsCount + " origins");
+        MyLog.v(this, "Accounts initialized, " + this.myAccounts.size() + " accounts in " + distinctOriginsCount + " origins");
         return this;
     }
 
     public MyAccount getDefaultAccount() {
-        return myAccounts.isEmpty() ? MyAccount.EMPTY : list().get(0);
+        return myAccounts.isEmpty() ? MyAccount.EMPTY : myAccounts.iterator().next();
     }
 
     public int getDistinctOriginsCount() {
@@ -108,31 +97,17 @@ public class MyAccounts {
     }
     
     /**
-     * Delete everything about the MyAccount
-     * 
      * @return Was the MyAccount (and Account) deleted?
      */
     public boolean delete(MyAccount ma) {
-        boolean isDeleted = false;
+        MyAccount toDelete = myAccounts.stream().filter(myAccount -> myAccount.equals(ma))
+                .findFirst().orElse(MyAccount.EMPTY);
+        if (!toDelete.isValid()) return false;
 
-        // Delete the Actor's object from the list
-        MyAccount toDelete = null;
-        for (MyAccount persistentAccount : myAccounts) {
-            if (persistentAccount.equals(ma)) {
-                toDelete = persistentAccount;
-                break;
-            }
-        }
-        if (toDelete != null) {
-            MyAccount.Builder.fromMyAccount(myContext, ma, "delete", false).deleteData();
-
-            // And delete the object from the list
-            myAccounts.remove(toDelete);
-
-            isDeleted = true;
-            MyPreferences.onPreferencesChanged();
-        }
-        return isDeleted;
+        MyAccount.Builder.fromMyAccount(myContext, toDelete, "delete", false).deleteData();
+        myAccounts.remove(toDelete);
+        MyPreferences.onPreferencesChanged();
+        return true;
     }
 
     /**
@@ -144,9 +119,8 @@ public class MyAccounts {
     @NonNull
     public MyAccount fromAccountName(String accountNameString) {
         AccountName accountName = AccountName.fromAccountName(myContext, accountNameString);
-        if (!accountName.isValid()) {
-            return MyAccount.EMPTY;
-        }
+        if (!accountName.isValid()) return MyAccount.EMPTY;
+
         for (MyAccount persistentAccount : myAccounts) {
             if (persistentAccount.getAccountName().equals(accountName.toString())) {
                 return persistentAccount;
@@ -213,9 +187,8 @@ public class MyAccounts {
     @NonNull
     public MyAccount getCurrentAccount() {
         MyAccount ma = fromAccountName(currentAccountName);
-        if (ma.isValid()) {
-            return ma;
-        }
+        if (ma.isValid()) return ma;
+
         currentAccountName = "";
         ma = getDefaultAccount();
         if (!ma.isValid()) {
@@ -302,7 +275,6 @@ public class MyAccounts {
     /** Should not be called from UI thread
      * Find MyAccount, which may be linked to a note in this origin.
      * First try two supplied accounts, then try any other existing account
-     * @return Invalid account if nothing suitable found
      */
     @NonNull
     public MyAccount getAccountForThisNote(Origin origin, MyAccount firstAccount, MyAccount preferredAccount,
@@ -370,7 +342,7 @@ public class MyAccounts {
 
     public List<MyAccount> accountsToSync() {
         boolean syncedAutomaticallyOnly = hasSyncedAutomatically();
-        return list().stream().filter( myAccount -> accountToSyncFilter(myAccount, syncedAutomaticallyOnly))
+        return myAccounts.stream().filter( myAccount -> accountToSyncFilter(myAccount, syncedAutomaticallyOnly))
                 .collect(Collectors.toList());
     }
 

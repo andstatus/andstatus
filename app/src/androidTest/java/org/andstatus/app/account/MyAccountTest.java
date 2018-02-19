@@ -69,7 +69,7 @@ public class MyAccountTest {
     }
 
     public static void fixPersistentAccounts(MyContext myContext) {
-        for (MyAccount ma : myContext.accounts().list()) {
+        for (MyAccount ma : myContext.accounts().get()) {
             fixAccountByName(myContext, ma.getAccountName());
         }
     }

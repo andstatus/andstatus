@@ -18,6 +18,7 @@ package org.andstatus.app.timeline;
 
 import android.content.Intent;
 
+import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.origin.Origin;
@@ -28,7 +29,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class TimelinePositionTest extends TimelineActivityTest {
+public class TimelinePositionTest extends TimelineActivityTest<ActivityViewItem> {
     private static volatile ViewItem previousItem = EmptyViewItem.EMPTY;
 
     @Override

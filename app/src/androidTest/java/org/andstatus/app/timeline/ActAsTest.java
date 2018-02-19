@@ -21,6 +21,7 @@ import android.content.Intent;
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
@@ -28,7 +29,6 @@ import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.note.ConversationActivity;
 import org.andstatus.app.note.NoteContextMenuItem;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
@@ -42,7 +42,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class ActAsTest extends TimelineActivityTest {
+public class ActAsTest extends TimelineActivityTest<ActivityViewItem> {
 
     @Override
     protected Intent getActivityIntent() {

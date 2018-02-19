@@ -74,7 +74,7 @@ public class DataPruner {
         SharedPreferences sp = SharedPreferencesUtil.getDefaultSharedPreferences();
 
         // Don't delete my activities
-        final SqlActorIds accountIds = SqlActorIds.fromIds(MyContextHolder.get().accounts().list().stream()
+        final SqlActorIds accountIds = SqlActorIds.fromIds(MyContextHolder.get().accounts().get().stream()
                 .map(MyAccount::getActorId).collect(Collectors.toList()));
         String sqlNotMyActivity = ActivityTable.TABLE_NAME + "." + ActivityTable.ACTOR_ID + accountIds.getNotSql();
         String sqlNotLatestActivityByActor = ActivityTable.TABLE_NAME + "." + ActivityTable._ID + " NOT IN("

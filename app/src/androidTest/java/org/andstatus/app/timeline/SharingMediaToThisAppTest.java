@@ -11,6 +11,7 @@ import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DownloadData;
@@ -31,7 +32,7 @@ import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class SharingMediaToThisAppTest extends TimelineActivityTest {
+public class SharingMediaToThisAppTest extends TimelineActivityTest<ActivityViewItem> {
     private MyServiceTestHelper mService;
     private MyAccount ma;
 
@@ -69,7 +70,7 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest {
 
         View editorView = getActivity().findViewById(R.id.note_editor);
         ActivityTestHelper.waitViewVisible(method, editorView);
-        TextView details = (TextView) editorView.findViewById(R.id.noteEditDetails);
+        TextView details = editorView.findViewById(R.id.noteEditDetails);
         String textToFind = MyContextHolder.get().context().getText(R.string.label_with_media).toString();
         ActivityTestHelper.waitTextInAView(method, details, textToFind);
 

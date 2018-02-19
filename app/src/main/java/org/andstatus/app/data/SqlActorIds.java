@@ -45,7 +45,7 @@ public class SqlActorIds {
                     ? MyContextHolder.get().users().myActorIds()
                     : new SqlActorIds(timeline.user.actors);
         } else if (timeline.isCombined() || timeline.getTimelineType().isAtOrigin()) {
-            return new SqlActorIds(MyContextHolder.get().accounts().list().stream()
+            return new SqlActorIds(MyContextHolder.get().accounts().get().stream()
                     .filter(ma -> !timeline.getOrigin().isValid() || timeline.getOrigin().equals(ma.getOrigin()))
                     .map(MyAccount::getActorId).collect(toList()));
         } else if (timeline.getMyAccount().isValid()) {

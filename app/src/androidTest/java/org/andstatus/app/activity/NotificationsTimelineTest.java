@@ -30,7 +30,7 @@ import org.junit.Test;
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertTrue;
 
-public class NotificationsTimelineTest extends TimelineActivityTest {
+public class NotificationsTimelineTest extends TimelineActivityTest<ActivityViewItem> {
 
     @Override
     protected Intent getActivityIntent() {

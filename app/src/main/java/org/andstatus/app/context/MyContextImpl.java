@@ -136,7 +136,6 @@ public class MyContextImpl implements MyContext {
                     state = MyContextState.RESTORING;
                 } else {
                     users.initialize();
-                    // Accounts are not restored yet
                     accounts.initialize();
                     timelines.initialize();
                     ImageCaches.initialize(context());

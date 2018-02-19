@@ -19,6 +19,7 @@ package org.andstatus.app.timeline;
 import android.content.Intent;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
@@ -36,7 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertTrue;
 
-public class TimeLineActivityLayoutToggleTest extends TimelineActivityTest {
+public class TimeLineActivityLayoutToggleTest extends TimelineActivityTest<ActivityViewItem> {
     private static final AtomicInteger iteration = new AtomicInteger();
     private static final boolean showAttachedImagesOld = MyPreferences.getDownloadAndDisplayAttachedImages();
     private boolean showAttachedImages = false;

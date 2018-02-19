@@ -19,6 +19,7 @@ package org.andstatus.app.account;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
@@ -62,12 +63,12 @@ public class AccountListFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.drag_list_layout, container, false);
-        mDragListView = (DragListView) view.findViewById(R.id.drag_list_view);
+        mDragListView = view.findViewById(R.id.drag_list_view);
         mDragListView.getRecyclerView().setVerticalScrollBarEnabled(true);
 
-        mItems = new CopyOnWriteArrayList<>(MyContextHolder.get().accounts().list());
+        mItems = new CopyOnWriteArrayList<>(MyContextHolder.get().accounts().get());
         setupListRecyclerView();
         return view;
     }

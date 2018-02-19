@@ -25,13 +25,13 @@ import android.widget.TextView;
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.note.BaseNoteViewItem;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -53,7 +53,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class PublicTimelineActivityTest extends TimelineActivityTest {
+public class PublicTimelineActivityTest extends TimelineActivityTest<ActivityViewItem> {
     private MyAccount ma;
 
     @Override

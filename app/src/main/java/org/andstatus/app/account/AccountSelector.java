@@ -82,7 +82,7 @@ public class AccountSelector extends SelectorDialog {
         long originId = Optional.ofNullable(getArguments())
                 .map(bundle -> bundle.getLong(IntentExtra.ORIGIN_ID.key)).orElse(0L);
         List<MyAccount> listData = new ArrayList<>();
-        for (MyAccount ma : MyContextHolder.get().accounts().list()) {
+        for (MyAccount ma : MyContextHolder.get().accounts().get()) {
             if (originId==0 || ma.getOriginId() == originId) {
                 listData.add(ma);
             }

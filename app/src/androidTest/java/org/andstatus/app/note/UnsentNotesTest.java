@@ -8,6 +8,7 @@ import android.view.View;
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DownloadStatus;
@@ -34,7 +35,7 @@ import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class UnsentNotesTest extends TimelineActivityTest {
+public class UnsentNotesTest extends TimelineActivityTest<ActivityViewItem> {
     private final MyServiceTestHelper mService = new MyServiceTestHelper();
 
     @Override

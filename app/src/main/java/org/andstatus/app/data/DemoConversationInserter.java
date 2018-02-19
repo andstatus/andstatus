@@ -35,14 +35,12 @@ import java.util.GregorianCalendar;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class DemoConversationInserter {
-    private static final AtomicInteger iterationCounter = new AtomicInteger(0);
     private static final Map<String, Actor> actors = new ConcurrentHashMap<>();
 
     private int iteration = 0;
@@ -62,7 +60,7 @@ public class DemoConversationInserter {
         bodySuffix = TextUtils.isEmpty(bodySuffixIn)
                 ? ""
                 : " " + bodySuffixIn;
-        iteration = iterationCounter.incrementAndGet();
+        iteration = demoData.conversationIterationCounter.incrementAndGet();
         ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(demoData.conversationAccountName + " exists", ma.isValid());
         accountActor = ma.getActor();

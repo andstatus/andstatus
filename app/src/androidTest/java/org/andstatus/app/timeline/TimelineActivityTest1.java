@@ -30,7 +30,6 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.DemoConversationInserter;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.note.ConversationActivity;
@@ -59,7 +58,7 @@ import static org.junit.Assert.assertTrue;
  * On activity testing: http://developer.android.com/tools/testing/activity_testing.html
  * @author yvolk@yurivolkov.com
  */
-public class TimelineActivityTest1 extends TimelineActivityTest {
+public class TimelineActivityTest1 extends TimelineActivityTest<ActivityViewItem> {
     private MyAccount ma = MyAccount.EMPTY;
 
     @Override
@@ -110,12 +109,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
     private void onePositionOnContentChange(int position0, int iterationId) throws InterruptedException, MalformedURLException {
         final String method = "testPositionOnContentChange" + iterationId;
         TestSuite.waitForListLoaded(getActivity(), 1);
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                getActivity().showList(WhichPage.TOP);
-            }
-        });
+        getInstrumentation().runOnMainSync(() -> getActivity().showList(WhichPage.TOP));
         TestSuite.waitForListLoaded(getActivity(), position0 + 2);
 
         TimelineData<ActivityViewItem> timelineData = getActivity().getListData();
@@ -135,7 +129,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest {
         long itemId = getListView().getAdapter().getItemId(position1);
         int count1 = getListView().getAdapter().getCount();
 
-        new DemoConversationInserter().insertConversation("p" + iterationId);
+        demoData.insertPumpIoConversation("p" + iterationId);
         broadcastCommandExecuted();
 
         long updatedAt2 = 0;

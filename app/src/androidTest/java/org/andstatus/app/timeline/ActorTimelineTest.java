@@ -34,7 +34,7 @@ import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
-public class ActorTimelineTest extends TimelineActivityTest {
+public class ActorTimelineTest extends TimelineActivityTest<ActivityViewItem> {
 
     @Override
     protected Intent getActivityIntent() {

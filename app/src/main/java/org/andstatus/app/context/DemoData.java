@@ -41,6 +41,7 @@ import org.andstatus.app.util.TriState;
 
 import java.util.Locale;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -56,6 +57,7 @@ public final class DemoData {
     private static final String HTTP = "http://";
 
     public final String testRunUid = String.valueOf(System.currentTimeMillis());
+    public final AtomicInteger conversationIterationCounter = new AtomicInteger(0);
 
     public final String testOriginParentHost = "example.com";
     public final String pumpioOriginName = "PumpioTest";
@@ -190,7 +192,7 @@ public final class DemoData {
                 assertTrue("Only " + size + " accounts added: " + MyContextHolder.get().accounts(),
                         size > 5);
                 assertEquals("No WebfingerId", Optional.empty(), MyContextHolder.get().accounts()
-                        .list().stream().filter(ma -> !ma.getActor().isWebFingerIdValid()).findFirst());
+                        .get().stream().filter(ma -> !ma.getActor().isWebFingerIdValid()).findFirst());
                 int size2 = MyContextHolder.get().users().size();
                 assertTrue("Only " + size2 + " users added: " + MyContextHolder.get().users()
                         + "\nAccounts: " + MyContextHolder.get().accounts(),
@@ -198,8 +200,7 @@ public final class DemoData {
 
                 originInserter.checkDefaultTimelinesForOrigins();
                 accountInserter.checkDefaultTimelinesForAccounts();
-
-                new DemoConversationInserter().insertConversation("");
+                insertPumpIoConversation("");
                 new DemoGnuSocialConversationInserter().insertConversation();
                 if (progressCallback != null) {
                     progressCallback.onProgressMessage("Demo notes added...");
@@ -237,6 +238,10 @@ public final class DemoData {
         return asyncTask;
     }
 
+    public void insertPumpIoConversation(String bodySuffix) {
+        new DemoConversationInserter().insertConversation(bodySuffix);
+    }
+
     public void assertConversations() {
         assertEquals("Conversations need fixes", 0, new CheckConversations()
                         .setMyContext(MyContextHolder.get()).setLogger(ProgressLogger.getEmpty()).countChanges());
@@ -247,7 +252,7 @@ public final class DemoData {
         boolean found = (MyContextHolder.get().accounts().getCurrentAccount().getCredentialsVerified()
                 == MyAccount.CredentialsVerificationStatus.SUCCEEDED);
         if (!found) {
-            for (MyAccount ma : MyContextHolder.get().accounts().list()) {
+            for (MyAccount ma : MyContextHolder.get().accounts().get()) {
                 MyLog.i(TAG, ma.toString());
                 if (ma.getCredentialsVerified()
                 == MyAccount.CredentialsVerificationStatus.SUCCEEDED) {
@@ -284,7 +289,7 @@ public final class DemoData {
 
     @NonNull
     public Actor getAccountActorByOid(String actorOid) {
-        for (MyAccount ma : MyContextHolder.get().accounts().list()) {
+        for (MyAccount ma : MyContextHolder.get().accounts().get()) {
             if (ma.getActorOid().equals(actorOid)) {
                 return ma.getActor();
             }

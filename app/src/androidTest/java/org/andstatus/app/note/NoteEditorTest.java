@@ -33,6 +33,7 @@ import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
@@ -70,7 +71,7 @@ import static org.junit.Assert.assertTrue;
  * On activity testing: http://developer.android.com/tools/testing/activity_testing.html
  * @author yvolk@yurivolkov.com
  */
-public class NoteEditorTest extends TimelineActivityTest {
+public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
     private NoteEditorData data = null;
     private static final AtomicInteger editingStep = new AtomicInteger();
 

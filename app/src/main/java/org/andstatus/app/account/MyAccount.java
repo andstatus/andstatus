@@ -151,7 +151,7 @@ public final class MyAccount implements Comparable<MyAccount> {
     public static final class Builder implements Parcelable {
         private static final String TAG = MyAccount.TAG + "." + Builder.class.getSimpleName();
 
-        private MyContext myContext;
+        public final MyContext myContext;
         private volatile MyAccount myAccount;
 
         /**
@@ -653,7 +653,7 @@ public final class MyAccount implements Comparable<MyAccount> {
 
         boolean found = false;
         String possiblyUnique = getUsername();
-        for (MyAccount persistentAccount : myContext.accounts().list()) {
+        for (MyAccount persistentAccount : myContext.accounts().get()) {
             if (!persistentAccount.toString().equalsIgnoreCase(toString())
                     && persistentAccount.getUsername().equalsIgnoreCase(possiblyUnique)) {
                 found = true;
@@ -665,7 +665,7 @@ public final class MyAccount implements Comparable<MyAccount> {
             int indAt = uniqueName.indexOf('@');
             if (indAt > 0) {
                 possiblyUnique = uniqueName.substring(0, indAt);
-                for (MyAccount persistentAccount : myContext.accounts().list()) {
+                for (MyAccount persistentAccount : myContext.accounts().get()) {
                     if (!persistentAccount.toString().equalsIgnoreCase(toString())) {
                         String toCompareWith = persistentAccount.getUsername();
                         indAt = toCompareWith.indexOf('@');
@@ -926,7 +926,7 @@ public final class MyAccount implements Comparable<MyAccount> {
 
     public int numberOfAccountsOfThisOrigin() {
         int count = 0;
-        for (MyAccount persistentAccount : MyContextHolder.get().accounts().list()) {
+        for (MyAccount persistentAccount : MyContextHolder.get().accounts().get()) {
             if (persistentAccount.getOrigin().equals(this.getOrigin())) {
                 count++;
             }
@@ -939,7 +939,7 @@ public final class MyAccount implements Comparable<MyAccount> {
      */
     @NonNull
     public MyAccount firstOtherAccountOfThisOrigin() {
-        for (MyAccount persistentAccount : MyContextHolder.get().accounts().list()) {
+        for (MyAccount persistentAccount : MyContextHolder.get().accounts().get()) {
             if (persistentAccount.getOrigin().equals(this.getOrigin()) && !persistentAccount.equals(this)) {
                 return persistentAccount;
             }
