@@ -28,6 +28,8 @@ import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.util.MyLog;
 
+import java.util.Objects;
+
 /**
  * @author yvolk@yurivolkov.com
  */
@@ -93,9 +95,7 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
     }
 
     public void setMyActor(@NonNull MyAccount myAccount) {
-        if (myAccount == null) {
-            throw new IllegalArgumentException("MyAccount is null here");
-        }
+        Objects.requireNonNull(myAccount);
         this.myActor = myAccount;
     }
 

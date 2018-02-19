@@ -460,8 +460,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                         actor.getNamePreferablyWebFingerId());
             }
             if (errorSettingUsername) {
-                String msg = myContext.context().getText(R.string.error_set_username)
-                        + " " + (actor == null ? "null" : actor.getUsername());
+                String msg = myContext.context().getText(R.string.error_set_username) + " " + actor.getUsername();
                 MyLog.e(TAG, msg);
                 throw new ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg);
             }
