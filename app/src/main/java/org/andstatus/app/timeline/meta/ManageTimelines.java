@@ -46,7 +46,7 @@ import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.view.EnumSelector;
 
-import java.util.Collections;
+import java.util.stream.Collectors;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -155,21 +155,13 @@ public class ManageTimelines extends LoadableListActivity {
         return new SyncLoader<ManageTimelinesViewItem>() {
             @Override
             public void load(ProgressPublisher publisher) {
-                // TODO: Implement filter parameters in this activity
-                countersSince = 0;
-                for (Timeline timeline : myContext.timelines().
-                        filter(false, TriState.UNKNOWN, TimelineType.UNKNOWN, MyAccount.EMPTY,
-                                Origin.EMPTY)) {
-                    ManageTimelinesViewItem viewItem = new ManageTimelinesViewItem(myContext, timeline);
-                    if (viewItem.timeline.getCountSince() > 0 &&
-                            (viewItem.timeline.getCountSince() < countersSince || countersSince == 0)) {
-                        countersSince = viewItem.timeline.getCountSince();
-                    }
-                    items.add(viewItem);
-                }
-                if (sortByField != 0) {
-                    Collections.sort(items, new ManageTimelinesViewItemComparator(sortByField, sortDefault, isTotal));
-                }
+                items = myContext.timelines()
+                        .filter(false, TriState.UNKNOWN, TimelineType.UNKNOWN, MyAccount.EMPTY, Origin.EMPTY)
+                        .map(timeline -> new ManageTimelinesViewItem(myContext, timeline))
+                        .sorted(new ManageTimelinesViewItemComparator(sortByField, sortDefault, isTotal))
+                        .collect(Collectors.toList());
+                countersSince = items.stream().map(item -> item.countSince).filter(count -> count > 0)
+                        .max(Long::compareTo).orElse(0L);
             }
         };
     }

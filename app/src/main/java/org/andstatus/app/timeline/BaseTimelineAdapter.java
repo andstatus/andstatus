@@ -55,9 +55,13 @@ public abstract class BaseTimelineAdapter<T extends ViewItem<T>> extends BaseAda
     public BaseTimelineAdapter(@NonNull MyContext myContext, @NonNull TimelineData<T> listData) {
         this.myContext = myContext;
         this.listData = listData;
-        displayDensity = myContext.context().getResources().getDisplayMetrics().density;
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this,"density=" + displayDensity);
+        if (myContext.context() == null) {
+            displayDensity = 1;
+        } else {
+            displayDensity = myContext.context().getResources().getDisplayMetrics().density;
+            if (MyLog.isVerboseEnabled()) {
+                MyLog.v(this,"density=" + displayDensity);
+            }
         }
     }
 
@@ -90,19 +94,18 @@ public abstract class BaseTimelineAdapter<T extends ViewItem<T>> extends BaseAda
     }
 
     private TextView getPositionView(View view) {
-        if (view != null) {
-            View parentView = view;
-            for (int i = 0; i < 10; i++) {
-                TextView positionView = parentView.findViewById(R.id.position);
-                if (positionView != null) {
-                    return positionView;
-                }
-                if (parentView.getParent() != null &&
-                        View.class.isAssignableFrom(parentView.getParent().getClass())) {
-                    parentView = (View) parentView.getParent();
-                } else {
-                    break;
-                }
+        if (view == null) return null;
+        View parentView = view;
+        for (int i = 0; i < 10; i++) {
+            TextView positionView = parentView.findViewById(R.id.position);
+            if (positionView != null) {
+                return positionView;
+            }
+            if (parentView.getParent() != null &&
+                    View.class.isAssignableFrom(parentView.getParent().getClass())) {
+                parentView = (View) parentView.getParent();
+            } else {
+                break;
             }
         }
         return null;

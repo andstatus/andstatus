@@ -302,6 +302,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
         return itemId;
     }
 
+    @NonNull
     private ListAdapter getListAdapter() {
         return mActivity.getListAdapter();
     }
@@ -403,8 +404,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
         final int lastListItemPosition = firstListItemPosition + selector.getListView().getChildCount() - 1;
         View view;
         if (position < firstListItemPosition || position > lastListItemPosition ) {
-            if (position < 0 || getListAdapter() == null
-                    || selector.getListAdapter().getCount() < position + 1) {
+            if (position < 0 || selector.getListAdapter().getCount() < position + 1) {
                 view = null;
             } else {
                 view = selector.getListAdapter().getView(position, null, getListView());

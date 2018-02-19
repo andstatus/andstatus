@@ -17,6 +17,7 @@
 package org.andstatus.app.list;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ListFragment;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -40,7 +41,7 @@ public class MyListActivity extends MyBaseListActivity {
     }
 
     @Override
-    protected void setListAdapter(ListAdapter adapter) {
+    protected void setListAdapter(@NonNull ListAdapter adapter) {
         findListView();
         if (listFragment != null) {
             listFragment.setListAdapter(adapter);
@@ -49,6 +50,7 @@ public class MyListActivity extends MyBaseListActivity {
         }
     }
 
+    @NonNull
     @Override
     public ListAdapter getListAdapter() {
         findListView();
@@ -57,7 +59,7 @@ public class MyListActivity extends MyBaseListActivity {
         } else if (listView != null) {
             return listView.getAdapter();
         }
-        return null;
+        return super.getListAdapter();
     }
 
     @Override

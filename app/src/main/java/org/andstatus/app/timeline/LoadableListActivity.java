@@ -135,7 +135,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
                 new TimelinePage<>(new TimelineParameters(myContext), null)) {
             @Override
             public int size() {
-                return getListAdapter() == null ? 0 : getListAdapter().getCount();
+                return getListAdapter().getCount();
             }
         };
     }
@@ -197,10 +197,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
     /** @return selectedItem or EmptyViewItem */
     @NonNull
     public ViewItem saveContextOfSelectedItem(View v) {
-        int position = -1;
-        if (getListAdapter() != null) {
-            position = getListAdapter().getPosition(v);
-        }
+        int position = getListAdapter().getPosition(v);
         setPositionOfContextMenu(position);
         if (position >= 0) {
             Object viewItem = getListAdapter().getItem(position);
@@ -343,7 +340,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         // For a finer position restore see http://stackoverflow.com/questions/3014089/maintain-save-restore-scroll-position-when-returning-to-a-listview?rq=1
         long itemIdOfAdapterPosition = centralItemId;
         int y = 0;
-        if (list.getChildCount() > list.getHeaderViewsCount() + list.getFooterViewsCount() && adapter != null) {
+        if (list.getChildCount() > list.getHeaderViewsCount() + list.getFooterViewsCount()) {
             int firstVisibleAdapterPosition = Integer.max(list.getFirstVisiblePosition() - list.getHeaderViewsCount(), 0);
             itemIdOfAdapterPosition = adapter.getItemId(firstVisibleAdapterPosition);
             y = getYOfPosition(list, adapter, firstVisibleAdapterPosition);
@@ -380,14 +377,12 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         if (MyLog.isVerboseEnabled()) {
             int firstVisibleAdapterPosition = getListView().getFirstVisiblePosition() - getListView().getHeaderViewsCount();
             MyLog.d(this, method + "; " + description
-                    + ", adapter count:" + (getListAdapter() == null ? "(no adapter)" : getListAdapter().getCount())
+                    + ", adapter count:" + getListAdapter().getCount()
                     + ", list items:" + getListView().getChildCount()
                     + (itemId != 0 ? ", itemId:" + itemId
-                        + " -> first position:" + (getListAdapter() == null ? "(no adapter)"
-                            : getListAdapter().getPositionById(itemId))
+                        + " -> first position:" + getListAdapter().getPositionById(itemId)
                         : ", first position:" + firstVisibleAdapterPosition
-                        + " -> itemId:" + (getListAdapter() == null ? "(no adapter)"
-                            : getListAdapter().getItemId(firstVisibleAdapterPosition))
+                        + " -> itemId:" + getListAdapter().getItemId(firstVisibleAdapterPosition)
                     )
             );
         }
@@ -408,6 +403,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
 
     protected abstract BaseTimelineAdapter newListAdapter();
 
+    @NonNull
     @Override
     public BaseTimelineAdapter<T> getListAdapter() {
         return (BaseTimelineAdapter<T>) super.getListAdapter();
@@ -615,7 +611,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
     }
 
     public boolean isPositionRestored() {
-        return getListAdapter() != null && getListAdapter().isPositionRestored();
+        return getListAdapter().isPositionRestored();
     }
 
     protected void showSyncing(String source, CharSequence text) {

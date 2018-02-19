@@ -47,14 +47,11 @@ public class MyServiceTest1 extends MyServiceTest {
         assertTrue("No successful account", myAccount.isValidAndSucceeded());
 
         MyContext myContext = MyContextHolder.get();
-        for (Timeline timeline : myContext.timelines().filter(false, TriState.FALSE,
-                TimelineType.UNKNOWN, MyAccount.EMPTY, Origin.EMPTY)) {
-            if (timeline.isSyncedAutomatically()) {
-                if (timeline.isTimeToAutoSync()) {
-                    timeline.onSyncEnded(new CommandResult());
-                }
-            }
-        }
+        myContext.timelines().filter(false, TriState.FALSE,
+                TimelineType.UNKNOWN, MyAccount.EMPTY, Origin.EMPTY)
+                .filter(Timeline::isSyncedAutomatically)
+                .filter(Timeline::isTimeToAutoSync)
+                .forEach(timeline -> timeline.onSyncEnded(new CommandResult()));
         myContext.timelines().saveChanged();
         SyncResult syncResult = new SyncResult();
         MyServiceCommandsRunner runner = new MyServiceCommandsRunner(myContext);

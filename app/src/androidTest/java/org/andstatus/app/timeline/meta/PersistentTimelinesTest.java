@@ -30,11 +30,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collection;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.andstatus.app.context.DemoData.demoData;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
@@ -61,39 +60,39 @@ public class PersistentTimelinesTest {
     @Test
     public void testFilteredList() throws Exception {
         Collection<Timeline> timelines = myContext.timelines().values();
-        Set<Timeline> filtered = myContext.timelines().filter(
-                false, TriState.UNKNOWN, TimelineType.UNKNOWN, MyAccount.EMPTY, Origin.EMPTY);
-        assertEquals(timelines.size(), filtered.size());
+        long count = myContext.timelines().filter(
+                false, TriState.UNKNOWN, TimelineType.UNKNOWN, MyAccount.EMPTY, Origin.EMPTY).count();
+        assertEquals(timelines.size(), count);
 
-        filtered = myContext.timelines().filter(
-                true, TriState.FALSE, TimelineType.UNKNOWN, MyAccount.EMPTY, Origin.EMPTY);
-        assertTrue(timelines.size() > filtered.size());
+        count = myContext.timelines().filter(
+                true, TriState.FALSE, TimelineType.UNKNOWN, MyAccount.EMPTY, Origin.EMPTY).count();
+        assertTrue(timelines.size() > count);
 
-        filtered = myContext.timelines().filter(
-                true, TriState.TRUE, TimelineType.UNKNOWN, MyAccount.EMPTY, Origin.EMPTY);
-        assertTrue(!filtered.isEmpty());
-        assertTrue(timelines.size() > filtered.size());
+        count = myContext.timelines().filter(
+                true, TriState.TRUE, TimelineType.UNKNOWN, MyAccount.EMPTY, Origin.EMPTY).count();
+        assertTrue(count > 0);
+        assertTrue(timelines.size() > count);
 
         ensureAtLeastOneNotDisplayedTimeline();
-        Set<Timeline> filtered2 = myContext.timelines().filter(
-                true, TriState.UNKNOWN, TimelineType.UNKNOWN, MyAccount.EMPTY, Origin.EMPTY);
-        assertTrue(timelines.size() > filtered2.size());
-        assertTrue(filtered2.size() > filtered.size());
+        long count2 = myContext.timelines().filter(
+                true, TriState.UNKNOWN, TimelineType.UNKNOWN, MyAccount.EMPTY, Origin.EMPTY).count();
+        assertTrue(timelines.size() > count2);
+        assertTrue(count2 > count);
 
         MyAccount myAccount = demoData.getMyAccount(demoData.conversationAccountName);
-        filtered = myContext.timelines().filter(
-                true, TriState.FALSE, TimelineType.UNKNOWN, myAccount, Origin.EMPTY);
-        assertTrue(!filtered.isEmpty());
+        count = myContext.timelines().filter(
+                true, TriState.FALSE, TimelineType.UNKNOWN, myAccount, Origin.EMPTY).count();
+        assertTrue(count > 0);
 
-        filtered = myContext.timelines().filter(
-                true, TriState.FALSE, TimelineType.UNKNOWN, MyAccount.EMPTY, myAccount.getOrigin());
-        assertTrue(!filtered.isEmpty());
+        count = myContext.timelines().filter(
+                true, TriState.FALSE, TimelineType.UNKNOWN, MyAccount.EMPTY, myAccount.getOrigin()).count();
+        assertTrue(count > 0);
 
-        filtered = myContext.timelines().filter(true, TriState.FALSE,
-                TimelineType.EVERYTHING, MyAccount.EMPTY, myAccount.getOrigin());
-        assertTrue(!filtered.isEmpty());
-        assertThat(filtered.stream().filter(timeline -> timeline.getTimelineType() == TimelineType.EVERYTHING)
-                .collect(Collectors.toList()), not(empty()));
+        List<Timeline> filtered = myContext.timelines().filter(true, TriState.FALSE,
+                TimelineType.EVERYTHING, MyAccount.EMPTY, myAccount.getOrigin()).collect(Collectors.toList());
+        assertTrue(filtered.size() > 0);
+        assertTrue(filtered.stream()
+                .filter(timeline -> timeline.getTimelineType() == TimelineType.EVERYTHING).count() > 0);
     }
 
     private void ensureAtLeastOneNotDisplayedTimeline() {
@@ -138,9 +137,9 @@ public class PersistentTimelinesTest {
         Origin origin = myContext.origins().fromName(demoData.gnusocialTestOriginName);
         MyAccount myAccount = myContext.accounts().getFirstSucceededForOrigin(origin);
         assertTrue(myAccount.isValid());
-        Timeline timeline2 = myContext.timelines().
-                filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount, Origin.EMPTY)
-                .stream().filter(timeline -> timeline != timeline1).findFirst().orElse(Timeline.EMPTY);
+        Timeline timeline2 = myContext.timelines()
+                .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount, Origin.EMPTY)
+                .filter(timeline -> timeline != timeline1).findFirst().orElse(Timeline.EMPTY);
         myContext.timelines().setDefault(timeline2);
 
         assertNotEquals(timeline1, myContext.timelines().getDefault());
@@ -158,13 +157,14 @@ public class PersistentTimelinesTest {
     }
 
     private void oneFromIsCombined(MyAccount myAccount, TimelineType timelineType) {
-        Timeline combinedTimeline = myContext.timelines().
-                filter(true, TriState.TRUE, timelineType, myAccount, Origin.EMPTY).iterator().next();
-        Timeline notCombinedTimeline = combinedTimeline.fromIsCombined(myContext, false);
-        assertEquals("Should be not combined " + notCombinedTimeline, false, notCombinedTimeline.isCombined());
-        Timeline combinedTimeline2 = notCombinedTimeline.fromIsCombined(myContext, true);
-        assertEquals("Should be combined " + notCombinedTimeline, true, combinedTimeline2.isCombined());
-        assertEquals(combinedTimeline, combinedTimeline2);
+        Timeline combined = myContext.timelines()
+                .filter(true, TriState.TRUE, timelineType, myAccount, Origin.EMPTY)
+                .findFirst().orElse(Timeline.EMPTY);
+        Timeline notCombined = combined.fromIsCombined(myContext, false);
+        assertEquals("Should be not combined " + notCombined, false, notCombined.isCombined());
+        Timeline combined2 = notCombined.fromIsCombined(myContext, true);
+        assertEquals("Should be combined " + notCombined, true, combined2.isCombined());
+        assertEquals(combined, combined2);
     }
 
     @Test
@@ -177,20 +177,19 @@ public class PersistentTimelinesTest {
         oneFromMyAccount(myAccount1, myAccount2, TimelineType.NOTIFICATIONS);
     }
 
-    private void oneFromMyAccount(MyAccount myAccount1, MyAccount myAccount2, TimelineType timelineType) {
-        final Set<Timeline> timelines = myContext.timelines().
-                filter(true, TriState.FALSE, timelineType, myAccount1, myAccount1.getOrigin());
-        Timeline timeline1 = timelines.isEmpty()
-                ? myContext.timelines().get(timelineType, myAccount1.getActorId(), myAccount1.getOrigin(), "")
-                : timelines.iterator().next();
-        Timeline timeline2 = timeline1.fromMyAccount(myContext, myAccount2);
+    private void oneFromMyAccount(MyAccount ma1, MyAccount ma2, TimelineType timelineType) {
+        Timeline timeline1 = myContext.timelines()
+                .filter(true, TriState.FALSE, timelineType, ma1, ma1.getOrigin())
+                .findFirst().orElse(
+                    myContext.timelines().get(timelineType, ma1.getActorId(), ma1.getOrigin(), ""));
+        Timeline timeline2 = timeline1.fromMyAccount(myContext, ma2);
         assertEquals("Should be not combined " + timeline2, false, timeline2.isCombined());
         if (timelineType.isForUser()) {
-            assertEquals("Account should change " + timeline2, myAccount2, timeline2.getMyAccount());
+            assertEquals("Account should change " + timeline2, ma2, timeline2.getMyAccount());
         } else {
-            assertEquals("Origin should change " + timeline2, myAccount2.getOrigin(), timeline2.getOrigin());
+            assertEquals("Origin should change " + timeline2, ma2.getOrigin(), timeline2.getOrigin());
         }
-        Timeline timeline3 = timeline2.fromMyAccount(myContext, myAccount1);
+        Timeline timeline3 = timeline2.fromMyAccount(myContext, ma1);
         assertEquals(timeline1, timeline3);
     }
 

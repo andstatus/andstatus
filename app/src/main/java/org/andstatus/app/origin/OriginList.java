@@ -95,12 +95,7 @@ public abstract class OriginList extends MyListActivity {
     protected void fillList() {
         data.clear();
         fillData(data);
-        java.util.Collections.sort(data, new Comparator<Map<String, String>>() {
-            @Override
-            public int compare(Map<String, String> lhs, Map<String, String> rhs) {
-                return lhs.get(KEY_VISIBLE_NAME).compareToIgnoreCase(rhs.get(KEY_VISIBLE_NAME));
-            }
-        });
+        data.sort((lhs, rhs) -> lhs.get(KEY_VISIBLE_NAME).compareToIgnoreCase(rhs.get(KEY_VISIBLE_NAME)));
         MyLog.v(this, "fillList, " + data.size() + " items");
         ((BaseAdapter) getListAdapter()).notifyDataSetChanged();
     }

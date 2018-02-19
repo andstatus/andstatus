@@ -212,7 +212,8 @@ public final class DemoData {
                 setSuccessfulAccountAsCurrent();
                 Timeline defaultTimeline = MyContextHolder.get().timelines().filter(
                         false, TriState.TRUE, TimelineType.EVERYTHING, MyAccount.EMPTY,
-                        MyContextHolder.get().accounts().getCurrentAccount().getOrigin()).iterator().next();
+                        MyContextHolder.get().accounts().getCurrentAccount().getOrigin())
+                        .findFirst().orElse(Timeline.EMPTY);
                 assertThat(defaultTimeline.getTimelineType(), is(TimelineType.EVERYTHING));
                 MyContextHolder.get().timelines().setDefault(defaultTimeline);
                 MyLog.v(TAG_ASYNC, "Before initialize 3");

@@ -71,7 +71,7 @@ public class QueueViewer extends LoadableListActivity {
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        queueData = getListAdapter() == null ? null : (QueueData) getListAdapter().getItem(v);
+        queueData = (QueueData) getListAdapter().getItem(v);
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.queue_context_menu, menu);
     }

@@ -42,11 +42,11 @@ public class SqlActorIdsTest {
         assertTrue("account is not valid: " + demoData.conversationAccountName, myAccount.isValid());
 
         Timeline timeline = MyContextHolder.get().timelines().filter(false, TriState.FALSE,
-                TimelineType.SENT, myAccount, myAccount.getOrigin()).iterator().next();
+                TimelineType.SENT, myAccount, myAccount.getOrigin()).findFirst().orElse(Timeline.EMPTY);
         assertNotEquals(0, SqlActorIds.fromTimeline(timeline).size());
 
         Timeline timelineCombined = MyContextHolder.get().timelines().filter(false, TriState.TRUE,
-                TimelineType.SENT, MyAccount.EMPTY, Origin.EMPTY).iterator().next();
+                TimelineType.SENT, MyAccount.EMPTY, Origin.EMPTY).findFirst().orElse(Timeline.EMPTY);
         assertNotEquals("No actors for " + timelineCombined,0, SqlActorIds.fromTimeline(timelineCombined).size());
 
         long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, myAccount.getOriginId(),  demoData.conversationAuthorSecondActorOid);

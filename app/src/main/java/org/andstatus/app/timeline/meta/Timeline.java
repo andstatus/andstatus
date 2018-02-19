@@ -955,4 +955,25 @@ public class Timeline implements Comparable<Timeline> {
     public long getLastChangedDate() {
         return lastChangedDate;
     }
+
+    public boolean match(boolean isForSelector, TriState isTimelineCombined, @NonNull TimelineType timelineType,
+                         @NonNull MyAccount myAccount, @NonNull Origin origin) {
+        if (isForSelector && isDisplayedInSelector() == DisplayedInSelector.ALWAYS) {
+            return true;
+        } else if (isForSelector && isDisplayedInSelector() == DisplayedInSelector.NEVER) {
+            return false;
+        } else if (timelineType != TimelineType.UNKNOWN && timelineType != getTimelineType()) {
+            return false;
+        } else if (isTimelineCombined == TriState.TRUE) {
+            return isCombined();
+        } else if (isTimelineCombined == TriState.FALSE && isCombined()) {
+            return false;
+        } else if (timelineType == TimelineType.UNKNOWN) {
+            return (!myAccount.isValid() || myAccount.equals(getMyAccount()))
+                    && (origin.isEmpty() || origin.equals(getOrigin())) ;
+        } else if (timelineType.isAtOrigin()) {
+            return origin.isEmpty() || origin.equals(getOrigin());
+        }
+        return !myAccount.isValid() || myAccount.equals(getMyAccount());
+    }
 }

@@ -31,11 +31,10 @@ import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Stream;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -155,37 +154,13 @@ public class PersistentTimelines {
     }
 
     @NonNull
-    public Set<Timeline> filter(boolean isForSelector,
-                                 TriState isTimelineCombined,
-                                 @NonNull TimelineType timelineType,
-                                 @NonNull MyAccount myAccount,
-                                 @NonNull Origin origin) {
-        Set<Timeline> timelines = new HashSet<>();
-        for (Timeline timeline : values()) {
-            boolean include;
-            if (isForSelector && timeline.isDisplayedInSelector() == DisplayedInSelector.ALWAYS) {
-                include = true;
-            } else if (isForSelector && timeline.isDisplayedInSelector() == DisplayedInSelector.NEVER) {
-                include = false;
-            } else if (timelineType != TimelineType.UNKNOWN && timelineType != timeline.getTimelineType()) {
-                include = false;
-            } else if (isTimelineCombined == TriState.TRUE) {
-                include = timeline.isCombined();
-            } else if (isTimelineCombined == TriState.FALSE && timeline.isCombined()) {
-                include = false;
-            } else if (timelineType == TimelineType.UNKNOWN) {
-                include = (!myAccount.isValid() || myAccount.equals(timeline.getMyAccount()))
-                && (origin.isEmpty() || origin.equals(timeline.getOrigin())) ;
-            } else if (timelineType.isAtOrigin()) {
-                include = origin.isEmpty() || origin.equals(timeline.getOrigin());
-            } else {
-                include = !myAccount.isValid() || myAccount.equals(timeline.getMyAccount());
-            }
-            if (include) {
-                timelines.add(timeline);
-            }
-        }
-        return timelines;
+    public Stream<Timeline> filter(boolean isForSelector,
+                                   TriState isTimelineCombined,
+                                   @NonNull TimelineType timelineType,
+                                   @NonNull MyAccount myAccount,
+                                   @NonNull Origin origin) {
+        return values().stream().filter(
+                timeline -> timeline.match(isForSelector, isTimelineCombined, timelineType, myAccount, origin));
     }
 
     public void onAccountDelete(MyAccount ma) {

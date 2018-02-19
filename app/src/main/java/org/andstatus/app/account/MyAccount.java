@@ -977,16 +977,11 @@ public final class MyAccount implements Comparable<MyAccount> {
     }
 
     public long getLastSyncSucceededDate(MyContext myContext) {
-        long lastSyncedDate = 0;
-        if (isValid() && isPersistent()) {
-            for (Timeline timeline : myContext.timelines().filter(
-                    false, TriState.UNKNOWN, TimelineType.UNKNOWN, this, Origin.EMPTY)) {
-                if (timeline.getSyncSucceededDate() > lastSyncedDate) {
-                    lastSyncedDate = timeline.getSyncSucceededDate();
-                }
-            }
-        }
-        return lastSyncedDate;
+        return (isValid() && isPersistent())
+                ? myContext.timelines()
+                    .filter(false, TriState.UNKNOWN, TimelineType.UNKNOWN, this, Origin.EMPTY)
+                    .map(Timeline::getSyncSucceededDate).max(Long::compareTo).orElse(0L)
+                : 0L;
     }
 
     public boolean hasAnyTimelines(MyContext myContext) {

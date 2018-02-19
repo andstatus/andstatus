@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -70,12 +71,12 @@ public class TimelineSelector extends SelectorDialog {
         Set<Timeline> timelines = myContext.timelines().filter(
                 true,
                 TriState.fromBoolean(timeline.isCombined()),
-                TimelineType.UNKNOWN, currentMyAccount, Origin.EMPTY);
+                TimelineType.UNKNOWN, currentMyAccount, Origin.EMPTY).collect(Collectors.toSet());
         if (!timeline.isCombined() && currentMyAccount.isValid()) {
             timelines.addAll(myContext.timelines().filter(
                     true,
                     TriState.fromBoolean(timeline.isCombined()),
-                    TimelineType.UNKNOWN, MyAccount.EMPTY, currentMyAccount.getOrigin()));
+                    TimelineType.UNKNOWN, MyAccount.EMPTY, currentMyAccount.getOrigin()).collect(Collectors.toSet()));
         }
         if (timelines.isEmpty()) {
             returnSelectedTimeline(Timeline.EMPTY);

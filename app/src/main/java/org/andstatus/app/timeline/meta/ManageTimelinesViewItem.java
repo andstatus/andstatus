@@ -29,11 +29,13 @@ import org.andstatus.app.timeline.ViewItem;
 public class ManageTimelinesViewItem extends ViewItem<ManageTimelinesViewItem> {
     final Timeline timeline;
     final TimelineTitle timelineTitle;
+    final long countSince;
 
     protected ManageTimelinesViewItem(MyContext myContext, Timeline timeline) {
         super(false);
         this.timeline = timeline;
-        this.timelineTitle = TimelineTitle.load(myContext, timeline, MyAccount.EMPTY);
+        timelineTitle = TimelineTitle.load(myContext, timeline, MyAccount.EMPTY);
+        countSince = timeline.getCountSince();
     }
 
     @NonNull

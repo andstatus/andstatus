@@ -57,8 +57,8 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.note.NoteAdapter;
 import org.andstatus.app.note.NoteContextMenu;
-import org.andstatus.app.note.NoteEditorListActivity;
 import org.andstatus.app.note.NoteContextMenuContainer;
+import org.andstatus.app.note.NoteEditorListActivity;
 import org.andstatus.app.note.NoteViewItem;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
@@ -194,11 +194,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         }
     }
 
-    @Override
-    public BaseTimelineAdapter<T> getListAdapter() {
-        return super.getListAdapter();
-    }
-
+    @NonNull
     @Override
     protected BaseTimelineAdapter<T> newListAdapter() {
         if (getParamsNew().getTimelineType().showsActivities()) {
@@ -715,14 +711,9 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         return listData;
     }
 
-    private TimelineData<T> setAndGetListData(
-            TimelinePage<T> pageLoaded) {
+    private TimelineData<T> setAndGetListData(TimelinePage<T> pageLoaded) {
         listData = new TimelineData<T>(listData, pageLoaded);
-        BaseTimelineAdapter<T> listAdapter = getListAdapter();
-        if (listAdapter != null) {
-            // Old value of listData is modified also
-            listAdapter.notifyDataSetChanged();
-        }
+        getListAdapter().notifyDataSetChanged();
         return listData;
     }
 
@@ -823,10 +814,9 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         boolean keepCurrentPosition = keepCurrentPosition_in && getListData().isSameTimeline &&
                 isPositionRestored() && dataLoaded.params.whichPage != WhichPage.TOP;
         super.onLoadFinished(keepCurrentPosition);
-        BaseTimelineAdapter<T> listAdapter = getListAdapter();
-        if (dataLoaded.params.whichPage == WhichPage.TOP && listAdapter != null) {
+        if (dataLoaded.params.whichPage == WhichPage.TOP) {
             TimelinePositionStorage.setPosition(getListView(), 0);
-            listAdapter.setPositionRestored(true);
+            getListAdapter().setPositionRestored(true);
         }
         // TODO end: Move this inside superclass
 

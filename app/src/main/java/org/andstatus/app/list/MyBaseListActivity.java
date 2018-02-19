@@ -17,13 +17,14 @@
 package org.andstatus.app.list;
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
+import org.andstatus.app.timeline.EmptyBaseTimelineAdapter;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.widget.MySwipeRefreshLayout;
 
@@ -33,7 +34,7 @@ public abstract class MyBaseListActivity extends MyActivity implements
 
     protected MySwipeRefreshLayout mSwipeLayout = null;
     private int mPositionOfContextMenu = -1;
-    private ListAdapter mAdapter = null;
+    private ListAdapter mAdapter = EmptyBaseTimelineAdapter.EMPTY;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,14 +61,12 @@ public abstract class MyBaseListActivity extends MyActivity implements
         this.mPositionOfContextMenu = position;
     }
 
-    protected void setListAdapter(ListAdapter adapter) {
-        if (adapter != null) {
-            mAdapter = adapter;
-            getListView().setAdapter(mAdapter);
-        }
+    protected void setListAdapter(@NonNull ListAdapter adapter) {
+        mAdapter = adapter;
+        getListView().setAdapter(mAdapter);
     }
 
-    @Nullable
+    @NonNull
     public ListAdapter getListAdapter() {
         return mAdapter;
     }
