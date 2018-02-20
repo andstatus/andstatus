@@ -697,10 +697,6 @@ public class MyQuery {
         return getLongs(sql);
     }
 
-    public static long getNumberOfNotificationEvents(@NonNull NotificationEventType event) {
-        return getCountOfActivities(ActivityTable.NEW_NOTIFICATION_EVENT + "=" + event.id);
-    }
-
     public static long getCountOfActivities(@NonNull String condition) {
         String sql = "SELECT COUNT(*) FROM " + ActivityTable.TABLE_NAME
                 + (TextUtils.isEmpty(condition) ? "" : " WHERE " + condition);

@@ -24,8 +24,8 @@ public class CommandExecutionContextTest {
     @Test
     public void testMentionsAccumulation() {
         CommandExecutionContext execContext = new CommandExecutionContext(
-                CommandData.newTimelineCommand( CommandEnum.GET_TIMELINE, ma, TimelineType.MENTIONS));
-        assertEquals(TimelineType.MENTIONS, execContext.getTimeline().getTimelineType());
+                CommandData.newTimelineCommand( CommandEnum.GET_TIMELINE, ma, TimelineType.INTERACTIONS));
+        assertEquals(TimelineType.INTERACTIONS, execContext.getTimeline().getTimelineType());
         
         final int noteCount = 4;
         final int mentionCount = 2;

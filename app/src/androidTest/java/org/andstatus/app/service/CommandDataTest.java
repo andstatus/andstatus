@@ -127,7 +127,7 @@ public class CommandDataTest {
         queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.SENT, ma.getActorId(), ma.getOrigin()));
         queue.add(CommandData.newSearch(SearchObjects.NOTES, MyContextHolder.get(), ma.getOrigin(), "q1"));
         queue.add(CommandData.newUpdateStatus(MyAccount.EMPTY, 2, 5));
-        queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.MENTIONS));
+        queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.INTERACTIONS));
         queue.add(CommandData.newUpdateStatus(MyAccount.EMPTY, 3, 6));
         queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME).setInForeground(true));
         queue.add(CommandData.newCommand(CommandEnum.GET_NOTE));
@@ -139,7 +139,7 @@ public class CommandDataTest {
         assertCommand(queue, CommandEnum.GET_NOTE);
         assertCommand(queue, CommandEnum.GET_TIMELINE, TimelineType.SENT);
         assertCommand(queue, CommandEnum.GET_TIMELINE, TimelineType.SEARCH);
-        assertCommand(queue, CommandEnum.GET_TIMELINE, TimelineType.MENTIONS);
+        assertCommand(queue, CommandEnum.GET_TIMELINE, TimelineType.INTERACTIONS);
     }
 
     private void assertCommand(Queue<CommandData> queue, CommandEnum commandEnum) {

@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class DatabaseCreatorTest {
@@ -43,7 +44,7 @@ public class DatabaseCreatorTest {
         assertEquals(true, database.isOpen());
         long originId = MyQuery.conditionToLongColumnValue(database, "", OriginTable.TABLE_NAME,
                 OriginTable._ID, OriginTable.ORIGIN_NAME + "='Twitter'");
-        assertTrue("Origin Twitter exists", originId != 0);
+        assertNotEquals("Origin Twitter doesn't exist", 0, originId );
     }
 
 }

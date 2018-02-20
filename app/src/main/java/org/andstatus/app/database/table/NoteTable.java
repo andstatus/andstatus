@@ -98,9 +98,6 @@ public final class NoteTable implements BaseColumns {
      * Main difference: visibility. REBLOGGED are shown for all followers in their Home timelines.
      */
     public static final String REBLOGGED = "reblogged";
-    /** Some of my accounts are mentioned in this note, is a recipient (in TO or CC)
-     *     or this is a reply to my account */
-    public static final String MENTIONED = "mentioned";
 
     public static final String FAVORITE_COUNT = "favorite_count";
     public static final String REBLOG_COUNT = "reblog_count";
@@ -137,7 +134,6 @@ public final class NoteTable implements BaseColumns {
                 + PRIVATE + " INTEGER NOT NULL DEFAULT 0,"
                 + FAVORITED + " INTEGER NOT NULL DEFAULT 0,"
                 + REBLOGGED + " INTEGER NOT NULL DEFAULT 0,"
-                + MENTIONED + " INTEGER NOT NULL DEFAULT 0,"
                 + FAVORITE_COUNT + " INTEGER NOT NULL DEFAULT 0,"
                 + REBLOG_COUNT + " INTEGER NOT NULL DEFAULT 0,"
                 + REPLY_COUNT + " INTEGER NOT NULL DEFAULT 0,"

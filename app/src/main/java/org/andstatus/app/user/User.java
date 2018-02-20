@@ -93,7 +93,7 @@ public class User {
         if (!TextUtils.isEmpty(knownAs)) {
             members += "; knownAs=" + knownAs;
         }
-        if (isMyUser.known()) {
+        if (isMyUser.known) {
             members += "; isMine=" + isMyUser.toBoolean(false);
         }
         return str + "{" + members + "}";
@@ -118,7 +118,7 @@ public class User {
     private ContentValues toContentValues(MyContext myContext) {
         ContentValues values = new ContentValues();
         if (StringUtils.nonEmpty(knownAs)) values.put(UserTable.KNOWN_AS, knownAs);
-        if (isMyUser.known()) values.put(UserTable.IS_MY, isMyUser.id);
+        if (isMyUser.known) values.put(UserTable.IS_MY, isMyUser.id);
         return values;
     }
 

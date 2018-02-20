@@ -38,7 +38,7 @@ public enum NotificationEventType {
     ANNOUNCE(1, "notifications_announce", asList(TimelineType.HOME), true, R.string.notification_events_announce),
     FOLLOW(2, "notifications_follow", EMPTY_LIST, true, R.string.notification_events_follow),
     LIKE(3, "notifications_like", EMPTY_LIST, true, R.string.notification_events_like),
-    MENTION(4, "notifications_mention", asList(TimelineType.HOME, TimelineType.MENTIONS), true, R.string.notification_events_mention),
+    MENTION(4, "notifications_mention", asList(TimelineType.HOME, TimelineType.INTERACTIONS), true, R.string.notification_events_mention),
     OUTBOX(5, "notifications_outbox", asList(TimelineType.OUTBOX), true, org.andstatus.app.R.string.notification_events_outbox),
     PRIVATE(6, "notifications_private", asList(TimelineType.PRIVATE), true, R.string.notification_events_private),
     SERVICE_RUNNING(8, "", EMPTY_LIST, true, R.string.syncing),

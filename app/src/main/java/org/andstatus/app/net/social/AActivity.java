@@ -63,9 +63,11 @@ public class AActivity extends AObject {
 
     /** Some additional attributes may appear from "My account's" (authenticated User's) point of view */
     private TriState subscribedByMe = TriState.UNKNOWN;
+    private TriState interacted = TriState.UNKNOWN;
+    private NotificationEventType interactionEventType = NotificationEventType.EMPTY;
     private TriState notified = TriState.UNKNOWN;
     private Actor notifiedActor = Actor.EMPTY;
-    private NotificationEventType notificationEventType = NotificationEventType.EMPTY;
+    private NotificationEventType newNotificationEventType = NotificationEventType.EMPTY;
 
     @NonNull
     public static AActivity fromInner(@NonNull Actor actor, @NonNull ActivityType type,
@@ -278,9 +280,11 @@ public class AActivity extends AObject {
                 + ", oid:" + timelinePosition
                 + ", updated:" + MyLog.debugFormatOfDate(updatedDate)
                 + ", me:" + (accountActor.isEmpty() ? "EMPTY" : accountActor.oid)
-                + (subscribedByMe.known() ? (subscribedByMe == TriState.TRUE ? ", subscribed" : ", NOT subscribed") : "" )
-                + (notified.known() ? (notified == TriState.TRUE ? ", notified" : ", NOT notified") : "" )
-                + (notificationEventType.isEmpty() ? "" : ", " + notificationEventType)
+                + (subscribedByMe.known ? (subscribedByMe == TriState.TRUE ? ", subscribed" : ", NOT subscribed") : "" )
+                + (interacted.isTrue ? ", interacted" : "" )
+                + (notifiedActor.isEmpty() ? "" : " actor:" + objActor)
+                + (notified.isTrue ? ", notified" : "" )
+                + (newNotificationEventType.isEmpty() ? "" : ", " + newNotificationEventType)
                 + (actor.isEmpty() ? "" : ", \nactor:" + actor)
                 + (note.isEmpty() ? "" : ", \nnote:" + note)
                 + (getActivity().isEmpty() ? "" : ", \nactivity:" + getActivity())
@@ -323,11 +327,14 @@ public class AActivity extends AObject {
         activity.aActivity = AActivity.from(activity.accountActor, ActivityType.EMPTY);
         activity.aActivity.id =  DbUtils.getLong(cursor, ActivityTable.OBJ_ACTIVITY_ID);
         activity.subscribedByMe = DbUtils.getTriState(cursor, ActivityTable.SUBSCRIBED);
+        activity.interacted = DbUtils.getTriState(cursor, ActivityTable.INTERACTED);
+        activity.interactionEventType = NotificationEventType.fromId(
+                DbUtils.getLong(cursor, ActivityTable.INTERACTION_EVENT));
         activity.notified = DbUtils.getTriState(cursor, ActivityTable.NOTIFIED);
         activity.notifiedActor = Actor.fromOriginAndActorId(activity.accountActor.origin,
                 DbUtils.getLong(cursor, ActivityTable.NOTIFIED_ACTOR_ID));
-        activity.setNotificationEventType(NotificationEventType.fromId(
-                DbUtils.getLong(cursor, ActivityTable.NEW_NOTIFICATION_EVENT)));
+        activity.newNotificationEventType = NotificationEventType.fromId(
+                DbUtils.getLong(cursor, ActivityTable.NEW_NOTIFICATION_EVENT));
         activity.updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
         activity.insDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
         return activity;
@@ -335,7 +342,7 @@ public class AActivity extends AObject {
     
     public long save(MyContext myContext) {
         if (wontSave(myContext)) return id;
-        calculateNotification(myContext);
+        if (updatedDate > 0) calculateInteraction(myContext);
         if (getId() == 0) {
             id = DbUtils.addRowWithRetry(myContext, ActivityTable.TABLE_NAME, toContentValues(), 3);
             MyLog.v(this, "Added " + this);
@@ -419,40 +426,50 @@ public class AActivity extends AObject {
         }
     }
 
-    private void calculateNotification(MyContext myContext) {
-        if (getUpdatedDate() < 1
-                || isNotified().equals(TriState.FALSE)
-                || myContext.users().contains(getActor())) return;
-        final NotificationEventType event;
-        if(myContext.getNotifier().isEnabled(NotificationEventType.MENTION)
-                && myContext.users().contains(getNote().audience().getRecipients())
-                && !isMyActorOrAuthor(myContext)) {
-            event = NotificationEventType.MENTION;
-            notifiedActor = myContext.users().myActors.values().stream()
-                    .filter(actor -> getNote().audience().contains(actor)).findFirst().orElse(Actor.EMPTY);
-        } else if (myContext.getNotifier().isEnabled(NotificationEventType.ANNOUNCE)
-                && type == ActivityType.ANNOUNCE
-                && myContext.users().contains(getAuthor())) {
-            event = NotificationEventType.ANNOUNCE;
-            notifiedActor = getAuthor();
-        } else if (myContext.getNotifier().isEnabled(NotificationEventType.LIKE)
-                && (type == ActivityType.LIKE || type == ActivityType.UNDO_LIKE)
-                && myContext.users().contains(getAuthor())) {
-            event = NotificationEventType.LIKE;
-            notifiedActor = getAuthor();
-        } else if (myContext.getNotifier().isEnabled(NotificationEventType.FOLLOW)
-                && (type == ActivityType.FOLLOW || type == ActivityType.UNDO_FOLLOW)
-                && myContext.users().contains(getObjActor())) {
-            event = NotificationEventType.FOLLOW;
-            notifiedActor = getObjActor();
-        } else if (myContext.getNotifier().isEnabled(NotificationEventType.PRIVATE)
-                && getNote().isPrivate()) {
-            event = NotificationEventType.PRIVATE;
-            notifiedActor = accountActor;
-        } else {
-            return;
+    private void calculateInteraction(MyContext myContext) {
+        newNotificationEventType = calculateNotificationEventType(myContext);
+        interacted = TriState.fromBoolean(newNotificationEventType != NotificationEventType.EMPTY);
+        interactionEventType = newNotificationEventType;
+        notifiedActor = calculateNotifiedActor(myContext, newNotificationEventType);
+        if (isNotified().toBoolean(true)) {
+            this.notified = TriState.fromBoolean(myContext.getNotifier().isEnabled(newNotificationEventType));
         }
-        setNotificationEventType(event);
+    }
+
+    private NotificationEventType calculateNotificationEventType(MyContext myContext) {
+        if (myContext.users().contains(getActor())) return NotificationEventType.EMPTY;
+        if (getNote().isPrivate()) {
+            return NotificationEventType.PRIVATE;
+        } else if(myContext.users().contains(getNote().audience().getRecipients()) && !isMyActorOrAuthor(myContext)) {
+            return NotificationEventType.MENTION;
+        } else if (type == ActivityType.ANNOUNCE && myContext.users().contains(getAuthor())) {
+            return NotificationEventType.ANNOUNCE;
+        } else if ((type == ActivityType.LIKE || type == ActivityType.UNDO_LIKE)
+                && myContext.users().contains(getAuthor())) {
+            return NotificationEventType.LIKE;
+        } else if ((type == ActivityType.FOLLOW || type == ActivityType.UNDO_FOLLOW)
+                && myContext.users().contains(getObjActor())) {
+            return NotificationEventType.FOLLOW;
+        } else {
+            return NotificationEventType.EMPTY;
+        }
+    }
+
+    private Actor calculateNotifiedActor(MyContext myContext, NotificationEventType event) {
+        switch (event) {
+            case MENTION:
+                return myContext.users().myActors.values().stream()
+                        .filter(actor -> getNote().audience().contains(actor)).findFirst().orElse(Actor.EMPTY);
+            case ANNOUNCE:
+            case LIKE:
+                return getAuthor();
+            case FOLLOW:
+                return getObjActor();
+            case PRIVATE:
+                return accountActor;
+            default:
+                return Actor.EMPTY;
+        }
     }
 
     private ContentValues toContentValues() {
@@ -463,16 +480,20 @@ public class AActivity extends AObject {
         values.put(ActivityTable.NOTE_ID, getNote().noteId);
         values.put(ActivityTable.OBJ_ACTOR_ID, getObjActor().actorId);
         values.put(ActivityTable.OBJ_ACTIVITY_ID, getActivity().id);
-        if (subscribedByMe.known()) {
+        if (subscribedByMe.known) {
             values.put(ActivityTable.SUBSCRIBED, subscribedByMe.id);
         }
-        if (notified.known()) {
+        if (interacted.known) {
+            values.put(ActivityTable.INTERACTED, interacted.id);
+            values.put(ActivityTable.INTERACTION_EVENT, interactionEventType.id);
+        }
+        if (notified.known) {
             values.put(ActivityTable.NOTIFIED, notified.id);
+            values.put(ActivityTable.NEW_NOTIFICATION_EVENT, newNotificationEventType.id);
         }
         if (notifiedActor.nonEmpty()) {
             values.put(ActivityTable.NOTIFIED_ACTOR_ID, notifiedActor.actorId);
         }
-        values.put(ActivityTable.NEW_NOTIFICATION_EVENT, notificationEventType.id);
         values.put(ActivityTable.UPDATED_DATE, updatedDate);
         if (getId() == 0) {
             values.put(ActivityTable.ACTIVITY_TYPE, type.id);
@@ -504,13 +525,8 @@ public class AActivity extends AObject {
         }
     }
 
-    public void setNotificationEventType(@NonNull NotificationEventType notificationEventType) {
-        this.notificationEventType = notificationEventType;
-        if (notificationEventType != NotificationEventType.EMPTY) setNotified(TriState.TRUE);
-    }
-
-    public NotificationEventType getNotificationEventType() {
-        return notificationEventType;
+    public NotificationEventType getNewNotificationEventType() {
+        return newNotificationEventType;
     }
 
     public void setId(long id) {

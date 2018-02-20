@@ -316,7 +316,7 @@ public class MyBackupAgent extends BackupAgent {
         return false;
     }
     
-    /** Returns count of restores files */
+    /** @return count of restores files */
     public long restoreFile(MyBackupDataInput data, File dataFile) throws IOException {
         if (dataFile.exists() && !dataFile.delete()) {
             throw new FileNotFoundException("Couldn't delete old file before restore '"
@@ -326,8 +326,7 @@ public class MyBackupAgent extends BackupAgent {
         MyLog.i(this, method + " started, " + fileWritten(data.getKey(), dataFile, data.getDataSize()));
         int bytesToWrite = data.getDataSize();
         int bytesWritten = 0;
-        FileOutputStream output = new FileOutputStream(dataFile, false);
-        try {
+        try (FileOutputStream output = new FileOutputStream(dataFile, false)) {
             while (bytesToWrite > bytesWritten) {
                 byte[] bytes = new byte[MyBackupDataInput.fileChunkSize];
                 int bytesRead = data.readEntityData(bytes, 0, bytes.length);
@@ -341,8 +340,6 @@ public class MyBackupAgent extends BackupAgent {
                 throw new FileNotFoundException("Couldn't restore " 
                         + filePartiallyWritten(data.getKey(), dataFile, bytesToWrite, bytesWritten));
             }
-        } finally {
-            output.close();
         }
         backupDescriptor.getLogger().logProgress("Restored "
                 + filePartiallyWritten(data.getKey(), dataFile, bytesToWrite, bytesWritten));

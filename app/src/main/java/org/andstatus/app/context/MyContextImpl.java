@@ -120,7 +120,7 @@ public class MyContextImpl implements MyContext {
         }
         MyLog.v(this, "Starting initialization of " + instanceId + " by " + initializedBy);
 
-        boolean createApplicationData = MyStorage.isApplicationDataCreated().not().toBoolean(false);
+        boolean createApplicationData = MyStorage.isApplicationDataCreated() != TriState.TRUE;
         if (createApplicationData) {
             MyLog.i(this, method + " Creating application data");
             MyPreferencesGroupsEnum.setDefaultValues();

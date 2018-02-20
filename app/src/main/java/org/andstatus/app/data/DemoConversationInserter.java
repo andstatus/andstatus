@@ -100,8 +100,8 @@ public class DemoConversationInserter {
 
         AActivity reply2 = buildActivity(author2, "Reply 2 to selected is private", selected, null);
         addPrivateNote(reply2, TriState.TRUE);
-        assertNotificationEvent(reply2, NotificationEventType.PRIVATE);
-        assertNotificationEvent(selected, NotificationEventType.EMPTY);
+        DemoNoteInserter.assertInteraction(reply2, NotificationEventType.PRIVATE, TriState.TRUE);
+        DemoNoteInserter.assertInteraction(selected, NotificationEventType.EMPTY, TriState.FALSE);
         if (iteration == 1) {
             assertEquals("Should be subscribed " + selected, TriState.TRUE,
                     MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, selected.getId()));
@@ -114,7 +114,7 @@ public class DemoConversationInserter {
                     MyContentType.IMAGE));
         addActivity(reply3);
         addActivity(reply1);
-        assertNotificationEvent(reply1, NotificationEventType.EMPTY);
+        DemoNoteInserter.assertInteraction(reply1, NotificationEventType.EMPTY, TriState.FALSE);
         addActivity(reply2);
         AActivity reply4 = buildActivity(author4, "Reply 4 to Reply 1 other author", reply1, null);
         addActivity(reply4);
@@ -190,23 +190,22 @@ public class DemoConversationInserter {
         AActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7, " + demoData.globalPublicNoteText
                 + " text", reply7, null);
         addPrivateNote(reply11, TriState.FALSE);
-        DemoNoteInserter.assertNotified(reply11, TriState.UNKNOWN);
+        DemoNoteInserter.assertInteraction(reply11, NotificationEventType.EMPTY, TriState.FALSE);
 
         AActivity myReply13 = buildActivity(accountActor, "My reply to Reply 2", reply2, null);
         AActivity reply14 = buildActivity(author3, "Reply to my note 13", myReply13, null);
         addActivity(reply14);
-        assertNotificationEvent(reply14, NotificationEventType.MENTION);
+        DemoNoteInserter.assertInteraction(reply14, NotificationEventType.MENTION, TriState.TRUE);
 
         AActivity reblogOf14 = buildActivity(author2, ActivityType.ANNOUNCE);
         reblogOf14.setActivity(reply14);
         addActivity(reblogOf14);
-        DemoNoteInserter.assertNotified(reblogOf14, TriState.TRUE);
+        DemoNoteInserter.assertInteraction(reblogOf14, NotificationEventType.MENTION, TriState.TRUE);
 
         AActivity reblogOfMy13 = buildActivity(author3, ActivityType.ANNOUNCE);
         reblogOfMy13.setActivity(myReply13);
         addActivity(reblogOfMy13);
-        DemoNoteInserter.assertNotified(reblogOfMy13, TriState.TRUE);
-        assertNotificationEvent(reblogOfMy13, NotificationEventType.ANNOUNCE);
+        DemoNoteInserter.assertInteraction(reblogOfMy13, NotificationEventType.ANNOUNCE, TriState.TRUE);
 
         AActivity mentionOfAuthor3 = buildActivity(reblogger1, "@" + author3.getUsername() + " mention in reply to 4",
                 reply4, iteration == 1 ? demoData.conversationMentionOfAuthor3Oid : null);
@@ -215,7 +214,7 @@ public class DemoConversationInserter {
         AActivity followOf3 = buildActivity(author2, ActivityType.FOLLOW);
         followOf3.setObjActor(author3);
         addActivity(followOf3);
-        assertNotificationEvent(followOf3, NotificationEventType.EMPTY);
+        DemoNoteInserter.assertInteraction(followOf3, NotificationEventType.EMPTY, TriState.FALSE);
 
         AActivity notLoaded1 = AActivity.newPartialNote(accountActor, MyLog.uniqueDateTimeFormatted());
         Actor notLoadedActor = Actor.fromOriginAndActorOid(accountActor.origin, "acct:notloaded@someother.host"
@@ -227,17 +226,10 @@ public class DemoConversationInserter {
         AActivity followOfMe = buildActivity(getAuthor1(), ActivityType.FOLLOW);
         followOfMe.setObjActor(accountActor);
         addActivity(followOfMe);
-        assertNotificationEvent(followOfMe, NotificationEventType.FOLLOW);
+        DemoNoteInserter.assertInteraction(followOfMe, NotificationEventType.FOLLOW, TriState.TRUE);
 
         AActivity reply16 = buildActivity(author2, "Reply 16 to Reply 15", reply15, null);
         addActivity(reply16);
-    }
-
-    private void assertNotificationEvent(AActivity activity, NotificationEventType expectedEvent) {
-        assertEquals("Notification event assertion failed for activity:\n" + activity,
-                expectedEvent,
-                NotificationEventType.fromId(
-                        MyQuery.activityIdToLongColumnValue(ActivityTable.NEW_NOTIFICATION_EVENT, activity.getId())));
     }
 
     private Actor getAuthor1() {

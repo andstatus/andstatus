@@ -88,7 +88,7 @@ public abstract class ConnectionTwitterLike extends Connection {
             case HOME_TIMELINE:
                 url = "statuses/home_timeline.json";
                 break;
-            case MENTIONS_TIMELINE:
+            case NOTIFICATIONS_TIMELINE:
                 url = "statuses/mentions.json";
                 break;
             case UPDATE_PRIVATE_NOTE:

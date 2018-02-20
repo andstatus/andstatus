@@ -21,14 +21,22 @@ import android.os.Bundle;
 import org.andstatus.app.IntentExtra;
 
 public enum TriState {
-    TRUE(2),
-    FALSE(1),
-    UNKNOWN(3);
+    TRUE(2, true, false, true, false),
+    FALSE(1, false, true, true, false),
+    UNKNOWN(3, false, false, false, true);
 
     public final long id;
-    
-    TriState(long id) {
+    public final boolean isTrue;
+    public final boolean isFalse;
+    public final boolean known;
+    public final boolean unknown;
+
+    TriState(long id, boolean isTrue, boolean isFalse, boolean known, boolean unknown) {
         this.id = id;
+        this.isTrue = isTrue;
+        this.isFalse = isFalse;
+        this.known = known;
+        this.unknown = unknown;
     }
     
     public static TriState fromId(long id) {
@@ -83,39 +91,8 @@ public enum TriState {
         }
     }
 
-    public static boolean isKnown(TriState triState) {
-        return triState == TRUE || triState == FALSE;
-    }
-
-    public Bundle toBundle(String key) {
-        return toBundle(new Bundle(), key);
-    }
-
     public Bundle toBundle(Bundle bundle, String key) {
         bundle.putLong(key, id);
         return bundle;
-    }
-
-    public TriState not() {
-        switch (this) {
-            case TRUE:
-                return FALSE;
-            case FALSE:
-                return TRUE;
-            default:
-                return UNKNOWN;
-        }
-    }
-
-    public boolean isBoolean(boolean value) {
-        return this.toBoolean(value) == value;
-    }
-
-    public boolean known() {
-        return !unknown();
-    }
-
-    public boolean unknown() {
-        return this.equals(UNKNOWN);
     }
 }

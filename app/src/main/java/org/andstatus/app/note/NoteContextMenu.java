@@ -32,7 +32,6 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.data.NoteForAccount;
-import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.origin.Origin;
@@ -125,19 +124,16 @@ public class NoteContextMenu extends MyContextMenu {
                 // Notes, where an Actor of this note is an Actor ("Actor timeline" of that actor)
                 NoteContextMenuItem.ACTOR_ACTIONS.addTo(menu, order++,
                         String.format(
-                                getActivity().getText(R.string.menu_item_user_messages).toString(),
-                                MyQuery.actorIdToWebfingerId(noteForAccount.actorId)));
+                                getActivity().getText(R.string.menu_item_user_messages).toString(), noteForAccount.actorName));
                 if (!noteForAccount.isActor) {
                     if (noteForAccount.actorFollowed) {
                         NoteContextMenuItem.UNDO_FOLLOW_ACTOR.addTo(menu, order++,
                                 String.format(
-                                        getActivity().getText(R.string.menu_item_stop_following_user).toString(),
-                                        MyQuery.actorIdToWebfingerId(noteForAccount.actorId)));
+                                        getActivity().getText(R.string.menu_item_stop_following_user).toString(), noteForAccount.actorName));
                     } else {
                         NoteContextMenuItem.FOLLOW_ACTOR.addTo(menu, order++,
                                 String.format(
-                                        getActivity().getText(R.string.menu_item_follow_user).toString(),
-                                        MyQuery.actorIdToWebfingerId(noteForAccount.actorId)));
+                                        getActivity().getText(R.string.menu_item_follow_user).toString(), noteForAccount.actorName));
                     }
                 }
             }
@@ -147,19 +143,16 @@ public class NoteContextMenu extends MyContextMenu {
                 // "Actor timeline" of that actor
                 NoteContextMenuItem.AUTHOR_ACTIONS.addTo(menu, order++,
                         String.format(
-                                getActivity().getText(R.string.menu_item_user_messages).toString(),
-                                MyQuery.actorIdToWebfingerId(noteForAccount.authorId)));
+                                getActivity().getText(R.string.menu_item_user_messages).toString(), noteForAccount.authorName));
                 if (!noteForAccount.isAuthor) {
                     if (noteForAccount.authorFollowed) {
                         NoteContextMenuItem.UNDO_FOLLOW_AUTHOR.addTo(menu, order++,
                                 String.format(
-                                        getActivity().getText(R.string.menu_item_stop_following_user).toString(),
-                                        MyQuery.actorIdToWebfingerId(noteForAccount.authorId)));
+                                        getActivity().getText(R.string.menu_item_stop_following_user).toString(), noteForAccount.authorName));
                     } else {
                         NoteContextMenuItem.FOLLOW_AUTHOR.addTo(menu, order++,
                                 String.format(
-                                        getActivity().getText(R.string.menu_item_follow_user).toString(),
-                                        MyQuery.actorIdToWebfingerId(noteForAccount.authorId)));
+                                        getActivity().getText(R.string.menu_item_follow_user).toString(), noteForAccount.authorName));
                     }
                 }
             }

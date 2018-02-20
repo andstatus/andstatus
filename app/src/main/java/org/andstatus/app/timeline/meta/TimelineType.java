@@ -34,7 +34,8 @@ public enum TimelineType implements SelectableEnum {
     SEARCH(Scope.ORIGIN, "search", R.string.options_menu_search, Connection.ApiRoutineEnum.SEARCH_NOTES),
     FAVORITES(Scope.USER, "favorites", R.string.timeline_title_favorites, Connection.ApiRoutineEnum.FAVORITES_TIMELINE),
     /** The Mentions timeline and other information (replies...). */
-    MENTIONS(Scope.USER, "mentions", R.string.timeline_title_mentions, Connection.ApiRoutineEnum.MENTIONS_TIMELINE),
+    INTERACTIONS(Scope.USER, "interactions", R.string.timeline_title_interactions,
+            Connection.ApiRoutineEnum.NOTIFICATIONS_TIMELINE),
     /** Private notes (direct tweets, dents...) */
     PRIVATE(Scope.USER, "private", R.string.timeline_title_private, Connection.ApiRoutineEnum.PRIVATE_NOTES),
     /** Notes by the selected Actor (where he is an Author or an Actor only (e.g. for Reblog/Retweet).
@@ -164,7 +165,7 @@ public enum TimelineType implements SelectableEnum {
             DRAFTS,
             FAVORITES,
             HOME,
-            MENTIONS,
+            INTERACTIONS,
             FOLLOWERS,
             FRIENDS,
             NOTIFICATIONS,
@@ -204,7 +205,7 @@ public enum TimelineType implements SelectableEnum {
             case FOLLOWERS:
             case FRIENDS:
             case HOME:
-            case MENTIONS:
+            case INTERACTIONS:
             case NOTIFICATIONS:
             case OUTBOX:
             case SENT:
@@ -234,7 +235,7 @@ public enum TimelineType implements SelectableEnum {
             case FOLLOWERS:
             case FRIENDS:
             case HOME:
-            case MENTIONS:
+            case INTERACTIONS:
             case NOTIFICATIONS:
             case OUTBOX:
             case PRIVATE:
@@ -254,7 +255,7 @@ public enum TimelineType implements SelectableEnum {
             case FAVORITES:
             case FRIENDS:
             case HOME:
-            case MENTIONS:
+            case INTERACTIONS:
             case NOTIFICATIONS:
             case SENT:
                 return true;

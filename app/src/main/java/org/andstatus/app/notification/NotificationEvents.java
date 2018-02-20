@@ -97,7 +97,7 @@ public class NotificationEvents {
     }
 
     public void update() {
-        final String method = "getNotificationData";
+        final String method = "update";
         map.clear();
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
@@ -123,6 +123,7 @@ public class NotificationEvents {
         }
     }
 
+    // TODO: event for an Actor, not for an Account
     public void onNewEvent(NotificationEventType eventType, MyAccount myAccount, long updatedDate) {
         NotificationData data = map.get(eventType);
         if (data == null) {

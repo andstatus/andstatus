@@ -24,6 +24,7 @@ import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
@@ -117,12 +118,12 @@ public class DemoGnuSocialConversationInserter {
         AActivity likeOfMyReply = new DemoNoteInserter(accountActor).buildActivity(author1, ActivityType.LIKE, "");
         likeOfMyReply.setActivity(myReplyTo12);
         addActivity(likeOfMyReply);
-        DemoNoteInserter.assertNotified(likeOfMyReply, TriState.TRUE);
+        DemoNoteInserter.assertInteraction(likeOfMyReply, NotificationEventType.LIKE, TriState.TRUE);
 
         AActivity followOfMe = new DemoNoteInserter(accountActor).buildActivity(author2, ActivityType.FOLLOW, "");
         followOfMe.setObjActor(accountActor);
         DemoNoteInserter.onActivityS(followOfMe);
-        DemoNoteInserter.assertNotified(followOfMe, TriState.TRUE);
+        DemoNoteInserter.assertInteraction(followOfMe, NotificationEventType.FOLLOW, TriState.TRUE);
 
         AActivity reply13 = buildActivity(author2, "Reply 13 to MyReply12", myReplyTo12, null);
         addActivity(reply13);

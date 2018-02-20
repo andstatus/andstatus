@@ -64,24 +64,24 @@ class NoteContextMenuData {
                     final Origin origin = myContext.origins().fromId(MyQuery.noteIdToOriginId(noteId));
                     MyAccount ma1 = myContext.accounts()
                             .getAccountForThisNote(origin, myActor, viewItem.getLinkedMyAccount(), false);
-                    NoteForAccount msgNew = new NoteForAccount(origin, 0, noteId, ma1);
+                    NoteForAccount noteForAccount = new NoteForAccount(origin, 0, noteId, ma1);
                     boolean changedToCurrent = !ma1.equals(currentMyAccount) && !myActor.isValid() && ma1.isValid()
-                            && !msgNew.isTiedToThisAccount()
+                            && !noteForAccount.isTiedToThisAccount()
                             && !menuContainer.getTimeline().getTimelineType().isForUser()
                             && currentMyAccount.isValid() && ma1.getOrigin().equals(currentMyAccount.getOrigin());
                     if (changedToCurrent) {
-                        msgNew = new NoteForAccount(origin, 0, noteId, currentMyAccount);
+                        noteForAccount = new NoteForAccount(origin, 0, noteId, currentMyAccount);
                     }
                     if (MyLog.isVerboseEnabled()) {
-                        MyLog.v(noteContextMenu, "actor:" + msgNew.getMyAccount()
+                        MyLog.v(noteContextMenu, "actor:" + noteForAccount.getMyAccount()
                                 + (changedToCurrent ? " <- to current" : "")
-                                + (msgNew.getMyAccount().equals(myActor) ? "" : " <- myActor:" + myActor)
+                                + (noteForAccount.getMyAccount().equals(myActor) ? "" : " <- myActor:" + myActor)
                                 + (myActor.equals(viewItem.getLinkedMyAccount())
                                     || !viewItem.getLinkedMyAccount().isValid() ? "" : " <- linked:"
                                     + viewItem.getLinkedMyAccount())
                                 + "; noteId:" + noteId);
                     }
-                    return msgNew.getMyAccount().isValid() ? msgNew : NoteForAccount.EMPTY;
+                    return noteForAccount.getMyAccount().isValid() ? noteForAccount : NoteForAccount.EMPTY;
                 }
 
                 @Override

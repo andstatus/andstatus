@@ -96,9 +96,9 @@ public class TimelineSql {
                 actWhere.append(ActivityTable.ACTOR_ID, SqlActorIds.forTimelineActor(timeline));
                 noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.FAVORITED, "=" + TriState.TRUE.id);
                 break;
-            case MENTIONS:
-                actWhere.append(ActivityTable.NOTIFIED_ACTOR_ID, SqlActorIds.forTimelineActor(timeline));
-                noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.MENTIONED, "=" + TriState.TRUE.id);
+            case INTERACTIONS:
+                actWhere.append(ActivityTable.INTERACTED, "=" + TriState.TRUE.id)
+                        .append(ActivityTable.NOTIFIED_ACTOR_ID, SqlActorIds.forTimelineActor(timeline));
                 break;
             case PUBLIC:
                 noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.PRIVATE, "!=" + TriState.TRUE.id);

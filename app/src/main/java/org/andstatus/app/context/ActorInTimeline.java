@@ -22,6 +22,7 @@ import org.andstatus.app.util.MyLog;
 
 /** How to show an Actor in a Timeline */
 public enum ActorInTimeline {
+    EMPTY(0),
     USERNAME(1),
     AT_USERNAME(2),
     WEBFINGER_ID(3),

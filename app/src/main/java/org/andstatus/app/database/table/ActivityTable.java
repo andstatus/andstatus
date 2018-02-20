@@ -46,7 +46,10 @@ public final class ActivityTable implements BaseColumns {
 
     /** {@link #ACCOUNT_ID} is subscribed to this action or was a "Secondary target audience" */
     public static final String SUBSCRIBED = "subscribed";
-    /** {@link #ACCOUNT_ID} should be notified of this action */
+    /** {@link #NOTIFIED_ACTOR_ID} is interacted **/
+    public static final String INTERACTED = "interacted";
+    public static final String INTERACTION_EVENT = "interaction_event";
+    /** {@link #NOTIFIED_ACTOR_ID} should be notified of this action */
     public static final String NOTIFIED = "notified";
     public static final String NOTIFIED_ACTOR_ID = "notified_actor_id";
     // TODO: Add "is mine" flag/ID... to easily make "SENT/ACTOR" timelines
@@ -88,6 +91,8 @@ public final class ActivityTable implements BaseColumns {
                 + OBJ_ACTOR_ID + " INTEGER NOT NULL,"
                 + OBJ_ACTIVITY_ID + " INTEGER NOT NULL,"
                 + SUBSCRIBED + " INTEGER NOT NULL DEFAULT 0,"
+                + INTERACTED + " INTEGER NOT NULL DEFAULT 0,"
+                + INTERACTION_EVENT + " INTEGER NOT NULL DEFAULT 0,"
                 + NOTIFIED + " INTEGER NOT NULL DEFAULT 0,"
                 + NOTIFIED_ACTOR_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + NEW_NOTIFICATION_EVENT + " INTEGER NOT NULL DEFAULT 0,"
@@ -149,5 +154,18 @@ public final class ActivityTable implements BaseColumns {
                 + NEW_NOTIFICATION_EVENT
                 + ")"
         );
+
+        DbUtils.execSQL(db, "CREATE INDEX idx_activity_interacted_timeline ON " + TABLE_NAME + " ("
+                + INTERACTED + ", "
+                + UPDATED_DATE
+                + ")"
+        );
+
+        DbUtils.execSQL(db, "CREATE INDEX idx_activity_interacted_actor ON " + TABLE_NAME + " ("
+                + INTERACTED + ", "
+                + NOTIFIED_ACTOR_ID
+                + ")"
+        );
+
     }
 }

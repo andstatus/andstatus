@@ -28,6 +28,7 @@ import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
+import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.service.CommandData;
@@ -263,9 +264,29 @@ public class DemoNoteInserter {
         return activity;
     }
 
-    public static void assertNotified(AActivity activity, TriState notified) {
-        assertEquals("Should" + (notified == TriState.FALSE ? " not" : "") + " be notified " + activity,
-                notified,
-                MyQuery.activityIdToTriState(ActivityTable.NOTIFIED, activity.getId()));
+    public static void assertInteraction(AActivity activity, NotificationEventType eventType, TriState notified) {
+        assertEquals("Notification event type\n" + activity + "\n",
+                eventType,
+                NotificationEventType.fromId(
+                        MyQuery.activityIdToLongColumnValue(ActivityTable.NEW_NOTIFICATION_EVENT, activity.getId())));
+
+        assertEquals("Interacted TriState\n" + activity + "\n",
+                TriState.fromBoolean(eventType != NotificationEventType.EMPTY),
+                MyQuery.activityIdToTriState(ActivityTable.INTERACTED, activity.getId()));
+
+        final long notifiedActorId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTIFIED_ACTOR_ID, activity.getId());
+        final String message = "Notified actor ID\n" + activity + "\n";
+        if (eventType == NotificationEventType.EMPTY) {
+            assertEquals(message, 0, notifiedActorId);
+        } else {
+            assertNotEquals(message, 0, notifiedActorId);
+        }
+
+        if (notified.known) {
+            assertEquals("Notified TriState\n"
+                            + activity + "\n",
+                    notified,
+                    MyQuery.activityIdToTriState(ActivityTable.NOTIFIED, activity.getId()));
+        }
     }
 }

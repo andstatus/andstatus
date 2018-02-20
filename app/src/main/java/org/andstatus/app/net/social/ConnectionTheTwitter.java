@@ -71,7 +71,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
             case HOME_TIMELINE:
                 url = "statuses/home_timeline.json?tweet_mode=extended";
                 break;
-            case MENTIONS_TIMELINE:
+            case NOTIFICATIONS_TIMELINE:
                 // https://dev.twitter.com/docs/api/1.1/get/statuses/mentions_timeline
                 url = "statuses/mentions_timeline.json?tweet_mode=extended";
                 break;

@@ -88,13 +88,6 @@ public abstract class Connection {
          * This is the equivalent of /home on the Web.
          */
         HOME_TIMELINE,
-        /**
-         * Get the actor's replies.
-         * 
-         * Returns most recent @replies (status updates prefixed with @username)
-         * for the authenticating user (an account).
-         */
-        MENTIONS_TIMELINE,
         /** Notifications in a separate API */
         NOTIFICATIONS_TIMELINE,
         /**

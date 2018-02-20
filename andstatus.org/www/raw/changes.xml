@@ -29,6 +29,22 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="37.00" android:versionCode="244"
+             versionDate="2018-02-20"
+             versionTitle="Merging actors of Users from different Social Networks and Interactions timeline">
+        <changes>
+            <change>Actors having the same WebFingerId (e.g. "andstatus@loadaverage.org") in different social networks
+                are merged logically. This allows AndStatus to show you in one timeline activities of one actor, downloaded
+                via different instances. This is especially needed for GNU Social and Mastodon.<br/>
+                Please note that for Pump.io this feature is provided for years, because all Pump.io instances use
+                the same actorID (WebFingerId) for the same actor.
+            </change>
+            <change><i>Mentions</i> timeline is replaced by <i>Interactions</i>, which shows not only "mentions" and replies,
+                but also likes, reposts and followers. Basically "Interactions" timeline shows all interactions of other
+                users with us (our actors) whereas "Notifications" timeline shows us only those interactions, which we
+                preferred to be notified about in Settings &gt; Notifications, plus unsent notes.</change>
+        </changes>
+    </release>
     <release android:versionName="36.09" android:versionCode="243"
              versionDate="2018-02-04"
              versionTitle="Bugfixes and smoother scrolling">

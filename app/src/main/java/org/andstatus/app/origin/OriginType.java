@@ -25,11 +25,11 @@ import org.andstatus.app.net.http.HttpConnectionEmpty;
 import org.andstatus.app.net.http.HttpConnectionOAuthApache;
 import org.andstatus.app.net.http.HttpConnectionOAuthJavaNet;
 import org.andstatus.app.net.http.HttpConnectionOAuthMastodon;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ConnectionEmpty;
 import org.andstatus.app.net.social.ConnectionMastodon;
 import org.andstatus.app.net.social.ConnectionTheTwitter;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocial;
-import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.TriState;
@@ -124,8 +124,7 @@ public enum OriginType implements SelectableEnum {
     private boolean isPublicTimeLineSyncable = false;
     private boolean isSearchTimelineSyncable = true;
     private boolean isPrivateTimelineSyncable = true;
-    private boolean isMentionsTimelineSyncable = true;
-    private boolean isNotificationsTimeLineSyncable = false;
+    private boolean isInteractionsTimelineSyncable = true;
     private final boolean isPrivateNoteAllowsReply;
     private final boolean isSelectable;
 
@@ -176,7 +175,7 @@ public enum OriginType implements SelectableEnum {
                 mAllowAttachmentForPrivateNote = true;
                 isSearchTimelineSyncable = false;
                 isPrivateTimelineSyncable = false;
-                isMentionsTimelineSyncable = false;
+                isInteractionsTimelineSyncable = false;
                 allowEditing = true;
                 isPrivateNoteAllowsReply = true;
                 isSelectable = true;
@@ -220,9 +219,7 @@ public enum OriginType implements SelectableEnum {
                 mAllowAttachmentForPrivateNote = false;
                 isSearchTimelineSyncable = true;
                 isPrivateTimelineSyncable = false;
-                isMentionsTimelineSyncable = false;
                 isPublicTimeLineSyncable = true;
-                isNotificationsTimeLineSyncable = true;
                 allowEditing = false;
                 isPrivateNoteAllowsReply = false;
                 isSelectable = true;
@@ -338,12 +335,11 @@ public enum OriginType implements SelectableEnum {
                 return isPublicTimeLineSyncable;
             case SEARCH:
                 return isSearchTimelineSyncable;
-            case MENTIONS:
-                return isMentionsTimelineSyncable;
+            case INTERACTIONS:
+            case NOTIFICATIONS:
+                return isInteractionsTimelineSyncable;
             case PRIVATE:
                 return isPrivateTimelineSyncable;
-            case NOTIFICATIONS:
-                return isNotificationsTimeLineSyncable;
             default:
                 return true;
         }

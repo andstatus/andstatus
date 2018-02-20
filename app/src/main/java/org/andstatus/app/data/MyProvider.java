@@ -233,7 +233,8 @@ public class MyProvider extends ContentProvider {
         TriState reblogged = TriState.fromBoolean(
                 myContext.users().contains(MyQuery.getRebloggers(myContext.getDatabase(), origin, noteId))
         );
-        update(myContext, NoteTable.TABLE_NAME, NoteTable.REBLOGGED + "=" + reblogged.id,
+        update(myContext, NoteTable.TABLE_NAME,
+                NoteTable.REBLOGGED + "=" + reblogged.id,
                 NoteTable._ID + "=" + noteId);
     }
 
@@ -241,12 +242,14 @@ public class MyProvider extends ContentProvider {
         TriState favorited = TriState.fromBoolean(
                 myContext.users().contains(MyQuery.getStargazers(myContext.getDatabase(), origin, noteId))
         );
-        update(myContext, NoteTable.TABLE_NAME, NoteTable.FAVORITED + "=" + favorited.id,
+        update(myContext, NoteTable.TABLE_NAME,
+                NoteTable.FAVORITED + "=" + favorited.id,
                 NoteTable._ID + "=" + noteId);
     }
 
     public static void clearNotification(@NonNull MyContext myContext, @NonNull Timeline timeline) {
-        update(myContext, ActivityTable.TABLE_NAME, ActivityTable.NEW_NOTIFICATION_EVENT + "=0",
+        update(myContext, ActivityTable.TABLE_NAME,
+                ActivityTable.NEW_NOTIFICATION_EVENT + "=0",
                 timeline.isEmpty() ? "" : ActivityTable.NEW_NOTIFICATION_EVENT +
                         SqlActorIds.fromIds(NotificationEventType.idsOfShownOn(timeline.getTimelineType())).getSql());
     }

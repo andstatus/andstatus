@@ -23,6 +23,7 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Audience;
@@ -45,7 +46,9 @@ public class NoteForAccount {
     public DownloadStatus status = DownloadStatus.UNKNOWN;
     private String body = "";
     public long authorId = 0;
+    public String authorName = "";
     public long actorId = 0;
+    public String actorName = "";
     private boolean isAuthorMySucceededMyAccount = false;
     TriState isPrivate = TriState.UNKNOWN;
     public String imageFilename = null;
@@ -98,6 +101,7 @@ public class NoteForAccount {
                 status = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
                 body = DbUtils.getString(cursor, NoteTable.BODY);
                 authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID);
+                authorName = MyQuery.actorIdToName(db, authorId, MyPreferences.getActorInTimeline());
                 isAuthor = (accountActorId == authorId);
                 isAuthorMySucceededMyAccount = isAuthor && myAccount.isValidAndSucceeded();
                 isPrivate = DbUtils.getTriState(cursor, NoteTable.PRIVATE);
@@ -119,6 +123,7 @@ public class NoteForAccount {
         } else {
             actorId = MyQuery.activityIdToLongColumnValue(ActivityTable.ACTOR_ID, activityId);
         }
+        actorName = MyQuery.actorIdToName(db, actorId, MyPreferences.getActorInTimeline());
         isActor = actorId == accountActorId;
         actorFollowed = !isActor && (actorId == authorId ? authorFollowed : MyQuery.isFollowing(accountActorId, actorId));
     }

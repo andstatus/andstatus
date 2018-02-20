@@ -122,7 +122,7 @@ public class DataUpdater {
         if ( !activity.isAuthorActor()) {
             lum.onNewActorActivity(new ActorActivity(activity.getAuthor().actorId, activity.getId(), activity.getUpdatedDate()));
         }
-        execContext.getResult().onNotificationEvent(activity.getNotificationEventType());
+        execContext.getResult().onNotificationEvent(activity.getNewNotificationEventType());
     }
 
     public void saveLum() {
@@ -201,10 +201,6 @@ public class DataUpdater {
             for ( Actor actor : note.audience().getRecipients()) {
                 updateObjActor(actor.update(activity.accountActor, activity.getActor()));
             }
-            if (activity.getNote().audience().containsMe(execContext.getMyContext())
-                    && !activity.isMyActorOrAuthor(execContext.myContext)) {
-                values.put(NoteTable.MENTIONED, TriState.TRUE.id);
-            }
 
             if (!TextUtils.isEmpty(note.via)) {
                 values.put(NoteTable.VIA, note.via);
@@ -212,7 +208,7 @@ public class DataUpdater {
             if (!TextUtils.isEmpty(note.url)) {
                 values.put(NoteTable.URL, note.url);
             }
-            if (note.getPrivate().known()) {
+            if (note.getPrivate().known) {
                 values.put(NoteTable.PRIVATE, note.getPrivate().id);
             }
 
@@ -328,14 +324,14 @@ public class DataUpdater {
         TriState followedByMe = TriState.UNKNOWN;
         TriState followedByActor = activity.type.equals(ActivityType.FOLLOW) ? TriState.TRUE :
                 activity.type.equals(ActivityType.UNDO_FOLLOW) ? TriState.FALSE : TriState.UNKNOWN;
-        if (actor.followedByMe.known()) {
+        if (actor.followedByMe.known) {
             followedByMe = actor.followedByMe;
         } else if (activity.getActor().actorId == me.getActorId() && me.getActorId() != 0) {
             followedByMe = followedByActor;
         }
 
         actor.lookupActorId();
-        if (actor.actorId != 0 && actor.isPartiallyDefined() && followedByMe.unknown()) {
+        if (actor.actorId != 0 && actor.isPartiallyDefined() && followedByMe.unknown) {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, method + "; Skipping partially defined: " + actor.toString());
             }
@@ -407,7 +403,7 @@ public class DataUpdater {
                 values.put(ActorTable.UPDATED_DATE, actor.getUpdatedDate());
             }
 
-            if (followedByMe.known()) {
+            if (followedByMe.known) {
                 values.put(FriendshipTable.FOLLOWED, followedByMe.toBoolean(false));
                 MyLog.v(this, "Account '" + me.getAccountName() + "' "
                                 + (followedByMe.toBoolean(false) ? "follows" : "stop following ")

@@ -36,6 +36,7 @@ import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginPumpio;
 import org.andstatus.app.service.AttachmentDownloaderTest;
@@ -182,7 +183,7 @@ public class DataUpdaterTest {
 
         assertEquals("Note should be private", TriState.TRUE,
                 MyQuery.noteIdToTriState(NoteTable.PRIVATE, noteId));
-        DemoNoteInserter.assertNotified(activity, TriState.TRUE);
+        DemoNoteInserter.assertInteraction(activity, NotificationEventType.PRIVATE, TriState.TRUE);
 
         Audience audience = Audience.fromNoteId(accountActor.origin, noteId);
         assertNotEquals("No recipients for " + activity, 0, audience.getRecipients().size());
@@ -240,7 +241,7 @@ public class DataUpdaterTest {
                 MyQuery.noteIdToTriState(NoteTable.FAVORITED, noteId));
         assertEquals("Activity is subscribed " + likeActivity, TriState.UNKNOWN,
                 MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, likeActivity.getId()));
-        DemoNoteInserter.assertNotified(likeActivity, TriState.UNKNOWN);
+        DemoNoteInserter.assertInteraction(likeActivity, NotificationEventType.EMPTY, TriState.FALSE);
         assertEquals("Note is reblogged", TriState.UNKNOWN,
                 MyQuery.noteIdToTriState(NoteTable.REBLOGGED, noteId));
 
@@ -336,7 +337,7 @@ public class DataUpdaterTest {
         }
         assertEquals("Activity is subscribed", TriState.UNKNOWN,
                 MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, activity.getId()));
-        DemoNoteInserter.assertNotified(activity, TriState.UNKNOWN);
+        DemoNoteInserter.assertInteraction(activity, NotificationEventType.EMPTY, TriState.FALSE);
         assertEquals("Note is reblogged", TriState.UNKNOWN,
                 MyQuery.noteIdToTriState(NoteTable.REBLOGGED, noteId));
         assertEquals("Note stored as loaded", DownloadStatus.LOADED, DownloadStatus.load(

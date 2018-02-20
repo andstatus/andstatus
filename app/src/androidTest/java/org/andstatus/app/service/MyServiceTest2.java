@@ -60,7 +60,7 @@ public class MyServiceTest2 extends MyServiceTest {
 
         CommandData cd2 = CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
                 demoData.getMyAccount(demoData.twitterTestAccountName),
-                TimelineType.MENTIONS);
+                TimelineType.INTERACTIONS);
         mService.setListenedCommand(cd2);
 
         startCount = mService.executionStartCount;

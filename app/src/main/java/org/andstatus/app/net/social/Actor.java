@@ -510,7 +510,7 @@ public class Actor implements Comparable<Actor> {
     }
 
     public void saveUser(MyContext myContext) {
-        if (user.isMyUser().unknown() && myContext.users().contains(this)) {
+        if (user.isMyUser().unknown && myContext.users().contains(this)) {
             user.setIsMyUser(TriState.TRUE);
         }
         if (user.userId == 0) user.setKnownAs(getNamePreferablyWebFingerId());
