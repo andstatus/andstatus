@@ -167,7 +167,7 @@ public class MyAccounts {
 
     private MyAccount fromFriendsActorId(long actorId) {
         return myAccounts.stream().filter(ma -> myContext.users().myFriends.getOrDefault(actorId, Actor.EMPTY)
-                    .user.actors.contains(ma.getActorId()))
+                    .user.actorIds.contains(ma.getActorId()))
                 .findFirst().orElse(MyAccount.EMPTY);
     }
 

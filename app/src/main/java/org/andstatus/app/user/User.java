@@ -42,7 +42,7 @@ public class User {
     public long userId = 0L;
     private String knownAs = "";
     private TriState isMyUser = TriState.UNKNOWN;
-    public final Set<Long> actors;
+    public final Set<Long> actorIds;
 
     @NonNull
     public static User load(@NonNull MyContext myContext, long actorId) {
@@ -61,11 +61,11 @@ public class User {
         return MyQuery.get(myContext, sql, function).stream().findFirst().orElse(EMPTY);
     }
 
-    public User(long userId, String knownAs, TriState isMyUser, Set<Long> actors) {
+    public User(long userId, String knownAs, TriState isMyUser, Set<Long> actorIds) {
         this.userId = userId;
         this.knownAs = knownAs;
         this.isMyUser = isMyUser;
-        this.actors = actors;
+        this.actorIds = actorIds;
     }
 
     @NonNull

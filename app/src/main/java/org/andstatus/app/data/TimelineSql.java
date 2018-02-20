@@ -43,6 +43,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.andstatus.app.data.ProjectionMap.NOTE_TABLE_ALIAS;
+
 public class TimelineSql {
 
     private TimelineSql() {
@@ -57,13 +59,9 @@ public class TimelineSql {
      */
     static String tablesForTimeline(Uri uri, String[] projection) {
         Timeline timeline = Timeline.fromParsedUri(MyContextHolder.get(), ParsedUri.fromUri(uri), "");
-        SqlActorIds selectedAccounts = SqlActorIds.fromTimeline(timeline);
-    
         Collection<String> columns = new java.util.HashSet<>(Arrays.asList(projection));
-
-        SqlWhere activityWhere = new SqlWhere();
-        activityWhere.append(ActivityTable.UPDATED_DATE + ">0");
-        SqlWhere msgWhere = new SqlWhere();
+        SqlWhere actWhere = new SqlWhere().append(ActivityTable.UPDATED_DATE, ">0");
+        SqlWhere noteWhere = new SqlWhere();
 
         switch (timeline.getTimelineType()) {
             case FOLLOWERS:
@@ -80,67 +78,67 @@ public class TimelineSql {
                         + " INNER JOIN " + FriendshipTable.TABLE_NAME
                         + " ON (" + FriendshipTable.TABLE_NAME + "." + fActorIdColumnName + "=u1." + BaseColumns._ID
                         + " AND " + FriendshipTable.TABLE_NAME + "."
-                        + fActorLinkedActorIdColumnName + selectedAccounts.getSql()
+                        + fActorLinkedActorIdColumnName + SqlActorIds.forTimelineActor(timeline).getSql()
                         + " AND " + FriendshipTable.FOLLOWED + "=1"
                         + ")";
-                activityWhere.append(BaseColumns._ID + " IN (" + activityIds + ")");
+                actWhere.append(BaseColumns._ID + " IN (" + activityIds + ")");
                 break;
             case HOME:
-                activityWhere.append(ActivityTable.SUBSCRIBED + "=" + TriState.TRUE.id);
-                msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.PRIVATE + "!=" + TriState.TRUE.id);
-                addConditionForAccount(timeline, activityWhere);
+                actWhere.append(ActivityTable.SUBSCRIBED + "=" + TriState.TRUE.id)
+                        .append(ActivityTable.ACCOUNT_ID, SqlActorIds.forTimelineAccount(timeline));
+                noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.PRIVATE, "!=" + TriState.TRUE.id);
                 break;
             case PRIVATE:
-                msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.PRIVATE + "=" + TriState.TRUE.id);
-                addConditionForAccount(timeline, activityWhere);
+                actWhere.append(ActivityTable.ACCOUNT_ID, SqlActorIds.forTimelineAccount(timeline));
+                noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.PRIVATE, "=" + TriState.TRUE.id);
                 break;
             case FAVORITES:
-                msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.FAVORITED + "=" + TriState.TRUE.id);
-                addConditionForActor(timeline, activityWhere);
+                actWhere.append(ActivityTable.ACTOR_ID, SqlActorIds.forTimelineActor(timeline));
+                noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.FAVORITED, "=" + TriState.TRUE.id);
                 break;
             case MENTIONS:
-                msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.MENTIONED + "=" + TriState.TRUE.id);
-                addConditionForNotifiedActor(timeline, activityWhere);
+                actWhere.append(ActivityTable.NOTIFIED_ACTOR_ID, SqlActorIds.forTimelineActor(timeline));
+                noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.MENTIONED, "=" + TriState.TRUE.id);
                 break;
             case PUBLIC:
-                msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.PRIVATE + "!=" + TriState.TRUE.id);
+                noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.PRIVATE, "!=" + TriState.TRUE.id);
                 break;
             case DRAFTS:
-                msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.NOTE_STATUS + "=" + DownloadStatus.DRAFT.save());
-                addConditionForActor(timeline, activityWhere);
+                actWhere.append(ActivityTable.ACTOR_ID, SqlActorIds.forTimelineActor(timeline));
+                noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.NOTE_STATUS, "=" + DownloadStatus.DRAFT.save());
                 break;
             case OUTBOX:
-                msgWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.NOTE_STATUS + "=" + DownloadStatus.SENDING.save());
-                addConditionForActor(timeline, activityWhere);
+                actWhere.append(ActivityTable.ACTOR_ID, SqlActorIds.forTimelineActor(timeline));
+                noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.NOTE_STATUS, "=" + DownloadStatus.SENDING.save());
                 break;
             case SENT:
-                addConditionForActor(timeline, activityWhere);
+                actWhere.append(ActivityTable.ACTOR_ID, SqlActorIds.forTimelineActor(timeline));
                 break;
             case NOTIFICATIONS:
-                activityWhere.append(ActivityTable.NOTIFIED + "=" + TriState.TRUE.id);
-                addConditionForNotifiedActor(timeline, activityWhere);
+                actWhere.append(ActivityTable.NOTIFIED, "=" + TriState.TRUE.id)
+                        .append(ActivityTable.NOTIFIED_ACTOR_ID, SqlActorIds.forTimelineActor(timeline));
                 break;
             default:
                 break;
         }
 
         if (timeline.getTimelineType().isAtOrigin() && !timeline.isCombined()) {
-            activityWhere.append(ActivityTable.ORIGIN_ID + "=" + timeline.getOrigin().getId());
+            actWhere.append(ActivityTable.ORIGIN_ID, "=" + timeline.getOrigin().getId());
         }
-        String  tables = "(SELECT * FROM " + ActivityTable.TABLE_NAME + activityWhere.getWhere()
+        String  tables = "(SELECT * FROM " + ActivityTable.TABLE_NAME + actWhere.getWhere()
                 + ") AS " + ProjectionMap.ACTIVITY_TABLE_ALIAS
-                + (msgWhere.isEmpty() ? " LEFT" : " INNER") + " JOIN "
-                + NoteTable.TABLE_NAME + " AS " + ProjectionMap.NOTE_TABLE_ALIAS
-                + " ON (" + ProjectionMap.NOTE_TABLE_ALIAS + "." + BaseColumns._ID + "="
+                + (noteWhere.isEmpty() ? " LEFT" : " INNER") + " JOIN "
+                + NoteTable.TABLE_NAME + " AS " + NOTE_TABLE_ALIAS
+                + " ON (" + NOTE_TABLE_ALIAS + "." + BaseColumns._ID + "="
                     + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.NOTE_ID
-                    + msgWhere.getAndWhere() + ")";
+                    + noteWhere.getAndWhere() + ")";
 
         if (columns.contains(ActorTable.AUTHOR_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
                     + BaseColumns._ID + ", " 
                     + TimelineSql.usernameField() + " AS " + ActorTable.AUTHOR_NAME
                     + " FROM " + ActorTable.TABLE_NAME + ") AS author ON "
-                    + ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.AUTHOR_ID + "=author."
+                    + NOTE_TABLE_ALIAS + "." + NoteTable.AUTHOR_ID + "=author."
                     + BaseColumns._ID;
 
             if (columns.contains(DownloadTable.AVATAR_FILE_NAME)) {
@@ -152,7 +150,7 @@ public class TimelineSql {
                         + " ON "
                         + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_STATUS
                         + "=" + DownloadStatus.LOADED.save() + " AND "
-                        + "DownloadActorId=" + ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.AUTHOR_ID;
+                        + "DownloadActorId=" + NOTE_TABLE_ALIAS + "." + NoteTable.AUTHOR_ID;
             }
         }
         if (columns.contains(DownloadTable.IMAGE_FILE_NAME)) {
@@ -176,24 +174,10 @@ public class TimelineSql {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
                     + TimelineSql.usernameField() + " AS " + ActorTable.IN_REPLY_TO_NAME
                     + " FROM " + ActorTable.TABLE_NAME + ") AS prevAuthor ON "
-                    + ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.IN_REPLY_TO_ACTOR_ID
+                    + NOTE_TABLE_ALIAS + "." + NoteTable.IN_REPLY_TO_ACTOR_ID
                     + "=prevAuthor." + BaseColumns._ID;
         }
         return tables;
-    }
-
-    private static void addConditionForAccount(Timeline timeline, SqlWhere activityWhere) {
-        if (!timeline.isCombined() && timeline.user.isMyUser() == TriState.TRUE) {
-            activityWhere.append(ActivityTable.ACCOUNT_ID + SqlActorIds.fromIds(timeline.user.actors).getSql());
-        }
-    }
-
-    private static void addConditionForActor(Timeline timeline, SqlWhere activityWhere) {
-        activityWhere.append(ActivityTable.ACTOR_ID + SqlActorIds.fromTimeline(timeline).getSql());
-    }
-
-    private static void addConditionForNotifiedActor(Timeline timeline, SqlWhere activityWhere) {
-        activityWhere.append(ActivityTable.NOTIFIED_ACTOR_ID + SqlActorIds.fromTimeline(timeline).getSql());
     }
 
     /**

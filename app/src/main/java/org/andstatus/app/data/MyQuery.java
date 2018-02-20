@@ -741,20 +741,15 @@ public class MyQuery {
         return set;
     }
 
-    /**
-     *  MyAccounts' actorIds, who follow the specified Actor
-     */
+    /** IDs of my users' actors, who follow the specified Actor */
     @NonNull
-    public static Set<Long> getMyFollowersOf(long actorId) {
-        SqlActorIds selectedAccounts = SqlActorIds.fromTimeline(Timeline.EMPTY);
-
-        String where = FriendshipTable.ACTOR_ID + selectedAccounts.getSql()
-                + " AND " + FriendshipTable.FRIEND_ID + "=" + actorId
+    public static Set<Long> getMyFollowersOf(long friendId) {
+        String where = FriendshipTable.ACTOR_ID + SqlActorIds.forTimelineActor(Timeline.EMPTY).getSql()
+                + " AND " + FriendshipTable.FRIEND_ID + "=" + friendId
                 + " AND " + FriendshipTable.FOLLOWED + "=1";
         String sql = "SELECT " + FriendshipTable.ACTOR_ID
                 + " FROM " + FriendshipTable.TABLE_NAME
                 + " WHERE " + where;
-
         return getLongs(sql);
     }
 

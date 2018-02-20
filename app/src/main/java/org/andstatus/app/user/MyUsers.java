@@ -24,7 +24,7 @@ public class MyUsers {
     private final MyContext myContext;
     public final Map<Long, Actor> myActors = new ConcurrentHashMap<>();
     public final Map<Long, Actor> myFriends = new ConcurrentHashMap<>();
-    private final Map<Long, User> myUsers = new ConcurrentHashMap<>();
+    public final Map<Long, User> myUsers = new ConcurrentHashMap<>();
 
     public static MyUsers newEmpty(MyContext myContext) {
         return new MyUsers(myContext);
@@ -72,7 +72,7 @@ public class MyUsers {
                 actor.user = new User(userId, cursor.getString(3), TriState.TRUE, new HashSet<>());
                 myUsers.put(userId, actor.user);
             }
-            actor.user.actors.add(actor.actorId);
+            actor.user.actorIds.add(actor.actorId);
             return actor;
         };
         myActors.putAll(MyQuery.get(myContext, sql, function).stream()
@@ -119,11 +119,6 @@ public class MyUsers {
 
     public boolean isMeOrMyFriend(long actorId) {
         return myActors.containsKey(actorId) || myFriends.containsKey(actorId);
-    }
-
-    @NonNull
-    public SqlActorIds myActorIds() {
-        return SqlActorIds.fromIds(myActors.keySet());
     }
 
     @NonNull

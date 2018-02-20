@@ -18,11 +18,9 @@ package org.andstatus.app.data;
 
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.timeline.meta.TimelineType;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,19 +37,22 @@ public class SqlActorIds {
     public static final SqlActorIds EMPTY = new SqlActorIds();
     private final Set<Long> ids;
 
-    public static SqlActorIds fromTimeline(@NonNull Timeline timeline) {
-        if (timeline.getTimelineType() == TimelineType.SENT) {
-            return timeline.isCombined()
-                    ? MyContextHolder.get().users().myActorIds()
-                    : new SqlActorIds(timeline.user.actors);
-        } else if (timeline.isCombined() || timeline.getTimelineType().isAtOrigin()) {
-            return new SqlActorIds(MyContextHolder.get().accounts().get().stream()
-                    .filter(ma -> !timeline.getOrigin().isValid() || timeline.getOrigin().equals(ma.getOrigin()))
-                    .map(MyAccount::getActorId).collect(toList()));
-        } else if (timeline.getMyAccount().isValid()) {
-            return new SqlActorIds(timeline.getMyAccount().getActorId());
+    public static SqlActorIds forTimelineActor(@NonNull Timeline timeline) {
+        if (timeline.isCombined()) {
+            return SqlActorIds.fromIds(MyContextHolder.get().users().myActors.keySet());
+        } else if (timeline.getTimelineType().isAtOrigin()) {
+            return SqlActorIds.fromActors(MyContextHolder.get().users().myActors.values().stream()
+                    .filter(actor -> actor.origin.equals(timeline.getOrigin())).collect(toList()));
+        } else {
+            return SqlActorIds.fromIds(timeline.user.actorIds);
         }
-        return EMPTY;
+    }
+
+    public static SqlActorIds forTimelineAccount(@NonNull Timeline timeline) {
+        if (timeline.isCombined() || timeline.getTimelineType().isAtOrigin()) {
+            return SqlActorIds.EMPTY;
+        }
+        return SqlActorIds.fromIds(timeline.user.actorIds);
     }
 
     public static SqlActorIds fromActors(@NonNull Collection<Actor> actors) {

@@ -25,14 +25,26 @@ import android.text.TextUtils;
 public class SqlWhere {
     private String where = "";
 
-    public void append(String condition) {
+    public SqlWhere append(String field, SqlActorIds actorIds) {
+        return append(field, actorIds.getSql());
+    }
+
+    public SqlWhere append(String field, String condition) {
         if (TextUtils.isEmpty(condition)) {
-            return;
+            return this;
+        }
+        return append(field + condition);
+    }
+
+    public SqlWhere append(String condition) {
+        if (TextUtils.isEmpty(condition)) {
+            return this;
         }
         if (!TextUtils.isEmpty(where)) {
             where += " AND ";
         }
         where += "(" + condition + ")";
+        return this;
     }
 
     @NonNull
