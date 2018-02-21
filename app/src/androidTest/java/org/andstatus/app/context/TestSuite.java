@@ -74,7 +74,7 @@ public class TestSuite {
         }
         MyLog.setMinLogLevel(MyLog.VERBOSE);
         for (int iter=1; iter<6; iter++) {
-            MyLog.d(TAG, "Initializing Test Suite, iteration=" + iter);
+            MyLog.i(TAG, "Initializing Test Suite, iteration=" + iter);
             if (testCase == null) {
                 MyLog.e(TAG, "testCase is null.");
                 throw new IllegalArgumentException("testCase is null");
@@ -89,18 +89,18 @@ public class TestSuite {
                 MyLog.e(TAG, "targetContext is null.");
                 throw new IllegalArgumentException("testCase.getInstrumentation().getTargetContext() returned null");
             }
-            MyLog.d(TAG, "Before MyContextHolder.initialize " + iter);
+            MyLog.i(TAG, "Before MyContextHolder.initialize " + iter);
             try {
                 MyContextHolder.setCreator(new MyContextForTest(null, context, testCase));
-                MyContextHolder.initialize(context, testCase);
-                MyLog.d(TAG, "After MyContextHolder.initialize " + iter);
-                break;
+                MyContext myContext = MyContextHolder.initialize(context, testCase);
+                MyLog.i(TAG, "After MyContextHolder.initialize " + iter + " " + myContext);
+                if (myContext.state() == MyContextState.READY) break;
             } catch (IllegalStateException e) {
                 MyLog.i(TAG, "Error caught, iteration=" + iter, e);
             }
-            DbUtils.waitMs(method, 100);
+            DbUtils.waitMs(method, 3000);
         }
-        MyLog.d(TAG, "After Initializing Test Suite loop");
+        MyLog.i(TAG, "After Initializing Test Suite loop");
         MyContextHolder.setExecutionMode(
                 ExecutionMode.load(InstrumentationRegistry.getArguments().getString("executionMode")));
         final MyContext myContext = MyContextHolder.get();

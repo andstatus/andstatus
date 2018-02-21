@@ -48,6 +48,8 @@ public class ActivityLoader extends TimelineLoader<ActivityViewItem> {
                 loader.addActorIdToList(item.origin, item.objActorId);
             }
         }
+        if (loader.getList().isEmpty()) return items;
+
         loader.load(progress -> {});
         for (ActivityViewItem item: items) {
             if (item.activityType != ActivityType.CREATE && item.activityType != ActivityType.UPDATE) {

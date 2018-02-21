@@ -30,6 +30,7 @@ import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.MyAction;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.actor.ActorListType;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
@@ -44,7 +45,6 @@ import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.actor.ActorListType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
@@ -186,20 +186,30 @@ public enum NoteContextMenuItem implements ContextMenuItem {
             copyNoteText(editorData);
         }
     },
-    ACTOR_ACTIONS {
+    ACTOR_ACTIONS(true) {
+        @Override
+        NoteEditorData executeAsync(NoteContextMenu menu) {
+            return NoteEditorData.newEmpty(MyAccount.EMPTY)
+                    .setTimeline(menu.getActivity().getMyContext().timelines()
+                            .get(TimelineType.SENT, menu.getActorId(), Origin.EMPTY, ""));
+        }
+
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            menu.switchTimelineActivityView(
-                    menu.getActivity().getMyContext().timelines().get(TimelineType.SENT,
-                            menu.getActorId(), menu.getOrigin(), ""));
+            menu.switchTimelineActivityView(editorData.timeline);
         }
     },
-    AUTHOR_ACTIONS {
+    AUTHOR_ACTIONS(true) {
+        @Override
+        NoteEditorData executeAsync(NoteContextMenu menu) {
+            return NoteEditorData.newEmpty(MyAccount.EMPTY)
+                    .setTimeline(menu.getActivity().getMyContext().timelines()
+                            .get(TimelineType.SENT, menu.getAuthorId(), Origin.EMPTY, ""));
+        }
+
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            menu.switchTimelineActivityView(
-                    menu.getActivity().getMyContext().timelines().get(TimelineType.SENT,
-                            menu.getAuthorId(), menu.getOrigin(), ""));
+            menu.switchTimelineActivityView(editorData.timeline);
         }
     },
     FOLLOW_ACTOR {

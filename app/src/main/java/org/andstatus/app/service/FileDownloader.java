@@ -106,7 +106,7 @@ public abstract class FileDownloader {
         DownloadFile fileNew = new DownloadFile(data.getFilenameNew());
         fileNew.delete();
         if (!data.isError() && !fileTemp.getFile().renameTo(fileNew.getFile())) {
-            data.softErrorLogged(method + ", Couldn't rename file " + fileTemp + " to " + fileNew, null);
+            data.softErrorLogged(method + "; Couldn't rename file " + fileTemp + " to " + fileNew, null);
         }
     }
 

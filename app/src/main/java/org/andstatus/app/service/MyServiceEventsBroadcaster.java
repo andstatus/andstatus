@@ -17,6 +17,7 @@
 package org.andstatus.app.service;
 
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
@@ -28,7 +29,7 @@ import org.andstatus.app.util.MyLog;
 public class MyServiceEventsBroadcaster {
     private final MyContext mMyContext;
     private final MyServiceState mState;
-    private CommandData mCommandData = null;
+    private CommandData mCommandData = CommandData.EMPTY;
     private MyServiceEvent mEvent = MyServiceEvent.UNKNOWN;
     private String progress = null;
     
@@ -41,7 +42,7 @@ public class MyServiceEventsBroadcaster {
         return new MyServiceEventsBroadcaster(myContext, state);
     }
 
-    public MyServiceEventsBroadcaster setCommandData(CommandData commandData) {
+    public MyServiceEventsBroadcaster setCommandData(@NonNull CommandData commandData) {
         this.mCommandData = commandData;
         return this;
     }
@@ -58,10 +59,10 @@ public class MyServiceEventsBroadcaster {
 
     public void broadcast() {
         Intent intent = MyAction.SERVICE_STATE.getIntent();
-        if (mCommandData != null) {
+        if (mCommandData != CommandData.EMPTY) {
             mCommandData.getResult().setProgress(progress);
-            intent = mCommandData.toIntent(intent);
         }
+        mCommandData.toIntent(intent);
         intent.putExtra(IntentExtra.SERVICE_STATE.key, mState.save());
         intent.putExtra(IntentExtra.SERVICE_EVENT.key, mEvent.save());
         if (MyLog.isVerboseEnabled()) {

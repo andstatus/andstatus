@@ -48,6 +48,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.StringUtils;
 
+import java.util.Objects;
 import java.util.Queue;
 
 /**
@@ -204,17 +205,17 @@ public class CommandData implements Comparable<CommandData> {
      * @return Intent to be sent to MyService
      */
     public Intent toIntent(Intent intent) {
-        if (intent == null) {
-            throw new IllegalArgumentException("toIntent: input intent is null");
-        }
+        Objects.requireNonNull(intent);
         intent.putExtras(toBundle());
         return intent;
     }
 
     public Bundle toBundle() {
         Bundle bundle = new Bundle();
-        BundleUtils.putNotZero(bundle, IntentExtra.COMMAND_ID, commandId);
         BundleUtils.putNotEmpty(bundle, IntentExtra.COMMAND, command.save());
+        if (command == CommandEnum.EMPTY) return bundle;
+
+        BundleUtils.putNotZero(bundle, IntentExtra.COMMAND_ID, commandId);
         timeline.toBundle(bundle);
         BundleUtils.putNotZero(bundle, IntentExtra.ITEM_ID, itemId);
         BundleUtils.putNotEmpty(bundle, IntentExtra.USERNAME, username);

@@ -24,6 +24,10 @@ import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.lang.SelectableEnum;
 import org.andstatus.app.net.social.Connection;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 public enum TimelineType implements SelectableEnum {
     UNKNOWN(Scope.ORIGIN, "unknown", R.string.timeline_title_unknown, Connection.ApiRoutineEnum.DUMMY),
     /** The Home timeline and other information (replies...). */
@@ -85,11 +89,11 @@ public enum TimelineType implements SelectableEnum {
         return UNKNOWN;
     }
 
-    public static TimelineType[] getDefaultMyAccountTimelineTypes() {
+    public static Set<TimelineType> getDefaultMyAccountTimelineTypes() {
         return defaultMyAccountTimelineTypes;
     }
 
-    public static TimelineType[] getDefaultOriginTimelineTypes() {
+    public static Set<TimelineType> getDefaultOriginTimelineTypes() {
         return defaultOriginTimelineTypes;
     }
 
@@ -160,7 +164,7 @@ public enum TimelineType implements SelectableEnum {
         }
     }
 
-    private static final TimelineType[] defaultMyAccountTimelineTypes = {
+    private static final Set<TimelineType> defaultMyAccountTimelineTypes = Stream.of(
             PRIVATE,
             DRAFTS,
             FAVORITES,
@@ -170,13 +174,13 @@ public enum TimelineType implements SelectableEnum {
             FRIENDS,
             NOTIFICATIONS,
             OUTBOX,
-            SENT,
-    };
+            SENT
+    ).collect(Collectors.toSet());
 
-    private static final TimelineType[] defaultOriginTimelineTypes = {
+    private static final Set<TimelineType> defaultOriginTimelineTypes = Stream.of(
             EVERYTHING,
-            PUBLIC,
-    };
+            PUBLIC
+    ).collect(Collectors.toSet());
 
     public boolean isAtOrigin() {
         return scope == Scope.ORIGIN;

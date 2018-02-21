@@ -26,6 +26,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.UserTable;
+import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -46,7 +47,7 @@ public class User {
 
     @NonNull
     public static User load(@NonNull MyContext myContext, long actorId) {
-        if (actorId == 0) return User.EMPTY;
+        if (actorId == 0 || MyAsyncTask.isUiThread()) return User.EMPTY;
         final String sql = "SELECT " + UserTable.TABLE_NAME + "." + UserTable._ID + ", " + UserTable.KNOWN_AS
                 + ", " + UserTable.IS_MY
                 + " FROM " + UserTable.TABLE_NAME

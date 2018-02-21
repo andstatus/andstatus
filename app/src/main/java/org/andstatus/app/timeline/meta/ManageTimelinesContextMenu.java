@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import org.andstatus.app.R;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.timeline.ContextMenuHeader;
 import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.util.MyLog;
@@ -71,7 +72,7 @@ public class ManageTimelinesContextMenu extends MyContextMenu {
 
     public ManageTimelinesViewItem getViewItem() {
         if (mViewItem.isEmpty()) {
-            return new ManageTimelinesViewItem(listActivity.getMyContext(), Timeline.EMPTY);
+            return new ManageTimelinesViewItem(listActivity.getMyContext(), Timeline.EMPTY, MyAccount.EMPTY);
         }
         return (ManageTimelinesViewItem) mViewItem;
     }

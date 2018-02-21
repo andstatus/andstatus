@@ -28,12 +28,11 @@ class CheckTimelines extends DataChecker {
 
     long fixInternal(boolean countOnly) {
         logger.logProgress("Checking if all default timelines are present");
-        long rowsCount = 0;
-        long changedCount = 0;
+        long size1 = myContext.timelines().values().size();
         try {
-            changedCount += new TimelineSaver(myContext).addDefaultCombined().size();
+            new TimelineSaver(myContext).addDefaultCombined();
             for (MyAccount myAccount: myContext.accounts().get()) {
-                changedCount += new TimelineSaver(myContext).addDefaultForAccount(myContext, myAccount).size();
+                new TimelineSaver(myContext).addDefaultForAccount(myContext, myAccount);
             }
         } catch (Exception e) {
             String logMsg = "Error: " + e.getMessage();
@@ -41,9 +40,11 @@ class CheckTimelines extends DataChecker {
             MyLog.e(this, logMsg, e);
         }
         myContext.timelines().saveChanged();
+        final int size2 = myContext.timelines().values().size();
+        long changedCount = size2 - size1;
         logger.logProgress(changedCount == 0
-                ? "No changes to timelines were needed. " + rowsCount + " timelines"
-                : "Changed " + changedCount + " of " + myContext.timelines().values().size() + " timelines");
+                ? "No changes to timelines were needed. " + size2 + " timelines"
+                : "Changed " + changedCount + " of " + size2 + " timelines");
         DbUtils.waitMs(this, changedCount == 0 ? 1000 : 3000);
         return changedCount;
     }

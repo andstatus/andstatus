@@ -34,6 +34,7 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.list.SyncLoader;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.LoadableListActivity;
@@ -156,8 +157,8 @@ public class ManageTimelines extends LoadableListActivity {
             @Override
             public void load(ProgressPublisher publisher) {
                 items = myContext.timelines()
-                        .filter(false, TriState.UNKNOWN, TimelineType.UNKNOWN, MyAccount.EMPTY, Origin.EMPTY)
-                        .map(timeline -> new ManageTimelinesViewItem(myContext, timeline))
+                        .filter(false, TriState.UNKNOWN, TimelineType.UNKNOWN, Actor.EMPTY, Origin.EMPTY)
+                        .map(timeline -> new ManageTimelinesViewItem(myContext, timeline, MyAccount.EMPTY))
                         .sorted(new ManageTimelinesViewItemComparator(sortByField, sortDefault, isTotal))
                         .collect(Collectors.toList());
                 countersSince = items.stream().map(item -> item.countSince).filter(count -> count > 0)

@@ -59,9 +59,8 @@ public final class MyServiceEventsReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         MyServiceEvent event = MyServiceEvent.load(intent.getStringExtra(IntentExtra.SERVICE_EVENT.key));
-        if (event == MyServiceEvent.UNKNOWN) {
-            return;
-        }
+        if (event == MyServiceEvent.UNKNOWN) return;
+
         MyLog.v(this, "onReceive " + event + " for " + MyLog.objToTag(listener) + ", instanceId:" + mInstanceId);
         listener.onReceive(CommandData.fromIntent(myContext, intent), event);
     }

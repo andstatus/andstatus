@@ -207,7 +207,7 @@ public class AActivity extends AObject {
 
     @NonNull
     public Note getNote() {
-        return Optional.ofNullable(note).filter(msg -> msg != Note.EMPTY).orElse(getNestedNote());
+        return Optional.ofNullable(note).filter(msg -> msg != Note.EMPTY).orElseGet(this::getNestedNote);
     }
 
     @NonNull

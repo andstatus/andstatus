@@ -108,16 +108,16 @@ public class DemoAccountInserter {
         assertEquals("Oid: " + ma.getActor(), actor.oid, ma.getActor().oid);
         assertEquals("Partially defined: " + ma.getActor(), false, ma.getActor().isPartiallyDefined());
 
-        assertNotEquals(Timeline.EMPTY, getAutomaticallySyncableTimeline(myContext, ma));
+        assertNotEquals(Timeline.EMPTY, getAutomaticallySyncableTimeline(myContext, ma.getActor()));
         return ma;
     }
 
     @NonNull
-    public static Timeline getAutomaticallySyncableTimeline(MyContext myContext, MyAccount myAccount) {
+    public static Timeline getAutomaticallySyncableTimeline(MyContext myContext, Actor myActor) {
         Timeline timelineToSync = myContext.timelines()
-                .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount, Origin.EMPTY)
+                .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myActor, Origin.EMPTY)
                 .filter(Timeline::isSyncedAutomatically).findFirst().orElse(Timeline.EMPTY);
-        assertTrue("No syncable automatically timeline for " + myAccount + "\n"
+        assertTrue("No syncable automatically timeline for " + myActor + "\n"
                 + myContext.timelines().values(), timelineToSync.isSyncableAutomatically());
         return timelineToSync;
     }
@@ -184,7 +184,8 @@ public class DemoAccountInserter {
                 StringBuilder logMsg =new StringBuilder(myAccount.toString());
                 I18n.appendWithSpace(logMsg, timelineType.toString());
                 for (Timeline timeline : MyContextHolder.get().timelines().values()) {
-                    if (timeline.getMyAccount().equals(myAccount) && timeline.getTimelineType().equals(timelineType)
+                    if (timeline.getActorId() == myAccount.getActorId()
+                            && timeline.getTimelineType().equals(timelineType)
                             && !timeline.hasSearchQuery()) {
                         count++;
                         I18n.appendWithSpace(logMsg, timeline.toString());

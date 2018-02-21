@@ -63,7 +63,7 @@ public class MyServiceTest1 extends MyServiceTest {
                 0, mService.getHttp().getRequestsCounter());
 
         myContext = MyContextHolder.get();
-        Timeline timelineToSync = DemoAccountInserter.getAutomaticallySyncableTimeline(myContext, myAccount);
+        Timeline timelineToSync = DemoAccountInserter.getAutomaticallySyncableTimeline(myContext, myAccount.getActor());
         timelineToSync.setSyncSucceededDate(0);
 
         runner = new MyServiceCommandsRunner(myContext);

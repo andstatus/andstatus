@@ -99,8 +99,10 @@ public class TimelineTitle {
         final StringBuilder subTitle = new StringBuilder();
         boolean nameAdded = false;
         if (!timeline.isCombined()) {
-            I18n.appendWithSpace(subTitle, timeline.getTimelineType()
-                    .getPrepositionForNotCombinedTimeline(myContext.context()));
+            if (timeline.getTimelineType().isAtOrigin() || !timeline.isActorDifferentFromAccount()) {
+                I18n.appendWithSpace(subTitle, timeline.getTimelineType()
+                        .getPrepositionForNotCombinedTimeline(myContext.context()));
+            }
             if (timeline.getTimelineType().isAtOrigin()) {
                 I18n.appendWithSpace(subTitle, timeline.getOrigin().getName());
                 nameAdded = true;

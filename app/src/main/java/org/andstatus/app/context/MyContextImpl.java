@@ -122,7 +122,7 @@ public class MyContextImpl implements MyContext {
 
         boolean createApplicationData = MyStorage.isApplicationDataCreated() != TriState.TRUE;
         if (createApplicationData) {
-            MyLog.i(this, method + " Creating application data");
+            MyLog.i(this, method + "; Creating application data");
             MyPreferencesGroupsEnum.setDefaultValues();
             tryToSetExternalStorageOnDataCreation();
         }
@@ -180,7 +180,7 @@ public class MyContextImpl implements MyContext {
     }
 
     private void logDatabaseError(String method, Exception e) {
-        MyLog.e(this, method + " Error", e);
+        MyLog.e(this, method + "; Error", e);
         lastDatabaseError = e.getMessage();
     }
 

@@ -30,7 +30,6 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.AudienceTable;
@@ -342,10 +341,7 @@ public class MyProvider extends ContentProvider {
             if (rowId == -1) {
                 throw new SQLException("Failed to insert row into " + uri);
             }
-            if ( ActorTable.TABLE_NAME.equals(table)) {
-                optionallyLoadAvatar(rowId, values);
-            }
-            
+
             if (friendshipValues != null) {
                 friendshipValues.friendId =  rowId;
                 friendshipValues.update(db);
@@ -370,12 +366,6 @@ public class MyProvider extends ContentProvider {
         return newUri;
     }
 
-    private void optionallyLoadAvatar(long actorId, ContentValues values) {
-        if (MyPreferences.getShowAvatars() && values.containsKey(ActorTable.AVATAR_URL)) {
-            AvatarData.getForActor(actorId).requestDownload();
-        }
-    }
-    
     /**
      * Get a cursor to the database
      * 
@@ -578,7 +568,6 @@ public class MyProvider extends ContentProvider {
                             selectionArgs);
                 }
                 friendshipValues.update(db);
-                optionallyLoadAvatar(selectedActorId, values);
                 break;
 
             default:

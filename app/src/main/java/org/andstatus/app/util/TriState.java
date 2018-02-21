@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2013-2015 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2013-2018 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,23 +20,29 @@ import android.os.Bundle;
 
 import org.andstatus.app.IntentExtra;
 
+/** @author yvolk@yurivolkov.com */
 public enum TriState {
-    TRUE(2, true, false, true, false),
-    FALSE(1, false, true, true, false),
-    UNKNOWN(3, false, false, false, true);
+    TRUE(2, true, false),
+    FALSE(1, false, true),
+    UNKNOWN(3, false, false);
 
     public final long id;
     public final boolean isTrue;
+    /** https://philosophy.stackexchange.com/questions/38542/what-is-the-difference-if-any-between-not-true-and-false */
+    public final boolean untrue;
     public final boolean isFalse;
+    public final boolean notFalse;
     public final boolean known;
     public final boolean unknown;
 
-    TriState(long id, boolean isTrue, boolean isFalse, boolean known, boolean unknown) {
+    TriState(long id, boolean isTrue, boolean isFalse) {
         this.id = id;
         this.isTrue = isTrue;
+        untrue = !isTrue;
         this.isFalse = isFalse;
-        this.known = known;
-        this.unknown = unknown;
+        notFalse = !isFalse;
+        known = isTrue || isFalse;
+        unknown = !known;
     }
     
     public static TriState fromId(long id) {

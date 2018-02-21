@@ -186,7 +186,7 @@ public final class DemoData {
                     progressCallback.onProgressMessage("Demo accounts added...");
                     DbUtils.waitMs(TAG_ASYNC, 1000);
                 }
-                assertTrue("Context is not ready", MyContextHolder.get().isReady());
+                assertTrue("Context is not ready " + MyContextHolder.get(), MyContextHolder.get().isReady());
                 checkDataPath();
                 int size = MyContextHolder.get().accounts().size();
                 assertTrue("Only " + size + " accounts added: " + MyContextHolder.get().accounts(),

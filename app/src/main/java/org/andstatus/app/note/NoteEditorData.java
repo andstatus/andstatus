@@ -43,6 +43,7 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Note;
+import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
@@ -55,7 +56,7 @@ import static org.andstatus.app.data.DownloadStatus.UNKNOWN;
 
 public class NoteEditorData {
     public static final String TAG = NoteEditorData.class.getSimpleName();
-    static final NoteEditorData EMPTY = NoteEditorData.newEmpty(null);
+    static final NoteEditorData EMPTY = NoteEditorData.newEmpty(MyAccount.EMPTY);
 
     private long noteId = 0;
     String noteOid = "";
@@ -80,10 +81,11 @@ public class NoteEditorData {
     private boolean replyToConversationParticipants = false;
     private boolean replyToMentionedActors = false;
     public Audience recipients = new Audience();
-    public MyAccount ma = MyAccount.EMPTY;
+    public final MyAccount ma;
+    public Timeline timeline = Timeline.EMPTY;
 
-    private NoteEditorData(MyAccount myAccount) {
-        ma = myAccount == null ? MyAccount.EMPTY : myAccount;
+    private NoteEditorData(@NonNull MyAccount myAccount) {
+        ma = myAccount;
     }
 
     public static NoteEditorData newEmpty(MyAccount myAccount) {
@@ -94,7 +96,7 @@ public class NoteEditorData {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((ma == null) ? 0 : ma.hashCode());
+        result = prime * result + ma.hashCode();
         result = prime * result + getMediaUri().hashCode();
         result = prime * result + body.hashCode();
         result = prime * result + recipients.hashCode();
@@ -109,10 +111,7 @@ public class NoteEditorData {
         if (o == null || getClass() != o.getClass())
             return false;
         NoteEditorData other = (NoteEditorData) o;
-        if (ma == null) {
-            if (other.ma != null)
-                return false;
-        } else if (!ma.equals(other.ma))
+        if (!ma.equals(other.ma))
             return false;
         if (!getMediaUri().equals(other.getMediaUri()))
             return false;
@@ -381,6 +380,11 @@ public class NoteEditorData {
 
     public NoteEditorData setPrivate(TriState isPrivate) {
         this.isPrivate = isPrivate;
+        return this;
+    }
+
+    public NoteEditorData setTimeline(Timeline timeline) {
+        this.timeline = timeline;
         return this;
     }
 }

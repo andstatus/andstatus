@@ -34,7 +34,6 @@ import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -725,7 +724,10 @@ public class MyQuery {
             return Collections.emptySet();
         }
         if (MyAsyncTask.isUiThread()) {
-            MyLog.v(TAG, method + "; Is UI thread");
+            if (MyLog.isVerboseEnabled()) {
+                MyLog.v(TAG, method + "; Database access in UI thread: '" + sql + "'\n"
+                        + MyLog.getStackTrace(new IllegalAccessException()));
+            }
             return Collections.emptySet();
         }
         Set<T> set = new HashSet<>();

@@ -16,15 +16,13 @@
 
 package org.andstatus.app.timeline.meta;
 
-import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.TimelineTable;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
@@ -32,6 +30,7 @@ import org.andstatus.app.util.TriState;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -53,39 +52,24 @@ public class PersistentTimelines {
 
     public PersistentTimelines initialize() {
         final String method = "initialize";
-        Context context = myContext.context();
         timelines.clear();
-        SQLiteDatabase db = myContext.getDatabase();
-        if (db == null) {
-            MyLog.d(context, method + "; Database is unavailable");
-        } else {
-            String sql = "SELECT * FROM " + TimelineTable.TABLE_NAME;
-            Cursor c = null;
-            try {
-                c = db.rawQuery(sql, null);
-                while (c.moveToNext()) {
-                    Timeline timeline = Timeline.fromCursor(myContext, c);
-                    if (!timeline.isValid()) {
-                        MyLog.e(context, method + "; invalid skipped " + timeline);
-                    } else {
-                        timelines.put(timeline.getId(), timeline);
-                        if (MyLog.isVerboseEnabled() && timelines.size() < 5) {
-                            MyLog.v(context, method + "; " + timeline);
-                        }
-                    }
+        MyQuery.get(myContext, "SELECT * FROM " + TimelineTable.TABLE_NAME,
+                cursor -> Timeline.fromCursor(myContext, cursor)
+        ).forEach(timeline -> {
+            if (timeline.isValid()) {
+                timelines.put(timeline.getId(), timeline);
+                if (MyLog.isVerboseEnabled() && timelines.size() < 5) {
+                    MyLog.v(PersistentTimelines.class, method + "; " + timeline);
                 }
-            } finally {
-                DbUtils.closeSilently(c);
-            }
-            MyLog.v(this, "Timelines initialized, " + timelines.size() + " timelines");
-        }
+            } else MyLog.e(PersistentTimelines.class, method + "; invalid skipped " + timeline);
+        });
+        MyLog.v(this, "Timelines initialized, " + timelines.size() + " timelines");
         return this;
     }
 
     @NonNull
     public Timeline fromId(long id) {
-        Timeline timeline = timelines.get(id);
-        return timeline == null ? Timeline.EMPTY : timeline;
+        return Optional.ofNullable(timelines.get(id)).orElseGet(() -> addNew(Timeline.fromId(myContext, id)));
     }
 
     @NonNull
@@ -106,31 +90,19 @@ public class PersistentTimelines {
         }
     }
 
+    @NonNull
     public Timeline get(@NonNull TimelineType timelineType, long actorId, @NonNull Origin origin, String searchQuery) {
         return get(0, timelineType, actorId, origin, searchQuery);
     }
 
+    @NonNull
     public Timeline get(long id, @NonNull TimelineType timelineType,
                         long actorId, @NonNull Origin origin, String searchQuery) {
-        Timeline timeline = new Timeline(myContext, id, timelineType, actorId, origin, searchQuery);
-        return timeline.isValid() ? fromNewTimeLine(timeline) : timeline;
-    }
-
-    @NonNull
-    Timeline fromNewTimeLine(Timeline newTimeline) {
-        Timeline found = newTimeline;
-        for (Timeline timeline : values()) {
-            if (newTimeline.getId() == 0) {
-                if (timeline.equals(newTimeline)) {
-                    found = timeline;
-                    break;
-                }
-            } else if (timeline.getId() == newTimeline.getId()) {
-                found = timeline;
-                break;
-            }
-        }
-        return found;
+        Timeline newTimeline = new Timeline(myContext, id, timelineType, actorId, origin, searchQuery);
+        return values().stream().filter(timeline -> newTimeline.getId() == 0
+                ? timeline.equals(newTimeline)
+                : timeline.getId() == newTimeline.getId())
+                .findFirst().orElseGet(() -> newTimeline.save(myContext));
     }
 
     public Collection<Timeline> values() {
@@ -153,14 +125,24 @@ public class PersistentTimelines {
         return timelines;
     }
 
+    // TODO: Remove the method
     @NonNull
     public Stream<Timeline> filter(boolean isForSelector,
                                    TriState isTimelineCombined,
                                    @NonNull TimelineType timelineType,
                                    @NonNull MyAccount myAccount,
                                    @NonNull Origin origin) {
+        return filter(isForSelector, isTimelineCombined, timelineType, myAccount.getActor(), origin);
+    }
+
+    @NonNull
+    public Stream<Timeline> filter(boolean isForSelector,
+                                   TriState isTimelineCombined,
+                                   @NonNull TimelineType timelineType,
+                                   @NonNull Actor actor,
+                                   @NonNull Origin origin) {
         return values().stream().filter(
-                timeline -> timeline.match(isForSelector, isTimelineCombined, timelineType, myAccount, origin));
+                timeline -> timeline.match(isForSelector, isTimelineCombined, timelineType, actor, origin));
     }
 
     public void onAccountDelete(MyAccount ma) {
@@ -187,10 +169,9 @@ public class PersistentTimelines {
         new TimelineSaver(myContext).executeNotOnUiThread();
     }
 
-    public void addNew(Timeline timeline) {
-        if (timeline.getId() != 0) {
-            timelines.putIfAbsent(timeline.getId(), timeline);
-        }
+    public Timeline addNew(Timeline timeline) {
+        if (timeline.isValid() && timeline.getId() != 0) timelines.putIfAbsent(timeline.getId(), timeline);
+        return timelines.getOrDefault(timeline.getId(), timeline);
     }
 
     public void resetCounters(boolean all) {

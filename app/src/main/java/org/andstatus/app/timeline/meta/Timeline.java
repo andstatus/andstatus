@@ -37,6 +37,7 @@ import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.data.SqlWhere;
 import org.andstatus.app.database.table.CommandTable;
 import org.andstatus.app.database.table.TimelineTable;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandResult;
@@ -149,8 +150,7 @@ public class Timeline implements Comparable<Timeline> {
     private volatile int visibleY = 0;
     private volatile long visibleOldestDate = 0;
 
-    private volatile boolean changed = false;
-
+    private volatile boolean changed = true;
     private volatile long lastChangedDate = 0;
 
     public static Timeline getTimeline(@NonNull TimelineType timelineType, long actorId, @NonNull Origin origin) {
@@ -166,6 +166,7 @@ public class Timeline implements Comparable<Timeline> {
                 myContext.origins().fromId(DbUtils.getLong(cursor, TimelineTable.ORIGIN_ID)),
                 DbUtils.getString(cursor, TimelineTable.SEARCH_QUERY));
 
+        timeline.changed = false;
         timeline.actorInTimeline = DbUtils.getString(cursor, TimelineTable.ACTOR_IN_TIMELINE);
         timeline.setSyncedAutomatically(DbUtils.getBoolean(cursor, TimelineTable.IS_SYNCED_AUTOMATICALLY));
         timeline.isDisplayedInSelector = DisplayedInSelector.load(DbUtils.getString(cursor, TimelineTable.DISPLAYED_IN_SELECTOR));
@@ -474,10 +475,9 @@ public class Timeline implements Comparable<Timeline> {
         }
     }
 
-    public long save(MyContext myContext) {
-        if (MyAsyncTask.isUiThread()) {
-            throw new IllegalStateException("Saving a timeline on the Main thread " + toString());
-        }
+    @NonNull
+    public Timeline save(MyContext myContext) {
+        if (MyAsyncTask.isUiThread()) return this;
         if (needToLoadActorInTimeline()) {
             setChanged();
         }
@@ -487,15 +487,19 @@ public class Timeline implements Comparable<Timeline> {
                 long duplicatedId = findDuplicateInDatabase(myContext);
                 if (duplicatedId != 0) {
                     MyLog.i(this, "Found duplicating timeline, id=" + duplicatedId + " for " + this);
-                    return duplicatedId;
+                    return myContext.timelines().fromId(duplicatedId);
+                }
+                if (isAddedByDefault()) {
+                    setDisplayedInSelector(DisplayedInSelector.IN_CONTEXT);
+                    setSyncedAutomatically(getTimelineType().isSyncedAutomaticallyByDefault());
                 }
             }
             saveInternal(myContext);
             if (isNew && id != 0) {
-                myContext.timelines().addNew(this);
+                return myContext.timelines().fromId(id);
             }
         }
-        return id;
+        return this;
     }
 
     private long findDuplicateInDatabase(MyContext myContext) {
@@ -518,6 +522,9 @@ public class Timeline implements Comparable<Timeline> {
         }
         ContentValues contentValues = new ContentValues();
         toContentValues(contentValues);
+        if (myContext.isTestRun()) {
+            MyLog.i(this, "Saving " + this + "\n" + MyLog.getStackTrace(new Exception()));
+        }
         if (getId() == 0) {
             id = DbUtils.addRowWithRetry(myContext, TimelineTable.TABLE_NAME, contentValues, 3);
         } else {
@@ -528,7 +535,7 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public boolean needToLoadActorInTimeline() {
-        return actorId != 0 && isActorDifferentFromAccount() && TextUtils.isEmpty(actorInTimeline);
+        return actorId != 0 && TextUtils.isEmpty(actorInTimeline) && user.isMyUser().untrue;
     }
 
     public void delete() {
@@ -546,6 +553,18 @@ public class Timeline implements Comparable<Timeline> {
         }
     }
 
+    public boolean isAddedByDefault() {
+        if (isRequired()) return true;
+        if (isCombined || !isValid() || hasSearchQuery()) return false;
+        if (timelineType.isAtOrigin()) {
+            return TimelineType.getDefaultOriginTimelineTypes().contains(timelineType)
+                    && (origin.getOriginType().isTimelineTypeSyncable(timelineType)
+                    || timelineType.equals(TimelineType.EVERYTHING));
+        } else {
+            return user.isMyUser().isTrue && TimelineType.getDefaultMyAccountTimelineTypes().contains(timelineType);
+        }
+    }
+
     /** Required timeline cannot be deleted */
     public boolean isRequired() {
         return isCombined() && timelineType.isSelectable() && !hasSearchQuery();
@@ -556,22 +575,23 @@ public class Timeline implements Comparable<Timeline> {
         StringBuilder builder = new StringBuilder();
 
         builder.append("Timeline{");
-        if (myAccount.isValid()) {
-            builder.append(myAccount.getAccountName());
-            if (!myAccount.getOrigin().equals(origin) && origin.isValid()) {
-                builder.append(", origin:" + origin.getName());
-            }
-        } else {
+        if (timelineType.isAtOrigin()) {
             builder.append(origin.isValid() ? origin.getName() : "(all origins)");
-        }
-        if (!isSyncable()) {
-            builder.append(", not syncable");
+        } else {
+            if (myAccount.isValid()) {
+                builder.append(myAccount.getAccountName());
+                if (!myAccount.getOrigin().equals(origin) && origin.isValid()) {
+                    builder.append(", origin:" + origin.getName());
+                }
+            } else {
+                builder.append(user);
+            }
         }
         if (timelineType != TimelineType.UNKNOWN) {
             builder.append(", type:" + timelineType.save());
         }
         if (!TextUtils.isEmpty(actorInTimeline)) {
-            builder.append(", user:'" + actorInTimeline + "'");
+            builder.append(", actor:'" + actorInTimeline + "'");
         } else if (actorId != 0) {
             builder.append(", actorId:" + actorId);
         }
@@ -580,6 +600,9 @@ public class Timeline implements Comparable<Timeline> {
         }
         if ( id != 0) {
             builder.append(", id:" + id);
+        }
+        if (!isSyncable()) {
+            builder.append(", not syncable");
         }
         builder.append('}');
         return builder.toString();
@@ -827,6 +850,15 @@ public class Timeline implements Comparable<Timeline> {
         return myContext.timelines().get(0, getTimelineType(), 0, origin, getSearchQuery());
     }
 
+    @NonNull
+    static Timeline fromId(MyContext myContext, long id) {
+        return id == 0
+                ? Timeline.EMPTY
+                : MyQuery.get(myContext,
+                "SELECT * FROM " + TimelineTable.TABLE_NAME + " WHERE " + TimelineTable._ID + "=" + id,
+                cursor -> Timeline.fromCursor(myContext, cursor)).stream().findFirst().orElse(EMPTY);
+    }
+
     public void onSyncEnded(CommandResult result) {
         if (result.hasError()) {
             syncFailedDate = System.currentTimeMillis();
@@ -916,7 +948,7 @@ public class Timeline implements Comparable<Timeline> {
             if (needToLoadActorInTimeline()) {
                 return "...";
             } else {
-                return "";
+                return user.getKnownAs();
             }
         } else {
             return actorInTimeline;
@@ -957,7 +989,7 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public boolean match(boolean isForSelector, TriState isTimelineCombined, @NonNull TimelineType timelineType,
-                         @NonNull MyAccount myAccount, @NonNull Origin origin) {
+                         @NonNull Actor actor, @NonNull Origin origin) {
         if (isForSelector && isDisplayedInSelector() == DisplayedInSelector.ALWAYS) {
             return true;
         } else if (isForSelector && isDisplayedInSelector() == DisplayedInSelector.NEVER) {
@@ -969,11 +1001,11 @@ public class Timeline implements Comparable<Timeline> {
         } else if (isTimelineCombined == TriState.FALSE && isCombined()) {
             return false;
         } else if (timelineType == TimelineType.UNKNOWN) {
-            return (!myAccount.isValid() || myAccount.equals(getMyAccount()))
+            return (actor.actorId == 0 || actor.actorId == getActorId())
                     && (origin.isEmpty() || origin.equals(getOrigin())) ;
         } else if (timelineType.isAtOrigin()) {
             return origin.isEmpty() || origin.equals(getOrigin());
         }
-        return !myAccount.isValid() || myAccount.equals(getMyAccount());
+        return actor.actorId == 0 || actor.actorId == getActorId();
     }
 }

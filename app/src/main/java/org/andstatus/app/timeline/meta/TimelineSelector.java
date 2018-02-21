@@ -63,19 +63,19 @@ public class TimelineSelector extends SelectorDialog {
         super.onActivityCreated(savedInstanceState);
         Objects.requireNonNull(getArguments());
         setTitle(R.string.dialog_title_select_timeline);
-        Timeline timeline = myContext.timelines().fromId(getArguments().
+        Timeline currentTimeline = myContext.timelines().fromId(getArguments().
                 getLong(IntentExtra.TIMELINE_ID.key, 0));
         MyAccount currentMyAccount = myContext.accounts().fromAccountName(
                 getArguments().getString(IntentExtra.ACCOUNT_NAME.key));
 
         Set<Timeline> timelines = myContext.timelines().filter(
                 true,
-                TriState.fromBoolean(timeline.isCombined()),
+                TriState.fromBoolean(currentTimeline.isCombined()),
                 TimelineType.UNKNOWN, currentMyAccount, Origin.EMPTY).collect(Collectors.toSet());
-        if (!timeline.isCombined() && currentMyAccount.isValid()) {
+        if (!currentTimeline.isCombined() && currentMyAccount.isValid()) {
             timelines.addAll(myContext.timelines().filter(
                     true,
-                    TriState.fromBoolean(timeline.isCombined()),
+                    TriState.fromBoolean(currentTimeline.isCombined()),
                     TimelineType.UNKNOWN, MyAccount.EMPTY, currentMyAccount.getOrigin()).collect(Collectors.toSet()));
         }
         if (timelines.isEmpty()) {
@@ -88,21 +88,18 @@ public class TimelineSelector extends SelectorDialog {
 
         final List<ManageTimelinesViewItem> items = new ArrayList<>();
         for (Timeline timeline2 : timelines) {
-            ManageTimelinesViewItem viewItem = new ManageTimelinesViewItem(myContext, timeline2);
+            ManageTimelinesViewItem viewItem = new ManageTimelinesViewItem(myContext, timeline2, currentMyAccount);
             items.add(viewItem);
         }
-        Collections.sort(items, new ManageTimelinesViewItemComparator(R.id.displayedInSelector, true, false));
+        items.sort(new ManageTimelinesViewItemComparator(R.id.displayedInSelector, true, false));
         removeDuplicates(items);
 
         setListAdapter(newListAdapter(items));
 
-        getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                long timelineId = Long.parseLong(((TextView) view.findViewById(R.id.id)).getText()
-                        .toString());
-                returnSelectedTimeline(myContext.timelines().fromId(timelineId));
-            }
+        getListView().setOnItemClickListener((parent, view, position, id) -> {
+            long timelineId = Long.parseLong(((TextView) view.findViewById(R.id.id)).getText()
+                    .toString());
+            returnSelectedTimeline(myContext.timelines().fromId(timelineId));
         });
     }
 

@@ -29,7 +29,6 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -148,50 +147,28 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
         }
     }
 
-    public List<Timeline> addDefaultForAccount(MyContext myContext, MyAccount myAccount) {
-        List<Timeline> timelines = new ArrayList<>();
+    public void addDefaultForAccount(MyContext myContext, MyAccount myAccount) {
         for (TimelineType timelineType : TimelineType.getDefaultMyAccountTimelineTypes()) {
-            final Timeline timeline = myContext.timelines().get(0, timelineType, myAccount.getActorId(), Origin.EMPTY, "");
-            if (timeline.getId() == 0) {
-                saveNewDefaultTimeline(timeline);
-                timelines.add(timeline);
-            }
+            myContext.timelines().get(0, timelineType, myAccount.getActorId(), Origin.EMPTY, "");
         }
-        return timelines;
     }
 
-    private Collection<Timeline> addDefaultForOrigin(MyContext myContext, Origin origin) {
-        List<Timeline> timelines = new ArrayList<>();
+    private void addDefaultForOrigin(MyContext myContext, Origin origin) {
         for (TimelineType timelineType : TimelineType.getDefaultOriginTimelineTypes()) {
             if (origin.getOriginType().isTimelineTypeSyncable(timelineType)
                     || timelineType.equals(TimelineType.EVERYTHING)) {
-                saveNewDefaultTimeline(myContext.timelines().get(0, timelineType, 0, origin, ""));
+                myContext.timelines().get(0, timelineType, 0, origin, "");
             }
         }
-        return timelines;
     }
 
-    /**
-     * @return Newly added timelines
-     */
-    public List<Timeline> addDefaultCombined() {
+    public void addDefaultCombined() {
         List<Timeline> timelines = new ArrayList<>();
         for (TimelineType timelineType : TimelineType.values()) {
             if (timelineType.isSelectable()) {
-                final Timeline timeline = myContext.timelines().get(0, timelineType, 0, Origin.EMPTY, "");
-                if (timeline.getId() == 0) {
-                    saveNewDefaultTimeline(timeline);
-                    timelines.add(timeline);
-                }
+                myContext.timelines().get(0, timelineType, 0, Origin.EMPTY, "");
             }
         }
-        return timelines;
-    }
-
-    private void saveNewDefaultTimeline(Timeline timeline) {
-        timeline.setDisplayedInSelector(DisplayedInSelector.IN_CONTEXT);
-        timeline.setSyncedAutomatically(timeline.getTimelineType().isSyncedAutomaticallyByDefault());
-        timeline.save(myContext);
     }
 
     @NonNull

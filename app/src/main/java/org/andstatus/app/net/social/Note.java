@@ -33,7 +33,6 @@ import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.andstatus.app.util.UriUtils.TEMP_OID_PREFIX;
 import static org.andstatus.app.util.UriUtils.isEmptyOid;
@@ -55,6 +54,7 @@ public class Note extends AObject {
     private Audience recipients = new Audience();
     private String body = "";
 
+    @NonNull
     private AActivity inReplyTo = AActivity.EMPTY;
     public final List<AActivity> replies = new ArrayList<>();
     public String conversationOid="";
@@ -253,7 +253,7 @@ public class Note extends AObject {
 
     @NonNull
     public AActivity getInReplyTo() {
-        return Optional.ofNullable(inReplyTo).orElse(AActivity.EMPTY);
+        return inReplyTo;
     }
 
     public void setInReplyTo(AActivity activity) {

@@ -180,7 +180,7 @@ public class PersistentTimelinesTest {
     private void oneFromMyAccount(MyAccount ma1, MyAccount ma2, TimelineType timelineType) {
         Timeline timeline1 = myContext.timelines()
                 .filter(true, TriState.FALSE, timelineType, ma1, ma1.getOrigin())
-                .findFirst().orElse(
+                .findFirst().orElseGet(() ->
                     myContext.timelines().get(timelineType, ma1.getActorId(), ma1.getOrigin(), ""));
         Timeline timeline2 = timeline1.fromMyAccount(myContext, ma2);
         assertEquals("Should be not combined " + timeline2, false, timeline2.isCombined());
