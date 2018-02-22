@@ -63,7 +63,7 @@ public class TimelineTitle {
     public static TimelineTitle load(MyContext myContext, Timeline timeline, @NonNull MyAccount currentMyAccount) {
         Objects.requireNonNull(currentMyAccount);
         TimelineTitle timelineTitle = new TimelineTitle();
-        timelineTitle.title = toTimelineTitle(myContext, timeline);
+        timelineTitle.title = toTimelineTitle(myContext, timeline, currentMyAccount);
         timelineTitle.subTitle = toTimelineSubtitle(myContext, timeline, currentMyAccount);
 
         timelineTitle.accountName = timeline.getMyAccount().isValid() ?
@@ -74,47 +74,42 @@ public class TimelineTitle {
         return timelineTitle;
     }
 
-    private static String toTimelineTitle(MyContext myContext, Timeline timeline) {
+    private static String toTimelineTitle(MyContext myContext, Timeline timeline, MyAccount currentMyAccount) {
         StringBuilder title = new StringBuilder();
         I18n.appendWithSpace(title, timeline.getTimelineType().getTitle(myContext.context()));
         if (timeline.hasSearchQuery()) {
             I18n.appendWithSpace(title, "'" + timeline.getSearchQuery() + "'");
         }
-        if (timeline.getActorId() != 0 && (timeline.isActorDifferentFromAccount() ||
-                timeline.getTimelineType().isAtOrigin())) {
-            if (timeline.isActorDifferentFromAccount()) {
-                I18n.appendWithSpace(title, timeline.getActorInTimeline());
-            } else {
-                I18n.appendWithSpace(title, timeline.getMyAccount().toAccountButtonText(myContext));
-            }
-        }
         if (timeline.isCombined()) {
             I18n.appendWithSpace(title,
                     myContext.context() == null ? "combined" : myContext.context().getText(R.string.combined_timeline_on));
+        } else {
+            if (timeline.getTimelineType().isAtOrigin()) {
+                if (currentMyAccount != MyAccount.EMPTY) {
+                    I18n.appendWithSpace(title, timeline.getTimelineType()
+                            .getPrepositionForNotCombinedTimeline(myContext.context()));
+                    I18n.appendWithSpace(title, timeline.getOrigin().getName());
+                }
+            } else {
+                if (currentMyAccount == MyAccount.EMPTY) {
+                    if (timeline.isActorDifferentFromAccount()) {
+                        I18n.appendWithSpace(title, timeline.getActorInTimeline());
+                    }
+                } else {
+                    if (timeline.getActorId() != currentMyAccount.getActorId()) {
+                        I18n.appendWithSpace(title, timeline.getActorInTimeline());
+                    }
+                }
+            }
         }
         return title.toString();
     }
 
     private static String toTimelineSubtitle(MyContext myContext, Timeline timeline, @NonNull MyAccount currentMyAccount) {
-        final StringBuilder subTitle = new StringBuilder();
-        boolean nameAdded = false;
-        if (!timeline.isCombined()) {
-            if (timeline.getTimelineType().isAtOrigin() || !timeline.isActorDifferentFromAccount()) {
-                I18n.appendWithSpace(subTitle, timeline.getTimelineType()
-                        .getPrepositionForNotCombinedTimeline(myContext.context()));
-            }
-            if (timeline.getTimelineType().isAtOrigin()) {
-                I18n.appendWithSpace(subTitle, timeline.getOrigin().getName());
-                nameAdded = true;
-            }
+        final StringBuilder title = new StringBuilder();
+        if (currentMyAccount != MyAccount.EMPTY) {
+            I18n.appendWithSpace(title, currentMyAccount.toAccountButtonText(myContext));
         }
-        if (currentMyAccount.isValid()) {
-            if (nameAdded) {
-                subTitle.append(";");
-            }
-            I18n.appendWithSpace(subTitle, currentMyAccount.toAccountButtonText(myContext));
-        }
-        return subTitle.toString();
+        return title.toString();
     }
-
 }

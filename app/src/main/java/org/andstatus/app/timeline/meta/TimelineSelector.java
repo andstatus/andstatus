@@ -20,8 +20,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.provider.BaseColumns;
 import android.support.v4.app.FragmentActivity;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.TextView;
 
 import org.andstatus.app.ActivityRequestCode;
@@ -34,7 +32,6 @@ import org.andstatus.app.view.MySimpleAdapter;
 import org.andstatus.app.view.SelectorDialog;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,15 +83,15 @@ public class TimelineSelector extends SelectorDialog {
             return;
         }
 
-        final List<ManageTimelinesViewItem> items = new ArrayList<>();
+        final List<ManageTimelinesViewItem> viewItems = new ArrayList<>();
         for (Timeline timeline2 : timelines) {
             ManageTimelinesViewItem viewItem = new ManageTimelinesViewItem(myContext, timeline2, currentMyAccount);
-            items.add(viewItem);
+            viewItems.add(viewItem);
         }
-        items.sort(new ManageTimelinesViewItemComparator(R.id.displayedInSelector, true, false));
-        removeDuplicates(items);
+        viewItems.sort(new ManageTimelinesViewItemComparator(R.id.displayedInSelector, true, false));
+        removeDuplicates(viewItems);
 
-        setListAdapter(newListAdapter(items));
+        setListAdapter(newListAdapter(viewItems));
 
         getListView().setOnItemClickListener((parent, view, position, id) -> {
             long timelineId = Long.parseLong(((TextView) view.findViewById(R.id.id)).getText()
@@ -124,7 +121,7 @@ public class TimelineSelector extends SelectorDialog {
         final String syncText = getText(R.string.synced_abbreviated).toString();
         for (ManageTimelinesViewItem viewItem : listData) {
             Map<String, String> map = new HashMap<>();
-            map.put(KEY_VISIBLE_NAME, viewItem.timelineTitle.toString());
+            map.put(KEY_VISIBLE_NAME, viewItem.timelineTitle.title);
             map.put(KEY_SYNC_AUTO, viewItem.timeline.isSyncedAutomatically() ? syncText : "");
             map.put(BaseColumns._ID, Long.toString(viewItem.timeline.getId()));
             list.add(map);

@@ -163,7 +163,9 @@ public class MyAccounts {
     public MyAccount fromActorId(long actorId) {
         if (actorId == 0) return MyAccount.EMPTY;
         return myAccounts.stream().filter(ma -> ma.getActorId() == actorId).findFirst()
-                .orElseGet(() -> fromFriendsActorId(actorId));
+                .orElseGet(() -> myAccounts.stream()
+                        .filter(ma -> myContext.users().fromActorId(actorId).actorIds.contains(ma.getActorId()))
+                        .findFirst().orElseGet(() -> fromFriendsActorId(actorId)));
     }
 
     private MyAccount fromFriendsActorId(long actorId) {

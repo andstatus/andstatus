@@ -677,7 +677,7 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public boolean isActorDifferentFromAccount() {
-        return actorId != 0 && myAccount.getActorId() != actorId;
+        return actorId != 0 && myAccount.getActorId() != 0 && myAccount.getActorId() != actorId;
     }
 
     /**
