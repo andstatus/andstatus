@@ -715,7 +715,7 @@ public final class MyAccount implements Comparable<MyAccount> {
         actor.actorId = accountData.getDataLong(KEY_ACTOR_ID, 0L);
         actor.setUsername(oAccountName.getUsername());
         actor.setWebFingerId(MyQuery.actorIdToName(myContext.getDatabase(), actor.actorId, ActorInTimeline.WEBFINGER_ID));
-        actor.user = myContext.users().fromActorId(actor.actorId);
+        actor.user = myContext.users().meOrMyFriendFromActorId(actor.actorId);
         this.version = accountData.getDataInt(KEY_VERSION, ACCOUNT_VERSION);
 
         deleted = accountData.getDataBoolean(KEY_DELETED, false);

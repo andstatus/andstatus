@@ -96,6 +96,7 @@ public class MyUsers {
         final Function<Cursor, Friendship> function = cursor -> {
             Actor friend = Actor.fromOriginAndActorId(myContext.origins().fromId(cursor.getLong(1)),
                     cursor.getLong(0));
+            friend.user = User.load(myContext, friend.actorId);
             return new Friendship(myActors.getOrDefault(cursor.getLong(2), Actor.EMPTY), friend);
         };
         friendsOfMyActors.addAll(MyQuery.get(myContext, sql, function));
@@ -118,12 +119,15 @@ public class MyUsers {
     }
 
     public boolean isMeOrMyFriend(long actorId) {
-        return myActors.containsKey(actorId)
-                || friendsOfMyActors.stream().filter(friendship -> friendship.friend.actorId == actorId).count() > 0;
+        return meOrMyFriendFromActorId(actorId).nonEmpty();
     }
 
     @NonNull
-    public User fromActorId(long actorId) {
-        return myUsers.getOrDefault(myActors.getOrDefault(actorId, Actor.EMPTY).user, User.EMPTY);
+    public User meOrMyFriendFromActorId(long actorId) {
+        final User user = myActors.getOrDefault(actorId, Actor.EMPTY).user;
+        if (user.nonEmpty()) return user;
+        return friendsOfMyActors.stream().filter(friendship -> friendship.friend.actorId == actorId
+            || friendship.friend.user.actorIds.contains(actorId))
+                .findFirst().map(friendship -> friendship.friend.user).orElse(User.EMPTY);
     }
 }

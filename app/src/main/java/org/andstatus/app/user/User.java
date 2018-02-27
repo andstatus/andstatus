@@ -47,6 +47,13 @@ public class User {
 
     @NonNull
     public static User load(@NonNull MyContext myContext, long actorId) {
+        if (actorId == 0) return User.EMPTY;
+        User meOrMyFriend = myContext.users().meOrMyFriendFromActorId(actorId);
+        if (meOrMyFriend.nonEmpty()) return meOrMyFriend;
+        return loadInternal(myContext, actorId);
+    }
+
+    private static User loadInternal(@NonNull MyContext myContext, long actorId) {
         if (actorId == 0 || MyAsyncTask.isUiThread()) return User.EMPTY;
         final String sql = "SELECT " + UserTable.TABLE_NAME + "." + UserTable._ID + ", " + UserTable.KNOWN_AS
                 + ", " + UserTable.IS_MY
@@ -134,13 +141,5 @@ public class User {
 
     public void setKnownAs(String knownAs) {
         this.knownAs = knownAs;
-    }
-
-    @NonNull
-    public static User fromActorId(@NonNull MyContext myContext, long actorId) {
-        if (actorId == 0) return User.EMPTY;
-        User myUser = myContext.users().fromActorId(actorId);
-        if (myUser.nonEmpty()) return myUser;
-        return load(myContext, actorId);
     }
 }
