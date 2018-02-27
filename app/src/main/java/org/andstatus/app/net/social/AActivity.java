@@ -513,11 +513,11 @@ public class AActivity extends AObject {
         switch (type) {
             case LIKE:
             case UNDO_LIKE:
-                final MyAccount myActorAccount = myContext.accounts().fromActor(actor);
+                final MyAccount myActorAccount = myContext.accounts().fromActorOfAnyOrigin(actor);
                 if (myActorAccount.isValid()) {
                     MyLog.v(this, myActorAccount + " " + type
                             + " '" + getNote().oid + "' " + I18n.trimTextAt(getNote().getBody(), 80));
-                    MyProvider.updateNoteFavorited(myContext, accountActor.origin, getNote().noteId);
+                    MyProvider.updateNoteFavorited(myContext, actor.origin, getNote().noteId);
                 }
                 break;
             default:

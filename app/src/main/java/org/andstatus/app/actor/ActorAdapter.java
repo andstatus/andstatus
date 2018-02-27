@@ -102,13 +102,13 @@ public class ActorAdapter extends BaseTimelineAdapter<ActorViewItem> {
         if (!item.myFollowers.isEmpty()) {
             int count = 0;
             builder.append(contextMenu.getActivity().getText(R.string.followed_by));
-            for (long actorId : item.myFollowers) {
+            for (long followerId : item.myFollowers) {
                 if (count == 0) {
                     builder.append(" ");
                 } else {
                     builder.append(", ");
                 }
-                builder.append(myContext.accounts().fromActorId(actorId).getAccountName());
+                builder.append(myContext.accounts().fromActorId(followerId).getAccountName());
                 count++;
             }
         }

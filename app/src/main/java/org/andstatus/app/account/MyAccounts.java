@@ -30,9 +30,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MyAccounts {
     /**
@@ -137,41 +139,62 @@ public class MyAccounts {
         return MyAccount.EMPTY;
     }
 
-    @NonNull
-    public MyAccount fromActorOfSameOrigin(@NonNull Actor actor) {
-        return fromActor(actor, true);
-    }
-
-    /** Doesn't take origin into account */
-    @NonNull
-    public MyAccount fromActor(@NonNull Actor actor) {
-        return fromActor(actor, false);
-    }
-
-    @NonNull
-    public MyAccount fromActor(@NonNull Actor other, boolean sameOriginOnly) {
-        return myAccounts.stream().filter(ma -> ma.getActor().isSame(other, sameOriginOnly))
-                .findFirst().orElse(MyAccount.EMPTY);
-    }
-
     /**
-     * Get MyAccount by the ActorId.
+     * Get MyAccount by the ActorId. The MyAccount found may be from another origin
      * Please note that a valid Actor may not have an Account (in AndStatus)
      * @return EMPTY account if was not found
      */
     @NonNull
     public MyAccount fromActorId(long actorId) {
         if (actorId == 0) return MyAccount.EMPTY;
-        return myAccounts.stream().filter(ma -> ma.getActorId() == actorId).findFirst()
-                .orElseGet(() -> myAccounts.stream()
-                        .filter(ma -> myContext.users().fromActorId(actorId).actorIds.contains(ma.getActorId()))
-                        .findFirst().orElseGet(() -> fromFriendsActorId(actorId)));
+        return fromActor(Actor.fromOriginAndActorId(Origin.EMPTY, actorId), false, false);
     }
 
-    private MyAccount fromFriendsActorId(long actorId) {
-        return myAccounts.stream().filter(ma -> myContext.users().myFriends.getOrDefault(actorId, Actor.EMPTY)
-                    .user.actorIds.contains(ma.getActorId()))
+    @NonNull
+    public MyAccount fromActorOfSameOrigin(@NonNull Actor actor) {
+        return fromActor(actor, true, false);
+    }
+
+    /** Doesn't take origin into account */
+    @NonNull
+    public MyAccount fromActorOfAnyOrigin(@NonNull Actor actor) {
+        return fromActor(actor, false, false);
+    }
+
+    @NonNull
+    private MyAccount fromActor(@NonNull Actor other, boolean sameOriginOnly, boolean succeededOnly) {
+        return myAccounts.stream().filter(ma -> ma.isValidAndSucceeded() || !succeededOnly)
+                .filter(ma -> ma.getActor().isSame(other, sameOriginOnly))
+                .findFirst().orElseGet(() -> fromMyActors(other, sameOriginOnly));
+    }
+
+    @NonNull
+    private MyAccount fromMyActors(@NonNull Actor other, boolean sameOriginOnly) {
+        return myAccounts.stream().filter(ma ->
+                myContext.users().myActors.values().stream()
+                        .filter(actor -> actor.user.userId == ma.getActor().user.userId)
+                        .filter(actor -> actor.isSame(other, sameOriginOnly)).count() > 0)
                 .findFirst().orElse(MyAccount.EMPTY);
+    }
+
+    /** My account, which can be used to sync the "other" actor's data and to interact with that actor */
+    @NonNull
+    public MyAccount toSyncThisActor(@NonNull Actor other) {
+        return Stream.of(fromActor(other, true, true))
+                .findFirst().orElseGet(() -> forFriend(other, true, true)
+                                .orElseGet(() -> getFirstSucceededForOrigin(other.origin))
+                );
+    }
+
+    private Optional<MyAccount> forFriend(Actor friend, boolean sameOriginOnly, boolean succeededOnly) {
+        return myAccounts.stream()
+                .filter(ma -> ma.isValidAndSucceeded() || !succeededOnly)
+                .filter(ma -> myContext.users().friendsOfMyActors.stream()
+                                .filter(friendship ->
+                                        friendship.actor.isSame(ma.getActor(), sameOriginOnly)
+                                        && friendship.friend.isSame(friend, sameOriginOnly)
+                                ).count() > 0)
+                .findFirst();
     }
 
     /** Doesn't take origin into account */
@@ -478,6 +501,8 @@ public class MyAccounts {
     }
 
     void addIfNew(@NonNull MyAccount myAccount) {
-        if (!myAccounts.contains(myAccount)) myAccounts.add(myAccount);
+        if (myAccounts.contains(myAccount)) return;
+        myAccounts.add(myAccount);
+        myContext.users().myActors.put(myAccount.getActorId(), myAccount.getActor());
     }
 }

@@ -44,7 +44,7 @@ public class SqlActorIds {
             return SqlActorIds.fromActors(MyContextHolder.get().users().myActors.values().stream()
                     .filter(actor -> actor.origin.equals(timeline.getOrigin())).collect(toList()));
         } else {
-            return SqlActorIds.fromIds(timeline.user.actorIds);
+            return SqlActorIds.fromIds(timeline.actor.user.actorIds);
         }
     }
 
@@ -52,7 +52,7 @@ public class SqlActorIds {
         if (timeline.isCombined() || timeline.getTimelineType().isAtOrigin()) {
             return SqlActorIds.EMPTY;
         }
-        return SqlActorIds.fromIds(timeline.user.actorIds);
+        return SqlActorIds.fromIds(timeline.actor.user.actorIds);
     }
 
     public static SqlActorIds fromActors(@NonNull Collection<Actor> actors) {

@@ -139,11 +139,15 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public static CommandData newAccountCommand(CommandEnum command, @NonNull MyAccount myAccount) {
-        return newTimelineCommand(command, Timeline.getTimeline(TimelineType.OUTBOX, myAccount.getActorId(), Origin.EMPTY));
+        return newTimelineCommand(command, myAccount.isValid()
+                ? Timeline.getTimeline(TimelineType.OUTBOX, myAccount.getActorId(), Origin.EMPTY)
+                : Timeline.EMPTY);
     }
 
     public static CommandData newOriginCommand(CommandEnum command, @NonNull Origin origin) {
-        return newTimelineCommand(command, Timeline.getTimeline(TimelineType.EVERYTHING, 0, origin));
+        return newTimelineCommand(command, origin.isEmpty()
+                ? Timeline.EMPTY
+                : Timeline.getTimeline(TimelineType.EVERYTHING, 0, origin));
     }
 
     public static CommandData newTimelineCommand(CommandEnum command, @NonNull MyAccount myAccount,

@@ -108,16 +108,16 @@ public class DemoAccountInserter {
         assertEquals("Oid: " + ma.getActor(), actor.oid, ma.getActor().oid);
         assertEquals("Partially defined: " + ma.getActor(), false, ma.getActor().isPartiallyDefined());
 
-        assertNotEquals(Timeline.EMPTY, getAutomaticallySyncableTimeline(myContext, ma.getActor()));
+        assertNotEquals(Timeline.EMPTY, getAutomaticallySyncableTimeline(myContext, ma));
         return ma;
     }
 
     @NonNull
-    public static Timeline getAutomaticallySyncableTimeline(MyContext myContext, Actor myActor) {
+    public static Timeline getAutomaticallySyncableTimeline(MyContext myContext, MyAccount myAccount) {
         Timeline timelineToSync = myContext.timelines()
-                .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myActor, Origin.EMPTY)
+                .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount, Origin.EMPTY)
                 .filter(Timeline::isSyncedAutomatically).findFirst().orElse(Timeline.EMPTY);
-        assertTrue("No syncable automatically timeline for " + myActor + "\n"
+        assertTrue("No syncable automatically timeline for " + myAccount + "\n"
                 + myContext.timelines().values(), timelineToSync.isSyncableAutomatically());
         return timelineToSync;
     }

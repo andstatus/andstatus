@@ -147,6 +147,10 @@ public final class MyAccount implements Comparable<MyAccount> {
         return actor.getWebFingerId();
     }
 
+    public boolean nonEmpty() {
+        return this != EMPTY;
+    }
+
     /** Companion class used to load/create/change/delete {@link MyAccount}'s data */
     public static final class Builder implements Parcelable {
         private static final String TAG = MyAccount.TAG + "." + Builder.class.getSimpleName();
@@ -851,14 +855,8 @@ public final class MyAccount implements Comparable<MyAccount> {
 
         String members = (isValid() ? "" : "(invalid) ") + "accountName:" + oAccountName + ",";
         try {
-            if (actor.actorId != 0) {
-                members += "id:" + actor.actorId + ",";
-            }
-            if (!TextUtils.isEmpty(actor.oid)) {
-                members += "oid:" + actor.oid + ",";
-            }
-            if (actor.isWebFingerIdValid()) {
-                members += actor.getWebFingerId() + ",";
+            if (actor.nonEmpty()) {
+                members += actor + ",";
             }
             if (!isPersistent()) {
                 members += "not persistent,";

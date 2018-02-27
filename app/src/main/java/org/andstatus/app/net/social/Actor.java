@@ -16,6 +16,7 @@
 
 package org.andstatus.app.net.social;
 
+import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
@@ -23,6 +24,8 @@ import android.text.TextUtils;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.database.table.ActorTable;
+import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.user.User;
 import org.andstatus.app.util.I18n;
@@ -38,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -85,6 +89,36 @@ public class Actor implements Comparable<Actor> {
     @NonNull
     public static Actor fromOriginAndActorOid(@NonNull Origin origin, String actorOid) {
         return new Actor(origin, actorOid);
+    }
+
+    public static Actor load(@NonNull MyContext myContext, long actorId) {
+        Actor myActor = myContext.users().myActors.getOrDefault(actorId, Actor.EMPTY);
+        if (myActor.nonEmpty()) return myActor;
+        return myContext.users().friendsOfMyActors.stream()
+                .map(friendship -> friendship.friend)
+                .filter(friend -> friend.actorId == actorId).findFirst()
+                .orElseGet(() -> myContext.timelines().values().stream()
+                        .map(timeline -> timeline.actor)
+                        .filter(actor -> actor.actorId == actorId).findFirst()
+                        .orElseGet(() -> loadInternal(myContext, actorId)));
+    }
+
+    private static Actor loadInternal(@NonNull MyContext myContext, long actorId) {
+        final String sql = "SELECT "
+                + ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID
+                + ", " + ActorTable.TABLE_NAME + "." + ActorTable.USER_ID
+                + ", " + UserTable.TABLE_NAME + "." + UserTable.KNOWN_AS
+                + " FROM " + ActorTable.TABLE_NAME
+                + " INNER JOIN " + UserTable.TABLE_NAME + " ON " + ActorTable.TABLE_NAME + "." + ActorTable.USER_ID
+                + "=" + UserTable.TABLE_NAME + "." + UserTable._ID
+                + " AND " + ActorTable.TABLE_NAME + "." + ActorTable._ID;
+        final Function<Cursor, Actor> function = cursor -> {
+            Actor actor = Actor.fromOriginAndActorId(myContext.origins().fromId(cursor.getLong(0)), actorId);
+            final long userId = cursor.getLong(1);
+            actor.user = new User(userId, cursor.getString(2), TriState.UNKNOWN, new HashSet<>());
+            return actor;
+        };
+        return MyQuery.get(myContext, sql, function).stream().findFirst().orElse(Actor.EMPTY);
     }
 
     public static Actor fromOriginAndActorId(@NonNull Origin origin, long actorId) {
@@ -151,14 +185,20 @@ public class Actor implements Comparable<Actor> {
         if (actorId != 0) {
             members += "; id=" + actorId;
         }
+        if (!TextUtils.isEmpty(oid)) {
+            members += "oid:" + oid + ",";
+        }
+        if (isWebFingerIdValid()) {
+            members += getWebFingerId() + ",";
+        }
         if (!TextUtils.isEmpty(username)) {
             members += "; username=" + username;
         }
-        if (!TextUtils.isEmpty(webFingerId)) {
-            members += "; webFingerId=" + webFingerId;
-        }
         if (!TextUtils.isEmpty(realName)) {
             members += "; realName=" + realName;
+        }
+        if (user.nonEmpty()) {
+            members += "; user=" + user;
         }
         if (!Uri.EMPTY.equals(profileUri)) {
             members += "; profileUri=" + profileUri.toString();

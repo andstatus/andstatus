@@ -163,7 +163,6 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
     }
 
     public void addDefaultCombined() {
-        List<Timeline> timelines = new ArrayList<>();
         for (TimelineType timelineType : TimelineType.values()) {
             if (timelineType.isSelectable()) {
                 myContext.timelines().get(0, timelineType, 0, Origin.EMPTY, "");
