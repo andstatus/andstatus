@@ -95,7 +95,7 @@ public class Actor implements Comparable<Actor> {
     }
 
     public static Actor load(@NonNull MyContext myContext, long actorId, Supplier<Actor> supplier) {
-        if (actorId == 0) return Actor.EMPTY;
+        if (actorId == 0) return supplier.get();
         Actor actor1 = myContext.users().actors.getOrDefault(actorId, Actor.EMPTY);
         return actor1.nonEmpty() ? actor1 : loadInternal(myContext, actorId, supplier);
     }
@@ -183,12 +183,12 @@ public class Actor implements Comparable<Actor> {
 
     public boolean isEmpty() {
         return this == EMPTY || !origin.isValid() || (actorId == 0 && UriUtils.nonRealOid(oid)
-                && TextUtils.isEmpty(webFingerId) && TextUtils.isEmpty(username));
+                && TextUtils.isEmpty(webFingerId) && !origin.isUsernameValid(username));
     }
 
     public boolean isPartiallyDefined() {
         return !origin.isValid() || UriUtils.nonRealOid(oid) || TextUtils.isEmpty(webFingerId)
-                || TextUtils.isEmpty(username);
+                || !origin.isUsernameValid(username);
     }
 
     public boolean isIdentified() {

@@ -147,11 +147,7 @@ public class Origin {
     }
 
     public boolean isUsernameValid(String username) {
-        boolean ok = false;
-        if (!TextUtils.isEmpty(username)) {
-            ok = username.matches(originType.usernameRegEx);
-        }
-        return ok;
+        return StringUtils.nonEmpty(username) && username.matches(originType.usernameRegEx);
     }
 
     /**

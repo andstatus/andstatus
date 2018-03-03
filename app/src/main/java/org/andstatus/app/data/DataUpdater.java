@@ -350,7 +350,7 @@ public class DataUpdater {
                 // Substitute required empty values with some temporary for a new entry only!
                 String username = actor.getUsername();
                 if (SharedPreferencesUtil.isEmpty(username)) {
-                    username = "id:" + actorOid;
+                    username = (actorOid.startsWith(UriUtils.TEMP_OID_PREFIX) ? "" : UriUtils.TEMP_OID_PREFIX) + actorOid;
                 }
                 values.put(ActorTable.USERNAME, username);
                 String webFingerId = actor.getWebFingerId();

@@ -46,6 +46,7 @@ import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UriUtils;
 
 import java.util.Date;
 import java.util.Objects;
@@ -524,8 +525,10 @@ public class Timeline implements Comparable<Timeline> {
         return getId();
     }
 
-    public boolean needToLoadActorInTimeline() {
-        return actor.nonEmpty() && TextUtils.isEmpty(actorInTimeline) && actor.user.isMyUser().untrue;
+    private boolean needToLoadActorInTimeline() {
+        return actor.nonEmpty()
+                && (TextUtils.isEmpty(actorInTimeline) || actorInTimeline.startsWith(UriUtils.TEMP_OID_PREFIX))
+                && actor.user.isMyUser().untrue;
     }
 
     public void delete() {
