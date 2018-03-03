@@ -29,7 +29,6 @@ import android.text.TextUtils;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.SearchObjects;
-import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -336,7 +335,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                 }
                 MyLog.v(this, (result.savedToAccountManager ? " Saved "
                         : (result.changed ? " Didn't save?! " : " Didn't change ")) + this.toString());
-                myContext.accounts().addIfNew(myAccount);
+                myContext.accounts().addIfAbsent(myAccount);
                 if (myContext.isReady() && !myAccount.hasAnyTimelines(myContext)) {
                     new TimelineSaver(myContext).setAddDefaults(true).setAccount(myAccount).executeNotOnUiThread();
                 }
@@ -430,6 +429,7 @@ public final class MyAccount implements Comparable<MyAccount> {
 
             if (ok) {
                 setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
+                actor.lookupActorId(myContext);
                 actor.lookupUser(myContext);
                 actor.user.setIsMyUser(TriState.TRUE);
                 myAccount.actor = actor;
@@ -711,11 +711,11 @@ public final class MyAccount implements Comparable<MyAccount> {
     private MyAccount(MyContext myContext, @NonNull AccountData accountData, @NonNull AccountName accountName) {
         this.accountData = accountData;
         oAccountName = accountName;
-        actor = Actor.fromOriginAndActorOid(accountName.getOrigin(), accountData.getDataString(KEY_ACTOR_OID, ""));
-        actor.actorId = accountData.getDataLong(KEY_ACTOR_ID, 0L);
-        actor.setUsername(oAccountName.getUsername());
-        actor.setWebFingerId(MyQuery.actorIdToName(myContext.getDatabase(), actor.actorId, ActorInTimeline.WEBFINGER_ID));
-        actor.user = myContext.users().meOrMyFriendFromActorId(actor.actorId);
+        actor = Actor.load(myContext, accountData.getDataLong(KEY_ACTOR_ID, 0L), () ->
+            Actor.fromOriginAndActorOid(accountName.getOrigin(), accountData.getDataString(KEY_ACTOR_OID, ""))
+                .setUsername(oAccountName.getUsername())
+                .lookupUser(myContext)
+        );
         this.version = accountData.getDataInt(KEY_VERSION, ACCOUNT_VERSION);
 
         deleted = accountData.getDataBoolean(KEY_DELETED, false);
@@ -891,7 +891,7 @@ public final class MyAccount implements Comparable<MyAccount> {
         } catch (Exception e) {
             MyLog.v(this, members, e);
         }
-        return MyLog.formatKeyValue(TAG, members);
+        return MyLog.formatKeyValue(this, members);
     }
     
     public JSONObject toJson() throws JSONException {

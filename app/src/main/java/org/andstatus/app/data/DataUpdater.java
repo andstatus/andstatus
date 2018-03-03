@@ -330,7 +330,7 @@ public class DataUpdater {
             followedByMe = followedByActor;
         }
 
-        actor.lookupActorId();
+        actor.lookupActorId(execContext.getMyContext());
         if (actor.actorId != 0 && actor.isPartiallyDefined() && followedByMe.unknown) {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, method + "; Skipping partially defined: " + actor.toString());

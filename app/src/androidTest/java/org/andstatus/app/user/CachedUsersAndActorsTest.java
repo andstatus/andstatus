@@ -28,7 +28,7 @@ import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class MyUsersTest {
+public class CachedUsersAndActorsTest {
     @Before
     public void setUp() {
         TestSuite.initializeWithData(this);
@@ -36,7 +36,7 @@ public class MyUsersTest {
 
     @Test
     public void test() {
-        MyUsers users = MyContextHolder.get().users();
+        CachedUsersAndActors users = MyContextHolder.get().users();
         assertTrue(users.toString(), users.size() > 4);
 
         Origin origin = MyContextHolder.get().origins().fromName(demoData.conversationOriginName);

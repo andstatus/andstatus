@@ -155,7 +155,7 @@ public class AActivity extends AObject {
     }
 
     public boolean isMyActorOrAuthor(@NonNull MyContext myContext) {
-        return myContext.users().contains(getActor()) || myContext.users().contains(getAuthor());
+        return myContext.users().containsMe(getActor()) || myContext.users().containsMe(getAuthor());
     }
 
     @NonNull
@@ -413,7 +413,7 @@ public class AActivity extends AObject {
 
     private void findExisting(MyContext myContext) {
         if (!timelinePosition.isEmpty()) {
-            id = MyQuery.oidToId(myContext.getDatabase(), OidEnum.ACTIVITY_OID, accountActor.origin.getId(),
+            id = MyQuery.oidToId(myContext, OidEnum.ACTIVITY_OID, accountActor.origin.getId(),
                     timelinePosition.getPosition());
         }
         if (id != 0) {
@@ -437,18 +437,18 @@ public class AActivity extends AObject {
     }
 
     private NotificationEventType calculateNotificationEventType(MyContext myContext) {
-        if (myContext.users().contains(getActor())) return NotificationEventType.EMPTY;
+        if (myContext.users().containsMe(getActor())) return NotificationEventType.EMPTY;
         if (getNote().isPrivate()) {
             return NotificationEventType.PRIVATE;
-        } else if(myContext.users().contains(getNote().audience().getRecipients()) && !isMyActorOrAuthor(myContext)) {
+        } else if(myContext.users().containsMe(getNote().audience().getRecipients()) && !isMyActorOrAuthor(myContext)) {
             return NotificationEventType.MENTION;
-        } else if (type == ActivityType.ANNOUNCE && myContext.users().contains(getAuthor())) {
+        } else if (type == ActivityType.ANNOUNCE && myContext.users().containsMe(getAuthor())) {
             return NotificationEventType.ANNOUNCE;
         } else if ((type == ActivityType.LIKE || type == ActivityType.UNDO_LIKE)
-                && myContext.users().contains(getAuthor())) {
+                && myContext.users().containsMe(getAuthor())) {
             return NotificationEventType.LIKE;
         } else if ((type == ActivityType.FOLLOW || type == ActivityType.UNDO_FOLLOW)
-                && myContext.users().contains(getObjActor())) {
+                && myContext.users().containsMe(getObjActor())) {
             return NotificationEventType.FOLLOW;
         } else {
             return NotificationEventType.EMPTY;

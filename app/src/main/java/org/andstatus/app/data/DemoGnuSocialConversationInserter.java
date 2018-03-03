@@ -59,7 +59,7 @@ public class DemoGnuSocialConversationInserter {
         final MyAccount myAccount = MyContextHolder.get().accounts()
                 .fromAccountName(demoData.gnusocialTestAccountName);
         accountActor = myAccount.getActor();
-        assertFalse( "Account actor is not defined " + myAccount + ", actor:" + accountActor,
+        assertFalse( "Account actor is not defined " + myAccount,
                 accountActor.isEmpty() || accountActor.isPartiallyDefined());
         assertEquals( "Inconsistent origin for " + accountActor + "\n and " + origin, accountActor.origin, origin);
     }

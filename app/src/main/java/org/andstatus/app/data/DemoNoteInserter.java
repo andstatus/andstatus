@@ -268,7 +268,7 @@ public class DemoNoteInserter {
         assertEquals("Notification event type\n" + activity + "\n",
                 eventType,
                 NotificationEventType.fromId(
-                        MyQuery.activityIdToLongColumnValue(ActivityTable.NEW_NOTIFICATION_EVENT, activity.getId())));
+                        MyQuery.activityIdToLongColumnValue(ActivityTable.INTERACTION_EVENT, activity.getId())));
 
         assertEquals("Interacted TriState\n" + activity + "\n",
                 TriState.fromBoolean(eventType != NotificationEventType.EMPTY),

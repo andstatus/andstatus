@@ -30,7 +30,7 @@ import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionState;
 import org.andstatus.app.timeline.meta.PersistentTimelines;
 import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.user.MyUsers;
+import org.andstatus.app.user.CachedUsersAndActors;
 import org.andstatus.app.util.IdentifiableInstance;
 
 public interface MyContext extends IdentifiableInstance {
@@ -47,7 +47,7 @@ public interface MyContext extends IdentifiableInstance {
     String getLastDatabaseError();
     SQLiteDatabase getDatabase();
     @NonNull
-    MyUsers users();
+    CachedUsersAndActors users();
     @NonNull
     MyAccounts accounts();
     @NonNull

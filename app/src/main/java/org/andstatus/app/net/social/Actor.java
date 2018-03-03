@@ -22,6 +22,8 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.ActorTable;
@@ -30,6 +32,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.user.User;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -39,9 +42,9 @@ import org.andstatus.app.util.UrlUtils;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -91,34 +94,54 @@ public class Actor implements Comparable<Actor> {
         return new Actor(origin, actorOid);
     }
 
-    public static Actor load(@NonNull MyContext myContext, long actorId) {
-        Actor myActor = myContext.users().myActors.getOrDefault(actorId, Actor.EMPTY);
-        if (myActor.nonEmpty()) return myActor;
-        return myContext.users().friendsOfMyActors.stream()
-                .map(friendship -> friendship.friend)
-                .filter(friend -> friend.actorId == actorId).findFirst()
-                .orElseGet(() -> myContext.timelines().values().stream()
-                        .map(timeline -> timeline.actor)
-                        .filter(actor -> actor.actorId == actorId).findFirst()
-                        .orElseGet(() -> loadInternal(myContext, actorId)));
+    public static Actor load(@NonNull MyContext myContext, long actorId, Supplier<Actor> supplier) {
+        Actor actor1 = myContext.users().actors.getOrDefault(actorId, Actor.EMPTY);
+        return actor1.nonEmpty() ? actor1 : loadInternal(myContext, actorId, supplier);
     }
 
-    private static Actor loadInternal(@NonNull MyContext myContext, long actorId) {
-        final String sql = "SELECT "
-                + ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID
+    private static Actor loadInternal(@NonNull MyContext myContext, long actorId, Supplier<Actor> supplier) {
+        final String sql = "SELECT " + Actor.getActorAndUserSqlColumns()
+                + " FROM " + Actor.getActorAndUserSqlTables()
+                + " WHERE " + ActorTable.TABLE_NAME + "." + ActorTable._ID + "=" + actorId;
+        final Function<Cursor, Actor> function = cursor -> fromCursor(myContext, cursor);
+        return MyQuery.get(myContext, sql, function).stream().findFirst().orElseGet(supplier);
+    }
+
+    @NonNull
+    public static String getActorAndUserSqlTables() {
+        return ActorTable.TABLE_NAME
+                + " INNER JOIN " + UserTable.TABLE_NAME
+                + " ON " + ActorTable.TABLE_NAME + "." + ActorTable.USER_ID
+                + "=" + UserTable.TABLE_NAME + "." + UserTable._ID;
+    }
+
+    @NonNull
+    public static String getActorAndUserSqlColumns() {
+        return ActorTable.TABLE_NAME + "." + ActorTable._ID
                 + ", " + ActorTable.TABLE_NAME + "." + ActorTable.USER_ID
-                + ", " + UserTable.TABLE_NAME + "." + UserTable.KNOWN_AS
-                + " FROM " + ActorTable.TABLE_NAME
-                + " INNER JOIN " + UserTable.TABLE_NAME + " ON " + ActorTable.TABLE_NAME + "." + ActorTable.USER_ID
-                + "=" + UserTable.TABLE_NAME + "." + UserTable._ID
-                + " AND " + ActorTable.TABLE_NAME + "." + ActorTable._ID;
-        final Function<Cursor, Actor> function = cursor -> {
-            Actor actor = Actor.fromOriginAndActorId(myContext.origins().fromId(cursor.getLong(0)), actorId);
-            final long userId = cursor.getLong(1);
-            actor.user = new User(userId, cursor.getString(2), TriState.UNKNOWN, new HashSet<>());
-            return actor;
-        };
-        return MyQuery.get(myContext, sql, function).stream().findFirst().orElse(Actor.EMPTY);
+                + ", " + ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID
+                + ", " + ActorTable.TABLE_NAME + "." + ActorTable.ACTOR_OID
+                + ", " + ActorTable.TABLE_NAME + "." + ActorTable.USERNAME
+                + ", " + ActorTable.TABLE_NAME + "." + ActorTable.WEBFINGER_ID
+                + ", " + UserTable.TABLE_NAME + "." + UserTable.IS_MY
+                + ", " + UserTable.TABLE_NAME + "." + UserTable.KNOWN_AS;
+    }
+
+    @NonNull
+    public static Actor fromCursor(MyContext myContext, Cursor cursor) {
+        final long actorId = DbUtils.getLong(cursor, ActorTable._ID);
+        Actor actor = myContext.users().actors.getOrDefault(actorId, Actor.EMPTY);
+        if (actor.isEmpty()) {
+            actor = Actor.fromOriginAndActorOid(
+                    myContext.origins().fromId(DbUtils.getLong(cursor, ActorTable.ORIGIN_ID)),
+                    DbUtils.getString(cursor, ActorTable.ACTOR_OID));
+            actor.actorId = actorId;
+            actor.setUsername(DbUtils.getString(cursor, ActorTable.USERNAME));
+            actor.setWebFingerId(DbUtils.getString(cursor, ActorTable.WEBFINGER_ID));
+            actor.user = User.fromCursor(myContext, cursor);
+            myContext.users().addIfAbsent(actor);
+        }
+        return actor;
     }
 
     public static Actor fromOriginAndActorId(@NonNull Origin origin, long actorId) {
@@ -180,33 +203,32 @@ public class Actor implements Comparable<Actor> {
         if (this == EMPTY) {
             return "Actor:EMPTY";
         }
-        String str = Actor.class.getSimpleName();
-        String members = (TextUtils.isEmpty(oid) ? "" : "oid=" + oid + "; ") + " origin=" + origin.getName();
+        String members = "origin=" + origin.getName() + ",";
         if (actorId != 0) {
-            members += "; id=" + actorId;
+            members += "id=" + actorId + ",";
         }
         if (!TextUtils.isEmpty(oid)) {
-            members += "oid:" + oid + ",";
+            members += "oid=" + oid + ",";
         }
         if (isWebFingerIdValid()) {
             members += getWebFingerId() + ",";
         }
         if (!TextUtils.isEmpty(username)) {
-            members += "; username=" + username;
+            members += "username=" + username + ",";
         }
         if (!TextUtils.isEmpty(realName)) {
-            members += "; realName=" + realName;
+            members += "realName=" + realName + ",";
         }
         if (user.nonEmpty()) {
-            members += "; user=" + user;
+            members += user + ",";
         }
         if (!Uri.EMPTY.equals(profileUri)) {
-            members += "; profileUri=" + profileUri.toString();
+            members += "profileUri=" + profileUri.toString() + ",";
         }
         if (hasLatestNote()) {
-            members += "; latest note present";
+            members += "latest note present,";
         }
-        return str + "{" + members + "}";
+        return MyLog.formatKeyValue(this, members);
     }
 
     public String getUsername() {
@@ -341,9 +363,9 @@ public class Actor implements Comparable<Actor> {
     }
 
     /** Lookup the application's id from other IDs */
-    public void lookupActorId() {
+    public void lookupActorId(@NonNull MyContext myContext) {
         if (actorId == 0 && isOidReal()) {
-            actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(), oid);
+            actorId = MyQuery.oidToId(myContext, OidEnum.ACTOR_OID, origin.getId(), oid);
         }
         if (actorId == 0 && isWebFingerIdValid()) {
             actorId = MyQuery.webFingerIdToId(origin.getId(), webFingerId);
@@ -352,10 +374,10 @@ public class Actor implements Comparable<Actor> {
             actorId = MyQuery.usernameToId(origin.getId(), username);
         }
         if (actorId == 0) {
-            actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(), getTempOid());
+            actorId = MyQuery.oidToId(myContext, OidEnum.ACTOR_OID, origin.getId(), getTempOid());
         }
         if (actorId == 0 && hasAltTempOid()) {
-            actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(), getAltTempOid());
+            actorId = MyQuery.oidToId(myContext, OidEnum.ACTOR_OID, origin.getId(), getAltTempOid());
         }
     }
 
@@ -434,7 +456,7 @@ public class Actor implements Comparable<Actor> {
             }
         }
         actor.setUsername(validUsername);
-        actor.lookupActorId();
+        actor.lookupActorId(MyContextHolder.get());
         if (!actors.contains(actor)) {
             actors.add(actor);
         }
@@ -537,7 +559,7 @@ public class Actor implements Comparable<Actor> {
         return MyQuery.actorIdToWebfingerId(actorId);
     }
 
-    public void lookupUser(MyContext myContext) {
+    public Actor lookupUser(MyContext myContext) {
         if (user == User.EMPTY && actorId != 0) {
             user = User.load(myContext, actorId);
         }
@@ -545,12 +567,13 @@ public class Actor implements Comparable<Actor> {
             user = User.load(myContext, MyQuery.webFingerIdToId(0, webFingerId));
         }
         if (user == User.EMPTY) {
-            user = new User(0, "", TriState.UNKNOWN, new HashSet<>());
+            user = User.getNew();
         }
+        return this;
     }
 
     public void saveUser(MyContext myContext) {
-        if (user.isMyUser().unknown && myContext.users().contains(this)) {
+        if (user.isMyUser().unknown && myContext.users().containsMe(this)) {
             user.setIsMyUser(TriState.TRUE);
         }
         if (user.userId == 0) user.setKnownAs(getNamePreferablyWebFingerId());

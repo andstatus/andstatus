@@ -81,10 +81,10 @@ public class MyQuery {
      *         {@link NoteTable#_ID} ). Or 0 if nothing was found.
      */
     public static long oidToId(OidEnum oidEnum, long originId, String oid) {
-        return oidToId(null, oidEnum, originId, oid);
+        return oidToId(MyContextHolder.get(), oidEnum, originId, oid);
     }
 
-    public static long oidToId(SQLiteDatabase database, OidEnum oidEnum, long originId, String oid) {
+    public static long oidToId(@NonNull MyContext myContext, OidEnum oidEnum, long originId, String oid) {
         if (TextUtils.isEmpty(oid)) {
             return 0;
         }
@@ -109,7 +109,7 @@ public class MyQuery {
             default:
                 throw new IllegalArgumentException(msgLog + "; Unknown oidEnum");
         }
-        return sqlToLong(database, msgLog, sql);
+        return sqlToLong(myContext.getDatabase(), msgLog, sql);
     }
 
     public static long sqlToLong(SQLiteDatabase databaseIn, String msgLogIn, String sql) {

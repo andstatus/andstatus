@@ -36,7 +36,7 @@ import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionState;
 import org.andstatus.app.timeline.meta.PersistentTimelines;
 import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.user.MyUsers;
+import org.andstatus.app.user.CachedUsersAndActors;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.Permissions;
@@ -69,7 +69,7 @@ public class MyContextImpl implements MyContext {
     private volatile DatabaseHolder db = null;
     private volatile String lastDatabaseError = "";
 
-    private final MyUsers users = MyUsers.newEmpty(this);
+    private final CachedUsersAndActors users = CachedUsersAndActors.newEmpty(this);
     private final MyAccounts accounts = MyAccounts.newEmpty(this);
     private final PersistentOrigins origins = PersistentOrigins.newEmpty(this);
     private final PersistentTimelines timelines = PersistentTimelines.newEmpty(this);
@@ -264,7 +264,7 @@ public class MyContextImpl implements MyContext {
 
     @Override
     @NonNull
-    public MyUsers users() {
+    public CachedUsersAndActors users() {
         return users;
     }
 

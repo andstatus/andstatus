@@ -78,9 +78,8 @@ class CheckUsers extends DataChecker {
                 rowsCount++;
                 final Actor actor = Actor.fromOriginAndActorId(myContext.origins().fromId(c.getLong(1)),
                         c.getLong(0));
-                actor.user = User.load(myContext, c.getLong(2));
-                if (actor.user == User.EMPTY) actor.lookupUser(myContext);
                 actor.setWebFingerId(c.getString(3));
+                actor.lookupUser(myContext);
                 if (shouldMergeUsers(prev, actor)) {
                     AActivity activity = whomToMerge(prev, actor);
                     results.usersToMerge.add(activity);

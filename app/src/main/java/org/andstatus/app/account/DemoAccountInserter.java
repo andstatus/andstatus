@@ -80,7 +80,7 @@ public class DemoAccountInserter {
         assertTrue("Name '" + accountNameString + "' is valid for " + originType, accountName.isValid());
         assertEquals("Origin for '" + accountNameString + "' account created",
                 accountName.getOrigin().getOriginType(), originType);
-        long accountActorId_existing = MyQuery.oidToId(myContext.getDatabase(), OidEnum.ACTOR_OID,
+        long accountActorId_existing = MyQuery.oidToId(myContext, OidEnum.ACTOR_OID,
                 accountName.getOrigin().getId(), actorOid);
         Actor actor = Actor.fromOriginAndActorOid(accountName.getOrigin(), actorOid);
         actor.setUsername(accountName.getUsername());

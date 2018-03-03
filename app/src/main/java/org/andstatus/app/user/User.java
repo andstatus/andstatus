@@ -26,12 +26,14 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.UserTable;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -48,25 +50,28 @@ public class User {
     @NonNull
     public static User load(@NonNull MyContext myContext, long actorId) {
         if (actorId == 0) return User.EMPTY;
-        User meOrMyFriend = myContext.users().meOrMyFriendFromActorId(actorId);
-        if (meOrMyFriend.nonEmpty()) return meOrMyFriend;
+        User user = myContext.users().userFromActorId(actorId);
+        if (user.nonEmpty()) return user;
         return loadInternal(myContext, actorId);
     }
 
     private static User loadInternal(@NonNull MyContext myContext, long actorId) {
         if (actorId == 0 || MyAsyncTask.isUiThread()) return User.EMPTY;
-        final String sql = "SELECT " + UserTable.TABLE_NAME + "." + UserTable._ID + ", " + UserTable.KNOWN_AS
-                + ", " + UserTable.IS_MY
-                + " FROM " + UserTable.TABLE_NAME
-                + " INNER JOIN " + ActorTable.TABLE_NAME + " ON "
-                + ActorTable.TABLE_NAME + "." + ActorTable.USER_ID + "=" + UserTable.TABLE_NAME + "." + UserTable._ID
-                + " AND " + ActorTable.TABLE_NAME + "." + ActorTable._ID + "=" + actorId;
-        final Function<Cursor, User> function = cursor -> {
-            final long userId = cursor.getLong(0);
-            return new User(userId, cursor.getString(1),
-                    TriState.fromId(cursor.getLong(2)), loadActors(myContext, userId));
-        };
+        final String sql = "SELECT " + Actor.getActorAndUserSqlColumns()
+                + " FROM " + Actor.getActorAndUserSqlTables()
+                + " WHERE " + ActorTable.TABLE_NAME + "." + ActorTable._ID + "=" + actorId;
+        final Function<Cursor, User> function = cursor -> fromCursor(myContext, cursor);
         return MyQuery.get(myContext, sql, function).stream().findFirst().orElse(EMPTY);
+    }
+
+    @NonNull
+    public static User fromCursor(MyContext myContext, Cursor cursor) {
+        final long userId = cursor.getLong(1);
+        User user1 = myContext.users().users.getOrDefault(userId, User.EMPTY);
+        return user1.nonEmpty() ? user1
+                : new User(userId, DbUtils.getString(cursor, UserTable.KNOWN_AS),
+                    DbUtils.getTriState(cursor, UserTable.IS_MY),
+                    loadActors(myContext, userId));
     }
 
     public User(long userId, String knownAs, TriState isMyUser, Set<Long> actorIds) {
@@ -77,10 +82,15 @@ public class User {
     }
 
     @NonNull
-    static Set<Long> loadActors(MyContext myContext, long userId) {
+    public static Set<Long> loadActors(MyContext myContext, long userId) {
         return MyQuery.getLongs(myContext, "SELECT " + ActorTable._ID
                 + " FROM " + ActorTable.TABLE_NAME
                 + " WHERE " + ActorTable.USER_ID + "=" + userId);
+    }
+
+    @NonNull
+    public static User getNew() {
+        return new User(0, "", TriState.UNKNOWN, new HashSet<>());
     }
 
     public boolean nonEmpty() {
@@ -88,7 +98,7 @@ public class User {
     }
 
     public boolean isEmpty() {
-        return this == EMPTY;
+        return this == EMPTY || (userId == 0 && TextUtils.isEmpty(knownAs));
     }
 
     @Override

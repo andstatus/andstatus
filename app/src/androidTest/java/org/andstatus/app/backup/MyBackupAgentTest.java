@@ -51,12 +51,13 @@ public class MyBackupAgentTest {
 
     @Test
     public void testBackupRestore() throws IOException, JSONException, NameNotFoundException, InterruptedException {
+        MyAccounts accountsBefore = MyAccounts.newEmpty(MyContextHolder.get());
+        accountsBefore.initialize();
+
         TestSuite.forget();
         TestSuite.initialize(this);
         demoData.assertConversations();
         
-        MyAccounts accountsBefore = MyAccounts.newEmpty(MyContextHolder.get());
-        accountsBefore.initialize();
         assertEquals("Compare Persistent accounts with copy", MyContextHolder.get().accounts(), accountsBefore);
         compareOneAccount(MyContextHolder.get().accounts(), accountsBefore, demoData.gnusocialTestAccountName);
         

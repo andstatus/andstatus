@@ -230,7 +230,7 @@ public class MyProvider extends ContentProvider {
 
     public static void updateNoteReblogged(MyContext myContext, Origin origin, long noteId) {
         TriState reblogged = TriState.fromBoolean(
-                myContext.users().contains(MyQuery.getRebloggers(myContext.getDatabase(), origin, noteId))
+                myContext.users().containsMe(MyQuery.getRebloggers(myContext.getDatabase(), origin, noteId))
         );
         update(myContext, NoteTable.TABLE_NAME,
                 NoteTable.REBLOGGED + "=" + reblogged.id,
@@ -239,7 +239,7 @@ public class MyProvider extends ContentProvider {
 
     public static void updateNoteFavorited(@NonNull MyContext myContext, @NonNull Origin origin, long noteId) {
         TriState favorited = TriState.fromBoolean(
-                myContext.users().contains(MyQuery.getStargazers(myContext.getDatabase(), origin, noteId))
+                myContext.users().containsMe(MyQuery.getStargazers(myContext.getDatabase(), origin, noteId))
         );
         update(myContext, NoteTable.TABLE_NAME,
                 NoteTable.FAVORITED + "=" + favorited.id,

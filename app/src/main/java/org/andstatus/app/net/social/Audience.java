@@ -95,7 +95,7 @@ public class Audience {
     }
 
     public boolean containsMe(MyContext myContext) {
-        return myContext.users().contains(recipients);
+        return myContext.users().containsMe(recipients);
     }
 
     public boolean contains(Actor actor) {

@@ -189,12 +189,9 @@ public class MyAccounts {
     private Optional<MyAccount> forFriend(Actor friend, boolean sameOriginOnly, boolean succeededOnly) {
         return myAccounts.stream()
                 .filter(ma -> ma.isValidAndSucceeded() || !succeededOnly)
-                .filter(ma -> myContext.users().friendsOfMyActors.stream()
-                                .filter(friendship ->
-                                        friendship.actor.isSame(ma.getActor(), sameOriginOnly)
-                                        && friendship.friend.isSame(friend, sameOriginOnly)
-                                ).count() > 0)
-                .findFirst();
+                .filter(ma -> !sameOriginOnly || ma.getOrigin().equals(friend.origin))
+                .filter(ma -> myContext.users().friendsOfMyActors.getOrDefault(friend.actorId, 0L)
+                        == ma.getActorId()).findFirst();
     }
 
     /** Doesn't take origin into account */
@@ -500,9 +497,8 @@ public class MyAccounts {
         return Collections.emptyList();
     }
 
-    void addIfNew(@NonNull MyAccount myAccount) {
-        if (myAccounts.contains(myAccount)) return;
-        myAccounts.add(myAccount);
-        myContext.users().myActors.put(myAccount.getActorId(), myAccount.getActor());
+    void addIfAbsent(@NonNull MyAccount myAccount) {
+        if (!myAccounts.contains(myAccount)) myAccounts.add(myAccount);
+        myContext.users().addIfAbsent(myAccount.getActor());
     }
 }
