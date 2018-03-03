@@ -181,6 +181,7 @@ public class MyAccounts {
     @NonNull
     public MyAccount toSyncThisActor(@NonNull Actor other) {
         return Stream.of(fromActor(other, true, true))
+                .filter(MyAccount::isValid)
                 .findFirst().orElseGet(() -> forFriend(other, true, true)
                                 .orElseGet(() -> getFirstSucceededForOrigin(other.origin))
                 );

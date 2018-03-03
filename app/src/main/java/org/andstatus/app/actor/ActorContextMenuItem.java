@@ -37,15 +37,15 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 
 public enum ActorContextMenuItem implements ContextMenuItem {
-    GET_ACTOR() {
+    GET_ACTOR(true) {
         @Override
-        void executeOnUiThread(ActorContextMenu menu, MyAccount ma) {
+        void executeAsync(Params params) {
             CommandData commandData = CommandData.newActorCommand(
                     CommandEnum.GET_ACTOR,
-                    ma,
-                    menu.getOrigin(),
-                    menu.getViewItem().getActorId(),
-                    menu.getViewItem().actor.getUsername());
+                    params.ma,
+                    params.menu.getOrigin(),
+                    params.menu.getViewItem().getActorId(),
+                    params.menu.getViewItem().actor.getUsername());
             MyServiceManager.sendManualForegroundCommand(commandData);
         }
     },
@@ -65,13 +65,14 @@ public enum ActorContextMenuItem implements ContextMenuItem {
             // TODO
         }
     },
-    ACTOR_NOTES() {
+    ACTOR_NOTES(true) {
         @Override
-        void executeOnUiThread(ActorContextMenu menu, MyAccount ma) {
-            TimelineActivity.startForTimeline(menu.getActivity().getMyContext(),
-                    menu.getActivity(),
-                    menu.getActivity().getMyContext().timelines().get( TimelineType.SENT,
-                            menu.getViewItem().getActorId(), menu.getOrigin(), ""), ma, false);
+        void executeAsync(Params params) {
+            TimelineActivity.startForTimeline(params.menu.getActivity().getMyContext(),
+                    params.menu.getActivity(),
+                    params.menu.getActivity().getMyContext().timelines().get( TimelineType.SENT,
+                            params.menu.getViewItem().getActorId(), params.menu.getOrigin(), ""),
+                    params.ma, false);
         }
     },
     FOLLOW() {

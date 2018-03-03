@@ -95,6 +95,7 @@ public class Actor implements Comparable<Actor> {
     }
 
     public static Actor load(@NonNull MyContext myContext, long actorId, Supplier<Actor> supplier) {
+        if (actorId == 0) return Actor.EMPTY;
         Actor actor1 = myContext.users().actors.getOrDefault(actorId, Actor.EMPTY);
         return actor1.nonEmpty() ? actor1 : loadInternal(myContext, actorId, supplier);
     }

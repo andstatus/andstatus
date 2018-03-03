@@ -413,7 +413,9 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     @Override
     public Actor getActor(String actorOid, String username) throws ConnectionException {
-        JSONObject jso = http.getRequest(getApiPathWithActorId(ApiRoutineEnum.GET_ACTOR, actorOid));
+        JSONObject jso = http.getRequest(
+                getApiPathWithActorId(ApiRoutineEnum.GET_ACTOR, UriUtils.isRealOid(actorOid) ? actorOid : username)
+        );
         Actor actor = actorFromJson(jso);
         MyLog.v(this, "getActor oid='" + actorOid + "', username='" + username + "' -> " + actor.getRealName());
         return actor;
