@@ -36,14 +36,14 @@ import java.util.concurrent.ConcurrentHashMap;
  * This is kind of mock of the concrete implementation 
  * @author yvolk@yurivolkov.com
  */
-public class MyContextForTest extends MyContextImpl {
+public class MyContextTestImpl extends MyContextImpl {
     private final Map<String, AssertionData> assertionData = new ConcurrentHashMap<>();
     private volatile Class<? extends HttpConnection> httpConnectionMockClass = null;
     private volatile HttpConnection httpConnectionMockInstance = null;
     private volatile ConnectionState mockedConnectionState = ConnectionState.UNKNOWN;
     private final Map<NotificationEventType, NotificationData> androidNotifications = new ConcurrentHashMap<>();
 
-    MyContextForTest(MyContextForTest parent, Context context, Object initializer) {
+    MyContextTestImpl(MyContextTestImpl parent, Context context, Object initializer) {
         super(parent, context, initializer);
         if (parent != null) {
             assertionData.putAll(parent.assertionData);
@@ -64,12 +64,12 @@ public class MyContextForTest extends MyContextImpl {
 
     @Override
     public MyContext newInitialized(Object initializer) {
-        return new MyContextForTest(this, context(), initializer).initialize();
+        return new MyContextTestImpl(this, context(), initializer).initialize();
     }
 
     @Override
     public MyContext newCreator(Context context, Object initializer) {
-        return new MyContextForTest(null, context, initializer);
+        return new MyContextTestImpl(null, context, initializer);
     }
 
     @Override

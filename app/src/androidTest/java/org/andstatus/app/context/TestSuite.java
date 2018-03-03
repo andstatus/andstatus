@@ -91,7 +91,7 @@ public class TestSuite {
             }
             MyLog.i(TAG, "Before MyContextHolder.initialize " + iter);
             try {
-                MyContextHolder.setCreator(new MyContextForTest(null, context, testCase));
+                MyContextHolder.setCreator(new MyContextTestImpl(null, context, testCase));
                 MyContext myContext = MyContextHolder.initialize(context, testCase);
                 MyLog.i(TAG, "After MyContextHolder.initialize " + iter + " " + myContext);
                 if (myContext.state() == MyContextState.READY) break;
@@ -172,11 +172,11 @@ public class TestSuite {
         getMyContextForTest().getAssertions().clear();
     }
     
-    public static MyContextForTest getMyContextForTest() {
-        if (!(MyContextHolder.get() instanceof MyContextForTest)) {
+    public static MyContextTestImpl getMyContextForTest() {
+        if (!(MyContextHolder.get() instanceof MyContextTestImpl)) {
             fail("Wrong type of current context");
         }
-        return (MyContextForTest) MyContextHolder.get();
+        return (MyContextTestImpl) MyContextHolder.get();
     }
     
     public static void setHttpConnectionMockClass(Class<? extends HttpConnection> httpConnectionMockClass) {

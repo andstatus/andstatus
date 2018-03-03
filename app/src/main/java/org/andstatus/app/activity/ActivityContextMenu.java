@@ -26,12 +26,12 @@ import org.andstatus.app.actor.ActorContextMenu;
 import org.andstatus.app.view.MyContextMenu;
 
 public class ActivityContextMenu {
-    public final org.andstatus.app.activity.ActorContextMenu actor;
+    public final ActorOfActivityContextMenu actor;
     public final NoteContextMenu note;
     public final ActorContextMenu objActor;
 
     public ActivityContextMenu(NoteContextMenuContainer container) {
-        actor = new org.andstatus.app.activity.ActorContextMenu(container);
+        actor = new ActorOfActivityContextMenu(container);
         note = new NoteContextMenu(container);
         objActor = new ActorContextMenu(container, MyContextMenu.MENU_GROUP_OBJACTOR);
     }

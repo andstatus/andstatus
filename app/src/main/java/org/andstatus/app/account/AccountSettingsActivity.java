@@ -100,6 +100,10 @@ public class AccountSettingsActivity extends MyActivity {
     private static final int MSG_CONNECTION_EXCEPTION = 5;
     private static final int MSG_CREDENTIALS_OF_OTHER_ACCOUNT = 7;
 
+    private static final String SUCCEEDED_KEY = "succeeded";
+    private static final String MESSAGE_KEY = "message";
+    private static final String WHAT_KEY = "what";
+
     private enum ActivityOnFinish {
         NONE,
         HOME,
@@ -876,8 +880,8 @@ public class AccountSettingsActivity extends MyActivity {
                 }
 
                 jso = new JSONObject();
-                jso.put("succeeded", succeeded);
-                jso.put("message", stepErrorMessage);
+                jso.put(SUCCEEDED_KEY, succeeded);
+                jso.put(MESSAGE_KEY, stepErrorMessage);
             } catch (JSONException e) {
                 MyLog.e(this, e);
             }
@@ -891,8 +895,8 @@ public class AccountSettingsActivity extends MyActivity {
             boolean succeeded = false;
             if (jso != null) {
                 try {
-                    succeeded = jso.getBoolean("succeeded");
-                    String message = jso.getString("message");
+                    succeeded = jso.getBoolean(SUCCEEDED_KEY);
+                    String message = jso.getString(MESSAGE_KEY);
 
                     if (succeeded) {
                         String accountName = state.getAccount().getAccountName();
@@ -1013,8 +1017,8 @@ public class AccountSettingsActivity extends MyActivity {
                 }
 
                 jso = new JSONObject();
-                jso.put("succeeded", requestSucceeded);
-                jso.put("message", stepErrorMessage);
+                jso.put(SUCCEEDED_KEY, requestSucceeded);
+                jso.put(MESSAGE_KEY, stepErrorMessage);
             } catch (JSONException e) {
                 MyLog.i(this, e);
             }
@@ -1028,8 +1032,8 @@ public class AccountSettingsActivity extends MyActivity {
             boolean succeeded = false;
             if (jso != null) {
                 try {
-                    succeeded = jso.getBoolean("succeeded");
-                    String message = jso.getString("message");
+                    succeeded = jso.getBoolean(SUCCEEDED_KEY);
+                    String message = jso.getString(MESSAGE_KEY);
 
                     if (succeeded) {
                         // Finish this activity in order to start properly 
@@ -1147,8 +1151,8 @@ public class AccountSettingsActivity extends MyActivity {
             JSONObject jso = null;
             try {
                 jso = new JSONObject();
-                jso.put("succeeded", !TextUtils.isEmpty(accessToken) && !TextUtils.isEmpty(accessSecret));
-                jso.put("message", message);
+                jso.put(SUCCEEDED_KEY, !TextUtils.isEmpty(accessToken) && !TextUtils.isEmpty(accessSecret));
+                jso.put(MESSAGE_KEY, message);
             } catch (JSONException e) {
                 MyLog.e(this, e);
             }
@@ -1162,8 +1166,8 @@ public class AccountSettingsActivity extends MyActivity {
             boolean succeeded = false;
             if (jso != null) {
                 try {
-                    succeeded = jso.getBoolean("succeeded");
-                    String connectionErrorMessage = jso.getString("message");
+                    succeeded = jso.getBoolean(SUCCEEDED_KEY);
+                    String connectionErrorMessage = jso.getString(MESSAGE_KEY);
                     if (succeeded) {
                         // Credentials are present, so we may verify them
                         // This is needed even for OAuth - to know Twitter Username
@@ -1252,8 +1256,8 @@ public class AccountSettingsActivity extends MyActivity {
 
             try {
                 jso = new JSONObject();
-                jso.put("what", what);
-                jso.put("message", message);
+                jso.put(WHAT_KEY, what);
+                jso.put(MESSAGE_KEY, message);
             } catch (JSONException e) {
                 MyLog.e(this, e);
             }
@@ -1271,8 +1275,8 @@ public class AccountSettingsActivity extends MyActivity {
             CharSequence errorMessage = "";
             if (jso != null) {
                 try {
-                    int what = jso.getInt("what");
-                    CharSequence message = jso.getString("message");
+                    int what = jso.getInt(WHAT_KEY);
+                    CharSequence message = jso.getString(MESSAGE_KEY);
 
                     switch (what) {
                         case MSG_ACCOUNT_VALID:
