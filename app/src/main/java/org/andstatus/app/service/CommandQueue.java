@@ -142,8 +142,8 @@ public class CommandQueue {
             int count = load(QueueType.CURRENT) + load(QueueType.RETRY);
             int countError = load(QueueType.ERROR);
             MyLog.d(this, "State restored, " + (count > 0 ? Integer.toString(count) : "no ")
-                    + " msg in the Queues, "
-                    + (countError > 0 ? Integer.toString(countError) + " in Error queue" : "")
+                    + " msg in the Queues"
+                    + (countError > 0 ? ", plus " + Integer.toString(countError) + " in Error queue" : "")
             );
             loaded = true;
         }
@@ -200,11 +200,11 @@ public class CommandQueue {
         }
         if (loaded) clearQueuesInDatabase(db);
         moveCommandsFromPreToMainQueue();
-        int count = save(db, QueueType.CURRENT) + save(db, QueueType.RETRY);
+        int countCurrentRetry = save(db, QueueType.CURRENT) + save(db, QueueType.RETRY);
         int countError = save(db, QueueType.ERROR);
         MyLog.d(this, (loaded ? "Queues saved" : "Saved new queued commands only") + ", "
-                + (count > 0 ? Integer.toString(count) : "no") + " commands"
-                + (countError > 0 ? ", including " + Integer.toString(countError) + " in Error queue" : "")
+                + (countCurrentRetry > 0 ? Integer.toString(countCurrentRetry) : "no") + " commands"
+                + (countError > 0 ? ", plus " + Integer.toString(countError) + " in Error queue" : "")
         );
         saved |= loaded;
         loaded = false;
