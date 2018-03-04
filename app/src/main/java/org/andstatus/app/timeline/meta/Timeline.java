@@ -26,6 +26,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.actor.ActorListType;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -229,7 +230,7 @@ public class Timeline implements Comparable<Timeline> {
                 parsedUri.getOrigin(myContext),
                 TextUtils.isEmpty(searchQueryIn) ? parsedUri.getSearchQuery() : searchQueryIn
         );
-        if (timeline.getTimelineType() == TimelineType.UNKNOWN) {
+        if (timeline.getTimelineType() == TimelineType.UNKNOWN && parsedUri.getActorListType() == ActorListType.UNKNOWN) {
             MyLog.e(Timeline.class, "fromParsedUri; uri:" + parsedUri.getUri() + "; " + timeline);
         }
         return timeline;

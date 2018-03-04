@@ -21,10 +21,10 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.actor.ActorListType;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.actor.ActorListType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 
@@ -118,21 +118,19 @@ public class ParsedUri {
     }
     
     public TimelineType getTimelineType() {
-        TimelineType tt = TimelineType.UNKNOWN;
         try {
             switch (matchedUri) {
                 case TIMELINE:
                 case TIMELINE_SEARCH:
                 case TIMELINE_ITEM:
-                    tt = TimelineType.load(uri.getPathSegments().get(3));
-                    break;
+                    return TimelineType.load(uri.getPathSegments().get(3));
                 default:
                     break;
             }
         } catch (Exception e) {
             MyLog.d(this, toString(), e);
         }
-        return tt;        
+        return TimelineType.UNKNOWN;
     }
 
     public ActorListType getActorListType() {
