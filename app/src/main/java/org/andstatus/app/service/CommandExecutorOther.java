@@ -29,6 +29,7 @@ import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.data.checker.CheckConversations;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.http.ConnectionException;
@@ -46,7 +47,10 @@ import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 class CommandExecutorOther extends CommandExecutorStrategy{
 
@@ -133,23 +137,34 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         if (TextUtils.isEmpty(conversationOid)) {
             logExecutionError(true, method + " empty conversationId " + MyQuery.noteInfoForLog(noteId));
         } else {
-            onActivities(method, () -> execContext.getMyAccount().getConnection().getConversation(conversationOid),
-                    () -> MyQuery.noteInfoForLog(noteId));
+            Set<Long> noteIds = onActivities(method,
+                    () -> execContext.getMyAccount().getConnection().getConversation(conversationOid),
+                    () -> MyQuery.noteInfoForLog(noteId))
+                    .stream().map(activity -> activity.getNote().noteId).collect(Collectors.toSet());
+            if (noteIds.size() > 1) {
+                if (new CheckConversations().setNoteIdsOfOneConversation(noteIds)
+                        .setMyContext(execContext.myContext).fix() > 0) {
+                    execContext.getCommandData().getResult().incrementNewCount();
+                }
+            }
         }
     }
 
-    private void onActivities(String method, SupplierWithException<List<AActivity>, ConnectionException> supplier,
+    private List<AActivity> onActivities(String method, SupplierWithException<List<AActivity>, ConnectionException> supplier,
                               Supplier<String> contextInfoSupplier) {
+        List<AActivity> activities;
         try {
-            List<AActivity> activities = supplier.get();
+            activities = supplier.get();
             DataUpdater.onActivities(execContext, activities);
+            MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
+            return activities;
         } catch (ConnectionException e) {
             if (e.getStatusCode() == StatusCode.NOT_FOUND) {
                 execContext.getResult().incrementParseExceptions();
             }
             logConnectionException(e, method + "; " + contextInfoSupplier.get());
         }
-        MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
+        return Collections.emptyList();
     }
 
     private void getActor(long actorId, String username) {

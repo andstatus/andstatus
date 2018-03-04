@@ -20,8 +20,6 @@ import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.net.social.AActivity;
-import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
@@ -32,7 +30,7 @@ import org.andstatus.app.util.MyLog;
 public abstract class DataChecker {
     static final int PROGRESS_REPORT_PERIOD_SECONDS = 20;
     MyContext myContext;
-    ProgressLogger logger;
+    ProgressLogger logger = new ProgressLogger(null);
 
     public DataChecker setMyContext(MyContext myContext) {
         this.myContext = myContext;

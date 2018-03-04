@@ -17,17 +17,21 @@
 package org.andstatus.app.data.checker;
 
 import android.database.Cursor;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.SqlActorIds;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,10 +39,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author yvolk@yurivolkov.com
  */
 public class CheckConversations extends DataChecker {
-    private Map<Long, MsgItem> items = new TreeMap<>();
-    private Map<Long, List<MsgItem>> replies = new TreeMap<>();
+    private Map<Long, NoteItem> items = new TreeMap<>();
+    private Map<Long, List<NoteItem>> replies = new TreeMap<>();
+    private Set<Long> noteIdsOfOneConversation = new HashSet<>();
 
-    private class MsgItem {
+    private class NoteItem {
         long id = 0;
         long originId = 0;
         long inReplyToId_initial = 0;
@@ -89,11 +94,20 @@ public class CheckConversations extends DataChecker {
         }
     }
 
+    public CheckConversations setNoteIdsOfOneConversation(@NonNull Set<Long> ids) {
+        noteIdsOfOneConversation.addAll(ids);
+        return  this;
+    }
+
     @Override
     long fixInternal(boolean countOnly) {
         loadNotes();
-        fixConversationsUsingReplies();
-        fixConversationsUsingConversationOid();
+        if (noteIdsOfOneConversation.isEmpty()) {
+            fixConversationsUsingReplies();
+            fixConversationsUsingConversationOid();
+        } else {
+            fixOneConversation();
+        }
         return saveChanges(countOnly);
     }
 
@@ -107,41 +121,44 @@ public class CheckConversations extends DataChecker {
                 + ", " + NoteTable.CONVERSATION_OID
                 + " FROM " + NoteTable.TABLE_NAME
                 ;
-        Cursor c = null;
+        if (noteIdsOfOneConversation.size() > 0) {
+            sql += " WHERE " + NoteTable.CONVERSATION_ID + " IN ("
+                    + "SELECT DISTINCT " + NoteTable.CONVERSATION_ID
+                    + " FROM " + NoteTable.TABLE_NAME + " WHERE "
+                    + NoteTable._ID + SqlActorIds.fromIds(noteIdsOfOneConversation).getSql()
+            + ")";
+        }
+
+        Cursor cursor = null;
         long rowsCount = 0;
         try {
-            c = myContext.getDatabase().rawQuery(sql, null);
-            while (c.moveToNext()) {
+            cursor = myContext.getDatabase().rawQuery(sql, null);
+            while (cursor.moveToNext()) {
                 rowsCount++;
-                MsgItem item = new MsgItem();
-                item.id = c.getLong(0);
-                item.originId = c.getLong(1);
-                item.inReplyToId = c.getLong(2);
+                NoteItem item = new NoteItem();
+                item.id = DbUtils.getLong(cursor, NoteTable._ID);
+                item.originId = DbUtils.getLong(cursor, NoteTable.ORIGIN_ID);
+                item.inReplyToId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
                 item.inReplyToId_initial = item.inReplyToId;
-                item.conversationId = c.getLong(3);
+                item.conversationId = DbUtils.getLong(cursor, NoteTable.CONVERSATION_ID);
                 item.conversationId_initial = item.conversationId;
-                item.conversationOid = c.getString(4);
+                item.conversationOid = DbUtils.getString(cursor, NoteTable.CONVERSATION_OID);
                 items.put(item.id, item);
                 if (item.inReplyToId != 0) {
-                    List<MsgItem> replies1 = replies.get(item.inReplyToId);
-                    if (replies1 == null) {
-                        replies1 = new ArrayList<>();
-                        replies.put(item.inReplyToId, replies1);
-                    }
-                    replies1.add(item);
+                    replies.computeIfAbsent(item.inReplyToId, k -> new ArrayList<>()).add(item);
                 }
             }
         } finally {
-            DbUtils.closeSilently(c);
+            DbUtils.closeSilently(cursor);
         }
         logger.logProgress(Long.toString(rowsCount) + " notes loaded");
     }
 
     private void fixConversationsUsingReplies() {
         int counter = 0;
-        for (MsgItem item : items.values()) {
+        for (NoteItem item : items.values()) {
             if (item.inReplyToId != 0) {
-                MsgItem parent = items.get(item.inReplyToId);
+                NoteItem parent = items.get(item.inReplyToId);
                 if (parent == null) {
                     item.fixInReplyToId(0);
                 } else {
@@ -162,15 +179,15 @@ public class CheckConversations extends DataChecker {
 
     private void fixConversationsUsingConversationOid() {
         int counter = 0;
-        Map<Long, Map<String, MsgItem>> origins = new ConcurrentHashMap<>();
-        for (MsgItem item : items.values()) {
+        Map<Long, Map<String, NoteItem>> origins = new ConcurrentHashMap<>();
+        for (NoteItem item : items.values()) {
             if (!TextUtils.isEmpty(item.conversationOid)) {
-                Map<String, MsgItem> firstConversationMembers = origins.get(item.originId);
+                Map<String, NoteItem> firstConversationMembers = origins.get(item.originId);
                 if (firstConversationMembers == null) {
                     firstConversationMembers = new ConcurrentHashMap<>();
                     origins.put(item.originId, firstConversationMembers);
                 }
-                MsgItem parent = firstConversationMembers.get(item.conversationOid);
+                NoteItem parent = firstConversationMembers.get(item.conversationOid);
                 if (parent == null) {
                     item.fixConversationId(item.conversationId == 0 ? item.id : item.conversationId);
                     firstConversationMembers.put(item.conversationOid, item);
@@ -187,12 +204,12 @@ public class CheckConversations extends DataChecker {
         }
     }
 
-    private void changeConversationOfReplies(MsgItem parent, int level) {
-        List<MsgItem> replies1 = replies.get(parent.id);
+    private void changeConversationOfReplies(NoteItem parent, int level) {
+        List<NoteItem> replies1 = replies.get(parent.id);
         if (replies1 == null) {
             return;
         }
-        for (MsgItem item : replies1) {
+        for (NoteItem item : replies1) {
             if (item.fixConversationId(parent.conversationId)) {
                 if (level > 0) {
                     changeConversationOfReplies(item, level - 1);
@@ -203,9 +220,18 @@ public class CheckConversations extends DataChecker {
         }
     }
 
+    private void fixOneConversation() {
+        long newConversationId = items.values().stream().map(noteItem -> noteItem.conversationId)
+                .min(Long::compareTo).orElse(0L);
+        if (newConversationId == 0) throw new IllegalStateException("Conversation ID=0, " + noteIdsOfOneConversation);
+        for (NoteItem item : items.values()) {
+            item.conversationId = newConversationId;
+        }
+    }
+
     private int saveChanges(boolean countOnly) {
         int changedCount = 0;
-        for (MsgItem item : items.values()) {
+        for (NoteItem item : items.values()) {
             if (item.isChanged()) {
                 String sql = "";
                 try {
