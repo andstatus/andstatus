@@ -59,9 +59,6 @@ public class MyBackupAgent extends BackupAgent {
     private long sharedPreferencesBackedUp = 0;
     long sharedPreferencesRestored = 0;
 
-    public MyBackupAgent() {
-    }
-    
     void setContext(Context baseContext) {
         attachBaseContext(baseContext);
     }
@@ -156,7 +153,7 @@ public class MyBackupAgent extends BackupAgent {
             data.writeEntityHeader(key, bytesToWrite, MyBackupDataOutput.getDataFileExtension(dataFile));
             int bytesWritten = 0;
             while (bytesWritten < bytesToWrite) {
-                byte[] bytes = FileUtils.getBytes(dataFile, bytesWritten, MyBackupDataInput.fileChunkSize);
+                byte[] bytes = FileUtils.getBytes(dataFile, bytesWritten, MyBackupDataInput.FILE_CHUNK_SIZE);
                 if (bytes.length <= 0) {
                     break;
                 }
@@ -328,7 +325,7 @@ public class MyBackupAgent extends BackupAgent {
         int bytesWritten = 0;
         try (FileOutputStream output = new FileOutputStream(dataFile, false)) {
             while (bytesToWrite > bytesWritten) {
-                byte[] bytes = new byte[MyBackupDataInput.fileChunkSize];
+                byte[] bytes = new byte[MyBackupDataInput.FILE_CHUNK_SIZE];
                 int bytesRead = data.readEntityData(bytes, 0, bytes.length);
                 if (bytesRead == 0) {
                     break;

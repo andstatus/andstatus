@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -67,7 +67,7 @@ public class MyServiceEventsBroadcaster {
         intent.putExtra(IntentExtra.SERVICE_EVENT.key, mEvent.save());
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, "state:" + mState + ", event:" + mEvent
-            + (mCommandData == null ? "" : ", " + mCommandData.toCommandSummary(MyContextHolder.get()))
+            + ", " + mCommandData.toCommandSummary(MyContextHolder.get())
             + (TextUtils.isEmpty(progress) ? "" : ", progress:" + progress) );
         }
         mMyContext.context().sendBroadcast(intent);

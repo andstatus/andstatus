@@ -250,7 +250,7 @@ public class ConnectionPumpioTest {
         ind++;
         activity = timeline.get(ind);
         note = activity.getNote();
-        assertEquals(activity.isSubscribedByMe(), TriState.UNKNOWN);
+        assertEquals(TriState.UNKNOWN, activity.isSubscribedByMe());
         assertTrue("Is a reply", note.getInReplyTo().nonEmpty());
         assertEquals("Is not a reply to this actor " + activity, "jankusanagi@identi.ca", note.getInReplyTo().getAuthor().getUsername());
         assertEquals(TriState.UNKNOWN, note.getInReplyTo().isSubscribedByMe());
@@ -385,7 +385,7 @@ public class ConnectionPumpioTest {
             msg = msg.copy(msg.oid + "_" + demoData.testRunUid);
         }
         assertNotNull("note returned", msg);
-        assertEquals("has attachment", msg.attachments.size(), 1);
+        assertEquals("has attachment", 1, msg.attachments.size());
         Attachment attachment = Attachment.fromUrlAndContentType(new URL(
                 "https://io.jpope.org/uploads/jpope/2014/8/18/m1o1bw.jpg"), MyContentType.IMAGE);
         assertEquals("attachment", attachment, msg.attachments.get(0));

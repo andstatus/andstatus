@@ -113,7 +113,7 @@ public class MyBackupAgentTest {
         assertTrue(accountHeader.exists());
         jso = FileUtils.getJSONObject(accountHeader);
         assertTrue(jso.getInt(MyBackupDataOutput.KEY_DATA_SIZE) > 10);
-        assertEquals(jso.getString(MyBackupDataOutput.KEY_FILE_EXTENSION), ".json");
+        assertEquals(".json", jso.getString(MyBackupDataOutput.KEY_FILE_EXTENSION));
 
         File accountData = new File(backupManager.getDataFolder(), "account_data.json");
         assertTrue(accountData.exists());

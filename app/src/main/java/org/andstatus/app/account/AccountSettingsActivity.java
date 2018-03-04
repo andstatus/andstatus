@@ -30,9 +30,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.WindowManager;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -463,38 +461,35 @@ public class AccountSettingsActivity extends MyActivity {
                     break;
             }
         }
-        TextView state = (TextView) findFragmentViewById(R.id.account_state);
-        if (state != null) {
-            state.setText(summary);
+        TextView stateText = (TextView) findFragmentViewById(R.id.account_state);
+        if (stateText != null) {
+            stateText.setText(summary);
         }
     }
     
     private void showAddAccountButton() {
         TextView textView = showTextView(R.id.add_account, null, !state.builder.isPersistent());
         if (textView != null) {
-            textView.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    clearError();
-                    updateChangedFields();
-                    updateScreen();
-                    MyAccount ma = state.getAccount();
-                    CharSequence error = "";
-                    boolean addAccountEnabled = !ma.isUsernameNeededToStartAddingNewAccount()
-                            || ma.isUsernameValid();
-                    if (addAccountEnabled) {
-                        if (!ma.isOAuth() && !ma.getCredentialsPresent()) {
-                            addAccountEnabled = false;
-                            error = getText(R.string.title_preference_password);
-                        }
-                    } else {
-                        error = getText(ma.alternativeTermForResourceId(R.string.title_preference_username));
+            textView.setOnClickListener(v -> {
+                clearError();
+                updateChangedFields();
+                updateScreen();
+                MyAccount ma = state.getAccount();
+                CharSequence error = "";
+                boolean addAccountEnabled = !ma.isUsernameNeededToStartAddingNewAccount()
+                        || ma.isUsernameValid();
+                if (addAccountEnabled) {
+                    if (!ma.isOAuth() && !ma.getCredentialsPresent()) {
+                        addAccountEnabled = false;
+                        error = getText(R.string.title_preference_password);
                     }
-                    if (addAccountEnabled) {
-                        verifyCredentials(true);
-                    } else {
-                        appendError(getText(R.string.error_invalid_value) + ": " + error);
-                    }
+                } else {
+                    error = getText(ma.alternativeTermForResourceId(R.string.title_preference_username));
+                }
+                if (addAccountEnabled) {
+                    verifyCredentials(true);
+                } else {
+                    appendError(getText(R.string.error_invalid_value) + ": " + error);
                 }
             });
         }
@@ -513,13 +508,10 @@ public class AccountSettingsActivity extends MyActivity {
         TextView textView = showTextView(
                 R.id.home_timeline, R.string.options_menu_home_timeline, state.builder.isPersistent());
         if (textView != null) {
-            textView.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    updateChangedFields();
-                    activityOnFinish = ActivityOnFinish.HOME;
-                    finish();
-                }
+            textView.setOnClickListener(v -> {
+                updateChangedFields();
+                activityOnFinish = ActivityOnFinish.HOME;
+                finish();
             });
         }
     }
@@ -532,14 +524,11 @@ public class AccountSettingsActivity extends MyActivity {
                         : R.string.title_preference_verify_credentials_failed,
                 state.builder.isPersistent());
         if (textView != null) {
-            textView.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    clearError();
-                    updateChangedFields();
-                    updateScreen();
-                    verifyCredentials(true);
-                }
+            textView.setOnClickListener(v -> {
+                clearError();
+                updateChangedFields();
+                updateScreen();
+                verifyCredentials(true);
             });
         }
     }
@@ -555,13 +544,7 @@ public class AccountSettingsActivity extends MyActivity {
     private void showIsSyncedAutomatically() {
         MyCheckBox.set(findFragmentViewById(R.id.synced_automatically),
                 state.builder.getAccount().isSyncedAutomatically(),
-                new CompoundButton.OnCheckedChangeListener() {
-
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        state.builder.setSyncedAutomatically(isChecked);
-                    }
-                });
+                (buttonView, isChecked) -> state.builder.setSyncedAutomatically(isChecked));
     }
 
     private void showSyncFrequency() {
@@ -704,10 +687,9 @@ public class AccountSettingsActivity extends MyActivity {
             }
         }
         EditText passwordEditable = (EditText) findFragmentViewById(R.id.password);
-        if (passwordEditable != null) {
-            if (state.getAccount().getPassword().compareTo(passwordEditable.getText().toString()) != 0) {
-                state.builder.setPassword(passwordEditable.getText().toString());
-            }
+        if (passwordEditable != null
+                && state.getAccount().getPassword().compareTo(passwordEditable.getText().toString()) != 0) {
+            state.builder.setPassword(passwordEditable.getText().toString());
         }
     }
 

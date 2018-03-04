@@ -47,7 +47,7 @@ public class UriUtilsTest {
 
     @Test
     public void testNotNull() {
-        assertEquals(UriUtils.notNull(null), Uri.EMPTY);
+        assertEquals(Uri.EMPTY, UriUtils.notNull(null));
         Uri uri = Uri.parse("http://some.org/");
         assertEquals(UriUtils.notNull(uri), uri);
     }

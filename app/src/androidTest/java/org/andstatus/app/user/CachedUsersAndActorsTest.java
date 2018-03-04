@@ -43,8 +43,8 @@ public class CachedUsersAndActorsTest {
         assertEquals(demoData.conversationOriginName, origin.getName());
 
         long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(), demoData.conversationAccount2ActorOid);
-        assertEquals(users.toString(), users.isMeOrMyFriend(actorId), true);
-        assertEquals(users.toString(), users.isMeOrMyFriend(-1), false);
+        assertEquals(users.toString(), true, users.isMeOrMyFriend(actorId));
+        assertEquals(users.toString(), false, users.isMeOrMyFriend(-1));
     }
 
 }

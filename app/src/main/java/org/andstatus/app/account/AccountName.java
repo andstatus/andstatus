@@ -126,8 +126,12 @@ public class AccountName {
 
     @Override
     public String toString() {
-        return (isValid() ? ""
-                : "(invalid " + (origin.isUsernameValid(username) ? "" : "username " + origin + " ") + ")") + getName();
+        return (isValid() ? "" : "(invalid " + usernameToString() + ")") + getName();
+    }
+
+    @NonNull
+    private String usernameToString() {
+        return origin.isUsernameValid(username) ? "" : "username " + origin + " ";
     }
 
     public Origin getOrigin() {

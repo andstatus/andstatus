@@ -68,13 +68,9 @@ public class AccountSelector extends SelectorDialog {
 
         setListAdapter(newListAdapter(listData));
 
-        getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                long actorId = Long.parseLong(((TextView) view.findViewById(R.id.id)).getText()
-                        .toString());
-                returnSelectedAccount(MyContextHolder.get().accounts().fromActorId(actorId));
-            }
+        getListView().setOnItemClickListener((parent, view, position, id) -> {
+            long actorId = Long.parseLong(((TextView) view.findViewById(R.id.id)).getText().toString());
+            returnSelectedAccount(MyContextHolder.get().accounts().fromActorId(actorId));
         });
     }
 

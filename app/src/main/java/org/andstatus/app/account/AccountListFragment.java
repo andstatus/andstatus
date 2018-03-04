@@ -116,7 +116,7 @@ public class AccountListFragment extends Fragment {
 
     }
 
-    class ItemAdapter extends DragItemAdapter<MyAccount, ItemAdapter.ViewHolder> {
+    class ItemAdapter extends DragItemAdapter<MyAccount, ItemAdapter.AccountViewHolder> {
 
         private int mLayoutId;
         private int mGrabHandleId;
@@ -130,13 +130,13 @@ public class AccountListFragment extends Fragment {
         }
 
         @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public AccountViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext()).inflate(mLayoutId, parent, false);
-            return new ViewHolder(view, mGrabHandleId);
+            return new AccountViewHolder(view, mGrabHandleId);
         }
 
         @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
+        public void onBindViewHolder(AccountViewHolder holder, int position) {
             super.onBindViewHolder(holder, position);
             MyAccount ma = mItemList.get(position);
             String visibleName = ma.getAccountName();
@@ -155,9 +155,9 @@ public class AccountListFragment extends Fragment {
             return mItemList.get(position).getActorId();
         }
 
-        public class ViewHolder extends DragItemAdapter.ViewHolder {
+        class AccountViewHolder extends DragItemAdapter.ViewHolder {
 
-            public ViewHolder(final View itemView, int grabHandleId) {
+            AccountViewHolder(final View itemView, int grabHandleId) {
                 super(itemView, grabHandleId, false);
             }
 

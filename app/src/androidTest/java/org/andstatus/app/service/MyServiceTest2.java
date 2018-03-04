@@ -70,7 +70,7 @@ public class MyServiceTest2 extends MyServiceTest {
         assertTrue("Service stopped", mService.waitForServiceStopped(false));
         MyLog.i(this, method + "; Service stopped after the second command");
         assertEquals("No new data was posted while in foreground",
-                mService.getHttp().getRequestsCounter(), 1);
+                1, mService.getHttp().getRequestsCounter());
 
         Queue<CommandData> queue = new CommandQueue().load().get(QueueType.CURRENT);
         MyLog.i(this, method + "; Queue loaded, size:" + queue.size());

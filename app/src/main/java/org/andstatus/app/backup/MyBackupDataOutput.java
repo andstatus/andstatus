@@ -18,7 +18,6 @@ package org.andstatus.app.backup;
 
 import android.app.backup.BackupDataOutput;
 
-import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -135,19 +134,12 @@ public class MyBackupDataOutput {
         return size;
     }
 
-    private int appendBytesToFile(File file, byte[] data, int size) throws IOException {
+    private void appendBytesToFile(File file, byte[] data, int size) throws IOException {
         MyLog.v(this, "Appending data to file='" + file.getName() + "', size=" + size);
-        FileOutputStream fileOutputStream = null;
-        OutputStream out = null;
-        try {
-            fileOutputStream = new FileOutputStream(file, true);
-            out = new BufferedOutputStream(fileOutputStream);
+        try (FileOutputStream fileOutputStream = new FileOutputStream(file, true);
+            OutputStream out = new BufferedOutputStream(fileOutputStream)) {
             out.write(data, 0, size);
-        } finally {
-            DbUtils.closeSilently(out, file.getAbsolutePath());
-            DbUtils.closeSilently(fileOutputStream, file.getAbsolutePath());
         }
-        return 0;
     }
 
     File getDataFolder() {

@@ -33,10 +33,10 @@ public class OriginTest {
                 + urlString;
 
         Origin origin = MyContextHolder.get().origins().firstOfType(OriginType.ORIGIN_TYPE_DEFAULT);
-        assertEquals(origin.getOriginType(), OriginType.TWITTER);
+        assertEquals(OriginType.TWITTER, origin.getOriginType());
 
         origin = MyContextHolder.get().origins().firstOfType(OriginType.TWITTER);
-        assertEquals(origin.getOriginType(), OriginType.TWITTER);
+        assertEquals(OriginType.TWITTER, origin.getOriginType());
         int textLimit = 280;
         assertEquals("Textlimit", textLimit, origin.getTextLimit());
         assertEquals("Short URL length", 23, origin.shortUrlLength);
@@ -119,7 +119,7 @@ public class OriginTest {
     @Test
     public void testPermalink() {
         Origin origin = MyContextHolder.get().origins().firstOfType(OriginType.TWITTER);
-        assertEquals(origin.getOriginType(), OriginType.TWITTER);
+        assertEquals(OriginType.TWITTER, origin.getOriginType());
         String body = "Posting to Twitter " + demoData.testRunUid;
         String noteOid = "2578909845023" + demoData.testRunUid;
         AActivity activity = DemoNoteInserter.addNoteForAccount(

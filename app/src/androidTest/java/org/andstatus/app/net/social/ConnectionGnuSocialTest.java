@@ -181,7 +181,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("Author", "mcscx", activity.getAuthor().getUsername());
         assertEquals("null Homepage (url) should be treated as blank", "", activity.getAuthor().getHomepage());
 
-        assertEquals("has attachment", activity.getNote().attachments.size(), 1);
+        assertEquals("has attachment", 1, activity.getNote().attachments.size());
         Attachment attachment = Attachment.fromUrlAndContentType(new URL(
                 "https://quitter.se/file/mcscx-20131110T222250-427wlgn.png")
                 , MyContentType.IMAGE);

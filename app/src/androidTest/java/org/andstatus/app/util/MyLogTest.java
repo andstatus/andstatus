@@ -62,7 +62,7 @@ public class MyLogTest {
         assertTrue(TextUtils.isEmpty(MyLog.getLogFilename()));
         assertTrue(file.delete());
         MyLog.v(this, method);
-        assertEquals(MyLog.getLogFilename(), null);
+        assertEquals(null, MyLog.getLogFilename());
         assertFalse(file.exists());
 
         if (isLogEnabled) {

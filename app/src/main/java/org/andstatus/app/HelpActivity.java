@@ -104,15 +104,15 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
         ViewUtils.showView(this, R.id.system_info_section, MyPreferences.isShowDebuggingInfoInUi()
                 || MyContextHolder.getExecutionMode() != ExecutionMode.DEVICE);
         if (MyPreferences.isShowDebuggingInfoInUi()) {
-            MyUrlSpan.showText(this, R.id.system_info, MyContextHolder.getSystemInfo(this, false), false, false);
+            MyUrlSpan.showText(this, R.id.system_info,
+                    MyContextHolder.getSystemInfo(this, false), false, false);
         }
 
-        if (!MyContextHolder.get().accounts().getCurrentAccount().isValid() &&
-                MyContextHolder.getExecutionMode() == ExecutionMode.ROBO_TEST) {
-            if (!generatingDemoData) {
-                generatingDemoData = true;
-                demoData.addAsync("GenerateDemoData", MyContextHolder.get(), HelpActivity.this);
-            }
+        if (!MyContextHolder.get().accounts().getCurrentAccount().isValid()
+                && MyContextHolder.getExecutionMode() == ExecutionMode.ROBO_TEST
+                && !generatingDemoData) {
+            generatingDemoData = true;
+            demoData.addAsync("GenerateDemoData", MyContextHolder.get(), HelpActivity.this);
         }
 
         showChangeLog();
@@ -144,7 +144,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
     }
 
     private void showVersionText() {
-        TextView versionText = (TextView) findViewById(R.id.splash_application_version);
+        TextView versionText = findViewById(R.id.splash_application_version);
         String text = MyContextHolder.getVersionText(this);
         if (!MyContextHolder.get().isReady()) {
             text += "\n" + MyContextHolder.get().state();
@@ -167,15 +167,12 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
     }
     
     private void showRestoreButton() {
-        Button restoreButton = (Button) findViewById(R.id.button_restore);
+        Button restoreButton = findViewById(R.id.button_restore);
         if (!generatingDemoData
                 && MyContextHolder.get().isReady() && MyContextHolder.get().accounts().isEmpty()) {
-            restoreButton.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    startActivity(new Intent(HelpActivity.this, RestoreActivity.class));
-                    finish();
-                }
+            restoreButton.setOnClickListener(v -> {
+                startActivity(new Intent(HelpActivity.this, RestoreActivity.class));
+                finish();
             });
         } else {
             restoreButton.setVisibility(View.GONE);
@@ -184,36 +181,33 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
 
     private void showGetStartedButton() {
         //The button is always visible in order to avoid a User's confusion,
-        final Button getStarted = (Button) findViewById(R.id.button_help_get_started);
+        final Button getStarted = findViewById(R.id.button_help_get_started);
         getStarted.setVisibility(generatingDemoData ? View.GONE : View.VISIBLE);
-        getStarted.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch (MyContextHolder.get().state()) {
-                    case READY:
-                        FirstActivity.checkAndUpdateLastOpenedAppVersion(HelpActivity.this, true);
-                        if (MyContextHolder.get().accounts().getCurrentAccount().isValid()) {
-                            startActivity(new Intent(HelpActivity.this, TimelineActivity.class));
-                            finish();
-                        } else {
-                            startActivity(new Intent(HelpActivity.this, AccountSettingsActivity.class));
-                            finish();
-                        }
-                        break;
-                    case NO_PERMISSIONS:
-                        // Actually this is not used for now...
-                        Permissions.checkPermissionAndRequestIt( HelpActivity.this,
-                                Permissions.PermissionType.GET_ACCOUNTS);
-                        break;
-                    case UPGRADING:
-                        DialogFactory.showOkAlertDialog(HelpActivity.this, HelpActivity.this,
-                                R.string.app_name, R.string.label_upgrading);
-                        break;
-                    default:
-                        DialogFactory.showOkAlertDialog(HelpActivity.this, HelpActivity.this,
-                                R.string.app_name, R.string.loading);
-                        break;
-                }
+        getStarted.setOnClickListener(v -> {
+            switch (MyContextHolder.get().state()) {
+                case READY:
+                    FirstActivity.checkAndUpdateLastOpenedAppVersion(HelpActivity.this, true);
+                    if (MyContextHolder.get().accounts().getCurrentAccount().isValid()) {
+                        startActivity(new Intent(HelpActivity.this, TimelineActivity.class));
+                        finish();
+                    } else {
+                        startActivity(new Intent(HelpActivity.this, AccountSettingsActivity.class));
+                        finish();
+                    }
+                    break;
+                case NO_PERMISSIONS:
+                    // Actually this is not used for now...
+                    Permissions.checkPermissionAndRequestIt( HelpActivity.this,
+                            Permissions.PermissionType.GET_ACCOUNTS);
+                    break;
+                case UPGRADING:
+                    DialogFactory.showOkAlertDialog(HelpActivity.this, HelpActivity.this,
+                            R.string.app_name, R.string.label_upgrading);
+                    break;
+                default:
+                    DialogFactory.showOkAlertDialog(HelpActivity.this, HelpActivity.this,
+                            R.string.app_name, R.string.loading);
+                    break;
             }
         });
         if (MyContextHolder.get().accounts().getCurrentAccount().isValid()) {
@@ -222,7 +216,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
     }
 
     private void setupHelpFlipper() {
-        mFlipper = ((ViewFlipper) this.findViewById(R.id.help_flipper));
+        mFlipper = this.findViewById(R.id.help_flipper);
         
         // In order to have swipe gestures we need to add listeners to every page
         // Only in a case of WebView we need to set a listener on than WebView,
@@ -237,13 +231,8 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
         view.setOnTouchListener(swipe);
 
         if (ViewUtils.showView(this, R.id.button_help_learn_more, MyContextHolder.get().isReady())) {
-            final Button learnMore = (Button) findViewById(R.id.button_help_learn_more);
-            learnMore.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mFlipper.showNext();
-                }
-            });
+            final Button learnMore = findViewById(R.id.button_help_learn_more);
+            learnMore.setOnClickListener(v -> mFlipper.showNext());
         }
 
         if (getIntent().hasExtra(EXTRA_HELP_PAGE_INDEX)) {
@@ -390,12 +379,9 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
     @Override
     public void onComplete(final boolean success) {
         try {
-            this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    TimelineActivity.goHome(HelpActivity.this);
-                    finish();
-                }
+            this.runOnUiThread(() -> {
+                TimelineActivity.goHome(HelpActivity.this);
+                finish();
             });
         } catch (Exception e) {
             MyLog.d(this, "onComplete " + success, e);
@@ -404,15 +390,12 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
 
     private void cleanOnFinish() {
         try {
-            this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (progress != null) {
-                        DialogFactory.dismissSafely(progress);
-                        progress = null;
-                    }
-                    generatingDemoData = false;
+            this.runOnUiThread(() -> {
+                if (progress != null) {
+                    DialogFactory.dismissSafely(progress);
+                    progress = null;
                 }
+                generatingDemoData = false;
             });
         } catch (Exception e) {
             MyLog.d(this, "cleanOnFinish", e);

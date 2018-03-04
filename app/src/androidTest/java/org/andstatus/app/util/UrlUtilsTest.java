@@ -89,10 +89,10 @@ public class UrlUtilsTest {
         if (isValid) {
             assertEquals(strUrl, UrlUtils.buildUrl(strInput, false).toExternalForm());
             assertEquals(strUrlSsl, UrlUtils.buildUrl(strInput, true).toExternalForm());
-            assertEquals(UrlUtils.isHostOnly(UrlUtils.buildUrl(strInput, true)), false);
+            assertEquals(false, UrlUtils.isHostOnly(UrlUtils.buildUrl(strInput, true)));
         } else {
             assertEquals(null, UrlUtils.buildUrl(strInput, false));
-            assertEquals(UrlUtils.isHostOnly(null), false);
+            assertEquals(false, UrlUtils.isHostOnly(null));
         }
     }
 

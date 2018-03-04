@@ -80,7 +80,7 @@ public class MyActivity extends AppCompatActivity implements IdentifiableInstanc
                 return;
             }
         }
-        Toolbar toolbar = (Toolbar) findViewById(R.id.my_action_bar);
+        Toolbar toolbar = findViewById(R.id.my_action_bar);
         if (toolbar != null) {
             setSupportActionBar(toolbar);
         }

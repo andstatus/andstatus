@@ -176,7 +176,7 @@ public class ConnectionTwitterTest {
 
         Note note = connection.getNote("503799441900314624").getNote();
         assertNotNull("note returned", note);
-        assertEquals("has attachment", note.attachments.size(), 1);
+        assertEquals("has attachment", 1, note.attachments.size());
         Attachment attachment = Attachment.fromUrlAndContentType(new URL(
                 "https://pbs.twimg.com/media/Bv3a7EsCAAIgigY.jpg"), MyContentType.IMAGE);
         assertEquals("attachment", attachment, note.attachments.get(0));
@@ -193,7 +193,7 @@ public class ConnectionTwitterTest {
         String body = "Update: Streckensperrung zw. Berliner Tor &lt;&gt; Bergedorf. Ersatzverkehr mit Bussen und Taxis " +
                 "Störungsdauer bis ca. 10 Uhr. #hvv #sbahnhh";
         AActivity activity = connection.getNote("834306097003581440");
-        assertEquals("No note returned " + activity, activity.getObjectType(), AObjectType.NOTE);
+        assertEquals("No note returned " + activity, AObjectType.NOTE, activity.getObjectType());
         Note note = activity.getNote();
         assertEquals("Body of this note", MyHtml.unescapeHtml(body), note.getBody());
         assertEquals("Body of this note", ",update,streckensperrung,zw,berliner,tor,bergedorf,ersatzverkehr,mit,bussen," +
