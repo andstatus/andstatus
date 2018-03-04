@@ -30,8 +30,8 @@
         </subtitle>
     </header>
     <release android:versionName="37.00" android:versionCode="244"
-             versionDate="2018-02-20"
-             versionTitle="Merging actors of Users from different Social Networks and Interactions timeline">
+             versionDate="2018-03-04"
+             versionTitle="Merging actors of Users from different Social Networks. New Interactions timeline">
         <changes>
             <change>Actors having the same WebFingerId (e.g. "andstatus@loadaverage.org") in different social networks
                 are merged logically. This allows AndStatus to show you in one timeline activities of one actor, downloaded
@@ -43,20 +43,17 @@
                 but also likes, reposts and followers. Basically "Interactions" timeline shows all interactions of other
                 users with us (our actors) whereas "Notifications" timeline shows us only those interactions, which we
                 preferred to be notified about in Settings &gt; Notifications, plus unsent notes.</change>
+            <change>Names of things in the User interface (mostly) changed according to the
+                <a href="https://www.w3.org/TR/activitypub/#Overview" target="_blank">ActivityPub</a>
+                recommendation. In particular, now we use the word "note" for tweets/toots/notices.<br/>
+                And the words "Actor" and "User" have different meanings (In ActivityPub, a user is represented by "actors"
+                via the user's accounts on servers. User's accounts on different servers correspond to different actors.)
+                Most of Timelines in AndStatus show <i>Activities</i> now instead of Notes.
+            </change>
         </changes>
     </release>
     <release android:versionName="36.09" android:versionCode="243"
              versionDate="2018-02-04"
-             versionTitle="Bugfixes and smoother scrolling">
-        <changes>
-            <change>Fixed two causes of application slowdowns.
-                This resulted in a noticeably smoother timeline scrolling.
-                <a href="https://github.com/andstatus/andstatus/issues/478">#478</a></change>
-            <change>Filipino and French translations updated.</change>
-        </changes>
-    </release>
-    <release android:versionName="36.06" android:versionCode="240"
-             versionDate="2018-01-14"
              versionTitle="Activities instead of messages, and enhancements of Notifications">
         <changes>
             <change>This is a major change of AndStatus, which is available for Android 7.0+ devices only

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-    Copyright (C) 2010-2017 Yuri Volkov, yvolk@yurivolkov.com and translators
+    Copyright (C) 2010-2018 Yuri Volkov, yvolk@yurivolkov.com and translators
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@
   <string name="acquiring_a_request_token_failed">Acquiring a request token failed</string>
   <string name="acquiring_an_access_token_failed">Acquiring an Access token failed</string>
   <string name="attach_images_summary_off">\"Paperclip+\" button, used to attach images to your posts, is hidden</string>
-  <string name="attach_images_summary_on">Use \"Paperclip+\" button (\"Attach\" menu item) to attach images to you message. Or Share image to AndStatus from another application</string>
-  <string name="attach_images_title">Attach images to my messages</string>
+  <string name="attach_images_summary_on">Use \"Paperclip+\" button (\"Attach\" menu item) to attach images to you note. Or Share image to AndStatus from another application</string>
+  <string name="attach_images_title">Attach images to my notes</string>
   <string name="attachments">Attachments</string>
   <string name="authentication_never">Didn\'t authenticate yet</string>
   <string name="authentication_successful">Authentication successful!</string>
@@ -50,9 +50,9 @@
   <string name="button_save_draft">Save draft</string>
   <string name="button_skip">Skip</string>
   <string name="button_send">Send</string>
-  <string name="cannot_send_empty_message">Cannot send empty message.</string>
+  <string name="cannot_send_empty_message">Cannot send empty note.</string>
   <string name="category_title_preference_appearance">Appearance</string>
-  <string name="category_title_preference_credentials">User Credentials</string>
+  <string name="category_title_preference_credentials">Account Credentials</string>
   <string name="category_title_preference_information">Information</string>
   <string name="category_title_preference_origin">Social network</string>
   <string name="category_title_preference_settings">Settings</string>
@@ -102,7 +102,7 @@
   <string name="dialog_summary_external_storage">External storage has been detected. Do you wish AndStatus to store data there? Old data cannot be moved, but will remain in your internal memory.</string>
   <string name="dialog_summary_external_storage_missing">External storage not present or unmounted. Do you want to use the internal memory? Any data stored on the external storage will still be available.</string>
   <string name="dialog_summary_registering_client">Please wait while AndStatus is registering itself as a client application</string>
-  <string name="dialog_summary_sending_message">Please wait while message is being sent.</string>
+  <string name="dialog_summary_sending_message">Please wait while an activity is being sent.</string>
   <string name="dialog_summary_service_unavailable">Twitter is currently over capacity. Please try again later.</string>
   <string name="dialog_summary_timeline_loading">Please wait while the timeline is being refreshed. This may take several minutes depending on your connection.</string>
   <string name="dialog_title_acquiring_an_access_token">Acquiring an Access token</string>
@@ -125,18 +125,18 @@
   <string name="dialog_title_preference_username_pumpio">Webfinger ID</string>
   <string name="dialog_title_registering_client">Registering AndStatus</string>
   <string name="dialog_title_select_timeline">Select a Timeline</string>
-  <string name="dialog_title_sending_message">Sending a message&#8230;</string>
+  <string name="dialog_title_sending_message">Sending an activity&#8230;</string>
   <string name="dialog_title_service_unavailable">Service Unavailable</string>
   <string name="dialog_title_timeline_loading">Updating a Timeline&#8230;</string>
   <string name="discover_open_instances_title">Discover open instances</string>
   <string name="displayed_in_selector">Displayed in a selector</string>
   <string name="displayed_in_selector_abbreviated">Displ.</string>
   <string name="database_disk_io_error">Attention! %1$s error(s) occur during access to the local cache database, which caused malfunction of AndStatus application. \nThis usually means that SD card on your device is not working properly.</string>
-  <string name="dont_synchronize_old_messages">Don\'t synchronize old messages, if previous sync was more than ... hours ago</string>
+  <string name="dont_synchronize_old_messages">Don\'t synchronize old activities, if previous sync was more than ... hours ago</string>
   <string name="dont_synchronize_old_messages_summary">After %s hours since previous sync
-    AndStatus will not try to sync all messages since the latest message downloaded,
-    but will request only 200 recent messages from a server. If number of new messages is more than 200,
-    you will not see in a Timeline some older messages.</string>
+    AndStatus will not try to sync all activities since the latest activity downloaded,
+    but will request only 200 recent activities from a server. If number of new activities is more than 200,
+    you will not see in a Timeline some older activities.</string>
   <string name="download_status_draft">draft</string>
   <string name="download_status_unsent">unsent</string>
   <string name="downloaded_items_count_abbreviated">Dnl.</string>
@@ -148,9 +148,9 @@
   <string name="error_twitter_404">The page cannot be found. Please report this error!</string>
   <string name="error_connection_error">A connection error occurred</string>
   <string name="error_set_username">Couldn\'t set the Username to: </string>
-  <string name="error_credentials_of_other_user">These are credentials of other user</string>
+  <string name="error_credentials_of_other_user">These are credentials of another account</string>
   <string name="favorite_created">Favorite created.</string>
-  <string name="favorite_destroyed">Message unfavorited.</string>
+  <string name="favorite_destroyed">Note unfavorited.</string>
   <string name="fetch_frequency_entries_3_minutes">3 minutes</string>
   <string name="fetch_frequency_entries_5_minutes">5 minutes</string>
   <string name="fetch_frequency_entries_10_minutes">10 minutes</string>
@@ -163,7 +163,7 @@
   <string name="fetch_frequency_entries_12_hours">12 hours</string>
   <string name="fetch_frequency_entries_1_day">day</string>
   <string name="filters_title">Filters</string>
-  <string name="filters_summary">Global filters to be applied to all messages</string>
+  <string name="filters_summary">Global filters to be applied to all activities</string>
   <string name="followed">followed</string>
   <string name="followed_by">Followed by</string>
   <string name="followers">Followers</string>
@@ -177,24 +177,24 @@
   <string name="get_followers">Get followers</string>
   <string name="get_friends">Get friends</string>
   <string name="get_open_instances_title">Get Open Instances</string>
-  <string name="get_message">Get Message information</string>
-  <string name="get_user">Get User information</string>
+  <string name="get_message">Get Note information</string>
+  <string name="get_user">Get Actor information</string>
   <string name="go_to_the_top_title">Go to the Top</string>
   <string name="header_accounts">Accounts</string>
   <string name="header_accounts_summary">Manage accounts and Social networks</string>
   <string name="header_add_new_account">Add new account</string>
-  <string name="hide_messages_based_on_keywords_title">Hide messages based on keywords or exact phrases</string>
+  <string name="hide_messages_based_on_keywords_title">Hide notes based on keywords or exact phrases</string>
   <string name="hide_messages_based_on_keywords_dialog_message">Separate keywords by spaces. Put phrases in double quotes e.g.:\nkeyword \"exact phrase\"</string>
   <string name="hide_replies_not_to_me_or_friends_title">Hide replies not to me or my friends from Home timeline</string>
-  <string name="history_size_entries_500">500 messages</string>
-  <string name="history_size_entries_1000">1000 messages</string>
-  <string name="history_size_entries_2000">2000 messages</string>
-  <string name="history_size_entries_5000">5000 messages</string>
-  <string name="history_size_entries_10000">10000 messages</string>
-  <string name="history_size_entries_20000">20000 messages</string>
-  <string name="history_size_entries_50000">50000 messages</string>
-  <string name="history_size_entries_100000">100000 messages</string>
-  <string name="history_size_entries_1mln">1 mln messages</string>
+  <string name="history_size_entries_500">500 notes</string>
+  <string name="history_size_entries_1000">1000 notes</string>
+  <string name="history_size_entries_2000">2000 notes</string>
+  <string name="history_size_entries_5000">5000 notes</string>
+  <string name="history_size_entries_10000">10000 notes</string>
+  <string name="history_size_entries_20000">20000 notes</string>
+  <string name="history_size_entries_50000">50000 notes</string>
+  <string name="history_size_entries_100000">100000 notes</string>
+  <string name="history_size_entries_1mln">1 mln notes</string>
   <string name="history_time_entries_1day">1 day</string>
   <string name="history_time_entries_2days">2 days</string>
   <string name="history_time_entries_3days">3 days</string>
@@ -208,7 +208,7 @@
   <string name="host_hint">E.g. gnusocial.net, social.10one.net</string>
   <string name="host_hint_mastodon">The address or domain of any instance, e.g. mastodon.social, icosahedron.website,
     social.tchncs.de</string>
-  <string name="id_of_this_message_was_not_specified">Id of this message was not specified</string>
+  <string name="id_of_this_message_was_not_specified">Id of this note was not specified</string>
   <string name="in_combined_global_search_label">Include in \"Search in Internet\" while in Combined Timeline</string>
   <string name="in_combined_public_reload_label">Include in \"Syncing\" while in Combined Public Timeline</string>
   <string name="in_context">In context</string>
@@ -251,54 +251,54 @@
   <string name="menu_item_destroy_reblog">Undo repost</string>
   <string name="menu_item_destroy_reblog_pumpio">Undo share</string>
   <string name="menu_item_destroy_reblog_twitter">Undo retweet</string>
-  <string name="menu_item_destroy_status">Remove message</string>
+  <string name="menu_item_destroy_status">Remove note</string>
   <string name="menu_item_edit">Edit</string>
   <string name="menu_item_favorite">Favorite</string>
   <string name="menu_item_follow_user">Follow \"%1s\"</string>
   <string name="menu_item_view_image">View image</string>
   <string name="menu_item_open_conversation">Open Conversation</string>
   <string name="menu_item_open_message_permalink">Open in browser</string>
-  <string name="menu_item_private_message">Private Message</string>
+  <string name="menu_item_private_message">Private notes</string>
   <string name="menu_item_reply">Reply</string>
   <string name="menu_item_reply_to_conversation_participants">Reply to conversation participants</string>
-  <string name="menu_item_reply_to_mentioned_users">Reply to mentioned users</string>
+  <string name="menu_item_reply_to_mentioned_users">Reply to mentioned actors</string>
   <string name="menu_item_reblog">Repost</string>
   <string name="menu_item_reblog_pumpio">Share via Pump.io</string>
   <string name="menu_item_reblog_twitter">Retweet</string>
   <string name="menu_item_resend">Resend</string>
   <string name="menu_item_share">Share</string>
   <string name="menu_item_stop_following_user">Stop following \"%1s\"</string>
-  <string name="menu_item_user_messages">Messages by \"%1s\"</string>
+  <string name="menu_item_user_messages">Notes by \"%1s\"</string>
   <string name="menu_item_view_profile">View Profile</string>
-  <string name="message">Message</string>
+  <string name="message">Note</string>
   <string name="message_characters_left">Characters left:</string>
-  <string name="message_edit_hint">Enter your message here!</string>
-  <string name="message_is_too_long">Message is too long.</string>
-  <string name="message_sent">Your message has been sent.</string>
+  <string name="message_edit_hint">Enter your note here!</string>
+  <string name="message_is_too_long">Note is too long.</string>
+  <string name="message_sent">Your note has been sent.</string>
   <string name="message_source_from">from %1$s</string>
   <string name="message_source_in_reply_to">in reply to %1$s</string>
   <string name="message_source_to">to %1$s</string>
   <string name="message_twitter">Tweet</string>
-  <string name="messages">Messages</string>
-  <string name="n_message_link">Message link</string>
-  <string name="n_message_links">%d message links</string>
+  <string name="messages">Notes</string>
+  <string name="n_message_link">Note link</string>
+  <string name="n_message_links">%d note links</string>
   <string name="never">Never</string>
   <string name="new_items_count_abbreviated">New</string>
   <string name="no">No</string>
-  <string name="no_more_messages">No more messages</string>
+  <string name="no_more_messages">No more activities</string>
   <string name="not_set">not set</string>
   <string name="not_syncable">Not syncable</string>
-  <string name="nothing_in_the_loadable_list">Nothing here yet...</string>
+  <string name="nothing_in_the_loadable_list">Nothing here yet&#8230;</string>
   <string name="notification_behavior">How to notify you</string>
   <string name="notification_events">What events to include in Notifications</string>
   <string name="notification_events_announce">Reblogs</string>
   <string name="notification_events_follow">Followers</string>
   <string name="notification_events_like">Favorites</string>
   <string name="notification_events_private">Private</string>
-  <string name="notification_events_private_summary">Private (\"direct\") messages</string>
+  <string name="notification_events_private_summary">Private (\"direct\") notes</string>
   <string name="notification_events_mention">Mentions</string>
   <string name="notification_events_outbox">Outbox</string>
-  <string name="notification_events_outbox_summary">Unsent messages and actions in Outbox</string>
+  <string name="notification_events_outbox_summary">Unsent notes and actions in Outbox</string>
   <string name="notification_icon_alternative_title">Alternative Notification icon</string>
   <string name="notification_icon_alternative_off">Icon as \"&amp;s\" letters</string>
   <string name="notification_icon_alternative_on">Icon as a circle</string>
@@ -368,28 +368,28 @@
   <string name="remove_account_dialog_text">Removing the account will delete all its data from the device. Continue?</string>
   <string name="reset_counters">Reset counters</string>
   <string name="reset_timelines_order">Reset timelines order</string>
-  <string name="resolve_view">View Message</string>
+  <string name="resolve_view">View note</string>
   <string name="rounded_avatars">Rounded avatars</string>
-  <string name="search_timeline_label">Search messages, users, and hashtags</string>
+  <string name="search_timeline_label">Search notes, actors, and hashtags</string>
   <string name="search_timeline_hint">Enter keywords/#hashtags</string>
   <string name="search_userlist_hint">Enter name/Webfinger ID</string>
-  <string name="search_users">Search users</string>
+  <string name="search_users">Search actors</string>
   <string name="select_backup_folder">Select backup folder</string>
   <string name="select_displayed_in_selector">Select if and when this timeline is displayed</string>
   <string name="sent">Sent</string>
   <string name="select_social_network">Select social network</string>
   <string name="settings_action">Settings</string>
   <string name="settings_activity_title">Settings</string>
-  <string name="show_buttons_below_message">Show Reply, Repost and Favorite buttons below message</string>
+  <string name="show_buttons_below_message">Show Reply, Repost and Favorite buttons below a note</string>
   <string name="show_duplicates">Show duplicates</string>
   <string name="show_threads_of_conversation">Show threads of a conversation</string>
-  <string name="show_timeline_messages">Show timeline messages</string>
+  <string name="show_timeline_messages">Open timeline</string>
   <string name="since">Since %s</string>
   <string name="splash_button_learn_more">Learn More</string>
   <string name="splash_button_get_started">Get Started</string>
   <string name="splash_payoff_line">Open Source multiple accounts client for multiple Social networks, including
     GNU social, Mastodon, Twitter and Pump.io</string>
-  <string name="status_destroyed">The message has been removed.</string>
+  <string name="status_destroyed">The note has been removed.</string>
   <string name="subtitle">Subtitle</string>
   <string name="summary_preference_accounts_absent">No AndStatus accounts yet</string>
   <string name="summary_preference_accounts_present">Number of AndStatus Accounts</string>
@@ -399,8 +399,8 @@
   <string name="summary_preference_enable_android_backup_off">Android backups will not be requested</string>
   <string name="summary_preference_enable_android_backup_on">AndStatus notifies Android on data changes to be backed up (experimental)</string>
   <string name="summary_preference_frequency">Updates are fetched every {0}.</string>
-  <string name="summary_preference_history_size">Message history is up to {0}.</string>
-  <string name="summary_preference_history_time">Message history is up to {0}.</string>
+  <string name="summary_preference_history_size">Note history is up to {0}.</string>
+  <string name="summary_preference_history_time">Note history is up to {0}.</string>
   <string name="summary_preference_host">Host name of the system, e.g. quitter.se</string>
   <string name="summary_preference_theme_color">Color and style</string>
   <string name="summary_preference_min_log_level">The level is {0}.</string>
@@ -409,8 +409,8 @@
   <string name="summary_preference_oauth_on">OAuth (secure authentication) is on</string>
   <string name="summary_preference_origin_system">Tap here to select a Social network</string>
   <string name="summary_preference_password">Your password in the Social network</string>
-  <string name="summary_preference_show_avatars_off">No User avatars will be displayed</string>
-  <string name="summary_preference_show_avatars_on">User avatars will be displayed</string>
+  <string name="summary_preference_show_avatars_off">No actor avatars will be displayed</string>
+  <string name="summary_preference_show_avatars_on">Actor avatars will be displayed</string>
   <string name="summary_preference_ssl_off">No SSL</string>
   <string name="summary_preference_ssl_on">SSL is on</string>
   <string name="summary_preference_storage">Where and what information to store. Check and backup your data.</string>
@@ -422,18 +422,18 @@
   <string name="summary_preference_sync_while_using_application_on">Background sync is always on. Timeline may freeze sometimes.</string>
   <string name="summary_preference_syncing">When to sync timeline and how to indicate this</string>
   <string name="summary_preference_theme_size">Select text size</string>
-  <string name="summary_preference_user_in_timeline">User will be shown as \"{0}\"</string>
+  <string name="summary_preference_user_in_timeline">Actor will be shown as \"{0}\"</string>
   <string name="summary_preference_username">Your username in the %1$s Social network; e.g.: %2$s</string>
   <string name="summary_preference_username_webfinger_id">Your ID in %1$s. It
     looks like an email address, with your username then \"@\" then your server; e.g.: %2$s</string>
   <string name="summary_preference_verify_credentials">This Account is verified and enabled. Tap Back button to continue or
-    tap the button below to check the User\'s credentials again.</string>
+    tap the button below to check the Account\'s credentials again.</string>
   <string name="summary_preference_verify_credentials_failed">Verification failed. Tap the button below to verify credentials and enable this User Account</string>
   <string name="summary_preference_vibration_off">Vibration is turned off</string>
-  <string name="summary_preference_vibration_on">Vibrate on incoming message</string>
+  <string name="summary_preference_vibration_on">Vibrate on incoming activity</string>
   <string name="switch_to_default_timeline">Switch to Default Timeline</string>
-  <string name="sync_younger_messages">Synced %1$s. Sync messages since %2$s</string>
-  <string name="sync_older_messages">Sync messages before %1$s</string>
+  <string name="sync_younger_messages">Synced %1$s. Sync activities since %2$s</string>
+  <string name="sync_older_messages">Sync activities before %1$s</string>
   <string name="sync_over_wifi_only">Sync over WiFi only</string>
   <string name="sync_failed">Sync failed</string>
   <string name="sync_frequency_minutes">Sync frequency in minutes. Leave it blank to have the default value: </string>
@@ -463,16 +463,16 @@
   <string name="timeline_title_interactions">Interactions</string>
   <string name="timeline_title_mentions">Mentions</string>
   <string name="timeline_title_outbox">Outbox</string>
-  <string name="timeline_title_private">Private messages</string>
+  <string name="timeline_title_private">Private notes</string>
   <string name="timeline_title_public">Public</string>
   <string name="timeline_title_replies">Replies</string>
   <string name="timeline_title_unknown">(Unknown timeline)</string>
-  <string name="timeline_title_user">User</string>
+  <string name="timeline_title_user">Actor</string>
   <string name="title">Title</string>
   <string name="title_account">Account</string>
   <string name="title_command_fetch_attachment">Fetch attachment</string>
   <string name="title_command_fetch_avatar">Avatar</string>
-  <string name="title_command_get_status">Fetch message</string>
+  <string name="title_command_get_status">Fetch note</string>
   <string name="title_preference_about_application">About AndStatus</string>
   <string name="title_preference_add_account">Add this account</string>
   <string name="title_preference_appearance">Appearance</string>
@@ -482,14 +482,14 @@
   <string name="title_preference_debugging">Logging and debugging</string>
   <string name="title_preference_download_attachments_over_wifi_only">Download attachments over Wi-Fi only</string>
   <string name="title_preference_enable_android_backup">Enable automatic Android backup</string>
-  <string name="title_preference_enter_sends_message">ENTER key sends message</string>
+  <string name="title_preference_enter_sends_message">ENTER key sends a note</string>
   <string name="title_preference_frequency">Default sync frequency</string>
   <string name="title_preference_history_size">History Size</string>
   <string name="title_preference_history_time">History Time</string>
   <string name="title_preference_is_default_account">This is the default account</string>
   <string name="title_preference_min_log_level">Minimum logging level</string>
   <string name="title_preference_oauth">OAuth</string>
-  <string name="title_preference_old_messages_first_in_conversation">Old messages first in a Conversation view</string>
+  <string name="title_preference_old_messages_first_in_conversation">Old notes first in a Conversation view</string>
   <string name="title_preference_origin_system">{0}, type: {1}</string>
   <string name="title_preference_password">Password</string>
   <string name="title_preference_mark_replies_in_timeline">Mark replies to me in a Timeline</string>
@@ -497,7 +497,7 @@
   <string name="title_preference_storage">Storage</string>
   <string name="title_preference_ssl">SSL</string>
   <string name="title_preference_storage_external">External Storage</string>
-  <string name="title_preference_sync_after_message_was_sent">Sync after message was sent</string>
+  <string name="title_preference_sync_after_message_was_sent">Sync after a note was sent</string>
   <string name="title_preference_sync_indicator_on_timeline">Syncing indicator in a Timeline</string>
   <string name="title_preference_sync_while_using_application">Sync while using AndStatus</string>
   <string name="title_preference_syncing">Syncing</string>
@@ -508,11 +508,11 @@
   <string name="title_preference_show_avatars">Display Avatars</string>
   <string name="title_preference_show_attached_images">Download and display attached images</string>
   <string name="title_preference_show_origin">Display a Social network in a Timeline</string>
-  <string name="title_preference_user_in_timeline">How to show a User in a Timeline</string>
+  <string name="title_preference_user_in_timeline">How to show an actor in a Timeline</string>
   <string name="title_preference_verify_credentials">Reverify credentials</string>
   <string name="title_preference_verify_credentials_failed">Verify credentials</string>
   <string name="title_preference_vibration">Vibration</string>
-  <string name="title_sending_messages_log_enabled">Log Sending messages to a file</string>
+  <string name="title_sending_messages_log_enabled">Log Sending notes to a file</string>
   <string name="title_timeline">Timeline</string>
   <string name="top">Top</string>
   <string name="total_counters">Total counters</string>
@@ -522,7 +522,7 @@
   <string name="undid_like">undid like</string>
   <string name="unimplemented">Not implemented.</string>
   <string name="unknown_in_parenthesis">(unknown)</string>
-  <string name="unknown_userlist">(Unknown user list)</string>
+  <string name="unknown_userlist">(Unknown list of actors)</string>
   <string name="updated">updated</string>
   <string name="use_legacy_http_protocol_title">Use legacy HTTP protocol</string>
   <string name="user_in_timeline_entries_username">username</string>
@@ -530,8 +530,8 @@
   <string name="user_in_timeline_entries_webfingerid">webFingerId</string>
   <string name="user_in_timeline_entries_real_name">Real name</string>
   <string name="user_in_timeline_entries_real_name_at_username">Real name @username</string>
-  <string name="user_list">User list</string>
-  <string name="users">Users</string>
-  <string name="users_of_message">Users of message</string>
+  <string name="user_list">Actors</string>
+  <string name="users">Actors</string>
+  <string name="users_of_message">Actors of Note</string>
   <string name="yes">Yes</string>
 </resources>
