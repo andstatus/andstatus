@@ -43,6 +43,7 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
@@ -53,6 +54,8 @@ import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
+import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.timeline.TimelineActivity;
@@ -89,25 +92,41 @@ import oauth.signpost.exception.OAuthNotAuthorizedException;
 public class AccountSettingsActivity extends MyActivity {
     private static final String TAG = AccountSettingsActivity.class.getSimpleName();
 
-    /**
-     * This is single list of (in fact, enums...) of Message/Dialog IDs
-     */
-    private static final int MSG_NONE = 1;
-    private static final int MSG_ACCOUNT_VALID = 2;
-    private static final int MSG_ACCOUNT_INVALID = 3;
-    private static final int MSG_CONNECTION_EXCEPTION = 5;
-    private static final int MSG_CREDENTIALS_OF_OTHER_ACCOUNT = 7;
+    private enum ResultStatus {
+        NONE,
+        ACCOUNT_VALID,
+        ACCOUNT_INVALID,
+        CONNECTION_EXCEPTION,
+        CREDENTIALS_OF_OTHER_ACCOUNT
+    }
+
+    private static class TaskResult {
+        final ResultStatus status;
+        CharSequence message = "";
+
+        TaskResult(ResultStatus status) {
+            this(status, "");
+        }
+
+        TaskResult(ResultStatus status, CharSequence message) {
+            this.status = status;
+            this.message = message;
+        }
+
+        boolean isSuccess() {
+            return status == ResultStatus.ACCOUNT_VALID;
+        }
+    }
 
     private static final String SUCCEEDED_KEY = "succeeded";
     private static final String MESSAGE_KEY = "message";
-    private static final String WHAT_KEY = "what";
 
     private enum ActivityOnFinish {
         NONE,
         HOME,
         OUR_DEFAULT_SCREEN
     }
-    private ActivityOnFinish activityOnFinish = ActivityOnFinish.NONE;
+    private volatile ActivityOnFinish activityOnFinish = ActivityOnFinish.NONE;
     
     private StateOfAccountChangeProcess state = null;
 
@@ -728,6 +747,7 @@ public class AccountSettingsActivity extends MyActivity {
             if (activityOnFinish == ActivityOnFinish.HOME) {
                 Timeline home = Timeline.getTimeline(TimelineType.HOME, myAccount.getActorId(), Origin.EMPTY);
                 TimelineActivity.startForTimeline(myContext, AccountSettingsActivity.this, home, myAccount, true);
+                state.forget();
             } else {
                 if (myContext.accounts().size() > 1) {
                     Intent intent = new Intent(myContext.context(), MySettingsActivity.class);
@@ -1177,9 +1197,9 @@ public class AccountSettingsActivity extends MyActivity {
      * Assuming we already have credentials to verify, verify them
      * @author yvolk@yurivolkov.com
      */
-    private class VerifyCredentialsTask extends MyAsyncTask<Void, Void, JSONObject> {
+    private class VerifyCredentialsTask extends MyAsyncTask<Void, Void, TaskResult> {
         private ProgressDialog dlg;
-        private boolean skip = false;
+        private volatile boolean skip = false;
 
         VerifyCredentialsTask() {
             super(PoolEnum.LONG_UI);
@@ -1187,6 +1207,7 @@ public class AccountSettingsActivity extends MyActivity {
 
         @Override
         protected void onPreExecute() {
+            activityOnFinish = ActivityOnFinish.NONE;
             dlg = ProgressDialog.show(AccountSettingsActivity.this,
                     getText(R.string.dialog_title_checking_credentials),
                     getText(R.string.dialog_summary_checking_credentials),
@@ -1206,94 +1227,87 @@ public class AccountSettingsActivity extends MyActivity {
         }
 
         @Override
-        protected JSONObject doInBackground2(Void... arg0) {
-            JSONObject jso = null;
+        protected TaskResult doInBackground2(Void... arg0) {
+            if (skip) return new TaskResult(ResultStatus.NONE);
 
-            int what = MSG_NONE;
+            ResultStatus status = ResultStatus.ACCOUNT_INVALID;
             String message = "";
-            
-            if (!skip) {
-                what = MSG_ACCOUNT_INVALID;
-                try {
-                    state.builder.getOriginConfig();
-                    if (state.builder.verifyCredentials(true)) {
-                        what = MSG_ACCOUNT_VALID;
-                    }
-                } catch (ConnectionException e) {
-                    switch (e.getStatusCode()) {
-                        case AUTHENTICATION_ERROR:
-                            what = MSG_ACCOUNT_INVALID;
-                            break;
-                        case CREDENTIALS_OF_OTHER_ACCOUNT:
-                            what = MSG_CREDENTIALS_OF_OTHER_ACCOUNT;
-                            break;
-                        default:
-                            what = MSG_CONNECTION_EXCEPTION;
-                            break;
-                    }
-                    message = e.toString();
-                    MyLog.v(this, e);
-                }
-            }
-
             try {
-                jso = new JSONObject();
-                jso.put(WHAT_KEY, what);
-                jso.put(MESSAGE_KEY, message);
-            } catch (JSONException e) {
-                MyLog.e(this, e);
+                state.builder.getOriginConfig();
+                state.builder.verifyCredentials();
+                final MyAccount myAccount = state.builder.getAccount();
+                if (myAccount.isValidAndSucceeded()) {
+                    state.forget();
+                    MyContext myContext = MyContextHolder.initialize(MyContextHolder.get().context(),
+                            AccountSettingsActivity.this);
+                    status = ResultStatus.ACCOUNT_VALID;
+                    final Timeline timeline = myContext.timelines()
+                            .get(TimelineType.HOME, myAccount.getActorId(), Origin.EMPTY, "");
+                    if (timeline.isTimeToAutoSync()) {
+                        MyServiceManager.sendForegroundCommand(
+                                CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, timeline)
+                                        .setManuallyLaunched(true));
+                        activityOnFinish = ActivityOnFinish.HOME;
+                    }
+                }
+            } catch (ConnectionException e) {
+                switch (e.getStatusCode()) {
+                    case AUTHENTICATION_ERROR:
+                        status = ResultStatus.ACCOUNT_INVALID;
+                        break;
+                    case CREDENTIALS_OF_OTHER_ACCOUNT:
+                        status = ResultStatus.CREDENTIALS_OF_OTHER_ACCOUNT;
+                        break;
+                    default:
+                        status = ResultStatus.CONNECTION_EXCEPTION;
+                        break;
+                }
+                message = e.toString();
+                MyLog.v(this, e);
             }
-            return jso;
+            return new TaskResult(status, message);
         }
 
         /**
          * Credentials were verified just now!
-         * This is in the UI thread, so we can mess with the UI
          */
         @Override
-        protected void onPostExecute2(JSONObject jso) {
+        protected void onPostExecute2(TaskResult resultIn) {
             DialogFactory.dismissSafely(dlg);
-            boolean succeeded = false;
+            TaskResult result = resultIn == null ? new TaskResult(ResultStatus.NONE) : resultIn;
             CharSequence errorMessage = "";
-            if (jso != null) {
-                try {
-                    int what = jso.getInt(WHAT_KEY);
-                    CharSequence message = jso.getString(MESSAGE_KEY);
-
-                    switch (what) {
-                        case MSG_ACCOUNT_VALID:
-                            Toast.makeText(AccountSettingsActivity.this, R.string.authentication_successful,
-                                    Toast.LENGTH_SHORT).show();
-                            succeeded = true;
-                            break;
-                        case MSG_ACCOUNT_INVALID:
-                            errorMessage = getText(R.string.dialog_summary_authentication_failed);
-                            break;
-                        case MSG_CREDENTIALS_OF_OTHER_ACCOUNT:
-                            errorMessage = getText(R.string.error_credentials_of_other_user);
-                            break;
-                        case MSG_CONNECTION_EXCEPTION:
-                            errorMessage = getText(R.string.error_connection_error) + " \n" + message;
-							MyLog.i(this, errorMessage.toString());
-                            break;
-                        default:
-                            break;
-                    }
-                } catch (JSONException e) {
-                    MyLog.e(this, e);
-                }
+            switch (result.status) {
+                case ACCOUNT_VALID:
+                    Toast.makeText(AccountSettingsActivity.this, R.string.authentication_successful,
+                            Toast.LENGTH_SHORT).show();
+                    break;
+                case ACCOUNT_INVALID:
+                    errorMessage = getText(R.string.dialog_summary_authentication_failed);
+                    break;
+                case CREDENTIALS_OF_OTHER_ACCOUNT:
+                    errorMessage = getText(R.string.error_credentials_of_other_user);
+                    break;
+                case CONNECTION_EXCEPTION:
+                    errorMessage = getText(R.string.error_connection_error) + " \n" + result.message;
+                    MyLog.i(this, errorMessage.toString());
+                    break;
+                default:
+                    break;
+            }
+            if (activityOnFinish == ActivityOnFinish.HOME) {
+                finish();
+                return;
             }
             if (!skip) {
                 StateOfAccountChangeProcess state2 = AccountSettingsActivity.this.state;
                 // Note: MyAccount was already saved inside MyAccount.verifyCredentials
                 // Now we only have to deal with the state
                
-                state2.actionSucceeded = succeeded;
-                if (succeeded) {
+                state2.actionSucceeded = result.isSuccess();
+                if (result.isSuccess()) {
                     state2.actionCompleted = true;
                     if (state2.getAccountAction().compareTo(Intent.ACTION_INSERT) == 0) {
                         state2.setAccountAction(Intent.ACTION_EDIT);
-                        // TODO: Decide if we need closeAndGoBack() here
                     }
                 }
                 somethingIsBeingProcessed = false;

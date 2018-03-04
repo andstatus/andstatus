@@ -150,11 +150,6 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         syncWithInternet(getParamsLoaded().getTimeline(), true, true);
     }
 
-    /**
-     * This method is the first of the whole application to be called 
-     * when the application starts for the very first time.
-     * So we may put some Application initialization code here. 
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         mLayoutId = R.layout.timeline;

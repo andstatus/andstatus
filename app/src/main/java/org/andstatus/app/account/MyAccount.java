@@ -398,21 +398,16 @@ public final class MyAccount implements Comparable<MyAccount> {
          * successful
          *
          * @see CredentialsVerificationStatus
-         * @param reVerify Verify even if it was verified already
-         * @return true if verified successfully
          */
-        public boolean verifyCredentials(boolean reVerify) throws ConnectionException {
-            if (!reVerify && myAccount.isValidAndSucceeded()) {
-                return true;
-            }
+        void verifyCredentials() throws ConnectionException {
             try {
-                return onCredentialsVerified(myAccount.getConnection().verifyCredentials(), null);
+                onCredentialsVerified(myAccount.getConnection().verifyCredentials(), null);
             } catch (ConnectionException e) {
-                return onCredentialsVerified(Actor.EMPTY, e);
+                onCredentialsVerified(Actor.EMPTY, e);
             }
         }
 
-        public boolean onCredentialsVerified(@NonNull Actor actor, ConnectionException ce) throws ConnectionException {
+        public void onCredentialsVerified(@NonNull Actor actor, ConnectionException ce) throws ConnectionException {
             boolean ok = ce == null && !actor.isEmpty() && StringUtils.nonEmpty(actor.oid)
                     && actor.origin.isUsernameValid(actor.getUsername());
             boolean errorSettingUsername = !ok;
@@ -468,7 +463,6 @@ public final class MyAccount implements Comparable<MyAccount> {
                 MyLog.e(TAG, msg);
                 throw new ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg);
             }
-            return ok;
         }
 
         public void setUserTokenWithSecret(String token, String secret) {
