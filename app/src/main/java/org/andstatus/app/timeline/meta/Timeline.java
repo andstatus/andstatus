@@ -837,8 +837,7 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public Timeline cloneForAccount(MyContext myContext, MyAccount ma) {
-        long actorId = getMyAccount().getActorId() != getActorId() ? getActorId() : 0;
-        return myContext.timelines().get(0, getTimelineType(), actorId, Origin.EMPTY, getSearchQuery());
+        return myContext.timelines().get(0, getTimelineType(), ma.getActorId(), Origin.EMPTY, getSearchQuery());
     }
 
     public Timeline cloneForOrigin(MyContext myContext, Origin origin) {

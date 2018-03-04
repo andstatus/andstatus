@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -209,4 +210,25 @@ public class PersistentTimelinesTest {
         assertThat(timelines, is(empty()));
     }
 
+    @Test
+    public void syncForAllAccounts() {
+        Timeline combined = myContext.timelines().get(TimelineType.NOTIFICATIONS, 0, Origin.EMPTY, "");
+        assertEquals("Should be combined: " + combined, true, combined.isCombined());
+        assertNotEquals("Should exist: " + combined, 0, combined.getId());
+        assertEquals("Should not have account: " + combined, MyAccount.EMPTY, combined.getMyAccount());
+
+        final List<MyAccount> accountsToSync = myContext.accounts().accountsToSync();
+        assertThat(accountsToSync, is(not(empty())));
+        boolean syncableFound = false;
+        for (MyAccount accountToSync : accountsToSync) {
+            Timeline forOneAccount = combined.cloneForAccount(myContext, accountToSync);
+            assertEquals("Should have selected account: " + forOneAccount, accountToSync, forOneAccount.getMyAccount());
+            assertEquals("Timeline type: " + forOneAccount, combined.getTimelineType(), forOneAccount.getTimelineType());
+            if (accountToSync.getOrigin().getOriginType().isTimelineTypeSyncable(forOneAccount.getTimelineType())) {
+                assertEquals("Should be syncable: " + forOneAccount, true, forOneAccount.isSyncable());
+                syncableFound = true;
+            }
+        }
+        assertTrue("No syncable timelines for " + accountsToSync, syncableFound);
+    }
 }

@@ -180,7 +180,8 @@ public class MyAccounts {
     /** My account, which can be used to sync the "other" actor's data and to interact with that actor */
     @NonNull
     public MyAccount toSyncThisActor(@NonNull Actor other) {
-        return Stream.of(fromActor(other, true, true))
+        return other.isEmpty() ? MyAccount.EMPTY
+                : Stream.of(fromActor(other, true, true))
                 .filter(MyAccount::isValid)
                 .findFirst().orElseGet(() -> forFriend(other, true, true)
                                 .orElseGet(() -> getFirstSucceededForOrigin(other.origin))
