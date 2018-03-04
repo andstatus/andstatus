@@ -580,4 +580,8 @@ public class Actor implements Comparable<Actor> {
         if (user.userId == 0) user.setKnownAs(getNamePreferablyWebFingerId());
         user.save(myContext);
     }
+
+    public boolean hasAvatar() {
+        return StringUtils.nonEmpty(avatarUrl);
+    }
 }

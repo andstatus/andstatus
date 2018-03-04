@@ -424,6 +424,9 @@ public class DataUpdater {
             if (actor.hasLatestNote()) {
                 updateNote(actor.getLatestActivity(), false);
             }
+            if (me.isValidAndSucceeded() && MyPreferences.getShowAvatars() && actor.hasAvatar()) {
+                AvatarData.getForActor(actor.actorId).requestDownload();
+            }
         } catch (Exception e) {
             MyLog.e(this, method + "; actorId=" + actor.actorId + "; oid=" + actorOid, e);
         }
