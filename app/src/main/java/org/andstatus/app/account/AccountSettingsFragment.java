@@ -20,6 +20,7 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -66,15 +67,16 @@ public class AccountSettingsFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.account_settings, container, false);
-        return view;
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.account_settings, container, false);
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        ((AccountSettingsActivity) getActivity()).restoreState(getActivity().getIntent(),
-                "onActivityCreated");
+        final AccountSettingsActivity activity = (AccountSettingsActivity) getActivity();
+        if (activity != null) {
+            activity.restoreState(activity.getIntent(), "onActivityCreated");
+        }
         super.onActivityCreated(savedInstanceState);
     }
 

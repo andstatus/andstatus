@@ -22,6 +22,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -149,8 +150,17 @@ public class AccountSettingsActivity extends MyActivity {
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
     }
-    
-    private View findFragmentViewById(int id) {
+
+    private boolean invisibleView(@IdRes int id) {
+        return !isViewVisible(id);
+    }
+
+    private boolean isViewVisible(@IdRes int id) {
+        View view = findFragmentViewById(id);
+        return view != null && view.getVisibility() == View.VISIBLE;
+    }
+
+    private View findFragmentViewById(@IdRes int id) {
         Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmentOne);
         if (fragment != null) {
             View view = fragment.getView();
@@ -171,8 +181,6 @@ public class AccountSettingsActivity extends MyActivity {
     /**
      * Restore previous state and set the Activity mode depending on input (Intent).
      * We should decide if we should use the stored state or a newly created one
-     * @param intent
-     * @param calledFrom - for logging only
      */
     protected void restoreState(Intent intent, String calledFrom) {
         String message = "";
@@ -201,7 +209,7 @@ public class AccountSettingsActivity extends MyActivity {
         }
         MyLog.v(this, "setState from " + calledFrom + "; " + message + "intent=" + intent.toUri(0));
     }
-    
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (ActivityRequestCode.fromId(requestCode)) {
@@ -295,6 +303,17 @@ public class AccountSettingsActivity extends MyActivity {
                     AccountName.fromOriginAndUsername(origin, state.getAccount().getUsername()).toString(),
                     TriState.fromBoolean(state.getAccount().isOAuth()));
             updateScreen();
+            goToAddAccount();
+        }
+    }
+
+    private void goToAddAccount() {
+        if (state.getAccountAction().equals(Intent.ACTION_INSERT)
+                && invisibleView(R.id.username)
+                && invisibleView(R.id.password)
+                && isViewVisible(R.id.add_account)) {
+            View addAccount = findFragmentViewById(R.id.add_account);
+            if (addAccount != null) addAccount.performClick();
         }
     }
 
@@ -488,7 +507,7 @@ public class AccountSettingsActivity extends MyActivity {
     
     private void showAddAccountButton() {
         TextView textView = showTextView(R.id.add_account, null, !state.builder.isPersistent());
-        if (textView != null) {
+        if (textView != null && isViewVisible(R.id.add_account)) {
             textView.setOnClickListener(v -> {
                 clearError();
                 updateChangedFields();
@@ -1295,7 +1314,12 @@ public class AccountSettingsActivity extends MyActivity {
                     break;
             }
             if (activityOnFinish == ActivityOnFinish.HOME) {
-                finish();
+                if (isMyResumed()) {
+                    finish();
+                } else {
+                    finish();
+                    returnToOurActivity();
+                }
                 return;
             }
             if (!skip) {
