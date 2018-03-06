@@ -99,7 +99,9 @@ class TimelineDownloaderOther extends TimelineDownloader {
                     syncTracker.onNewMsg(activity.getTimelinePosition(), activity.getUpdatedDate());
                     if (!activity.isSubscribedByMe().equals(TriState.FALSE)
                         && activity.getUpdatedDate() > 0
-                        && execContext.getTimeline().getTimelineType().isSubscribedByMe()) {
+                        && execContext.getTimeline().getTimelineType().isSubscribedByMe()
+                        && execContext.myContext.users().containsMe(execContext.getTimeline().actor)
+                            ) {
                         activity.setSubscribedByMe(TriState.TRUE);
                     }
                     di.onActivity(activity, false);
