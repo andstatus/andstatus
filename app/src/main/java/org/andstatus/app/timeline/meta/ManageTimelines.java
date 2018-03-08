@@ -54,13 +54,29 @@ import java.util.stream.Collectors;
  */
 public class ManageTimelines extends LoadableListActivity {
     private int sortByField = R.id.synced;
-    private int sortFieldPrev = 0;
     private boolean sortDefault = true;
     private ViewGroup columnHeadersParent = null;
     private ManageTimelinesContextMenu contextMenu = null;
     private ManageTimelinesViewItem selectedItem = null;
     private boolean isTotal = false;
     private volatile long countersSince = 0;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        mLayoutId = R.layout.timeline_list;
+        super.onCreate(savedInstanceState);
+
+        contextMenu = new ManageTimelinesContextMenu(this);
+        LinearLayout linearLayout = findViewById(R.id.linear_list_wrapper);
+        LayoutInflater inflater = getLayoutInflater();
+        View listHeader = inflater.inflate(R.layout.timeline_list_header, linearLayout, false);
+        linearLayout.addView(listHeader, 0);
+
+        columnHeadersParent = listHeader.findViewById(R.id.columnHeadersParent);
+        for (int i = 0; i < columnHeadersParent.getChildCount(); i++) {
+            columnHeadersParent.getChildAt(i).setOnClickListener(v -> sortBy(v.getId()));
+        }
+    }
 
     @Override
     protected void onPause() {
@@ -95,9 +111,7 @@ public class ManageTimelines extends LoadableListActivity {
     @Override
     public void onLoadFinished(boolean keepCurrentPosition) {
         showSortColumn();
-        int sortFieldNew = sortDefault ? sortByField : 0 - sortByField;
-        super.onLoadFinished(sortFieldPrev == sortFieldNew);
-        sortFieldPrev = sortFieldNew;
+        super.onLoadFinished(true);
     }
 
     private void showSortColumn() {
@@ -115,29 +129,6 @@ public class ManageTimelines extends LoadableListActivity {
             if (textView.getId() == sortByField) {
                 textView.setText((sortDefault ? '▲' : '▼') + text);
             }
-        }
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        mLayoutId = R.layout.timeline_list;
-        super.onCreate(savedInstanceState);
-
-        contextMenu = new ManageTimelinesContextMenu(this);
-        LinearLayout linearLayout = (LinearLayout) findViewById(R.id.linear_list_wrapper);
-        LayoutInflater inflater = getLayoutInflater();
-        View listHeader = inflater.inflate(R.layout.timeline_list_header, linearLayout, false);
-        linearLayout.addView(listHeader, 0);
-
-        columnHeadersParent = (ViewGroup) listHeader.findViewById(R.id.columnHeadersParent);
-        for (int i = 0; i < columnHeadersParent.getChildCount(); i++) {
-            View view = columnHeadersParent.getChildAt(i);
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    sortBy(v.getId());
-                }
-            });
         }
     }
 
