@@ -24,17 +24,16 @@ import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.OAuthClientKeys;
-import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.AActivity;
-import org.andstatus.app.net.social.ActivityType;
-import org.andstatus.app.net.social.Attachment;
-import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.AObjectType;
+import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.Attachment;
+import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
+import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio.ConnectionAndUrl;
 import org.andstatus.app.origin.OriginConnectionData;
@@ -386,8 +385,7 @@ public class ConnectionPumpioTest {
         }
         assertNotNull("note returned", msg);
         assertEquals("has attachment", 1, msg.attachments.size());
-        Attachment attachment = Attachment.fromUrlAndContentType(new URL(
-                "https://io.jpope.org/uploads/jpope/2014/8/18/m1o1bw.jpg"), MyContentType.IMAGE);
+        Attachment attachment = Attachment.fromUri("https://io.jpope.org/uploads/jpope/2014/8/18/m1o1bw.jpg");
         assertEquals("attachment", attachment, msg.attachments.get(0));
         assertEquals("Body text", "<p>Hanging out up in the mountains.</p>", msg.getBody());
         return msg;

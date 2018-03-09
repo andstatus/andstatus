@@ -26,12 +26,14 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.data.FileProvider;
+import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.UriUtils;
 
 public class NoteShare {
     private final Origin origin;
@@ -77,13 +79,16 @@ public class NoteShare {
         subject.append(" - " + msgBodyPlainText);
 
         Intent intent = new Intent(share ? android.content.Intent.ACTION_SEND : Intent.ACTION_VIEW);
-        if (share || TextUtils.isEmpty(imageFilename)) {
+        final Uri imageFileUri = FileProvider.downloadFilenameToUri(imageFilename);
+        if (share || UriUtils.isEmpty(imageFileUri)) {
             intent.setType("text/*");
         } else {
-            intent.setDataAndType(FileProvider.downloadFilenameToUri(imageFilename),"image/*");
+            intent.setDataAndType(imageFileUri, MyContentType.uri2MimeType(
+                    MyContextHolder.get().context().getContentResolver(), imageFileUri, "image/*"
+            ));
         }
-        if (!TextUtils.isEmpty(imageFilename)) {
-            intent.putExtra(Intent.EXTRA_STREAM, FileProvider.downloadFilenameToUri(imageFilename));
+        if (UriUtils.nonEmpty(imageFileUri)) {
+            intent.putExtra(Intent.EXTRA_STREAM, imageFileUri);
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
         intent.putExtra(Intent.EXTRA_SUBJECT, I18n.trimTextAt(subject.toString(), 80));

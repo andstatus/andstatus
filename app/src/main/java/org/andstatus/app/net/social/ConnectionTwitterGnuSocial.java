@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,19 +20,16 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
-import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -178,9 +175,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     @Override
     @NonNull
     AActivity activityFromJson2(JSONObject jso) throws ConnectionException {
-        if (jso == null) {
-            return AActivity.EMPTY;
-        }
+        if (jso == null) return AActivity.EMPTY;
         final String method = "activityFromJson2";
         AActivity activity = super.activityFromJson2(jso);
         Note note = activity.getNote();
@@ -190,14 +185,11 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
             try {
                 JSONArray jArr = jso.getJSONArray(ATTACHMENTS_FIELD_NAME);
                 for (int ind = 0; ind < jArr.length(); ind++) {
-                    JSONObject attachment = (JSONObject) jArr.get(ind);
-                    URL url = UrlUtils.fromJson(attachment, "url");
-                    if (url == null) {
-                        url = UrlUtils.fromJson(attachment, "thumb_url");
-                    }
-                    Attachment mbAttachment =  Attachment.fromUrlAndContentType(url, MyContentType.fromUrl(url, attachment.optString("mimetype")));
-                    if (mbAttachment.isValid()) {
-                        note.attachments.add(mbAttachment);
+                    JSONObject jsonAttachment = (JSONObject) jArr.get(ind);
+                    Uri uri = UriUtils.fromAlternativeTags(jsonAttachment, "url", "thumb_url");
+                    Attachment attachment =  Attachment.fromUriAndContentType(uri, jsonAttachment.optString("mimetype"));
+                    if (attachment.isValid()) {
+                        note.attachments.add(attachment);
                     } else {
                         MyLog.d(this, method + "; invalid attachment #" + ind + "; " + jArr.toString());
                     }

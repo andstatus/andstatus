@@ -16,7 +16,6 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.service.MyServiceTestHelper;
@@ -98,8 +97,7 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest<ActivityView
         assertEquals("Status of unsent note", DownloadStatus.SENDING, DownloadStatus.load(
                 MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)));
 
-        DownloadData dd = DownloadData.getSingleForNote(unsentMsgId,
-                MyContentType.IMAGE, null);
+        DownloadData dd = DownloadData.getSingleAttachment(unsentMsgId);
         MyLog.v(this, method + "; " + dd);
         assertEquals("Image URI stored", demoData.localImageTestUri2, dd.getUri());
         assertEquals("Loaded '" + dd.getUri() + "'; " + dd, DownloadStatus.LOADED, dd.getStatus());

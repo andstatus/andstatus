@@ -31,7 +31,6 @@ import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
@@ -157,7 +156,7 @@ public class NoteEditorData {
             data.activityId = MyQuery.noteIdToLongColumnValue(ActivityTable.LAST_UPDATE_ID, noteId);
             data.status = DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId));
             data.setBody(MyQuery.noteIdToStringColumnValue(NoteTable.BODY, noteId));
-            data.downloadData = DownloadData.getSingleForNote(noteId, MyContentType.IMAGE, Uri.EMPTY);
+            data.downloadData = DownloadData.getSingleAttachment(noteId);
             if (data.downloadData.getStatus() == LOADED) {
                 AttachedImageFile imageFile = new AttachedImageFile(data.downloadData.getDownloadId(),
                         data.downloadData.getFilename());
@@ -214,10 +213,8 @@ public class NoteEditorData {
             note.setInReplyTo(inReplyTo);
         }
         Uri mediaUri = imageUriToSave.equals(Uri.EMPTY) ? downloadData.getUri() : imageUriToSave;
-        if (!mediaUri.equals(Uri.EMPTY)) {
-            note.attachments.add(
-                    Attachment.fromUriAndContentType(mediaUri, MyContentType.IMAGE));
-        }
+        if (!mediaUri.equals(Uri.EMPTY)) note.attachments.add(Attachment.fromUri(mediaUri));
+
         DataUpdater di = new DataUpdater(getMyAccount());
         setNoteId(di.onActivity(activity).getNote().noteId);
         if (activity.getId() != 0 && activityId != activity.getId()) {

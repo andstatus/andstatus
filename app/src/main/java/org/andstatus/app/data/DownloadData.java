@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.webkit.MimeTypeMap;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -25,11 +26,12 @@ import java.util.List;
 
 public class DownloadData {
     private static final String TAG = DownloadData.class.getSimpleName();
-    public static final DownloadData EMPTY = new DownloadData();
-
+    public static final DownloadData EMPTY = new DownloadData(0, 0, 0, "",
+            DownloadType.UNKNOWN, Uri.EMPTY);
     private DownloadType downloadType = DownloadType.UNKNOWN;
     public long actorId = 0;
     public long noteId = 0;
+    private String mimeType = "";
     private MyContentType contentType = MyContentType.UNKNOWN;
     private DownloadStatus status = DownloadStatus.UNKNOWN; 
     private long downloadId = 0;
@@ -46,52 +48,30 @@ public class DownloadData {
     private DownloadFile fileNew = DownloadFile.EMPTY;
 
     public static DownloadData fromId(long downloadId) {
-        DownloadData dd = new DownloadData();
-        dd.downloadId = downloadId;
-        dd.loadOtherFields();
-        dd.fixFieldsAfterLoad();
-        return dd;
+        return new DownloadData(downloadId, 0, 0, "", DownloadType.UNKNOWN, Uri.EMPTY);
     }
 
     /**
      * Currently we assume that there is no more than one attachment of a message
      */
-    public static DownloadData getSingleForNote(long msgIdIn, MyContentType contentTypeIn, Uri uriIn) {
-        DownloadData data = new DownloadData(0, msgIdIn, contentTypeIn, Uri.EMPTY);
-        if (!UriUtils.isEmpty(uriIn) && !data.getUri().equals(uriIn)) {
-            deleteAllOfThisNote(MyContextHolder.get().getDatabase(), msgIdIn);
-            data = getThisForNote(msgIdIn, contentTypeIn, uriIn);
-        }
-        return data;
+    public static DownloadData getSingleAttachment(long noteId) {
+        return new DownloadData(0, 0, noteId, "", DownloadType.ATTACHMENT, Uri.EMPTY);
     }
 
-    public static DownloadData getThisForNote(long msgIdIn, MyContentType contentTypeIn, Uri uriIn) {
-        return new DownloadData(0, msgIdIn, contentTypeIn, uriIn);
+    public static DownloadData getThisForNote(long noteId, String mimeType, DownloadType downloadType, Uri uriIn) {
+        return new DownloadData(0, 0, noteId, mimeType, downloadType, uriIn);
     }
 
-    protected DownloadData(long actorIdIn, long msgIdIn, MyContentType contentTypeIn, Uri uriIn) {
-        switch (contentTypeIn) {
-        case IMAGE:
-            downloadType = (actorIdIn == 0) ? DownloadType.IMAGE : DownloadType.AVATAR;
-            break;
-        case TEXT:
-            downloadType = DownloadType.TEXT;
-            break;
-        default:
-            downloadType = DownloadType.UNKNOWN;
-            hardError = true;
-            break;
-        }
-        actorId = actorIdIn;
-        noteId = msgIdIn;
-        contentType = contentTypeIn;
-        uri = UriUtils.notNull(uriIn);
+    protected DownloadData(long downloadId, long actorId, long noteId, String mimeType, DownloadType downloadType, Uri uri) {
+        this.downloadId = downloadId;
+        this.actorId = actorId;
+        this.noteId = noteId;
+        this.downloadType = downloadType;
+        this.mimeType = mimeType;
+        contentType = MyContentType.fromUri(downloadType, MyContextHolder.get().context().getContentResolver(), uri, mimeType);
+        this.uri = UriUtils.notNull(uri);
         loadOtherFields();
         fixFieldsAfterLoad();
-    }
-
-    private DownloadData() {
-        // Empty
     }
 
     private void loadOtherFields() {
@@ -137,13 +117,21 @@ public class DownloadData {
                     uri = UriUtils.fromString(DbUtils.getString(cursor, DownloadTable.URI));
                 }
             }
+            mimeType = MyContentType.uri2MimeType(null, Uri.parse(fileStored.getFilename()), mimeType);
+            if (TextUtils.isEmpty(fileStored.getFilename())) {
+                // TODO: This is a hack in order not to store mimeType directly
+                fileStored = DownloadFile.newInexistentOfMimeType(mimeType);
+            }
         }
     }
 
     private boolean checkHardErrorBeforeLoad() {
-        if ((actorId != 0) && (noteId != 0)
-                || (actorId == 0 && noteId == 0 && downloadId == 0)
-                || (actorId != 0 && downloadType != DownloadType.AVATAR)) {
+        if ( downloadId == 0 && downloadType == DownloadType.UNKNOWN) {
+            hardError = true;
+        }
+        if (((actorId != 0) && (noteId != 0))
+            || (actorId == 0 && noteId == 0 && downloadId == 0)
+            || (actorId != 0 && downloadType != DownloadType.AVATAR)) {
             hardError = true;
         }
         return hardError;
@@ -151,18 +139,20 @@ public class DownloadData {
 
     private String getWhereClause() {
         StringBuilder builder = new StringBuilder();
-        if (actorId != 0) {
-            builder.append(DownloadTable.ACTOR_ID + "=" + actorId);
-        } else if (noteId != 0) {
-            builder.append(DownloadTable.NOTE_ID + "=" + noteId);
-        } else {
+        if (downloadId != 0) {
             builder.append(DownloadTable._ID + "=" + downloadId);
-        }
-        if (contentType != MyContentType.UNKNOWN) {
-            builder.append(" AND " + DownloadTable.CONTENT_TYPE + "=" + contentType.save());
-        }
-        if (!UriUtils.isEmpty(uri)) {
-            builder.append(" AND " + DownloadTable.URI + "=" + MyQuery.quoteIfNotQuoted(uri.toString()));
+        } else {
+            if (actorId != 0) {
+                builder.append(DownloadTable.ACTOR_ID + "=" + actorId);
+            } else if (noteId != 0) {
+                builder.append(DownloadTable.NOTE_ID + "=" + noteId);
+            }
+            if (downloadType != DownloadType.UNKNOWN) {
+                builder.append(" AND " + DownloadTable.DOWNLOAD_TYPE + "=" + downloadType.save());
+            }
+            if (UriUtils.nonEmpty(uri)) {
+                builder.append(" AND " + DownloadTable.URI + "=" + MyQuery.quoteIfNotQuoted(uri.toString()));
+            }
         }
         return builder.toString();
     }
@@ -184,16 +174,16 @@ public class DownloadData {
     public void onNewDownload() {
         softError = false;
         hardError = false;
-        loadTimeNew =  System.currentTimeMillis();
-        fileNew = new DownloadFile(Long.toString(loadTimeNew)
-                + "_"
-                + Long.toString(InstanceId.next())
-                + getOptionalExtension());
+        loadTimeNew = System.currentTimeMillis();
+        String filename = Long.toString(loadTimeNew) + "_" + Long.toString(InstanceId.next()) + "." + getExtension();
+        fileNew = new DownloadFile(filename);
     }
 
-    private String getOptionalExtension() {
-        return TextUtils.isEmpty(MyContentType.getExtension(uri.toString())) ? "" : "."
-                + (MyContentType.getExtension(uri.toString()));
+    private String getExtension() {
+        final String fileExtensionFromUrl = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
+        return TextUtils.isEmpty(fileExtensionFromUrl)
+                ? MimeTypeMap.getFileExtensionFromUrl(fileStored.getFilename())
+                : fileExtensionFromUrl;
     }
     
     public void saveToDatabase() {

@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+/*
+ * Copyright (C) 2014-2018 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,49 +16,53 @@
 
 package org.andstatus.app.data;
 
+import android.content.ContentResolver;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.webkit.MimeTypeMap;
 
 import org.andstatus.app.util.MyLog;
-
-import java.net.URL;
+import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.UriUtils;
 
 public enum MyContentType {
-    IMAGE(2),
-    TEXT(3),
-    UNKNOWN(0);
+    IMAGE("image/*", 2),
+    TEXT("text/*", 3),
+    VIDEO("video/*", 4),
+    UNKNOWN("*/*", 0);
     
-    public static final String DEFAULT_MIME_TYPE = "image/png";
-
     private static final String TAG = MyContentType.class.getSimpleName();
     
     private final long code;
-    
-    MyContentType(long code) {
-        this.code = code;
-    }
-    
-    public String save() {
-        return Long.toString(code);
-    }
-    
-    /**
-     * see http://stackoverflow.com/questions/3571223/how-do-i-get-the-file-extension-of-a-file-in-java
-     * @return empty string if not found
-     */
-    public static String getExtension(String filename) {
-        String extension = "";
-        int i = filename.lastIndexOf('.');
-        int p = Math.max(filename.lastIndexOf('/'), filename.lastIndexOf('\\'));
-        if (i > p) {
-            extension = filename.substring(i+1);
-        }
-        return extension;
+    public final String generalMimeType;
+
+
+    @NonNull
+    public static MyContentType fromPathOfSavedFile(String mediaFilePath) {
+        return TextUtils.isEmpty(mediaFilePath)
+                ? UNKNOWN
+                : fromUri(DownloadType.UNKNOWN, null, Uri.parse(mediaFilePath), UNKNOWN.generalMimeType);
     }
 
-    /**
-     * Returns the enum or UNKNOWN
-     */
+    public static MyContentType fromUri(DownloadType downloadType, ContentResolver contentResolver, Uri uri,
+                                        String defaultMimeType) {
+        if (downloadType == DownloadType.AVATAR) return MyContentType.IMAGE;
+
+        String mimeType = uri2MimeType(contentResolver, uri, defaultMimeType);
+        if (mimeType.startsWith("image")) {
+            return IMAGE;
+        } else if (mimeType.startsWith("video")) {
+            return VIDEO;
+        } else if (mimeType.startsWith("text")) {
+            return TEXT;
+        } else {
+            return UNKNOWN;
+        }
+    }
+
+    /** Returns the enum or UNKNOWN */
+    @NonNull
     public static MyContentType load(String strCode) {
         try {
             return load(Long.parseLong(strCode));
@@ -77,70 +81,43 @@ public enum MyContentType {
         return UNKNOWN;
     }
 
-    public static MyContentType fromUri(Uri uri, MyContentType defaultValue) {
-        MyContentType val = defaultValue == null ? UNKNOWN : defaultValue;
-        if (uri != null) {
-            val = fromPath(uri.getPath(), val);
+    MyContentType(String generalMimeType, long code) {
+        this.generalMimeType = generalMimeType;
+        this.code = code;
+    }
+
+    public String save() {
+        return Long.toString(code);
+    }
+
+    @NonNull
+    public static String uri2MimeType(ContentResolver contentResolver, Uri uri) {
+        return uri2MimeType(contentResolver, uri, "");
+    }
+
+    @NonNull
+    public static String uri2MimeType(ContentResolver contentResolver, Uri uri, String defaultValue) {
+        if (contentResolver != null && !UriUtils.isEmpty(uri)) {
+            String mimeType = contentResolver.getType(uri);
+            if (StringUtils.nonEmpty(mimeType)) return mimeType;
         }
-        return val;
+        return path2MimeType(
+                uri == null ? null : uri.getPath(),
+                TextUtils.isEmpty(defaultValue) ? UNKNOWN.generalMimeType : defaultValue
+        );
     }
 
-    public static MyContentType fromUrl(URL url, MyContentType defaultValue) {
-        MyContentType val = defaultValue == null ? UNKNOWN : defaultValue;
-        if (url != null) {
-            val = fromPath(url.getPath(), val);
-        }
-        return val;
+    /** @return "bin" if no better extension found */
+    @NonNull
+    public static String mimeToFileExtension(String mimeType) {
+        String extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
+        return TextUtils.isEmpty(mimeType) ? "bin" : extension;
     }
 
-    public static MyContentType fromPath(String path, MyContentType defaultValue) {
-        MyContentType val = defaultValue == null ? UNKNOWN : defaultValue;
-        if (!TextUtils.isEmpty(path)) {
-            String extension = MyContentType.getExtension(path);
-            if( TextUtils.isEmpty(extension)) {
-                return val;
-            }
-            if ("jpg.jpeg.png.gif".contains(extension)) {
-                val = IMAGE;
-            } else if ("txt.html.htm".contains(extension)) {
-                val = TEXT;
-            }
-        }
-        return val;
+    @NonNull
+    private static String path2MimeType(String path, @NonNull String defaultValue) {
+        if (TextUtils.isEmpty(path)) return defaultValue;
+        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(path));
+        return TextUtils.isEmpty(mimeType) ? defaultValue : mimeType;
     }
-
-    public static MyContentType fromUrl(URL url, String defaultValue) {
-        if (TextUtils.isEmpty(defaultValue)) {
-            // Nothing to do
-        } else if (defaultValue.startsWith("image")) {
-            return IMAGE;
-        } else if (defaultValue.startsWith("text")) {
-            return TEXT;
-        } 
-        return fromUrl(url, UNKNOWN);
-    }
-
-    public static String uri2MimeType(Uri uri, String defaultValue) {
-        String filename = uri == null ? null : uri.getPath();
-        return filename2MimeType(filename, defaultValue);
-    }
-    
-    public static String filename2MimeType(String filename, String defaultValue) {
-        String mimeType = defaultValue == null ? DEFAULT_MIME_TYPE : defaultValue;
-        if (filename != null) {
-            String extension = MyContentType.getExtension(filename);
-            if( TextUtils.isEmpty(extension)) {
-                return mimeType;
-            } 
-            if ("png.gif".contains(extension)) {
-                mimeType = "image/" + extension;
-            } else if ("jpg.jpeg".contains(extension)) {
-    		    mimeType = "image/jpeg";
-            } else if ("txt.html.htm".contains(extension)) {
-                mimeType = "text/" + extension;
-            }
-        } 
-        return mimeType;
-    }
-    
 }

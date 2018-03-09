@@ -362,8 +362,7 @@ public class DataUpdaterTest {
         assertNotEquals("Note added " + activity.getNote(), 0, noteId);
         assertNotEquals("Activity added " + activity, 0, activity.getId());
 
-        DownloadData dd = DownloadData.getSingleForNote(noteId,
-                activity.getNote().attachments.get(0).contentType, null);
+        DownloadData dd = DownloadData.getSingleAttachment(noteId);
         assertEquals("Image URI stored", activity.getNote().attachments.get(0).getUri(), dd.getUri());
     }
 
@@ -376,16 +375,15 @@ public class DataUpdaterTest {
         activity.setActor(accountActor);
         Note note = activity.getNote();
         note.setBody("Unsent note with an attachment " + demoData.testRunUid);
-        note.attachments.add(Attachment.fromUriAndContentType(demoData.localImageTestUri,
-                MyContentType.IMAGE));
+        note.attachments.add(Attachment.fromUri(demoData.localImageTestUri));
         new DataUpdater(ma).onActivity(activity);
         assertNotEquals("Note added " + activity, 0, note.noteId);
         assertNotEquals("Activity added " + activity, 0, activity.getId());
         assertEquals("Status of unsent note", DownloadStatus.SENDING, DownloadStatus.load(
                 MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, note.noteId)));
 
-        DownloadData dd = DownloadData.getSingleForNote(note.noteId,
-                note.attachments.get(0).contentType, null);
+        DownloadData dd = DownloadData.getSingleAttachment(note.noteId
+        );
         assertEquals("Image URI stored", note.attachments.get(0).getUri(), dd.getUri());
         assertEquals("Local image immediately loaded " + dd, DownloadStatus.LOADED, dd.getStatus());
 
@@ -397,7 +395,7 @@ public class DataUpdaterTest {
         activity2.setActor(activity.getAuthor());
         Note note2 = activity2.getNote();
         note2.setBody("Just sent: " + note.getBody());
-        note2.attachments.add(Attachment.fromUriAndContentType(demoData.image1Url, MyContentType.IMAGE));
+        note2.attachments.add(Attachment.fromUri(demoData.image1Url));
         note2.noteId = note.noteId;
         new DataUpdater(ma).onActivity(activity2);
 
@@ -407,8 +405,8 @@ public class DataUpdaterTest {
         assertEquals("Status of loaded note", DownloadStatus.LOADED, DownloadStatus.load(
                 MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, note.noteId)));
 
-        DownloadData dd2 = DownloadData.getSingleForNote(note2.noteId,
-                note2.attachments.get(0).contentType, null);
+        DownloadData dd2 = DownloadData.getSingleAttachment(note2.noteId
+        );
         assertEquals("New image URI stored", note2.attachments.get(0).getUri(), dd2.getUri());
 
         assertEquals("Not loaded yet. " + dd2, DownloadStatus.ABSENT, dd2.getStatus());

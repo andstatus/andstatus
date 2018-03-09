@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.Html;
 import android.text.TextUtils;
@@ -488,7 +489,7 @@ public class NoteEditor {
     }
 
     private void showAttachedImage() {
-        ImageView imageView = (ImageView) editorView.findViewById(R.id.attached_image);
+        ImageView imageView = editorView.findViewById(R.id.attached_image);
         if (editorData.image == null) {
             imageView.setVisibility(View.GONE);
         } else {
@@ -628,11 +629,12 @@ public class NoteEditor {
      * See http://stackoverflow.com/questions/2169649/get-pick-an-image-from-androids-built-in-gallery-app-programmatically
      */
 	private Intent getIntentForKitKatMediaChooser() {
-		Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.addFlags(UriUtils.flagsToTakePersistableUriPermission());
+        Intent intent = new Intent()
+                .setType("*/*")
+                .putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/*", "video/*"})
+                .setAction(Intent.ACTION_GET_CONTENT)
+                .addCategory(Intent.CATEGORY_OPENABLE)
+                .addFlags(UriUtils.flagsToTakePersistableUriPermission());
         return Intent.createChooser(intent, getActivity().getText(R.string.options_menu_attach));
 	}
 	
@@ -641,7 +643,8 @@ public class NoteEditor {
      */
 	private Intent getIntentToPickImages() {
         return new Intent(Intent.ACTION_PICK,
-                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                .setType("*/*")
                 .addFlags(UriUtils.flagsToTakePersistableUriPermission());
 	}
 

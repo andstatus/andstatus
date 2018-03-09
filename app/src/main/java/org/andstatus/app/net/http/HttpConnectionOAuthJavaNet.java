@@ -16,6 +16,7 @@
 
 package org.andstatus.app.net.http;
 
+import android.content.ContentResolver;
 import android.net.Uri;
 
 import org.andstatus.app.context.MyContextHolder;
@@ -147,27 +148,22 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
     }
 
     /** This method is not legacy HTTP */
-    void writeMedia(HttpURLConnection conn, JSONObject formParams)
+    private void writeMedia(HttpURLConnection conn, JSONObject formParams)
             throws IOException, JSONException {
+        final ContentResolver contentResolver = MyContextHolder.get().context().getContentResolver();
         Uri mediaUri = Uri.parse(formParams.getString(KEY_MEDIA_PART_URI));
         conn.setChunkedStreamingMode(0);
-        conn.setRequestProperty("Content-Type", MyContentType.uri2MimeType(mediaUri, null));
+        conn.setRequestProperty("Content-Type", MyContentType.uri2MimeType(contentResolver, mediaUri));
         signConnection(conn, getConsumer(), false);
-                
-        InputStream in = MyContextHolder.get().context().getContentResolver().openInputStream(mediaUri);
-        try {
+
+        try (InputStream in = contentResolver.openInputStream(mediaUri)) {
             byte[] buffer = new byte[16384];
-            int length;
-            OutputStream out = new BufferedOutputStream(conn.getOutputStream());
-            try {
+            try (OutputStream out = new BufferedOutputStream(conn.getOutputStream())) {
+                int length;
                 while ((length = in.read(buffer)) != -1) {
                     out.write(buffer, 0, length);
                 }
-            } finally {
-                DbUtils.closeSilently(out);
             }
-        } finally {
-            DbUtils.closeSilently(in);
         }
     }
 

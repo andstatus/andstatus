@@ -283,7 +283,8 @@ public class DataUpdater {
     private void saveAttachments(Note note) {
         List<Long> downloadIds = new ArrayList<>();
         for (Attachment attachment : note.attachments) {
-            DownloadData dd = DownloadData.getThisForNote(note.noteId, attachment.contentType, attachment.getUri());
+            DownloadData dd = DownloadData.getThisForNote(note.noteId, attachment.mimeType, DownloadType.ATTACHMENT,
+                    attachment.getUri());
             dd.saveToDatabase();
             downloadIds.add(dd.getDownloadId());
             switch (dd.getStatus()) {
@@ -292,7 +293,9 @@ public class DataUpdater {
                     break;
                 default:
                     if (UriUtils.isDownloadable(dd.getUri())) {
-                        if (attachment.contentType == MyContentType.IMAGE && MyPreferences.getDownloadAndDisplayAttachedImages()) {
+                        if ((attachment.contentType == MyContentType.IMAGE ||
+                                attachment.contentType == MyContentType.VIDEO)
+                                && MyPreferences.getDownloadAndDisplayAttachedImages()) {
                             dd.requestDownload();
                         }
                     } else {

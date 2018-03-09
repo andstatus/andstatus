@@ -25,7 +25,7 @@ import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.graphics.ImageCaches;
 
 public class AvatarFile extends ImageFile {
-    public static final AvatarFile EMPTY = new AvatarFile(0, null);
+    public static final AvatarFile EMPTY = new AvatarFile(0, "");
     private final long actorId;
     public static final int AVATAR_SIZE_DIP = 48;
     

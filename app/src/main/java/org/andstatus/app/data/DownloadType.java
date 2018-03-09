@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,8 +20,7 @@ import org.andstatus.app.util.MyLog;
 
 public enum DownloadType {
     AVATAR(1),
-    IMAGE(2),
-    TEXT(3),
+    ATTACHMENT(2),
     UNKNOWN(0);
 
     private static final String TAG = DownloadType.class.getSimpleName();

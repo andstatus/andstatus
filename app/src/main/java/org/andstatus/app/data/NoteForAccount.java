@@ -18,7 +18,6 @@ package org.andstatus.app.data;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
@@ -111,7 +110,7 @@ public class NoteForAccount {
         }
         Audience recipients = Audience.fromNoteId(origin, noteId);
         isRecipient = recipients.contains(accountActorId);
-        DownloadData downloadData = DownloadData.getSingleForNote(noteId, MyContentType.IMAGE, Uri.EMPTY);
+        DownloadData downloadData = DownloadData.getSingleAttachment(noteId);
         imageFilename = downloadData.getStatus() == DownloadStatus.LOADED ? downloadData.getFilename() : "";
         ActorToNote actorToNote = MyQuery.favoritedAndReblogged(db, noteId, accountActorId);
         favorited = actorToNote.favorited;

@@ -25,7 +25,6 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
@@ -41,7 +40,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -177,11 +175,10 @@ public class ConnectionTwitterTest {
         Note note = connection.getNote("503799441900314624").getNote();
         assertNotNull("note returned", note);
         assertEquals("has attachment", 1, note.attachments.size());
-        Attachment attachment = Attachment.fromUrlAndContentType(new URL(
-                "https://pbs.twimg.com/media/Bv3a7EsCAAIgigY.jpg"), MyContentType.IMAGE);
-        assertEquals("attachment", attachment, note.attachments.get(0));
-        attachment.setUrl(new URL("https://pbs.twimg.com/media/Bv4a7EsCAAIgigY.jpg"));
-        assertNotSame("attachment", attachment, note.attachments.get(0));
+        assertEquals("attachment",  Attachment.fromUri("https://pbs.twimg.com/media/Bv3a7EsCAAIgigY.jpg"),
+                note.attachments.get(0));
+        assertNotSame("attachment", Attachment.fromUri("https://pbs.twimg.com/media/Bv4a7EsCAAIgigY.jpg"),
+                note.attachments.get(0));
     }
 
     @Test

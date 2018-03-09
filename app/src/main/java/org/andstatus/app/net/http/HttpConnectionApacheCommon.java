@@ -16,6 +16,7 @@
 
 package org.andstatus.app.net.http;
 
+import android.content.ContentResolver;
 import android.net.Uri;
 import android.text.TextUtils;
 
@@ -94,16 +95,14 @@ public class HttpConnectionApacheCommon {
                 builder.addTextBody(name, value, textContentType);
             }
         }
-        if (!TextUtils.isEmpty(mediaPartName) && !UriUtils.isEmpty(mediaUri)) {
-            InputStream ins = null;
-            try {
-                ins = MyContextHolder.get().context().getContentResolver().openInputStream(mediaUri);
-                ContentType mediaContentType = ContentType.create(MyContentType.uri2MimeType(mediaUri, null));
+        final ContentResolver contentResolver = MyContextHolder.get().context().getContentResolver();
+        if (!TextUtils.isEmpty(mediaPartName) && !UriUtils.isEmpty(mediaUri) && contentResolver != null) {
+            try (InputStream ins = contentResolver.openInputStream(mediaUri)) {
+                ContentType mediaContentType = ContentType.create(
+                        MyContentType.uri2MimeType(contentResolver, mediaUri));
                 builder.addBinaryBody(mediaPartName, FileUtils.getBytes(ins), mediaContentType, mediaUri.getPath());
             } catch (SecurityException | IOException e) {
                 throw ConnectionException.hardConnectionException("mediaUri='" + mediaUri + "'", e);
-            } finally {
-                DbUtils.closeSilently(ins);
             }
         }
         return builder.build();

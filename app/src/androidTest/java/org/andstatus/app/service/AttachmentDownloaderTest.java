@@ -25,7 +25,6 @@ import org.andstatus.app.data.DemoNoteInserter;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.FileProvider;
-import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.Attachment;
@@ -36,7 +35,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
@@ -60,13 +58,12 @@ public class AttachmentDownloaderTest {
         DemoNoteInserter inserter = new DemoNoteInserter(ma);
         AActivity activity = inserter.buildActivity(inserter.buildActor(), body, null, null,
                 DownloadStatus.LOADED);
-        activity.getNote().attachments.add(Attachment.fromUrlAndContentType(
-                new URL("http://www.publicdomainpictures.net/pictures/60000/nahled/landscape-1376582205Yno.jpg"),
-                MyContentType.IMAGE));
+        activity.getNote().attachments.add(Attachment.fromUri(
+                "http://www.publicdomainpictures.net/pictures/60000/nahled/landscape-1376582205Yno.jpg"));
         inserter.onActivity(activity);
         
-        DownloadData dd = DownloadData.getSingleForNote(activity.getNote().noteId,
-                activity.getNote().attachments.get(0).contentType, null);
+        DownloadData dd = DownloadData.getSingleAttachment(activity.getNote().noteId
+        );
         assertEquals("Image URI stored", activity.getNote().attachments.get(0).getUri(), dd.getUri());
         
         loadAndAssertStatusForRow(dd.getDownloadId(), DownloadStatus.ABSENT, true);

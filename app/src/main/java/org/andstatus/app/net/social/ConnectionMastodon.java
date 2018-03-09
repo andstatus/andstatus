@@ -20,20 +20,17 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import org.andstatus.app.data.MyContentType;
-import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
+import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
-import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -377,11 +374,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                     JSONArray jArr = jso.getJSONArray(ATTACHMENTS_FIELD_NAME);
                     for (int ind = 0; ind < jArr.length(); ind++) {
                         JSONObject attachment = (JSONObject) jArr.get(ind);
-                        URL url = UrlUtils.fromJson(attachment, "url");
-                        if (url == null) {
-                            url = UrlUtils.fromJson(attachment, "preview_url");
-                        }
-                        Attachment mbAttachment =  Attachment.fromUrlAndContentType(url, MyContentType.fromUrl(url, attachment.optString("type")));
+                        Uri uri = UriUtils.fromAlternativeTags(attachment, "url", "preview_url");
+                        Attachment mbAttachment =  Attachment.fromUriAndContentType(uri, attachment.optString("type"));
                         if (mbAttachment.isValid()) {
                             note.attachments.add(mbAttachment);
                         } else {

@@ -20,7 +20,6 @@ import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.util.RawResourceUtils;
@@ -29,7 +28,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 
 import static org.andstatus.app.context.DemoData.demoData;
@@ -182,9 +180,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("null Homepage (url) should be treated as blank", "", activity.getAuthor().getHomepage());
 
         assertEquals("has attachment", 1, activity.getNote().attachments.size());
-        Attachment attachment = Attachment.fromUrlAndContentType(new URL(
-                "https://quitter.se/file/mcscx-20131110T222250-427wlgn.png")
-                , MyContentType.IMAGE);
+        Attachment attachment = Attachment.fromUri("https://quitter.se/file/mcscx-20131110T222250-427wlgn.png");
         assertEquals("attachment", attachment, activity.getNote().attachments.get(0));
         return activity;
     }

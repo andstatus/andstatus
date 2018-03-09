@@ -20,7 +20,6 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.util.MyLog;
@@ -205,11 +204,11 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
             try {
                 JSONArray jArr = entities.getJSONArray(ATTACHMENTS_FIELD_NAME);
                 for (int ind = 0; ind < jArr.length(); ind++) {
-                    JSONObject attachment = (JSONObject) jArr.get(ind);
-                    Uri uri = UriUtils.fromAlternativeTags(attachment, "media_url_https", "media_url_http");
-                    Attachment mbAttachment =  Attachment.fromUriAndContentType(uri, MyContentType.IMAGE);
-                    if (mbAttachment.isValid()) {
-                        activity.getNote().attachments.add(mbAttachment);
+                    Attachment attachment = Attachment.fromUri(
+                            UriUtils.fromAlternativeTags((JSONObject) jArr.get(ind),
+                                    "media_url_https", "media_url_http"));
+                    if (attachment.isValid()) {
+                        activity.getNote().attachments.add(attachment);
                     } else {
                         MyLog.d(this, method + "; invalid attachment #" + ind + "; " + jArr.toString());
                     }

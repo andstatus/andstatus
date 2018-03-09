@@ -16,82 +16,69 @@
 
 package org.andstatus.app.net.social;
 
+import android.content.ContentResolver;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.DownloadType;
 import org.andstatus.app.data.MyContentType;
-import org.andstatus.app.util.UriUtils;
 
-import java.net.URL;
+import java.util.Objects;
 
 public class Attachment {
-    private Uri uri = null;
-    public MyContentType contentType = MyContentType.UNKNOWN;
+    @NonNull
+    public final Uri uri;
+    @NonNull
+    public final String mimeType;
+    @NonNull
+    public final MyContentType contentType;
 
-    public static Attachment fromUrlAndContentType(URL urlIn, MyContentType contentTypeIn) {
-        return fromUriAndContentType(UriUtils.fromUrl(urlIn),
-                MyContentType.fromUrl(urlIn, contentTypeIn));
+    private Attachment(ContentResolver contentResolver, @NonNull Uri uri, @NonNull String mimeType) {
+        this.uri = uri;
+        this.mimeType = MyContentType.uri2MimeType(contentResolver, uri, mimeType);
+        contentType = MyContentType.fromUri(DownloadType.ATTACHMENT, contentResolver, uri, mimeType);
     }
 
-    public static Attachment fromUriAndContentType(Uri uriIn, MyContentType contentTypeIn) {
-        Attachment attachment = new Attachment();
-        if (uriIn == null) {
-            throw new IllegalArgumentException("Uri is null");
-        }
-        if (contentTypeIn == null) {
-            throw new IllegalArgumentException("MyContentType is null");
-        }
-        attachment.uri = uriIn;
-        attachment.contentType = MyContentType.fromUri(uriIn, contentTypeIn);
-        return attachment;
+    public static Attachment fromUri(String uriString) {
+        return fromUri(Uri.parse(uriString));
     }
 
-    private Attachment() {
-        // Empty
+    public static Attachment fromUri(Uri uriIn) {
+        return fromUriAndContentType(uriIn, "");
     }
-    
+
+    public static Attachment fromUriAndContentType(Uri uriIn, @NonNull String mimeContentTypeIn) {
+        Objects.requireNonNull(uriIn);
+        Objects.requireNonNull(mimeContentTypeIn);
+        return new Attachment(MyContextHolder.get().context().getContentResolver(), uriIn, mimeContentTypeIn);
+    }
+
     public boolean isValid() {
-        return uri != null && contentType != MyContentType.UNKNOWN;
+        return uri != Uri.EMPTY && contentType != MyContentType.UNKNOWN;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((contentType == null) ? 0 : contentType.hashCode());
-        result = prime * result + ((uri == null) ? 0 : uri.hashCode());
+        result = prime * result + contentType.hashCode();
+        result = prime * result + uri.hashCode();
+        result = prime * result + mimeType.hashCode();
         return result;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         Attachment other = (Attachment) o;
-        if (contentType != other.contentType) {
-            return false;
-        }
-        if (uri == null) {
-            if (other.uri != null) {
-                return false;
-            }
-        } else if (!uri.equals(other.uri)) {
-            return false;
-        }
-        return true;
+        return contentType == other.contentType && uri.equals(other.uri) && mimeType.equals(other.mimeType);
     }
 
     @Override
     public String toString() {
-        return "MbAttachment [uri='" + uri
-                + "', contentType=" + contentType + "]";
-    }
-
-    public void setUrl(URL url) {
-        this.uri = UriUtils.fromUrl(url);
+        return "MbAttachment [uri='" + uri + "', contentType=" + contentType + "]";
     }
 
     public Uri getUri() {

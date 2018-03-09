@@ -25,7 +25,6 @@ import org.andstatus.app.context.DemoData;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
@@ -407,7 +406,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         String oid = getNoteOid(method, noteId, false);
         TriState isPrivate = MyQuery.noteIdToTriState(NoteTable.PRIVATE, noteId);
         Audience recipients = Audience.fromNoteId(execContext.getMyAccount().getOrigin(), noteId);
-        Uri mediaUri = DownloadData.getSingleForNote(noteId, MyContentType.IMAGE, Uri.EMPTY).
+        Uri mediaUri = DownloadData.getSingleAttachment(noteId).
                 mediaUriToBePosted();
         String msgLog = "text:'" + MyLog.trimmedString(body, 40) + "'"
                 + (mediaUri.equals(Uri.EMPTY) ? "" : "; mediaUri:'" + mediaUri + "'");

@@ -28,12 +28,17 @@ import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
+import android.media.MediaMetadataRetriever;
+import android.media.ThumbnailUtils;
+import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.LruCache;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.MyLog;
 
 import java.io.File;
@@ -183,6 +188,18 @@ public class ImageCache extends LruCache<String, CachedImage> {
 
     @Nullable
     private Bitmap loadBitmap(Object objTag, long imageId, String path) {
+        switch (MyContentType.fromPathOfSavedFile(path)) {
+            case IMAGE:
+                return imagePathToBitmap(objTag, imageId, path);
+            case VIDEO:
+                return videoPathToBitmap(objTag, imageId, path);
+            default:
+                return null;
+        }
+    }
+
+    @Nullable
+    private Bitmap imagePathToBitmap(Object objTag, long imageId, String path) {
         Bitmap bitmap = null;
         if (MyPreferences.isShowDebuggingInfoInUi()) {
             bitmap = BitmapFactory
@@ -204,6 +221,24 @@ public class ImageCache extends LruCache<String, CachedImage> {
         return bitmap;
     }
 
+    @Nullable
+    private Bitmap videoPathToBitmap(Object objTag, long videoId, String path) {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        retriever.setDataSource(MyContextHolder.get().context(), Uri.parse(path));
+        Bitmap source = retriever.getFrameAtTime();
+        if (source == null) {
+            return null;
+        }
+        Bitmap bitmap = ThumbnailUtils.extractThumbnail(source, maxBitmapWidth, maxBitmapHeight);
+        source.recycle();
+        if (MyLog.isVerboseEnabled()) {
+            MyLog.v(objTag, (bitmap == null ? "Failed to load " + name + "'s bitmap"
+                    : "Loaded " + name + "'s bitmap " + bitmap.getWidth()
+                    + "x" + bitmap.getHeight()) + " '" + path + "'");
+        }
+        return bitmap;
+    }
+
     Point getImageSize(long imageId, String path) {
         if (!TextUtils.isEmpty(path)) {
             CachedImage image = get(path);
@@ -211,6 +246,9 @@ public class ImageCache extends LruCache<String, CachedImage> {
                 return image.getImageSize();
             }
             try {
+                if (MyContentType.fromPathOfSavedFile(path) == MyContentType.VIDEO) {
+                    return new Point(maxBitmapWidth, maxBitmapHeight);
+                }
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inJustDecodeBounds = true;
                 BitmapFactory.decodeFile(path, options);

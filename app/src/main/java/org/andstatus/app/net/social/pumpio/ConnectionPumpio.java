@@ -26,14 +26,14 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionData;
-import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.AActivity;
-import org.andstatus.app.net.social.ActivityType;
-import org.andstatus.app.net.social.Attachment;
-import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.AObjectType;
-import org.andstatus.app.net.social.RateLimitStatus;
+import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.Attachment;
+import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.Note;
+import org.andstatus.app.net.social.RateLimitStatus;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.origin.OriginPumpio;
@@ -497,11 +497,8 @@ public class ConnectionPumpio extends Connection {
             note.url = jso.optString("url");
 
             if (jso.has("fullImage") || jso.has("image")) {
-                URL url = getImageUrl(jso, "fullImage");
-                if (url == null) {
-                    url = getImageUrl(jso, "image");
-                }
-                Attachment mbAttachment =  Attachment.fromUrlAndContentType(url, MyContentType.IMAGE);
+                Uri uri = UriUtils.fromAlternativeTags(jso, "fullImage","image");
+                Attachment mbAttachment =  Attachment.fromUriAndContentType(uri, MyContentType.IMAGE.generalMimeType);
                 if (mbAttachment.isValid()) {
                     note.attachments.add(mbAttachment);
                 } else {

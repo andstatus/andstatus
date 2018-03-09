@@ -23,22 +23,32 @@ import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.util.MyLog;
 
 import java.io.File;
+import java.util.Objects;
 
 public class DownloadFile {
+    private static final String INEXISTENT_FILENAME_START = "inexistent-file.";
     private final String filename;
     private final File file;
     /** Existence is checked at the moment of the object creation */
     public final boolean existed;
-    public static final DownloadFile EMPTY = new DownloadFile(null);
+    public static final DownloadFile EMPTY = new DownloadFile("");
+
+    @NonNull
+    static DownloadFile newInexistentOfMimeType(String mimeType) {
+        return new DownloadFile(INEXISTENT_FILENAME_START
+                + MyContentType.mimeToFileExtension(mimeType));
+    }
 
     public DownloadFile(String filename) {
+        Objects.requireNonNull(filename);
         this.filename = filename;
-        if (TextUtils.isEmpty(filename)) {
+        if (TextUtils.isEmpty(filename) || filename.startsWith(INEXISTENT_FILENAME_START)) {
             file = null;
+            existed = false;
         } else {
             file = new File(MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS), filename);
+            existed = existsNow();
         }
-        existed = existsNow();
     }
 
     public final boolean isEmpty() {
@@ -93,7 +103,7 @@ public class DownloadFile {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((filename == null) ? 0 : filename.hashCode());
+        result = prime * result + filename.hashCode();
         return result;
     }
 
@@ -106,13 +116,6 @@ public class DownloadFile {
             return false;
         }
         DownloadFile other = (DownloadFile) o;
-        if (filename == null) {
-            if (other.filename != null) {
-                return false;
-            }
-        } else if (!filename.equals(other.filename)) {
-            return false;
-        }
-        return true;
+        return filename.equals(other.filename);
     }
 }

@@ -23,7 +23,7 @@ import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.graphics.CachedImage;
 
 public class AttachedImageFile extends ImageFile {
-    public static final AttachedImageFile EMPTY = new AttachedImageFile(0, null);
+    public static final AttachedImageFile EMPTY = new AttachedImageFile(0, "");
 
     private final long downloadRowId;
 

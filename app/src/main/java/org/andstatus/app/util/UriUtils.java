@@ -45,11 +45,13 @@ public class UriUtils {
         return uri;
     }
 
-    /**
-     * @return true for null also
-     */
+    public static boolean nonEmpty(Uri uri) {
+        return !isEmpty(uri);
+    }
+
+    /** @return true for null also */
     public static boolean isEmpty(Uri uri) {
-        return Uri.EMPTY.equals(notNull(uri));
+        return uri == null || Uri.EMPTY.equals(uri);
     }
 
     @NonNull

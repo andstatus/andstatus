@@ -158,15 +158,15 @@ public class TimelineSql {
                     "SELECT "
                     + DownloadTable._ID + ", "
                     + DownloadTable.NOTE_ID + ", "
-                    + DownloadTable.CONTENT_TYPE + ", "
+                    + DownloadTable.DOWNLOAD_TYPE + ", "
                     + (columns.contains(DownloadTable.IMAGE_URL) ? DownloadTable.URI + ", " : "")
                     + DownloadTable.FILE_NAME
                     + " FROM " + DownloadTable.TABLE_NAME
                     + " WHERE " + DownloadTable.NOTE_ID + "!=0"
                     + ") AS " + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS
                     +  " ON "
-                    + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.CONTENT_TYPE
-                    + "=" + MyContentType.IMAGE.save() + " AND " 
+                    + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_TYPE
+                    + "=" + DownloadType.ATTACHMENT.save() + " AND "
                     + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.NOTE_ID
                     + "=" + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.NOTE_ID;
         }
