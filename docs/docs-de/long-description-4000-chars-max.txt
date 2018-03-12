@@ -1,10 +1,10 @@
 AndStatus ist ein Client für soziale Netzwerke mit geringem Datenaufkommen und baumartiger Gesprächsdarstellung.
 Es unterstützt verschiedene soziale Netzwerke, einschließlich
-GNU Social (z.B. Quitter, LoadAverage, Vinilox, uvm.), Twitter und Pump.io.
+GNU social, Mastodon, Twitter und Pump.io.
 AndStatus kann Ihre Feeds aus allen Netzen in einer Timeline kombinieren,
 und es erlaubt Ihnen zu lesen und zu schreiben, auch wenn Sie offline sind.
 
-Für Geräte ab Android 7.0.
+Für Android v.7.0+ Geräte.
 
 Unterscheidungsmerkmale von AndStatus:
 

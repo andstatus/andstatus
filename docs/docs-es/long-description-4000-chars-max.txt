@@ -1,10 +1,10 @@
 AndStatus es un un cliente de código abierto liviano para redes sociales con conversaciones ramificadas.
 Soporta diferentes redes sociales, incluyendo
-GNU social (como Quitter.se, LoadAverage, Vinilox, etc.), Twitter y Pump.io.
+GNU social, Mastodon, Twitter y Pump.io.
 AndStatus puede combinar tus líneas temporales de todas tus redes en una sola
 y te permite leer y publicar incluso desconectado.
 
-Para dispositivos con Android 7.0 o posterior.
+Para dispositivos con Android v.7.0+.
 
 Diferentes características de AndStatus:
 

@@ -1,10 +1,10 @@
 O AndStatus é uma aplicação open source para redes sociais e com conversas ao estilo de árvore.
 Tem suporte a diversas redes sociais, incluindo
-GNU social (Quitter.se, LoadAverage, Vinilox, etc.), Twitter e Pump.io.
+GNU social, Mastodon, Twitter e Pump.io.
 O AndStatus pode combinar as fontes de todas as redes em apenas uma cronologia
 e permite-lhe ler e publicar informações mesmo que esteja offline.
 
-Para versões Android 7.0+
+Para dispositivos com Android v7.0+.
 
 Características distintivas do AndStatus:
 

@@ -180,7 +180,9 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
         <p>Harap perhatikan bahwa bila Anda mengaktifkan opsi ini, gambar tidak akan ditampilkan dengan segera,
              karena AndStatus membutuhkan waktu untuk mendownloadnya di latar belakang.
         </p>
-        <p>
+        <p>2. "Lampirkan gambar ke pesan saya". Saat "hidup", anda dapat menggunakan tombol "kertas klip"
+            (item menu "Lampirkan") untuk melampirkan gambar ke pesan anda.
+            Saat "mati", "Kertasklip", digunakan untuk melampirkan sebuah gambar ke postingan anda, tersembunyi.
         </p>
         <p>Lihat <a xlink:href="https://github.com/andstatus/andstatus/issues/288">di sini untuk info lebih lanjut</a>.</p>
     </section>
