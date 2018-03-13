@@ -18,7 +18,6 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 
@@ -32,9 +31,9 @@ public class DownloadData {
     public long actorId = 0;
     public long noteId = 0;
     private String mimeType = "";
-    private MyContentType contentType = MyContentType.UNKNOWN;
-    private DownloadStatus status = DownloadStatus.UNKNOWN; 
+    private DownloadStatus status = DownloadStatus.UNKNOWN;
     private long downloadId = 0;
+    private long downloadNumber = 0;
     @NonNull
     private DownloadFile fileStored = DownloadFile.EMPTY;
     protected Uri uri = Uri.EMPTY;
@@ -43,7 +42,6 @@ public class DownloadData {
     private boolean softError = false;
     private String errorMessage = "";
 
-    private long loadTimeNew = 0;
     @NonNull
     private DownloadFile fileNew = DownloadFile.EMPTY;
 
@@ -68,7 +66,6 @@ public class DownloadData {
         this.noteId = noteId;
         this.downloadType = downloadType;
         this.mimeType = mimeType;
-        contentType = MyContentType.fromUri(downloadType, MyContextHolder.get().context().getContentResolver(), uri, mimeType);
         this.uri = UriUtils.notNull(uri);
         loadOtherFields();
         fixFieldsAfterLoad();
@@ -76,17 +73,7 @@ public class DownloadData {
 
     private void loadOtherFields() {
         if (checkHardErrorBeforeLoad()) return;
-        String sql = "SELECT " + DownloadTable.DOWNLOAD_STATUS + ", "
-                + DownloadTable.FILE_NAME
-                + (downloadType == DownloadType.UNKNOWN ? ", " + DownloadTable.DOWNLOAD_TYPE : "")
-                + (actorId == 0 ? ", " + DownloadTable.ACTOR_ID : "")
-                + (noteId == 0 ? ", " + DownloadTable.NOTE_ID : "")
-                + (contentType == MyContentType.UNKNOWN ? ", " + DownloadTable.CONTENT_TYPE : "")
-                + (downloadId == 0 ? ", " + DownloadTable._ID : "")
-                + (uri.equals(Uri.EMPTY) ? ", " + DownloadTable.URI : "")
-                + " FROM " + DownloadTable.TABLE_NAME
-                + " WHERE " + getWhereClause();
-        
+        String sql = "SELECT * FROM " + DownloadTable.TABLE_NAME + getWhere().getWhere();
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
             MyLog.v(this, "Database is null");
@@ -101,26 +88,25 @@ public class DownloadData {
                 if (downloadType == DownloadType.UNKNOWN) {
                     downloadType = DownloadType.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_TYPE));
                 }
+                if (TextUtils.isEmpty(mimeType)) {
+                    mimeType = DbUtils.getString(cursor, DownloadTable.MEDIA_TYPE,
+                            () -> MyContentType.uri2MimeType(null, Uri.parse(fileStored.getFilename())));
+                }
                 if (actorId == 0) {
                     actorId = DbUtils.getLong(cursor, DownloadTable.ACTOR_ID);
                 }
                 if (noteId == 0) {
                     noteId = DbUtils.getLong(cursor, DownloadTable.NOTE_ID);
                 }
-                if (contentType == MyContentType.UNKNOWN) {
-                    contentType = MyContentType.load(DbUtils.getLong(cursor, DownloadTable.CONTENT_TYPE));
-                }
                 if (downloadId == 0) {
                     downloadId = DbUtils.getLong(cursor, DownloadTable._ID);
+                }
+                if (downloadNumber == 0) {
+                    downloadNumber = DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_NUMBER);
                 }
                 if (uri.equals(Uri.EMPTY)) {
                     uri = UriUtils.fromString(DbUtils.getString(cursor, DownloadTable.URI));
                 }
-            }
-            mimeType = MyContentType.uri2MimeType(null, Uri.parse(fileStored.getFilename()), mimeType);
-            if (TextUtils.isEmpty(fileStored.getFilename())) {
-                // TODO: This is a hack in order not to store mimeType directly
-                fileStored = DownloadFile.newInexistentOfMimeType(mimeType);
             }
         }
     }
@@ -137,24 +123,25 @@ public class DownloadData {
         return hardError;
     }
 
-    private String getWhereClause() {
-        StringBuilder builder = new StringBuilder();
+    private SqlWhere getWhere() {
+        SqlWhere where = new SqlWhere();
         if (downloadId != 0) {
-            builder.append(DownloadTable._ID + "=" + downloadId);
+            where.append(DownloadTable._ID + "=" + downloadId);
+            where.append(DownloadTable.DOWNLOAD_NUMBER + "=" + downloadNumber);
         } else {
             if (actorId != 0) {
-                builder.append(DownloadTable.ACTOR_ID + "=" + actorId);
+                where.append(DownloadTable.ACTOR_ID + "=" + actorId);
             } else if (noteId != 0) {
-                builder.append(DownloadTable.NOTE_ID + "=" + noteId);
+                where.append(DownloadTable.NOTE_ID + "=" + noteId);
             }
             if (downloadType != DownloadType.UNKNOWN) {
-                builder.append(" AND " + DownloadTable.DOWNLOAD_TYPE + "=" + downloadType.save());
+                where.append(DownloadTable.DOWNLOAD_TYPE + "=" + downloadType.save());
             }
             if (UriUtils.nonEmpty(uri)) {
-                builder.append(" AND " + DownloadTable.URI + "=" + MyQuery.quoteIfNotQuoted(uri.toString()));
+                where.append(DownloadTable.URI + "=" + MyQuery.quoteIfNotQuoted(uri.toString()));
             }
         }
-        return builder.toString();
+        return where;
     }
 
     private void fixFieldsAfterLoad() {
@@ -171,12 +158,17 @@ public class DownloadData {
         }
     }
 
-    public void onNewDownload() {
+    public void beforeDownload() {
         softError = false;
         hardError = false;
-        loadTimeNew = System.currentTimeMillis();
-        String filename = Long.toString(loadTimeNew) + "_" + Long.toString(InstanceId.next()) + "." + getExtension();
-        fileNew = new DownloadFile(filename);
+        if (downloadId == 0) saveToDatabase();
+        fileNew = new DownloadFile(downloadType.filePrefix + "_" + Long.toString(downloadId)
+                + "_" + Long.toString(downloadNumber)
+                + "." + getExtension());
+    }
+
+    public void onDownloaded() {
+        fileNew = new DownloadFile(fileNew.getFilename());
     }
 
     private String getExtension() {
@@ -211,26 +203,22 @@ public class DownloadData {
     }
 
     private void addNew() {
-       ContentValues values = new ContentValues();
-       values.put(DownloadTable.DOWNLOAD_TYPE, downloadType.save());
-       if (actorId != 0) {
-           values.put(DownloadTable.ACTOR_ID, actorId);
-       }
-       if (noteId != 0) {
-           values.put(DownloadTable.NOTE_ID, noteId);
-       }
-       values.put(DownloadTable.CONTENT_TYPE, contentType.save());
-       values.put(DownloadTable.VALID_FROM, loadTimeNew);
-       values.put(DownloadTable.URI, uri.toString());
-       values.put(DownloadTable.DOWNLOAD_STATUS, status.save());
-       values.put(DownloadTable.FILE_NAME, fileNew.getFilename());
+        ContentValues values = new ContentValues();
+        values.put(DownloadTable.DOWNLOAD_NUMBER, downloadNumber);
+        values.put(DownloadTable.DOWNLOAD_TYPE, downloadType.save());
+        values.put(DownloadTable.MEDIA_TYPE, mimeType);
+        ContentValuesUtils.putNotZero(values, DownloadTable.ACTOR_ID, actorId);
+        ContentValuesUtils.putNotZero(values, DownloadTable.NOTE_ID, noteId);
+        values.put(DownloadTable.URI, uri.toString());
+        values.put(DownloadTable.DOWNLOAD_STATUS, status.save());
+        values.put(DownloadTable.FILE_NAME, fileNew.getFilename());
 
-       downloadId = DbUtils.addRowWithRetry(MyContextHolder.get(), DownloadTable.TABLE_NAME, values, 3);
-       if (downloadId == -1) {
+        downloadId = DbUtils.addRowWithRetry(MyContextHolder.get(), DownloadTable.TABLE_NAME, values, 3);
+        if (downloadId == -1) {
            softError = true;
-       } else {
+        } else {
            MyLog.v(this, "Added " + actorNoteUriToString());
-       }
+        }
     }
 
     public boolean isHardError() {
@@ -248,10 +236,10 @@ public class DownloadData {
     private void update() {
         ContentValues values = new ContentValues();
         values.put(DownloadTable.DOWNLOAD_STATUS, status.save());
-        boolean changeFile = !isError() && fileNew.existsNow() && fileStored != fileNew;
-        if (changeFile) {
+        boolean filenameChanged = !isError() && fileNew.existsNow()
+                && !fileStored.getFilename().equals(fileNew.getFilename());
+        if (filenameChanged) {
             values.put(DownloadTable.FILE_NAME, fileNew.getFilename());
-            values.put(DownloadTable.VALID_FROM, loadTimeNew);
         }
 
         if (DbUtils.updateRowWithRetry(MyContextHolder.get(), DownloadTable.TABLE_NAME, downloadId, values, 3) != 1) {
@@ -259,7 +247,7 @@ public class DownloadData {
         } else {
             MyLog.v(this, "Updated " + actorNoteUriToString());
         }
-        if (!isError() && changeFile) {
+        if (!isError() && filenameChanged) {
             fileStored.delete();
         }
     }
@@ -408,6 +396,9 @@ public class DownloadData {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
+        if(downloadNumber != 0) {
+            builder.append("num:" + downloadNumber + ",");
+        }
         builder.append("uri:'" + getUri() + "',");
         if(actorId != 0) {
             builder.append("actorId:" + actorId + ",");

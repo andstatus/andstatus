@@ -22,39 +22,32 @@ import android.provider.BaseColumns;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.DownloadType;
-import org.andstatus.app.data.MyContentType;
 
-/** Avatar, Note's attachment...
- */
+/** Avatar, Note's attachment... */
 public final class DownloadTable implements BaseColumns {
     public static final String TABLE_NAME = "download";
     private DownloadTable() {
     }
     /** See {@link DownloadType} */
     public static final String DOWNLOAD_TYPE = "download_type";
+    /** Index (e.g. of an attachment for a particular note) Starting from 0 */
+    public static final String DOWNLOAD_NUMBER = "download_number";
     /** Avatar is connected to exactly one actor */
     public static final String ACTOR_ID = ActorTable.ACTOR_ID;
     /** Attachment is connected to a note */
     public static final String NOTE_ID =  NoteTable.NOTE_ID;
-    /** See {@link MyContentType} */
-    public static final String CONTENT_TYPE = "content_type";
-    /**
-     * Date and time of the information. Used to decide which
-     * (version of) information
-     * is newer (we may upload older information later...)
-     */
-    public static final String VALID_FROM = "valid_from";
+    public static final String MEDIA_TYPE = "media_type";
     public static final String URI = "url";
-    /**
-     * TODO: Drop this column on next table update as it is not used
-     * Date and time there was last attempt to load this. The attempt may be successful or not.
-     */
-    static final String LOADED_DATE = "loaded_date";
     /**
      * See {@link DownloadStatus}. Defaults to {@link DownloadStatus#UNKNOWN}
      */
     public static final String DOWNLOAD_STATUS = "download_status";
+    public static final String WIDTH = "width";
+    public static final String HEIGHT = "height";
+    public static final String DURATION = "duration";
     public static final String FILE_NAME = "file_name";
+    public static final String FILE_SIZE = "file_size";
+    public static final String UPDATED_DATE = "download_updated_date";
 
     /*
      * Derived columns (they are not stored in this table but are result of joins)
@@ -71,14 +64,18 @@ public final class DownloadTable implements BaseColumns {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + DOWNLOAD_TYPE + " INTEGER NOT NULL,"
+                + DOWNLOAD_NUMBER + " INTEGER NOT NULL DEFAULT 0,"
                 + ACTOR_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + NOTE_ID + " INTEGER NOT NULL DEFAULT 0,"
-                + CONTENT_TYPE + " INTEGER NOT NULL,"
-                + VALID_FROM + " INTEGER NOT NULL,"
+                + MEDIA_TYPE + " TEXT NOT NULL,"
                 + URI + " TEXT NOT NULL,"
-                + LOADED_DATE + " INTEGER NOT NULL DEFAULT 0,"
                 + DOWNLOAD_STATUS + " INTEGER NOT NULL DEFAULT 0,"
-                + FILE_NAME + " TEXT"
+                + WIDTH + " INTEGER NOT NULL DEFAULT 0,"
+                + HEIGHT + " INTEGER NOT NULL DEFAULT 0,"
+                + DURATION + " INTEGER NOT NULL DEFAULT 0,"
+                + FILE_NAME + " TEXT,"
+                + FILE_SIZE + " INTEGER NOT NULL DEFAULT 0,"
+                + UPDATED_DATE + " INTEGER NOT NULL DEFAULT 0"
                 + ")");
 
         DbUtils.execSQL(db, "CREATE INDEX idx_download_actor ON " + TABLE_NAME + " ("
@@ -88,8 +85,7 @@ public final class DownloadTable implements BaseColumns {
 
         DbUtils.execSQL(db, "CREATE INDEX idx_download_note ON " + TABLE_NAME + " ("
                 + NOTE_ID + ", "
-                + CONTENT_TYPE  + ", "
-                + DOWNLOAD_STATUS
+                + DOWNLOAD_NUMBER
                 + ")");
     }
 }

@@ -19,16 +19,18 @@ package org.andstatus.app.data;
 import org.andstatus.app.util.MyLog;
 
 public enum DownloadType {
-    AVATAR(1),
-    ATTACHMENT(2),
-    UNKNOWN(0);
+    AVATAR(1, "av"),
+    ATTACHMENT(2, "at"),
+    UNKNOWN(0, "un");
 
     private static final String TAG = DownloadType.class.getSimpleName();
     
-    private long code;
+    private final long code;
+    public final String filePrefix;
 
-    DownloadType(long code) {
+    DownloadType(long code, String filePrefix) {
         this.code = code;
+        this.filePrefix = filePrefix;
     }
 
     public String save() {

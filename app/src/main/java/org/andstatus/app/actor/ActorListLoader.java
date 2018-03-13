@@ -9,17 +9,14 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.ActorListSql;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.SqlActorIds;
 import org.andstatus.app.data.SqlWhere;
-import org.andstatus.app.data.ActorListSql;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.list.SyncLoader;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.service.CommandData;
-import org.andstatus.app.service.CommandEnum;
-import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.timeline.LoadableListActivity.ProgressPublisher;
 import org.andstatus.app.timeline.ViewItem;
@@ -74,32 +71,21 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
         items.add(ActorViewItem.newEmpty(description));
     }
 
-    public ActorViewItem addActorIdToList(Origin origin, long actorId) {
-        return addActorToList(ActorViewItem.fromActorId(origin, actorId));
+    public Actor addActorIdToList(Origin origin, long actorId) {
+        return actorId == 0 ? Actor.EMPTY : addActorToList(Actor.fromOriginAndActorId(origin, actorId));
     }
 
-    protected ActorViewItem addActorToList(ActorViewItem item) {
-        if (item.isEmpty()) return item;
+    protected Actor addActorToList(Actor actor) {
+        if (actor.isEmpty()) return Actor.EMPTY;
+        ActorViewItem item = ActorViewItem.fromActor(actor);
         int existing = items.indexOf(item);
-        if (existing >= 0) return items.get(existing);
+        if (existing >= 0) return items.get(existing).actor;
         items.add(item);
-        if (item.actor.actorId == 0 && mAllowLoadingFromInternet) {
-            loadFromInternet(item);
-        }
+        if (actor.actorId == 0 && mAllowLoadingFromInternet) actor.loadFromInternet();
         if (mProgress != null) {
             mProgress.publish(Integer.toString(size()));
         }
-        return item;
-    }
-
-    private void loadFromInternet(ActorViewItem viewItem) {
-        MyLog.v(this, "Actor " + viewItem.actor + " will be loaded from the Internet");
-        MyServiceManager.sendForegroundCommand(
-                CommandData.newActorCommand(
-                        CommandEnum.GET_ACTOR,
-                        MyAccount.EMPTY, viewItem.actor.origin,
-                        viewItem.getActorId(),
-                        viewItem.actor.getUsername()));
+        return actor;
     }
 
     protected void loadInternal() {
@@ -129,21 +115,12 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
 
     private void populateItem(Cursor cursor) {
         ActorViewItem item = ActorViewItem.EMPTY.fromCursor(cursor);
-        int index = getById(DbUtils.getLong(cursor, BaseColumns._ID));
+        int index = items.indexOf(item);
         if (index < 0) {
             items.add(item);
         } else {
             items.set(index, item);
         }
-    }
-
-    private int getById(long actorId) {
-        for (int ind=0; ind < items.size(); ind++) {
-            if (items.get(ind).getActorId() == actorId) {
-                return ind;
-            }
-        }
-        return -1;
     }
 
     protected String getSqlActorIds() {

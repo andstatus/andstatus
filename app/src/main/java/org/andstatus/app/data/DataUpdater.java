@@ -193,8 +193,8 @@ public class DataUpdater {
             if (nonEmptyOid(note.conversationOid)) {
                 values.put(NoteTable.CONVERSATION_OID, note.conversationOid);
             }
-            values.put(NoteTable.BODY, note.getBody());
-            values.put(NoteTable.BODY_TO_SEARCH, note.getBodyToSearch());
+            values.put(NoteTable.CONTENT, note.getBody());
+            values.put(NoteTable.CONTENT_TO_SEARCH, note.getBodyToSearch());
 
             activity.getNote().addRecipientsFromBodyText(activity.getActor());
             updateInReplyTo(activity, values);

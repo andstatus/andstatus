@@ -242,7 +242,7 @@ public class CheckConversations extends DataChecker {
                             + (item.isInReplyToIdChanged() && item.isConversationIdChanged() ? " and " : "")
                             + (item.isConversationIdChanged() ? "conversationId changed from "
                                 + item.conversationId_initial + " to " + item.conversationId : "")
-                            + ", Body:'" + MyQuery.noteIdToStringColumnValue(NoteTable.BODY, item.id) + "'");
+                            + ", Body:'" + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, item.id) + "'");
                     }
                     if (!countOnly) {
                         sql = "UPDATE " + NoteTable.TABLE_NAME

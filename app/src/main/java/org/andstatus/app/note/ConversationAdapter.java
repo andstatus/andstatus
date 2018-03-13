@@ -134,7 +134,7 @@ public class ConversationAdapter extends BaseNoteAdapter<ConversationViewItem> {
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) avatarView.getLayoutParams();
         layoutParams.leftMargin = dpToPixes(indentPixels == 0 ? 2 : 1) + indentPixels;
         avatarView.setLayoutParams(layoutParams);
-        item.avatarFile.showImage(context, avatarView);
+        item.author.showAvatar(context, avatarView);
         return ViewUtils.getWidthWithMargins(avatarView);
     }
 

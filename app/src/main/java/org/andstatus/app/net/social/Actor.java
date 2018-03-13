@@ -21,6 +21,7 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
@@ -29,6 +30,9 @@ import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.CommandEnum;
+import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.user.User;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
@@ -583,5 +587,15 @@ public class Actor implements Comparable<Actor> {
 
     public boolean hasAvatar() {
         return StringUtils.nonEmpty(avatarUrl);
+    }
+
+    public void loadFromInternet() {
+        MyLog.v(this, "Actor " + this + " will be loaded from the Internet");
+        MyServiceManager.sendForegroundCommand(
+                CommandData.newActorCommand(
+                        CommandEnum.GET_ACTOR,
+                        MyAccount.EMPTY, origin,
+                        actorId,
+                        getUsername()));
     }
 }

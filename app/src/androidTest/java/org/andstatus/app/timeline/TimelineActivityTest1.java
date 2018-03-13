@@ -219,7 +219,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest<ActivityViewItem
                 ListActivityTestHelper.newForSelectorDialog(getActivity(), AccountSelector.getDialogTag());
         long noteId = helper.getListItemIdOfLoadedReply();
         String logMsg = "noteId:" + noteId
-                + "; text:'" + MyQuery.noteIdToStringColumnValue(NoteTable.BODY, noteId) + "'";
+                + "; text:'" + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId) + "'";
         assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, noteId,
                 NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT, R.id.note_wrapper));
         MyAccount actor1 = getActivity().getContextMenu().getMyActor();

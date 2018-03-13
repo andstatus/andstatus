@@ -47,7 +47,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -445,14 +444,6 @@ public class ConnectionPumpio extends Connection {
         }
     }
 
-    private URL getImageUrl(JSONObject jso, String imageTag) throws JSONException {
-        if (jso.has(imageTag)) {
-            JSONObject attachment = jso.getJSONObject(imageTag);
-            return UrlUtils.fromJson(attachment, "url");
-        } 
-        return null;
-    }
-    
     private void noteFromJsonComment(AActivity parentActivity, JSONObject jso) throws ConnectionException {
         try {
             String oid = jso.optString("id");
@@ -497,7 +488,7 @@ public class ConnectionPumpio extends Connection {
             note.url = jso.optString("url");
 
             if (jso.has("fullImage") || jso.has("image")) {
-                Uri uri = UriUtils.fromAlternativeTags(jso, "fullImage","image");
+                Uri uri = UriUtils.fromAlternativeTags(jso, "fullImage/url","image/url");
                 Attachment mbAttachment =  Attachment.fromUriAndContentType(uri, MyContentType.IMAGE.generalMimeType);
                 if (mbAttachment.isValid()) {
                     note.attachments.add(mbAttachment);

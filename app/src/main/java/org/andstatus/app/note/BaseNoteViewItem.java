@@ -22,11 +22,12 @@ import android.text.TextUtils;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.actor.ActorListLoader;
+import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
-import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.DuplicationLink;
@@ -52,8 +53,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     private long noteId;
     private Origin origin = Origin.EMPTY;
 
-    String authorName = "";
-    long authorId = 0;
+    protected ActorViewItem author = ActorViewItem.EMPTY;
 
     String recipientName = "";
 
@@ -72,7 +72,6 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     boolean reblogged = false;
 
     AttachedImageFile attachedImageFile = AttachedImageFile.EMPTY;
-    AvatarFile avatarFile = AvatarFile.EMPTY;
 
     private MyAccount linkedMyAccount = MyAccount.EMPTY;
 
@@ -260,5 +259,20 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     public void hideActor(long actorId) {
         rebloggers.remove(actorId);
+    }
+
+    @Override
+    public void addActorsToLoad(ActorListLoader loader) {
+        loader.addActorIdToList(origin, author.getActorId());
+    }
+
+    @Override
+    public void setLoadedActors(ActorListLoader loader) {
+        if (author.getActorId() != 0) {
+            int index = loader.getList().indexOf(author);
+            if (index >= 0) {
+                author = loader.getList().get(index);
+            }
+        }
     }
 }

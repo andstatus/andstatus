@@ -39,6 +39,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.channels.FileChannel;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Supplier;
 
 public final class DbUtils {
     private static final int MS_BETWEEN_RETRIES = 500;
@@ -177,6 +178,12 @@ public final class DbUtils {
                     + (TextUtils.isEmpty(message) ? "" : "; " + message) ;
             MyLog.w(TAG, MyLog.getStackTrace(new IllegalArgumentException(detailMessage)));
         }
+    }
+
+    @NonNull
+    public static String getString(Cursor cursor, String columnName, Supplier<String> ifEmpty) {
+        String value = getString(cursor, columnName);
+        return TextUtils.isEmpty(value) ? ifEmpty.get() : value;
     }
 
     @NonNull

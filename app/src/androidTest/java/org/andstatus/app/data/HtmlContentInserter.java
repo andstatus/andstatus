@@ -103,13 +103,13 @@ public class HtmlContentInserter {
         final AActivity activity = mi.buildActivity(author, bodyString, null, noteOid, DownloadStatus.LOADED);
         mi.onActivity(activity);
         long msgId1 = activity.getNote().noteId;
-        String body = MyQuery.noteIdToStringColumnValue(NoteTable.BODY, msgId1);
+        String body = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, msgId1);
         if (htmlContentAllowed) {
             assertEquals("HTML preserved", bodyString, body);
         } else {
             assertEquals("HTML removed", MyHtml.fromHtml(bodyString), body);
         }
-        String bodyToSearch = MyQuery.noteIdToStringColumnValue(NoteTable.BODY_TO_SEARCH, msgId1);
+        String bodyToSearch = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT_TO_SEARCH, msgId1);
         assertEquals("Body to search", MyHtml.getBodyToSearch(body), bodyToSearch);
 		return mi;
 	}

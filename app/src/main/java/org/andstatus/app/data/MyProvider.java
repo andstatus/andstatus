@@ -308,12 +308,12 @@ public class MyProvider extends ContentProvider {
 
             ParsedUri uriParser = ParsedUri.fromUri(uri);
             switch (uriParser.matched()) {
-                case MSG_ITEM:
+                case NOTE_ITEM:
                     accountActorId = uriParser.getAccountActorId();
                     
                     table = NoteTable.TABLE_NAME;
-                    if (!values.containsKey(NoteTable.BODY)) {
-                        values.put(NoteTable.BODY, "");
+                    if (!values.containsKey(NoteTable.CONTENT)) {
+                        values.put(NoteTable.CONTENT, "");
                     }
                     if (!values.containsKey(NoteTable.VIA)) {
                         values.put(NoteTable.VIA, "");
@@ -348,7 +348,7 @@ public class MyProvider extends ContentProvider {
             }
 
             switch (uriParser.matched()) {
-                case MSG_ITEM:
+                case NOTE_ITEM:
                     newUri = MatchedUri.getMsgUri(accountActorId, rowId);
                     break;
                 case ORIGIN_ITEM:
@@ -410,10 +410,7 @@ public class MyProvider extends ContentProvider {
                         selection = "";
                     }
                     KeywordsFilter searchQuery  = new KeywordsFilter(rawQuery);
-                    selection = "(" + ActorTable.AUTHOR_NAME + " LIKE ?  OR "
-                            + searchQuery.getSqlSelection(NoteTable.BODY_TO_SEARCH)
-                            + ")" + selection;
-                    selectionArgs = searchQuery.prependSqlSelectionArgs(selectionArgs);
+                    selection = "(" + searchQuery.getSqlSelection(NoteTable.CONTENT_TO_SEARCH) + ")" + selection;
                     selectionArgs = StringUtils.addBeforeArray(selectionArgs, "%" + rawQuery + "%");
                 }
                 break;
@@ -545,7 +542,7 @@ public class MyProvider extends ContentProvider {
                 count = db.update(NoteTable.TABLE_NAME, values, selection, selectionArgs);
                 break;
 
-            case MSG_ITEM:
+            case NOTE_ITEM:
                 long rowId = uriParser.getNoteId();
                 if (values.size() > 0) {
                     count = db.update(NoteTable.TABLE_NAME, values, BaseColumns._ID + "=" + rowId

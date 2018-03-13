@@ -38,8 +38,8 @@ class SearchIndexUpdate extends DataChecker {
     @Override
     long fixInternal(boolean countOnly) {
         String sql = "SELECT " + NoteTable._ID
-                + ", " + NoteTable.BODY
-                + ", " + NoteTable.BODY_TO_SEARCH
+                + ", " + NoteTable.CONTENT
+                + ", " + NoteTable.CONTENT_TO_SEARCH
                 + " FROM " + NoteTable.TABLE_NAME
                 ;
         long rowsCount = 0;
@@ -56,7 +56,7 @@ class SearchIndexUpdate extends DataChecker {
                     MyLog.i(this, "Wrong body to search for " + id + ": " + quoteIfNotQuoted(body));
                     sql = "UPDATE " + NoteTable.TABLE_NAME
                             + " SET "
-                            + NoteTable.BODY_TO_SEARCH + "=" + quoteIfNotQuoted(bodyToSearchExpected)
+                            + NoteTable.CONTENT_TO_SEARCH + "=" + quoteIfNotQuoted(bodyToSearchExpected)
                             + " WHERE " + NoteTable._ID + "=" + id;
                     myContext.getDatabase().execSQL(sql);
                 }

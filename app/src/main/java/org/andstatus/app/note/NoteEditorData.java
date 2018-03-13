@@ -49,6 +49,7 @@ import org.andstatus.app.util.UriUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.andstatus.app.data.DownloadStatus.LOADED;
 import static org.andstatus.app.data.DownloadStatus.UNKNOWN;
@@ -155,7 +156,7 @@ public class NoteEditorData {
             data.noteOid = MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId);
             data.activityId = MyQuery.noteIdToLongColumnValue(ActivityTable.LAST_UPDATE_ID, noteId);
             data.status = DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId));
-            data.setBody(MyQuery.noteIdToStringColumnValue(NoteTable.BODY, noteId));
+            data.setBody(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId));
             data.downloadData = DownloadData.getSingleAttachment(noteId);
             if (data.downloadData.getStatus() == LOADED) {
                 AttachedImageFile imageFile = new AttachedImageFile(data.downloadData.getDownloadId(),
@@ -164,7 +165,7 @@ public class NoteEditorData {
             }
             data.inReplyToNoteId = MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, noteId);
             data.inReplyToActorId = MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_ACTOR_ID, noteId);
-            data.inReplyToBody = MyQuery.noteIdToStringColumnValue(NoteTable.BODY, data.inReplyToNoteId);
+            data.inReplyToBody = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, data.inReplyToNoteId);
             data.recipients = Audience.fromNoteId(ma.getOrigin(), noteId);
             data.isPrivate = MyQuery.noteIdToTriState(NoteTable.PRIVATE, noteId);
             MyLog.v(TAG, "Loaded " + data);
@@ -303,14 +304,10 @@ public class NoteEditorData {
         ConversationLoader<? extends ConversationMemberItem> loader =
                 new ConversationLoaderFactory<ConversationMemberItem>().getLoader(
                 ConversationMemberItem.EMPTY, MyContextHolder.get(), ma, inReplyToNoteId, false);
-        loader.load(null);
-        List<Long> toMention = new ArrayList<>();
-        for(ConversationMemberItem item : loader.getList()) {
-            if (!item.isFavoritingAction) {
-                toMention.add(item.authorId);
-            }
-        }
-        addActorsBeforeText(toMention);
+        loader.load(progress -> {});
+        addActorsBeforeText(loader.getList().stream()
+                .filter(o -> !o.isFavoritingAction)
+                .map(o -> o.author.getActorId()).collect(Collectors.toList()));
     }
 
     private void addMentionedActorsBeforeText() {

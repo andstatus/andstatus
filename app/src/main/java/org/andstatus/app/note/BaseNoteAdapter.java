@@ -64,7 +64,7 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
 
     public void populateView(ViewGroup view, T item, int position) {
         showRebloggers(view, item);
-        MyUrlSpan.showText(view, R.id.note_author, item.authorName, false, false);
+        MyUrlSpan.showText(view, R.id.note_author, item.author.getName(), false, false);
         showNoteBody(view, item);
         MyUrlSpan.showText(view, R.id.note_details, item.getDetails(contextMenu.getActivity()).toString(), false, false);
 
@@ -129,8 +129,7 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
     }
 
     protected void showAvatar(View view, T item) {
-        AvatarView avatarView = view.findViewById(R.id.avatar_image);
-        item.avatarFile.showImage(contextMenu.getActivity(), avatarView);
+        item.author.showAvatar(contextMenu.getActivity(), view.findViewById(R.id.avatar_image));
     }
 
     protected void showAttachedImage(View view, T item) {

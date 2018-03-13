@@ -55,7 +55,12 @@ public class UriUtils {
     }
 
     @NonNull
-    public static Uri fromJson(JSONObject jso, String urlTag) {
+    public static Uri fromJson(JSONObject jsoIn, String pathIn) {
+        if (jsoIn == null || TextUtils.isEmpty(pathIn)) return Uri.EMPTY;
+
+        String[] path = pathIn.split("/");
+        JSONObject jso = path.length == 2 ? jsoIn.optJSONObject(path[0]) : jsoIn;
+        String urlTag = path.length == 2 ? path[1] : pathIn;
         if (jso != null && !TextUtils.isEmpty(urlTag) && jso.has(urlTag)) {
             return fromString(jso.optString(urlTag));
         }

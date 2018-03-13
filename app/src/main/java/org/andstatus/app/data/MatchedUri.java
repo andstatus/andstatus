@@ -49,7 +49,7 @@ public enum MatchedUri {
      * Operations on {@link org.andstatus.app.database.table.ActivityTable} and dependent tables
      */
     ACTIVITY(7),
-    MSG_ITEM(10),
+    NOTE_ITEM(10),
     ORIGIN(8),
     ORIGIN_ITEM(11),
     /**
@@ -77,7 +77,6 @@ public enum MatchedUri {
     private static final String ORIGIN_SEGMENT = "origin";
     private static final String SEARCH_SEGMENT = "search";
     private static final String LISTTYPE_SEGMENT = "lt";
-    private static final String COUNT_SEGMENT = "count";
     private static final String CONTENT_SEGMENT = "content";
     private static final String CONTENT_ITEM_SEGMENT = "item";
     private static final String ACTOR_SEGMENT = "actor";
@@ -118,7 +117,7 @@ public enum MatchedUri {
         URI_MATCHER.addURI(AUTHORITY, NoteTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + ACTOR_SEGMENT + "/#/" + SEARCH_SEGMENT + "/*", TIMELINE_SEARCH.code);
         URI_MATCHER.addURI(AUTHORITY, NoteTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + ACTOR_SEGMENT + "/#/rnd/#", TIMELINE.code);
         URI_MATCHER.addURI(AUTHORITY, NoteTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + ACTOR_SEGMENT + "/#", TIMELINE.code);
-        URI_MATCHER.addURI(AUTHORITY, NoteTable.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", MSG_ITEM.code);
+        URI_MATCHER.addURI(AUTHORITY, NoteTable.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", NOTE_ITEM.code);
         URI_MATCHER.addURI(AUTHORITY, ActivityTable.TABLE_NAME + "/" + CONTENT_SEGMENT, ACTIVITY.code);
 
         URI_MATCHER.addURI(AUTHORITY, OriginTable.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", ORIGIN_ITEM.code);
@@ -152,7 +151,7 @@ public enum MatchedUri {
                 type = CONTENT_TYPE_PREFIX + NoteTable.TABLE_NAME;
                 break;
             case TIMELINE_ITEM:
-            case MSG_ITEM:
+            case NOTE_ITEM:
                 type = CONTENT_ITEM_TYPE_PREFIX + NoteTable.TABLE_NAME;
                 break;
             case ORIGIN_ITEM:

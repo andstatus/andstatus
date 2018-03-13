@@ -20,18 +20,19 @@ import android.content.Context;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.actor.ActorListLoader;
+import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.note.NoteViewItem;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.note.NoteViewItem;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.DuplicationLink;
 import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
-import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
@@ -171,5 +172,32 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
 
     public void setObjActorItem(ActorViewItem objActorItem) {
         this.objActorItem = objActorItem;
+    }
+
+    @Override
+    public void addActorsToLoad(ActorListLoader loader) {
+        noteViewItem.addActorsToLoad(loader);
+        if (activityType != ActivityType.CREATE && activityType != ActivityType.UPDATE) {
+            loader.addActorIdToList(origin, actor.getId());
+        }
+        loader.addActorIdToList(origin, objActorId);
+    }
+
+    @Override
+    public void setLoadedActors(ActorListLoader loader) {
+        noteViewItem.setLoadedActors(loader);
+        if (activityType != ActivityType.CREATE && activityType != ActivityType.UPDATE) {
+            int index = loader.getList().indexOf(actor);
+            if (index >= 0) {
+                actor = loader.getList().get(index);
+            }
+        }
+        if (objActorId != 0) {
+            int index = loader.getList().indexOf(getObjActorItem());
+            if (index >= 0) {
+                setObjActorItem(loader.getList().get(index));
+            }
+            getObjActorItem().setParent(this);
+        }
     }
 }

@@ -24,8 +24,6 @@ import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 
-import java.util.List;
-
 /**
  * @author yvolk@yurivolkov.com
  */
@@ -39,7 +37,7 @@ public class ActorsOfNoteListLoader extends ActorListLoader {
         super(actorListType, ma, ma.getOrigin(), centralItemId, searchQuery);
 
         selectedNoteId = centralItemId;
-        noteBody = MyQuery.noteIdToStringColumnValue(NoteTable.BODY, selectedNoteId);
+        noteBody = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, selectedNoteId);
         originOfSelectedNote = MyContextHolder.get().origins().fromId(
                 MyQuery.noteIdToOriginId(selectedNoteId));
     }
@@ -62,7 +60,7 @@ public class ActorsOfNoteListLoader extends ActorListLoader {
         if (mentionedOnly) {
             addActorsFromNoteBody(Actor.fromOriginAndActorId(originOfSelectedNote, authorId));
         } else {
-            Actor author = addActorIdToList(originOfSelectedNote, authorId).actor;
+            Actor author = addActorIdToList(originOfSelectedNote, authorId);
             addActorIdToList(originOfSelectedNote,
                     MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, selectedNoteId));
             addActorIdToList(originOfSelectedNote,
@@ -74,10 +72,7 @@ public class ActorsOfNoteListLoader extends ActorListLoader {
     }
 
     private void addActorsFromNoteBody(Actor author) {
-        List<Actor> actors = author.extractActorsFromBodyText(noteBody, false);
-        for (Actor actor: actors) {
-            addActorToList(ActorViewItem.fromActor(actor));
-        }
+        author.extractActorsFromBodyText(noteBody, false).forEach(this::addActorToList);
     }
 
     private void addRebloggers() {

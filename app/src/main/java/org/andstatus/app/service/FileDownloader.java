@@ -70,7 +70,7 @@ public abstract class FileDownloader {
         if (data.isHardError()) {
             return;
         }
-        data.onNewDownload();
+        data.beforeDownload();
         downloadFile();
         data.saveToDatabase();
         if (!data.isError()) {
@@ -108,6 +108,7 @@ public abstract class FileDownloader {
         if (!data.isError() && !fileTemp.getFile().renameTo(fileNew.getFile())) {
             data.softErrorLogged(method + "; Couldn't rename file " + fileTemp + " to " + fileNew, null);
         }
+        data.onDownloaded();
     }
 
     private Connection getConnection(MyAccount ma, Uri uri) throws ConnectionException {

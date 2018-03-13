@@ -268,7 +268,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
                 MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId) : listItemId;
         logMsg += ", noteId=" + noteId;
 
-        String body = MyQuery.noteIdToStringColumnValue(NoteTable.BODY, noteId);
+        String body = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
         helper.invokeContextMenuAction4ListItemId(method, listItemId, NoteContextMenuItem.COPY_TEXT, R.id.note_wrapper);
         assertEquals(logMsg, body, getClipboardText(method));
 
@@ -312,11 +312,12 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(),
                 ConversationActivity.class);
         long listItemId = helper.findListItemId("My loaded note",
-                item -> item.authorId == data.getMyAccount().getActorId() && item.noteStatus == DownloadStatus.LOADED);
+                item -> item.author.getActorId() == data.getMyAccount().getActorId()
+                        && item.noteStatus == DownloadStatus.LOADED);
 
         long noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId);
         String logMsg = "itemId=" + listItemId + ", noteId=" + noteId + " text='"
-                + MyQuery.noteIdToStringColumnValue(NoteTable.BODY, noteId) + "'";
+                + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId) + "'";
 
         boolean invoked = helper.invokeContextMenuAction4ListItemId(method, listItemId,
                 NoteContextMenuItem.EDIT, R.id.note_wrapper);

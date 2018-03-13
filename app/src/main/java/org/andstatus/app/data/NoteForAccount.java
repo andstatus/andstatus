@@ -85,7 +85,7 @@ public class NoteForAccount {
     private void getData() {
         final String method = "getData";
         String sql = "SELECT " + NoteTable.NOTE_STATUS + ", "
-                + NoteTable.BODY + ", "
+                + NoteTable.CONTENT + ", "
                 + NoteTable.AUTHOR_ID + ","
                 + NoteTable.PRIVATE
                 + " FROM " + NoteTable.TABLE_NAME
@@ -98,7 +98,7 @@ public class NoteForAccount {
         try (Cursor cursor = db.rawQuery(sql, null)) {
             if (cursor.moveToNext()) {
                 status = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
-                body = DbUtils.getString(cursor, NoteTable.BODY);
+                body = DbUtils.getString(cursor, NoteTable.CONTENT);
                 authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID);
                 authorName = MyQuery.actorIdToName(db, authorId, MyPreferences.getActorInTimeline());
                 isAuthor = (accountActorId == authorId);

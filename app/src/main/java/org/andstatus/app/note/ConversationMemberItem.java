@@ -19,6 +19,7 @@ package org.andstatus.app.note;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
@@ -47,22 +48,22 @@ public class ConversationMemberItem extends ConversationItem<ConversationMemberI
         columnNames.add(NoteTable.UPDATED_DATE);
         columnNames.add(NoteTable.IN_REPLY_TO_NOTE_ID);
         columnNames.add(NoteTable.AUTHOR_ID);
-        columnNames.add(NoteTable.BODY);
+        columnNames.add(NoteTable.CONTENT);
         return columnNames.toArray(new String[]{});
     }
 
     @Override
     void load(Cursor cursor) {
         super.load(cursor);
-        authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID);
-        setBody(MyHtml.fromHtml(DbUtils.getString(cursor, NoteTable.BODY)));
+        author = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
+        setBody(MyHtml.fromHtml(DbUtils.getString(cursor, NoteTable.CONTENT)));
     }
 
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("ConversationMemberItem [authorId=");
-        builder.append(authorId);
+        builder.append("ConversationMemberItem [author=");
+        builder.append(author);
         builder.append(", ind=");
         builder.append(mListOrder);
         builder.append("]");

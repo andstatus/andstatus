@@ -26,23 +26,16 @@ import java.io.File;
 import java.util.Objects;
 
 public class DownloadFile {
-    private static final String INEXISTENT_FILENAME_START = "inexistent-file.";
     private final String filename;
     private final File file;
     /** Existence is checked at the moment of the object creation */
     public final boolean existed;
     public static final DownloadFile EMPTY = new DownloadFile("");
 
-    @NonNull
-    static DownloadFile newInexistentOfMimeType(String mimeType) {
-        return new DownloadFile(INEXISTENT_FILENAME_START
-                + MyContentType.mimeToFileExtension(mimeType));
-    }
-
     public DownloadFile(String filename) {
         Objects.requireNonNull(filename);
         this.filename = filename;
-        if (TextUtils.isEmpty(filename) || filename.startsWith(INEXISTENT_FILENAME_START)) {
+        if (TextUtils.isEmpty(filename)) {
             file = null;
             existed = false;
         } else {

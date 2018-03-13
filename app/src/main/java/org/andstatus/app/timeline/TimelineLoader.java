@@ -19,6 +19,8 @@ package org.andstatus.app.timeline;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.actor.ActorListLoader;
+import org.andstatus.app.actor.ActorListType;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.util.I18n;
@@ -53,7 +55,7 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
         }
         params.timeline.save(params.getMyContext());
         if (params.whichPage != WhichPage.EMPTY) {
-            filter(loadFromCursor(queryDatabase()));
+            filter(loadActors(loadFromCursor(queryDatabase())));
         }
         params.isLoaded = true;
         if (MyLog.isDebugEnabled()) {
@@ -123,6 +125,17 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
         if (MyLog.isDebugEnabled()) {
             MyLog.d(this, method + " ended; " + rowsCount + " rows, " + stopWatch.getTime() + "ms" );
         }
+        return items;
+    }
+
+    private List<T> loadActors(List<T> items) {
+        if (items.isEmpty()) return items;
+        ActorListLoader loader = new ActorListLoader(ActorListType.ACTORS, getParams().getMyAccount(),
+                getParams().getTimeline().getOrigin(), 0, "");
+        items.forEach(item -> item.addActorsToLoad(loader));
+        if (loader.getList().isEmpty()) return items;
+        loader.load(progress -> {});
+        items.forEach(item -> item.setLoadedActors(loader));
         return items;
     }
 

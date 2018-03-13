@@ -19,7 +19,7 @@ package org.andstatus.app.timeline;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.context.MyContext;
+import org.andstatus.app.actor.ActorListLoader;
 import org.andstatus.app.timeline.meta.TimelineType;
 
 import java.util.ArrayList;
@@ -100,5 +100,13 @@ public class ViewItem<T extends ViewItem<T>> {
 
     public long getTopmostId() {
         return getParent().isEmpty() ? getId() : getParent().getId();
+    }
+
+    public void addActorsToLoad(ActorListLoader loader) {
+        // Empty
+    }
+
+    public void setLoadedActors(ActorListLoader loader) {
+        // Empty
     }
 }

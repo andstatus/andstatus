@@ -22,17 +22,16 @@ import android.support.annotation.NonNull;
 import android.text.Html;
 import android.text.TextUtils;
 
+import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
-import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
-import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.util.I18n;
@@ -80,16 +79,14 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
                 break;
             }
 
-            authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID);
             super.load(cursor);
+            author = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
             noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
-            authorName = TimelineSql.actorColumnNameToNameAtTimeline(cursor, ActorTable.AUTHOR_NAME, false);
-            setBody(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.BODY)));
+            setBody(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.CONTENT)));
             String via = DbUtils.getString(cursor, NoteTable.VIA);
             if (!TextUtils.isEmpty(via)) {
                 noteSource = Html.fromHtml(via).toString().trim();
             }
-            avatarFile = AvatarFile.fromCursor(authorId, cursor, DownloadTable.AVATAR_FILE_NAME);
             if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
                 attachedImageFile = AttachedImageFile.fromCursor(cursor);
             }

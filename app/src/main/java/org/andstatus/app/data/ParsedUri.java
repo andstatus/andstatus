@@ -71,7 +71,7 @@ public class ParsedUri {
                 case TIMELINE:
                 case TIMELINE_SEARCH:
                 case TIMELINE_ITEM:
-                case MSG_ITEM:
+                case NOTE_ITEM:
                 case ORIGIN_ITEM:
                 case ACTORLIST:
                 case ACTORLIST_SEARCH:
@@ -172,7 +172,7 @@ public class ParsedUri {
                 case TIMELINE_ITEM:
                     noteId = Long.parseLong(uri.getPathSegments().get(9));
                     break;
-                case MSG_ITEM:
+                case NOTE_ITEM:
                     noteId = Long.parseLong(uri.getPathSegments().get(3));
                     break;
                 case ACTORLIST:

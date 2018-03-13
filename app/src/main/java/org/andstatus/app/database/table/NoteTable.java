@@ -63,14 +63,12 @@ public final class NoteTable implements BaseColumns {
      * representation of the resource (its "permalink")
      */
     public static final String URL = "url";
-    /**
-     * Text of the note ("TEXT" may be reserved word so it was renamed here)
-     */
-    public static final String BODY = "body";
-    /**
-     * Body text, prepared for easy searching in a database
-     */
-    public static final String BODY_TO_SEARCH = "body_to_search";
+    /** A simple, human-readable, plain-text name for the Note */
+    public static final String NAME = "note_name";
+    /** Content of the note */
+    public static final String CONTENT = "body"; // TODO: Rename
+    /** Name and Content text, prepared for easy searching in a database */
+    public static final String CONTENT_TO_SEARCH = "body_to_search"; // TODO: Rename
     /**
      * String generally describing Client's software used to post this note
      * It's like "User Agent" string in the browsers?!: "via ..."
@@ -102,6 +100,7 @@ public final class NoteTable implements BaseColumns {
     public static final String FAVORITE_COUNT = "favorite_count";
     public static final String REBLOG_COUNT = "reblog_count";
     public static final String REPLY_COUNT = "reply_count";  // To be calculated locally?!
+    public static final String ATTACHMENTS_COUNT = "attachments_count";
 
     // Columns, which duplicate other existing info. Here to speed up data retrieval
     public static final String AUTHOR_ID = "note_author_id";
@@ -125,8 +124,9 @@ public final class NoteTable implements BaseColumns {
                 + CONVERSATION_ID + " INTEGER NOT NULL DEFAULT 0" + ","
                 + CONVERSATION_OID + " TEXT,"
                 + URL + " TEXT,"
-                + BODY + " TEXT,"
-                + BODY_TO_SEARCH + " TEXT,"
+                + NAME + " TEXT,"
+                + CONTENT + " TEXT,"
+                + CONTENT_TO_SEARCH + " TEXT,"
                 + VIA + " TEXT,"
                 + AUTHOR_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + IN_REPLY_TO_NOTE_ID + " INTEGER,"
@@ -137,6 +137,7 @@ public final class NoteTable implements BaseColumns {
                 + FAVORITE_COUNT + " INTEGER NOT NULL DEFAULT 0,"
                 + REBLOG_COUNT + " INTEGER NOT NULL DEFAULT 0,"
                 + REPLY_COUNT + " INTEGER NOT NULL DEFAULT 0,"
+                + ATTACHMENTS_COUNT + " INTEGER NOT NULL DEFAULT 0,"
                 + INS_DATE + " INTEGER NOT NULL,"
                 + UPDATED_DATE + " INTEGER NOT NULL DEFAULT 0"
                 + ")");

@@ -46,7 +46,6 @@ import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityAdapter;
 import org.andstatus.app.activity.ActivityContextMenu;
-import org.andstatus.app.activity.ActivityLoader;
 import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContext;
@@ -792,10 +791,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 intent.setData(params.getContentUri());
             }
         }
-        if (params.getTimelineType().showsActivities()) {
-            return (SyncLoader<T>) new ActivityLoader(params, BundleUtils.fromBundle(args, IntentExtra.INSTANCE_ID));
-        }
-        return new TimelineLoader<>(params, BundleUtils.fromBundle(args, IntentExtra.INSTANCE_ID));
+        return new TimelineLoader<T>(params, BundleUtils.fromBundle(args, IntentExtra.INSTANCE_ID));
     }
 
     @Override

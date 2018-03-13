@@ -401,7 +401,7 @@ public class DataUpdaterTest {
 
         assertEquals("Row id didn't change", note.noteId, note2.noteId);
         assertEquals("Note body updated", note2.getBody(),
-                MyQuery.noteIdToStringColumnValue(NoteTable.BODY, note.noteId));
+                MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, note.noteId));
         assertEquals("Status of loaded note", DownloadStatus.LOADED, DownloadStatus.load(
                 MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, note.noteId)));
 

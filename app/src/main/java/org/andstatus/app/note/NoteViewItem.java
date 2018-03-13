@@ -20,19 +20,18 @@ import android.support.annotation.NonNull;
 import android.text.Html;
 import android.text.TextUtils;
 
+import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
-import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
@@ -68,9 +67,7 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
         setOrigin(myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)));
         setLinkedAccount(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID));
 
-        authorName = TimelineSql.actorColumnIndexToNameAtTimeline(cursor,
-                cursor.getColumnIndex(ActorTable.AUTHOR_NAME), MyPreferences.getShowOrigin());
-        setBody(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.BODY)));
+        setBody(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.CONTENT)));
         inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
         inReplyToActorId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID);
         inReplyToName = DbUtils.getString(cursor, ActorTable.IN_REPLY_TO_NAME);
@@ -78,9 +75,7 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
         activityUpdatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
         updatedDate = DbUtils.getLong(cursor, NoteTable.UPDATED_DATE);
         noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
-
-        authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID);
-
+        author = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
         favorited = DbUtils.getTriState(cursor, NoteTable.FAVORITED) == TriState.TRUE;
         reblogged = DbUtils.getTriState(cursor, NoteTable.REBLOGGED) == TriState.TRUE;
 
@@ -89,7 +84,6 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
             noteSource = Html.fromHtml(via).toString().trim();
         }
 
-        avatarFile = AvatarFile.fromCursor(authorId, cursor, DownloadTable.AVATAR_FILE_NAME);
         if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
             attachedImageFile = new AttachedImageFile(
                     DbUtils.getLong(cursor, DownloadTable.IMAGE_ID),

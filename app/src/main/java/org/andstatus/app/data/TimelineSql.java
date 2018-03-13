@@ -132,43 +132,25 @@ public class TimelineSql {
                 + " ON (" + NOTE_TABLE_ALIAS + "." + BaseColumns._ID + "="
                     + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.NOTE_ID
                     + noteWhere.getAndWhere() + ")";
-
-        if (columns.contains(ActorTable.AUTHOR_NAME)) {
-            tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
-                    + BaseColumns._ID + ", " 
-                    + TimelineSql.usernameField() + " AS " + ActorTable.AUTHOR_NAME
-                    + " FROM " + ActorTable.TABLE_NAME + ") AS author ON "
-                    + NOTE_TABLE_ALIAS + "." + NoteTable.AUTHOR_ID + "=author."
-                    + BaseColumns._ID;
-
-            if (columns.contains(DownloadTable.AVATAR_FILE_NAME)) {
-                tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
-                        + DownloadTable.ACTOR_ID + " AS DownloadActorId, "
-                        + DownloadTable.DOWNLOAD_STATUS + ", "
-                        + DownloadTable.FILE_NAME
-                        + " FROM " + DownloadTable.TABLE_NAME + ") AS " + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS
-                        + " ON "
-                        + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_STATUS
-                        + "=" + DownloadStatus.LOADED.save() + " AND "
-                        + "DownloadActorId=" + NOTE_TABLE_ALIAS + "." + NoteTable.AUTHOR_ID;
-            }
-        }
         if (columns.contains(DownloadTable.IMAGE_FILE_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (" +
                     "SELECT "
                     + DownloadTable._ID + ", "
                     + DownloadTable.NOTE_ID + ", "
                     + DownloadTable.DOWNLOAD_TYPE + ", "
+                    + DownloadTable.DOWNLOAD_NUMBER + ", "
                     + (columns.contains(DownloadTable.IMAGE_URL) ? DownloadTable.URI + ", " : "")
                     + DownloadTable.FILE_NAME
                     + " FROM " + DownloadTable.TABLE_NAME
                     + " WHERE " + DownloadTable.NOTE_ID + "!=0"
                     + ") AS " + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS
                     +  " ON "
+                    + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.NOTE_ID
+                    + "=" + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.NOTE_ID + " AND "
                     + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_TYPE
                     + "=" + DownloadType.ATTACHMENT.save() + " AND "
-                    + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.NOTE_ID
-                    + "=" + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.NOTE_ID;
+                    + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_NUMBER
+                    + "=0";
         }
         if (columns.contains(ActorTable.IN_REPLY_TO_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
@@ -200,7 +182,6 @@ public class TimelineSql {
     public static Set<String> getTimelineProjection() {
         Set<String> columnNames = getBaseProjection();
         columnNames.add(ActivityTable.ACTIVITY_ID);
-        columnNames.add(NoteTable.AUTHOR_ID);
         columnNames.add(ActivityTable.ACTOR_ID);
         columnNames.add(NoteTable.VIA);
         columnNames.add(NoteTable.REBLOGGED);
@@ -211,8 +192,7 @@ public class TimelineSql {
         Set<String> columnNames = new HashSet<>();
         columnNames.add(ActivityTable.NOTE_ID);
         columnNames.add(ActivityTable.ORIGIN_ID);
-        columnNames.add(ActorTable.AUTHOR_NAME);
-        columnNames.add(NoteTable.BODY);
+        columnNames.add(NoteTable.CONTENT);
         columnNames.add(NoteTable.IN_REPLY_TO_NOTE_ID);
         columnNames.add(ActorTable.IN_REPLY_TO_NAME);
         columnNames.add(NoteTable.FAVORITED);
@@ -220,10 +200,7 @@ public class TimelineSql {
         columnNames.add(NoteTable.UPDATED_DATE);
         columnNames.add(NoteTable.NOTE_STATUS);
         columnNames.add(ActivityTable.ACCOUNT_ID);
-        if (MyPreferences.getShowAvatars()) {
-            columnNames.add(NoteTable.AUTHOR_ID);
-            columnNames.add(DownloadTable.AVATAR_FILE_NAME);
-        }
+        columnNames.add(NoteTable.AUTHOR_ID);
         if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
             columnNames.add(DownloadTable.IMAGE_ID);
             columnNames.add(DownloadTable.IMAGE_FILE_NAME);

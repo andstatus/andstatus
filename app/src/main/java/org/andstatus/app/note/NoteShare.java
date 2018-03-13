@@ -68,7 +68,7 @@ public class NoteShare {
 
     Intent intentToViewAndShare(boolean share) {
         StringBuilder subject = new StringBuilder();
-        String msgBody = MyQuery.noteIdToStringColumnValue(NoteTable.BODY, noteId);
+        String msgBody = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
         String msgBodyPlainText = msgBody;
         if (origin.isHtmlContentAllowed()) {
             msgBodyPlainText = MyHtml.fromHtml(msgBody);

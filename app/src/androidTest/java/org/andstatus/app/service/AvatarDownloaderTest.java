@@ -87,10 +87,10 @@ public class AvatarDownloaderTest {
         assertEquals("Changed 1 row ", 1, changeMaAvatarUrl(urlString));
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
 
-        deleteMaAvatar();
+        deleteMaAvatarFile();
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
         
-        deleteMaAvatar();
+        deleteMaAvatarFile();
         assertEquals("Changed 1 row ", 1, changeMaAvatarStatus(urlString, DownloadStatus.HARD_ERROR));
         // Don't reload if hard error
         loadAndAssertStatusForMa(DownloadStatus.HARD_ERROR, false);
@@ -108,7 +108,7 @@ public class AvatarDownloaderTest {
         assertEquals("Updated the same row ", rowIdError, rowIdRecovered);
     }
 
-    private void deleteMaAvatar() {
+    private void deleteMaAvatarFile() {
         DownloadData data = AvatarData.getForActor(ma.getActorId());
         assertTrue("Loaded avatar file deleted", data.getFile().delete());
     }

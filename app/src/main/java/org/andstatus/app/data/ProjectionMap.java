@@ -69,7 +69,7 @@ public class ProjectionMap {
                 + " AS " + DownloadTable.IMAGE_ID);
         MSG.put(DownloadTable.IMAGE_URL, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.URI
                 + " AS " + DownloadTable.IMAGE_URL);
-        MSG.put(NoteTable.BODY, NoteTable.BODY);
+        MSG.put(NoteTable.CONTENT, NoteTable.CONTENT);
         MSG.put(NoteTable.VIA, NoteTable.VIA);
         MSG.put(NoteTable.URL, NoteTable.URL);
         MSG.put(NoteTable.IN_REPLY_TO_NOTE_ID, NoteTable.IN_REPLY_TO_NOTE_ID);

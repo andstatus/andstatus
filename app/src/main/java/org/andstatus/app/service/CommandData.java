@@ -109,7 +109,7 @@ public class CommandData implements Comparable<CommandData> {
     private void setTrimmedNoteBodyAsDescription(long noteId) {
         if (noteId != 0) {
             description = trimConditionally(
-                            MyQuery.noteIdToStringColumnValue(NoteTable.BODY, noteId), true)
+                            MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId), true)
                             .toString();
         }
     }

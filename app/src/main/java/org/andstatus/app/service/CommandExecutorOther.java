@@ -39,7 +39,6 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.RateLimitStatus;
-import org.andstatus.app.support.java.util.function.Supplier;
 import org.andstatus.app.support.java.util.function.SupplierWithException;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
@@ -49,6 +48,7 @@ import org.andstatus.app.util.UriUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 class CommandExecutorOther extends CommandExecutorStrategy{
@@ -401,7 +401,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         final String method = "updateNote";
         AActivity activity = AActivity.EMPTY;
         long noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, activityId);
-        String body = MyQuery.noteIdToStringColumnValue(NoteTable.BODY, noteId);
+        String body = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
         DemoData.crashTest(() -> body.startsWith("Crash me on sending 2015-04-10"));
         String oid = getNoteOid(method, noteId, false);
         TriState isPrivate = MyQuery.noteIdToTriState(NoteTable.PRIVATE, noteId);

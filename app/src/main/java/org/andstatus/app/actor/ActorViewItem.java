@@ -28,14 +28,17 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.DownloadTable;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.ActorTable;
+import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.util.I18n;
+import org.andstatus.app.util.StringUtils;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -74,11 +77,7 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
     }
 
     public static ActorViewItem fromActorId(Origin origin, long actorId) {
-        Actor actor = Actor.EMPTY;
-        if (actorId != 0) {
-            actor = Actor.fromOriginAndActorId(origin, actorId);
-        }
-        return fromActor(actor);
+        return actorId == 0 ? ActorViewItem.EMPTY : fromActor(Actor.fromOriginAndActorId(origin, actorId));
     }
 
     public static ActorViewItem fromActor(@NonNull Actor actor) {
@@ -87,6 +86,16 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
 
     public long getActorId() {
         return actor.actorId;
+    }
+
+    public String getName() {
+        if (MyPreferences.getShowOrigin() && actor.nonEmpty()) {
+            String name = actor.getUsername() + " / " + actor.origin.getName();
+            if (actor.origin.getOriginType() == OriginType.GNUSOCIAL && MyPreferences.isShowDebuggingInfoInUi()) {
+                return name + " id:" + (StringUtils.nonEmpty(actor.oid) ? actor.oid : MyQuery.idToOid(OidEnum.ACTOR_OID,
+                                        actor.actorId, 0));
+            } else return name;
+        } else return actor.getUsername();
     }
 
     public String getDescription() {

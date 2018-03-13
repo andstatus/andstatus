@@ -161,7 +161,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     COPY_TEXT(true) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
-            String body = MyQuery.noteIdToStringColumnValue(NoteTable.BODY, menu.getNoteId());
+            String body = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, menu.getNoteId());
             if (menu.getOrigin().isHtmlContentAllowed()) {
                 body = MyHtml.fromHtml(body);
             }
