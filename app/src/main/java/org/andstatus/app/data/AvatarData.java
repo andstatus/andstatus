@@ -42,7 +42,6 @@ public class AvatarData extends DownloadData {
         Uri avatarUriNew = UriUtils.fromString(MyQuery.actorIdToStringColumnValue(ActorTable.AVATAR_URL, actorIdIn));
         AvatarData data = new AvatarData(actorIdIn, Uri.EMPTY);
         if (!data.getUri().equals(avatarUriNew)) {
-            deleteAllOfThisActor(actorIdIn);
             data = new AvatarData(actorIdIn, avatarUriNew);
         }
         return data;

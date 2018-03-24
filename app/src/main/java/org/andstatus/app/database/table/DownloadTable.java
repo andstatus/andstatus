@@ -47,7 +47,6 @@ public final class DownloadTable implements BaseColumns {
     public static final String DURATION = "duration";
     public static final String FILE_NAME = "file_name";
     public static final String FILE_SIZE = "file_size";
-    public static final String UPDATED_DATE = "download_updated_date";
 
     /*
      * Derived columns (they are not stored in this table but are result of joins)
@@ -74,8 +73,7 @@ public final class DownloadTable implements BaseColumns {
                 + HEIGHT + " INTEGER NOT NULL DEFAULT 0,"
                 + DURATION + " INTEGER NOT NULL DEFAULT 0,"
                 + FILE_NAME + " TEXT,"
-                + FILE_SIZE + " INTEGER NOT NULL DEFAULT 0,"
-                + UPDATED_DATE + " INTEGER NOT NULL DEFAULT 0"
+                + FILE_SIZE + " INTEGER NOT NULL DEFAULT 0"
                 + ")");
 
         DbUtils.execSQL(db, "CREATE INDEX idx_download_actor ON " + TABLE_NAME + " ("

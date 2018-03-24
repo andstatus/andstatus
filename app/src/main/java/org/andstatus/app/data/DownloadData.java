@@ -21,7 +21,6 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
 
@@ -45,7 +44,6 @@ public class DownloadData {
     public long width = 0;
     public long height = 0;
     public long duration = 0;
-    public long updatedDate = 0;
 
     private boolean hardError = false;
     private boolean softError = false;
@@ -69,7 +67,8 @@ public class DownloadData {
         return new DownloadData(0, 0, noteId, mimeType, downloadType, uriIn);
     }
 
-    protected DownloadData(long downloadId, long actorId, long noteId, String mimeType, DownloadType downloadType, Uri uri) {
+    protected DownloadData(long downloadId, long actorId, long noteId, String mimeType, DownloadType downloadType,
+                           Uri uri) {
         this.downloadId = downloadId;
         this.actorId = actorId;
         this.noteId = noteId;
@@ -120,9 +119,6 @@ public class DownloadData {
                 height = DbUtils.getLong(cursor, DownloadTable.HEIGHT);
                 duration = DbUtils.getLong(cursor, DownloadTable.DURATION);
                 fileSize = DbUtils.getLong(cursor, DownloadTable.FILE_SIZE);
-                if (updatedDate == 0) {
-                    updatedDate = DbUtils.getLong(cursor, DownloadTable.UPDATED_DATE);
-                }
             }
         }
     }
@@ -271,7 +267,6 @@ public class DownloadData {
         values.put(DownloadTable.WIDTH, width);
         values.put(DownloadTable.HEIGHT, height);
         values.put(DownloadTable.DURATION, duration);
-        values.put(DownloadTable.UPDATED_DATE, updatedDate);
         return values;
     }
 
@@ -451,7 +446,6 @@ public class DownloadData {
             if (height > 0) builder.append("height:" + height + ",");
             if (duration > 0) builder.append("duration:" + height + ",");
         }
-        if (updatedDate > 0) builder.append(RelativeTime.secondsAgo(updatedDate) + " sec. ago,");
         return MyLog.formatKeyValue(this, builder.toString());
     }
 

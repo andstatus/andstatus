@@ -146,8 +146,8 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
         return getWebFingerIdOrUsername().compareTo(o.getWebFingerIdOrUsername());
     }
 
-    public void setAvatarFile(AvatarFile avatarFile) {
-        this.avatarFile = avatarFile;
+    public AvatarFile getAvatarFile() {
+        return avatarFile;
     }
 
     public void showAvatar(MyActivity myActivity, AvatarView imageView) {
@@ -185,7 +185,7 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
 
         item.myFollowers = MyQuery.getMyFollowersOf(actor.actorId);
         AvatarFile avatarFile = AvatarFile.fromCursor(actor.actorId, cursor, DownloadTable.AVATAR_FILE_NAME);
-        item.setAvatarFile(avatarFile);
+        item.avatarFile = avatarFile;
         item.populated = true;
         return item;
     }

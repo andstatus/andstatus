@@ -96,7 +96,8 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 rateLimitStatus();
                 break;
             case GET_ATTACHMENT:
-                FileDownloader.newForDownloadRow(execContext.getCommandData().itemId).load(execContext.getCommandData());
+                FileDownloader.newForDownloadData(DownloadData.fromId(execContext.getCommandData().itemId))
+                        .load(execContext.getCommandData());
                 break;
             case GET_AVATAR:
                 (new AvatarDownloader(execContext.getCommandData().getActorId())).load(execContext.getCommandData());

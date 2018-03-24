@@ -19,6 +19,9 @@ package org.andstatus.app.service;
 import android.content.ContentValues;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.actor.ActorListLoader;
+import org.andstatus.app.actor.ActorListType;
+import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.AvatarData;
@@ -100,8 +103,20 @@ public class AvatarDownloaderTest {
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
         
         changeMaAvatarUrl("");
+        // In a case avatar removed from actor, we see the last loaded
+        loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
+
+        changeMaAvatarUrl("http://example.com/inexistent.jpg");
         loadAndAssertStatusForMa(DownloadStatus.HARD_ERROR, false);
-        
+
+        ActorListLoader aLoader = new ActorListLoader(ActorListType.ACTORS, ma, ma.getOrigin()
+                , 0, "");
+        aLoader.addActorIdToList(ma.getOrigin(), ma.getActorId());
+        aLoader.load(progress -> {});
+        ActorViewItem viewItem = aLoader.getList().get(0);
+        assertTrue("Should show previous avatar " + viewItem.getAvatarFile(),
+                viewItem.getAvatarFile().getSize().x > 0);
+
         changeMaAvatarUrl(urlStringInitial);
         long rowIdError = loadAndAssertStatusForMa(DownloadStatus.ABSENT, true);
         long rowIdRecovered = loadAndAssertStatusForMa(DownloadStatus.LOADED, false);

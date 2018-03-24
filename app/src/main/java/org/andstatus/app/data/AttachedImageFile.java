@@ -25,7 +25,7 @@ import org.andstatus.app.graphics.CachedImage;
 public class AttachedImageFile extends ImageFile {
     public static final AttachedImageFile EMPTY = new AttachedImageFile(0, "");
 
-    private final long downloadRowId;
+    private final long downloadId;
 
     public static AttachedImageFile fromCursor(Cursor cursor) {
         return new AttachedImageFile(
@@ -33,9 +33,9 @@ public class AttachedImageFile extends ImageFile {
                 DbUtils.getString(cursor, DownloadTable.IMAGE_FILE_NAME));
     }
 
-    public AttachedImageFile(long downloadRowIdIn, String filename) {
+    public AttachedImageFile(long downloadIdIn, String filename) {
         super(filename);
-        downloadRowId = downloadRowIdIn;
+        downloadId = downloadIdIn;
     }
 
     public CacheName getCacheName() {
@@ -44,7 +44,7 @@ public class AttachedImageFile extends ImageFile {
 
     @Override
     protected long getId() {
-        return downloadRowId;
+        return downloadId;
     }
 
     @Override
@@ -54,8 +54,8 @@ public class AttachedImageFile extends ImageFile {
 
     @Override
     protected void requestAsyncDownload() {
-        if (downloadRowId != 0) {
-            DownloadData.asyncRequestDownload(downloadRowId);
+        if (downloadId != 0) {
+            DownloadData.asyncRequestDownload(downloadId);
         }
     }
 }

@@ -66,9 +66,9 @@ public class AttachmentDownloaderTest {
         );
         assertEquals("Image URI stored", activity.getNote().attachments.get(0).getUri(), dd.getUri());
         
-        loadAndAssertStatusForRow(dd.getDownloadId(), DownloadStatus.ABSENT, true);
+        loadAndAssertStatusForRow(dd, DownloadStatus.ABSENT, true);
 
-        loadAndAssertStatusForRow(dd.getDownloadId(), DownloadStatus.LOADED, false);
+        loadAndAssertStatusForRow(dd, DownloadStatus.LOADED, false);
         
         testFileProvider(dd.getDownloadId());
     }
@@ -85,15 +85,15 @@ public class AttachmentDownloaderTest {
         in.close();
     }
 
-    public static void loadAndAssertStatusForRow(long downloadRowId, DownloadStatus status, boolean mockNetworkError) {
-        FileDownloader loader = FileDownloader.newForDownloadRow(downloadRowId);
+    public static void loadAndAssertStatusForRow(DownloadData dataIn, DownloadStatus status, boolean mockNetworkError) {
+        FileDownloader loader = FileDownloader.newForDownloadData(dataIn);
         if (mockNetworkError) {
             loader.connectionMock = new ConnectionTwitterGnuSocialMock(new ConnectionException("Mocked IO exception"));
         }
         CommandData commandData = CommandData.newCommand(CommandEnum.GET_AVATAR);
         loader.load(commandData);
 
-        DownloadData data = DownloadData.fromId(downloadRowId);
+        DownloadData data = DownloadData.fromId(dataIn.getDownloadId());
         if (DownloadStatus.LOADED.equals(status)) {
             assertFalse("Loaded " + data.getUri() + "; " + data, commandData.getResult().hasError());
             assertEquals("Loaded " + data.getUri(), status, loader.getStatus());

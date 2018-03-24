@@ -299,7 +299,7 @@ public class DataUpdater {
                             dd.requestDownload();
                         }
                     } else {
-                        AttachmentDownloader.load(dd.getDownloadId(), execContext.getCommandData());
+                        AttachmentDownloader.load(dd, execContext.getCommandData());
                     }
                     break;
             }
@@ -369,7 +369,7 @@ public class DataUpdater {
                 // End of required attributes
             }
 
-            if (!SharedPreferencesUtil.isEmpty(actor.avatarUrl)) {
+            if (UriUtils.nonEmptyOid(actor.avatarUrl)) {
                 values.put(ActorTable.AVATAR_URL, actor.avatarUrl);
             }
             if (!SharedPreferencesUtil.isEmpty(actor.getDescription())) {

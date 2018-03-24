@@ -33,8 +33,7 @@ public abstract class FileDownloader {
     protected final DownloadData data;
     public Connection connectionMock;
 
-    static FileDownloader newForDownloadRow(long rowIdIn) {
-        DownloadData data = DownloadData.fromId(rowIdIn);
+    static FileDownloader newForDownloadData(DownloadData data) {
         if (data.actorId != 0) {
             return new AvatarDownloader(data);
         } else {
@@ -128,8 +127,8 @@ public abstract class FileDownloader {
 
     protected abstract MyAccount findBestAccountForDownload();
 
-    public static void load(long downloadRowId, CommandData commandData) {
-        FileDownloader downloader = FileDownloader.newForDownloadRow(downloadRowId);
+    public static void load(DownloadData downloadData, CommandData commandData) {
+        FileDownloader downloader = FileDownloader.newForDownloadData(downloadData);
         downloader.load(commandData);
     }
 }
