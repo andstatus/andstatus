@@ -132,7 +132,7 @@ public class ImageCaches {
 
     @NonNull
     public static Point getImageSize(CacheName cacheName, long imageId, String path) {
-        return getCache(cacheName).getImageSize(imageId, path);
+        return getCache(cacheName).getImageSize(path);
     }
 
     public static CachedImage loadAndGetImage(CacheName cacheName, Object objTag, long imageId, String path) {

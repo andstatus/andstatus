@@ -227,14 +227,14 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         for (int attempt=0; attempt < 4; attempt++) {
             ActivityTestHelper.waitViewVisible(method, editorView);
             // Due to a race the editor may open before this change first.
-            if (demoData.localImageTestUri2.equals(editor.getData().getMediaUri())) {
+            if (demoData.localImageTestUri2.equals(editor.getData().getAttachment().getUri())) {
                 break;
             }
             if (DbUtils.waitMs(method, 2000)) {
                 break;
             }
         }
-        assertEquals("Image attached", demoData.localImageTestUri2, editor.getData().getMediaUri());
+        assertEquals("Image attached", demoData.localImageTestUri2, editor.getData().getAttachment().getUri());
         onView(withId(R.id.noteBodyEditText)).check(matches(withText(body + " ")));
         helper.clickMenuItem(method + " clicker save draft", R.id.saveDraftButton);
 

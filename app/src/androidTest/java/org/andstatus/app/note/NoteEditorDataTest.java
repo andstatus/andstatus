@@ -55,7 +55,7 @@ public class NoteEditorDataTest {
         assertEquals(recipientId, data.recipients.getFirst().actorId);
         assertMentionedActor(data, inReplyToActorId, true);
         assertMentionedActor(data, memberActorId, replyAll);
-        assertEquals(data.toString(), Uri.EMPTY, data.getMediaUri());
+        assertEquals(data.toString(), Uri.EMPTY, data.getAttachment().getUri());
     }
 
     private void assertMentionedActor(NoteEditorData data, long mentionedActorId, boolean isMentioned_in) {

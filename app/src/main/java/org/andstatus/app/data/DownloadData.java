@@ -12,6 +12,8 @@ import android.webkit.MimeTypeMap;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.DownloadTable;
+import org.andstatus.app.graphics.ImageCache;
+import org.andstatus.app.graphics.MediaMetadata;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
@@ -19,6 +21,8 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.List;
@@ -36,7 +40,12 @@ public class DownloadData {
     private long downloadNumber = 0;
     @NonNull
     private DownloadFile fileStored = DownloadFile.EMPTY;
+    public long fileSize = 0;
     protected Uri uri = Uri.EMPTY;
+    public long width = 0;
+    public long height = 0;
+    public long duration = 0;
+    public long updatedDate = 0;
 
     private boolean hardError = false;
     private boolean softError = false;
@@ -107,6 +116,13 @@ public class DownloadData {
                 if (uri.equals(Uri.EMPTY)) {
                     uri = UriUtils.fromString(DbUtils.getString(cursor, DownloadTable.URI));
                 }
+                width = DbUtils.getLong(cursor, DownloadTable.WIDTH);
+                height = DbUtils.getLong(cursor, DownloadTable.HEIGHT);
+                duration = DbUtils.getLong(cursor, DownloadTable.DURATION);
+                fileSize = DbUtils.getLong(cursor, DownloadTable.FILE_SIZE);
+                if (updatedDate == 0) {
+                    updatedDate = DbUtils.getLong(cursor, DownloadTable.UPDATED_DATE);
+                }
             }
         }
     }
@@ -169,13 +185,26 @@ public class DownloadData {
 
     public void onDownloaded() {
         fileNew = new DownloadFile(fileNew.getFilename());
+        if (isError() || !fileNew.existed) {
+            fileSize = 0;
+            width = 0;
+            height = 0;
+            duration = 0;
+            return;
+        }
+        fileSize = fileNew.getSize();
+        MediaMetadata metadata = ImageCache.getMetadata(fileNew.getFilePath());
+        width = metadata.size.x;
+        height = metadata.size.y;
+        duration = metadata.duration;
     }
 
     private String getExtension() {
-        final String fileExtensionFromUrl = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
-        return TextUtils.isEmpty(fileExtensionFromUrl)
+        final String fileExtension = TextUtils.isEmpty(mimeType) ? MimeTypeMap.getFileExtensionFromUrl(uri.toString())
+                : MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
+        return TextUtils.isEmpty(fileExtension)
                 ? MimeTypeMap.getFileExtensionFromUrl(fileStored.getFilename())
-                : fileExtensionFromUrl;
+                : fileExtension;
     }
     
     public void saveToDatabase() {
@@ -203,53 +232,59 @@ public class DownloadData {
     }
 
     private void addNew() {
-        ContentValues values = new ContentValues();
-        values.put(DownloadTable.DOWNLOAD_NUMBER, downloadNumber);
-        values.put(DownloadTable.DOWNLOAD_TYPE, downloadType.save());
-        values.put(DownloadTable.MEDIA_TYPE, mimeType);
-        ContentValuesUtils.putNotZero(values, DownloadTable.ACTOR_ID, actorId);
-        ContentValuesUtils.putNotZero(values, DownloadTable.NOTE_ID, noteId);
-        values.put(DownloadTable.URI, uri.toString());
-        values.put(DownloadTable.DOWNLOAD_STATUS, status.save());
-        values.put(DownloadTable.FILE_NAME, fileNew.getFilename());
-
+        ContentValues values = toContentValues();
         downloadId = DbUtils.addRowWithRetry(MyContextHolder.get(), DownloadTable.TABLE_NAME, values, 3);
         if (downloadId == -1) {
-           softError = true;
+            softError = true;
         } else {
-           MyLog.v(this, "Added " + actorNoteUriToString());
+            MyLog.v(this, "Added " + actorNoteUriToString());
         }
+    }
+
+    private void update() {
+        ContentValues values = toContentValues();
+        if (DbUtils.updateRowWithRetry(MyContextHolder.get(), DownloadTable.TABLE_NAME, downloadId, values, 3) != 1) {
+            softError = true;
+        } else {
+            MyLog.v(this, "Updated " + actorNoteUriToString());
+        }
+        boolean filenameChanged = !isError() && fileNew.existsNow()
+                && !fileStored.getFilename().equals(fileNew.getFilename());
+        if (filenameChanged) {
+            fileStored.delete();
+        }
+    }
+
+    private ContentValues toContentValues() {
+        ContentValues values = new ContentValues();
+        if (downloadId == 0) {
+            values.put(DownloadTable.DOWNLOAD_NUMBER, downloadNumber);
+            values.put(DownloadTable.DOWNLOAD_TYPE, downloadType.save());
+            ContentValuesUtils.putNotZero(values, DownloadTable.ACTOR_ID, actorId);
+            ContentValuesUtils.putNotZero(values, DownloadTable.NOTE_ID, noteId);
+        }
+        values.put(DownloadTable.URI, uri.toString());
+        values.put(DownloadTable.MEDIA_TYPE, mimeType);
+        values.put(DownloadTable.DOWNLOAD_STATUS, status.save());
+        values.put(DownloadTable.FILE_NAME, fileNew.getFilename());
+        values.put(DownloadTable.FILE_SIZE, fileSize);
+        values.put(DownloadTable.WIDTH, width);
+        values.put(DownloadTable.HEIGHT, height);
+        values.put(DownloadTable.DURATION, duration);
+        values.put(DownloadTable.UPDATED_DATE, updatedDate);
+        return values;
     }
 
     public boolean isHardError() {
         return hardError;
     }
-    
+
     public boolean isSoftError() {
         return softError;
     }
 
     public boolean isError() {
         return softError || hardError;
-    }
-    
-    private void update() {
-        ContentValues values = new ContentValues();
-        values.put(DownloadTable.DOWNLOAD_STATUS, status.save());
-        boolean filenameChanged = !isError() && fileNew.existsNow()
-                && !fileStored.getFilename().equals(fileNew.getFilename());
-        if (filenameChanged) {
-            values.put(DownloadTable.FILE_NAME, fileNew.getFilename());
-        }
-
-        if (DbUtils.updateRowWithRetry(MyContextHolder.get(), DownloadTable.TABLE_NAME, downloadId, values, 3) != 1) {
-            softError = true;
-        } else {
-            MyLog.v(this, "Updated " + actorNoteUriToString());
-        }
-        if (!isError() && filenameChanged) {
-            fileStored.delete();
-        }
     }
 
     public String actorNoteUriToString() {
@@ -396,10 +431,9 @@ public class DownloadData {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        if(downloadNumber != 0) {
-            builder.append("num:" + downloadNumber + ",");
-        }
+        if(downloadNumber > 0) builder.append("num:" + downloadNumber + ",");
         builder.append("uri:'" + getUri() + "',");
+        if (StringUtils.nonEmpty(mimeType)) builder.append("mime:" + getUri() + ",");
         if(actorId != 0) {
             builder.append("actorId:" + actorId + ",");
         }
@@ -410,9 +444,14 @@ public class DownloadData {
         if(!TextUtils.isEmpty(errorMessage)) {
             builder.append("errorMessage:'" + getMessage() + "',");
         }
-        if (!fileStored.equals(DownloadFile.EMPTY)) {
+        if (fileStored.existed) {
             builder.append("file:" + getFilename() + ",");
+            builder.append("size:" + fileSize + ",");
+            if (width > 0) builder.append("width:" + width + ",");
+            if (height > 0) builder.append("height:" + height + ",");
+            if (duration > 0) builder.append("duration:" + height + ",");
         }
+        if (updatedDate > 0) builder.append(RelativeTime.secondsAgo(updatedDate) + " sec. ago,");
         return MyLog.formatKeyValue(this, builder.toString());
     }
 
@@ -429,9 +468,17 @@ public class DownloadData {
     }
 
     public Uri mediaUriToBePosted() {
-      if (getUri().equals(Uri.EMPTY) || UriUtils.isDownloadable(getUri())) {
+      if (isEmpty() || UriUtils.isDownloadable(getUri())) {
           return Uri.EMPTY;
       }
       return FileProvider.downloadFilenameToUri(getFile().getFilename());
+    }
+
+    public boolean nonEmpty() {
+        return !isEmpty();
+    }
+
+    public boolean isEmpty() {
+        return this == EMPTY || uri.equals(Uri.EMPTY);
     }
 }

@@ -41,6 +41,7 @@ import android.widget.Toast;
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.actor.ActorAutoCompleteAdapter;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
@@ -52,7 +53,6 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.LoadableListActivity;
-import org.andstatus.app.actor.ActorAutoCompleteAdapter;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
@@ -475,11 +475,12 @@ public class NoteEditor {
                         getActivity().getText(R.string.message_source_to).toString(), recipientName);
             }
         }
-        if (!UriUtils.isEmpty(editorData.getMediaUri())) {
+        if (editorData.getAttachment().nonEmpty()) {
             noteDetails += " (" + getActivity().getText(R.string.label_with_media).toString()
-                    + " " + editorData.getImageSize().x + "x" + editorData.getImageSize().y
-                    + ", " + editorData.getImageFileSize()/1024 + "K" +
-                    ")";
+                    + " " + editorData.getAttachment().width + "x" + editorData.getAttachment().height
+                    + ", " + editorData.getAttachment().fileSize/1024 + "K"
+                    + (editorData.getAttachment().duration == 0 ? "" : " " + editorData.getAttachment().duration)
+                    + ")";
         }
         showIfNotEmpty(R.id.noteEditDetails, noteDetails);
     }

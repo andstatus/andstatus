@@ -16,21 +16,24 @@
 
 package org.andstatus.app.data;
 
+import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.util.MyLog;
 
 public enum DownloadType {
-    AVATAR(1, "av"),
-    ATTACHMENT(2, "at"),
-    UNKNOWN(0, "un");
+    AVATAR(1, "av", CacheName.AVATAR),
+    ATTACHMENT(2, "at", CacheName.ATTACHED_IMAGE),
+    UNKNOWN(0, "un", CacheName.ATTACHED_IMAGE);
 
     private static final String TAG = DownloadType.class.getSimpleName();
     
     private final long code;
     public final String filePrefix;
+    public final CacheName cacheName;
 
-    DownloadType(long code, String filePrefix) {
+    DownloadType(long code, String filePrefix, CacheName cacheName) {
         this.code = code;
         this.filePrefix = filePrefix;
+        this.cacheName = cacheName;
     }
 
     public String save() {

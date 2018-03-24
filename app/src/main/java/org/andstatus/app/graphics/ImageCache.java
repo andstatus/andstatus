@@ -31,6 +31,7 @@ import android.graphics.Shader;
 import android.media.MediaMetadataRetriever;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
@@ -203,11 +204,11 @@ public class ImageCache extends LruCache<String, CachedImage> {
         Bitmap bitmap = null;
         if (MyPreferences.isShowDebuggingInfoInUi()) {
             bitmap = BitmapFactory
-                    .decodeFile(path, calculateScaling(objTag, getImageSize(imageId, path)));
+                    .decodeFile(path, calculateScaling(objTag, getImageSize(path)));
         } else {
             try {
                 bitmap = BitmapFactory
-                        .decodeFile(path, calculateScaling(objTag, getImageSize(imageId, path)));
+                        .decodeFile(path, calculateScaling(objTag, getImageSize(path)));
             } catch (OutOfMemoryError e) {
                 MyLog.w(objTag, getInfo(), e);
                 evictAll();
@@ -239,25 +240,34 @@ public class ImageCache extends LruCache<String, CachedImage> {
         return bitmap;
     }
 
-    Point getImageSize(long imageId, String path) {
+    Point getImageSize(String path) {
         if (!TextUtils.isEmpty(path)) {
             CachedImage image = get(path);
-            if (image != null) {
-                return image.getImageSize();
-            }
-            try {
-                if (MyContentType.fromPathOfSavedFile(path) == MyContentType.VIDEO) {
-                    return new Point(maxBitmapWidth, maxBitmapHeight);
-                }
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inJustDecodeBounds = true;
-                BitmapFactory.decodeFile(path, options);
-                return new Point(options.outWidth, options.outHeight);
-            } catch (Exception e) {
-                MyLog.d("getImageSize", "path:'" + path + "'", e);
-            }
+            if (image != null) return image.getImageSize();
+            return getMetadata(path).size;
         }
         return new Point(0, 0);
+    }
+
+    @NonNull
+    public static MediaMetadata getMetadata(String path) {
+        try {
+            if (MyContentType.fromPathOfSavedFile(path) == MyContentType.VIDEO) {
+                MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+                retriever.setDataSource(MyContextHolder.get().context(), Uri.parse(path));
+                return new MediaMetadata(
+                        Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)),
+                        Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)),
+                        Long.parseLong(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)));
+            }
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(path, options);
+            return new MediaMetadata(options.outWidth, options.outHeight, 0);
+        } catch (Exception e) {
+            MyLog.d("getImageSize", "path:'" + path + "'", e);
+        }
+        return MediaMetadata.EMPTY;
     }
 
     BitmapFactory.Options calculateScaling(Object objTag, Point imageSize) {

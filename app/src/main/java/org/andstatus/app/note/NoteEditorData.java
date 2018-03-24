@@ -16,7 +16,6 @@
 
 package org.andstatus.app.note;
 
-import android.graphics.Point;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
@@ -45,7 +44,6 @@ import org.andstatus.app.net.social.Note;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
-import org.andstatus.app.util.UriUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +63,7 @@ public class NoteEditorData {
     @NonNull
     public volatile String body = "";
 
-    private DownloadData downloadData = DownloadData.EMPTY;
+    private DownloadData attachment = DownloadData.EMPTY;
     CachedImage image = null;
 
     private TriState isPrivate = TriState.UNKNOWN;
@@ -97,7 +95,7 @@ public class NoteEditorData {
         final int prime = 31;
         int result = 1;
         result = prime * result + ma.hashCode();
-        result = prime * result + getMediaUri().hashCode();
+        result = prime * result + attachment.getUri().hashCode();
         result = prime * result + body.hashCode();
         result = prime * result + recipients.hashCode();
         result = prime * result + (int) (inReplyToNoteId ^ (inReplyToNoteId >>> 32));
@@ -113,7 +111,7 @@ public class NoteEditorData {
         NoteEditorData other = (NoteEditorData) o;
         if (!ma.equals(other.ma))
             return false;
-        if (!getMediaUri().equals(other.getMediaUri()))
+        if (!attachment.getUri().equals(other.attachment.getUri()))
             return false;
         if (!body.equals(other.body))
             return false;
@@ -130,8 +128,8 @@ public class NoteEditorData {
         if(!TextUtils.isEmpty(body)) {
             builder.append("text:'" + body + "',");
         }
-        if(!UriUtils.isEmpty(downloadData.getUri())) {
-            builder.append("downloadData:" + downloadData + ",");
+        if(attachment.nonEmpty()) {
+            builder.append("attachment:" + attachment + ",");
         }
         if(inReplyToNoteId != 0) {
             builder.append("inReplyTo:" + inReplyToNoteId + " by " + inReplyToActorId + ",");
@@ -157,10 +155,10 @@ public class NoteEditorData {
             data.activityId = MyQuery.noteIdToLongColumnValue(ActivityTable.LAST_UPDATE_ID, noteId);
             data.status = DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId));
             data.setBody(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId));
-            data.downloadData = DownloadData.getSingleAttachment(noteId);
-            if (data.downloadData.getStatus() == LOADED) {
-                AttachedImageFile imageFile = new AttachedImageFile(data.downloadData.getDownloadId(),
-                        data.downloadData.getFilename());
+            data.attachment = DownloadData.getSingleAttachment(noteId);
+            if (data.attachment.getStatus() == LOADED) {
+                AttachedImageFile imageFile = new AttachedImageFile(data.attachment.getDownloadId(),
+                        data.attachment.getFilename());
                 data.image = imageFile.loadAndGetImage();
             }
             data.inReplyToNoteId = MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, noteId);
@@ -183,7 +181,7 @@ public class NoteEditorData {
             data.noteOid = noteOid;
             data.status = status;
             data.setBody(body);
-            data.downloadData = downloadData;
+            data.attachment = attachment;
             data.image = image;
             data.inReplyToNoteId = inReplyToNoteId;
             data.inReplyToActorId = inReplyToActorId;
@@ -213,7 +211,7 @@ public class NoteEditorData {
             inReplyTo.setActor(Actor.fromOriginAndActorId(getMyAccount().getOrigin(), inReplyToActorId));
             note.setInReplyTo(inReplyTo);
         }
-        Uri mediaUri = imageUriToSave.equals(Uri.EMPTY) ? downloadData.getUri() : imageUriToSave;
+        Uri mediaUri = imageUriToSave.equals(Uri.EMPTY) ? attachment.getUri() : imageUriToSave;
         if (!mediaUri.equals(Uri.EMPTY)) note.attachments.add(Attachment.fromUri(mediaUri));
 
         DataUpdater di = new DataUpdater(getMyAccount());
@@ -231,7 +229,7 @@ public class NoteEditorData {
     }
     
     boolean isEmpty() {
-        return TextUtils.isEmpty(body) && getMediaUri().equals(Uri.EMPTY) && noteId == 0;
+        return TextUtils.isEmpty(body) && attachment.isEmpty() && noteId == 0;
     }
 
     public boolean isValid() {
@@ -247,16 +245,9 @@ public class NoteEditorData {
         return this;
     }
 
-    public Uri getMediaUri() {
-        return downloadData.getUri();
-    }
-
-    public long getImageFileSize() {
-        return downloadData.getFile().getSize();
-    }
-
-    public Point getImageSize() {
-        return image == null ? new Point(0,0) : image.getImageSize();
+    @NonNull
+    public DownloadData getAttachment() {
+        return attachment;
     }
 
     public NoteEditorData setNoteId(long msgIdIn) {
