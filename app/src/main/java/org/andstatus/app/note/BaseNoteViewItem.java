@@ -44,7 +44,7 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends ViewItem<T> {
     private static final int MIN_LENGTH_TO_COMPARE = 5;
-    private MyContext myContext = MyContextHolder.get();
+    MyContext myContext = MyContextHolder.get();
     long updatedDate = 0;
     long activityUpdatedDate = 0;
 

@@ -19,9 +19,12 @@ package org.andstatus.app.note;
 import android.content.Context;
 import android.database.Cursor;
 
+import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.util.I18n;
+import org.andstatus.app.util.MyHtml;
 
 public abstract class ConversationItem<T extends ConversationItem<T>> extends BaseNoteViewItem<T> implements Comparable<ConversationItem> {
     ConversationItem inReplyToViewItem = null;
@@ -93,6 +96,10 @@ public abstract class ConversationItem<T extends ConversationItem<T>> extends Ba
     abstract String[] getProjection();
     
     void load(Cursor cursor) {
+        setOrigin(myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)));
+        author = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
+        setName(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.NAME)));
+        setContent(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.CONTENT)));
         inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
         updatedDate = DbUtils.getLong(cursor, NoteTable.UPDATED_DATE);
     }

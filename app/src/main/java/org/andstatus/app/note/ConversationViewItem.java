@@ -22,7 +22,6 @@ import android.support.annotation.NonNull;
 import android.text.Html;
 import android.text.TextUtils;
 
-import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
@@ -35,7 +34,6 @@ import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.util.I18n;
-import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.TriState;
 
 public class ConversationViewItem extends ConversationItem<ConversationViewItem> {
@@ -80,10 +78,7 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
             }
 
             super.load(cursor);
-            author = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
             noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
-            setName(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.NAME)));
-            setContent(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.CONTENT)));
             String via = DbUtils.getString(cursor, NoteTable.VIA);
             if (!TextUtils.isEmpty(via)) {
                 noteSource = Html.fromHtml(via).toString().trim();

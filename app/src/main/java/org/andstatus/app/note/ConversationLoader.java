@@ -22,13 +22,14 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.actor.ActorListLoader;
+import org.andstatus.app.actor.ActorListType;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.net.social.Connection;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
@@ -81,6 +82,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
         }
         load2(newONote(selectedNoteId));
         addMissedFromCache();
+        loadActors(items);
         items.sort(replyLevelComparator);
         enumerateNotes();
     }
@@ -97,6 +99,16 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
         for (T oNote : cachedItems.values()) {
             addNoteToList(oNote);
         }
+    }
+
+    private void loadActors(List<T> items) {
+        if (items.isEmpty()) return;
+        ActorListLoader loader = new ActorListLoader(ActorListType.ACTORS, ma,
+                ma.getOrigin(), 0, "");
+        items.forEach(item -> item.addActorsToLoad(loader));
+        if (loader.getList().isEmpty()) return;
+        loader.load(progress -> {});
+        items.forEach(item -> item.setLoadedActors(loader));
     }
 
     /** Returns true if note was added false in a case the note existed already */
