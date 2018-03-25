@@ -43,6 +43,7 @@ import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
@@ -61,7 +62,9 @@ public class NoteEditorData {
     private long activityId = 0;
     public DownloadStatus status = DownloadStatus.DRAFT;
     @NonNull
-    public volatile String body = "";
+    public String name = "";
+    @NonNull
+    public volatile String content = "";
 
     private DownloadData attachment = DownloadData.EMPTY;
     CachedImage image = null;
@@ -96,7 +99,8 @@ public class NoteEditorData {
         int result = 1;
         result = prime * result + ma.hashCode();
         result = prime * result + attachment.getUri().hashCode();
-        result = prime * result + body.hashCode();
+        result = prime * result + name.hashCode();
+        result = prime * result + content.hashCode();
         result = prime * result + recipients.hashCode();
         result = prime * result + (int) (inReplyToNoteId ^ (inReplyToNoteId >>> 32));
         return result;
@@ -113,8 +117,8 @@ public class NoteEditorData {
             return false;
         if (!attachment.getUri().equals(other.attachment.getUri()))
             return false;
-        if (!body.equals(other.body))
-            return false;
+        if (!name.equals(other.name)) return false;
+        if (!content.equals(other.content)) return false;
         if (!recipients.equals(other.recipients))
             return false;
         return inReplyToNoteId == other.inReplyToNoteId;
@@ -125,8 +129,11 @@ public class NoteEditorData {
         StringBuilder builder = new StringBuilder();
         builder.append("id:" + noteId + ",");
         builder.append("status:" + status + ",");
-        if(!TextUtils.isEmpty(body)) {
-            builder.append("text:'" + body + "',");
+        if(StringUtils.nonEmpty(name)) {
+            builder.append("name:'" + name + "',");
+        }
+        if(StringUtils.nonEmpty(content)) {
+            builder.append("content:'" + content + "',");
         }
         if(attachment.nonEmpty()) {
             builder.append("attachment:" + attachment + ",");
@@ -154,6 +161,7 @@ public class NoteEditorData {
             data.noteOid = MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId);
             data.activityId = MyQuery.noteIdToLongColumnValue(ActivityTable.LAST_UPDATE_ID, noteId);
             data.status = DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId));
+            data.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId));
             data.setContent(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId));
             data.attachment = DownloadData.getSingleAttachment(noteId);
             if (data.attachment.getStatus() == LOADED) {
@@ -180,7 +188,8 @@ public class NoteEditorData {
             data.noteId = noteId;
             data.noteOid = noteOid;
             data.status = status;
-            data.setContent(body);
+            data.setName(name);
+            data.setContent(content);
             data.attachment = attachment;
             data.image = image;
             data.inReplyToNoteId = inReplyToNoteId;
@@ -200,7 +209,8 @@ public class NoteEditorData {
         activity.setActor(activity.accountActor);
         Note note = activity.getNote();
         note.noteId = getNoteId();
-        note.setContent(body);
+        note.setName(name);
+        note.setContent(content);
         note.addRecipients(recipients);
         if (inReplyToNoteId != 0) {
             final AActivity inReplyTo = AActivity.newPartialNote(getMyAccount().getActor(),
@@ -229,7 +239,7 @@ public class NoteEditorData {
     }
     
     boolean isEmpty() {
-        return TextUtils.isEmpty(body) && attachment.isEmpty() && noteId == 0;
+        return TextUtils.isEmpty(content) && attachment.isEmpty() && noteId == 0 && TextUtils.isEmpty(name);
     }
 
     public boolean isValid() {
@@ -240,8 +250,8 @@ public class NoteEditorData {
         return Note.mayBeEdited(ma.getOrigin().getOriginType(), status);
     }
 
-    public NoteEditorData setContent(String bodyIn) {
-        body = bodyIn == null ? "" : bodyIn.trim();
+    public NoteEditorData setContent(String contentIn) {
+        this.content = StringUtils.notEmpty(contentIn, "").trim();
         return this;
     }
 
@@ -323,14 +333,14 @@ public class NoteEditorData {
                 String name = MyQuery.actorIdToName(null, actorId, getActorInTimeline());
                 if (!TextUtils.isEmpty(name)) {
                     String mentionText = "@" + name + " ";
-                    if (TextUtils.isEmpty(body) || !(body + " ").contains(mentionText)) {
+                    if (TextUtils.isEmpty(content) || !(content + " ").contains(mentionText)) {
                         mentions = mentions.trim() + " " + mentionText;
                     }
                 }
             }
         }
         if (!TextUtils.isEmpty(mentions)) {
-            setContent(mentions.trim() + " " + body);
+            setContent(mentions.trim() + " " + content);
         }
     }
 
@@ -338,8 +348,8 @@ public class NoteEditorData {
         String name = MyQuery.actorIdToName(null, mentionedActorId, getActorInTimeline());
         if (!TextUtils.isEmpty(name)) {
             String bodyText2 = "@" + name + " ";
-            if (!TextUtils.isEmpty(body) && !(body + " ").contains(bodyText2)) {
-                bodyText2 = body.trim() + " " + bodyText2;
+            if (!TextUtils.isEmpty(content) && !(content + " ").contains(bodyText2)) {
+                bodyText2 = content.trim() + " " + bodyText2;
             }
             setContent(bodyText2);
         }
@@ -371,5 +381,9 @@ public class NoteEditorData {
     public NoteEditorData setTimeline(Timeline timeline) {
         this.timeline = timeline;
         return this;
+    }
+
+    public void setName(String name) {
+        this.name = StringUtils.notEmpty(name, "").trim();
     }
 }

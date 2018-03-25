@@ -350,7 +350,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         hideLoading(method);
         hideSyncing(method);
         DemoData.crashTest(() -> getNoteEditor() != null
-                && getNoteEditor().getData().body.startsWith("Crash me on pause 2015-04-10"));
+                && getNoteEditor().getData().content.startsWith("Crash me on pause 2015-04-10"));
         saveTimelinePosition();
         myContext.timelines().saveChanged();
         super.onPause();

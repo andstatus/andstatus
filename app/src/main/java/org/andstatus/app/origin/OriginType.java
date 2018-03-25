@@ -42,18 +42,20 @@ public enum OriginType implements SelectableEnum {
      * Origin type for Twitter system 
      * <a href="https://dev.twitter.com/docs">Twitter Developers' documentation</a>
      */
-    TWITTER(1, "Twitter", ApiEnum.TWITTER1P1),
+    TWITTER(1, "Twitter", ApiEnum.TWITTER1P1, NoteName.NO),
     /**
      * Origin type for the pump.io system 
      * Till July of 2013 (and v.1.16 of AndStatus) the API was: 
      * <a href="http://status.net/wiki/Twitter-compatible_API">Twitter-compatible identi.ca API</a>
      * Since July 2013 the API is <a href="https://github.com/e14n/pump.io/blob/master/API.md">pump.io API</a>
      */
-    PUMPIO(2, "Pump.io", ApiEnum.PUMPIO),
-    GNUSOCIAL(3, "GNU social", ApiEnum.GNUSOCIAL_TWITTER),
+    PUMPIO(2, "Pump.io", ApiEnum.PUMPIO, NoteName.YES),
+    GNUSOCIAL(3, "GNU social", ApiEnum.GNUSOCIAL_TWITTER, NoteName.NO),
     /** <a href="https://github.com/Gargron/mastodon">Mastodon at GitHub</a> */
-    MASTODON(4, "Mastodon", ApiEnum.MASTODON),
-    UNKNOWN(0, "?", ApiEnum.UNKNOWN_API);
+    MASTODON(4, "Mastodon", ApiEnum.MASTODON, NoteName.YES),
+    UNKNOWN(0, "?", ApiEnum.UNKNOWN_API, NoteName.NO);
+
+    private enum NoteName { YES, NO}
 
     /**
      * Connection APIs known
@@ -127,10 +129,12 @@ public enum OriginType implements SelectableEnum {
     private boolean isInteractionsTimelineSyncable = true;
     private final boolean isPrivateNoteAllowsReply;
     private final boolean isSelectable;
+    public final boolean hasNoteName;
 
-    OriginType(long id, String title, ApiEnum api) {
+    OriginType(long id, String title, ApiEnum api, NoteName noteName) {
         this.id = id;
         this.title = title;
+        this.hasNoteName = noteName == NoteName.YES;
         switch (api) {
             case TWITTER1P1:
                 isOAuthDefault = true;

@@ -50,7 +50,7 @@ public class NoteEditorDataTest {
                 .addRecipientId(recipientId)
                 .setReplyToConversationParticipants(replyAll)
                 .setContent("Some text here " + demoData.testRunUid);
-        assertFalse(data.toString(), data.body.contains("@"));
+        assertFalse(data.toString(), data.content.contains("@"));
         data.addMentionsToText();
         assertEquals(recipientId, data.recipients.getFirst().actorId);
         assertMentionedActor(data, inReplyToActorId, true);
@@ -66,7 +66,7 @@ public class NoteEditorDataTest {
                 data.ma.getOrigin().isMentionAsWebFingerId() ? ActorTable.WEBFINGER_ID
                         : ActorTable.USERNAME, mentionedActorId);
         assertTrue(!TextUtils.isEmpty(expectedName));
-        boolean isMentioned = data.body.contains("@" + expectedName);
+        boolean isMentioned = data.content.contains("@" + expectedName);
         assertEquals(data.toString() + "; expected name:" + expectedName, isMentioned_in, isMentioned);
     }
 

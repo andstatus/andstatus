@@ -365,12 +365,12 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     }
 
     protected void copyNoteText(NoteEditorData editorData) {
-        MyLog.v(this, "text='" + editorData.body + "'");
-        if (!TextUtils.isEmpty(editorData.body)) {
+        MyLog.v(this, "text='" + editorData.content + "'");
+        if (!TextUtils.isEmpty(editorData.content)) {
             // http://developer.android.com/guide/topics/text/copy-paste.html
             ClipboardManager clipboard = (ClipboardManager) MyContextHolder.get().context().
                     getSystemService(Context.CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText(I18n.trimTextAt(editorData.body, 40), editorData.body);
+            ClipData clip = ClipData.newPlainText(I18n.trimTextAt(editorData.content, 40), editorData.content);
             clipboard.setPrimaryClip(clip);
             MyLog.v(this, "clip='" + clip.toString() + "'");
         }

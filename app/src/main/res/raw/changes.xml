@@ -36,7 +36,8 @@
             <change>Video file can be attached to a new note. A thumbnail of the video attachment is shown in a timeline.
                 Video attachment may be viewed the same way as an image attachment.
             </change>
-            <change>Added titles (names) for notes of Pump.io and Mastodon (where they are called "CW")</change>
+            <change>Added titles (names) for notes of Pump.io and Mastodon (where they are called "CW").
+                <a href="https://github.com/andstatus/andstatus/issues/150">#150</a></change>
         </changes>
     </release>
     <release android:versionName="37.01" android:versionCode="245"

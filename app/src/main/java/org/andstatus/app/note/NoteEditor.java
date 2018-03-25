@@ -54,6 +54,7 @@ import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
@@ -105,8 +106,8 @@ public class NoteEditor {
             @Override
             public void afterTextChanged(Editable s) {
                 editorData.setContent(s.toString());
-                MyLog.v(NoteEditorData.TAG, "Body updated to '" + editorData.body + "'");
-                mCharsLeftText.setText(String.valueOf(editorData.getMyAccount().charactersLeftForNote(editorData.body)));
+                MyLog.v(NoteEditorData.TAG, "Content updated to '" + editorData.content + "'");
+                mCharsLeftText.setText(String.valueOf(editorData.getMyAccount().charactersLeftForNote(editorData.content)));
             }
 
             @Override
@@ -415,7 +416,9 @@ public class NoteEditor {
 
     public void updateScreen() {
         setAdapter();
-        String body = editorData.body.trim();
+        MyUrlSpan.showText(editorView, R.id.note_name_edit, editorData.name, false,
+                editorData.ma.getOrigin().getOriginType().hasNoteName);
+        String body = editorData.content.trim();
         if (!body.equals(bodyView.getText().toString().trim())) {
             if (!TextUtils.isEmpty(body)) {
                 body += " ";
@@ -503,10 +506,10 @@ public class NoteEditor {
         updateDataFromScreen();
         if (!editorData.isValid()) {
             discardAndHide();
-        } else if (TextUtils.isEmpty(editorData.body.trim())) {
+        } else if (TextUtils.isEmpty(editorData.content.trim())) {
             Toast.makeText(getActivity(), R.string.cannot_send_empty_message,
                     Toast.LENGTH_SHORT).show();
-        } else if (editorData.getMyAccount().charactersLeftForNote(editorData.body) < 0) {
+        } else if (editorData.getMyAccount().charactersLeftForNote(editorData.content) < 0) {
             Toast.makeText(getActivity(), R.string.message_is_too_long,
                     Toast.LENGTH_SHORT).show();
         } else {
@@ -518,6 +521,7 @@ public class NoteEditor {
     }
 
     private void updateDataFromScreen() {
+        editorData.setName(MyUrlSpan.getText(editorView, R.id.note_name_edit));
         editorData.setContent(bodyView.getText().toString());
     }
 

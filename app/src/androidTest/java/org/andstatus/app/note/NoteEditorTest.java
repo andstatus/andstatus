@@ -192,9 +192,11 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         ActivityTestHelper.waitViewVisible(method + "; Editor appeared", editorView);
         assertTextCleared();
 
-        String body = "Note with attachment " + demoData.testRunUid;
         TestSuite.waitForIdleSync();
-        onView(withId(R.id.noteBodyEditText)).perform(new TypeTextAction(body));
+        final String noteName = "A note can have a title (name)";
+        final String content = "Note with attachment " + demoData.testRunUid;
+        onView(withId(R.id.note_name_edit)).perform(new TypeTextAction(noteName));
+        onView(withId(R.id.noteBodyEditText)).perform(new TypeTextAction(content));
         TestSuite.waitForIdleSync();
 
         getActivity().setSelectorActivityMock(helper);
@@ -235,7 +237,8 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
             }
         }
         assertEquals("Image attached", demoData.localImageTestUri2, editor.getData().getAttachment().getUri());
-        onView(withId(R.id.noteBodyEditText)).check(matches(withText(body + " ")));
+        onView(withId(R.id.noteBodyEditText)).check(matches(withText(content + " ")));
+        onView(withId(R.id.note_name_edit)).check(matches(withText(noteName)));
         helper.clickMenuItem(method + " clicker save draft", R.id.saveDraftButton);
 
         MyLog.v(this, method + " ended");
@@ -244,8 +247,8 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
     private void assertInitialText(final String description) throws InterruptedException {
         final NoteEditor editor = getActivity().getNoteEditor();
         TextView textView = (TextView) getActivity().findViewById(R.id.noteBodyEditText);
-        ActivityTestHelper.waitTextInAView(description, textView, data.body);
-        MyLog.v(this, description + " text:'" + editor.getData().body + "'");
+        ActivityTestHelper.waitTextInAView(description, textView, data.content);
+        MyLog.v(this, description + " text:'" + editor.getData().content + "'");
         assertEquals(description, data, editor.getData());
     }
 

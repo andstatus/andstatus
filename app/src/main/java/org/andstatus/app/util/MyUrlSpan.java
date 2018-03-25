@@ -126,6 +126,12 @@ public class MyUrlSpan extends URLSpan {
         }
     }
 
+    public static String getText(View parentView, @IdRes int viewId) {
+        View view = parentView.findViewById(viewId);
+        return view == null || !TextView.class.isAssignableFrom(view.getClass()) ? ""
+                : ((TextView) view).getText().toString();
+    }
+
     /**
      * Substitute for: textView.setMovementMethod(LinkMovementMethod.getInstance());
      * setMovementMethod intercepts click on a text part without links,

@@ -27,6 +27,7 @@ import android.util.AttributeSet;
  */
 public class LongHintEditText extends android.support.v7.widget.AppCompatEditText {
     boolean singleLine = false;
+
     public LongHintEditText(Context context) {
         super(context);
         setTextChangedListener();

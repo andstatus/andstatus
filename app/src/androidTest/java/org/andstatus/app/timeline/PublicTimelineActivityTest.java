@@ -116,7 +116,7 @@ public class PublicTimelineActivityTest extends TimelineActivityTest<ActivityVie
                 public void run() {
                     sb.setLength(0);
                     if (timelineActivity != null) {
-                        TextView item = (TextView) timelineActivity.findViewById(R.id.timelineTypeButton);
+                        TextView item = timelineActivity.findViewById(R.id.timelineTypeButton);
                         if (item != null) {
                             sb.append(item.getText());
                         }
@@ -129,11 +129,11 @@ public class PublicTimelineActivityTest extends TimelineActivityTest<ActivityVie
             if (sb.toString().contains(queryString)) {
                 found = true;
                 break;
-            } else if (DbUtils.waitMs(method, 2000 * (attempt + 1))) {
-                break;
             }
+            DbUtils.waitMs(method, 1000 * (attempt + 1));
         }
-        assertTrue(caption + " '" + (sb.toString()) + "'", found);
+        assertTrue(caption + " '" + (sb.toString()) + "', query:'" + queryString
+                + "', found:'" + sb.toString() + "'", found);
     }
 
     private void assertNotesArePublic(TimelineActivity timelineActivity, String publicNoteText) throws InterruptedException {
