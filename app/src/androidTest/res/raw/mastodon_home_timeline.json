@@ -5,7 +5,7 @@
     "in_reply_to_id": null,
     "in_reply_to_account_id": null,
     "sensitive": false,
-    "spoiler_text": "",
+    "spoiler_text": "This is a test spoiler",
     "visibility": "public",
     "application": {
         "name": "Web",

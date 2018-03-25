@@ -224,7 +224,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     protected void setNoteBodyFromJson(Note note, JSONObject jso) throws JSONException {
         boolean bodyFound = false;
         if (!jso.isNull("full_text")) {
-            note.setBody(jso.getString("full_text"));
+            note.setContent(jso.getString("full_text"));
             bodyFound = true;
         }
         if (!bodyFound) {

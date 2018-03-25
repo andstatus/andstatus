@@ -48,6 +48,7 @@ public class ConversationMemberItem extends ConversationItem<ConversationMemberI
         columnNames.add(NoteTable.UPDATED_DATE);
         columnNames.add(NoteTable.IN_REPLY_TO_NOTE_ID);
         columnNames.add(NoteTable.AUTHOR_ID);
+        columnNames.add(NoteTable.NAME);
         columnNames.add(NoteTable.CONTENT);
         return columnNames.toArray(new String[]{});
     }
@@ -56,7 +57,8 @@ public class ConversationMemberItem extends ConversationItem<ConversationMemberI
     void load(Cursor cursor) {
         super.load(cursor);
         author = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
-        setBody(MyHtml.fromHtml(DbUtils.getString(cursor, NoteTable.CONTENT)));
+        setName(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.NAME)));
+        setContent(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.CONTENT)));
     }
 
     @Override

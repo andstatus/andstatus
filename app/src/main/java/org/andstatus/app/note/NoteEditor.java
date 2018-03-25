@@ -46,7 +46,6 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.graphics.MediaMetadata;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
@@ -105,7 +104,7 @@ public class NoteEditor {
         bodyView.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
-                editorData.setBody(s.toString());
+                editorData.setContent(s.toString());
                 MyLog.v(NoteEditorData.TAG, "Body updated to '" + editorData.body + "'");
                 mCharsLeftText.setText(String.valueOf(editorData.getMyAccount().charactersLeftForNote(editorData.body)));
             }
@@ -377,7 +376,7 @@ public class NoteEditor {
         MyLog.v(NoteEditorData.TAG, "startEditingSharedData " + textToShare + " uri: " + mediaToShare);
         updateDataFromScreen();
         NoteEditorCommand command = new NoteEditorCommand(
-                NoteEditorData.newEmpty(ma).setBody(textToShare), editorData)
+                NoteEditorData.newEmpty(ma).setContent(textToShare), editorData)
                 .setMediaUri(mediaToShare);
         command.showAfterSave = true;
         command.beingEdited = true;
@@ -431,7 +430,7 @@ public class NoteEditor {
         showIfNotEmpty(R.id.note_author,
                 shouldShowAccountName() ? editorData.getMyAccount().getAccountName() : "");
         showNoteDetails();
-        showIfNotEmpty(R.id.inReplyToBody, editorData.inReplyToBody);
+        showIfNotEmpty(R.id.inReplyToBody, editorData.inReplyToContent);
         mCharsLeftText.setText(String.valueOf(editorData.getMyAccount()
                 .charactersLeftForNote(body)));
         showAttachedImage();
@@ -519,7 +518,7 @@ public class NoteEditor {
     }
 
     private void updateDataFromScreen() {
-        editorData.setBody(bodyView.getText().toString());
+        editorData.setContent(bodyView.getText().toString());
     }
 
     private void discardAndHide() {

@@ -75,7 +75,7 @@ public class NoteEditorData {
      */
     public long inReplyToNoteId = 0;
     private long inReplyToActorId = 0;
-    String inReplyToBody = "";
+    String inReplyToContent = "";
     private boolean replyToConversationParticipants = false;
     private boolean replyToMentionedActors = false;
     public Audience recipients = new Audience();
@@ -154,7 +154,7 @@ public class NoteEditorData {
             data.noteOid = MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId);
             data.activityId = MyQuery.noteIdToLongColumnValue(ActivityTable.LAST_UPDATE_ID, noteId);
             data.status = DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId));
-            data.setBody(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId));
+            data.setContent(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId));
             data.attachment = DownloadData.getSingleAttachment(noteId);
             if (data.attachment.getStatus() == LOADED) {
                 AttachedImageFile imageFile = new AttachedImageFile(data.attachment.getDownloadId(),
@@ -163,7 +163,7 @@ public class NoteEditorData {
             }
             data.inReplyToNoteId = MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, noteId);
             data.inReplyToActorId = MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_ACTOR_ID, noteId);
-            data.inReplyToBody = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, data.inReplyToNoteId);
+            data.inReplyToContent = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, data.inReplyToNoteId);
             data.recipients = Audience.fromNoteId(ma.getOrigin(), noteId);
             data.isPrivate = MyQuery.noteIdToTriState(NoteTable.PRIVATE, noteId);
             MyLog.v(TAG, "Loaded " + data);
@@ -180,12 +180,12 @@ public class NoteEditorData {
             data.noteId = noteId;
             data.noteOid = noteOid;
             data.status = status;
-            data.setBody(body);
+            data.setContent(body);
             data.attachment = attachment;
             data.image = image;
             data.inReplyToNoteId = inReplyToNoteId;
             data.inReplyToActorId = inReplyToActorId;
-            data.inReplyToBody = inReplyToBody;
+            data.inReplyToContent = inReplyToContent;
             data.replyToConversationParticipants = replyToConversationParticipants;
             data.recipients.addAll(recipients);
             return data;
@@ -200,7 +200,7 @@ public class NoteEditorData {
         activity.setActor(activity.accountActor);
         Note note = activity.getNote();
         note.noteId = getNoteId();
-        note.setBody(body);
+        note.setContent(body);
         note.addRecipients(recipients);
         if (inReplyToNoteId != 0) {
             final AActivity inReplyTo = AActivity.newPartialNote(getMyAccount().getActor(),
@@ -240,7 +240,7 @@ public class NoteEditorData {
         return Note.mayBeEdited(ma.getOrigin().getOriginType(), status);
     }
 
-    public NoteEditorData setBody(String bodyIn) {
+    public NoteEditorData setContent(String bodyIn) {
         body = bodyIn == null ? "" : bodyIn.trim();
         return this;
     }
@@ -330,7 +330,7 @@ public class NoteEditorData {
             }
         }
         if (!TextUtils.isEmpty(mentions)) {
-            setBody(mentions.trim() + " " + body);
+            setContent(mentions.trim() + " " + body);
         }
     }
 
@@ -341,7 +341,7 @@ public class NoteEditorData {
             if (!TextUtils.isEmpty(body) && !(body + " ").contains(bodyText2)) {
                 bodyText2 = body.trim() + " " + bodyText2;
             }
-            setBody(bodyText2);
+            setContent(bodyText2);
         }
         return this;
     }

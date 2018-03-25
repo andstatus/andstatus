@@ -30,14 +30,14 @@ import org.andstatus.app.origin.Origin;
 public class ActorsOfNoteListLoader extends ActorListLoader {
     private final long selectedNoteId;
     private final Origin originOfSelectedNote;
-    final String noteBody;
+    final String noteContent;
     private boolean mentionedOnly = false;
 
     public ActorsOfNoteListLoader(ActorListType actorListType, MyAccount ma, long centralItemId, String searchQuery) {
         super(actorListType, ma, ma.getOrigin(), centralItemId, searchQuery);
 
         selectedNoteId = centralItemId;
-        noteBody = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, selectedNoteId);
+        noteContent = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, selectedNoteId);
         originOfSelectedNote = MyContextHolder.get().origins().fromId(
                 MyQuery.noteIdToOriginId(selectedNoteId));
     }
@@ -72,7 +72,7 @@ public class ActorsOfNoteListLoader extends ActorListLoader {
     }
 
     private void addActorsFromNoteBody(Actor author) {
-        author.extractActorsFromBodyText(noteBody, false).forEach(this::addActorToList);
+        author.extractActorsFromContent(noteContent, false).forEach(this::addActorToList);
     }
 
     private void addRebloggers() {
@@ -84,6 +84,6 @@ public class ActorsOfNoteListLoader extends ActorListLoader {
 
     @Override
     protected String getTitle() {
-        return noteBody;
+        return noteContent;
     }
 }

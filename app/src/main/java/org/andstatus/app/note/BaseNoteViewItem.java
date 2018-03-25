@@ -63,7 +63,8 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     String noteSource = "";
 
-    private String body = "";
+    private String name = "";
+    private String content = "";
     String cleanedBody = "";
 
     boolean favorited = false;
@@ -219,15 +220,24 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         return attachedImageFile;
     }
 
-    public BaseNoteViewItem setBody(String body) {
-        this.body = body;
-        this.isFavoritingAction = MyHtml.isFavoritingAction(body);
-        cleanedBody = MyHtml.getCleanedBody(body);
+    public BaseNoteViewItem setName(String name) {
+        this.name = name;
         return this;
     }
 
-    public String getBody() {
-        return body;
+    public String getName() {
+        return name;
+    }
+
+    public BaseNoteViewItem setContent(String content) {
+        this.content = content;
+        this.isFavoritingAction = MyHtml.isFavoritingAction(content);
+        cleanedBody = MyHtml.getCleanedBody(content);
+        return this;
+    }
+
+    public String getContent() {
+        return content;
     }
 
     @Override
@@ -243,7 +253,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     @Override
     public boolean matches(TimelineFilter filter) {
         if (!filter.keywordsFilter.isEmpty() || !filter.searchQuery.isEmpty()) {
-            String bodyToSearch = MyHtml.getBodyToSearch(getBody());
+            String bodyToSearch = MyHtml.getContentToSearch(getContent());
             if (filter.keywordsFilter.matchedAny(bodyToSearch)) return false;
             if (!filter.searchQuery.isEmpty() && !filter.searchQuery.matchedAll(bodyToSearch)) return false;
         }
@@ -254,7 +264,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     @Override
     public String toString() {
-        return "Note " + body;
+        return "Note " + content;
     }
 
     public void hideActor(long actorId) {

@@ -158,10 +158,10 @@ public class PublicTimelineActivityTest extends TimelineActivityTest<ActivityVie
             final BaseNoteViewItem viewItem = ListActivityTestHelper.toBaseNoteViewItem(
                     timelineActivity.getListAdapter().getItem(noteView));
             if (bodyView != null) {
-                assertTrue("Note #" + viewItem.getId() + " '" + viewItem.getBody()
+                assertTrue("Note #" + viewItem.getId() + " '" + viewItem.getContent()
                                 + "' contains '" + publicNoteText + "'\n" + viewItem,
-                        String.valueOf(viewItem.getBody()).contains(publicNoteText));
-                assertNotEquals("Note #" + viewItem.getId() + " '" + viewItem.getBody()
+                        String.valueOf(viewItem.getContent()).contains(publicNoteText));
+                assertNotEquals("Note #" + viewItem.getId() + " '" + viewItem.getContent()
                         + "' is private" + "\n" + viewItem, TriState.TRUE,
                         MyQuery.noteIdToTriState(NoteTable.PRIVATE, viewItem.getId()));
                 msgCount++;

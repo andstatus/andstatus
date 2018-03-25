@@ -56,7 +56,7 @@ public class AttachmentDownloaderTest {
     public void testImageAttachmentLoad() throws IOException {
         String body = "A note with an image attachment";
         DemoNoteInserter inserter = new DemoNoteInserter(ma);
-        AActivity activity = inserter.buildActivity(inserter.buildActor(), body, null, null,
+        AActivity activity = inserter.buildActivity(inserter.buildActor(), "", body, null, null,
                 DownloadStatus.LOADED);
         activity.getNote().attachments.add(Attachment.fromUri(
                 "http://www.publicdomainpictures.net/pictures/60000/nahled/landscape-1376582205Yno.jpg"));

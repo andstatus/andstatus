@@ -102,7 +102,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
                 .addRecipientId(MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOrigin().getId(),
                         demoData.conversationEntryAuthorOid))
                 .addMentionsToText()
-                .setBody("Some static text " + demoData.testRunUid);
+                .setContent("Some static text " + demoData.testRunUid);
     }
 
     @Test
@@ -268,9 +268,9 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
                 MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId) : listItemId;
         logMsg += ", noteId=" + noteId;
 
-        String body = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
+        String content = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
         helper.invokeContextMenuAction4ListItemId(method, listItemId, NoteContextMenuItem.COPY_TEXT, R.id.note_wrapper);
-        assertEquals(logMsg, body, getClipboardText(method));
+        assertEquals(logMsg, content, getClipboardText(method));
 
         helper.invokeContextMenuAction4ListItemId(method, listItemId, NoteContextMenuItem.COPY_AUTHOR, R.id.note_wrapper);
         String text = getClipboardText(method);

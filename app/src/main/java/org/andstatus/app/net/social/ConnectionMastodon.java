@@ -332,7 +332,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             }
 
             Note note =  activity.getNote();
-            note.setBody(jso.optString("content"));
+            note.setName(jso.optString("spoiler_text"));
+            note.setContent(jso.optString("content"));
             note.url = jso.optString("url");
             if (jso.has("recipient")) {
                 JSONObject recipient = jso.getJSONObject("recipient");

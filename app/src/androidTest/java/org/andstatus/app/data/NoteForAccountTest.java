@@ -29,7 +29,7 @@ public class NoteForAccountTest {
         assertTrue(ma.isValid());
         DemoNoteInserter mi = new DemoNoteInserter(ma);
         Actor accountActor = ma.getActor();
-        AActivity activity1 = mi.buildActivity(accountActor, "My testing note", null,
+        AActivity activity1 = mi.buildActivity(accountActor, "", "My testing note", null,
                 null, DownloadStatus.LOADED);
         mi.onActivity(activity1);
         
@@ -42,7 +42,7 @@ public class NoteForAccountTest {
         assertTrue(mfa.hasPrivateAccess());
         
         Actor author2 = mi.buildActorFromOid("acct:a2." + demoData.testRunUid + "@pump.example.com");
-        final AActivity replyTo1 = mi.buildActivity(author2, "@" + accountActor.getUsername()
+        final AActivity replyTo1 = mi.buildActivity(author2, "", "@" + accountActor.getUsername()
                 + " Replying to you", activity1, null, DownloadStatus.LOADED);
         replyTo1.getNote().setPrivate(FALSE);
         mi.onActivity(replyTo1);
@@ -56,7 +56,7 @@ public class NoteForAccountTest {
         assertTrue(mfa.hasPrivateAccess());
 
         Actor author3 = mi.buildActorFromOid("acct:b3." + demoData.testRunUid + "@pumpity.example.com");
-        AActivity replyTo2 = mi.buildActivity(author3, "@" + author2.getUsername()
+        AActivity replyTo2 = mi.buildActivity(author3, "", "@" + author2.getUsername()
                 + " Replying to the second author", replyTo1, null, DownloadStatus.LOADED);
         replyTo2.getNote().setPrivate(FALSE);
         mi.onActivity(replyTo2);
@@ -70,7 +70,7 @@ public class NoteForAccountTest {
         assertFalse(mfa.hasPrivateAccess());
         assertFalse(mfa.reblogged);
 
-        AActivity reblogged1 = mi.buildActivity(author3, "@" + author2.getUsername()
+        AActivity reblogged1 = mi.buildActivity(author3, "", "@" + author2.getUsername()
                 + " This reply is reblogged by anotherMan", replyTo1, null, DownloadStatus.LOADED);
         Actor anotherMan = mi.buildActorFromOid("acct:c4." + demoData.testRunUid + "@pump.example.com");
         anotherMan.setUsername("anotherMan" + demoData.testRunUid);

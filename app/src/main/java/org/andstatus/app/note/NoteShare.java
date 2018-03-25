@@ -68,15 +68,15 @@ public class NoteShare {
 
     Intent intentToViewAndShare(boolean share) {
         StringBuilder subject = new StringBuilder();
-        String msgBody = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
-        String msgBodyPlainText = msgBody;
+        String noteContent = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
+        String noteContentPlainText = noteContent;
         if (origin.isHtmlContentAllowed()) {
-            msgBodyPlainText = MyHtml.fromHtml(msgBody);
+            noteContentPlainText = MyHtml.fromHtml(noteContent);
         }
 
         subject.append(MyContextHolder.get().context()
                 .getText(origin.alternativeTermForResourceId(R.string.message)));
-        subject.append(" - " + msgBodyPlainText);
+        subject.append(" - " + noteContentPlainText);
 
         Intent intent = new Intent(share ? android.content.Intent.ACTION_SEND : Intent.ACTION_VIEW);
         final Uri imageFileUri = FileProvider.downloadFilenameToUri(imageFilename);
@@ -92,9 +92,9 @@ public class NoteShare {
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
         intent.putExtra(Intent.EXTRA_SUBJECT, I18n.trimTextAt(subject.toString(), 80));
-        intent.putExtra(Intent.EXTRA_TEXT, buildBody(origin, msgBodyPlainText, false));
-        if (origin.isHtmlContentAllowed() && MyHtml.hasHtmlMarkup(msgBody) ) {
-            intent.putExtra(Intent.EXTRA_HTML_TEXT, buildBody(origin, msgBody, true));
+        intent.putExtra(Intent.EXTRA_TEXT, buildBody(origin, noteContentPlainText, false));
+        if (origin.isHtmlContentAllowed() && MyHtml.hasHtmlMarkup(noteContent) ) {
+            intent.putExtra(Intent.EXTRA_HTML_TEXT, buildBody(origin, noteContent, true));
         }
         return intent;
     }

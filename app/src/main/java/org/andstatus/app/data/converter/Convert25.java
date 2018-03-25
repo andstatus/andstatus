@@ -67,7 +67,7 @@ class Convert25 extends ConvertOneStep {
         int count = 0;
         try (Cursor c = db.rawQuery(sql, null)) {
             while (c.moveToNext()) {
-                sql = "UPDATE msg SET body_to_search=" + MyQuery.quoteIfNotQuoted(MyHtml.getBodyToSearch(c.getString(1)))
+                sql = "UPDATE msg SET body_to_search=" + MyQuery.quoteIfNotQuoted(MyHtml.getContentToSearch(c.getString(1)))
                         + " WHERE _id=" + c.getLong(0);
                 db.execSQL(sql);
                 count++;

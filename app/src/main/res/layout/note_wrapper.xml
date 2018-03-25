@@ -21,6 +21,15 @@
         <include layout="@layout/author_and_rebloggers"/>
 
         <TextView
+            android:id="@+id/note_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/messageBodyAppearance"
+            android:visibility="gone"
+            tools:visibility="visible"
+            tools:text="Sample title of a note"/>
+
+        <TextView
             android:id="@+id/note_body"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

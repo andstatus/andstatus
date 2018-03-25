@@ -106,8 +106,8 @@ public class DemoNoteInserter {
         return String.valueOf(demoData.testRunUid) + InstanceId.next();
     }
 
-    public AActivity buildActivity(Actor author, String body, AActivity inReplyToActivity, String noteOidIn,
-                                   DownloadStatus noteStatus) {
+    public AActivity buildActivity(Actor author, String name, String content, AActivity inReplyToActivity,
+                                   String noteOidIn, DownloadStatus noteStatus) {
         final String method = "buildActivity";
         String noteOid = noteOidIn;
         if (TextUtils.isEmpty(noteOid) && noteStatus != DownloadStatus.SENDING) {
@@ -125,7 +125,8 @@ public class DemoNoteInserter {
         Note note = Note.fromOriginAndOid(origin, noteOid, noteStatus);
         activity.setNote(note);
         note.setUpdatedDate(activity.getUpdatedDate());
-        note.setBody(body);
+        note.setName(name);
+        note.setContent(content);
         note.via = "AndStatus";
         note.setInReplyTo(inReplyToActivity);
         if (origin.getOriginType() == OriginType.PUMPIO) {
@@ -193,6 +194,9 @@ public class DemoNoteInserter {
                 assertEquals("Note permalink has the same host as origin, " + note.toString(),
                         origin.getUrl().getHost(), urlPermalink.getHost());
             }
+            if (!TextUtils.isEmpty(note.getName())) {
+                assertEquals("Note name " + note, note.getName(), MyQuery.noteIdToStringColumnValue(NoteTable.NAME, note.noteId));
+            }
             if (!TextUtils.isEmpty(note.url)) {
                 assertEquals("Note permalink", note.url, origin.notePermalink(note.noteId));
             }
@@ -259,7 +263,7 @@ public class DemoNoteInserter {
         assertTrue("Is not valid: " + ma, ma.isValid());
         Actor accountActor = ma.getActor();
         DemoNoteInserter mi = new DemoNoteInserter(accountActor);
-        AActivity activity = mi.buildActivity(accountActor, body, null, noteOid, noteStatus);
+        AActivity activity = mi.buildActivity(accountActor, "", body, null, noteOid, noteStatus);
         mi.onActivity(activity);
         return activity;
     }

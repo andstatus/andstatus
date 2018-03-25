@@ -43,7 +43,7 @@ public class NoteForAccount {
     private final long activityId;
     public final long noteId;
     public DownloadStatus status = DownloadStatus.UNKNOWN;
-    private String body = "";
+    private String content = "";
     public long authorId = 0;
     public String authorName = "";
     public long actorId = 0;
@@ -98,7 +98,7 @@ public class NoteForAccount {
         try (Cursor cursor = db.rawQuery(sql, null)) {
             if (cursor.moveToNext()) {
                 status = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
-                body = DbUtils.getString(cursor, NoteTable.CONTENT);
+                content = DbUtils.getString(cursor, NoteTable.CONTENT);
                 authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID);
                 authorName = MyQuery.actorIdToName(db, authorId, MyPreferences.getActorInTimeline());
                 isAuthor = (accountActorId == authorId);
@@ -154,6 +154,6 @@ public class NoteForAccount {
     }
 
     public String getBodyTrimmed() {
-        return I18n.trimTextAt(MyHtml.fromHtml(body), 80).toString();
+        return I18n.trimTextAt(MyHtml.fromHtml(content), 80).toString();
     }
 }

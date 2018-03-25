@@ -480,9 +480,8 @@ public class ConnectionPumpio extends Connection {
             }
 
             Note note =  activity.getNote();
-            if (jso.has("content")) {
-                note.setBody(jso.getString("content"));
-            }
+            note.setName(jso.optString("displayName"));
+            note.setContent(jso.optString("content"));
 
             setVia(note, jso);
             note.url = jso.optString("url");

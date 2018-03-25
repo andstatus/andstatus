@@ -82,7 +82,8 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
             super.load(cursor);
             author = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
             noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
-            setBody(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.CONTENT)));
+            setName(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.NAME)));
+            setContent(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.CONTENT)));
             String via = DbUtils.getString(cursor, NoteTable.VIA);
             if (!TextUtils.isEmpty(via)) {
                 noteSource = Html.fromHtml(via).toString().trim();

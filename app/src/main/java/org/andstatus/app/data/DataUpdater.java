@@ -193,8 +193,9 @@ public class DataUpdater {
             if (nonEmptyOid(note.conversationOid)) {
                 values.put(NoteTable.CONVERSATION_OID, note.conversationOid);
             }
-            values.put(NoteTable.CONTENT, note.getBody());
-            values.put(NoteTable.CONTENT_TO_SEARCH, note.getBodyToSearch());
+            ContentValuesUtils.putNotEmpty(values, NoteTable.NAME, note.getName());
+            ContentValuesUtils.putNotEmpty(values, NoteTable.CONTENT, note.getContent());
+            values.put(NoteTable.CONTENT_TO_SEARCH, note.getContentToSearch());
 
             activity.getNote().addRecipientsFromBodyText(activity.getActor());
             updateInReplyTo(activity, values);
@@ -250,7 +251,7 @@ public class DataUpdater {
                 saveAttachments(note);
             }
 
-            if (keywordsFilter.matchedAny(note.getBodyToSearch())) {
+            if (keywordsFilter.matchedAny(note.getContentToSearch())) {
                 activity.setNotified(TriState.FALSE);
             } else {
                 if (note.getStatus() == DownloadStatus.LOADED) {

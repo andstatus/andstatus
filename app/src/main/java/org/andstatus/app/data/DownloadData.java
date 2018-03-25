@@ -187,11 +187,17 @@ public class DownloadData {
     }
 
     private String getExtension() {
-        final String fileExtension = TextUtils.isEmpty(mimeType) ? MimeTypeMap.getFileExtensionFromUrl(uri.toString())
-                : MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
-        return TextUtils.isEmpty(fileExtension)
-                ? MimeTypeMap.getFileExtensionFromUrl(fileStored.getFilename())
-                : fileExtension;
+        final String fileExtension = MyContentType.mimeToFileExtension(mimeType);
+        if (StringUtils.nonEmpty(fileExtension)) return fileExtension;
+
+        final String fileExtension2 = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
+        if (StringUtils.nonEmpty(fileExtension2)) return fileExtension2;
+
+        final String fileExtension3 = MimeTypeMap.getFileExtensionFromUrl(fileStored.getFilename());
+        if (StringUtils.nonEmpty(fileExtension3)) return fileExtension3;
+
+        MyLog.d(this, "Failed to find file extension " + this);
+        return "png";
     }
     
     public void saveToDatabase() {

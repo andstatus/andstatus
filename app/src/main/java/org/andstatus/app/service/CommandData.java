@@ -95,18 +95,18 @@ public class CommandData implements Comparable<CommandData> {
     public static CommandData newUpdateStatus(MyAccount myAccount, long unsentActivityId, long noteId) {
         CommandData commandData = newAccountCommand(CommandEnum.UPDATE_NOTE, myAccount);
         commandData.itemId = unsentActivityId;
-        commandData.setTrimmedNoteBodyAsDescription(noteId);
+        commandData.setTrimmedNoteContentAsDescription(noteId);
         return commandData;
     }
 
     public static CommandData newFetchAttachment(long noteId, long downloadDataRowId) {
         CommandData commandData = newOriginCommand(CommandEnum.GET_ATTACHMENT, Origin.EMPTY);
         commandData.itemId = downloadDataRowId;
-        commandData.setTrimmedNoteBodyAsDescription(noteId);
+        commandData.setTrimmedNoteContentAsDescription(noteId);
         return commandData;
     }
 
-    private void setTrimmedNoteBodyAsDescription(long noteId) {
+    private void setTrimmedNoteContentAsDescription(long noteId) {
         if (noteId != 0) {
             description = trimConditionally(
                             MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId), true)

@@ -66,7 +66,7 @@ public class MyHtml {
     }
 
     @NonNull
-    public static String getBodyToSearch(String body) {
+    public static String getContentToSearch(String body) {
         return normalizeWordsForSearch(fromHtml(body)).toLowerCase();
     }
 

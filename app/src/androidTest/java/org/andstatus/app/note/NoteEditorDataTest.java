@@ -49,7 +49,7 @@ public class NoteEditorDataTest {
                 .setInReplyToNoteId(inReplyToMsgId)
                 .addRecipientId(recipientId)
                 .setReplyToConversationParticipants(replyAll)
-                .setBody("Some text here " + demoData.testRunUid);
+                .setContent("Some text here " + demoData.testRunUid);
         assertFalse(data.toString(), data.body.contains("@"));
         data.addMentionsToText();
         assertEquals(recipientId, data.recipients.getFirst().actorId);

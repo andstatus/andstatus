@@ -178,7 +178,8 @@ public class ConnectionPumpioTest {
         assertEquals("Posting image", AObjectType.NOTE, timeline.get(ind).getObjectType());
         AActivity activity = timeline.get(ind);
         Note note = activity.getNote();
-        assertThat("Note body " + note, note.getBody(), startsWith("Wow! Fantastic wheel stand at #DragWeek2013 today."));
+        assertEquals("Note name " + note, "Wheel Stand", note.getName());
+        assertThat("Note body " + note, note.getContent(), startsWith("Wow! Fantastic wheel stand at #DragWeek2013 today."));
         assertEquals("Note updated at " + TestSuite.utcTime(activity.getUpdatedDate()),
                 TestSuite.utcTime(2013, Calendar.SEPTEMBER, 13, 1, 8, 38),
                 TestSuite.utcTime(activity.getUpdatedDate()));
@@ -236,7 +237,7 @@ public class ConnectionPumpioTest {
         assertTrue("Does not have a recipient", note.audience().isEmpty());
         assertEquals("Note oid " + note, "https://fmrl.me/api/note/Dp-njbPQSiOfdclSOuAuFw", note.oid);
         assertEquals("Url of the note " + note, "https://fmrl.me/lostson/note/Dp-njbPQSiOfdclSOuAuFw", note.url);
-        assertThat("Note body " + note, note.getBody(), startsWith("My new <b>Firefox</b> OS phone arrived today"));
+        assertThat("Note body " + note, note.getContent(), startsWith("My new <b>Firefox</b> OS phone arrived today"));
         assertEquals("Note updated " + note,
                 TestSuite.utcTime(2013, Calendar.SEPTEMBER, 20, 20, 4, 22),
                 TestSuite.utcTime(note.getUpdatedDate()));
@@ -387,7 +388,7 @@ public class ConnectionPumpioTest {
         assertEquals("has attachment", 1, msg.attachments.size());
         Attachment attachment = Attachment.fromUri("https://io.jpope.org/uploads/jpope/2014/8/18/m1o1bw.jpg");
         assertEquals("attachment", attachment, msg.attachments.get(0));
-        assertEquals("Body text", "<p>Hanging out up in the mountains.</p>", msg.getBody());
+        assertEquals("Body text", "<p>Hanging out up in the mountains.</p>", msg.getContent());
         return msg;
     }
 

@@ -97,7 +97,7 @@ public class DataUpdaterTest {
         AActivity activity = AActivity.newPartialNote(accountActor, noteOid, System.currentTimeMillis() , DownloadStatus.LOADED);
         activity.setActor(somebody);
         Note note = activity.getNote();
-        note.setBody("The test note by Somebody at run " + demoData.testRunUid);
+        note.setContent("The test note by Somebody at run " + demoData.testRunUid);
         note.via = "MyCoolClient";
         note.url = "http://identi.ca/somebody/comment/dasdjfdaskdjlkewjz1EhSrTRB";
 
@@ -169,9 +169,10 @@ public class DataUpdaterTest {
                 OriginPumpio.ACCOUNT_PREFIX + username);
         author.setUsername(username);
 
+        final String noteName = "For You only";
         AActivity activity = new DemoNoteInserter(accountActor).buildActivity(
                 author,
-                "Hello, this is a test Private note by your namesake from http://pumpity.net",
+                noteName, "Hello, this is a test Private note by your namesake from http://pumpity.net",
                 null, noteOid, DownloadStatus.LOADED);
         final Note note = activity.getNote();
         note.via = "AnyOtherClient";
@@ -181,8 +182,9 @@ public class DataUpdaterTest {
         assertNotEquals("Note added", 0, noteId);
         assertNotEquals("Activity added", 0, activity.getId());
 
-        assertEquals("Note should be private", TriState.TRUE,
+        assertEquals("Note should be private " + note, TriState.TRUE,
                 MyQuery.noteIdToTriState(NoteTable.PRIVATE, noteId));
+        assertEquals("Note name " + note, noteName, MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId));
         DemoNoteInserter.assertInteraction(activity, NotificationEventType.PRIVATE, TriState.TRUE);
 
         Audience audience = Audience.fromNoteId(accountActor.origin, noteId);
@@ -207,7 +209,7 @@ public class DataUpdaterTest {
                 13312697000L, DownloadStatus.LOADED);
         activity.setActor(author);
         Note note = activity.getNote();
-        note.setBody("This test note will be favorited by First Reader from http://pumpity.net");
+        note.setContent("This test note will be favorited by First Reader from http://pumpity.net");
         note.via = "SomeOtherClient";
 
         String otherUsername = "firstreader@identi.ca";
@@ -297,7 +299,7 @@ public class DataUpdaterTest {
                 13312795000L, DownloadStatus.LOADED);
         activity.setActor(author);
         Note note = activity.getNote();
-        note.setBody("The test note by Example from the http://pumpity.net " +  iterationId);
+        note.setContent("The test note by Example from the http://pumpity.net " +  iterationId);
         note.via = "UnknownClient";
         if (favorited) note.addFavoriteBy(accountActor, TriState.TRUE);
 
@@ -374,7 +376,7 @@ public class DataUpdaterTest {
         AActivity activity = AActivity.newPartialNote(accountActor, "", System.currentTimeMillis(), DownloadStatus.SENDING);
         activity.setActor(accountActor);
         Note note = activity.getNote();
-        note.setBody("Unsent note with an attachment " + demoData.testRunUid);
+        note.setContent("Unsent note with an attachment " + demoData.testRunUid);
         note.attachments.add(Attachment.fromUri(demoData.localImageTestUri));
         new DataUpdater(ma).onActivity(activity);
         assertNotEquals("Note added " + activity, 0, note.noteId);
@@ -394,13 +396,13 @@ public class DataUpdaterTest {
         AActivity activity2 = AActivity.newPartialNote(accountActor, oid, System.currentTimeMillis(), DownloadStatus.LOADED);
         activity2.setActor(activity.getAuthor());
         Note note2 = activity2.getNote();
-        note2.setBody("Just sent: " + note.getBody());
+        note2.setContent("Just sent: " + note.getContent());
         note2.attachments.add(Attachment.fromUri(demoData.image1Url));
         note2.noteId = note.noteId;
         new DataUpdater(ma).onActivity(activity2);
 
         assertEquals("Row id didn't change", note.noteId, note2.noteId);
-        assertEquals("Note body updated", note2.getBody(),
+        assertEquals("Note content updated", note2.getContent(),
                 MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, note.noteId));
         assertEquals("Status of loaded note", DownloadStatus.LOADED, DownloadStatus.load(
                 MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, note.noteId)));
@@ -511,11 +513,11 @@ public class DataUpdaterTest {
     public void testReplyInBody() {
         MyAccount ma = demoData.getConversationMyAccount();
         String buddyUsername = "buddy" +  demoData.testRunUid + "@example.com";
-        String body = "@" + buddyUsername + " I'm replying to you in a note's body."
+        String content = "@" + buddyUsername + " I'm replying to you in a note's body."
                 + " Hope you will see this as a real reply!";
-        addOneNote4testReplyInBody(buddyUsername, body, true);
+        addOneNote4testReplyInContent(buddyUsername, content, true);
 
-        addOneNote4testReplyInBody(buddyUsername, "Oh, " + body, false);
+        addOneNote4testReplyInContent(buddyUsername, "Oh, " + content, false);
 
         long actorId1 = MyQuery.webFingerIdToId(ma.getOriginId(), buddyUsername);
         assertEquals("Actor has temp Oid", Actor.getTempOid(buddyUsername, ""), MyQuery.idToOid(OidEnum.ACTOR_OID, actorId1, 0));
@@ -528,15 +530,15 @@ public class DataUpdaterTest {
         assertEquals(actorId1, actorId2);
         assertEquals("TempOid replaced with real", realBuddyOid, MyQuery.idToOid(OidEnum.ACTOR_OID, actorId1, 0));
 
-        body = "<a href=\"http://example.com/a\">@" + buddyUsername + "</a>, this is an HTML <i>formatted</i> note";
-        addOneNote4testReplyInBody(buddyUsername, body, true);
+        content = "<a href=\"http://example.com/a\">@" + buddyUsername + "</a>, this is an HTML <i>formatted</i> note";
+        addOneNote4testReplyInContent(buddyUsername, content, true);
 
         buddyUsername = demoData.conversationAuthorThirdUsername;
-        body = "@" + buddyUsername + " I know you are already in our cache";
-        addOneNote4testReplyInBody(buddyUsername, body, true);
+        content = "@" + buddyUsername + " I know you are already in our cache";
+        addOneNote4testReplyInContent(buddyUsername, content, true);
     }
 
-    private void addOneNote4testReplyInBody(String buddyUsername, String body, boolean isReply) {
+    private void addOneNote4testReplyInContent(String buddyUsername, String content, boolean isReply) {
         MyAccount ma = demoData.getConversationMyAccount();
         Actor accountActor = ma.getActor();
 
@@ -551,7 +553,7 @@ public class DataUpdaterTest {
                 System.currentTimeMillis(), DownloadStatus.LOADED);
         activity.setActor(somebody);
         Note note = activity.getNote();
-        note.setBody(body);
+        note.setContent(content);
         note.via = "MyCoolClient";
 
         long noteId = di.onActivity(activity).getNote().noteId;
@@ -569,7 +571,7 @@ public class DataUpdaterTest {
             assertNotEquals("'" + buddyUsername + "' is not added " + buddy, 0, buddy.actorId);
         } else {
             assertTrue("Don't treat this note as a reply:'"
-                    + note.getBody() + "'", buddy.isEmpty());
+                    + note.getContent() + "'", buddy.isEmpty());
         }
     }
 
@@ -586,7 +588,7 @@ public class DataUpdaterTest {
                 System.currentTimeMillis(), DownloadStatus.LOADED);
         activity1.setActor(author1);
         Note note = activity1.getNote();
-        note.setBody("@" + myMentionedUser.getUsername() + " I mention your another account");
+        note.setContent("@" + myMentionedUser.getUsername() + " I mention your another account");
         note.via = "AndStatus";
 
         AActivity activity2 = AActivity.from(accountActor, ActivityType.UPDATE);

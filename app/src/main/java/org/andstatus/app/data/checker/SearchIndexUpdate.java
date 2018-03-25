@@ -50,7 +50,7 @@ class SearchIndexUpdate extends DataChecker {
                 long id = c.getLong(0);
                 String body = c.getString(1);
                 String bodyToSearch = c.getString(2);
-                String bodyToSearchExpected = MyHtml.getBodyToSearch(body);
+                String bodyToSearchExpected = MyHtml.getContentToSearch(body);
                 if (!bodyToSearchExpected.equals(bodyToSearch)) {
                     changedCount++;
                     MyLog.i(this, "Wrong body to search for " + id + ": " + quoteIfNotQuoted(body));

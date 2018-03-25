@@ -82,7 +82,7 @@ public class KeywordsFilter {
     private List<String> rawToActual(List<String> keywordsRaw) {
         List<String> keywords = new ArrayList<>();
         for (String itemRaw : keywordsRaw) {
-            String item = MyHtml.getBodyToSearch(itemRaw);
+            String item = MyHtml.getContentToSearch(itemRaw);
             if (!TextUtils.isEmpty(item) && !keywords.contains(item)) {
                 keywords.add(item);
             }

@@ -83,7 +83,8 @@ public class ConnectionMastodonTest {
 
         assertEquals("Note Oid " + activity, "22", note.oid);
         assertEquals("Note url" + activity, "https://neumastodon.com/@t131t1/22", note.url);
-        assertEquals("Body", "<p>I'm figuring out how to work with Mastodon</p>", note.getBody());
+        assertEquals("Name", "This is a test spoiler", note.getName());
+        assertEquals("Body", "<p>I'm figuring out how to work with Mastodon</p>", note.getContent());
         assertEquals("Note application", "Web", note.via);
 
         assertEquals("Media attachments", 1, note.attachments.size());
@@ -134,7 +135,7 @@ public class ConnectionMastodonTest {
         assertEquals("Note Oid", "4729037", activity.getNote().oid);
         assertEquals("Is not an activity " + activity, AObjectType.ACTIVITY, activity.getObjectType());
         assertEquals("Is not LIKE " + activity, ActivityType.LIKE, activity.type);
-        assertThat(activity.getNote().getBody(), is("<p>IT infrastructure of modern church</p>"));
+        assertThat(activity.getNote().getContent(), is("<p>IT infrastructure of modern church</p>"));
         assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
         assertEquals("Author's username", "AndStatus", activity.getAuthor().getUsername());
         actor = activity.getActor();
@@ -157,7 +158,7 @@ public class ConnectionMastodonTest {
         activity = timeline.get(ind);
         assertEquals("Is not UPDATE " + activity, ActivityType.UPDATE, activity.type);
         assertEquals("Is not a note", AObjectType.NOTE, activity.getObjectType());
-        assertThat(activity.getNote().getBody(), containsString("universe of Mastodon"));
+        assertThat(activity.getNote().getContent(), containsString("universe of Mastodon"));
         actor = activity.getActor();
         assertEquals("Actor's Oid", "119218", actor.oid);
         assertEquals("Username", "izwx6502", actor.getUsername());

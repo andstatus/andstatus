@@ -407,7 +407,7 @@ public class Actor implements Comparable<Actor> {
         return UriUtils.TEMP_OID_PREFIX + oid;
     }
 
-    public List<Actor> extractActorsFromBodyText(String textIn, boolean replyOnly) {
+    public List<Actor> extractActorsFromContent(String textIn, boolean replyOnly) {
         final String SEPARATORS = ", ;'=`~!#$%^&*(){}[]/";
         List<Actor> actors = new ArrayList<>();
         String text = MyHtml.fromHtml(textIn);

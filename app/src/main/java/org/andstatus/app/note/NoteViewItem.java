@@ -68,7 +68,8 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
         setOrigin(myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)));
         setLinkedAccount(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID));
 
-        setBody(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.CONTENT)));
+        setName(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.NAME)));
+        setContent(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.CONTENT)));
         inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
         inReplyToActorId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID);
         inReplyToName = DbUtils.getString(cursor, ActorTable.IN_REPLY_TO_NAME);
@@ -105,7 +106,7 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
 
     @Override
     public String toString() {
-        return MyLog.formatKeyValue(this, I18n.trimTextAt(MyHtml.fromHtml(getBody()), 40) + ","
+        return MyLog.formatKeyValue(this, I18n.trimTextAt(MyHtml.fromHtml(getContent()), 40) + ","
                 + getDetails(getMyContext().context()));
     }
 }

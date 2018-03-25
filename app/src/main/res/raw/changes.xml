@@ -31,11 +31,12 @@
     </header>
     <release android:versionName="38.00" android:versionCode="246"
              versionDate="2018-03-25"
-             versionTitle="Video attachments">
+             versionTitle="Video attachments and Titles for notes">
         <changes>
             <change>Video file can be attached to a new note. A thumbnail of the video attachment is shown in a timeline.
                 Video attachment may be viewed the same way as an image attachment.
             </change>
+            <change>Added titles (names) for notes of Pump.io and Mastodon (where they are called "CW")</change>
         </changes>
     </release>
     <release android:versionName="37.01" android:versionCode="245"

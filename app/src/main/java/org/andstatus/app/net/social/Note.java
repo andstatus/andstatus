@@ -52,7 +52,8 @@ public class Note extends AObject {
     public final String oid;
     private long updatedDate = 0;
     private Audience recipients = new Audience();
-    private String body = "";
+    private String name = "";
+    private String content = "";
 
     @NonNull
     private AActivity inReplyTo = AActivity.EMPTY;
@@ -103,11 +104,15 @@ public class Note extends AObject {
         return mbActivity;
     }
 
-    public String getBody() {
-        return body;
+    public String getName() {
+        return name;
     }
-    public String getBodyToSearch() {
-        return MyHtml.getBodyToSearch(body);
+
+    public String getContent() {
+        return content;
+    }
+    public String getContentToSearch() {
+        return MyHtml.getContentToSearch(content);
     }
 
     private boolean isHtmlContentAllowed() {
@@ -120,13 +125,23 @@ public class Note extends AObject {
                 (downloadStatus == DownloadStatus.LOADED && originType.allowEditing());
     }
 
-    public void setBody(String body) {
-        if (TextUtils.isEmpty(body)) {
-            this.body = "";
+    public void setName(String name) {
+        if (TextUtils.isEmpty(name)) {
+            this.name = "";
         } else if (isHtmlContentAllowed()) {
-            this.body = MyHtml.stripUnnecessaryNewlines(MyHtml.unescapeHtml(body));
+            this.name = MyHtml.stripUnnecessaryNewlines(MyHtml.unescapeHtml(name));
         } else {
-            this.body = MyHtml.fromHtml(body);
+            this.name = MyHtml.fromHtml(name);
+        }
+    }
+
+    public void setContent(String content) {
+        if (TextUtils.isEmpty(content)) {
+            this.content = "";
+        } else if (isHtmlContentAllowed()) {
+            this.content = MyHtml.stripUnnecessaryNewlines(MyHtml.unescapeHtml(content));
+        } else {
+            this.content = MyHtml.fromHtml(content);
         }
     }
 
@@ -175,7 +190,7 @@ public class Note extends AObject {
                 || !origin.isValid()
                 || (nonRealOid(oid)
                     && ((status != DownloadStatus.SENDING && status != DownloadStatus.DRAFT)
-                        || (TextUtils.isEmpty(body) && attachments.isEmpty())));
+                        || (TextUtils.isEmpty(name) && TextUtils.isEmpty(content) && attachments.isEmpty())));
     }
 
     @Override
@@ -211,8 +226,11 @@ public class Note extends AObject {
             builder.append("conversation_id:" + conversationId + ",");
         }
         builder.append("status:" + status + ",");
-        if(StringUtils.nonEmpty(body)) {
-            builder.append("body:'" + body + "',");
+        if(StringUtils.nonEmpty(name)) {
+            builder.append("name:'" + name + "',");
+        }
+        if(StringUtils.nonEmpty(content)) {
+            builder.append("content:'" + content + "',");
         }
         if(isEmpty) {
             builder.append("isEmpty,");
@@ -303,7 +321,7 @@ public class Note extends AObject {
     }
 
     public void addRecipientsFromBodyText(Actor author) {
-        for (Actor actor : author.extractActorsFromBodyText(getBody(), true)) {
+        for (Actor actor : author.extractActorsFromContent(getContent(), true)) {
             addRecipient(actor);
         }
     }
@@ -321,7 +339,8 @@ public class Note extends AObject {
         note.setUpdatedDate(updatedDate);
 
         note.recipients.addAll(recipients);
-        note.setBody(body);
+        note.setName(name);
+        note.setContent(content);
         note.inReplyTo = getInReplyTo();
         note.replies.addAll(replies);
         note.setConversationOid(conversationOid);

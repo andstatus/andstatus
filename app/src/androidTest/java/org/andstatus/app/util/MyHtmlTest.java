@@ -72,17 +72,17 @@ public class MyHtmlTest {
         final String result1 = ",somebody,@somebody,This,is,a,normalised,text,user,@user@domain.com,AndStatus,#AndStatus,"
                 + "gnusocial,!gnusocial,";
         assertEquals(result1, MyHtml.normalizeWordsForSearch(text2));
-        assertEquals(result1.toLowerCase(), MyHtml.getBodyToSearch(text2));
-        assertEquals(result1.toLowerCase(), MyHtml.getBodyToSearch(text1));
+        assertEquals(result1.toLowerCase(), MyHtml.getContentToSearch(text2));
+        assertEquals(result1.toLowerCase(), MyHtml.getContentToSearch(text1));
 
         final String text3 = "<p>Hello! Does anyone use?! <a href=\"https://mstdn.io/tags/andstatus\" rel=\"nofollow " +
                 "noopener\" target=\"_blank\">#<span>Andstatus</span></a>? How do I get to recognize my instance?</p>";
         final String result2 = ",hello,does,anyone,use,andstatus,#andstatus,how,do,i,get,to,recognize,my,instance,";
-        assertEquals(result2, MyHtml.getBodyToSearch(text3));
+        assertEquals(result2, MyHtml.getContentToSearch(text3));
 
         String text4 = "Uh someone on XYZ just said \"I found a Something in the XYZ fridge.\" @ABVinskeep we''re gonna need an investigation of this.";
         String result4 = ",uh,someone,on,xyz,just,said,i,found,a,something,in,the,xyz,fridge,abvinskeep,@abvinskeep,we,re,gonna,need,an,investigation,of,this,";
-        assertEquals(result4, MyHtml.getBodyToSearch(text4));
+        assertEquals(result4, MyHtml.getContentToSearch(text4));
     }
 
     @Test

@@ -131,7 +131,7 @@ public class ConnectionTwitterTest {
         assertTrue("Reply status is unknown", note.getInReplyTo().getNote().getStatus() == DownloadStatus.UNKNOWN);
         assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
         String startsWith = "@t131t";
-        assertEquals("Body of this note starts with", startsWith, note.getBody().substring(0, startsWith.length()));
+        assertEquals("Body of this note starts with", startsWith, note.getContent().substring(0, startsWith.length()));
 
         ind++;
         activity = timeline.get(ind);
@@ -146,7 +146,7 @@ public class ConnectionTwitterTest {
         assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
         startsWith = "This AndStatus application";
         assertEquals("Body of reblogged note starts with", startsWith,
-                note.getBody().substring(0, startsWith.length()));
+                note.getContent().substring(0, startsWith.length()));
         Date date = TestSuite.utcTime(2013, Calendar.SEPTEMBER, 26, 18, 23, 5);
         assertEquals("Reblogged at Thu Sep 26 18:23:05 +0000 2013 (" + date + ") " + activity, date,
                 TestSuite.utcTime(activity.getUpdatedDate()));
@@ -163,7 +163,7 @@ public class ConnectionTwitterTest {
         assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
         assertEquals("Author's oid is actor oid of this account", connectionData.getAccountActor().oid, activity.getAuthor().oid);
         startsWith = "And this is";
-        assertEquals("Body of this note starts with", startsWith, note.getBody().substring(0, startsWith.length()));
+        assertEquals("Body of this note starts with", startsWith, note.getContent().substring(0, startsWith.length()));
     }
 
     @Test
@@ -192,9 +192,9 @@ public class ConnectionTwitterTest {
         AActivity activity = connection.getNote("834306097003581440");
         assertEquals("No note returned " + activity, AObjectType.NOTE, activity.getObjectType());
         Note note = activity.getNote();
-        assertEquals("Body of this note", MyHtml.unescapeHtml(body), note.getBody());
+        assertEquals("Body of this note", MyHtml.unescapeHtml(body), note.getContent());
         assertEquals("Body of this note", ",update,streckensperrung,zw,berliner,tor,bergedorf,ersatzverkehr,mit,bussen," +
-                "und,taxis,störungsdauer,bis,ca,10,uhr,hvv,#hvv,sbahnhh,#sbahnhh,", note.getBodyToSearch());
+                "und,taxis,störungsdauer,bis,ca,10,uhr,hvv,#hvv,sbahnhh,#sbahnhh,", note.getContentToSearch());
 
         MyAccount ma = demoData.getMyAccount(connectionData.getAccountName().toString());
         CommandExecutionContext executionContext = new CommandExecutionContext(

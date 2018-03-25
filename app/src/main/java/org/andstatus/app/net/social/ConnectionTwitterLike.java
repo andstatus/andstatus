@@ -358,7 +358,7 @@ public abstract class ConnectionTwitterLike extends Connection {
 
     protected void setNoteBodyFromJson(Note note, JSONObject jso) throws JSONException {
         if (jso.has("text")) {
-            note.setBody(jso.getString("text"));
+            note.setContent(jso.getString("text"));
         }
     }
 

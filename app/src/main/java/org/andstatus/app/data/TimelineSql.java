@@ -195,6 +195,7 @@ public class TimelineSql {
         Set<String> columnNames = new HashSet<>();
         columnNames.add(ActivityTable.NOTE_ID);
         columnNames.add(ActivityTable.ORIGIN_ID);
+        columnNames.add(NoteTable.NAME);
         columnNames.add(NoteTable.CONTENT);
         columnNames.add(NoteTable.IN_REPLY_TO_NOTE_ID);
         columnNames.add(ActorTable.IN_REPLY_TO_NAME);

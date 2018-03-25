@@ -133,7 +133,7 @@ public class DemoGnuSocialConversationInserter {
         activity.getNote().setPrivate(isPrivate);
         addActivity(activity);
         assertEquals("Note is " + (isPrivate.equals(TriState.TRUE) ? "private" :
-                        isPrivate.equals(TriState.FALSE) ? "non private" : "") + ": " + activity.getNote().getBody(),
+                        isPrivate.equals(TriState.FALSE) ? "non private" : "") + ": " + activity.getNote().getContent(),
                 isPrivate, MyQuery.noteIdToTriState(NoteTable.PRIVATE, activity.getNote().noteId));
     }
 
@@ -149,7 +149,7 @@ public class DemoGnuSocialConversationInserter {
     }
     
     private AActivity buildActivity(Actor author, String body, AActivity inReplyToNote, String noteOidIn) {
-        final AActivity activity = new DemoNoteInserter(accountActor).buildActivity(author, body
+        final AActivity activity = new DemoNoteInserter(accountActor).buildActivity(author, "", body
                         + (inReplyToNote != null ? " it" + iteration : ""),
                 inReplyToNote, noteOidIn, DownloadStatus.LOADED);
         activity.getNote().setConversationOid(conversationOid);

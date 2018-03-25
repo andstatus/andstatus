@@ -55,7 +55,7 @@ public class LargeImageTest {
         String body = "Large image attachment";
         MyAccount ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
         DemoNoteInserter inserter = new DemoNoteInserter(ma);
-        AActivity activity = inserter.buildActivity(inserter.buildActor(), body, null, null,
+        AActivity activity = inserter.buildActivity(inserter.buildActor(), "", body, null, null,
                 DownloadStatus.LOADED);
         activity.getNote().attachments.add(Attachment.fromUri("http://www.example.com/pictures/large_image.png"));
         inserter.onActivity(activity);

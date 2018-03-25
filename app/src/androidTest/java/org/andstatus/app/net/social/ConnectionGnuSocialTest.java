@@ -105,7 +105,7 @@ public class ConnectionGnuSocialTest {
 
         assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
         String startsWith = "@<span class=\"vcard\">";
-        assertEquals("Body of this note starts with", startsWith, activity.getNote().getBody().substring(0, startsWith.length()));
+        assertEquals("Body of this note starts with", startsWith, activity.getNote().getContent().substring(0, startsWith.length()));
         assertEquals("Username", "andstatus", activity.getAuthor().getUsername());
         assertEquals("Display name", "AndStatus@quitter.se", activity.getAuthor().getRealName());
         assertEquals("Banner URL", "https://quitter.se/file/3fd65c6088ea02dc3a5ded9798a865a8ff5425b13878da35ad894cd084d015fc.png", activity.getAuthor().bannerUrl);

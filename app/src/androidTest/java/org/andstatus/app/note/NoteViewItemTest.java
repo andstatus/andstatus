@@ -46,28 +46,28 @@ public class NoteViewItemTest {
     @Test
     public void testDuplicationLink() {
         NoteViewItem item1 = new NoteViewItem(false);
-        item1.setBody(HTML_BODY);
+        item1.setContent(HTML_BODY);
         NoteViewItem item2 = new NoteViewItem(false);
-        item2.setBody("Some other text");
+        item2.setContent("Some other text");
         assertDuplicates(item1, DuplicationLink.DUPLICATES, item2);
 
         item2.setNoteId(2);
         assertDuplicates(item1, DuplicationLink.NONE, item2);
 
-        item2.setBody(THIS_ACTOR_FAVORITED_SOMETHING_BY_THAT_ACTOR + item1.getBody());
-        assertTrue("Is not favoriting action: " + item2.getBody(), item2.isFavoritingAction);
+        item2.setContent(THIS_ACTOR_FAVORITED_SOMETHING_BY_THAT_ACTOR + item1.getContent());
+        assertTrue("Is not favoriting action: " + item2.getContent(), item2.isFavoritingAction);
         assertDuplicates(item1, DuplicationLink.IS_DUPLICATED, item2);
         assertDuplicates(item2, DuplicationLink.DUPLICATES, item1);
 
-        item2.setBody("@<a href=\"https://bsdnode.xyz/actor/2\" class=\"h-card mention\">username</a> On duplicated posts, sent by AndStatus, please read <a href=\"https://github.com/andstatus/andstatus/issues/83\" title=\"https://github.com/andstatus/andstatus/issues/83\" class=\"attachment\" rel=\"nofollow\">https://github.com/andstatus/andstatus/issues/83</a><br /> Sorry if I misunderstood your post :-)");
+        item2.setContent("@<a href=\"https://bsdnode.xyz/actor/2\" class=\"h-card mention\">username</a> On duplicated posts, sent by AndStatus, please read <a href=\"https://github.com/andstatus/andstatus/issues/83\" title=\"https://github.com/andstatus/andstatus/issues/83\" class=\"attachment\" rel=\"nofollow\">https://github.com/andstatus/andstatus/issues/83</a><br /> Sorry if I misunderstood your post :-)");
         assertDuplicates(item1, DuplicationLink.DUPLICATES, item2);
 
-        item1.setBody("&quot;Interactions&quot; timeline in Twidere is the same or close to existing &quot;Mentions&quot; timeline in AndStatus");
-        item2.setBody("\"Interactions\" timeline in Twidere is the same or close to existing \"Mentions\" timeline in AndStatus");
+        item1.setContent("&quot;Interactions&quot; timeline in Twidere is the same or close to existing &quot;Mentions&quot; timeline in AndStatus");
+        item2.setContent("\"Interactions\" timeline in Twidere is the same or close to existing \"Mentions\" timeline in AndStatus");
         assertDuplicates(item1, DuplicationLink.DUPLICATES, item2);
 
-        item1.setBody("What is good about Android is that I can use Quitter.se via AndStatus.");
-        item2.setBody("What is good about Android is that I can use <a href=\"https://quitter.se/\" title=\"https://quitter.se/\" class=\"attachment\" id=\"attachment-1205381\" rel=\"nofollow external\">Quitter.se</a> via AndStatus.");
+        item1.setContent("What is good about Android is that I can use Quitter.se via AndStatus.");
+        item2.setContent("What is good about Android is that I can use <a href=\"https://quitter.se/\" title=\"https://quitter.se/\" class=\"attachment\" id=\"attachment-1205381\" rel=\"nofollow external\">Quitter.se</a> via AndStatus.");
         assertDuplicates(item1, DuplicationLink.DUPLICATES, item2);
 
         item1.updatedDate = 1468509659000L;
@@ -88,8 +88,8 @@ public class NoteViewItemTest {
         assertDuplicates(item2, DuplicationLink.DUPLICATES, item1);
         assertDuplicates(item1, DuplicationLink.IS_DUPLICATED, item2);
 
-        item1.setBody("cat favorited something by nstr: test from andstatus on freshly r00ted phone");
-        item2.setBody("mmn favorited something by nstr: test from andstatus on freshly r00ted phone");
+        item1.setContent("cat favorited something by nstr: test from andstatus on freshly r00ted phone");
+        item2.setContent("mmn favorited something by nstr: test from andstatus on freshly r00ted phone");
         assertDuplicates(item1, DuplicationLink.IS_DUPLICATED, item2);
     }
 

@@ -516,7 +516,7 @@ public class AActivity extends AObject {
                 final MyAccount myActorAccount = myContext.accounts().fromActorOfAnyOrigin(actor);
                 if (myActorAccount.isValid()) {
                     MyLog.v(this, myActorAccount + " " + type
-                            + " '" + getNote().oid + "' " + I18n.trimTextAt(getNote().getBody(), 80));
+                            + " '" + getNote().oid + "' " + I18n.trimTextAt(getNote().getContent(), 80));
                     MyProvider.updateNoteFavorited(myContext, actor.origin, getNote().noteId);
                 }
                 break;

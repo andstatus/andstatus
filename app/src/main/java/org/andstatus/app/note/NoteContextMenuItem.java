@@ -165,7 +165,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
             if (menu.getOrigin().isHtmlContentAllowed()) {
                 body = MyHtml.fromHtml(body);
             }
-            return NoteEditorData.newEmpty(menu.getMyActor()).setBody(body);
+            return NoteEditorData.newEmpty(menu.getMyActor()).setContent(body);
         }
 
         @Override

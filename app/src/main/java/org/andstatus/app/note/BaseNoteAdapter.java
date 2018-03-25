@@ -27,12 +27,12 @@ import android.widget.TextView;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.TimelineData;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtils;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -65,7 +65,8 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
     public void populateView(ViewGroup view, T item, int position) {
         showRebloggers(view, item);
         MyUrlSpan.showText(view, R.id.note_author, item.author.getName(), false, false);
-        showNoteBody(view, item);
+        showNoteName(view, item);
+        showNoteContent(view, item);
         MyUrlSpan.showText(view, R.id.note_details, item.getDetails(contextMenu.getActivity()).toString(), false, false);
 
         showAvatarEtc(view, item);
@@ -123,9 +124,14 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
         }
     }
 
-    protected void showNoteBody(View view, T item) {
-        TextView body = view.findViewById(R.id.note_body);
-        MyUrlSpan.showText(body, item.getBody(), true, true);
+    protected void showNoteName(View view, T item) {
+        TextView textView = view.findViewById(R.id.note_name);
+        MyUrlSpan.showText(textView, item.getName(), true, false);
+    }
+
+    protected void showNoteContent(View view, T item) {
+        TextView textView = view.findViewById(R.id.note_body);
+        MyUrlSpan.showText(textView, item.getContent(), true, false);
     }
 
     protected void showAvatar(View view, T item) {

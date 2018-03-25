@@ -45,7 +45,7 @@ public class ActorTest {
                 + " Please take this into account\n@" + webFingerId2
                 + " @" + demoData.gnusocialTestAccount2Username
                 + " And let me mention: @" + shortUsername3;
-        List<Actor> actors = Actor.fromOriginAndActorOid(origin, "").extractActorsFromBodyText(body, false);
+        List<Actor> actors = Actor.fromOriginAndActorOid(origin, "").extractActorsFromContent(body, false);
         String msgLog = body + " ->\n" + actors;
         assertEquals(msgLog, 4, actors.size());
         assertEquals(msgLog, demoData.gnusocialTestAccountUsername, actors.get(0).getUsername());
@@ -66,7 +66,7 @@ public class ActorTest {
                 + " by @" + USERNAME1 + " @@" + SKIPPED_USERNAME2 + " @#" + SKIPPED_USERNAME3
                 + " &amp; @" + USERNAME4
                 + " https://t.co/djkdfeowefPh";
-        List<Actor> actors = Actor.fromOriginAndActorOid(origin, "").extractActorsFromBodyText(body, false);
+        List<Actor> actors = Actor.fromOriginAndActorOid(origin, "").extractActorsFromContent(body, false);
         String msgLog = body + " -> " + actors;
         assertEquals(msgLog, 2, actors.size());
         assertEquals(msgLog, USERNAME1, actors.get(0).getUsername());

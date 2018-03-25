@@ -767,8 +767,8 @@ public class MyQuery {
         I18n.appendWithComma(builder, "noteId:" + noteId);
         String oid = idToOid(OidEnum.NOTE_OID, noteId, 0);
         I18n.appendWithComma(builder, "oid" + (TextUtils.isEmpty(oid) ? " is empty" : ":'" + oid + "'"));
-        String body = MyHtml.fromHtml(noteIdToStringColumnValue(NoteTable.CONTENT, noteId));
-        I18n.appendAtNewLine(builder, "text:'" + body + "'");
+        String content = MyHtml.fromHtml(noteIdToStringColumnValue(NoteTable.CONTENT, noteId));
+        I18n.appendAtNewLine(builder, "content:'" + content + "'");
         Origin origin = MyContextHolder.get().origins().fromId(noteIdToLongColumnValue(NoteTable.ORIGIN_ID, noteId));
         I18n.appendAtNewLine(builder, origin.toString());
         return builder.toString();

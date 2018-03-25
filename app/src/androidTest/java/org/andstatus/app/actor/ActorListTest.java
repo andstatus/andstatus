@@ -69,10 +69,11 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(), ActorList.class);
         long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, demoData.getConversationOriginId(),
                 demoData.conversationMentionsNoteOid);
-        String body = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
+        String content = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
         String logMsg = MyQuery.noteInfoForLog(noteId);
 
-        List<Actor> actors = Actor.fromOriginAndActorOid(demoData.getConversationMyAccount().getOrigin(), "").extractActorsFromBodyText(body, false);
+        List<Actor> actors = Actor.fromOriginAndActorOid(demoData.getConversationMyAccount().getOrigin(), "")
+                .extractActorsFromContent(content, false);
         assertEquals(logMsg, 3, actors.size());
         assertEquals(logMsg, "unknownUser@example.com", actors.get(2).getUsername());
 

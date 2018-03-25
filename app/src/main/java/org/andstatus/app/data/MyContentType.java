@@ -99,7 +99,7 @@ public enum MyContentType {
     public static String uri2MimeType(ContentResolver contentResolver, Uri uri, String defaultValue) {
         if (contentResolver != null && !UriUtils.isEmpty(uri)) {
             String mimeType = contentResolver.getType(uri);
-            if (StringUtils.nonEmpty(mimeType)) return mimeType;
+            if (!isEmptyMime(mimeType)) return mimeType;
         }
         return path2MimeType(
                 uri == null ? null : uri.getPath(),
@@ -107,17 +107,22 @@ public enum MyContentType {
         );
     }
 
-    /** @return "bin" if no better extension found */
+    public static boolean isEmptyMime(String mimeType) {
+        return TextUtils.isEmpty(mimeType) || mimeType.startsWith("*");
+    }
+
+    /** @return empty string if no extension found */
     @NonNull
     public static String mimeToFileExtension(String mimeType) {
+        if (isEmptyMime(mimeType)) return "";
         String extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
-        return TextUtils.isEmpty(mimeType) ? "bin" : extension;
+        return TextUtils.isEmpty(extension) ? "" : extension;
     }
 
     @NonNull
     private static String path2MimeType(String path, @NonNull String defaultValue) {
         if (TextUtils.isEmpty(path)) return defaultValue;
         String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(path));
-        return TextUtils.isEmpty(mimeType) ? defaultValue : mimeType;
+        return isEmptyMime(mimeType) ? defaultValue : mimeType;
     }
 }

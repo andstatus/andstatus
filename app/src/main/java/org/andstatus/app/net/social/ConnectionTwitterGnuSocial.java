@@ -164,7 +164,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     protected void setNoteBodyFromJson(Note note, JSONObject jso) throws JSONException {
         boolean bodyFound = false;
         if (data.getOrigin().isHtmlContentAllowed() && !jso.isNull(HTML_BODY_FIELD_NAME)) {
-            note.setBody(jso.getString(HTML_BODY_FIELD_NAME));
+            note.setContent(jso.getString(HTML_BODY_FIELD_NAME));
             bodyFound = true;
         }
         if (!bodyFound) {

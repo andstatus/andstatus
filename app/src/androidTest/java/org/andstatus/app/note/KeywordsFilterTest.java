@@ -69,22 +69,22 @@ public class KeywordsFilterTest {
     }
 
     private void assertMatchAll(String query, String body) {
-        final String bodyToSearch = MyHtml.getBodyToSearch(body);
+        final String bodyToSearch = MyHtml.getContentToSearch(body);
         assertTrue("query '" + query + "' doesn't match: '" + body + "'", new KeywordsFilter(query).matchedAll(bodyToSearch));
     }
 
     private void assertNotMatchAll(String query, String body) {
-        final String bodyToSearch = MyHtml.getBodyToSearch(body);
+        final String bodyToSearch = MyHtml.getContentToSearch(body);
         assertFalse("query '" + query + "' matched: '" + body + "'", new KeywordsFilter(query).matchedAll(bodyToSearch));
     }
 
     private void assertMatchAny(String query, String body) {
-        final String bodyToSearch = MyHtml.getBodyToSearch(body);
+        final String bodyToSearch = MyHtml.getContentToSearch(body);
         assertTrue("no keywords from '" + query + "' match: '" + body + "'", new KeywordsFilter(query).matchedAny(bodyToSearch));
     }
 
     private void assertNotMatchAny(String query, String body) {
-        final String bodyToSearch = MyHtml.getBodyToSearch(body);
+        final String bodyToSearch = MyHtml.getContentToSearch(body);
         assertFalse("Some keyword from '" + query + "' match: '" + body + "'", new KeywordsFilter(query).matchedAny(bodyToSearch));
     }
 }
