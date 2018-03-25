@@ -46,6 +46,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.NoteTable;
+import org.andstatus.app.graphics.MediaMetadata;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
@@ -476,10 +477,10 @@ public class NoteEditor {
             }
         }
         if (editorData.getAttachment().nonEmpty()) {
-            noteDetails += " (" + getActivity().getText(R.string.label_with_media).toString()
-                    + " " + editorData.getAttachment().width + "x" + editorData.getAttachment().height
-                    + ", " + editorData.getAttachment().fileSize/1024 + "K"
-                    + (editorData.getAttachment().duration == 0 ? "" : " " + editorData.getAttachment().duration)
+            noteDetails += " ("
+                    + getActivity().getText(R.string.label_with_media).toString() + " "
+                    + editorData.getAttachment().mediaMetadata.toDetails() + ", "
+                    + editorData.getAttachment().fileSize/1024 + "K"
                     + ")";
         }
         showIfNotEmpty(R.id.noteEditDetails, noteDetails);

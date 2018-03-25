@@ -84,7 +84,7 @@ public class LargeImageTest {
     }
 
     private void loadingTest(DownloadData dd) {
-        CachedImage image = new AttachedImageFile(dd.getDownloadId(), dd.getFilename()).loadAndGetImage();
+        CachedImage image = new AttachedImageFile(dd.getDownloadId(), dd.getFilename(), dd.mediaMetadata).loadAndGetImage();
         int width = image.getImageSize().x;
         assertTrue("Not wide already " + width, width < 4000 && width > 10);
         int height = image.getImageSize().y;

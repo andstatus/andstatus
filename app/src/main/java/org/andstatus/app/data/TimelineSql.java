@@ -139,6 +139,9 @@ public class TimelineSql {
                     + DownloadTable.NOTE_ID + ", "
                     + DownloadTable.DOWNLOAD_TYPE + ", "
                     + DownloadTable.DOWNLOAD_NUMBER + ", "
+                    + DownloadTable.WIDTH + ", "
+                    + DownloadTable.HEIGHT + ", "
+                    + DownloadTable.DURATION + ", "
                     + (columns.contains(DownloadTable.IMAGE_URL) ? DownloadTable.URI + ", " : "")
                     + DownloadTable.FILE_NAME
                     + " FROM " + DownloadTable.TABLE_NAME
@@ -204,6 +207,9 @@ public class TimelineSql {
         if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
             columnNames.add(DownloadTable.IMAGE_ID);
             columnNames.add(DownloadTable.IMAGE_FILE_NAME);
+            columnNames.add(DownloadTable.WIDTH);
+            columnNames.add(DownloadTable.HEIGHT);
+            columnNames.add(DownloadTable.DURATION);
         }
         if (SharedPreferencesUtil.getBoolean(MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, true)
                 || SharedPreferencesUtil.getBoolean(

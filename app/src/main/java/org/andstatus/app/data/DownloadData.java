@@ -41,9 +41,7 @@ public class DownloadData {
     private DownloadFile fileStored = DownloadFile.EMPTY;
     public long fileSize = 0;
     protected Uri uri = Uri.EMPTY;
-    public long width = 0;
-    public long height = 0;
-    public long duration = 0;
+    public MediaMetadata mediaMetadata = MediaMetadata.EMPTY;
 
     private boolean hardError = false;
     private boolean softError = false;
@@ -115,9 +113,7 @@ public class DownloadData {
                 if (uri.equals(Uri.EMPTY)) {
                     uri = UriUtils.fromString(DbUtils.getString(cursor, DownloadTable.URI));
                 }
-                width = DbUtils.getLong(cursor, DownloadTable.WIDTH);
-                height = DbUtils.getLong(cursor, DownloadTable.HEIGHT);
-                duration = DbUtils.getLong(cursor, DownloadTable.DURATION);
+                mediaMetadata = MediaMetadata.fromCursor(cursor);
                 fileSize = DbUtils.getLong(cursor, DownloadTable.FILE_SIZE);
             }
         }
@@ -183,16 +179,11 @@ public class DownloadData {
         fileNew = new DownloadFile(fileNew.getFilename());
         if (isError() || !fileNew.existed) {
             fileSize = 0;
-            width = 0;
-            height = 0;
-            duration = 0;
+            mediaMetadata = MediaMetadata.EMPTY;
             return;
         }
         fileSize = fileNew.getSize();
-        MediaMetadata metadata = ImageCache.getMetadata(fileNew.getFilePath());
-        width = metadata.size.x;
-        height = metadata.size.y;
-        duration = metadata.duration;
+        mediaMetadata = ImageCache.getMetadata(fileNew.getFilePath());
     }
 
     private String getExtension() {
@@ -264,9 +255,7 @@ public class DownloadData {
         values.put(DownloadTable.DOWNLOAD_STATUS, status.save());
         values.put(DownloadTable.FILE_NAME, fileNew.getFilename());
         values.put(DownloadTable.FILE_SIZE, fileSize);
-        values.put(DownloadTable.WIDTH, width);
-        values.put(DownloadTable.HEIGHT, height);
-        values.put(DownloadTable.DURATION, duration);
+        mediaMetadata.toContentValues(values);
         return values;
     }
 
@@ -442,9 +431,7 @@ public class DownloadData {
         if (fileStored.existed) {
             builder.append("file:" + getFilename() + ",");
             builder.append("size:" + fileSize + ",");
-            if (width > 0) builder.append("width:" + width + ",");
-            if (height > 0) builder.append("height:" + height + ",");
-            if (duration > 0) builder.append("duration:" + height + ",");
+            if (mediaMetadata.nonEmpty()) builder.append(mediaMetadata.toString() + ",");
         }
         return MyLog.formatKeyValue(this, builder.toString());
     }

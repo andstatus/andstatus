@@ -158,7 +158,7 @@ public class NoteEditorData {
             data.attachment = DownloadData.getSingleAttachment(noteId);
             if (data.attachment.getStatus() == LOADED) {
                 AttachedImageFile imageFile = new AttachedImageFile(data.attachment.getDownloadId(),
-                        data.attachment.getFilename());
+                        data.attachment.getFilename(), data.attachment.mediaMetadata);
                 data.image = imageFile.loadAndGetImage();
             }
             data.inReplyToNoteId = MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, noteId);

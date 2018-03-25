@@ -30,7 +30,6 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.ActorTable;
-import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
@@ -184,8 +183,7 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
         ActorViewItem item = new ActorViewItem(actor, false);
 
         item.myFollowers = MyQuery.getMyFollowersOf(actor.actorId);
-        AvatarFile avatarFile = AvatarFile.fromCursor(actor.actorId, cursor, DownloadTable.AVATAR_FILE_NAME);
-        item.avatarFile = avatarFile;
+        item.avatarFile = AvatarFile.fromCursor(actor.actorId, cursor);
         item.populated = true;
         return item;
     }

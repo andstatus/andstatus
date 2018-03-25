@@ -27,16 +27,18 @@ import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.graphics.IdentifiableImageView;
 import org.andstatus.app.graphics.ImageCaches;
+import org.andstatus.app.graphics.MediaMetadata;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
 
 public abstract class ImageFile {
     private final DownloadFile downloadFile;
-    private volatile Point size = null;
+    private volatile MediaMetadata mediaMetadata = MediaMetadata.EMPTY;
 
-    ImageFile(String filename) {
+    ImageFile(String filename, MediaMetadata mediaMetadata) {
         downloadFile = new DownloadFile(filename);
+        this.mediaMetadata = mediaMetadata;
     }
 
     public void showImage(@NonNull MyActivity myActivity, IdentifiableImageView imageView) {
@@ -225,10 +227,11 @@ public abstract class ImageFile {
     }
 
     public Point getSize() {
-        if (size == null && downloadFile.existed) {
-            size = ImageCaches.getImageSize(getCacheName(), getId(), downloadFile.getFilePath());
+        if (mediaMetadata.isEmpty() && downloadFile.existed) {
+            Point point = ImageCaches.getImageSize(getCacheName(), getId(), downloadFile.getFilePath());
+            mediaMetadata = new MediaMetadata(point.x, point.y, 0);
         }
-        return size == null ? new Point() : size;
+        return mediaMetadata.size();
     }
 
     public boolean isEmpty() {

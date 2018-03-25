@@ -21,20 +21,23 @@ import android.database.Cursor;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.graphics.CachedImage;
+import org.andstatus.app.graphics.MediaMetadata;
 
 public class AttachedImageFile extends ImageFile {
-    public static final AttachedImageFile EMPTY = new AttachedImageFile(0, "");
+    public static final AttachedImageFile EMPTY = new AttachedImageFile(0, "", MediaMetadata.EMPTY);
 
     private final long downloadId;
 
     public static AttachedImageFile fromCursor(Cursor cursor) {
         return new AttachedImageFile(
                 DbUtils.getLong(cursor, DownloadTable.IMAGE_ID),
-                DbUtils.getString(cursor, DownloadTable.IMAGE_FILE_NAME));
+                DbUtils.getString(cursor, DownloadTable.IMAGE_FILE_NAME),
+                MediaMetadata.fromCursor(cursor)
+        );
     }
 
-    public AttachedImageFile(long downloadIdIn, String filename) {
-        super(filename);
+    public AttachedImageFile(long downloadIdIn, String filename, MediaMetadata mediaMetadata) {
+        super(filename, mediaMetadata);
         downloadId = downloadIdIn;
     }
 

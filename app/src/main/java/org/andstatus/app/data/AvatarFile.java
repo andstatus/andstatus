@@ -20,24 +20,27 @@ import android.database.Cursor;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.R;
+import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.graphics.ImageCaches;
+import org.andstatus.app.graphics.MediaMetadata;
 
 public class AvatarFile extends ImageFile {
-    public static final AvatarFile EMPTY = new AvatarFile(0, "");
+    public static final AvatarFile EMPTY = new AvatarFile(0, "", MediaMetadata.EMPTY);
     private final long actorId;
     public static final int AVATAR_SIZE_DIP = 48;
     
-    public AvatarFile(long actorId, String filename) {
-        super(filename);
+    private AvatarFile(long actorId, String filename, MediaMetadata mediaMetadata) {
+        super(filename, mediaMetadata);
         this.actorId = actorId;
     }
 
     @NonNull
-    public static AvatarFile fromCursor(long actorId, Cursor cursor, String avatarColumnName) {
-        String avatarFilename = DbUtils.getString(cursor, avatarColumnName);
-        return new AvatarFile(actorId, avatarFilename);
+    public static AvatarFile fromCursor(long actorId, Cursor cursor) {
+        return new AvatarFile(actorId,
+                DbUtils.getString(cursor, DownloadTable.AVATAR_FILE_NAME),
+                MediaMetadata.EMPTY);
     }
 
     @Override

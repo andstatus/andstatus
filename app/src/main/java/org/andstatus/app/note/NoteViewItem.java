@@ -32,6 +32,7 @@ import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.NoteTable;
+import org.andstatus.app.graphics.MediaMetadata;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
@@ -87,7 +88,8 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
         if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
             attachedImageFile = new AttachedImageFile(
                     DbUtils.getLong(cursor, DownloadTable.IMAGE_ID),
-                    DbUtils.getString(cursor, DownloadTable.IMAGE_FILE_NAME));
+                    DbUtils.getString(cursor, DownloadTable.IMAGE_FILE_NAME),
+                    MediaMetadata.fromCursor(cursor));
         }
 
         long beforeRebloggers = System.currentTimeMillis();

@@ -29,8 +29,17 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="37.00" android:versionCode="244"
-             versionDate="2018-03-04"
+    <release android:versionName="38.00" android:versionCode="246"
+             versionDate="2018-03-25"
+             versionTitle="Video attachments">
+        <changes>
+            <change>Video file can be attached to a new note. A thumbnail of the video attachment is shown in a timeline.
+                Video attachment may be viewed the same way as an image attachment.
+            </change>
+        </changes>
+    </release>
+    <release android:versionName="37.01" android:versionCode="245"
+             versionDate="2018-03-12"
              versionTitle="Merging actors of Users from different Social Networks. New Interactions timeline">
         <changes>
             <change>Actors having the same WebFingerId (e.g. "andstatus@loadaverage.org") in different social networks

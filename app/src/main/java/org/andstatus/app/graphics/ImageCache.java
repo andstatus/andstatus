@@ -244,7 +244,7 @@ public class ImageCache extends LruCache<String, CachedImage> {
         if (!TextUtils.isEmpty(path)) {
             CachedImage image = get(path);
             if (image != null) return image.getImageSize();
-            return getMetadata(path).size;
+            return getMetadata(path).size();
         }
         return new Point(0, 0);
     }

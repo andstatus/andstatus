@@ -16,15 +16,66 @@
 
 package org.andstatus.app.graphics;
 
+import android.content.ContentValues;
+import android.database.Cursor;
 import android.graphics.Point;
+import android.support.annotation.NonNull;
+
+import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.database.table.DownloadTable;
+import org.andstatus.app.util.MyLog;
 
 public class MediaMetadata {
     public static final MediaMetadata EMPTY = new MediaMetadata(0, 0, 0);
-    public final Point size;
+    public final int width;
+    public final int height;
     public final long duration;
 
+    @NonNull
+    public static MediaMetadata fromCursor(Cursor cursor) {
+        return new MediaMetadata(
+                DbUtils.getInt(cursor, DownloadTable.WIDTH),
+                DbUtils.getInt(cursor, DownloadTable.HEIGHT),
+                DbUtils.getLong(cursor, DownloadTable.DURATION)
+        );
+    }
+
     public MediaMetadata(int width, int height, long duration) {
-        this.size = new Point(width, height);
+        this.width = width;
+        this.height = height;
         this.duration = duration;
+    }
+
+    public Point size() {
+        return new Point(width, height);
+    }
+
+    public boolean isEmpty() {
+        return width <= 0 || height <= 0;
+    }
+
+    public void toContentValues(ContentValues values) {
+        values.put(DownloadTable.WIDTH, width);
+        values.put(DownloadTable.HEIGHT, height);
+        values.put(DownloadTable.DURATION, duration);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        if (width > 0) builder.append("width:" + width + ",");
+        if (height > 0) builder.append("height:" + height + ",");
+        if (duration > 0) builder.append("duration:" + height + ",");
+        return MyLog.formatKeyValue(this, builder.toString());
+    }
+
+    public boolean nonEmpty() {
+        return !isEmpty();
+    }
+
+    public String toDetails() {
+        return nonEmpty()
+                ? width + "x" + height + (duration == 0 ? "" : " " + duration)
+                : "";
     }
 }

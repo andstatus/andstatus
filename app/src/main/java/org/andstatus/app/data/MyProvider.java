@@ -389,19 +389,19 @@ public class MyProvider extends ContentProvider {
             case TIMELINE:
                 qb.setDistinct(true);
                 qb.setTables(TimelineSql.tablesForTimeline(uri, projection));
-                qb.setProjectionMap(ProjectionMap.MSG);
+                qb.setProjectionMap(ProjectionMap.TIMELINE);
                 break;
 
             case TIMELINE_ITEM:
                 qb.setTables(TimelineSql.tablesForTimeline(uri, projection));
-                qb.setProjectionMap(ProjectionMap.MSG);
+                qb.setProjectionMap(ProjectionMap.TIMELINE);
                 qb.appendWhere(ProjectionMap.ACTIVITY_TABLE_ALIAS + "."
                         + ActivityTable.NOTE_ID + "=" + uriParser.getNoteId());
                 break;
 
             case TIMELINE_SEARCH:
                 qb.setTables(TimelineSql.tablesForTimeline(uri, projection));
-                qb.setProjectionMap(ProjectionMap.MSG);
+                qb.setProjectionMap(ProjectionMap.TIMELINE);
                 String rawQuery = uriParser.getSearchQuery();
                 if (StringUtils.nonEmpty(rawQuery)) {
                     if (StringUtils.nonEmpty(selection)) {
@@ -417,14 +417,14 @@ public class MyProvider extends ContentProvider {
 
             case ACTIVITY:
                 qb.setTables(ActivityTable.TABLE_NAME + " AS " + ProjectionMap.ACTIVITY_TABLE_ALIAS);
-                qb.setProjectionMap(ProjectionMap.MSG);
+                qb.setProjectionMap(ProjectionMap.TIMELINE);
                 break;
 
             case ACTOR:
             case ACTORLIST:
             case ACTORLIST_SEARCH:
                 qb.setTables(ActorListSql.tablesForList(uri, projection));
-                qb.setProjectionMap(ProjectionMap.ACTOR);
+                qb.setProjectionMap(ProjectionMap.ACTORLIST);
                 rawQuery = uriParser.getSearchQuery();
                 if (StringUtils.nonEmpty(rawQuery)) {
                     if (StringUtils.nonEmpty(selection)) {
@@ -443,13 +443,13 @@ public class MyProvider extends ContentProvider {
 
             case ACTORLIST_ITEM:
                 qb.setTables(ActorListSql.tablesForList(uri, projection));
-                qb.setProjectionMap(ProjectionMap.ACTOR);
+                qb.setProjectionMap(ProjectionMap.ACTORLIST);
                 qb.appendWhere(BaseColumns._ID + "=" + uriParser.getActorId());
                 break;
 
             case ACTOR_ITEM:
                 qb.setTables(ActorTable.TABLE_NAME);
-                qb.setProjectionMap(ProjectionMap.ACTOR);
+                qb.setProjectionMap(ProjectionMap.ACTORLIST);
                 qb.appendWhere(BaseColumns._ID + "=" + uriParser.getActorId());
                 break;
 
