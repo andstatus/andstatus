@@ -515,10 +515,10 @@ public abstract class ConnectionTwitterLike extends Connection {
     }
     
     @Override
-    public AActivity updatePrivateNote(String note, String noteOid, String recipientOid, Uri mediaUri) throws ConnectionException {
+    public AActivity updatePrivateNote(String name, String content, String noteOid, String recipientOid, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
-            formParams.put("text", note);
+            formParams.put("text", content);
             if ( !TextUtils.isEmpty(recipientOid)) {
                 formParams.put("user_id", recipientOid);
             }
@@ -575,10 +575,10 @@ public abstract class ConnectionTwitterLike extends Connection {
     }
     
     @Override
-    public AActivity updateNote(String note, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
+    public AActivity updateNote(String name, String content, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
-            formParams.put("status", note);
+            formParams.put("status", content);
             if ( !TextUtils.isEmpty(inReplyToOid)) {
                 formParams.put("in_reply_to_status_id", inReplyToOid);
             }

@@ -107,10 +107,10 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     }
 
     @Override
-    public AActivity updateNote(String note, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
+    public AActivity updateNote(String name, String content, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
-            formParams.put("status", note);
+            formParams.put("status", content);
             
             // This parameter was removed from Twitter API, but it still is in GNUsocial
             formParams.put("source", HttpConnection.USER_AGENT);

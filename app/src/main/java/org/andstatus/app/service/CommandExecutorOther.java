@@ -402,6 +402,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         final String method = "updateNote";
         AActivity activity = AActivity.EMPTY;
         long noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, activityId);
+        String name = MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId);
         String content = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
         DemoData.crashTest(() -> content.startsWith("Crash me on sending 2015-04-10"));
         String oid = getNoteOid(method, noteId, false);
@@ -409,7 +410,8 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         Audience recipients = Audience.fromNoteId(execContext.getMyAccount().getOrigin(), noteId);
         Uri mediaUri = DownloadData.getSingleAttachment(noteId).
                 mediaUriToBePosted();
-        String msgLog = "content:'" + MyLog.trimmedString(content, 40) + "'"
+        String msgLog = (StringUtils.nonEmpty(name) ? "name:'" + name + "'" : "")
+                + (StringUtils.nonEmpty(content) ? "content:'" + MyLog.trimmedString(content, 40) + "'" : "")
                 + (mediaUri.equals(Uri.EMPTY) ? "" : "; mediaUri:'" + mediaUri + "'");
         try {
             if (MyLog.isVerboseEnabled()) {
@@ -421,17 +423,18 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 throw ConnectionException.hardConnectionException(
                         "Wrong note status: " + statusStored, null);
             }
-            if (recipients.isEmpty() || isPrivate != TriState.TRUE) {
+            // TODO: Separate being Private and having recipients
+            if (recipients.isEmpty() || isPrivate.untrue) {
                 long replyToMsgId = MyQuery.noteIdToLongColumnValue(
                         NoteTable.IN_REPLY_TO_NOTE_ID, noteId);
                 String replyToMsgOid = getNoteOid(method, replyToMsgId, false);
                 activity = execContext.getMyAccount().getConnection()
-                        .updateNote(content.trim(), oid, replyToMsgOid, mediaUri);
+                        .updateNote(name, content.trim(), oid, replyToMsgOid, mediaUri);
             } else {
                 String recipientOid = getActorOid(method, recipients.getFirst().actorId, true);
                 // Currently we don't use Screen Name, I guess id is enough.
                 activity = execContext.getMyAccount().getConnection()
-                        .updatePrivateNote(content.trim(), oid, recipientOid, mediaUri);
+                        .updatePrivateNote(name, content.trim(), oid, recipientOid, mediaUri);
             }
             logIfEmptyNote(method, noteId, activity.getNote());
         } catch (ConnectionException e) {

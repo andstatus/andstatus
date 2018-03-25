@@ -36,6 +36,9 @@ import java.util.List;
 
 public class ConnectionMastodon extends ConnectionTwitterLike {
     private static final String ATTACHMENTS_FIELD_NAME = "media_attachments";
+    private static final String NAME_PROPERTY = "spoiler_text";
+    private static final String CONTENT_PROPERTY_UPDATE = "status";
+    private static final String CONTENT_PROPERTY = "content";
 
     @Override
     protected String getApiPath1(ApiRoutineEnum routine) {
@@ -247,11 +250,12 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
 
     @Override
-    public AActivity updateNote(String note, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
+    public AActivity updateNote(String name, String content, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         JSONObject mediaObject = null;
         try {
-            formParams.put("status", note);
+            formParams.put(NAME_PROPERTY, name);
+            formParams.put(CONTENT_PROPERTY_UPDATE, content);
             if ( !TextUtils.isEmpty(inReplyToOid)) {
                 formParams.put("in_reply_to_id", inReplyToOid);
             }
@@ -332,8 +336,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             }
 
             Note note =  activity.getNote();
-            note.setName(jso.optString("spoiler_text"));
-            note.setContent(jso.optString("content"));
+            note.setName(jso.optString(NAME_PROPERTY));
+            note.setContent(jso.optString(CONTENT_PROPERTY));
             note.url = jso.optString("url");
             if (jso.has("recipient")) {
                 JSONObject recipient = jso.getJSONObject("recipient");

@@ -154,7 +154,7 @@ public class ConnectionGnuSocialTest {
                 org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
         connection.getHttpMock().setResponse(jso);
         
-        AActivity activity = connection.updateNote("Test post note with media", "", "", demoData.localImageTestUri);
+        AActivity activity = connection.updateNote("", "Test post note with media", "", "", demoData.localImageTestUri);
         activity.getNote().setPrivate(TriState.FALSE);
         assertEquals("Note returned", privateGetNoteWithAttachment(
                 InstrumentationRegistry.getInstrumentation().getContext(), false).getNote(), activity.getNote());

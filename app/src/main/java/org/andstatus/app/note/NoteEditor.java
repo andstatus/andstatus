@@ -232,12 +232,9 @@ public class NoteEditor {
         MenuItem item = menu.findItem(R.id.noteSendButton);
         if (item != null) {
             item.setOnMenuItemClickListener(
-                    new MenuItem.OnMenuItemClickListener() {
-                        @Override
-                        public boolean onMenuItemClick(MenuItem item) {
-                            sendAndHide();
-                            return false;
-                        }
+                    item1 -> {
+                        sendAndHide();
+                        return false;
                     });
         }
     }
@@ -506,7 +503,7 @@ public class NoteEditor {
         updateDataFromScreen();
         if (!editorData.isValid()) {
             discardAndHide();
-        } else if (TextUtils.isEmpty(editorData.content.trim())) {
+        } else if (editorData.isEmpty()) {
             Toast.makeText(getActivity(), R.string.cannot_send_empty_message,
                     Toast.LENGTH_SHORT).show();
         } else if (editorData.getMyAccount().charactersLeftForNote(editorData.content) < 0) {

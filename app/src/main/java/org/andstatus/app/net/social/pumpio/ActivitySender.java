@@ -22,14 +22,18 @@ import android.text.TextUtils;
 
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
-import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.AActivity;
+import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio.ConnectionAndUrl;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static org.andstatus.app.net.social.pumpio.ConnectionPumpio.CONTENT_PROPERTY;
+import static org.andstatus.app.net.social.pumpio.ConnectionPumpio.NAME_PROPERTY;
 
 /**
  * Pump.io specific
@@ -41,6 +45,7 @@ class ActivitySender {
     String objectId = "";
     String inReplyToId = "";
     String recipientId = "";
+    String name = "";
     String content = "";
     Uri mMediaUri = null;
     
@@ -51,10 +56,11 @@ class ActivitySender {
         return sender;
     }
     
-    static ActivitySender fromContent(ConnectionPumpio connection, String objectId, String content) {
+    static ActivitySender fromContent(ConnectionPumpio connection, String objectId, String name, String content) {
         ActivitySender sender = new ActivitySender();
         sender.connection = connection;
         sender.objectId = objectId;
+        sender.name = name;
         sender.content = content;
         return sender;
     }
@@ -113,8 +119,11 @@ class ActivitySender {
                     obj = mediaObject;
                 }
             }
-            if (!TextUtils.isEmpty(content)) {
-                obj.put("content", content);
+            if (StringUtils.nonEmpty(name)) {
+                obj.put(NAME_PROPERTY, name);
+            }
+            if (StringUtils.nonEmpty(content)) {
+                obj.put(CONTENT_PROPERTY, content);
             }
             if (!TextUtils.isEmpty(inReplyToId)) {
                 JSONObject inReplyToObject = new JSONObject();
@@ -134,9 +143,13 @@ class ActivitySender {
                 MyLog.v(this, msgLog + " " + jso.toString(2));
             }
             JSONObject objPosted = jso.optJSONObject("object");
-            if (PActivityType.POST.equals(activityType) && objPosted != null &&
-                    !TextUtils.isEmpty(content) &&
-                    TextUtils.isEmpty(objPosted.optString("content"))) {
+            if (PActivityType.POST.equals(activityType)
+                    && objPosted != null
+                    && (
+                       StringUtils.nonEmpty(content) && TextUtils.isEmpty(objPosted.optString(CONTENT_PROPERTY))
+                    || StringUtils.nonEmpty(name) && TextUtils.isEmpty(objPosted.optString(NAME_PROPERTY))
+                    )
+                    ) {
                 if (MyLog.isVerboseEnabled()) {
                     MyLog.v(this, msgLog + " Pump.io bug: content is not sent, " +
                             "when an image object is posted. Sending an update");
@@ -229,7 +242,7 @@ class ActivitySender {
             obj.put("id", objectId);
             obj.put("objectType", connection.oidToObjectType(objectId));
         } else {
-            if (TextUtils.isEmpty(content)) {
+            if (TextUtils.isEmpty(name) && TextUtils.isEmpty(content) && UriUtils.isEmpty(mMediaUri)) {
                 throw new IllegalArgumentException("Nothing to send");
             }
             obj.put("author", activity.getJSONObject("actor"));

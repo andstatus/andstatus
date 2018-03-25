@@ -56,7 +56,9 @@ import java.util.List;
  */
 public class ConnectionPumpio extends Connection {
     private static final String TAG = ConnectionPumpio.class.getSimpleName();
-    static final String  APPLICATION_ID = "http://andstatus.org/andstatus";
+    static final String APPLICATION_ID = "http://andstatus.org/andstatus";
+    static final String NAME_PROPERTY = "displayName";
+    static final String CONTENT_PROPERTY = "content";
 
     @Override
     public void enrichConnectionData(OriginConnectionData connectionData) {
@@ -135,9 +137,9 @@ public class ConnectionPumpio extends Connection {
         String oid = jso.optString("id");
         Actor actor = Actor.fromOriginAndActorOid(data.getOrigin(), oid);
         actor.setUsername(actorOidToUsername(oid));
-        actor.setRealName(jso.optString("displayName"));
+        actor.setRealName(jso.optString(NAME_PROPERTY));
         actor.avatarUrl = JsonUtils.optStringInside(jso, "image", "url");
-        actor.location = JsonUtils.optStringInside(jso, "location", "displayName");
+        actor.location = JsonUtils.optStringInside(jso, "location", NAME_PROPERTY);
         actor.setDescription(jso.optString("summary"));
         actor.setHomepage(jso.optString("url"));
         actor.setProfileUrl(jso.optString("url"));
@@ -214,9 +216,9 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public AActivity updateNote(String note, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
-        String body = toHtmlIfAllowed(note);
-        ActivitySender sender = ActivitySender.fromContent(this, noteOid, body);
+    public AActivity updateNote(String name, String content, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
+        String content2 = toHtmlIfAllowed(content);
+        ActivitySender sender = ActivitySender.fromContent(this, noteOid, name, content2);
         sender.setInReplyTo(inReplyToOid);
         sender.setMediaUri(mediaUri);
         return activityFromJson(sender.sendMe(PActivityType.POST));
@@ -309,9 +311,9 @@ public class ConnectionPumpio extends Connection {
     }
     
     @Override
-    public AActivity updatePrivateNote(String note, String noteOid, String recipientOid, Uri mediaUri) throws ConnectionException {
-        String body = toHtmlIfAllowed(note);
-        ActivitySender sender = ActivitySender.fromContent(this, noteOid, body);
+    public AActivity updatePrivateNote(String name, String content, String noteOid, String recipientOid, Uri mediaUri) throws ConnectionException {
+        String content2 = toHtmlIfAllowed(content);
+        ActivitySender sender = ActivitySender.fromContent(this, noteOid, name, content2);
         sender.setRecipient(recipientOid);
         sender.setMediaUri(mediaUri);
         return activityFromJson(sender.sendMe(PActivityType.POST));
@@ -438,8 +440,8 @@ public class ConnectionPumpio extends Connection {
     private void setVia(Note note, JSONObject activity) throws JSONException {
         if (TextUtils.isEmpty(note.via) && activity.has(Properties.GENERATOR.code)) {
             JSONObject generator = activity.getJSONObject(Properties.GENERATOR.code);
-            if (generator.has("displayName")) {
-                note.via = generator.getString("displayName");
+            if (generator.has(NAME_PROPERTY)) {
+                note.via = generator.getString(NAME_PROPERTY);
             }
         }
     }
@@ -480,8 +482,8 @@ public class ConnectionPumpio extends Connection {
             }
 
             Note note =  activity.getNote();
-            note.setName(jso.optString("displayName"));
-            note.setContent(jso.optString("content"));
+            note.setName(jso.optString(NAME_PROPERTY));
+            note.setContent(jso.optString(CONTENT_PROPERTY));
 
             setVia(note, jso);
             note.url = jso.optString("url");

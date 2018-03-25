@@ -278,28 +278,32 @@ public class ConnectionPumpioTest {
 
     @Test
     public void testUpdateStatus() throws ConnectionException, JSONException {
-        String body = "@peter Do you think it's true?";
+        String name = "To Peter";
+        String content = "@peter Do you think it's true?";
         String inReplyToId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
         httpConnectionMock.setResponse("");
         connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.conversationAccountActorOid));
-        connection.updateNote(body, "", inReplyToId, null);
+        connection.updateNote(name, content, "", inReplyToId, null);
         JSONObject activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         JSONObject obj = activity.getJSONObject("object");
-        assertEquals("Note content", body, MyHtml.fromHtml(obj.getString("content")));
+        assertEquals("Note name", name, MyHtml.fromHtml(obj.getString("displayName")));
+        assertEquals("Note content", content, MyHtml.fromHtml(obj.getString("content")));
         assertEquals("Reply is comment", PObjectType.COMMENT.id(), obj.getString("objectType"));
         
         assertTrue("InReplyTo is present", obj.has("inReplyTo"));
         JSONObject inReplyToObject = obj.getJSONObject("inReplyTo");
         assertEquals("Id of the in reply to object", inReplyToId, inReplyToObject.getString("id"));
 
-        body = "Testing the application...";
+        name = "";
+        content = "Testing the application...";
         inReplyToId = "";
-        connection.updateNote(body, "", inReplyToId, null);
+        connection.updateNote(name, content, "", inReplyToId, null);
         activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         obj = activity.getJSONObject("object");
-        assertEquals("Note content", body, MyHtml.fromHtml(obj.getString("content")));
+        assertEquals("Note name", name, MyHtml.fromHtml(obj.getString("displayName")));
+        assertEquals("Note content", content, MyHtml.fromHtml(obj.getString("content")));
         assertEquals("Note without reply is a note", PObjectType.NOTE.id(), obj.getString("objectType"));
 
         JSONArray recipients = activity.optJSONArray("to");
@@ -369,7 +373,7 @@ public class ConnectionPumpioTest {
         httpConnectionMock.setResponse(jso);
         
         connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.conversationAccountActorOid));
-        AActivity activity = connection.updateNote("Test post note with media", "", "", demoData.localImageTestUri);
+        AActivity activity = connection.updateNote("", "Test post note with media", "", "", demoData.localImageTestUri);
         activity.getNote().setPrivate(TriState.FALSE);
         assertEquals("Note returned", privateGetNoteWithAttachment(
                 InstrumentationRegistry.getInstrumentation().getContext(), false), activity.getNote());
