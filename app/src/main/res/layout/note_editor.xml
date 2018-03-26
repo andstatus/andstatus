@@ -67,6 +67,14 @@
                           android:layout_width="0dip"
                           android:layout_weight="1"
                           android:orientation="vertical">
+                <CheckBox
+                    android:id="@+id/is_private"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:visibility="gone"
+                    tools:visibility="visible"
+                    android:text="@string/notification_events_private"/>
                 <EditText
                     android:id="@+id/note_name_edit"
                     android:layout_width="match_parent"

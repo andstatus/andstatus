@@ -53,11 +53,13 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.LoadableListActivity;
+import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
+import org.andstatus.app.util.ViewUtils;
 
 /**
  * "Enter your message here" box 
@@ -413,6 +415,8 @@ public class NoteEditor {
 
     public void updateScreen() {
         setAdapter();
+        ViewUtils.showView(editorView, R.id.is_private, editorData.canChangeIsPrivate());
+        MyCheckBox.set(getActivity(), R.id.is_private, editorData.isPrivate(), true);
         MyUrlSpan.showText(editorView, R.id.note_name_edit, editorData.name, false,
                 editorData.ma.getOrigin().getOriginType().hasNoteName);
         String body = editorData.content.trim();
@@ -520,6 +524,8 @@ public class NoteEditor {
     private void updateDataFromScreen() {
         editorData.setName(MyUrlSpan.getText(editorView, R.id.note_name_edit));
         editorData.setContent(bodyView.getText().toString());
+        editorData.setPrivate(TriState.fromBoolean(
+                MyCheckBox.isChecked(getActivity(), R.id.is_private, false)));
     }
 
     private void discardAndHide() {

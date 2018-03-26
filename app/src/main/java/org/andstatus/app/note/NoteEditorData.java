@@ -102,6 +102,7 @@ public class NoteEditorData {
         result = prime * result + name.hashCode();
         result = prime * result + content.hashCode();
         result = prime * result + recipients.hashCode();
+        result = prime * result + isPrivate.hashCode();
         result = prime * result + (int) (inReplyToNoteId ^ (inReplyToNoteId >>> 32));
         return result;
     }
@@ -119,8 +120,8 @@ public class NoteEditorData {
             return false;
         if (!name.equals(other.name)) return false;
         if (!content.equals(other.content)) return false;
-        if (!recipients.equals(other.recipients))
-            return false;
+        if (!recipients.equals(other.recipients)) return false;
+        if (!isPrivate.equals(other.isPrivate)) return false;
         return inReplyToNoteId == other.inReplyToNoteId;
     }
 
@@ -147,6 +148,7 @@ public class NoteEditorData {
         if(recipients.nonEmpty()) {
             builder.append("recipients:" + recipients + ",");
         }
+        if(isPrivate.isTrue) builder.append("private,");
         builder.append("ma:" + ma.getAccountName() + ",");
         return MyLog.formatKeyValue(this, builder.toString());
     }
@@ -190,6 +192,7 @@ public class NoteEditorData {
             data.status = status;
             data.setName(name);
             data.setContent(content);
+            data.isPrivate = isPrivate;
             data.attachment = attachment;
             data.image = image;
             data.inReplyToNoteId = inReplyToNoteId;
@@ -212,6 +215,7 @@ public class NoteEditorData {
         note.setName(name);
         note.setContent(content);
         note.addRecipients(recipients);
+        note.setPrivate(isPrivate);
         if (inReplyToNoteId != 0) {
             final AActivity inReplyTo = AActivity.newPartialNote(getMyAccount().getActor(),
                     MyQuery.idToOid(OidEnum.NOTE_OID, inReplyToNoteId, 0), 0, UNKNOWN);
@@ -366,7 +370,7 @@ public class NoteEditorData {
     }
 
     public boolean isPrivate() {
-        return isPrivate == TriState.TRUE;
+        return isPrivate.isTrue;
     }
 
     public boolean nonPrivate() {
@@ -385,5 +389,10 @@ public class NoteEditorData {
 
     public void setName(String name) {
         this.name = StringUtils.notEmpty(name, "").trim();
+    }
+
+    public boolean canChangeIsPrivate() {
+        return recipients.nonEmpty()
+                && (inReplyToNoteId == 0 || ma.getOrigin().getOriginType().isPrivateNoteAllowsReply());
     }
 }
