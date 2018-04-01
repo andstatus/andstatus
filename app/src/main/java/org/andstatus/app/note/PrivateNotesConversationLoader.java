@@ -30,7 +30,6 @@ import org.andstatus.app.data.SqlActorIds;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Audience;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.TriState;
@@ -70,7 +69,7 @@ public class PrivateNotesConversationLoader<T extends ConversationItem<T>> exten
     @NonNull
     // TODO: Actually this is not exactly what we need, because we don't check recipients
     private String getSelectionForActorAndRecipient(String actor, String recipients) {
-        return "(" + NoteTable.PRIVATE + "=" + TriState.TRUE.id
+        return "(" + NoteTable.PUBLIC + "=" + TriState.FALSE.id
                 + " AND (" + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.ACTOR_ID + actor
                 + " OR " + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.ACTOR_ID + recipients + "))";
     }

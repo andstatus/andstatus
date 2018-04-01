@@ -98,7 +98,7 @@ public class MyLog {
     @GuardedBy("logFileLock")
     private static String logFileName = null;
 
-    private static final String COMMA = ",";
+    public static final String COMMA = ",";
 
     private MyLog() {
         // Empty

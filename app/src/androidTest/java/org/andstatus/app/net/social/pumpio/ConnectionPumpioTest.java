@@ -32,6 +32,7 @@ import org.andstatus.app.net.social.AObjectType;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Attachment;
+import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
@@ -245,7 +246,7 @@ public class ConnectionPumpioTest {
         ind++;
         note = timeline.get(ind).getNote();
         assertTrue("Have a recipient", note.audience().nonEmpty());
-        assertEquals("Directed to yvolk", "acct:yvolk@identi.ca" , note.audience().getFirst().oid);
+        assertEquals("Directed to yvolk", "acct:yvolk@identi.ca" , note.audience().getFirstNonPublic().oid);
 
         ind++;
         activity = timeline.get(ind);
@@ -283,7 +284,7 @@ public class ConnectionPumpioTest {
         String inReplyToId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
         httpConnectionMock.setResponse("");
         connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.conversationAccountActorOid));
-        connection.updateNote(name, content, "", inReplyToId, null);
+        connection.updateNote(name, content, "", Audience.EMPTY, inReplyToId, null);
         JSONObject activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         JSONObject obj = activity.getJSONObject("object");
@@ -298,11 +299,11 @@ public class ConnectionPumpioTest {
         name = "";
         content = "Testing the application...";
         inReplyToId = "";
-        connection.updateNote(name, content, "", inReplyToId, null);
+        connection.updateNote(name, content, "", Audience.EMPTY, inReplyToId, null);
         activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         obj = activity.getJSONObject("object");
-        assertEquals("Note name", name, MyHtml.fromHtml(obj.getString("displayName")));
+        assertEquals("Note name", name, MyHtml.fromHtml(obj.optString("displayName")));
         assertEquals("Note content", content, MyHtml.fromHtml(obj.getString("content")));
         assertEquals("Note without reply is a note", PObjectType.NOTE.id(), obj.getString("objectType"));
 
@@ -373,8 +374,8 @@ public class ConnectionPumpioTest {
         httpConnectionMock.setResponse(jso);
         
         connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.conversationAccountActorOid));
-        AActivity activity = connection.updateNote("", "Test post note with media", "", "", demoData.localImageTestUri);
-        activity.getNote().setPrivate(TriState.FALSE);
+        AActivity activity = connection.updateNote("", "Test post note with media", "",
+                Audience.EMPTY, "", demoData.localImageTestUri);
         assertEquals("Note returned", privateGetNoteWithAttachment(
                 InstrumentationRegistry.getInstrumentation().getContext(), false), activity.getNote());
     }
@@ -384,16 +385,16 @@ public class ConnectionPumpioTest {
                 org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
         httpConnectionMock.setResponse(jso);
 
-        Note msg = connection.getNote("w9wME-JVQw2GQe6POK7FSQ").getNote();
+        Note note = connection.getNote("w9wME-JVQw2GQe6POK7FSQ").getNote();
         if (uniqueUid) {
-            msg = msg.copy(msg.oid + "_" + demoData.testRunUid);
+            note = note.copy(note.oid + "_" + demoData.testRunUid);
         }
-        assertNotNull("note returned", msg);
-        assertEquals("has attachment", 1, msg.attachments.size());
+        assertNotNull("note returned", note);
+        assertEquals("has attachment", 1, note.attachments.size());
         Attachment attachment = Attachment.fromUri("https://io.jpope.org/uploads/jpope/2014/8/18/m1o1bw.jpg");
-        assertEquals("attachment", attachment, msg.attachments.get(0));
-        assertEquals("Body text", "<p>Hanging out up in the mountains.</p>", msg.getContent());
-        return msg;
+        assertEquals("attachment", attachment, note.attachments.get(0));
+        assertEquals("Body text", "<p>Hanging out up in the mountains.</p>", note.getContent());
+        return note;
     }
 
     @Test

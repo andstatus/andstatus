@@ -157,7 +157,7 @@ public class NoteContextMenu extends MyContextMenu {
                 }
             }
 
-            if (noteForAccount.isLoaded() && (!noteForAccount.isPrivate() ||
+            if (noteForAccount.isLoaded() && (noteForAccount.getPublic().notFalse ||
                     noteForAccount.origin.getOriginType().isPrivateNoteAllowsReply()) && !isEditorVisible()) {
                 NoteContextMenuItem.REPLY.addTo(menu, order++, R.string.menu_item_reply);
                 NoteContextMenuItem.REPLY_TO_CONVERSATION_PARTICIPANTS.addTo(menu, order++,
@@ -176,7 +176,7 @@ public class NoteContextMenu extends MyContextMenu {
                         R.string.menu_item_private_message);
             }
 
-            if (noteForAccount.isLoaded() && !noteForAccount.isPrivate()) {
+            if (noteForAccount.isLoaded() && noteForAccount.getPublic().notFalse) {
                 if (noteForAccount.favorited) {
                     NoteContextMenuItem.UNDO_LIKE.addTo(menu, order++,
                             R.string.menu_item_destroy_favorite);
@@ -202,9 +202,7 @@ public class NoteContextMenu extends MyContextMenu {
 
             if (noteForAccount.isAuthorSucceededMyAccount()) {
                 if (noteForAccount.isLoaded()) {
-                    if (noteForAccount.isPrivate()) {
-                        // TODO: Delete private note
-                    } else if (!noteForAccount.reblogged && noteForAccount.getMyAccount().getConnection()
+                    if (!noteForAccount.reblogged && noteForAccount.getMyAccount().getConnection()
                             .isApiSupported(Connection.ApiRoutineEnum.DELETE_NOTE)) {
                         NoteContextMenuItem.DELETE_NOTE.addTo(menu, order++,
                                 R.string.menu_item_destroy_status);

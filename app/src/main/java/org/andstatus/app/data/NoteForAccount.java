@@ -49,7 +49,7 @@ public class NoteForAccount {
     public long actorId = 0;
     public String actorName = "";
     private boolean isAuthorMySucceededMyAccount = false;
-    TriState isPrivate = TriState.UNKNOWN;
+    TriState isPublic = TriState.UNKNOWN;
     public String imageFilename = null;
     @NonNull
     private final MyAccount myAccount;
@@ -87,7 +87,7 @@ public class NoteForAccount {
         String sql = "SELECT " + NoteTable.NOTE_STATUS + ", "
                 + NoteTable.CONTENT + ", "
                 + NoteTable.AUTHOR_ID + ","
-                + NoteTable.PRIVATE
+                + NoteTable.PUBLIC
                 + " FROM " + NoteTable.TABLE_NAME
                 + " WHERE " + NoteTable._ID + "=" + noteId;
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
@@ -103,7 +103,7 @@ public class NoteForAccount {
                 authorName = MyQuery.actorIdToName(db, authorId, MyPreferences.getActorInTimeline());
                 isAuthor = (accountActorId == authorId);
                 isAuthorMySucceededMyAccount = isAuthor && myAccount.isValidAndSucceeded();
-                isPrivate = DbUtils.getTriState(cursor, NoteTable.PRIVATE);
+                isPublic = DbUtils.getTriState(cursor, NoteTable.PUBLIC);
             }
         } catch (Exception e) {
             MyLog.i(this, method + "; SQL:'" + sql + "'", e);
@@ -131,9 +131,9 @@ public class NoteForAccount {
     public MyAccount getMyAccount() {
         return myAccount;
     }
-    
-    public boolean isPrivate() {
-        return isPrivate.equals(TriState.TRUE);
+
+    public TriState getPublic() {
+        return isPublic;
     }
 
     public boolean isTiedToThisAccount() {

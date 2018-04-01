@@ -42,20 +42,21 @@ public enum OriginType implements SelectableEnum {
      * Origin type for Twitter system 
      * <a href="https://dev.twitter.com/docs">Twitter Developers' documentation</a>
      */
-    TWITTER(1, "Twitter", ApiEnum.TWITTER1P1, NoteName.NO),
+    TWITTER(1, "Twitter", ApiEnum.TWITTER1P1, NoteName.NO, PublicWithAudience.NO),
     /**
      * Origin type for the pump.io system 
      * Till July of 2013 (and v.1.16 of AndStatus) the API was: 
      * <a href="http://status.net/wiki/Twitter-compatible_API">Twitter-compatible identi.ca API</a>
      * Since July 2013 the API is <a href="https://github.com/e14n/pump.io/blob/master/API.md">pump.io API</a>
      */
-    PUMPIO(2, "Pump.io", ApiEnum.PUMPIO, NoteName.YES),
-    GNUSOCIAL(3, "GNU social", ApiEnum.GNUSOCIAL_TWITTER, NoteName.NO),
+    PUMPIO(2, "Pump.io", ApiEnum.PUMPIO, NoteName.YES, PublicWithAudience.YES),
+    GNUSOCIAL(3, "GNU social", ApiEnum.GNUSOCIAL_TWITTER, NoteName.NO, PublicWithAudience.NO),
     /** <a href="https://github.com/Gargron/mastodon">Mastodon at GitHub</a> */
-    MASTODON(4, "Mastodon", ApiEnum.MASTODON, NoteName.YES),
-    UNKNOWN(0, "?", ApiEnum.UNKNOWN_API, NoteName.NO);
+    MASTODON(4, "Mastodon", ApiEnum.MASTODON, NoteName.YES, PublicWithAudience.NO),
+    UNKNOWN(0, "?", ApiEnum.UNKNOWN_API, NoteName.NO, PublicWithAudience.NO);
 
     private enum NoteName { YES, NO}
+    private enum PublicWithAudience { YES, NO}
 
     /**
      * Connection APIs known
@@ -130,11 +131,14 @@ public enum OriginType implements SelectableEnum {
     private final boolean isPrivateNoteAllowsReply;
     private final boolean isSelectable;
     public final boolean hasNoteName;
+    public final boolean isPublicWithAudienceAllowed;
 
-    OriginType(long id, String title, ApiEnum api, NoteName noteName) {
+    OriginType(long id, String title, ApiEnum api, NoteName noteName, PublicWithAudience publicWithAudience) {
         this.id = id;
         this.title = title;
-        this.hasNoteName = noteName == NoteName.YES;
+        hasNoteName = noteName == NoteName.YES;
+        isPublicWithAudienceAllowed = publicWithAudience == PublicWithAudience.YES;
+
         switch (api) {
             case TWITTER1P1:
                 isOAuthDefault = true;

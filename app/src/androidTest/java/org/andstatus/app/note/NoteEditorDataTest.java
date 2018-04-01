@@ -45,14 +45,13 @@ public class NoteEditorDataTest {
     private void assertData(MyAccount ma, long inReplyToMsgId, long inReplyToActorId, long recipientId,
             long memberActorId, boolean replyAll) {
         Uri uri = Uri.parse("http://example.com/" + demoData.testRunUid + "/some.png");
-        NoteEditorData data = NoteEditorData.newEmpty(ma)
-                .setInReplyToNoteId(inReplyToMsgId)
+        NoteEditorData data = NoteEditorData.newReply(ma, inReplyToMsgId)
                 .addRecipientId(recipientId)
                 .setReplyToConversationParticipants(replyAll)
                 .setContent("Some text here " + demoData.testRunUid);
-        assertFalse(data.toString(), data.content.contains("@"));
+        assertFalse(data.toString(), data.getContent().contains("@"));
         data.addMentionsToText();
-        assertEquals(recipientId, data.recipients.getFirst().actorId);
+        assertEquals(recipientId, data.activity.getNote().audience().getFirstNonPublic().actorId);
         assertMentionedActor(data, inReplyToActorId, true);
         assertMentionedActor(data, memberActorId, replyAll);
         assertEquals(data.toString(), Uri.EMPTY, data.getAttachment().getUri());
@@ -66,7 +65,7 @@ public class NoteEditorDataTest {
                 data.ma.getOrigin().isMentionAsWebFingerId() ? ActorTable.WEBFINGER_ID
                         : ActorTable.USERNAME, mentionedActorId);
         assertTrue(!TextUtils.isEmpty(expectedName));
-        boolean isMentioned = data.content.contains("@" + expectedName);
+        boolean isMentioned = data.getContent().contains("@" + expectedName);
         assertEquals(data.toString() + "; expected name:" + expectedName, isMentioned_in, isMentioned);
     }
 

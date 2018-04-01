@@ -54,7 +54,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         void executeOnUiThread(ActorContextMenu menu, MyAccount ma) {
             NoteEditorData editorData = NoteEditorData.newEmpty(menu.getMyActor())
                     .addRecipientId(menu.getViewItem().getActorId());
-            if (editorData.recipients.nonEmpty()) {
+            if (editorData.activity.getNote().audience().hasNonPublic()) {
                 menu.menuContainer.getNoteEditor().startEditingNote(editorData);
             }
         }

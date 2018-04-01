@@ -89,12 +89,12 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
 
     public String getName() {
         if (MyPreferences.getShowOrigin() && actor.nonEmpty()) {
-            String name = actor.getUsername() + " / " + actor.origin.getName();
+            String name = actor.getTimelineUsername() + " / " + actor.origin.getName();
             if (actor.origin.getOriginType() == OriginType.GNUSOCIAL && MyPreferences.isShowDebuggingInfoInUi()) {
                 return name + " id:" + (StringUtils.nonEmpty(actor.oid) ? actor.oid : MyQuery.idToOid(OidEnum.ACTOR_OID,
                                         actor.actorId, 0));
             } else return name;
-        } else return actor.getUsername();
+        } else return actor.getTimelineUsername();
     }
 
     public String getDescription() {

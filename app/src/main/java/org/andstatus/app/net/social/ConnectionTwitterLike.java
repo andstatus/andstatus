@@ -24,6 +24,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
@@ -474,7 +475,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     void setNotesPrivate(List<AActivity> timeline) {
         for (AActivity item : timeline) {
             if (item.getObjectType() == AObjectType.NOTE) {
-                item.getNote().setPrivate(TriState.TRUE);
+                item.getNote().setPublic(TriState.FALSE);
             }
         }
     }
@@ -512,21 +513,6 @@ public abstract class ConnectionTwitterLike extends Connection {
         Actor actor = actorFromJson(jso);
         MyLog.v(this, "getActor oid='" + actorOid + "', username='" + username + "' -> " + actor.getRealName());
         return actor;
-    }
-    
-    @Override
-    public AActivity updatePrivateNote(String name, String content, String noteOid, String recipientOid, Uri mediaUri) throws ConnectionException {
-        JSONObject formParams = new JSONObject();
-        try {
-            formParams.put("text", content);
-            if ( !TextUtils.isEmpty(recipientOid)) {
-                formParams.put("user_id", recipientOid);
-            }
-        } catch (JSONException e) {
-            MyLog.e(this, e);
-        }
-        JSONObject jso = postRequest(ApiRoutineEnum.UPDATE_PRIVATE_NOTE, formParams);
-        return activityFromJson(jso);
     }
     
     @Override
@@ -575,7 +561,16 @@ public abstract class ConnectionTwitterLike extends Connection {
     }
     
     @Override
-    public AActivity updateNote(String name, String content, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
+    public AActivity updateNote(String name, String content, String noteOid, Audience audience, String inReplyToOid,
+                                Uri mediaUri) throws ConnectionException {
+        if (StringUtils.isEmpty(inReplyToOid) && audience.hasNonPublic()) {
+            return updatePrivateNote(name, content, noteOid, audience.getFirstNonPublic().oid, mediaUri);
+        }
+        return  updateNote2(name, content, noteOid, audience, inReplyToOid, mediaUri);
+    }
+
+    protected AActivity updateNote2(String name, String content, String noteOid, Audience audience, String inReplyToOid,
+                                Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put("status", content);
@@ -586,6 +581,21 @@ public abstract class ConnectionTwitterLike extends Connection {
             MyLog.e(this, e);
         }
         JSONObject jso = postRequest(ApiRoutineEnum.UPDATE_NOTE, formParams);
+        return activityFromJson(jso);
+    }
+
+    private AActivity updatePrivateNote(String name, String content, String noteOid, String recipientOid, Uri mediaUri)
+            throws ConnectionException {
+        JSONObject formParams = new JSONObject();
+        try {
+            formParams.put("text", content);
+            if ( !TextUtils.isEmpty(recipientOid)) {
+                formParams.put("user_id", recipientOid);
+            }
+        } catch (JSONException e) {
+            MyLog.e(this, e);
+        }
+        JSONObject jso = postRequest(ApiRoutineEnum.UPDATE_PRIVATE_NOTE, formParams);
         return activityFromJson(jso);
     }
 

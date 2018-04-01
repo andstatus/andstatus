@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,8 +36,8 @@ import org.andstatus.app.util.SharedPreferencesUtil;
  * Asynchronously save, delete and send a note, prepared by {@link NoteEditor}
  */
 public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorData> {
-    final NoteEditor editor;
-    volatile NoteEditorCommand command = new NoteEditorCommand(NoteEditorData.EMPTY);
+    private final NoteEditor editor;
+    private volatile NoteEditorCommand command = new NoteEditorCommand(NoteEditorData.EMPTY);
 
     public NoteSaver(NoteEditor editor) {
         super(PoolEnum.QUICK_UI);
@@ -56,7 +56,9 @@ public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorDa
             command.loadCurrent();
         }
         saveCurrentData();
-        return command.showAfterSave ? NoteEditorData.load(command.currentData.getNoteId()) : NoteEditorData.EMPTY;
+        return command.showAfterSave
+                ? NoteEditorData.load(MyContextHolder.get(), command.currentData.getNoteId())
+                : NoteEditorData.EMPTY;
     }
 
     private void savePreviousData() {
@@ -69,7 +71,7 @@ public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorDa
 
     private void saveCurrentData() {
         MyLog.v(NoteEditorData.TAG, "Saving current data:" + command.currentData);
-        if (command.currentData.status == DownloadStatus.DELETED) {
+        if (command.currentData.activity.getNote().getStatus() == DownloadStatus.DELETED) {
             MyProvider.deleteNote(MyContextHolder.get().context(), command.currentData.getNoteId());
         } else {
             command.currentData.save(command.getMediaUri());
@@ -77,10 +79,10 @@ public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorDa
                 SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID,
                         command.currentData.getNoteId());
             }
-            if (command.currentData.status == DownloadStatus.SENDING) {
+            if (command.currentData.activity.getNote().getStatus() == DownloadStatus.SENDING) {
                 CommandData commandData = CommandData.newUpdateStatus(
                         command.currentData.getMyAccount(),
-                        command.currentData.getActivityId(), command.currentData.getNoteId());
+                        command.currentData.activity.getId(), command.currentData.getNoteId());
                 MyServiceManager.sendManualForegroundCommand(commandData);
             }
         }
@@ -91,9 +93,9 @@ public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorDa
         if (data.isEmpty()) {
             return;
         }
-        CommandData commandData = data.status == DownloadStatus.DELETED ?
+        CommandData commandData = data.activity.getNote().getStatus() == DownloadStatus.DELETED ?
                 CommandData.newItemCommand(CommandEnum.DELETE_NOTE, data.getMyAccount(), data.getNoteId()) :
-                CommandData.newUpdateStatus(data.getMyAccount(), data.getActivityId(), data.getNoteId());
+                CommandData.newUpdateStatus(data.getMyAccount(), data.activity.getId(), data.getNoteId());
         MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.UNKNOWN)
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
     }

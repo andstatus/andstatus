@@ -30,8 +30,9 @@ class OriginGnuSocial extends Origin {
     protected String alternativeNotePermalink(long noteId) {
         try {
             return new URL(url,
-                    (MyQuery.noteIdToTriState(NoteTable.PRIVATE, noteId) == TriState.TRUE ?
-                    "message" : "notice") + "/"
+                    (MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId) == TriState.TRUE
+                            ? "notice"
+                            : "message") + "/"
                     + MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId)).toExternalForm();
         } catch (MalformedURLException e) {
             MyLog.d(this, "Malformed URL from '" + url.toExternalForm() + "'", e);

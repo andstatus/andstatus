@@ -308,7 +308,7 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     private Actor fixedActor(MyContext myContext, TimelineType timelineType, long actorId) {
-        return timelineType.isForUser() ? Actor.load(myContext, actorId, () -> Actor.EMPTY) : Actor.EMPTY;
+        return timelineType.isForUser() ? Actor.load(myContext, actorId) : Actor.EMPTY;
     }
 
     @NonNull

@@ -78,7 +78,7 @@ public class UnsentNotesTest extends TimelineActivityTest<ActivityViewItem> {
 
         mService.waitForServiceStopped(false);
 
-        String condition = "BODY='" + body + "'";
+        String condition = NoteTable.CONTENT + "='" + body + "'";
         long unsentMsgId = MyQuery.conditionToLongColumnValue(NoteTable.TABLE_NAME, BaseColumns._ID, condition);
         step = "Unsent note " + unsentMsgId;
         assertTrue(method + "; " + step + ": " + condition, unsentMsgId != 0);
@@ -86,7 +86,7 @@ public class UnsentNotesTest extends TimelineActivityTest<ActivityViewItem> {
                 MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)));
 
         step = "Start editing unsent note " + unsentMsgId ;
-        getActivity().getNoteEditor().startEditingNote(NoteEditorData.load(unsentMsgId));
+        getActivity().getNoteEditor().startEditingNote(NoteEditorData.load(MyContextHolder.get(), unsentMsgId));
         ActivityTestHelper.waitViewVisible(method + "; " + step, editorView);
         TestSuite.waitForIdleSync();
 

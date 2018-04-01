@@ -103,7 +103,7 @@ public class ActorTest {
         Actor actor1 = Actor.fromOriginAndActorOid(origin, "acct:fourthWithoutAvatar@pump.example.com");
         actor1.actorId = 11;
         actor1.setUsername("fourthWithoutAvatar@pump.example.com");
-        actor1.setRealName("Real fourthWithoutAvatar@pump.example.com");
+        actor1.setRealName("Real Fourth");
         actor1.setProfileUrl("http://pump.example.com/fourthWithoutAvatar");
 
         Actor actor2 = Actor.fromOriginAndActorId(origin, 11);

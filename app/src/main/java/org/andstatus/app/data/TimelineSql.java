@@ -86,11 +86,11 @@ public class TimelineSql {
             case HOME:
                 actWhere.append(ActivityTable.SUBSCRIBED + "=" + TriState.TRUE.id)
                         .append(ActivityTable.ACCOUNT_ID, SqlActorIds.forTimelineAccount(timeline));
-                noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.PRIVATE, "!=" + TriState.TRUE.id);
+                noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.PUBLIC, "!=" + TriState.FALSE.id);
                 break;
             case PRIVATE:
                 actWhere.append(ActivityTable.ACCOUNT_ID, SqlActorIds.forTimelineAccount(timeline));
-                noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.PRIVATE, "=" + TriState.TRUE.id);
+                noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.PUBLIC, "=" + TriState.FALSE.id);
                 break;
             case FAVORITES:
                 actWhere.append(ActivityTable.ACTOR_ID, SqlActorIds.forTimelineActor(timeline));
@@ -101,7 +101,7 @@ public class TimelineSql {
                         .append(ActivityTable.NOTIFIED_ACTOR_ID, SqlActorIds.forTimelineActor(timeline));
                 break;
             case PUBLIC:
-                noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.PRIVATE, "!=" + TriState.TRUE.id);
+                noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.PUBLIC, "!=" + TriState.FALSE.id);
                 break;
             case DRAFTS:
                 actWhere.append(ActivityTable.ACTOR_ID, SqlActorIds.forTimelineActor(timeline));

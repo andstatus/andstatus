@@ -29,7 +29,11 @@ public class StringUtils {
     }
 
     public static boolean nonEmpty(String value) {
-        return !TextUtils.isEmpty(value);
+        return !isEmpty(value);
+    }
+
+    public static boolean isEmpty(String value) {
+        return TextUtils.isEmpty(value);
     }
 
     public static String notEmpty(String value, String valueIfEmpty) {

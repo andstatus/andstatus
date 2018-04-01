@@ -209,8 +209,8 @@ public class DataUpdater {
             if (!TextUtils.isEmpty(note.url)) {
                 values.put(NoteTable.URL, note.url);
             }
-            if (note.getPrivate().known) {
-                values.put(NoteTable.PRIVATE, note.getPrivate().id);
+            if (note.getPublic().known) {
+                values.put(NoteTable.PUBLIC, note.getPublic().id);
             }
 
             if (note.lookupConversationId() != 0) {

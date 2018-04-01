@@ -30,6 +30,7 @@ import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UriUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +52,7 @@ public class Note extends AObject {
     
     public final String oid;
     private long updatedDate = 0;
-    private Audience recipients = new Audience();
+    private final Audience recipients;
     private String name = "";
     private String content = "";
 
@@ -65,7 +66,6 @@ public class Note extends AObject {
     public final List<Attachment> attachments = new ArrayList<>();
 
     /** Some additional attributes may appear from "My account's" (authenticated Account's) point of view */
-    private TriState isPrivate = TriState.UNKNOWN;
 
     // In our system
     public final Origin origin;
@@ -89,6 +89,7 @@ public class Note extends AObject {
     private Note(Origin origin, String oid) {
         this.origin = origin;
         this.oid = oid;
+        recipients = new Audience(origin);
     }
 
     @NonNull
@@ -235,10 +236,8 @@ public class Note extends AObject {
         if(isEmpty) {
             builder.append("isEmpty,");
         }
-        if(isPrivate()) {
-            builder.append("private,");
-        } else if(nonPrivate()) {
-            builder.append("nonprivate,");
+        if(getPublic().known) {
+            builder.append(getPublic() == TriState.TRUE ? "public," : "nonpublic,");
         }
         if(isRealOid(oid)) {
             builder.append("oid:'" + oid + "',");
@@ -280,20 +279,12 @@ public class Note extends AObject {
         }
     }
 
-    public TriState getPrivate() {
-        return isPrivate;
+    public TriState getPublic() {
+        return audience().getPublic();
     }
 
-    public boolean isPrivate() {
-        return isPrivate == TriState.TRUE;
-    }
-
-    public boolean nonPrivate() {
-        return !isPrivate();
-    }
-
-    public Note setPrivate(TriState isPrivate) {
-        this.isPrivate = isPrivate;
+    public Note setPublic(TriState isPublic) {
+        audience().setPublic(isPublic);
         return this;
     }
 
@@ -308,10 +299,6 @@ public class Note extends AObject {
     @NonNull
     public Audience audience() {
         return recipients;
-    }
-
-    public void addRecipients(@NonNull Audience audience) {
-        recipients.addAll(audience);
     }
 
     public void addRecipient(Actor recipient) {
@@ -337,8 +324,7 @@ public class Note extends AObject {
         Note note = fromOriginAndOid(origin, oidNew, status);
         note.noteId = noteId;
         note.setUpdatedDate(updatedDate);
-
-        note.recipients.addAll(recipients);
+        note.recipients.copy(recipients);
         note.setName(name);
         note.setContent(content);
         note.inReplyTo = getInReplyTo();
@@ -346,10 +332,7 @@ public class Note extends AObject {
         note.setConversationOid(conversationOid);
         note.via = via;
         note.url = url;
-
         note.attachments.addAll(attachments);
-        note.isPrivate = getPrivate();
-
         note.conversationId = conversationId;
         return note;
     }
@@ -387,5 +370,13 @@ public class Note extends AObject {
                     return TriState.UNKNOWN;
             }
         }
+    }
+
+    public void setDiscarded() {
+        status = UriUtils.isRealOid(oid) ? DownloadStatus.LOADED : DownloadStatus.DELETED;
+    }
+
+    public void setStatus(DownloadStatus status) {
+        this.status = status;
     }
 }

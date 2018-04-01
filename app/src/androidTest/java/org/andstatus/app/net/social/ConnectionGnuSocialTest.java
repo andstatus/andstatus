@@ -113,7 +113,7 @@ public class ConnectionGnuSocialTest {
         ind++;
         activity = timeline.get(ind);
         assertEquals("conversationOid", "2218650", activity.getNote().conversationOid);
-        assertEquals("Note not private", TriState.UNKNOWN, activity.getNote().getPrivate());
+        assertEquals("Note not private", TriState.UNKNOWN, activity.getNote().getPublic());
         assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
         assertEquals("MyAccount", accountActorOid, activity.accountActor.oid);
         assertEquals("Actor", activity.getAuthor().oid, activity.getActor().oid);
@@ -154,8 +154,8 @@ public class ConnectionGnuSocialTest {
                 org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
         connection.getHttpMock().setResponse(jso);
         
-        AActivity activity = connection.updateNote("", "Test post note with media", "", "", demoData.localImageTestUri);
-        activity.getNote().setPrivate(TriState.FALSE);
+        AActivity activity = connection.updateNote("", "Test post note with media", "",
+                Audience.EMPTY, "", demoData.localImageTestUri);
         assertEquals("Note returned", privateGetNoteWithAttachment(
                 InstrumentationRegistry.getInstrumentation().getContext(), false).getNote(), activity.getNote());
     }

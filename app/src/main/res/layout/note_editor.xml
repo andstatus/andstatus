@@ -67,14 +67,6 @@
                           android:layout_width="0dip"
                           android:layout_weight="1"
                           android:orientation="vertical">
-                <CheckBox
-                    android:id="@+id/is_private"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="end"
-                    android:visibility="gone"
-                    tools:visibility="visible"
-                    android:text="@string/notification_events_private"/>
                 <EditText
                     android:id="@+id/note_name_edit"
                     android:layout_width="match_parent"
@@ -109,14 +101,28 @@
                 android:scaleType="fitCenter"
                 android:contentDescription="@string/attachments"
                 tools:src="@drawable/splash_logo"/>
-            <TextView
-                android:id="@+id/noteEditDetails"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingLeft="5dip"
-                android:paddingRight="5dip"
-                style="@style/messageDetailsAppearance"
-                tools:text="one hour ago in reply to somebody@somewhere.net (with media 1920x1080 1323kb)"/>
+                android:orientation="horizontal">
+                <CheckBox
+                    android:id="@+id/is_public"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    tools:visibility="visible"
+                    android:text="@string/timeline_title_public"/>
+
+                <TextView
+                    android:id="@+id/noteEditDetails"
+                    style="@style/messageDetailsAppearance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="10dp"
+                    android:paddingLeft="5dip"
+                    android:paddingRight="5dip"
+                    tools:text="one hour ago in reply to somebody@somewhere.net (with media 1920x1080 1323kb)"/>
+            </LinearLayout>
             <TextView
                 android:id="@+id/inReplyToBody"
                 android:layout_width="wrap_content"

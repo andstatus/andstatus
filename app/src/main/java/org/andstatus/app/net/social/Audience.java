@@ -17,51 +17,72 @@
 package org.andstatus.app.net.social;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.SqlActorIds;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.AudienceTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
 
 public class Audience {
+    public final static Audience EMPTY = new Audience(Origin.EMPTY);
+    public final Origin origin;
     private final Set<Actor> recipients = new HashSet<>();
+    private TriState isPublic = TriState.UNKNOWN;
+
+    public Audience(Origin origin) {
+        this.origin = origin;
+    }
 
     public static Audience fromNoteId(@NonNull Origin origin, long noteId) {
         String where = AudienceTable.NOTE_ID + "=" + noteId;
-        String sql = "SELECT " + AudienceTable.ACTOR_ID
+        String sql = "SELECT " + AudienceTable.ACTOR_ID + "," + ActorTable.ACTOR_OID
                 + " FROM " + AudienceTable.TABLE_NAME
+                + " INNER JOIN " + ActorTable.TABLE_NAME + " ON " + AudienceTable.ACTOR_ID + "="
+                + ActorTable.TABLE_NAME + "." + ActorTable._ID
                 + " WHERE " + where;
-        Audience audience = new Audience();
-        for (long recipientId : MyQuery.getLongs(sql)) {
-            audience.add(Actor.fromOriginAndActorId(origin, recipientId));
-        }
+        Audience audience = new Audience(origin);
+        final Function<Cursor, Actor> function = cursor -> Actor.fromOriginAndActorId(origin,
+                DbUtils.getLong(cursor, AudienceTable.ACTOR_ID),
+                DbUtils.getString(cursor, ActorTable.ACTOR_OID));
+        MyQuery.get(MyContextHolder.get(), sql, function).forEach(audience::add);
+        audience.setPublic(MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId));
         return audience;
     }
 
-    public Actor getFirst() {
-        if (recipients.isEmpty()) {
-            return Actor.EMPTY;
-        }
-        return recipients.iterator().next();
+    public static Audience load(@NonNull MyContext myContext, @NonNull Origin origin, long noteId) {
+        Audience audience = new Audience(origin);
+        final String sql = "SELECT " + Actor.getActorAndUserSqlColumns()
+                + " FROM (" + Actor.getActorAndUserSqlTables()
+                + ") INNER JOIN " + AudienceTable.TABLE_NAME + " ON " + AudienceTable.ACTOR_ID + "="
+                + ActorTable.TABLE_NAME + "." + ActorTable._ID
+                + " AND " + AudienceTable.NOTE_ID + "=" + noteId;
+        final Function<Cursor, Actor> function = cursor -> Actor.fromCursor(myContext, cursor);
+        MyQuery.get(myContext, sql, function).forEach(audience::add);
+        audience.setPublic(MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId));
+        return audience;
+    }
+
+    public Actor getFirstNonPublic() {
+        return recipients.stream().filter(Actor::nonPublic).findFirst().orElse(Actor.EMPTY);
     }
 
     public String getUsernames() {
-        StringBuilder sb = new StringBuilder();
-        for (Actor actor : recipients) {
-            if (sb.length() > 0) {
-                sb.append(", ");
-            }
-            sb.append(actor.getTimelineUsername());
-        }
-        return sb.toString();
+        return recipients.stream().map(Actor::getTimelineUsername).reduce((a, b) -> a + ", " + b).orElse("");
     }
 
     public Set<Actor> getRecipients() {
@@ -73,16 +94,22 @@ public class Audience {
     }
 
     public boolean isEmpty() {
-        return recipients.isEmpty();
+        return this.equals(EMPTY) || recipients.isEmpty();
     }
 
-    public void addAll(@NonNull Audience audience) {
-        for (Actor actor : audience.recipients) {
-            add(actor);
-        }
+    public boolean hasNonPublic() {
+        return recipients.stream().anyMatch(Actor::nonPublic);
+    }
+
+    public void copy(@NonNull Audience audience) {
+        audience.recipients.forEach(this::add);
+        isPublic = audience.isPublic;
     }
 
     public void add(@NonNull Actor actor) {
+        if (actor.isPublic()) {
+            isPublic = TriState.TRUE;
+        }
         if (!recipients.contains(actor)) {
             recipients.add(actor);
             return;
@@ -124,12 +151,14 @@ public class Audience {
         Audience prevAudience = Audience.fromNoteId(origin, noteId);
         Set<Actor> toDelete = new HashSet<>();
         Set<Actor> toAdd = new HashSet<>();
-        for (Actor recipient : prevAudience.getRecipients()) {
-            if (!getRecipients().contains(recipient)) {
-                toDelete.add(recipient);
+        for (Actor actor : prevAudience.getRecipients()) {
+            if (actor.isPublic()) continue;
+            if (!getRecipients().contains(actor)) {
+                toDelete.add(actor);
             }
         }
         for (Actor actor : getRecipients()) {
+            if (actor.isPublic()) continue;
             if (!prevAudience.getRecipients().contains(actor)) {
                 if (actor.actorId == 0) {
                     MyLog.w(this, "No actorId for " + actor);
@@ -176,4 +205,21 @@ public class Audience {
     public String toString() {
         return recipients.toString();
     }
+
+    public void setPublic(TriState isPublic) {
+        this.isPublic = isPublic;
+        switch (isPublic) {
+            case TRUE:
+                recipients.add(Actor.PUBLIC);
+                break;
+            default:
+                recipients.remove(Actor.PUBLIC);
+                break;
+        }
+    }
+
+    public TriState getPublic() {
+        return isPublic;
+    }
+
 }

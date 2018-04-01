@@ -82,6 +82,7 @@ public class DemoConversationInserter {
         actors.put(author3.oid, author3);
 
         Actor author4 = buildActorFromOid("acct:fourthWithoutAvatar@pump.example.com");
+        author4.setRealName("Real Fourth");
         
         AActivity minus1 = buildActivity(author2, "", "Older one note", null, null);
         AActivity selected = buildActivity(getAuthor1(), "", "Selected note from Home timeline", minus1,
@@ -100,7 +101,7 @@ public class DemoConversationInserter {
 
         AActivity reply2 = buildActivity(author2, "Private reply", "Reply 2 to selected is private",
                 selected, null);
-        addPrivateNote(reply2, TriState.TRUE);
+        addPublicNote(reply2, TriState.FALSE);
         DemoNoteInserter.assertInteraction(reply2, NotificationEventType.PRIVATE, TriState.TRUE);
         DemoNoteInserter.assertInteraction(selected, NotificationEventType.EMPTY, TriState.FALSE);
         if (iteration == 1) {
@@ -120,7 +121,7 @@ public class DemoConversationInserter {
         addActivity(reply4);
 
         DemoNoteInserter.increaseUpdateDate(reply4);
-        addPrivateNote(reply4, TriState.FALSE);
+        addPublicNote(reply4, TriState.TRUE);
 
         DemoConversationInserter.assertIfActorIsMyFriend(author3, true, ma);
 
@@ -148,7 +149,7 @@ public class DemoConversationInserter {
 
         AActivity reply7 = buildActivity(getAuthor1(), "", "Reply 7 to Reply 2 is about "
         + demoData.publicNoteText + " and something else", reply2, null);
-        addPrivateNote(reply7, TriState.FALSE);
+        addPublicNote(reply7, TriState.TRUE);
         
         AActivity reply8 = buildActivity(author4, "", "<b>Reply 8</b> to Reply 7", reply7, null);
         AActivity reblogOfNewActivity8 = buildActivity(author3, ActivityType.ANNOUNCE);
@@ -186,7 +187,7 @@ public class DemoConversationInserter {
 
         AActivity reply11 = buildActivity(author2, "", "Reply 11 to Reply 7, " + demoData.globalPublicNoteText
                 + " text", reply7, null);
-        addPrivateNote(reply11, TriState.FALSE);
+        addPublicNote(reply11, TriState.TRUE);
         DemoNoteInserter.assertInteraction(reply11, NotificationEventType.EMPTY, TriState.FALSE);
 
         AActivity myReply13 = buildActivity(accountActor, "", "My reply to Reply 2", reply2, null);
@@ -235,13 +236,13 @@ public class DemoConversationInserter {
         return author1;
     }
     
-    private void addPrivateNote(AActivity activity, TriState isPrivate) {
-        activity.getNote().setPrivate(isPrivate);
+    private void addPublicNote(AActivity activity, TriState isPublic) {
+        activity.getNote().setPublic(isPublic);
         addActivity(activity);
-        TriState storedPrivate = MyQuery.noteIdToTriState(NoteTable.PRIVATE, activity.getNote().noteId);
-        assertEquals("Note is " + (isPrivate.equals(TriState.TRUE) ? "private" :
-                        isPrivate.equals(TriState.FALSE) ? "non private" : "") + ": " + activity.getNote().getContent(),
-                isPrivate, storedPrivate);
+        TriState storedPublic = MyQuery.noteIdToTriState(NoteTable.PUBLIC, activity.getNote().noteId);
+        assertEquals("Note is " + (isPublic.equals(TriState.TRUE) ? "public" :
+                        isPublic.equals(TriState.FALSE) ? "non public" : "") + ": " + activity.getNote().getContent(),
+                isPublic, storedPublic);
     }
 
     private Actor buildActorFromOid(String actorOid) {

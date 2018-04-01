@@ -8,7 +8,7 @@ import org.andstatus.app.data.DbUtils;
  * Recipients and Mentioned actors
  * See https://www.w3.org/TR/activitystreams-vocabulary/#audienceTargeting
  * We don't distinguish between Primary and Secondary audiences yet.
- * Targeting to Public is flagged by {@link NoteTable#PRIVATE}
+ * Targeting to Public is flagged by {@link NoteTable#PUBLIC}
  */
 public class AudienceTable {
     public static final String TABLE_NAME = "audience";

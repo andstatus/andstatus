@@ -438,7 +438,7 @@ public class AActivity extends AObject {
 
     private NotificationEventType calculateNotificationEventType(MyContext myContext) {
         if (myContext.users().containsMe(getActor())) return NotificationEventType.EMPTY;
-        if (getNote().isPrivate()) {
+        if (getNote().getPublic().isFalse) {
             return NotificationEventType.PRIVATE;
         } else if(myContext.users().containsMe(getNote().audience().getRecipients()) && !isMyActorOrAuthor(myContext)) {
             return NotificationEventType.MENTION;

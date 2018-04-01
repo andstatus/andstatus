@@ -63,7 +63,7 @@ public class CachedUsersAndActors {
                 + " FROM " + Actor.getActorAndUserSqlTables()
                 + " WHERE " + UserTable.IS_MY + "=" + TriState.TRUE.id;
         final Function<Cursor, Actor> function = cursor -> Actor.fromCursor(myContext, cursor);
-        MyQuery.get(myContext, sql, function);
+        MyQuery.get(myContext, sql, function).forEach(this::addIfAbsent);
     }
 
     private void initializeFriendsOfMyActors() {

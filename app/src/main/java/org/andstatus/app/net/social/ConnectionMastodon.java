@@ -250,7 +250,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
 
     @Override
-    public AActivity updateNote(String name, String content, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
+    protected AActivity updateNote2(String name, String content, String noteOid, Audience audience, String inReplyToOid,
+                                Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         JSONObject mediaObject = null;
         try {

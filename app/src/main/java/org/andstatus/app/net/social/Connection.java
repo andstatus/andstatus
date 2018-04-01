@@ -298,6 +298,7 @@ public abstract class Connection {
      * @param name Name (Title) of the Note
      * @param content      Text of the note
      * @param noteOid      id is not empty, if we are updating existing "status"
+     * @param audience
      * @param inReplyToOid   The ID of an existing Note that the update is in reply to.
      * @param mediaUri
      *
@@ -305,17 +306,8 @@ public abstract class Connection {
      *      href="https://dev.twitter.com/docs/api/1/post/statuses/update">Twitter
      *      POST statuses/update</a>
      */
-    public abstract AActivity updateNote(String name, String content, String noteOid, String inReplyToOid, Uri mediaUri)
-            throws ConnectionException;
-
-    /**
-     * Post Private ("direct") note
-     * @see <a href="https://dev.twitter.com/docs/api/1/post/direct_messages/new">POST direct_messages/new</a>
-     *
-     * @param name Name (Title) of the Note
-     * @param recipientOid {@link ActorTable#ACTOR_OID} - The ID of the actor who should receive the private note
-     */
-    public abstract AActivity updatePrivateNote(String name, String content, String noteOid, String recipientOid, Uri mediaUri)
+    public abstract AActivity updateNote(String name, String content, String noteOid, Audience audience,
+                                         String inReplyToOid, Uri mediaUri)
             throws ConnectionException;
 
     /**

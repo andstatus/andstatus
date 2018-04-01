@@ -57,9 +57,13 @@ import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.ViewUtils;
+
+import static org.andstatus.app.util.I18n.appendWithSeparator;
+import static org.andstatus.app.util.I18n.appendWithSpace;
 
 /**
  * "Enter your message here" box 
@@ -108,8 +112,9 @@ public class NoteEditor {
             @Override
             public void afterTextChanged(Editable s) {
                 editorData.setContent(s.toString());
-                MyLog.v(NoteEditorData.TAG, "Content updated to '" + editorData.content + "'");
-                mCharsLeftText.setText(String.valueOf(editorData.getMyAccount().charactersLeftForNote(editorData.content)));
+                MyLog.v(NoteEditorData.TAG, "Content updated to '" + editorData.getContent() + "'");
+                mCharsLeftText.setText(String.valueOf(editorData.getMyAccount()
+                        .charactersLeftForNote(editorData.getContent())));
             }
 
             @Override
@@ -123,49 +128,40 @@ public class NoteEditor {
             }
         });
 
-        bodyView.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    switch (keyCode) {
-                        case KeyEvent.KEYCODE_DPAD_CENTER:
-                            sendAndHide();
-                            return true;
-                        default:
-                            break;
-                    }
+        bodyView.setOnKeyListener((v, keyCode, event) -> {
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                switch (keyCode) {
+                    case KeyEvent.KEYCODE_DPAD_CENTER:
+                        sendAndHide();
+                        return true;
+                    default:
+                        break;
                 }
-                return false;
             }
+            return false;
         });
 
-        bodyView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (event != null && (event.isAltPressed() ||
-                        !SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ENTER_SENDS_NOTE, false))) {
-                    return false;
-                }
-                sendAndHide();
-                return true;
+        bodyView.setOnEditorActionListener((v, actionId, event) -> {
+            if (event != null && (event.isAltPressed() ||
+                    !SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ENTER_SENDS_NOTE, false))) {
+                return false;
             }
+            sendAndHide();
+            return true;
         });
 
         // Allow vertical scrolling
         // See http://stackoverflow.com/questions/16605486/edit-text-not-scrollable-inside-scroll-view
-        bodyView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (v.getId() == bodyView.getId()) {
-                    v.getParent().requestDisallowInterceptTouchEvent(true);
-                    switch (event.getAction() & MotionEvent.ACTION_MASK) {
-                        case MotionEvent.ACTION_UP:
-                            v.getParent().requestDisallowInterceptTouchEvent(false);
-                            break;
-                    }
+        bodyView.setOnTouchListener((v, event) -> {
+            if (v.getId() == bodyView.getId()) {
+                v.getParent().requestDisallowInterceptTouchEvent(true);
+                switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                    case MotionEvent.ACTION_UP:
+                        v.getParent().requestDisallowInterceptTouchEvent(false);
+                        break;
                 }
-                return false;
             }
+            return false;
         });
 
         bodyView.setTokenizer(new NoteBodyTokenizer());
@@ -297,7 +293,7 @@ public class NoteEditor {
         if (item != null) {
             boolean enableAttach = isVisible()
                     && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ATTACH_IMAGES_TO_MY_NOTES, true)
-                    && (editorData.nonPrivate() || editorData.getMyAccount().getOrigin().getOriginType()
+                    && (editorData.getPublic().notFalse || editorData.getMyAccount().getOrigin().getOriginType()
                     .allowAttachmentForPrivateNote());
             item.setEnabled(enableAttach);
             item.setVisible(enableAttach);
@@ -392,7 +388,7 @@ public class NoteEditor {
             MyLog.v(NoteEditorData.TAG, "Cannot be edited " + data);
             return;
         }
-        data.status = DownloadStatus.DRAFT;
+        data.activity.getNote().setStatus(DownloadStatus.DRAFT);
         updateDataFromScreen();
         NoteEditorCommand command = new NoteEditorCommand(data, editorData);
         command.showAfterSave = true;
@@ -415,11 +411,11 @@ public class NoteEditor {
 
     public void updateScreen() {
         setAdapter();
-        ViewUtils.showView(editorView, R.id.is_private, editorData.canChangeIsPrivate());
-        MyCheckBox.set(getActivity(), R.id.is_private, editorData.isPrivate(), true);
-        MyUrlSpan.showText(editorView, R.id.note_name_edit, editorData.name, false,
+        ViewUtils.showView(editorView, R.id.is_public, editorData.canChangeIsPublic());
+        MyCheckBox.set(getActivity(), R.id.is_public, editorData.getPublic().isTrue, true);
+        MyUrlSpan.showText(editorView, R.id.note_name_edit, editorData.activity.getNote().getName(), false,
                 editorData.ma.getOrigin().getOriginType().hasNoteName);
-        String body = editorData.content.trim();
+        String body = editorData.activity.getNote().getContent().trim();
         if (!body.equals(bodyView.getText().toString().trim())) {
             if (!TextUtils.isEmpty(body)) {
                 body += " ";
@@ -431,10 +427,12 @@ public class NoteEditor {
             bodyView.setText(body);
             bodyView.setSelection(bodyView.getText().toString().length());
         }
-        showIfNotEmpty(R.id.note_author,
-                shouldShowAccountName() ? editorData.getMyAccount().getAccountName() : "");
+        MyUrlSpan.showText(editorView, R.id.note_author, shouldShowAccountName()
+                ? editorData.getMyAccount().getAccountName() : "", false, false);
         showNoteDetails();
-        showIfNotEmpty(R.id.inReplyToBody, editorData.inReplyToContent);
+        MyUrlSpan.showText(editorView, R.id.inReplyToBody,
+                Html.fromHtml(editorData.activity.getNote().getInReplyTo().getNote().getContent()).toString(),
+                false, false);
         mCharsLeftText.setText(String.valueOf(editorData.getMyAccount()
                 .charactersLeftForNote(body)));
         showAttachedImage();
@@ -453,40 +451,28 @@ public class NoteEditor {
         }
     }
 
-    private void showIfNotEmpty(int viewId, String value) {
-        TextView textView = (TextView) editorView.findViewById(viewId);
-        if (TextUtils.isEmpty(value)) {
-            textView.setText("");
-            textView.setVisibility(View.GONE);
-        } else {
-            textView.setText(Html.fromHtml(value));
-            textView.setVisibility(View.VISIBLE);
-        }
-    }
-
     private void showNoteDetails() {
-        String noteDetails = "";
-        if (editorData.inReplyToNoteId != 0) {
-            String replyToName = MyQuery.noteIdToUsername(NoteTable.AUTHOR_ID, editorData.inReplyToNoteId,
-                    MyPreferences.getActorInTimeline());
-            noteDetails += " " + String.format(
-                    getActivity().getText(R.string.message_source_in_reply_to).toString(), replyToName);
+        StringBuilder noteDetails = new StringBuilder();
+        String replyToName = editorData.getInReplyToNoteId() == 0
+                ? "" : MyQuery.noteIdToUsername(NoteTable.AUTHOR_ID, editorData.getInReplyToNoteId(),
+                MyPreferences.getActorInTimeline());
+        if (StringUtils.nonEmpty(replyToName)) {
+            appendWithSpace(noteDetails, String.format(getActivity().getText(R.string.message_source_in_reply_to).toString(), replyToName));
         }
-        if (editorData.recipients.nonEmpty()) {
-            String recipientName = editorData.recipients.getUsernames();
-            if (!TextUtils.isEmpty(recipientName)) {
-                noteDetails += " " + String.format(
-                        getActivity().getText(R.string.message_source_to).toString(), recipientName);
+        if (editorData.activity.getNote().audience().hasNonPublic()) {
+            String recipientNames = editorData.activity.getNote().audience().getUsernames();
+            if (StringUtils.nonEmpty(recipientNames) && !recipientNames.equals(replyToName) ) {
+                appendWithSeparator(noteDetails, String.format(getActivity().getText(R.string.message_source_to).toString(), recipientNames), "\n");
             }
         }
         if (editorData.getAttachment().nonEmpty()) {
-            noteDetails += " ("
+            appendWithSpace(noteDetails,"("
                     + getActivity().getText(R.string.label_with_media).toString() + " "
                     + editorData.getAttachment().mediaMetadata.toDetails() + ", "
                     + editorData.getAttachment().fileSize/1024 + "K"
-                    + ")";
+                    + ")");
         }
-        showIfNotEmpty(R.id.noteEditDetails, noteDetails);
+        MyUrlSpan.showText(editorView, R.id.noteEditDetails, noteDetails.toString(), false, false);
     }
 
     private boolean shouldShowAccountName() {
@@ -510,12 +496,12 @@ public class NoteEditor {
         } else if (editorData.isEmpty()) {
             Toast.makeText(getActivity(), R.string.cannot_send_empty_message,
                     Toast.LENGTH_SHORT).show();
-        } else if (editorData.getMyAccount().charactersLeftForNote(editorData.content) < 0) {
+        } else if (editorData.getMyAccount().charactersLeftForNote(editorData.getContent()) < 0) {
             Toast.makeText(getActivity(), R.string.message_is_too_long,
                     Toast.LENGTH_SHORT).show();
         } else {
             NoteEditorCommand command = new NoteEditorCommand(editorData.copy());
-            command.currentData.status = DownloadStatus.SENDING;
+            command.currentData.activity.getNote().setStatus(DownloadStatus.SENDING);
             MyLog.onSendingNoteStart();
             saveData(command);
         }
@@ -524,14 +510,12 @@ public class NoteEditor {
     private void updateDataFromScreen() {
         editorData.setName(MyUrlSpan.getText(editorView, R.id.note_name_edit));
         editorData.setContent(bodyView.getText().toString());
-        editorData.setPrivate(TriState.fromBoolean(
-                MyCheckBox.isChecked(getActivity(), R.id.is_private, false)));
+        editorData.setPublic(MyCheckBox.isChecked(getActivity(), R.id.is_public, false));
     }
 
     private void discardAndHide() {
         NoteEditorCommand command = new NoteEditorCommand(editorData.copy());
-        command.currentData.status = UriUtils.isRealOid(command.currentData.noteOid) ?
-                DownloadStatus.LOADED : DownloadStatus.DELETED;
+        command.currentData.activity.getNote().setDiscarded();
         saveData(command);
     }
 
@@ -553,7 +537,7 @@ public class NoteEditor {
     private void saveData(NoteEditorCommand command) {
         command.acquireLock(false);
         SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID,
-                command.beingEdited ? command.getCurrentMsgId() : 0);
+                command.beingEdited ? command.getCurrentNoteId() : 0);
         hide();
         if (!command.isEmpty()) {
             MyLog.v(NoteEditorData.TAG, "Requested: " + command);
@@ -595,7 +579,8 @@ public class NoteEditor {
                         lock = potentialLock;
                         MyLog.v(NoteEditorData.TAG, "loadCurrentDraft acquired lock");
 
-                        final NoteEditorData data = NoteEditorData.load(noteId);
+                        final NoteEditorData data = NoteEditorData.load(editorContainer.getActivity().getMyContext(),
+                                noteId);
                         if (data.mayBeEdited()) {
                             return data;
                         } else {
@@ -626,7 +611,7 @@ public class NoteEditor {
                 , noteId);
     }
 
-    public void onAttach() {
+    private void onAttach() {
 		Intent intent = SharedPreferencesUtil.getBoolean(MyPreferences.KEY_MODERN_INTERFACE_TO_SELECT_AN_ATTACHMENT, true) ?
             getIntentForKitKatMediaChooser() :
             getIntentToPickImages();

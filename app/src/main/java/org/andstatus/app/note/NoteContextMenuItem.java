@@ -55,8 +55,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     REPLY(true) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
-            return NoteEditorData.newEmpty(menu.getMyActor()).
-                    setInReplyToNoteId(menu.getNoteId()).addMentionsToText();
+            return NoteEditorData.newReply(menu.getMyActor(), menu.getNoteId()).addMentionsToText();
         }
 
         @Override
@@ -67,7 +66,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     EDIT(true) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
-            return NoteEditorData.load(menu.getNoteId());
+            return NoteEditorData.load(menu.menuContainer.getActivity().getMyContext(), menu.getNoteId());
         }
 
         @Override
@@ -89,9 +88,9 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     REPLY_TO_CONVERSATION_PARTICIPANTS(true) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
-            return NoteEditorData.newEmpty(menu.getMyActor()).
-                    setInReplyToNoteId(menu.getNoteId()).setReplyToConversationParticipants(true).
-                    addMentionsToText();
+            return NoteEditorData.newReply(menu.getMyActor(), menu.getNoteId())
+                    .setReplyToConversationParticipants(true)
+                    .addMentionsToText();
         }
 
         @Override
@@ -102,9 +101,9 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     REPLY_TO_MENTIONED_ACTORS(true) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
-            return NoteEditorData.newEmpty(menu.getMyActor()).
-                    setInReplyToNoteId(menu.getNoteId()).setReplyToMentionedActors(true).
-                    addMentionsToText();
+            return NoteEditorData.newReply(menu.getMyActor(), menu.getNoteId())
+                    .setReplyToMentionedActors(true)
+                    .addMentionsToText();
         }
 
         @Override
@@ -116,7 +115,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData_unused) {
             NoteEditorData editorData = NoteEditorData.newEmpty(menu.getMyActor())
-                    .addRecipientId(menu.getAuthorId()).setPrivate(TriState.TRUE);
+                    .addRecipientId(menu.getAuthorId()).setPublic(false);
             menu.menuContainer.getNoteEditor().startEditingNote(editorData);
         }
     },
@@ -365,12 +364,13 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     }
 
     protected void copyNoteText(NoteEditorData editorData) {
-        MyLog.v(this, "text='" + editorData.content + "'");
-        if (!TextUtils.isEmpty(editorData.content)) {
+        MyLog.v(this, "text='" + editorData.getContent() + "'");
+        if (!TextUtils.isEmpty(editorData.getContent())) {
             // http://developer.android.com/guide/topics/text/copy-paste.html
             ClipboardManager clipboard = (ClipboardManager) MyContextHolder.get().context().
                     getSystemService(Context.CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText(I18n.trimTextAt(editorData.content, 40), editorData.content);
+            ClipData clip = ClipData.newPlainText(I18n.trimTextAt(editorData.getContent(), 40),
+                    editorData.getContent());
             clipboard.setPrimaryClip(clip);
             MyLog.v(this, "clip='" + clip.toString() + "'");
         }
@@ -389,8 +389,8 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         if (mIsAsync) {
             executeAsync1(menu);
         } else {
-            executeOnUiThread(menu, NoteEditorData.newEmpty(menu.getMyActor()).
-                    setNoteId(menu.getNoteId()));
+            executeOnUiThread(menu, new NoteEditorData(menu.menuContainer.getActivity().getMyContext(),
+                    menu.getMyActor(), menu.getNoteId(), 0, false));
         }
         return false;
     }

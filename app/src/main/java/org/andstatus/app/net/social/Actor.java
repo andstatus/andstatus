@@ -24,6 +24,7 @@ import android.text.TextUtils;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
@@ -54,7 +55,9 @@ import java.util.function.Supplier;
  * @author yvolk@yurivolkov.com
  */
 public class Actor implements Comparable<Actor> {
-    public static final Actor EMPTY = new Actor(Origin.EMPTY, "");
+    public static final Actor EMPTY = new Actor(Origin.EMPTY, "").setUsername("Empty");
+    public static final Actor PUBLIC = new Actor(Origin.EMPTY, "https://www.w3.org/ns/activitystreams#Public").setUsername("Public");
+
     // RegEx from http://www.mkyong.com/regular-expressions/how-to-validate-email-address-with-regular-expression/
     public static final String WEBFINGER_ID_REGEX = "^[_A-Za-z0-9-+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
     @NonNull
@@ -98,6 +101,11 @@ public class Actor implements Comparable<Actor> {
         return new Actor(origin, actorOid);
     }
 
+    @NonNull
+    public static Actor load(@NonNull MyContext myContext, long actorId) {
+        return load(myContext, actorId, () -> Actor.EMPTY);
+    }
+
     public static Actor load(@NonNull MyContext myContext, long actorId, Supplier<Actor> supplier) {
         if (actorId == 0) return supplier.get();
         Actor actor1 = myContext.users().actors.getOrDefault(actorId, Actor.EMPTY);
@@ -126,6 +134,7 @@ public class Actor implements Comparable<Actor> {
                 + ", " + ActorTable.TABLE_NAME + "." + ActorTable.USER_ID
                 + ", " + ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID
                 + ", " + ActorTable.TABLE_NAME + "." + ActorTable.ACTOR_OID
+                + ", " + ActorTable.TABLE_NAME + "." + ActorTable.REAL_NAME
                 + ", " + ActorTable.TABLE_NAME + "." + ActorTable.USERNAME
                 + ", " + ActorTable.TABLE_NAME + "." + ActorTable.WEBFINGER_ID
                 + ", " + UserTable.TABLE_NAME + "." + UserTable.IS_MY
@@ -137,10 +146,11 @@ public class Actor implements Comparable<Actor> {
         final long actorId = DbUtils.getLong(cursor, ActorTable._ID);
         Actor actor = myContext.users().actors.getOrDefault(actorId, Actor.EMPTY);
         if (actor.isEmpty()) {
-            actor = Actor.fromOriginAndActorOid(
+            actor = Actor.fromOriginAndActorId(
                     myContext.origins().fromId(DbUtils.getLong(cursor, ActorTable.ORIGIN_ID)),
+                    actorId,
                     DbUtils.getString(cursor, ActorTable.ACTOR_OID));
-            actor.actorId = actorId;
+            actor.setRealName(DbUtils.getString(cursor, ActorTable.REAL_NAME));
             actor.setUsername(DbUtils.getString(cursor, ActorTable.USERNAME));
             actor.setWebFingerId(DbUtils.getString(cursor, ActorTable.WEBFINGER_ID));
             actor.user = User.fromCursor(myContext, cursor);
@@ -150,7 +160,11 @@ public class Actor implements Comparable<Actor> {
     }
 
     public static Actor fromOriginAndActorId(@NonNull Origin origin, long actorId) {
-        Actor actor = new Actor(origin, "");
+        return fromOriginAndActorId(origin, actorId, "");
+    }
+
+    public static Actor fromOriginAndActorId(@NonNull Origin origin, long actorId, String actorOid) {
+        Actor actor = new Actor(origin, actorOid);
         actor.actorId = actorId;
         return actor;
     }
@@ -343,20 +357,11 @@ public class Actor implements Comparable<Actor> {
     }
 
     public String getNamePreferablyWebFingerId() {
-        String name = getWebFingerId();
-        if (TextUtils.isEmpty(name)) {
-            name = getUsername();
-        }
-        if (TextUtils.isEmpty(name)) {
-            name = realName;
-        }
-        if (TextUtils.isEmpty(name) && !TextUtils.isEmpty(oid)) {
-            name = "oid: " + oid;
-        }
-        if (TextUtils.isEmpty(name)) {
-            name = "id: " + actorId;
-        }
-        return name;
+        if (StringUtils.nonEmpty(webFingerId)) return webFingerId;
+        if (StringUtils.nonEmpty(username)) return username;
+        if (StringUtils.nonEmpty(realName)) return realName;
+        if (StringUtils.nonEmpty(oid)) return "oid:" + oid;
+        return "id:" + actorId;
     }
 
     public boolean isWebFingerIdValid() {
@@ -561,7 +566,26 @@ public class Actor implements Comparable<Actor> {
     }
 
     public String getTimelineUsername() {
-        return MyQuery.actorIdToWebfingerId(actorId);
+        String name1 = getTimelineUsername1();
+        if (StringUtils.nonEmpty(name1)) return name1;
+        return getNamePreferablyWebFingerId();
+    }
+
+    private String getTimelineUsername1() {
+        switch (MyPreferences.getActorInTimeline()) {
+            case AT_USERNAME:
+                return StringUtils.isEmpty(username) ? "" : "@" + username;
+            case WEBFINGER_ID:
+                return webFingerId;
+            case REAL_NAME:
+                return realName;
+            case REAL_NAME_AT_USERNAME:
+                return StringUtils.nonEmpty(realName) && StringUtils.nonEmpty(username)
+                    ? realName + " @" + username
+                    : username;
+            default:
+                return username;
+        }
     }
 
     public Actor lookupUser(MyContext myContext) {
@@ -597,5 +621,13 @@ public class Actor implements Comparable<Actor> {
                         MyAccount.EMPTY, origin,
                         actorId,
                         getUsername()));
+    }
+
+   public boolean isPublic() {
+        return PUBLIC.equals(this);
+    }
+
+    public boolean nonPublic() {
+        return !isPublic();
     }
 }

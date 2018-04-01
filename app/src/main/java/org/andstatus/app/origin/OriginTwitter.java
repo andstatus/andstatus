@@ -66,12 +66,12 @@ class OriginTwitter extends Origin {
             return "";
         }
         final Uri uri = fixUriforPermalink(UriUtils.fromUrl(url));
-        if (MyQuery.noteIdToTriState(NoteTable.PRIVATE, noteId).toBoolean(false)) {
-            return Uri.withAppendedPath(uri, "messages").toString();
-        } else {
+        if (MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId).toBoolean(true)) {
             String username = MyQuery.noteIdToUsername(NoteTable.AUTHOR_ID, noteId, ActorInTimeline.USERNAME);
             final String oid = MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId);
             return Uri.withAppendedPath(uri, username + "/status/" + oid).toString();
+        } else {
+            return Uri.withAppendedPath(uri, "messages").toString();
         }
     }
 

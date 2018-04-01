@@ -22,10 +22,12 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.support.test.espresso.action.ReplaceTextAction;
 import android.support.test.espresso.action.TypeTextAction;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import org.andstatus.app.ActivityRequestCode;
@@ -62,6 +64,7 @@ import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -96,8 +99,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
     }
 
     private NoteEditorData getStaticData(MyAccount ma) {
-        return NoteEditorData.newEmpty(ma)
-                .setInReplyToNoteId(MyQuery.oidToId(OidEnum.NOTE_OID, ma.getOrigin().getId(),
+        return NoteEditorData.newReply(ma, MyQuery.oidToId(OidEnum.NOTE_OID, ma.getOrigin().getId(),
                         demoData.conversationEntryNoteOid))
                 .addRecipientId(MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOrigin().getId(),
                         demoData.conversationEntryAuthorOid))
@@ -194,7 +196,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
 
         TestSuite.waitForIdleSync();
         final String noteName = "A note can have a title (name)";
-        final String content = "Note with attachment " + demoData.testRunUid;
+        final String content = "Note with an attachment " + demoData.testRunUid;
         onView(withId(R.id.note_name_edit)).perform(new TypeTextAction(noteName));
         onView(withId(R.id.noteBodyEditText)).perform(new TypeTextAction(content));
         TestSuite.waitForIdleSync();
@@ -247,15 +249,15 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
     private void assertInitialText(final String description) throws InterruptedException {
         final NoteEditor editor = getActivity().getNoteEditor();
         TextView textView = (TextView) getActivity().findViewById(R.id.noteBodyEditText);
-        ActivityTestHelper.waitTextInAView(description, textView, data.content);
-        MyLog.v(this, description + " text:'" + editor.getData().content + "'");
-        assertEquals(description, data, editor.getData());
+        ActivityTestHelper.waitTextInAView(description, textView, data.getContent());
+        assertEquals(description, data.toVisibleSummary(), editor.getData().toVisibleSummary());
     }
 
     private void assertTextCleared() {
         final NoteEditor editor = getActivity().getNoteEditor();
         assertTrue("Editor is not null", editor != null);
-        assertEquals(NoteEditorData.newEmpty(getActivity().getCurrentMyAccount()), editor.getData());
+        assertEquals(NoteEditorData.newEmpty(getActivity().getCurrentMyAccount()).toVisibleSummary(),
+                editor.getData().toVisibleSummary());
     }
 
     @Test
@@ -340,6 +342,55 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
 
         assertEquals("Loaded note should be unchanged after Discard: " + logMsg, DownloadStatus.LOADED,
                 DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)));
+    }
+
+    @Test
+    public void replying() throws InterruptedException {
+        final String method = "replying";
+        TestSuite.waitForListLoaded(getActivity(), 2);
+        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(),
+                ConversationActivity.class);
+        long listItemId = helper.findListItemId("Some others loaded note",
+                item -> item.author.getActorId() != data.getMyAccount().getActorId()
+                        && item.noteStatus == DownloadStatus.LOADED);
+
+        long noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId);
+        String logMsg = "itemId=" + listItemId + ", noteId=" + noteId + " text='"
+                + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId) + "'";
+
+        boolean invoked = helper.invokeContextMenuAction4ListItemId(method, listItemId,
+                NoteContextMenuItem.REPLY, R.id.note_wrapper);
+        logMsg += ";" + (invoked ? "" : " failed to invoke Reply menu item," );
+        assertTrue(logMsg, invoked);
+        ActivityTestHelper.closeContextMenu(getActivity());
+
+        View editorView = getActivity().findViewById(R.id.note_editor);
+        ActivityTestHelper.waitViewVisible(method + " " + logMsg, editorView);
+
+        onView(withId(R.id.noteBodyEditText)).check(matches(withText(startsWith("@"))));
+
+        TestSuite.waitForIdleSync();
+        final String content = "Replying to you during " + demoData.testRunUid;
+        EditText bodyText = editorView.findViewById(R.id.noteBodyEditText);
+        // Espresso types in the centre, unfortunately, so we need to retype text
+        onView(withId(R.id.noteBodyEditText)).perform(new ReplaceTextAction(bodyText.getText().toString().trim()
+                + " " + content));
+        TestSuite.waitForIdleSync();
+
+        ActivityTestHelper<TimelineActivity> helper2 = new ActivityTestHelper<>(getActivity());
+        helper2.clickMenuItem(method + " clicker Save draft " + logMsg, R.id.saveDraftButton);
+        ActivityTestHelper.waitViewInvisible(method + " " + logMsg, editorView);
+
+        String sql = "SELECT " + NoteTable._ID + " FROM " + NoteTable.TABLE_NAME + " WHERE "
+                + NoteTable.CONTENT + " LIKE('% " + content + "')";
+        long draftNoteId = MyQuery.getLongs(sql).stream().findFirst().orElse(0L);
+        assertTrue("Reply '" + content + "' was not saved: " + logMsg, draftNoteId != 0);
+
+        assertEquals("Saved note should be in DRAFT state: " + logMsg, DownloadStatus.DRAFT,
+                DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, draftNoteId)));
+
+        assertEquals("Wrong id of inReplyTo note of '" + content + "': " + logMsg, noteId,
+                MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, draftNoteId));
     }
 
 }

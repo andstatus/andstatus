@@ -77,8 +77,8 @@ public class DemoGnuSocialConversationInserter {
         AActivity selected = buildActivity(author1, "Selected note", minus1,null);
         selected.setSubscribedByMe(TriState.TRUE);
         AActivity reply1 = buildActivity(author3, "Reply 1 to selected", selected, null);
-        AActivity reply2 = buildActivity(author2, "Reply 2 to selected is non-private", selected, null);
-        addPrivateNote(reply2, TriState.FALSE);
+        AActivity reply2 = buildActivity(author2, "Reply 2 to selected is public", selected, null);
+        addPublicNote(reply2, TriState.TRUE);
         AActivity reply3 = buildActivity(author1, "Reply 3 to selected by the same author", selected, null);
         addActivity(selected);
         addActivity(reply3);
@@ -88,22 +88,23 @@ public class DemoGnuSocialConversationInserter {
         AActivity reply4 = buildActivity(author4, "Reply 4 to Reply 1, " + demoData.publicNoteText + " other author", reply1, null);
         addActivity(reply4);
         DemoNoteInserter.increaseUpdateDate(reply4);
-        addPrivateNote(reply4, TriState.TRUE);
+        addPublicNote(reply4, TriState.FALSE);
 
         addActivity(buildActivity(author2, "Reply 5 to Reply 4", reply4, null));
         addActivity(buildActivity(author3, "Reply 6 to Reply 4 - the second", reply4, null));
 
         AActivity reply7 = buildActivity(author1, "Reply 7 to Reply 2 is about "
         + demoData.publicNoteText + " and something else", reply2, null);
-        addPrivateNote(reply7, TriState.FALSE);
+        addPublicNote(reply7, TriState.TRUE);
         
         AActivity reply8 = buildActivity(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
         AActivity reply9 = buildActivity(author2, "Reply 9 to Reply 7", reply7, null);
         addActivity(reply9);
         AActivity reply10 = buildActivity(author3, "Reply 10 to Reply 8", reply8, null);
         addActivity(reply10);
-        AActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7 with " + demoData.globalPublicNoteText + " text", reply7, null);
-        addPrivateNote(reply11, TriState.FALSE);
+        AActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7 with " + demoData.globalPublicNoteText
+                + " text", reply7, null);
+        addPublicNote(reply11, TriState.TRUE);
 
         AActivity reply12 = buildActivity(author2, "Reply 12 to Reply 7 reblogged by author1", reply7, null);
         DemoNoteInserter.onActivityS(reply12);
@@ -129,12 +130,12 @@ public class DemoGnuSocialConversationInserter {
         addActivity(reply13);
     }
 
-    private void addPrivateNote(AActivity activity, TriState isPrivate) {
-        activity.getNote().setPrivate(isPrivate);
+    private void addPublicNote(AActivity activity, TriState isPublic) {
+        activity.getNote().setPublic(isPublic);
         addActivity(activity);
-        assertEquals("Note is " + (isPrivate.equals(TriState.TRUE) ? "private" :
-                        isPrivate.equals(TriState.FALSE) ? "non private" : "") + ": " + activity.getNote().getContent(),
-                isPrivate, MyQuery.noteIdToTriState(NoteTable.PRIVATE, activity.getNote().noteId));
+        assertEquals("Note is " + (isPublic.equals(TriState.TRUE) ? "public" :
+                        isPublic.equals(TriState.FALSE) ? "non public" : "") + ": " + activity.getNote().getContent(),
+                isPublic, MyQuery.noteIdToTriState(NoteTable.PUBLIC, activity.getNote().noteId));
     }
 
     private Actor actorFromOidAndAvatar(String actorOid, @Nullable String avatarUrl) {

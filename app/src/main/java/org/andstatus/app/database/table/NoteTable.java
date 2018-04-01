@@ -66,9 +66,9 @@ public final class NoteTable implements BaseColumns {
     /** A simple, human-readable, plain-text name for the Note */
     public static final String NAME = "note_name";
     /** Content of the note */
-    public static final String CONTENT = "body"; // TODO: Rename
+    public static final String CONTENT = "content";
     /** Name and Content text, prepared for easy searching in a database */
-    public static final String CONTENT_TO_SEARCH = "body_to_search"; // TODO: Rename
+    public static final String CONTENT_TO_SEARCH = "content_to_search";
     /**
      * String generally describing Client's software used to post this note
      * It's like "User Agent" string in the browsers?!: "via ..."
@@ -86,9 +86,8 @@ public final class NoteTable implements BaseColumns {
     public static final String UPDATED_DATE = "note_updated_date";
     /** Date and time the row was inserted into this database */
     public static final String INS_DATE = "note_ins_date";
-    /** The Note is definitely private (e.g. "Direct message")
-     *  Absence of this flag means that we don't know for sure, if the note is private */
-    public static final String PRIVATE = "private";
+    /** The Note is definitely public (e.g. it has Public group as one of its recipients) */
+    public static final String PUBLIC = "public";
     /** Some of my accounts favorited this note */
     public static final String FAVORITED = "favorited";
     /** The Note is reblogged by some of my actors
@@ -131,7 +130,7 @@ public final class NoteTable implements BaseColumns {
                 + AUTHOR_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + IN_REPLY_TO_NOTE_ID + " INTEGER,"
                 + IN_REPLY_TO_ACTOR_ID + " INTEGER,"
-                + PRIVATE + " INTEGER NOT NULL DEFAULT 0,"
+                + PUBLIC + " INTEGER NOT NULL DEFAULT 0,"
                 + FAVORITED + " INTEGER NOT NULL DEFAULT 0,"
                 + REBLOGGED + " INTEGER NOT NULL DEFAULT 0,"
                 + FAVORITE_COUNT + " INTEGER NOT NULL DEFAULT 0,"

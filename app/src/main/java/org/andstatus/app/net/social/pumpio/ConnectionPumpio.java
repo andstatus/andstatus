@@ -31,6 +31,7 @@ import org.andstatus.app.net.social.AObjectType;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Attachment;
+import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.RateLimitStatus;
@@ -40,6 +41,7 @@ import org.andstatus.app.origin.OriginPumpio;
 import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
@@ -216,14 +218,19 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public AActivity updateNote(String name, String content, String noteOid, String inReplyToOid, Uri mediaUri) throws ConnectionException {
+    public AActivity updateNote(String name, String content, String noteOid, Audience audience, String inReplyToOid,
+                                Uri mediaUri) throws ConnectionException {
         String content2 = toHtmlIfAllowed(content);
         ActivitySender sender = ActivitySender.fromContent(this, noteOid, name, content2);
+        // Only one recipient for now...
+        if (StringUtils.isEmpty(inReplyToOid) && audience.hasNonPublic()) {
+            sender.setRecipient(audience.getFirstNonPublic().oid);
+        }
         sender.setInReplyTo(inReplyToOid);
         sender.setMediaUri(mediaUri);
         return activityFromJson(sender.sendMe(PActivityType.POST));
     }
-    
+
     private String toHtmlIfAllowed(String body) {
         return data.getOrigin().isHtmlContentAllowed() ? MyHtml.htmlify(body) : body;
     }
@@ -308,15 +315,6 @@ public class ConnectionPumpio extends Connection {
     static class ConnectionAndUrl {
         String url;
         HttpConnection httpConnection;
-    }
-    
-    @Override
-    public AActivity updatePrivateNote(String name, String content, String noteOid, String recipientOid, Uri mediaUri) throws ConnectionException {
-        String content2 = toHtmlIfAllowed(content);
-        ActivitySender sender = ActivitySender.fromContent(this, noteOid, name, content2);
-        sender.setRecipient(recipientOid);
-        sender.setMediaUri(mediaUri);
-        return activityFromJson(sender.sendMe(PActivityType.POST));
     }
 
     @Override

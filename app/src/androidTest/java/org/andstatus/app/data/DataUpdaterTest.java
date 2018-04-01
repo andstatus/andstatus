@@ -177,20 +177,20 @@ public class DataUpdaterTest {
         final Note note = activity.getNote();
         note.via = "AnyOtherClient";
         note.addRecipient(accountActor);
-        note.setPrivate(TriState.TRUE);
+        note.setPublic(TriState.FALSE);
         final long noteId = new DataUpdater(ma).onActivity(activity).getNote().noteId;
         assertNotEquals("Note added", 0, noteId);
         assertNotEquals("Activity added", 0, activity.getId());
 
-        assertEquals("Note should be private " + note, TriState.TRUE,
-                MyQuery.noteIdToTriState(NoteTable.PRIVATE, noteId));
+        assertEquals("Note should be private " + note, TriState.FALSE,
+                MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId));
         assertEquals("Note name " + note, noteName, MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId));
         DemoNoteInserter.assertInteraction(activity, NotificationEventType.PRIVATE, TriState.TRUE);
 
         Audience audience = Audience.fromNoteId(accountActor.origin, noteId);
         assertNotEquals("No recipients for " + activity, 0, audience.getRecipients().size());
         assertEquals("Recipient " + ma.getAccountName() + "; " + audience.getRecipients(),
-                ma.getActorId(), audience.getFirst().actorId);
+                ma.getActorId(), audience.getFirstNonPublic().actorId);
         assertEquals("Number of recipients for " + activity, 1, audience.getRecipients().size());
     }
 

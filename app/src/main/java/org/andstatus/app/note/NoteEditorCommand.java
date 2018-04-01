@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,12 +18,13 @@ package org.andstatus.app.note;
 
 import android.net.Uri;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.UriUtils;
 
 public class NoteEditorCommand {
-    private volatile Long currentMsgId = null;
+    private volatile Long currentNoteId = null;
     private Uri imageUriToSave = Uri.EMPTY;
     boolean beingEdited = false;
     boolean showAfterSave = false;
@@ -48,7 +49,7 @@ public class NoteEditorCommand {
         if (hasLock()) {
             return true;
         }
-        NoteEditorLock lock1 = new NoteEditorLock(true, getCurrentMsgId());
+        NoteEditorLock lock1 = new NoteEditorLock(true, getCurrentNoteId());
         if (lock1.acquire(wait)) {
             lock = lock1;
             return true;
@@ -64,18 +65,18 @@ public class NoteEditorCommand {
         return lock.acquired();
     }
     
-    public long getCurrentMsgId() {
+    public long getCurrentNoteId() {
         if (currentData.isValid()) {
             return currentData.getNoteId();
         }
-        if (currentMsgId == null) {
-            currentMsgId = SharedPreferencesUtil.getLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID);
+        if (currentNoteId == null) {
+            currentNoteId = SharedPreferencesUtil.getLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID);
         }
-        return currentMsgId;
+        return currentNoteId;
     }
 
     public void loadCurrent() {
-        currentData = NoteEditorData.load(getCurrentMsgId());
+        currentData = NoteEditorData.load(MyContextHolder.get(), getCurrentNoteId());
     }
 
     public boolean isEmpty() {

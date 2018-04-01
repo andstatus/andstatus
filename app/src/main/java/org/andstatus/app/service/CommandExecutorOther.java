@@ -42,7 +42,6 @@ import org.andstatus.app.net.social.RateLimitStatus;
 import org.andstatus.app.support.java.util.function.SupplierWithException;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
-import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.Collections;
@@ -406,7 +405,6 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         String content = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
         DemoData.crashTest(() -> content.startsWith("Crash me on sending 2015-04-10"));
         String oid = getNoteOid(method, noteId, false);
-        TriState isPrivate = MyQuery.noteIdToTriState(NoteTable.PRIVATE, noteId);
         Audience recipients = Audience.fromNoteId(execContext.getMyAccount().getOrigin(), noteId);
         Uri mediaUri = DownloadData.getSingleAttachment(noteId).
                 mediaUriToBePosted();
@@ -423,19 +421,11 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 throw ConnectionException.hardConnectionException(
                         "Wrong note status: " + statusStored, null);
             }
-            // TODO: Separate being Private and having recipients
-            if (recipients.isEmpty() || isPrivate.untrue) {
-                long replyToMsgId = MyQuery.noteIdToLongColumnValue(
-                        NoteTable.IN_REPLY_TO_NOTE_ID, noteId);
-                String replyToMsgOid = getNoteOid(method, replyToMsgId, false);
-                activity = execContext.getMyAccount().getConnection()
-                        .updateNote(name, content.trim(), oid, replyToMsgOid, mediaUri);
-            } else {
-                String recipientOid = getActorOid(method, recipients.getFirst().actorId, true);
-                // Currently we don't use Screen Name, I guess id is enough.
-                activity = execContext.getMyAccount().getConnection()
-                        .updatePrivateNote(name, content.trim(), oid, recipientOid, mediaUri);
-            }
+            long inReplyToNoteId = MyQuery.noteIdToLongColumnValue(
+                    NoteTable.IN_REPLY_TO_NOTE_ID, noteId);
+            String inReplyToNoteOid = getNoteOid(method, inReplyToNoteId, false);
+            activity = execContext.getMyAccount().getConnection()
+                    .updateNote(name, content.trim(), oid, recipients, inReplyToNoteOid, mediaUri);
             logIfEmptyNote(method, noteId, activity.getNote());
         } catch (ConnectionException e) {
             logConnectionException(e, method + "; " + msgLog);

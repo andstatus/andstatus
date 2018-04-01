@@ -10,7 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.andstatus.app.context.DemoData.demoData;
-import static org.andstatus.app.util.TriState.FALSE;
+import static org.andstatus.app.util.TriState.TRUE;
 import static org.andstatus.app.util.TriState.UNKNOWN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -37,35 +37,33 @@ public class NoteForAccountTest {
         assertTrue(mfa.isAuthor);
         assertTrue(mfa.isActor);
         assertTrue(mfa.isSubscribed);
-        assertEquals(UNKNOWN, mfa.isPrivate);
+        assertEquals(UNKNOWN, mfa.isPublic);
         assertTrue(mfa.isTiedToThisAccount());
         assertTrue(mfa.hasPrivateAccess());
         
         Actor author2 = mi.buildActorFromOid("acct:a2." + demoData.testRunUid + "@pump.example.com");
         final AActivity replyTo1 = mi.buildActivity(author2, "", "@" + accountActor.getUsername()
                 + " Replying to you", activity1, null, DownloadStatus.LOADED);
-        replyTo1.getNote().setPrivate(FALSE);
+        replyTo1.getNote().setPublic(TRUE);
         mi.onActivity(replyTo1);
         
         mfa = new NoteForAccount(ma.getOrigin(), replyTo1.getId(), replyTo1.getNote().noteId, ma);
         assertFalse(mfa.isAuthor);
         assertFalse(mfa.isActor);
-        assertFalse(mfa.isPrivate());
-        assertEquals(FALSE, mfa.isPrivate);
+        assertEquals(TRUE, mfa.isPublic);
         assertTrue(mfa.isTiedToThisAccount());
         assertTrue(mfa.hasPrivateAccess());
 
         Actor author3 = mi.buildActorFromOid("acct:b3." + demoData.testRunUid + "@pumpity.example.com");
         AActivity replyTo2 = mi.buildActivity(author3, "", "@" + author2.getUsername()
                 + " Replying to the second author", replyTo1, null, DownloadStatus.LOADED);
-        replyTo2.getNote().setPrivate(FALSE);
+        replyTo2.getNote().setPublic(TRUE);
         mi.onActivity(replyTo2);
         
         mfa = new NoteForAccount(ma.getOrigin(), 0, replyTo2.getNote().noteId, ma);
         assertFalse(mfa.isAuthor);
         assertFalse(mfa.isActor);
-        assertFalse(mfa.isPrivate());
-        assertEquals(FALSE, mfa.isPrivate);
+        assertEquals(TRUE, mfa.isPublic);
         assertFalse(mfa.isTiedToThisAccount());
         assertFalse(mfa.hasPrivateAccess());
         assertFalse(mfa.reblogged);
@@ -85,8 +83,7 @@ public class NoteForAccountTest {
         assertFalse(mfa.isAuthor);
         assertFalse(mfa.isActor);
         assertFalse(mfa.isSubscribed);
-        assertFalse(mfa.isPrivate());
-        assertEquals(UNKNOWN, mfa.isPrivate);
+        assertEquals(UNKNOWN, mfa.isPublic);
         assertFalse(mfa.isTiedToThisAccount());
         assertFalse(mfa.hasPrivateAccess());
         assertFalse(mfa.reblogged);
