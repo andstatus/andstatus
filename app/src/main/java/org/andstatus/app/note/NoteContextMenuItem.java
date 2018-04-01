@@ -111,11 +111,15 @@ public enum NoteContextMenuItem implements ContextMenuItem {
             menu.menuContainer.getNoteEditor().startEditingNote(editorData);
         }
     },
-    PRIVATE_NOTE {
+    PRIVATE_NOTE(true) {
         @Override
-        void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData_unused) {
-            NoteEditorData editorData = NoteEditorData.newEmpty(menu.getMyActor())
+        NoteEditorData executeAsync(NoteContextMenu menu) {
+            return NoteEditorData.newEmpty(menu.getMyActor())
                     .addRecipientId(menu.getAuthorId()).setPublic(false);
+        }
+
+        @Override
+        void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
             menu.menuContainer.getNoteEditor().startEditingNote(editorData);
         }
     },

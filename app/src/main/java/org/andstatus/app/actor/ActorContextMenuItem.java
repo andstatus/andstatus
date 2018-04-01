@@ -39,7 +39,7 @@ import org.andstatus.app.util.MyLog;
 public enum ActorContextMenuItem implements ContextMenuItem {
     GET_ACTOR(true) {
         @Override
-        void executeAsync(Params params) {
+        NoteEditorData executeAsync(Params params) {
             CommandData commandData = CommandData.newActorCommand(
                     CommandEnum.GET_ACTOR,
                     params.ma,
@@ -47,13 +47,18 @@ public enum ActorContextMenuItem implements ContextMenuItem {
                     params.menu.getViewItem().getActorId(),
                     params.menu.getViewItem().actor.getUsername());
             MyServiceManager.sendManualForegroundCommand(commandData);
+            return super.executeAsync(params);
         }
     },
-    PRIVATE_NOTE() {
+    PRIVATE_NOTE(true) {
         @Override
-        void executeOnUiThread(ActorContextMenu menu, MyAccount ma) {
-            NoteEditorData editorData = NoteEditorData.newEmpty(menu.getMyActor())
-                    .addRecipientId(menu.getViewItem().getActorId());
+        NoteEditorData executeAsync(Params params) {
+            return NoteEditorData.newEmpty(params.menu.getMyActor())
+                    .addRecipientId(params.menu.getViewItem().getActorId());
+        }
+
+        @Override
+        void executeOnUiThread(ActorContextMenu menu, MyAccount ma, NoteEditorData editorData) {
             if (editorData.activity.getNote().audience().hasNonPublic()) {
                 menu.menuContainer.getNoteEditor().startEditingNote(editorData);
             }
@@ -61,65 +66,68 @@ public enum ActorContextMenuItem implements ContextMenuItem {
     },
     SHARE() {
         @Override
-        void executeOnUiThread(ActorContextMenu menu, MyAccount ma) {
+        void executeOnUiThread(ActorContextMenu menu, MyAccount ma, NoteEditorData editorData) {
             // TODO
         }
     },
     ACTOR_NOTES(true) {
         @Override
-        void executeAsync(Params params) {
+        NoteEditorData executeAsync(Params params) {
             TimelineActivity.startForTimeline(params.menu.getActivity().getMyContext(),
                     params.menu.getActivity(),
                     params.menu.getActivity().getMyContext().timelines().get( TimelineType.SENT,
                             params.menu.getViewItem().getActorId(), params.menu.getOrigin(), ""),
                     params.ma, false);
+            return super.executeAsync(params);
         }
     },
     FOLLOW() {
         @Override
-        void executeOnUiThread(ActorContextMenu menu, MyAccount ma) {
+        void executeOnUiThread(ActorContextMenu menu, MyAccount ma, NoteEditorData editorData) {
             sendActorCommand(CommandEnum.FOLLOW, ma, menu);
         }
     },
     STOP_FOLLOWING() {
         @Override
-        void executeOnUiThread(ActorContextMenu menu, MyAccount ma) {
+        void executeOnUiThread(ActorContextMenu menu, MyAccount ma, NoteEditorData editorData) {
             sendActorCommand(CommandEnum.UNDO_FOLLOW, ma, menu);
         }
     },
     ACT_AS_FIRST_OTHER_ACCOUNT() {
         @Override
-        void executeOnUiThread(ActorContextMenu menu, MyAccount ma) {
+        void executeOnUiThread(ActorContextMenu menu, MyAccount ma, NoteEditorData editorData) {
             menu.setMyActor(ma.firstOtherAccountOfThisOrigin());
             menu.showContextMenu();
         }
     },
     ACT_AS() {
         @Override
-        void executeOnUiThread(ActorContextMenu menu, MyAccount ma) {
+        void executeOnUiThread(ActorContextMenu menu, MyAccount ma, NoteEditorData editorData) {
             AccountSelector.selectAccount(menu.getActivity(),
                     ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS, ma.getOriginId());
         }
     },
     FOLLOWERS(true) {
         @Override
-        void executeAsync(Params params) {
+        NoteEditorData executeAsync(Params params) {
             setMaForActorId(params);
+            return super.executeAsync(params);
         }
 
         @Override
-        void executeOnUiThread(ActorContextMenu menu, MyAccount ma) {
+        void executeOnUiThread(ActorContextMenu menu, MyAccount ma, NoteEditorData editorData) {
             startActorListActivity(menu, ma, ActorListType.FOLLOWERS);
         }
     },
     FRIENDS(true) {
         @Override
-        void executeAsync(Params params) {
+        NoteEditorData executeAsync(Params params) {
             setMaForActorId(params);
+            return super.executeAsync(params);
         }
 
         @Override
-        void executeOnUiThread(ActorContextMenu menu, MyAccount ma) {
+        void executeOnUiThread(ActorContextMenu menu, MyAccount ma, NoteEditorData editorData) {
             startActorListActivity(menu, ma, ActorListType.FRIENDS);
         }
     },
@@ -175,26 +183,27 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         if (mIsAsync) {
             executeAsync1(params);
         } else {
-            executeOnUiThread(params.menu, params.ma);
+            executeOnUiThread(params.menu, params.ma,
+                    new NoteEditorData(menu.menuContainer.getActivity().getMyContext(),
+                            menu.getMyActor(), 0, 0, false));
         }
         return false;
     }
     
     private void executeAsync1(final Params params) {
         AsyncTaskLauncher.execute(TAG, true,
-                new MyAsyncTask<Void, Void, Void>(TAG + name(), MyAsyncTask.PoolEnum.QUICK_UI) {
+                new MyAsyncTask<Void, Void, NoteEditorData>(TAG + name(), MyAsyncTask.PoolEnum.QUICK_UI) {
                     @Override
-                    protected Void doInBackground2(Void... params2) {
+                    protected NoteEditorData doInBackground2(Void... params2) {
                         MyLog.v(this, "execute async started. "
                                 + params.menu.getViewItem().actor.getNamePreferablyWebFingerId());
-                        executeAsync(params);
-                        return null;
+                        return executeAsync(params);
                     }
 
                     @Override
-                    protected void onPostExecute2(Void v) {
+                    protected void onPostExecute2(NoteEditorData editorData) {
                         MyLog.v(this, "execute async ended");
-                        executeOnUiThread(params.menu, params.ma);
+                        executeOnUiThread(params.menu, params.ma, editorData);
                     }
 
                     @Override
@@ -205,11 +214,11 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         );
     }
 
-    void executeAsync(Params params) {
-        // Empty
+    NoteEditorData executeAsync(Params params) {
+        return NoteEditorData.newEmpty(params.menu.getMyActor());
     }
 
-    void executeOnUiThread(ActorContextMenu menu, MyAccount ma) {
+    void executeOnUiThread(ActorContextMenu menu, MyAccount ma, NoteEditorData editorData) {
         // Empty
     }
 
