@@ -601,8 +601,7 @@ public class MyLog {
     }
 
     public static void logNetworkLevelMessage(Object objTag, String namePrefix, Object jso) {
-        if (jso != null && isLoggable(objTag, VERBOSE) 
-                && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_LOG_NETWORK_LEVEL_MESSAGES, false)) {
+        if (jso != null && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_LOG_NETWORK_LEVEL_MESSAGES, false)) {
             logJson(objTag, namePrefix, jso, MyPreferences.isLogEverythingToFile());
         }
     }
