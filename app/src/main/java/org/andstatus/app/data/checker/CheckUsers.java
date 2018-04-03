@@ -68,7 +68,7 @@ class CheckUsers extends DataChecker {
                 + ", " + ActorTable.USER_ID
                 + ", " + ActorTable.WEBFINGER_ID
                 + " FROM " + ActorTable.TABLE_NAME
-                + " ORDER BY " + ActorTable.WEBFINGER_ID
+                + " ORDER BY " + ActorTable.WEBFINGER_ID  +" COLLATE NOCASE"
                 ;
 
         long rowsCount = 0;
@@ -103,7 +103,7 @@ class CheckUsers extends DataChecker {
         if (prev == null || actor == null) return false;
         if (prev.user.userId == actor.user.userId) return false;
         if (!prev.isWebFingerIdValid()) return false;
-        return prev.getWebFingerId().equals(actor.getWebFingerId());
+        return prev.getWebFingerId().equalsIgnoreCase(actor.getWebFingerId());
     }
 
     @NonNull
