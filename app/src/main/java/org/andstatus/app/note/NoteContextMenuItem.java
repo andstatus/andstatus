@@ -194,7 +194,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         NoteEditorData executeAsync(NoteContextMenu menu) {
             return NoteEditorData.newEmpty(MyAccount.EMPTY)
                     .setTimeline(menu.getActivity().getMyContext().timelines()
-                            .get(TimelineType.SENT, menu.getActorId(), Origin.EMPTY, ""));
+                            .get(TimelineType.SENT, menu.getActorId(), Origin.EMPTY));
         }
 
         @Override
@@ -207,7 +207,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         NoteEditorData executeAsync(NoteContextMenu menu) {
             return NoteEditorData.newEmpty(MyAccount.EMPTY)
                     .setTimeline(menu.getActivity().getMyContext().timelines()
-                            .get(TimelineType.SENT, menu.getAuthorId(), Origin.EMPTY, ""));
+                            .get(TimelineType.SENT, menu.getAuthorId(), Origin.EMPTY));
         }
 
         @Override

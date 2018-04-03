@@ -28,8 +28,6 @@ import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.TriState;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -121,7 +119,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
 
             long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
                     TimelineTable._ID, TimelineTable.ACTOR_ID + "=" + ma.getActorId());
-            if (timelineId == 0) addDefaultForAccount(myContext, ma);
+            if (timelineId == 0) addDefaultForAccount(ma);
         }
     }
 
@@ -143,21 +141,21 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
                     TimelineTable._ID,
                     TimelineTable.ORIGIN_ID + "=" + origin.getId() + " AND " +
                             TimelineTable.TIMELINE_TYPE + "='" + TimelineType.EVERYTHING.save() + "'");
-            if (timelineId == 0) addDefaultForOrigin(myContext, origin);
+            if (timelineId == 0) addDefaultForOrigin(origin);
         }
     }
 
-    public void addDefaultForAccount(MyContext myContext, MyAccount myAccount) {
+    public void addDefaultForAccount(MyAccount myAccount) {
         for (TimelineType timelineType : TimelineType.getDefaultMyAccountTimelineTypes()) {
-            myContext.timelines().get(0, timelineType, myAccount.getActorId(), Origin.EMPTY, "");
+            timelines().get(timelineType, myAccount.getActorId(), Origin.EMPTY).save(myContext);
         }
     }
 
-    private void addDefaultForOrigin(MyContext myContext, Origin origin) {
+    private void addDefaultForOrigin(Origin origin) {
         for (TimelineType timelineType : TimelineType.getDefaultOriginTimelineTypes()) {
             if (origin.getOriginType().isTimelineTypeSyncable(timelineType)
                     || timelineType.equals(TimelineType.EVERYTHING)) {
-                myContext.timelines().get(0, timelineType, 0, origin, "");
+                timelines().get(timelineType, 0, origin).save(myContext);
             }
         }
     }
@@ -165,7 +163,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
     public void addDefaultCombined() {
         for (TimelineType timelineType : TimelineType.values()) {
             if (timelineType.isSelectable()) {
-                myContext.timelines().get(0, timelineType, 0, Origin.EMPTY, "");
+                timelines().get(timelineType, 0, Origin.EMPTY).save(myContext);
             }
         }
     }

@@ -113,6 +113,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     public static void startForTimeline(MyContext myContext, Context context, Timeline timeline,
                                         MyAccount newCurrentMyAccount, boolean clearTask) {
+        timeline.save(myContext);
         Intent intent = getIntentForTimeline(myContext, timeline, newCurrentMyAccount, clearTask);
         context.startActivity(intent);
     }
@@ -1143,6 +1144,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     public void switchView(Timeline timeline, MyAccount newCurrentMyAccount) {
+        timeline.save(myContext);
         MyAccount currentMyAccountToSet = MyAccount.EMPTY;
         if (newCurrentMyAccount != null && newCurrentMyAccount.isValid()) {
             currentMyAccountToSet = newCurrentMyAccount;

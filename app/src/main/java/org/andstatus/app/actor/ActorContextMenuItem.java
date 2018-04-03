@@ -73,10 +73,11 @@ public enum ActorContextMenuItem implements ContextMenuItem {
     ACTOR_NOTES(true) {
         @Override
         NoteEditorData executeAsync(Params params) {
-            TimelineActivity.startForTimeline(params.menu.getActivity().getMyContext(),
+            TimelineActivity.startForTimeline(
+                    params.menu.getActivity().getMyContext(),
                     params.menu.getActivity(),
-                    params.menu.getActivity().getMyContext().timelines().get( TimelineType.SENT,
-                            params.menu.getViewItem().getActorId(), params.menu.getOrigin(), ""),
+                    params.menu.getActivity().getMyContext().timelines()
+                            .get(TimelineType.SENT, params.menu.getViewItem().getActorId(), params.menu.getOrigin()),
                     params.ma, false);
             return super.executeAsync(params);
         }

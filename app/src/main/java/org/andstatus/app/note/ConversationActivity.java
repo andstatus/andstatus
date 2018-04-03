@@ -181,14 +181,13 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
     }
 
     private void closeDrawer() {
-        ViewGroup mDrawerList = (ViewGroup) findViewById(R.id.navigation_drawer);
+        ViewGroup mDrawerList = findViewById(R.id.navigation_drawer);
         mDrawerLayout.closeDrawer(mDrawerList);
     }
 
     @Override
     public Timeline getTimeline() {
-        return myContext.timelines().get(TimelineType.EVERYTHING,
-                0, getCurrentMyAccount().getOrigin(), "");
+        return myContext.timelines().get(TimelineType.EVERYTHING, 0, getCurrentMyAccount().getOrigin());
     }
 
     @SuppressWarnings("unchecked")

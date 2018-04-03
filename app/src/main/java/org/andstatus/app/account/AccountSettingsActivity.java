@@ -1261,7 +1261,7 @@ public class AccountSettingsActivity extends MyActivity {
                             AccountSettingsActivity.this);
                     status = ResultStatus.ACCOUNT_VALID;
                     final Timeline timeline = myContext.timelines()
-                            .get(TimelineType.HOME, myAccount.getActorId(), Origin.EMPTY, "");
+                            .get(TimelineType.HOME, myAccount.getActorId(), Origin.EMPTY);
                     if (timeline.isTimeToAutoSync()) {
                         MyServiceManager.sendForegroundCommand(
                                 CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, timeline)

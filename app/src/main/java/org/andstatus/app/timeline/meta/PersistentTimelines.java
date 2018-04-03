@@ -90,6 +90,12 @@ public class PersistentTimelines {
         }
     }
 
+
+    @NonNull
+    public Timeline get(@NonNull TimelineType timelineType, long actorId, @NonNull Origin origin) {
+        return get(timelineType, actorId, origin, "");
+    }
+
     @NonNull
     public Timeline get(@NonNull TimelineType timelineType, long actorId, @NonNull Origin origin, String searchQuery) {
         return get(0, timelineType, actorId, origin, searchQuery);
@@ -102,7 +108,7 @@ public class PersistentTimelines {
         return values().stream().filter(timeline -> newTimeline.getId() == 0
                 ? timeline.equals(newTimeline)
                 : timeline.getId() == newTimeline.getId())
-                .findFirst().orElseGet(() -> newTimeline.save(myContext));
+                .findFirst().orElseGet(() -> newTimeline);
     }
 
     public Collection<Timeline> values() {
