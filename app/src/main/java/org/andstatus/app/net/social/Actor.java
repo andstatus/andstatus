@@ -347,7 +347,7 @@ public class Actor implements Comparable<Actor> {
 
     public void setWebFingerId(String webFingerId) {
         if (isWebFingerIdValid(webFingerId)) {
-            this.webFingerId = webFingerId;
+            this.webFingerId = webFingerId.toLowerCase();
             isWebFingerIdValid = true;
         }
     }

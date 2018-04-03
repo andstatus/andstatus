@@ -40,6 +40,7 @@ class CheckUsers extends DataChecker {
     private static class CheckResults {
         Set<AActivity> usersToMerge = new HashSet<>();
         Set<User> myUsers = new HashSet<>();
+        Set<Actor> toFixWebFingerId = new HashSet<>();
     }
 
     @Override
@@ -57,6 +58,12 @@ class CheckUsers extends DataChecker {
                 changedCount++;
             }
         }
+        for (Actor actor : results.toFixWebFingerId) {
+            String sql = "UPDATE " + ActorTable.TABLE_NAME + " SET " + ActorTable.WEBFINGER_ID + "='"
+                    + actor.getWebFingerId() + "' WHERE " + ActorTable._ID + "=" + actor.actorId;
+            myContext.getDatabase().execSQL(sql);
+            changedCount++;
+        }
         return changedCount;
     }
 
@@ -68,7 +75,7 @@ class CheckUsers extends DataChecker {
                 + ", " + ActorTable.USER_ID
                 + ", " + ActorTable.WEBFINGER_ID
                 + " FROM " + ActorTable.TABLE_NAME
-                + " ORDER BY " + ActorTable.WEBFINGER_ID  +" COLLATE NOCASE"
+                + " ORDER BY " + ActorTable.WEBFINGER_ID
                 ;
 
         long rowsCount = 0;
@@ -78,7 +85,11 @@ class CheckUsers extends DataChecker {
                 rowsCount++;
                 final Actor actor = Actor.fromOriginAndActorId(myContext.origins().fromId(c.getLong(1)),
                         c.getLong(0));
-                actor.setWebFingerId(c.getString(3));
+                final String webFingerId = c.getString(3);
+                actor.setWebFingerId(webFingerId);
+                if (actor.isWebFingerIdValid() && !actor.getWebFingerId().equals(webFingerId)) {
+                    results.toFixWebFingerId.add(actor);
+                }
                 actor.lookupUser(myContext);
                 if (shouldMergeUsers(prev, actor)) {
                     AActivity activity = whomToMerge(prev, actor);
@@ -103,7 +114,7 @@ class CheckUsers extends DataChecker {
         if (prev == null || actor == null) return false;
         if (prev.user.userId == actor.user.userId) return false;
         if (!prev.isWebFingerIdValid()) return false;
-        return prev.getWebFingerId().equalsIgnoreCase(actor.getWebFingerId());
+        return prev.getWebFingerId().equals(actor.getWebFingerId());
     }
 
     @NonNull
