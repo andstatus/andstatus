@@ -532,12 +532,12 @@ public class Timeline implements Comparable<Timeline> {
                 && actor.user.isMyUser().untrue;
     }
 
-    public void delete() {
+    public void delete(MyContext myContext) {
         if (isRequired()) {
             MyLog.d(this, "Cannot delete required timeline: " + this);
             return;
         }
-        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
             MyLog.d(this, "delete; Database is unavailable");
         } else {

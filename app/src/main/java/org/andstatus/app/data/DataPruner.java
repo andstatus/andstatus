@@ -26,9 +26,10 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.database.table.ActorTable;
+import org.andstatus.app.timeline.meta.DisplayedInSelector;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SelectionAndArgs;
@@ -46,14 +47,15 @@ import java.util.stream.Collectors;
  * old Notes, log files...
  */
 public class DataPruner {
-    private MyContext mMyContext;
+    private MyContext myContext;
     private ContentResolver mContentResolver;
     private long mDeleted = 0;
     static final long MAX_DAYS_LOGS_TO_KEEP = 10;
+    static final long MAX_DAYS_UNUSED_TIMELINES_TO_KEEP = 31;
     private static final long PRUNE_MIN_PERIOD_DAYS = 1;
 
     public DataPruner(MyContext myContext) {
-        mMyContext = myContext;
+        this.myContext = myContext;
         mContentResolver = myContext.context().getContentResolver();
     }
 
@@ -81,7 +83,7 @@ public class DataPruner {
                 + " SELECT " + ActorTable.ACTOR_ACTIVITY_ID + " FROM " + ActorTable.TABLE_NAME + ")";
 
         long maxDays = Integer.parseInt(sp.getString(MyPreferences.KEY_HISTORY_TIME, "3"));
-        long latestTimestamp = 0;
+        long latestTimestamp = getLatestTimestamp(maxDays);
 
         long nActivities = 0;
         long nToDeleteSize = 0;
@@ -91,7 +93,6 @@ public class DataPruner {
         Cursor cursor = null;
         try {
             if (maxDays > 0) {
-                latestTimestamp = System.currentTimeMillis() - java.util.concurrent.TimeUnit.DAYS.toMillis(maxDays);
                 SelectionAndArgs sa = new SelectionAndArgs();
                 sa.addSelection(ActivityTable.TABLE_NAME + "." + ActivityTable.INS_DATE + " <  ?",
                         Long.toString(latestTimestamp));
@@ -133,6 +134,7 @@ public class DataPruner {
         if (mDeleted > 0) {
             pruneAttachments();
         }
+        pruneTimelines(Long.max(latestTimestamp, getLatestTimestamp(MAX_DAYS_UNUSED_TIMELINES_TO_KEEP)));
         pruneLogs(MAX_DAYS_LOGS_TO_KEEP);
         setDataPrunedNow();
         if (MyLog.isVerboseEnabled()) {
@@ -143,6 +145,10 @@ public class DataPruner {
                     + nDeletedSize + " of " + nActivities + " notes, before " + new Date(latestTimestampSize).toString());
         }
         return pruned;
+    }
+
+    public static long getLatestTimestamp(long maxDays) {
+        return maxDays <=0 ? 0 : System.currentTimeMillis() - java.util.concurrent.TimeUnit.DAYS.toMillis(maxDays);
     }
 
     long pruneAttachments() {
@@ -179,20 +185,25 @@ public class DataPruner {
         return nDeleted;
     }
 
+    private void pruneTimelines(long latestTimestamp) {
+        myContext.timelines().values().stream().filter(t -> !t.isRequired()
+                && t.isDisplayedInSelector() == DisplayedInSelector.NEVER
+                && t.getLastChangedDate() < latestTimestamp).forEach(t -> t.delete(myContext));
+    }
+
     public static void setDataPrunedNow() {
         SharedPreferencesUtil.putLong(MyPreferences.KEY_DATA_PRUNED_DATE, System.currentTimeMillis());
     }
 
     private boolean isTimeToPrune()	{
-        return !mMyContext.isInForeground() && RelativeTime.moreSecondsAgoThan(
+        return !myContext.isInForeground() && RelativeTime.moreSecondsAgoThan(
                 SharedPreferencesUtil.getLong(MyPreferences.KEY_DATA_PRUNED_DATE),
                 TimeUnit.DAYS.toSeconds(PRUNE_MIN_PERIOD_DAYS));
     }
 
     long pruneLogs(long maxDaysToKeep) {
         final String method = "pruneLogs";
-        long latestTimestamp = System.currentTimeMillis() 
-                - java.util.concurrent.TimeUnit.DAYS.toMillis(maxDaysToKeep);
+        long latestTimestamp = getLatestTimestamp(maxDaysToKeep);
         long deletedCount = 0;
         File dir = MyLog.getLogDir(true);
         if (dir == null) {

@@ -155,7 +155,7 @@ public class PersistentTimelines {
         List<Timeline> toRemove = new ArrayList<>();
         for (Timeline timeline : values()) {
             if (timeline.getMyAccount().equals(ma)) {
-                timeline.delete();
+                timeline.delete(myContext);
                 toRemove.add(timeline);
             }
         }
@@ -166,7 +166,7 @@ public class PersistentTimelines {
 
     public void delete(Timeline timeline) {
         if (myContext.isReady()) {
-            timeline.delete();
+            timeline.delete(myContext);
             timelines.remove(timeline.getId());
         }
     }
