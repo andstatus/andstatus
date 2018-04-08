@@ -368,8 +368,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 }
                 if (!SharedPreferencesUtil.isEmpty(inReplyToNoteOid)) {
                     // Construct Related note from available info
-                    AActivity inReplyTo = AActivity.newPartialNote(data.getAccountActor(), inReplyToNoteOid);
-                    inReplyTo.setActor(Actor.fromOriginAndActorOid(data.getOrigin(), inReplyToActorOid));
+                    AActivity inReplyTo = AActivity.newPartialNote(data.getAccountActor(),
+                            Actor.fromOriginAndActorOid(data.getOrigin(), inReplyToActorOid), inReplyToNoteOid);
                     note.setInReplyTo(inReplyTo);
                 }
             }

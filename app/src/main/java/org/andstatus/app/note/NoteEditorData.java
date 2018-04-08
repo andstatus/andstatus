@@ -79,12 +79,12 @@ public class NoteEditorData {
         MyAccount ma = myAccount.isValid() ? myAccount : myContext.accounts().getCurrentAccount();
         AActivity activity;
         if (noteId == 0 || !andLoad) {
-            activity = AActivity.newPartialNote(ma.getActor(), "", System.currentTimeMillis(),
+            activity = AActivity.newPartialNote(ma.getActor(), ma.getActor(), "", System.currentTimeMillis(),
                     DownloadStatus.DRAFT);
         } else {
             final String noteOid = MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId);
             activity = AActivity.newPartialNote(ma.getActor(),
-                    noteOid,
+                    ma.getActor(), noteOid,
                     System.currentTimeMillis(),
                     DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)));
             activity.setId(MyQuery.oidToId(myContext, OidEnum.ACTIVITY_OID, activity.accountActor.origin.getId(),
@@ -93,7 +93,6 @@ public class NoteEditorData {
                 activity.setId(MyQuery.noteIdToLongColumnValue(ActivityTable.LAST_UPDATE_ID, noteId));
             }
         }
-        activity.setActor(activity.accountActor);
         activity.getNote().noteId = noteId;
         return activity;
     }
@@ -113,13 +112,13 @@ public class NoteEditorData {
                 ? MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, noteId)
                 : inReplyToNoteIdIn;
         if (inReplyToNoteId != 0) {
-            final AActivity inReplyTo = AActivity.newPartialNote(getMyAccount().getActor(),
-                    MyQuery.idToOid(OidEnum.NOTE_OID, inReplyToNoteId, 0), 0, UNKNOWN);
             long inReplyToActorId = MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_ACTOR_ID, noteId);
             if (inReplyToActorId == 0) {
                 inReplyToActorId = MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, inReplyToNoteId);
             }
-            inReplyTo.setActor(Actor.load(myContext, inReplyToActorId));
+            final AActivity inReplyTo = AActivity.newPartialNote(getMyAccount().getActor(),
+                    Actor.load(myContext, inReplyToActorId),
+                    MyQuery.idToOid(OidEnum.NOTE_OID, inReplyToNoteId, 0), 0, UNKNOWN);
             final Note inReplyToNote = inReplyTo.getNote();
             inReplyToNote.noteId = inReplyToNoteId;
             inReplyToNote.setContent(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, inReplyToNoteId));

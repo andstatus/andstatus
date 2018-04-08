@@ -261,8 +261,8 @@ public abstract class ConnectionTwitterLike extends Connection {
 
     @NonNull
     AActivity newLoadedUpdateActivity(String oid, long updatedDate) throws ConnectionException {
-        return AActivity.newPartialNote(data.getAccountActor(), oid, updatedDate,
-                DownloadStatus.LOADED );
+        return AActivity.newPartialNote(data.getAccountActor(), Actor.EMPTY, oid, updatedDate,
+                DownloadStatus.LOADED).setTimelinePosition(oid);
     }
 
     AActivity rebloggedNoteFromJson(@NonNull JSONObject jso) throws ConnectionException {
@@ -338,8 +338,8 @@ public abstract class ConnectionTwitterLike extends Connection {
                     if (jso.has("in_reply_to_screen_name")) {
                         inReplyToActor.setUsername(jso.getString("in_reply_to_screen_name"));
                     }
-                    AActivity inReplyTo = AActivity.newPartialNote(data.getAccountActor(), inReplyToNoteOid);
-                    inReplyTo.setActor(inReplyToActor);
+                    AActivity inReplyTo = AActivity.newPartialNote(data.getAccountActor(), inReplyToActor,
+                            inReplyToNoteOid);
                     note.setInReplyTo(inReplyTo);
                 }
             }

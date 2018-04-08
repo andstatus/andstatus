@@ -40,6 +40,8 @@ import org.andstatus.app.util.UriUtils;
 
 import java.util.Optional;
 
+import static org.andstatus.app.util.UriUtils.TEMP_OID_PREFIX;
+
 /** Activity in a sense of Activity Streams https://www.w3.org/TR/activitystreams-core/ */
 public class AActivity extends AObject {
     public static final AActivity EMPTY = from(Actor.EMPTY, ActivityType.EMPTY);
@@ -85,15 +87,19 @@ public class AActivity extends AObject {
     }
 
     @NonNull
-    public static AActivity newPartialNote(@NonNull Actor accountActor, String noteOid) {
-        return newPartialNote(accountActor, noteOid, 0, DownloadStatus.UNKNOWN);
+    public static AActivity newPartialNote(@NonNull Actor accountActor, Actor actor, String noteOid) {
+        return newPartialNote(accountActor, actor, noteOid, 0, DownloadStatus.UNKNOWN);
     }
 
     @NonNull
-    public static AActivity newPartialNote(@NonNull Actor accountActor, String noteOid,
+    public static AActivity newPartialNote(@NonNull Actor accountActor, Actor actor, String noteOid,
                                            long updatedDate, DownloadStatus status) {
         AActivity activity = from(accountActor, ActivityType.UPDATE);
-        activity.setTimelinePosition(noteOid);
+        activity.setActor(actor);
+        activity.setTimelinePosition(
+                (UriUtils.isTempOid(noteOid) ? TEMP_OID_PREFIX : "")
+                + (StringUtils.isEmpty(noteOid) ? "" : activity.getActorPrefix())
+                + noteOid);
         final Note note = Note.fromOriginAndOid(activity.accountActor.origin, noteOid, status);
         activity.setNote(note);
         note.setUpdatedDate(updatedDate);
@@ -184,17 +190,25 @@ public class AActivity extends AObject {
         setTimelinePosition("");
     }
 
-    public void setTimelinePosition(String strPosition) {
+    public AActivity setTimelinePosition(String strPosition) {
         this.timelinePosition = new TimelinePosition(TextUtils.isEmpty(strPosition) ? getTempPositionString() : strPosition);
+        return this;
     }
 
     @NonNull
     private String getTempPositionString() {
-        return UriUtils.TEMP_OID_PREFIX
-                + (StringUtils.nonEmpty(actor.oid) ?  actor.oid + "-" : "")
+        return TEMP_OID_PREFIX
+                + getActorPrefix()
                 + type.name().toLowerCase() + "-"
                 + (StringUtils.nonEmpty(getNote().oid) ? getNote().oid + "-" : "")
                 + MyLog.uniqueDateTimeFormatted();
+    }
+
+    @NonNull
+    private String getActorPrefix() {
+        return StringUtils.nonEmpty(actor.oid) ? actor.oid + "-"
+                : (StringUtils.nonEmpty(accountActor.oid) ? accountActor.oid + "-"
+                    : "");
     }
 
     public long getUpdatedDate() {

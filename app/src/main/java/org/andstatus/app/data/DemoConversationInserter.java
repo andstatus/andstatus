@@ -214,10 +214,9 @@ public class DemoConversationInserter {
         addActivity(followOf3);
         DemoNoteInserter.assertInteraction(followOf3, NotificationEventType.EMPTY, TriState.FALSE);
 
-        AActivity notLoaded1 = AActivity.newPartialNote(accountActor, MyLog.uniqueDateTimeFormatted());
         Actor notLoadedActor = Actor.fromOriginAndActorOid(accountActor.origin, "acct:notloaded@someother.host"
         + demoData.testOriginParentHost);
-        notLoaded1.setActor(notLoadedActor);
+        AActivity notLoaded1 = AActivity.newPartialNote(accountActor, notLoadedActor, MyLog.uniqueDateTimeFormatted());
         AActivity reply15 = buildActivity(author4, "", "Reply 15 to not loaded 1", notLoaded1, null);
         addActivity(reply15);
 

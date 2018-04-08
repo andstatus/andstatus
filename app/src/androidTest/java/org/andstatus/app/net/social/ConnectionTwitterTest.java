@@ -103,7 +103,7 @@ public class ConnectionTwitterTest {
         Actor author = activity.getAuthor();
         assertEquals("Oid", "221452291", author.oid);
         assertEquals("Username", "Know", author.getUsername());
-        assertEquals("WebFinger ID", "Know@" + hostName, author.getWebFingerId());
+        assertEquals("WebFinger ID", "know@" + hostName, author.getWebFingerId());
         assertEquals("Display name", "Just so you Know", author.getRealName());
         assertEquals("Description", "Unimportant facts you'll never need to know. Legally responsible publisher: @FUN", author.getDescription());
         assertEquals("Location", "Library of Congress", author.location);

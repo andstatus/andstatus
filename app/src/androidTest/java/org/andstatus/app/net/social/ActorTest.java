@@ -50,7 +50,7 @@ public class ActorTest {
         assertEquals(msgLog, 4, actors.size());
         assertEquals(msgLog, demoData.gnusocialTestAccountUsername, actors.get(0).getUsername());
         assertEquals(msgLog, demoData.gnusocialTestAccount2Username, actors.get(1).getUsername());
-        assertEquals(msgLog, webFingerId2, actors.get(2).getWebFingerId());
+        assertEquals(msgLog, webFingerId2.toLowerCase(), actors.get(2).getWebFingerId());
         assertEquals(msgLog, shortUsername3, actors.get(3).getUsername());
     }
 

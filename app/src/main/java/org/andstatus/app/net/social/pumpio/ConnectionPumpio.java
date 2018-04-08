@@ -455,11 +455,10 @@ public class ConnectionPumpio extends Connection {
             if (updatedDate == 0) {
                 updatedDate = dateFromJson(jso, "published");
             }
-            final AActivity noteActivity = AActivity.newPartialNote(data.getAccountActor(), oid,
+            final AActivity noteActivity = AActivity.newPartialNote(data.getAccountActor(),
+                    jso.has("author") ? actorFromJson(jso.getJSONObject("author")) : Actor.EMPTY,
+                    oid,
                     updatedDate, DownloadStatus.LOADED);
-            if (jso.has("author")) {
-                noteActivity.setActor(actorFromJson(jso.getJSONObject("author")));
-            }
 
             final AActivity activity;
             switch (parentActivity.type) {

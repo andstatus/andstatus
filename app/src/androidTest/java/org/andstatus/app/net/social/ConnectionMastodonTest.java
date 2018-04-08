@@ -125,7 +125,7 @@ public class ConnectionMastodonTest {
         Actor actor = activity.getActor();
         assertEquals("Actor's Oid", "15451", actor.oid);
         assertEquals("Actor's username", "Chaosphere", actor.getUsername());
-        assertEquals("WebfingerId", "Chaosphere@mastodon.social", actor.getWebFingerId());
+        assertEquals("WebfingerId", "chaosphere@mastodon.social", actor.getWebFingerId());
         assertEquals("Author's username" + activity, "AndStatus", activity.getAuthor().getUsername());
         assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
 

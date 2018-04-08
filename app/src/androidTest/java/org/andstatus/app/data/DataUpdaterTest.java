@@ -26,16 +26,16 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.ActorTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.http.ConnectionException;
-import org.andstatus.app.net.social.Audience;
-import org.andstatus.app.net.social.ConnectionGnuSocialTest;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
-import org.andstatus.app.net.social.Attachment;
-import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.Attachment;
+import org.andstatus.app.net.social.Audience;
+import org.andstatus.app.net.social.ConnectionGnuSocialTest;
+import org.andstatus.app.net.social.Note;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginPumpio;
@@ -94,8 +94,8 @@ public class DataUpdaterTest {
         assertTrue("Actor " + username + " added", somebody.actorId != 0);
         DemoConversationInserter.assertIfActorIsMyFriend(somebody, false, ma);
 
-        AActivity activity = AActivity.newPartialNote(accountActor, noteOid, System.currentTimeMillis() , DownloadStatus.LOADED);
-        activity.setActor(somebody);
+        AActivity activity = AActivity.newPartialNote(accountActor, somebody, noteOid, System.currentTimeMillis(),
+                DownloadStatus.LOADED);
         Note note = activity.getNote();
         note.setContent("The test note by Somebody at run " + demoData.testRunUid);
         note.via = "MyCoolClient";
@@ -205,9 +205,8 @@ public class DataUpdaterTest {
         author.setUsername(authorUsername);
 
         AActivity activity = AActivity.newPartialNote(accountActor,
-                "https://pumpity.net/api/comment/sdajklsdkiewwpdsldkfsdasdjWED" +  demoData.testRunUid,
+                author, "https://pumpity.net/api/comment/sdajklsdkiewwpdsldkfsdasdjWED" +  demoData.testRunUid,
                 13312697000L, DownloadStatus.LOADED);
-        activity.setActor(author);
         Note note = activity.getNote();
         note.setContent("This test note will be favorited by First Reader from http://pumpity.net");
         note.via = "SomeOtherClient";
@@ -294,20 +293,20 @@ public class DataUpdaterTest {
                 OriginPumpio.ACCOUNT_PREFIX + authorUsername);
         author.setUsername(authorUsername);
 
-        AActivity activity = AActivity.newPartialNote(accountActor,
+        AActivity activity = AActivity.newPartialNote(accountActor, author,
                 "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123" + iterationId + demoData.testRunUid,
                 13312795000L, DownloadStatus.LOADED);
-        activity.setActor(author);
         Note note = activity.getNote();
         note.setContent("The test note by Example from the http://pumpity.net " +  iterationId);
         note.via = "UnknownClient";
         if (favorited) note.addFavoriteBy(accountActor, TriState.TRUE);
 
         String inReplyToOid = "https://identi.ca/api/comment/dfjklzdfSf28skdkfgloxWB" + iterationId  + demoData.testRunUid;
-        AActivity inReplyTo = AActivity.newPartialNote(accountActor, inReplyToOid,
-                0, DownloadStatus.UNKNOWN);
-        inReplyTo.setActor(Actor.fromOriginAndActorOid(accountActor.origin,
-                "irtUser" +  iterationId + demoData.testRunUid).setUsername("irt" + authorUsername +  iterationId));
+        AActivity inReplyTo = AActivity.newPartialNote(accountActor,
+                Actor.fromOriginAndActorOid(accountActor.origin,
+                        "irtUser" +  iterationId + demoData.testRunUid)
+                        .setUsername("irt" + authorUsername +  iterationId),
+                inReplyToOid, 0, DownloadStatus.UNKNOWN);
         note.setInReplyTo(inReplyTo);
 
         DataUpdater di = new DataUpdater(ma);
@@ -373,8 +372,8 @@ public class DataUpdaterTest {
         final String method = "testUnsentNoteWithAttachment";
         MyAccount ma = MyContextHolder.get().accounts().getFirstSucceeded();
         Actor accountActor = ma.getActor();
-        AActivity activity = AActivity.newPartialNote(accountActor, "", System.currentTimeMillis(), DownloadStatus.SENDING);
-        activity.setActor(accountActor);
+        AActivity activity = AActivity.newPartialNote(accountActor, accountActor, "",
+                System.currentTimeMillis(), DownloadStatus.SENDING);
         Note note = activity.getNote();
         note.setContent("Unsent note with an attachment " + demoData.testRunUid);
         note.attachments.add(Attachment.fromUri(demoData.localImageTestUri));
@@ -393,8 +392,8 @@ public class DataUpdaterTest {
 
         // Emulate receiving of note
         final String oid = "sentMsgOid" + demoData.testRunUid;
-        AActivity activity2 = AActivity.newPartialNote(accountActor, oid, System.currentTimeMillis(), DownloadStatus.LOADED);
-        activity2.setActor(activity.getAuthor());
+        AActivity activity2 = AActivity.newPartialNote(accountActor, activity.getAuthor(), oid,
+                System.currentTimeMillis(), DownloadStatus.LOADED);
         Note note2 = activity2.getNote();
         note2.setContent("Just sent: " + note.getContent());
         note2.attachments.add(Attachment.fromUri(demoData.image1Url));
@@ -549,9 +548,8 @@ public class DataUpdaterTest {
         somebody.setUsername(username);
         somebody.setProfileUrl("https://somewhere.net/" + username);
 
-        AActivity activity = AActivity.newPartialNote(accountActor, String.valueOf(System.nanoTime()),
+        AActivity activity = AActivity.newPartialNote(accountActor, somebody, String.valueOf(System.nanoTime()),
                 System.currentTimeMillis(), DownloadStatus.LOADED);
-        activity.setActor(somebody);
         Note note = activity.getNote();
         note.setContent(content);
         note.via = "MyCoolClient";
@@ -584,9 +582,8 @@ public class DataUpdaterTest {
         Actor author1 = Actor.fromOriginAndActorOid(accountActor.origin, "sam" + demoData.testRunUid);
         author1.setUsername("samBrook");
 
-        AActivity activity1 = AActivity.newPartialNote(accountActor, String.valueOf(System.nanoTime()),
+        AActivity activity1 = AActivity.newPartialNote(accountActor, author1, String.valueOf(System.nanoTime()),
                 System.currentTimeMillis(), DownloadStatus.LOADED);
-        activity1.setActor(author1);
         Note note = activity1.getNote();
         note.setContent("@" + myMentionedUser.getUsername() + " I mention your another account");
         note.via = "AndStatus";
