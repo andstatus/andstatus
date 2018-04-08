@@ -122,8 +122,13 @@ public class Actor implements Comparable<Actor> {
 
     @NonNull
     public static String getActorAndUserSqlTables() {
-        return ActorTable.TABLE_NAME
-                + " INNER JOIN " + UserTable.TABLE_NAME
+        return getActorAndUserSqlTables(false);
+    }
+
+    @NonNull
+    public static String getActorAndUserSqlTables(boolean optionalUser) {
+        return ActorTable.TABLE_NAME + " "
+                + (optionalUser ? "LEFT" : "INNER") + " JOIN " + UserTable.TABLE_NAME
                 + " ON " + ActorTable.TABLE_NAME + "." + ActorTable.USER_ID
                 + "=" + UserTable.TABLE_NAME + "." + UserTable._ID;
     }

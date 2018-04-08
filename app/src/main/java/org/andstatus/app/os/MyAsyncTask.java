@@ -53,6 +53,7 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
     /** This allows to control execution time of single steps/commands by this AsyncTask */
     protected volatile long currentlyExecutingSince = 0;
 
+    boolean cancelable = true;
     private volatile long cancelledAt = 0;
     private volatile String firstError = "";
     volatile boolean hasExecutor = true;
@@ -83,8 +84,14 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
         this.singleInstance = singleInstance;
     }
 
-    public void setMaxCommandExecutionSeconds(long maxCommandExecutionSeconds) {
-        this.maxCommandExecutionSeconds = maxCommandExecutionSeconds;
+    public MyAsyncTask setMaxCommandExecutionSeconds(long seconds) {
+        this.maxCommandExecutionSeconds = seconds;
+        return this;
+    }
+
+    public MyAsyncTask setCancelable(boolean cancelable) {
+        this.cancelable = cancelable;
+        return this;
     }
 
     public MyAsyncTask(PoolEnum pool) {

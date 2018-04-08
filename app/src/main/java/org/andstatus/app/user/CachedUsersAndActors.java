@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class CachedUsersAndActors {
     private final MyContext myContext;
@@ -118,10 +119,11 @@ public class CachedUsersAndActors {
     }
 
     @NonNull
-    public User userFromActorId(long actorId) {
+    public User userFromActorId(long actorId, Supplier<User> userSupplier) {
+        if (actorId == 0) return User.EMPTY;
         final User user1 = actors.getOrDefault(actorId, Actor.EMPTY).user;
         return user1.nonEmpty() ? user1
-            : users.values().stream().filter(user -> user.actorIds.contains(actorId)).findFirst().orElse(User.EMPTY);
+            : users.values().stream().filter(user -> user.actorIds.contains(actorId)).findFirst().orElseGet(userSupplier);
     }
 
     public void addIfAbsent(@NonNull Actor actor) {

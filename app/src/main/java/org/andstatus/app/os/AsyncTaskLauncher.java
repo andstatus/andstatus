@@ -251,6 +251,8 @@ public class AsyncTaskLauncher<Params> {
     public static void cancelPoolTasks(MyAsyncTask.PoolEnum pool) {
         MyLog.v(TAG, "Cancelling tasks for pool " + pool.name());
         for (MyAsyncTask<?, ?, ?> launched : launchedTasks) {
+            if (!launched.cancelable) continue;
+
             if (launched.pool == pool) {
                 try {
                     launched.cancelLogged(true);

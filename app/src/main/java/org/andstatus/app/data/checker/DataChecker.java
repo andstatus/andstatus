@@ -53,6 +53,8 @@ public abstract class DataChecker {
                     protected Void doInBackground2(Void... params) {
                         fixData(logger, includeLong);
                         DbUtils.waitMs(DataChecker.class, 3000);
+                        MyContextHolder.release();
+                        MyContextHolder.initialize(MyContextHolder.get().context(), DataChecker.class);
                         return null;
                     }
 

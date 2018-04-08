@@ -49,10 +49,7 @@ public class User {
 
     @NonNull
     public static User load(@NonNull MyContext myContext, long actorId) {
-        if (actorId == 0) return User.EMPTY;
-        User user = myContext.users().userFromActorId(actorId);
-        if (user.nonEmpty()) return user;
-        return loadInternal(myContext, actorId);
+        return myContext.users().userFromActorId(actorId, () -> loadInternal(myContext, actorId));
     }
 
     private static User loadInternal(@NonNull MyContext myContext, long actorId) {

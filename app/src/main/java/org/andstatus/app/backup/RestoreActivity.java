@@ -34,8 +34,9 @@ import org.andstatus.app.util.SimpleFileDialog;
 import java.io.File;
 
 public class RestoreActivity extends MyActivity {
+    private static final int MAX_RESTORE_SECONDS = 300;
     File selectedFolder = null;
-    RestoreTask asyncTask = null;
+    MyAsyncTask<File, CharSequence, Boolean> asyncTask = null;
     private int progressCounter = 0;
 
     @Override
@@ -50,7 +51,34 @@ public class RestoreActivity extends MyActivity {
             public void onClick(View v) {
                 if (asyncTask == null || asyncTask.completedBackgroundWork()) {
                     resetProgress();
-                    asyncTask = new RestoreTask();
+                    asyncTask = new MyAsyncTask<File, CharSequence, Boolean>( this,
+                            MyAsyncTask.PoolEnum.QUICK_UI) {
+
+                        Boolean success = false;
+
+                        @Override
+                        protected Boolean doInBackground2(File... params) {
+                            MyBackupManager.restoreInteractively(params[0], new ProgressLogger.ProgressCallback() {
+
+                                        @Override
+                                        public void onProgressMessage(CharSequence message) {
+                                            publishProgress(message);
+                                        }
+
+                                        @Override
+                                        public void onComplete(boolean successIn) {
+                                            success = successIn;
+                                        }
+                                    }
+                            );
+                            return success;
+                        }
+
+                        @Override
+                        protected void onProgressUpdate(CharSequence... values) {
+                            addProgressMessage(values[0]);
+                        }
+                    }.setMaxCommandExecutionSeconds(MAX_RESTORE_SECONDS).setCancelable(false);
                     new AsyncTaskLauncher<File>().execute(this, true, asyncTask, getSelectedFolder());
                 }
             }
@@ -111,37 +139,6 @@ public class RestoreActivity extends MyActivity {
         if (view != null) {
             File folder = getSelectedFolder();
             view.setText(MyBackupManager.isBackupFolder(folder) ? folder.getAbsolutePath() : "");
-        }
-    }
-
-    private class RestoreTask extends MyAsyncTask<File, CharSequence, Boolean> {
-        Boolean success = false;
-
-        public RestoreTask() {
-            super(PoolEnum.LONG_UI);
-        }
-
-        @Override
-        protected Boolean doInBackground2(File... params) {
-            MyBackupManager.restoreInteractively(params[0], new ProgressLogger.ProgressCallback() {
-                
-                @Override
-                public void onProgressMessage(CharSequence message) {
-                   publishProgress(message);
-                }
-                
-                @Override
-                public void onComplete(boolean successIn) {
-                    RestoreTask.this.success = successIn;
-                }
-            }
-            );
-            return success;
-        }
-
-        @Override
-        protected void onProgressUpdate(CharSequence... values) {
-            addProgressMessage(values[0]);
         }
     }
 

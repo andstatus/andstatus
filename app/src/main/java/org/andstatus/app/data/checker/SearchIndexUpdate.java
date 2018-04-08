@@ -48,15 +48,15 @@ class SearchIndexUpdate extends DataChecker {
             while (c.moveToNext()) {
                 rowsCount++;
                 long id = c.getLong(0);
-                String body = c.getString(1);
-                String bodyToSearch = c.getString(2);
-                String bodyToSearchExpected = MyHtml.getContentToSearch(body);
-                if (!bodyToSearchExpected.equals(bodyToSearch)) {
+                String content = c.getString(1);
+                String contentToSearch = c.getString(2);
+                String contentToSearchExpected = MyHtml.getContentToSearch(content);
+                if (!contentToSearchExpected.equals(contentToSearch)) {
                     changedCount++;
-                    MyLog.i(this, "Wrong body to search for " + id + ": " + quoteIfNotQuoted(body));
+                    MyLog.i(this, "Wrong content to search for " + id + ": " + quoteIfNotQuoted(content));
                     sql = "UPDATE " + NoteTable.TABLE_NAME
                             + " SET "
-                            + NoteTable.CONTENT_TO_SEARCH + "=" + quoteIfNotQuoted(bodyToSearchExpected)
+                            + NoteTable.CONTENT_TO_SEARCH + "=" + quoteIfNotQuoted(contentToSearchExpected)
                             + " WHERE " + NoteTable._ID + "=" + id;
                     myContext.getDatabase().execSQL(sql);
                 }

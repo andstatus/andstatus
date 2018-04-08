@@ -17,19 +17,19 @@
 package org.andstatus.app.data.checker;
 
 import android.database.Cursor;
-import android.support.annotation.NonNull;
 
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyProvider;
-import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.UserTable;
-import org.andstatus.app.net.social.AActivity;
-import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.user.User;
 import org.andstatus.app.util.TriState;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -38,27 +38,21 @@ import java.util.Set;
 class CheckUsers extends DataChecker {
 
     private static class CheckResults {
-        Set<AActivity> usersToMerge = new HashSet<>();
-        Set<User> myUsers = new HashSet<>();
-        Set<Actor> toFixWebFingerId = new HashSet<>();
+        Map<String, Set<Actor>> actorsToMergeUsers = new HashMap<>();
+        Set<User> usersToSave = new HashSet<>();
+        Set<Actor> actorsToFixWebFingerId = new HashSet<>();
     }
 
     @Override
     long fixInternal(boolean countOnly) {
-        int changedCount = 0;
         CheckResults results = getResults();
-        for (AActivity activity : results.usersToMerge) {
-            mergeUsers(activity);
+        long changedCount = 0;
+        for (User user : results.usersToSave) {
+            user.save(myContext);
             changedCount++;
         }
-        for (User user : results.myUsers) {
-            if (MyQuery.idToLongColumnValue(myContext.getDatabase(), UserTable.TABLE_NAME, UserTable.IS_MY, user.userId)
-                    != TriState.TRUE.id) {
-                user.save(myContext);
-                changedCount++;
-            }
-        }
-        for (Actor actor : results.toFixWebFingerId) {
+        changedCount += results.actorsToMergeUsers.values().stream().mapToLong(this::mergeUsers).sum();
+        for (Actor actor : results.actorsToFixWebFingerId) {
             String sql = "UPDATE " + ActorTable.TABLE_NAME + " SET " + ActorTable.WEBFINGER_ID + "='"
                     + actor.getWebFingerId() + "' WHERE " + ActorTable._ID + "=" + actor.actorId;
             myContext.getDatabase().execSQL(sql);
@@ -70,76 +64,83 @@ class CheckUsers extends DataChecker {
     private CheckResults getResults() {
         final String method = "getResults";
         CheckResults results = new CheckResults();
-        String sql = "SELECT " + ActorTable._ID
+        String sql = "SELECT " + ActorTable.TABLE_NAME + "." + ActorTable._ID
                 + ", " + ActorTable.ORIGIN_ID
-                + ", " + ActorTable.USER_ID
                 + ", " + ActorTable.WEBFINGER_ID
-                + " FROM " + ActorTable.TABLE_NAME
-                + " ORDER BY " + ActorTable.WEBFINGER_ID
+                + ", " + UserTable.TABLE_NAME + "." + UserTable._ID + " AS " + UserTable.USER_ID
+                + " FROM " + Actor.getActorAndUserSqlTables(true)
+                + " ORDER BY " + ActorTable.WEBFINGER_ID + " COLLATE NOCASE";
                 ;
 
         long rowsCount = 0;
         try (Cursor c = myContext.getDatabase().rawQuery(sql, null)) {
-            Actor prev = null;
+            String key = "";
+            Set<Actor> actors = new HashSet<>();
             while (c.moveToNext()) {
                 rowsCount++;
-                final Actor actor = Actor.fromOriginAndActorId(myContext.origins().fromId(c.getLong(1)),
-                        c.getLong(0));
-                final String webFingerId = c.getString(3);
+                final Actor actor = Actor.fromOriginAndActorId(
+                        myContext.origins().fromId(DbUtils.getLong(c, ActorTable.ORIGIN_ID)),
+                        DbUtils.getLong(c, ActorTable._ID));
+                final String webFingerId = DbUtils.getString(c, ActorTable.WEBFINGER_ID);
                 actor.setWebFingerId(webFingerId);
                 if (actor.isWebFingerIdValid() && !actor.getWebFingerId().equals(webFingerId)) {
-                    results.toFixWebFingerId.add(actor);
-                }
-                actor.lookupUser(myContext);
-                if (shouldMergeUsers(prev, actor)) {
-                    AActivity activity = whomToMerge(prev, actor);
-                    results.usersToMerge.add(activity);
-                    prev = activity.getActor();
-                } else {
-                    prev = actor;
+                    results.actorsToFixWebFingerId.add(actor);
                 }
 
-                if (myContext.accounts().fromWebFingerId(actor.getWebFingerId()).isValid()) {
+                actor.user = myContext.users().userFromActorId(actor.actorId,
+                        () -> new User(
+                                DbUtils.getLong(c, UserTable.USER_ID),
+                                actor.getWebFingerId(),
+                                TriState.FALSE,
+                                Collections.emptySet()));
+                if (myContext.accounts().fromWebFingerId(actor.getWebFingerId()).isValid()
+                        && actor.user.isMyUser().untrue) {
                     actor.user.setIsMyUser(TriState.TRUE);
-                    results.myUsers.add(actor.user);
+                    results.usersToSave.add(actor.user);
+                } else if (actor.user.userId == 0) {
+                    results.usersToSave.add(actor.user);
                 }
+
+                if (!actor.getWebFingerId().equals(key)) {
+                    if (shouldMerge(actors)) {
+                        results.actorsToMergeUsers.put(key, actors);
+                    }
+                    key = actor.getWebFingerId();
+                    actors = new HashSet<>();
+                }
+                actors.add(actor);
+            }
+            if (shouldMerge(actors)) {
+                results.actorsToMergeUsers.put(key, actors);
             }
         }
 
-        logger.logProgress(method + " ended, " + rowsCount + " users, " + results.usersToMerge.size() + " to be merged");
+        logger.logProgress(method + " ended, " + rowsCount + " actors, " + results.actorsToMergeUsers.size() + " to be merged");
         return results;
     }
 
-    private boolean shouldMergeUsers(Actor prev, Actor actor) {
-        if (prev == null || actor == null) return false;
-        if (prev.user.userId == actor.user.userId) return false;
-        if (!prev.isWebFingerIdValid()) return false;
-        return prev.getWebFingerId().equals(actor.getWebFingerId());
+    private boolean shouldMerge(Set<Actor> actors) {
+        return actors.stream().anyMatch(a -> a.user.userId == 0)
+                || actors.stream().mapToLong(a -> a.user.userId).distinct().count() > 1;
     }
 
-    @NonNull
-    private AActivity whomToMerge(@NonNull Actor prev, @NonNull Actor actor) {
-        AActivity activity = AActivity.from(Actor.EMPTY, ActivityType.UPDATE);
-        activity.setObjActor(actor);
-        Actor mergeWith = prev;
-        if (myContext.accounts().fromActorId(actor.actorId).isValid()) {
-            mergeWith = actor;
-            activity.setObjActor(prev);
-        }
-        activity.setActor(mergeWith);
-        return activity;
-    }
+    private long mergeUsers(Set<Actor> actors) {
+        User userWith = actors.stream().map(a -> a.user).reduce((a, b) -> a.userId < b.userId ? a : b)
+                .orElse(User.EMPTY);
+        if (userWith.userId == 0) return 0;
 
-    private void mergeUsers(AActivity activity) {
-        Actor actor = activity.getObjActor();
-        String logMsg = "Merging user of " + actor + " with " + activity.getActor();
-        logger.logProgress(logMsg);
-        MyProvider.update(myContext, ActorTable.TABLE_NAME,
-                ActorTable.USER_ID + "=" + activity.getActor().user.userId,
-                ActorTable.USER_ID + "=" + activity.getObjActor().user.userId
-        );
-        MyProvider.delete(myContext, UserTable.TABLE_NAME, UserTable._ID + "=" + actor.user.userId);
-        actor.user.userId = activity.getActor().user.userId;
-        actor.user.setIsMyUser(activity.getActor().user.isMyUser());
+        return actors.stream().map( actor -> {
+            String logMsg = "Linking " + actor + " with " + userWith;
+            if (logger.loggedMoreSecondsAgoThan(5)) logger.logProgress(logMsg);
+            MyProvider.update(myContext, ActorTable.TABLE_NAME,
+                    ActorTable.USER_ID + "=" + userWith.userId,
+                    ActorTable._ID + "=" + actor.actorId
+            );
+            if (actor.user.userId != 0 && actor.user.userId != userWith.userId && userWith.isMyUser().isTrue) {
+                actor.user.setIsMyUser(TriState.FALSE);
+                actor.user.save(myContext);
+            }
+            return 1;
+        }).count();
     }
 }
