@@ -42,9 +42,11 @@ import org.andstatus.app.util.UrlUtils;
 
 import java.net.URL;
 import java.util.List;
+import java.util.Set;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -210,28 +212,26 @@ public class DemoNoteInserter {
 
         if (activity.type == ActivityType.LIKE) {
             List<Actor> stargazers = MyQuery.getStargazers(MyContextHolder.get().getDatabase(), accountActor.origin, note.noteId);
-            boolean found = false;
-            for (Actor stargazer : stargazers) {
-                if (stargazer.actorId == actor.actorId) {
-                    found = true;
-                    break;
-                }
-            }
+            boolean found = stargazers.stream().anyMatch(stargazer -> stargazer.actorId == actor.actorId);
             assertTrue("Actor, who favorited, is not found among stargazers: " + activity
                     + "\nstargazers: " + stargazers, found);
         }
 
         if (activity.type == ActivityType.ANNOUNCE) {
             List<Actor> rebloggers = MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), accountActor.origin, note.noteId);
-            boolean found = false;
-            for (Actor stargazer : rebloggers) {
-                if (stargazer.actorId == actor.actorId) {
-                    found = true;
-                    break;
-                }
-            }
+            boolean found = rebloggers.stream().anyMatch(a -> a.actorId == actor.actorId);
             assertTrue("Reblogger is not found among rebloggers: " + activity
                     + "\nrebloggers: " + rebloggers, found);
+        }
+
+        if (activity.type == ActivityType.FOLLOW || activity.type == ActivityType.UNDO_FOLLOW) {
+            Set<Long> friendsIds = MyQuery.getFriendsIds(actor.actorId);
+            boolean found = friendsIds.stream().anyMatch(id -> id == activity.getObjActor().actorId );
+            if (activity.type == ActivityType.FOLLOW) {
+                assertTrue("Friend not found: " + activity + "\nfriendsIds: " + friendsIds, found);
+            } else {
+                assertFalse("Friend found: " + activity + "\nfriendsIds: " + friendsIds, found);
+            }
         }
 
         if (!note.replies.isEmpty()) {

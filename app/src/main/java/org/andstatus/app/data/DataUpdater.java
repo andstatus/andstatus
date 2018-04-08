@@ -25,7 +25,6 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.ActorTable;
-import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.AActivity;
@@ -325,17 +324,11 @@ public class DataUpdater {
             }
         }
 
-        TriState followedByMe = TriState.UNKNOWN;
+        TriState followedByMe = actor.followedByMe;
         TriState followedByActor = activity.type.equals(ActivityType.FOLLOW) ? TriState.TRUE :
                 activity.type.equals(ActivityType.UNDO_FOLLOW) ? TriState.FALSE : TriState.UNKNOWN;
-        if (actor.followedByMe.known) {
-            followedByMe = actor.followedByMe;
-        } else if (activity.getActor().actorId == me.getActorId() && me.getActorId() != 0) {
-            followedByMe = followedByActor;
-        }
-
         actor.lookupActorId(execContext.getMyContext());
-        if (actor.actorId != 0 && actor.isPartiallyDefined() && followedByMe.unknown) {
+        if (actor.actorId != 0 && actor.isPartiallyDefined() && followedByMe.unknown && followedByActor.unknown) {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, method + "; Skipping partially defined: " + actor.toString());
             }
@@ -407,13 +400,6 @@ public class DataUpdater {
                 values.put(ActorTable.UPDATED_DATE, actor.getUpdatedDate());
             }
 
-            if (followedByMe.known) {
-                values.put(FriendshipTable.FOLLOWED, followedByMe.toBoolean(false));
-                MyLog.v(this, "Account '" + me.getAccountName() + "' "
-                                + (followedByMe.toBoolean(false) ? "follows" : "stop following ")
-                                + actor.getUsername());
-            }
-            
             actor.saveUser(execContext.myContext);
             Uri actorUri = MatchedUri.getActorUri(me.getActorId(), actor.actorId);
             if (actor.actorId == 0) {
@@ -425,6 +411,19 @@ public class DataUpdater {
             } else if (values.size() > 0) {
                 execContext.getContext().getContentResolver().update(actorUri, values, null, null);
             }
+            if (followedByMe.known) {
+                MyLog.v(this, "Account " + me.getActor().getNamePreferablyWebFingerId() + " "
+                        + (followedByMe.isTrue ? "follows " : "stop following ")
+                        + actor.getNamePreferablyWebFingerId());
+                Friendship.setFollowed(execContext.myContext, me.getActorId(), followedByMe, actor.actorId);
+            }
+            if (followedByActor.known) {
+                MyLog.v(this, "Actor " + activity.getActor().getNamePreferablyWebFingerId() + " "
+                        + (followedByActor.isTrue ? "follows " : "stop following ")
+                        + actor.getNamePreferablyWebFingerId());
+                Friendship.setFollowed(execContext.myContext, activity.getActor().actorId, followedByActor, actor.actorId);
+            }
+
             if (actor.hasLatestNote()) {
                 updateNote(actor.getLatestActivity(), false);
             }

@@ -209,10 +209,10 @@ public class DemoConversationInserter {
                 reply4, iteration == 1 ? demoData.conversationMentionOfAuthor3Oid : null);
         addActivity(mentionOfAuthor3);
 
-        AActivity followOf3 = buildActivity(author2, ActivityType.FOLLOW);
-        followOf3.setObjActor(author3);
-        addActivity(followOf3);
-        DemoNoteInserter.assertInteraction(followOf3, NotificationEventType.EMPTY, TriState.FALSE);
+        AActivity followAuthor3 = buildActivity(author2, ActivityType.FOLLOW);
+        followAuthor3.setObjActor(author3);
+        addActivity(followAuthor3);
+        DemoNoteInserter.assertInteraction(followAuthor3, NotificationEventType.EMPTY, TriState.FALSE);
 
         Actor notLoadedActor = Actor.fromOriginAndActorOid(accountActor.origin, "acct:notloaded@someother.host"
         + demoData.testOriginParentHost);
@@ -220,10 +220,10 @@ public class DemoConversationInserter {
         AActivity reply15 = buildActivity(author4, "", "Reply 15 to not loaded 1", notLoaded1, null);
         addActivity(reply15);
 
-        AActivity followOfMe = buildActivity(getAuthor1(), ActivityType.FOLLOW);
-        followOfMe.setObjActor(accountActor);
-        addActivity(followOfMe);
-        DemoNoteInserter.assertInteraction(followOfMe, NotificationEventType.FOLLOW, TriState.TRUE);
+        AActivity followsMe = buildActivity(getAuthor1(), ActivityType.FOLLOW);
+        followsMe.setObjActor(accountActor);
+        addActivity(followsMe);
+        DemoNoteInserter.assertInteraction(followsMe, NotificationEventType.FOLLOW, TriState.TRUE);
 
         AActivity reply16 = buildActivity(author2, "", "Reply 16 to Reply 15", reply15, null);
         addActivity(reply16);

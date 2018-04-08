@@ -20,21 +20,22 @@ import android.text.TextUtils;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.ActorActivity;
 import org.andstatus.app.data.DataUpdater;
-import org.andstatus.app.data.FriendshipValues;
+import org.andstatus.app.data.Friendship;
 import org.andstatus.app.data.LatestActorActivities;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.data.ActorActivity;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.http.ConnectionException;
-import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -129,10 +130,10 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
 
         for (Actor actor : actorsNew) {
             actorIdsOld.remove(actor.actorId);
-            FriendshipValues.setFollowed(actor.actorId, actorId);
+            Friendship.setFollowed(execContext.myContext, actor.actorId, TriState.TRUE, actorId);
         }
         for (long actorIdOld : actorIdsOld) {
-            FriendshipValues.setNotFollowed(actorIdOld, actorId);
+            Friendship.setFollowed(execContext.myContext, actorIdOld, TriState.FALSE, actorId);
         }
     }
 
@@ -160,10 +161,10 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
 
         for (Actor actor : actorsNew) {
             actorIdsOld.remove(actor.actorId);
-            FriendshipValues.setFollowed(actorId, actor.actorId);
+            Friendship.setFollowed(execContext.myContext, actorId, TriState.TRUE, actor.actorId);
         }
         for (long actorIdOld : actorIdsOld) {
-            FriendshipValues.setNotFollowed(actorId, actorIdOld);
+            Friendship.setFollowed(execContext.myContext, actorId, TriState.FALSE, actorIdOld);
         }
     }
 

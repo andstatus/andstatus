@@ -799,4 +799,14 @@ public class MyQuery {
         }
         return idToOid(OidEnum.NOTE_OID, conversationId, 0);
     }
+
+    public static boolean dExists(SQLiteDatabase db, String sql) {
+        boolean exists = false;
+        try (Cursor cursor = db.rawQuery(sql, null)) {
+            exists = cursor.moveToFirst();
+        } catch (Exception e) {
+            MyLog.d("", "dExists \"" + sql + "\"", e);
+        }
+        return exists;
+    }
 }

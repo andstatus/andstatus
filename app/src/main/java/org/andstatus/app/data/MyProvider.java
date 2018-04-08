@@ -286,7 +286,6 @@ public class MyProvider extends ContentProvider {
     public Uri insert(@NonNull Uri uri, ContentValues initialValues) {
 
         ContentValues values;
-        FriendshipValues friendshipValues = null;
         long accountActorId = 0;
         
         long rowId;
@@ -330,7 +329,6 @@ public class MyProvider extends ContentProvider {
                     table = ActorTable.TABLE_NAME;
                     values.put(ActorTable.INS_DATE, MyLog.uniqueCurrentTimeMS());
                     accountActorId = uriParser.getAccountActorId();
-                    friendshipValues = FriendshipValues.valueOf(accountActorId, 0, values);
                     break;
                     
                 default:
@@ -340,11 +338,6 @@ public class MyProvider extends ContentProvider {
             rowId = db.insert(table, null, values);
             if (rowId == -1) {
                 throw new SQLException("Failed to insert row into " + uri);
-            }
-
-            if (friendshipValues != null) {
-                friendshipValues.friendId =  rowId;
-                friendshipValues.update(db);
             }
 
             switch (uriParser.matched()) {
@@ -558,13 +551,11 @@ public class MyProvider extends ContentProvider {
             case ACTOR_ITEM:
                 accountActorId = uriParser.getAccountActorId();
                 long selectedActorId = uriParser.getActorId();
-                FriendshipValues friendshipValues = FriendshipValues.valueOf(accountActorId, selectedActorId, values);
                 if (values.size() > 0) {
                     count = db.update(ActorTable.TABLE_NAME, values, BaseColumns._ID + "=" + selectedActorId
                                     + (StringUtils.nonEmpty(selection) ? " AND (" + selection + ')' : ""),
                             selectionArgs);
                 }
-                friendshipValues.update(db);
                 break;
 
             default:
