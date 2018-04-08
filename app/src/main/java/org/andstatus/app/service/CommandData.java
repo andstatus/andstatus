@@ -418,12 +418,12 @@ public class CommandData implements Comparable<CommandData> {
                 builder.append("\"");
                 break;
             case GET_TIMELINE:
-                builder.append(TimelineTitle.load(myContext, timeline, MyAccount.EMPTY).toString());
+                builder.append(TimelineTitle.load(myContext, timeline, myContext.accounts().getCurrentAccount()).title);
                 break;
             case GET_OLDER_TIMELINE:
                 builder.append(WhichPage.OLDER.getTitle(myContext.context()));
                 builder.append(" ");
-                builder.append(TimelineTitle.load(myContext, timeline, MyAccount.EMPTY).toString());
+                builder.append(TimelineTitle.load(myContext, timeline, myContext.accounts().getCurrentAccount()).title);
                 break;
             case FOLLOW:
             case UNDO_FOLLOW:

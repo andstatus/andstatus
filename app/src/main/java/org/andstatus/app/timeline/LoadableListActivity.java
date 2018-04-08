@@ -502,7 +502,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
 
                     @Override
                     protected String doInBackground2(CommandData... commandData) {
-                        return commandData[0].toCommandSummary(MyContextHolder.get());
+                        return commandData[0].toCommandSummary(myContext);
                     }
 
                     @Override
