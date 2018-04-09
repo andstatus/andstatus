@@ -404,7 +404,7 @@ public class MyProvider extends ContentProvider {
                     }
                     KeywordsFilter searchQuery  = new KeywordsFilter(rawQuery);
                     selection = "(" + searchQuery.getSqlSelection(NoteTable.CONTENT_TO_SEARCH) + ")" + selection;
-                    selectionArgs = StringUtils.addBeforeArray(selectionArgs, "%" + rawQuery + "%");
+                    selectionArgs = searchQuery.prependSqlSelectionArgs(selectionArgs);
                 }
                 break;
 
