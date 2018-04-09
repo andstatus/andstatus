@@ -21,8 +21,8 @@ import android.support.annotation.NonNull;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ConversationMemberItem extends ConversationItem<ConversationMemberItem> {
     public final static ConversationMemberItem EMPTY = new ConversationMemberItem(true);
@@ -38,16 +38,17 @@ public class ConversationMemberItem extends ConversationItem<ConversationMemberI
     }
 
     @Override
-    String[] getProjection() {
-        List<String> columnNames = new ArrayList<>();
+    Set<String> getProjection() {
+        Set<String> columnNames = new HashSet<>();
         columnNames.add(ActivityTable.NOTE_ID);
+        columnNames.add(NoteTable.CONVERSATION_ID);
         columnNames.add(NoteTable.UPDATED_DATE);
         columnNames.add(NoteTable.IN_REPLY_TO_NOTE_ID);
         columnNames.add(NoteTable.ORIGIN_ID);
         columnNames.add(NoteTable.AUTHOR_ID);
         columnNames.add(NoteTable.NAME);
         columnNames.add(NoteTable.CONTENT);
-        return columnNames.toArray(new String[]{});
+        return columnNames;
     }
 
     @Override

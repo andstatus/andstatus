@@ -36,6 +36,8 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.TriState;
 
+import java.util.Set;
+
 public class ConversationViewItem extends ConversationItem<ConversationViewItem> {
     public static final ConversationViewItem EMPTY = new ConversationViewItem(true);
 
@@ -50,7 +52,7 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
     }
 
     @Override
-    String[] getProjection() {
+    Set<String> getProjection() {
         return TimelineSql.getConversationProjection();        
     }
 

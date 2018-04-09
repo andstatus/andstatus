@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,9 +26,12 @@ import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 
-public abstract class ConversationItem<T extends ConversationItem<T>> extends BaseNoteViewItem<T> implements Comparable<ConversationItem> {
-    ConversationItem inReplyToViewItem = null;
+import java.util.Set;
 
+public abstract class ConversationItem<T extends ConversationItem<T>> extends BaseNoteViewItem<T> implements Comparable<ConversationItem> {
+    ConversationItem<T> inReplyToViewItem = null;
+
+    long conversationId = 0;
     boolean reversedListOrder = false;
     /** Numeration starts from 0 **/
     int mListOrder = 0;
@@ -93,9 +96,10 @@ public abstract class ConversationItem<T extends ConversationItem<T>> extends Ba
         return Long.valueOf(getNoteId()).hashCode();
     }
 
-    abstract String[] getProjection();
+    abstract Set<String> getProjection();
     
     void load(Cursor cursor) {
+        conversationId = DbUtils.getLong(cursor, NoteTable.CONVERSATION_ID);
         setOrigin(myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)));
         author = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
         setName(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.NAME)));

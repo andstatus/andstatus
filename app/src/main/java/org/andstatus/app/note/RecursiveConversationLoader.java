@@ -22,11 +22,9 @@ import android.net.Uri;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.ProjectionMap;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
@@ -42,18 +40,18 @@ public class RecursiveConversationLoader<T extends ConversationItem<T>> extends 
 
     @Override
     protected void load2(T oMsg) {
-        cacheConversation(oMsg);
         findPreviousNotesRecursively(getItem(oMsg.getNoteId(), 0));
     }
 
-    private void cacheConversation(T oMsg) {
-        long conversationId = MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID, oMsg.getNoteId());
-        String selection = (conversationId == 0
+    @Override
+    void cacheConversation(T oMsg) {
+        String selection = (oMsg.conversationId == 0
                 ? ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.NOTE_ID + "=" + oMsg.getNoteId()
-                : ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.CONVERSATION_ID + "=" + conversationId);
+                : ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.CONVERSATION_ID + "=" + oMsg.conversationId);
         Uri uri = Timeline.getTimeline(TimelineType.EVERYTHING, 0, ma.getOrigin()).getUri();
 
-        try (Cursor cursor = myContext.context().getContentResolver().query(uri, oMsg.getProjection(),
+        try (Cursor cursor = myContext.context().getContentResolver().query(uri,
+                oMsg.getProjection().toArray(new String[]{}),
                 selection, null, null)) {
             if (cursor != null) {
                 while (cursor.moveToNext()) {

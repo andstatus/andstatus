@@ -56,6 +56,7 @@ public class ProjectionMap {
         TIMELINE.put(NoteTable.NOTE_ID, NOTE_TABLE_ALIAS + "." + BaseColumns._ID + " AS " + NoteTable.NOTE_ID);
         TIMELINE.put(NoteTable.ORIGIN_ID, NoteTable.ORIGIN_ID);
         TIMELINE.put(NoteTable.NOTE_OID, NoteTable.NOTE_OID);
+        TIMELINE.put(NoteTable.CONVERSATION_ID, NoteTable.CONVERSATION_ID);
         TIMELINE.put(NoteTable.AUTHOR_ID, NoteTable.AUTHOR_ID);
         TIMELINE.put(ActorTable.AUTHOR_NAME, ActorTable.AUTHOR_NAME);
         TIMELINE.put(DownloadTable.DOWNLOAD_STATUS, DownloadTable.DOWNLOAD_STATUS);

@@ -220,13 +220,14 @@ public class TimelineSql {
         return columnNames;
     }
 
-    public static String[] getConversationProjection() {
+    public static Set<String> getConversationProjection() {
         Set<String> columnNames = getBaseProjection();
+        columnNames.add(NoteTable.CONVERSATION_ID);
         columnNames.add(NoteTable.AUTHOR_ID);
         columnNames.add(ActivityTable.ACTOR_ID);
         columnNames.add(NoteTable.VIA);
         columnNames.add(NoteTable.REBLOGGED);
-        return columnNames.toArray(new String[]{});
+        return columnNames;
     }
 
     @NonNull

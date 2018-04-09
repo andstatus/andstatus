@@ -28,6 +28,8 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.checker.CheckConversations;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.service.CommandData;
@@ -42,9 +44,12 @@ import org.andstatus.app.util.MyLog;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public abstract class ConversationLoader<T extends ConversationItem<T>> extends SyncLoader<T> {
     private static final int MAX_INDENT_LEVEL = 19;
@@ -52,6 +57,8 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
     protected final MyContext myContext;
     protected final MyAccount ma;
     private final long selectedNoteId;
+    Set<Long> conversationIds = new HashSet<>();
+    boolean fixConversation = false;
     private boolean sync = false;
     private boolean conversationSyncRequested = false;
     boolean mAllowLoadingFromInternet = false;
@@ -74,20 +81,40 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
     @Override
     public void load(ProgressPublisher publisher) {
         mProgress = publisher;
+        load1();
+        if (fixConversation) {
+            new CheckConversations()
+                    .setNoteIdsOfOneConversation(
+                            items.stream().map(ConversationItem::getNoteId).collect(Collectors.toSet()))
+                    .setMyContext(myContext).fix();
+            load1();
+        }
+        loadActors(items);
+        items.sort(replyLevelComparator);
+        enumerateNotes();
+    }
+
+    private void load1() {
+        conversationIds.clear();
         cachedItems.clear();
         idsOfItemsToFind.clear();
         items.clear();
         if (sync) {
             requestConversationSync(selectedNoteId);
         }
-        load2(newONote(selectedNoteId));
+        final T oNote = newONote(selectedNoteId);
+        oNote.conversationId = MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID, selectedNoteId);
+        conversationIds.add(oNote.conversationId);
+        conversationIds.stream().forEach(id -> cacheConversation(oNote));
+        load2(oNote);
         addMissedFromCache();
-        loadActors(items);
-        items.sort(replyLevelComparator);
-        enumerateNotes();
     }
 
     protected abstract void load2(T oMsg);
+
+    void cacheConversation(T oMsg) {
+        // Empty
+    }
 
     private void addMissedFromCache() {
         if (cachedItems.isEmpty()) return;
@@ -148,10 +175,18 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
                 Timeline.getTimeline(TimelineType.EVERYTHING, 0, ma.getOrigin()), item.getNoteId());
         boolean loaded = false;
         try (Cursor cursor = myContext.context().getContentResolver()
-                .query(uri, item.getProjection(), null, null, null)) {
+                .query(uri, item.getProjection().toArray(new String[]{}), null, null, null)) {
             if (cursor != null && cursor.moveToFirst()) {
                 item.load(cursor);
                 loaded = true;
+                if (item.conversationId == 0 || !conversationIds.contains(item.conversationId)) {
+                    fixConversation = true;
+                    if (item.conversationId != 0) {
+                        conversationIds.add(item.conversationId);
+                        cacheConversation(item);
+                        MyLog.d(this, "Another conversationId:" + item);
+                    }
+                }
             }
         }
         MyLog.v(this, (loaded ? "Loaded (" + item.isLoaded() + ")"  : "Couldn't load")

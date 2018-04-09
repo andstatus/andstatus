@@ -52,7 +52,7 @@ public class PrivateNotesConversationLoader<T extends ConversationItem<T>> exten
         Uri uri = Timeline.getTimeline(TimelineType.EVERYTHING, 0, ma.getOrigin()).getUri();
         Cursor cursor = null;
         try {
-            cursor = myContext.context().getContentResolver().query(uri, oMsg.getProjection(),
+            cursor = myContext.context().getContentResolver().query(uri, oMsg.getProjection().toArray(new String[]{}),
                     selection, null, null);
             if (cursor != null) {
                 while (cursor.moveToNext()) {
