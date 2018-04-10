@@ -12,7 +12,6 @@ import android.webkit.MimeTypeMap;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.DownloadTable;
-import org.andstatus.app.graphics.ImageCache;
 import org.andstatus.app.graphics.MediaMetadata;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.AsyncTaskLauncher;
@@ -183,7 +182,7 @@ public class DownloadData {
             return;
         }
         fileSize = fileNew.getSize();
-        mediaMetadata = ImageCache.getMetadata(fileNew.getFilePath());
+        mediaMetadata = MediaMetadata.fromFilePath(fileNew.getFilePath());
     }
 
     private String getExtension() {

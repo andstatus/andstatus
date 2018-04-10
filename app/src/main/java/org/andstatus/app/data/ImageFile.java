@@ -34,11 +34,17 @@ import org.andstatus.app.util.MyLog;
 
 public abstract class ImageFile {
     private final DownloadFile downloadFile;
-    private volatile MediaMetadata mediaMetadata = MediaMetadata.EMPTY;
+    private volatile MediaMetadata mediaMetadata;
+    public final long downloadId;
 
-    ImageFile(String filename, MediaMetadata mediaMetadata) {
+    ImageFile(String filename, MediaMetadata mediaMetadata, long downloadId) {
         downloadFile = new DownloadFile(filename);
         this.mediaMetadata = mediaMetadata;
+        this.downloadId = downloadId;
+    }
+
+    public boolean isVideo() {
+        return mediaMetadata.duration > 0;
     }
 
     public void showImage(@NonNull MyActivity myActivity, IdentifiableImageView imageView) {
@@ -96,7 +102,7 @@ public abstract class ImageFile {
     }
 
     private CachedImage getImageFromCache() {
-        return ImageCaches.getCachedImage(getCacheName(), this, getId(), downloadFile.getFilePath());
+        return ImageCaches.getCachedImage(getCacheName(), this);
     }
 
     public void preloadImageAsync() {
@@ -111,7 +117,7 @@ public abstract class ImageFile {
 
     public CachedImage loadAndGetImage() {
         if (downloadFile.existed) {
-            return ImageCaches.loadAndGetImage(getCacheName(), this, getId(), downloadFile.getFilePath());
+            return ImageCaches.loadAndGetImage(getCacheName(), this);
         }
         requestAsyncDownload();
         return null;
@@ -128,7 +134,7 @@ public abstract class ImageFile {
                         if (skip()) {
                             return null;
                         }
-                        return ImageCaches.loadAndGetImage(getCacheName(), this, getId(), downloadFile.getFilePath());
+                        return ImageCaches.loadAndGetImage(getCacheName(), ImageFile.this);
                     }
 
                     @Override
@@ -201,8 +207,7 @@ public abstract class ImageFile {
 
                     @Override
                     protected Void doInBackground2(Void... params) {
-                        CachedImage image = ImageCaches.loadAndGetImage(getCacheName(), this, getId(),
-                                downloadFile.getFilePath());
+                        CachedImage image = ImageCaches.loadAndGetImage(getCacheName(), ImageFile.this);
                         if (image == null) {
                             logResult("Failed to preload", taskSuffix);
                         } else if (image.id != getId()) {
@@ -228,8 +233,7 @@ public abstract class ImageFile {
 
     public Point getSize() {
         if (mediaMetadata.isEmpty() && downloadFile.existed) {
-            Point point = ImageCaches.getImageSize(getCacheName(), getId(), downloadFile.getFilePath());
-            mediaMetadata = new MediaMetadata(point.x, point.y, 0);
+            mediaMetadata = MediaMetadata.fromFilePath(downloadFile.getFilePath());
         }
         return mediaMetadata.size();
     }
@@ -245,7 +249,9 @@ public abstract class ImageFile {
 
     public abstract CacheName getCacheName();
 
-    protected abstract long getId();
+    public long getId() {
+        return downloadId;
+    }
 
     protected abstract CachedImage getDefaultImage();
 
@@ -253,5 +259,9 @@ public abstract class ImageFile {
 
     protected boolean isDefaultImageRequired() {
         return false;
+    }
+
+    public String getPath() {
+        return downloadFile.getFilePath();
     }
 }

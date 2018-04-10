@@ -27,6 +27,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.data.AvatarFile;
+import org.andstatus.app.data.ImageFile;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -130,17 +131,12 @@ public class ImageCaches {
         return memInfo;
     }
 
-    @NonNull
-    public static Point getImageSize(CacheName cacheName, long imageId, String path) {
-        return getCache(cacheName).getImageSize(path);
+    public static CachedImage loadAndGetImage(CacheName cacheName, ImageFile imageFile) {
+        return getCache(cacheName).loadAndGetImage(imageFile);
     }
 
-    public static CachedImage loadAndGetImage(CacheName cacheName, Object objTag, long imageId, String path) {
-        return getCache(cacheName).loadAndGetImage(objTag, imageId, path);
-    }
-
-    public static CachedImage getCachedImage(CacheName cacheName, Object objTag, long imageId, String path) {
-        return getCache(cacheName).getCachedImage(objTag, imageId, path);
+    public static CachedImage getCachedImage(CacheName cacheName, ImageFile imageFile) {
+        return getCache(cacheName).getCachedImage(imageFile);
     }
 
     public static ImageCache getCache(CacheName cacheName) {

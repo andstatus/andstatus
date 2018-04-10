@@ -11,12 +11,12 @@
         android:id="@+id/note_indented"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_marginTop="4dp"
         android:orientation="vertical"
         android:paddingBottom="2dp"
-        android:paddingLeft="54dp"
-        android:paddingRight="6dp">
+        android:paddingStart="54dp"
+        android:paddingEnd="6dp">
 
         <include layout="@layout/author_and_rebloggers"/>
 
@@ -36,13 +36,32 @@
             style="@style/messageBodyAppearance"
             tools:text="This is a sample note's body, which is long enough to fill more than one line on a phone. It looks like I need it a bit longer.\nThis should be at least the second line"/>
 
-        <org.andstatus.app.graphics.AttachedImageView
-            android:id="@+id/attached_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            tools:visibility="visible"
-            tools:src="@drawable/splash_logo"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <org.andstatus.app.graphics.AttachedImageView
+                android:id="@+id/attached_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                tools:visibility="visible"
+                tools:src="@drawable/splash_logo"/>
+
+            <ImageView
+                android:id="@+id/play_image"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_centerInParent="true"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:paddingTop="4dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"
+                tools:visibility="visible"
+                android:src="@drawable/ic_play_circle_outline_white_24px"/>
+
+        </RelativeLayout>
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -54,7 +73,7 @@
                 android:id="@+id/note_details"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
                 style="@style/messageDetailsAppearance"
                 tools:text="sent 5 minutes ago from AndStatus"/>
 
@@ -62,7 +81,7 @@
                 android:id="@+id/note_favorited"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:visibility="gone"
                 tools:visibility="visible"
@@ -75,10 +94,9 @@
     <org.andstatus.app.graphics.AvatarView
         android:id="@+id/avatar_image"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="2dp"
+        android:layout_marginStart="2dp"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:scaleType="fitCenter"
         tools:src="@drawable/icon"/>

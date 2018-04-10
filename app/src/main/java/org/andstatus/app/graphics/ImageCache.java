@@ -31,7 +31,6 @@ import android.graphics.Shader;
 import android.media.MediaMetadataRetriever;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
@@ -39,6 +38,7 @@ import android.util.LruCache;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.ImageFile;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.MyLog;
 
@@ -102,13 +102,13 @@ public class ImageCache extends LruCache<String, CachedImage> {
     }
 
     @Nullable
-    CachedImage getCachedImage(Object objTag, long imageId, String path) {
-        return getImage(objTag, imageId, path, true);
+    CachedImage getCachedImage(ImageFile imageFile) {
+        return getImage(imageFile, true);
     }
 
     @Nullable
-    CachedImage loadAndGetImage(Object objTag, long imageId, String path) {
-        return getImage(objTag, imageId, path, false);
+    CachedImage loadAndGetImage(ImageFile imageFile) {
+        return getImage(imageFile, false);
     }
 
     @Override
@@ -120,26 +120,26 @@ public class ImageCache extends LruCache<String, CachedImage> {
     }
 
     @Nullable
-    private CachedImage getImage(Object objTag, long imageId, String path, boolean fromCacheOnly) {
-        if (TextUtils.isEmpty(path)) {
+    private CachedImage getImage(ImageFile imageFile, boolean fromCacheOnly) {
+        if (TextUtils.isEmpty(imageFile.getPath())) {
             return null;
         }
-        CachedImage image = get(path);
+        CachedImage image = get(imageFile.getPath());
         if (image != null) {
             hits.incrementAndGet();
-        } else if (brokenBitmaps.contains(path)) {
+        } else if (brokenBitmaps.contains(imageFile.getPath())) {
             hits.incrementAndGet();
             return CachedImage.BROKEN;
         } else {
             misses.incrementAndGet();
-            if (!fromCacheOnly && (new File(path)).exists()) {
-                image = loadImage(objTag, imageId, path);
+            if (!fromCacheOnly && (new File(imageFile.getPath())).exists()) {
+                image = loadImage(imageFile);
                 if (image != null) {
                     if (currentCacheSize > 0) {
-                        put(path, image);
+                        put(imageFile.getPath(), image);
                     }
                 } else {
-                    brokenBitmaps.add(path);
+                    brokenBitmaps.add(imageFile.getPath());
                 }
             }
         }
@@ -147,16 +147,16 @@ public class ImageCache extends LruCache<String, CachedImage> {
     }
 
     @Nullable
-    private CachedImage loadImage(Object objTag, long imageId, String path) {
-        Bitmap bitmap = loadBitmap(objTag, imageId, path);
+    private CachedImage loadImage(ImageFile imageFile) {
+        Bitmap bitmap = loadBitmap(imageFile);
         if (bitmap == null) {
             return null;
         }
         Rect srcRect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
         Bitmap background = getSuitableRecycledBitmap(srcRect);
         if (background == null) {
-            MyLog.w(objTag, "No suitable bitmap found to cache "
-                    + srcRect.width() + "x" + srcRect.height() + " '" + path + "'");
+            MyLog.w(imageFile, "No suitable bitmap found to cache "
+                    + srcRect.width() + "x" + srcRect.height() + " '" + imageFile.getPath() + "'");
             return null ;
         }
         Canvas canvas = new Canvas(background);
@@ -167,7 +167,7 @@ public class ImageCache extends LruCache<String, CachedImage> {
             canvas.drawBitmap(bitmap, 0 , 0, null);
         }
         bitmap.recycle();
-        return new CachedImage(imageId, background, srcRect);
+        return new CachedImage(imageFile.getId(), background, srcRect);
     }
 
     /**
@@ -188,90 +188,63 @@ public class ImageCache extends LruCache<String, CachedImage> {
     }
 
     @Nullable
-    private Bitmap loadBitmap(Object objTag, long imageId, String path) {
-        switch (MyContentType.fromPathOfSavedFile(path)) {
+    private Bitmap loadBitmap(ImageFile imageFile) {
+        switch (MyContentType.fromPathOfSavedFile(imageFile.getPath())) {
             case IMAGE:
-                return imagePathToBitmap(objTag, imageId, path);
+                return imagePathToBitmap(imageFile);
             case VIDEO:
-                return videoPathToBitmap(objTag, imageId, path);
+                return videoPathToBitmap(imageFile);
             default:
                 return null;
         }
     }
 
     @Nullable
-    private Bitmap imagePathToBitmap(Object objTag, long imageId, String path) {
+    private Bitmap imagePathToBitmap(ImageFile imageFile) {
         Bitmap bitmap = null;
         if (MyPreferences.isShowDebuggingInfoInUi()) {
             bitmap = BitmapFactory
-                    .decodeFile(path, calculateScaling(objTag, getImageSize(path)));
+                    .decodeFile(imageFile.getPath(), calculateScaling(imageFile, imageFile.getSize()));
         } else {
             try {
                 bitmap = BitmapFactory
-                        .decodeFile(path, calculateScaling(objTag, getImageSize(path)));
+                        .decodeFile(imageFile.getPath(), calculateScaling(imageFile, imageFile.getSize()));
             } catch (OutOfMemoryError e) {
-                MyLog.w(objTag, getInfo(), e);
+                MyLog.w(imageFile, getInfo(), e);
                 evictAll();
             }
         }
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(objTag, (bitmap == null ? "Failed to load " + name + "'s bitmap"
+            MyLog.v(imageFile, (bitmap == null ? "Failed to load " + name + "'s bitmap"
                     : "Loaded " + name + "'s bitmap " + bitmap.getWidth()
-                    + "x" + bitmap.getHeight()) + " '" + path + "'");
+                    + "x" + bitmap.getHeight()) + " '" + imageFile.getPath() + "'");
         }
         return bitmap;
     }
 
     @Nullable
-    private Bitmap videoPathToBitmap(Object objTag, long videoId, String path) {
+    private Bitmap videoPathToBitmap(ImageFile imageFile) {
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        retriever.setDataSource(MyContextHolder.get().context(), Uri.parse(path));
+        retriever.setDataSource(MyContextHolder.get().context(), Uri.parse(imageFile.getPath()));
         Bitmap source = retriever.getFrameAtTime();
         if (source == null) {
             return null;
         }
-        Bitmap bitmap = ThumbnailUtils.extractThumbnail(source, maxBitmapWidth, maxBitmapHeight);
+        BitmapFactory.Options options = calculateScaling(imageFile, imageFile.getSize());
+        Bitmap bitmap = ThumbnailUtils.extractThumbnail(source, imageFile.getSize().x / options.inSampleSize,
+                imageFile.getSize().y / options.inSampleSize);
         source.recycle();
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(objTag, (bitmap == null ? "Failed to load " + name + "'s bitmap"
+            MyLog.v(imageFile, (bitmap == null ? "Failed to load " + name + "'s bitmap"
                     : "Loaded " + name + "'s bitmap " + bitmap.getWidth()
-                    + "x" + bitmap.getHeight()) + " '" + path + "'");
+                    + "x" + bitmap.getHeight()) + " '" + imageFile.getPath() + "'");
         }
         return bitmap;
     }
 
-    Point getImageSize(String path) {
-        if (!TextUtils.isEmpty(path)) {
-            CachedImage image = get(path);
-            if (image != null) return image.getImageSize();
-            return getMetadata(path).size();
-        }
-        return new Point(0, 0);
-    }
-
-    @NonNull
-    public static MediaMetadata getMetadata(String path) {
-        try {
-            if (MyContentType.fromPathOfSavedFile(path) == MyContentType.VIDEO) {
-                MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-                retriever.setDataSource(MyContextHolder.get().context(), Uri.parse(path));
-                return new MediaMetadata(
-                        Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)),
-                        Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)),
-                        Long.parseLong(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)));
-            }
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeFile(path, options);
-            return new MediaMetadata(options.outWidth, options.outHeight, 0);
-        } catch (Exception e) {
-            MyLog.d("getImageSize", "path:'" + path + "'", e);
-        }
-        return MediaMetadata.EMPTY;
-    }
-
     BitmapFactory.Options calculateScaling(Object objTag, Point imageSize) {
         BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = 1;
         int x = maxBitmapWidth;
         int y = maxBitmapHeight;
         while (imageSize.y > y || imageSize.x > x) {

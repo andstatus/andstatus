@@ -25,6 +25,7 @@ import android.text.Editable;
 import android.text.Html;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.format.Formatter;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -469,7 +470,7 @@ public class NoteEditor {
             appendWithSpace(noteDetails,"("
                     + getActivity().getText(R.string.label_with_media).toString() + " "
                     + editorData.getAttachment().mediaMetadata.toDetails() + ", "
-                    + editorData.getAttachment().fileSize/1024 + "K"
+                    + Formatter.formatShortFileSize(getActivity(), editorData.getAttachment().fileSize)
                     + ")");
         }
         MyUrlSpan.showText(editorView, R.id.noteEditDetails, noteDetails.toString(), false, false);

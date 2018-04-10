@@ -32,7 +32,7 @@ public class AvatarFile extends ImageFile {
     public static final int AVATAR_SIZE_DIP = 48;
     
     private AvatarFile(long actorId, String filename, MediaMetadata mediaMetadata) {
-        super(filename, mediaMetadata);
+        super(filename, mediaMetadata, 0);
         this.actorId = actorId;
     }
 
@@ -49,7 +49,7 @@ public class AvatarFile extends ImageFile {
     }
 
     @Override
-    protected long getId() {
+    public long getId() {
         return actorId;
     }
 

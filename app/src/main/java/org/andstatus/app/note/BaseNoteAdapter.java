@@ -32,7 +32,6 @@ import org.andstatus.app.timeline.TimelineData;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -141,6 +140,8 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
     protected void showAttachedImage(View view, T item) {
         preloadedImages.add(item.getNoteId());
         item.getAttachedImageFile().showImage(contextMenu.getActivity(), view.findViewById(R.id.attached_image));
+        final View playImage = view.findViewById(R.id.play_image);
+        playImage.setVisibility(item.getAttachedImageFile().isVideo() ? View.VISIBLE : View.GONE);
     }
 
     protected void showMarkReplies(ViewGroup view, T item) {

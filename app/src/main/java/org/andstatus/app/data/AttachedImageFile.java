@@ -26,8 +26,6 @@ import org.andstatus.app.graphics.MediaMetadata;
 public class AttachedImageFile extends ImageFile {
     public static final AttachedImageFile EMPTY = new AttachedImageFile(0, "", MediaMetadata.EMPTY);
 
-    private final long downloadId;
-
     public static AttachedImageFile fromCursor(Cursor cursor) {
         return new AttachedImageFile(
                 DbUtils.getLong(cursor, DownloadTable.IMAGE_ID),
@@ -36,18 +34,12 @@ public class AttachedImageFile extends ImageFile {
         );
     }
 
-    public AttachedImageFile(long downloadIdIn, String filename, MediaMetadata mediaMetadata) {
-        super(filename, mediaMetadata);
-        downloadId = downloadIdIn;
+    public AttachedImageFile(long downloadId, String filename, MediaMetadata mediaMetadata) {
+        super(filename, mediaMetadata, downloadId);
     }
 
     public CacheName getCacheName() {
         return CacheName.ATTACHED_IMAGE;
-    }
-
-    @Override
-    protected long getId() {
-        return downloadId;
     }
 
     @Override
