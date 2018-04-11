@@ -369,12 +369,28 @@ public class NoteEditor {
         return editorView.getVisibility() == View.VISIBLE;
     }
 
-    public void startEditingSharedData(final MyAccount ma, final String textToShare, final Uri mediaToShare) {
-        MyLog.v(NoteEditorData.TAG, "startEditingSharedData " + textToShare + " uri: " + mediaToShare);
+    public void startEditingSharedData(final MyAccount ma, String name, final String content,
+                                       final Uri media) {
+        MyLog.v(NoteEditorData.TAG, "startEditingSharedData " + name + " - " + content + " uri: " + media);
         updateDataFromScreen();
-        NoteEditorCommand command = new NoteEditorCommand(
-                NoteEditorData.newEmpty(ma).setContent(textToShare), editorData)
-                .setMediaUri(mediaToShare);
+
+        String contentWithName = "";
+        if (ma.getOrigin().getOriginType().hasNoteName) {
+            contentWithName = StringUtils.notEmpty(content, "");
+        } else {
+            if (subjectHasAdditionalContent(name, content)) {
+                contentWithName += name;
+            }
+            if (!TextUtils.isEmpty(content)) {
+                if (!TextUtils.isEmpty(contentWithName)) {
+                    contentWithName += " ";
+                }
+                contentWithName += content;
+            }
+        }
+        NoteEditorData currentData = NoteEditorData.newEmpty(ma).setContent(contentWithName);
+        if (ma.getOrigin().getOriginType().hasNoteName) currentData.setName(name);
+        NoteEditorCommand command = new NoteEditorCommand(currentData, editorData).setMediaUri(media);
         command.showAfterSave = true;
         command.beingEdited = true;
         saveData(command);
@@ -437,6 +453,55 @@ public class NoteEditor {
         mCharsLeftText.setText(String.valueOf(editorData.getMyAccount()
                 .charactersLeftForNote(body)));
         showAttachedImage();
+    }
+
+    static boolean subjectHasAdditionalContent(String subject, String text) {
+        if (TextUtils.isEmpty(subject)) {
+            return false;
+        }
+        if (TextUtils.isEmpty(text)) {
+            return true;
+        }
+        return !text.startsWith(stripEllipsis(stripBeginning(subject)));
+    }
+
+    /**
+     * Strips e.g. "Note - " or "Note:"
+     */
+    static String stripBeginning(String textIn) {
+        if (TextUtils.isEmpty(textIn)) {
+            return "";
+        }
+        int ind = textIn.indexOf("-");
+        if (ind < 0) {
+            ind = textIn.indexOf(":");
+        }
+        if (ind < 0) {
+            return textIn;
+        }
+        String beginningSeparators = "-:;,.[] ";
+        while ((ind < textIn.length()) && beginningSeparators.contains(String.valueOf(textIn.charAt(ind)))) {
+            ind++;
+        }
+        if (ind >= textIn.length()) {
+            return textIn;
+        }
+        return textIn.substring(ind);
+    }
+
+    static String stripEllipsis(String textIn) {
+        if (TextUtils.isEmpty(textIn)) {
+            return "";
+        }
+        int ind = textIn.length() - 1;
+        String ellipsis = "… .";
+        while (ind >= 0 && ellipsis.contains(String.valueOf(textIn.charAt(ind)))) {
+            ind--;
+        }
+        if (ind < -1) {
+            return "";
+        }
+        return textIn.substring(0, ind+1);
     }
 
     private void setAdapter() {

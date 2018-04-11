@@ -23,8 +23,8 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.ActorInTimeline;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyQuery;
@@ -33,6 +33,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
 
 public class NoteShare {
@@ -67,16 +68,12 @@ public class NoteShare {
     }
 
     Intent intentToViewAndShare(boolean share) {
-        StringBuilder subject = new StringBuilder();
+        String noteName = MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId);
         String noteContent = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
-        String noteContentPlainText = noteContent;
-        if (origin.isHtmlContentAllowed()) {
-            noteContentPlainText = MyHtml.fromHtml(noteContent);
-        }
-
-        subject.append(MyContextHolder.get().context()
-                .getText(origin.alternativeTermForResourceId(R.string.message)));
-        subject.append(" - " + noteContentPlainText);
+        String noteContentPlainText = origin.isHtmlContentAllowed() ? MyHtml.fromHtml(noteContent) : noteContent;
+        StringBuilder subject = new StringBuilder(
+                MyContextHolder.get().context().getText(origin.alternativeTermForResourceId(R.string.message)));
+        subject.append(" - " + (StringUtils.nonEmpty(noteName) ? noteName : noteContentPlainText));
 
         Intent intent = new Intent(share ? android.content.Intent.ACTION_SEND : Intent.ACTION_VIEW);
         final Uri imageFileUri = FileProvider.downloadFilenameToUri(imageFilename);

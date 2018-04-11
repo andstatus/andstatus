@@ -1,4 +1,4 @@
-package org.andstatus.app.timeline;
+package org.andstatus.app.note;
 
 import org.junit.Test;
 
@@ -23,9 +23,9 @@ public class SharingToThisAppTest {
 
     private void oneInputSharedContent(String prefix, String part1, String text, String ellipsis, boolean hasAdditionalContent) {
         String subject = prefix + part1 + ellipsis;
-        assertEquals(part1 + ellipsis, TimelineActivity.stripBeginning(subject));
-        assertEquals(String.valueOf(prefix + part1).trim(), TimelineActivity.stripEllipsis(subject));
-        assertEquals(part1, TimelineActivity.stripEllipsis(TimelineActivity.stripBeginning(subject)));
-        assertEquals(hasAdditionalContent, TimelineActivity.subjectHasAdditionalContent(subject, text));
+        assertEquals(part1 + ellipsis, NoteEditor.stripBeginning(subject));
+        assertEquals(String.valueOf(prefix + part1).trim(), NoteEditor.stripEllipsis(subject));
+        assertEquals(part1, NoteEditor.stripEllipsis(NoteEditor.stripBeginning(subject)));
+        assertEquals(hasAdditionalContent, NoteEditor.subjectHasAdditionalContent(subject, text));
     }
 }

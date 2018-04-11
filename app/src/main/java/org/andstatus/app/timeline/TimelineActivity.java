@@ -77,6 +77,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.ViewUtils;
@@ -99,7 +100,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     private ActivityContextMenu contextMenu;
 
-    private String mTextToShareViaThisApp = "";
+    private String mNoteNameToShareViaThisApp = "";
+    private String mContentToShareViaThisApp = "";
     private Uri mMediaToShareViaThisApp = Uri.EMPTY;
 
     private String mRateLimitText = "";
@@ -598,74 +600,18 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         }
     }
 
-    private void shareViaThisApplication(String subject, String text, Uri mediaUri) {
-        if (TextUtils.isEmpty(subject) && TextUtils.isEmpty(text) && UriUtils.isEmpty(mediaUri)) {
+    private void shareViaThisApplication(String name, String text, Uri mediaUri) {
+        if (TextUtils.isEmpty(name) && TextUtils.isEmpty(text) && UriUtils.isEmpty(mediaUri)) {
             return;
         }
-        mTextToShareViaThisApp = "";
+        mNoteNameToShareViaThisApp = StringUtils.notEmpty(name, "");
+        mContentToShareViaThisApp = StringUtils.notEmpty(text, "");
         mMediaToShareViaThisApp = mediaUri;
-        if (subjectHasAdditionalContent(subject, text)) {
-            mTextToShareViaThisApp += subject;
-        }
-        if (!TextUtils.isEmpty(text)) {
-            if (!TextUtils.isEmpty(mTextToShareViaThisApp)) {
-                mTextToShareViaThisApp += " ";
-            }
-            mTextToShareViaThisApp += text;
-        }
-        MyLog.v(this, "Share via this app " 
-                + (!TextUtils.isEmpty(mTextToShareViaThisApp) ? "; text:'" + mTextToShareViaThisApp +"'" : "") 
+        MyLog.v(this, "Share via this app "
+                + (!TextUtils.isEmpty(mNoteNameToShareViaThisApp) ? "; title:'" + mNoteNameToShareViaThisApp +"'" : "")
+                + (!TextUtils.isEmpty(mContentToShareViaThisApp) ? "; text:'" + mContentToShareViaThisApp +"'" : "")
                 + (!UriUtils.isEmpty(mMediaToShareViaThisApp) ? "; media:" + mMediaToShareViaThisApp.toString() : ""));
         AccountSelector.selectAccount(this, ActivityRequestCode.SELECT_ACCOUNT_TO_SHARE_VIA, 0);
-    }
-
-    static boolean subjectHasAdditionalContent(String subject, String text) {
-        if (TextUtils.isEmpty(subject)) {
-            return false;
-        }
-        if (TextUtils.isEmpty(text)) {
-            return true;
-        }
-        return !text.startsWith(stripEllipsis(stripBeginning(subject)));
-    }
-
-    /**
-     * Strips e.g. "Note - " or "Note:"
-     */
-    static String stripBeginning(String textIn) {
-        if (TextUtils.isEmpty(textIn)) {
-            return "";
-        }
-        int ind = textIn.indexOf("-");
-        if (ind < 0) {
-            ind = textIn.indexOf(":");
-        }
-        if (ind < 0) {
-            return textIn;
-        }
-        String beginningSeparators = "-:;,.[] ";
-        while ((ind < textIn.length()) && beginningSeparators.contains(String.valueOf(textIn.charAt(ind)))) {
-            ind++;
-        }
-        if (ind >= textIn.length()) {
-            return textIn;
-        }
-        return textIn.substring(ind);
-    }
-
-    static String stripEllipsis(String textIn) {
-        if (TextUtils.isEmpty(textIn)) {
-            return "";
-        }
-        int ind = textIn.length() - 1;
-        String ellipsis = "… .";
-        while (ind >= 0 && ellipsis.contains(String.valueOf(textIn.charAt(ind)))) {
-            ind--;
-        }
-        if (ind < -1) {
-            return "";
-        }
-        return textIn.substring(0, ind+1);
     }
 
     private void updateScreen() {
@@ -1045,7 +991,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     private void accountToShareViaSelected(Intent data) {
         MyAccount ma = myContext.accounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
-        getNoteEditor().startEditingSharedData(ma, mTextToShareViaThisApp, mMediaToShareViaThisApp);
+        getNoteEditor().startEditingSharedData(ma, mNoteNameToShareViaThisApp, mContentToShareViaThisApp,
+                mMediaToShareViaThisApp);
     }
 
     @Override

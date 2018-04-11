@@ -376,8 +376,9 @@ public class NoteEditorData {
         return this;
     }
 
-    public void setName(String name) {
+    public NoteEditorData setName(String name) {
         activity.getNote().setName(name);
+        return this;
     }
 
     public boolean canChangeIsPublic() {
