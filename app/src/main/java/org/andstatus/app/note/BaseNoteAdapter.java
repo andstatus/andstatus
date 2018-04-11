@@ -27,6 +27,7 @@ import android.widget.TextView;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.graphics.IdentifiableImageView;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.TimelineData;
 import org.andstatus.app.util.I18n;
@@ -139,8 +140,16 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
 
     protected void showAttachedImage(View view, T item) {
         preloadedImages.add(item.getNoteId());
-        item.getAttachedImageFile().showImage(contextMenu.getActivity(), view.findViewById(R.id.attached_image));
+
+        final IdentifiableImageView imageView = view.findViewById(R.id.attached_image);
+        if (imageView == null) return;
+        item.getAttachedImageFile().showImage(contextMenu.getActivity(), imageView);
+        if (!item.getAttachedImageFile().isEmpty()) {
+            setOnButtonClick(imageView, 0, NoteContextMenuItem.VIEW_IMAGE);
+        }
+
         final View playImage = view.findViewById(R.id.play_image);
+        if (playImage == null) return;
         playImage.setVisibility(item.getAttachedImageFile().isVideo() ? View.VISIBLE : View.GONE);
     }
 
@@ -178,7 +187,7 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
     }
 
     private void setOnButtonClick(final View viewGroup, int buttonId, final NoteContextMenuItem menuItem) {
-        viewGroup.findViewById(buttonId).setOnClickListener(
+        (buttonId == 0 ? viewGroup : viewGroup.findViewById(buttonId)).setOnClickListener(
                 v -> {
                     if (menuItem.equals(NoteContextMenuItem.UNKNOWN)) {
                         viewGroup.showContextMenu();
@@ -191,7 +200,7 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
 
     private void onButtonClick(View v, NoteContextMenuItem contextMenuItemIn) {
         T item = getItem(v);
-        if (item != null && item.noteStatus == DownloadStatus.LOADED) {
+        if (item != null && (item.noteStatus == DownloadStatus.LOADED || contextMenuItemIn.forUnsentAlso)) {
             contextMenu.onCreateContextMenu(null, v, null, (contextMenu) -> {
                 contextMenu.onContextItemSelected(contextMenuItemIn, item.getNoteId());
             });

@@ -30,7 +30,7 @@
         </subtitle>
     </header>
     <release android:versionName="38.00" android:versionCode="246"
-             versionDate="2018-04-01"
+             versionDate="2018-04-12"
              versionTitle="Video attachments and Titles for notes">
         <changes>
             <change>Video file can be attached to a new note. A thumbnail of the video attachment is shown in a timeline.
@@ -40,6 +40,7 @@
                 <a href="https://github.com/andstatus/andstatus/issues/150">#150</a></change>
             <change>Added "Public" checkbox to the Note Editor to mark a note explicitly as public or not
                 public. Currently this option is available for Pump.io only.</change>
+            <change>Click on an attached image or video opens corresponding viewer/player application.</change>
         </changes>
     </release>
     <release android:versionName="37.01" android:versionCode="245"
