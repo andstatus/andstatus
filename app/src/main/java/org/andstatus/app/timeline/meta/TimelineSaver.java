@@ -162,7 +162,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
 
     public void addDefaultCombined() {
         for (TimelineType timelineType : TimelineType.values()) {
-            if (timelineType.isSelectable()) {
+            if (timelineType.isCombinedRequired()) {
                 timelines().get(timelineType, 0, Origin.EMPTY).save(myContext);
             }
         }

@@ -149,6 +149,10 @@ public enum TimelineType implements SelectableEnum {
         }
     }
 
+    public boolean isCombinedRequired() {
+        return this != SEARCH && isSelectable();
+    }
+
     public boolean isSelectable() {
         switch (this) {
             case COMMANDS_QUEUE:
