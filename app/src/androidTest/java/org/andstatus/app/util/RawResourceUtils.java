@@ -6,6 +6,8 @@ package org.andstatus.app.util;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.support.annotation.RawRes;
+import android.support.test.InstrumentationRegistry;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -14,14 +16,15 @@ import java.nio.charset.Charset;
 
 public class RawResourceUtils {
 
-    public static String getString(Context context, int id) throws IOException {
-        return new String(getBytes(id, context), Charset.forName("UTF-8"));
+    public static String getString(@RawRes int id) throws IOException {
+        return new String(getBytes(id, InstrumentationRegistry.getInstrumentation().getContext()),
+                Charset.forName("UTF-8"));
     }
 
     /**
      *  reads resources regardless of their size
      */
-    public static byte[] getBytes(int id, Context context) throws IOException {
+    public static byte[] getBytes(@RawRes int id, Context context) throws IOException {
         Resources resources = context.getResources();
         InputStream is = resources.openRawResource(id);
 

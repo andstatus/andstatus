@@ -16,12 +16,14 @@
 
 package org.andstatus.app.net.http;
 
+import android.support.annotation.RawRes;
 import android.text.TextUtils;
 
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONObject;
 
@@ -32,35 +34,11 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class HttpConnectionMock extends HttpConnection {
-    
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("HttpConnectionMock [");
-        builder.append("Requests sent: " + getRequestsCounter());
-        builder.append("; Data posted " + getPostedCounter() + " times");
-        builder.append("; results=");
-        builder.append(Arrays.toString(getResults().toArray()));
-        builder.append(", responseString=");
-        builder.append(responseString);
-        builder.append(", exception=");
-        builder.append(exception);
-        builder.append(", password=");
-        builder.append(password);
-        builder.append(", userToken=");
-        builder.append(userToken);
-        builder.append(", userSecret=");
-        builder.append(userSecret);
-        builder.append(", networkDelayMs=");
-        builder.append(networkDelayMs);
-        builder.append(", mInstanceId=");
-        builder.append(mInstanceId);
-        builder.append("]");
-        return builder.toString();
-    }
 
     private final List<HttpReadResult> results = new CopyOnWriteArrayList<>();
-    private volatile String responseString = "";
+    private final List<String> responses = new CopyOnWriteArrayList<>();
+    public volatile int responsesCounter = 0;
+    private boolean sameResponse = false;
     private volatile InputStream responseFileStream = null;
 
     private volatile RuntimeException runtimeException = null;
@@ -71,10 +49,14 @@ public class HttpConnectionMock extends HttpConnection {
     private volatile String userSecret = "secret";
     
     private volatile long networkDelayMs = 1000;
-    protected final long mInstanceId = InstanceId.next(); 
-    
+    protected final long mInstanceId = InstanceId.next();
+
     public HttpConnectionMock() {
         MyLog.v(this, "Created, instanceId:" + mInstanceId);
+    }
+
+    public void setSameResponse(boolean sameResponse) {
+        this.sameResponse = sameResponse;
     }
 
     @Override
@@ -82,8 +64,12 @@ public class HttpConnectionMock extends HttpConnection {
         return false;
     }
 
-    public void setResponse(String responseString) {
-        this.responseString = responseString;
+    public void addResponse(@RawRes int responseResourceId) throws IOException {
+        addResponse(RawResourceUtils.getString(responseResourceId));
+    }
+
+    public void addResponse(String responseString) {
+        responses.add(responseString);
     }
 
     public void setResponseFileStream(InputStream inputStream) {
@@ -138,7 +124,7 @@ public class HttpConnectionMock extends HttpConnection {
     }
 
     private void onRequest(String method, HttpReadResult result) {
-        result.strResponse = responseString;
+        result.strResponse = getNextResponse();
         if (result.fileResult != null && responseFileStream != null) {
             try {
                 FileUtils.readStreamToFile(responseFileStream, result.fileResult);
@@ -151,6 +137,12 @@ public class HttpConnectionMock extends HttpConnection {
                 + "', originUrl:'" + data.originUrl + "', instanceId:" + mInstanceId );
         MyLog.v(this, Arrays.toString(Thread.currentThread().getStackTrace()));
         DbUtils.waitMs("networkDelay", networkDelayMs);
+    }
+
+    private synchronized String getNextResponse() {
+        return sameResponse
+                ? (responses.isEmpty() ? "" : responses.get(responses.size() - 1))
+                : (responsesCounter < responses.size() ? responses.get(responsesCounter++) : "");
     }
 
     private void getRequestInner(String method, HttpReadResult result) throws ConnectionException {
@@ -229,5 +221,32 @@ public class HttpConnectionMock extends HttpConnection {
     @Override
     protected void getRequest(HttpReadResult result) throws ConnectionException {
         getRequestInner("getRequest", result);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("HttpConnectionMock [");
+        builder.append("Requests sent: " + getRequestsCounter());
+        builder.append("; Data posted " + getPostedCounter() + " times");
+        builder.append("\nSent " + responsesCounter + " responses");
+        builder.append("\nresults:" + results.size());
+        results.forEach(r -> builder.append("\nResult: " + r.toString()));
+        builder.append("\n\nresponses:" + responses.size());
+        responses.forEach(r -> builder.append("\nResponse: " + r.toString()));
+        builder.append("\nexception=");
+        builder.append(exception);
+        builder.append("\npassword=");
+        builder.append(password);
+        builder.append(", userToken=");
+        builder.append(userToken);
+        builder.append(", userSecret=");
+        builder.append(userSecret);
+        builder.append(", networkDelayMs=");
+        builder.append(networkDelayMs);
+        builder.append(", mInstanceId=");
+        builder.append(mInstanceId);
+        builder.append("]");
+        return builder.toString();
     }
 }

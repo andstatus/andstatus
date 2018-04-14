@@ -24,7 +24,7 @@ public class AttachedImageScalingTest {
         ImageCache cache = ImageCaches.getCache(CacheName.ATTACHED_IMAGE);
         Point exactlyMaxSize = new Point(cache.getMaxBitmapWidth(), cache.getMaxBitmapWidth());
         BitmapFactory.Options options = cache.calculateScaling(this, exactlyMaxSize);
-        assertEquals(0, options.inSampleSize);
+        assertEquals(1, options.inSampleSize);
         Point largerSize = new Point(exactlyMaxSize.y + 10, exactlyMaxSize.x + 30);
         options = cache.calculateScaling(this, largerSize);
         assertEquals(2, options.inSampleSize);

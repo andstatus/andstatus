@@ -16,7 +16,6 @@
 
 package org.andstatus.app.net.social;
 
-import android.support.test.InstrumentationRegistry;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.AccountDataReaderEmpty;
@@ -87,9 +86,7 @@ public class VerifyCredentialsTest {
 
     @Test
     public void testVerifyCredentials() throws IOException {
-        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.verify_credentials_twitter);
-        httpConnection.setResponse(jso);
+        httpConnection.addResponse(org.andstatus.app.tests.R.raw.verify_credentials_twitter);
 
         Actor actor = connection.verifyCredentials();
         assertEquals("Actor's oid is actorOid of this account", demoData.twitterTestAccountActorOid, actor.oid);

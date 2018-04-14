@@ -16,8 +16,6 @@
 
 package org.andstatus.app.net.social;
 
-import android.support.test.InstrumentationRegistry;
-
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.account.MyAccount;
@@ -34,7 +32,6 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.util.MyHtml;
-import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,9 +79,7 @@ public class ConnectionTwitterTest {
 
     @Test
     public void testGetTimeline() throws IOException {
-        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.twitter_home_timeline);
-        httpConnection.setResponse(jso);
+        httpConnection.addResponse(org.andstatus.app.tests.R.raw.twitter_home_timeline);
         
         List<AActivity> timeline = connection.getTimeline(ApiRoutineEnum.HOME_TIMELINE,
                 new TimelinePosition("380925803053449216") , TimelinePosition.EMPTY, 20, connectionData.getAccountActor().oid);
@@ -168,9 +163,7 @@ public class ConnectionTwitterTest {
 
     @Test
     public void getNoteWithAttachment() throws IOException {
-        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.twitter_note_with_media);
-        httpConnection.setResponse(jso);
+        httpConnection.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_media);
 
         Note note = connection.getNote("503799441900314624").getNote();
         assertNotNull("note returned", note);
@@ -183,9 +176,7 @@ public class ConnectionTwitterTest {
 
     @Test
     public void getNoteWithEscapedHtmlTag() throws IOException {
-        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.twitter_note_with_escaped_html_tag);
-        httpConnection.setResponse(jso);
+        httpConnection.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_escaped_html_tag);
 
         String body = "Update: Streckensperrung zw. Berliner Tor &lt;&gt; Bergedorf. Ersatzverkehr mit Bussen und Taxis " +
                 "Störungsdauer bis ca. 10 Uhr. #hvv #sbahnhh";

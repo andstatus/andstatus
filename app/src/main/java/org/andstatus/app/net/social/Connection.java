@@ -21,13 +21,10 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.AccountDataWriter;
-import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionData;
-import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.OAuthService;
 import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.origin.OriginConnectionData;
@@ -515,16 +512,8 @@ public abstract class Connection {
         http.downloadFile(url, file);
     }
 
-    @NonNull
-    public HttpConnectionMock getHttpMock() {
-        if (http != null && HttpConnectionMock.class.isAssignableFrom(http.getClass())) {
-            return (HttpConnectionMock) http;
-        }
-        if (http == null) {
-            throw new IllegalStateException("http is null");
-        }
-        MyContextHolder.get().getHttpConnectionMock();
-        throw new IllegalStateException("http is " + http.getClass().getName() + ", " + MyContextHolder.get().toString());
+    public HttpConnection getHttp() {
+        return http;
     }
 
     protected String prependWithBasicPath(String url) {

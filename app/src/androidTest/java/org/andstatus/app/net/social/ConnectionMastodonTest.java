@@ -16,12 +16,9 @@
 
 package org.andstatus.app.net.social;
 
-import android.support.test.InstrumentationRegistry;
-
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyContentType;
-import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.junit.Before;
@@ -51,9 +48,7 @@ public class ConnectionMastodonTest {
 
     @Test
     public void testGetHomeTimeline() throws IOException {
-        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.mastodon_home_timeline);
-        connection.getHttpMock().setResponse(jso);
+        connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.mastodon_home_timeline);
 
         List<AActivity> timeline = connection.getTimeline(Connection.ApiRoutineEnum.HOME_TIMELINE,
                 new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountActorOid);
@@ -96,9 +91,7 @@ public class ConnectionMastodonTest {
 
     @Test
     public void testGetConversation() throws IOException {
-        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.mastodon_get_conversation);
-        connection.getHttpMock().setResponse(jso);
+        connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.mastodon_get_conversation);
 
         List<AActivity> timeline = connection.getConversation("5596683");
         assertNotNull("timeline returned", timeline);
@@ -107,9 +100,7 @@ public class ConnectionMastodonTest {
 
     @Test
     public void testGetNotifications() throws IOException {
-        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.mastodon_notifications);
-        connection.getHttpMock().setResponse(jso);
+        connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.mastodon_notifications);
 
         List<AActivity> timeline = connection.getTimeline(Connection.ApiRoutineEnum.NOTIFICATIONS_TIMELINE,
                 new TimelinePosition(""), TimelinePosition.EMPTY, 20, accountActorOid);

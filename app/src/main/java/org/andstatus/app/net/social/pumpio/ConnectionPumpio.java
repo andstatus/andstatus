@@ -61,6 +61,9 @@ public class ConnectionPumpio extends Connection {
     static final String APPLICATION_ID = "http://andstatus.org/andstatus";
     static final String NAME_PROPERTY = "displayName";
     static final String CONTENT_PROPERTY = "content";
+    static final String VIDEO_OBJECT = "stream";
+    static final String IMAGE_OBJECT = "image";
+    public static final String FULL_IMAGE_OBJECT = "fullImage";
 
     @Override
     public void enrichConnectionData(OriginConnectionData connectionData) {
@@ -174,7 +177,7 @@ public class ConnectionPumpio extends Connection {
     }
 
     private AActivity actOnNote(PActivityType activityType, String noteId) throws ConnectionException {
-        return ActivitySender.fromId(this, noteId).sendNote(activityType);
+        return ActivitySender.fromId(this, noteId).send(activityType);
     }
 
     @Override
@@ -228,7 +231,7 @@ public class ConnectionPumpio extends Connection {
         }
         sender.setInReplyTo(inReplyToOid);
         sender.setMediaUri(mediaUri);
-        return activityFromJson(sender.sendMe(PActivityType.POST));
+        return sender.send(PActivityType.POST);
     }
 
     private String toHtmlIfAllowed(String body) {
@@ -368,71 +371,75 @@ public class ConnectionPumpio extends Connection {
 
     @NonNull
     AActivity activityFromJson(JSONObject jsoActivity) throws ConnectionException {
-        if (jsoActivity == null) {
-            return AActivity.EMPTY;
-        }
+        if (jsoActivity == null) return AActivity.EMPTY;
+
         final PActivityType verb = PActivityType.load(jsoActivity.optString("verb"));
         AActivity activity = AActivity.from(data.getAccountActor(),
                 verb == PActivityType.UNKNOWN ? ActivityType.UPDATE : verb.activityType);
         try {
             if (PObjectType.ACTIVITY.isTypeOf(jsoActivity)) {
-                String oid = jsoActivity.optString("id");
-                if (TextUtils.isEmpty(oid)) {
-                    MyLog.d(this, "Pumpio activity has no id:" + jsoActivity.toString(2));
-                    return AActivity.EMPTY;
-                }
-                activity.setTimelinePosition(oid);
-                activity.setUpdatedDate(dateFromJson(jsoActivity, "updated"));
-                if (jsoActivity.has("actor")) {
-                    activity.setActor(actorFromJson(jsoActivity.getJSONObject("actor")));
-                }
-
-                JSONObject objectOfActivity = jsoActivity.getJSONObject("object");
-                if (PObjectType.ACTIVITY.isTypeOf(objectOfActivity)) {
-                    // Simplified dealing with nested activities
-                    AActivity innerActivity = activityFromJson(objectOfActivity);
-                    activity.setObjActor(innerActivity.getObjActor());
-                    activity.setNote(innerActivity.getNote());
-                } else {
-                    parseObjectOfActivity(activity, objectOfActivity);
-                }
-                if (activity.getObjectType().equals(AObjectType.NOTE)) {
-                    if (jsoActivity.has("to")) {
-                        JSONObject to = jsoActivity.optJSONObject("to");
-                        if ( to != null) {
-                            activity.getNote().addRecipient(actorFromJson(to));
-                        } else {
-                            JSONArray arrayOfTo = jsoActivity.optJSONArray("to");
-                            if (arrayOfTo != null && arrayOfTo.length() > 0) {
-                                // TODO: handle multiple recipients
-                                to = arrayOfTo.optJSONObject(0);
-                                Actor recipient = actorFromJson(to);
-                                if (!recipient.isEmpty()) {
-                                    activity.getNote().addRecipient(recipient);
-                                }
-                            }
-                        }
-                    }
-                    setVia(activity.getNote(), jsoActivity);
-                    if(activity.getAuthor().isEmpty()) {
-                        activity.setAuthor(activity.getActor());
-                    }
-                }
+                return parseActivity(activity, jsoActivity);
             } else {
-                parseObjectOfActivity(activity, jsoActivity);
+                return parseObjectOfActivity(activity, jsoActivity);
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, "Parsing timeline item", e, jsoActivity);
+            throw ConnectionException.loggedJsonException(this, "Parsing activity", e, jsoActivity);
+        }
+    }
+
+    private AActivity parseActivity(AActivity activity, JSONObject jsoActivity) throws JSONException, ConnectionException {
+        String oid = jsoActivity.optString("id");
+        if (TextUtils.isEmpty(oid)) {
+            MyLog.d(this, "Pumpio activity has no id:" + jsoActivity.toString(2));
+            return AActivity.EMPTY;
+        }
+        activity.setTimelinePosition(oid);
+        activity.setUpdatedDate(dateFromJson(jsoActivity, "updated"));
+        if (jsoActivity.has("actor")) {
+            activity.setActor(actorFromJson(jsoActivity.getJSONObject("actor")));
+        }
+
+        JSONObject objectOfActivity = jsoActivity.getJSONObject("object");
+        if (PObjectType.ACTIVITY.isTypeOf(objectOfActivity)) {
+            // Simplified dealing with nested activities
+            AActivity innerActivity = activityFromJson(objectOfActivity);
+            activity.setObjActor(innerActivity.getObjActor());
+            activity.setNote(innerActivity.getNote());
+        } else {
+            parseObjectOfActivity(activity, objectOfActivity);
+        }
+        if (activity.getObjectType().equals(AObjectType.NOTE)) {
+            if (jsoActivity.has("to")) {
+                JSONObject to = jsoActivity.optJSONObject("to");
+                if ( to != null) {
+                    activity.getNote().addRecipient(actorFromJson(to));
+                } else {
+                    JSONArray arrayOfTo = jsoActivity.optJSONArray("to");
+                    if (arrayOfTo != null && arrayOfTo.length() > 0) {
+                        // TODO: handle multiple recipients
+                        to = arrayOfTo.optJSONObject(0);
+                        Actor recipient = actorFromJson(to);
+                        if (!recipient.isEmpty()) {
+                            activity.getNote().addRecipient(recipient);
+                        }
+                    }
+                }
+            }
+            setVia(activity.getNote(), jsoActivity);
+            if(activity.getAuthor().isEmpty()) {
+                activity.setAuthor(activity.getActor());
+            }
         }
         return activity;
     }
 
-    private void parseObjectOfActivity(AActivity activity, JSONObject objectOfActivity) throws ConnectionException {
+    private AActivity parseObjectOfActivity(AActivity activity, JSONObject objectOfActivity) throws ConnectionException {
         if (PObjectType.PERSON.isTypeOf(objectOfActivity)) {
             activity.setObjActor(actorFromJson(objectOfActivity));
         } else if (PObjectType.compatibleWith(objectOfActivity) == PObjectType.COMMENT) {
             noteFromJsonComment(activity, objectOfActivity);
         }
+        return activity;
     }
 
     private void setVia(Note note, JSONObject activity) throws JSONException {
@@ -485,13 +492,22 @@ public class ConnectionPumpio extends Connection {
             setVia(note, jso);
             note.url = jso.optString("url");
 
-            if (jso.has("fullImage") || jso.has("image")) {
-                Uri uri = UriUtils.fromAlternativeTags(jso, "fullImage/url","image/url");
+            if (jso.has(VIDEO_OBJECT)) {
+                Uri uri = UriUtils.fromJson(jso, VIDEO_OBJECT + "/url");
+                Attachment mbAttachment =  Attachment.fromUriAndContentType(uri, MyContentType.VIDEO.generalMimeType);
+                if (mbAttachment.isValid()) {
+                    note.attachments.add(mbAttachment);
+                } else {
+                    MyLog.d(this, "Invalid video attachment; " + jso.toString());
+                }
+            }
+            if (jso.has(FULL_IMAGE_OBJECT) || jso.has(IMAGE_OBJECT)) {
+                Uri uri = UriUtils.fromAlternativeTags(jso, FULL_IMAGE_OBJECT + "/url", IMAGE_OBJECT + "/url");
                 Attachment mbAttachment =  Attachment.fromUriAndContentType(uri, MyContentType.IMAGE.generalMimeType);
                 if (mbAttachment.isValid()) {
                     note.attachments.add(mbAttachment);
                 } else {
-                    MyLog.d(this, "Invalid attachment; " + jso.toString());
+                    MyLog.d(this, "Invalid image attachment; " + jso.toString());
                 }
             }
 
@@ -572,7 +588,7 @@ public class ConnectionPumpio extends Connection {
     }
 
     private AActivity actOnActor(PActivityType activityType, String actorId) throws ConnectionException {
-        return ActivitySender.fromId(this, actorId).sendActor(activityType);
+        return ActivitySender.fromId(this, actorId).send(activityType);
     }
     
     @Override

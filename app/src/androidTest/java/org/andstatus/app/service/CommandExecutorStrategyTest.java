@@ -16,8 +16,6 @@
 
 package org.andstatus.app.service;
 
-import android.support.test.InstrumentationRegistry;
-
 import org.andstatus.app.SearchObjects;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -28,10 +26,10 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.social.AActivity;
+import org.andstatus.app.net.social.ConnectionMockable;
 import org.andstatus.app.origin.DiscoveredOrigins;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.util.RawResourceUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,7 +57,7 @@ public class CommandExecutorStrategyTest {
         ma = MyContextHolder.get().accounts().getFirstSucceededForOrigin(
                 MyContextHolder.get().origins().fromName(demoData.gnusocialTestOriginName));
         assertTrue(ma.toString(), ma.isValidAndSucceeded());
-        httpConnectionMock = ma.getConnection().getHttpMock();
+        httpConnectionMock = ConnectionMockable.getHttpMock(ma);
     }
 
     @Test
@@ -92,9 +90,8 @@ public class CommandExecutorStrategyTest {
     @Test
     public void testUpdateDestroyStatus() throws IOException {
         CommandData commandData = getCommandDataForUnsentNote("1");
-        httpConnectionMock.setResponse(
-                RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                        org.andstatus.app.tests.R.raw.quitter_update_note_response));
+        httpConnectionMock.addResponse(org.andstatus.app.tests.R.raw.quitter_update_note_response);
+        httpConnectionMock.setSameResponse(true);
         assertEquals(0, commandData.getResult().getExecutionCount());
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertEquals(1, commandData.getResult().getExecutionCount());
@@ -163,8 +160,7 @@ public class CommandExecutorStrategyTest {
     @Test
     public void testDiscoverOrigins() throws IOException {
         HttpConnectionMock http = new HttpConnectionMock();
-        http.setResponse(RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.get_open_instances));
+        http.addResponse(org.andstatus.app.tests.R.raw.get_open_instances);
         TestSuite.setHttpConnectionMockInstance(http);
         CommandData commandData = CommandData.newOriginCommand(
                 CommandEnum.GET_OPEN_INSTANCES,

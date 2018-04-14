@@ -41,6 +41,7 @@ enum PObjectType {
     PERSON("person", null),
     COMMENT("comment", null),
     IMAGE("image", COMMENT),
+    VIDEO("video", COMMENT),
     NOTE("note", COMMENT),
     COLLECTION("collection", null),
     UNKNOWN("unknown", null);

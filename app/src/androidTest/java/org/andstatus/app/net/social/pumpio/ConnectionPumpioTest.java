@@ -16,14 +16,13 @@
 
 package org.andstatus.app.net.social.pumpio;
 
-import android.content.Context;
-import android.support.test.InstrumentationRegistry;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.OAuthClientKeys;
@@ -34,13 +33,13 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
+import org.andstatus.app.net.social.ConnectionMockable;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio.ConnectionAndUrl;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
@@ -83,7 +82,7 @@ public class ConnectionPumpioTest {
         connectionData.setAccountActor(demoData.getAccountActorByOid(demoData.pumpioTestAccountActorOid));
         connectionData.setDataReader(new AccountDataReaderEmpty());
         connection = (ConnectionPumpio) connectionData.newConnection();
-        httpConnectionMock = connection.getHttpMock();
+        httpConnectionMock = ConnectionMockable.getHttpMock(connection);
 
         httpConnectionMock.data.originUrl = originUrl;
         httpConnectionMock.data.oauthClientKeys = OAuthClientKeys.fromConnectionData(httpConnectionMock.data);
@@ -164,11 +163,7 @@ public class ConnectionPumpioTest {
     @Test
     public void testGetTimeline() throws IOException {
         String sinceId = "https%3A%2F%2F" + originUrl.getHost() + "%2Fapi%2Factivity%2Ffrefq3232sf";
-
-        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.pumpio_actor_t131t_inbox);
-        httpConnectionMock.setResponse(jso);
-        
+        httpConnectionMock.addResponse(org.andstatus.app.tests.R.raw.pumpio_actor_t131t_inbox);
         List<AActivity> timeline = connection.getTimeline(ApiRoutineEnum.HOME_TIMELINE,
                 new TimelinePosition(sinceId), TimelinePosition.EMPTY, 20, "acct:t131t@" + originUrl.getHost());
         assertNotNull("timeline returned", timeline);
@@ -259,9 +254,7 @@ public class ConnectionPumpioTest {
 
     @Test
     public void testGetActorsFollowedBy() throws IOException {
-        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.pumpio_actor_t131t_following);
-        httpConnectionMock.setResponse(jso);
+        httpConnectionMock.addResponse(org.andstatus.app.tests.R.raw.pumpio_actor_t131t_following);
         
         assertTrue(connection.isApiSupported(ApiRoutineEnum.GET_FRIENDS));        
         assertTrue(connection.isApiSupported(ApiRoutineEnum.GET_FRIENDS_IDS));        
@@ -282,7 +275,6 @@ public class ConnectionPumpioTest {
         String name = "To Peter";
         String content = "@peter Do you think it's true?";
         String inReplyToId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
-        httpConnectionMock.setResponse("");
         connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.conversationAccountActorOid));
         connection.updateNote(name, content, "", Audience.EMPTY, inReplyToId, null);
         JSONObject activity = httpConnectionMock.getPostedJSONObject();
@@ -316,7 +308,6 @@ public class ConnectionPumpioTest {
     @Test
     public void testReblog() throws ConnectionException, JSONException {
         String rebloggedId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
-        httpConnectionMock.setResponse("");
         connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.conversationAccountActorOid));
         connection.announce(rebloggedId);
         JSONObject activity = httpConnectionMock.getPostedJSONObject();
@@ -329,9 +320,7 @@ public class ConnectionPumpioTest {
 
     @Test
     public void testUnfollowActor() throws IOException {
-        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.unfollow_pumpio);
-        httpConnectionMock.setResponse(jso);
+        httpConnectionMock.addResponse(org.andstatus.app.tests.R.raw.unfollow_pumpio);
         connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.conversationAccountActorOid));
         String actorOid = "acct:evan@e14n.com";
         AActivity activity = connection.follow(actorOid, false);
@@ -350,9 +339,7 @@ public class ConnectionPumpioTest {
 
     @Test
     public void testDestroyStatus() throws IOException {
-        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.pumpio_delete_comment_response);
-        httpConnectionMock.setResponse(jso);
+        httpConnectionMock.addResponse(org.andstatus.app.tests.R.raw.pumpio_delete_comment_response);
         connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.conversationAccountActorOid));
         assertTrue("Success", connection.deleteNote("https://" + demoData.pumpioMainHost
                 + "/api/comment/xf0WjLeEQSlyi8jwHJ0ttre"));
@@ -368,22 +355,41 @@ public class ConnectionPumpioTest {
     }
 
     @Test
-    public void testPostWithMedia() throws IOException {
-        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
-        httpConnectionMock.setResponse(jso);
+    public void testPostWithImage() throws IOException {
+        // TODO: There should be 3 responses, just like for Video
+        httpConnectionMock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
         
         connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.conversationAccountActorOid));
         AActivity activity = connection.updateNote("", "Test post note with media", "",
                 Audience.EMPTY, "", demoData.localImageTestUri);
-        assertEquals("Note returned", privateGetNoteWithAttachment(
-                InstrumentationRegistry.getInstrumentation().getContext(), false), activity.getNote());
     }
-    
-    private Note privateGetNoteWithAttachment(Context context, boolean uniqueUid) throws IOException {
-        String jso = RawResourceUtils.getString(context,
-                org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
-        httpConnectionMock.setResponse(jso);
+
+    @Test
+    public void testPostWithVideo() throws IOException {
+        httpConnectionMock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_video_response1);
+        httpConnectionMock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_video_response2);
+        httpConnectionMock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_video_response3);
+
+        String name = "Note - Testing Video attachments in #AndStatus";
+        String content = "<p dir=\"ltr\">Video attachment is here</p>";
+
+        connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.conversationAccountActorOid));
+        AActivity activity = connection.updateNote(name, content, "",
+                Audience.EMPTY, "", demoData.localVideoTestUri);
+        assertEquals("Responses counter " + httpConnectionMock, 3, httpConnectionMock.responsesCounter);
+        Note note = activity.getNote();
+        assertEquals("Note name " + activity, name, note.getName());
+        assertEquals("Note content " + activity, content, note.getContent());
+        assertEquals("Should have an attachment " + activity, false, note.attachments.isEmpty());
+        Attachment attachment = note.attachments.get(0);
+        assertEquals("Video attachment " + activity, MyContentType.VIDEO, attachment.contentType);
+        assertEquals("Video content type " + activity, "video/mp4", attachment.mimeType);
+        assertEquals("Video uri " + activity,
+                "https://identi.ca/uploads/andstatus/2018/4/11/7CmQmw.mp4", attachment.uri.toString());
+    }
+
+    private Note privateGetNoteWithAttachment(boolean uniqueUid) throws IOException {
+        httpConnectionMock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
 
         Note note = connection.getNote("w9wME-JVQw2GQe6POK7FSQ").getNote();
         if (uniqueUid) {
@@ -399,14 +405,12 @@ public class ConnectionPumpioTest {
 
     @Test
     public void getNoteWithAttachment() throws IOException {
-        privateGetNoteWithAttachment(InstrumentationRegistry.getInstrumentation().getContext(), true);
+        privateGetNoteWithAttachment(true);
     }
 
     @Test
     public void getNoteWithReplies() throws IOException {
-        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.pumpio_note_self);
-        httpConnectionMock.setResponse(jso);
+        httpConnectionMock.addResponse(org.andstatus.app.tests.R.raw.pumpio_note_self);
 
         final String noteOid = "https://identi.ca/api/note/Z-x96Q8rTHSxTthYYULRHA";
         final AActivity activity = connection.getNote(noteOid);

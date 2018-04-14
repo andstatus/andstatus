@@ -17,7 +17,6 @@
 package org.andstatus.app.net.social;
 
 import android.content.Context;
-import android.support.test.InstrumentationRegistry;
 
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.http.HttpReadResult;
@@ -42,7 +41,7 @@ public class ConnectionGnuSocialTest {
     public static AActivity getNoteWithAttachment(Context context) throws Exception {
         ConnectionGnuSocialTest test = new ConnectionGnuSocialTest();
         test.setUp();
-        return test.privateGetNoteWithAttachment(context, true);
+        return test.privateGetNoteWithAttachment(true);
     }
 
     @Before
@@ -53,9 +52,7 @@ public class ConnectionGnuSocialTest {
 
     @Test
     public void testGetPublicTimeline() throws IOException {
-        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.quitter_home);
-        connection.getHttpMock().setResponse(jso);
+        connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.quitter_home);
 
         String accountActorOid = demoData.gnusocialTestAccountActorOid;
         List<AActivity> timeline = connection.getTimeline(ApiRoutineEnum.PUBLIC_TIMELINE,
@@ -137,9 +134,7 @@ public class ConnectionGnuSocialTest {
 
     @Test
     public void testSearch() throws IOException {
-        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.twitter_home_timeline);
-        connection.getHttpMock().setResponse(jso);
+        connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.twitter_home_timeline);
         
         List<AActivity> timeline = connection.searchNotes(new TimelinePosition(""), TimelinePosition.EMPTY, 20,
                 demoData.globalPublicNoteText);
@@ -150,26 +145,22 @@ public class ConnectionGnuSocialTest {
 
     @Test
     public void testPostWithMedia() throws IOException {
-        String jso = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
-        connection.getHttpMock().setResponse(jso);
-        
+        connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
         AActivity activity = connection.updateNote("", "Test post note with media", "",
                 Audience.EMPTY, "", demoData.localImageTestUri);
-        assertEquals("Note returned", privateGetNoteWithAttachment(
-                InstrumentationRegistry.getInstrumentation().getContext(), false).getNote(), activity.getNote());
+        assertEquals("Note returned",
+                privateGetNoteWithAttachment(false).getNote(), activity.getNote());
     }
 
     @Test
     public void getNoteWithAttachment() throws IOException {
-        privateGetNoteWithAttachment(InstrumentationRegistry.getInstrumentation().getContext(), true);
+        privateGetNoteWithAttachment(true);
     }
 
-    private AActivity privateGetNoteWithAttachment(Context context, boolean uniqueUid) throws IOException {
+    private AActivity privateGetNoteWithAttachment(boolean uniqueUid) throws IOException {
         final String NOTE_OID = "2215662";
         // Originally downloaded from https://quitter.se/api/statuses/show.json?id=2215662
-        String jso = RawResourceUtils.getString(context, org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
-        connection.getHttpMock().setResponse(jso);
+        connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
         AActivity activity = connection.getNote(NOTE_OID);
         if (uniqueUid) {
             activity.setNote(activity.getNote().copy(activity.getNote().oid + "_" + demoData.testRunUid));
@@ -188,9 +179,7 @@ public class ConnectionGnuSocialTest {
     @Test
     public void testReblog() throws IOException {
         final String NOTE_OID = "10341561";
-        String jString = RawResourceUtils.getString(InstrumentationRegistry.getInstrumentation().getContext(),
-                org.andstatus.app.tests.R.raw.loadaverage_repost_response);
-        connection.getHttpMock().setResponse(jString);
+        connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.loadaverage_repost_response);
         AActivity activity = connection.announce(NOTE_OID);
         assertEquals(ActivityType.ANNOUNCE, activity.type);
         Note note = activity.getNote();

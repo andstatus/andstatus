@@ -15,7 +15,7 @@ import org.andstatus.app.util.TriState;
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertTrue;
 
-public class ConnectionTwitterGnuSocialMock extends ConnectionTwitterGnuSocial {
+public class ConnectionTwitterGnuSocialMock extends ConnectionTwitterGnuSocial implements ConnectionMockable {
 
     public ConnectionTwitterGnuSocialMock(ConnectionException e) {
         this();
@@ -41,9 +41,5 @@ public class ConnectionTwitterGnuSocialMock extends ConnectionTwitterGnuSocial {
         }
         TestSuite.setHttpConnectionMockClass(null);
         http.data.originUrl = origin.getUrl();
-    }
-
-    public HttpConnectionMock getHttpMock() {
-        return (HttpConnectionMock) http;
     }
 }

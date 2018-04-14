@@ -2,7 +2,6 @@ package org.andstatus.app.service;
 
 import android.text.TextUtils;
 
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccountTest;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -10,6 +9,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.net.http.HttpConnectionMock;
+import org.andstatus.app.net.social.ConnectionMockable;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
@@ -57,8 +57,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
             MyServiceManager.stopService();
 
             if (!isSingleMockedInstance) {
-                MyAccount ma = demoData.getMyAccount(accountName);
-                httpConnectionMock = ma.getConnection().getHttpMock();
+                httpConnectionMock = ConnectionMockable.getHttpMock(demoData.getMyAccount(accountName));
             }
             connectionInstanceId = httpConnectionMock.getInstanceId();
 

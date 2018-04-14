@@ -13,12 +13,7 @@ import org.andstatus.app.util.TriState;
 
 import static org.andstatus.app.context.DemoData.demoData;
 
-public class ConnectionMastodonMock extends ConnectionMastodon {
-
-    public ConnectionMastodonMock(ConnectionException e) {
-        this();
-        getHttpMock().setException(e);
-    }
+public class ConnectionMastodonMock extends ConnectionMastodon implements ConnectionMockable {
 
     public ConnectionMastodonMock() {
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
@@ -37,9 +32,5 @@ public class ConnectionMastodonMock extends ConnectionMastodon {
         }
         TestSuite.setHttpConnectionMockClass(null);
         http.data.originUrl = origin.getUrl();
-    }
-
-    public HttpConnectionMock getHttpMock() {
-        return (HttpConnectionMock) http;
     }
 }

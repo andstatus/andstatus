@@ -1,0 +1,372 @@
+{
+    "objectType": "activity",
+    "verb": "update",
+    "generator": {
+        "displayName": "AndStatus",
+        "objectType": "application",
+        "published": "2018-02-08T15:54:24Z",
+        "updated": "2018-02-08T15:54:24Z",
+        "links": {
+            "self": {
+                "href": "https:\/\/identi.ca\/api\/application?id=urn%3Auuid%3A2598712c-7c2d-54cf-a49a-40129be504f0"
+            }
+        },
+        "likes": {
+            "url": "https:\/\/identi.ca\/api\/application\/likes?id=urn%3Auuid%3A2598712c-7c2d-54cf-a49a-40129be504f0"
+        },
+        "replies": {
+            "url": "https:\/\/identi.ca\/api\/application\/replies?id=urn%3Auuid%3A2598712c-7c2d-54cf-a49a-40129be504f0"
+        },
+        "shares": {
+            "url": "https:\/\/identi.ca\/api\/application\/shares?id=urn%3Auuid%3A2598712c-7c2d-54cf-a49a-40129be504f0"
+        },
+        "id": "urn:uuid:2598712c-7c2d-54cf-a49a-40129be504f0"
+    },
+    "to": [
+        {
+            "objectType": "collection",
+            "updated": "2018-04-11T20:15:18Z",
+            "links": {
+                "self": {
+                    "href": "https:\/\/vegas.mobip.nl\/api\/collection?id=http%3A%2F%2Factivityschema.org%2Fcollection%2Fpublic"
+                }
+            },
+            "likes": {
+                "url": "https:\/\/vegas.mobip.nl\/api\/collection\/likes?id=http%3A%2F%2Factivityschema.org%2Fcollection%2Fpublic"
+            },
+            "replies": {
+                "url": "https:\/\/vegas.mobip.nl\/api\/collection\/replies?id=http%3A%2F%2Factivityschema.org%2Fcollection%2Fpublic"
+            },
+            "shares": {
+                "url": "https:\/\/vegas.mobip.nl\/api\/collection\/shares?id=http%3A%2F%2Factivityschema.org%2Fcollection%2Fpublic"
+            },
+            "liked": false,
+            "pump_io": {
+                "shared": false
+            },
+            "displayName": "Public",
+            "id": "http:\/\/activityschema.org\/collection\/public"
+        }
+    ],
+    "actor": {
+        "preferredUsername": "andstatus",
+        "url": "https:\/\/identi.ca\/andstatus",
+        "displayName": "AndStatus@Identi.ca",
+        "links": {
+            "self": {
+                "href": "https:\/\/identi.ca\/api\/user\/andstatus\/profile"
+            },
+            "activity-inbox": {
+                "href": "https:\/\/identi.ca\/api\/user\/andstatus\/inbox"
+            },
+            "activity-outbox": {
+                "href": "https:\/\/identi.ca\/api\/user\/andstatus\/feed"
+            }
+        },
+        "objectType": "person",
+        "followers": {
+            "url": "https:\/\/identi.ca\/api\/user\/andstatus\/followers",
+            "displayName": "Followers for AndStatus Project",
+            "objectTypes": [
+                "person"
+            ],
+            "author": {
+                "id": "acct:andstatus@identi.ca",
+                "objectType": "person"
+            },
+            "links": {
+                "self": {
+                    "href": "https:\/\/identi.ca\/api\/user\/andstatus\/followers?offset=0&count="
+                },
+                "current": {
+                    "href": "https:\/\/identi.ca\/api\/user\/andstatus\/followers"
+                },
+                "prev": {
+                    "href": "https:\/\/identi.ca\/api\/user\/andstatus\/followers?since=acct%3Aafleck%40microca.st"
+                }
+            }
+        },
+        "following": {
+            "url": "https:\/\/identi.ca\/api\/user\/andstatus\/following",
+            "displayName": "Following for AndStatus Project",
+            "objectTypes": [
+                "person"
+            ],
+            "author": {
+                "id": "acct:andstatus@identi.ca",
+                "objectType": "person"
+            },
+            "links": {
+                "self": {
+                    "href": "https:\/\/identi.ca\/api\/user\/andstatus\/following?offset=0&count=20"
+                },
+                "current": {
+                    "href": "https:\/\/identi.ca\/api\/user\/andstatus\/following"
+                },
+                "prev": {
+                    "href": "https:\/\/identi.ca\/api\/user\/andstatus\/following?since=acct%3Amacno%40fmrl.me"
+                }
+            }
+        },
+        "favorites": {
+            "url": "https:\/\/identi.ca\/api\/user\/andstatus\/favorites"
+        },
+        "lists": {
+            "url": "https:\/\/identi.ca\/api\/user\/andstatus\/lists\/person"
+        },
+        "status_net": {
+            "avatarLinks": [
+                {
+                    "url": "http:\/\/avatar3.status.net\/i\/identica\/923870-124-20120728170222.png",
+                    "rel": "avatar",
+                    "type": "image\/png",
+                    "width": 124,
+                    "height": 124
+                },
+                {
+                    "url": "http:\/\/avatar3.status.net\/i\/identica\/923870-96-20120728170222.png",
+                    "rel": "avatar",
+                    "type": "image\/png",
+                    "width": 96,
+                    "height": 96
+                },
+                {
+                    "url": "http:\/\/avatar3.status.net\/i\/identica\/923870-48-20120728170222.png",
+                    "rel": "avatar",
+                    "type": "image\/png",
+                    "width": 48,
+                    "height": 48
+                },
+                {
+                    "url": "http:\/\/avatar3.status.net\/i\/identica\/923870-24-20120728170222.png",
+                    "rel": "avatar",
+                    "type": "image\/png",
+                    "width": 24,
+                    "height": 24
+                }
+            ],
+            "profile_info": {
+                "local_id": "923870"
+            }
+        },
+        "image": {
+            "url": "https:\/\/identi.ca\/uploads\/andstatus\/2015\/8\/6\/C_k5cQ_thumb.png",
+            "width": 96,
+            "height": 96
+        },
+        "location": {
+            "objectType": "place",
+            "position": "-32.94132-60.66616\/",
+            "lat": "-32.94132",
+            "lon": "-60.66616",
+            "displayName": "Moscow, Russia",
+            "url": "http:\/\/www.geonames.org\/3846839"
+        },
+        "portablecontacts_net": {
+            "preferredUsername": "andstatus",
+            "displayName": "AndStatus Project",
+            "note": "Open Source community based project, creating AndStatus application for Android",
+            "addresses": {
+                "formatted": "Virtual"
+            },
+            "urls": [
+                {
+                    "type": "homepage",
+                    "value": "http:\/\/andstatus.org",
+                    "primary": "true"
+                }
+            ]
+        },
+        "upstreamDuplicates": [
+            "http:\/\/identi.ca\/user\/923870"
+        ],
+        "summary": "Open Source community based project, creating AndStatus social networking client for Android, which supports Pump.io, GNU Social, Mastodon, Twitter...\n\nHomepage: http:\/\/andstatus.org\nGitHub home: https:\/\/github.com\/andstatus\/andstatus",
+        "updated": "2018-03-04T07:42:42Z",
+        "pump_io": {
+            "followed": false
+        },
+        "id": "acct:andstatus@identi.ca"
+    },
+    "object": {
+        "author": {
+            "preferredUsername": "andstatus",
+            "url": "https:\/\/identi.ca\/andstatus",
+            "displayName": "AndStatus@Identi.ca",
+            "links": {
+                "self": {
+                    "href": "https:\/\/identi.ca\/api\/user\/andstatus\/profile"
+                },
+                "activity-inbox": {
+                    "href": "https:\/\/identi.ca\/api\/user\/andstatus\/inbox"
+                },
+                "activity-outbox": {
+                    "href": "https:\/\/identi.ca\/api\/user\/andstatus\/feed"
+                }
+            },
+            "objectType": "person",
+            "followers": {
+                "url": "https:\/\/identi.ca\/api\/user\/andstatus\/followers",
+                "displayName": "Followers for AndStatus Project",
+                "objectTypes": [
+                    "person"
+                ],
+                "author": {
+                    "id": "acct:andstatus@identi.ca",
+                    "objectType": "person"
+                },
+                "links": {
+                    "self": {
+                        "href": "https:\/\/identi.ca\/api\/user\/andstatus\/followers?offset=0&count="
+                    },
+                    "current": {
+                        "href": "https:\/\/identi.ca\/api\/user\/andstatus\/followers"
+                    },
+                    "prev": {
+                        "href": "https:\/\/identi.ca\/api\/user\/andstatus\/followers?since=acct%3Aafleck%40microca.st"
+                    }
+                }
+            },
+            "following": {
+                "url": "https:\/\/identi.ca\/api\/user\/andstatus\/following",
+                "displayName": "Following for AndStatus Project",
+                "objectTypes": [
+                    "person"
+                ],
+                "author": {
+                    "id": "acct:andstatus@identi.ca",
+                    "objectType": "person"
+                },
+                "links": {
+                    "self": {
+                        "href": "https:\/\/identi.ca\/api\/user\/andstatus\/following?offset=0&count=20"
+                    },
+                    "current": {
+                        "href": "https:\/\/identi.ca\/api\/user\/andstatus\/following"
+                    },
+                    "prev": {
+                        "href": "https:\/\/identi.ca\/api\/user\/andstatus\/following?since=acct%3Amacno%40fmrl.me"
+                    }
+                }
+            },
+            "favorites": {
+                "url": "https:\/\/identi.ca\/api\/user\/andstatus\/favorites"
+            },
+            "lists": {
+                "url": "https:\/\/identi.ca\/api\/user\/andstatus\/lists\/person"
+            },
+            "status_net": {
+                "avatarLinks": [
+                    {
+                        "url": "http:\/\/avatar3.status.net\/i\/identica\/923870-124-20120728170222.png",
+                        "rel": "avatar",
+                        "type": "image\/png",
+                        "width": 124,
+                        "height": 124
+                    },
+                    {
+                        "url": "http:\/\/avatar3.status.net\/i\/identica\/923870-96-20120728170222.png",
+                        "rel": "avatar",
+                        "type": "image\/png",
+                        "width": 96,
+                        "height": 96
+                    },
+                    {
+                        "url": "http:\/\/avatar3.status.net\/i\/identica\/923870-48-20120728170222.png",
+                        "rel": "avatar",
+                        "type": "image\/png",
+                        "width": 48,
+                        "height": 48
+                    },
+                    {
+                        "url": "http:\/\/avatar3.status.net\/i\/identica\/923870-24-20120728170222.png",
+                        "rel": "avatar",
+                        "type": "image\/png",
+                        "width": 24,
+                        "height": 24
+                    }
+                ],
+                "profile_info": {
+                    "local_id": "923870"
+                }
+            },
+            "image": {
+                "url": "https:\/\/identi.ca\/uploads\/andstatus\/2015\/8\/6\/C_k5cQ_thumb.png",
+                "width": 96,
+                "height": 96
+            },
+            "location": {
+                "objectType": "place",
+                "position": "-32.94132-60.66616\/",
+                "lat": "-32.94132",
+                "lon": "-60.66616",
+                "displayName": "Moscow, Russia",
+                "url": "http:\/\/www.geonames.org\/3846839"
+            },
+            "portablecontacts_net": {
+                "preferredUsername": "andstatus",
+                "displayName": "AndStatus Project",
+                "note": "Open Source community based project, creating AndStatus application for Android",
+                "addresses": {
+                    "formatted": "Virtual"
+                },
+                "urls": [
+                    {
+                        "type": "homepage",
+                        "value": "http:\/\/andstatus.org",
+                        "primary": "true"
+                    }
+                ]
+            },
+            "upstreamDuplicates": [
+                "http:\/\/identi.ca\/user\/923870"
+            ],
+            "summary": "Open Source community based project, creating AndStatus social networking client for Android, which supports Pump.io, GNU Social, Mastodon, Twitter...\n\nHomepage: http:\/\/andstatus.org\nGitHub home: https:\/\/github.com\/andstatus\/andstatus",
+            "updated": "2018-03-04T07:42:42Z",
+            "pump_io": {
+                "followed": false
+            },
+            "id": "acct:andstatus@identi.ca"
+        },
+        "stream": {
+            "url": "https:\/\/identi.ca\/uploads\/andstatus\/2018\/4\/11\/7CmQmw.mp4"
+        },
+        "objectType": "video",
+        "published": "2018-04-11T20:38:34Z",
+        "updated": "2018-04-11T20:38:40Z",
+        "links": {
+            "self": {
+                "href": "https:\/\/identi.ca\/api\/video\/DVi-fPpFQ_O9BGajwJbUkQ"
+            }
+        },
+        "likes": {
+            "url": "https:\/\/identi.ca\/api\/video\/DVi-fPpFQ_O9BGajwJbUkQ\/likes",
+            "totalItems": 0
+        },
+        "replies": {
+            "url": "https:\/\/identi.ca\/api\/video\/DVi-fPpFQ_O9BGajwJbUkQ\/replies",
+            "totalItems": 0
+        },
+        "shares": {
+            "url": "https:\/\/identi.ca\/api\/video\/DVi-fPpFQ_O9BGajwJbUkQ\/shares",
+            "totalItems": 0
+        },
+        "url": "https:\/\/identi.ca\/andstatus\/video\/DVi-fPpFQ_O9BGajwJbUkQ",
+        "displayName": "Note - Testing Video attachments in #AndStatus",
+        "content": "<p dir=\"ltr\">Video attachment is here<\/p>",
+        "id": "https:\/\/identi.ca\/api\/video\/DVi-fPpFQ_O9BGajwJbUkQ",
+        "liked": false,
+        "pump_io": {
+            "shared": false
+        }
+    },
+    "updated": "2018-04-11T20:38:40Z",
+    "id": "https:\/\/identi.ca\/api\/activity\/r4hOcj1bTwCBLtwHJ0R-Eg",
+    "links": {
+        "self": {
+            "href": "https:\/\/identi.ca\/api\/activity\/r4hOcj1bTwCBLtwHJ0R-Eg"
+        }
+    },
+    "url": "https:\/\/identi.ca\/undefined\/activity\/r4hOcj1bTwCBLtwHJ0R-Eg",
+    "published": "2018-04-11T20:38:40Z",
+    "content": "<a href='https:\/\/identi.ca\/andstatus'>AndStatus@Identi.ca<\/a> updated <a href='https:\/\/identi.ca\/andstatus\/video\/DVi-fPpFQ_O9BGajwJbUkQ'>Note - Testing Video attachments in #AndStatus<\/a>"
+}

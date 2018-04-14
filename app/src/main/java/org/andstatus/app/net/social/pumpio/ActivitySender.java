@@ -33,6 +33,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import static org.andstatus.app.net.social.pumpio.ConnectionPumpio.CONTENT_PROPERTY;
+import static org.andstatus.app.net.social.pumpio.ConnectionPumpio.FULL_IMAGE_OBJECT;
 import static org.andstatus.app.net.social.pumpio.ConnectionPumpio.NAME_PROPERTY;
 
 /**
@@ -80,87 +81,99 @@ class ActivitySender {
         return this;
     }
     
-    AActivity sendNote(PActivityType activityType) throws ConnectionException {
-        return connection.activityFromJson(sendMe(activityType));
+    AActivity send(PActivityType activityType) throws ConnectionException {
+        return connection.activityFromJson(sendInternal(activityType));
     }
 
-    AActivity sendActor(PActivityType activityType) throws ConnectionException {
-        return connection.activityFromJson(sendMe(activityType));
-    }
-
-    JSONObject sendMe(PActivityType activityTypeIn) throws ConnectionException {
-        PActivityType activityType = isExisting() ?
-                (activityTypeIn.equals(PActivityType.POST) ? PActivityType.UPDATE : activityTypeIn) :
-                PActivityType.POST;
-        String msgLog = "Activity '" + activityType + "'" +
-                (isExisting() ? " objectId:'" + objectId + "'" : "");
-        JSONObject jso = null;
+    private JSONObject sendInternal(PActivityType activityTypeIn) throws ConnectionException {
+        PActivityType activityType = isExisting()
+                ? (activityTypeIn.equals(PActivityType.POST) ? PActivityType.UPDATE : activityTypeIn)
+                : PActivityType.POST;
+        String msgLog = "Activity '" + activityType + "'" + (isExisting() ? " objectId:'" + objectId + "'" : "");
+        JSONObject activityResponse = null;
+        JSONObject activity = null;
         try {
-            JSONObject activity = newActivityOfThisAccount(activityType);
-            JSONObject obj = buildObject(activity);
-            if (!UriUtils.isEmpty(mMediaUri)) {
-                PObjectType objectType = PObjectType.fromJson(obj);
-                if (isExisting() && !PObjectType.IMAGE.equals(objectType)) {
-                    throw ConnectionException.hardConnectionException(
-                            "Cannot update '" + objectType + "' to " + PObjectType.IMAGE, null);
-                }
-                JSONObject mediaObject = uploadMedia();
-                if (isExisting()) {
-                    JSONObject image = mediaObject.optJSONObject("image");
-                    if (image != null) {
-                        // Replace an image in the existing object
-                        obj.put("image", image);
-                        image = mediaObject.optJSONObject("fullImage");
-                        if (image != null) {
-                            obj.put("fullImage", image);
-                        }
-                    }
-                } else {
-                    obj = mediaObject;
-                }
-            }
-            if (StringUtils.nonEmpty(name)) {
-                obj.put(NAME_PROPERTY, name);
-            }
-            if (StringUtils.nonEmpty(content)) {
-                obj.put(CONTENT_PROPERTY, content);
-            }
-            if (!TextUtils.isEmpty(inReplyToId)) {
-                JSONObject inReplyToObject = new JSONObject();
-                inReplyToObject.put("id", inReplyToId);
-                inReplyToObject.put("objectType", connection.oidToObjectType(inReplyToId));
-                obj.put("inReplyTo", inReplyToObject);
-            }
-            activity.put("object", obj);
-
+            activity = buildActivityToSend(activityType);
             ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.UPDATE_NOTE,
                     connection.getData().getAccountActor().oid);
-            jso = connection.postRequest(conu.url, activity);
-            if (jso == null) {
+            activityResponse = connection.postRequest(conu.url, activity);
+            if (activityResponse == null) {
                 throw ConnectionException.hardConnectionException(msgLog + " returned no data", null);
             }
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, msgLog + " " + jso.toString(2));
+                MyLog.v(this, msgLog + " " + activityResponse.toString(2));
             }
-            JSONObject objPosted = jso.optJSONObject("object");
-            if (PActivityType.POST.equals(activityType)
-                    && objPosted != null
-                    && (
-                       StringUtils.nonEmpty(content) && TextUtils.isEmpty(objPosted.optString(CONTENT_PROPERTY))
-                    || StringUtils.nonEmpty(name) && TextUtils.isEmpty(objPosted.optString(NAME_PROPERTY))
-                    )
-                    ) {
+            if (contentNotPosted(activityType, activityResponse)) {
                 if (MyLog.isVerboseEnabled()) {
                     MyLog.v(this, msgLog + " Pump.io bug: content is not sent, " +
                             "when an image object is posted. Sending an update");
                 }
                 activity.put("verb", PActivityType.UPDATE.code);
-                jso = connection.postRequest(conu.url, activity);
+                activityResponse = connection.postRequest(conu.url, activity);
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, msgLog, e, jso);
+            throw ConnectionException.loggedJsonException(this, msgLog, e,
+                    activityResponse == null ? activity : activityResponse);
         }
-        return jso;
+        return activityResponse;
+    }
+
+    private JSONObject buildActivityToSend(PActivityType activityType) throws JSONException, ConnectionException {
+        JSONObject activity = newActivityOfThisAccount(activityType);
+        JSONObject obj = buildObject(activity);
+        if (UriUtils.nonEmpty(mMediaUri)) {
+            PObjectType objectType = PObjectType.fromJson(obj);
+            if (isExisting()
+                    && (!PObjectType.IMAGE.equals(objectType) || !PObjectType.VIDEO.equals(objectType))
+                    ) {
+                throw ConnectionException.hardConnectionException(
+                        "Cannot update '" + objectType + "' to " + PObjectType.IMAGE, null);
+            }
+            JSONObject mediaObject = uploadMedia();
+            PObjectType mediaObjectType = PObjectType.fromJson(mediaObject);
+            if (isExisting() && mediaObjectType.equals(objectType)) {
+                if (objectType == PObjectType.VIDEO) {
+                    JSONObject video = mediaObject.optJSONObject(ConnectionPumpio.VIDEO_OBJECT);
+                    if (video != null) {
+                        // Replace the video in the existing object
+                        obj.put(ConnectionPumpio.VIDEO_OBJECT, video);
+                    }
+                } else {
+                    JSONObject image = mediaObject.optJSONObject(ConnectionPumpio.IMAGE_OBJECT);
+                    if (image != null) {
+                        // Replace an image in the existing object
+                        obj.put(ConnectionPumpio.IMAGE_OBJECT, image);
+                        JSONObject fullImage = mediaObject.optJSONObject(FULL_IMAGE_OBJECT);
+                        if (fullImage != null) {
+                            obj.put(FULL_IMAGE_OBJECT, fullImage);
+                        }
+                    }
+                }
+            } else {
+                obj = mediaObject;
+            }
+        }
+        if (StringUtils.nonEmpty(name)) {
+            obj.put(NAME_PROPERTY, name);
+        }
+        if (StringUtils.nonEmpty(content)) {
+            obj.put(CONTENT_PROPERTY, content);
+        }
+        if (!TextUtils.isEmpty(inReplyToId)) {
+            JSONObject inReplyToObject = new JSONObject();
+            inReplyToObject.put("id", inReplyToId);
+            inReplyToObject.put("objectType", connection.oidToObjectType(inReplyToId));
+            obj.put("inReplyTo", inReplyToObject);
+        }
+        activity.put("object", obj);
+        return activity;
+    }
+
+    private boolean contentNotPosted(PActivityType activityType, JSONObject jsActivity) {
+        JSONObject objPosted = jsActivity.optJSONObject("object");
+        return PActivityType.POST.equals(activityType) && objPosted != null
+                && (StringUtils.nonEmpty(content) && TextUtils.isEmpty(objPosted.optString(CONTENT_PROPERTY))
+                    || StringUtils.nonEmpty(name) && TextUtils.isEmpty(objPosted.optString(NAME_PROPERTY)));
     }
 
     private JSONObject newActivityOfThisAccount(PActivityType activityType) throws JSONException, ConnectionException {
