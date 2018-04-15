@@ -19,10 +19,9 @@ package org.andstatus.app.service;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.AccountToNote;
 import org.andstatus.app.data.DownloadData;
-import org.andstatus.app.data.NoteForAccount;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.origin.Origin;
+import org.andstatus.app.data.NoteForAnyAccount;
 import org.andstatus.app.util.MyLog;
 
 public class AttachmentDownloader extends FileDownloader {
@@ -35,20 +34,20 @@ public class AttachmentDownloader extends FileDownloader {
     protected MyAccount findBestAccountForDownload() {
         boolean subscribedFound = false;
         final MyContext myContext = MyContextHolder.get();
-        final Origin origin = myContext.origins().fromId(MyQuery.noteIdToOriginId(data.noteId));
-        MyAccount bestAccount = myContext.accounts().getFirstSucceededForOrigin(origin);
+        NoteForAnyAccount noteForAnyAccount = new NoteForAnyAccount(myContext, 0, data.noteId);
+        MyAccount bestAccount = myContext.accounts().getFirstSucceededForOrigin(noteForAnyAccount.origin);
         for( MyAccount ma : myContext.accounts().get()) {
-            if(ma.getOrigin().equals(origin) && ma.isValidAndSucceeded()) {
-                NoteForAccount msg = new NoteForAccount(origin, 0, data.noteId, ma);
-                if(msg.hasPrivateAccess()) {
+            if(ma.getOrigin().equals(noteForAnyAccount.origin) && ma.isValidAndSucceeded()) {
+                AccountToNote accountToNote = new AccountToNote(noteForAnyAccount, ma);
+                if(accountToNote.hasPrivateAccess()) {
                     bestAccount = ma;
                     break;
                 }
-                if(msg.isSubscribed) {
+                if(accountToNote.isSubscribed) {
                     bestAccount = ma;
                     subscribedFound = true;
                 }
-                if(msg.isTiedToThisAccount() && !subscribedFound) {
+                if(accountToNote.isTiedToThisAccount() && !subscribedFound) {
                     bestAccount = ma;
                 }
             }

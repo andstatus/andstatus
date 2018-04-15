@@ -337,12 +337,12 @@ public class MyQuery {
     }
 
     @NonNull
-    public static ActorToNote favoritedAndReblogged(
-            SQLiteDatabase db, long noteId, long actorId) {
+    public static ActorToNote favoritedAndReblogged(@NonNull MyContext myContext, long noteId, long actorId) {
         String method = "favoritedAndReblogged";
         boolean favoriteFound = false;
         boolean reblogFound = false;
         ActorToNote actorToNote = new ActorToNote();
+        SQLiteDatabase db = myContext.getDatabase();
         if (db == null || noteId == 0 || actorId == 0) {
             return actorToNote;
         }
@@ -427,12 +427,12 @@ public class MyQuery {
 
     @NonNull
     public static String actorIdToWebfingerId(long actorId) {
-        return actorIdToName(null, actorId, ActorInTimeline.WEBFINGER_ID);
+        return actorIdToName(MyContext.EMPTY, actorId, ActorInTimeline.WEBFINGER_ID);
     }
 
     @NonNull
-    public static String actorIdToName(SQLiteDatabase db, long actorId, ActorInTimeline actorInTimeline) {
-        return idToStringColumnValue(db, ActorTable.TABLE_NAME, usernameField(actorInTimeline), actorId);
+    public static String actorIdToName(@NonNull MyContext myContext, long actorId, ActorInTimeline actorInTimeline) {
+        return idToStringColumnValue(myContext.getDatabase(), ActorTable.TABLE_NAME, usernameField(actorInTimeline), actorId);
     }
 
     /**

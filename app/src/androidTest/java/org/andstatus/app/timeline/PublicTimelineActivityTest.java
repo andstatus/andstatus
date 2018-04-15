@@ -48,6 +48,7 @@ import static org.andstatus.app.util.EspressoUtils.setChecked;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -95,45 +96,38 @@ public class PublicTimelineActivityTest extends TimelineActivityTest<ActivityVie
         helper.clickMenuItem(method, menu_id);
 
         onView(withId(R.id.internet_search)).perform(setChecked(internetSearch));
-        onView(withResourceName("search_text")).perform(new TypeTextAction(noteText),
-                pressImeActionButton());
+        onView(withResourceName("search_text")).perform(new TypeTextAction(noteText), pressImeActionButton());
         TimelineActivity nextActivity = (TimelineActivity) helper.waitForNextActivity(method, 40000);
         waitForButtonClickedEvidence(nextActivity, method, noteText);
         assertNotesArePublic(nextActivity, noteText);
         nextActivity.finish();
     }
 
+    private volatile String stringFound = "";
     private void waitForButtonClickedEvidence(final TimelineActivity timelineActivity, String caption,
                                               String queryString) throws InterruptedException {
         final String method = "waitForButtonClickedEvidence";
         boolean found = false;
-        final StringBuilder sb = new StringBuilder();
+        assertNotNull("Timeline actibity is null", timelineActivity);
         for (int attempt = 0; attempt < 6; attempt++) {
             TestSuite.waitForIdleSync();
             
-            Runnable probe = new Runnable() {
-                @Override
-                public void run() {
-                    sb.setLength(0);
-                    if (timelineActivity != null) {
-                        TextView item = timelineActivity.findViewById(R.id.timelineTypeButton);
-                        if (item != null) {
-                            sb.append(item.getText());
-                        }
-                    }
+            Runnable probe = () -> {
+                TextView item = timelineActivity.findViewById(R.id.timelineTypeButton);
+                if (item != null) {
+                    stringFound = item.getText().toString();
                 }
             };
             timelineActivity.runOnUiThread(probe);
-            
-            
-            if (sb.toString().contains(queryString)) {
+
+            if (stringFound.contains(queryString)) {
                 found = true;
                 break;
             }
             DbUtils.waitMs(method, 1000 * (attempt + 1));
         }
-        assertTrue(caption + " '" + (sb.toString()) + "', query:'" + queryString
-                + "', found:'" + sb.toString() + "'", found);
+        assertTrue(caption + ", query:'" + queryString
+                + "', found:'" + stringFound + "'", found);
     }
 
     private void assertNotesArePublic(TimelineActivity timelineActivity, String publicNoteText) throws InterruptedException {

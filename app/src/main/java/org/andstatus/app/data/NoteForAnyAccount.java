@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2018 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
@@ -33,11 +32,12 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
 /**
- * Helper class to find out a relation of a Note to MyAccount
+ * Helper class to find out a relation of a Note with {@link #noteId} to MyAccount-s
  * @author yvolk@yurivolkov.com
  */
-public class NoteForAccount {
-    public static final NoteForAccount EMPTY = new NoteForAccount(Origin.EMPTY, 0, 0, MyAccount.EMPTY);
+public class NoteForAnyAccount {
+    public static final NoteForAnyAccount EMPTY = new NoteForAnyAccount(MyContext.EMPTY, 0, 0);
+    public final MyContext myContext;
     @NonNull
     public final Origin origin;
     private final long activityId;
@@ -48,38 +48,18 @@ public class NoteForAccount {
     public String authorName = "";
     public long actorId = 0;
     public String actorName = "";
-    private boolean isAuthorMySucceededMyAccount = false;
     TriState isPublic = TriState.UNKNOWN;
     public String imageFilename = null;
-    @NonNull
-    private final MyAccount myAccount;
-    private final long accountActorId;
-    public boolean isSubscribed = false;
-    public boolean isAuthor = false;
-    public boolean isActor = false;
-    private boolean isRecipient = false;
-    public boolean favorited = false;
-    public boolean reblogged = false;
-    public boolean actorFollowed = false;
-    public boolean authorFollowed = false;
+    Audience recipients;
 
-    public NoteForAccount(@NonNull Origin origin, long activityId, long noteId, MyAccount myAccount) {
-        this.origin = origin;
+    public NoteForAnyAccount(MyContext myContext, long activityId, long noteId) {
+        this.myContext = myContext;
+        this.origin = myContext.origins().fromId(MyQuery.noteIdToOriginId(noteId));
         this.activityId = activityId;
         this.noteId = noteId;
-        this.myAccount = calculateMyAccount(origin, myAccount);
-        this.accountActorId = this.myAccount.getActorId();
-        if (this.myAccount.isValid()) {
+        if (noteId != 0 && this.origin.isValid()) {
             getData();
         }
-    }
-
-    @NonNull
-    private MyAccount calculateMyAccount(Origin origin, MyAccount ma) {
-        if (ma == null || !origin.isValid() || !ma.getOrigin().equals(origin) || !ma.isValid()) {
-            return MyAccount.EMPTY;
-        }
-        return ma;
     }
 
     private void getData() {
@@ -90,7 +70,7 @@ public class NoteForAccount {
                 + NoteTable.PUBLIC
                 + " FROM " + NoteTable.TABLE_NAME
                 + " WHERE " + NoteTable._ID + "=" + noteId;
-        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
             MyLog.v(this, method + "; Database is null");
             return;
@@ -100,57 +80,29 @@ public class NoteForAccount {
                 status = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
                 content = DbUtils.getString(cursor, NoteTable.CONTENT);
                 authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID);
-                authorName = MyQuery.actorIdToName(db, authorId, MyPreferences.getActorInTimeline());
-                isAuthor = (accountActorId == authorId);
-                isAuthorMySucceededMyAccount = isAuthor && myAccount.isValidAndSucceeded();
+                authorName = MyQuery.actorIdToName(myContext, authorId, MyPreferences.getActorInTimeline());
                 isPublic = DbUtils.getTriState(cursor, NoteTable.PUBLIC);
             }
         } catch (Exception e) {
             MyLog.i(this, method + "; SQL:'" + sql + "'", e);
         }
-        Audience recipients = Audience.fromNoteId(origin, noteId);
-        isRecipient = recipients.contains(accountActorId);
+        recipients = Audience.fromNoteId(origin, noteId);
         DownloadData downloadData = DownloadData.getSingleAttachment(noteId);
         imageFilename = downloadData.getStatus() == DownloadStatus.LOADED ? downloadData.getFilename() : "";
-        ActorToNote actorToNote = MyQuery.favoritedAndReblogged(db, noteId, accountActorId);
-        favorited = actorToNote.favorited;
-        reblogged = actorToNote.reblogged;
-        isSubscribed = actorToNote.subscribed;
-        authorFollowed = MyQuery.isFollowing(accountActorId, authorId);
         if (activityId == 0) {
             actorId = authorId;
         } else {
             actorId = MyQuery.activityIdToLongColumnValue(ActivityTable.ACTOR_ID, activityId);
         }
-        actorName = MyQuery.actorIdToName(db, actorId, MyPreferences.getActorInTimeline());
-        isActor = actorId == accountActorId;
-        actorFollowed = !isActor && (actorId == authorId ? authorFollowed : MyQuery.isFollowing(accountActorId, actorId));
-    }
-
-    @NonNull
-    public MyAccount getMyAccount() {
-        return myAccount;
+        actorName = MyQuery.actorIdToName(myContext, actorId, MyPreferences.getActorInTimeline());
     }
 
     public TriState getPublic() {
         return isPublic;
     }
 
-    public boolean isTiedToThisAccount() {
-        return isRecipient || favorited || reblogged || isAuthor
-                || actorFollowed || authorFollowed;
-    }
-
-    public boolean hasPrivateAccess() {
-        return isRecipient || isAuthor;
-    }
-
     public boolean isLoaded() {
         return status == DownloadStatus.LOADED;
-    }
-
-    public boolean isAuthorSucceededMyAccount() {
-        return isAuthorMySucceededMyAccount;
     }
 
     public String getBodyTrimmed() {

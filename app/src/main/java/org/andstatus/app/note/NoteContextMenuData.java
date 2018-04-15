@@ -21,7 +21,8 @@ import android.view.View;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.NoteForAccount;
+import org.andstatus.app.data.AccountToNote;
+import org.andstatus.app.data.NoteForAnyAccount;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.MyAsyncTask;
@@ -40,8 +41,8 @@ class NoteContextMenuData {
     }
 
     private final BaseNoteViewItem viewItem;
-    NoteForAccount noteForAccount = NoteForAccount.EMPTY;
-    private MyAsyncTask<Void, Void, NoteForAccount> loader;
+    AccountToNote accountToNote = AccountToNote.EMPTY;
+    private MyAsyncTask<Void, Void, AccountToNote> loader;
 
     static void loadAsync(@NonNull final NoteContextMenu noteContextMenu,
                           final View view,
@@ -54,41 +55,42 @@ class NoteContextMenuData {
 
         if (menuContainer != null && view != null && viewItem != null && viewItem.getNoteId() != 0) {
             final long noteId = viewItem.getNoteId();
-            data.loader = new MyAsyncTask<Void, Void, NoteForAccount>(
+            data.loader = new MyAsyncTask<Void, Void, AccountToNote>(
                     NoteContextMenuData.class.getSimpleName() + noteId, MyAsyncTask.PoolEnum.QUICK_UI) {
 
                 @Override
-                protected NoteForAccount doInBackground2(Void... params) {
+                protected AccountToNote doInBackground2(Void... params) {
                     MyAccount currentMyAccount = menuContainer.getCurrentMyAccount();
                     final MyContext myContext = menuContainer.getActivity().getMyContext();
                     final Origin origin = myContext.origins().fromId(MyQuery.noteIdToOriginId(noteId));
+                    NoteForAnyAccount noteForAnyAccount = new NoteForAnyAccount(myContext, 0, noteId);
                     MyAccount ma1 = myContext.accounts()
                             .getAccountForThisNote(origin, myActor, viewItem.getLinkedMyAccount(), false);
-                    NoteForAccount noteForAccount = new NoteForAccount(origin, 0, noteId, ma1);
+                    AccountToNote accountToNote = new AccountToNote(noteForAnyAccount, ma1);
                     boolean changedToCurrent = !ma1.equals(currentMyAccount) && !myActor.isValid() && ma1.isValid()
-                            && !noteForAccount.isTiedToThisAccount()
+                            && !accountToNote.isTiedToThisAccount()
                             && !menuContainer.getTimeline().getTimelineType().isForUser()
                             && currentMyAccount.isValid() && ma1.getOrigin().equals(currentMyAccount.getOrigin());
                     if (changedToCurrent) {
-                        noteForAccount = new NoteForAccount(origin, 0, noteId, currentMyAccount);
+                        accountToNote = new AccountToNote(noteForAnyAccount, currentMyAccount);
                     }
                     if (MyLog.isVerboseEnabled()) {
-                        MyLog.v(noteContextMenu, "actor:" + noteForAccount.getMyAccount()
+                        MyLog.v(noteContextMenu, "actor:" + accountToNote.getMyAccount()
                                 + (changedToCurrent ? " <- to current" : "")
-                                + (noteForAccount.getMyAccount().equals(myActor) ? "" : " <- myActor:" + myActor)
+                                + (accountToNote.getMyAccount().equals(myActor) ? "" : " <- myActor:" + myActor)
                                 + (myActor.equals(viewItem.getLinkedMyAccount())
                                     || !viewItem.getLinkedMyAccount().isValid() ? "" : " <- linked:"
                                     + viewItem.getLinkedMyAccount())
                                 + "; noteId:" + noteId);
                     }
-                    return noteForAccount.getMyAccount().isValid() ? noteForAccount : NoteForAccount.EMPTY;
+                    return accountToNote.getMyAccount().isValid() ? accountToNote : AccountToNote.EMPTY;
                 }
 
                 @Override
-                protected void onFinish(NoteForAccount noteForAccount, boolean success) {
-                    data.noteForAccount = noteForAccount == null ? NoteForAccount.EMPTY : noteForAccount;
+                protected void onFinish(AccountToNote accountToNote, boolean success) {
+                    data.accountToNote = accountToNote == null ? AccountToNote.EMPTY : accountToNote;
                     noteContextMenu.setMenuData(data);
-                    if (data.noteForAccount.noteId != 0 && viewItem.equals(noteContextMenu.getViewItem())) {
+                    if (data.accountToNote.noteForAnyAccount.noteId != 0 && viewItem.equals(noteContextMenu.getViewItem())) {
                         if (next != null) {
                             next.accept(noteContextMenu);
                         } else {
@@ -120,10 +122,13 @@ class NoteContextMenuData {
         if (loader.isReallyWorking()) {
             return StateForSelectedViewItem.LOADING;
         }
-        return currentItem.getNoteId() == noteForAccount.noteId ? StateForSelectedViewItem.READY : StateForSelectedViewItem.NEW;
+        return currentItem.getNoteId() == accountToNote.noteForAnyAccount.noteId
+                ? StateForSelectedViewItem.READY
+                : StateForSelectedViewItem.NEW;
     }
 
     boolean isFor(long noteId) {
-        return noteId != 0 && loader != null && !loader.needsBackgroundWork() && noteId == noteForAccount.noteId;
+        return noteId != 0 && loader != null && !loader.needsBackgroundWork()
+                && noteId == accountToNote.noteForAnyAccount.noteId;
     }
 }

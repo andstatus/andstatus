@@ -67,6 +67,7 @@ public class NoteEditorData {
 
     private boolean replyToConversationParticipants = false;
     private boolean replyToMentionedActors = false;
+    final MyContext myContext;
     public final MyAccount ma;
     public Timeline timeline = Timeline.EMPTY;
 
@@ -99,6 +100,7 @@ public class NoteEditorData {
 
     private NoteEditorData(MyAccount myAccount, MyContext myContext, @NonNull AActivity activity, long inReplyToNoteIdIn, boolean andLoad) {
         ma = myAccount.isValid() ? myAccount : myContext.accounts().getCurrentAccount();
+        this.myContext = myContext;
         this.activity = activity;
         if (!andLoad) return;
 
@@ -321,7 +323,7 @@ public class NoteEditorData {
         for(Long actorId : toMention) {
             if (actorId != 0 && !mentioned.contains(actorId)) {
                 mentioned.add(actorId);
-                String name = MyQuery.actorIdToName(null, actorId, getActorInTimeline());
+                String name = MyQuery.actorIdToName(myContext, actorId, getActorInTimeline());
                 if (!TextUtils.isEmpty(name)) {
                     String mentionText = "@" + name + " ";
                     if (TextUtils.isEmpty(getContent()) || !(getContent() + " ").contains(mentionText)) {
@@ -340,7 +342,7 @@ public class NoteEditorData {
     }
 
     public NoteEditorData appendMentionedActorToText(long mentionedActorId) {
-        String name = MyQuery.actorIdToName(null, mentionedActorId, getActorInTimeline());
+        String name = MyQuery.actorIdToName(myContext, mentionedActorId, getActorInTimeline());
         if (!TextUtils.isEmpty(name)) {
             String bodyText2 = "@" + name + " ";
             if (!TextUtils.isEmpty(getContent()) && !(getContent() + " ").contains(bodyText2)) {
