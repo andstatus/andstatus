@@ -318,8 +318,18 @@ public class Timeline implements Comparable<Timeline> {
 
     private TimelineType fixedTimelineType(TimelineType timelineType) {
         return isCombined || (timelineType.isAtOrigin() ? origin.isValid() : actor.nonEmpty())
-                ? timelineType
+                ? timelineTypeFixEverything(timelineType)
                 : TimelineType.UNKNOWN;
+    }
+
+    private TimelineType timelineTypeFixEverything(TimelineType timelineType) {
+        switch (timelineType) {
+            case EVERYTHING:
+            case SEARCH:
+                return hasSearchQuery() ? TimelineType.SEARCH : TimelineType.EVERYTHING;
+            default:
+                return timelineType;
+        }
     }
 
     @Override
