@@ -70,11 +70,11 @@ public class ActAsTest extends TimelineActivityTest<ActivityViewItem> {
         long noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId);
         String logMsg = "itemId=" + listItemId + ", noteId=" + noteId + " text='"
                 + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId) + "'";
-        assertEquals("Default actor", MyAccount.EMPTY, getActivity().getContextMenu().getMyActor());
+        assertEquals("Default actor", MyAccount.EMPTY, getActivity().getContextMenu().getSelectedActingAccount());
 
         boolean invoked = helper.invokeContextMenuAction4ListItemId(method, listItemId,
                 NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT, R.id.note_wrapper);
-        MyAccount actor1 = getActivity().getContextMenu().getMyActor();
+        MyAccount actor1 = getActivity().getContextMenu().getSelectedActingAccount();
         logMsg += ";" + (invoked ? "" : " failed to invoke context menu 1," ) + " actor1=" + actor1;
         assertTrue(logMsg, actor1.isValid());
 
@@ -87,7 +87,7 @@ public class ActAsTest extends TimelineActivityTest<ActivityViewItem> {
 
         boolean invoked2 = helper.invokeContextMenuAction4ListItemId(method, listItemId,
                 NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT, R.id.note_wrapper);
-        MyAccount actor2 = getActivity().getContextMenu().getMyActor();
+        MyAccount actor2 = getActivity().getContextMenu().getSelectedActingAccount();
         logMsg += ";" + (invoked2 ? "" : " failed to invoke context menu 2," ) + " actor2=" + actor2;
         assertNotEquals(logMsg, actor1, actor2);
     }

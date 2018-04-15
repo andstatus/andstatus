@@ -53,7 +53,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
     PRIVATE_NOTE(true) {
         @Override
         NoteEditorData executeAsync(Params params) {
-            return NoteEditorData.newEmpty(params.menu.getMyActor())
+            return NoteEditorData.newEmpty(params.menu.getSelectedActingAccount())
                     .addRecipientId(params.menu.getViewItem().getActorId());
         }
 
@@ -97,7 +97,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
     ACT_AS_FIRST_OTHER_ACCOUNT() {
         @Override
         void executeOnUiThread(ActorContextMenu menu, MyAccount ma, NoteEditorData editorData) {
-            menu.setMyActor(ma.firstOtherAccountOfThisOrigin());
+            menu.setSelectedActingAccount(ma.firstOtherAccountOfThisOrigin());
             menu.showContextMenu();
         }
     },
@@ -105,7 +105,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(ActorContextMenu menu, MyAccount ma, NoteEditorData editorData) {
             AccountSelector.selectAccount(menu.getActivity(),
-                    ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS, ma.getOriginId());
+                    ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS, menu.getOrigin().getId());
         }
     },
     FOLLOWERS(true) {
@@ -186,7 +186,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         } else {
             executeOnUiThread(params.menu, params.ma,
                     new NoteEditorData(menu.menuContainer.getActivity().getMyContext(),
-                            menu.getMyActor(), 0, 0, false));
+                            menu.getSelectedActingAccount(), 0, 0, false));
         }
         return false;
     }
@@ -216,7 +216,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
     }
 
     NoteEditorData executeAsync(Params params) {
-        return NoteEditorData.newEmpty(params.menu.getMyActor());
+        return NoteEditorData.newEmpty(params.menu.getSelectedActingAccount());
     }
 
     void executeOnUiThread(ActorContextMenu menu, MyAccount ma, NoteEditorData editorData) {

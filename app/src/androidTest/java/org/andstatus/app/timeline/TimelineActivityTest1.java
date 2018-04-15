@@ -220,9 +220,12 @@ public class TimelineActivityTest1 extends TimelineActivityTest<ActivityViewItem
         long noteId = helper.getListItemIdOfLoadedReply();
         String logMsg = "noteId:" + noteId
                 + "; text:'" + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId) + "'";
+
+        // This context menu item doesn't exist
         assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, noteId,
                 NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT, R.id.note_wrapper));
-        MyAccount actor1 = getActivity().getContextMenu().getMyActor();
+
+        MyAccount actor1 = getActivity().getContextMenu().getMyAccount();
         logMsg += "; actor1:" + actor1;
         assertTrue(logMsg, actor1.isValid());
 
@@ -237,8 +240,8 @@ public class TimelineActivityTest1 extends TimelineActivityTest<ActivityViewItem
         helper.selectIdFromSelectorDialog(logMsg, actor2.getActorId());
         DbUtils.waitMs(method, 500);
 
-        MyAccount ma3 = getActivity().getContextMenu().getMyActor();
-        logMsg += ", actor2Actual:" + ma3.getAccountName();
-        assertEquals(logMsg, actor2, ma3);
+        MyAccount actor3 = getActivity().getContextMenu().getSelectedActingAccount();
+        logMsg += ", actor2Actual:" + actor3.getAccountName();
+        assertEquals(logMsg, actor2, actor3);
     }
 }

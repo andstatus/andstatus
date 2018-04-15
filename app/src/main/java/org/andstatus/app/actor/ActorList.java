@@ -193,7 +193,7 @@ public class ActorList extends NoteEditorListActivity {
         MyAccount ma = myContext.accounts().fromAccountName(
                 data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
         if (ma.isValid()) {
-            contextMenu.setMyActor(ma);
+            contextMenu.setSelectedActingAccount(ma);
             contextMenu.showContextMenu();
         }
     }

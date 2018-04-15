@@ -55,7 +55,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     REPLY(true, false) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
-            return NoteEditorData.newReply(menu.getMyActor(), menu.getNoteId()).addMentionsToText();
+            return NoteEditorData.newReply(menu.getSelectedActingAccount(), menu.getNoteId()).addMentionsToText();
         }
 
         @Override
@@ -88,7 +88,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     REPLY_TO_CONVERSATION_PARTICIPANTS(true, false) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
-            return NoteEditorData.newReply(menu.getMyActor(), menu.getNoteId())
+            return NoteEditorData.newReply(menu.getSelectedActingAccount(), menu.getNoteId())
                     .setReplyToConversationParticipants(true)
                     .addMentionsToText();
         }
@@ -101,7 +101,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     REPLY_TO_MENTIONED_ACTORS(true, false) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
-            return NoteEditorData.newReply(menu.getMyActor(), menu.getNoteId())
+            return NoteEditorData.newReply(menu.getSelectedActingAccount(), menu.getNoteId())
                     .setReplyToMentionedActors(true)
                     .addMentionsToText();
         }
@@ -114,7 +114,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     PRIVATE_NOTE(true, false) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
-            return NoteEditorData.newEmpty(menu.getMyActor())
+            return NoteEditorData.newEmpty(menu.getSelectedActingAccount())
                     .addRecipientId(menu.getAuthorId()).setPublic(false);
         }
 
@@ -168,7 +168,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
             if (menu.getOrigin().isHtmlContentAllowed()) {
                 body = MyHtml.fromHtml(body);
             }
-            return NoteEditorData.newEmpty(menu.getMyActor()).setContent(body);
+            return NoteEditorData.newEmpty(menu.getSelectedActingAccount()).setContent(body);
         }
 
         @Override
@@ -181,7 +181,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         NoteEditorData executeAsync(NoteContextMenu menu) {
             final long authorId = MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, menu.getNoteId());
             MyLog.v(this, "noteId:" + menu.getNoteId() + " -> authorId:" + authorId);
-            return NoteEditorData.newEmpty(menu.getMyActor()).appendMentionedActorToText(authorId);
+            return NoteEditorData.newEmpty(menu.getSelectedActingAccount()).appendMentionedActorToText(authorId);
         }
 
         @Override
@@ -244,15 +244,20 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     ACT_AS_FIRST_OTHER_ACCOUNT(false, true) {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            menu.setMyActor(editorData.ma.firstOtherAccountOfThisOrigin());
-            menu.showContextMenu();
+            MyAccount actingAccount = menu.getSelectedActingAccount();
+            if (actingAccount.isValid()) {
+                menu.setSelectedActingAccount(actingAccount.firstOtherAccountOfThisOrigin());
+                menu.showContextMenu();
+            } else {
+                ACT_AS.executeOnUiThread(menu, editorData);
+            }
         }
     },
     ACT_AS(false, true) {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
             AccountSelector.selectAccount(menu.getActivity(),
-                    ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS, editorData.ma.getOriginId());
+                    ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS, menu.getOrigin().getId());
         }
     },
     OPEN_NOTE_PERMALINK {
@@ -319,7 +324,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
             MyServiceManager.sendManualForegroundCommand(
-                    CommandData.newItemCommand(CommandEnum.GET_NOTE, menu.getMyActor(),
+                    CommandData.newItemCommand(CommandEnum.GET_NOTE, menu.getSelectedActingAccount(),
                     menu.getNoteId())
             );
         }
@@ -396,7 +401,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
             executeAsync1(menu);
         } else {
             executeOnUiThread(menu, new NoteEditorData(menu.menuContainer.getActivity().getMyContext(),
-                    menu.getMyActor(), menu.getNoteId(), 0, false));
+                    menu.getSelectedActingAccount(), menu.getNoteId(), 0, false));
         }
         return false;
     }
@@ -421,7 +426,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     }
 
     NoteEditorData executeAsync(NoteContextMenu menu) {
-        return NoteEditorData.newEmpty(menu.getMyActor());
+        return NoteEditorData.newEmpty(menu.getSelectedActingAccount());
     }
 
     void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {

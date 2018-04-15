@@ -100,7 +100,7 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
                     MyAccount myAccount = MyContextHolder.get().accounts().fromAccountName(
                             data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
                     if (myAccount.isValid()) {
-                        mContextMenu.setMyActor(myAccount);
+                        mContextMenu.setSelectedActingAccount(myAccount);
                         mContextMenu.showContextMenu();
                     }
                 }

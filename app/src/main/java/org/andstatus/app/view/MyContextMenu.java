@@ -48,7 +48,7 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
      *  oh whose behalf we are going to execute an action on this line in the list (on a note / other actor...)
      */
     @NonNull
-    private MyAccount myActor = MyAccount.EMPTY;
+    private MyAccount selectedActingAccount = MyAccount.EMPTY;
 
     public MyContextMenu(@NonNull LoadableListActivity listActivity, int menuGroup) {
         this.listActivity = listActivity;
@@ -64,7 +64,7 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
         viewOfTheContext = v;
         ViewItem viewItem = listActivity.saveContextOfSelectedItem(v);
         if (viewItem.isEmpty() || mViewItem.isEmpty() || mViewItem.getId() != viewItem.getId()) {
-            myActor = MyAccount.EMPTY;
+            selectedActingAccount = MyAccount.EMPTY;
         }
         mViewItem = viewItem;
     }
@@ -90,13 +90,13 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
     }
 
     @NonNull
-    public MyAccount getMyActor() {
-        return myActor;
+    public MyAccount getSelectedActingAccount() {
+        return selectedActingAccount;
     }
 
-    public void setMyActor(@NonNull MyAccount myAccount) {
+    public void setSelectedActingAccount(@NonNull MyAccount myAccount) {
         Objects.requireNonNull(myAccount);
-        this.myActor = myAccount;
+        this.selectedActingAccount = myAccount;
     }
 
     public MyContext getMyContext() {

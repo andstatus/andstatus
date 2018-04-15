@@ -20,11 +20,7 @@ import android.support.annotation.NonNull;
 import android.view.View;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.AccountToNote;
-import org.andstatus.app.data.NoteForAnyAccount;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
 
@@ -49,7 +45,6 @@ class NoteContextMenuData {
                           final BaseNoteViewItem viewItem,
                           final Consumer<NoteContextMenu> next) {
 
-        @NonNull final MyAccount myActor = noteContextMenu.getMyActor();
         final NoteContextMenuContainer menuContainer = noteContextMenu.menuContainer;
         NoteContextMenuData data = new NoteContextMenuData(viewItem);
 
@@ -60,28 +55,18 @@ class NoteContextMenuData {
 
                 @Override
                 protected AccountToNote doInBackground2(Void... params) {
+                    @NonNull final MyAccount myActingAccount = noteContextMenu.getSelectedActingAccount();
                     MyAccount currentMyAccount = menuContainer.getCurrentMyAccount();
-                    final MyContext myContext = menuContainer.getActivity().getMyContext();
-                    final Origin origin = myContext.origins().fromId(MyQuery.noteIdToOriginId(noteId));
-                    NoteForAnyAccount noteForAnyAccount = new NoteForAnyAccount(myContext, 0, noteId);
-                    MyAccount ma1 = myContext.accounts()
-                            .getAccountForThisNote(origin, myActor, viewItem.getLinkedMyAccount(), false);
-                    AccountToNote accountToNote = new AccountToNote(noteForAnyAccount, ma1);
-                    boolean changedToCurrent = !ma1.equals(currentMyAccount) && !myActor.isValid() && ma1.isValid()
-                            && !accountToNote.isTiedToThisAccount()
-                            && !menuContainer.getTimeline().getTimelineType().isForUser()
-                            && currentMyAccount.isValid() && ma1.getOrigin().equals(currentMyAccount.getOrigin());
-                    if (changedToCurrent) {
-                        accountToNote = new AccountToNote(noteForAnyAccount, currentMyAccount);
-                    }
+                    AccountToNote accountToNote = AccountToNote.getAccountToActOnNote(
+                            menuContainer.getActivity().getMyContext(), noteId,
+                            myActingAccount, currentMyAccount);
                     if (MyLog.isVerboseEnabled()) {
-                        MyLog.v(noteContextMenu, "actor:" + accountToNote.getMyAccount()
-                                + (changedToCurrent ? " <- to current" : "")
-                                + (accountToNote.getMyAccount().equals(myActor) ? "" : " <- myActor:" + myActor)
-                                + (myActor.equals(viewItem.getLinkedMyAccount())
-                                    || !viewItem.getLinkedMyAccount().isValid() ? "" : " <- linked:"
-                                    + viewItem.getLinkedMyAccount())
-                                + "; noteId:" + noteId);
+                        MyLog.v(noteContextMenu, "actor:" + accountToNote.getMyAccount().getAccountName()
+                            + (accountToNote.getMyAccount().equals(myActingAccount) || !myActingAccount.isValid()
+                                ? "" : ", acting:" + myActingAccount.getAccountName())
+                            + (accountToNote.getMyAccount().equals(currentMyAccount) || !currentMyAccount.isValid()
+                                ? "" : ", current:" + currentMyAccount.getAccountName())
+                            + "\n " + accountToNote);
                     }
                     return accountToNote.getMyAccount().isValid() ? accountToNote : AccountToNote.EMPTY;
                 }

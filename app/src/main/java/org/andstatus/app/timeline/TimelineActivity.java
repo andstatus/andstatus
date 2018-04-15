@@ -406,7 +406,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         prepareDrawer();
 
         if (contextMenu != null) {
-            contextMenu.setMyActor(MyAccount.EMPTY);
+            contextMenu.note.setSelectedActingAccount(MyAccount.EMPTY);
         }
         return super.onPrepareOptionsMenu(menu);
     }
@@ -984,7 +984,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         MyAccount ma = myContext.accounts().fromAccountName(
                 data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
         if (ma.isValid()) {
-            contextMenu.setMyActor(ma);
+            contextMenu.note.setSelectedActingAccount(ma);
             contextMenu.note.showContextMenu();
         }
     }

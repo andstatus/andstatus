@@ -19,10 +19,9 @@ package org.andstatus.app.activity;
 import android.os.Bundle;
 import android.view.MenuItem;
 
-import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.actor.ActorContextMenu;
 import org.andstatus.app.note.NoteContextMenu;
 import org.andstatus.app.note.NoteContextMenuContainer;
-import org.andstatus.app.actor.ActorContextMenu;
 import org.andstatus.app.view.MyContextMenu;
 
 public class ActivityContextMenu {
@@ -50,10 +49,6 @@ public class ActivityContextMenu {
             default:
                 break;
         }
-    }
-
-    public void setMyActor(MyAccount myActor) {
-        note.setMyActor(myActor);
     }
 
     public void saveState(Bundle outState) {

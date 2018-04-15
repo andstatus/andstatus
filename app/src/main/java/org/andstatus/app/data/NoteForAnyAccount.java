@@ -21,9 +21,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
@@ -40,65 +40,57 @@ public class NoteForAnyAccount {
     public final MyContext myContext;
     @NonNull
     public final Origin origin;
-    private final long activityId;
     public final long noteId;
-    public DownloadStatus status = DownloadStatus.UNKNOWN;
-    private String content = "";
-    public long authorId = 0;
-    public String authorName = "";
-    public long actorId = 0;
-    public String actorName = "";
-    TriState isPublic = TriState.UNKNOWN;
-    public String imageFilename = null;
+    public final DownloadStatus status;
+    public final Actor author;
+    public final Actor actor;
+    public final String imageFilename;
+    public final TriState isPublic;
     Audience recipients;
+    private String content = "";
 
     public NoteForAnyAccount(MyContext myContext, long activityId, long noteId) {
         this.myContext = myContext;
         this.origin = myContext.origins().fromId(MyQuery.noteIdToOriginId(noteId));
-        this.activityId = activityId;
         this.noteId = noteId;
-        if (noteId != 0 && this.origin.isValid()) {
-            getData();
-        }
-    }
-
-    private void getData() {
         final String method = "getData";
-        String sql = "SELECT " + NoteTable.NOTE_STATUS + ", "
-                + NoteTable.CONTENT + ", "
-                + NoteTable.AUTHOR_ID + ","
-                + NoteTable.PUBLIC
-                + " FROM " + NoteTable.TABLE_NAME
-                + " WHERE " + NoteTable._ID + "=" + noteId;
         SQLiteDatabase db = myContext.getDatabase();
-        if (db == null) {
-            MyLog.v(this, method + "; Database is null");
-            return;
-        }
-        try (Cursor cursor = db.rawQuery(sql, null)) {
-            if (cursor.moveToNext()) {
-                status = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
-                content = DbUtils.getString(cursor, NoteTable.CONTENT);
-                authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID);
-                authorName = MyQuery.actorIdToName(myContext, authorId, MyPreferences.getActorInTimeline());
-                isPublic = DbUtils.getTriState(cursor, NoteTable.PUBLIC);
+        long authorId = 0;
+        DownloadStatus statusLoc = DownloadStatus.UNKNOWN;
+        TriState isPublicLoc = TriState.UNKNOWN;
+        if (noteId != 0 && this.origin.isValid() && db != null) {
+            String sql = "SELECT " + NoteTable.NOTE_STATUS + ", "
+                    + NoteTable.CONTENT + ", "
+                    + NoteTable.AUTHOR_ID + ","
+                    + NoteTable.PUBLIC
+                    + " FROM " + NoteTable.TABLE_NAME
+                    + " WHERE " + NoteTable._ID + "=" + noteId;
+            try (Cursor cursor = db.rawQuery(sql, null)) {
+                if (cursor.moveToNext()) {
+                    statusLoc = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
+                    content = DbUtils.getString(cursor, NoteTable.CONTENT);
+                    authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID);
+                    isPublicLoc = DbUtils.getTriState(cursor, NoteTable.PUBLIC);
+                }
+            } catch (Exception e) {
+                MyLog.i(this, method + "; SQL:'" + sql + "'", e);
             }
-        } catch (Exception e) {
-            MyLog.i(this, method + "; SQL:'" + sql + "'", e);
         }
+        status = statusLoc;
+        isPublic = isPublicLoc;
         recipients = Audience.fromNoteId(origin, noteId);
+        author = Actor.load(myContext, authorId);
+        author.extractActorsFromContent(content, false).forEach(recipients::add);
+
         DownloadData downloadData = DownloadData.getSingleAttachment(noteId);
         imageFilename = downloadData.getStatus() == DownloadStatus.LOADED ? downloadData.getFilename() : "";
+        long actorId;
         if (activityId == 0) {
             actorId = authorId;
         } else {
             actorId = MyQuery.activityIdToLongColumnValue(ActivityTable.ACTOR_ID, activityId);
         }
-        actorName = MyQuery.actorIdToName(myContext, actorId, MyPreferences.getActorInTimeline());
-    }
-
-    public TriState getPublic() {
-        return isPublic;
+        actor = Actor.load(myContext, actorId);
     }
 
     public boolean isLoaded() {

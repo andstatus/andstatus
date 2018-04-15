@@ -19,7 +19,12 @@ package org.andstatus.app.data;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.origin.Origin;
+
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Helper class to find out a relation of a Note to {@link #myAccount}
@@ -42,6 +47,63 @@ public class AccountToNote {
     public boolean actorFollowed = false;
     public boolean authorFollowed = false;
 
+    public static MyAccount getBestAccountToDownloadNote(MyContext myContext, long noteId) {
+        NoteForAnyAccount noteForAnyAccount = new NoteForAnyAccount(myContext, 0, noteId);
+        boolean subscribedFound = false;
+        AccountToNote bestAccountToNote = AccountToNote.EMPTY;
+        for(AccountToNote accountToNote : getAccountsForNote(myContext, noteForAnyAccount)) {
+            if(accountToNote.hasPrivateAccess()) {
+                bestAccountToNote = accountToNote;
+                break;
+            }
+            if(accountToNote.isSubscribed) {
+                bestAccountToNote = accountToNote;
+                subscribedFound = true;
+            }
+            if(accountToNote.isTiedToThisAccount() && !subscribedFound) {
+                bestAccountToNote = accountToNote;
+            }
+        }
+        return bestAccountToNote.equals(EMPTY)
+            ? myContext.accounts().getFirstSucceededForOrigin(noteForAnyAccount.origin)
+            : bestAccountToNote.myAccount;
+    }
+
+    private static List<AccountToNote> getAccountsForNote(MyContext myContext, NoteForAnyAccount noteForAnyAccount) {
+        return myContext.accounts().get().stream().filter(a -> a.getOrigin().equals(noteForAnyAccount.origin)
+                && a.isValidAndSucceeded()).map(a -> new AccountToNote(noteForAnyAccount, a)).collect(toList());
+    }
+
+    public static AccountToNote getAccountToActOnNote(MyContext myContext, long noteId,
+                                                      @NonNull MyAccount myActingAccount,
+                                                      @NonNull MyAccount currentAccount) {
+        NoteForAnyAccount noteForAnyAccount = new NoteForAnyAccount(myContext, 0, noteId);
+        final List<AccountToNote> accountsForNote = getAccountsForNote(myContext, noteForAnyAccount);
+
+        AccountToNote acting = accountsForNote.stream().filter(atn -> atn.myAccount.equals(myActingAccount))
+                .findAny().orElse(EMPTY);
+        if (!acting.equals(EMPTY)) return acting;
+
+        AccountToNote bestAccountToNote = accountsForNote.stream().filter(atn -> atn.myAccount.equals(currentAccount))
+                .findAny().orElse(EMPTY);
+        for(AccountToNote accountToNote : accountsForNote) {
+            if (!bestAccountToNote.myAccount.isValidAndSucceeded()) {
+                bestAccountToNote = accountToNote;
+            }
+            if(accountToNote.hasPrivateAccess()) {
+                bestAccountToNote = accountToNote;
+                break;
+            }
+            if(accountToNote.isSubscribed && !bestAccountToNote.isSubscribed) {
+                bestAccountToNote = accountToNote;
+            }
+            if(accountToNote.isTiedToThisAccount() && !bestAccountToNote.isTiedToThisAccount()) {
+                bestAccountToNote = accountToNote;
+            }
+        }
+        return bestAccountToNote;
+    }
+
     public AccountToNote(@NonNull NoteForAnyAccount noteForAnyAccount, MyAccount myAccount) {
         this.noteForAnyAccount = noteForAnyAccount;
         this.myAccount = calculateMyAccount(noteForAnyAccount.origin, myAccount);
@@ -62,18 +124,18 @@ public class AccountToNote {
     private void getData() {
         final String method = "getData";
         isRecipient = noteForAnyAccount.recipients.contains(accountActorId);
-        isAuthor = (accountActorId == noteForAnyAccount.authorId);
+        isAuthor = (accountActorId == noteForAnyAccount.author.actorId);
         isAuthorMySucceededMyAccount = isAuthor && myAccount.isValidAndSucceeded();
         ActorToNote actorToNote = MyQuery.favoritedAndReblogged(noteForAnyAccount.myContext,
                 noteForAnyAccount.noteId, accountActorId);
         favorited = actorToNote.favorited;
         reblogged = actorToNote.reblogged;
         isSubscribed = actorToNote.subscribed;
-        authorFollowed = MyQuery.isFollowing(accountActorId, noteForAnyAccount.authorId);
-        isActor = noteForAnyAccount.actorId == accountActorId;
-        actorFollowed = !isActor && (noteForAnyAccount.actorId == noteForAnyAccount.authorId
+        authorFollowed = MyQuery.isFollowing(accountActorId, noteForAnyAccount.author.actorId);
+        isActor = noteForAnyAccount.actor.actorId == accountActorId;
+        actorFollowed = !isActor && (noteForAnyAccount.actor.actorId == noteForAnyAccount.author.actorId
                 ? authorFollowed
-                : MyQuery.isFollowing(accountActorId, noteForAnyAccount.actorId));
+                : MyQuery.isFollowing(accountActorId, noteForAnyAccount.actor.actorId));
     }
 
     @NonNull
@@ -92,5 +154,23 @@ public class AccountToNote {
 
     public boolean isAuthorSucceededMyAccount() {
         return isAuthorMySucceededMyAccount;
+    }
+
+    @Override
+    public String toString() {
+        return "AccountToNote{" +
+                "noteForAnyAccount=" + noteForAnyAccount +
+                ", isAuthorMySucceededMyAccount=" + isAuthorMySucceededMyAccount +
+                ", myAccount=" + myAccount +
+                ", accountActorId=" + accountActorId +
+                ", isSubscribed=" + isSubscribed +
+                ", isAuthor=" + isAuthor +
+                ", isActor=" + isActor +
+                ", isRecipient=" + isRecipient +
+                ", favorited=" + favorited +
+                ", reblogged=" + reblogged +
+                ", actorFollowed=" + actorFollowed +
+                ", authorFollowed=" + authorFollowed +
+                '}';
     }
 }
