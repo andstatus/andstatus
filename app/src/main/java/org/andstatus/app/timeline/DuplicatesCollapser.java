@@ -16,20 +16,55 @@
 
 package org.andstatus.app.timeline;
 
-import android.support.v4.util.Pair;
+import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.MyPreferences;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 public class DuplicatesCollapser<T extends ViewItem<T>> {
+    private int maxDistanceBetweenDuplicates = MyPreferences.getMaxDistanceBetweenDuplicates();
+
+    private static class GroupToCollapse<T extends ViewItem<T>> {
+        @NonNull
+        ItemWithPage<T> parent;
+        Set<ItemWithPage<T>> children = new HashSet<>();
+
+        GroupToCollapse(@NonNull ItemWithPage<T> parent) {
+            this.parent = parent;
+        }
+
+        boolean contains(long itemId) {
+            return itemId != 0 && (
+                    parent.item.getId() == itemId ||
+                    children.stream().anyMatch(child -> child.item.getId() == itemId));
+        }
+
+    }
+
+    private static class ItemWithPage<T extends ViewItem<T>> {
+        TimelinePage<T> page;
+        T item;
+
+        ItemWithPage(TimelinePage<T> page, T item) {
+            this.page = page;
+            this.item = item;
+        }
+    }
+
     // Parameters, which may be changed during presentation of the timeline
     protected volatile boolean collapseDuplicates = MyPreferences.isCollapseDuplicates();
     private final Set<Long> individualCollapsedStateIds = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
@@ -49,22 +84,17 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
 
     public boolean canBeCollapsed(int position) {
         T item = data.getItem(position);
-        if (position > 0) {
-            if (item.duplicates(data.getItem(position - 1)) != DuplicationLink.NONE) {
-                return true;
-            }
-        }
-        if (item.duplicates(data.getItem(position + 1)) != DuplicationLink.NONE) {
-            return true;
+        for (int i = Math.max(position - maxDistanceBetweenDuplicates, 0); i <= position + maxDistanceBetweenDuplicates; i++) {
+            if (i != position && item.duplicates(data.getItem(i)) != DuplicationLink.NONE) return true;
         }
         return false;
     }
 
-    private void setIndividualCollapsedStatus(boolean collapse, long itemId) {
+    private void setIndividualCollapsedStatus(boolean collapse, T item) {
         if (collapse == isCollapseDuplicates()) {
-            individualCollapsedStateIds.remove(itemId);
+            individualCollapsedStateIds.remove(item.getId());
         } else {
-            individualCollapsedStateIds.add(itemId);
+            individualCollapsedStateIds.add(item.getId());
         }
     }
 
@@ -74,86 +104,84 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
             this.collapseDuplicates = collapse;
             individualCollapsedStateIds.clear();
         }
-        if (collapse) {
-            collapseDuplicates(itemId);
-        } else {
-            showDuplicates(itemId);
-        }
+        if (collapse) collapseDuplicates(itemId); else showDuplicates(itemId);
     }
 
     private void collapseDuplicates(long itemId) {
-        Set<Pair<TimelinePage<T>, T>> toCollapse = new HashSet<>();
+        Set<ItemWithPage<T>> toCollapse = new HashSet<>();
         innerCollapseDuplicates(itemId, toCollapse);
-        for (Pair<TimelinePage<T>, T> pair : toCollapse) {
-            pair.first.items.remove(pair.second);
+        for (ItemWithPage<T> itemWithPage : toCollapse) {
+            itemWithPage.page.items.remove(itemWithPage.item);
         }
     }
 
-    private void innerCollapseDuplicates(long itemId, Collection<Pair<TimelinePage<T>, T>> toCollapse) {
-        Pair<TimelinePage<T>, T> parent = new Pair<>(null, data.getEmptyItem());
-        Set<Pair<TimelinePage<T>, T>> group = new HashSet<>();
+    private void innerCollapseDuplicates(long itemId, Set<ItemWithPage<T>> toCollapse) {
+        List<GroupToCollapse<T>> groups = new ArrayList<>();
         for (TimelinePage<T> page : data.pages) {
             for (T item : page.items) {
-                Pair<TimelinePage<T>, T> itemPair =new Pair<>(page, item);
-                switch (item.duplicates(parent.second)) {
-                    case DUPLICATES:
-                        break;
-                    case IS_DUPLICATED:
-                        parent = itemPair;
-                        break;
-                    default:
-                        if (collapseThisGroup(itemId, parent, group, toCollapse)) {
+                ItemWithPage<T> itemPair = new ItemWithPage<>(page, item);
+                boolean found = false;
+                for (GroupToCollapse<T> group : groups) {
+                    switch (item.duplicates(group.parent.item)) {
+                        case DUPLICATES:
+                            found = true;
+                            group.children.add(itemPair);
+                            break;
+                        case IS_DUPLICATED:
+                            found = true;
+                            group.children.add(group.parent);
+                            group.parent = itemPair;
+                            break;
+                        default:
+                            break;
+                    }
+                    if (found) break;
+                }
+                if (!found) {
+                    if (itemId != 0) {
+                        Optional<GroupToCollapse<T>> selectedGroupOpt =
+                                groups.stream().filter(group -> group.contains(itemId)).findAny();
+                        if (selectedGroupOpt.isPresent()) {
+                            collapseThisGroup(itemId, selectedGroupOpt.get(), toCollapse);
                             return;
                         }
-                        group.clear();
-                        parent = itemPair;
-                        break;
+                    }
+                    if (groups.size() > maxDistanceBetweenDuplicates) {
+                        GroupToCollapse<T> group = groups.remove(0);
+                        if (itemId == 0 || group.contains(itemId)) {
+                            collapseThisGroup(itemId, group, toCollapse);
+                            if (itemId != 0) return;
+                        }
+                    }
+                    groups.add(new GroupToCollapse<>(itemPair));
                 }
-                group.add(itemPair);
+
             }
         }
-        collapseThisGroup(itemId, parent, group, toCollapse);
+        for (GroupToCollapse<T> group : groups) {
+            if (itemId == 0 || group.contains(itemId)) {
+                collapseThisGroup(itemId, group, toCollapse);
+            }
+        }
     }
 
-    private boolean collapseThisGroup(long itemId, Pair<TimelinePage<T>, T> parent, Set<Pair<TimelinePage<T>, T>> group,
-                                      Collection<Pair<TimelinePage<T>, T>> toCollapse) {
-        if (group.isEmpty()) {
-            return false;
-        }
+    private void collapseThisGroup(long itemId, GroupToCollapse<T> group,
+                                      Collection<ItemWithPage<T>> toCollapse) {
+        if (group.children.isEmpty()) return;
 
-        boolean groupOfSelectedItem = false;
-        if (itemId != 0) {
-            for (Pair<TimelinePage<T>, T> itemPair : group) {
-                if (itemId == itemPair.second.getId()) {
-                    groupOfSelectedItem = true;
-                    break;
-                }
-            }
-        }
-        if (groupOfSelectedItem) {
-            for (Pair<TimelinePage<T>, T> itemPair : group) {
-                setIndividualCollapsedStatus(true, itemPair.second.getId());
-            }
-        }
+        boolean groupOfSelectedItem = group.contains(itemId);
+        if (groupOfSelectedItem) group.children
+                .forEach(child -> setIndividualCollapsedStatus(true, child.item));
 
-        boolean hasIndividualCollapseState = false;
-        if (!groupOfSelectedItem && !individualCollapsedStateIds.isEmpty()) {
-            for (Pair<TimelinePage<T>, T> itemPair : group) {
-                if (individualCollapsedStateIds.contains(itemPair.second.getId())) {
-                    hasIndividualCollapseState = true;
-                    break;
-                }
-            }
+        boolean noIndividualCollapseState = groupOfSelectedItem || individualCollapsedStateIds.isEmpty()
+                || group.children.stream().noneMatch(child -> individualCollapsedStateIds.contains(child.item.getId()));
+        if (noIndividualCollapseState) {
+            group.children.stream().filter(child -> !group.parent.equals(child))
+                    .forEach(child -> {
+                        group.parent.item.collapse(child.item);
+                        toCollapse.add(child);
+                    });
         }
-        if (!hasIndividualCollapseState) {
-            for (Pair<TimelinePage<T>, T> itemPair : group) {
-                if (!parent.equals(itemPair)) {
-                    parent.second.collapse(itemPair.second);
-                    toCollapse.add(itemPair);
-                }
-            }
-        }
-        return groupOfSelectedItem;
     }
 
     private void showDuplicates(long itemId) {
@@ -170,35 +198,20 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
 
     private boolean showDuplicatesOfOneItem(long itemId, TimelinePage<T> page, int ind) {
         T item = page.items.get(ind);
-        boolean groupOfSelectedItem = itemId == item.getId();
-        if (itemId != 0 && !groupOfSelectedItem) {
-            for (ViewItem child : item.getChildren()) {
-                if (itemId == child.getId()) {
-                    groupOfSelectedItem = true;
-                    break;
-                }
-            }
-        }
+        boolean groupOfSelectedItem = itemId == item.getId()
+                || (itemId != 0 && item.getChildren().stream().anyMatch(child -> child.getId() == itemId));
         if (groupOfSelectedItem) {
-            setIndividualCollapsedStatus(false, item.getId());
-            for (ViewItem child : item.getChildren()) {
-                setIndividualCollapsedStatus(false, child.getId());
-            }
+            setIndividualCollapsedStatus(false, item);
+            item.getChildren().forEach(child -> setIndividualCollapsedStatus(false, child));
         }
 
-        boolean hasIndividualCollapseState = false;
-        if (!groupOfSelectedItem && !individualCollapsedStateIds.isEmpty()) {
-            for (ViewItem child : item.getChildren()) {
-                if (individualCollapsedStateIds.contains(child.getId())) {
-                    hasIndividualCollapseState = true;
-                    break;
-                }
-            }
-        }
-        if (!hasIndividualCollapseState && (itemId == 0 || groupOfSelectedItem)) {
+        boolean noIndividualCollapseState = groupOfSelectedItem || individualCollapsedStateIds.isEmpty()
+                || item.getChildren().stream().noneMatch(child -> individualCollapsedStateIds.contains(child.getId()));
+        if (noIndividualCollapseState && (itemId == 0 || groupOfSelectedItem)) {
             int ind2 = ind + 1;
-            for (ViewItem child : item.getChildren()) {
-                page.items.add(ind2++, (T) child);
+            for (T child : item.getChildren().stream().sorted(
+                    Comparator.comparing(T::getDate).reversed()).collect(toList())) {
+                page.items.add(ind2++, child);
             }
             item.getChildren().clear();
         }

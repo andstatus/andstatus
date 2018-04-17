@@ -30,7 +30,7 @@
         </subtitle>
     </header>
     <release android:versionName="38.00" android:versionCode="246"
-             versionDate="2018-04-12"
+             versionDate="2018-04-17"
              versionTitle="Video attachments and Titles for notes">
         <changes>
             <change>Video file can be attached to a new note. A thumbnail of the video attachment is shown in a timeline.
@@ -41,6 +41,12 @@
             <change>Added "Public" checkbox to the Note Editor to mark a note explicitly as public or not
                 public. Currently this option is available for Pump.io only.</change>
             <change>Click on an attached image or video opens corresponding viewer/player application.</change>
+            <change>Added an option for "Collapse duplicates" that allows it to find not only adjacent duplicates
+                ("distance" = 1), but also duplicates, separated by other notes:
+                Timeline -> "Maximum distance between duplicates" which defaults to "5" now.
+                Setting it to 0 disables the "Collapse duplicates" feature.
+                <a href="https://github.com/andstatus/andstatus/issues/481">#481</a>
+            </change>
         </changes>
     </release>
     <release android:versionName="37.01" android:versionCode="245"

@@ -58,4 +58,9 @@
     <org.andstatus.app.context.MultilineCheckBoxPreference android:key="old_messages_first_in_conversation"
         android:title="@string/title_preference_old_messages_first_in_conversation"
         android:defaultValue="false" />
+    <org.andstatus.app.context.MultilineEditTextPreference android:key="max_distance_between_duplicates"
+        android:dialogTitle="@string/max_distance_between_duplicates_title"
+        android:singleLine="true"
+        android:defaultValue="5"
+        android:title="@string/max_distance_between_duplicates_title" />
 </PreferenceScreen>

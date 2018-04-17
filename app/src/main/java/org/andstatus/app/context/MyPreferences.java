@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -56,6 +56,8 @@ public class MyPreferences {
     public static final String KEY_OLD_NOTES_FIRST_IN_CONVERSATION = "old_messages_first_in_conversation";
     public static final String KEY_REFRESH_TIMELINE_AUTOMATICALLY = "refresh_timeline_automatically";
     public static final String KEY_SHOW_THREADS_OF_CONVERSATION = "show_threads_of_conversation";
+    public static final String KEY_MAX_DISTANCE_BETWEEN_DUPLICATES = "max_distance_between_duplicates";
+    public static final int MAX_DISTANCE_BETWEEN_DUPLICATES_DEFAULT = 5;
 
     // ----------------------------------------------------------
     // Gestures
@@ -249,5 +251,10 @@ public class MyPreferences {
 
     public static boolean isRefreshTimelineAutomatically() {
         return SharedPreferencesUtil.getBoolean(KEY_REFRESH_TIMELINE_AUTOMATICALLY, true);
+    }
+
+    public static int getMaxDistanceBetweenDuplicates() {
+        return SharedPreferencesUtil.getIntStoredAsString(KEY_MAX_DISTANCE_BETWEEN_DUPLICATES,
+                MAX_DISTANCE_BETWEEN_DUPLICATES_DEFAULT);
     }
 }

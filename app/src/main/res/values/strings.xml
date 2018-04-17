@@ -241,6 +241,7 @@
   <string name="manage_accounts">Manage accounts</string>
   <string name="manage_accounts_android">Manage AndStatus accounts in Android Settings</string>
   <string name="manage_timelines">Manage Timelines</string>
+  <string name="max_distance_between_duplicates_title">Maximum distance between duplicates</string>
   <string name="mention_as_webfingerid_title">Mention as @webFingerId</string>
   <string name="menu_item_act_as">Act as&#8230;</string>
   <string name="menu_item_act_as_user">Act as \"%1s\"</string>

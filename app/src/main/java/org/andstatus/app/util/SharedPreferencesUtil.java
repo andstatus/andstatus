@@ -228,6 +228,11 @@ public class SharedPreferencesUtil {
         }
     }
 
+    public static int getIntStoredAsString(@NonNull String key, int defaultValue) {
+        long longValue = getLongStoredAsString(key, defaultValue);
+        return (longValue >= Integer.MIN_VALUE && longValue <= Integer.MAX_VALUE) ? (int) longValue : defaultValue;
+    }
+
     public static long getLongStoredAsString(@NonNull String key, long defaultValue) {
         long value = defaultValue;
         try {

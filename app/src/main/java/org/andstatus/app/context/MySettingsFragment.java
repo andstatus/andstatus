@@ -121,6 +121,7 @@ public class MySettingsFragment extends PreferenceFragment implements
         showThemeSize();
         showFilterHideNotesBasedOnKeywords();
         showManageTimelines();
+        showMaxDistanceBetweenDuplicates();
     }
 
     private void showManageAccounts() {
@@ -294,6 +295,14 @@ public class MySettingsFragment extends PreferenceFragment implements
         }
     }
 
+    private void showMaxDistanceBetweenDuplicates() {
+        Preference preference = findPreference(MyPreferences.KEY_MAX_DISTANCE_BETWEEN_DUPLICATES);
+        if (preference != null) {
+            Integer value = MyPreferences.getMaxDistanceBetweenDuplicates();
+            preference.setSummary( value > 0 ? value.toString() : getText(R.string.this_option_is_turned_off));;
+        }
+    }
+
     private void showListPreference(String key) {
         ListPreference preference = (ListPreference) findPreference(key);
         if (preference != null) {
@@ -428,6 +437,9 @@ public class MySettingsFragment extends PreferenceFragment implements
                     break;
                 case MyPreferences.KEY_ROUNDED_AVATARS:
                     ImageCaches.setAvatarsRounded();
+                    break;
+                case MyPreferences.KEY_MAX_DISTANCE_BETWEEN_DUPLICATES:
+                    showMaxDistanceBetweenDuplicates();
                     break;
                 default:
                     break;
