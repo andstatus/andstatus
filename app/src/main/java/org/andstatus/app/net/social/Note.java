@@ -308,7 +308,7 @@ public class Note extends AObject {
     }
 
     public void addRecipientsFromBodyText(Actor author) {
-        for (Actor actor : author.extractActorsFromContent(getContent(), true)) {
+        for (Actor actor : author.extractActorsFromContent(getContent(), false)) {
             addRecipient(actor);
         }
     }

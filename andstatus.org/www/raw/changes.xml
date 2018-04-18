@@ -30,7 +30,7 @@
         </subtitle>
     </header>
     <release android:versionName="38.00" android:versionCode="246"
-             versionDate="2018-04-17"
+             versionDate="2018-04-18"
              versionTitle="Video attachments and Titles for notes">
         <changes>
             <change>Video file can be attached to a new note. A thumbnail of the video attachment is shown in a timeline.
@@ -47,6 +47,8 @@
                 Setting it to 0 disables the "Collapse duplicates" feature.
                 <a href="https://github.com/andstatus/andstatus/issues/481">#481</a>
             </change>
+            <change>Fixed: All users, mentioned as @username in a text of a note, are identified and used
+                in Notifications.</change>
         </changes>
     </release>
     <release android:versionName="37.01" android:versionCode="245"

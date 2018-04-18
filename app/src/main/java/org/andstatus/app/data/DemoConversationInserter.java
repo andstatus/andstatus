@@ -36,7 +36,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class DemoConversationInserter {
@@ -131,6 +134,10 @@ public class DemoConversationInserter {
         AActivity reply5 = buildActivity(author2, "", MENTIONS_NOTE_BODY, reply4,
                 iteration == 1 ? demoData.conversationMentionsNoteOid : null);
         addActivity(reply5);
+        assertThat("The user '" + author3.getUsername() + "' should be a recipient",
+                reply5.getNote().audience().getRecipients(), hasItem(author3));
+        assertThat("The user '" + author2.getUsername() + "' should not be a recipient",
+                reply5.getNote().audience().getRecipients(), not(hasItem(author2)));
 
         Actor reblogger1 = buildActorFromOid("acct:reblogger@" + demoData.pumpioMainHost);
         reblogger1.avatarUrl = "http://www.avatarsdb.com/avatars/cow_face.jpg";
