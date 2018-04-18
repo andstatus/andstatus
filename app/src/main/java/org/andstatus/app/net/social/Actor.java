@@ -362,7 +362,7 @@ public class Actor implements Comparable<Actor> {
     }
 
     public String getNamePreferablyWebFingerId() {
-        if (StringUtils.nonEmpty(webFingerId)) return webFingerId;
+        if (isWebFingerIdValid) return webFingerId;
         if (StringUtils.nonEmpty(username)) return username;
         if (StringUtils.nonEmpty(realName)) return realName;
         if (StringUtils.nonEmpty(oid)) return "oid:" + oid;
@@ -581,7 +581,7 @@ public class Actor implements Comparable<Actor> {
             case AT_USERNAME:
                 return StringUtils.isEmpty(username) ? "" : "@" + username;
             case WEBFINGER_ID:
-                return webFingerId;
+                return isWebFingerIdValid ? webFingerId : "";
             case REAL_NAME:
                 return realName;
             case REAL_NAME_AT_USERNAME:
