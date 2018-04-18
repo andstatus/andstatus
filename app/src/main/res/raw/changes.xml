@@ -47,8 +47,8 @@
                 Setting it to 0 disables the "Collapse duplicates" feature.
                 <a href="https://github.com/andstatus/andstatus/issues/481">#481</a>
             </change>
-            <change>Fixed: All users, mentioned as @username in a text of a note, are identified and used
-                in Notifications.</change>
+            <change>Fixed: All users, mentioned as @username in a text of an incoming note, are identified and used
+                in Notifications. Multiple note recipients (e.g. for Pump.io) are not supported yet.</change>
         </changes>
     </release>
     <release android:versionName="37.01" android:versionCode="245"

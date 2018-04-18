@@ -563,7 +563,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     @Override
     public AActivity updateNote(String name, String content, String noteOid, Audience audience, String inReplyToOid,
                                 Uri mediaUri) throws ConnectionException {
-        if (StringUtils.isEmpty(inReplyToOid) && audience.hasNonPublic()) {
+        if (StringUtils.isEmpty(inReplyToOid) && audience.hasNonPublic() && audience.getPublic().isFalse) {
             return updatePrivateNote(name, content, noteOid, audience.getFirstNonPublic().oid, mediaUri);
         }
         return  updateNote2(name, content, noteOid, audience, inReplyToOid, mediaUri);
