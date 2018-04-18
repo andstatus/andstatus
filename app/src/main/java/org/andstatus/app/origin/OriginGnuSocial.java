@@ -19,7 +19,6 @@ package org.andstatus.app.origin;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.TriState;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -30,9 +29,9 @@ class OriginGnuSocial extends Origin {
     protected String alternativeNotePermalink(long noteId) {
         try {
             return new URL(url,
-                    (MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId) == TriState.TRUE
-                            ? "notice"
-                            : "message") + "/"
+                    (MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId).isFalse
+                            ? "message"
+                            : "notice") + "/"
                     + MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId)).toExternalForm();
         } catch (MalformedURLException e) {
             MyLog.d(this, "Malformed URL from '" + url.toExternalForm() + "'", e);

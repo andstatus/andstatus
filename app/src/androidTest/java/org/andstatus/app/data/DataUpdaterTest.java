@@ -516,7 +516,7 @@ public class DataUpdaterTest {
                 + " Hope you will see this as a real reply!";
         addOneNote4testReplyInContent(buddyUsername, content, true);
 
-        addOneNote4testReplyInContent(buddyUsername, "Oh, " + content, false);
+        addOneNote4testReplyInContent(buddyUsername, "Oh, " + content, true);
 
         long actorId1 = MyQuery.webFingerIdToId(ma.getOriginId(), buddyUsername);
         assertEquals("Actor has temp Oid", Actor.getTempOid(buddyUsername, ""), MyQuery.idToOid(OidEnum.ACTOR_OID, actorId1, 0));
