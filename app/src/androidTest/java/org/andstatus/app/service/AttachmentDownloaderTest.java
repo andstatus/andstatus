@@ -64,7 +64,7 @@ public class AttachmentDownloaderTest {
         
         DownloadData dd = DownloadData.getSingleAttachment(activity.getNote().noteId
         );
-        assertEquals("Image URI stored", activity.getNote().attachments.get(0).getUri(), dd.getUri());
+        assertEquals("Image URI stored", activity.getNote().attachments.list.get(0).getUri(), dd.getUri());
         
         loadAndAssertStatusForRow(dd, DownloadStatus.ABSENT, true);
 

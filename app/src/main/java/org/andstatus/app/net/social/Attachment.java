@@ -26,13 +26,14 @@ import org.andstatus.app.data.MyContentType;
 
 import java.util.Objects;
 
-public class Attachment {
+public class Attachment implements Comparable<Attachment> {
     @NonNull
     public final Uri uri;
     @NonNull
     public final String mimeType;
     @NonNull
     public final MyContentType contentType;
+    int downloadNumber = 0;
 
     private Attachment(ContentResolver contentResolver, @NonNull Uri uri, @NonNull String mimeType) {
         this.uri = uri;
@@ -84,4 +85,13 @@ public class Attachment {
     public Uri getUri() {
         return uri;
     }
+
+    @Override
+    public int compareTo(@NonNull Attachment o) {
+        if (contentType != o.contentType) {
+            return contentType.attachmentsSortOrder > o.contentType.attachmentsSortOrder ? 1 : -1;
+        }
+        return 0;
+    }
+
 }

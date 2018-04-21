@@ -62,7 +62,7 @@ public class LargeImageTest {
         
         DownloadData dd = DownloadData.getSingleAttachment(activity.getNote().noteId
         );
-        assertEquals("Image URI stored", activity.getNote().attachments.get(0).getUri(), dd.getUri());
+        assertEquals("Image URI stored", activity.getNote().attachments.list.get(0).getUri(), dd.getUri());
 
         CommandData commandData = CommandData.newCommand(CommandEnum.GET_AVATAR);
         AttachmentDownloader loader = new AttachmentDownloader(dd);

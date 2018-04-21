@@ -40,8 +40,10 @@ public class TimelineData<T extends ViewItem<T>> {
         isSameTimeline = oldData != null &&
                 params.getContentUri().equals(oldData.params.getContentUri());
         this.pages = isSameTimeline ? new ArrayList<>(oldData.pages) : new ArrayList<>();
+        boolean collapsed = isCollapseDuplicates();
+        duplicatesCollapser.collapseDuplicates(false, 0);
         addThisPage(thisPage);
-        duplicatesCollapser.collapseDuplicates(isCollapseDuplicates(), 0);
+        if (collapsed) duplicatesCollapser.collapseDuplicates(true, 0);
         dropExcessivePage(thisPage);
     }
 
@@ -110,40 +112,9 @@ public class TimelineData<T extends ViewItem<T>> {
     }
 
     private void removeDuplicatesWithYounger(TimelinePage<T> page, int indExistingPage) {
-        if (indExistingPage < 0 || indExistingPage >= pages.size()
-                || pages.get(indExistingPage).items.isEmpty() || page.items.isEmpty()) {
-            return;
+        for (int ind = Integer.min(indExistingPage, pages.size() - 1); ind >= 0; ind--) {
+            pages.get(ind).items.removeAll(page.items);
         }
-        TimelinePage<T> ePage = pages.get(indExistingPage);
-        if (ePage.params.maxDate > 0 && page.params.maxDate >= ePage.params.maxDate) {
-            MyLog.v(this, "Previous younger page removed");
-            pages.remove(indExistingPage);
-            return;
-        }
-        long edgeDate = ePage.params.minDateLoaded;
-        List<T> toRemove = new ArrayList<>();
-        for (int ind = 0; ind < page.items.size(); ind++) {
-            T item = page.items.get(ind);
-            if (item.getDate() < edgeDate) {
-                break;
-            } else if (item.getDate() > edgeDate) {
-                MyLog.e(this, "This page has an item younger than on a younger page: " + item);
-                toRemove.add(item);
-            } else {
-                for (int eInd = ePage.items.size() - 1; eInd >= 0; eInd--) {
-                    T eItem = ePage.items.get(eInd);
-                    if (eItem.getDate() > item.getDate()) {
-                        break;
-                    }
-                    if (eItem.getId() == item.getId()) {
-                        mergeWithExisting(item, eItem);
-                        toRemove.add(item);
-                        break;
-                    }
-                }
-            }
-        }
-        page.items.removeAll(toRemove);
     }
 
     private void mergeWithExisting(T newItem, T existingItem) {
@@ -151,40 +122,9 @@ public class TimelineData<T extends ViewItem<T>> {
     }
 
     private void removeDuplicatesWithOlder(TimelinePage<T> page, int indExistingPage) {
-        if (indExistingPage < 0 || indExistingPage >= pages.size()
-                || pages.get(indExistingPage).items.isEmpty() || page.items.isEmpty()) {
-            return;
+        for (int ind = Integer.max(indExistingPage, 0); ind < pages.size(); ind++) {
+            pages.get(ind).items.removeAll(page.items);
         }
-        TimelinePage<T> ePage = pages.get(indExistingPage);
-        if (page.params.minDate <= ePage.params.minDate) {
-            MyLog.v(this, "Previous older page removed");
-            pages.remove(indExistingPage);
-            return;
-        }
-        long edgeDate = ePage.params.maxDateLoaded;
-        List<T> toRemove = new ArrayList<>();
-        for (int ind = page.items.size() - 1; ind >= 0; ind--) {
-            T item = page.items.get(ind);
-            if (item.getDate() > edgeDate) {
-                break;
-            } else if (item.getDate() < edgeDate) {
-                MyLog.e(this, "This page has an item older than on an older page: " + item);
-                toRemove.add(item);
-            } else {
-                for (int eInd = 0; eInd < ePage.items.size(); eInd++) {
-                    T eItem = ePage.items.get(eInd);
-                    if (eItem.getDate() < item.getDate()) {
-                        break;
-                    }
-                    if (eItem.getId() == item.getId()) {
-                        mergeWithExisting(item, eItem);
-                        toRemove.add(item);
-                        break;
-                    }
-                }
-            }
-        }
-        page.items.removeAll(toRemove);
     }
 
     // See http://stackoverflow.com/questions/300522/count-vs-length-vs-size-in-a-collection

@@ -109,4 +109,18 @@ public class ViewItem<T extends ViewItem<T>> {
     public void setLoadedActors(ActorListLoader loader) {
         // Empty
     }
+
+    @Override
+    public int hashCode() {
+        int result = Long.hashCode(getId());
+        return 31 * result + Long.hashCode(getDate());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        T that = (T) o;
+        return getId() == that.getId() && getDate() == that.getDate();
+    }
 }

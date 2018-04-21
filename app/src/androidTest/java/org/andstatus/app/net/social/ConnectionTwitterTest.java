@@ -169,9 +169,9 @@ public class ConnectionTwitterTest {
         assertNotNull("note returned", note);
         assertEquals("has attachment", 1, note.attachments.size());
         assertEquals("attachment",  Attachment.fromUri("https://pbs.twimg.com/media/Bv3a7EsCAAIgigY.jpg"),
-                note.attachments.get(0));
+                note.attachments.list.get(0));
         assertNotSame("attachment", Attachment.fromUri("https://pbs.twimg.com/media/Bv4a7EsCAAIgigY.jpg"),
-                note.attachments.get(0));
+                note.attachments.list.get(0));
     }
 
     @Test

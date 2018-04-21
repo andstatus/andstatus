@@ -30,11 +30,9 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.note.KeywordsFilter;
-import org.andstatus.app.service.AttachmentDownloader;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
@@ -45,7 +43,6 @@ import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -215,6 +212,9 @@ public class DataUpdater {
             if (note.lookupConversationId() != 0) {
                 values.put(NoteTable.CONVERSATION_ID, note.getConversationId());
             }
+            if (shouldSaveAttachments(isFirstTimeLoaded, isDraftUpdated)) {
+                values.put(NoteTable.ATTACHMENTS_COUNT, note.attachments.size());
+            }
 
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, ((note.noteId ==0) ? "insertMsg" : "updateMsg " + note.noteId)
@@ -246,8 +246,8 @@ public class DataUpdater {
             }
             note.audience().save(execContext.getMyContext(), note.origin, note.noteId);
 
-            if (isFirstTimeLoaded || isDraftUpdated) {
-                saveAttachments(note);
+            if (shouldSaveAttachments(isFirstTimeLoaded, isDraftUpdated)) {
+                note.attachments.save(execContext, note.noteId);
             }
 
             if (keywordsFilter.matchedAny(note.getContentToSearch())) {
@@ -261,6 +261,10 @@ public class DataUpdater {
         } catch (Exception e) {
             MyLog.e(this, method, e);
         }
+    }
+
+    private boolean shouldSaveAttachments(boolean isFirstTimeLoaded, boolean isDraftUpdated) {
+        return isFirstTimeLoaded || isDraftUpdated;
     }
 
     private void updateInReplyTo(AActivity activity, ContentValues values) {
@@ -278,33 +282,6 @@ public class DataUpdater {
                 }
             }
         }
-    }
-
-    private void saveAttachments(Note note) {
-        List<Long> downloadIds = new ArrayList<>();
-        for (Attachment attachment : note.attachments) {
-            DownloadData dd = DownloadData.getThisForNote(note.noteId, attachment.mimeType, DownloadType.ATTACHMENT,
-                    attachment.getUri());
-            dd.saveToDatabase();
-            downloadIds.add(dd.getDownloadId());
-            switch (dd.getStatus()) {
-                case LOADED:
-                case HARD_ERROR:
-                    break;
-                default:
-                    if (UriUtils.isDownloadable(dd.getUri())) {
-                        if ((attachment.contentType == MyContentType.IMAGE ||
-                                attachment.contentType == MyContentType.VIDEO)
-                                && MyPreferences.getDownloadAndDisplayAttachedImages()) {
-                            dd.requestDownload();
-                        }
-                    } else {
-                        AttachmentDownloader.load(dd, execContext.getCommandData());
-                    }
-                    break;
-            }
-        }
-        DownloadData.deleteOtherOfThisNote(note.noteId, downloadIds);
     }
 
     private void updateObjActor(AActivity activity) {

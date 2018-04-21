@@ -63,7 +63,7 @@ public class Note extends AObject {
     public String via = "";
     public String url="";
 
-    public final List<Attachment> attachments = new ArrayList<>();
+    public final Attachments attachments = new Attachments();
 
     /** Some additional attributes may appear from "My account's" (authenticated Account's) point of view */
 
@@ -257,7 +257,7 @@ public class Note extends AObject {
             builder.append("\nrecipients:" + recipients + ",");
         }
         if (!attachments.isEmpty()) {
-            builder.append("\nattachments:" + attachments + ",");
+            builder.append("\n" + attachments + ",");
         }
         if(getInReplyTo().nonEmpty()) {
             builder.append("\ninReplyTo:" + getInReplyTo() + ",");
@@ -332,7 +332,7 @@ public class Note extends AObject {
         note.setConversationOid(conversationOid);
         note.via = via;
         note.url = url;
-        note.attachments.addAll(attachments);
+        note.attachments.copy(attachments);
         note.conversationId = conversationId;
         return note;
     }

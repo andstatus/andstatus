@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.graphics.MediaMetadata;
@@ -198,7 +199,11 @@ public class DownloadData {
         MyLog.d(this, "Failed to find file extension " + this);
         return "png";
     }
-    
+
+    public void setDownloadNumber(long downloadNumber) {
+        this.downloadNumber = downloadNumber;
+    }
+
     public void saveToDatabase() {
         if (hardError) {
             status = DownloadStatus.HARD_ERROR;
@@ -314,38 +319,38 @@ public class DownloadData {
     public static void deleteOtherOfThisActor(long actorId, long rowId) {
         final String method = "deleteOtherOfThisActor actorId=" + actorId + (rowId != 0 ? ", downloadId=" + rowId : "");
         String where = DownloadTable.ACTOR_ID + "=" + actorId
-                + (rowId != 0 ? " AND " + DownloadTable._ID + "<>" + Long.toString(rowId) : "") ;
+                + (rowId == 0 ? "" : " AND " + DownloadTable._ID + "<>" + Long.toString(rowId)) ;
         deleteSelected(method, MyContextHolder.get().getDatabase(), where);
     }
 
     private static void deleteSelected(final String method, SQLiteDatabase db, String where) {
-        String sql = "SELECT " + DownloadTable._ID + ", "
-                + DownloadTable.FILE_NAME
+        String sql = "SELECT " + DownloadTable._ID + ", " + DownloadTable.FILE_NAME
                 + " FROM " + DownloadTable.TABLE_NAME
                 + " WHERE " + where;
         int rowsDeleted = 0;
         boolean done = false;
-        for (int pass=0; !done && pass<3; pass++) {
+        for (int pass=0; pass<3; pass++) {
             if (db == null) {
                 MyLog.v(TAG, "Database is null");
                 return;
             }
             try (Cursor cursor = db.rawQuery(sql, null)) {
                 while (cursor.moveToNext()) {
-                    long rowIdOld = cursor.getLong(0);
-                    new DownloadFile(cursor.getString(1)).delete();
-                    rowsDeleted += db.delete(DownloadTable.TABLE_NAME, DownloadTable._ID + "=" + Long.toString(rowIdOld), null);
+                    long rowIdOld = DbUtils.getLong(cursor, DownloadTable._ID);
+                    new DownloadFile(DbUtils.getString(cursor, DownloadTable.FILE_NAME)).delete();
+                    rowsDeleted += db.delete(DownloadTable.TABLE_NAME, DownloadTable._ID
+                            + "=" + Long.toString(rowIdOld), null);
                 }
                 done = true;
             } catch (SQLiteException e) {
-                MyLog.i(DownloadData.class, method + ", Database is locked, pass=" + pass + "; sql='" + sql + "'", e);
+                MyLog.i(DownloadData.class, method + ", Database error, pass=" + pass + "; sql='" + sql + "'", e);
             }
-            if (!done) {
-                DbUtils.waitMs(method, 500);
-            }
+            if (done) break;
+            DbUtils.waitMs(method, 500);
         }
         if (MyLog.isVerboseEnabled() && (!done || rowsDeleted>0)) {
-            MyLog.v(DownloadData.class, method + (done ? " succeeded" : " failed") + "; deleted " + rowsDeleted + " rows");
+            MyLog.v(DownloadData.class, method + (done ? " succeeded" : " failed")
+                    + "; deleted " + rowsDeleted + " rows");
         }
     }
 
@@ -354,14 +359,14 @@ public class DownloadData {
         deleteSelected(method, db, DownloadTable.NOTE_ID + "=" + noteId);
     }
 
-    public static void deleteOtherOfThisNote(long noteId, List<Long> downloadIds) {
-        if (noteId == 0 || downloadIds == null || downloadIds.isEmpty()) {
+    public static void deleteOtherOfThisNote(MyContext myContext, long noteId, @NonNull List<Long> downloadIds) {
+        if (noteId == 0 || downloadIds.isEmpty()) {
             return;
         }
         final String method = "deleteOtherOfThisNote noteId=" + noteId + ", rowIds:" + toSqlList(downloadIds);
         String where = DownloadTable.NOTE_ID + "=" + noteId
                 + " AND " + DownloadTable._ID + " NOT IN(" + toSqlList(downloadIds) + ")" ;
-        deleteSelected(method, MyContextHolder.get().getDatabase(), where);
+        deleteSelected(method, myContext.getDatabase(), where);
     }
 
     public static String toSqlList(List<Long> longs) {

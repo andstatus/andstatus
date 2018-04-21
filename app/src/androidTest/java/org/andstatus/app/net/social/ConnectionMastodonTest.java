@@ -83,7 +83,7 @@ public class ConnectionMastodonTest {
         assertEquals("Note application", "Web", note.via);
 
         assertEquals("Media attachments", 1, note.attachments.size());
-        Attachment attachment = note.attachments.get(0);
+        Attachment attachment = note.attachments.list.get(0);
         assertEquals("Content type", MyContentType.IMAGE, attachment.contentType);
         assertEquals("Content type", UriUtils.fromString("https://files.neumastodon.com/media_attachments/files/000/306/223/original/e678f956970a585b.png?1492832537"),
                 attachment.getUri());

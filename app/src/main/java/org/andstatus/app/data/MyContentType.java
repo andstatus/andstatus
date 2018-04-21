@@ -23,19 +23,19 @@ import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
 
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
 
 public enum MyContentType {
-    IMAGE("image/*", 2),
-    TEXT("text/*", 3),
-    VIDEO("video/*", 4),
-    UNKNOWN("*/*", 0);
+    IMAGE("image/*", 2, 1),
+    TEXT("text/*", 3, 3),
+    VIDEO("video/*", 4, 2),
+    UNKNOWN("*/*", 0, 4);
     
     private static final String TAG = MyContentType.class.getSimpleName();
     
     private final long code;
     public final String generalMimeType;
+    public final int attachmentsSortOrder;
 
 
     @NonNull
@@ -81,9 +81,10 @@ public enum MyContentType {
         return UNKNOWN;
     }
 
-    MyContentType(String generalMimeType, long code) {
+    MyContentType(String generalMimeType, long code, int attachmentsSortOrder) {
         this.generalMimeType = generalMimeType;
         this.code = code;
+        this.attachmentsSortOrder = attachmentsSortOrder;
     }
 
     public String save() {

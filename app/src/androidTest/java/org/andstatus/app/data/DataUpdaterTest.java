@@ -364,7 +364,7 @@ public class DataUpdaterTest {
         assertNotEquals("Activity added " + activity, 0, activity.getId());
 
         DownloadData dd = DownloadData.getSingleAttachment(noteId);
-        assertEquals("Image URI stored", activity.getNote().attachments.get(0).getUri(), dd.getUri());
+        assertEquals("Image URI stored", activity.getNote().attachments.list.get(0).getUri(), dd.getUri());
     }
 
     @Test
@@ -385,7 +385,7 @@ public class DataUpdaterTest {
 
         DownloadData dd = DownloadData.getSingleAttachment(note.noteId
         );
-        assertEquals("Image URI stored", note.attachments.get(0).getUri(), dd.getUri());
+        assertEquals("Image URI stored", note.attachments.list.get(0).getUri(), dd.getUri());
         assertEquals("Local image immediately loaded " + dd, DownloadStatus.LOADED, dd.getStatus());
 
         DbUtils.waitMs(method, 1000);
@@ -408,7 +408,7 @@ public class DataUpdaterTest {
 
         DownloadData dd2 = DownloadData.getSingleAttachment(note2.noteId
         );
-        assertEquals("New image URI stored", note2.attachments.get(0).getUri(), dd2.getUri());
+        assertEquals("New image URI stored", note2.attachments.list.get(0).getUri(), dd2.getUri());
 
         assertEquals("Not loaded yet. " + dd2, DownloadStatus.ABSENT, dd2.getStatus());
         AttachmentDownloaderTest.loadAndAssertStatusForRow(dd2, DownloadStatus.LOADED, false);

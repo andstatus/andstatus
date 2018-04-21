@@ -172,7 +172,7 @@ public class ConnectionGnuSocialTest {
 
         assertEquals("has attachment", 1, activity.getNote().attachments.size());
         Attachment attachment = Attachment.fromUri("https://quitter.se/file/mcscx-20131110T222250-427wlgn.png");
-        assertEquals("attachment", attachment, activity.getNote().attachments.get(0));
+        assertEquals("attachment", attachment, activity.getNote().attachments.list.get(0));
         return activity;
     }
 

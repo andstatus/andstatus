@@ -381,7 +381,7 @@ public class ConnectionPumpioTest {
         assertEquals("Note name " + activity, name, note.getName());
         assertEquals("Note content " + activity, content, note.getContent());
         assertEquals("Should have an attachment " + activity, false, note.attachments.isEmpty());
-        Attachment attachment = note.attachments.get(0);
+        Attachment attachment = note.attachments.list.get(0);
         assertEquals("Video attachment " + activity, MyContentType.VIDEO, attachment.contentType);
         assertEquals("Video content type " + activity, "video/mp4", attachment.mimeType);
         assertEquals("Video uri " + activity,
@@ -398,7 +398,7 @@ public class ConnectionPumpioTest {
         assertNotNull("note returned", note);
         assertEquals("has attachment", 1, note.attachments.size());
         Attachment attachment = Attachment.fromUri("https://io.jpope.org/uploads/jpope/2014/8/18/m1o1bw.jpg");
-        assertEquals("attachment", attachment, note.attachments.get(0));
+        assertEquals("attachment", attachment, note.attachments.list.get(0));
         assertEquals("Body text", "<p>Hanging out up in the mountains.</p>", note.getContent());
         return note;
     }
