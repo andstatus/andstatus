@@ -23,6 +23,7 @@ import android.text.TextUtils;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.social.AActivity;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio.ConnectionAndUrl;
@@ -195,14 +196,15 @@ class ActivitySender {
     }
 
     private void addRecipients(JSONObject activity, PActivityType activityType) throws JSONException {
-        recipients.getRecipients().forEach(actor -> addRecipient(activity, "to", actor.oid));
+        recipients.getRecipients().forEach(actor -> addRecipient(activity, "to", actor));
         if (recipients.isEmpty() && TextUtils.isEmpty(inReplyToId)
                 && (activityType.equals(PActivityType.POST) || activityType.equals(PActivityType.UPDATE))) {
-            addRecipient(activity, "to", ConnectionPumpio.PUBLIC_COLLECTION_ID);
+            addRecipient(activity, "to", Actor.PUBLIC);
         }
     }
 
-    private void addRecipient(JSONObject activity, String recipientField, String recipientId) {
+    private void addRecipient(JSONObject activity, String recipientField, Actor actor) {
+        String recipientId = actor.equals(Actor.PUBLIC) ? ConnectionPumpio.PUBLIC_COLLECTION_ID : actor.oid;
         if (TextUtils.isEmpty(recipientId)) return;
         JSONObject recipient = new JSONObject();
         try {
