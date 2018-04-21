@@ -65,6 +65,11 @@ public abstract class BaseTimelineAdapter<T extends ViewItem<T>> extends BaseAda
         }
     }
 
+    @NonNull
+    TimelineData<T> getListData() {
+        return listData;
+    }
+
     @Override
     public int getCount() {
         return listData.size();

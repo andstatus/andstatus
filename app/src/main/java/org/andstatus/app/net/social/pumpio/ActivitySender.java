@@ -23,6 +23,7 @@ import android.text.TextUtils;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.social.AActivity;
+import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio.ConnectionAndUrl;
 import org.andstatus.app.util.MyLog;
@@ -41,26 +42,27 @@ import static org.andstatus.app.net.social.pumpio.ConnectionPumpio.NAME_PROPERTY
  * @author yvolk@yurivolkov.com
  */
 class ActivitySender {
-    static final String PUBLIC_COLLECTION_ID = "http://activityschema.org/collection/public";
-    ConnectionPumpio connection;
-    String objectId = "";
+    final ConnectionPumpio connection;
+    final String objectId;
+    final Audience recipients;
     String inReplyToId = "";
-    String recipientId = "";
     String name = "";
     String content = "";
     Uri mMediaUri = null;
-    
+
+    ActivitySender(ConnectionPumpio connection, String objectId, Audience recipients) {
+        this.connection = connection;
+        this.objectId = objectId;
+        this.recipients = recipients;
+    }
+
     static ActivitySender fromId(ConnectionPumpio connection, String objectId) {
-        ActivitySender sender = new ActivitySender();
-        sender.connection = connection;
-        sender.objectId = objectId;
-        return sender;
+        return new ActivitySender(connection, objectId, Audience.EMPTY);
     }
     
-    static ActivitySender fromContent(ConnectionPumpio connection, String objectId, String name, String content) {
-        ActivitySender sender = new ActivitySender();
-        sender.connection = connection;
-        sender.objectId = objectId;
+    static ActivitySender fromContent(ConnectionPumpio connection, String objectId, Audience audience, String name,
+                                      String content) {
+        ActivitySender sender = new ActivitySender(connection, objectId, audience);
         sender.name = name;
         sender.content = content;
         return sender;
@@ -71,11 +73,6 @@ class ActivitySender {
         return this;
     }
     
-    ActivitySender setRecipient(String recipientId) {
-        this.recipientId = recipientId;
-        return this;
-    }
-
     ActivitySender setMediaUri(Uri mediaUri) {
         mMediaUri = mediaUri;
         return this;
@@ -187,7 +184,7 @@ class ActivitySender {
         generator.put("objectType", PObjectType.APPLICATION.id());
         activity.put("generator", generator);
 
-        addMainRecipient(activity, activityType);
+        addRecipients(activity, activityType);
 
         JSONObject author = new JSONObject();
         author.put("id", connection.getData().getAccountActor().oid);
@@ -197,30 +194,25 @@ class ActivitySender {
         return activity;
     }
 
-    private String getFollowersCollectionId() throws ConnectionException {
-        ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.GET_FOLLOWERS,
-                connection.getData().getAccountActor().oid);
-        return conu.httpConnection.pathToUrlString(conu.url);
-    }
-
-    private void addMainRecipient(JSONObject activity, PActivityType activityType) throws JSONException {
-        String id = recipientId;
-        if (TextUtils.isEmpty(id) && TextUtils.isEmpty(inReplyToId) && activityType.equals(PActivityType.POST)) {
-            id = PUBLIC_COLLECTION_ID;
+    private void addRecipients(JSONObject activity, PActivityType activityType) throws JSONException {
+        recipients.getRecipients().forEach(actor -> addRecipient(activity, "to", actor.oid));
+        if (recipients.isEmpty() && TextUtils.isEmpty(inReplyToId)
+                && (activityType.equals(PActivityType.POST) || activityType.equals(PActivityType.UPDATE))) {
+            addRecipient(activity, "to", ConnectionPumpio.PUBLIC_COLLECTION_ID);
         }
-        addRecipient(activity, "to", id);
     }
 
-    private void addRecipient(JSONObject activity, String recipientField, String recipientId) throws JSONException {
-        if (!TextUtils.isEmpty(recipientId)) {
-            JSONObject recipient = new JSONObject();
+    private void addRecipient(JSONObject activity, String recipientField, String recipientId) {
+        if (TextUtils.isEmpty(recipientId)) return;
+        JSONObject recipient = new JSONObject();
+        try {
             recipient.put("id", recipientId);
             recipient.put("objectType", connection.oidToObjectType(recipientId));
-
-            JSONArray field = activity.has(recipientField) ? activity.getJSONArray(recipientField) :
-                    new JSONArray();
+            JSONArray field = activity.has(recipientField) ? activity.getJSONArray(recipientField) : new JSONArray();
             field.put(recipient);
             activity.put(recipientField, field);
+        } catch (JSONException e) {
+            MyLog.e(this, e);
         }
     }
 

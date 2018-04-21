@@ -58,6 +58,7 @@ import java.util.List;
  */
 public class ConnectionPumpio extends Connection {
     private static final String TAG = ConnectionPumpio.class.getSimpleName();
+    static final String PUBLIC_COLLECTION_ID = "http://activityschema.org/collection/public";
     static final String APPLICATION_ID = "http://andstatus.org/andstatus";
     static final String NAME_PROPERTY = "displayName";
     static final String CONTENT_PROPERTY = "content";
@@ -224,11 +225,7 @@ public class ConnectionPumpio extends Connection {
     public AActivity updateNote(String name, String content, String noteOid, Audience audience, String inReplyToOid,
                                 Uri mediaUri) throws ConnectionException {
         String content2 = toHtmlIfAllowed(content);
-        ActivitySender sender = ActivitySender.fromContent(this, noteOid, name, content2);
-        // Only one recipient for now...
-        if (StringUtils.isEmpty(inReplyToOid) && audience.hasNonPublic()) {
-            sender.setRecipient(audience.getFirstNonPublic().oid);
-        }
+        ActivitySender sender = ActivitySender.fromContent(this, noteOid, audience, name, content2);
         sender.setInReplyTo(inReplyToOid);
         sender.setMediaUri(mediaUri);
         return sender.send(PActivityType.POST);
@@ -416,11 +413,13 @@ public class ConnectionPumpio extends Connection {
                 } else {
                     JSONArray arrayOfTo = jsoActivity.optJSONArray("to");
                     if (arrayOfTo != null && arrayOfTo.length() > 0) {
-                        // TODO: handle multiple recipients
-                        to = arrayOfTo.optJSONObject(0);
-                        Actor recipient = actorFromJson(to);
-                        if (!recipient.isEmpty()) {
-                            activity.getNote().addRecipient(recipient);
+                        for (int ind = 0; ind < arrayOfTo.length(); ind++) {
+                            Actor recipient = actorFromJson(arrayOfTo.optJSONObject(ind));
+                            activity.getNote().addRecipient(
+                                    ConnectionPumpio.PUBLIC_COLLECTION_ID.equals(recipient.oid)
+                                            ? Actor.PUBLIC
+                                            : recipient
+                            );
                         }
                     }
                 }

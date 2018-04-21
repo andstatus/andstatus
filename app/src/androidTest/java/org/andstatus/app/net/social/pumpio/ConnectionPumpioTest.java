@@ -112,7 +112,7 @@ public class ConnectionPumpioTest {
                 "acct:t131t@identi.ca",
                 "http://identi.ca/user/46155",
                 "https://identi.ca/api/user/andstatus/followers",
-                ActivitySender.PUBLIC_COLLECTION_ID};
+                ConnectionPumpio.PUBLIC_COLLECTION_ID};
         String objectTypes[] = {"activity",
                 "comment",
                 "note",
@@ -300,7 +300,7 @@ public class ConnectionPumpioTest {
         assertEquals("Note without reply is a note", PObjectType.NOTE.id(), obj.getString("objectType"));
 
         JSONArray recipients = activity.optJSONArray("to");
-        assertEquals("To Public collection", ActivitySender.PUBLIC_COLLECTION_ID, ((JSONObject) recipients.get(0)).get("id"));
+        assertEquals("To Public collection", ConnectionPumpio.PUBLIC_COLLECTION_ID, ((JSONObject) recipients.get(0)).get("id"));
 
         assertTrue("InReplyTo is not present", !obj.has("inReplyTo"));
     }

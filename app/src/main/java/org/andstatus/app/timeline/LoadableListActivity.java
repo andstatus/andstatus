@@ -131,13 +131,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
 
     @NonNull
     public TimelineData<T> getListData() {
-        return new TimelineData<T>(null,
-                new TimelinePage<>(new TimelineParameters(myContext), null)) {
-            @Override
-            public int size() {
-                return getListAdapter().getCount();
-            }
-        };
+        return getListAdapter().getListData();
     }
 
     public void showList(WhichPage whichPage) {
