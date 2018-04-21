@@ -55,7 +55,7 @@ public class ActorContextMenu extends MyContextMenu {
         try {
             new ContextMenuHeader(getActivity(), menu)
                     .setTitle(getViewItem().actor.toActorTitle(false))
-                    .setSubtitle(getSelectedActingAccount().getAccountName());
+                    .setSubtitle(getActingAccount().getAccountName());
             String shortName = getViewItem().actor.getUsername();
             if (getViewItem().actor.isIdentified()) {
                 ActorContextMenuItem.ACTOR_NOTES.addTo(menu, menuGroup, order++,
@@ -66,11 +66,11 @@ public class ActorContextMenu extends MyContextMenu {
                 ActorContextMenuItem.FOLLOWERS.addTo(menu, menuGroup, order++,
                         String.format(
                                 getActivity().getText(R.string.followers_of).toString(), shortName));
-                if (getViewItem().actorIsFollowedBy(getSelectedActingAccount())) {
+                if (getViewItem().actorIsFollowedBy(getActingAccount())) {
                     ActorContextMenuItem.STOP_FOLLOWING.addTo(menu, menuGroup, order++,
                             String.format(
                                     getActivity().getText(R.string.menu_item_stop_following_user).toString(), shortName));
-                } else if (getViewItem().getActorId() != getSelectedActingAccount().getActorId()) {
+                } else if (getViewItem().getActorId() != getActingAccount().getActorId()) {
                     ActorContextMenuItem.FOLLOW.addTo(menu, menuGroup, order++,
                             String.format(
                                     getActivity().getText(R.string.menu_item_follow_user).toString(), shortName));
@@ -80,7 +80,7 @@ public class ActorContextMenu extends MyContextMenu {
                     ActorContextMenuItem.PRIVATE_NOTE.addTo(menu, menuGroup, order++,
                             R.string.menu_item_private_message);
                 }
-                switch (getSelectedActingAccount().numberOfAccountsOfThisOrigin()) {
+                switch (getActingAccount().numberOfAccountsOfThisOrigin()) {
                     case 0:
                     case 1:
                         break;
@@ -88,7 +88,7 @@ public class ActorContextMenu extends MyContextMenu {
                         ActorContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT.addTo(menu, menuGroup, order++,
                                 String.format(
                                         getActivity().getText(R.string.menu_item_act_as_user).toString(),
-                                        getSelectedActingAccount().firstOtherAccountOfThisOrigin().getShortestUniqueAccountName(getMyContext())));
+                                        getActingAccount().firstOtherAccountOfThisOrigin().getShortestUniqueAccountName(getMyContext())));
                         break;
                     default:
                         ActorContextMenuItem.ACT_AS.addTo(menu, menuGroup, order++, R.string.menu_item_act_as);
@@ -104,7 +104,7 @@ public class ActorContextMenu extends MyContextMenu {
     }
 
     public boolean onContextItemSelected(MenuItem item) {
-        MyAccount ma = getSelectedActingAccount();
+        MyAccount ma = getActingAccount();
         if (ma.isValid()) {
             ActorContextMenuItem contextMenuItem = ActorContextMenuItem.fromId(item.getItemId());
             MyLog.v(this, "onContextItemSelected: " + contextMenuItem + "; actor="

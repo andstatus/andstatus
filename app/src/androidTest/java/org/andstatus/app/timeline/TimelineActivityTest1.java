@@ -225,7 +225,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest<ActivityViewItem
         assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, noteId,
                 NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT, R.id.note_wrapper));
 
-        MyAccount actor1 = getActivity().getContextMenu().getMyAccount();
+        MyAccount actor1 = getActivity().getContextMenu().getActingAccount();
         logMsg += "; actor1:" + actor1;
         assertTrue(logMsg, actor1.isValid());
 

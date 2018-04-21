@@ -90,7 +90,12 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
     }
 
     @NonNull
-    public MyAccount getSelectedActingAccount() {
+    public MyAccount getActingAccount() {
+        return getSelectedActingAccount();
+    }
+
+    @NonNull
+    final public MyAccount getSelectedActingAccount() {
         return selectedActingAccount;
     }
 

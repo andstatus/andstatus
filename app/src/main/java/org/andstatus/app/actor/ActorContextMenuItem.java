@@ -53,7 +53,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
     PRIVATE_NOTE(true) {
         @Override
         NoteEditorData executeAsync(Params params) {
-            return NoteEditorData.newEmpty(params.menu.getSelectedActingAccount())
+            return NoteEditorData.newEmpty(params.menu.getActingAccount())
                     .addRecipientId(params.menu.getViewItem().getActorId());
         }
 
@@ -186,7 +186,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         } else {
             executeOnUiThread(params.menu, params.ma,
                     new NoteEditorData(menu.menuContainer.getActivity().getMyContext(),
-                            menu.getSelectedActingAccount(), 0, 0, false));
+                            menu.getActingAccount(), 0, 0, false));
         }
         return false;
     }
@@ -216,7 +216,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
     }
 
     NoteEditorData executeAsync(Params params) {
-        return NoteEditorData.newEmpty(params.menu.getSelectedActingAccount());
+        return NoteEditorData.newEmpty(params.menu.getActingAccount());
     }
 
     void executeOnUiThread(ActorContextMenu menu, MyAccount ma, NoteEditorData editorData) {

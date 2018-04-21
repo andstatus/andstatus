@@ -55,15 +55,15 @@ class NoteContextMenuData {
 
                 @Override
                 protected AccountToNote doInBackground2(Void... params) {
-                    @NonNull final MyAccount myActingAccount = noteContextMenu.getSelectedActingAccount();
+                    @NonNull final MyAccount selectedMyAccount = noteContextMenu.getSelectedActingAccount();
                     MyAccount currentMyAccount = menuContainer.getCurrentMyAccount();
                     AccountToNote accountToNote = AccountToNote.getAccountToActOnNote(
                             menuContainer.getActivity().getMyContext(), noteId,
-                            myActingAccount, currentMyAccount);
+                            selectedMyAccount, currentMyAccount);
                     if (MyLog.isVerboseEnabled()) {
-                        MyLog.v(noteContextMenu, "actor:" + accountToNote.getMyAccount().getAccountName()
-                            + (accountToNote.getMyAccount().equals(myActingAccount) || !myActingAccount.isValid()
-                                ? "" : ", acting:" + myActingAccount.getAccountName())
+                        MyLog.v(noteContextMenu, "acting:" + accountToNote.getMyAccount().getAccountName()
+                            + (accountToNote.getMyAccount().equals(selectedMyAccount) || !selectedMyAccount.isValid()
+                                ? "" : ", selected:" + selectedMyAccount.getAccountName())
                             + (accountToNote.getMyAccount().equals(currentMyAccount) || !currentMyAccount.isValid()
                                 ? "" : ", current:" + currentMyAccount.getAccountName())
                             + "\n " + accountToNote);
