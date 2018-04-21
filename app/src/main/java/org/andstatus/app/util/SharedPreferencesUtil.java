@@ -236,8 +236,8 @@ public class SharedPreferencesUtil {
     public static long getLongStoredAsString(@NonNull String key, long defaultValue) {
         long value = defaultValue;
         try {
-            long longValueStored = Long.parseLong(getString(key, "0"));
-            if (longValueStored > 0) {
+            long longValueStored = Long.parseLong(getString(key,  Long.toString(Long.MIN_VALUE)));
+            if (longValueStored > Long.MIN_VALUE) {
                 value = longValueStored;
             }
         } catch (NumberFormatException e) {

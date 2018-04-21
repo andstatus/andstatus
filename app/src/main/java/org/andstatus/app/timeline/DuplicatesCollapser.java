@@ -83,6 +83,7 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
     }
 
     public boolean canBeCollapsed(int position) {
+        if (maxDistanceBetweenDuplicates < 1) return false;
         T item = data.getItem(position);
         for (int i = Math.max(position - maxDistanceBetweenDuplicates, 0); i <= position + maxDistanceBetweenDuplicates; i++) {
             if (i != position && item.duplicates(data.getItem(i)) != DuplicationLink.NONE) return true;
@@ -108,6 +109,7 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
     }
 
     private void collapseDuplicates(long itemId) {
+        if (maxDistanceBetweenDuplicates < 1) return;
         Set<ItemWithPage<T>> toCollapse = new HashSet<>();
         innerCollapseDuplicates(itemId, toCollapse);
         for (ItemWithPage<T> itemWithPage : toCollapse) {
