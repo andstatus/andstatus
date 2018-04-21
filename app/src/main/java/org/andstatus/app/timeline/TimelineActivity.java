@@ -622,6 +622,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         mDrawerToggle.setDrawerIndicatorEnabled(!getParamsLoaded().isAtHome());
         ViewUtils.showView(
                 findViewById(R.id.switchToDefaultTimelineButton), !getParamsLoaded().isAtHome());
+        ViewUtils.showView(this, R.id.collapseDuplicatesToggle,
+                MyPreferences.getMaxDistanceBetweenDuplicates() > 0);
         MyCheckBox.setEnabled(this, R.id.collapseDuplicatesToggle,
                 getListData().isCollapseDuplicates());
         showSyncListButtons();

@@ -29,8 +29,8 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="38.00" android:versionCode="246"
-             versionDate="2018-04-18"
+    <release android:versionName="38.01" android:versionCode="247"
+             versionDate="2018-04-21"
              versionTitle="Video attachments and Titles for notes">
         <changes>
             <change>Video file can be attached to a new note. A thumbnail of the video attachment is shown in a timeline.
@@ -48,7 +48,7 @@
                 <a href="https://github.com/andstatus/andstatus/issues/481">#481</a>
             </change>
             <change>Fixed: All users, mentioned as @username in a text of an incoming note, are identified and used
-                in Notifications. Multiple note recipients (e.g. for Pump.io) are not supported yet.</change>
+                in Notifications. Multiple note recipients are supported for Pump.io.</change>
         </changes>
     </release>
     <release android:versionName="37.01" android:versionCode="245"

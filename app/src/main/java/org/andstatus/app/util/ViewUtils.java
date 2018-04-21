@@ -57,16 +57,14 @@ public class ViewUtils {
      * @return true if succeeded
      */
     public static boolean showView(Activity activity, int viewId, boolean show) {
-        return activity != null &&
-                showView(activity.findViewById(viewId), show);
+        return activity != null && showView(activity.findViewById(viewId), show);
     }
 
     /**
      * @return true if succeeded
      */
     public static boolean showView(View parentView, int viewId, boolean show) {
-        return parentView != null &&
-                showView(parentView.findViewById(viewId), show);
+        return parentView != null && showView(parentView.findViewById(viewId), show);
     }
 
     /**
