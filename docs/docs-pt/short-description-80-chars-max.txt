@@ -1,1 +1,1 @@
-Aplicação para redes sociais com conversas ao estilo de árvore
+Aplicação Open Source para utilizar em diversas redes sociais

@@ -243,6 +243,7 @@
   <string name="manage_accounts">Konten verwalten</string>
   <string name="manage_accounts_android">AndStatus Konten in den Android Einstellungen verwalten</string>
   <string name="manage_timelines">Timelines verwalten</string>
+  <string name="max_distance_between_duplicates_title">Maximaler Abstand zwischen Duplikaten</string>
   <string name="mention_as_webfingerid_title">Erwähnung als @webFingerId</string>
   <string name="menu_item_act_as">Handle als&#8230;</string>
   <string name="menu_item_act_as_user">Handle als \"%1s\"</string>
@@ -389,7 +390,7 @@
   <string name="since">Seit %s</string>
   <string name="splash_button_learn_more">Mehr erfahren</string>
   <string name="splash_button_get_started">Loslegen</string>
-  <string name="splash_payoff_line">Open Source Multi-Account-Client für mehrere Social Networks, einschließlich 
+  <string name="splash_payoff_line">Open Source Multi-Account-Client für mehrere Soziale Netzwerke, einschließlich 
     GNU social, Mastodon, Twitter und Pump.io</string>
   <string name="status_destroyed">Die Nachricht wurde gelöscht.</string>
   <string name="subtitle">Untertitel</string>

@@ -239,6 +239,7 @@
   <string name="manage_accounts">Gerir contas</string>
   <string name="manage_accounts_android">Gerir as contas do AndStatus nas definições do Android</string>
   <string name="manage_timelines">Gerir cronologias</string>
+  <string name="max_distance_between_duplicates_title">Distância máxima entre duplicados</string>
   <string name="mention_as_webfingerid_title">Menção como @webFingerId</string>
   <string name="menu_item_act_as">Atuar como&#8230;</string>
   <string name="menu_item_act_as_user">Atuar como \"%1s\"</string>

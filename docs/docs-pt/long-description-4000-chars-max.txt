@@ -1,21 +1,20 @@
-O AndStatus é uma aplicação open source para redes sociais e com conversas ao estilo de árvore.
-Tem suporte a diversas redes sociais, incluindo
+AndStatus é uma aplicação Open Source para acesso a diversas redes sociais incluindo
 GNU social, Mastodon, Twitter e Pump.io.
-O AndStatus pode combinar as fontes de todas as redes em apenas uma cronologia
-e permite-lhe ler e publicar informações mesmo que esteja offline.
+O AndStatus pode combinar as fontes de todas as redes em apenas uma cronologia que
+lhe permite-lhe ler e publicar informações mesmo que esteja offline.
 
 Para dispositivos com Android v7.0+.
 
 Características distintivas do AndStatus:
 
-1. Possibilidade de usar diversas contas em diversas redes sociais. Pode possuir várias contas em cada uma das redes, escrever ou responder de qualquer uma delas e partilhá-las entre as contas e sistemas.
+1. Possibilidade de usar várias contas em diversas redes sociais. Pode ter diversas contas em cada rede, pode escrever/responder com qualquer identidade e partilhar as publicações entre as contas e redes.
 2. Não precisa de estar online para ler a cronologia nem para publicar as atualizações: os rascunhos e as publicações não efetuadas são mantidas. E serão enviadas assim que o dispositivo estiver ligado à rede.
 3. Uma "Vista de conversas" conveniente.
-4. A "pesquisa global" permite-lhe pesquisar as mensagens em todas as redes sociais com apenas uma consulta.
-5. Listas de amigos e seguidores, exibidas com listas de utilizadores e/ou cronologias (com a última mensagem de cada utilizador)
-6. Sincronização de tweets/mensagens/avatars/imagens em segundo plano, se o seu dispositivo estiver ligado à rede. Por definição, os anexos apenas serão descarregados por Wi-Fi.
+4. Um pesquisa global que lhe permite pesquisar notas públicas em todas as redes com apenas uma consulta.
+5. Lista de amigos e seguidores, mostradas como listas de utilizadores e cronologias (com a última nota de cada utilizador).
+6. As notas (tweets)/avatar/imagens são sincronizadas em segundo plano, sempre que o dispositivo estiver com uma boa ligação de rede. Por definição, os anexos apenas serão descarregados por Wi-Fi.
 7. Os itens em cache podem ser guardados por diversos anos ou apenas por alguns dias. Você escolhe.
-8. Possibilidade de criar backup e restaurar contas e mensagens entre os seus diversos dispositivos. Os seus dados são apenas seus!
+8. Backup de contas e notas bem como o restauro em qualquer um dos seus dispositivos. Os seus dados são apenas seus!
 9. Livre, sem anúncios e suportado pela comunidade.
 
 Consulte o registo de alterações para ver uma descrição de todas as funcionalidades do Andstatus e as ligações sobre as suas discussões:

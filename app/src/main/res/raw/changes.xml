@@ -29,8 +29,8 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="38.02" android:versionCode="248"
-             versionDate="2018-04-21"
+    <release android:versionName="38.03" android:versionCode="249"
+             versionDate="2018-04-25"
              versionTitle="Video attachments and Titles for notes">
         <changes>
             <change>Video file can be attached to a new note. A thumbnail of the video attachment is shown in a timeline.

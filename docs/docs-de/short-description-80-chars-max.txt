@@ -1,1 +1,1 @@
-Client für soziale Netzwerke, sparsam im Datenverbrauch und mit Baumansicht für Gespräche
+Open-Source-Client für mehrere Accounts in mehreren sozialen Netzwerken
