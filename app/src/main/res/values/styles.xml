@@ -293,7 +293,7 @@
 
         <item name="android:buttonBarStyle">@style/Widget.AppCompat.ButtonBar.AlertDialog</item>
         <item name="android:borderlessButtonStyle">@style/Widget.AppCompat.Button.Borderless</item>
-        <item name="android:windowCloseOnTouchOutside">@bool/abc_config_closeDialogWhenTouchOutside</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
     </style>
     <style name="BaseDialogStyle" parent="BaseDialogStyle_min" />
     <style name="AndStatusDialogStyle" parent="BaseDialogStyle" />

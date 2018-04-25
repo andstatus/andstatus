@@ -29,7 +29,7 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="38.03" android:versionCode="249"
+    <release android:versionName="38.04" android:versionCode="250"
              versionDate="2018-04-25"
              versionTitle="Video attachments and Titles for notes">
         <changes>

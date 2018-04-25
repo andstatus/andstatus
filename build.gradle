@@ -32,7 +32,7 @@ allprojects {
     project.ext.targetSdkVersion = 27 as int
 
     // Common versions of dependencies
-    project.ext.supportVersion = '27.0.2'
+    project.ext.supportVersion = '27.1.1'
     project.ext.acraVersion = '4.9.2' // https://github.com/ACRA/acra/wiki/AdvancedUsage
     project.ext.jcipAnnotationsVersion = '1.0-1'   // http://stephenc.github.io/jcip-annotations/dependency-info.html
     project.ext.httpclientVersion = '4.4.1.2' // https://github.com/smarek/httpclient-android
