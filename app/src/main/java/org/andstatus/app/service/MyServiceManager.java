@@ -201,14 +201,15 @@ public class MyServiceManager extends BroadcastReceiver {
     public static boolean isServiceAvailable() {
         boolean isAvailable = MyContextHolder.get().isReady();
         if (!isAvailable) {
-            boolean tryToInitialize = false;
+            boolean tryToInitialize;
             synchronized (serviceAvailableLock) {
                 tryToInitialize = mServiceAvailable;
             }
-            if (tryToInitialize && !MyContextHolder.get().initialized()) {
+            if (tryToInitialize
+                    && !MyAsyncTask.isUiThread()    // Don't block on UI thread
+                    && !MyContextHolder.get().initialized()) {
                 MyContextHolder.initialize(null, TAG);
-                // Don't block on UI thread
-                isAvailable = !MyAsyncTask.isUiThread() && MyContextHolder.get().isReady();
+                isAvailable = MyContextHolder.get().isReady();
             }
         }
         if (isAvailable) {
