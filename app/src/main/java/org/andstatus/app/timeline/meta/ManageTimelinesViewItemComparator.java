@@ -110,6 +110,13 @@ class ManageTimelinesViewItemComparator implements Comparator<ManageTimelinesVie
                 if (result == 0) {
                     return compareSynced(lhs, rhs);
                 }
+            case R.id.lastChangedDate:
+                result = compareLongDescending(lhs.timeline.getLastChangedDate(),
+                        rhs.timeline.getLastChangedDate());
+                if (result == 0) {
+                    return compareSynced(lhs, rhs);
+                }
+                break;
             default:
                 break;
         }

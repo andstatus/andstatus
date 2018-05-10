@@ -7,7 +7,7 @@
     <LinearLayout android:orientation="horizontal"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
-                  android:weightSum="41" >
+                  android:weightSum="45" >
         <TextView
             android:id="@+id/position"
             android:layout_width="0dip"
@@ -81,8 +81,7 @@
             android:layout_height="wrap_content"
             tools:text="3 days ago"
             android:layout_weight="4"
-            style="@style/messageBodyAppearance"
-            />
+            style="@style/messageBodyAppearance"/>
         <View style="@style/VerticalDivider"/>
         <TextView
             android:layout_width="0dp"
@@ -108,6 +107,13 @@
             tools:text="Error: not found something"
             android:id="@+id/errorMessage"
             android:layout_weight="15" />
+        <TextView
+            android:id="@+id/lastChangedDate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            tools:text="3 days ago"
+            android:layout_weight="4"
+            style="@style/messageBodyAppearance"/>
     </LinearLayout>
     <View style="@style/Divider"/>
 </LinearLayout>

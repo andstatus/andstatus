@@ -543,7 +543,7 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public void delete(MyContext myContext) {
-        if (isRequired()) {
+        if (isRequired() && myContext.timelines().values().stream().noneMatch(this::duplicates)) {
             MyLog.d(this, "Cannot delete required timeline: " + this);
             return;
         }
@@ -635,18 +635,34 @@ public class Timeline implements Comparable<Timeline> {
         if (this == o) return true;
         if (o == null || !(o instanceof Timeline)) return false;
 
-        Timeline timeline = (Timeline) o;
+        Timeline that = (Timeline) o;
 
-        if (timelineType != timeline.timelineType) return false;
-        if (!origin.equals(timeline.origin)) return false;
-        if (!myAccount.equals(timeline.myAccount)) return false;
-        if (!actor.equals(timeline.actor)) return false;
-        return StringUtils.equalsNotEmpty(searchQuery, timeline.searchQuery);
+        if (timelineType != that.timelineType) return false;
+        if (id != 0 || that.id != 0) {
+            return id == that.id;
+        }
+        if (!origin.equals(that.origin)) return false;
+        if (!myAccount.equals(that.myAccount)) return false;
+        if (!actor.equals(that.actor)) return false;
+        return StringUtils.equalsNotEmpty(searchQuery, that.searchQuery);
+    }
+
+    public boolean duplicates(Timeline that) {
+        if (equals(that)) return false;
+        if (id > 0 && id < that.id) return false;
+        if (timelineType != that.timelineType) return false;
+        if (!origin.equals(that.origin)) return false;
+        if (!myAccount.equals(that.myAccount)) return false;
+        if (!actor.equals(that.actor)) return false;
+        return StringUtils.equalsNotEmpty(searchQuery, that.searchQuery);
     }
 
     @Override
     public int hashCode() {
         int result = timelineType.hashCode();
+        if (id != 0) {
+            result = 31 * result + Long.hashCode(id);
+        }
         result = 31 * result + origin.hashCode();
         result = 31 * result + myAccount.hashCode();
         result = 31 * result + actor.hashCode();
@@ -973,7 +989,7 @@ public class Timeline implements Comparable<Timeline> {
         downloadedItemsCount = 0;
         newItemsCount = 0;
         countSince = System.currentTimeMillis();
-        setChanged();
+        changed = true;
     }
 
     public long getCountSince() {

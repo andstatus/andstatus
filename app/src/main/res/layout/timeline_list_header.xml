@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:orientation="horizontal"
-        android:weightSum="41">
+        android:weightSum="45">
 
         <TextView
             android:id="@+id/displayedInSelector"
@@ -113,6 +113,15 @@
             android:layout_marginLeft="10dp"
             android:text="@string/error"
             android:layout_weight="15" />
+        <TextView
+            android:id="@+id/lastChangedDate"
+            android:minHeight="48dp"
+            android:gravity="center_vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="7dp"
+            android:text="@string/changed"
+            android:layout_weight="4" />
     </LinearLayout>
 
     <View android:id="@+id/divider" style="@style/Divider"/>

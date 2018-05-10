@@ -305,7 +305,7 @@ public class Actor implements Comparable<Actor> {
     public int hashCode() {
         int result = origin.hashCode ();
         if (actorId != 0) {
-            return 31 * result + (int) (actorId ^ (actorId >>> 32));
+            return 31 * result + Long.hashCode(actorId);
         }
         if (UriUtils.isRealOid(oid)) {
             return 31 * result + oid.hashCode();

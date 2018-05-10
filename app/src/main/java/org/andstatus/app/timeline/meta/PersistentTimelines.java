@@ -106,9 +106,9 @@ public class PersistentTimelines {
                         long actorId, @NonNull Origin origin, String searchQuery) {
         Timeline newTimeline = new Timeline(myContext, id, timelineType, actorId, origin, searchQuery);
         return values().stream().filter(timeline -> newTimeline.getId() == 0
-                ? timeline.equals(newTimeline)
+                ? newTimeline.duplicates(timeline)
                 : timeline.getId() == newTimeline.getId())
-                .findFirst().orElseGet(() -> newTimeline);
+                .findAny().orElseGet(() -> newTimeline);
     }
 
     public Collection<Timeline> values() {

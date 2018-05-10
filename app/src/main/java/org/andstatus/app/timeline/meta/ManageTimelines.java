@@ -153,7 +153,7 @@ public class ManageTimelines extends LoadableListActivity {
                         .sorted(new ManageTimelinesViewItemComparator(sortByField, sortDefault, isTotal))
                         .collect(Collectors.toList());
                 countersSince = items.stream().map(item -> item.countSince).filter(count -> count > 0)
-                        .max(Long::compareTo).orElse(0L);
+                        .min(Long::compareTo).orElse(0L);
             }
         };
     }
@@ -202,6 +202,9 @@ public class ManageTimelines extends LoadableListActivity {
                         RelativeTime.getDifference(ManageTimelines.this, item.timeline.getSyncFailedDate()),
                         false, true);
                 MyUrlSpan.showText(view, R.id.errorMessage, item.timeline.getErrorMessage(), false, true);
+                MyUrlSpan.showText(view, R.id.lastChangedDate,
+                        RelativeTime.getDifference(ManageTimelines.this, item.timeline.getLastChangedDate()),
+                        false, true);
                 return view;
             }
 
@@ -240,7 +243,9 @@ public class ManageTimelines extends LoadableListActivity {
 
     @Override
     protected CharSequence getCustomTitle() {
-        StringBuilder title = new StringBuilder(getTitle() + " / ");
+        StringBuilder title = new StringBuilder(getTitle()
+                + (getListAdapter().getCount() == 0 ? "" : " " + getListAdapter().getCount())
+                + " / ");
         if (isTotal) {
             title.append(getText(R.string.total_counters));
         } else if (countersSince > 0) {
@@ -255,6 +260,7 @@ public class ManageTimelines extends LoadableListActivity {
         switch (item.getItemId()) {
             case R.id.reset_counters_menu_item:
                 myContext.timelines().resetCounters(isTotal);
+                myContext.timelines().saveChanged();
                 showList(WhichPage.CURRENT);
                 break;
             case R.id.reset_timelines_order:
