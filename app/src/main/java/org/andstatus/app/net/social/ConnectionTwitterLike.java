@@ -573,10 +573,8 @@ public abstract class ConnectionTwitterLike extends Connection {
                                 Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
-            formParams.put("status", content);
-            if ( !TextUtils.isEmpty(inReplyToOid)) {
-                formParams.put("in_reply_to_status_id", inReplyToOid);
-            }
+            if (StringUtils.nonEmpty(content)) formParams.put("status", content);
+            if (StringUtils.nonEmpty(inReplyToOid)) formParams.put("in_reply_to_status_id", inReplyToOid);
         } catch (JSONException e) {
             MyLog.e(this, e);
         }
