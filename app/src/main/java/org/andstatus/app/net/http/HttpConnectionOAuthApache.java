@@ -77,7 +77,7 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
         } catch (Exception e) {
             // We don't catch other exceptions because in fact it's vary difficult to tell
             // what was a real cause of it. So let's make code clearer.
-            result.e1 = e;
+            result.setException(e);
         }
     }
 

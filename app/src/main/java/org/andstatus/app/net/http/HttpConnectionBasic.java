@@ -61,7 +61,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
             result.setStatusCode(statusLine.getStatusCode());
             result.strResponse = HttpConnectionApacheCommon.readHttpResponseToString(httpResponse);
         } catch (Exception e) {
-            result.e1 = e;
+            result.setException(e);
         } finally {
             postMethod.abort();
         }

@@ -25,6 +25,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONObject;
 
@@ -170,15 +171,22 @@ public class HttpConnectionApacheCommon {
                     case MOVED:
                         result.appendToLog( "statusLine:'" + statusLine + "'");
                         result.redirected = true;
-                        result.setUrl(httpResponse.getHeaders("Location")[0].getValue().replace("%3F", "?"));
-                        String logMsg3 = "Following redirect to '" + result.getUrl() + "'";
-                        MyLog.v(this, method + logMsg3);
-                        if (MyLog.isVerboseEnabled()) {
-                            StringBuilder message = new StringBuilder(method + "Headers: ");
-                            for (Header header: httpResponse.getAllHeaders()) {
-                                message.append(header.getName() +": " + header.getValue() + ";\n");
+                        final Header[] locations = httpResponse.getHeaders("Location");
+                        final String location = locations != null && locations.length > 0 ? locations[0].getValue() : "";
+                        stop = StringUtils.isEmpty(location);
+                        if (stop) {
+                            result.onNoLocationHeaderOnMoved();
+                        } else {
+                            result.setUrl(location.replace("%3F", "?"));
+                            String logMsg3 = "Following redirect to '" + result.getUrl() + "'";
+                            MyLog.v(this, method + logMsg3);
+                            if (MyLog.isVerboseEnabled()) {
+                                StringBuilder message = new StringBuilder(method + "Headers: ");
+                                for (Header header: httpResponse.getAllHeaders()) {
+                                    message.append(header.getName() +": " + header.getValue() + ";\n");
+                                }
+                                MyLog.v(this, message.toString());
                             }
-                            MyLog.v(this, message.toString());
                         }
                         break;
                     default:

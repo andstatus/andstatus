@@ -40,7 +40,7 @@ public class HttpReadResult {
     
     JSONObject formParams = new JSONObject();
     StringBuilder logBuilder =  new StringBuilder();
-    Exception e1 = null;
+    private Exception exception = null;
     String strResponse = "";
     final File fileResult;
     String statusLine = "";
@@ -114,6 +114,7 @@ public class HttpReadResult {
                 + (redirected ? "; redirected from:'" + urlInitial + "'" : "")
                 + ( hasFormParams() ? "; posted:'" + formParams.toString() + "'" : "")
                 + (TextUtils.isEmpty(strResponse) ? "" : "; response:'" + I18n.trimTextAt(strResponse, 40) + "'")
+                + (exception == null ? "" : "; \nexception: " + exception.toString())
                 + (fileResult == null ? "" : "; saved to file");
     }
     
@@ -202,7 +203,7 @@ public class HttpReadResult {
     }
 
     public void setException(Exception e) {
-        e1 = e;
+        exception = e;
     }
 
     public void parseAndThrow() throws ConnectionException {
@@ -212,14 +213,13 @@ public class HttpReadResult {
             if (!TextUtils.isEmpty(strResponse)) {
                 throw getExceptionFromJsonErrorResponse();
             } else {
-                throw ConnectionException.fromStatusCodeAndThrowable(statusCode, toString(), e1);
+                throw ConnectionException.fromStatusCodeAndThrowable(statusCode, toString(), exception);
             }
         }
     }
 
     private boolean isStatusOk() {
-        return e1 == null 
-                && (statusCode == StatusCode.OK || statusCode == StatusCode.UNKNOWN);
+        return exception == null && (statusCode == StatusCode.OK || statusCode == StatusCode.UNKNOWN);
     }
 
     public HttpReadResult setFormParams(JSONObject formParamsIn) {
@@ -246,8 +246,8 @@ public class HttpReadResult {
         return this;
     }
 
-    public void resetError() {
-        e1 = null;
-        statusCode = StatusCode.UNKNOWN;
+    public void onNoLocationHeaderOnMoved() {
+        redirected = true;
+        setException(new IllegalArgumentException("No 'Location' header on MOVED response"));
     }
 }

@@ -29,6 +29,7 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -114,10 +115,10 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                     throw result.getExceptionFromJsonErrorResponse();
             }
         } catch (IOException | ExecutionException | OAuthException e) {
-            result.e1 = e;
+            result.setException(e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            result.e1 = e;
+            result.setException(e);
         }
     }
 
@@ -156,19 +157,25 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                         break;
                     case MOVED:
                         redirected = true;
-                        result.setUrl(response.getHeader("Location").replace("%3F", "?"));
-                        String logMsg3 = (result.redirected ? "Following redirect to "
-                                : "Not redirected to ") + "'" + result.getUrl() + "'";
-                        logBuilder.append(logMsg3 + "; ");
-                        MyLog.v(this, method + logMsg3);
-                        if (MyLog.isVerboseEnabled()) {
-                            StringBuilder message = new StringBuilder(method + "Headers: ");
-                            for (Map.Entry<String, String> entry : response.getHeaders().entrySet()) {
-                                message.append(entry.getKey() +": " + entry.getValue() + ";\n");
+                        final String location = response.getHeader("Location");
+                        stop = StringUtils.isEmpty(location);
+                        if (stop) {
+                            result.onNoLocationHeaderOnMoved();
+                        } else {
+                            result.setUrl(location.replace("%3F", "?"));
+                            String logMsg3 = (result.redirected ? "Following redirect to "
+                                    : "Not redirected to ") + "'" + result.getUrl() + "'";
+                            logBuilder.append(logMsg3 + "; ");
+                            MyLog.v(this, method + logMsg3);
+                            if (MyLog.isVerboseEnabled()) {
+                                StringBuilder message = new StringBuilder(method + "Headers: ");
+                                for (Map.Entry<String, String> entry : response.getHeaders().entrySet()) {
+                                    message.append(entry.getKey() +": " + entry.getValue() + ";\n");
+                                }
+                                MyLog.v(this, message.toString());
                             }
-                            MyLog.v(this, message.toString());
+                            // TODO: ?! ...disconnect();
                         }
-                        // TODO: ?! ...disconnect();
                         break;
                     default:
                         result.strResponse = HttpConnectionUtils.readStreamToString(response.getStream());
