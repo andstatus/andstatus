@@ -59,7 +59,6 @@ import org.andstatus.app.note.NoteContextMenu;
 import org.andstatus.app.note.NoteContextMenuContainer;
 import org.andstatus.app.note.NoteEditorListActivity;
 import org.andstatus.app.note.NoteViewItem;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
@@ -805,34 +804,58 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     private void showSyncListButtons() {
-        final ListView listView = getListView();
-        if (listView != null) {
-            showHeaderSyncButton(listView);
-            showFooterSyncButton(listView);
+        showHeaderSyncButton();
+        showFooterSyncButton();
+    }
+
+    private static class SyncStats {
+        final long syncSucceededDate;
+        final long youngestItemDate;
+
+        SyncStats(long syncSucceededDate, long youngestItemDate) {
+            this.syncSucceededDate = syncSucceededDate;
+            this.youngestItemDate = youngestItemDate;
+        }
+
+        static SyncStats accumulator(SyncStats stats, Timeline timeline) {
+            return new SyncStats(
+                    Long.max(timeline.getSyncSucceededDate(), stats.syncSucceededDate),
+                    Long.max(timeline.getYoungestItemDate(), stats.youngestItemDate)
+            );
+        }
+
+        static SyncStats combiner(SyncStats stats, SyncStats stats2) {
+            return new SyncStats(
+                    Long.max(stats2.syncSucceededDate, stats.syncSucceededDate),
+                    Long.max(stats2.youngestItemDate, stats.youngestItemDate)
+            );
         }
     }
 
-    private boolean showHeaderSyncButton(@NonNull ListView listView) {
+    private void showHeaderSyncButton() {
         if (getListData().mayHaveYoungerPage()) {
             disableHeaderSyncButton(R.string.loading);
-            return false;
+            return;
         }
         if (!getParamsLoaded().getTimeline().isSynableSomehow()) {
             disableHeaderSyncButton(R.string.not_syncable);
-            return false;
+            return;
         }
-        long syncSucceededDate = getParamsLoaded().getTimeline().getSyncSucceededDate();
-        long youngestItemDate = getParamsLoaded().getTimeline().getYoungestItemDate();
-        String format = getText(getParamsLoaded().getTimeline().isCombined() ||
-                youngestItemDate == 0 ? R.string.options_menu_sync : R.string.sync_younger_messages).toString();
+        SyncStats stats = myContext.timelines().toTimelinesToSync(getParamsLoaded().getTimeline()).reduce(
+                new SyncStats(0, 0),
+                SyncStats::accumulator,
+                SyncStats::combiner
+        );
+        String format = getText(stats.youngestItemDate == 0
+                ? R.string.options_menu_sync : R.string.sync_younger_messages).toString();
         MyUrlSpan.showText(syncYoungerView, R.id.sync_younger_button,
                 String.format(format,
-                    syncSucceededDate > 0 ? RelativeTime.getDifference(this, syncSucceededDate) : getText(R.string.never),
-                    DateUtils.getRelativeTimeSpanString(this, youngestItemDate)),
+                    stats.syncSucceededDate > 0
+                            ? RelativeTime.getDifference(this, stats.syncSucceededDate) : getText(R.string.never),
+                    DateUtils.getRelativeTimeSpanString(this, stats.youngestItemDate)),
                 false,
                 false);
         syncYoungerView.setEnabled(true);
-        return true;
     }
 
     private void disableHeaderSyncButton(int resInfo) {
@@ -843,7 +866,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         syncYoungerView.setEnabled(false);
     }
 
-    private void showFooterSyncButton(@NonNull ListView listView) {
+    private void showFooterSyncButton() {
         if (getListData().mayHaveOlderPage()) {
             disableFooterButton(R.string.loading);
             return;
@@ -880,32 +903,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     protected void syncWithInternet(Timeline timelineToSync, boolean syncYounger, boolean manuallyLaunched) {
-        if (timelineToSync.isSyncableForOrigins()) {
-            syncForAllOrigins(timelineToSync, syncYounger, manuallyLaunched);
-        } else if (timelineToSync.isSyncableForAccounts()) {
-            syncForAllAccounts(timelineToSync, syncYounger, manuallyLaunched);
-        } else if (timelineToSync.isSyncable()) {
-            syncOneTimeline(timelineToSync, syncYounger, manuallyLaunched);
-        } else {
-            hideSyncing("SyncWithInternet");
-        }
-    }
-
-    private void syncForAllOrigins(Timeline timelineToSync, boolean syncYounger, boolean manuallyLaunched) {
-        for (Origin origin : myContext.origins().originsToSync(
-                timelineToSync.getMyAccount().getOrigin(), true, timelineToSync.hasSearchQuery())) {
-            syncOneTimeline(timelineToSync.cloneForOrigin(myContext, origin), syncYounger, manuallyLaunched);
-        }
-    }
-
-    private void syncForAllAccounts(Timeline timelineToSync, boolean syncYounger, boolean manuallyLaunched) {
-        for (MyAccount ma : myContext.accounts().accountsToSync()) {
-            if (timelineToSync.getTimelineType() == TimelineType.EVERYTHING) {
-                ma.requestSync();
-            } else {
-                syncOneTimeline(timelineToSync.cloneForAccount(myContext, ma), syncYounger, manuallyLaunched);
-            }
-        }
+        myContext.timelines().toTimelinesToSync(timelineToSync)
+                .forEach(timeline -> syncOneTimeline(timeline, syncYounger, manuallyLaunched));
     }
 
     private void syncOneTimeline(Timeline timeline, boolean syncYounger, boolean manuallyLaunched) {

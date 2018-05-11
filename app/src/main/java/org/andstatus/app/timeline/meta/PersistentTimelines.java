@@ -131,6 +131,22 @@ public class PersistentTimelines {
         return timelines;
     }
 
+    @NonNull
+    public Stream<Timeline> toTimelinesToSync(Timeline timelineToSync) {
+        if (timelineToSync.isSyncableForOrigins()) {
+            return myContext.origins().originsToSync(
+                    timelineToSync.getMyAccount().getOrigin(), true, timelineToSync.hasSearchQuery())
+                    .stream().map(origin -> timelineToSync.cloneForOrigin(myContext, origin));
+        } else if (timelineToSync.isSyncableForAccounts()) {
+            return myContext.accounts().accountsToSync()
+                    .stream().map(account -> timelineToSync.cloneForAccount(myContext, account));
+        } else if (timelineToSync.isSyncable()) {
+            return Stream.of(timelineToSync);
+        } else {
+            return Stream.empty();
+        }
+    }
+
     // TODO: Remove the method
     @NonNull
     public Stream<Timeline> filter(boolean isForSelector,
