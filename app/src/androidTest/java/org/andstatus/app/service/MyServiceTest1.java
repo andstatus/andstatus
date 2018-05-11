@@ -24,6 +24,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.ExceptionsCounter;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -48,7 +49,7 @@ public class MyServiceTest1 extends MyServiceTest {
 
         MyContext myContext = MyContextHolder.get();
         myContext.timelines().filter(false, TriState.FALSE,
-                TimelineType.UNKNOWN, MyAccount.EMPTY, Origin.EMPTY)
+                TimelineType.UNKNOWN, Actor.EMPTY, Origin.EMPTY)
                 .filter(Timeline::isSyncedAutomatically)
                 .filter(Timeline::isTimeToAutoSync)
                 .forEach(timeline -> timeline.onSyncEnded(new CommandResult()));

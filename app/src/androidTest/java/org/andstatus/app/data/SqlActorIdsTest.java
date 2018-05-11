@@ -19,6 +19,7 @@ package org.andstatus.app.data;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -42,11 +43,11 @@ public class SqlActorIdsTest {
         assertTrue("account is not valid: " + demoData.conversationAccountName, myAccount.isValid());
 
         Timeline timeline = MyContextHolder.get().timelines().filter(false, TriState.FALSE,
-                TimelineType.SENT, myAccount, myAccount.getOrigin()).findFirst().orElse(Timeline.EMPTY);
+                TimelineType.SENT, myAccount.getActor(), myAccount.getOrigin()).findFirst().orElse(Timeline.EMPTY);
         assertNotEquals(0, SqlActorIds.forTimelineActor(timeline).size());
 
         Timeline timelineCombined = MyContextHolder.get().timelines().filter(false, TriState.TRUE,
-                TimelineType.SENT, MyAccount.EMPTY, Origin.EMPTY).findFirst().orElse(Timeline.EMPTY);
+                TimelineType.SENT, Actor.EMPTY, Origin.EMPTY).findFirst().orElse(Timeline.EMPTY);
         assertNotEquals("No actors for " + timelineCombined,0, SqlActorIds.forTimelineActor(timelineCombined).size());
 
         long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, myAccount.getOriginId(),  demoData.conversationAuthorSecondActorOid);

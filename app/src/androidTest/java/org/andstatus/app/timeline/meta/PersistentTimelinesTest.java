@@ -23,6 +23,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.DemoOriginInserter;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.TriState;
@@ -62,35 +63,35 @@ public class PersistentTimelinesTest {
     public void testFilteredList() throws Exception {
         Collection<Timeline> timelines = myContext.timelines().values();
         long count = myContext.timelines().filter(
-                false, TriState.UNKNOWN, TimelineType.UNKNOWN, MyAccount.EMPTY, Origin.EMPTY).count();
+                false, TriState.UNKNOWN, TimelineType.UNKNOWN, Actor.EMPTY, Origin.EMPTY).count();
         assertEquals(timelines.size(), count);
 
         count = myContext.timelines().filter(
-                true, TriState.FALSE, TimelineType.UNKNOWN, MyAccount.EMPTY, Origin.EMPTY).count();
+                true, TriState.FALSE, TimelineType.UNKNOWN, Actor.EMPTY, Origin.EMPTY).count();
         assertTrue(timelines.size() > count);
 
         count = myContext.timelines().filter(
-                true, TriState.TRUE, TimelineType.UNKNOWN, MyAccount.EMPTY, Origin.EMPTY).count();
+                true, TriState.TRUE, TimelineType.UNKNOWN, Actor.EMPTY, Origin.EMPTY).count();
         assertTrue(count > 0);
         assertTrue(timelines.size() > count);
 
         ensureAtLeastOneNotDisplayedTimeline();
         long count2 = myContext.timelines().filter(
-                true, TriState.UNKNOWN, TimelineType.UNKNOWN, MyAccount.EMPTY, Origin.EMPTY).count();
+                true, TriState.UNKNOWN, TimelineType.UNKNOWN, Actor.EMPTY, Origin.EMPTY).count();
         assertTrue(timelines.size() > count2);
         assertTrue(count2 > count);
 
         MyAccount myAccount = demoData.getMyAccount(demoData.conversationAccountName);
         count = myContext.timelines().filter(
-                true, TriState.FALSE, TimelineType.UNKNOWN, myAccount, Origin.EMPTY).count();
+                true, TriState.FALSE, TimelineType.UNKNOWN, myAccount.getActor(), Origin.EMPTY).count();
         assertTrue(count > 0);
 
         count = myContext.timelines().filter(
-                true, TriState.FALSE, TimelineType.UNKNOWN, MyAccount.EMPTY, myAccount.getOrigin()).count();
+                true, TriState.FALSE, TimelineType.UNKNOWN, Actor.EMPTY, myAccount.getOrigin()).count();
         assertTrue(count > 0);
 
         List<Timeline> filtered = myContext.timelines().filter(true, TriState.FALSE,
-                TimelineType.EVERYTHING, MyAccount.EMPTY, myAccount.getOrigin()).collect(Collectors.toList());
+                TimelineType.EVERYTHING, Actor.EMPTY, myAccount.getOrigin()).collect(Collectors.toList());
         assertTrue(filtered.size() > 0);
         assertTrue(filtered.stream()
                 .filter(timeline -> timeline.getTimelineType() == TimelineType.EVERYTHING).count() > 0);
@@ -139,7 +140,7 @@ public class PersistentTimelinesTest {
         MyAccount myAccount = myContext.accounts().getFirstSucceededForOrigin(origin);
         assertTrue(myAccount.isValid());
         Timeline timeline2 = myContext.timelines()
-                .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount, Origin.EMPTY)
+                .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount.getActor(), Origin.EMPTY)
                 .filter(timeline -> timeline != timeline1).findFirst().orElse(Timeline.EMPTY);
         myContext.timelines().setDefault(timeline2);
 
@@ -159,7 +160,7 @@ public class PersistentTimelinesTest {
 
     private void oneFromIsCombined(MyAccount myAccount, TimelineType timelineType) {
         Timeline combined = myContext.timelines()
-                .filter(true, TriState.TRUE, timelineType, myAccount, Origin.EMPTY)
+                .filter(true, TriState.TRUE, timelineType, myAccount.getActor(), Origin.EMPTY)
                 .findFirst().orElse(Timeline.EMPTY);
         Timeline notCombined = combined.fromIsCombined(myContext, false);
         assertEquals("Should be not combined " + notCombined, false, notCombined.isCombined());
@@ -180,7 +181,7 @@ public class PersistentTimelinesTest {
 
     private void oneFromMyAccount(MyAccount ma1, MyAccount ma2, TimelineType timelineType) {
         Timeline timeline1 = myContext.timelines()
-                .filter(true, TriState.FALSE, timelineType, ma1, ma1.getOrigin())
+                .filter(true, TriState.FALSE, timelineType, ma1.getActor(), ma1.getOrigin())
                 .findFirst().orElseGet(() ->
                     myContext.timelines().get(timelineType, ma1.getActorId(), ma1.getOrigin(), ""));
         Timeline timeline2 = timeline1.fromMyAccount(myContext, ma2);

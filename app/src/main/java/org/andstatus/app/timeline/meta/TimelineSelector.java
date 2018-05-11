@@ -26,6 +26,7 @@ import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.view.MySimpleAdapter;
@@ -68,12 +69,12 @@ public class TimelineSelector extends SelectorDialog {
         Set<Timeline> timelines = myContext.timelines().filter(
                 true,
                 TriState.fromBoolean(currentTimeline.isCombined()),
-                TimelineType.UNKNOWN, currentMyAccount, Origin.EMPTY).collect(Collectors.toSet());
+                TimelineType.UNKNOWN, currentMyAccount.getActor(), Origin.EMPTY).collect(Collectors.toSet());
         if (!currentTimeline.isCombined() && currentMyAccount.isValid()) {
             timelines.addAll(myContext.timelines().filter(
                     true,
                     TriState.fromBoolean(currentTimeline.isCombined()),
-                    TimelineType.UNKNOWN, MyAccount.EMPTY, currentMyAccount.getOrigin()).collect(Collectors.toSet()));
+                    TimelineType.UNKNOWN, Actor.EMPTY, currentMyAccount.getOrigin()).collect(Collectors.toSet()));
         }
         if (timelines.isEmpty()) {
             returnSelectedTimeline(Timeline.EMPTY);

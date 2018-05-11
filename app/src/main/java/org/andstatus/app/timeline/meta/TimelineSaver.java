@@ -23,6 +23,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.TimelineTable;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
@@ -112,7 +113,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
     }
 
     private void addDefaultMyAccountTimelinesIfNoneFound(MyAccount ma) {
-        if (ma.isValid() && timelines().filter(false, TriState.FALSE, TimelineType.UNKNOWN, ma,
+        if (ma.isValid() && timelines().filter(false, TriState.FALSE, TimelineType.UNKNOWN, ma.getActor(),
                 Origin.EMPTY).count() == 0) {
             addDefaultCombinedTimelinesIfNoneFound();
             addDefaultOriginTimelinesIfNoneFound(ma.getOrigin());
@@ -124,7 +125,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
     }
 
     private void addDefaultCombinedTimelinesIfNoneFound() {
-        if (timelines().filter(false, TriState.TRUE, TimelineType.UNKNOWN, MyAccount.EMPTY,
+        if (timelines().filter(false, TriState.TRUE, TimelineType.UNKNOWN, Actor.EMPTY,
                 Origin.EMPTY).count() == 0) {
             long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
                     TimelineTable._ID, TimelineTable.ACTOR_ID + "=0 AND " + TimelineTable.ORIGIN_ID + "=0");

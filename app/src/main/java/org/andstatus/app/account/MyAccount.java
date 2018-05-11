@@ -971,7 +971,7 @@ public final class MyAccount implements Comparable<MyAccount> {
     public long getLastSyncSucceededDate(MyContext myContext) {
         return (isValid() && isPersistent())
                 ? myContext.timelines()
-                    .filter(false, TriState.UNKNOWN, TimelineType.UNKNOWN, this, Origin.EMPTY)
+                    .filter(false, TriState.UNKNOWN, TimelineType.UNKNOWN, actor, Origin.EMPTY)
                     .map(Timeline::getSyncSucceededDate).max(Long::compareTo).orElse(0L)
                 : 0L;
     }

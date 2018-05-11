@@ -115,7 +115,7 @@ public class DemoAccountInserter {
     @NonNull
     public static Timeline getAutomaticallySyncableTimeline(MyContext myContext, MyAccount myAccount) {
         Timeline timelineToSync = myContext.timelines()
-                .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount, Origin.EMPTY)
+                .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount.getActor(), Origin.EMPTY)
                 .filter(Timeline::isSyncedAutomatically).findFirst().orElse(Timeline.EMPTY);
         assertTrue("No syncable automatically timeline for " + myAccount + "\n"
                 + myContext.timelines().values(), timelineToSync.isSyncableAutomatically());

@@ -212,7 +212,7 @@ public final class DemoData {
                 }
                 setSuccessfulAccountAsCurrent();
                 Timeline defaultTimeline = MyContextHolder.get().timelines().filter(
-                        false, TriState.TRUE, TimelineType.EVERYTHING, MyAccount.EMPTY,
+                        false, TriState.TRUE, TimelineType.EVERYTHING, Actor.EMPTY,
                         MyContextHolder.get().accounts().getCurrentAccount().getOrigin())
                         .findFirst().orElse(Timeline.EMPTY);
                 assertThat(defaultTimeline.getTimelineType(), is(TimelineType.EVERYTHING));

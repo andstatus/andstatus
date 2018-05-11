@@ -147,16 +147,6 @@ public class PersistentTimelines {
         }
     }
 
-    // TODO: Remove the method
-    @NonNull
-    public Stream<Timeline> filter(boolean isForSelector,
-                                   TriState isTimelineCombined,
-                                   @NonNull TimelineType timelineType,
-                                   @NonNull MyAccount myAccount,
-                                   @NonNull Origin origin) {
-        return filter(isForSelector, isTimelineCombined, timelineType, myAccount.getActor(), origin);
-    }
-
     @NonNull
     public Stream<Timeline> filter(boolean isForSelector,
                                    TriState isTimelineCombined,
