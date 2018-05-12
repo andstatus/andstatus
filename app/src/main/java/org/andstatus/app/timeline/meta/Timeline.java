@@ -1029,4 +1029,8 @@ public class Timeline implements Comparable<Timeline> {
         }
         return actor.actorId == 0 || actor.actorId == getActorId();
     }
+
+    public boolean withActorProfile() {
+        return !isCombined && actor.nonEmpty() && timelineType.withActorProfile();
+    }
 }

@@ -47,7 +47,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityAdapter;
 import org.andstatus.app.activity.ActivityContextMenu;
 import org.andstatus.app.activity.ActivityViewItem;
-import org.andstatus.app.actor.ActorViewItemPopulator;
+import org.andstatus.app.actor.ActorProfileViewer;
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -81,6 +81,7 @@ import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.ViewUtils;
+import org.andstatus.app.view.MyContextMenu;
 import org.andstatus.app.widget.MySearchView;
 
 import java.util.Collections;
@@ -112,7 +113,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     private volatile SelectorActivityMock selectorActivityMock;
     View syncYoungerView = null;
     View syncOlderView = null;
-    View actorProfileView = null;
+    ActorProfileViewer actorProfileViewer = null;
 
     public static void startForTimeline(MyContext myContext, Context context, Timeline timeline,
                                         MyAccount newCurrentMyAccount, boolean clearTask) {
@@ -181,7 +182,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         syncOlderView.findViewById(R.id.sync_older_button).setOnClickListener(
                 v -> syncWithInternet(getParamsLoaded().getTimeline(), false, true));
 
-        actorProfileView = View.inflate(this, R.layout.actor_profile, null);
+        actorProfileViewer = new ActorProfileViewer(this);
 
         addSyncButtons();
 
@@ -384,7 +385,11 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        contextMenu.onContextItemSelected(item);
+        if (item.getGroupId() == MyContextMenu.MENU_GROUP_ACTOR_PROFILE) {
+            actorProfileViewer.contextMenu.onContextItemSelected(item);
+        } else {
+            contextMenu.onContextItemSelected(item);
+        }
         return super.onContextItemSelected(item);
     }
     
@@ -903,12 +908,11 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         final ListView listView = getListView();
         if (listView == null) return;
 
-        listView.removeHeaderView(actorProfileView);
-        if (getParamsLoaded().timeline.actor.isEmpty()) return;
-
-        listView.addHeaderView(actorProfileView);
-        ActorViewItemPopulator populator = new ActorViewItemPopulator(this, false, true);
-        populator.populateView(actorProfileView, getListData().actorViewItem, 0);
+        listView.removeHeaderView(actorProfileViewer.profileView);
+        if (getParamsLoaded().timeline.withActorProfile()) {
+            actorProfileViewer.populateView();
+            listView.addHeaderView(actorProfileViewer.profileView);
+        }
     }
 
     private void onNoRowsLoaded(@NonNull Timeline timeline) {

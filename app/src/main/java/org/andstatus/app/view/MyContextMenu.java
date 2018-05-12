@@ -37,6 +37,7 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
     public static final int MENU_GROUP_ACTOR = Menu.FIRST;
     public static final int MENU_GROUP_NOTE = Menu.FIRST + 1;
     public static final int MENU_GROUP_OBJACTOR = Menu.FIRST + 2;
+    public static final int MENU_GROUP_ACTOR_PROFILE = Menu.FIRST + 3;
 
     @NonNull
     protected final LoadableListActivity listActivity;
@@ -62,7 +63,9 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
 
     private void saveContextOfSelectedItem(View v) {
         viewOfTheContext = v;
-        ViewItem viewItem = listActivity.saveContextOfSelectedItem(v);
+        ViewItem viewItem = menuGroup == MENU_GROUP_ACTOR_PROFILE
+                ? listActivity.getListData().actorViewItem
+                : listActivity.saveContextOfSelectedItem(v);
         if (viewItem.isEmpty() || mViewItem.isEmpty() || mViewItem.getId() != viewItem.getId()) {
             selectedActingAccount = MyAccount.EMPTY;
         }

@@ -42,6 +42,8 @@ import android.widget.Toast;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 
+import static android.text.Html.FROM_HTML_MODE_COMPACT;
+
 /** Prevents ActivityNotFoundException for malformed links,
  * see https://github.com/andstatus/andstatus/issues/300
  * Based on http://commonsware.com/blog/2013/10/23/linkify-autolink-need-custom-urlspan.html  */
@@ -113,7 +115,9 @@ public class MyUrlSpan extends URLSpan {
             if (text.contains(SOFT_HYPHEN)) {
                 text = text.replace(SOFT_HYPHEN, "-");
             }
-            Spanned spanned = MyHtml.hasHtmlMarkup(text) ? Html.fromHtml(text) : new SpannableString(text);
+            Spanned spanned = MyHtml.hasHtmlMarkup(text)
+                    ? Html.fromHtml(text, FROM_HTML_MODE_COMPACT)
+                    : new SpannableString(text);
             textView.setText(spanned);
             if (linkify && !hasUrlSpans(spanned)) {
                 Linkify.addLinks(textView, Linkify.WEB_URLS);

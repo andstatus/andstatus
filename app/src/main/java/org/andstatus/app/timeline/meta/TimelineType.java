@@ -272,6 +272,18 @@ public enum TimelineType implements SelectableEnum {
         }
     }
 
+    public boolean withActorProfile() {
+        switch (this) {
+            case FAVORITES:
+            case FOLLOWERS:
+            case FRIENDS:
+            case SENT:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     @Override
     public int getDialogTitleResId() {
         return R.string.dialog_title_select_timeline;
