@@ -65,7 +65,7 @@ public class Timeline implements Comparable<Timeline> {
     /** "Authenticated User" used to retrieve/post to... this Timeline */
     private final MyAccount myAccount;
     /** An Actor as a parameter of this timeline.
-     * This may be the same the Authenticated User ({@link #myAccount})
+     * This may be the same as the Authenticated User ({@link #myAccount})
      * or some other User e.g. to get a list of messages by some other person/user of the Social Network
      */
     public final Actor actor;

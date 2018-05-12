@@ -66,7 +66,7 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
         if (item.getObjActorItem().getId() == 0) {
             actorView.setVisibility(View.GONE);
         } else {
-            objActorAdapter.populateView(actorView, item.getObjActorItem(), position);
+            objActorAdapter.populator.populateView(actorView, item.getObjActorItem(), position);
             actorView.setOnCreateContextMenuListener(contextMenu.objActor);
             actorView.setOnClickListener(objActorAdapter);
             actorView.setVisibility(View.VISIBLE);

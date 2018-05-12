@@ -18,6 +18,7 @@ package org.andstatus.app.timeline;
 
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
@@ -31,12 +32,14 @@ public class TimelineData<T extends ViewItem<T>> {
     protected final List<TimelinePage<T>> pages; // Contains at least one Page
     final long updatedAt = MyLog.uniqueCurrentTimeMS();
     public final TimelineParameters params;
+    public final ActorViewItem actorViewItem;
     final boolean isSameTimeline;
     private final DuplicatesCollapser<T> duplicatesCollapser;
 
     public TimelineData(TimelineData<T> oldData, @NonNull TimelinePage<T> thisPage) {
         duplicatesCollapser = new DuplicatesCollapser<>(this, oldData == null ? null : oldData.duplicatesCollapser);
         this.params = thisPage.params;
+        actorViewItem = thisPage.actorViewItem;
         isSameTimeline = oldData != null &&
                 params.getContentUri().equals(oldData.params.getContentUri());
         this.pages = isSameTimeline ? new ArrayList<>(oldData.pages) : new ArrayList<>();

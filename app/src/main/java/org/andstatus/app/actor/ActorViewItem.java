@@ -80,7 +80,7 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
     }
 
     public static ActorViewItem fromActor(@NonNull Actor actor) {
-        return new ActorViewItem(actor, false);
+        return actor.isEmpty() ? ActorViewItem.EMPTY : new ActorViewItem(actor, false);
     }
 
     public long getActorId() {

@@ -75,7 +75,7 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
         return actorId == 0 ? Actor.EMPTY : addActorToList(Actor.fromOriginAndActorId(origin, actorId));
     }
 
-    protected Actor addActorToList(Actor actor) {
+    public Actor addActorToList(Actor actor) {
         if (actor.isEmpty()) return Actor.EMPTY;
         ActorViewItem item = ActorViewItem.fromActor(actor);
         int existing = items.indexOf(item);

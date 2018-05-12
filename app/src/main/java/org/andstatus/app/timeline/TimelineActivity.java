@@ -47,6 +47,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityAdapter;
 import org.andstatus.app.activity.ActivityContextMenu;
 import org.andstatus.app.activity.ActivityViewItem;
+import org.andstatus.app.actor.ActorViewItemPopulator;
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -111,6 +112,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     private volatile SelectorActivityMock selectorActivityMock;
     View syncYoungerView = null;
     View syncOlderView = null;
+    View actorProfileView = null;
 
     public static void startForTimeline(MyContext myContext, Context context, Timeline timeline,
                                         MyAccount newCurrentMyAccount, boolean clearTask) {
@@ -178,6 +180,9 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         syncOlderView = View.inflate(this, R.layout.sync_older, null);
         syncOlderView.findViewById(R.id.sync_older_button).setOnClickListener(
                 v -> syncWithInternet(getParamsLoaded().getTimeline(), false, true));
+
+        actorProfileView = View.inflate(this, R.layout.actor_profile, null);
+
         addSyncButtons();
 
         searchView = (MySearchView) findViewById(R.id.my_search_view);
@@ -626,6 +631,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         MyCheckBox.setEnabled(this, R.id.collapseDuplicatesToggle,
                 getListData().isCollapseDuplicates());
         showSyncListButtons();
+        showActorProfile();
     }
 
     @Override
@@ -891,6 +897,18 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 false,
                 false);
         syncOlderView.setEnabled(false);
+    }
+
+    private void showActorProfile() {
+        final ListView listView = getListView();
+        if (listView == null) return;
+
+        listView.removeHeaderView(actorProfileView);
+        if (getParamsLoaded().timeline.actor.isEmpty()) return;
+
+        listView.addHeaderView(actorProfileView);
+        ActorViewItemPopulator populator = new ActorViewItemPopulator(this, false, true);
+        populator.populateView(actorProfileView, getListData().actorViewItem, 0);
     }
 
     private void onNoRowsLoaded(@NonNull Timeline timeline) {

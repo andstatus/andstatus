@@ -129,13 +129,15 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
     }
 
     private List<T> loadActors(List<T> items) {
-        if (items.isEmpty()) return items;
+        if (items.isEmpty() && !params.timeline.getTimelineType().isForUser()) return items;
         ActorListLoader loader = new ActorListLoader(ActorListType.ACTORS, getParams().getMyAccount(),
                 getParams().getTimeline().getOrigin(), 0, "");
         items.forEach(item -> item.addActorsToLoad(loader));
+        if (params.timeline.getTimelineType().isForUser()) loader.addActorToList(params.timeline.actor);
         if (loader.getList().isEmpty()) return items;
         loader.load(progress -> {});
         items.forEach(item -> item.setLoadedActors(loader));
+        page.setLoadedActor(loader);
         return items;
     }
 

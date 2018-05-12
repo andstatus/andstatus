@@ -18,6 +18,10 @@ package org.andstatus.app.timeline;
 
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.actor.ActorListLoader;
+import org.andstatus.app.actor.ActorViewItem;
+import org.andstatus.app.net.social.ActivityType;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -27,6 +31,8 @@ import java.util.List;
 public class TimelinePage<T extends ViewItem<T>> {
     @NonNull
     final TimelineParameters params;
+    @NonNull
+    ActorViewItem actorViewItem = ActorViewItem.EMPTY;
     private final T emptyItem;
     @NonNull
     public final List<T> items;
@@ -40,5 +46,12 @@ public class TimelinePage<T extends ViewItem<T>> {
         this.params = params;
         emptyItem = new ViewItem<T>(true).getEmpty(params.getTimelineType());
         this.items = items == null ? Collections.EMPTY_LIST : items;
+    }
+
+    public void setLoadedActor(ActorListLoader loader) {
+        if (params.timeline.getTimelineType().isForUser()) {
+            int index = loader.getList().indexOf(ActorViewItem.fromActor(params.timeline.actor));
+            if (index >= 0) actorViewItem = loader.getList().get(index);
+        }
     }
 }
