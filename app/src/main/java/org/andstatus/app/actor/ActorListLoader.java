@@ -94,7 +94,7 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
                 searchQuery);
         try (Cursor c = MyContextHolder.get().context().getContentResolver()
                     .query(mContentUri, ActorListSql.getListProjection(), getSelection(), null, null)) {
-            while ( c != null && c.moveToNext()) {
+            while (c != null && c.moveToNext()) {
                 populateItem(c);
             }
         }

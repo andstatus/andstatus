@@ -47,7 +47,6 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
     boolean populated = false;
     @NonNull
     final Actor actor;
-    private AvatarFile avatarFile = null;
     Set<Long> myFollowers = new HashSet<>();
 
     @Override
@@ -146,13 +145,11 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
     }
 
     public AvatarFile getAvatarFile() {
-        return avatarFile;
+        return actor.avatarFile;
     }
 
     public void showAvatar(MyActivity myActivity, AvatarView imageView) {
-        if (avatarFile != null) {
-            avatarFile.showImage(myActivity, imageView);
-        }
+        getAvatarFile().showImage(myActivity, imageView);
     }
 
     @Override
@@ -180,10 +177,11 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
         actor.setCreatedDate(DbUtils.getLong(cursor, ActorTable.CREATED_DATE));
         actor.setUpdatedDate(DbUtils.getLong(cursor, ActorTable.UPDATED_DATE));
 
+        actor.avatarFile = AvatarFile.fromCursor(actor.actorId, cursor);
+
         ActorViewItem item = new ActorViewItem(actor, false);
 
         item.myFollowers = MyQuery.getMyFollowersOf(actor.actorId);
-        item.avatarFile = AvatarFile.fromCursor(actor.actorId, cursor);
         item.populated = true;
         return item;
     }

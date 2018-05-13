@@ -18,15 +18,14 @@ package org.andstatus.app.data;
 
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
-import android.provider.BaseColumns;
 
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.ActorTable;
+import org.andstatus.app.database.table.DownloadTable;
+import org.andstatus.app.net.social.Actor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 public class ActorListSql {
@@ -41,22 +40,8 @@ public class ActorListSql {
      * @return String for {@link SQLiteQueryBuilder#setTables(String)}
      */
     static String tablesForList(Uri uri, String[] projection) {
-        Collection<String> columns = new java.util.HashSet<>(Arrays.asList(projection));
-
-        String tables = ActorTable.TABLE_NAME;
-        if (columns.contains(DownloadTable.AVATAR_FILE_NAME)) {
-            tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
-                    + DownloadTable.ACTOR_ID + ", "
-                    + DownloadTable.DOWNLOAD_STATUS + ", "
-                    + DownloadTable.FILE_NAME
-                    + " FROM " + DownloadTable.TABLE_NAME + ") AS " + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS
-                    + " ON "
-                    + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_STATUS
-                    + "=" + DownloadStatus.LOADED.save() + " AND "
-                    + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.ACTOR_ID
-                    + "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID;
-        }
-        return tables;
+        return Actor.getActorAndUserSqlTables(false,
+                Arrays.asList(projection).contains(DownloadTable.AVATAR_FILE_NAME));
     }
 
     /**

@@ -66,7 +66,7 @@ public class Audience {
 
     public static Audience load(@NonNull MyContext myContext, @NonNull Origin origin, long noteId) {
         Audience audience = new Audience(origin);
-        final String sql = "SELECT " + Actor.getActorAndUserSqlColumns()
+        final String sql = "SELECT " + Actor.getActorAndUserSqlColumns(false)
                 + " FROM (" + Actor.getActorAndUserSqlTables()
                 + ") INNER JOIN " + AudienceTable.TABLE_NAME + " ON " + AudienceTable.ACTOR_ID + "="
                 + ActorTable.TABLE_NAME + "." + ActorTable._ID

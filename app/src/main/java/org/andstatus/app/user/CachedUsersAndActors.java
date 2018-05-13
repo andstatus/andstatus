@@ -60,8 +60,8 @@ public class CachedUsersAndActors {
         actors.clear();
         myUsers.clear();
         myActors.clear();
-        final String sql = "SELECT " + Actor.getActorAndUserSqlColumns()
-                + " FROM " + Actor.getActorAndUserSqlTables()
+        final String sql = "SELECT " + Actor.getActorAndUserSqlColumns(true)
+                + " FROM " + Actor.getActorAndUserSqlTables(false, true)
                 + " WHERE " + UserTable.IS_MY + "=" + TriState.TRUE.id;
         final Function<Cursor, Actor> function = cursor -> Actor.fromCursor(myContext, cursor);
         MyQuery.get(myContext, sql, function).forEach(this::addIfAbsent);
@@ -69,7 +69,7 @@ public class CachedUsersAndActors {
 
     private void initializeFriendsOfMyActors() {
         friendsOfMyActors.clear();
-        final String sql = "SELECT DISTINCT " + Actor.getActorAndUserSqlColumns()
+        final String sql = "SELECT DISTINCT " + Actor.getActorAndUserSqlColumns(false)
                 + ", " + FriendshipTable.ACTOR_ID
                 + " FROM (" + Actor.getActorAndUserSqlTables() + ")"
                 + " INNER JOIN " + FriendshipTable.TABLE_NAME
@@ -89,7 +89,7 @@ public class CachedUsersAndActors {
     }
 
     private void loadTimelineActors() {
-        final String sql = "SELECT " + Actor.getActorAndUserSqlColumns()
+        final String sql = "SELECT " + Actor.getActorAndUserSqlColumns(false)
                 + " FROM " + Actor.getActorAndUserSqlTables()
                 + " WHERE " + ActorTable.TABLE_NAME + "." + ActorTable._ID + " IN ("
                 + " SELECT DISTINCT " + TimelineTable.ACTOR_ID

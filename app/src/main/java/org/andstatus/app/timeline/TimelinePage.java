@@ -20,7 +20,6 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.actor.ActorListLoader;
 import org.andstatus.app.actor.ActorViewItem;
-import org.andstatus.app.net.social.ActivityType;
 
 import java.util.Collections;
 import java.util.List;
@@ -49,7 +48,7 @@ public class TimelinePage<T extends ViewItem<T>> {
     }
 
     public void setLoadedActor(ActorListLoader loader) {
-        if (params.timeline.getTimelineType().isForUser()) {
+        if (params.timeline.getTimelineType().withActorProfile()) {
             int index = loader.getList().indexOf(ActorViewItem.fromActor(params.timeline.actor));
             if (index >= 0) actorViewItem = loader.getList().get(index);
         }

@@ -18,6 +18,7 @@ package org.andstatus.app.net.social;
 
 import android.database.Cursor;
 import android.net.Uri;
+import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -25,10 +26,14 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.data.ProjectionMap;
 import org.andstatus.app.database.table.ActorTable;
+import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
@@ -93,6 +98,7 @@ public class Actor implements Comparable<Actor> {
     @NonNull
     public final Origin origin;
     public long actorId = 0L;
+    public AvatarFile avatarFile = AvatarFile.EMPTY;
 
     public User user = User.EMPTY;
 
@@ -113,7 +119,7 @@ public class Actor implements Comparable<Actor> {
     }
 
     private static Actor loadInternal(@NonNull MyContext myContext, long actorId, Supplier<Actor> supplier) {
-        final String sql = "SELECT " + Actor.getActorAndUserSqlColumns()
+        final String sql = "SELECT " + Actor.getActorAndUserSqlColumns(false)
                 + " FROM " + Actor.getActorAndUserSqlTables()
                 + " WHERE " + ActorTable.TABLE_NAME + "." + ActorTable._ID + "=" + actorId;
         final Function<Cursor, Actor> function = cursor -> fromCursor(myContext, cursor);
@@ -122,19 +128,34 @@ public class Actor implements Comparable<Actor> {
 
     @NonNull
     public static String getActorAndUserSqlTables() {
-        return getActorAndUserSqlTables(false);
+        return getActorAndUserSqlTables(false, false);
     }
 
     @NonNull
-    public static String getActorAndUserSqlTables(boolean optionalUser) {
-        return ActorTable.TABLE_NAME + " "
+    public static String getActorAndUserSqlTables(boolean optionalUser, boolean withAvatar) {
+        final String tables = ActorTable.TABLE_NAME + " "
                 + (optionalUser ? "LEFT" : "INNER") + " JOIN " + UserTable.TABLE_NAME
                 + " ON " + ActorTable.TABLE_NAME + "." + ActorTable.USER_ID
                 + "=" + UserTable.TABLE_NAME + "." + UserTable._ID;
+        return withAvatar ? addAvatarImageTable(tables) : tables;
     }
 
     @NonNull
-    public static String getActorAndUserSqlColumns() {
+    private static String addAvatarImageTable(String tables) {
+        return "(" + tables + ") LEFT OUTER JOIN (SELECT "
+                + DownloadTable.ACTOR_ID + ", "
+                + DownloadTable.DOWNLOAD_STATUS + ", "
+                + DownloadTable.FILE_NAME
+                + " FROM " + DownloadTable.TABLE_NAME + ") AS " + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS
+                + " ON "
+                + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_STATUS
+                + "=" + DownloadStatus.LOADED.save() + " AND "
+                + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.ACTOR_ID
+                + "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID;
+    }
+
+    @NonNull
+    public static String getActorAndUserSqlColumns(boolean withAvatar) {
         return ActorTable.TABLE_NAME + "." + ActorTable._ID
                 + ", " + ActorTable.TABLE_NAME + "." + ActorTable.USER_ID
                 + ", " + ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID
@@ -143,7 +164,8 @@ public class Actor implements Comparable<Actor> {
                 + ", " + ActorTable.TABLE_NAME + "." + ActorTable.USERNAME
                 + ", " + ActorTable.TABLE_NAME + "." + ActorTable.WEBFINGER_ID
                 + ", " + UserTable.TABLE_NAME + "." + UserTable.IS_MY
-                + ", " + UserTable.TABLE_NAME + "." + UserTable.KNOWN_AS;
+                + ", " + UserTable.TABLE_NAME + "." + UserTable.KNOWN_AS
+                + (withAvatar ? ", " + ProjectionMap.ACTORLIST.get(DownloadTable.AVATAR_FILE_NAME) : "");
     }
 
     @NonNull
@@ -159,6 +181,7 @@ public class Actor implements Comparable<Actor> {
             actor.setUsername(DbUtils.getString(cursor, ActorTable.USERNAME));
             actor.setWebFingerId(DbUtils.getString(cursor, ActorTable.WEBFINGER_ID));
             actor.user = User.fromCursor(myContext, cursor);
+            actor.avatarFile = AvatarFile.fromCursor(actorId, cursor);
             myContext.users().addIfAbsent(actor);
         }
         return actor;

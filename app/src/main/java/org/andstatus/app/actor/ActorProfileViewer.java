@@ -20,6 +20,7 @@ import android.view.View;
 
 import org.andstatus.app.R;
 import org.andstatus.app.note.NoteContextMenuContainer;
+import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.view.MyContextMenu;
 
 public class ActorProfileViewer {
@@ -29,20 +30,23 @@ public class ActorProfileViewer {
 
     public ActorProfileViewer(NoteContextMenuContainer container) {
         this.contextMenu = new ActorContextMenu(container, MyContextMenu.MENU_GROUP_ACTOR_PROFILE);
-        populator = new ActorViewItemPopulator(contextMenu.getActivity(), false, true);
-        profileView = View.inflate(contextMenu.getActivity(), R.layout.actor_profile, null);
-
+        populator = new ActorViewItemPopulator(getActivity(), false, true);
+        profileView = View.inflate(getActivity(), R.layout.actor_profile, null);
         setContextMenuTo(R.id.actor_wrapper);
     }
 
-    public void setContextMenuTo(int viewId) {
+    private LoadableListActivity getActivity() {
+        return contextMenu.getActivity();
+    }
+
+    private void setContextMenuTo(int viewId) {
         View view = profileView.findViewById(viewId);
         view.setOnCreateContextMenuListener(contextMenu);
         view.setOnClickListener(View::showContextMenu);
     }
 
     public void populateView() {
-        populator.populateView(profileView, contextMenu.getActivity().getListData().actorViewItem, 0);
+        populator.populateView(profileView, getActivity().getListData().actorViewItem, 0);
     }
 
 }

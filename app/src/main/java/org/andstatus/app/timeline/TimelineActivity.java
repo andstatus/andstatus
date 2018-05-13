@@ -54,12 +54,14 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.data.MatchedUri;
+import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.note.NoteAdapter;
 import org.andstatus.app.note.NoteContextMenu;
 import org.andstatus.app.note.NoteContextMenuContainer;
 import org.andstatus.app.note.NoteEditorListActivity;
 import org.andstatus.app.note.NoteViewItem;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
@@ -629,6 +631,16 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         getNoteEditor().updateScreen();
         updateTitle(mRateLimitText);
         mDrawerToggle.setDrawerIndicatorEnabled(!getParamsLoaded().isAtHome());
+        AvatarView avatarView = findViewById(R.id.current_account_avatar_image);
+        if (avatarView != null) {
+            getCurrentMyAccount().getActor().avatarFile.showImage(this, avatarView);
+            avatarView.setOnClickListener(v -> TimelineActivity.startForTimeline(
+                    getMyContext(), this,
+                    getMyContext().timelines().get(
+                            TimelineType.SENT, getCurrentMyAccount().getActorId(), Origin.EMPTY),
+                    getCurrentMyAccount(), false));
+        }
+
         ViewUtils.showView(
                 findViewById(R.id.switchToDefaultTimelineButton), !getParamsLoaded().isAtHome());
         ViewUtils.showView(this, R.id.collapseDuplicatesToggle,

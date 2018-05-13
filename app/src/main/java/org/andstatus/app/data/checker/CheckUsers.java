@@ -68,7 +68,7 @@ class CheckUsers extends DataChecker {
                 + ", " + ActorTable.ORIGIN_ID
                 + ", " + ActorTable.WEBFINGER_ID
                 + ", " + UserTable.TABLE_NAME + "." + UserTable._ID + " AS " + UserTable.USER_ID
-                + " FROM " + Actor.getActorAndUserSqlTables(true)
+                + " FROM " + Actor.getActorAndUserSqlTables(true, false)
                 + " ORDER BY " + ActorTable.WEBFINGER_ID + " COLLATE NOCASE";
                 ;
 

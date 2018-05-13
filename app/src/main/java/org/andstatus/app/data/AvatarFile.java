@@ -18,6 +18,7 @@ package org.andstatus.app.data;
 
 import android.database.Cursor;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import org.andstatus.app.R;
 import org.andstatus.app.database.table.DownloadTable;
@@ -38,9 +39,10 @@ public class AvatarFile extends ImageFile {
 
     @NonNull
     public static AvatarFile fromCursor(long actorId, Cursor cursor) {
-        return new AvatarFile(actorId,
-                DbUtils.getString(cursor, DownloadTable.AVATAR_FILE_NAME),
-                MediaMetadata.EMPTY);
+        final String filename = DbUtils.getString(cursor, DownloadTable.AVATAR_FILE_NAME);
+        return actorId == 0 || TextUtils.isEmpty(filename)
+                ? AvatarFile.EMPTY
+                : new AvatarFile(actorId, filename, MediaMetadata.EMPTY);
     }
 
     @Override

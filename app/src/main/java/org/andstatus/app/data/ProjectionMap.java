@@ -90,7 +90,7 @@ public class ProjectionMap {
     /**
      * Projection map for the {@link ActorTable} table
      */
-    static final Map<String, String> ACTORLIST = new HashMap<>();
+    public static final Map<String, String> ACTORLIST = new HashMap<>();
     static {
         ACTORLIST.put(BaseColumns._ID, ActorTable.TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
         ACTORLIST.put(ActorTable.ORIGIN_ID, ActorTable.ORIGIN_ID);
