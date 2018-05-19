@@ -106,6 +106,15 @@ public class NoteContextMenu extends MyContextMenu {
             if (!ConversationActivity.class.isAssignableFrom(getActivity().getClass())) {
                 NoteContextMenuItem.OPEN_CONVERSATION.addTo(menu, order++, R.string.menu_item_open_conversation);
             }
+
+            if (menuContainer.getTimeline().getActorId() != noteForAnyAccount.actor.actorId) {
+                // Notes, where an Actor of this note is an Actor ("Sent timeline" of that actor)
+                NoteContextMenuItem.ACTOR_ACTIONS.addTo(menu, order++,
+                        String.format(
+                                getActivity().getText(R.string.menu_item_user_messages).toString(),
+                                noteForAnyAccount.actor.getTimelineUsername()));
+            }
+
             if (viewItem.isCollapsed()) {
                 NoteContextMenuItem.SHOW_DUPLICATES.addTo(menu, order++, R.string.show_duplicates);
             } else if (getActivity().getListData().canBeCollapsed(getActivity().getPositionOfContextMenu())) {
@@ -127,24 +136,17 @@ public class NoteContextMenu extends MyContextMenu {
                 NoteContextMenuItem.COPY_AUTHOR.addTo(menu, order++, R.string.menu_item_copy_author);
             }
 
-            // "Actor" is about an Activity, not about a note
-            if (menuContainer.getTimeline().getActorId() != noteForAnyAccount.actor.actorId) {
-                // Notes, where an Actor of this note is an Actor ("Actor timeline" of that actor)
-                NoteContextMenuItem.ACTOR_ACTIONS.addTo(menu, order++,
-                        String.format(
-                                getActivity().getText(R.string.menu_item_user_messages).toString(),
-                                noteForAnyAccount.actor.getTimelineUsername()));
-                if (!accountToNote.isActor) {
-                    if (accountToNote.actorFollowed) {
-                        NoteContextMenuItem.UNDO_FOLLOW_ACTOR.addTo(menu, order++,
-                                String.format(
-                                        getActivity().getText(R.string.menu_item_stop_following_user).toString(),
-                                        noteForAnyAccount.actor.getTimelineUsername()));
-                    } else {
-                        NoteContextMenuItem.FOLLOW_ACTOR.addTo(menu, order++,
-                                String.format(
-                                        getActivity().getText(R.string.menu_item_follow_user).toString(), noteForAnyAccount.actor.getTimelineUsername()));
-                    }
+            if (menuContainer.getTimeline().getActorId() != noteForAnyAccount.actor.actorId
+                    && !accountToNote.isActor) {
+                if (accountToNote.actorFollowed) {
+                    NoteContextMenuItem.UNDO_FOLLOW_ACTOR.addTo(menu, order++,
+                            String.format(
+                                    getActivity().getText(R.string.menu_item_stop_following_user).toString(),
+                                    noteForAnyAccount.actor.getTimelineUsername()));
+                } else {
+                    NoteContextMenuItem.FOLLOW_ACTOR.addTo(menu, order++,
+                            String.format(
+                                    getActivity().getText(R.string.menu_item_follow_user).toString(), noteForAnyAccount.actor.getTimelineUsername()));
                 }
             }
 

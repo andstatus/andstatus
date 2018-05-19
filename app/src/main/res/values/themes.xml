@@ -46,6 +46,7 @@
         <item name="favoriteBorderIcon">@drawable/ic_favorite_border_white_24dp</item>
         <item name="moreIcon">@drawable/ic_more_vert_white_24dp</item>
         <item name="dragHandleIcon">@drawable/ic_drag_handle_white_24dp</item>
+        <item name="arrowDropDownIcon">@drawable/ic_arrow_drop_down_white_24dp</item>
     </style>
     <style name="Theme.AndStatus.DeviceDefault" parent="Theme.AndStatus.Min.Dark">
         <item name="andStatusActionBarTheme">@style/ThemeOverlay.AppCompat</item>
@@ -80,6 +81,7 @@
         <item name="favoriteBorderIcon">@drawable/ic_favorite_border_black_24dp</item>
         <item name="moreIcon">@drawable/ic_more_vert_black_24dp</item>
         <item name="dragHandleIcon">@drawable/ic_drag_handle_black_24dp</item>
+        <item name="arrowDropDownIcon">@drawable/ic_arrow_drop_down_black_24dp</item>
     </style>
     <style name="Base.Theme.AndStatus.Light" parent="Base.VMIN.Theme.AndStatus.Light"/>
 	<style name="Theme.AndStatus.Light" parent="Base.Theme.AndStatus.Light"/>

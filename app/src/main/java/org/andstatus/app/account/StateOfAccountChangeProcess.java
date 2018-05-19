@@ -140,7 +140,7 @@ class StateOfAccountChangeProcess {
             } else {
                 state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                         MyContextHolder.get(),
-                        MyContextHolder.get().accounts().getCurrentAccountName(), TriState.UNKNOWN);
+                        MyContextHolder.get().accounts().getCurrentAccount().getAccountName(), TriState.UNKNOWN);
             }
             if (!state.builder.isPersistent()) {
                 state.setAccountAction(Intent.ACTION_INSERT);

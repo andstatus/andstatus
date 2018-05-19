@@ -7,26 +7,67 @@
     android:choiceMode="singleChoice"
     android:orientation="vertical">
 
-    <LinearLayout
+    <RelativeLayout
+        android:id="@+id/account_avatars"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
         <org.andstatus.app.graphics.AvatarView
             android:id="@+id/current_account_avatar_image"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:padding="2dp"
-            android:scaleType="fitCenter"
+            android:layout_width="88dp"
+            android:layout_height="88dp"
+            android:layout_alignParentStart="true"
             android:layout_gravity="center_vertical"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
             tools:src="@drawable/icon"/>
+
+        <org.andstatus.app.graphics.AvatarView
+            android:id="@+id/account_avatar_image_1"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_alignParentEnd="true"
+            android:layout_gravity="top"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
+            tools:src="@drawable/icon"/>
+
+        <org.andstatus.app.graphics.AvatarView
+            android:id="@+id/account_avatar_image_2"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_gravity="top"
+            android:layout_toStartOf="@id/account_avatar_image_1"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
+            tools:src="@drawable/icon"/>
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="10">
 
         <TextView
             android:id="@+id/selectAccountButton"
             style="@style/drawerListItem"
             android:onClick="onSelectAccountButtonClick"
             tools:text="AndStatusVeryVeryLong/LoadAverage"
+            android:layout_weight="9"
             android:layout_gravity="center_vertical" />
+
+        <ImageView
+            android:id="@+id/selectAccountDropDown"
+            android:onClick="onSelectAccountButtonClick"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:src="?attr/arrowDropDownIcon"
+            android:contentDescription="@string/header_accounts"/>
 
     </LinearLayout>
 

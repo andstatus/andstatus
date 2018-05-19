@@ -87,6 +87,8 @@ import org.andstatus.app.view.MyContextMenu;
 import org.andstatus.app.widget.MySearchView;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -631,16 +633,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         getNoteEditor().updateScreen();
         updateTitle(mRateLimitText);
         mDrawerToggle.setDrawerIndicatorEnabled(!getParamsLoaded().isAtHome());
-        AvatarView avatarView = findViewById(R.id.current_account_avatar_image);
-        if (avatarView != null) {
-            getCurrentMyAccount().getActor().avatarFile.showImage(this, avatarView);
-            avatarView.setOnClickListener(v -> TimelineActivity.startForTimeline(
-                    getMyContext(), this,
-                    getMyContext().timelines().get(
-                            TimelineType.SENT, getCurrentMyAccount().getActorId(), Origin.EMPTY),
-                    getCurrentMyAccount(), false));
-        }
-
+        showRecentAccounts();
         ViewUtils.showView(
                 findViewById(R.id.switchToDefaultTimelineButton), !getParamsLoaded().isAtHome());
         ViewUtils.showView(this, R.id.collapseDuplicatesToggle,
@@ -649,6 +642,35 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 getListData().isCollapseDuplicates());
         showSyncListButtons();
         showActorProfile();
+    }
+
+    private void showRecentAccounts() {
+        List<MyAccount> recentAccounts = myContext.accounts().recentAccounts.stream().limit(3)
+                .collect(Collectors.toList());
+        for (int ind = 0; ind < 3; ind++) {
+            MyAccount ma = recentAccounts.size() > ind ? recentAccounts.get(ind) : MyAccount.EMPTY;
+            AvatarView avatarView = findViewById(ind == 0
+                    ? R.id.current_account_avatar_image
+                    : (ind == 1 ? R.id.account_avatar_image_1 : R.id.account_avatar_image_2));
+            if (avatarView == null) break;
+
+            ViewUtils.showView(avatarView, ma.isValid());
+            if (!ma.isValid()) continue;
+
+            ma.getActor().avatarFile.showImage(this, avatarView);
+            avatarView.setContentDescription(ma.getAccountName());
+            avatarView.setOnClickListener(ind == 0
+                    ? v ->
+                        TimelineActivity.startForTimeline(
+                            getMyContext(), this,
+                            getMyContext().timelines().get(
+                                    TimelineType.SENT, getCurrentMyAccount().getActorId(), Origin.EMPTY),
+                            getCurrentMyAccount(), false)
+                    : v -> {
+                        onAccountSelected(ma);
+                        closeDrawer();
+                       });
+        }
     }
 
     @Override
@@ -985,7 +1007,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         }
         switch (ActivityRequestCode.fromId(requestCode)) {
             case SELECT_ACCOUNT:
-                accountSelected(data);
+                onAccountSelected(data);
                 break;
             case SELECT_ACCOUNT_TO_ACT_AS:
                 accountToActAsSelected(data);
@@ -1006,8 +1028,11 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         }
     }
 
-    private void accountSelected(Intent data) {
-        MyAccount ma = myContext.accounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
+    private void onAccountSelected(Intent data) {
+        onAccountSelected(myContext.accounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key)));
+    }
+
+    private void onAccountSelected(MyAccount ma) {
         if (ma.isValid()) {
             switchView(getParamsLoaded().getTimeline().isCombined() ?
                     getParamsLoaded().getTimeline() :
@@ -1058,10 +1083,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     @Override
     public boolean canSwipeRefreshChildScrollUp() {
-        if (getListData().mayHaveYoungerPage()) {
-            return true;
-        }
-        return super.canSwipeRefreshChildScrollUp();
+        return getListData().mayHaveYoungerPage() || super.canSwipeRefreshChildScrollUp();
     }
 
     @Override

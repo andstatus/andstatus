@@ -32,18 +32,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toList;
+
 public class MyAccounts {
-    /**
-     * Name of "current" account: it is not stored when application is killed
-     */
-    private volatile String currentAccountName = "";
+    /** Current account is the first in this list */
+    public final List<MyAccount> recentAccounts = new CopyOnWriteArrayList<>();
 
     private final MyContext myContext;
-    private final Set<MyAccount> myAccounts = new ConcurrentSkipListSet<>();
+    private final SortedSet<MyAccount> myAccounts = new ConcurrentSkipListSet<>();
     private int distinctOriginsCount = 0;
 
     private MyAccounts(MyContext myContext) {
@@ -64,7 +66,8 @@ public class MyAccounts {
     }
     
     public MyAccounts initialize() {
-        this.myAccounts.clear();
+        myAccounts.clear();
+        recentAccounts.clear();
         for (android.accounts.Account account : getAccounts(myContext.context())) {
             MyAccount ma = Builder.fromAndroidAccount(myContext, account).getAccount();
             if (ma.isValid()) {
@@ -74,6 +77,7 @@ public class MyAccounts {
             }
         }
         calculateDistinctOriginsCount();
+        recentAccounts.addAll(myAccounts.stream().limit(3).collect(Collectors.toList()));
         MyLog.v(this, "Accounts initialized, " + this.myAccounts.size() + " accounts in " + distinctOriginsCount + " origins");
         return this;
     }
@@ -205,39 +209,11 @@ public class MyAccounts {
     }
 
     /**
-     * Get instance of current MyAccount (MyAccount selected by the user). The account isPersistent.
-     * As a side effect the function changes current account if old value is not valid.
-     * @return Invalid account if no persistent accounts exist
+     * @return current MyAccount (MyAccount selected by the User) or EMPTY if no persistent accounts exist
      */
     @NonNull
     public MyAccount getCurrentAccount() {
-        MyAccount ma = fromAccountName(currentAccountName);
-        if (ma.isValid()) return ma;
-
-        currentAccountName = "";
-        ma = getDefaultAccount();
-        if (!ma.isValid()) {
-            for (MyAccount myAccount : myAccounts) {
-                if (myAccount.isValid()) {
-                    ma = myAccount;
-                    break;
-                }
-            }
-        }
-        if (ma.isValid()) {
-            // Correct Current Account if needed
-            if (TextUtils.isEmpty(currentAccountName)) {
-                setCurrentAccount(ma);
-            }
-        }
-        return ma;
-    }
-
-    /**
-     * Get Guid of current MyAccount (MyAccount selected by the user). The account isPersistent
-     */
-    public String getCurrentAccountName() {
-        return getCurrentAccount().getAccountName();
+        return recentAccounts.stream().findFirst().orElse(myAccounts.stream().findFirst().orElse(MyAccount.EMPTY));
     }
 
     /**
@@ -342,15 +318,15 @@ public class MyAccounts {
         return oldMa;
     }
     
-    /**
-     * Set provided MyAccount as Current one.
-     * Current account selection is not persistent
-     */
+    /** Set provided MyAccount as the Current one */
     public void setCurrentAccount(MyAccount ma) {
-        if (ma != null && !currentAccountName.equals(ma.getAccountName()) ) {
-            MyLog.v(this, "Changing current account from '" + currentAccountName + "' to '" + ma.getAccountName() + "'");
-            currentAccountName = ma.getAccountName();
-        }
+        MyAccount prevAccount = getCurrentAccount();
+        if (ma == null || !ma.isValid() || ma.equals(prevAccount)) return;
+
+        MyLog.v(this, "Changing current account from '" + prevAccount.getAccountName()
+                + "' to '" + ma.getAccountName() + "'");
+        recentAccounts.remove(ma);
+        recentAccounts.add(0, ma);
     }
 
     public void onDefaultSyncFrequencyChanged() {
@@ -368,7 +344,7 @@ public class MyAccounts {
     public List<MyAccount> accountsToSync() {
         boolean syncedAutomaticallyOnly = hasSyncedAutomatically();
         return myAccounts.stream().filter( myAccount -> accountToSyncFilter(myAccount, syncedAutomaticallyOnly))
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     private boolean accountToSyncFilter(MyAccount account, boolean syncedAutomaticallyOnly) {
@@ -486,7 +462,7 @@ public class MyAccounts {
             getAccounts(context).stream()
             .map(account -> AccountData.fromAndroidAccount(context, account).getDataLong(MyAccount.KEY_ACTOR_ID, 0))
             .filter(id -> id > 0)
-            .collect(Collectors.toList())
+            .collect(toList())
         );
     }
 
