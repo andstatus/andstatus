@@ -292,6 +292,7 @@
         <item name="android:buttonBarStyle">@style/Widget.AppCompat.ButtonBar.AlertDialog</item>
         <item name="android:borderlessButtonStyle">@style/Widget.AppCompat.Button.Borderless</item>
         <item name="android:windowCloseOnTouchOutside">true</item>
+        <item name="android:windowElevation">@dimen/abc_floating_window_z</item>
     </style>
     <style name="BaseDialogStyle" parent="BaseDialogStyle_min" />
     <style name="AndStatusDialogStyle" parent="BaseDialogStyle" />

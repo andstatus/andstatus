@@ -17,7 +17,7 @@
  	See http://developer.android.com/guide/topics/ui/themes.html
  -->
 <resources>
-    <style name="Base.V24.Theme.AndStatus.Dark" parent="Base.V21.Theme.AndStatus.Dark">
+    <style name="Base.V24.Theme.AndStatus.Dark" parent="Base.VMIN.Theme.AndStatus.Dark">
         <!-- Due to Android N bug in the ContextMenuBuilder colorAccent item cannot be defined via attribute,
             so this item is not customizable in AndStatus
             See https://code.google.com/p/android/issues/detail?id=215525
@@ -26,7 +26,7 @@
     </style>
     <style name="Base.Theme.AndStatus.Dark" parent="Base.V24.Theme.AndStatus.Dark"/>
 
-    <style name="Base.V24.Theme.AndStatus.Light" parent="Base.V21.Theme.AndStatus.Light">
+    <style name="Base.V24.Theme.AndStatus.Light" parent="Base.VMIN.Theme.AndStatus.Light">
         <item name="colorAccent">@color/accent_material_light</item>
     </style>
     <style name="Base.Theme.AndStatus.Light" parent="Base.V24.Theme.AndStatus.Light"/>

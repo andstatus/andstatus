@@ -58,6 +58,7 @@
         <item name="colorPrimaryDark">?actionBarColorDark</item>
         <item name="colorAccent">?actionBarColorAccent</item>
         <item name="android:colorBackground">?myBackgroundColor</item>
+        <item name="android:navigationBarColor">?actionBarColorDark</item>
     </style>
     <style name="Base.Theme.AndStatus.Dark" parent="Base.VMIN.Theme.AndStatus.Dark"/>
     <style name="Theme.AndStatus.Dark" parent="Base.Theme.AndStatus.Dark"/>
@@ -68,6 +69,7 @@
         <item name="colorPrimaryDark">?actionBarColorDark</item>
         <item name="colorAccent">?actionBarColorAccent</item>
         <item name="dividerColor">@color/grey_300</item>
+        <item name="android:navigationBarColor">?actionBarColorDark</item>
 
         <item name="textColorLink">@color/link_text_dark</item>
 
