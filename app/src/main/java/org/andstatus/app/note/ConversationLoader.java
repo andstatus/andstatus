@@ -105,7 +105,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
         final T oNote = newONote(selectedNoteId);
         oNote.conversationId = MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID, selectedNoteId);
         conversationIds.add(oNote.conversationId);
-        conversationIds.stream().forEach(id -> cacheConversation(oNote));
+        cacheConversation(oNote);
         load2(oNote);
         addMissedFromCache();
     }

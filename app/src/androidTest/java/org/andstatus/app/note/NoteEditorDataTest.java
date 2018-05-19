@@ -30,16 +30,14 @@ public class NoteEditorDataTest {
         MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
         final Origin origin = MyContextHolder.get().origins().fromName(demoData.conversationOriginName);
         assertEquals(origin, ma.getOrigin());
-        long entryMsgId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(),
-                demoData.conversationEntryNoteOid);
-        long entryActorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(),
-                demoData.conversationEntryAuthorOid);
+        long entryMsgId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), demoData.conversationEntryNoteOid);
+        long entryActorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(), demoData.conversationEntryAuthorOid);
         long memberActorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(),
                 demoData.conversationAuthorThirdActorOid);
-        assertData(ma, entryMsgId, entryActorId, 0, memberActorId, false);
-        assertData(ma, entryMsgId, entryActorId, 0, memberActorId, true);
-        assertData(ma,          0,           0, memberActorId, 0, false);
-        assertData(ma,          0,           0, memberActorId, 0, true);
+        assertData(ma, entryMsgId, entryActorId,0, memberActorId,false);
+        assertData(ma, entryMsgId, entryActorId,0, memberActorId,true);
+        assertData(ma,0,0, memberActorId,0,false);
+        assertData(ma,0,0, memberActorId,0,true);
     }
 
     private void assertData(MyAccount ma, long inReplyToMsgId, long inReplyToActorId, long recipientId,
@@ -57,7 +55,7 @@ public class NoteEditorDataTest {
         assertEquals(data.toString(), Uri.EMPTY, data.getAttachment().getUri());
     }
 
-    private void assertMentionedActor(NoteEditorData data, long mentionedActorId, boolean isMentioned_in) {
+    private void assertMentionedActor(NoteEditorData data, long mentionedActorId, boolean isMentionedExpected) {
         if (mentionedActorId == 0) {
             return;
         }
@@ -66,7 +64,7 @@ public class NoteEditorDataTest {
                         : ActorTable.USERNAME, mentionedActorId);
         assertTrue(!TextUtils.isEmpty(expectedName));
         boolean isMentioned = data.getContent().contains("@" + expectedName);
-        assertEquals(data.toString() + "; expected name:" + expectedName, isMentioned_in, isMentioned);
+        assertEquals(data.toString() + "; expected name:" + expectedName, isMentionedExpected, isMentioned);
     }
 
 }
