@@ -660,16 +660,19 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             ma.getActor().avatarFile.showImage(this, avatarView);
             avatarView.setContentDescription(ma.getAccountName());
             avatarView.setOnClickListener(ind == 0
-                    ? v ->
-                        TimelineActivity.startForTimeline(
-                            getMyContext(), this,
-                            getMyContext().timelines().get(
-                                    TimelineType.SENT, getCurrentMyAccount().getActorId(), Origin.EMPTY),
-                            getCurrentMyAccount(), false)
-                    : v -> {
-                        onAccountSelected(ma);
-                        closeDrawer();
-                       });
+                ? v -> {
+                    TimelineActivity.startForTimeline(
+                        getMyContext(), this,
+                        getMyContext().timelines()
+                                .get(TimelineType.SENT, getCurrentMyAccount().getActorId(), Origin.EMPTY),
+                        getCurrentMyAccount(), false);
+                    closeDrawer();
+                    }
+                : v -> {
+                    onAccountSelected(ma);
+                    closeDrawer();
+                    }
+            );
         }
     }
 

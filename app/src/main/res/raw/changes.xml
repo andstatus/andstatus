@@ -29,8 +29,24 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="38.05" android:versionCode="251"
-             versionDate="2018-05-11"
+    <release android:versionName="39.00" android:versionCode="253"
+             versionDate="2018-05-20"
+             versionTitle="User's profile at the top of their timeline">
+        <changes>
+            <change>User's profile is shown at the top of their timelines: "Sent" (Notes by "someuser@somedomain").
+                For "my accounts" only: in "Favorites", "Friends" and "Followers" timelines also.
+                Lists of user's friends and followers are available via the profile's context menu.
+                <a href="https://github.com/andstatus/andstatus/issues/489">#489</a>
+            </change>
+            <change>Switching between accounts made more like in other Android applications, with avatars of current
+                and two previously selected accounts in the Navigation drawer (like e.g. in GMail app).
+                Clicking on current account's avatar opens their "Sent" timeline with the account's profile information
+                at the top.
+            </change>
+        </changes>
+    </release>
+    <release android:versionName="38.06" android:versionCode="252"
+             versionDate="2018-05-12"
              versionTitle="Video attachments and Titles for notes">
         <changes>
             <change>Video file can be attached to a new note. A thumbnail of the video attachment is shown in a timeline.
