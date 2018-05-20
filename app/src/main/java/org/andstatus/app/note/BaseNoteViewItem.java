@@ -29,6 +29,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.DuplicationLink;
 import org.andstatus.app.timeline.TimelineFilter;
@@ -58,8 +59,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     String recipientName = "";
 
     public long inReplyToNoteId = 0;
-    long inReplyToActorId = 0;
-    String inReplyToName = "";
+    ActorViewItem inReplyToActor = ActorViewItem.EMPTY;
 
     String noteSource = "";
 
@@ -184,14 +184,10 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     }
 
     protected void setInReplyTo(Context context, StringBuilder noteDetails) {
-        if (inReplyToNoteId != 0 && TextUtils.isEmpty(inReplyToName)) {
-            inReplyToName = "...";
-        }
-        if (!TextUtils.isEmpty(inReplyToName)) {
-            noteDetails.append(" ").append(String.format(
-                    context.getText(R.string.message_source_in_reply_to).toString(),
-                    inReplyToName));
-        }
+        if (inReplyToNoteId == 0 || inReplyToActor.isEmpty()) return;
+
+        I18n.appendWithSpace(noteDetails, String.format(context.getText(R.string.message_source_in_reply_to).toString(),
+                inReplyToActor.getName()));
     }
 
     private void setRecipientName(Context context, StringBuilder noteDetails) {
@@ -255,11 +251,12 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         if (!filter.keywordsFilter.isEmpty() || !filter.searchQuery.isEmpty()) {
             String bodyToSearch = MyHtml.getContentToSearch(getContent());
             if (filter.keywordsFilter.matchedAny(bodyToSearch)) return false;
+
             if (!filter.searchQuery.isEmpty() && !filter.searchQuery.matchedAll(bodyToSearch)) return false;
         }
-        if (filter.hideRepliesNotToMeOrFriends && inReplyToActorId != 0
-                && !MyContextHolder.get().users().isMeOrMyFriend(inReplyToActorId)) return false;
-        return true;
+        return !filter.hideRepliesNotToMeOrFriends
+                || inReplyToActor.isEmpty()
+                || MyContextHolder.get().users().isMeOrMyFriend(inReplyToActor.getId());
     }
 
     @Override
@@ -267,21 +264,28 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         return "Note " + content;
     }
 
-    public void hideActor(long actorId) {
-        rebloggers.remove(actorId);
+    public void hideActor(Actor actor) {
+        rebloggers.remove(actor.actorId);
     }
 
     @Override
     public void addActorsToLoad(ActorListLoader loader) {
-        loader.addActorIdToList(origin, author.getActorId());
+        loader.addActorToList(author.getActor());
+        loader.addActorToList(inReplyToActor.getActor());
     }
 
     @Override
     public void setLoadedActors(ActorListLoader loader) {
-        if (author.getActorId() != 0) {
+        if (author.getActor().nonEmpty()) {
             int index = loader.getList().indexOf(author);
             if (index >= 0) {
                 author = loader.getList().get(index);
+            }
+        }
+        if (inReplyToActor.getActor().nonEmpty()) {
+            int index = loader.getList().indexOf(inReplyToActor);
+            if (index >= 0) {
+                inReplyToActor = loader.getList().get(index);
             }
         }
     }

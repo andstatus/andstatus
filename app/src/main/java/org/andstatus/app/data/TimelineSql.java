@@ -16,12 +16,9 @@
 
 package org.andstatus.app.data;
 
-import android.database.Cursor;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.provider.BaseColumns;
-import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.context.MyContextHolder;
@@ -31,8 +28,6 @@ import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -155,13 +150,6 @@ public class TimelineSql {
                     + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_NUMBER
                     + "=0";
         }
-        if (columns.contains(ActorTable.IN_REPLY_TO_NAME)) {
-            tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
-                    + TimelineSql.usernameField() + " AS " + ActorTable.IN_REPLY_TO_NAME
-                    + " FROM " + ActorTable.TABLE_NAME + ") AS prevAuthor ON "
-                    + NOTE_TABLE_ALIAS + "." + NoteTable.IN_REPLY_TO_ACTOR_ID
-                    + "=prevAuthor." + BaseColumns._ID;
-        }
         return tables;
     }
 
@@ -198,7 +186,6 @@ public class TimelineSql {
         columnNames.add(NoteTable.NAME);
         columnNames.add(NoteTable.CONTENT);
         columnNames.add(NoteTable.IN_REPLY_TO_NOTE_ID);
-        columnNames.add(ActorTable.IN_REPLY_TO_NAME);
         columnNames.add(NoteTable.FAVORITED);
         columnNames.add(ActivityTable.INS_DATE); // ??
         columnNames.add(NoteTable.UPDATED_DATE);
@@ -228,37 +215,6 @@ public class TimelineSql {
         columnNames.add(NoteTable.VIA);
         columnNames.add(NoteTable.REBLOGGED);
         return columnNames;
-    }
-
-    @NonNull
-    public static String actorColumnNameToNameAtTimeline(Cursor cursor, String columnName, boolean showOrigin) {
-        return actorColumnIndexToNameAtTimeline(cursor, cursor.getColumnIndex(columnName), showOrigin);
-    }
-
-    @NonNull
-    public static String actorColumnIndexToNameAtTimeline(Cursor cursor, int columnIndex, boolean showOrigin) {
-        String username = "";
-        if (columnIndex >= 0) {
-            username = cursor.getString(columnIndex);
-            if (TextUtils.isEmpty(username)) {
-                username = "";
-            }
-        }
-        if (showOrigin) {
-            long originId = DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID);
-            if (originId != 0) {
-                Origin origin = MyContextHolder.get().origins().fromId(originId);
-                username += " / " + origin.getName();
-                if (origin.getOriginType() == OriginType.GNUSOCIAL &&
-                        MyPreferences.isShowDebuggingInfoInUi()) {
-                    long authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID);
-                    if (authorId != 0) {
-                        username += " id:" + MyQuery.idToOid(OidEnum.ACTOR_OID, authorId, 0);
-                    }
-                }
-            }
-        }
-        return username;
     }
 
     public static String usernameField() {

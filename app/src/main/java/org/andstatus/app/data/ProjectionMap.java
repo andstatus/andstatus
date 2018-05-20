@@ -78,7 +78,6 @@ public class ProjectionMap {
         TIMELINE.put(NoteTable.URL, NoteTable.URL);
         TIMELINE.put(NoteTable.IN_REPLY_TO_NOTE_ID, NoteTable.IN_REPLY_TO_NOTE_ID);
         TIMELINE.put(NoteTable.IN_REPLY_TO_ACTOR_ID, NoteTable.IN_REPLY_TO_ACTOR_ID);
-        TIMELINE.put(ActorTable.IN_REPLY_TO_NAME, ActorTable.IN_REPLY_TO_NAME);
         TIMELINE.put(NoteTable.PUBLIC, NoteTable.PUBLIC);
         TIMELINE.put(NoteTable.FAVORITED, NoteTable.FAVORITED);
         TIMELINE.put(NoteTable.REBLOGGED, NoteTable.REBLOGGED);

@@ -178,7 +178,7 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
     public void addActorsToLoad(ActorListLoader loader) {
         noteViewItem.addActorsToLoad(loader);
         if (activityType != ActivityType.CREATE && activityType != ActivityType.UPDATE) {
-            loader.addActorIdToList(origin, actor.getId());
+            loader.addActorToList(actor.getActor());
         }
         loader.addActorIdToList(origin, objActorId);
     }

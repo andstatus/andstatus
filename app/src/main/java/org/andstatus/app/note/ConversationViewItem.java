@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2013-2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +22,7 @@ import android.support.annotation.NonNull;
 import android.text.Html;
 import android.text.TextUtils;
 
+import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
@@ -30,7 +31,6 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.util.I18n;
@@ -89,9 +89,8 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
                 attachedImageFile = AttachedImageFile.fromCursor(cursor);
             }
             inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
-            inReplyToActorId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID);
-            inReplyToName = TimelineSql.actorColumnNameToNameAtTimeline(cursor, ActorTable.IN_REPLY_TO_NAME, false);
-
+            inReplyToActor = ActorViewItem.fromActorId(getOrigin(),
+                    DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID));
             if (DbUtils.getTriState(cursor, NoteTable.REBLOGGED) == TriState.TRUE) {
                 reblogged = true;
             }

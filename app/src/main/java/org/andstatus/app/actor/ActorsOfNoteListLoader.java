@@ -78,7 +78,7 @@ public class ActorsOfNoteListLoader extends ActorListLoader {
     private void addRebloggers() {
         for (Actor reblogger : MyQuery.getRebloggers(
                 MyContextHolder.get().getDatabase(), origin, selectedNoteId)) {
-            addActorIdToList(originOfSelectedNote, reblogger.actorId);
+            addActorToList(reblogger);
         }
     }
 

@@ -29,8 +29,8 @@ import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.ActorTable;
+import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
@@ -111,7 +111,7 @@ public class AvatarDownloaderTest {
 
         ActorListLoader aLoader = new ActorListLoader(ActorListType.ACTORS, ma, ma.getOrigin()
                 , 0, "");
-        aLoader.addActorIdToList(ma.getOrigin(), ma.getActorId());
+        aLoader.addActorToList(ma.getActor());
         aLoader.load(progress -> {});
         ActorViewItem viewItem = aLoader.getList().get(0);
         assertTrue("Should show previous avatar " + viewItem.getAvatarFile(),

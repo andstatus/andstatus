@@ -71,8 +71,7 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
         setName(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.NAME)));
         setContent(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.CONTENT)));
         inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
-        inReplyToActorId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID);
-        inReplyToName = DbUtils.getString(cursor, ActorTable.IN_REPLY_TO_NAME);
+        inReplyToActor = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID));
         recipientName = DbUtils.getString(cursor, ActorTable.RECIPIENT_NAME);
         activityUpdatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
         updatedDate = DbUtils.getLong(cursor, NoteTable.UPDATED_DATE);

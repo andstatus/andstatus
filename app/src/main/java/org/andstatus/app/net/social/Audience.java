@@ -49,6 +49,8 @@ public class Audience {
     }
 
     public static Audience fromNoteId(@NonNull Origin origin, long noteId) {
+        if (noteId == 0) return Audience.EMPTY;
+
         String where = AudienceTable.NOTE_ID + "=" + noteId;
         String sql = "SELECT " + AudienceTable.ACTOR_ID + "," + ActorTable.ACTOR_OID
                 + " FROM " + AudienceTable.TABLE_NAME

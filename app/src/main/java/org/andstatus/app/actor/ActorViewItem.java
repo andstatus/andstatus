@@ -28,7 +28,6 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.net.social.Actor;
@@ -82,6 +81,11 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
         return actor.isEmpty() ? ActorViewItem.EMPTY : new ActorViewItem(actor, false);
     }
 
+    @NonNull
+    public Actor getActor() {
+        return actor;
+    }
+
     public long getActorId() {
         return actor.actorId;
     }
@@ -89,9 +93,9 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
     public String getName() {
         if (MyPreferences.getShowOrigin() && actor.nonEmpty()) {
             String name = actor.getTimelineUsername() + " / " + actor.origin.getName();
-            if (actor.origin.getOriginType() == OriginType.GNUSOCIAL && MyPreferences.isShowDebuggingInfoInUi()) {
-                return name + " id:" + (StringUtils.nonEmpty(actor.oid) ? actor.oid : MyQuery.idToOid(OidEnum.ACTOR_OID,
-                                        actor.actorId, 0));
+            if (actor.origin.getOriginType() == OriginType.GNUSOCIAL && MyPreferences.isShowDebuggingInfoInUi()
+                    && StringUtils.nonEmpty(actor.oid)) {
+                return name + " oid:" + actor.oid;
             } else return name;
         } else return actor.getTimelineUsername();
     }
@@ -99,7 +103,7 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
     public String getDescription() {
         StringBuilder builder = new StringBuilder(actor.getDescription());
         if (MyPreferences.isShowDebuggingInfoInUi()) {
-            I18n.appendWithSpace(builder, "(id=" + getActorId() + ")");
+            I18n.appendWithSpace(builder, "(id=" + getActor().actorId + ")");
         }
         return builder.toString();
     }
@@ -121,7 +125,7 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
 
     @Override
     public long getId() {
-        return getActorId();
+        return getActor().actorId;
     }
 
     @Override
@@ -192,7 +196,7 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
         return super.matches(filter);
     }
 
-    public void hideActor(long actorId) {
-        myFollowers.remove(actorId);
+    public void hideActor(Actor actor) {
+        myFollowers.remove(actor.actorId);
     }
 }

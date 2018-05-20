@@ -25,6 +25,7 @@ import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.list.ContextMenuItem;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.note.NoteEditorData;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.AsyncTaskLauncher;
@@ -224,14 +225,14 @@ public enum ActorContextMenuItem implements ContextMenuItem {
     }
 
     void setMaForActorId(Params params) {
-        long actorId = params.menu.getViewItem().getActorId();
+        Actor actor = params.menu.getViewItem().getActor();
         Origin origin = params.menu.getOrigin();
         if (!origin.isValid()) {
             MyLog.e(this, "Unknown origin for " + params.menu.getViewItem().actor);
             return;
         }
         if (!params.ma.isValid() || !params.ma.getOrigin().equals(origin)) {
-            params.ma = params.menu.getActivity().getMyContext().accounts().fromActorId(actorId);
+            params.ma = params.menu.getActivity().getMyContext().accounts().fromActorOfSameOrigin(actor);
             if (!params.ma.isValid()) {
                 params.ma = params.menu.getActivity().getMyContext().accounts().
                         getFirstSucceededForOrigin(origin);
