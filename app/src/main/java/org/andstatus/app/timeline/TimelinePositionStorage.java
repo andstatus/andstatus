@@ -16,6 +16,7 @@
 
 package org.andstatus.app.timeline;
 
+import android.view.View;
 import android.widget.ListView;
 
 import org.andstatus.app.util.MyLog;
@@ -34,6 +35,24 @@ class TimelinePositionStorage<T extends ViewItem<T>> {
     private final ListView mListView;
     private final TimelineParameters mListParameters;
 
+    public static int getYOfPosition(ListView list, BaseTimelineAdapter adapter, int position) {
+        int zeroChildPosition = adapter.getPosition(list.getChildAt(list.getHeaderViewsCount()));
+        View viewOfPosition = list.getChildAt(position - zeroChildPosition + list.getHeaderViewsCount());
+        int y = viewOfPosition == null ? 0 : viewOfPosition.getTop() - list.getPaddingTop();
+        if (MyLog.isVerboseEnabled() ) {
+            MyLog.v(TimelinePositionStorage.class, "getYOfPosition; " + position
+                    + " listFirstVisiblePos:" + list.getFirstVisiblePosition()
+                    + ", listViews=" + list.getCount()
+                    + ", headers:" + list.getHeaderViewsCount()
+                    + ", items=" + adapter.getCount()
+                    + ", zeroChildPos:" + zeroChildPosition
+                    + (viewOfPosition == null ? " view not found" : " y=" + y)
+//                    + "\n" + MyLog.getStackTrace(new Throwable())
+            );
+        }
+        return y;
+    }
+
     static class TLPosition {
         long firstVisibleItemId = NOT_STORED;
         long minSentDate = NOT_STORED;
@@ -47,7 +66,7 @@ class TimelinePositionStorage<T extends ViewItem<T>> {
     }
 
     void save() {
-        final String method = "save";
+        final String method = "save" + mListParameters.timeline.getId();
         if (mListView == null || adapter == null || mListParameters.isEmpty() || adapter.getCount() == 0) {
             MyLog.v(this, method + "; skipped");
             return;
@@ -56,11 +75,8 @@ class TimelinePositionStorage<T extends ViewItem<T>> {
         int firstVisibleAdapterPosition = Integer.min(
                 Integer.max(mListView.getFirstVisiblePosition() - mListView.getHeaderViewsCount(), 0),
                 itemCount - 1);
-        int y = 0;
         long firstVisibleItemId = adapter.getItemId(firstVisibleAdapterPosition);
-        y = LoadableListActivity.getYOfPosition(mListView, adapter, firstVisibleAdapterPosition);
-        MyLog.v(this, method + "; firstVisiblePos:" + firstVisibleAdapterPosition + " of " + itemCount
-                + ", id:" + firstVisibleItemId + ", y:" + y);
+        int y = getYOfPosition(mListView, adapter, firstVisibleAdapterPosition);
         int lastPosition = Integer.min(mListView.getLastVisiblePosition() + 10, itemCount - 1);
         long minDate = adapter.getItem(lastPosition).getDate();
 
@@ -75,6 +91,7 @@ class TimelinePositionStorage<T extends ViewItem<T>> {
                     + " at pos=" + firstVisibleAdapterPosition
                     + ", minDate=" + MyLog.formatDateTime(minDate)
                     + " at pos=" + lastPosition + " of " + itemCount
+                    + ", listViews=" + mListView.getCount()
                     + " " + mListParameters.getTimeline();
             if (firstVisibleItemId <= 0) {
                 MyLog.v(this, method + "; failed " + msgLog
@@ -115,7 +132,7 @@ class TimelinePositionStorage<T extends ViewItem<T>> {
      * Restore (the first visible item) position saved for this timeline
      */
     public void restore() {
-        final String method = "restore";
+        final String method = "restore" + mListParameters.timeline.getId();
         if (mListView == null || adapter == null || mListParameters.isEmpty() || adapter.getCount() == 0) {
             MyLog.v(this, method + "; skipped");
             return;
@@ -141,7 +158,8 @@ class TimelinePositionStorage<T extends ViewItem<T>> {
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, method + "; " + (restored ? "succeeded" : "failed" )
                     + ", id:" + tlPosition.firstVisibleItemId + ", y:" + tlPosition.y
-                    + ", at pos=" + position + " of " + mListView.getCount()
+                    + ", at pos=" + position + " of " + adapter.getCount()
+                    + ", listViews=" + mListView.getCount()
                     + " " + mListParameters.getTimeline() );
         }
         if (!restored) {

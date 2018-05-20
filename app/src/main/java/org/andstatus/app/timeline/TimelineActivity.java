@@ -763,7 +763,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                     + (chainedRequest == TriState.TRUE ? "; chained" : "")
                     + "; requesting " + (isDifferentRequest ? "" : "duplicating ")
                     + params.toSummary());
-            saveTimelinePosition();
+            if (chainedRequest.untrue) saveTimelinePosition();
             disableHeaderSyncButton(R.string.loading);
             disableFooterButton(R.string.loading);
             showLoading(method, getText(R.string.loading) + " "
@@ -832,7 +832,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             MyLog.v(this, method + "; Parameters changed, requesting " + otherParams.toSummary());
             showList(otherParams, TriState.TRUE);
         } else if (otherPageToRequest != WhichPage.EMPTY) {
-            MyLog.v(this, method + "; Nothing loaded, requesting " + otherPageToRequest);
+            MyLog.v(this, method + "; Other page requested " + otherPageToRequest);
             showList(otherPageToRequest, TriState.TRUE);
         }
     }

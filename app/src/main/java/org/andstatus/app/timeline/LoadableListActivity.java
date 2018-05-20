@@ -337,7 +337,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         if (list.getChildCount() > list.getHeaderViewsCount() + list.getFooterViewsCount()) {
             int firstVisibleAdapterPosition = Integer.max(list.getFirstVisiblePosition() - list.getHeaderViewsCount(), 0);
             itemIdOfAdapterPosition = adapter.getItemId(firstVisibleAdapterPosition);
-            y = getYOfPosition(list, adapter, firstVisibleAdapterPosition);
+            y = TimelinePositionStorage.getYOfPosition(list, adapter, firstVisibleAdapterPosition);
         }
 
         if (!TriState.UNKNOWN.equals(collapseDuplicates)) {
@@ -380,19 +380,6 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
                     )
             );
         }
-    }
-
-    public static int getYOfPosition(ListView list, BaseTimelineAdapter adapter, int position) {
-        int y = 0;
-        int zeroChildPosition = adapter.getPosition(list.getChildAt(list.getHeaderViewsCount()));
-        if (position - zeroChildPosition != 0) {
-            MyLog.v("getYOfPosition", "pos:" + position + ", zeroChildPos:" + zeroChildPosition);
-        }
-        View viewOfPosition = list.getChildAt(position - zeroChildPosition + list.getHeaderViewsCount());
-        if (viewOfPosition != null) {
-            y  = viewOfPosition.getTop() - list.getPaddingTop();
-        }
-        return y;
     }
 
     protected abstract BaseTimelineAdapter newListAdapter();
