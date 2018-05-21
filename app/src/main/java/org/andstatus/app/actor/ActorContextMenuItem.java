@@ -43,7 +43,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         NoteEditorData executeAsync(Params params) {
             CommandData commandData = CommandData.newActorCommand(
                     CommandEnum.GET_ACTOR,
-                    params.ma,
+                    params.menu.getActingAccount(),
                     params.menu.getOrigin(),
                     params.menu.getViewItem().getActorId(),
                     params.menu.getViewItem().actor.getUsername());
@@ -59,7 +59,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         }
 
         @Override
-        void executeOnUiThread(ActorContextMenu menu, MyAccount ma, NoteEditorData editorData) {
+        void executeOnUiThread(ActorContextMenu menu, NoteEditorData editorData) {
             if (editorData.activity.getNote().audience().hasNonPublic()) {
                 menu.menuContainer.getNoteEditor().startEditingNote(editorData);
             }
@@ -67,7 +67,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
     },
     SHARE() {
         @Override
-        void executeOnUiThread(ActorContextMenu menu, MyAccount ma, NoteEditorData editorData) {
+        void executeOnUiThread(ActorContextMenu menu, NoteEditorData editorData) {
             // TODO
         }
     },
@@ -79,32 +79,32 @@ public enum ActorContextMenuItem implements ContextMenuItem {
                     params.menu.getActivity(),
                     params.menu.getActivity().getMyContext().timelines()
                             .get(TimelineType.SENT, params.menu.getViewItem().getActorId(), params.menu.getOrigin()),
-                    params.ma, false);
+                    params.menu.getActingAccount(), false);
             return super.executeAsync(params);
         }
     },
     FOLLOW() {
         @Override
-        void executeOnUiThread(ActorContextMenu menu, MyAccount ma, NoteEditorData editorData) {
-            sendActorCommand(CommandEnum.FOLLOW, ma, menu);
+        void executeOnUiThread(ActorContextMenu menu, NoteEditorData editorData) {
+            sendActorCommand(CommandEnum.FOLLOW, menu);
         }
     },
     STOP_FOLLOWING() {
         @Override
-        void executeOnUiThread(ActorContextMenu menu, MyAccount ma, NoteEditorData editorData) {
-            sendActorCommand(CommandEnum.UNDO_FOLLOW, ma, menu);
+        void executeOnUiThread(ActorContextMenu menu, NoteEditorData editorData) {
+            sendActorCommand(CommandEnum.UNDO_FOLLOW, menu);
         }
     },
     ACT_AS_FIRST_OTHER_ACCOUNT() {
         @Override
-        void executeOnUiThread(ActorContextMenu menu, MyAccount ma, NoteEditorData editorData) {
-            menu.setSelectedActingAccount(ma.firstOtherAccountOfThisOrigin());
+        void executeOnUiThread(ActorContextMenu menu, NoteEditorData editorData) {
+            menu.setSelectedActingAccount(menu.getActingAccount().firstOtherAccountOfThisOrigin());
             menu.showContextMenu();
         }
     },
     ACT_AS() {
         @Override
-        void executeOnUiThread(ActorContextMenu menu, MyAccount ma, NoteEditorData editorData) {
+        void executeOnUiThread(ActorContextMenu menu, NoteEditorData editorData) {
             AccountSelector.selectAccount(menu.getActivity(),
                     ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS, menu.getOrigin().getId());
         }
@@ -117,8 +117,8 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         }
 
         @Override
-        void executeOnUiThread(ActorContextMenu menu, MyAccount ma, NoteEditorData editorData) {
-            startActorListActivity(menu, ma, ActorListType.FOLLOWERS);
+        void executeOnUiThread(ActorContextMenu menu, NoteEditorData editorData) {
+            startActorListActivity(menu, ActorListType.FOLLOWERS);
         }
     },
     FRIENDS(true) {
@@ -129,8 +129,8 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         }
 
         @Override
-        void executeOnUiThread(ActorContextMenu menu, MyAccount ma, NoteEditorData editorData) {
-            startActorListActivity(menu, ma, ActorListType.FRIENDS);
+        void executeOnUiThread(ActorContextMenu menu, NoteEditorData editorData) {
+            startActorListActivity(menu, ActorListType.FRIENDS);
         }
     },
     NONEXISTENT(),
@@ -138,11 +138,9 @@ public enum ActorContextMenuItem implements ContextMenuItem {
 
     private static class Params {
         ActorContextMenu menu;
-        volatile MyAccount ma;
 
-        Params(ActorContextMenu menu, MyAccount ma) {
+        Params(ActorContextMenu menu) {
             this.menu = menu;
-            this.ma = ma;
         }
     }
 
@@ -180,12 +178,12 @@ public enum ActorContextMenuItem implements ContextMenuItem {
     }
     
     public boolean execute(ActorContextMenu menu, MyAccount ma) {
-        Params params = new Params(menu, ma);
+        Params params = new Params(menu);
         MyLog.v(this, "execute started");
         if (mIsAsync) {
             executeAsync1(params);
         } else {
-            executeOnUiThread(params.menu, params.ma,
+            executeOnUiThread(params.menu,
                     new NoteEditorData(menu.menuContainer.getActivity().getMyContext(),
                             menu.getActingAccount(), 0, 0, false));
         }
@@ -205,7 +203,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
                     @Override
                     protected void onPostExecute2(NoteEditorData editorData) {
                         MyLog.v(this, "execute async ended");
-                        executeOnUiThread(params.menu, params.ma, editorData);
+                        executeOnUiThread(params.menu, editorData);
                     }
 
                     @Override
@@ -220,7 +218,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         return NoteEditorData.newEmpty(params.menu.getActingAccount());
     }
 
-    void executeOnUiThread(ActorContextMenu menu, MyAccount ma, NoteEditorData editorData) {
+    void executeOnUiThread(ActorContextMenu menu, NoteEditorData editorData) {
         // Empty
     }
 
@@ -231,17 +229,18 @@ public enum ActorContextMenuItem implements ContextMenuItem {
             MyLog.e(this, "Unknown origin for " + params.menu.getViewItem().actor);
             return;
         }
-        if (!params.ma.isValid() || !params.ma.getOrigin().equals(origin)) {
-            params.ma = params.menu.getActivity().getMyContext().accounts().fromActorOfSameOrigin(actor);
-            if (!params.ma.isValid()) {
-                params.ma = params.menu.getActivity().getMyContext().accounts().
-                        getFirstSucceededForOrigin(origin);
+        if (!params.menu.getActingAccount().isValid() || !params.menu.getActingAccount().getOrigin().equals(origin)) {
+            params.menu.setSelectedActingAccount(params.menu.getActivity().getMyContext().accounts()
+                    .fromActorOfSameOrigin(actor));
+            if (!params.menu.getActingAccount().isValid()) {
+                params.menu.setSelectedActingAccount(params.menu.getActivity().getMyContext().accounts().
+                        getFirstSucceededForOrigin(origin));
             }
         }
     }
 
-    void startActorListActivity(ActorContextMenu menu, MyAccount ma, ActorListType actorListType) {
-        Uri uri = MatchedUri.getActorListUri(ma.getActorId(),
+    void startActorListActivity(ActorContextMenu menu, ActorListType actorListType) {
+        Uri uri = MatchedUri.getActorListUri(menu.getActingAccount().getActorId(),
                 actorListType,
                 menu.getOrigin().getId(),
                 menu.getViewItem().getActorId(), "");
@@ -251,8 +250,9 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         menu.getActivity().startActivity(MyAction.VIEW_FOLLOWERS.getIntent(uri));
     }
 
-    void sendActorCommand(CommandEnum command, MyAccount myActor, ActorContextMenu menu) {
+    void sendActorCommand(CommandEnum command, ActorContextMenu menu) {
         MyServiceManager.sendManualForegroundCommand(
-                CommandData.newActorCommand(command, myActor, menu.getOrigin(), menu.getViewItem().getActorId(), ""));
+                CommandData.newActorCommand(command, menu.getActingAccount(), menu.getOrigin(),
+                        menu.getViewItem().getActorId(), ""));
     }
 }
