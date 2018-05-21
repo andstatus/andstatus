@@ -333,12 +333,8 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         ListView list = getListView();
         // For a finer position restore see http://stackoverflow.com/questions/3014089/maintain-save-restore-scroll-position-when-returning-to-a-listview?rq=1
         long itemIdOfAdapterPosition = centralItemId;
-        int y = 0;
-        if (list.getChildCount() > list.getHeaderViewsCount() + list.getFooterViewsCount()) {
-            int firstVisibleAdapterPosition = Integer.max(list.getFirstVisiblePosition() - list.getHeaderViewsCount(), 0);
-            itemIdOfAdapterPosition = adapter.getItemId(firstVisibleAdapterPosition);
-            y = TimelinePositionStorage.getYOfPosition(list, adapter, firstVisibleAdapterPosition);
-        }
+        TimelinePositionStorage.YOfPosition yop = TimelinePositionStorage
+                .getYOfPosition(list, adapter, list.getFirstVisiblePosition());
 
         if (!TriState.UNKNOWN.equals(collapseDuplicates)) {
             getListData().collapseDuplicates(collapseDuplicates.toBoolean(true), itemId);
@@ -348,23 +344,22 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
             adapter = newListAdapter();
             verboseListPositionLog(method, "Before setting new adapter", itemIdOfAdapterPosition);
             setListAdapter(adapter);
-        } else if (adapter != null) {
+        } else {
             adapter.notifyDataSetChanged();
         }
 
-        if (adapter != null) {
-            boolean positionRestored = false;
-            if (itemIdOfAdapterPosition >= 0) {
-                int firstVisibleAdapterPosition = adapter.getPositionById(itemIdOfAdapterPosition);
-                if (firstVisibleAdapterPosition >= 0) {
-                    list.setSelectionFromTop(firstVisibleAdapterPosition + list.getHeaderViewsCount(), y);
-                    positionRestored = true;
-                    verboseListPositionLog(method, "After setting position: " + firstVisibleAdapterPosition,
-                            itemIdOfAdapterPosition);
-                }
+        boolean positionRestored = false;
+        if (itemIdOfAdapterPosition >= 0) {
+            int firstVisibleAdapterPosition = adapter.getPositionById(
+                    yop.itemId == 0 ? itemIdOfAdapterPosition : yop.itemId);
+            if (firstVisibleAdapterPosition >= 0) {
+                list.setSelectionFromTop(firstVisibleAdapterPosition + list.getHeaderViewsCount(), yop.y);
+                positionRestored = true;
+                verboseListPositionLog(method, "After setting position: " + firstVisibleAdapterPosition,
+                        itemIdOfAdapterPosition);
             }
-            adapter.setPositionRestored(positionRestored);
         }
+        adapter.setPositionRestored(positionRestored);
     }
 
     protected void verboseListPositionLog(String method, String description, long itemId) {

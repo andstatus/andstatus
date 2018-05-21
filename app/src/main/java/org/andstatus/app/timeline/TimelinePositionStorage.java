@@ -16,6 +16,7 @@
 
 package org.andstatus.app.timeline;
 
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.ListView;
 
@@ -35,9 +36,13 @@ class TimelinePositionStorage<T extends ViewItem<T>> {
     private final ListView mListView;
     private final TimelineParameters mListParameters;
 
-    public static int getYOfPosition(ListView list, BaseTimelineAdapter adapter, int position) {
-        int zeroChildPosition = adapter.getPosition(list.getChildAt(list.getHeaderViewsCount()));
-        View viewOfPosition = list.getChildAt(position - zeroChildPosition + list.getHeaderViewsCount());
+    public static YOfPosition getYOfPosition(ListView list, BaseTimelineAdapter adapter, int positionIn) {
+        int position = positionIn;
+        View viewOfPosition = getViewOfPosition(list, adapter, positionIn);
+        if (viewOfPosition == null && position > 0) {
+            position -= 1;
+            viewOfPosition = getViewOfPosition(list, adapter, position);
+        }
         int y = viewOfPosition == null ? 0 : viewOfPosition.getTop() - list.getPaddingTop();
         if (MyLog.isVerboseEnabled() ) {
             MyLog.v(TimelinePositionStorage.class, "getYOfPosition; " + position
@@ -45,18 +50,45 @@ class TimelinePositionStorage<T extends ViewItem<T>> {
                     + ", listViews=" + list.getCount()
                     + ", headers:" + list.getHeaderViewsCount()
                     + ", items=" + adapter.getCount()
-                    + ", zeroChildPos:" + zeroChildPosition
                     + (viewOfPosition == null ? " view not found" : " y=" + y)
 //                    + "\n" + MyLog.getStackTrace(new Throwable())
             );
         }
-        return y;
+        if (viewOfPosition == null) {
+            return new YOfPosition(positionIn, adapter.getItemId(positionIn), 0);
+        }
+        return new YOfPosition(position, adapter.getItemId(position), y);
+    }
+
+    @Nullable
+    private static View getViewOfPosition(ListView list, BaseTimelineAdapter adapter, int position) {
+        View viewOfPosition = null;
+        for (int ind = 0; ind < list.getChildCount(); ind++) {
+            View view = list.getChildAt(ind);
+            if (adapter.getPosition(view) == position) {
+                viewOfPosition = view;
+                break;
+            }
+        }
+        return viewOfPosition;
     }
 
     static class TLPosition {
         long firstVisibleItemId = NOT_STORED;
         long minSentDate = NOT_STORED;
         int y = NOT_STORED;
+    }
+
+    static class YOfPosition {
+        final int position;
+        final long itemId;
+        final int y;
+
+        YOfPosition(int position, long itemId, int y) {
+            this.position = position;
+            this.itemId = itemId;
+            this.y = y;
+        }
     }
 
     TimelinePositionStorage(BaseTimelineAdapter<T> listAdapter, ListView listView, TimelineParameters listParameters) {
@@ -73,27 +105,28 @@ class TimelinePositionStorage<T extends ViewItem<T>> {
         }
         int itemCount = adapter.getCount();
         int firstVisibleAdapterPosition = Integer.min(
-                Integer.max(mListView.getFirstVisiblePosition() - mListView.getHeaderViewsCount(), 0),
+                Integer.max(mListView.getFirstVisiblePosition(), 0),
                 itemCount - 1);
-        long firstVisibleItemId = adapter.getItemId(firstVisibleAdapterPosition);
-        int y = getYOfPosition(mListView, adapter, firstVisibleAdapterPosition);
+        YOfPosition yop = getYOfPosition(mListView, adapter, firstVisibleAdapterPosition);
+
         int lastPosition = Integer.min(mListView.getLastVisiblePosition() + 10, itemCount - 1);
         long minDate = adapter.getItem(lastPosition).getDate();
 
-        if (firstVisibleItemId <= 0) {
+        if (yop.itemId <= 0) {
             clear();
         } else {
-            saveTLPosition(firstVisibleItemId, minDate, y);
+            saveTLPosition(yop.itemId, minDate, yop.y);
         }
         if (MyLog.isVerboseEnabled()) {
-            String msgLog = "id:" + firstVisibleItemId
-                    + ", y:" + y
+            String msgLog = "id:" + yop.itemId
+                    + ", y:" + yop.y
                     + " at pos=" + firstVisibleAdapterPosition
+                    + (yop.position != firstVisibleAdapterPosition ? " found pos=" + yop.position : "")
                     + ", minDate=" + MyLog.formatDateTime(minDate)
                     + " at pos=" + lastPosition + " of " + itemCount
                     + ", listViews=" + mListView.getCount()
                     + " " + mListParameters.getTimeline();
-            if (firstVisibleItemId <= 0) {
+            if (yop.itemId <= 0) {
                 MyLog.v(this, method + "; failed " + msgLog
                         + "\n no visible items");
             } else {
@@ -180,11 +213,11 @@ class TimelinePositionStorage<T extends ViewItem<T>> {
             MyLog.v(TimelinePositionStorage.class, "Set position of " + position + " item to " + y + " px," +
                     " header views: " + headerViewsCount);
         }
-        listView.setSelectionFromTop(position  + headerViewsCount, y);
+        listView.setSelectionFromTop(position, y);
     }
 
     /**
-     * @return the position in the list or -1 if the item was not found
+     * @return the position in the adapter or -1 if the item was not found
      */
     private int getPositionById(long itemId) {
         if (adapter == null) {

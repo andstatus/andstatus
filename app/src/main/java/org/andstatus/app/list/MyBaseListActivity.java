@@ -28,6 +28,8 @@ import org.andstatus.app.timeline.EmptyBaseTimelineAdapter;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.widget.MySwipeRefreshLayout;
 
+import java.util.Objects;
+
 public abstract class MyBaseListActivity extends MyActivity implements
         MySwipeRefreshLayout.CanSwipeRefreshScrollUpCallback,
         MySwipeRefreshLayout.OnRefreshListener{
@@ -62,6 +64,7 @@ public abstract class MyBaseListActivity extends MyActivity implements
     }
 
     protected void setListAdapter(@NonNull ListAdapter adapter) {
+        Objects.requireNonNull(adapter);
         mAdapter = adapter;
         getListView().setAdapter(mAdapter);
     }

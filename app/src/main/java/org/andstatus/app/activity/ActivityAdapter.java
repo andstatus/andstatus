@@ -21,12 +21,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.andstatus.app.R;
+import org.andstatus.app.actor.ActorAdapter;
 import org.andstatus.app.graphics.AvatarView;
-import org.andstatus.app.note.NoteAdapter;
 import org.andstatus.app.net.social.ActivityType;
+import org.andstatus.app.note.NoteAdapter;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.TimelineData;
-import org.andstatus.app.actor.ActorAdapter;
 import org.andstatus.app.util.MyUrlSpan;
 
 /**

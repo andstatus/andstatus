@@ -75,6 +75,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     AttachedImageFile attachedImageFile = AttachedImageFile.EMPTY;
 
     private MyAccount linkedMyAccount = MyAccount.EMPTY;
+    public final StringBuilder detailsSuffix = new StringBuilder();
 
     protected BaseNoteViewItem(boolean isEmpty) {
         super(isEmpty);
@@ -177,9 +178,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         setNoteSource(context, builder);
         setNoteStatus(context, builder);
         setCollapsedStatus(builder);
-        if (MyPreferences.isShowDebuggingInfoInUi()) {
-            I18n.appendWithSpace(builder, "(noteId=" + getNoteId() + ")");
-        }
+        if (detailsSuffix.length() > 0) I18n.appendWithSpace(builder, detailsSuffix.toString());
         return builder;
     }
 

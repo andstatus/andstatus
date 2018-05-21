@@ -84,6 +84,9 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
         } else {
             noteViewItem = NoteViewItem.EMPTY.getNew().fromCursorRow(MyContextHolder.get(), cursor);
             noteViewItem.setParent(this);
+            if (MyPreferences.isShowDebuggingInfoInUi()) {
+                I18n.appendWithSpace(noteViewItem.detailsSuffix, "(actId=" + id + ")");
+            }
         }
     }
 
