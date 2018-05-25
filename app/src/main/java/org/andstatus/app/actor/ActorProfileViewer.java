@@ -17,6 +17,7 @@
 package org.andstatus.app.actor;
 
 import android.view.View;
+import android.widget.ListView;
 
 import org.andstatus.app.R;
 import org.andstatus.app.note.NoteContextMenuContainer;
@@ -27,6 +28,7 @@ public class ActorProfileViewer {
     public final ActorContextMenu contextMenu;
     private final ActorViewItemPopulator populator;
     public final View profileView;
+    private boolean viewAdded = false;
 
     public ActorProfileViewer(NoteContextMenuContainer container) {
         this.contextMenu = new ActorContextMenu(container, MyContextMenu.MENU_GROUP_ACTOR_PROFILE);
@@ -43,6 +45,20 @@ public class ActorProfileViewer {
         View view = profileView.findViewById(viewId);
         view.setOnCreateContextMenuListener(contextMenu);
         view.setOnClickListener(View::showContextMenu);
+    }
+
+    public void ensureView(boolean added) {
+        if (viewAdded == added) return;
+
+        final ListView listView = getActivity().getListView();
+        if (listView == null) return;
+
+        viewAdded = added;
+        if (added) {
+            listView.addHeaderView(profileView);
+        } else {
+            listView.removeHeaderView(profileView);
+        }
     }
 
     public void populateView() {

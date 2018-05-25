@@ -38,6 +38,7 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.LoadableListActivity;
+import org.andstatus.app.timeline.LoadableListPosition;
 import org.andstatus.app.timeline.WhichPage;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyCheckBox;
@@ -109,9 +110,9 @@ public class ManageTimelines extends LoadableListActivity {
     }
 
     @Override
-    public void onLoadFinished(boolean keepCurrentPosition) {
+    public void onLoadFinished(LoadableListPosition pos) {
         showSortColumn();
-        super.onLoadFinished(true);
+        super.onLoadFinished(pos);
     }
 
     private void showSortColumn() {

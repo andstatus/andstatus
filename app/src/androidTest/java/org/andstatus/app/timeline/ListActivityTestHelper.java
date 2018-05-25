@@ -116,7 +116,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
                 }
                 MyLog.v(methodExt, method + " on setSelection " + position
                         + " of " + (listAdapter.getCount() - 1));
-                listView.setSelectionFromTop(position + listView.getHeaderViewsCount(), 0);
+                listView.setSelectionFromTop(position, 0);
             }
         });
         TestSuite.waitForIdleSync();

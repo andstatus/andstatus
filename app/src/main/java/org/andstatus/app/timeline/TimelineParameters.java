@@ -239,7 +239,8 @@ public class TimelineParameters {
     private void prepareQueryParameters() {
         switch (whichPage) {
             case CURRENT:
-                minDate = (new TimelinePositionStorage<>( null, null, this)).getTLPosition().minSentDate;
+                minDate = (new TimelineViewPositionStorage<>(null, null, this))
+                        .loadListPosition().minSentDate;
                 break;
             default:
                 break;

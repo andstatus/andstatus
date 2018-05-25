@@ -35,6 +35,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
+import org.andstatus.app.timeline.LoadableListPosition;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.BundleUtils;
@@ -170,14 +171,14 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
         closeDrawer();
         showThreadsOfConversation = isChecked;
         MyPreferences.setShowThreadsOfConversation(isChecked);
-        updateList(TriState.UNKNOWN, 0, true);
+        updateList(LoadableListPosition.EMPTY);
     }
 
     public void onOldNotesFirstInConversationChanged(View v, boolean isChecked) {
         closeDrawer();
         oldNotesFirstInConversation = isChecked;
         MyPreferences.setOldNotesFirstInConversation(isChecked);
-        updateList(TriState.UNKNOWN, 0, true);
+        updateList(LoadableListPosition.EMPTY);
     }
 
     private void closeDrawer() {

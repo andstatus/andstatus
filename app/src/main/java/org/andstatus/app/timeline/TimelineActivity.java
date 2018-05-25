@@ -282,7 +282,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         if (getListData().mayHaveYoungerPage()) {
             showList(WhichPage.TOP);
         } else {
-            TimelinePositionStorage.setPosition(getListView(), 0);
+            LoadableListPosition.setPosition(getListView(), 0);
         }
     }
 
@@ -303,7 +303,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     public void onCollapseDuplicatesToggleClick(View view) {
         closeDrawer();
-        updateList(TriState.fromBoolean(((CheckBox) view).isChecked()), 0, false);
+        updateList(TriState.fromBoolean(((CheckBox) view).isChecked()), 0);
     }
 
     /** View.OnClickListener */
@@ -383,7 +383,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
      */
     protected void saveTimelinePosition() {
         if (getParamsLoaded().isLoaded() && isPositionRestored()) {
-            new TimelinePositionStorage<>(getListAdapter(), getListView(), getParamsLoaded()).save();
+            new TimelineViewPositionStorage<>(getListView(), getListAdapter(), getParamsLoaded()).save();
         }
     }
 
@@ -605,6 +605,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             getParamsNew().setTimeline(myContext.timelines().getDefault());
         }
         setCurrentMyAccount(getParamsNew().getTimeline().getMyAccount(), getParamsNew().getTimeline().getOrigin());
+        actorProfileViewer.ensureView(getParamsNew().getTimeline().withActorProfile());
 
         if (Intent.ACTION_SEND.equals(intentNew.getAction())) {
             shareViaThisApplication(intentNew.getStringExtra(Intent.EXTRA_SUBJECT),
@@ -703,7 +704,6 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     private TimelineData<T> setAndGetListData(TimelinePage<T> pageLoaded) {
         listData = new TimelineData<T>(listData, pageLoaded);
-        getListAdapter().notifyDataSetChanged();
         return listData;
     }
 
@@ -791,24 +791,25 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     @Override
-    public void onLoadFinished(boolean keepCurrentPosition_in) {
+    public void onLoadFinished(LoadableListPosition posIn) {
         final String method = "onLoadFinished";
-        verboseListPositionLog(method, "started", 0);
+        if (MyLog.isVerboseEnabled()) posIn.logV(method + " started;");
         TimelineData<T> dataLoaded = setAndGetListData(((TimelineLoader<T>) getLoaded()).getPage());
         MyLog.v(this, method + "; " + dataLoaded.params.toSummary());
 
-        // TODO start: Move this inside superclass
-        boolean keepCurrentPosition = keepCurrentPosition_in && getListData().isSameTimeline &&
-                isPositionRestored() && dataLoaded.params.whichPage != WhichPage.TOP;
-        super.onLoadFinished(keepCurrentPosition);
+        LoadableListPosition pos = posIn.nonEmpty() && getListData().isSameTimeline &&
+            isPositionRestored() && dataLoaded.params.whichPage != WhichPage.TOP
+                ? posIn
+                : new TimelineViewPositionStorage<T>(getListView(), getListAdapter(), dataLoaded.params)
+                    .loadListPosition();
+        super.onLoadFinished(pos);
         if (dataLoaded.params.whichPage == WhichPage.TOP) {
-            TimelinePositionStorage.setPosition(getListView(), 0);
+            LoadableListPosition.setPosition(getListView(), 0);
             getListAdapter().setPositionRestored(true);
         }
-        // TODO end: Move this inside superclass
 
         if (!isPositionRestored()) {
-            new TimelinePositionStorage<T>(getListAdapter(), getListView(), dataLoaded.params).restore();
+            new TimelineViewPositionStorage<T>(getListView(), getListAdapter(), dataLoaded.params).restore();
         }
 
         TimelineParameters otherParams = paramsToLoad;
@@ -942,13 +943,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     private void showActorProfile() {
-        final ListView listView = getListView();
-        if (listView == null) return;
-
-        listView.removeHeaderView(actorProfileViewer.profileView);
         if (getParamsLoaded().timeline.withActorProfile()) {
             actorProfileViewer.populateView();
-            listView.addHeaderView(actorProfileViewer.profileView);
         }
     }
 

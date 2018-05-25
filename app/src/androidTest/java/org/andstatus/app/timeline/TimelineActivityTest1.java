@@ -18,6 +18,7 @@ package org.andstatus.app.timeline;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.widget.CheckBox;
 import android.widget.ListView;
 
@@ -46,8 +47,6 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.view.SelectorDialog;
 import org.junit.Test;
-
-import java.net.MalformedURLException;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
@@ -97,16 +96,16 @@ public class TimelineActivityTest1 extends TimelineActivityTest<ActivityViewItem
      *  This is why we have two similar methods
      */
     @Test
-    public void testPositionOnContentChange1() throws MalformedURLException, InterruptedException {
+    public void testPositionOnContentChange1() throws InterruptedException {
         onePositionOnContentChange(5, 1);
     }
 
     @Test
-    public void testPositionOnContentChange2() throws MalformedURLException, InterruptedException {
+    public void testPositionOnContentChange2() throws InterruptedException {
         onePositionOnContentChange(0, 2);
     }
     
-    private void onePositionOnContentChange(int position0, int iterationId) throws InterruptedException, MalformedURLException {
+    private void onePositionOnContentChange(int position0, int iterationId) throws InterruptedException {
         final String method = "testPositionOnContentChange" + iterationId;
         TestSuite.waitForListLoaded(getActivity(), 1);
         getInstrumentation().runOnMainSync(() -> getActivity().showList(WhichPage.TOP));
@@ -122,38 +121,33 @@ public class TimelineActivityTest1 extends TimelineActivityTest<ActivityViewItem
         assertEquals(collapseDuplicates, ((CheckBox) getActivity().findViewById(R.id.collapseDuplicatesToggle)).isChecked());
         assertEquals(collapseDuplicates, getActivity().getListData().isCollapseDuplicates());
 
+        getCurrentPosition().logV(method + "; before selecting position " + position0);
         new ListActivityTestHelper<>(getActivity()).selectListPosition(method, position0);
-        int position1 = getListView().getFirstVisiblePosition();
-        long maxDateLoaded1 = getActivity().getListAdapter().getItem(0).getDate();
+        getCurrentPosition().logV(method + "; after selecting position " + position0);
+        DbUtils.waitMs(this, 2000);
+
+        LoadableListPosition pos1 = getCurrentPosition().logV(method + "; before adding new content");
         long updatedAt1 = getActivity().getListData().updatedAt;
-        long itemId = getListView().getAdapter().getItemId(position1);
-        int count1 = getListView().getAdapter().getCount();
+        int count1 = getActivity().getListAdapter().getCount();
 
         demoData.insertPumpIoConversation("p" + iterationId);
         broadcastCommandExecuted();
 
         long updatedAt2 = 0;
-        long maxDateLoaded2 = 0;
         int count2 = 0;
-        int position2 = 0;
-        int position2Any = -1;
+        LoadableListPosition pos2 = getCurrentPosition().logV(method + "; just after adding new content");
+        int positionOfItem = -1;
         boolean found = false;
-        for (int attempt = 0; attempt < 6; attempt++) {
+        for (int attempt = 0; attempt < 6 && !found; attempt++) {
             TestSuite.waitForIdleSync();
-            count2 = getListView().getAdapter().getCount();
+            pos2 = getCurrentPosition().logV(method + "; waiting for list data update");
+
+            count2 = getActivity().getListAdapter().getCount();
             updatedAt2 = getActivity().getListData().updatedAt;
-            maxDateLoaded2 = getActivity().getListAdapter().getItem(0).getDate();
             if (updatedAt2 > updatedAt1) {
-                position2 = getListView().getFirstVisiblePosition();
-                for (int ind = 0; ind < count2; ind++) {
-                    if (itemId == getListView().getAdapter().getItemId(ind)) {
-                        position2Any = ind;
-                    }
-                    if ( ind >= position2 && ind <= position2 + 2 
-                            && itemId == getListView().getAdapter().getItemId(ind)) {
-                        found = true;
-                        break;
-                    }
+                positionOfItem = getActivity().getListAdapter().getPositionById(pos1.itemId);
+                if (positionOfItem >= pos2.position - 1 && positionOfItem <= pos2.position + 1) {
+                    found = true;
                 }
             } else {
                 if (attempt == 3) {
@@ -164,14 +158,11 @@ public class TimelineActivityTest1 extends TimelineActivityTest<ActivityViewItem
                     break;
                 }
             }
-            if (found) {
-                break;
-            }
         }
-        String logText = method +  " The item id=" + itemId + " was " + (found ? "" : " not") + " found. "
-                + "position1=" + position1 + " of " + count1
-                + "; position2=" + position2 + " of " + count2
-                + ((position2Any >=0) ? " foundAt=" + position2Any : "")
+        String logText = method +  " The item id=" + pos1.itemId + " was " + (found ? "" : " not") + " found. "
+                + "position1=" + pos1 + " of " + count1
+                + "; position2=" + pos2 + " of " + count2
+                + ((positionOfItem >=0) ? " foundAt=" + positionOfItem : "")
                 + ", updated in " + (updatedAt2 - updatedAt1) + "ms";
         MyLog.v(this, logText);
         assertTrue(logText, found);
@@ -189,6 +180,11 @@ public class TimelineActivityTest1 extends TimelineActivityTest<ActivityViewItem
             }
             assertTrue("Collapsed not found", found);
         }
+    }
+
+    @NonNull
+    private LoadableListPosition getCurrentPosition() {
+        return LoadableListPosition.getCurrent(getListView(), getActivity().getListAdapter(), 0);
     }
 
     private void broadcastCommandExecuted() {

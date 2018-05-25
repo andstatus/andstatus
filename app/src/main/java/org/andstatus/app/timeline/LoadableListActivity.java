@@ -295,7 +295,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
             updateCompletedLoader();
             try {
                 if (isMyResumed()) {
-                    onLoadFinished(true);
+                    onLoadFinished(LoadableListPosition.getCurrent(getListView(), getListAdapter(), centralItemId));
                 }
             } catch (Exception e) {
                 MyLog.d(this,"onPostExecute", e);
@@ -314,12 +314,8 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         }
     }
 
-    public void onLoadFinished(boolean keepCurrentPosition) {
-        if (keepCurrentPosition) {
-            updateList(TriState.UNKNOWN, 0, true);
-        } else {
-            setListAdapter(newListAdapter());
-        }
+    public void onLoadFinished(LoadableListPosition pos) {
+        updateList(pos);
         updateTitle("");
         if (onRefreshHandled) {
             onRefreshHandled = false;
@@ -327,14 +323,25 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         }
     }
 
-    public void updateList(TriState collapseDuplicates, long itemId, boolean newAdapter) {
+    public void updateList(LoadableListPosition pos) {
+        updateList(pos, TriState.UNKNOWN, 0, true);
+    }
+
+    public void updateList(TriState collapseDuplicates, long itemId) {
+        updateList(LoadableListPosition.EMPTY, collapseDuplicates, itemId, false);
+    }
+
+    private void updateList(LoadableListPosition pos, TriState collapseDuplicates, long itemId, boolean newAdapter) {
         final String method = "updateList";
-        BaseTimelineAdapter adapter = getListAdapter();
         ListView list = getListView();
-        // For a finer position restore see http://stackoverflow.com/questions/3014089/maintain-save-restore-scroll-position-when-returning-to-a-listview?rq=1
-        long itemIdOfAdapterPosition = centralItemId;
-        TimelinePositionStorage.YOfPosition yop = TimelinePositionStorage
-                .getYOfPosition(list, adapter, list.getFirstVisiblePosition());
+        if (list == null) return;
+
+        BaseTimelineAdapter<T> adapter = getListAdapter();
+
+        // LoadableListPosition tlp = LoadableListPosition.getCurrent(list, adapter, centralItemId);
+        pos.logV(method + "; Before " + (newAdapter
+                ? "setting new adapter"
+                : "notifying change"));
 
         if (!TriState.UNKNOWN.equals(collapseDuplicates)) {
             getListData().collapseDuplicates(collapseDuplicates.toBoolean(true), itemId);
@@ -342,42 +349,20 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
 
         if (newAdapter) {
             adapter = newListAdapter();
-            verboseListPositionLog(method, "Before setting new adapter", itemIdOfAdapterPosition);
             setListAdapter(adapter);
         } else {
             adapter.notifyDataSetChanged();
         }
 
-        boolean positionRestored = false;
-        if (itemIdOfAdapterPosition >= 0) {
-            int firstVisibleAdapterPosition = adapter.getPositionById(
-                    yop.itemId == 0 ? itemIdOfAdapterPosition : yop.itemId);
-            if (firstVisibleAdapterPosition >= 0) {
-                list.setSelectionFromTop(firstVisibleAdapterPosition + list.getHeaderViewsCount(), yop.y);
-                positionRestored = true;
-                verboseListPositionLog(method, "After setting position: " + firstVisibleAdapterPosition,
-                        itemIdOfAdapterPosition);
-            }
+        boolean positionRestored = LoadableListPosition.restore(list, adapter, pos);
+        if (MyLog.isVerboseEnabled()) {
+            LoadableListPosition.getCurrent(list, adapter, pos.itemId)
+                    .logV(method + "; After setting position: " + (positionRestored ? "succeeded" : "failed"));
         }
         adapter.setPositionRestored(positionRestored);
     }
 
-    protected void verboseListPositionLog(String method, String description, long itemId) {
-        if (MyLog.isVerboseEnabled()) {
-            int firstVisibleAdapterPosition = getListView().getFirstVisiblePosition() - getListView().getHeaderViewsCount();
-            MyLog.d(this, method + "; " + description
-                    + ", adapter count:" + getListAdapter().getCount()
-                    + ", list items:" + getListView().getChildCount()
-                    + (itemId != 0 ? ", itemId:" + itemId
-                        + " -> first position:" + getListAdapter().getPositionById(itemId)
-                        : ", first position:" + firstVisibleAdapterPosition
-                        + " -> itemId:" + getListAdapter().getItemId(firstVisibleAdapterPosition)
-                    )
-            );
-        }
-    }
-
-    protected abstract BaseTimelineAdapter newListAdapter();
+    protected abstract BaseTimelineAdapter<T> newListAdapter();
 
     @NonNull
     @Override

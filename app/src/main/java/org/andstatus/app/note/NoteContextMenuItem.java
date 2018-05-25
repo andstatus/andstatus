@@ -311,13 +311,13 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     SHOW_DUPLICATES(false, true) {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            menu.getActivity().updateList(TriState.FALSE, menu.getViewItem().getTopmostId(), false);
+            menu.getActivity().updateList(TriState.FALSE, menu.getViewItem().getTopmostId());
         }
     },
     COLLAPSE_DUPLICATES(false, true) {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            menu.getActivity().updateList(TriState.TRUE, menu.getViewItem().getTopmostId(), false);
+            menu.getActivity().updateList(TriState.TRUE, menu.getViewItem().getTopmostId());
         }
     },
     GET_NOTE {
