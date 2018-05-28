@@ -199,10 +199,10 @@ public class DataUpdater {
                 updateObjActor(actor.update(activity.accountActor, activity.getActor()));
             }
 
-            if (!TextUtils.isEmpty(note.via)) {
+            if (!StringUtils.isEmpty(note.via)) {
                 values.put(NoteTable.VIA, note.via);
             }
-            if (!TextUtils.isEmpty(note.url)) {
+            if (!StringUtils.isEmpty(note.url)) {
                 values.put(NoteTable.URL, note.url);
             }
             if (note.getPublic().known) {

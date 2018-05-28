@@ -17,9 +17,9 @@
 package org.andstatus.app.data;
 
 import android.content.ContentValues;
-import android.text.TextUtils;
 
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtils;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -86,7 +86,7 @@ public class ContentValuesUtils {
     }
 
     public static void putNotEmpty(ContentValues values, String key, String value) {
-        if (!TextUtils.isEmpty(value)) {
+        if (!StringUtils.isEmpty(value)) {
             values.put(key, value);
         }
     }

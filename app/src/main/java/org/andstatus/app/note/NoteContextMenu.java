@@ -180,7 +180,7 @@ public class NoteContextMenu extends MyContextMenu {
                         R.string.menu_item_reply_to_mentioned_users);
             }
             NoteContextMenuItem.SHARE.addTo(menu, order++, R.string.menu_item_share);
-            if (!TextUtils.isEmpty(getImageFilename())) {
+            if (!StringUtils.isEmpty(getImageFilename())) {
                 NoteContextMenuItem.VIEW_IMAGE.addTo(menu, order++, R.string.menu_item_view_image);
             }
 

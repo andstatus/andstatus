@@ -20,13 +20,13 @@ import android.accounts.AccountAuthenticatorResponse;
 import android.accounts.AccountManager;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 /** State of the Account add/change process that we store between activity execution steps
@@ -101,7 +101,7 @@ class StateOfAccountChangeProcess {
             
             // Maybe we received MyAccount name as a parameter?!
             String accountName = extras.getString(IntentExtra.ACCOUNT_NAME.key);
-            if (!TextUtils.isEmpty(accountName)) {
+            if (!StringUtils.isEmpty(accountName)) {
                 state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                         MyContextHolder.get(),
                         accountName, 
@@ -199,18 +199,18 @@ class StateOfAccountChangeProcess {
     /** null means to clear the old values */
     public void setRequestTokenWithSecret(String token,
             String secret) {
-        if (TextUtils.isEmpty(token)) {
+        if (StringUtils.isEmpty(token)) {
             requestToken = null;
         } else {
             requestToken = token;
         }
-        MyLog.d(TAG, TextUtils.isEmpty(token) ? "Clearing Request Token" : "Saving Request Token: " + token);
-        if (TextUtils.isEmpty(secret)) {
+        MyLog.d(TAG, StringUtils.isEmpty(token) ? "Clearing Request Token" : "Saving Request Token: " + token);
+        if (StringUtils.isEmpty(secret)) {
             requestSecret = null;
         } else {
             requestSecret = secret;
         }
-        MyLog.d(TAG, TextUtils.isEmpty(secret) ? "Clearing Request Secret" : "Saving Request Secret: " + secret);
+        MyLog.d(TAG, StringUtils.isEmpty(secret) ? "Clearing Request Secret" : "Saving Request Secret: " + secret);
     }
     
     /**
@@ -247,7 +247,7 @@ class StateOfAccountChangeProcess {
     }
     
     void setAccountAction(String accountAction) {
-        if (TextUtils.isEmpty(accountAction)) {
+        if (StringUtils.isEmpty(accountAction)) {
             this.accountAction = Intent.ACTION_DEFAULT;
         } else {
             this.accountAction = accountAction;

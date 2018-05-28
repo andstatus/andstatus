@@ -24,7 +24,6 @@ import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.text.SpannableString;
-import android.text.TextUtils;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
 
@@ -92,6 +91,7 @@ public class Origin {
     private boolean inCombinedPublicReload = false;
     
     private TriState mMentionAsWebFingerId = TriState.UNKNOWN;
+    private boolean isValid = false;
 
     protected Origin() {
         // Empty
@@ -128,6 +128,10 @@ public class Origin {
     }
 
     public boolean isValid() {
+        return isValid;
+    }
+
+    private boolean calcIsValid() {
         return !isEmpty()
                 && isNameValid()
                 && urlIsValid()
@@ -147,7 +151,7 @@ public class Origin {
     }
 
     public boolean isUsernameValid(String username) {
-        return StringUtils.nonEmpty(username) && username.matches(originType.usernameRegEx);
+        return StringUtils.nonEmpty(username) && originType.usernameRegExPattern.matcher(username).matches();
     }
 
     /**
@@ -158,7 +162,7 @@ public class Origin {
      */
     public int charactersLeftForNote(String note) {
         int noteLength = 0;
-        if (!TextUtils.isEmpty(note)) {
+        if (!StringUtils.isEmpty(note)) {
             noteLength = note.length();
 
             if (shortUrlLength > 0) {
@@ -183,7 +187,7 @@ public class Origin {
 
     public final String notePermalink(long noteId) {
         String msgUrl = MyQuery.noteIdToStringColumnValue(NoteTable.URL, noteId);
-        if (!TextUtils.isEmpty(msgUrl)) {
+        if (!StringUtils.isEmpty(msgUrl)) {
             try {
                 return new URL(msgUrl).toExternalForm();
             } catch (MalformedURLException e) {
@@ -454,6 +458,7 @@ public class Origin {
             setInCombinedPublicReload(original.inCombinedPublicReload);
             setMentionAsWebFingerId(original.mMentionAsWebFingerId);
             origin.mUseLegacyHttpProtocol = original.mUseLegacyHttpProtocol;
+            origin.isValid = origin.calcIsValid();
         }
 
         public Origin build() {
@@ -473,7 +478,7 @@ public class Origin {
             if (origin.isNameValid(nameIn)) {
                 return nameIn;
             }
-            if (TextUtils.isEmpty(nameIn)) {
+            if (StringUtils.isEmpty(nameIn)) {
                 return "";
             }
             // Test with: http://www.regexplanet.com/advanced/java/index.html
@@ -548,6 +553,7 @@ public class Origin {
 
         public Builder save() {
             saved = false;
+            origin.isValid = origin.calcIsValid(); // TODO: refactor...
             if (!origin.isValid()) {
                 MyLog.v(this, "Is not valid: " + origin.toString());
                 return this;

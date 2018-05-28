@@ -17,9 +17,9 @@
 package org.andstatus.app.net.http;
 
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 
 /**
  * These are the keys for the AndStatus application (a "Client" of the Microblogging system)
@@ -84,7 +84,7 @@ public class OAuthClientKeys {
     }
     
     public boolean areKeysPresent() {
-        return !TextUtils.isEmpty(getConsumerKey()) && !TextUtils.isEmpty(getConsumerSecret());
+        return !StringUtils.isEmpty(getConsumerKey()) && !StringUtils.isEmpty(getConsumerSecret());
     }
     
     public String getConsumerKey() {

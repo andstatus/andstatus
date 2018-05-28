@@ -383,7 +383,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
      */
     protected void saveTimelinePosition() {
         if (getParamsLoaded().isLoaded() && isPositionRestored()) {
-            new TimelineViewPositionStorage<>(getListView(), getListAdapter(), getParamsLoaded()).save();
+            new TimelineViewPositionStorage<>(this, getParamsLoaded()).save();
         }
     }
 
@@ -615,15 +615,15 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     private void shareViaThisApplication(String name, String text, Uri mediaUri) {
-        if (TextUtils.isEmpty(name) && TextUtils.isEmpty(text) && UriUtils.isEmpty(mediaUri)) {
+        if (StringUtils.isEmpty(name) && StringUtils.isEmpty(text) && UriUtils.isEmpty(mediaUri)) {
             return;
         }
         mNoteNameToShareViaThisApp = StringUtils.notEmpty(name, "");
         mContentToShareViaThisApp = StringUtils.notEmpty(text, "");
         mMediaToShareViaThisApp = mediaUri;
         MyLog.v(this, "Share via this app "
-                + (!TextUtils.isEmpty(mNoteNameToShareViaThisApp) ? "; title:'" + mNoteNameToShareViaThisApp +"'" : "")
-                + (!TextUtils.isEmpty(mContentToShareViaThisApp) ? "; text:'" + mContentToShareViaThisApp +"'" : "")
+                + (!StringUtils.isEmpty(mNoteNameToShareViaThisApp) ? "; title:'" + mNoteNameToShareViaThisApp +"'" : "")
+                + (!StringUtils.isEmpty(mContentToShareViaThisApp) ? "; text:'" + mContentToShareViaThisApp +"'" : "")
                 + (!UriUtils.isEmpty(mMediaToShareViaThisApp) ? "; media:" + mMediaToShareViaThisApp.toString() : ""));
         AccountSelector.selectAccount(this, ActivityRequestCode.SELECT_ACCOUNT_TO_SHARE_VIA, 0);
     }
@@ -800,8 +800,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         LoadableListPosition pos = posIn.nonEmpty() && getListData().isSameTimeline &&
             isPositionRestored() && dataLoaded.params.whichPage != WhichPage.TOP
                 ? posIn
-                : new TimelineViewPositionStorage<T>(getListView(), getListAdapter(), dataLoaded.params)
-                    .loadListPosition();
+                : TimelineViewPositionStorage.loadListPosition(dataLoaded.params);
         super.onLoadFinished(pos);
         if (dataLoaded.params.whichPage == WhichPage.TOP) {
             LoadableListPosition.setPosition(getListView(), 0);
@@ -809,7 +808,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         }
 
         if (!isPositionRestored()) {
-            new TimelineViewPositionStorage<T>(getListView(), getListAdapter(), dataLoaded.params).restore();
+            new TimelineViewPositionStorage<T>(this, dataLoaded.params).restore();
         }
 
         TimelineParameters otherParams = paramsToLoad;

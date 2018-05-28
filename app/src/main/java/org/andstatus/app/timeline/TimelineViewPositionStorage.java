@@ -28,29 +28,31 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 class TimelineViewPositionStorage<T extends ViewItem<T>> {
+    private final LoadableListActivity<T> activity;
     private final BaseTimelineAdapter<T> adapter;
-    private final ListView mListView;
-    private final TimelineParameters mListParameters;
+    private final ListView listView;
+    private final TimelineParameters params;
 
-    TimelineViewPositionStorage(ListView listView, BaseTimelineAdapter<T> listAdapter, TimelineParameters listParameters) {
-        this.adapter = listAdapter;
-        this.mListView = listView;
-        this.mListParameters = listParameters;
+    TimelineViewPositionStorage(LoadableListActivity<T> activity, TimelineParameters listParameters) {
+        this.activity = activity;
+        this.adapter = activity.getListAdapter();
+        this.listView = activity.getListView();
+        this.params = listParameters;
     }
 
     void save() {
-        final String method = "save" + mListParameters.timeline.getId();
-        if (mListView == null || adapter == null || mListParameters.isEmpty() || adapter.getCount() == 0) {
+        final String method = "save" + params.timeline.getId();
+        if (isEmpty()) {
             MyLog.v(this, method + "; skipped");
             return;
         }
         int itemCount = adapter.getCount();
         int firstVisibleAdapterPosition = Integer.min(
-                Integer.max(mListView.getFirstVisiblePosition(), 0),
+                Integer.max(listView.getFirstVisiblePosition(), 0),
                 itemCount - 1);
-        LoadableListPosition pos = LoadableListPosition.getCurrent(mListView, adapter, 0);
+        LoadableListPosition pos = activity.getCurrentListPosition();
 
-        int lastPosition = Integer.min(mListView.getLastVisiblePosition() + 10, itemCount - 1);
+        int lastPosition = Integer.min(listView.getLastVisiblePosition() + 10, itemCount - 1);
         long minDate = adapter.getItem(lastPosition).getDate();
 
         if (pos.itemId <= 0) {
@@ -65,8 +67,8 @@ class TimelineViewPositionStorage<T extends ViewItem<T>> {
                     + (pos.position != firstVisibleAdapterPosition ? " found pos=" + pos.position : "")
                     + ", minDate=" + MyLog.formatDateTime(minDate)
                     + " at pos=" + lastPosition + " of " + itemCount
-                    + ", listViews=" + mListView.getCount()
-                    + " " + mListParameters.getTimeline();
+                    + ", listViews=" + listView.getCount()
+                    + " " + params.getTimeline();
             if (pos.itemId <= 0) {
                 MyLog.v(this, method + "; failed " + msgLog
                         + "\n no visible items");
@@ -76,28 +78,32 @@ class TimelineViewPositionStorage<T extends ViewItem<T>> {
         }
 
     }
-    
-    private void saveListPosition(long firstVisibleItemId, long minDate, int y) {
-        mListParameters.getTimeline().setVisibleItemId(firstVisibleItemId);
-        mListParameters.getTimeline().setVisibleOldestDate(minDate);
-        mListParameters.getTimeline().setVisibleY(y);
+
+    private boolean isEmpty() {
+        return listView == null || adapter == null || params.isEmpty() || adapter.getCount() == 0;
     }
 
-    public LoadableListPosition loadListPosition() {
-        return mListParameters.getTimeline().getVisibleItemId() > 0
+    private void saveListPosition(long firstVisibleItemId, long minDate, int y) {
+        params.getTimeline().setVisibleItemId(firstVisibleItemId);
+        params.getTimeline().setVisibleOldestDate(minDate);
+        params.getTimeline().setVisibleY(y);
+    }
+
+    public static LoadableListPosition loadListPosition(TimelineParameters params) {
+        return params.getTimeline().getVisibleItemId() > 0
                 ? LoadableListPosition.saved(
-                    mListParameters.getTimeline().getVisibleItemId(),
-                    mListParameters.getTimeline().getVisibleY(),
-                    mListParameters.getTimeline().getVisibleOldestDate())
+                    params.getTimeline().getVisibleItemId(),
+                    params.getTimeline().getVisibleY(),
+                    params.getTimeline().getVisibleOldestDate())
                 : LoadableListPosition.EMPTY;
     }
 
     void clear() {
-        mListParameters.getTimeline().setVisibleItemId(0);
-        mListParameters.getTimeline().setVisibleOldestDate(0);
-        mListParameters.getTimeline().setVisibleY(0);
+        params.getTimeline().setVisibleItemId(0);
+        params.getTimeline().setVisibleOldestDate(0);
+        params.getTimeline().setVisibleY(0);
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "Position forgot " + mListParameters.getTimeline());
+            MyLog.v(this, "Position forgot " + params.getTimeline());
         }
     }
     
@@ -106,18 +112,16 @@ class TimelineViewPositionStorage<T extends ViewItem<T>> {
      * see http://stackoverflow.com/questions/3014089/maintain-save-restore-scroll-position-when-returning-to-a-listview?rq=1
      */
     public void restore() {
-        final String method = "restore" + mListParameters.timeline.getId();
-        if (mListView == null || adapter == null || mListParameters.isEmpty() || adapter.getCount() == 0) {
+        final String method = "restore" + params.timeline.getId();
+        if (isEmpty()) {
             MyLog.v(this, method + "; skipped");
             return;
         }
-        final LoadableListPosition pos = loadListPosition();
-        boolean restored = LoadableListPosition.restore(mListView, adapter, pos);
+        final LoadableListPosition pos = loadListPosition(params);
+        boolean restored = LoadableListPosition.restore(listView, adapter, pos);
         if (MyLog.isVerboseEnabled()) {
-            pos.logV(method + "; stored " + (restored ? "succeeded" : "failed")
-                + " " + mListParameters.getTimeline());
-            LoadableListPosition.getCurrent(mListView, adapter, pos.itemId)
-                    .logV(method + "; actual " + (restored ? "succeeded" : "failed"));
+            pos.logV(method + "; stored " + (restored ? "succeeded" : "failed") + " " + params.getTimeline());
+            activity.getCurrentListPosition().logV(method + "; actual " + (restored ? "succeeded" : "failed"));
         }
         if (!restored) clear();
         adapter.setPositionRestored(true);

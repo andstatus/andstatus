@@ -21,6 +21,7 @@ import android.text.TextUtils;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -60,8 +61,8 @@ public class HttpReadResult {
     }
 
     public final void setUrl(String urlIn) throws ConnectionException {
-        if (!TextUtils.isEmpty(urlIn) && !urlString.contentEquals(urlIn)) {
-            redirected = !TextUtils.isEmpty(urlString);
+        if (!StringUtils.isEmpty(urlIn) && !urlString.contentEquals(urlIn)) {
+            redirected = !StringUtils.isEmpty(urlString);
             urlString = urlIn;
             try {
                 url = new URL(urlIn);
@@ -105,7 +106,7 @@ public class HttpReadResult {
     @Override
     public String toString() {
         return logMsg()
-                + ((statusCode == StatusCode.OK) || TextUtils.isEmpty(statusLine) 
+                + ((statusCode == StatusCode.OK) || StringUtils.isEmpty(statusLine)
                         ? "" : "; statusLine:'" + statusLine + "'")
                 + (intStatusCode == 0 ? "" : "; statusCode:" + statusCode + " (" + intStatusCode + ")") 
                 + "; url:'" + urlString + "'"
@@ -113,7 +114,7 @@ public class HttpReadResult {
                 + (authenticate ? "; authenticated" : "")
                 + (redirected ? "; redirected from:'" + urlInitial + "'" : "")
                 + ( hasFormParams() ? "; posted:'" + formParams.toString() + "'" : "")
-                + (TextUtils.isEmpty(strResponse) ? "" : "; response:'" + I18n.trimTextAt(strResponse, 40) + "'")
+                + (StringUtils.isEmpty(strResponse) ? "" : "; response:'" + I18n.trimTextAt(strResponse, 40) + "'")
                 + (exception == null ? "" : "; \nexception: " + exception.toString())
                 + (fileResult == null ? "" : "; saved to file");
     }
@@ -126,7 +127,7 @@ public class HttpReadResult {
         String method = "getJsonObject; ";
         JSONObject jso = null;
         try {
-            if (TextUtils.isEmpty(strJson)) {
+            if (StringUtils.isEmpty(strJson)) {
                 jso = new JSONObject();
             } else {
                 jso = new JSONObject(strJson);
@@ -145,7 +146,7 @@ public class HttpReadResult {
 
     JSONArray getJsonArray(String arrayKey) throws ConnectionException {
         String method = "getJsonArray; ";
-        if (TextUtils.isEmpty(strResponse)) {
+        if (StringUtils.isEmpty(strResponse)) {
             MyLog.v(this, method + "; response is empty");
             return new JSONArray();
         }
@@ -210,7 +211,7 @@ public class HttpReadResult {
         if ( isStatusOk()) {
             MyLog.v(this, toString());
         } else {
-            if (!TextUtils.isEmpty(strResponse)) {
+            if (!StringUtils.isEmpty(strResponse)) {
                 throw getExceptionFromJsonErrorResponse();
             } else {
                 throw ConnectionException.fromStatusCodeAndThrowable(statusCode, toString(), exception);

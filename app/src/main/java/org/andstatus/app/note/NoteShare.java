@@ -123,7 +123,7 @@ public class NoteShare {
     }
 
     public static boolean openLink(Context context, String urlString) {
-        if (TextUtils.isEmpty(urlString)) {
+        if (StringUtils.isEmpty(urlString)) {
             return false;
         } else {
             Intent intent = new Intent(Intent.ACTION_VIEW);

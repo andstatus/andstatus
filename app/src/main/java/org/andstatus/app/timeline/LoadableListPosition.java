@@ -52,14 +52,14 @@ public class LoadableListPosition<T extends ViewItem<T>> {
                 adapter.getCount() - 1);
 
         int position = firstVisiblePosition;
-        View viewOfPosition = getViewOfPosition(list, adapter, firstVisiblePosition);
+        View viewOfPosition = getViewOfPosition(list, firstVisiblePosition);
         if (viewOfPosition == null && position > 0) {
             position -= 1;
-            viewOfPosition = getViewOfPosition(list, adapter, position - 1);
+            viewOfPosition = getViewOfPosition(list, position - 1);
             if (viewOfPosition != null) {
                 position = position - 1;
             } else {
-                viewOfPosition = getViewOfPosition(list, adapter, position + 1);
+                viewOfPosition = getViewOfPosition(list, position + 1);
                 if (viewOfPosition != null) {
                     position = position + 1;
                 }
@@ -87,12 +87,12 @@ public class LoadableListPosition<T extends ViewItem<T>> {
     }
 
     @Nullable
-    private static View getViewOfPosition(ListView list, BaseTimelineAdapter adapter, int position) {
+    public static View getViewOfPosition(ListView list, int position) {
         View viewOfPosition = null;
         for (int ind = 0; ind < list.getChildCount(); ind++) {
             View view = list.getChildAt(ind);
             final int positionForView = list.getPositionForView(view);
-            MyLog.v(LoadableListPosition.class, "getViewOfPosition " + ind + " => " + positionForView);
+            MyLog.v(LoadableListPosition.class, "getViewOfPosition " + position + ", ind " + ind + " => " + positionForView);
             if (positionForView == position) {
                 viewOfPosition = view;
                 break;

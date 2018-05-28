@@ -34,7 +34,6 @@ import org.andstatus.app.timeline.DuplicationLink;
 import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.util.I18n;
-import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
 /** View on ActivityStream
@@ -64,7 +63,6 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
 
     protected ActivityViewItem(Cursor cursor) {
         super(false);
-        long startTime = System.currentTimeMillis();
         id = DbUtils.getLong(cursor, ActivityTable.ACTIVITY_ID);
         origin = MyContextHolder.get().origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID));
         activityType = ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
@@ -75,9 +73,6 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
         objActorId = DbUtils.getLong(cursor, ActivityTable.OBJ_ACTOR_ID);
         if (objActorId != 0) {
             objActorItem = ActorViewItem.fromActorId(origin, objActorId);
-        }
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, ": " + (System.currentTimeMillis() - startTime) + "ms");
         }
         if (noteId == 0) {
             noteViewItem = NoteViewItem.EMPTY;

@@ -415,7 +415,7 @@ public final class MyAccount implements Comparable<MyAccount> {
             boolean credentialsOfOtherAccount = false;
             // We are comparing actor names ignoring case, but we fix correct case
             // as the Originating system tells us. 
-            if (ok && !TextUtils.isEmpty(myAccount.getUsername())
+            if (ok && !StringUtils.isEmpty(myAccount.getUsername())
                     && myAccount.getUsername().compareToIgnoreCase(actor.getUsername()) != 0) {
                 // Credentials belong to other Account ??
                 ok = false;
@@ -688,8 +688,8 @@ public final class MyAccount implements Comparable<MyAccount> {
         return (!deleted && version == MyAccount.ACCOUNT_VERSION)
                 && actor.actorId != 0
                 && connection != null
-                && oAccountName.isValid()
-                && !TextUtils.isEmpty(actor.oid);
+                && oAccountName.isValid
+                && !StringUtils.isEmpty(actor.oid);
     }
 
     private MyAccount(MyContext myContext, AccountData accountDataIn, String accountName) {
@@ -954,7 +954,7 @@ public final class MyAccount implements Comparable<MyAccount> {
     @Override
     public int hashCode() {
         int result = oAccountName.hashCode();
-        if (!TextUtils.isEmpty(actor.oid)) {
+        if (!StringUtils.isEmpty(actor.oid)) {
             result = 31 * result + actor.oid.hashCode();
         }
         return result;

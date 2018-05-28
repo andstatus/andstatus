@@ -101,20 +101,12 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
         int rowsCount = 0;
         if (cursor != null && !cursor.isClosed()) {
             try {
-                final StopWatch rowStopWatch = StopWatch.createStarted();
                 if (cursor.moveToFirst()) {
                     do {
-                        long rowMoveTime= rowStopWatch.getTime();
                         rowsCount++;
                         T item = (T) page.getEmptyItem().fromCursor(cursor);
-                        long rowFromCursorTime = rowStopWatch.getTime() - rowMoveTime;
                         getParams().rememberItemDateLoaded(item.getDate());
                         items.add(item);
-                        if (MyLog.isVerboseEnabled()) {
-                            MyLog.v(this, method + "; row " + rowsCount + ", id:" + item.getId()
-                                    + ", total: " + rowStopWatch.getTimeAndRestart() + "ms, rowMove: " + rowMoveTime + "ms"
-                                    + ", fromCursor: " + rowFromCursorTime + "ms");
-                        }
                     } while (cursor.moveToNext());
                 }
             } finally {

@@ -19,7 +19,6 @@ package org.andstatus.app.util;
 import android.support.annotation.NonNull;
 import android.text.Html;
 import android.text.SpannableString;
-import android.text.TextUtils;
 import android.text.util.Linkify;
 
 import org.apache.commons.lang3.text.translate.AggregateTranslator;
@@ -55,7 +54,7 @@ public class MyHtml {
 
     @NonNull
 	public static String htmlify(String text) {
-		if (TextUtils.isEmpty(text)) return "";
+		if (StringUtils.isEmpty(text)) return "";
         return stripUnnecessaryNewlines(hasHtmlMarkup(text) ? text : htmlifyPlain(text));
     }
 	
@@ -72,7 +71,7 @@ public class MyHtml {
 
     /** Strips HTML markup from the String */
     public static String fromHtml(String text) {
-        return TextUtils.isEmpty(text) ? "" :
+        return StringUtils.isEmpty(text) ? "" :
             stripUnnecessaryNewlines(
                     unescapeHtml(
                             MyHtml.hasHtmlMarkup(text) ? Html.fromHtml(text).toString() : text
@@ -98,7 +97,7 @@ public class MyHtml {
 
     @NonNull
     public static String stripUnnecessaryNewlines(String text) {
-        if (TextUtils.isEmpty(text)) {
+        if (StringUtils.isEmpty(text)) {
             return "";
         } else {
             String text2 = MULTIPLE_NEWLINES_PATTERN.matcher(text.trim()).replaceAll(NEWLINE_REPLACE);
@@ -110,7 +109,7 @@ public class MyHtml {
     }
 
     static String normalizeWordsForSearch(String text) {
-        if (TextUtils.isEmpty(text)) {
+        if (StringUtils.isEmpty(text)) {
             return "";
         } else {
             return MENTION_HASH_PREFIX_PATTERN.matcher(
@@ -133,18 +132,18 @@ public class MyHtml {
         return has; 
     }
 
-    public static boolean isFavoritingAction(String body) {
-        return GNU_SOCIAL_FAVORITED_SOMETHING_BY_PATTERN.matcher(
-                fromHtml(body).toLowerCase()
-        ).matches();
+    @NonNull
+    public static String getCleanedBody1(String body) {
+        return SPACES_PATTERN.matcher(fromHtml(body).toLowerCase())
+            .replaceAll(" ");
+    }
+
+    public static boolean isFavoritingAction(String cleanedBody) {
+        return GNU_SOCIAL_FAVORITED_SOMETHING_BY_PATTERN.matcher(cleanedBody).matches();
     }
 
     @NonNull
-    public static String getCleanedBody(String body) {
-        return GNU_SOCIAL_FAVORITED_SOMETHING_BY_PATTERN.matcher(
-            SPACES_PATTERN.matcher(
-                    fromHtml(body).toLowerCase()
-            ).replaceAll(" ")
-        ).replaceFirst("$2");
+    public static String getCleanedBody2(String cleanedBody1) {
+        return GNU_SOCIAL_FAVORITED_SOMETHING_BY_PATTERN.matcher(cleanedBody1).replaceFirst("$2");
     }
 }

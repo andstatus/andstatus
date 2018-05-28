@@ -26,19 +26,20 @@ import org.json.JSONObject;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 public final class UrlUtils {
     private static final String TAG = UrlUtils.class.getSimpleName();
+    // From http://stackoverflow.com/questions/106179/regular-expression-to-match-hostname-or-ip-address?rq=1
+    private static final String validHostnameRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$";
+    private static final Pattern validHostnameRegexPattern = Pattern.compile(validHostnameRegex);
 
     private UrlUtils() {
         // Empty
     }
 
     public static boolean hostIsValid(String host) {
-        if (TextUtils.isEmpty(host)) return false;
-        // From http://stackoverflow.com/questions/106179/regular-expression-to-match-hostname-or-ip-address?rq=1
-        String validHostnameRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$";
-        return host.matches(validHostnameRegex);
+        return !StringUtils.isEmpty(host) && validHostnameRegexPattern.matcher(host).matches();
     }
 
     public static boolean hasHost(URL url) {
@@ -46,12 +47,12 @@ public final class UrlUtils {
     }
 
     public static boolean isHostOnly(URL url) {
-        return url != null && TextUtils.isEmpty(url.getFile())
+        return url != null && StringUtils.isEmpty(url.getFile())
                 && url.getHost().contentEquals(url.getAuthority());
     }
 
     public static URL fromString(String strUrl) {
-        if (strUrl != null && !TextUtils.isEmpty(strUrl)) {
+        if (strUrl != null && !StringUtils.isEmpty(strUrl)) {
             try {
                 return new URL(strUrl);
             } catch (MalformedURLException e) {
@@ -70,7 +71,7 @@ public final class UrlUtils {
     }
     
     public static URL fromJson(JSONObject jso, String urlTag) throws JSONException {
-        if (jso != null && !TextUtils.isEmpty(urlTag) && jso.has(urlTag)) {
+        if (jso != null && !StringUtils.isEmpty(urlTag) && jso.has(urlTag)) {
             String strUrl = jso.getString(urlTag);
             try {
                 return new URL(strUrl);
@@ -82,7 +83,7 @@ public final class UrlUtils {
     }
 
     public static URL buildUrl(String hostOrUrl, boolean isSsl) {
-        if (TextUtils.isEmpty(hostOrUrl)) {
+        if (StringUtils.isEmpty(hostOrUrl)) {
             return null;
         }
         String corrected = correctedHostOrUrl(hostOrUrl); 
@@ -97,7 +98,7 @@ public final class UrlUtils {
     }
 
     private static String correctedHostOrUrl(String hostOrUrl) {
-        if (TextUtils.isEmpty(hostOrUrl)) {
+        if (StringUtils.isEmpty(hostOrUrl)) {
             return "";
         }
         // Test with: http://www.regexplanet.com/advanced/java/index.html

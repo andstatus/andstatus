@@ -24,13 +24,13 @@ import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.acra.ACRA;
 import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
 import org.andstatus.app.R;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TamperingDetector;
 
 import java.io.File;
@@ -127,7 +127,7 @@ public class MyApplication extends Application {
                 }
             }
         }
-        return TextUtils.isEmpty(processName) ? "?" : processName;
+        return StringUtils.isEmpty(processName) ? "?" : processName;
     }
 
 }

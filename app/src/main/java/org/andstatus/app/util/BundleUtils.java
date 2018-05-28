@@ -51,7 +51,7 @@ public class BundleUtils {
     @NonNull
     public static Bundle toBundle(Bundle bundleIn, String key, Long value) {
         Bundle bundle = bundleIn == null ? new Bundle() : bundleIn;
-        if (!TextUtils.isEmpty(key)) {
+        if (!StringUtils.isEmpty(key)) {
             if (value == null) {
                 bundle.remove(key);
             } else {
@@ -62,7 +62,7 @@ public class BundleUtils {
     }
 
     public static void putNotEmpty(Bundle bundle, IntentExtra intentExtra, String value) {
-        if (!TextUtils.isEmpty(value)) {
+        if (!StringUtils.isEmpty(value)) {
             bundle.putString(intentExtra.key, value);
         }
     }
@@ -78,7 +78,7 @@ public class BundleUtils {
         String out = "";
         if (bundle != null && intentExtra != null) {
             String value = bundle.getString(intentExtra.key);
-            if (!TextUtils.isEmpty(value)) {
+            if (!StringUtils.isEmpty(value)) {
                 out = value;
             }
         }

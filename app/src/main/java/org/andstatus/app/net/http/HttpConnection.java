@@ -17,11 +17,11 @@
 package org.andstatus.app.net.http;
 
 import android.net.Uri;
-import android.text.TextUtils;
 
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
@@ -79,7 +79,7 @@ public abstract class HttpConnection {
 
     private JSONObject postRequestOneHttpProtocol(String path, JSONObject formParams, 
             boolean isLegacyHttpProtocol ) throws ConnectionException {
-        if (TextUtils.isEmpty(path)) {
+        if (StringUtils.isEmpty(path)) {
             throw new IllegalArgumentException("path is empty");
         }
         HttpReadResult result = new HttpReadResult(pathToUrlString(path)).setFormParams(formParams)
@@ -104,7 +104,7 @@ public abstract class HttpConnection {
     }
     
     private HttpReadResult getRequestCommon(String path, boolean authenticated) throws ConnectionException {
-        if (TextUtils.isEmpty(path)) {
+        if (StringUtils.isEmpty(path)) {
             throw new IllegalArgumentException("path is empty");
         }
         HttpReadResult result = new HttpReadResult(pathToUrlString(path));

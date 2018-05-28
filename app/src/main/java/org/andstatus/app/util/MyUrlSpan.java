@@ -101,7 +101,7 @@ public class MyUrlSpan extends URLSpan {
 
     public static void showText(TextView textView, String text, boolean linkify, boolean showIfEmpty) {
         if (textView == null) return;
-        if (TextUtils.isEmpty(text)) {
+        if (StringUtils.isEmpty(text)) {
             textView.setText("");
             ViewUtils.showView(textView, showIfEmpty);
         } else {

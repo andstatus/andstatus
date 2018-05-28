@@ -18,10 +18,10 @@ package org.andstatus.app.account;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.text.TextUtils;
 
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtils;
 
 class AndroidAccountData implements AccountDataReader {
     private AccountManager am;
@@ -93,7 +93,7 @@ class AndroidAccountData implements AccountDataReader {
     public String getDataString(String key, String defValue) {
         String value = defValue;
         String str = am.getUserData(androidAccount, key);
-        if (!TextUtils.isEmpty(str)) {
+        if (!StringUtils.isEmpty(str)) {
             value = str;
         }
         return value;

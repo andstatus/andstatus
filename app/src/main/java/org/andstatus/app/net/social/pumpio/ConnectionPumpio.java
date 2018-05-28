@@ -69,7 +69,7 @@ public class ConnectionPumpio extends Connection {
     @Override
     public void enrichConnectionData(OriginConnectionData connectionData) {
         super.enrichConnectionData(connectionData);
-        if (!TextUtils.isEmpty(connectionData.getAccountName().getUsername())) {
+        if (!StringUtils.isEmpty(connectionData.getAccountName().getUsername())) {
             connectionData.setOriginUrl(UrlUtils.buildUrl(usernameToHost(
                     connectionData.getAccountName().getUsername()), connectionData.isSsl()));
         }
@@ -261,7 +261,7 @@ public class ConnectionPumpio extends Connection {
                 }
             }
         }
-        if (TextUtils.isEmpty(objectType)) {
+        if (StringUtils.isEmpty(objectType)) {
             objectType = "unknown object type: " + oid;
             MyLog.e(this, objectType);
         }
@@ -269,7 +269,7 @@ public class ConnectionPumpio extends Connection {
     }
 
     ConnectionAndUrl getConnectionAndUrl(ApiRoutineEnum apiRoutine, String actorId) throws ConnectionException {
-        if (TextUtils.isEmpty(actorId)) {
+        if (StringUtils.isEmpty(actorId)) {
             throw new ConnectionException(StatusCode.BAD_REQUEST, apiRoutine + ": actorId is required");
         }
         return  getConnectionAndUrlForUsername(apiRoutine, actorOidToUsername(actorId));
@@ -278,19 +278,19 @@ public class ConnectionPumpio extends Connection {
     private ConnectionAndUrl getConnectionAndUrlForUsername(ApiRoutineEnum apiRoutine, String username) throws ConnectionException {
         ConnectionAndUrl conu = new ConnectionAndUrl();
         conu.url = this.getApiPath(apiRoutine);
-        if (TextUtils.isEmpty(conu.url)) {
+        if (StringUtils.isEmpty(conu.url)) {
             throw new ConnectionException(StatusCode.UNSUPPORTED_API, "The API is not supported yet: " + apiRoutine);
         }
-        if (TextUtils.isEmpty(username)) {
+        if (StringUtils.isEmpty(username)) {
             throw new ConnectionException(StatusCode.BAD_REQUEST, apiRoutine + ": userName is required");
         }
         String nickname = usernameToNickname(username);
-        if (TextUtils.isEmpty(nickname)) {
+        if (StringUtils.isEmpty(nickname)) {
             throw new ConnectionException(StatusCode.BAD_REQUEST, apiRoutine + ": wrong userName='" + username + "'");
         }
         String host = usernameToHost(username);
         conu.httpConnection = http;
-        if (TextUtils.isEmpty(host)) {
+        if (StringUtils.isEmpty(host)) {
             throw new ConnectionException(StatusCode.BAD_REQUEST, apiRoutine + ": host is empty for the username='"
                     + username + "'");
         } else if (http.data.originUrl == null || host.compareToIgnoreCase(http.data.originUrl.getHost()) != 0) {
@@ -386,7 +386,7 @@ public class ConnectionPumpio extends Connection {
 
     private AActivity parseActivity(AActivity activity, JSONObject jsoActivity) throws JSONException, ConnectionException {
         String oid = jsoActivity.optString("id");
-        if (TextUtils.isEmpty(oid)) {
+        if (StringUtils.isEmpty(oid)) {
             MyLog.d(this, "Pumpio activity has no id:" + jsoActivity.toString(2));
             return AActivity.EMPTY;
         }
@@ -442,7 +442,7 @@ public class ConnectionPumpio extends Connection {
     }
 
     private void setVia(Note note, JSONObject activity) throws JSONException {
-        if (TextUtils.isEmpty(note.via) && activity.has(Properties.GENERATOR.code)) {
+        if (StringUtils.isEmpty(note.via) && activity.has(Properties.GENERATOR.code)) {
             JSONObject generator = activity.getJSONObject(Properties.GENERATOR.code);
             if (generator.has(NAME_PROPERTY)) {
                 note.via = generator.getString(NAME_PROPERTY);
@@ -453,7 +453,7 @@ public class ConnectionPumpio extends Connection {
     private void noteFromJsonComment(AActivity parentActivity, JSONObject jso) throws ConnectionException {
         try {
             String oid = jso.optString("id");
-            if (TextUtils.isEmpty(oid)) {
+            if (StringUtils.isEmpty(oid)) {
                 MyLog.d(TAG, "Pumpio object has no id:" + jso.toString(2));
                 return;
             }
@@ -540,7 +540,7 @@ public class ConnectionPumpio extends Connection {
      */
     public String actorOidToUsername(String actorId) {
         String username = "";
-        if (!TextUtils.isEmpty(actorId)) {
+        if (!StringUtils.isEmpty(actorId)) {
             int indexOfColon = actorId.indexOf(':');
             if (indexOfColon >= 0) {
                 username = actorId.substring(indexOfColon+1);
@@ -553,7 +553,7 @@ public class ConnectionPumpio extends Connection {
     
     public String usernameToNickname(String username) {
         String nickname = "";
-        if (!TextUtils.isEmpty(username)) {
+        if (!StringUtils.isEmpty(username)) {
             int indexOfAt = username.indexOf('@');
             if (indexOfAt > 0) {
                 nickname = username.substring(0, indexOfAt);
@@ -564,7 +564,7 @@ public class ConnectionPumpio extends Connection {
 
     public String usernameToHost(String username) {
         String host = "";
-        if (!TextUtils.isEmpty(username)) {
+        if (!StringUtils.isEmpty(username)) {
             int indexOfAt = username.indexOf('@');
             if (indexOfAt >= 0) {
                 host = username.substring(indexOfAt + 1);

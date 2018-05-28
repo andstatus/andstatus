@@ -25,17 +25,18 @@ import org.andstatus.app.net.http.HttpConnectionEmpty;
 import org.andstatus.app.net.http.HttpConnectionOAuthApache;
 import org.andstatus.app.net.http.HttpConnectionOAuthJavaNet;
 import org.andstatus.app.net.http.HttpConnectionOAuthMastodon;
-import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ConnectionEmpty;
 import org.andstatus.app.net.social.ConnectionMastodon;
 import org.andstatus.app.net.social.ConnectionTheTwitter;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocial;
+import org.andstatus.app.net.social.Patterns;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
 import java.net.URL;
+import java.util.regex.Pattern;
 
 public enum OriginType implements SelectableEnum {
     /**
@@ -77,7 +78,6 @@ public enum OriginType implements SelectableEnum {
 
     private static final String BASIC_PATH_DEFAULT = "api";
     private static final String OAUTH_PATH_DEFAULT = "oauth";
-    private static final String USERNAME_REGEX_SIMPLE = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*$";
     private static final String USERNAME_EXAMPLES_SIMPLE = "AndStatus user357 peter";
     public static final OriginType ORIGIN_TYPE_DEFAULT = TWITTER;
     public static final int TEXT_LIMIT_MAXIMUM = 5000;
@@ -104,7 +104,7 @@ public enum OriginType implements SelectableEnum {
     /** May a User set username for the new Account/Actor manually?
      * This is only for no OAuth */
     protected boolean shouldSetNewUsernameManuallyNoOAuth = false;
-    protected String usernameRegEx = USERNAME_REGEX_SIMPLE;
+    protected final Pattern usernameRegExPattern;
     public final String validUsernameExamples;
     /**
      * Length of the link after changing to the shortened link
@@ -149,7 +149,7 @@ public enum OriginType implements SelectableEnum {
                 shouldSetNewUsernameManuallyNoOAuth = true;
                 // TODO: Read from Config
                 shortUrlLengthDefault = 23; 
-                usernameRegEx = USERNAME_REGEX_SIMPLE;
+                usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
                 validUsernameExamples = USERNAME_EXAMPLES_SIMPLE;
                 textLimitDefault = 280;
                 urlDefault = UrlUtils.fromString("https://api.twitter.com");
@@ -170,7 +170,7 @@ public enum OriginType implements SelectableEnum {
                 canSetUrlOfOrigin = false;
                 shouldSetNewUsernameManuallyIfOAuth = true;
                 shouldSetNewUsernameManuallyNoOAuth = false;
-                usernameRegEx = Actor.WEBFINGER_ID_REGEX;
+                usernameRegExPattern = Patterns.WEBFINGER_ID_REGEX_PATTERN;
                 validUsernameExamples = "andstatus@identi.ca test425@1realtime.net";
                 // This is not a hard limit, just for convenience
                 textLimitDefault = TEXT_LIMIT_MAXIMUM;
@@ -194,7 +194,7 @@ public enum OriginType implements SelectableEnum {
                 canSetUrlOfOrigin = true;
                 shouldSetNewUsernameManuallyIfOAuth = false;
                 shouldSetNewUsernameManuallyNoOAuth = true;
-                usernameRegEx = USERNAME_REGEX_SIMPLE;
+                usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
                 validUsernameExamples = USERNAME_EXAMPLES_SIMPLE;
                 canChangeSsl = true;
                 basicPath = BASIC_PATH_DEFAULT;
@@ -215,7 +215,7 @@ public enum OriginType implements SelectableEnum {
                 canSetUrlOfOrigin = true;
                 shouldSetNewUsernameManuallyIfOAuth = false;
                 shouldSetNewUsernameManuallyNoOAuth = true;
-                usernameRegEx = USERNAME_REGEX_SIMPLE;
+                usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
                 validUsernameExamples = USERNAME_EXAMPLES_SIMPLE;
                 textLimitDefault = 500;
                 basicPath = "api/v1";
@@ -234,6 +234,7 @@ public enum OriginType implements SelectableEnum {
                 break;
             default:
                 canSetUrlOfOrigin = false;
+                usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
                 originClass = Origin.class;
                 connectionClass = ConnectionEmpty.class;
                 httpConnectionClassOauth = HttpConnectionEmpty.class;

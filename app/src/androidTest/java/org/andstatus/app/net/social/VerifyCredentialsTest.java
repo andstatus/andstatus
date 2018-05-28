@@ -16,8 +16,6 @@
 
 package org.andstatus.app.net.social;
 
-import android.text.TextUtils;
-
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.account.MyAccount;
@@ -31,7 +29,7 @@ import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.origin.OriginType;
-import org.andstatus.app.util.RawResourceUtils;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
@@ -79,7 +77,7 @@ public class VerifyCredentialsTest {
 
     @After
     public void tearDown() throws Exception {
-        if (!TextUtils.isEmpty(keyStored)) {
+        if (!StringUtils.isEmpty(keyStored)) {
             httpConnection.data.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored);        
         }
     }

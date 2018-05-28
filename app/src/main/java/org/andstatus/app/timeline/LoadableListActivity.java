@@ -49,6 +49,7 @@ import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.widget.MySearchView;
 
@@ -295,7 +296,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
             updateCompletedLoader();
             try {
                 if (isMyResumed()) {
-                    onLoadFinished(LoadableListPosition.getCurrent(getListView(), getListAdapter(), centralItemId));
+                    onLoadFinished(getCurrentListPosition());
                 }
             } catch (Exception e) {
                 MyLog.d(this,"onPostExecute", e);
@@ -312,6 +313,11 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         public String toString() {
             return super.toString() + (mSyncLoader == null ? "" : "; " + mSyncLoader);
         }
+    }
+
+    @NonNull
+    public LoadableListPosition getCurrentListPosition() {
+        return LoadableListPosition.getCurrent(getListView(), getListAdapter(), centralItemId);
     }
 
     public void onLoadFinished(LoadableListPosition pos) {
@@ -354,12 +360,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
             adapter.notifyDataSetChanged();
         }
 
-        boolean positionRestored = LoadableListPosition.restore(list, adapter, pos);
-        if (MyLog.isVerboseEnabled()) {
-            LoadableListPosition.getCurrent(list, adapter, pos.itemId)
-                    .logV(method + "; After setting position: " + (positionRestored ? "succeeded" : "failed"));
-        }
-        adapter.setPositionRestored(positionRestored);
+        adapter.setPositionRestored(LoadableListPosition.restore(list, adapter, pos));
     }
 
     protected abstract BaseTimelineAdapter<T> newListAdapter();
@@ -379,7 +380,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
     
     protected void updateTitle(String progress) {
         StringBuilder title = new StringBuilder(getCustomTitle());
-        if (!TextUtils.isEmpty(progress)) {
+        if (!StringUtils.isEmpty(progress)) {
             I18n.appendWithSpace(title, progress);
         }
         setTitle(title.toString());

@@ -18,7 +18,6 @@ package org.andstatus.app.note;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
@@ -26,7 +25,6 @@ import org.andstatus.app.actor.ActorListLoader;
 import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.social.Actor;
@@ -38,6 +36,7 @@ import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -190,7 +189,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     }
 
     private void setRecipientName(Context context, StringBuilder noteDetails) {
-        if (!TextUtils.isEmpty(recipientName)) {
+        if (!StringUtils.isEmpty(recipientName)) {
             noteDetails.append(" " + String.format(
                     context.getText(R.string.message_source_to).toString(),
                     recipientName));
@@ -226,8 +225,11 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     public BaseNoteViewItem setContent(String content) {
         this.content = content;
-        this.isFavoritingAction = MyHtml.isFavoritingAction(content);
-        cleanedBody = MyHtml.getCleanedBody(content);
+        String cleanedBody1 = MyHtml.getCleanedBody1(content);
+        isFavoritingAction = MyHtml.isFavoritingAction(cleanedBody1);
+        cleanedBody = isFavoritingAction
+                ? MyHtml.getCleanedBody2(cleanedBody1)
+                : cleanedBody1;
         return this;
     }
 

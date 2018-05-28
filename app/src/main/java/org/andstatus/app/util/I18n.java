@@ -125,7 +125,7 @@ public class I18n {
     }
 
     public static String localeToLanguage(String locale) {
-        if (TextUtils.isEmpty(locale)) {
+        if (StringUtils.isEmpty(locale)) {
             return "";
         }
         int indHyphen = locale.indexOf('-');
@@ -136,7 +136,7 @@ public class I18n {
     }
 
     public static String localeToCountry(String locale) {
-        if (TextUtils.isEmpty(locale)) {
+        if (StringUtils.isEmpty(locale)) {
             return "";
         }
         int indHyphen = locale.indexOf("-r");
@@ -174,7 +174,7 @@ public class I18n {
     }
 
     public static void appendAtNewLine(StringBuilder builder, String string) {
-        if (!TextUtils.isEmpty(string)) {
+        if (!StringUtils.isEmpty(string)) {
             if (builder.length() > 0) {
                 builder.append(", \n");
             }

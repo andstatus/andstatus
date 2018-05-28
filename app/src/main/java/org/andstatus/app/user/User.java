@@ -95,7 +95,7 @@ public class User {
     }
 
     public boolean isEmpty() {
-        return this == EMPTY || (userId == 0 && TextUtils.isEmpty(knownAs));
+        return this == EMPTY || (userId == 0 && StringUtils.isEmpty(knownAs));
     }
 
     @Override
@@ -105,7 +105,7 @@ public class User {
         }
         String str = User.class.getSimpleName();
         String members = "id=" + userId;
-        if (!TextUtils.isEmpty(knownAs)) {
+        if (!StringUtils.isEmpty(knownAs)) {
             members += "; knownAs=" + knownAs;
         }
         if (isMyUser.known) {

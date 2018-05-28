@@ -18,13 +18,13 @@ package org.andstatus.app.net.social;
 
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -66,7 +66,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
                 url = "";
                 break;
         }
-        if (TextUtils.isEmpty(url)) {
+        if (StringUtils.isEmpty(url)) {
             return super.getApiPath1(routine);
         } 
         return prependWithBasicPath(url);
@@ -116,7 +116,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
             // This parameter was removed from Twitter API, but it still is in GNUsocial
             formParams.put("source", HttpConnection.USER_AGENT);
             
-            if ( !TextUtils.isEmpty(inReplyToOid)) {
+            if ( !StringUtils.isEmpty(inReplyToOid)) {
                 formParams.put("in_reply_to_status_id", inReplyToOid);
             }
             if (!UriUtils.isEmpty(mediaUri)) {
@@ -152,7 +152,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
 
     @Override
     public List<AActivity> getConversation(String conversationOid) throws ConnectionException {
-        if (TextUtils.isEmpty(conversationOid)) {
+        if (StringUtils.isEmpty(conversationOid)) {
             return new ArrayList<>();
         } else {
             String url = getApiPathWithNoteId(ApiRoutineEnum.GET_CONVERSATION, conversationOid);

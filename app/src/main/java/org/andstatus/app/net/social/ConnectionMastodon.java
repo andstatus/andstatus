@@ -18,13 +18,13 @@ package org.andstatus.app.net.social;
 
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
@@ -189,7 +189,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                                        TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException {
         String tag = new KeywordsFilter(searchQuery).getFirstTagOrFirstKeyword();
-        if (TextUtils.isEmpty(tag)) {
+        if (StringUtils.isEmpty(tag)) {
             return new ArrayList<>();
         }
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.TAG_TIMELINE;
@@ -206,7 +206,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     @Override
     public List<Actor> searchActors(int limit, String searchQuery) throws ConnectionException {
         String tag = new KeywordsFilter(searchQuery).getFirstTagOrFirstKeyword();
-        if (TextUtils.isEmpty(tag)) {
+        if (StringUtils.isEmpty(tag)) {
             return new ArrayList<>();
         }
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_ACTORS;
@@ -227,7 +227,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     @Override
     public List<AActivity> getConversation(String conversationOid) throws ConnectionException {
         List<AActivity> timeline = new ArrayList<>();
-        if (TextUtils.isEmpty(conversationOid)) {
+        if (StringUtils.isEmpty(conversationOid)) {
             return timeline;
         }
         String url = getApiPathWithNoteId(ApiRoutineEnum.GET_CONVERSATION, conversationOid);
@@ -257,7 +257,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         try {
             formParams.put(NAME_PROPERTY, name);
             formParams.put(CONTENT_PROPERTY_UPDATE, content);
-            if ( !TextUtils.isEmpty(inReplyToOid)) {
+            if ( !StringUtils.isEmpty(inReplyToOid)) {
                 formParams.put("in_reply_to_id", inReplyToOid);
             }
             if (!UriUtils.isEmpty(mediaUri)) {
@@ -299,7 +299,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         }
         String oid = jso.optString("id");
         String username = jso.optString("username");
-        if (TextUtils.isEmpty(oid) || TextUtils.isEmpty(username)) {
+        if (StringUtils.isEmpty(oid) || StringUtils.isEmpty(username)) {
             throw ConnectionException.loggedJsonException(this, "Id or username is empty", null, jso);
         }
         Actor actor = Actor.fromOriginAndActorOid(data.getOrigin(), oid);

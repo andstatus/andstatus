@@ -121,47 +121,48 @@ public class TimelineActivityTest1 extends TimelineActivityTest<ActivityViewItem
         assertEquals(collapseDuplicates, ((CheckBox) getActivity().findViewById(R.id.collapseDuplicatesToggle)).isChecked());
         assertEquals(collapseDuplicates, getActivity().getListData().isCollapseDuplicates());
 
-        getCurrentPosition().logV(method + "; before selecting position " + position0);
+        getCurrentListPosition().logV(method + "; before selecting position " + position0);
         new ListActivityTestHelper<>(getActivity()).selectListPosition(method, position0);
-        getCurrentPosition().logV(method + "; after selecting position " + position0);
-        DbUtils.waitMs(this, 2000);
 
-        LoadableListPosition pos1 = getCurrentPosition().logV(method + "; before adding new content");
+        long itemIdOfSelected = 0;
+        for (int attempt = 0; attempt < 10; attempt++) {
+            TestSuite.waitForIdleSync();
+            if (LoadableListPosition.getViewOfPosition(getListView(), position0) != null) {
+                itemIdOfSelected = getActivity().getListAdapter().getItemId(position0);
+                if (itemIdOfSelected > 0) break;
+            }
+        }
+        assertTrue("Position should be selected: " + getCurrentListPosition(), itemIdOfSelected > 0);
+        getCurrentListPosition().logV(method + "; after selecting position " + position0 + " itemId=" + itemIdOfSelected);
+
+        LoadableListPosition pos1 = getCurrentListPosition().logV(method + "; stored pos1 before adding new content");
         long updatedAt1 = getActivity().getListData().updatedAt;
-        int count1 = getActivity().getListAdapter().getCount();
 
         demoData.insertPumpIoConversation("p" + iterationId);
         broadcastCommandExecuted();
 
+        LoadableListPosition pos2 = getCurrentListPosition().logV(method + "; just after adding new content");
+
         long updatedAt2 = 0;
-        int count2 = 0;
-        LoadableListPosition pos2 = getCurrentPosition().logV(method + "; just after adding new content");
+        for (int attempt = 0; attempt < 10; attempt++) {
+            TestSuite.waitForIdleSync();
+            updatedAt2 = getActivity().getListData().updatedAt;
+            if (updatedAt2 > updatedAt1) break;
+        }
+        assertTrue("Timeline data should be updated: " + getActivity().getListData(), updatedAt2 > updatedAt1);
+
         int positionOfItem = -1;
         boolean found = false;
-        for (int attempt = 0; attempt < 6 && !found; attempt++) {
+        for (int attempt = 0; attempt < 10 && !found; attempt++) {
             TestSuite.waitForIdleSync();
-            pos2 = getCurrentPosition().logV(method + "; waiting for list data update");
-
-            count2 = getActivity().getListAdapter().getCount();
-            updatedAt2 = getActivity().getListData().updatedAt;
-            if (updatedAt2 > updatedAt1) {
-                positionOfItem = getActivity().getListAdapter().getPositionById(pos1.itemId);
-                if (positionOfItem >= pos2.position - 1 && positionOfItem <= pos2.position + 1) {
-                    found = true;
-                }
-            } else {
-                if (attempt == 3) {
-                    MyLog.v(this, "New notes were not loaded, repeating broadcast command executed");
-                    broadcastCommandExecuted();
-                }
-                if (DbUtils.waitMs(method, 2000 * (attempt + 1))) {
-                    break;
-                }
+            pos2 = getCurrentListPosition().logV(method + "; waiting for list reposition " + attempt);
+            positionOfItem = getActivity().getListAdapter().getPositionById(pos1.itemId);
+            if (positionOfItem >= pos2.position - 1 && positionOfItem <= pos2.position + 1) {
+                found = true;
             }
         }
         String logText = method +  " The item id=" + pos1.itemId + " was " + (found ? "" : " not") + " found. "
-                + "position1=" + pos1 + " of " + count1
-                + "; position2=" + pos2 + " of " + count2
+                + "pos1=" + pos1 + "; pos2=" + pos2
                 + ((positionOfItem >=0) ? " foundAt=" + positionOfItem : "")
                 + ", updated in " + (updatedAt2 - updatedAt1) + "ms";
         MyLog.v(this, logText);
@@ -183,8 +184,8 @@ public class TimelineActivityTest1 extends TimelineActivityTest<ActivityViewItem
     }
 
     @NonNull
-    private LoadableListPosition getCurrentPosition() {
-        return LoadableListPosition.getCurrent(getListView(), getActivity().getListAdapter(), 0);
+    private LoadableListPosition getCurrentListPosition() {
+        return getActivity().getCurrentListPosition();
     }
 
     private void broadcastCommandExecuted() {

@@ -76,7 +76,7 @@ public class Note extends AObject {
     public static Note fromOriginAndOid(@NonNull Origin origin, String oid, DownloadStatus status) {
         Note note = new Note(origin, isEmptyOid(oid) ? getTempOid() : oid);
         note.status = status;
-        if (TextUtils.isEmpty(oid) && status == DownloadStatus.LOADED) {
+        if (StringUtils.isEmpty(oid) && status == DownloadStatus.LOADED) {
             note.status = DownloadStatus.UNKNOWN;
         }
         return note;
@@ -127,7 +127,7 @@ public class Note extends AObject {
     }
 
     public void setName(String name) {
-        if (TextUtils.isEmpty(name)) {
+        if (StringUtils.isEmpty(name)) {
             this.name = "";
         } else if (isHtmlContentAllowed()) {
             this.name = MyHtml.stripUnnecessaryNewlines(MyHtml.unescapeHtml(name));
@@ -137,7 +137,7 @@ public class Note extends AObject {
     }
 
     public void setContent(String content) {
-        if (TextUtils.isEmpty(content)) {
+        if (StringUtils.isEmpty(content)) {
             this.content = "";
         } else if (isHtmlContentAllowed()) {
             this.content = MyHtml.stripUnnecessaryNewlines(MyHtml.unescapeHtml(content));
@@ -147,7 +147,7 @@ public class Note extends AObject {
     }
 
     public Note setConversationOid(String conversationOid) {
-        if (TextUtils.isEmpty(conversationOid)) {
+        if (StringUtils.isEmpty(conversationOid)) {
             this.conversationOid = "";
         } else {
             this.conversationOid = conversationOid;
@@ -156,7 +156,7 @@ public class Note extends AObject {
     }
 
     public long lookupConversationId() {
-        if (conversationId == 0  && !TextUtils.isEmpty(conversationOid)) {
+        if (conversationId == 0  && !StringUtils.isEmpty(conversationOid)) {
             conversationId = MyQuery.conversationOidToId(origin.getId(), conversationOid);
         }
         if (conversationId == 0 && noteId != 0) {
@@ -191,7 +191,7 @@ public class Note extends AObject {
                 || !origin.isValid()
                 || (nonRealOid(oid)
                     && ((status != DownloadStatus.SENDING && status != DownloadStatus.DRAFT)
-                        || (TextUtils.isEmpty(name) && TextUtils.isEmpty(content) && attachments.isEmpty())));
+                        || (StringUtils.isEmpty(name) && StringUtils.isEmpty(content) && attachments.isEmpty())));
     }
 
     @Override
@@ -245,10 +245,10 @@ public class Note extends AObject {
         if(isRealOid(conversationOid)) {
             builder.append("conversation_oid:'" + conversationOid + "',");
         }
-        if(!TextUtils.isEmpty(url)) {
+        if(!StringUtils.isEmpty(url)) {
             builder.append("url:'" + url + "',");
         }
-        if(!TextUtils.isEmpty(via)) {
+        if(!StringUtils.isEmpty(via)) {
             builder.append("via:'" + via + "',");
         }
         builder.append("updated:" + MyLog.debugFormatOfDate(updatedDate) + ",");

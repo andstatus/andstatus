@@ -33,7 +33,6 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.preference.RingtonePreference;
 import android.provider.Settings;
-import android.text.TextUtils;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.HelpActivity;
@@ -54,6 +53,7 @@ import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineTitle;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtils;
 
 public class MySettingsFragment extends PreferenceFragment implements
         OnSharedPreferenceChangeListener {
@@ -188,7 +188,7 @@ public class MySettingsFragment extends PreferenceFragment implements
             String ringtoneString = NotificationMethodType.SOUND.getString();
             Uri uri = Uri.EMPTY;
             Ringtone rt = null;
-            if (TextUtils.isEmpty(ringtoneString)) {
+            if (StringUtils.isEmpty(ringtoneString)) {
                 uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
             } else {
                 uri = Uri.parse(ringtoneString);

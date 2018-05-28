@@ -191,7 +191,7 @@ public class AActivity extends AObject {
     }
 
     public AActivity setTimelinePosition(String strPosition) {
-        this.timelinePosition = new TimelinePosition(TextUtils.isEmpty(strPosition) ? getTempPositionString() : strPosition);
+        this.timelinePosition = new TimelinePosition(StringUtils.isEmpty(strPosition) ? getTempPositionString() : strPosition);
         return this;
     }
 

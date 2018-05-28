@@ -3,12 +3,12 @@ package org.andstatus.app.appwidget;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
-import android.text.TextUtils;
 import android.widget.RemoteViews;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 
 import java.util.Collection;
 import java.util.Map;
@@ -112,17 +112,17 @@ public class AppWidgets {
     private RemoteViews constructRemoteViews(Context context, MyRemoteViewData viewData) {
         RemoteViews views = new RemoteViews(context.getPackageName(),
                 R.layout.appwidget);
-        if (TextUtils.isEmpty(viewData.widgetText)) {
+        if (StringUtils.isEmpty(viewData.widgetText)) {
             views.setViewVisibility(R.id.appwidget_text, android.view.View.GONE);
         }
-        if (TextUtils.isEmpty(viewData.widgetComment)) {
+        if (StringUtils.isEmpty(viewData.widgetComment)) {
             views.setViewVisibility(R.id.appwidget_comment, android.view.View.GONE);
         }
-        if (!TextUtils.isEmpty(viewData.widgetText)) {
+        if (!StringUtils.isEmpty(viewData.widgetText)) {
             views.setViewVisibility(R.id.appwidget_text, android.view.View.VISIBLE);
             views.setTextViewText(R.id.appwidget_text, viewData.widgetText);
         }
-        if (!TextUtils.isEmpty(viewData.widgetComment)) {
+        if (!StringUtils.isEmpty(viewData.widgetComment)) {
             views.setViewVisibility(R.id.appwidget_comment,
                     android.view.View.VISIBLE);
             views.setTextViewText(R.id.appwidget_comment, viewData.widgetComment);

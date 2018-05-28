@@ -18,7 +18,6 @@ package org.andstatus.app.net.social;
 
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.net.http.ConnectionException;
@@ -29,6 +28,7 @@ import org.andstatus.app.net.http.OAuthService;
 import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -148,7 +148,7 @@ public abstract class Connection {
      */
     protected final String getApiPath(ApiRoutineEnum routine) throws ConnectionException {
         String path = this.getApiPath1(routine);
-        if (TextUtils.isEmpty(path)) {
+        if (StringUtils.isEmpty(path)) {
             String detailMessage = "The API is not supported: '" + routine + "'";
             MyLog.e(this.getClass().getSimpleName(), detailMessage);
             throw new ConnectionException(StatusCode.UNSUPPORTED_API, this.getClass().getSimpleName() + ": " + detailMessage);
@@ -169,7 +169,7 @@ public abstract class Connection {
         if (routine == null || routine == ApiRoutineEnum.DUMMY) {
             return true;
         }
-        boolean is = !TextUtils.isEmpty(this.getApiPath1(routine));
+        boolean is = !StringUtils.isEmpty(this.getApiPath1(routine));
         if (!is && MyLog.isVerboseEnabled()) {
           MyLog.v(this.getClass().getSimpleName(), "The API routine '" + routine + "' is not supported");  
         }
@@ -349,7 +349,7 @@ public abstract class Connection {
     
     protected final String fixSinceId(String sinceId) {
         String out = "";
-        if (!TextUtils.isEmpty(sinceId) && sinceId.length()>1) {
+        if (!StringUtils.isEmpty(sinceId) && sinceId.length()>1) {
             // For some reason "0" results in "bad request"
             out = sinceId;
         }
@@ -439,13 +439,13 @@ public abstract class Connection {
      * @return Unix time. Returns 0 in a case of an error
      */
     public long parseDate(String stringDate) {
-        if(TextUtils.isEmpty(stringDate)) {
+        if(StringUtils.isEmpty(stringDate)) {
             return 0;
         }
         long unixDate = 0;
         String[] formats = {"", "E MMM d HH:mm:ss Z yyyy", "E, d MMM yyyy HH:mm:ss Z"};
         for (String format : formats) {
-            if (TextUtils.isEmpty(format)) {
+            if (StringUtils.isEmpty(format)) {
                 try {
                     unixDate = Date.parse(stringDate);
                 } catch (IllegalArgumentException e) {
@@ -517,7 +517,7 @@ public abstract class Connection {
     }
 
     protected String prependWithBasicPath(String url) {
-        if (!TextUtils.isEmpty(url) && !url.contains("://")) {
+        if (!StringUtils.isEmpty(url) && !url.contains("://")) {
             url = http.data.getAccountName().getOrigin().getOriginType().getBasicPath() + "/" + url;
         }
         return url;

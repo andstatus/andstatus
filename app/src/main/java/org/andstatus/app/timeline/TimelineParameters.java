@@ -21,7 +21,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.account.MyAccount;
@@ -34,6 +33,7 @@ import org.andstatus.app.timeline.meta.TimelineTitle;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
+import org.andstatus.app.util.StringUtils;
 
 import java.util.Set;
 
@@ -146,7 +146,7 @@ public class TimelineParameters {
                 + (minDate > 0 ? ", minDate=" + MyLog.formatDateTime(minDate) : "")
                 + (maxDate > 0 ? ", maxDate=" + MyLog.formatDateTime(maxDate) : "")
                 + (selectionAndArgs.isEmpty() ? "" : ", sa=" + selectionAndArgs)
-                + (TextUtils.isEmpty(sortOrderAndLimit) ? "" : ", sortOrder=" + sortOrderAndLimit)
+                + (StringUtils.isEmpty(sortOrderAndLimit) ? "" : ", sortOrder=" + sortOrderAndLimit)
                 + (isLoaded  ? ", loaded" : "")
                 + (mLoaderCallbacks == null ? "" : ", loaderCallbacks=" + mLoaderCallbacks)
         );
@@ -239,8 +239,7 @@ public class TimelineParameters {
     private void prepareQueryParameters() {
         switch (whichPage) {
             case CURRENT:
-                minDate = (new TimelineViewPositionStorage<>(null, null, this))
-                        .loadListPosition().minSentDate;
+                minDate = TimelineViewPositionStorage.loadListPosition(this).minSentDate;
                 break;
             default:
                 break;

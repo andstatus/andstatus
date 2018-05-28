@@ -17,10 +17,10 @@
 package org.andstatus.app.data;
 
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 
 import java.io.File;
 import java.util.Objects;
@@ -35,7 +35,7 @@ public class DownloadFile {
     public DownloadFile(String filename) {
         Objects.requireNonNull(filename);
         this.filename = filename;
-        if (TextUtils.isEmpty(filename)) {
+        if (StringUtils.isEmpty(filename)) {
             file = null;
             existed = false;
         } else {

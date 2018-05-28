@@ -16,10 +16,9 @@
 
 package org.andstatus.app.net.http;
 
-import android.text.TextUtils;
-
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtils;
 
 /**
  * CLient Keys, obtained dynamically for each host and Origin.
@@ -60,7 +59,7 @@ public class OAuthClientKeysDynamic implements OAuthClientKeysStrategy {
     
     @Override
     public void setConsumerKeyAndSecret(String consumerKeyIn, String consumerSecretIn) {
-        if (TextUtils.isEmpty(consumerKeyIn) || TextUtils.isEmpty(consumerSecretIn)) {
+        if (StringUtils.isEmpty(consumerKeyIn) || StringUtils.isEmpty(consumerSecretIn)) {
             consumerKey = "";
             consumerSecret = "";
             SharedPreferencesUtil.removeKey(keyConsumerKey);

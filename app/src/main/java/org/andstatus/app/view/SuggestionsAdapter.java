@@ -33,6 +33,7 @@ import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.MyUrlSpan;
+import org.andstatus.app.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -119,7 +120,7 @@ public class SuggestionsAdapter extends BaseAdapter implements Filterable {
         }
 
         private List<String> loadFiltered(final String prefixString) {
-            if (TextUtils.isEmpty(prefixString)) {
+            if (StringUtils.isEmpty(prefixString)) {
                 return Collections.emptyList();
             }
             List<String> filteredValues = new ArrayList<>();
@@ -156,7 +157,7 @@ public class SuggestionsAdapter extends BaseAdapter implements Filterable {
     }
 
     public static void addSuggestion(SearchObjects searchObjects, String suggestion) {
-        if (TextUtils.isEmpty(suggestion)) {
+        if (StringUtils.isEmpty(suggestion)) {
             return;
         }
         List<String> suggestions = getAllSuggestions(searchObjects);

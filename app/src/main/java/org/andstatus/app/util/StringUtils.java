@@ -33,11 +33,11 @@ public class StringUtils {
     }
 
     public static boolean isEmpty(String value) {
-        return TextUtils.isEmpty(value);
+        return value == null || value.isEmpty();
     }
 
     public static String notEmpty(String value, String valueIfEmpty) {
-        return TextUtils.isEmpty(value) ? valueIfEmpty : value;
+        return StringUtils.isEmpty(value) ? valueIfEmpty : value;
     }
 
     public static String notNull(String value) {
@@ -81,7 +81,7 @@ public class StringUtils {
     }
 
     public static boolean isFilled(String value) {
-        return !TextUtils.isEmpty(value);
+        return !StringUtils.isEmpty(value);
     }
 
     public static boolean isNewFilledValue(String oldValue, String newValue) {

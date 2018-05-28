@@ -16,8 +16,7 @@
 
 package org.andstatus.app.net.social;
 
-import android.text.TextUtils;
-
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
 
 /**
@@ -30,7 +29,7 @@ public class TimelinePosition {
     private final String position;
 
     public TimelinePosition(String position) {
-        if (TextUtils.isEmpty(position)) {
+        if (StringUtils.isEmpty(position)) {
             this.position = "";
         } else {
             this.position = position;
@@ -51,7 +50,7 @@ public class TimelinePosition {
     }
 
     public boolean isEmpty() {
-        return TextUtils.isEmpty(position);
+        return StringUtils.isEmpty(position);
     }
 
     public boolean nonEmpty() {

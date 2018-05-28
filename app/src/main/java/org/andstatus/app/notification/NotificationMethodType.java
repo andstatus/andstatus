@@ -44,7 +44,7 @@ public enum NotificationMethodType {
     }
 
     public boolean isEnabled() {
-        if (TextUtils.isEmpty(preferenceKey) ) return false;
+        if (StringUtils.isEmpty(preferenceKey) ) return false;
         switch (this) {
             case SOUND:
                 return StringUtils.nonEmpty(SharedPreferencesUtil.getString(preferenceKey, ""));

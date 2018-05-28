@@ -18,13 +18,13 @@ package org.andstatus.app.service;
 
 import android.content.Intent;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyAction;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 
 public class MyServiceEventsBroadcaster {
     private final MyContext mMyContext;
@@ -68,7 +68,7 @@ public class MyServiceEventsBroadcaster {
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this, "state:" + mState + ", event:" + mEvent
             + ", " + mCommandData.toCommandSummary(MyContextHolder.get())
-            + (TextUtils.isEmpty(progress) ? "" : ", progress:" + progress) );
+            + (StringUtils.isEmpty(progress) ? "" : ", progress:" + progress) );
         }
         mMyContext.context().sendBroadcast(intent);
     }

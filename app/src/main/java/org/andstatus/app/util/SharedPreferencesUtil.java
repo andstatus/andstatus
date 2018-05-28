@@ -69,7 +69,7 @@ public class SharedPreferencesUtil {
     public static boolean delete(Context context, String prefsFileName) {
         boolean isDeleted = false;
 
-        if (context == null || TextUtils.isEmpty(prefsFileName)) {
+        if (context == null || StringUtils.isEmpty(prefsFileName)) {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(TAG, "delete '" + prefsFileName + "' - nothing to do");
             }

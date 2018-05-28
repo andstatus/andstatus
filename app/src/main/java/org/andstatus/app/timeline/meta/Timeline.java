@@ -228,7 +228,7 @@ public class Timeline implements Comparable<Timeline> {
                 parsedUri.getTimelineType(),
                 parsedUri.getActorId(),
                 parsedUri.getOrigin(myContext),
-                TextUtils.isEmpty(searchQueryIn) ? parsedUri.getSearchQuery() : searchQueryIn
+                StringUtils.isEmpty(searchQueryIn) ? parsedUri.getSearchQuery() : searchQueryIn
         );
         if (timeline.getTimelineType() == TimelineType.UNKNOWN && parsedUri.getActorListType() == ActorListType.UNKNOWN) {
             MyLog.e(Timeline.class, "fromParsedUri; uri:" + parsedUri.getUri() + "; " + timeline);
@@ -257,7 +257,7 @@ public class Timeline implements Comparable<Timeline> {
         this.actor = fixedActor(myContext, timelineType, actorId);
         this.myAccount = calcMyAccount(myContext, timelineType, actor);
         this.origin = fixedOrigin(timelineType, origin);
-        this.searchQuery = TextUtils.isEmpty(searchQuery) ? "" : searchQuery.trim();
+        this.searchQuery = StringUtils.isEmpty(searchQuery) ? "" : searchQuery.trim();
         this.isCombined = calcIsCombined(timelineType, this.origin);
         this.timelineType = fixedTimelineType(timelineType);
         MyAccount myAccountToSync = getMyAccountToSync(myContext);
@@ -538,7 +538,7 @@ public class Timeline implements Comparable<Timeline> {
 
     private boolean needToLoadActorInTimeline() {
         return actor.nonEmpty()
-                && (TextUtils.isEmpty(actorInTimeline) || actorInTimeline.startsWith(UriUtils.TEMP_OID_PREFIX))
+                && (StringUtils.isEmpty(actorInTimeline) || actorInTimeline.startsWith(UriUtils.TEMP_OID_PREFIX))
                 && actor.user.isMyUser().untrue;
     }
 
@@ -666,7 +666,7 @@ public class Timeline implements Comparable<Timeline> {
         result = 31 * result + origin.hashCode();
         result = 31 * result + myAccount.hashCode();
         result = 31 * result + actor.hashCode();
-        if (!TextUtils.isEmpty(searchQuery)) {
+        if (!StringUtils.isEmpty(searchQuery)) {
             result = 31 * result + searchQuery.hashCode();
         }
         return result;
@@ -677,7 +677,7 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public boolean hasSearchQuery() {
-        return !TextUtils.isEmpty(getSearchQuery());
+        return !StringUtils.isEmpty(getSearchQuery());
     }
 
     @NonNull
@@ -726,7 +726,7 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public void forgetPositionsAndDates() {
-        if (!TextUtils.isEmpty(youngestPosition)) {
+        if (!StringUtils.isEmpty(youngestPosition)) {
             youngestPosition = "";
             setChanged();
         }
@@ -739,7 +739,7 @@ public class Timeline implements Comparable<Timeline> {
             setChanged();
         }
 
-        if (!TextUtils.isEmpty(oldestPosition)) {
+        if (!StringUtils.isEmpty(oldestPosition)) {
             oldestPosition = "";
             setChanged();
         }
@@ -760,7 +760,7 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public void onNewMsg(long newDate, String newPosition) {
-        if (newDate <= 0 || TextUtils.isEmpty(newPosition)) {
+        if (newDate <= 0 || StringUtils.isEmpty(newPosition)) {
             return;
         }
         if (youngestItemDate < newDate ||
@@ -883,7 +883,7 @@ public class Timeline implements Comparable<Timeline> {
     public void onSyncEnded(CommandResult result) {
         if (result.hasError()) {
             syncFailedDate = System.currentTimeMillis();
-            if (!TextUtils.isEmpty(result.getMessage())) {
+            if (!StringUtils.isEmpty(result.getMessage())) {
                 errorMessage = result.getMessage();
             }
             syncFailedTimesCount++;
@@ -965,7 +965,7 @@ public class Timeline implements Comparable<Timeline> {
 
     @NonNull
     public String getActorInTimeline() {
-        if (TextUtils.isEmpty(actorInTimeline)) {
+        if (StringUtils.isEmpty(actorInTimeline)) {
             if (needToLoadActorInTimeline()) {
                 return "...";
             } else {

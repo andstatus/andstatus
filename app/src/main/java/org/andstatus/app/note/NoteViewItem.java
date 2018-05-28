@@ -18,7 +18,6 @@ package org.andstatus.app.note;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.text.Html;
-import android.text.TextUtils;
 
 import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.context.MyContext;
@@ -37,6 +36,7 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 /**
@@ -62,7 +62,6 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
     }
 
     public NoteViewItem fromCursorRow(MyContext myContext, Cursor cursor) {
-        long startTime = System.currentTimeMillis();
         setMyContext(myContext);
         setNoteId(DbUtils.getLong(cursor, ActivityTable.NOTE_ID));
         setOrigin(myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)));
@@ -81,7 +80,7 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
         reblogged = DbUtils.getTriState(cursor, NoteTable.REBLOGGED) == TriState.TRUE;
 
         String via = DbUtils.getString(cursor, NoteTable.VIA);
-        if (!TextUtils.isEmpty(via)) {
+        if (!StringUtils.isEmpty(via)) {
             noteSource = Html.fromHtml(via).toString().trim();
         }
 
@@ -92,13 +91,8 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
                     MediaMetadata.fromCursor(cursor));
         }
 
-        long beforeRebloggers = System.currentTimeMillis();
         for (Actor actor : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getNoteId())) {
             rebloggers.put(actor.actorId, actor.getWebFingerId());
-        }
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, ": " + (System.currentTimeMillis() - startTime) + "ms, "
-                    + rebloggers.size() + " rebloggers: " + (System.currentTimeMillis() - beforeRebloggers) + "ms");
         }
         return this;
     }

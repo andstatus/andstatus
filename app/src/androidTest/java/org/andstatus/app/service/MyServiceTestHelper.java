@@ -1,7 +1,5 @@
 package org.andstatus.app.service;
 
-import android.text.TextUtils;
-
 import org.andstatus.app.account.MyAccountTest;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -12,6 +10,7 @@ import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.social.ConnectionMockable;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 import static org.andstatus.app.context.DemoData.demoData;
@@ -37,7 +36,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
             MyServiceManager.stopService();
 
             MyAccountTest.fixPersistentAccounts(myContext);
-            boolean isSingleMockedInstance = TextUtils.isEmpty(accountName);
+            boolean isSingleMockedInstance = StringUtils.isEmpty(accountName);
             if (isSingleMockedInstance) {
                 httpConnectionMock = new HttpConnectionMock();
                 TestSuite.setHttpConnectionMockInstance(httpConnectionMock);

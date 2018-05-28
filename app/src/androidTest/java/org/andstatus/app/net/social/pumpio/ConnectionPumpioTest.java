@@ -16,8 +16,6 @@
 
 package org.andstatus.app.net.social.pumpio;
 
-import android.text.TextUtils;
-
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContextHolder;
@@ -40,6 +38,7 @@ import org.andstatus.app.net.social.pumpio.ConnectionPumpio.ConnectionAndUrl;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
@@ -97,7 +96,7 @@ public class ConnectionPumpioTest {
     
     @After
     public void tearDown() throws Exception {
-        if (!TextUtils.isEmpty(keyStored)) {
+        if (!StringUtils.isEmpty(keyStored)) {
             httpConnectionMock.data.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored);        
         }
     }

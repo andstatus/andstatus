@@ -17,7 +17,6 @@
 package org.andstatus.app.service;
 
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataUpdater;
@@ -29,6 +28,7 @@ import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 import java.util.Date;
@@ -133,7 +133,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
             }
         } else {
             String actorOid =  MyQuery.idToOid(OidEnum.ACTOR_OID, actorId, 0);
-            if (TextUtils.isEmpty(actorOid)) {
+            if (StringUtils.isEmpty(actorOid)) {
                 throw new ConnectionException("Actor oId is not found for id=" + actorId + ", timeline:" + getTimeline());
             }
             return actorOid;

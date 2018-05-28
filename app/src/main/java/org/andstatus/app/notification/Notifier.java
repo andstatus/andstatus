@@ -100,7 +100,7 @@ public class Notifier {
                 if (vibration) {
                     builder.setVibrate(VIBRATION_PATTERN);
                 }
-                builder.setSound(TextUtils.isEmpty(soundUri) ? null : Uri.parse(soundUri));
+                builder.setSound(StringUtils.isEmpty(soundUri) ? null : Uri.parse(soundUri));
                 builder.setLights(LIGHT_COLOR, 500, 1000);
             }
         }
@@ -146,7 +146,7 @@ public class Notifier {
             if (vibration) {
                 channel.setVibrationPattern(VIBRATION_PATTERN);
             }
-            channel.setSound(TextUtils.isEmpty(soundUri) ? null : Uri.parse(soundUri),
+            channel.setSound(StringUtils.isEmpty(soundUri) ? null : Uri.parse(soundUri),
                     Notification.AUDIO_ATTRIBUTES_DEFAULT);
         }
         nM.createNotificationChannel(channel);

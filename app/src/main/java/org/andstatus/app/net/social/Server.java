@@ -16,7 +16,7 @@
 
 package org.andstatus.app.net.social;
 
-import android.text.TextUtils;
+import org.andstatus.app.util.StringUtils;
 
 /** 
  * Metadata of a (server of a) Social Network (e.g. from a discovery service)
@@ -36,6 +36,6 @@ public class Server {
     }
     
     public boolean isEmpty() {
-        return TextUtils.isEmpty(name) || TextUtils.isEmpty(urlString);
+        return StringUtils.isEmpty(name) || StringUtils.isEmpty(urlString);
     }
 }

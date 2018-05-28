@@ -224,7 +224,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
-        if (!TextUtils.isEmpty(actorId)) {
+        if (!StringUtils.isEmpty(actorId)) {
             builder.appendQueryParameter("user_id", actorId);
         }
         return builder;
@@ -277,7 +277,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         AActivity activity;
         try {
             String oid = jso.optString("id_str");
-            if (TextUtils.isEmpty(oid)) {
+            if (StringUtils.isEmpty(oid)) {
                 // This is for the Status.net
                 oid = jso.optString("id");
             }
@@ -427,7 +427,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         String url = this.getApiPath(apiRoutine);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
-        if (!TextUtils.isEmpty(searchQuery)) {
+        if (!StringUtils.isEmpty(searchQuery)) {
             builder.appendQueryParameter("q", searchQuery);
         }
         appendPositionParameters(builder, youngestPosition, oldestPosition);
@@ -587,7 +587,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put("text", content);
-            if ( !TextUtils.isEmpty(recipientOid)) {
+            if ( !StringUtils.isEmpty(recipientOid)) {
                 formParams.put("user_id", recipientOid);
             }
         } catch (JSONException e) {

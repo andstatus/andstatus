@@ -20,7 +20,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.View;
 
@@ -28,6 +27,7 @@ import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtils;
 
 /**
  * Theme and style-relates utility class
@@ -77,7 +77,7 @@ public class MyTheme {
 
     private static int getStyleId(Context context, String styleName, int defaultId) {
         int styleId = 0;
-        if (!TextUtils.isEmpty(styleName)) {
+        if (!StringUtils.isEmpty(styleName)) {
             styleId = context.getResources().getIdentifier(styleName, "style", "org.andstatus.app");
             if (styleId == 0 || MyLog.isVerboseEnabled()) {
                 String text = "getStyleId; name:\"" + styleName + "\"; id:" + Integer.toHexString(styleId)

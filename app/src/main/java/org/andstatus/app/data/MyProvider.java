@@ -268,7 +268,7 @@ public class MyProvider extends ContentProvider {
             MyLog.v(MyProvider.TAG, method + "; Database is null");
             return;
         }
-        String sql = "UPDATE " + tableName + " SET " + set + (TextUtils.isEmpty(where) ? "" : " WHERE " + where);
+        String sql = "UPDATE " + tableName + " SET " + set + (StringUtils.isEmpty(where) ? "" : " WHERE " + where);
         try {
             db.execSQL(sql);
         } catch (Exception e) {
@@ -452,7 +452,7 @@ public class MyProvider extends ContentProvider {
 
         // If no sort order is specified use the default
         String orderBy;
-        if (TextUtils.isEmpty(sortOrder)) {
+        if (StringUtils.isEmpty(sortOrder)) {
             switch (uriParser.matched()) {
                 case TIMELINE:
                 case TIMELINE_ITEM:

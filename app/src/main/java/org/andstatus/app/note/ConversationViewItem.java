@@ -20,7 +20,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.text.Html;
-import android.text.TextUtils;
 
 import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.context.MyContextHolder;
@@ -34,6 +33,7 @@ import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.util.I18n;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 import java.util.Set;
@@ -82,7 +82,7 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
             super.load(cursor);
             noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
             String via = DbUtils.getString(cursor, NoteTable.VIA);
-            if (!TextUtils.isEmpty(via)) {
+            if (!StringUtils.isEmpty(via)) {
                 noteSource = Html.fromHtml(via).toString().trim();
             }
             if (MyPreferences.getDownloadAndDisplayAttachedImages()) {

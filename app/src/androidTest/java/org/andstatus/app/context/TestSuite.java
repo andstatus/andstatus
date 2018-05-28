@@ -223,10 +223,9 @@ public class TestSuite {
         for (int ind=0; ind<40; ind++) {
             DbUtils.waitMs(method, 2000);
             InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-            int itemsCountNew = list.getChildCount();
-            if (ListView.class.isInstance(list)) {
-                itemsCountNew = ((ListView) list).getCount();
-            }
+            int itemsCountNew = ListView.class.isInstance(list)
+                    ? ((ListView) list).getCount()
+                    : list.getChildCount();
             MyLog.v(TAG, "waitForListLoaded; countNew=" + itemsCountNew + ", prev=" + itemsCount + ", min=" + minCount);
             if (itemsCountNew >= minCount && itemsCount == itemsCountNew) {
                 break;

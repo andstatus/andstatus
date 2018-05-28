@@ -16,9 +16,8 @@
 
 package org.andstatus.app.context;
 
-import android.text.TextUtils;
-
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 
 /** How to show an Actor in a Timeline */
 public enum ActorInTimeline {
@@ -46,7 +45,7 @@ public enum ActorInTimeline {
      */
     public static ActorInTimeline load(String strCode) {
         try {
-            if (!TextUtils.isEmpty(strCode)) {
+            if (!StringUtils.isEmpty(strCode)) {
                 return load(Long.parseLong(strCode));
             }
         } catch (NumberFormatException e) {

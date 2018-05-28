@@ -16,11 +16,11 @@
 
 package org.andstatus.app.net.http;
 
-import android.text.TextUtils;
 import android.util.Base64;
 
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.util.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -75,8 +75,8 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
 
     @Override
     public boolean getCredentialsPresent() {
-        return !TextUtils.isEmpty(data.getAccountName().getUsername())
-                && !TextUtils.isEmpty(mPassword);
+        return !StringUtils.isEmpty(data.getAccountName().getUsername())
+                && !StringUtils.isEmpty(mPassword);
     }
 
     @Override

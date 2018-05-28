@@ -63,8 +63,6 @@ public class Actor implements Comparable<Actor> {
     public static final Actor EMPTY = new Actor(Origin.EMPTY, "").setUsername("Empty");
     public static final Actor PUBLIC = new Actor(Origin.EMPTY, "https://www.w3.org/ns/activitystreams#Public").setUsername("Public");
 
-    // RegEx from http://www.mkyong.com/regular-expressions/how-to-validate-email-address-with-regular-expression/
-    public static final String WEBFINGER_ID_REGEX = "^[_A-Za-z0-9-+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
     @NonNull
     public final String oid;
     private String username = "";
@@ -199,7 +197,7 @@ public class Actor implements Comparable<Actor> {
 
     private Actor(@NonNull Origin origin, String actorOid) {
         this.origin = origin;
-        this.oid = TextUtils.isEmpty(actorOid) ? "" : actorOid;
+        this.oid = StringUtils.isEmpty(actorOid) ? "" : actorOid;
     }
 
     @NonNull
@@ -229,11 +227,11 @@ public class Actor implements Comparable<Actor> {
 
     public boolean isEmpty() {
         return this == EMPTY || !origin.isValid() || (actorId == 0 && UriUtils.nonRealOid(oid)
-                && TextUtils.isEmpty(webFingerId) && !origin.isUsernameValid(username));
+                && StringUtils.isEmpty(webFingerId) && !origin.isUsernameValid(username));
     }
 
     public boolean isPartiallyDefined() {
-        return !origin.isValid() || UriUtils.nonRealOid(oid) || TextUtils.isEmpty(webFingerId)
+        return !origin.isValid() || UriUtils.nonRealOid(oid) || StringUtils.isEmpty(webFingerId)
                 || !origin.isUsernameValid(username);
     }
 
@@ -254,16 +252,16 @@ public class Actor implements Comparable<Actor> {
         if (actorId != 0) {
             members += "id=" + actorId + ",";
         }
-        if (!TextUtils.isEmpty(oid)) {
+        if (!StringUtils.isEmpty(oid)) {
             members += "oid=" + oid + ",";
         }
         if (isWebFingerIdValid()) {
             members += getWebFingerId() + ",";
         }
-        if (!TextUtils.isEmpty(username)) {
+        if (!StringUtils.isEmpty(username)) {
             members += "username=" + username + ",";
         }
-        if (!TextUtils.isEmpty(realName)) {
+        if (!StringUtils.isEmpty(realName)) {
             members += "realName=" + realName + ",";
         }
         if (user.nonEmpty()) {
@@ -318,7 +316,7 @@ public class Actor implements Comparable<Actor> {
         if (UriUtils.isRealOid(oid) || UriUtils.isRealOid(that.oid)) {
             return oid.equals(that.oid);
         }
-        if (!TextUtils.isEmpty(getWebFingerId()) || !TextUtils.isEmpty(that.getWebFingerId())) {
+        if (!StringUtils.isEmpty(getWebFingerId()) || !StringUtils.isEmpty(that.getWebFingerId())) {
             return getWebFingerId().equals(that.getWebFingerId());
         }
         return getUsername().equals(that.getUsername());
@@ -333,7 +331,7 @@ public class Actor implements Comparable<Actor> {
         if (UriUtils.isRealOid(oid)) {
             return 31 * result + oid.hashCode();
         }
-        if (!TextUtils.isEmpty(getWebFingerId())) {
+        if (!StringUtils.isEmpty(getWebFingerId())) {
             return 31 * result + getWebFingerId().hashCode();
         }
         return 31 * result + getUsername().hashCode();
@@ -361,7 +359,7 @@ public class Actor implements Comparable<Actor> {
     }
 
     private void fixWebFingerId() {
-        if (TextUtils.isEmpty(username)) return;
+        if (StringUtils.isEmpty(username)) return;
         if (username.contains("@")) {
             setWebFingerId(username);
         } else if (!UriUtils.isEmpty(profileUri)){
@@ -397,7 +395,7 @@ public class Actor implements Comparable<Actor> {
     }
 
     static boolean isWebFingerIdValid(String webFingerId) {
-        return StringUtils.nonEmpty(webFingerId) && webFingerId.matches(WEBFINGER_ID_REGEX);
+        return StringUtils.nonEmpty(webFingerId) && Patterns.WEBFINGER_ID_REGEX_PATTERN.matcher(webFingerId).matches();
     }
 
     /** Lookup the application's id from other IDs */
@@ -408,7 +406,7 @@ public class Actor implements Comparable<Actor> {
         if (actorId == 0 && isWebFingerIdValid()) {
             actorId = MyQuery.webFingerIdToId(origin.getId(), webFingerId);
         }
-        if (actorId == 0 && !isWebFingerIdValid() && !TextUtils.isEmpty(username)) {
+        if (actorId == 0 && !isWebFingerIdValid() && !StringUtils.isEmpty(username)) {
             actorId = MyQuery.usernameToId(origin.getId(), username);
         }
         if (actorId == 0) {
@@ -420,7 +418,7 @@ public class Actor implements Comparable<Actor> {
     }
 
     public boolean hasAltTempOid() {
-        return !getTempOid().equals(getAltTempOid()) && !TextUtils.isEmpty(username);
+        return !getTempOid().equals(getAltTempOid()) && !StringUtils.isEmpty(username);
     }
 
     public boolean hasLatestNote() {
@@ -444,7 +442,7 @@ public class Actor implements Comparable<Actor> {
         final String SEPARATORS = ", ;'=`~!#$%^&*(){}[]/";
         List<Actor> actors = new ArrayList<>();
         String text = MyHtml.fromHtml(textIn);
-        while (!TextUtils.isEmpty(text)) {
+        while (!StringUtils.isEmpty(text)) {
             int atPos = text.indexOf('@');
             if (atPos < 0 || (atPos > 0 && replyOnly)) {
                 break;
@@ -582,12 +580,12 @@ public class Actor implements Comparable<Actor> {
 
     public String toActorTitle(boolean showWebFingerId) {
         StringBuilder builder = new StringBuilder();
-        if (showWebFingerId && !TextUtils.isEmpty(getWebFingerId())) {
+        if (showWebFingerId && !StringUtils.isEmpty(getWebFingerId())) {
             builder.append(getWebFingerId());
-        } else if (!TextUtils.isEmpty(getUsername())) {
+        } else if (!StringUtils.isEmpty(getUsername())) {
             builder.append("@" + getUsername());
         }
-        if (!TextUtils.isEmpty(getRealName())) {
+        if (!StringUtils.isEmpty(getRealName())) {
             I18n.appendWithSpace(builder, "(" + getRealName() + ")");
         }
         return builder.toString();

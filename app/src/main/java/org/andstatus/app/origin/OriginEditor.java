@@ -44,6 +44,7 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
@@ -162,13 +163,10 @@ public class OriginEditor extends MyActivity {
         editTextHost.setText(strHost);
         editTextHost.setHint(origin.alternativeTermForResourceId(R.string.host_hint));
         MyUrlSpan.showLabel(this, R.id.label_host, origin.alternativeTermForResourceId(R.string.label_host));
-        if (Intent.ACTION_INSERT.equals(editorAction) && TextUtils.isEmpty(origin.getName())) {
-            editTextHost.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                @Override
-                public void onFocusChange(View v, boolean hasFocus) {
-                    if (!hasFocus) {
-                        originNameFromHost();
-                    }
+        if (Intent.ACTION_INSERT.equals(editorAction) && StringUtils.isEmpty(origin.getName())) {
+            editTextHost.setOnFocusChangeListener((v, hasFocus) -> {
+                if (!hasFocus) {
+                    originNameFromHost();
                 }
             });
         }

@@ -24,7 +24,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -33,6 +32,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtils;
 
 /** Activity to be started, when Application is not initialised yet (or needs re-initialization).
  * It allows to avoid "Application not responding" errors.
@@ -84,7 +84,7 @@ public class FirstActivity extends AppCompatActivity {
                 Intent intent = new Intent(this, TimelineActivity.class);
                 if (myIntent != null) {
                     String action = myIntent.getAction();
-                    if (!TextUtils.isEmpty(action)) {
+                    if (!StringUtils.isEmpty(action)) {
                         intent.setAction(action);
                     }
                     Uri data = myIntent.getData();

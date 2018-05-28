@@ -202,7 +202,7 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
 
 
     private void launchActivity(String query) {
-        if (TextUtils.isEmpty(query)) {
+        if (StringUtils.isEmpty(query)) {
             return;
         }
         Intent intent = new Intent(Intent.ACTION_SEARCH, getUri(), getContext(), getSearchObjects().getActivityClass());

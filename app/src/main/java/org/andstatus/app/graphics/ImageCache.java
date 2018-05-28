@@ -32,7 +32,6 @@ import android.media.MediaMetadataRetriever;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.LruCache;
 
@@ -41,6 +40,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.ImageFile;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 
 import java.io.File;
 import java.util.Queue;
@@ -121,7 +121,7 @@ public class ImageCache extends LruCache<String, CachedImage> {
 
     @Nullable
     private CachedImage getImage(ImageFile imageFile, boolean fromCacheOnly) {
-        if (TextUtils.isEmpty(imageFile.getPath())) {
+        if (StringUtils.isEmpty(imageFile.getPath())) {
             return null;
         }
         CachedImage image = get(imageFile.getPath());

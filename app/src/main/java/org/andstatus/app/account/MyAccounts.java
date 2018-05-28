@@ -4,7 +4,6 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount.Builder;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
@@ -20,6 +19,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.Permissions;
+import org.andstatus.app.util.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -125,7 +125,7 @@ public class MyAccounts {
     @NonNull
     public MyAccount fromAccountName(String accountNameString) {
         AccountName accountName = AccountName.fromAccountName(myContext, accountNameString);
-        if (!accountName.isValid()) return MyAccount.EMPTY;
+        if (!accountName.isValid) return MyAccount.EMPTY;
 
         for (MyAccount persistentAccount : myAccounts) {
             if (persistentAccount.getAccountName().equals(accountName.toString())) {
@@ -203,7 +203,7 @@ public class MyAccounts {
     /** Doesn't take origin into account */
     @NonNull
     public MyAccount fromWebFingerId(String webFingerId) {
-        if (TextUtils.isEmpty(webFingerId)) return MyAccount.EMPTY;
+        if (StringUtils.isEmpty(webFingerId)) return MyAccount.EMPTY;
         return myAccounts.stream().filter(myAccount -> myAccount.getWebFingerId().equals(webFingerId)).findFirst()
                 .orElse(MyAccount.EMPTY);
     }

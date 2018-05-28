@@ -19,17 +19,17 @@ package org.andstatus.app.data;
 import android.content.ContentUris;
 import android.content.UriMatcher;
 import android.net.Uri;
-import android.text.TextUtils;
 
 import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.actor.ActorListType;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.OriginTable;
-import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.actor.ActorListType;
+import org.andstatus.app.util.StringUtils;
 
 /**
  * Classifier of Uri-s, passed to our content provider
@@ -184,7 +184,7 @@ public enum MatchedUri {
         uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + timeline.getOrigin().getId());
         uri = Uri.withAppendedPath(uri, ACTOR_SEGMENT);
         uri = ContentUris.withAppendedId(uri, timeline.getActorId());
-        if (!TextUtils.isEmpty(timeline.getSearchQuery())) {
+        if (!StringUtils.isEmpty(timeline.getSearchQuery())) {
             uri = Uri.withAppendedPath(uri, SEARCH_SEGMENT);
             uri = Uri.withAppendedPath(uri, Uri.encode(timeline.getSearchQuery()));
         }
@@ -207,7 +207,7 @@ public enum MatchedUri {
         uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + originId);
         uri = Uri.withAppendedPath(uri, CENTRAL_ITEM_SEGMENT);
         uri = ContentUris.withAppendedId(uri, centralItemId);
-        if (!TextUtils.isEmpty(searchQuery)) {
+        if (!StringUtils.isEmpty(searchQuery)) {
             uri = Uri.withAppendedPath(uri, SEARCH_SEGMENT);
             uri = Uri.withAppendedPath(uri, Uri.encode(searchQuery));
         }

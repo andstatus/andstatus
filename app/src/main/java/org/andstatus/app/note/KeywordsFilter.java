@@ -38,7 +38,7 @@ public class KeywordsFilter {
     @NonNull
     private List<String> parseFilterString(String text) {
         List<String> keywords = new ArrayList<>();
-        if (TextUtils.isEmpty(text)) {
+        if (StringUtils.isEmpty(text)) {
             return keywords;
         }
         boolean inQuote = false;
@@ -48,7 +48,7 @@ public class KeywordsFilter {
                 break;
             }
             String item = text.substring(atPos, separatorInd);
-            if (!TextUtils.isEmpty(item) && !keywords.contains(item)) {
+            if (!StringUtils.isEmpty(item) && !keywords.contains(item)) {
                 keywords.add(item);
             }
             if (separatorInd < text.length() && text.charAt(separatorInd) == '"') {
@@ -83,7 +83,7 @@ public class KeywordsFilter {
         List<String> keywords = new ArrayList<>();
         for (String itemRaw : keywordsRaw) {
             String item = MyHtml.getContentToSearch(itemRaw);
-            if (!TextUtils.isEmpty(item) && !keywords.contains(item)) {
+            if (!StringUtils.isEmpty(item) && !keywords.contains(item)) {
                 keywords.add(item);
             }
         }
@@ -91,7 +91,7 @@ public class KeywordsFilter {
     }
 
     public boolean matchedAny(String s) {
-        if (keywordsToFilter.isEmpty() || TextUtils.isEmpty(s)) {
+        if (keywordsToFilter.isEmpty() || StringUtils.isEmpty(s)) {
             return false;
         }
         for (String keyword : keywordsToFilter) {
@@ -103,7 +103,7 @@ public class KeywordsFilter {
     }
 
     public boolean matchedAll(String s) {
-        if (keywordsToFilter.isEmpty() || TextUtils.isEmpty(s)) {
+        if (keywordsToFilter.isEmpty() || StringUtils.isEmpty(s)) {
             return false;
         }
         for (String keyword : keywordsToFilter) {

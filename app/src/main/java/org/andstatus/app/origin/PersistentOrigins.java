@@ -28,6 +28,7 @@ import org.andstatus.app.context.MyContextImpl;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -87,7 +88,7 @@ public class PersistentOrigins {
      */
     public Origin fromName(String originName) {
         Origin origin = null;
-        if (!TextUtils.isEmpty(originName)) {
+        if (!StringUtils.isEmpty(originName)) {
             origin = mOrigins.get(originName);
         }
         if (origin == null) {

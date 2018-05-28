@@ -23,11 +23,11 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StopWatch;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 import java.io.Closeable;
@@ -175,7 +175,7 @@ public final class DbUtils {
         } else {
             String detailMessage = "Couldn't close silently an object of the class: "
                     + closeable.getClass().getCanonicalName() 
-                    + (TextUtils.isEmpty(message) ? "" : "; " + message) ;
+                    + (StringUtils.isEmpty(message) ? "" : "; " + message) ;
             MyLog.w(TAG, MyLog.getStackTrace(new IllegalArgumentException(detailMessage)));
         }
     }
@@ -183,7 +183,7 @@ public final class DbUtils {
     @NonNull
     public static String getString(Cursor cursor, String columnName, Supplier<String> ifEmpty) {
         String value = getString(cursor, columnName);
-        return TextUtils.isEmpty(value) ? ifEmpty.get() : value;
+        return StringUtils.isEmpty(value) ? ifEmpty.get() : value;
     }
 
     @NonNull
@@ -196,7 +196,7 @@ public final class DbUtils {
         String value = "";
         if (cursor != null && columnIndex >= 0) {
             String value2 = cursor.getString(columnIndex);
-            if (!TextUtils.isEmpty(value2)) {
+            if (!StringUtils.isEmpty(value2)) {
                 value = value2;
             }
         }
@@ -253,6 +253,6 @@ public final class DbUtils {
     }
 
     public static String sqlEmptyToNull(String value) {
-        return TextUtils.isEmpty(value) ? null : "'" + value + "'";
+        return StringUtils.isEmpty(value) ? null : "'" + value + "'";
     }
 }

@@ -25,7 +25,6 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount.Builder.SaveResult;
 import org.andstatus.app.context.MyContext;
@@ -33,6 +32,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -257,7 +257,7 @@ public class AccountData implements Parcelable, AccountDataWriter {
     @Override
     public void setDataString(String key, String value) {
         try {
-            if (TextUtils.isEmpty(value)) {
+            if (StringUtils.isEmpty(value)) {
                 data.remove(key);
             } else {
                 data.put(key, value);

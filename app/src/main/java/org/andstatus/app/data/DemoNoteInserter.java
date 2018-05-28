@@ -17,7 +17,6 @@
 package org.andstatus.app.data;
 
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -37,6 +36,7 @@ import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
@@ -71,7 +71,7 @@ public class DemoNoteInserter {
     }
 
     final Actor buildActorFromOid(String actorOid) {
-        if (TextUtils.isEmpty(actorOid)) throw  new IllegalArgumentException("Actor oid cannot be empty");
+        if (StringUtils.isEmpty(actorOid)) throw  new IllegalArgumentException("Actor oid cannot be empty");
         Actor actor = Actor.fromOriginAndActorOid(origin, actorOid);
         String username;
         String profileUrl;
@@ -112,7 +112,7 @@ public class DemoNoteInserter {
                                    String noteOidIn, DownloadStatus noteStatus) {
         final String method = "buildActivity";
         String noteOid = noteOidIn;
-        if (TextUtils.isEmpty(noteOid) && noteStatus != DownloadStatus.SENDING) {
+        if (StringUtils.isEmpty(noteOid) && noteStatus != DownloadStatus.SENDING) {
             if (origin.getOriginType() == OriginType.PUMPIO) {
                 noteOid = (UrlUtils.hasHost(UrlUtils.fromString(author.getProfileUrl()))
                           ? author.getProfileUrl()
@@ -141,7 +141,7 @@ public class DemoNoteInserter {
     public AActivity buildActivity(@NonNull Actor actor, @NonNull ActivityType type, String noteOid) {
         AActivity activity = AActivity.from(accountActor, type);
         activity.setTimelinePosition(
-                (TextUtils.isEmpty(noteOid) ?  MyLog.uniqueDateTimeFormatted() : noteOid)
+                (StringUtils.isEmpty(noteOid) ?  MyLog.uniqueDateTimeFormatted() : noteOid)
                 + "-" + activity.type.name().toLowerCase());
         activity.setActor(actor);
         activity.setUpdatedDate(System.currentTimeMillis());
@@ -196,10 +196,10 @@ public class DemoNoteInserter {
                 assertEquals("Note permalink has the same host as origin, " + note.toString(),
                         origin.getUrl().getHost(), urlPermalink.getHost());
             }
-            if (!TextUtils.isEmpty(note.getName())) {
+            if (!StringUtils.isEmpty(note.getName())) {
                 assertEquals("Note name " + note, note.getName(), MyQuery.noteIdToStringColumnValue(NoteTable.NAME, note.noteId));
             }
-            if (!TextUtils.isEmpty(note.url)) {
+            if (!StringUtils.isEmpty(note.url)) {
                 assertEquals("Note permalink", note.url, origin.notePermalink(note.noteId));
             }
 

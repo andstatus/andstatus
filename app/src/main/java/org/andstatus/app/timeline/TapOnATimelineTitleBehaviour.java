@@ -16,9 +16,8 @@
 
 package org.andstatus.app.timeline;
 
-import android.text.TextUtils;
-
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 
 public enum TapOnATimelineTitleBehaviour {
     SWITCH_TO_DEFAULT_TIMELINE(1),
@@ -44,7 +43,7 @@ public enum TapOnATimelineTitleBehaviour {
      */
     public static TapOnATimelineTitleBehaviour load(String strCode) {
         try {
-            if (!TextUtils.isEmpty(strCode)) {
+            if (!StringUtils.isEmpty(strCode)) {
                 return load(Long.parseLong(strCode));
             }
         } catch (NumberFormatException e) {

@@ -21,7 +21,6 @@ import android.database.sqlite.SQLiteDiskIOException;
 import android.os.AsyncTask;
 import android.os.Looper;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.acra.ACRA;
 import org.andstatus.app.context.MyContextHolder;
@@ -29,6 +28,7 @@ import org.andstatus.app.util.IdentifiableInstance;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.StringUtils;
 
 import static org.andstatus.app.os.ExceptionsCounter.onDiskIoException;
 
@@ -286,7 +286,7 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
 
     private void logError(String msgLog, Throwable tr) {
         MyLog.e(this, msgLog, tr);
-        if (!TextUtils.isEmpty(firstError) || tr == null) {
+        if (!StringUtils.isEmpty(firstError) || tr == null) {
             return;
         }
         firstError = MyLog.getStackTrace(tr);

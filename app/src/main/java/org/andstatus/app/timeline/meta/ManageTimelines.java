@@ -18,7 +18,6 @@ package org.andstatus.app.timeline.meta;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -45,6 +44,7 @@ import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.view.EnumSelector;
 
@@ -123,7 +123,7 @@ public class ManageTimelines extends LoadableListActivity {
             }
             TextView textView = (TextView) view;
             String text = textView.getText().toString();
-            if (!TextUtils.isEmpty(text) && "▲▼↑↓".indexOf(text.charAt(0)) >= 0) {
+            if (!StringUtils.isEmpty(text) && "▲▼↑↓".indexOf(text.charAt(0)) >= 0) {
                 text = text.substring(1);
                 textView.setText(text);
             }

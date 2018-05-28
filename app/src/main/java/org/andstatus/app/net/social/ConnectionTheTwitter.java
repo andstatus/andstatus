@@ -18,11 +18,11 @@ package org.andstatus.app.net.social;
 
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -100,7 +100,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
                 url = "";
                 break;
         }
-        if (TextUtils.isEmpty(url)) {
+        if (StringUtils.isEmpty(url)) {
             return super.getApiPath1(routine);
         }
         return prependWithBasicPath(url);
@@ -119,7 +119,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put("status", note);
-            if (!TextUtils.isEmpty(inReplyToId)) {
+            if (!StringUtils.isEmpty(inReplyToId)) {
                 formParams.put("in_reply_to_status_id", inReplyToId);
             }
             if (!UriUtils.isEmpty(mediaUri)) {
@@ -166,7 +166,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         String url = this.getApiPath(apiRoutine);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
-        if (!TextUtils.isEmpty(searchQuery)) {
+        if (!StringUtils.isEmpty(searchQuery)) {
             builder.appendQueryParameter("q", searchQuery);
         }
         appendPositionParameters(builder, youngestPosition, oldestPosition);
@@ -182,7 +182,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         String url = this.getApiPath(apiRoutine);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
-        if (!TextUtils.isEmpty(searchQuery)) {
+        if (!StringUtils.isEmpty(searchQuery)) {
             builder.appendQueryParameter("q", searchQuery);
         }
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
@@ -237,7 +237,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
         int limit = 200;
-        if (!TextUtils.isEmpty(actorId)) {
+        if (!StringUtils.isEmpty(actorId)) {
             builder.appendQueryParameter("user_id", actorId);
         }
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));

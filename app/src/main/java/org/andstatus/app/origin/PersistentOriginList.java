@@ -18,7 +18,6 @@ package org.andstatus.app.origin;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -27,6 +26,7 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 
 public class PersistentOriginList extends OriginList {
 
@@ -85,7 +85,7 @@ public class PersistentOriginList extends OriginList {
             case SELECT_OPEN_INSTANCE:
                 if (resultCode == Activity.RESULT_OK) {
                     String originName = data.getStringExtra(IntentExtra.ORIGIN_NAME.key);
-                    if (!TextUtils.isEmpty(originName)) {
+                    if (!StringUtils.isEmpty(originName)) {
                         onAddOriginSelected(originName);
                     }
                 }

@@ -19,10 +19,10 @@ package org.andstatus.app.data;
 import android.content.ContentResolver;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
 
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
 
 public enum MyContentType {
@@ -40,7 +40,7 @@ public enum MyContentType {
 
     @NonNull
     public static MyContentType fromPathOfSavedFile(String mediaFilePath) {
-        return TextUtils.isEmpty(mediaFilePath)
+        return StringUtils.isEmpty(mediaFilePath)
                 ? UNKNOWN
                 : fromUri(DownloadType.UNKNOWN, null, Uri.parse(mediaFilePath), UNKNOWN.generalMimeType);
     }
@@ -104,12 +104,12 @@ public enum MyContentType {
         }
         return path2MimeType(
                 uri == null ? null : uri.getPath(),
-                TextUtils.isEmpty(defaultValue) ? UNKNOWN.generalMimeType : defaultValue
+                StringUtils.isEmpty(defaultValue) ? UNKNOWN.generalMimeType : defaultValue
         );
     }
 
     public static boolean isEmptyMime(String mimeType) {
-        return TextUtils.isEmpty(mimeType) || mimeType.startsWith("*");
+        return StringUtils.isEmpty(mimeType) || mimeType.startsWith("*");
     }
 
     /** @return empty string if no extension found */
@@ -117,12 +117,12 @@ public enum MyContentType {
     public static String mimeToFileExtension(String mimeType) {
         if (isEmptyMime(mimeType)) return "";
         String extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
-        return TextUtils.isEmpty(extension) ? "" : extension;
+        return StringUtils.isEmpty(extension) ? "" : extension;
     }
 
     @NonNull
     private static String path2MimeType(String path, @NonNull String defaultValue) {
-        if (TextUtils.isEmpty(path)) return defaultValue;
+        if (StringUtils.isEmpty(path)) return defaultValue;
         String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(path));
         return isEmptyMime(mimeType) ? defaultValue : mimeType;
     }

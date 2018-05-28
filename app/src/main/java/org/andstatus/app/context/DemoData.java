@@ -18,7 +18,6 @@ package org.andstatus.app.context;
 
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.account.DemoAccountInserter;
 import org.andstatus.app.account.MyAccount;
@@ -37,6 +36,7 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 import java.util.Locale;
@@ -271,7 +271,7 @@ public final class DemoData {
     }
 
     public void checkDataPath() {
-        if (!TextUtils.isEmpty(dataPath)) {
+        if (!StringUtils.isEmpty(dataPath)) {
             assertEquals("Data path. " + MyContextHolder.get(), dataPath,
                     MyContextHolder.get().context().getDatabasePath("andstatus").getPath());
         }

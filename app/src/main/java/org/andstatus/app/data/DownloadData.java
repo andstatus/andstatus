@@ -94,7 +94,7 @@ public class DownloadData {
                 if (downloadType == DownloadType.UNKNOWN) {
                     downloadType = DownloadType.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_TYPE));
                 }
-                if (TextUtils.isEmpty(mimeType)) {
+                if (StringUtils.isEmpty(mimeType)) {
                     mimeType = DbUtils.getString(cursor, DownloadTable.MEDIA_TYPE,
                             () -> MyContentType.uri2MimeType(null, Uri.parse(fileStored.getFilename())));
                 }
@@ -435,7 +435,7 @@ public class DownloadData {
             builder.append("msgId:" + noteId + ",");
         }
         builder.append("status:" + getStatus() + ",");
-        if(!TextUtils.isEmpty(errorMessage)) {
+        if(!StringUtils.isEmpty(errorMessage)) {
             builder.append("errorMessage:'" + getMessage() + "',");
         }
         if (fileStored.existed) {

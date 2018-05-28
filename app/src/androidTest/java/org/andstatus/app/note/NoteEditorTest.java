@@ -24,7 +24,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.test.espresso.action.ReplaceTextAction;
 import android.support.test.espresso.action.TypeTextAction;
-import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
@@ -54,6 +53,7 @@ import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
@@ -294,7 +294,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
             return "";
         }
         ClipData.Item item = reader.clip.getItemAt(0);
-        return (TextUtils.isEmpty(item.getHtmlText()) ? item.getText() : item.getHtmlText())
+        return (StringUtils.isEmpty(item.getHtmlText()) ? item.getText() : item.getHtmlText())
                 .toString();
     }
 

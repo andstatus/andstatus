@@ -53,13 +53,13 @@ public class MyLogTest {
         boolean isLogEnabled = MyLog.isLogToFileEnabled();
 
         MyLog.setLogToFile(true);
-        assertFalse(TextUtils.isEmpty(MyLog.getLogFilename()));
+        assertFalse(StringUtils.isEmpty(MyLog.getLogFilename()));
         MyLog.v(this, method);
         File file = MyLog.getFileInLogDir(MyLog.getLogFilename(), true);
         assertTrue(file.exists());
         
         MyLog.setLogToFile(false);
-        assertTrue(TextUtils.isEmpty(MyLog.getLogFilename()));
+        assertTrue(StringUtils.isEmpty(MyLog.getLogFilename()));
         assertTrue(file.delete());
         MyLog.v(this, method);
         assertEquals(null, MyLog.getLogFilename());

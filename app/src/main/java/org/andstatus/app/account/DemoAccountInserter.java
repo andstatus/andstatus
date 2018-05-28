@@ -18,7 +18,6 @@ package org.andstatus.app.account;
 
 import android.accounts.Account;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContext;
@@ -34,6 +33,7 @@ import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
@@ -77,7 +77,7 @@ public class DemoAccountInserter {
         demoData.checkDataPath();
         AccountName accountName = AccountName.fromAccountName(myContext, accountNameString);
         MyLog.v(this, "Adding account " + accountName);
-        assertTrue("Name '" + accountNameString + "' is valid for " + originType, accountName.isValid());
+        assertTrue("Name '" + accountNameString + "' is valid for " + originType, accountName.isValid);
         assertEquals("Origin for '" + accountNameString + "' account created",
                 accountName.getOrigin().getOriginType(), originType);
         long accountActorId_existing = MyQuery.oidToId(myContext, OidEnum.ACTOR_OID,
@@ -161,7 +161,7 @@ public class DemoAccountInserter {
         assertTrue("Account " + actor.getUsername() + " has ActorId", actorId != 0);
         assertEquals("Account actorOid", ma.getActorOid(), actor.oid);
         String oid = MyQuery.idToOid(myContext.getDatabase(), OidEnum.ACTOR_OID, actorId, 0);
-        if (TextUtils.isEmpty(oid)) {
+        if (StringUtils.isEmpty(oid)) {
             String message = "Couldn't find an Actor in the database for id=" + actorId + " oid=" + actor.oid;
             MyLog.v(this, message);
             fail(message);

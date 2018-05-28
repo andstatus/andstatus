@@ -280,7 +280,7 @@ public class CommandData implements Comparable<CommandData> {
             if (itemId != 0) {
                 result += prime * itemId;
             }
-            if (!TextUtils.isEmpty(description)) {
+            if (!StringUtils.isEmpty(description)) {
                 result += prime * description.hashCode();
             }
         }
@@ -470,7 +470,7 @@ public class CommandData implements Comparable<CommandData> {
 
     @NonNull
     private static CharSequence trimConditionally(String text, boolean trim) {
-        if ( TextUtils.isEmpty(text)) {
+        if ( StringUtils.isEmpty(text)) {
             return "";
         } else if (trim) {
             return I18n.trimTextAt(MyHtml.fromHtml(text), 40);
@@ -552,7 +552,7 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public void setUsername(String username) {
-        if (TextUtils.isEmpty(this.username) && !TextUtils.isEmpty(username)) {
+        if (StringUtils.isEmpty(this.username) && !StringUtils.isEmpty(username)) {
             this.username = username;
         }
     }

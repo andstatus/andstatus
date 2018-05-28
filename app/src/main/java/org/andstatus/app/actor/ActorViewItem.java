@@ -68,7 +68,7 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
     }
 
     public static ActorViewItem newEmpty(String description) {
-        Actor actor = TextUtils.isEmpty(description) ? Actor.EMPTY :
+        Actor actor = StringUtils.isEmpty(description) ? Actor.EMPTY :
                 Actor.fromOriginAndActorId(Origin.EMPTY, 0L).setDescription(description);
         return fromActor(actor);
     }

@@ -16,8 +16,6 @@
 
 package org.andstatus.app.service;
 
-import android.text.TextUtils;
-
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.ActorActivity;
@@ -35,6 +33,7 @@ import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
@@ -98,7 +97,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         final String method = "lookupActor";
         actorId = execContext.getCommandData().getActorId();
         actorOid = MyQuery.idToOid(OidEnum.ACTOR_OID, actorId, 0);
-        if (TextUtils.isEmpty(actorOid)) {
+        if (StringUtils.isEmpty(actorOid)) {
             execContext.getResult().incrementParseExceptions();
             MyLog.e(this, method + "; actorOid not found for id: " + actorId);
             return true;

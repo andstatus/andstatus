@@ -157,7 +157,7 @@ class ActivitySender {
         if (StringUtils.nonEmpty(content)) {
             obj.put(CONTENT_PROPERTY, content);
         }
-        if (!TextUtils.isEmpty(inReplyToId)) {
+        if (!StringUtils.isEmpty(inReplyToId)) {
             JSONObject inReplyToObject = new JSONObject();
             inReplyToObject.put("id", inReplyToId);
             inReplyToObject.put("objectType", connection.oidToObjectType(inReplyToId));
@@ -170,8 +170,8 @@ class ActivitySender {
     private boolean contentNotPosted(PActivityType activityType, JSONObject jsActivity) {
         JSONObject objPosted = jsActivity.optJSONObject("object");
         return PActivityType.POST.equals(activityType) && objPosted != null
-                && (StringUtils.nonEmpty(content) && TextUtils.isEmpty(objPosted.optString(CONTENT_PROPERTY))
-                    || StringUtils.nonEmpty(name) && TextUtils.isEmpty(objPosted.optString(NAME_PROPERTY)));
+                && (StringUtils.nonEmpty(content) && StringUtils.isEmpty(objPosted.optString(CONTENT_PROPERTY))
+                    || StringUtils.nonEmpty(name) && StringUtils.isEmpty(objPosted.optString(NAME_PROPERTY)));
     }
 
     private JSONObject newActivityOfThisAccount(PActivityType activityType) throws JSONException, ConnectionException {
@@ -197,7 +197,7 @@ class ActivitySender {
 
     private void addRecipients(JSONObject activity, PActivityType activityType) throws JSONException {
         recipients.getRecipients().forEach(actor -> addRecipient(activity, "to", actor));
-        if (recipients.isEmpty() && TextUtils.isEmpty(inReplyToId)
+        if (recipients.isEmpty() && StringUtils.isEmpty(inReplyToId)
                 && (activityType.equals(PActivityType.POST) || activityType.equals(PActivityType.UPDATE))) {
             addRecipient(activity, "to", Actor.PUBLIC);
         }
@@ -205,7 +205,7 @@ class ActivitySender {
 
     private void addRecipient(JSONObject activity, String recipientField, Actor actor) {
         String recipientId = actor.equals(Actor.PUBLIC) ? ConnectionPumpio.PUBLIC_COLLECTION_ID : actor.oid;
-        if (TextUtils.isEmpty(recipientId)) return;
+        if (StringUtils.isEmpty(recipientId)) return;
         JSONObject recipient = new JSONObject();
         try {
             recipient.put("id", recipientId);
@@ -249,11 +249,11 @@ class ActivitySender {
             obj.put("id", objectId);
             obj.put("objectType", connection.oidToObjectType(objectId));
         } else {
-            if (TextUtils.isEmpty(name) && TextUtils.isEmpty(content) && UriUtils.isEmpty(mMediaUri)) {
+            if (StringUtils.isEmpty(name) && StringUtils.isEmpty(content) && UriUtils.isEmpty(mMediaUri)) {
                 throw new IllegalArgumentException("Nothing to send");
             }
             obj.put("author", activity.getJSONObject("actor"));
-            PObjectType objectType = TextUtils.isEmpty(inReplyToId) ? PObjectType.NOTE : PObjectType.COMMENT;
+            PObjectType objectType = StringUtils.isEmpty(inReplyToId) ? PObjectType.NOTE : PObjectType.COMMENT;
             obj.put("objectType", objectType.id());
         }
         return obj;

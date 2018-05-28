@@ -21,9 +21,9 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
-import android.text.TextUtils;
 
 import org.andstatus.app.ClassInApplicationPackage;
+import org.andstatus.app.util.StringUtils;
 
 import java.io.FileNotFoundException;
 
@@ -55,7 +55,7 @@ public class FileProvider extends ContentProvider {
     }
 
     public static Uri downloadFilenameToUri(String filename) {
-        if (TextUtils.isEmpty(filename)) {
+        if (StringUtils.isEmpty(filename)) {
             return Uri.EMPTY;
         } else {
             return Uri.withAppendedPath(DOWNLOAD_FILE_URI, filename);

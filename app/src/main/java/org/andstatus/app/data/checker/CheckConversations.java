@@ -18,7 +18,6 @@ package org.andstatus.app.data.checker;
 
 import android.database.Cursor;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
@@ -26,6 +25,7 @@ import org.andstatus.app.data.SqlActorIds;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -181,7 +181,7 @@ public class CheckConversations extends DataChecker {
         int counter = 0;
         Map<Long, Map<String, NoteItem>> origins = new ConcurrentHashMap<>();
         for (NoteItem item : items.values()) {
-            if (!TextUtils.isEmpty(item.conversationOid)) {
+            if (!StringUtils.isEmpty(item.conversationOid)) {
                 Map<String, NoteItem> firstConversationMembers = origins.get(item.originId);
                 if (firstConversationMembers == null) {
                     firstConversationMembers = new ConcurrentHashMap<>();

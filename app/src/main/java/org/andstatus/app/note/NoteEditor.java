@@ -381,8 +381,8 @@ public class NoteEditor {
             if (subjectHasAdditionalContent(name, content)) {
                 contentWithName += name;
             }
-            if (!TextUtils.isEmpty(content)) {
-                if (!TextUtils.isEmpty(contentWithName)) {
+            if (!StringUtils.isEmpty(content)) {
+                if (!StringUtils.isEmpty(contentWithName)) {
                     contentWithName += " ";
                 }
                 contentWithName += content;
@@ -434,10 +434,10 @@ public class NoteEditor {
                 editorData.ma.getOrigin().getOriginType().hasNoteName);
         String body = editorData.activity.getNote().getContent().trim();
         if (!body.equals(bodyView.getText().toString().trim())) {
-            if (!TextUtils.isEmpty(body)) {
+            if (!StringUtils.isEmpty(body)) {
                 body += " ";
             }
-            if (!TextUtils.isEmpty(bodyView.getText()) && !TextUtils.isEmpty(body)) {
+            if (!TextUtils.isEmpty(bodyView.getText()) && !StringUtils.isEmpty(body)) {
                 MyLog.v(NoteEditorData.TAG, "Body updated '" + bodyView.getText()
                 + "' to '" + body + "'", new IllegalStateException());
             }
@@ -456,10 +456,10 @@ public class NoteEditor {
     }
 
     static boolean subjectHasAdditionalContent(String subject, String text) {
-        if (TextUtils.isEmpty(subject)) {
+        if (StringUtils.isEmpty(subject)) {
             return false;
         }
-        if (TextUtils.isEmpty(text)) {
+        if (StringUtils.isEmpty(text)) {
             return true;
         }
         return !text.startsWith(stripEllipsis(stripBeginning(subject)));
@@ -469,7 +469,7 @@ public class NoteEditor {
      * Strips e.g. "Note - " or "Note:"
      */
     static String stripBeginning(String textIn) {
-        if (TextUtils.isEmpty(textIn)) {
+        if (StringUtils.isEmpty(textIn)) {
             return "";
         }
         int ind = textIn.indexOf("-");
@@ -490,7 +490,7 @@ public class NoteEditor {
     }
 
     static String stripEllipsis(String textIn) {
-        if (TextUtils.isEmpty(textIn)) {
+        if (StringUtils.isEmpty(textIn)) {
             return "";
         }
         int ind = textIn.length() - 1;

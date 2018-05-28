@@ -1,7 +1,6 @@
 package org.andstatus.app.note;
 
 import android.net.Uri;
-import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -10,6 +9,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.util.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -62,7 +62,7 @@ public class NoteEditorDataTest {
         String expectedName = MyQuery.actorIdToStringColumnValue(
                 data.ma.getOrigin().isMentionAsWebFingerId() ? ActorTable.WEBFINGER_ID
                         : ActorTable.USERNAME, mentionedActorId);
-        assertTrue(!TextUtils.isEmpty(expectedName));
+        assertTrue(!StringUtils.isEmpty(expectedName));
         boolean isMentioned = data.getContent().contains("@" + expectedName);
         assertEquals(data.toString() + "; expected name:" + expectedName, isMentionedExpected, isMentioned);
     }

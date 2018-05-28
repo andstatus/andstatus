@@ -16,12 +16,11 @@
 
 package org.andstatus.app.net.http;
 
-import android.text.TextUtils;
-
 import com.github.scribejava.core.model.OAuthConstants;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
 import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +44,7 @@ public class HttpConnectionOAuthMastodon extends HttpConnectionOAuth2JavaNet {
                 break;
         }
 
-        if (!TextUtils.isEmpty(url)) {
+        if (!StringUtils.isEmpty(url)) {
             url = pathToUrlString(url);
         }
 

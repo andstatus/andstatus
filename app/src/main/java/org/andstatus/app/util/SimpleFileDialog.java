@@ -101,7 +101,7 @@ public class SimpleFileDialog {
      * sdcard directory
      */
     public void chooseFileOrDir() {
-        if (TextUtils.isEmpty(mDir)) {
+        if (StringUtils.isEmpty(mDir)) {
             chooseFileOrDir(mSdCardDirectory);
         } else {
             chooseFileOrDir(mDir);
@@ -114,7 +114,7 @@ public class SimpleFileDialog {
      */
     public void chooseFileOrDir(String dirIn) {
         mDir = fixInputDir(dirIn);
-        if (TextUtils.isEmpty(mDir)) {
+        if (StringUtils.isEmpty(mDir)) {
             return;
         }
         mSubdirs = getDirectories(mDir);
@@ -159,7 +159,7 @@ public class SimpleFileDialog {
                 int slashInd = mDir.lastIndexOf("/");
                 if (slashInd >= 0) {
                     mDir = mDir.substring(0, slashInd);
-                    if (TextUtils.isEmpty(mDir)) {
+                    if (StringUtils.isEmpty(mDir)) {
                         mDir = getRootFolder();
                     }
                 }
@@ -268,7 +268,7 @@ public class SimpleFileDialog {
 
     private static boolean isExistingDirectoryLogged(String dir) {
         final String method = "isExistingDirectoryLogged";
-        if (TextUtils.isEmpty(dir)) {
+        if (StringUtils.isEmpty(dir)) {
             Log.v(method, "Empty dir");
             return false;
         }

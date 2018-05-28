@@ -16,8 +16,6 @@
 
 package org.andstatus.app.data;
 
-import android.text.TextUtils;
-
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -27,6 +25,7 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyHtml;
+import org.andstatus.app.util.StringUtils;
 import org.junit.Before;
 
 import static org.andstatus.app.context.DemoData.demoData;
@@ -93,7 +92,7 @@ public class HtmlContentInserter {
     private void assertHtmlNote(Actor author, String bodyString, String noteOid) {
         assertHtmlNoteContentAllowed(author, bodyString, noteOid, true);
         assertHtmlNoteContentAllowed(author, bodyString + " no HTML",
-        		TextUtils.isEmpty(noteOid) ? null : noteOid + "-noHtml", false);
+        		StringUtils.isEmpty(noteOid) ? null : noteOid + "-noHtml", false);
     }
 
 	private DemoNoteInserter assertHtmlNoteContentAllowed(Actor author,

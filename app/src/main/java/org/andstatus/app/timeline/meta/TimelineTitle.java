@@ -17,7 +17,6 @@
 package org.andstatus.app.timeline.meta;
 
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
@@ -25,6 +24,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 
 import java.util.Objects;
 
@@ -54,7 +54,7 @@ public class TimelineTitle {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder(title);
-        if (!TextUtils.isEmpty(subTitle)) {
+        if (!StringUtils.isEmpty(subTitle)) {
             I18n.appendWithSpace(builder, subTitle);
         }
         return builder.toString();

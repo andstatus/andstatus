@@ -458,7 +458,7 @@ public class AccountSettingsActivity extends MyActivity {
         StringBuilder labelBuilder = new StringBuilder();
         if (isNeeded) {
             labelBuilder.append(this.getText(R.string.summary_preference_password));
-            if (TextUtils.isEmpty(ma.getPassword())) {
+            if (StringUtils.isEmpty(ma.getPassword())) {
                 labelBuilder.append(": (" + this.getText(R.string.not_set) + ")");
             }
         }
@@ -894,7 +894,7 @@ public class AccountSettingsActivity extends MyActivity {
                 if (!succeeded) {
                     stepErrorMessage = AccountSettingsActivity.this
                             .getString(R.string.client_registration_failed);
-                    if (!TextUtils.isEmpty(connectionErrorMessage)) {
+                    if (!StringUtils.isEmpty(connectionErrorMessage)) {
                         stepErrorMessage += ": " + connectionErrorMessage;
                     }
                     MyLog.d(TAG, stepErrorMessage);
@@ -1172,7 +1172,7 @@ public class AccountSettingsActivity extends MyActivity {
             JSONObject jso = null;
             try {
                 jso = new JSONObject();
-                jso.put(SUCCEEDED_KEY, !TextUtils.isEmpty(accessToken) && !TextUtils.isEmpty(accessSecret));
+                jso.put(SUCCEEDED_KEY, !StringUtils.isEmpty(accessToken) && !StringUtils.isEmpty(accessSecret));
                 jso.put(MESSAGE_KEY, message);
             } catch (JSONException e) {
                 MyLog.e(this, e);
@@ -1196,7 +1196,7 @@ public class AccountSettingsActivity extends MyActivity {
                     } else {
                         String stepErrorMessage = AccountSettingsActivity.this
                         .getString(R.string.acquiring_an_access_token_failed);
-                        if (!TextUtils.isEmpty(connectionErrorMessage)) {
+                        if (!StringUtils.isEmpty(connectionErrorMessage)) {
                             stepErrorMessage += ": " + connectionErrorMessage;
                             MyLog.d(TAG, connectionErrorMessage);
                         }

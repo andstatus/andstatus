@@ -19,7 +19,6 @@ package org.andstatus.app.note;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.actor.ActorListLoader;
@@ -40,6 +39,7 @@ import org.andstatus.app.timeline.LoadableListActivity.ProgressPublisher;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -223,11 +223,11 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
         if (ma.getConnection().isApiSupported(Connection.ApiRoutineEnum.GET_CONVERSATION)) {
             long noteId = selectedNoteId;
             String conversationOid = MyQuery.noteIdToConversationOid(noteId);
-            if (TextUtils.isEmpty(conversationOid) && noteId_in != noteId) {
+            if (StringUtils.isEmpty(conversationOid) && noteId_in != noteId) {
                 noteId = noteId_in;
                 conversationOid = MyQuery.noteIdToConversationOid(noteId);
             }
-            if (!TextUtils.isEmpty(conversationOid)) {
+            if (!StringUtils.isEmpty(conversationOid)) {
                 conversationSyncRequested = true;
                 MyLog.v(this, "Conversation oid=" +  conversationOid + " for noteId=" + noteId
                         + " will be loaded from the Internet");

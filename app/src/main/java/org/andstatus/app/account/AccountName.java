@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2013-2018 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,16 +33,13 @@ public class AccountName {
 
     public static final String ORIGIN_SEPARATOR = "/";
     
-    /**
-     * The system in which the Account is defined, see {@link Origin}
-     */
-    private Origin origin;
-    /**
-     * The username ("screen name") is unique for the {@link Origin}
-     */
-    private String username;
+    /** The system in which the Account is defined, see {@link Origin} */
+    public final Origin origin;
+    /** The username ("screen name") is unique for the {@link Origin} */
+    public final String username;
+    public final boolean isValid;
 
-    protected static String accountNameToOriginName(String accountName) {
+    private static String accountNameToOriginName(String accountName) {
         String accountNameFixed = AccountName.fixAccountName(accountName);
         int indSeparator = accountNameFixed.lastIndexOf(ORIGIN_SEPARATOR);
         String originName = "";
@@ -53,7 +50,7 @@ public class AccountName {
         return fixOriginName(originName);
     }
 
-    private String fixUsername(String usernameIn) {
+    private static String fixUsername(String usernameIn, Origin origin) {
         String usernameOut = "";
         if (usernameIn != null) {
             usernameOut = usernameIn.trim();
@@ -64,17 +61,17 @@ public class AccountName {
         return usernameOut;
     }
     
-    String accountNameToUsername(String accountName) {
+    private static String accountNameToUsername(String accountName, Origin origin) {
         String accountNameFixed = fixAccountName(accountName);
         int indSeparator = accountNameFixed.indexOf(ORIGIN_SEPARATOR);
         String usernameOut = "";
         if (indSeparator > 0) {
             usernameOut = accountNameFixed.substring(0, indSeparator);
         }
-        return fixUsername(usernameOut);
+        return fixUsername(usernameOut, origin);
     }
 
-    static String fixAccountName(String accountNameIn) {
+    private static String fixAccountName(String accountNameIn) {
         String accountName = "";
         if (accountNameIn != null) {
             accountName = accountNameIn.trim();
@@ -83,10 +80,7 @@ public class AccountName {
     }
 
     protected static AccountName getEmpty() {
-        AccountName accountName = new AccountName();
-        accountName.origin = Origin.EMPTY;
-        accountName.username = "";
-        return accountName;
+        return new AccountName("", Origin.EMPTY);
     }
 
     protected static AccountName fromOriginAndUserNames(MyContext myContext, String originName,
@@ -95,13 +89,10 @@ public class AccountName {
     }
 
     public static AccountName fromOriginAndUsername(@NonNull Origin origin, String username) {
-        AccountName accountName = new AccountName();
-        accountName.origin = origin;
-        accountName.username = accountName.fixUsername(username);
-        return accountName;
+        return new AccountName(fixUsername(username, origin), origin);
     }
 
-    protected static String fixOriginName(String originNameIn) {
+    private static String fixOriginName(String originNameIn) {
         String originName = "";
         if (originNameIn != null) {
             originName = originNameIn.trim();
@@ -111,13 +102,14 @@ public class AccountName {
 
     @NonNull
     public static AccountName fromAccountName(MyContext myContext, String accountNameString) {
-        AccountName accountName = new AccountName();
-        accountName.origin = myContext.origins().fromName(accountNameToOriginName(accountNameString));
-        accountName.username = accountName.accountNameToUsername(accountNameString);
-        return accountName;
+        Origin origin = myContext.origins().fromName(accountNameToOriginName(accountNameString));
+        return new AccountName(accountNameToUsername(accountNameString, origin), origin);
     }
     
-    private AccountName() {
+    private AccountName(String username, Origin origin) {
+        this.username = username;
+        this.origin = origin;
+        isValid = origin.isUsernameValid(username) && origin.isPersistent();
     }
 
     public String getName() {
@@ -126,7 +118,7 @@ public class AccountName {
 
     @Override
     public String toString() {
-        return (isValid() ? "" : "(invalid " + usernameToString() + ")") + getName();
+        return (isValid ? "" : "(invalid " + usernameToString() + ")") + getName();
     }
 
     @NonNull
@@ -139,7 +131,7 @@ public class AccountName {
     }
 
     public boolean isValid() {
-        return origin.isUsernameValid(username) && origin.isPersistent();
+        return isValid;
     }
     
     public String getUsername() {
@@ -169,7 +161,7 @@ public class AccountName {
     @Override
     public int hashCode() {
         int result = origin.hashCode();
-        if (!TextUtils.isEmpty(username)) {
+        if (!StringUtils.isEmpty(username)) {
             result = 31 * result + username.hashCode();
         }
         return result;

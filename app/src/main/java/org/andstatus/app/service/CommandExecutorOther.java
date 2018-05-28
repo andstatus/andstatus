@@ -133,7 +133,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     private void getConversation(long noteId) {
         final String method = "getConversation";
         String conversationOid = MyQuery.noteIdToConversationOid(noteId);
-        if (TextUtils.isEmpty(conversationOid)) {
+        if (StringUtils.isEmpty(conversationOid)) {
             logExecutionError(true, method + " empty conversationId " + MyQuery.noteInfoForLog(noteId));
         } else {
             Set<Long> noteIds = onActivities(method,
@@ -171,7 +171,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         String oid = getActorOid(method, actorId, false);
         String msgLog = method + "; username='" + username + "'";
         Actor actor = null;
-        if (UriUtils.isRealOid(oid) || !TextUtils.isEmpty(username)) {
+        if (UriUtils.isRealOid(oid) || !StringUtils.isEmpty(username)) {
             try {
                 actor = execContext.getMyAccount().getConnection().getActor(oid, username);
                 logIfActorIsEmpty(msgLog, actorId, actor);
@@ -244,7 +244,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     @NonNull
     private String getNoteOid(String method, long noteId, boolean required) {
         String oid = MyQuery.idToOid(OidEnum.NOTE_OID, noteId, 0);
-        if (required && TextUtils.isEmpty(oid)) {
+        if (required && StringUtils.isEmpty(oid)) {
             logExecutionError(true, method + "; no note ID in the Social Network "
                     + MyQuery.noteInfoForLog(noteId));
         }
@@ -294,7 +294,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     @NonNull
     private String getActorOid(String method, long actorId, boolean required) {
         String oid = MyQuery.idToOid(OidEnum.ACTOR_OID, actorId, 0);
-        if (required && TextUtils.isEmpty(oid)) {
+        if (required && StringUtils.isEmpty(oid)) {
             logExecutionError(true, method + "; no Actor ID in the Social Network " + actorInfoLogged(actorId));
         }
         return oid;
@@ -302,7 +302,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
 
     private String actorInfoLogged(long actorId) {
         String oid = getActorOid("actorInfoLogged", actorId, false);
-        return " actorId=" + actorId + ", oid" + (TextUtils.isEmpty(oid) ? " is empty" : "'" + oid + "'" +
+        return " actorId=" + actorId + ", oid" + (StringUtils.isEmpty(oid) ? " is empty" : "'" + oid + "'" +
                 ", webFingerId:'" + MyQuery.actorIdToWebfingerId(actorId) + "'");
     }
 
@@ -312,7 +312,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         String oid = getNoteOid(method, noteId, false);
         DownloadStatus statusStored = DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId));
         try {
-            if (noteId == 0 || TextUtils.isEmpty(oid) || statusStored != DownloadStatus.LOADED) {
+            if (noteId == 0 || StringUtils.isEmpty(oid) || statusStored != DownloadStatus.LOADED) {
                 ok = true;
                 MyLog.i(this, method + "; OID='" + oid + "', status='" + statusStored + "' for noteId=" + noteId);
             } else {

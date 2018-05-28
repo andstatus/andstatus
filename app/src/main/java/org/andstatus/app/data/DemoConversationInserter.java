@@ -16,8 +16,6 @@
 
 package org.andstatus.app.data;
 
-import android.text.TextUtils;
-
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
@@ -28,6 +26,7 @@ import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 import java.util.GregorianCalendar;
@@ -59,7 +58,7 @@ public class DemoConversationInserter {
     }
 
     public void insertConversation(String bodySuffixIn) {
-        bodySuffix = TextUtils.isEmpty(bodySuffixIn)
+        bodySuffix = StringUtils.isEmpty(bodySuffixIn)
                 ? ""
                 : " " + bodySuffixIn;
         iteration = demoData.conversationIterationCounter.incrementAndGet();

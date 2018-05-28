@@ -18,7 +18,6 @@ package org.andstatus.app.appwidget;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.text.TextUtils;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
@@ -27,6 +26,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.notification.Notifier;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtils;
 
 /**
  * The class maintains the appWidget instance (defined by mappWidgetId): - state
@@ -167,7 +167,7 @@ public class MyAppWidgetData {
                 ", notifications:" + notifier.events +
                 (dateLastChecked > 0 ? ", checked:" + dateLastChecked : "") +
                 (dateSince > 0 ? ", since:" + dateSince : "") +
-                (TextUtils.isEmpty(nothingPref) ? "" : ", nothing:" + nothingPref) +
+                (StringUtils.isEmpty(nothingPref) ? "" : ", nothing:" + nothingPref) +
                 "}";
     }
 

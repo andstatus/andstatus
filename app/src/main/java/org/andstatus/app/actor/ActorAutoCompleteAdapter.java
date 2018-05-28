@@ -93,7 +93,7 @@ public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable 
     }
 
     private void showAvatar(View view, ActorViewItem item) {
-        AvatarView avatarView = (AvatarView) view.findViewById(R.id.avatar_image);
+        AvatarView avatarView = view.findViewById(R.id.avatar_image);
         if (item == null) {
             avatarView.setVisibility(View.INVISIBLE);
         } else {

@@ -19,7 +19,6 @@ package org.andstatus.app.note;
 import android.content.ContentValues;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.actor.ActorListType;
@@ -46,6 +45,7 @@ import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
@@ -324,15 +324,15 @@ public class NoteEditorData {
             if (actorId != 0 && !mentioned.contains(actorId)) {
                 mentioned.add(actorId);
                 String name = MyQuery.actorIdToName(myContext, actorId, getActorInTimeline());
-                if (!TextUtils.isEmpty(name)) {
+                if (!StringUtils.isEmpty(name)) {
                     String mentionText = "@" + name + " ";
-                    if (TextUtils.isEmpty(getContent()) || !(getContent() + " ").contains(mentionText)) {
+                    if (StringUtils.isEmpty(getContent()) || !(getContent() + " ").contains(mentionText)) {
                         mentions = mentions.trim() + " " + mentionText;
                     }
                 }
             }
         }
-        if (!TextUtils.isEmpty(mentions)) {
+        if (!StringUtils.isEmpty(mentions)) {
             setContent(mentions.trim() + " " + getContent());
         }
     }
@@ -343,9 +343,9 @@ public class NoteEditorData {
 
     public NoteEditorData appendMentionedActorToText(long mentionedActorId) {
         String name = MyQuery.actorIdToName(myContext, mentionedActorId, getActorInTimeline());
-        if (!TextUtils.isEmpty(name)) {
+        if (!StringUtils.isEmpty(name)) {
             String bodyText2 = "@" + name + " ";
-            if (!TextUtils.isEmpty(getContent()) && !(getContent() + " ").contains(bodyText2)) {
+            if (!StringUtils.isEmpty(getContent()) && !(getContent() + " ").contains(bodyText2)) {
                 bodyText2 = getContent().trim() + " " + bodyText2;
             }
             setContent(bodyText2);

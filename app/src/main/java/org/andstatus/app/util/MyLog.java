@@ -45,6 +45,7 @@ import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -94,8 +95,8 @@ public class MyLog {
      */
     private static volatile int minLogLevel = VERBOSE;
 
-    private final static Object logFileLock = new Object();
-    @GuardedBy("logFileLock")
+    private final static AtomicBoolean logToFileEnabled = new AtomicBoolean(false);
+    @GuardedBy("logToFileEnabled")
     private static String logFileName = null;
 
     public static final String COMMA = ",";
@@ -312,7 +313,7 @@ public class MyLog {
             return true;
         } else {
             String tag = objToTruncatedTag(objTag);
-            if (TextUtils.isEmpty(tag)) {
+            if (StringUtils.isEmpty(tag)) {
                 tag = APPTAG;
             }
             return Log.isLoggable(tag, level);
@@ -398,7 +399,7 @@ public class MyLog {
     
     private static boolean writeStringToFile(String string, String filename, boolean append, boolean logged) {
         boolean ok = false;
-        if (TextUtils.isEmpty(filename)) {
+        if (StringUtils.isEmpty(filename)) {
             if (logged) {
                 MyLog.v("writeStringToFile", "Empty filename");
             }
@@ -453,7 +454,7 @@ public class MyLog {
     /** Strips value from leading and trailing commas */
     public static String formatKeyValue(Object key, String value) {
         String out = "";
-        if (!TextUtils.isEmpty(value)) {
+        if (!StringUtils.isEmpty(value)) {
             out = value.trim();
             if (out.substring(0, 1).equals(COMMA)) {
                 out = out.substring(1);
@@ -487,10 +488,11 @@ public class MyLog {
     }
     
     public static void setLogToFile(boolean logEnabled) {
-        if (logEnabled) {
+        logToFileEnabled.set(logEnabled);
+        if (logToFileEnabled.get()) {
             setNextLogFileName(false);
         } else { 
-            synchronized (logFileLock) {
+            synchronized (logToFileEnabled) {
                 logFileName = null;
             }
         }
@@ -498,7 +500,7 @@ public class MyLog {
 
     private static void setNextLogFileName(boolean changeExisting) {
         String filename = currentDateTimeFormatted() + "_log.txt";
-        synchronized (logFileLock) {
+        synchronized (logToFileEnabled) {
             if (logFileName == null || changeExisting) {
                 logFileName = filename; 
             }
@@ -506,16 +508,13 @@ public class MyLog {
     }
     
     public static boolean isLogToFileEnabled() {
-        synchronized (logFileLock) {
-            return logFileName != null;
-        }
+        return logToFileEnabled.get();
     }
     
     private static Object logFileWriterLock = new Object();
     static void logToFile(int logLevel, String tag, String msg, Throwable tr) {
-        if(!isLogToFileEnabled()) {
-            return;
-        }
+        if(!isLogToFileEnabled()) return;
+
         StringBuilder builder = new StringBuilder();
         builder.append(currentDateTimeForLogLine());
         builder.append(" ");
@@ -523,7 +522,7 @@ public class MyLog {
         builder.append("/");
         builder.append(tag);
         builder.append(":");
-        if (!TextUtils.isEmpty(msg)) {
+        if (!StringUtils.isEmpty(msg)) {
             builder.append(" ");
             builder.append(msg);
         }
@@ -556,7 +555,7 @@ public class MyLog {
     }
     
     public static String getLogFilename() {
-        synchronized (logFileLock) {
+        synchronized (logToFileEnabled) {
             return logFileName;
         }
     }
@@ -600,9 +599,9 @@ public class MyLog {
         return out;
     }
 
-    public static void logNetworkLevelMessage(Object objTag, String namePrefix, Object jso) {
-        if (jso != null && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_LOG_NETWORK_LEVEL_MESSAGES, false)) {
-            logJson(objTag, namePrefix, jso, MyPreferences.isLogEverythingToFile());
+    public static void logNetworkLevelMessage(Object objTag, String namePrefix, Object message) {
+        if (message != null && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_LOG_NETWORK_LEVEL_MESSAGES, false)) {
+            logJson(objTag, namePrefix, message, true);
         }
     }
    
@@ -614,7 +613,7 @@ public class MyLog {
             boolean isEmpty = false;
             Object jso2 = jso;
             if (String.class.isInstance(jso)) {
-                if (TextUtils.isEmpty((String) jso)) {
+                if (StringUtils.isEmpty((String) jso)) {
                     return;
                 }
                 jso2 = (new JSONTokener((String) jso)).nextValue();

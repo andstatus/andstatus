@@ -97,7 +97,7 @@ public class HttpConnectionApacheCommon {
             }
         }
         final ContentResolver contentResolver = MyContextHolder.get().context().getContentResolver();
-        if (!TextUtils.isEmpty(mediaPartName) && !UriUtils.isEmpty(mediaUri) && contentResolver != null) {
+        if (!StringUtils.isEmpty(mediaPartName) && !UriUtils.isEmpty(mediaUri) && contentResolver != null) {
             try (InputStream ins = contentResolver.openInputStream(mediaUri)) {
                 ContentType mediaContentType = ContentType.create(
                         MyContentType.uri2MimeType(contentResolver, mediaUri));
@@ -127,7 +127,7 @@ public class HttpConnectionApacheCommon {
         while (iterator.hasNext()) {
             String name = iterator.next();
             String value = jso.optString(name);
-            if (!TextUtils.isEmpty(value)) {
+            if (!StringUtils.isEmpty(value)) {
                 formParams.add(new BasicNameValuePair(name, value));
             }
         }
