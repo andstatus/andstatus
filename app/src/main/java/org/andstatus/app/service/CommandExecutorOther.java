@@ -19,7 +19,6 @@ package org.andstatus.app.service;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
-import android.text.TextUtils;
 
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.data.DataUpdater;
@@ -42,6 +41,7 @@ import org.andstatus.app.net.social.RateLimitStatus;
 import org.andstatus.app.support.java.util.function.SupplierWithException;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.Collections;
@@ -262,22 +262,14 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         if (noErrors()) {
             try {
                 activity = execContext.getMyAccount().getConnection().follow(oid, follow);
-                logIfActorIsEmpty(method, actorId, activity.getObjActor());
+                final Actor friend = activity.getObjActor();
+                friend.followedByMe = TriState.UNKNOWN; // That "hack" attribute may only confuse us here as it can show outdated info
+                logIfActorIsEmpty(method, actorId, friend);
             } catch (ConnectionException e) {
                 logConnectionException(e, method + actorInfoLogged(actorId));
             }
         }
         if (activity != null && noErrors()) {
-            if (!activity.type.equals(follow ? ActivityType.FOLLOW : ActivityType.UNDO_FOLLOW)) {
-                if (follow) {
-                    // Act just like for creating favorite...
-                    activity = activity.getObjActor().act(Actor.EMPTY, activity.getActor(), ActivityType.FOLLOW);
-                    MyLog.d(this, "Follow an Actor. 'following' flag didn't change yet.");
-                    // Let's try to assume that everything was OK:
-                } else {
-                    logExecutionError(false, "'following' flag didn't change yet, " + method + actorInfoLogged(actorId));
-                }
-            }
             if (noErrors()) {
                 new DataUpdater(execContext).onActivity(activity);
             }

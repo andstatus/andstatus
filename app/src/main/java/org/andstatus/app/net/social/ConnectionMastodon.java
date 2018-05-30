@@ -430,8 +430,11 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             return AActivity.EMPTY;
         }
         TriState following = TriState.fromBoolean(relationship.optBoolean("following"));
-        return actor.act(Actor.EMPTY, data.getAccountActor(), following.toBoolean(!follow) == follow
-                ? (follow ? ActivityType.FOLLOW : ActivityType.UNDO_FOLLOW)
+        return actor.act(data.getAccountActor(), data.getAccountActor(),
+                following.toBoolean(!follow) == follow
+                ? (follow
+                    ? ActivityType.FOLLOW
+                    : ActivityType.UNDO_FOLLOW)
                 : ActivityType.UPDATE );
     }
 

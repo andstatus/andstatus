@@ -23,6 +23,8 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
@@ -195,5 +197,27 @@ public class ConnectionTwitterTest {
         assertNotEquals("Note was not added " + activity, 0, note.noteId);
         assertNotEquals("Activity was not added " + activity, 0, activity.getId());
     }
+
+    @Test
+    public void follow() throws IOException {
+        httpConnection.addResponse(org.andstatus.app.tests.R.raw.twitter_follow);
+
+        String actorOid = "96340134";
+        AActivity activity = connection.follow(actorOid, true);
+        assertEquals("No actor returned " + activity, AObjectType.ACTOR, activity.getObjectType());
+        Actor friend = activity.getObjActor();
+        assertEquals("Wrong username returned " + activity, "LPirro93", friend.getUsername());
+
+        MyAccount ma = demoData.getMyAccount(connectionData.getAccountName().toString());
+        CommandExecutionContext executionContext = new CommandExecutionContext(
+                CommandData.newActorCommand(CommandEnum.FOLLOW, ma, ma.getOrigin(), 123, ""));
+        DataUpdater di = new DataUpdater(executionContext);
+        di.onActivity(activity);
+        long friendId = MyQuery.oidToId(MyContextHolder.get(), OidEnum.ACTOR_OID, ma.getOriginId(), actorOid);
+
+        assertNotEquals("Followed Actor was not added " + activity, 0, friendId);
+        assertNotEquals("Activity was not added " + activity, 0, activity.getId());
+    }
+
 
 }

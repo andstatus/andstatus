@@ -142,8 +142,9 @@ public abstract class ConnectionTwitterLike extends Connection {
         } catch (JSONException e) {
             MyLog.e(this, e);
         }
-        JSONObject actor = postRequest(follow ? ApiRoutineEnum.FOLLOW : ApiRoutineEnum.UNDO_FOLLOW, out);
-        return actorFromJson(actor).act(Actor.EMPTY, data.getAccountActor(),
+        JSONObject jsoActor = postRequest(follow ? ApiRoutineEnum.FOLLOW : ApiRoutineEnum.UNDO_FOLLOW, out);
+        final Actor friend = actorFromJson(jsoActor);
+        return friend.act(data.getAccountActor(), data.getAccountActor(),
                 follow ? ActivityType.FOLLOW : ActivityType.UNDO_FOLLOW);
     } 
 

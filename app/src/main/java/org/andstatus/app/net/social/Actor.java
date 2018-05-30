@@ -20,7 +20,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
@@ -210,6 +209,7 @@ public class Actor implements Comparable<Actor> {
         return act(accountActor, actor, ActivityType.UPDATE);
     }
 
+    /** Act on this actor. I.e. this actor is an abject of the action */
     @NonNull
     public AActivity act(Actor accountActor, @NonNull Actor actor, @NonNull ActivityType activityType) {
         if (this == EMPTY || accountActor == EMPTY || actor == EMPTY) {
