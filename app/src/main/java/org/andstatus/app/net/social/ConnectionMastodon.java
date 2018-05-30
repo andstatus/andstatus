@@ -425,17 +425,20 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     public AActivity follow(String actorOid, Boolean follow) throws ConnectionException {
         JSONObject relationship = postRequest(getApiPathWithActorId(follow ? ApiRoutineEnum.FOLLOW :
                 ApiRoutineEnum.UNDO_FOLLOW, actorOid), new JSONObject());
-        Actor actor = Actor.fromOriginAndActorOid(data.getOrigin(), actorOid);
+        Actor friend = Actor.fromOriginAndActorOid(data.getOrigin(), actorOid);
         if (relationship == null || relationship.isNull("following")) {
             return AActivity.EMPTY;
         }
         TriState following = TriState.fromBoolean(relationship.optBoolean("following"));
-        return actor.act(data.getAccountActor(), data.getAccountActor(),
+        return data.getAccountActor().act(
+                data.getAccountActor(),
                 following.toBoolean(!follow) == follow
-                ? (follow
-                    ? ActivityType.FOLLOW
-                    : ActivityType.UNDO_FOLLOW)
-                : ActivityType.UPDATE );
+                    ? (follow
+                        ? ActivityType.FOLLOW
+                        : ActivityType.UNDO_FOLLOW)
+                    : ActivityType.UPDATE,
+                friend
+        );
     }
 
     @Override

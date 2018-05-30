@@ -204,20 +204,23 @@ public class Actor implements Comparable<Actor> {
         return update(accountActor, accountActor);
     }
 
+    /** another actor updates this actor */
     @NonNull
     public AActivity update(Actor accountActor, @NonNull Actor actor) {
-        return act(accountActor, actor, ActivityType.UPDATE);
+        return actor == EMPTY
+                ? AActivity.EMPTY
+                : actor.act(accountActor, ActivityType.UPDATE, this);
     }
 
-    /** Act on this actor. I.e. this actor is an abject of the action */
+    /** this actor acts on objActor */
     @NonNull
-    public AActivity act(Actor accountActor, @NonNull Actor actor, @NonNull ActivityType activityType) {
-        if (this == EMPTY || accountActor == EMPTY || actor == EMPTY) {
+    public AActivity act(Actor accountActor, @NonNull ActivityType activityType, @NonNull Actor objActor) {
+        if (this == EMPTY || accountActor == EMPTY || objActor == EMPTY) {
             return AActivity.EMPTY;
         }
         AActivity mbActivity = AActivity.from(accountActor, activityType);
-        mbActivity.setActor(actor);
-        mbActivity.setObjActor(this);
+        mbActivity.setActor(this);
+        mbActivity.setObjActor(objActor);
         return mbActivity;
     }
 

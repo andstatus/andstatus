@@ -18,7 +18,6 @@ package org.andstatus.app.net.social;
 
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
@@ -144,8 +143,12 @@ public abstract class ConnectionTwitterLike extends Connection {
         }
         JSONObject jsoActor = postRequest(follow ? ApiRoutineEnum.FOLLOW : ApiRoutineEnum.UNDO_FOLLOW, out);
         final Actor friend = actorFromJson(jsoActor);
-        return friend.act(data.getAccountActor(), data.getAccountActor(),
-                follow ? ActivityType.FOLLOW : ActivityType.UNDO_FOLLOW);
+        return data.getAccountActor().act(
+                data.getAccountActor(),
+                follow
+                    ? ActivityType.FOLLOW
+                    : ActivityType.UNDO_FOLLOW,
+                friend);
     } 
 
     /**
