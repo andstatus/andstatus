@@ -199,17 +199,18 @@ public class Actor implements Comparable<Actor> {
         this.oid = StringUtils.isEmpty(actorOid) ? "" : actorOid;
     }
 
+    /** this Actor is MyAccount and the Actor updates objActor */
     @NonNull
-    public AActivity update(Actor accountActor) {
-        return update(accountActor, accountActor);
+    public AActivity update(Actor objActor) {
+        return update(this, objActor);
     }
 
-    /** another actor updates this actor */
+    /** this actor updates objActor */
     @NonNull
-    public AActivity update(Actor accountActor, @NonNull Actor actor) {
-        return actor == EMPTY
+    public AActivity update(Actor accountActor, @NonNull Actor objActor) {
+        return objActor == EMPTY
                 ? AActivity.EMPTY
-                : actor.act(accountActor, ActivityType.UPDATE, this);
+                : act(accountActor, ActivityType.UPDATE, objActor);
     }
 
     /** this actor acts on objActor */

@@ -204,19 +204,20 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
      * @return true if we need to interrupt process
      */
     private boolean updateNewActorsAndTheirLatestActions(List<Actor> actorsNew) {
-        DataUpdater di = new DataUpdater(execContext);
+        DataUpdater dataUpdater = new DataUpdater(execContext);
         boolean allNotesLoaded = true;
         long count = 0;
+        final Actor myAccountActor = execContext.getMyAccount().getActor();
         for (Actor actor : actorsNew) {
             count++;
             broadcastProgress(String.valueOf(count) + ". " + execContext.getContext().getText(R.string.button_save)
                     + ": " + actor.getNamePreferablyWebFingerId(), true);
-            di.onActivity(actor.update(execContext.getMyAccount().getActor()), false);
+            dataUpdater.onActivity(myAccountActor.update(actor), false);
             if (!actor.hasLatestNote()) {
                 allNotesLoaded = false;
             }
         }
-        di.saveLum();
+        dataUpdater.saveLum();
         if (!allNotesLoaded) {
             count = 0;
             for (Actor actor : actorsNew) {
@@ -229,7 +230,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                     broadcastProgress(String.valueOf(count) + ". "
                             + execContext.getContext().getText(R.string.title_command_get_status)
                             + ": " + actor.getNamePreferablyWebFingerId(), true);
-                    di.downloadOneNoteBy(actor.oid);
+                    dataUpdater.downloadOneNoteBy(actor.oid);
                     execContext.getResult().incrementDownloadedCount();
                 } catch (ConnectionException e) {
                     e1 = e;

@@ -88,7 +88,7 @@ public class DataUpdaterTest {
         somebody.setUsername(username);
         somebody.followedByMe = TriState.FALSE;
         somebody.setProfileUrl("http://identi.ca/somebody");
-        di.onActivity(somebody.update(accountActor, accountActor));
+        di.onActivity(accountActor.update(somebody));
 
         somebody.actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, accountActor.origin.getId(), actorOid);
         assertTrue("Actor " + username + " added", somebody.actorId != 0);
@@ -141,7 +141,7 @@ public class DataUpdaterTest {
         cursor.close();
 
         somebody.followedByMe = TriState.TRUE;
-        di.onActivity(somebody.update(accountActor, accountActor));
+        di.onActivity(accountActor.update(somebody));
         DemoConversationInserter.assertIfActorIsMyFriend(somebody, true, ma);
 
         Set<Long> friendsIds = MyQuery.getFriendsIds(ma.getActorId());
@@ -424,14 +424,14 @@ public class DataUpdaterTest {
         actor1.setProfileUrl("https://" + demoData.gnusocialTestOriginName + ".example.com/");
         
         DataUpdater di = new DataUpdater(ma);
-        long actorId1 = di.onActivity(actor1.update(accountActor)).getObjActor().actorId;
+        long actorId1 = di.onActivity(accountActor.update(actor1)).getObjActor().actorId;
         assertTrue("Actor added", actorId1 != 0);
         assertEquals("username stored", actor1.getUsername(),
                 MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1));
 
         Actor actor1partial = Actor.fromOriginAndActorOid(actor1.origin, actor1.oid);
         assertTrue("Partially defined", actor1partial.isPartiallyDefined());
-        long actorId1partial = di.onActivity(actor1partial.update(accountActor)).getObjActor().actorId;
+        long actorId1partial = di.onActivity(accountActor.update(actor1partial)).getObjActor().actorId;
         assertEquals("Same Actor", actorId1, actorId1partial);
         assertEquals("Partially defined Actor shouldn't change Username", actor1.getUsername(),
                 MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1));
@@ -441,7 +441,7 @@ public class DataUpdaterTest {
                 MyQuery.actorIdToStringColumnValue(ActorTable.REAL_NAME, actorId1));
 
         actor1.setUsername(actor1.getUsername() + "renamed");
-        long actorId1Renamed = di.onActivity(actor1.update(accountActor)).getObjActor().actorId;
+        long actorId1Renamed = di.onActivity(accountActor.update(actor1)).getObjActor().actorId;
         assertEquals("Same Actor renamed", actorId1, actorId1Renamed);
         assertEquals("Same Actor renamed", actor1.getUsername(),
                 MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1));
@@ -449,7 +449,7 @@ public class DataUpdaterTest {
         Actor actor2SameOldUsername = new DemoNoteInserter(ma).buildActorFromOid("34805"
                 + demoData.testRunUid);
         actor2SameOldUsername.setUsername(username);
-        long actorId2 = di.onActivity(actor2SameOldUsername.update(accountActor)).getObjActor().actorId;
+        long actorId2 = di.onActivity(accountActor.update(actor2SameOldUsername)).getObjActor().actorId;
         assertTrue("Other Actor with the same Actor name as old name of Actor", actorId1 != actorId2);
         assertEquals("Username stored", actor2SameOldUsername.getUsername(),
                 MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId2));
@@ -458,7 +458,7 @@ public class DataUpdaterTest {
                 + demoData.testRunUid);
         actor3SameNewUsername.setUsername(actor1.getUsername());
         actor3SameNewUsername.setProfileUrl("https://" + demoData.gnusocialTestOriginName + ".other.example.com/");
-        long actorId3 = di.onActivity(actor3SameNewUsername.update(accountActor)).getObjActor().actorId;
+        long actorId3 = di.onActivity(accountActor.update(actor3SameNewUsername)).getObjActor().actorId;
         assertTrue("Actor added " + actor3SameNewUsername, actorId3 != 0);
         assertTrue("Other Actor with the same username as the new name of actor1, but different WebFingerId", actorId1 != actorId3);
         assertEquals("username stored for actorId=" + actorId3, actor3SameNewUsername.getUsername(),
@@ -472,7 +472,7 @@ public class DataUpdaterTest {
         Actor accountActor = ma.getActor();
 
         DataUpdater di = new DataUpdater(ma);
-        long id = di.onActivity(actor.update(accountActor)).getObjActor().actorId;
+        long id = di.onActivity(accountActor.update(actor)).getObjActor().actorId;
         assertTrue("Actor added", id != 0);
         assertEquals("Username", actor.getUsername(),
                 MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, id));
@@ -525,7 +525,7 @@ public class DataUpdaterTest {
         Actor actor = Actor.fromOriginAndActorOid(ma.getOrigin(), realBuddyOid);
         actor.setUsername(buddyUsername);
         DataUpdater di = new DataUpdater(ma);
-        long actorId2 = di.onActivity(actor.update(ma.getActor())).getObjActor().actorId;
+        long actorId2 = di.onActivity(ma.getActor().update(actor)).getObjActor().actorId;
         assertEquals(actorId1, actorId2);
         assertEquals("TempOid replaced with real", realBuddyOid, MyQuery.idToOid(OidEnum.ACTOR_OID, actorId1, 0));
 

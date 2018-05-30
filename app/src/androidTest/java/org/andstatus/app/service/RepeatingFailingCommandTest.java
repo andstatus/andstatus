@@ -41,7 +41,7 @@ public class RepeatingFailingCommandTest extends MyServiceTest {
 
         final DemoNoteInserter inserter = new DemoNoteInserter(ma);
         Actor actor = inserter.buildActor();
-        inserter.onActivity(actor.update(ma.getActor()));
+        inserter.onActivity(ma.getActor().update(actor));
 
         String urlString = "http://andstatus.org/nonexistent2_avatar_" + System.currentTimeMillis() +  ".png";
         AvatarDownloaderTest.changeAvatarUrl(actor, urlString);

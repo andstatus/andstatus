@@ -116,9 +116,11 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         List<Actor> actors = null;
         if (StringUtils.nonEmpty(searchQuery)) {
             try {
+                final DataUpdater dataUpdater = new DataUpdater(execContext);
+                final Actor myAccountActor = execContext.getMyAccount().getActor();
                 actors = execContext.getMyAccount().getConnection().searchActors(ACTORS_LIMIT, searchQuery);
                 for (Actor actor : actors) {
-                    new DataUpdater(execContext).onActivity(actor.update(execContext.getMyAccount().getActor()));
+                    dataUpdater.onActivity(myAccountActor.update(actor));
                 }
             } catch (ConnectionException e) {
                 logConnectionException(e, msgLog);
@@ -183,7 +185,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             logExecutionError(true, msgLog + actorInfoLogged(actorId));
         }
         if (noErrors() && actor != null) {
-            new DataUpdater(execContext).onActivity(actor.update(execContext.getMyAccount().getActor()));
+            new DataUpdater(execContext).onActivity(execContext.getMyAccount().getActor().update(actor));
         }
         MyLog.d(this, (msgLog + (noErrors() ? " succeeded" : " failed") ));
     }

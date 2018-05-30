@@ -24,7 +24,6 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
@@ -500,7 +499,7 @@ public final class MyAccount implements Comparable<MyAccount> {
             if (myAccount.actor.actorId == 0) {
                 DataUpdater di = new DataUpdater(myAccount);
                 try {
-                    di.onActivity(myAccount.actor.update(myAccount.getActor()));
+                    di.onActivity(myAccount.actor.update(myAccount.actor));
                 } catch (Exception e) {
                     MyLog.e(TAG, "assignUserId", e);
                 }

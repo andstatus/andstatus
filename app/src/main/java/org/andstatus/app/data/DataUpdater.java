@@ -85,7 +85,7 @@ public class DataUpdater {
         if (activity == null || activity.isEmpty()) {
             return activity;
         }
-        updateObjActor(activity.getActor().update(activity.accountActor));
+        updateObjActor(activity.accountActor.update(activity.getActor()));
         switch (activity.getObjectType()) {
             case ACTIVITY:
                 onActivity(activity.getActivity(), false);
@@ -143,7 +143,7 @@ public class DataUpdater {
                 if (activity.isAuthorActor()) {
                     activity.setAuthor(activity.getActor());
                 } else {
-                    updateObjActor(activity.getAuthor().update(activity.accountActor, activity.getActor()));
+                    updateObjActor(activity.getActor().update(activity.accountActor, activity.getAuthor()));
                 }
             }
             if (note.noteId == 0) {
@@ -196,7 +196,7 @@ public class DataUpdater {
             activity.getNote().addRecipientsFromBodyText(activity.getActor());
             updateInReplyTo(activity, values);
             for ( Actor actor : note.audience().getRecipients()) {
-                updateObjActor(actor.update(activity.accountActor, activity.getActor()));
+                updateObjActor(activity.getActor().update(activity.accountActor, actor));
             }
 
             if (!StringUtils.isEmpty(note.via)) {
