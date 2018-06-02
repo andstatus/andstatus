@@ -30,8 +30,6 @@ import org.apache.commons.lang3.text.translate.NumericEntityUnescaper;
 import java.util.regex.Pattern;
 
 public class MyHtml {
-    private static final Pattern GNU_SOCIAL_FAVORITED_SOMETHING_BY_PATTERN = Pattern.compile(
-            "(?s)([^ ]+) favorited something by [^ ]+ (.+)");
     private static final Pattern SPACES_PATTERN = Pattern.compile("[\\[\\](){}\n\'\"<>,:;\\s]+");
     private static final Pattern PUNCTUATION_BEFORE_COMMA_PATTERN = Pattern.compile("[,.!?]+,");
     private static final Pattern MENTION_HASH_PREFIX_PATTERN = Pattern.compile("(,[@#!]([^@#!,]+))");
@@ -133,17 +131,7 @@ public class MyHtml {
     }
 
     @NonNull
-    public static String getCleanedBody1(String body) {
-        return SPACES_PATTERN.matcher(fromHtml(body).toLowerCase())
-            .replaceAll(" ");
-    }
-
-    public static boolean isFavoritingAction(String cleanedBody) {
-        return GNU_SOCIAL_FAVORITED_SOMETHING_BY_PATTERN.matcher(cleanedBody).matches();
-    }
-
-    @NonNull
-    public static String getCleanedBody2(String cleanedBody1) {
-        return GNU_SOCIAL_FAVORITED_SOMETHING_BY_PATTERN.matcher(cleanedBody1).replaceFirst("$2");
+    public static String getCleanedBody(String body) {
+        return SPACES_PATTERN.matcher(fromHtml(body).toLowerCase()).replaceAll(" ");
     }
 }

@@ -16,16 +16,22 @@
 
 package org.andstatus.app.note;
 
+import android.database.Cursor;
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
+import org.andstatus.app.net.social.ActivityType;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public class ConversationMemberItem extends ConversationItem<ConversationMemberItem> {
     public final static ConversationMemberItem EMPTY = new ConversationMemberItem(true);
+
+    ActivityType activityType = ActivityType.EMPTY;
+
 
     protected ConversationMemberItem(boolean isEmpty) {
         super(isEmpty);
@@ -41,6 +47,7 @@ public class ConversationMemberItem extends ConversationItem<ConversationMemberI
     Set<String> getProjection() {
         Set<String> columnNames = new HashSet<>();
         columnNames.add(ActivityTable.NOTE_ID);
+        columnNames.add(ActivityTable.ACTIVITY_TYPE);
         columnNames.add(NoteTable.CONVERSATION_ID);
         columnNames.add(NoteTable.UPDATED_DATE);
         columnNames.add(NoteTable.IN_REPLY_TO_NOTE_ID);
@@ -49,6 +56,12 @@ public class ConversationMemberItem extends ConversationItem<ConversationMemberI
         columnNames.add(NoteTable.NAME);
         columnNames.add(NoteTable.CONTENT);
         return columnNames;
+    }
+
+    @Override
+    void load(Cursor cursor) {
+        super.load(cursor);
+        activityType = ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
     }
 
     @Override

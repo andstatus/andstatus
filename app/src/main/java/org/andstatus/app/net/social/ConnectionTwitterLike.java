@@ -369,9 +369,8 @@ public abstract class ConnectionTwitterLike extends Connection {
 
     @NonNull
     protected Actor actorFromJson(JSONObject jso) throws ConnectionException {
-        if (jso == null) {
-            return Actor.EMPTY;
-        }
+        if (jso == null) return Actor.EMPTY;
+
         String oid = "";
         if (jso.has("id_str")) {
             oid = jso.optString("id_str");

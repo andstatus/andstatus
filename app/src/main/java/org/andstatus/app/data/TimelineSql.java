@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2014-2018 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -153,45 +153,39 @@ public class TimelineSql {
         return tables;
     }
 
-    /**
-     * Table columns to use for activities
-     */
+    public static Set<String> getConversationProjection() {
+        Set<String> columnNames = getActivityProjection();
+        columnNames.add(NoteTable.CONVERSATION_ID);
+        return columnNames;
+    }
+
+    /** Table columns to use for activities */
     public static Set<String> getActivityProjection() {
         Set<String> columnNames = getTimelineProjection();
-        columnNames.add(ActivityTable.INS_DATE);
         columnNames.add(ActivityTable.UPDATED_DATE);
         columnNames.add(ActivityTable.ACTIVITY_TYPE);
-        columnNames.add(ActivityTable.ACTOR_ID);
-        columnNames.add(ActivityTable.NOTE_ID);
         columnNames.add(ActivityTable.OBJ_ACTOR_ID);
         return columnNames;
     }
 
-    /** 
-     * Table columns to use for notes' content
-     */
     public static Set<String> getTimelineProjection() {
-        Set<String> columnNames = getBaseProjection();
+        Set<String> columnNames = new HashSet<>();
         columnNames.add(ActivityTable.ACTIVITY_ID);
         columnNames.add(ActivityTable.ACTOR_ID);
-        columnNames.add(NoteTable.VIA);
-        columnNames.add(NoteTable.REBLOGGED);
-        return columnNames;
-    }
-
-    private static Set<String> getBaseProjection() {
-        Set<String> columnNames = new HashSet<>();
         columnNames.add(ActivityTable.NOTE_ID);
         columnNames.add(ActivityTable.ORIGIN_ID);
         columnNames.add(NoteTable.NAME);
         columnNames.add(NoteTable.CONTENT);
+        columnNames.add(NoteTable.CONTENT_TO_SEARCH);
         columnNames.add(NoteTable.IN_REPLY_TO_NOTE_ID);
         columnNames.add(NoteTable.FAVORITED);
-        columnNames.add(ActivityTable.INS_DATE); // ??
+        columnNames.add(ActivityTable.INS_DATE);
         columnNames.add(NoteTable.UPDATED_DATE);
         columnNames.add(NoteTable.NOTE_STATUS);
         columnNames.add(ActivityTable.ACCOUNT_ID);
         columnNames.add(NoteTable.AUTHOR_ID);
+        columnNames.add(NoteTable.VIA);
+        columnNames.add(NoteTable.REBLOGGED);
         if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
             columnNames.add(DownloadTable.IMAGE_ID);
             columnNames.add(DownloadTable.IMAGE_FILE_NAME);
@@ -204,16 +198,6 @@ public class TimelineSql {
                 MyPreferences.KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS, false)) {
             columnNames.add(NoteTable.IN_REPLY_TO_ACTOR_ID);
         }
-        return columnNames;
-    }
-
-    public static Set<String> getConversationProjection() {
-        Set<String> columnNames = getBaseProjection();
-        columnNames.add(NoteTable.CONVERSATION_ID);
-        columnNames.add(NoteTable.AUTHOR_ID);
-        columnNames.add(ActivityTable.ACTOR_ID);
-        columnNames.add(NoteTable.VIA);
-        columnNames.add(NoteTable.REBLOGGED);
         return columnNames;
     }
 

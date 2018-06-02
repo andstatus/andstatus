@@ -17,19 +17,23 @@
 package org.andstatus.app.net.social;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
-import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.List;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_LONG_AGO;
+import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -97,7 +101,8 @@ public class ConnectionGnuSocialTest {
         assertTrue("Is a reply", inReplyTo.nonEmpty());
         assertEquals("Reply to the note id", "2663833", inReplyTo.getNote().oid);
         assertEquals("Reply to the note by actorOid", "114973", inReplyTo.getActor().oid);
-        assertEquals("Updated date should be 0 for inReplyTo note", 0, inReplyTo.getNote().getUpdatedDate());
+        assertEquals("Updated date should be 0 for inReplyTo note", DATETIME_MILLIS_NEVER,
+                inReplyTo.getNote().getUpdatedDate());
         assertEquals("Updated date should be 0 for inReplyTo activity", 0, inReplyTo.getUpdatedDate());
 
         assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
@@ -192,4 +197,80 @@ public class ConnectionGnuSocialTest {
         assertEquals("Actor; " + activity, "andstatus@loadaverage.org", activity.getActor().getWebFingerId());
         assertEquals("Author; " + activity, "igor@herds.eu", activity.getAuthor().getWebFingerId());
     }
+
+
+    @Test
+    public void testFavoritingActivity() {
+        AActivity activity1 = getFavoritingActivity("10238", "somebody favorited something by anotheractor: ");
+        AActivity activity2 = getFavoritingActivity("10239", "anotherman favorited something by anotheractor: ");
+        assertEquals("Should have the same content", activity1.getNote().getContent(), activity2.getNote().getContent());
+    }
+
+    @NonNull
+    private AActivity getFavoritingActivity(String favoritingOid, String favoritingPrefix) {
+        Actor accountActor = demoData.getAccountActorByOid(demoData.gnusocialTestAccountActorOid);
+        String actorOid = favoritingOid + "1";
+        Actor actor = Actor.fromOriginAndActorOid(accountActor.origin, actorOid);
+        long favoritingUpdateDate = System.currentTimeMillis() - 1000000;
+        AActivity activityIn = AActivity.newPartialNote(accountActor, actor, favoritingOid, favoritingUpdateDate,
+                DownloadStatus.LOADED);
+
+        String contentOfFavoritedNote = "the favorited note";
+        String body = favoritingPrefix + contentOfFavoritedNote;
+        activityIn.getNote().setContent(body);
+
+        AActivity activity = ConnectionTwitterGnuSocial.createLikeActivity(activityIn);
+        assertEquals("Should become LIKE activity " + activityIn, ActivityType.LIKE , activity.type);
+        final Note note = activity.getNote();
+        assertEquals("Should strip favoriting prefix " + activityIn, contentOfFavoritedNote, note.getContent());
+        assertEquals("Note updatedDate should be 1 " + activity, DATETIME_MILLIS_LONG_AGO, note.getUpdatedDate());
+        return activity;
+    }
+
+    @Test
+    public void testFavoritingActivityInTimeline() throws IOException {
+        connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.loadaverage_favoriting_activity);
+
+        String accountActorOid = demoData.gnusocialTestAccountActorOid;
+        List<AActivity> timeline = connection.getTimeline(ApiRoutineEnum.SEARCH_NOTES,
+                new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountActorOid);
+        assertNotNull("timeline returned", timeline);
+        assertEquals("Number of items in the Timeline", 2, timeline.size());
+
+        int ind = 0;
+        AActivity activity = timeline.get(ind);
+        assertEquals("Posting a note " + activity, AObjectType.NOTE, activity.getObjectType());
+        assertEquals("Should be UPDATE " + activity, ActivityType.UPDATE,  activity.type);
+        assertEquals("Timeline position", "12940131", activity.getTimelinePosition().getPosition());
+        assertEquals("Note Oid", "12940131", activity.getNote().oid);
+        assertEquals("conversationOid", "10538185", activity.getNote().conversationOid);
+        assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
+        assertEquals("Actor Oid", "379323", activity.getActor().oid);
+        assertEquals("Actor Username", "colegota", activity.getActor().getUsername());
+        assertEquals("Author Oid", "379323", activity.getAuthor().oid);
+        assertEquals("Author Username", "colegota", activity.getAuthor().getUsername());
+        final String contentPrefix = "@<a href=\"https://linuxinthenight.com/user/1\" class";
+        assertTrue("Content " + activity, activity.getNote().getContent().startsWith(contentPrefix));
+        // TODO: assertTrue("Should have a recipient", activity.recipients().nonEmpty());
+
+        ind++;
+        activity = timeline.get(ind);
+        assertEquals("Should be LIKE " + activity, ActivityType.LIKE,  activity.type);
+        assertEquals("Timeline position", "12942571", activity.getTimelinePosition().getPosition());
+        assertEquals("Actor Oid", "347578", activity.getActor().oid);
+        assertEquals("Actor Username", "fanta", activity.getActor().getUsername());
+        assertEquals("Author Oid", "379323", activity.getAuthor().oid);
+        assertEquals("Note Oid", "12940131", activity.getNote().oid);
+        assertTrue("Should not have a recipient", activity.recipients().isEmpty());
+
+        assertTrue("Content " + activity, activity.getNote().getContent().startsWith(contentPrefix));
+
+        assertTrue("inReplyTo should be empty " + activity , activity.getNote().getInReplyTo().isEmpty());
+        assertEquals("Updated date should be 1 for favorited note", DATETIME_MILLIS_LONG_AGO,
+                activity.getNote().getUpdatedDate());
+        assertEquals("Activity updated at " + TestSuite.utcTime(activity.getUpdatedDate()),
+                TestSuite.utcTime(2018, Calendar.JUNE, 1, 17, 4, 57),
+                TestSuite.utcTime(activity.getUpdatedDate()));
+    }
+
 }

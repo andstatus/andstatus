@@ -64,10 +64,9 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     private String name = "";
     private String content = "";
-    String cleanedBody = "";
+    String contentToSearch = "";
 
     boolean favorited = false;
-    boolean isFavoritingAction = false;
     Map<Long, String> rebloggers = new HashMap<>();
     boolean reblogged = false;
 
@@ -131,8 +130,6 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     private DuplicationLink duplicatesByFavoritedAndReblogged(@NonNull T other) {
         if (favorited != other.favorited) {
             return favorited ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
-        } else if (isFavoritingAction != other.isFavoritingAction) {
-            return other.isFavoritingAction ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
         } else if (reblogged != other.reblogged) {
             return reblogged ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
         } else if (!getLinkedMyAccount().equals(other.getLinkedMyAccount())) {
@@ -146,7 +143,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     private DuplicationLink duplicatesByOther(@NonNull T other) {
         if (Math.abs(updatedDate - other.updatedDate) >= TimeUnit.HOURS.toMillis(24)
                 || isTooShortToCompare() || other.isTooShortToCompare()) return DuplicationLink.NONE;
-        if (cleanedBody.equals(other.cleanedBody)) {
+        if (contentToSearch.equals(other.contentToSearch)) {
             if (updatedDate == other.updatedDate) {
                 return duplicatesByFavoritedAndReblogged(other);
             } else if (updatedDate < other.updatedDate) {
@@ -154,16 +151,16 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
             } else {
                 return DuplicationLink.DUPLICATES;
             }
-        } else if (cleanedBody.contains(other.cleanedBody)) {
+        } else if (contentToSearch.contains(other.contentToSearch)) {
             return DuplicationLink.DUPLICATES;
-        } else if (other.cleanedBody.contains(cleanedBody)) {
+        } else if (other.contentToSearch.contains(contentToSearch)) {
             return DuplicationLink.IS_DUPLICATED;
         }
         return DuplicationLink.NONE;
     }
 
     boolean isTooShortToCompare() {
-        return cleanedBody.length() < MIN_LENGTH_TO_COMPARE;
+        return contentToSearch.length() < MIN_LENGTH_TO_COMPARE;
     }
 
     public boolean isReblogged() {
@@ -225,11 +222,6 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     public BaseNoteViewItem setContent(String content) {
         this.content = content;
-        String cleanedBody1 = MyHtml.getCleanedBody1(content);
-        isFavoritingAction = MyHtml.isFavoritingAction(cleanedBody1);
-        cleanedBody = isFavoritingAction
-                ? MyHtml.getCleanedBody2(cleanedBody1)
-                : cleanedBody1;
         return this;
     }
 

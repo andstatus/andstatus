@@ -39,6 +39,7 @@ import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.net.social.AActivity;
+import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Audience;
@@ -300,7 +301,7 @@ public class NoteEditorData {
                 ConversationMemberItem.EMPTY, MyContextHolder.get(), ma, getInReplyToNoteId(), false);
         loader.load(progress -> {});
         addActorsBeforeText(loader.getList().stream()
-                .filter(o -> !o.isFavoritingAction)
+                .filter(o -> o.activityType == ActivityType.UPDATE)
                 .map(o -> o.author.getActorId()).collect(Collectors.toList()));
     }
 

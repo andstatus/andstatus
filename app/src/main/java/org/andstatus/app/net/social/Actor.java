@@ -297,9 +297,10 @@ public class Actor implements Comparable<Actor> {
         return profileUri.toString();
     }
 
-    public void setProfileUrl(String url) {
+    public Actor setProfileUrl(String url) {
         this.profileUri = UriUtils.fromString(url);
         fixWebFingerId();
+        return this;
     }
 
     public void setProfileUrl(URL url) {

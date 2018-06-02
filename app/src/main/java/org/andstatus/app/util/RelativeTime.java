@@ -27,6 +27,8 @@ import java.util.concurrent.TimeUnit;
  * @author yvolk@yurivolkov.com
  */
 public class RelativeTime {
+    public static long DATETIME_MILLIS_NEVER = 0;
+    public static long DATETIME_MILLIS_LONG_AGO = 1; // We don't know exact date
 
     private RelativeTime() {
         // Empty
@@ -40,7 +42,7 @@ public class RelativeTime {
     }
 
     public static String getDifference(Context context, long fromMs, long toMs) {
-        if (fromMs <= 0 || toMs <= 0) {
+        if (fromMs <= DATETIME_MILLIS_NEVER || toMs <= DATETIME_MILLIS_NEVER) {
             return "";
         }
         long numSeconds = TimeUnit.MILLISECONDS.toSeconds(toMs - fromMs);
@@ -88,7 +90,7 @@ public class RelativeTime {
     }
 
     private static long getMonthsDifference(long fromMs, long toMs) {
-        if (fromMs <= 0 || toMs <= fromMs ) {
+        if (fromMs <= DATETIME_MILLIS_NEVER || toMs <= fromMs ) {
             return 0;
         }
         // TODO: Migrate to java.util.time, see http://stackoverflow.com/questions/1086396/java-date-month-difference

@@ -33,6 +33,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_LONG_AGO;
 
 /**
  * Specific implementation of the Twitter API in GNU Social
@@ -42,6 +46,8 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     private static final String ATTACHMENTS_FIELD_NAME = "attachments";
     private static final String CONVERSATION_ID_FIELD_NAME = "statusnet_conversation_id";
     private static final String HTML_BODY_FIELD_NAME = "statusnet_html";
+    public static final Pattern GNU_SOCIAL_FAVORITED_SOMETHING_BY_PATTERN = Pattern.compile(
+            "(?s)([^ ]+) favorited something by [^ ]+ (.+)");
 
     @Override
     protected String getApiPath1(ApiRoutineEnum routine) {
@@ -199,17 +205,42 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
                 MyLog.d(this, method, e);
             }
         }
+        return createLikeActivity(activity);
+    }
+
+    public static AActivity createLikeActivity(AActivity activityIn) {
+        final Note noteIn = activityIn.getNote();
+        Matcher matcher = GNU_SOCIAL_FAVORITED_SOMETHING_BY_PATTERN.matcher(noteIn.getContent());
+        if (!matcher.matches()) return activityIn;
+
+        final AActivity inReplyTo = noteIn.getInReplyTo();
+        final AActivity favoritedActivity;
+        if (UriUtils.isRealOid(inReplyTo.getNote().oid)) {
+            favoritedActivity = inReplyTo;
+        } else {
+            favoritedActivity = AActivity.from(activityIn.accountActor, ActivityType.UPDATE);
+            favoritedActivity.setActor(activityIn.getActor());
+            favoritedActivity.setNote(noteIn);
+        }
+        favoritedActivity.setUpdatedDate(DATETIME_MILLIS_LONG_AGO);
+
+        Note note = favoritedActivity.getNote();
+        note.setContent(matcher.replaceFirst("$2"));
+        note.setUpdatedDate(DATETIME_MILLIS_LONG_AGO);
+        note.setInReplyTo(AActivity.EMPTY);
+
+        AActivity activity = AActivity.from(activityIn.accountActor, ActivityType.LIKE);
+        activity.setTimelinePosition(activityIn.getTimelinePosition().getPosition());
+        activity.setActor(activityIn.getActor());
+        activity.setUpdatedDate(activityIn.getUpdatedDate());
+        activity.setActivity(favoritedActivity);
         return activity;
     }
 
     @Override
     @NonNull
     protected Actor actorFromJson(JSONObject jso) throws ConnectionException {
-        Actor actor = super.actorFromJson(jso);
-        if (jso != null) {
-            actor.setProfileUrl(jso.optString("statusnet_profile_url"));
-        }
-        return actor;
+        return super.actorFromJson(jso).setProfileUrl(jso.optString("statusnet_profile_url"));
     }
     
     @Override

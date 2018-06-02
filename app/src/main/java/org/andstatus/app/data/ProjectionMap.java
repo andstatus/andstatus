@@ -74,6 +74,7 @@ public class ProjectionMap {
         TIMELINE.put(DownloadTable.DURATION, DownloadTable.DURATION);
         TIMELINE.put(NoteTable.NAME, NoteTable.NAME);
         TIMELINE.put(NoteTable.CONTENT, NoteTable.CONTENT);
+        TIMELINE.put(NoteTable.CONTENT_TO_SEARCH, NoteTable.CONTENT_TO_SEARCH);
         TIMELINE.put(NoteTable.VIA, NoteTable.VIA);
         TIMELINE.put(NoteTable.URL, NoteTable.URL);
         TIMELINE.put(NoteTable.IN_REPLY_TO_NOTE_ID, NoteTable.IN_REPLY_TO_NOTE_ID);

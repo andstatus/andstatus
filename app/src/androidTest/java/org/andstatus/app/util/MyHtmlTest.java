@@ -111,17 +111,4 @@ public class MyHtmlTest {
         assertEquals(expected, MyHtml.fromHtml(string));
         assertEquals("I'm working", MyHtml.fromHtml("I&apos;m working"));
     }
-
-    @Test
-    public void testGetCleanedBody() {
-        String body = "";
-        String expected = "the favorited note";
-
-        body = "Somebody favorited something by anotheractor: " + expected;
-        final String cleanedBody1 = MyHtml.getCleanedBody1(body);
-        final String cleanedBody2 = MyHtml.getCleanedBody2(cleanedBody1);
-        assertEquals(expected, cleanedBody2);
-        assertTrue(body, MyHtml.isFavoritingAction(cleanedBody1));
-        assertFalse(HTMLIFIED_STRING, MyHtml.isFavoritingAction(HTMLIFIED_STRING));
-    }
 }

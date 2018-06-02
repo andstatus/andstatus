@@ -69,6 +69,7 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
 
         setName(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.NAME)));
         setContent(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.CONTENT)));
+        contentToSearch = DbUtils.getString(cursor, NoteTable.CONTENT_TO_SEARCH);
         inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
         inReplyToActor = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID));
         recipientName = DbUtils.getString(cursor, ActorTable.RECIPIENT_NAME);
