@@ -560,11 +560,12 @@ public class NoteEditor {
         if (!editorData.isValid()) {
             discardAndHide();
         } else if (editorData.isEmpty()) {
-            Toast.makeText(getActivity(), R.string.cannot_send_empty_message,
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), R.string.cannot_send_empty_message, Toast.LENGTH_SHORT).show();
         } else if (editorData.getMyAccount().charactersLeftForNote(editorData.getContent()) < 0) {
-            Toast.makeText(getActivity(), R.string.message_is_too_long,
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), R.string.message_is_too_long, Toast.LENGTH_SHORT).show();
+        } else if (editorData.getAttachment().nonEmpty()
+                && editorData.getAttachment().fileSize > MyPreferences.getMaximumSizeOfAttachmentBytes()) {
+            Toast.makeText(getActivity(), R.string.attachment_is_too_large, Toast.LENGTH_SHORT).show();
         } else {
             NoteEditorCommand command = new NoteEditorCommand(editorData.copy());
             command.currentData.activity.getNote().setStatus(DownloadStatus.SENDING);

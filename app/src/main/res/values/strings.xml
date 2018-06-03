@@ -30,6 +30,7 @@
   <string name="attach_images_summary_off">\"Paperclip+\" button, used to attach images to your posts, is hidden</string>
   <string name="attach_images_summary_on">Use \"Paperclip+\" button (\"Attach\" menu item) to attach images to you note. Or Share image to AndStatus from another application</string>
   <string name="attach_images_title">Attach images to my notes</string>
+  <string name="attachment_is_too_large">Attachment is too large</string>
   <string name="attachments">Attachments</string>
   <string name="authentication_never">Didn\'t authenticate yet</string>
   <string name="authentication_successful">Authentication successful!</string>
@@ -243,6 +244,8 @@
   <string name="manage_accounts_android">Manage AndStatus accounts in Android Settings</string>
   <string name="manage_timelines">Manage Timelines</string>
   <string name="max_distance_between_duplicates_title">Maximum distance between duplicates</string>
+  <string name="maximum_size_of_attachment_mb">Maximum size of an attachment, Mb</string>
+  <string name="maximum_size_of_cached_media_mb">Maximum size of cached media files (including attachments), Mb</string>
   <string name="mention_as_webfingerid_title">Mention as @webFingerId</string>
   <string name="menu_item_act_as">Act as&#8230;</string>
   <string name="menu_item_act_as_user">Act as \"%1s\"</string>

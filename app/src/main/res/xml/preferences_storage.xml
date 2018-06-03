@@ -34,6 +34,10 @@
 		android:dialogTitle="@string/dialog_title_preference_history_time"
 		android:defaultValue="365"
 		android:title="@string/title_preference_history_time" />
+    <org.andstatus.app.context.MultilineEditTextPreference android:key="maximum_size_of_cached_media_mb"
+        android:singleLine="true"
+        android:defaultValue="1000"
+        android:title="@string/maximum_size_of_cached_media_mb" />
 	<Preference android:key="backup_restore"
 		android:persistent="false" />
 	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="enable_android_backup"

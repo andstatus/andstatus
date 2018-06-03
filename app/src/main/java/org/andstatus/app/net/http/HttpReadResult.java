@@ -1,6 +1,4 @@
-/*
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
- *
+/* Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,7 +15,10 @@
 package org.andstatus.app.net.http;
 
 import android.text.TextUtils;
+import android.text.format.Formatter;
 
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
@@ -192,9 +193,8 @@ public class HttpReadResult {
         try {
             JSONObject jsonError = new JSONObject(strResponse);
             error = jsonError.optString("error", error);
-            if (statusCode == StatusCode.UNKNOWN) {
-                statusCode = (error.indexOf("not found") < 0 ? StatusCode.UNKNOWN
-                        : StatusCode.NOT_FOUND);
+            if (statusCode == StatusCode.UNKNOWN && error.contains("not found")) {
+                statusCode = StatusCode.NOT_FOUND;
             }
             ce = new ConnectionException(statusCode, toString() + "; error='" + error + "'");
         } catch (JSONException e) {
@@ -209,6 +209,13 @@ public class HttpReadResult {
 
     public void parseAndThrow() throws ConnectionException {
         if ( isStatusOk()) {
+            if (fileResult != null && fileResult.isFile() && fileResult.exists()
+                    && fileResult.length() > MyPreferences.getMaximumSizeOfAttachmentBytes()) {
+                throw ConnectionException.hardConnectionException(
+                        "File, downloaded from \"" + urlString + "\", is too large: "
+                          + Formatter.formatShortFileSize(MyContextHolder.get().context(), fileResult.length()),
+                        null);
+            }
             MyLog.v(this, toString());
         } else {
             if (!StringUtils.isEmpty(strResponse)) {

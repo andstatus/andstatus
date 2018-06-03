@@ -69,6 +69,7 @@ public class MyPreferences {
     public static final String KEY_DOWNLOAD_AND_DISPLAY_ATTACHED_IMAGES = "show_attached_images";
     public static final String KEY_ATTACH_IMAGES_TO_MY_NOTES = "attach_images";
     public static final String KEY_DOWNLOAD_ATTACHMENTS_OVER_WIFI_ONLY = "download_attachments_over_wifi_only";
+    public static final String KEY_MAXIMUM_SIZE_OF_ATTACHMENT_MB = "maximum_size_of_attachment_mb";
     public static final String KEY_MODERN_INTERFACE_TO_SELECT_AN_ATTACHMENT = "use_kitkat_media_chooser";
 
     // ----------------------------------------------------------
@@ -100,6 +101,7 @@ public class MyPreferences {
     public static final String KEY_USE_EXTERNAL_STORAGE_NEW = "use_external_storage_new";
     public static final String KEY_HISTORY_SIZE = "history_size";
     public static final String KEY_HISTORY_TIME = "history_time";
+    public static final String KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB = "maximum_size_of_cached_media_mb";
     public static final String KEY_ENABLE_ANDROID_BACKUP = "enable_android_backup";
 
     // ----------------------------------------------------------
@@ -126,6 +128,8 @@ public class MyPreferences {
     public static final String KEY_BEING_EDITED_NOTE_ID = "draft_message_id";
 
     private static final boolean COLLAPSE_DUPLICATES_DEFAULT_VALUE = true;
+
+    public static final int BYTES_IN_MEGABYTE = 1024 * 1024;
 
     private MyPreferences(){
         // Non instantiable
@@ -256,5 +260,15 @@ public class MyPreferences {
     public static int getMaxDistanceBetweenDuplicates() {
         return SharedPreferencesUtil.getIntStoredAsString(KEY_MAX_DISTANCE_BETWEEN_DUPLICATES,
                 MAX_DISTANCE_BETWEEN_DUPLICATES_DEFAULT);
+    }
+
+    public static int getMaximumSizeOfAttachmentBytes() {
+        return SharedPreferencesUtil.getIntStoredAsString(KEY_MAXIMUM_SIZE_OF_ATTACHMENT_MB, 5)
+                * BYTES_IN_MEGABYTE;
+    }
+
+    public static int getMaximumSizeOfCachedMediaBytes() {
+        return SharedPreferencesUtil.getIntStoredAsString(KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB, 1000)
+                * BYTES_IN_MEGABYTE;
     }
 }

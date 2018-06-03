@@ -23,7 +23,9 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public class DownloadFile {
     private final String filename;
@@ -39,9 +41,21 @@ public class DownloadFile {
             file = null;
             existed = false;
         } else {
-            file = new File(MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS), filename);
+            file = new File(getFilesDir(), filename);
             existed = existsNow();
         }
+    }
+
+    public static long getDirSize() {
+        return getMediaFiles().mapToLong(File::length).sum();
+    }
+
+    public static Stream<File> getMediaFiles() {
+        return Arrays.stream(getFilesDir().listFiles()).filter(File::isFile);
+    }
+
+    private static File getFilesDir() {
+        return MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS);
     }
 
     public final boolean isEmpty() {

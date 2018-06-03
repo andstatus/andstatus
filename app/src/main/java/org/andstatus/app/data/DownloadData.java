@@ -6,7 +6,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
 
 import org.andstatus.app.account.MyAccount;
@@ -25,10 +24,11 @@ import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class DownloadData {
     private static final String TAG = DownloadData.class.getSimpleName();
-    public static final DownloadData EMPTY = new DownloadData(0, 0, 0, "",
+    public static final DownloadData EMPTY = new DownloadData(null, 0, 0, 0, "",
             DownloadType.UNKNOWN, Uri.EMPTY);
     private DownloadType downloadType = DownloadType.UNKNOWN;
     public long actorId = 0;
@@ -50,30 +50,38 @@ public class DownloadData {
     @NonNull
     private DownloadFile fileNew = DownloadFile.EMPTY;
 
+    public static DownloadData fromCursor(@NonNull Cursor cursor) {
+        return new DownloadData(cursor, 0, 0, 0, "", DownloadType.UNKNOWN, Uri.EMPTY);
+    }
+
     public static DownloadData fromId(long downloadId) {
-        return new DownloadData(downloadId, 0, 0, "", DownloadType.UNKNOWN, Uri.EMPTY);
+        return new DownloadData(null, downloadId, 0, 0, "", DownloadType.UNKNOWN, Uri.EMPTY);
     }
 
     /**
      * Currently we assume that there is no more than one attachment of a message
      */
     public static DownloadData getSingleAttachment(long noteId) {
-        return new DownloadData(0, 0, noteId, "", DownloadType.ATTACHMENT, Uri.EMPTY);
+        return new DownloadData(null, 0, 0, noteId, "", DownloadType.ATTACHMENT, Uri.EMPTY);
     }
 
     public static DownloadData getThisForNote(long noteId, String mimeType, DownloadType downloadType, Uri uriIn) {
-        return new DownloadData(0, 0, noteId, mimeType, downloadType, uriIn);
+        return new DownloadData(null, 0, 0, noteId, mimeType, downloadType, uriIn);
     }
 
-    protected DownloadData(long downloadId, long actorId, long noteId, String mimeType, DownloadType downloadType,
-                           Uri uri) {
+    protected DownloadData(Cursor cursor, long downloadId, long actorId, long noteId, String mimeType,
+                           DownloadType downloadType, Uri uri) {
         this.downloadId = downloadId;
         this.actorId = actorId;
         this.noteId = noteId;
         this.downloadType = downloadType;
         this.mimeType = mimeType;
         this.uri = UriUtils.notNull(uri);
-        loadOtherFields();
+        if (cursor == null) {
+            loadOtherFields();
+        } else {
+            loadFromCursor(cursor);
+        }
         fixFieldsAfterLoad();
     }
 
@@ -89,34 +97,38 @@ public class DownloadData {
         try (Cursor cursor = db.rawQuery(sql, null)) {
             status = DownloadStatus.ABSENT;
             if (cursor.moveToNext()) {
-                status = DownloadStatus.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_STATUS));
-                fileStored = new DownloadFile(DbUtils.getString(cursor, DownloadTable.FILE_NAME));
-                if (downloadType == DownloadType.UNKNOWN) {
-                    downloadType = DownloadType.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_TYPE));
-                }
-                if (StringUtils.isEmpty(mimeType)) {
-                    mimeType = DbUtils.getString(cursor, DownloadTable.MEDIA_TYPE,
-                            () -> MyContentType.uri2MimeType(null, Uri.parse(fileStored.getFilename())));
-                }
-                if (actorId == 0) {
-                    actorId = DbUtils.getLong(cursor, DownloadTable.ACTOR_ID);
-                }
-                if (noteId == 0) {
-                    noteId = DbUtils.getLong(cursor, DownloadTable.NOTE_ID);
-                }
-                if (downloadId == 0) {
-                    downloadId = DbUtils.getLong(cursor, DownloadTable._ID);
-                }
-                if (downloadNumber == 0) {
-                    downloadNumber = DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_NUMBER);
-                }
-                if (uri.equals(Uri.EMPTY)) {
-                    uri = UriUtils.fromString(DbUtils.getString(cursor, DownloadTable.URI));
-                }
-                mediaMetadata = MediaMetadata.fromCursor(cursor);
-                fileSize = DbUtils.getLong(cursor, DownloadTable.FILE_SIZE);
+                loadFromCursor(cursor);
             }
         }
+    }
+
+    private void loadFromCursor(@NonNull Cursor cursor) {
+        status = DownloadStatus.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_STATUS));
+        fileStored = new DownloadFile(DbUtils.getString(cursor, DownloadTable.FILE_NAME));
+        if (downloadType == DownloadType.UNKNOWN) {
+            downloadType = DownloadType.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_TYPE));
+        }
+        if (StringUtils.isEmpty(mimeType)) {
+            mimeType = DbUtils.getString(cursor, DownloadTable.MEDIA_TYPE,
+                    () -> MyContentType.uri2MimeType(null, Uri.parse(fileStored.getFilename())));
+        }
+        if (actorId == 0) {
+            actorId = DbUtils.getLong(cursor, DownloadTable.ACTOR_ID);
+        }
+        if (noteId == 0) {
+            noteId = DbUtils.getLong(cursor, DownloadTable.NOTE_ID);
+        }
+        if (downloadId == 0) {
+            downloadId = DbUtils.getLong(cursor, DownloadTable._ID);
+        }
+        if (downloadNumber == 0) {
+            downloadNumber = DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_NUMBER);
+        }
+        if (uri.equals(Uri.EMPTY)) {
+            uri = UriUtils.fromString(DbUtils.getString(cursor, DownloadTable.URI));
+        }
+        mediaMetadata = MediaMetadata.fromCursor(cursor);
+        fileSize = DbUtils.getLong(cursor, DownloadTable.FILE_SIZE);
     }
 
     private boolean checkHardErrorBeforeLoad() {
@@ -354,6 +366,14 @@ public class DownloadData {
         }
     }
 
+    public void deleteFile(SQLiteDatabase db) {
+        if (fileStored.existed) {
+            fileStored.delete();
+            status = DownloadStatus.ABSENT;
+            saveToDatabase();
+        }
+    }
+
     public static void deleteAllOfThisNote(SQLiteDatabase db, long noteId) {
         final String method = "deleteAllOfThisNote noteId=" + noteId;
         deleteSelected(method, db, DownloadTable.NOTE_ID + "=" + noteId);
@@ -472,4 +492,37 @@ public class DownloadData {
     public boolean isEmpty() {
         return this == EMPTY || uri.equals(Uri.EMPTY);
     }
+
+    static long pruneFiles(MyContext myContext, DownloadType downloadType, long bytesToPrune) {
+        SQLiteDatabase db = myContext.getDatabase();
+        return (db == null) ?  0 : foldOldest(myContext, downloadType, bytesToPrune, d -> d.deleteFile(db));
+    }
+
+    static long foldOldest(MyContext myContext, DownloadType downloadType, long totalSizeOfFiles,
+                                   Consumer<DownloadData> consumer) {
+        final String sql = "SELECT *"
+                + " FROM " + DownloadTable.TABLE_NAME
+                + " WHERE " + DownloadTable.DOWNLOAD_TYPE + "='" + downloadType.save() + "'"
+                + " ORDER BY " + DownloadTable._ID;
+        return MyQuery.foldLeft(myContext, sql,
+                new CountWithSize(),
+                countWithSize -> cursor -> {
+                    if (countWithSize.size < totalSizeOfFiles) {
+                        DownloadData data = DownloadData.fromCursor(cursor);
+                        if (data.fileStored.existed) {
+                            countWithSize.count += 1;
+                            countWithSize.size += data.fileSize;
+                            consumer.accept(data);
+                        }
+                    }
+                    return countWithSize;
+                }
+            ).count;
+    }
+
+    private static class CountWithSize {
+        long count = 0;
+        long size = 0;
+    }
+
 }

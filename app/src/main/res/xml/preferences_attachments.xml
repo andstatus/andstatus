@@ -28,6 +28,10 @@
         android:title="@string/title_preference_download_attachments_over_wifi_only"
         android:defaultValue="true"
         android:dependency="show_attached_images" />
+    <org.andstatus.app.context.MultilineEditTextPreference android:key="maximum_size_of_attachment_mb"
+        android:singleLine="true"
+        android:defaultValue="5"
+        android:title="@string/maximum_size_of_attachment_mb" />
     <org.andstatus.app.context.MultilineCheckBoxPreference android:key="use_kitkat_media_chooser"
         android:title="@string/preference_use_kitkat_media_chooser_title"
         android:defaultValue="true"

@@ -23,7 +23,6 @@ import android.database.sqlite.SQLiteStatement;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
-import android.text.TextUtils;
 
 import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.context.MyContext;
@@ -717,26 +716,39 @@ public class MyQuery {
      * @return Empty set on UI thread
      */
     @NonNull
-    public static <T> Set<T> get(@NonNull MyContext myContext, @NonNull String sql, Function<Cursor, T> f) {
-        final String method = "get";
+    public static <T> Set<T> get(@NonNull MyContext myContext, @NonNull String sql, Function<Cursor, T> fromCursor) {
+        return foldLeft(myContext,
+                    sql,
+                    new HashSet<>(),
+                    t -> cursor -> { t.add(fromCursor.apply(cursor)); return t; }
+                );
+    }
+
+    /**
+     * @return identity on UI thread
+     */
+    @NonNull
+    public static <U> U foldLeft(@NonNull MyContext myContext, @NonNull String sql, @NonNull U identity,
+                                 @NonNull Function<U, Function<Cursor, U>> f) {
+        final String method = "foldLeft";
         if (myContext.getDatabase() == null) {
             MyLog.v(TAG, method + "; Database is null");
-            return Collections.emptySet();
+            return identity;
         }
         if (MyAsyncTask.isUiThread()) {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(TAG, method + "; Database access in UI thread: '" + sql + "'\n"
                         + MyLog.getStackTrace(new IllegalAccessException()));
             }
-            return Collections.emptySet();
+            return identity;
         }
-        Set<T> set = new HashSet<>();
+        U result = identity;
         try (Cursor c = myContext.getDatabase().rawQuery(sql, null)) {
-            while (c.moveToNext()) set.add(f.apply(c));
+            while (c.moveToNext()) result = f.apply(result).apply(c);
         } catch (Exception e) {
             MyLog.i(TAG, method + "; SQL:'" + sql + "'", e);
         }
-        return set;
+        return result;
     }
 
     /** IDs of my users' actors, who follow the specified Actor */

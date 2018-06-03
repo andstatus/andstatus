@@ -20,6 +20,7 @@ import android.content.ContentResolver;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
@@ -36,9 +37,7 @@ import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -47,15 +46,29 @@ import java.util.stream.Collectors;
  * old Notes, log files...
  */
 public class DataPruner {
-    private MyContext myContext;
-    private ContentResolver mContentResolver;
+    @NonNull
+    private final MyContext myContext;
+    @NonNull
+    private final SQLiteDatabase db;
+    private final ContentResolver mContentResolver;
     private long mDeleted = 0;
     static final long MAX_DAYS_LOGS_TO_KEEP = 10;
     static final long MAX_DAYS_UNUSED_TIMELINES_TO_KEEP = 31;
     private static final long PRUNE_MIN_PERIOD_DAYS = 1;
+    private static final double ATTACHMENTS_SIZE_PART = 0.75;
 
-    public DataPruner(MyContext myContext) {
+    public static void prune(@NonNull MyContext myContext) {
+        SQLiteDatabase db = myContext.getDatabase();
+        if (db == null) {
+            MyLog.d(DataPruner.class, "Database is null");
+        } else {
+            new DataPruner(myContext, db).prune();
+        }
+    }
+
+    public DataPruner(@NonNull MyContext myContext, @NonNull SQLiteDatabase db) {
         this.myContext = myContext;
+        this.db = db;
         mContentResolver = myContext.context().getContentResolver();
     }
 
@@ -132,8 +145,9 @@ public class DataPruner {
         }
         mDeleted = nDeletedTime + nDeletedSize;
         if (mDeleted > 0) {
-            pruneAttachments();
+            pruneParentlesAttachments();
         }
+        pruneMedia();
         pruneTimelines(Long.max(latestTimestamp, getLatestTimestamp(MAX_DAYS_UNUSED_TIMELINES_TO_KEEP)));
         pruneLogs(MAX_DAYS_LOGS_TO_KEEP);
         setDataPrunedNow();
@@ -147,35 +161,42 @@ public class DataPruner {
         return pruned;
     }
 
+    private void pruneMedia() {
+        long dirSize = DownloadFile.getDirSize();
+        long maxSize = MyPreferences.getMaximumSizeOfCachedMediaBytes();
+        final long bytesToPrune = dirSize - maxSize;
+        MyLog.v(this, "Size of media files: " + dirSize + " bytes"
+        + (bytesToPrune > 0
+                        ? " exceeds"
+                        : " less than")
+                + " maximum " + maxSize
+        );
+        if (bytesToPrune < 5 * MyPreferences.getMaximumSizeOfAttachmentBytes()) return;
+
+        MyLog.v(this, "Pruned "
+            + DownloadData.pruneFiles(myContext, DownloadType.ATTACHMENT,
+                Math.round(bytesToPrune * ATTACHMENTS_SIZE_PART))
+            + " attachment files");
+        MyLog.v(this, "Pruned "
+                + DownloadData.pruneFiles(myContext, DownloadType.AVATAR,
+                Math.round(bytesToPrune * (1 - ATTACHMENTS_SIZE_PART)))
+                + " avatar files");
+    }
+
     public static long getLatestTimestamp(long maxDays) {
         return maxDays <=0 ? 0 : System.currentTimeMillis() - java.util.concurrent.TimeUnit.DAYS.toMillis(maxDays);
     }
 
-    long pruneAttachments() {
-        final String method = "pruneAttachments";
+    long pruneParentlesAttachments() {
+        final String method = "pruneParentlessAttachments";
         String sql = "SELECT DISTINCT " + DownloadTable.NOTE_ID + " FROM " + DownloadTable.TABLE_NAME
                 + " WHERE " + DownloadTable.NOTE_ID + " NOT NULL"
                 + " AND NOT EXISTS (" 
                 + "SELECT * FROM " + NoteTable.TABLE_NAME
                 + " WHERE " + NoteTable.TABLE_NAME + "." + NoteTable._ID + "=" + DownloadTable.NOTE_ID
                 + ")";
-        SQLiteDatabase db = MyContextHolder.get().getDatabase();
-        if (db == null) {
-            MyLog.v(this, method + "; Database is null");
-            return 0;
-        }
         long nDeleted = 0;
-        List<Long> list = new ArrayList<Long>();
-        Cursor cursor = null;
-        try {
-            cursor = db.rawQuery(sql, null);
-            while (cursor.moveToNext()) {
-                list.add(cursor.getLong(0));
-            }
-        } finally {
-            DbUtils.closeSilently(cursor);
-        }
-        for (Long noteId : list) {
+        for (Long noteId : MyQuery.getLongs(myContext, sql)) {
             DownloadData.deleteAllOfThisNote(db, noteId);
             nDeleted++;
         }

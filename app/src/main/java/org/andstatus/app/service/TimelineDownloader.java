@@ -68,10 +68,10 @@ abstract class TimelineDownloader extends CommandExecutorStrategy {
     public void onSyncEnded() {
         getTimeline().onSyncEnded(execContext.getCommandData().getResult());
         getTimeline().save(execContext.getMyContext());
-        if (!execContext.getResult().hasError() && !isStopping()) {
-            new DataPruner(execContext.getMyContext()).prune();
-        }
         if (execContext.getResult().getDownloadedCount() > 0) {
+            if (!execContext.getResult().hasError() && !isStopping()) {
+                DataPruner.prune(execContext.getMyContext());
+            }
             MyLog.v(this, "Notifying of timeline changes");
             execContext.getMyContext().getNotifier().update();
         }

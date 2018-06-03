@@ -41,7 +41,7 @@ public class DataPrunerTest {
         MyLog.setLogToFile(false);
         assertTrue(logFile1.exists());
         clearPrunedDate();
-        DataPruner dp = new DataPruner(MyContextHolder.get());
+        DataPruner dp = new DataPruner(MyContextHolder.get(), MyContextHolder.get().getDatabase());
         assertTrue("Pruned", dp.prune());
         
         assertTrue("File is fresh", logFile1.exists());
@@ -86,13 +86,13 @@ public class DataPrunerTest {
 
     @Test
     public void testPruneAttachments() throws MalformedURLException {
-        DataPruner dp = new DataPruner(MyContextHolder.get());
-        dp.pruneAttachments();
+        DataPruner dp = new DataPruner(MyContextHolder.get(), MyContextHolder.get().getDatabase());
+        dp.pruneParentlesAttachments();
         DownloadData dd = DownloadData.getThisForNote(-555L, "", DownloadType.ATTACHMENT,
                 Uri.parse("http://example.com/image.png"));
         dd.saveToDatabase();
-        assertEquals(1, dp.pruneAttachments());
-        assertEquals(0, dp.pruneAttachments());
+        assertEquals(1, dp.pruneParentlesAttachments());
+        assertEquals(0, dp.pruneParentlesAttachments());
     }
 
     private void clearPrunedDate() {
