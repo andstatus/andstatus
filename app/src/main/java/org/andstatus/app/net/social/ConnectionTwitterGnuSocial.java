@@ -19,6 +19,7 @@ package org.andstatus.app.net.social;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.OriginConfig;
@@ -36,7 +37,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_LONG_AGO;
+import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 
 /**
  * Specific implementation of the Twitter API in GNU Social
@@ -222,11 +223,12 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
             favoritedActivity.setActor(activityIn.getActor());
             favoritedActivity.setNote(noteIn);
         }
-        favoritedActivity.setUpdatedDate(DATETIME_MILLIS_LONG_AGO);
+        favoritedActivity.setUpdatedDate(SOME_TIME_AGO);
 
         Note note = favoritedActivity.getNote();
         note.setContent(matcher.replaceFirst("$2"));
-        note.setUpdatedDate(DATETIME_MILLIS_LONG_AGO);
+        note.setUpdatedDate(SOME_TIME_AGO);
+        note.setStatus(DownloadStatus.LOADED);  // TODO: Maybe we need to invent some other status for partially loaded...
         note.setInReplyTo(AActivity.EMPTY);
 
         AActivity activity = AActivity.from(activityIn.accountActor, ActivityType.LIKE);

@@ -363,6 +363,7 @@
   <string name="reltime_months_ago_formats_2">{0} months ago</string>
   <string name="reltime_seconds_ago_formats_1">one second ago</string>
   <string name="reltime_seconds_ago_formats_2">{0} seconds ago</string>
+  <string name="reltime_some_time_ago">some time ago</string>
   <string name="reltime_just_now">just now</string>
   <string name="reltime_years_ago">more than a year ago</string>
   <string name="remove_account_menu_item">Remove account</string>

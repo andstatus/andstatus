@@ -32,7 +32,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import static org.andstatus.app.context.DemoData.demoData;
-import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_LONG_AGO;
+import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -223,7 +223,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("Should become LIKE activity " + activityIn, ActivityType.LIKE , activity.type);
         final Note note = activity.getNote();
         assertEquals("Should strip favoriting prefix " + activityIn, contentOfFavoritedNote, note.getContent());
-        assertEquals("Note updatedDate should be 1 " + activity, DATETIME_MILLIS_LONG_AGO, note.getUpdatedDate());
+        assertEquals("Note updatedDate should be 1 " + activity, SOME_TIME_AGO, note.getUpdatedDate());
         return activity;
     }
 
@@ -266,7 +266,7 @@ public class ConnectionGnuSocialTest {
         assertTrue("Content " + activity, activity.getNote().getContent().startsWith(contentPrefix));
 
         assertTrue("inReplyTo should be empty " + activity , activity.getNote().getInReplyTo().isEmpty());
-        assertEquals("Updated date should be 1 for favorited note", DATETIME_MILLIS_LONG_AGO,
+        assertEquals("Updated date should be 1 for favorited note", SOME_TIME_AGO,
                 activity.getNote().getUpdatedDate());
         assertEquals("Activity updated at " + TestSuite.utcTime(activity.getUpdatedDate()),
                 TestSuite.utcTime(2018, Calendar.JUNE, 1, 17, 4, 57),

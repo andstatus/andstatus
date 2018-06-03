@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class RelativeTime {
     public static long DATETIME_MILLIS_NEVER = 0;
-    public static long DATETIME_MILLIS_LONG_AGO = 1; // We don't know exact date
+    public static long SOME_TIME_AGO = 1; // We don't know exact date
 
     private RelativeTime() {
         // Empty
@@ -42,9 +42,9 @@ public class RelativeTime {
     }
 
     public static String getDifference(Context context, long fromMs, long toMs) {
-        if (fromMs <= DATETIME_MILLIS_NEVER || toMs <= DATETIME_MILLIS_NEVER) {
-            return "";
-        }
+        if (fromMs <= DATETIME_MILLIS_NEVER || toMs <= DATETIME_MILLIS_NEVER) return "";
+        if (fromMs == SOME_TIME_AGO) return context.getString(R.string.reltime_some_time_ago);
+
         long numSeconds = TimeUnit.MILLISECONDS.toSeconds(toMs - fromMs);
         if (numSeconds < 1) {
             return context.getString(R.string.reltime_just_now);
