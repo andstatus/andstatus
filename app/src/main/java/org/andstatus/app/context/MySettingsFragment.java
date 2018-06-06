@@ -33,6 +33,7 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.preference.RingtonePreference;
 import android.provider.Settings;
+import android.text.format.Formatter;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.HelpActivity;
@@ -122,6 +123,8 @@ public class MySettingsFragment extends PreferenceFragment implements
         showFilterHideNotesBasedOnKeywords();
         showManageTimelines();
         showMaxDistanceBetweenDuplicates();
+        showMaximumSizeOfAttachment();
+        showMaximumSizeOfCachedMedia();
     }
 
     private void showManageAccounts() {
@@ -303,6 +306,22 @@ public class MySettingsFragment extends PreferenceFragment implements
         }
     }
 
+    private void showMaximumSizeOfAttachment() {
+        Preference preference = findPreference(MyPreferences.KEY_MAXIMUM_SIZE_OF_ATTACHMENT_MB);
+        if (preference != null) {
+            preference.setSummary(Formatter.formatShortFileSize(getActivity(),
+                    MyPreferences.getMaximumSizeOfAttachmentBytes()));
+        }
+    }
+
+    private void showMaximumSizeOfCachedMedia() {
+        Preference preference = findPreference(MyPreferences.KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB);
+        if (preference != null) {
+            preference.setSummary(Formatter.formatShortFileSize(getActivity(),
+                    MyPreferences.getMaximumSizeOfCachedMediaBytes()));
+        }
+    }
+
     private void showListPreference(String key) {
         ListPreference preference = (ListPreference) findPreference(key);
         if (preference != null) {
@@ -440,6 +459,12 @@ public class MySettingsFragment extends PreferenceFragment implements
                     break;
                 case MyPreferences.KEY_MAX_DISTANCE_BETWEEN_DUPLICATES:
                     showMaxDistanceBetweenDuplicates();
+                    break;
+                case MyPreferences.KEY_MAXIMUM_SIZE_OF_ATTACHMENT_MB:
+                    showMaximumSizeOfAttachment();
+                    break;
+                case MyPreferences.KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB:
+                    showMaximumSizeOfCachedMedia();
                     break;
                 default:
                     break;

@@ -15,8 +15,10 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.util.Date;
 
+import static org.andstatus.app.context.MyPreferences.BYTES_IN_MB;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class DataPrunerTest {
@@ -85,14 +87,47 @@ public class DataPrunerTest {
     }
 
     @Test
-    public void testPruneAttachments() throws MalformedURLException {
+    public void testPruneParentlessAttachments() {
         DataPruner dp = new DataPruner(MyContextHolder.get(), MyContextHolder.get().getDatabase());
-        dp.pruneParentlesAttachments();
+        dp.pruneParentlessAttachments();
         DownloadData dd = DownloadData.getThisForNote(-555L, "", DownloadType.ATTACHMENT,
                 Uri.parse("http://example.com/image.png"));
         dd.saveToDatabase();
-        assertEquals(1, dp.pruneParentlesAttachments());
-        assertEquals(0, dp.pruneParentlesAttachments());
+        assertEquals(1, dp.pruneParentlessAttachments());
+        assertEquals(0, dp.pruneParentlessAttachments());
+    }
+
+
+    @Test
+    public void testPruneMedia() {
+        long dirSize1 = DownloadFile.getDirSize();
+        long newSizeOfAttachmentMb = 1;
+        long newSizeOfAttachment = newSizeOfAttachmentMb * BYTES_IN_MB;
+        long attachmentsStoredMin = DataPruner.ATTACHMENTS_TO_STORE_MIN + 2;
+        if (dirSize1 < attachmentsStoredMin * newSizeOfAttachment) {
+            MyLog.i(this, "Too few media files to prune, size " + dirSize1);
+            return;
+        }
+        long maximumSizeOfStoredMediaMb = Math.round(
+                (dirSize1 - DataPruner.ATTACHMENTS_TO_STORE_MIN * newSizeOfAttachment) / BYTES_IN_MB - 1
+        );
+        SharedPreferencesUtil.forget();
+        SharedPreferencesUtil.putLong(MyPreferences.KEY_MAXIMUM_SIZE_OF_ATTACHMENT_MB, newSizeOfAttachmentMb);
+        SharedPreferencesUtil.putLong(MyPreferences.KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB, maximumSizeOfStoredMediaMb);
+
+        DataPruner dp = new DataPruner(MyContextHolder.get(), MyContextHolder.get().getDatabase());
+        long prunedCount1 = dp.pruneMedia();
+        long dirSize2 = DownloadFile.getDirSize();
+        long prunedCount2 = dp.pruneMedia();
+        long dirSize3 = DownloadFile.getDirSize();
+
+        SharedPreferencesUtil.removeKey(MyPreferences.KEY_MAXIMUM_SIZE_OF_ATTACHMENT_MB);
+        SharedPreferencesUtil.removeKey(MyPreferences.KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB);
+
+        assertNotEquals("Something should be pruned, dir size: " + dirSize1
+                + " max: " + maximumSizeOfStoredMediaMb + " MB", 0, prunedCount1);
+        assertTrue("Dir size should decrease " + dirSize1 + " -> " + dirSize2, dirSize1 > dirSize2);
+        assertEquals("Nothing should be pruned, " + dirSize2 + " -> " + dirSize3, 0, prunedCount2);
     }
 
     private void clearPrunedDate() {

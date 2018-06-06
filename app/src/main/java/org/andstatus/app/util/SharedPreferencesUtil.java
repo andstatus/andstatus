@@ -236,7 +236,7 @@ public class SharedPreferencesUtil {
     public static long getLongStoredAsString(@NonNull String key, long defaultValue) {
         long value = defaultValue;
         try {
-            long longValueStored = Long.parseLong(getString(key,  Long.toString(Long.MIN_VALUE)));
+            long longValueStored = Long.parseLong(getString(key, Long.toString(Long.MIN_VALUE)));
             if (longValueStored > Long.MIN_VALUE) {
                 value = longValueStored;
             }
@@ -278,7 +278,12 @@ public class SharedPreferencesUtil {
         String value = defaultValue;
         SharedPreferences sp = getDefaultSharedPreferences();
         if (sp != null) {
-            value = sp.getString(key, defaultValue);
+            try {
+                value = sp.getString(key, defaultValue);
+            } catch (ClassCastException e) {
+                MyLog.ignored("getString, key=" + key, e);
+                value = Long.toString(sp.getLong(key, Long.parseLong(defaultValue)));
+            }
             putToCache(key, value);
         }
         return value;
@@ -318,6 +323,10 @@ public class SharedPreferencesUtil {
     }
 
     public static long getLong(@NonNull String key) {
+        return getLong(key, 0);
+    }
+
+    public static long getLong(@NonNull String key, long defaultValue) {
         if (cachedValues.containsKey(key)) {
             try {
                 return (long) cachedValues.get(key);
@@ -326,13 +335,14 @@ public class SharedPreferencesUtil {
                 cachedValues.remove(key);
             }
         }
-        long value = 0;
+        long value = defaultValue;
         SharedPreferences sp = getDefaultSharedPreferences();
         if (sp != null) {
             try {
-                value = sp.getLong(key, 0);
+                value = sp.getLong(key, defaultValue);
                 cachedValues.put(key, value);
             } catch (ClassCastException e) {
+                removeKey(key);
                 MyLog.ignored("getLong", e);
             }
         }

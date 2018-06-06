@@ -40,6 +40,7 @@ public class DatabaseCreator {
      * Current database scheme version, defined by AndStatus developers.
      * This is used to check (and upgrade if necessary) existing database after application update.
      *
+     * v.40 2018-06-05 DownloadTable added "downloaded_date" to decide, when to prune the download
      * v.38 2018-04-01 app.v.38 DownloadTable update to support Video. NoteTable - added Note's Name
      * v.37 2018-02-19 app.v.37 UserTable added, one-to-many linked to ActorTable. Renaming fields.
      * v.27 2017-11-04 app.v.36 Moving to ActivityStreams data model.
@@ -67,7 +68,7 @@ public class DatabaseCreator {
      *      All messages are in the same table.
      *      Allows to have multiple User Accounts in different Originating systems (twitter.com etc. )
      */
-    public static final int DATABASE_VERSION = 38;
+    public static final int DATABASE_VERSION = 40;
     public static final long ORIGIN_ID_TWITTER =  1L;
 
     private final SQLiteDatabase db;

@@ -29,6 +29,25 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="40.00" android:versionCode="254"
+             versionDate="2018-06-06"
+             versionTitle="">
+        <changes>
+            <change>GNU Social sends favoriting activity as an ordinary note
+                with "somebody favorited something by otheruser:" <i>favoriting prefix</i>.
+                AndStatus detects such notes during downloading and automatically converts them into LIKE (favoriting)
+                activities, removing the favoriting prefix.
+                <a href="https://github.com/andstatus/andstatus/issues/491">#491</a>
+            </change>
+            <change>Added two options to limit total size of cached images and maximum size of any single image
+                (to be sent or received):<br/><ul>
+                    <li>Storage -&gt; "Maximum size of cached images, Mb" with a default value of 1000 Mb.</li>
+                    <li>Attachments -&gt; "Maximum size of an attachment, Mb" with a default value of 5 Mb.</li>
+                </ul>
+                <a href="https://github.com/andstatus/andstatus/issues/459">#459</a>
+            </change>
+        </changes>
+    </release>
     <release android:versionName="39.00" android:versionCode="253"
              versionDate="2018-05-30"
              versionTitle="User's profile at the top of their timeline">

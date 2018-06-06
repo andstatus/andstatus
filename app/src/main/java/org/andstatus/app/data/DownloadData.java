@@ -20,6 +20,7 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
 
@@ -46,6 +47,8 @@ public class DownloadData {
     private boolean hardError = false;
     private boolean softError = false;
     private String errorMessage = "";
+
+    private long downloadedDate = RelativeTime.DATETIME_MILLIS_NEVER;
 
     @NonNull
     private DownloadFile fileNew = DownloadFile.EMPTY;
@@ -129,6 +132,7 @@ public class DownloadData {
         }
         mediaMetadata = MediaMetadata.fromCursor(cursor);
         fileSize = DbUtils.getLong(cursor, DownloadTable.FILE_SIZE);
+        downloadedDate = DbUtils.getLong(cursor, DownloadTable.DOWNLOADED_DATE);
     }
 
     private boolean checkHardErrorBeforeLoad() {
@@ -172,7 +176,7 @@ public class DownloadData {
         if (hardError) {
             status = DownloadStatus.HARD_ERROR;
         } else if (DownloadStatus.LOADED == status && !fileStored.existsNow()) {
-           status = DownloadStatus.ABSENT;
+           onNoFile();
         } else if (DownloadStatus.HARD_ERROR == status) {
             hardError = true;
         }
@@ -190,12 +194,19 @@ public class DownloadData {
     public void onDownloaded() {
         fileNew = new DownloadFile(fileNew.getFilename());
         if (isError() || !fileNew.existed) {
-            fileSize = 0;
-            mediaMetadata = MediaMetadata.EMPTY;
+            if (!fileNew.existed) onNoFile();
             return;
         }
         fileSize = fileNew.getSize();
         mediaMetadata = MediaMetadata.fromFilePath(fileNew.getFilePath());
+        downloadedDate = System.currentTimeMillis();
+    }
+
+    private void onNoFile() {
+        if (DownloadStatus.LOADED == status) status = DownloadStatus.ABSENT;
+        fileSize = 0;
+        mediaMetadata = MediaMetadata.EMPTY;
+        downloadedDate = RelativeTime.DATETIME_MILLIS_NEVER;
     }
 
     private String getExtension() {
@@ -278,6 +289,7 @@ public class DownloadData {
         values.put(DownloadTable.FILE_NAME, fileNew.getFilename());
         values.put(DownloadTable.FILE_SIZE, fileSize);
         mediaMetadata.toContentValues(values);
+        values.put(DownloadTable.DOWNLOADED_DATE, downloadedDate);
         return values;
     }
 
@@ -366,10 +378,12 @@ public class DownloadData {
         }
     }
 
-    public void deleteFile(SQLiteDatabase db) {
+    public void deleteFile() {
         if (fileStored.existed) {
             fileStored.delete();
-            status = DownloadStatus.ABSENT;
+            if (fileStored.existsNow()) return;
+
+            onNoFile();
             saveToDatabase();
         }
     }
@@ -493,35 +507,35 @@ public class DownloadData {
         return this == EMPTY || uri.equals(Uri.EMPTY);
     }
 
-    static long pruneFiles(MyContext myContext, DownloadType downloadType, long bytesToPrune) {
-        SQLiteDatabase db = myContext.getDatabase();
-        return (db == null) ?  0 : foldOldest(myContext, downloadType, bytesToPrune, d -> d.deleteFile(db));
+    static long pruneFiles(MyContext myContext, DownloadType downloadType, long bytesToKeep) {
+        return consumeOldest(myContext, downloadType, bytesToKeep, DownloadData::deleteFile);
     }
 
-    static long foldOldest(MyContext myContext, DownloadType downloadType, long totalSizeOfFiles,
-                                   Consumer<DownloadData> consumer) {
+    private static long consumeOldest(MyContext myContext, DownloadType downloadType, long totalSizeToSkip,
+                              Consumer<DownloadData> consumer) {
         final String sql = "SELECT *"
                 + " FROM " + DownloadTable.TABLE_NAME
                 + " WHERE " + DownloadTable.DOWNLOAD_TYPE + "='" + downloadType.save() + "'"
-                + " ORDER BY " + DownloadTable._ID;
+                + " AND " + DownloadTable.DOWNLOAD_STATUS + "=" + DownloadStatus.LOADED.save()
+                + " ORDER BY " + DownloadTable.DOWNLOADED_DATE + " DESC";
         return MyQuery.foldLeft(myContext, sql,
                 new CountWithSize(),
                 countWithSize -> cursor -> {
-                    if (countWithSize.size < totalSizeOfFiles) {
                         DownloadData data = DownloadData.fromCursor(cursor);
                         if (data.fileStored.existed) {
-                            countWithSize.count += 1;
                             countWithSize.size += data.fileSize;
-                            consumer.accept(data);
+                            if (countWithSize.size > totalSizeToSkip) {
+                                countWithSize.consumedCount += 1;
+                                consumer.accept(data);
+                            }
                         }
-                    }
                     return countWithSize;
                 }
-            ).count;
+            ).consumedCount;
     }
 
     private static class CountWithSize {
-        long count = 0;
+        long consumedCount = 0;
         long size = 0;
     }
 

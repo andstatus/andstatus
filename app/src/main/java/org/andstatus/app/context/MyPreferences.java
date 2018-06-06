@@ -129,7 +129,7 @@ public class MyPreferences {
 
     private static final boolean COLLAPSE_DUPLICATES_DEFAULT_VALUE = true;
 
-    public static final int BYTES_IN_MEGABYTE = 1024 * 1024;
+    public static final int BYTES_IN_MB = 1000 * 1000;
 
     private MyPreferences(){
         // Non instantiable
@@ -262,13 +262,13 @@ public class MyPreferences {
                 MAX_DISTANCE_BETWEEN_DUPLICATES_DEFAULT);
     }
 
-    public static int getMaximumSizeOfAttachmentBytes() {
-        return SharedPreferencesUtil.getIntStoredAsString(KEY_MAXIMUM_SIZE_OF_ATTACHMENT_MB, 5)
-                * BYTES_IN_MEGABYTE;
+    public static long getMaximumSizeOfAttachmentBytes() {
+        return SharedPreferencesUtil.getLong(KEY_MAXIMUM_SIZE_OF_ATTACHMENT_MB, 5)
+                * BYTES_IN_MB;
     }
 
-    public static int getMaximumSizeOfCachedMediaBytes() {
-        return SharedPreferencesUtil.getIntStoredAsString(KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB, 1000)
-                * BYTES_IN_MEGABYTE;
+    public static long getMaximumSizeOfCachedMediaBytes() {
+        return SharedPreferencesUtil.getLong(KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB, 1000)
+                * BYTES_IN_MB;
     }
 }

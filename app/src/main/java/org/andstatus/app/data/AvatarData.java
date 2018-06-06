@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+/*
+ * Copyright (C) 2014-2018 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,9 @@ import org.andstatus.app.util.UriUtils;
 public class AvatarData extends DownloadData {
     public static final String TAG = AvatarData.class.getSimpleName();
 
-    public static void asyncRequestDownload(final long actorIdIn) {
+    public static void asyncRequestDownload(long actorIdIn) {
         AsyncTaskLauncher.execute(TAG, false,
-                new MyAsyncTask<Void, Void, Void>(TAG + actorIdIn, MyAsyncTask.PoolEnum.FILE_DOWNLOAD) {
+                new MyAsyncTask<Void, Void, Void>(TAG + actorIdIn, MyAsyncTask.PoolEnum.LONG_UI) {
                     @Override
                     protected Void doInBackground2(Void... params) {
                         getForActor(actorIdIn).requestDownload();

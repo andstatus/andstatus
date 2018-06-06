@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+/*
+ * Copyright (C) 2013-2018 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import java.util.stream.Collectors;
  * old Notes, log files...
  */
 public class DataPruner {
+    public static final long ATTACHMENTS_TO_STORE_MIN = 5;
     @NonNull
     private final MyContext myContext;
     @NonNull
@@ -55,7 +56,7 @@ public class DataPruner {
     static final long MAX_DAYS_LOGS_TO_KEEP = 10;
     static final long MAX_DAYS_UNUSED_TIMELINES_TO_KEEP = 31;
     private static final long PRUNE_MIN_PERIOD_DAYS = 1;
-    private static final double ATTACHMENTS_SIZE_PART = 0.75;
+    private static final double ATTACHMENTS_SIZE_PART = 0.95;
 
     public static void prune(@NonNull MyContext myContext) {
         SQLiteDatabase db = myContext.getDatabase();
@@ -145,7 +146,7 @@ public class DataPruner {
         }
         mDeleted = nDeletedTime + nDeletedSize;
         if (mDeleted > 0) {
-            pruneParentlesAttachments();
+            pruneParentlessAttachments();
         }
         pruneMedia();
         pruneTimelines(Long.max(latestTimestamp, getLatestTimestamp(MAX_DAYS_UNUSED_TIMELINES_TO_KEEP)));
@@ -161,33 +162,34 @@ public class DataPruner {
         return pruned;
     }
 
-    private void pruneMedia() {
+    long pruneMedia() {
         long dirSize = DownloadFile.getDirSize();
         long maxSize = MyPreferences.getMaximumSizeOfCachedMediaBytes();
         final long bytesToPrune = dirSize - maxSize;
+        long bytesToPruneMin = ATTACHMENTS_TO_STORE_MIN * MyPreferences.getMaximumSizeOfAttachmentBytes();
         MyLog.v(this, "Size of media files: " + dirSize + " bytes"
-        + (bytesToPrune > 0
+        + (bytesToPrune > bytesToPruneMin
                         ? " exceeds"
                         : " less than")
-                + " maximum " + maxSize
+                + " maximum " + maxSize + ", min bytes to prune: " + bytesToPruneMin
         );
-        if (bytesToPrune < 5 * MyPreferences.getMaximumSizeOfAttachmentBytes()) return;
+        if (bytesToPrune < bytesToPruneMin) return 0;
 
-        MyLog.v(this, "Pruned "
-            + DownloadData.pruneFiles(myContext, DownloadType.ATTACHMENT,
-                Math.round(bytesToPrune * ATTACHMENTS_SIZE_PART))
-            + " attachment files");
-        MyLog.v(this, "Pruned "
-                + DownloadData.pruneFiles(myContext, DownloadType.AVATAR,
-                Math.round(bytesToPrune * (1 - ATTACHMENTS_SIZE_PART)))
-                + " avatar files");
+        long pruned1 = DownloadData.pruneFiles(myContext, DownloadType.ATTACHMENT,
+                Math.round(maxSize * ATTACHMENTS_SIZE_PART));
+
+        MyLog.v(this, "Pruned " + pruned1 + " attachment files");
+        long pruned2 = DownloadData.pruneFiles(myContext, DownloadType.AVATAR,
+                Math.round(maxSize * (1 - ATTACHMENTS_SIZE_PART)));
+        MyLog.v(this, "Pruned " + pruned2 + " avatar files");
+        return pruned1 + pruned2;
     }
 
     public static long getLatestTimestamp(long maxDays) {
         return maxDays <=0 ? 0 : System.currentTimeMillis() - java.util.concurrent.TimeUnit.DAYS.toMillis(maxDays);
     }
 
-    long pruneParentlesAttachments() {
+    long pruneParentlessAttachments() {
         final String method = "pruneParentlessAttachments";
         String sql = "SELECT DISTINCT " + DownloadTable.NOTE_ID + " FROM " + DownloadTable.TABLE_NAME
                 + " WHERE " + DownloadTable.NOTE_ID + " NOT NULL"
