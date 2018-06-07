@@ -146,7 +146,7 @@ public class Actor implements Comparable<Actor> {
                 + " FROM " + DownloadTable.TABLE_NAME + ") AS " + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS
                 + " ON "
                 + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_STATUS
-                + "=" + DownloadStatus.LOADED.save() + " AND "
+                + " IN (" + DownloadStatus.LOADED.save() + ", " + DownloadStatus.ABSENT.save() + ") AND "
                 + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.ACTOR_ID
                 + "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID;
     }
