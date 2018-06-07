@@ -63,4 +63,7 @@
         android:singleLine="true"
         android:defaultValue="5"
         android:title="@string/max_distance_between_duplicates_title" />
+    <org.andstatus.app.context.MultilineCheckBoxPreference android:key="show_my_account_which_downloaded"
+        android:title="@string/show_my_account_which_downloaded"
+        android:defaultValue="false" />
 </PreferenceScreen>

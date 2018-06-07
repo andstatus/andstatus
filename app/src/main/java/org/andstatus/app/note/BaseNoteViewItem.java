@@ -25,6 +25,7 @@ import org.andstatus.app.actor.ActorListLoader;
 import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.social.Actor;
@@ -172,6 +173,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         setInReplyTo(context, builder);
         setRecipientName(context, builder);
         setNoteSource(context, builder);
+        setAccountDownloaded(builder);
         setNoteStatus(context, builder);
         setCollapsedStatus(builder);
         if (detailsSuffix.length() > 0) I18n.appendWithSpace(builder, detailsSuffix.toString());
@@ -198,6 +200,12 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
                 && !"unknown".equals(noteSource)) {
             noteDetails.append(" " + String.format(
                     context.getText(R.string.message_source_from).toString(), noteSource));
+        }
+    }
+
+    private void setAccountDownloaded(StringBuilder noteDetails) {
+        if (MyPreferences.isShowMyAccountWhichDownloadedActivity() && linkedMyAccount.isValid()) {
+            noteDetails.append(" a:" + linkedMyAccount.getShortestUniqueAccountName(myContext));
         }
     }
 

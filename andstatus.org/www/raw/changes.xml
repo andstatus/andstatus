@@ -47,6 +47,10 @@
                 </ul>
                 <a href="https://github.com/andstatus/andstatus/issues/459">#459</a>
             </change>
+            <change>Added an option in Settings -&gt; Timeline: "Show my account, which downloaded the activity/note".
+                So far the account shown as "a:accountname" in the note's details (below note's text).
+                <a href="https://github.com/andstatus/andstatus/issues/493">#493</a>
+            </change>
         </changes>
     </release>
     <release android:versionName="39.00" android:versionCode="253"

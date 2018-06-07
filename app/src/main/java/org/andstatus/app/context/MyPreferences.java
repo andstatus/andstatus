@@ -58,6 +58,7 @@ public class MyPreferences {
     public static final String KEY_SHOW_THREADS_OF_CONVERSATION = "show_threads_of_conversation";
     public static final String KEY_MAX_DISTANCE_BETWEEN_DUPLICATES = "max_distance_between_duplicates";
     public static final int MAX_DISTANCE_BETWEEN_DUPLICATES_DEFAULT = 5;
+    public static final String KEY_SHOW_MY_ACCOUNT_WHICH_DOWNLOADED = "show_my_account_which_downloaded";
 
     // ----------------------------------------------------------
     // Gestures
@@ -270,5 +271,9 @@ public class MyPreferences {
     public static long getMaximumSizeOfCachedMediaBytes() {
         return SharedPreferencesUtil.getLong(KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB, 1000)
                 * BYTES_IN_MB;
+    }
+
+    public static boolean isShowMyAccountWhichDownloadedActivity() {
+        return SharedPreferencesUtil.getBoolean(KEY_SHOW_MY_ACCOUNT_WHICH_DOWNLOADED, false);
     }
 }
