@@ -69,7 +69,7 @@ class Convert38 extends ConvertOneStep {
         sql = "ALTER TABLE download ADD COLUMN downloaded_date INTEGER NOT NULL DEFAULT 0";
         DbUtils.execSQL(db, sql);
 
-        sql = "UPDATE download SET downloaded = CASE download_status WHEN 2 THEN _id ELSE 0 END";
+        sql = "UPDATE download SET downloaded_date = CASE download_status WHEN 2 THEN _id ELSE 0 END";
         DbUtils.execSQL(db, sql);
 
         sql = "CREATE INDEX idx_download_downloaded_date ON download (downloaded_date)";
