@@ -32,8 +32,8 @@ import java.util.Calendar;
 import java.util.List;
 
 import static org.andstatus.app.context.DemoData.demoData;
-import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
+import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -201,13 +201,21 @@ public class ConnectionGnuSocialTest {
 
     @Test
     public void testFavoritingActivity() {
-        AActivity activity1 = getFavoritingActivity("10238", "somebody favorited something by anotheractor: ");
-        AActivity activity2 = getFavoritingActivity("10239", "anotherman favorited something by anotheractor: ");
+        String contentOfFavoritedNote = "the favorited note";
+        AActivity activity1 = getFavoritingActivity("10238",
+                "somebody favorited something by anotheractor: " + contentOfFavoritedNote,
+                contentOfFavoritedNote);
+        AActivity activity2 = getFavoritingActivity("10239",
+                "anotherman favorited something by anotheractor: " + contentOfFavoritedNote,
+                contentOfFavoritedNote);
         assertEquals("Should have the same content", activity1.getNote().getContent(), activity2.getNote().getContent());
+
+        final String content2 = "a status by somebody@somewhere.org";
+        getFavoritingActivity("10240", "oneman favourited " + content2, content2);
     }
 
     @NonNull
-    private AActivity getFavoritingActivity(String favoritingOid, String favoritingPrefix) {
+    private AActivity getFavoritingActivity(String favoritingOid, String favoritingContent, String likedContent) {
         Actor accountActor = demoData.getAccountActorByOid(demoData.gnusocialTestAccountActorOid);
         String actorOid = favoritingOid + "1";
         Actor actor = Actor.fromOriginAndActorOid(accountActor.origin, actorOid);
@@ -215,14 +223,12 @@ public class ConnectionGnuSocialTest {
         AActivity activityIn = AActivity.newPartialNote(accountActor, actor, favoritingOid, favoritingUpdateDate,
                 DownloadStatus.LOADED);
 
-        String contentOfFavoritedNote = "the favorited note";
-        String body = favoritingPrefix + contentOfFavoritedNote;
-        activityIn.getNote().setContent(body);
+        activityIn.getNote().setContent(favoritingContent);
 
         AActivity activity = ConnectionTwitterGnuSocial.createLikeActivity(activityIn);
         assertEquals("Should become LIKE activity " + activityIn, ActivityType.LIKE , activity.type);
         final Note note = activity.getNote();
-        assertEquals("Should strip favoriting prefix " + activityIn, contentOfFavoritedNote, note.getContent());
+        assertEquals("Should strip favoriting prefix " + activityIn, likedContent, note.getContent());
         assertEquals("Note updatedDate should be 1 " + activity, SOME_TIME_AGO, note.getUpdatedDate());
         return activity;
     }

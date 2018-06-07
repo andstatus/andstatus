@@ -49,6 +49,8 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     private static final String HTML_BODY_FIELD_NAME = "statusnet_html";
     public static final Pattern GNU_SOCIAL_FAVORITED_SOMETHING_BY_PATTERN = Pattern.compile(
             "(?s)([^ ]+) favorited something by [^ ]+ (.+)");
+    public static final Pattern GNU_SOCIAL_FAVOURITED_A_STATUS_BY_PATTERN = Pattern.compile(
+            "(?s)([^ ]+) favourited (a status by [^ ]+)");
 
     @Override
     protected String getApiPath1(ApiRoutineEnum routine) {
@@ -212,6 +214,9 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     public static AActivity createLikeActivity(AActivity activityIn) {
         final Note noteIn = activityIn.getNote();
         Matcher matcher = GNU_SOCIAL_FAVORITED_SOMETHING_BY_PATTERN.matcher(noteIn.getContent());
+        if (!matcher.matches()) {
+            matcher = GNU_SOCIAL_FAVOURITED_A_STATUS_BY_PATTERN.matcher(noteIn.getContent());
+        }
         if (!matcher.matches()) return activityIn;
 
         final AActivity inReplyTo = noteIn.getInReplyTo();

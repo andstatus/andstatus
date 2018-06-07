@@ -30,11 +30,12 @@
         </subtitle>
     </header>
     <release android:versionName="40.00" android:versionCode="254"
-             versionDate="2018-06-06"
-             versionTitle="">
+             versionDate="2018-06-07"
+             versionTitle="Favoriting activity in GNU Social and Limiting image cache size">
         <changes>
             <change>GNU Social sends favoriting activity as an ordinary note
-                with "somebody favorited something by otheruser:" <i>favoriting prefix</i>.
+                with "somebody favorited something by otheruser:" <i>favoriting prefix</i> (or as
+                "oneman favourited a status by somebody@somewhere.org)".
                 AndStatus detects such notes during downloading and automatically converts them into LIKE (favoriting)
                 activities, removing the favoriting prefix.
                 <a href="https://github.com/andstatus/andstatus/issues/491">#491</a>
