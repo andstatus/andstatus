@@ -590,7 +590,7 @@ public class NoteEditor {
         saveAndHide(true);
     }
 
-    private void saveDraft() {
+    public void saveDraft() {
         saveAndHide(false);
     }
 

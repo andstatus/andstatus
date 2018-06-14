@@ -19,12 +19,14 @@ package org.andstatus.app.note;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.Menu;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.timeline.ViewItem;
+import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 
 /**
@@ -70,6 +72,18 @@ abstract public class NoteEditorListActivity<T extends ViewItem<T>> extends Load
             getNoteEditor().startEditingCurrentWithAttachedMedia(uri);
         }
     }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0 && noteEditor.isVisible()) {
+            if (getActivity().isFullScreen()) {
+                getActivity().toggleFullscreen(TriState.FALSE);
+            } else noteEditor.saveDraft();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
 
     @Override
     protected void onPause() {

@@ -154,14 +154,10 @@ public class MyActivity extends AppCompatActivity implements IdentifiableInstanc
      * On Immersive mode: https://developer.android.com/training/system-ui/immersive.html
      */
     public void toggleFullscreen(TriState fullScreenIn) {
-        int uiOptions = getWindow().getDecorView().getSystemUiVisibility();
-        int uiOptionsNew = uiOptions;
-        boolean fullscreenNew = ((uiOptions & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            fullscreenNew = actionBar.isShowing();
-        }
-        fullscreenNew = fullScreenIn.toBoolean(fullscreenNew);
+        int uiOptionsNew = getWindow().getDecorView().getSystemUiVisibility();
+        boolean fullscreenNew = fullScreenIn.known
+                ? fullScreenIn.toBoolean(false)
+                : !isFullScreen();
         hideActionBar(fullscreenNew);
         if (fullscreenNew) {
             uiOptionsNew |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
@@ -174,6 +170,16 @@ public class MyActivity extends AppCompatActivity implements IdentifiableInstanc
         }
         getWindow().getDecorView().setSystemUiVisibility(uiOptionsNew);
     }
+
+    public boolean isFullScreen() {
+        ActionBar actionBar = getSupportActionBar();
+        return !(
+            actionBar != null
+            ? actionBar.isShowing()
+            : (getWindow().getDecorView().getSystemUiVisibility() & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0
+        );
+    }
+
 
     public void hideActionBar(boolean hide) {
         ActionBar actionBar = getSupportActionBar();
