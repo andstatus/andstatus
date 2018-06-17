@@ -511,6 +511,7 @@
   <string name="total_counters">Compteurs totaux</string>
   <string name="translator_credits">Crédits de traduction</string>
   <string name="undid_reblog">reblog annulé</string>
+  <string name="undid_follow">a cessé de suivre</string>
   <string name="undid_like">like annulé</string>
   <string name="unimplemented">Non implémenté.</string>
   <string name="unknown_in_parenthesis">(inconnu)</string>

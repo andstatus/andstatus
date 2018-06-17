@@ -1,1 +1,1 @@
-Client pour réseaux sociaux ayant une faible consommation réseau et avec conversations en arborescence
+Client multi-comptes et Libre pour différents réseaux sociaux

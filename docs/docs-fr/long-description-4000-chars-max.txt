@@ -1,5 +1,4 @@
-AndStatus est un client open source pour réseaux sociaux consommant peu de bande passante et avec des conversations en arborescence.
-AndStatus prend en charge de nombreux réseaux sociaux, y compris
+AndStatus est un client Libre et multi-comptes supportant plusieurs réseaux sociaux dont
 GNU social, Mastodon, Twitter et Pump.io.
 AndStatus peut combiner vos flux de tous les réseaux sociaux dans un seul fil d'actualité
 et vous permet de lire et de publier même lorsque vous êtes en mode hors connexion.
@@ -8,14 +7,14 @@ Pour les appareils Android v.7.0+
 
 Les différentes fonctionnalités d'AndStatus :
 
-1. Plusieurs comptes sur différents types de réseaux sociaux. Vous pouvez avoir plusieurs comptes dans chaque, écrire/répondre depuis n'importe quel "Vous" et partager entre les comptes et les systèmes.
-2. Vous n’avez pas besoin d’être connecté pour lire votre file d'actualités et pour répondre à des messages : vos brouillons et vos messages non envoyés sont conservés même après le redémarrage de votre smartphone. Ils seront envoyés lorsque votre appareil sera de nouveau connecté à un réseau Internet.
+1. Plusieurs comptes sur différents types de réseaux sociaux. Vous pouvez avoir plusieurs comptes dans chaque, écrire/répondre depuis n'importe quel "Vous" et partager entre les comptes et les réseaux.
+2. Vous n’avez pas besoin d’être connecté pour lire les fils d'actualités et pour publier des messages : vos brouillons et vos messages non envoyés sont conservés même après le redémarrage de votre appareil. Ils seront envoyés lorsque votre appareil sera de nouveau connecté.
 3. Une visualisation des conversation en arborescence.
 4. "Recherche globale". Cette fonctionnalité vous permet de rechercher des messages publics sur tous les réseaux connectés à AndStatus via une seule et unique requête.
-5. Les listes d’Amis et Abonnés, présentés comme des listes d'Utilisateurs, ou comme fil d'actualité (avec le dernier message de chaque utilisateur)
-6. Les tweets/messages/avatars/images jointes sont synchronisés en arrière-plan, lorsque votre appareil a une bonne connexion. Par défaut, les pièces jointes seront téléchargées uniquement via Wi-Fi.
+5. Lists of Friends and Followers, presented as User Lists and as Timelines (with the latest note by each User).
+6. Notes (tweets)/avatars/attached images are being synced in a background, when your device has a good connection. Par défaut, les pièces jointes seront téléchargées uniquement via Wi-Fi.
 7. Les données en mémoire cache peuvent être conservées pour des années ou pour plusieurs jours seulement - selon votre choix.
-8. Sauvegarde et restauration des comptes et messages entre vos appareils. Gardez vos données !
+8. Backup accounts and notes and Restore them on any of your devices. Gardez vos données !
 9. Gratuit et sans publicité, soutenu par la communauté.
 
 Consultez le Changelog pour obtenir une description de toutes les fonctionnalités de AndStatus avec des liens vers leurs discussions :

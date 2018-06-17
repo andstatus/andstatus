@@ -31,6 +31,7 @@
   <string name="attach_images_summary_off">O botão \"Paperclip+\", usado para anexar imagens às publicações está oculto</string>
   <string name="attach_images_summary_on">Utilize o botão \"Paperclip+\" (item de menu \"Anexar\") para anexar imagens às suas mensagens. Ou partilhe a imagem com o AndStatus a partir de outra aplicação</string>
   <string name="attach_images_title">Anexar imagens às mensagens</string>
+  <string name="attachment_is_too_large">Anexo demasiado grande</string>
   <string name="attachments">Anexos</string>
   <string name="authentication_never">Ainda não se autenticou</string>
   <string name="authentication_successful">Autenticação efetuada!</string>
@@ -57,6 +58,7 @@
   <string name="category_title_preference_information">Informações</string>
   <string name="category_title_preference_origin">Rede social</string>
   <string name="category_title_preference_settings">Definições</string>
+  <string name="changed">Alterado</string>
   <string name="check_and_fix_data">Analisar e corrigir dados</string>
   <string name="check_and_fix_data_summary">Utilize esta ação se achar que a aplicação está a funcionar
  incorretamente e não quiser tentar a reinstalação</string>
@@ -240,6 +242,8 @@
   <string name="manage_accounts_android">Gerir as contas do AndStatus nas definições do Android</string>
   <string name="manage_timelines">Gerir cronologias</string>
   <string name="max_distance_between_duplicates_title">Distância máxima entre duplicados</string>
+  <string name="maximum_size_of_attachment_mb">Tamanho máximo do anexo (MB)</string>
+  <string name="maximum_size_of_cached_media_mb">Tamanho máximo dos ficheiros em cache (MB)</string>
   <string name="mention_as_webfingerid_title">Menção como @webFingerId</string>
   <string name="menu_item_act_as">Atuar como&#8230;</string>
   <string name="menu_item_act_as_user">Atuar como \"%1s\"</string>
@@ -360,6 +364,7 @@
   <string name="reltime_months_ago_formats_2">{0} meses atrás</string>
   <string name="reltime_seconds_ago_formats_1">um segundo atrás</string>
   <string name="reltime_seconds_ago_formats_2">{0} segundos atrás</string>
+  <string name="reltime_some_time_ago">há algum tempo</string>
   <string name="reltime_just_now">agora mesmo</string>
   <string name="reltime_years_ago">há mais de um ano</string>
   <string name="remove_account_menu_item">Remover conta</string>
@@ -383,6 +388,7 @@
   <string name="show_duplicates">Mostrar duplicados</string>
   <string name="show_threads_of_conversation">Mostrar tópicos de uma conversa</string>
   <string name="show_timeline_messages">Mostrar mensagens da cronologia</string>
+  <string name="show_my_account_which_downloaded">Mostrar a conta que descarregou a atividade/nota</string>
   <string name="since">Desde %s</string>
   <string name="splash_button_learn_more">Saber mais</string>
   <string name="splash_button_get_started">Iniciar</string>

@@ -33,6 +33,7 @@
   <string name="attach_images_summary_on">使用“回形针+”按钮 (“附加”菜单项) 将图像附加到您的消息。 
 或从另一个应用程序共享图像到AndStatus</string>
   <string name="attach_images_title">将图像附加到我的邮件</string>
+  <string name="attachment_is_too_large">附件太大</string>
   <string name="attachments">附件</string>
   <string name="authentication_never">尚未验证</string>
   <string name="authentication_successful">发布</string>

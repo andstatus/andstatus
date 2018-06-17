@@ -31,6 +31,7 @@
   <string name="attach_images_summary_off">Кнопка «Скрепка+», используемая для прикрепления изображений к вашим сообщениям, скрыта</string>
   <string name="attach_images_summary_on">Используйте кнопку «Скрепка+» (пункт меню «Прикрепить») чтобы вложить изображение в ваше сообщение. Или \"поделитесь\" изображением с AndStatus-ом из другого приложения</string>
   <string name="attach_images_title">Прикреплять изображения к моим сообщениям</string>
+  <string name="attachment_is_too_large">Файл слишком большой</string>
   <string name="attachments">Вложения</string>
   <string name="authentication_never">Пока не аутентифицирован</string>
   <string name="authentication_successful">Успешная аутентификация (проверка логина и пароля…)!</string>
@@ -57,6 +58,7 @@
   <string name="category_title_preference_information">Информация</string>
   <string name="category_title_preference_origin">Социальная сеть</string>
   <string name="category_title_preference_settings">Настройки</string>
+  <string name="changed">Изменено</string>
   <string name="check_and_fix_data">Проверка и исправление данных</string>
   <string name="check_and_fix_data_summary">Используйте это действие, например, в том случае, если AndStatus работает некорректно, но вы не хотите его переустанавливать</string>
   <string name="client_registration_failed">Ошибка регистрации клиента AndStatus</string>
@@ -238,6 +240,8 @@
   <string name="manage_accounts_android">Управление учётными записями AndStatus-а в настройках Android</string>
   <string name="manage_timelines">Управление Лентами времени</string>
   <string name="max_distance_between_duplicates_title">Максимальное расстояние между дубликатами</string>
+  <string name="maximum_size_of_attachment_mb">Максимальный размер вложения, MB</string>
+  <string name="maximum_size_of_cached_media_mb">Максимальный размер кэшированных медиа файлов (включая вложения), МБ</string>
   <string name="mention_as_webfingerid_title">Упоминания как @webFingerId</string>
   <string name="menu_item_act_as">От имени&#8230;</string>
   <string name="menu_item_act_as_user">От имени \"%1s\"</string>
@@ -358,6 +362,7 @@
   <string name="reltime_months_ago_formats_2">{0} месяц назад</string>
   <string name="reltime_seconds_ago_formats_1">секунду назад</string>
   <string name="reltime_seconds_ago_formats_2">{0} секунду назад</string>
+  <string name="reltime_some_time_ago">некоторое время назад</string>
   <string name="reltime_just_now">только что</string>
   <string name="reltime_years_ago">больше года назад</string>
   <string name="remove_account_menu_item">Удалить аккаунт</string>
@@ -381,6 +386,7 @@
   <string name="show_duplicates">Показать дубликаты</string>
   <string name="show_threads_of_conversation">Показать нити в обсуждении</string>
   <string name="show_timeline_messages">Показать сообщения этой Ленты</string>
+  <string name="show_my_account_which_downloaded">Показать мой аккаунт, который скачал сообщение</string>
   <string name="since">Начиная с: %s</string>
   <string name="splash_button_learn_more">Узнать больше</string>
   <string name="splash_button_get_started">Начать работу</string>
