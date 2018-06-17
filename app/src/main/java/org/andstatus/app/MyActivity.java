@@ -169,7 +169,10 @@ public class MyActivity extends AppCompatActivity implements IdentifiableInstanc
             uiOptionsNew &= ~View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
         }
         getWindow().getDecorView().setSystemUiVisibility(uiOptionsNew);
+        onFullScreenToggle(fullscreenNew);
     }
+
+    protected void onFullScreenToggle(boolean fullscreenNew) { }
 
     public boolean isFullScreen() {
         ActionBar actionBar = getSupportActionBar();

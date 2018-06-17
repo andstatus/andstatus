@@ -30,7 +30,7 @@
         android:paddingTop="3dp"
         android:visibility="visible">
 
-        <View style="@style/Divider"/>
+        <View style="@style/ThickDivider"/>
 
         <RelativeLayout
             android:id="@+id/note_editor_above_body"

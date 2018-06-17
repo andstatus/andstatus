@@ -74,6 +74,29 @@ public class NoteEditor {
     private final NoteEditorContainer editorContainer;
     private final android.view.ViewGroup editorView;
 
+    private enum ScreenToggleState {
+        SHOW_TIMELINE(null, true),
+        MAXIMIZE_EDITOR(SHOW_TIMELINE, true),
+        INITIAL(MAXIMIZE_EDITOR, false),
+        EMPTY(INITIAL, false);
+
+        private final ScreenToggleState nextState;
+        final boolean isFullScreen;
+
+        ScreenToggleState(ScreenToggleState nextState, boolean isFullScreen) {
+            this.nextState = nextState;
+            this.isFullScreen = isFullScreen;
+        }
+
+        ScreenToggleState toggle(boolean isNextState, boolean isFullscreen) {
+            ScreenToggleState state = isNextState
+                    ? (nextState == null ? INITIAL : nextState)
+                    : (this == EMPTY ? INITIAL : this);
+            return (isNextState || state.isFullScreen == isFullscreen) ? state : INITIAL;
+        }
+    }
+    ScreenToggleState screenToggleState = ScreenToggleState.EMPTY;
+
     /**
      * Text to be sent
      */
@@ -171,20 +194,14 @@ public class NoteEditor {
     private void setupFullscreenToggle() {
         setupFullscreenToggleFor(R.id.note_editor_above_body);
         setupFullscreenToggleFor(R.id.note_editor_below_body);
+        onScreenToggle(false, getActivity().isFullScreen());
     }
 
     private void setupFullscreenToggleFor(int id) {
         View view = getActivity().findViewById(id);
-        if (view != null) {
-            view.setOnClickListener(
-                    new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            getActivity().toggleFullscreen(TriState.UNKNOWN);
-                        }
-                    }
-            );
-        }
+        if (view != null) view.setOnClickListener(
+                v -> onScreenToggle(true, getActivity().isFullScreen())
+        );
     }
 
     public void onCreateOptionsMenu(Menu menu) {
@@ -547,7 +564,7 @@ public class NoteEditor {
 
     private void showAttachedImage() {
         ImageView imageView = editorView.findViewById(R.id.attached_image);
-        if (editorData.image == null) {
+        if (editorData.image == null || screenToggleState == ScreenToggleState.SHOW_TIMELINE) {
             imageView.setVisibility(View.GONE);
         } else {
             imageView.setImageDrawable(editorData.image.getDrawable());
@@ -722,5 +739,31 @@ public class NoteEditor {
 
     public NoteEditorData getData() {
         return editorData;
+    }
+
+    public void onScreenToggle(boolean isNextState, boolean isFullscreen) {
+	    if (screenToggleState != ScreenToggleState.EMPTY && !isNextState
+                && isFullscreen == screenToggleState.isFullScreen) return;
+
+        screenToggleState = screenToggleState.toggle(isNextState, isFullscreen);
+        if (isNextState && isFullscreen != screenToggleState.isFullScreen) {
+            getActivity().toggleFullscreen(TriState.fromBoolean(screenToggleState.isFullScreen));
+        }
+	    TextView inReplyToBody = editorView.findViewById(R.id.inReplyToBody);
+	    switch (screenToggleState) {
+            case SHOW_TIMELINE:
+                if (inReplyToBody != null) inReplyToBody.setMaxLines(3);
+                bodyView.setMaxLines(5);
+                break;
+            case MAXIMIZE_EDITOR:
+                if (inReplyToBody != null) inReplyToBody.setMaxLines(Integer.MAX_VALUE);
+                bodyView.setMaxLines(15);
+                break;
+            default:
+                if (inReplyToBody != null) inReplyToBody.setMaxLines(5);
+                bodyView.setMaxLines(8);
+                break;
+        }
+        showAttachedImage();
     }
 }

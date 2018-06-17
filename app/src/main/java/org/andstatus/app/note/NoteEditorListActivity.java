@@ -75,7 +75,8 @@ abstract public class NoteEditorListActivity<T extends ViewItem<T>> extends Load
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0 && noteEditor.isVisible()) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0
+                && noteEditor != null && noteEditor.isVisible()) {
             if (getActivity().isFullScreen()) {
                 getActivity().toggleFullscreen(TriState.FALSE);
             } else noteEditor.saveDraft();
@@ -87,7 +88,7 @@ abstract public class NoteEditorListActivity<T extends ViewItem<T>> extends Load
 
     @Override
     protected void onPause() {
-        noteEditor.saveAsBeingEditedAndHide();
+        if (noteEditor != null) noteEditor.saveAsBeingEditedAndHide();
         super.onPause();
     }
 
@@ -135,5 +136,10 @@ abstract public class NoteEditorListActivity<T extends ViewItem<T>> extends Load
     @Override
     public void onNoteEditorVisibilityChange() {
         invalidateOptionsMenu();
+    }
+
+    @Override
+    protected void onFullScreenToggle(boolean fullscreenNew) {
+        if (noteEditor != null) noteEditor.onScreenToggle(false, fullscreenNew);
     }
 }
