@@ -43,6 +43,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
+
 public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends ViewItem<T> {
     private static final int MIN_LENGTH_TO_COMPARE = 5;
     MyContext myContext = MyContextHolder.get();
@@ -142,8 +144,11 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     @NonNull
     private DuplicationLink duplicatesByOther(@NonNull T other) {
-        if (Math.abs(updatedDate - other.updatedDate) >= TimeUnit.HOURS.toMillis(24)
-                || isTooShortToCompare() || other.isTooShortToCompare()) return DuplicationLink.NONE;
+        if (updatedDate != SOME_TIME_AGO && other.updatedDate != SOME_TIME_AGO
+              &&  (Math.abs(updatedDate - other.updatedDate) >= TimeUnit.HOURS.toMillis(24))
+                || isTooShortToCompare()
+                || other.isTooShortToCompare()
+                ) return DuplicationLink.NONE;
         if (contentToSearch.equals(other.contentToSearch)) {
             if (updatedDate == other.updatedDate) {
                 return duplicatesByFavoritedAndReblogged(other);
