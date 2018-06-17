@@ -29,6 +29,18 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="40.01" android:versionCode="255"
+             versionDate="2018-06-17"
+             versionTitle="Note Editor UI improvements">
+        <changes>
+            <change>Hide Note Editor and save Draft on BACK device key.</change>
+            <change>Note Editor can cycle between three layouts: Default, Maximizing the Editor,
+                Showing Timeline with the Editor.<br/> The layout switch occur on clicking above or below editable text
+                in the Editor (e.g. on clicking text of the "in reply to" note).
+                Divider between the Editor and a Timeline made more noticeable to avoid User's confusion.
+            </change>
+        </changes>
+    </release>
     <release android:versionName="40.00" android:versionCode="254"
              versionDate="2018-06-07"
              versionTitle="Favoriting activity in GNU Social and Limiting image cache size">

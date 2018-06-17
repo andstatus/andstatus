@@ -6,8 +6,8 @@ android {
     buildToolsVersion project.ext.buildToolsVersion
 
     defaultConfig {
-        versionCode 254
-        versionName "40.00"
+        versionCode 255
+        versionName "40.01"
 
         applicationId "org.andstatus.app"
         minSdkVersion project.ext.minSdkVersion
