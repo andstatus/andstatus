@@ -30,7 +30,9 @@ public class DiscoveredOrigins {
         for (Origin origin : newOrigins) {
             mOrigins.put(origin.getName(), origin);
         }
-        MyLog.v(DiscoveredOrigins.class, "Removed " + oldCount + " and added " + newOrigins.size() + " " + type.name() + " origins");
+        int removed = oldCount;
+        MyLog.v(DiscoveredOrigins.class, () -> "Removed " + removed + " and added " + newOrigins.size()
+                + " " + type.name() + " origins");
     }
 
     public static void clear() {

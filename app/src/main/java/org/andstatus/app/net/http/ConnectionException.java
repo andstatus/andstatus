@@ -100,7 +100,7 @@ public class ConnectionException extends IOException {
             if (e != null) {
                 String stackTrace = MyLog.getStackTrace(e);
                 MyLog.writeStringToFile(stackTrace, MyLog.uniqueDateTimeFormatted() + "_JsonException_stacktrace_log.txt");
-                MyLog.v(objTag, "stack trace: " + stackTrace);
+                MyLog.v(objTag, () -> "stack trace: " + stackTrace);
             }
             MyLog.logJson(objTag, "json_exception", jso, true);
         }

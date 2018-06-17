@@ -69,7 +69,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                 return;
             }
         }
-        MyLog.v(this, "Progress: " + progress);
+        MyLog.v(this, () -> "Progress: " + progress);
         lastProgressBroadcastAt = System.currentTimeMillis();
         MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
                 .setCommandData(execContext.getCommandData())
@@ -107,7 +107,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                                         break;
                                 }
                             } else {
-                                MyLog.v(CommandExecutorStrategy.class, "Dummy commandExecutor for " +
+                                MyLog.v(CommandExecutorStrategy.class, () -> "Dummy commandExecutor for " +
                                         execContext.getCommandData().getTimeline());
                                 strategy = new CommandExecutorStrategy();
                             }
@@ -121,7 +121,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                             break;
                     }
                 } else {
-                    MyLog.v(CommandExecutorStrategy.class, "Dummy commandExecutor for " + execContext.getMyAccount());
+                    MyLog.v(CommandExecutorStrategy.class, () -> "Dummy commandExecutor for " + execContext.getMyAccount());
                     strategy = new CommandExecutorStrategy();
                 }
                 break;

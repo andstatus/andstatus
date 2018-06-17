@@ -114,10 +114,7 @@ public class MyAppWidgetData {
                 dateSince = prefs.getLong(PREF_DATESINCE_KEY, 0);
             }
 
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "Prefs for appWidgetId=" + mAppWidgetId
-                        + " were loaded");
-            }
+            MyLog.v(this, () -> "Prefs for appWidgetId=" + mAppWidgetId + " were loaded");
             isLoaded = true;
         }
     }
@@ -147,9 +144,7 @@ public class MyAppWidgetData {
         editor.putLong(PREF_DATECHECKED_KEY, dateLastChecked);
         editor.putLong(PREF_DATESINCE_KEY, dateSince);
         editor.apply();
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "Saved " + toString());
-        }
+        MyLog.v(this, () -> "Saved " + toString());
         return true;
     }
 
@@ -157,7 +152,7 @@ public class MyAppWidgetData {
      * Delete the preferences file!
      * */
     public boolean delete() {
-        MyLog.v(this, "Deleting data for widgetId=" + mAppWidgetId );
+        MyLog.v(this, () -> "Deleting data for widgetId=" + mAppWidgetId );
         return SharedPreferencesUtil.delete(mContext.context(), prefsFileName);
     }
 

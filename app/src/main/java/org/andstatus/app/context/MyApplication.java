@@ -71,7 +71,7 @@ public class MyApplication extends Application {
 
     @Override
     protected void attachBaseContext(Context base) {
-        MyLog.v(this, "attachBaseContext started" + (isAcraProcess ? ". ACRA process" : ""));
+        MyLog.v(this, () -> "attachBaseContext started" + (isAcraProcess ? ". ACRA process" : ""));
         super.attachBaseContext(base);
         ACRA.init(this);
         TamperingDetector.initialize(this);

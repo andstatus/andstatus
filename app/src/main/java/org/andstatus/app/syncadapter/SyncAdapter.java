@@ -37,7 +37,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     public SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
         this.mContext = context;
-        MyLog.v(this, "created, context:" + context.getClass().getCanonicalName());
+        MyLog.v(this, () -> "created, context:" + context.getClass().getCanonicalName());
     }
 
     @Override

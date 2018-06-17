@@ -102,7 +102,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             DbUtils.closeSilently(writer);
         }
         if (data.oauthClientKeys.areKeysPresent()) {
-            MyLog.v(this, "Completed " + logmsg);
+            MyLog.v(this, () -> "Completed " + logmsg);
         } else {
             throw ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST, "No client keys for the host yet; " + logmsg, data.originUrl);
         }
@@ -230,7 +230,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                             String logMsg3 = (result.redirected ? "Following redirect to "
                                     : "Not redirected to ") + "'" + result.getUrl() + "'";
                             logBuilder.append(logMsg3 + "; ");
-                            MyLog.v(this, method + logMsg3);
+                            MyLog.v(this, () -> method + logMsg3);
                             if (MyLog.isVerboseEnabled()) {
                                 StringBuilder message = new StringBuilder(method + "Headers: ");
                                 for (Entry<String, List<String>> entry : conn.getHeaderFields().entrySet()) {
@@ -238,7 +238,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                                         message.append(entry.getKey() +": " + value + ";\n");
                                     }
                                 }
-                                MyLog.v(this, message.toString());
+                                MyLog.v(this, message::toString);
                             }
                             conn.disconnect();
                         }
@@ -250,7 +250,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                             result.authenticate = false;
                             String logMsg4 = "Retrying without authentication connection to '" + result.getUrl() + "'";
                             logBuilder.append(logMsg4 + "; ");
-                            MyLog.v(this, method + logMsg4);
+                            MyLog.v(this, () -> method + logMsg4);
                         }
                         break;
                 }
@@ -279,7 +279,8 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                     conn.setRequestProperty("Authorization", "Dialback");
                     conn.setRequestProperty("host", data.urlForUserToken.getHost());
                     conn.setRequestProperty("token", getUserToken());
-                    MyLog.v(this, "Dialback authorization at " + data.originUrl + "; urlForUserToken=" + data.urlForUserToken + "; token=" + getUserToken());
+                    MyLog.v(this, () -> "Dialback authorization at " + data.originUrl
+                            + "; urlForUserToken=" + data.urlForUserToken + "; token=" + getUserToken());
                     consumer.sign(conn);
                 }
             }

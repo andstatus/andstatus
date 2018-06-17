@@ -46,9 +46,7 @@ public class TimelineTitle {
     public void updateActivityTitle(MyActivity activity, String additionalTitleText) {
         activity.setTitle(title);
         activity.setSubtitle(I18n.appendWithSpace(new StringBuilder(subTitle), additionalTitleText));
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(activity, "Title: " + toString());
-        }
+        MyLog.v(activity, () -> "Title: " + toString());
     }
 
     @Override

@@ -645,7 +645,7 @@ public class Actor implements Comparable<Actor> {
     }
 
     public void loadFromInternet() {
-        MyLog.v(this, "Actor " + this + " will be loaded from the Internet");
+        MyLog.v(this, () -> "Actor " + this + " will be loaded from the Internet");
         MyServiceManager.sendForegroundCommand(
                 CommandData.newActorCommand(
                         CommandEnum.GET_ACTOR,

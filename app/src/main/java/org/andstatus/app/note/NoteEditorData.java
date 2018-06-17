@@ -135,7 +135,7 @@ public class NoteEditorData {
             image = imageFile.loadAndGetImage();
             note.attachments.add(Attachment.fromUri(attachment.getUri()));
         }
-        MyLog.v(TAG, "Loaded " + this);
+        MyLog.v(TAG, () -> "Loaded " + this);
     }
 
     public static NoteEditorData newEmpty(MyAccount myAccount) {

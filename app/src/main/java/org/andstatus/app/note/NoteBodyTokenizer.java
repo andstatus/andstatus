@@ -42,8 +42,9 @@ class NoteBodyTokenizer implements MultiAutoCompleteTextView.Tokenizer {
         if (i >= cursor - MIN_LENGHT_TO_SEARCH || text == null || text.charAt(i) != '@') {
             return cursor;
         }
-        MyLog.v(this, "'" + text + "', cursor=" + cursor + ", start=" + (i + 1));
-        return i + 1; // Skip the "@"
+        int start = i + 1;  // Skip the "@"
+        MyLog.v(this, () -> "'" + text + "', cursor=" + cursor + ", start=" + start);
+        return start;
     }
 
     @Override

@@ -114,12 +114,10 @@ public final class ActorActivity {
      * @return true if succeeded
      */
     public boolean save() {
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "actorId " + actorId + ": " + MyQuery.actorIdToWebfingerId(actorId)
-                    + " Latest activity update at " + (new Date(getLastActivityDate()).toString())
-                    + (changed ? "" : " not changed")                    
-                    );
-        }
+        MyLog.v(this, () -> "actorId " + actorId + ": " + MyQuery.actorIdToWebfingerId(actorId)
+                + " Latest activity update at " + (new Date(getLastActivityDate()).toString())
+                + (changed ? "" : " not changed")
+                );
         if (!changed) {
             return true;
         }
@@ -129,11 +127,9 @@ public final class ActorActivity {
         if (activityDate > lastActivityDate) {
             lastActivityDate = activityDate;
             lastActivityId = MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, actorId);
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "There is newer information in the database. Actor " + actorId + ": "
-                        + MyQuery.actorIdToWebfingerId(actorId)
-                        + " Latest activity at " + (new Date(getLastActivityDate()).toString()));
-            }
+            MyLog.v(this, () -> "There is newer information in the database. Actor " + actorId + ": "
+                    + MyQuery.actorIdToWebfingerId(actorId)
+                    + " Latest activity at " + (new Date(getLastActivityDate()).toString()));
             changed = false;
             return true;
         }

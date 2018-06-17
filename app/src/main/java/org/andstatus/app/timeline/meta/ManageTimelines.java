@@ -96,7 +96,7 @@ public class ManageTimelines extends LoadableListActivity {
                     final DisplayedInSelector displayedInSelector = DisplayedInSelector.load(
                             data.getStringExtra(IntentExtra.SELECTABLE_ENUM.key));
                     selectedItem.timeline.setDisplayedInSelector(displayedInSelector);
-                    MyLog.v("isDisplayedInSelector", displayedInSelector.save() + " " +
+                    MyLog.v("isDisplayedInSelector", () -> displayedInSelector.save() + " " +
                             selectedItem.timeline);
                     if (displayedInSelector != DisplayedInSelector.IN_CONTEXT || sortByField == R.id.displayedInSelector) {
                         showList(WhichPage.CURRENT);
@@ -186,7 +186,8 @@ public class ManageTimelines extends LoadableListActivity {
                         item.timeline.isSyncableAutomatically() ?
                                 (CompoundButton.OnCheckedChangeListener) (buttonView, isChecked) -> {
                                     item.timeline.setSyncedAutomatically(isChecked);
-                                    MyLog.v("isSyncedAutomatically", (isChecked ? "+ " : "- ") + item.timeline);
+                                    MyLog.v("isSyncedAutomatically", () ->
+                                            (isChecked ? "+ " : "- ") + item.timeline);
                             } : null);
                 MyUrlSpan.showText(view, R.id.syncedTimesCount,
                         I18n.notZero(item.timeline.getSyncedTimesCount(isTotal)), false, true);
@@ -224,7 +225,7 @@ public class ManageTimelines extends LoadableListActivity {
                                 item.timeline.setDisplayedInSelector(DisplayedInSelector.NEVER);
                                 buttonView.setText("");
                             }
-                            MyLog.v("isDisplayedInSelector", (isChecked ? "+ " : "- ") + item.timeline);
+                            MyLog.v("isDisplayedInSelector", () -> (isChecked ? "+ " : "- ") + item.timeline);
                         });
                 view.setText(item.timeline.equals(defaultTimeline) ? "D" :
                         (item.timeline.isDisplayedInSelector() == DisplayedInSelector.ALWAYS ? "*" : ""));

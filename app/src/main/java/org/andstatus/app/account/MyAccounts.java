@@ -78,7 +78,8 @@ public class MyAccounts {
         }
         calculateDistinctOriginsCount();
         recentAccounts.addAll(myAccounts.stream().limit(3).collect(Collectors.toList()));
-        MyLog.v(this, "Accounts initialized, " + this.myAccounts.size() + " accounts in " + distinctOriginsCount + " origins");
+        MyLog.v(this, () -> "Accounts initialized, " + this.myAccounts.size() + " accounts" +
+                " in " + distinctOriginsCount + " origins");
         return this;
     }
 
@@ -323,7 +324,7 @@ public class MyAccounts {
         MyAccount prevAccount = getCurrentAccount();
         if (ma == null || !ma.isValid() || ma.equals(prevAccount)) return;
 
-        MyLog.v(this, "Changing current account from '" + prevAccount.getAccountName()
+        MyLog.v(this, () -> "Changing current account from '" + prevAccount.getAccountName()
                 + "' to '" + ma.getAccountName() + "'");
         recentAccounts.remove(ma);
         recentAccounts.add(0, ma);
@@ -349,11 +350,13 @@ public class MyAccounts {
 
     private boolean accountToSyncFilter(MyAccount account, boolean syncedAutomaticallyOnly) {
         if ( !account.isValidAndSucceeded()) {
-            MyLog.v(this, "Account '" + account.getAccountName() + "' skipped as invalid authenticated account");
+            MyLog.v(this, () -> "Account '" + account.getAccountName() + "'" +
+                    " skipped as invalid authenticated account");
             return false;
         }
         if (syncedAutomaticallyOnly && !account.isSyncedAutomatically()) {
-            MyLog.v(this, "Account '" + account.getAccountName() + "' skipped as it is not synced automatically");
+            MyLog.v(this, () -> "Account '" + account.getAccountName() + "'" +
+                    " skipped as it is not synced automatically");
             return false;
         }
         return true;

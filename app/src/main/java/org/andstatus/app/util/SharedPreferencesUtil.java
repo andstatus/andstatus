@@ -67,22 +67,21 @@ public class SharedPreferencesUtil {
      * @return Was the file deleted?
      */
     public static boolean delete(Context context, String prefsFileName) {
-        boolean isDeleted = false;
+        boolean isDeleted;
 
         if (context == null || StringUtils.isEmpty(prefsFileName)) {
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(TAG, "delete '" + prefsFileName + "' - nothing to do");
-            }
+            MyLog.v(TAG, () -> "delete '" + prefsFileName + "' - nothing to do");
             return false;
         }
         File prefFile = new File(prefsDirectory(context), prefsFileName + FILE_EXTENSION);
         if (prefFile.exists()) {
             isDeleted = prefFile.delete();
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(TAG, "The prefs file '" + prefFile.getAbsolutePath() + "' was "
+                MyLog.v(TAG, () -> "The prefs file '" + prefFile.getAbsolutePath() + "' was "
                         + (isDeleted ? "" : "not ") + " deleted");
             }
         } else {
+            isDeleted = false;
             if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
                 MyLog.d(TAG, "The prefs file '" + prefFile.getAbsolutePath() + "' was not found");
             }
@@ -220,7 +219,7 @@ public class SharedPreferencesUtil {
         if (context == null) {
             MyLog.e(TAG, "getSharedPreferences for " + name + " - were not initialized yet");
             for(StackTraceElement element : Thread.currentThread().getStackTrace()) {
-                MyLog.v(TAG, element.toString());
+                MyLog.v(TAG, element::toString);
             }
             return null;
         } else {

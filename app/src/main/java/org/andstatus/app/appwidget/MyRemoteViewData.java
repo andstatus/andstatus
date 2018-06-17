@@ -42,10 +42,8 @@ class MyRemoteViewData {
         }
         onClickIntent = widgetData.notifier.events.getPendingIntent();
         
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, method + "; text=\"" + widgetText.replaceAll("\n", "; ") + "\"; comment=\""
-                    + widgetComment + "\"");
-        }
+        MyLog.v(this, () -> method + "; text=\"" + widgetText.replaceAll("\n", "; ")
+                + "\"; comment=\"" + widgetComment + "\"");
     }
     
     static String formatWidgetTime(Context context, long startMillis,

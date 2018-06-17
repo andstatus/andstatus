@@ -54,11 +54,11 @@ public class MyServiceCommandsRunner {
             MyLog.d(this, method + "; No timelines to sync");
             return;
         }
-        MyLog.v(this, method + " started, " + timelines.size() + " timelines");
+        MyLog.v(this, () -> method + " started, " + timelines.size() + " timelines");
         timelines.stream()
                 .map(t -> CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, t))
                 .forEach(this::sendCommand);
-        MyLog.v(this, method + " ended, " + timelines.size() + " timelines requested: " + timelines);
+        MyLog.v(this, () -> method + " ended, " + timelines.size() + " timelines requested: " + timelines);
     }
 
     private void sendCommand(CommandData commandData) {

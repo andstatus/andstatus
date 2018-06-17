@@ -19,7 +19,6 @@ package org.andstatus.app.data;
 import android.content.ContentValues;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -156,8 +155,8 @@ public class DataUpdater {
              * 1. There was only "a stub" stored (without a sent date and a body)
              * 2. Note was "unsent"
              */
-            boolean isFirstTimeLoaded = note.getStatus() == DownloadStatus.LOADED || note.noteId == 0;
-            boolean isDraftUpdated = !isFirstTimeLoaded
+            boolean isFirstTimeLoaded1 = note.getStatus() == DownloadStatus.LOADED || note.noteId == 0;
+            boolean isDraftUpdated = !isFirstTimeLoaded1
                     && (note.getStatus() == DownloadStatus.SENDING || note.getStatus() == DownloadStatus.DRAFT);
 
             long updatedDateStored = 0;
@@ -165,14 +164,15 @@ public class DataUpdater {
                 DownloadStatus statusStored = DownloadStatus.load(
                         MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, note.noteId));
                 updatedDateStored = MyQuery.noteIdToLongColumnValue(NoteTable.UPDATED_DATE, note.noteId);
-                if (isFirstTimeLoaded) {
-                    isFirstTimeLoaded = statusStored != DownloadStatus.LOADED;
+                if (isFirstTimeLoaded1) {
+                    isFirstTimeLoaded1 = statusStored != DownloadStatus.LOADED;
                 }
             }
+            boolean isFirstTimeLoaded = isFirstTimeLoaded1;
 
             boolean isNewerThanInDatabase = note.getUpdatedDate() > updatedDateStored;
             if (!isFirstTimeLoaded && !isDraftUpdated && !isNewerThanInDatabase) {
-                MyLog.v("Note", "Skipped as not younger " + note);
+                MyLog.v("Note", () -> "Skipped as not younger " + note);
                 return;
             }
 
@@ -217,7 +217,7 @@ public class DataUpdater {
             }
 
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, ((note.noteId ==0) ? "insertMsg" : "updateMsg " + note.noteId)
+                MyLog.v(this, () -> ((note.noteId ==0) ? "insertMsg" : "updateMsg " + note.noteId)
                         + ":" + note.getStatus()
                         + (isFirstTimeLoaded ? " new;" : "")
                         + (isDraftUpdated ? " draft updated;" : "")
@@ -238,11 +238,11 @@ public class DataUpdater {
                     values2.put(NoteTable.CONVERSATION_ID, note.setConversationIdFromMsgId());
                     execContext.getContext().getContentResolver().update(msgUri, values2, null, null);
                 }
-                MyLog.v("Note", "Added " + note);
+                MyLog.v("Note", () -> "Added " + note);
             } else {
                 Uri msgUri = MatchedUri.getMsgUri(me.getActorId(), note.noteId);
                 execContext.getContext().getContentResolver().update(msgUri, values, null, null);
-                MyLog.v("Note", "Updated " + note);
+                MyLog.v("Note", () -> "Updated " + note);
             }
             note.audience().save(execContext.getMyContext(), note.origin, note.noteId);
 
@@ -288,7 +288,7 @@ public class DataUpdater {
         Actor actor = activity.getObjActor();
         final String method = "updateObjActor";
         if (actor.isEmpty()) {
-            MyLog.v(this, method + "; objActor is empty");
+            MyLog.v(this, () -> method + "; objActor is empty");
             return;
         }
         MyAccount me = execContext.getMyContext().accounts().fromActorOfSameOrigin(activity.accountActor);
@@ -306,9 +306,7 @@ public class DataUpdater {
                 activity.type.equals(ActivityType.UNDO_FOLLOW) ? TriState.FALSE : TriState.UNKNOWN;
         actor.lookupActorId(execContext.getMyContext());
         if (actor.actorId != 0 && actor.isPartiallyDefined() && followedByMe.unknown && followedByActor.unknown) {
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, method + "; Skipping partially defined: " + actor.toString());
-            }
+            MyLog.v(this, () -> method + "; Skipping partially defined: " + actor);
             return;
         }
         actor.lookupUser(execContext.getMyContext());
@@ -389,13 +387,13 @@ public class DataUpdater {
                 execContext.getContext().getContentResolver().update(actorUri, values, null, null);
             }
             if (followedByMe.known) {
-                MyLog.v(this, "Account " + me.getActor().getNamePreferablyWebFingerId() + " "
+                MyLog.v(this, () -> "Account " + me.getActor().getNamePreferablyWebFingerId() + " "
                         + (followedByMe.isTrue ? "follows " : "stop following ")
                         + actor.getNamePreferablyWebFingerId());
                 Friendship.setFollowed(execContext.myContext, me.getActorId(), followedByMe, actor.actorId);
             }
             if (followedByActor.known) {
-                MyLog.v(this, "Actor " + activity.getActor().getNamePreferablyWebFingerId() + " "
+                MyLog.v(this, () -> "Actor " + activity.getActor().getNamePreferablyWebFingerId() + " "
                         + (followedByActor.isTrue ? "follows " : "stop following ")
                         + actor.getNamePreferablyWebFingerId());
                 Friendship.setFollowed(execContext.myContext, activity.getActor().actorId, followedByActor, actor.actorId);
@@ -410,7 +408,7 @@ public class DataUpdater {
         } catch (Exception e) {
             MyLog.e(this, method + "; actorId=" + actor.actorId + "; oid=" + actorOid, e);
         }
-        MyLog.v(this, method + "; actorId=" + actor.actorId + "; oid=" + actorOid);
+        MyLog.v(this, () -> method + "; actorId=" + actor.actorId + "; oid=" + actorOid);
     }
 
     public void downloadOneNoteBy(String actorOid) throws ConnectionException {

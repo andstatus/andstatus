@@ -115,11 +115,11 @@ public class MyQuery {
         String msgLog = StringUtils.notNull(msgLogIn);
         SQLiteDatabase db = databaseIn == null ? MyContextHolder.get().getDatabase() : databaseIn;
         if (db == null) {
-            MyLog.v(TAG, msgLog + "; database is null");
+            MyLog.v(TAG, () -> msgLog + "; database is null");
             return 0;
         }
         if (StringUtils.isEmpty(sql)) {
-            MyLog.v(TAG, msgLog + "; sql is empty");
+            MyLog.v(TAG, () -> msgLog + "; sql is empty");
             return 0;
         }
         String msgLogSql = msgLog + (msgLog.contains(sql) ? "" : "; sql='" + sql +"'");
@@ -178,7 +178,7 @@ public class MyQuery {
     public static String idToOid(OidEnum oe, long entityId, long rebloggerActorId) {
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
-            MyLog.v(TAG, "idToOid: database is null, oe=" + oe + " id=" + entityId);
+            MyLog.v(TAG, () -> "idToOid: database is null, oe=" + oe + " id=" + entityId);
             return "";
         } else {
             return idToOid(db, oe, entityId, rebloggerActorId);
@@ -403,7 +403,7 @@ public class MyQuery {
                 }
                 SQLiteDatabase db = MyContextHolder.get().getDatabase();
                 if (db == null) {
-                    MyLog.v(TAG, method + "; Database is null");
+                    MyLog.v(TAG, () -> method + "; Database is null");
                     return "";
                 }
                 prog = db.compileStatement(sql);
@@ -508,7 +508,7 @@ public class MyQuery {
         String method = "cond2str";
         SQLiteDatabase db = dbIn == null ? MyContextHolder.get().getDatabase() : dbIn;
         if (db == null) {
-            MyLog.v(TAG, method + "; Database is null");
+            MyLog.v(TAG, () -> method + "; Database is null");
             return "";
         }
         String sql = "SELECT " + columnName + " FROM " + tableName + " WHERE " + condition;
@@ -647,7 +647,7 @@ public class MyQuery {
         final String method = "actor" + columnName + "ToId";
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
-            MyLog.v(TAG, method + "; Database is null");
+            MyLog.v(TAG, () -> method + "; Database is null");
             return 0;
         }
         long id = 0;
@@ -732,12 +732,12 @@ public class MyQuery {
                                  @NonNull Function<U, Function<Cursor, U>> f) {
         final String method = "foldLeft";
         if (myContext.getDatabase() == null) {
-            MyLog.v(TAG, method + "; Database is null");
+            MyLog.v(TAG, () -> method + "; Database is null");
             return identity;
         }
         if (MyAsyncTask.isUiThread()) {
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(TAG, method + "; Database access in UI thread: '" + sql + "'\n"
+                MyLog.v(TAG, () -> method + "; Database access in UI thread: '" + sql + "'\n"
                         + MyLog.getStackTrace(new IllegalAccessException()));
             }
             return identity;

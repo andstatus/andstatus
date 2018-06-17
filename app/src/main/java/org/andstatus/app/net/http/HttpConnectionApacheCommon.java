@@ -179,8 +179,9 @@ public class HttpConnectionApacheCommon {
                         } else {
                             result.setUrl(location.replace("%3F", "?"));
                             String logMsg3 = "Following redirect to '" + result.getUrl() + "'";
-                            MyLog.v(this, method + logMsg3);
                             if (MyLog.isVerboseEnabled()) {
+                                MyLog.v(this, method + logMsg3);
+
                                 StringBuilder message = new StringBuilder(method + "Headers: ");
                                 for (Header header: httpResponse.getAllHeaders()) {
                                     message.append(header.getName() +": " + header.getValue() + ";\n");
@@ -200,7 +201,7 @@ public class HttpConnectionApacheCommon {
                             result.authenticate = false;
                             result.appendToLog("retrying without authentication");
                             DbUtils.closeSilently(httpResponse);
-                            MyLog.v(this, result.toString());
+                            MyLog.v(this, result::toString);
                         }
                         break;
                 }

@@ -94,8 +94,9 @@ public class I18n {
             }
             lastSpace--;
         }
-        MyLog.v(TAG, "'" + text.subSequence(0, lastSpace) + "…" + "' max=" + maxLength);
-        return text.subSequence(0, lastSpace) + "…";
+        final CharSequence trimmed = text.subSequence(0, lastSpace);
+        MyLog.v(TAG, () -> "'" + trimmed + "…" + "' max=" + maxLength);
+        return trimmed + "…";
     }
 
     private static boolean isSpace(char charAt) {

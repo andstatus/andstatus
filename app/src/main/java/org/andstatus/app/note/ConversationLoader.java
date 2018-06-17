@@ -122,7 +122,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
             cachedItems.remove(item.getId());
             if (cachedItems.isEmpty()) return;
         }
-        MyLog.v(this, cachedItems.size() + " cached notes are not connected to selected");
+        MyLog.v(this, () -> cachedItems.size() + " cached notes are not connected to selected");
         for (T oNote : cachedItems.values()) {
             addNoteToList(oNote);
         }
@@ -143,7 +143,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
         if (noteId == 0) {
             return false;
         } else if (idsOfItemsToFind.contains(noteId)) {
-            MyLog.v(this, "find cycled on the id=" + noteId);
+            MyLog.v(this, () -> "find cycled on the id=" + noteId);
             return false;
         }
         idsOfItemsToFind.add(noteId);
@@ -173,7 +173,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
         }
         Uri uri = MatchedUri.getTimelineItemUri(
                 Timeline.getTimeline(TimelineType.EVERYTHING, 0, ma.getOrigin()), item.getNoteId());
-        boolean loaded = false;
+        boolean loaded;
         try (Cursor cursor = myContext.context().getContentResolver()
                 .query(uri, item.getProjection().toArray(new String[]{}), null, null, null)) {
             if (cursor != null && cursor.moveToFirst()) {
@@ -187,16 +187,16 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
                         MyLog.d(this, "Another conversationId:" + item);
                     }
                 }
-            }
+            } else loaded = false;
         }
-        MyLog.v(this, (loaded ? "Loaded (" + item.isLoaded() + ")"  : "Couldn't load")
+        MyLog.v(this, () -> (loaded ? "Loaded (" + item.isLoaded() + ")"  : "Couldn't load")
                 + " from a database noteId=" + item.getNoteId());
     }
 
     protected boolean addNoteToList(T oMsg) {
         boolean added = false;
         if (items.contains(oMsg)) {
-            MyLog.v(this, "Note id=" + oMsg.getNoteId() + " is in the list already");
+            MyLog.v(this, () -> "Note id=" + oMsg.getNoteId() + " is in the list already");
         } else {
             items.add(oMsg);
             if (mProgress != null) {
@@ -211,7 +211,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
         if (requestConversationSync(noteId)) {
             return;
         }
-        MyLog.v(this, "Note id=" + noteId + " will be loaded from the Internet");
+        MyLog.v(this, () -> "Note id=" + noteId + " will be loaded from the Internet");
         MyServiceManager.sendForegroundCommand(
                 CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, noteId));
     }
@@ -229,8 +229,10 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
             }
             if (!StringUtils.isEmpty(conversationOid)) {
                 conversationSyncRequested = true;
-                MyLog.v(this, "Conversation oid=" +  conversationOid + " for noteId=" + noteId
-                        + " will be loaded from the Internet");
+                if (MyLog.isVerboseEnabled()) {
+                    MyLog.v(this, "Conversation oid=" +  conversationOid + " for noteId=" + noteId
+                            + " will be loaded from the Internet");
+                }
                 MyServiceManager.sendForegroundCommand(
                         CommandData.newItemCommand(CommandEnum.GET_CONVERSATION, ma, noteId));
                 return true;

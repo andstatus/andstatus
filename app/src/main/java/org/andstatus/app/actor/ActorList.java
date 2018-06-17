@@ -175,7 +175,8 @@ public class ActorList extends NoteEditorListActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         final String method = "onActivityResult";
-        MyLog.v(this, method + "; request:" + requestCode + ", result:" + (resultCode == RESULT_OK ? "ok" : "fail"));
+        MyLog.v(this, () -> method + "; request:" + requestCode + ", result:"
+                + (resultCode == RESULT_OK ? "ok" : "fail"));
         if (resultCode != RESULT_OK || data == null) {
             return;
         }

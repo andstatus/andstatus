@@ -63,14 +63,15 @@ public class AsyncTaskLauncher<Params> {
         }
         if (executor != null && executor.isShutdown()) {
             if (executor.isTerminating()) {
-                MyLog.v(TAG, "Pool " + pool.name() + " isTerminating. Applying shutdownNow: "
-                        + executor );
+                if (MyLog.isVerboseEnabled()) {
+                    MyLog.v(TAG, "Pool " + pool.name() + " isTerminating. Applying shutdownNow: " + executor );
+                }
                 executor.shutdownNow();
             }
             executor = null;
         }
         if (executor == null) {
-            MyLog.v(TAG, "Creating pool " + pool.name());
+            MyLog.v(TAG, () -> "Creating pool " + pool.name());
             executor = new ThreadPoolExecutor(pool.corePoolSize, pool.corePoolSize + 1,
                     1, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(128));
             setExecutor(pool, executor);
@@ -102,9 +103,7 @@ public class AsyncTaskLauncher<Params> {
 
     public boolean execute(Object objTag, boolean throwOnFail, MyAsyncTask<Params, ?, ?> asyncTask,
                            Params... params) {
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(objTag, asyncTask.toString() + " Launching task");
-        }
+        MyLog.v(objTag, () -> asyncTask.toString() + " Launching task");
         boolean launched = false;
         try {
             cancelStalledTasks();
@@ -133,7 +132,7 @@ public class AsyncTaskLauncher<Params> {
         Set<MyAsyncTask.PoolEnum> poolsToShutDown = new HashSet<>();
         for (MyAsyncTask<?, ?, ?> launched : launchedTasks) {
             if (launched.needsBackgroundWork() && !launched.isReallyWorking()) {
-                MyLog.v(TAG, "Found stalled task at " + launched.pool + ": " + launched);
+                MyLog.v(TAG, () -> "Found stalled task at " + launched.pool + ": " + launched);
                 if (launched.pool.mayBeShutDown && launched.cancelledLongAgo() && launched.hasExecutor) {
                     poolsToShutDown.add(launched.pool);
                 } else {
@@ -147,7 +146,7 @@ public class AsyncTaskLauncher<Params> {
     private boolean foundUnfinished(MyAsyncTask<Params, ?, ?> asyncTask) {
         for (MyAsyncTask<?, ?, ?> launched : launchedTasks) {
             if (launched.equals(asyncTask) && launched.needsBackgroundWork()) {
-                MyLog.v(this, "Found unfinished " + launched);
+                MyLog.v(this, () -> "Found unfinished " + launched);
                 return true;
             }
         }
@@ -167,7 +166,7 @@ public class AsyncTaskLauncher<Params> {
     }
 
     private static void onExecutorRemoval(MyAsyncTask.PoolEnum pool) {
-        MyLog.v(TAG, "On removing executor for pool " + pool.name());
+        MyLog.v(TAG, () -> "On removing executor for pool " + pool.name());
         for (MyAsyncTask<?, ?, ?> launched : launchedTasks) {
             if (launched.pool == pool) launched.hasExecutor = false;
         }
@@ -236,7 +235,7 @@ public class AsyncTaskLauncher<Params> {
         for (MyAsyncTask.PoolEnum pool : pools) {
             ThreadPoolExecutor executor = getExecutor(pool);
             if (executor == null) continue;
-            MyLog.v(TAG, "Shutting down executor " + pool + ":" + executor);
+            MyLog.v(TAG, () -> "Shutting down executor " + pool + ":" + executor);
             executor.shutdownNow();
             setExecutor(pool, null);
         }
@@ -249,7 +248,7 @@ public class AsyncTaskLauncher<Params> {
     }
 
     public static void cancelPoolTasks(MyAsyncTask.PoolEnum pool) {
-        MyLog.v(TAG, "Cancelling tasks for pool " + pool.name());
+        MyLog.v(TAG, () -> "Cancelling tasks for pool " + pool.name());
         for (MyAsyncTask<?, ?, ?> launched : launchedTasks) {
             if (!launched.cancelable) continue;
 

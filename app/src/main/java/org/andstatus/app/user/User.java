@@ -123,10 +123,10 @@ public class User {
         if (this == EMPTY || values.size() == 0) return;
         if (userId == 0) {
             userId = DbUtils.addRowWithRetry(myContext, UserTable.TABLE_NAME, values, 3);
-            MyLog.v(this, "Added " + this);
+            MyLog.v(this, () -> "Added " + this);
         } else {
             DbUtils.updateRowWithRetry(myContext, UserTable.TABLE_NAME, userId, values, 3);
-            MyLog.v(this, "Updated " + this);
+            MyLog.v(this, () -> "Updated " + this);
         }
     }
 

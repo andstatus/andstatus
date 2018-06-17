@@ -189,14 +189,15 @@ public class MySettingsFragment extends PreferenceFragment implements
                 (RingtonePreference) findPreference(NotificationMethodType.SOUND.preferenceKey);
         if (ringtonePreference != null) {
             String ringtoneString = NotificationMethodType.SOUND.getString();
-            Uri uri = Uri.EMPTY;
-            Ringtone rt = null;
+            Uri uri;
             if (StringUtils.isEmpty(ringtoneString)) {
                 uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
             } else {
                 uri = Uri.parse(ringtoneString);
             }
-            MyLog.v(this, "Ringtone URI: " + uri);
+            MyLog.v(this, () -> "Ringtone URI: " + uri);
+
+            Ringtone rt = null;
             if (uri != null && uri != Uri.EMPTY) {
                 rt = RingtoneManager.getRingtone(getActivity(), uri);
             }

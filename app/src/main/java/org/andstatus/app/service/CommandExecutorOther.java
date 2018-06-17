@@ -407,7 +407,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 + (mediaUri.equals(Uri.EMPTY) ? "" : "; mediaUri:'" + mediaUri + "'");
         try {
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, method + ";" + msgLog);
+                MyLog.v(this, () -> method + ";" + msgLog);
             }
             DownloadStatus statusStored = DownloadStatus.load(
                     MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId));

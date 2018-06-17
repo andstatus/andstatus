@@ -322,7 +322,8 @@ public class Origin {
                 }
                 cursor.close();
             }
-            MyLog.v(this, this.toString() + " has " + count + " children");
+            long countVal = count;
+            MyLog.v(this, () -> this.toString() + " has " + countVal + " children");
         } catch (Exception e) {
             MyLog.e(this, "Error counting children", e);
         } finally {
@@ -555,7 +556,7 @@ public class Origin {
             saved = false;
             origin.isValid = origin.calcIsValid(); // TODO: refactor...
             if (!origin.isValid()) {
-                MyLog.v(this, "Is not valid: " + origin.toString());
+                MyLog.v(this, () -> "Is not valid: " + origin.toString());
                 return this;
             }
             if (origin.id == 0) {

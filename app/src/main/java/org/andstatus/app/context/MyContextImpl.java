@@ -118,7 +118,7 @@ public class MyContextImpl implements MyContext {
             state = MyContextState.NO_PERMISSIONS;
             return this;
         }
-        MyLog.v(this, "Starting initialization of " + instanceId + " by " + initializedBy);
+        MyLog.v(this, () -> "Starting initialization of " + instanceId + " by " + initializedBy);
 
         boolean createApplicationData = MyStorage.isApplicationDataCreated() != TriState.TRUE;
         if (createApplicationData) {

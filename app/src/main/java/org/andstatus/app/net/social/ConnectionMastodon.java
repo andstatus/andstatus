@@ -280,10 +280,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "file");
             formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mediaUri.toString());
             jso = postRequest(ApiRoutineEnum.UPDATE_NOTE_WITH_MEDIA, formParams);
-            if (jso != null) {
-                if (MyLog.isVerboseEnabled()) {
-                    MyLog.v(this, "uploaded '" + mediaUri.toString() + "' " + jso.toString(2));
-                }
+            if (jso != null && MyLog.isVerboseEnabled()) {
+                MyLog.v(this, "uploaded '" + mediaUri.toString() + "' " + jso.toString(2));
             }
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Error uploading '" + mediaUri + "'", e, jso);
@@ -417,7 +415,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 getApiPathWithActorId(ApiRoutineEnum.GET_ACTOR, UriUtils.isRealOid(actorOid) ? actorOid : username)
         );
         Actor actor = actorFromJson(jso);
-        MyLog.v(this, "getActor oid='" + actorOid + "', username='" + username + "' -> " + actor.getRealName());
+        MyLog.v(this, () -> "getActor oid='" + actorOid
+                + "', username='" + username + "' -> " + actor.getRealName());
         return actor;
     }
 

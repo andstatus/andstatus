@@ -41,7 +41,7 @@ public class MyServiceManager extends BroadcastReceiver {
     private final long instanceId = InstanceId.next();
 
     public MyServiceManager() {
-        MyLog.v(this, "Created, instanceId=" + instanceId );
+        MyLog.v(this, () -> "Created, instanceId=" + instanceId );
     }
 
     private static class MyServiceStateInTime {
@@ -221,8 +221,8 @@ public class MyServiceManager extends BroadcastReceiver {
                 }
                 isAvailable = mServiceAvailable;
             }
-            if (!isAvailable) {
-                MyLog.v(TAG,"Service will be available in " 
+            if (!isAvailable && MyLog.isVerboseEnabled()) {
+                MyLog.v(TAG,"Service will be available in "
                         + java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(availableInMillis) 
                         + " seconds");
             }

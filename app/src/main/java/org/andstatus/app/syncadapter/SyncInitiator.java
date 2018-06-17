@@ -57,7 +57,7 @@ public class SyncInitiator extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        MyLog.v(this, "onReceive "
+        MyLog.v(this, () -> "onReceive "
                 + (pm == null || pm.isDeviceIdleMode() ? " idle" : " " + UriUtils.getConnectionState(context))
         );
         if (pm == null || pm.isDeviceIdleMode()) return;
@@ -85,7 +85,7 @@ public class SyncInitiator extends BroadcastReceiver {
 
     private boolean syncIfNeeded(MyContext myContext) {
         final ConnectionState connectionState = UriUtils.getConnectionState(myContext.context());
-        MyLog.v(this, "syncIfNeeded " + UriUtils.getConnectionState(myContext.context()));
+        MyLog.v(this, () -> "syncIfNeeded " + UriUtils.getConnectionState(myContext.context()));
         if (!ConnectionRequired.SYNC.isConnectionStateOk(connectionState)) return false;
         for (MyAccount myAccount: myContext.accounts().accountsToSync()) {
             if (!myContext.timelines().toAutoSyncForAccount(myAccount).isEmpty()) {

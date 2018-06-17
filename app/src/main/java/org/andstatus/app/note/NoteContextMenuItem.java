@@ -180,7 +180,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
             final long authorId = MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, menu.getNoteId());
-            MyLog.v(this, "noteId:" + menu.getNoteId() + " -> authorId:" + authorId);
+            MyLog.v(this, () -> "noteId:" + menu.getNoteId() + " -> authorId:" + authorId);
             return NoteEditorData.newEmpty(menu.getActingAccount()).appendMentionedActorToText(authorId);
         }
 
@@ -375,7 +375,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     }
 
     protected void copyNoteText(NoteEditorData editorData) {
-        MyLog.v(this, "text='" + editorData.getContent() + "'");
+        MyLog.v(this, () -> "text='" + editorData.getContent() + "'");
         if (!StringUtils.isEmpty(editorData.getContent())) {
             // http://developer.android.com/guide/topics/text/copy-paste.html
             ClipboardManager clipboard = (ClipboardManager) MyContextHolder.get().context().
@@ -383,7 +383,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
             ClipData clip = ClipData.newPlainText(I18n.trimTextAt(editorData.getContent(), 40),
                     editorData.getContent());
             clipboard.setPrimaryClip(clip);
-            MyLog.v(this, "clip='" + clip.toString() + "'");
+            MyLog.v(this, () -> "clip='" + clip.toString() + "'");
         }
     }
 
@@ -411,7 +411,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
                 new MyAsyncTask<Void, Void, NoteEditorData>(TAG + name(), MyAsyncTask.PoolEnum.QUICK_UI) {
                     @Override
                     protected NoteEditorData doInBackground2(Void... params) {
-                        MyLog.v(NoteContextMenuItem.this,
+                        MyLog.v(NoteContextMenuItem.this, () ->
                                 "execute async started. noteId=" + menu.getNoteId());
                         return executeAsync(menu);
                     }

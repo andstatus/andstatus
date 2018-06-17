@@ -93,9 +93,9 @@ public class DownloadFile {
         if(existsNow()) {
             deleted = file.delete();
             if (deleted) {
-                MyLog.v(this, "Deleted file " + file.toString());
+                MyLog.v(this, () -> "Deleted file " + file);
             } else {
-                MyLog.e(this, "Couldn't delete file " + file.toString());
+                MyLog.e(this, "Couldn't delete file " + file);
             }
         }
         return deleted;

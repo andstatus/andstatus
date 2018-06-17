@@ -46,7 +46,7 @@ public class NoteShare {
         this.noteId = noteId;
         this.imageFilename = imageFilename;
         if (origin == null) {
-            MyLog.v(this, "Origin not found for noteId=" + noteId);
+            MyLog.v(this, () -> "Origin not found for noteId=" + noteId);
         }
     }
 

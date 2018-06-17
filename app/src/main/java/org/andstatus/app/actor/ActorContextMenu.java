@@ -107,7 +107,7 @@ public class ActorContextMenu extends MyContextMenu {
         MyAccount ma = getActingAccount();
         if (ma.isValid()) {
             ActorContextMenuItem contextMenuItem = ActorContextMenuItem.fromId(item.getItemId());
-            MyLog.v(this, "onContextItemSelected: " + contextMenuItem + "; actor="
+            MyLog.v(this, () -> "onContextItemSelected: " + contextMenuItem + "; actor="
                     + ma.getAccountName() + "; name=" + getViewItem().actor.getNamePreferablyWebFingerId());
             return contextMenuItem.execute(this, ma);
         } else {

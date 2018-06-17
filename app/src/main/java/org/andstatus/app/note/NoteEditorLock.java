@@ -46,19 +46,19 @@ class NoteEditorLock {
             if (lockPrevious.expired()) {
                 this.startedAt = MyLog.uniqueCurrentTimeMS();
                 if (lock.compareAndSet(lockPrevious, this)) {
-                    MyLog.v(this, "Received lock " + this + (lockPrevious.isEmpty() ? "" :
+                    MyLog.v(this, () -> "Received lock " + this + (lockPrevious.isEmpty() ? "" :
                             (". Replaced expired " + lockPrevious)));
                     break;
                 }
             } else if (isSave && !lockPrevious.isSave) {
                 this.startedAt = MyLog.uniqueCurrentTimeMS();
                 if (lock.compareAndSet(lockPrevious, this)) {
-                    MyLog.v(this, "Received lock " + this + ". Replaced load " + lockPrevious);
+                    MyLog.v(this, () -> "Received lock " + this + ". Replaced load " + lockPrevious);
                     break;
                 }
             } else {
                 if (lockPrevious.isSave == isSave && lockPrevious.noteId == noteId) {
-                    MyLog.v(this, "The same operation in progress: " + lockPrevious);
+                    MyLog.v(this, () -> "The same operation in progress: " + lockPrevious);
                     acquired = false;
                     break;
                 }
@@ -78,10 +78,10 @@ class NoteEditorLock {
     public boolean release() {
         if (!isEmpty()) {
             if (lock.compareAndSet(this, EMPTY)) {
-                MyLog.v(this, "Released lock " + this);
+                MyLog.v(this, () -> "Released lock " + this);
                 return true;
             } else {
-                MyLog.v(this, "Didn't release lock " + this + ". Was " + lock.get());
+                MyLog.v(this, () -> "Didn't release lock " + this + ". Was " + lock.get());
             }
         }
         return false;

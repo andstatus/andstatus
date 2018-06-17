@@ -104,7 +104,7 @@ public abstract class MyBaseListActivity extends MyActivity implements
         if (mSwipeLayout != null
                 && mSwipeLayout.isRefreshing() != isSyncing
                 && !isFinishing()) {
-            MyLog.v(this, source + " set Circular Syncing to " + isSyncing);
+            MyLog.v(this, () -> source + " set Circular Syncing to " + isSyncing);
             mSwipeLayout.setRefreshing(isSyncing);
         }
     }

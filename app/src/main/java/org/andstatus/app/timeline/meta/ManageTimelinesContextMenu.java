@@ -65,7 +65,7 @@ public class ManageTimelinesContextMenu extends MyContextMenu {
 
     public boolean onContextItemSelected(MenuItem item) {
         ManageTimelinesContextMenuItem contextMenuItem = ManageTimelinesContextMenuItem.fromId(item.getItemId());
-        MyLog.v(this, "onContextItemSelected: " + contextMenuItem +
+        MyLog.v(this, () -> "onContextItemSelected: " + contextMenuItem +
                 "; timeline=" + getViewItem().timeline);
         return contextMenuItem.execute(this, getViewItem());
     }

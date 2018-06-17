@@ -359,10 +359,10 @@ public class AActivity extends AObject {
         if (updatedDate > 0) calculateInteraction(myContext);
         if (getId() == 0) {
             id = DbUtils.addRowWithRetry(myContext, ActivityTable.TABLE_NAME, toContentValues(), 3);
-            MyLog.v(this, "Added " + this);
+            MyLog.v(this, () -> "Added " + this);
         } else {
             DbUtils.updateRowWithRetry(myContext, ActivityTable.TABLE_NAME, getId(), toContentValues(), 3);
-            MyLog.v(this, "Updated " + this);
+            MyLog.v(this, () -> "Updated " + this);
         }
         afterSave(myContext);
         return id;
@@ -371,7 +371,7 @@ public class AActivity extends AObject {
     private boolean wontSave(MyContext myContext) {
         if (isEmpty() || (type.equals(ActivityType.UPDATE) && getObjectType().equals(AObjectType.ACTOR))
                 || (timelinePosition.isEmpty() && getId() != 0)) {
-            MyLog.v(this, "Won't save " + this);
+            MyLog.v(this, () -> "Won't save " + this);
             return true;
         }
 
@@ -388,7 +388,7 @@ public class AActivity extends AObject {
             long storedUpdatedDate = MyQuery.idToLongColumnValue(
                     myContext.getDatabase(), ActivityTable.TABLE_NAME, ActivityTable.UPDATED_DATE, id);
             if (updatedDate <= storedUpdatedDate) {
-                MyLog.v(this, "Skipped as not younger " + this);
+                MyLog.v(this, () -> "Skipped as not younger " + this);
                 return true;
             }
             switch (type) {
@@ -399,7 +399,7 @@ public class AActivity extends AObject {
                     if ((favAndType.second.equals(ActivityType.LIKE) && type == ActivityType.LIKE)
                             || (favAndType.second.equals(ActivityType.UNDO_LIKE) && type == ActivityType.UNDO_LIKE)
                             ) {
-                        MyLog.v(this, "Skipped as already " + type.name() + " " + this);
+                        MyLog.v(this, () -> "Skipped as already " + type.name() + " " + this);
                         return true;
                     }
                     break;
@@ -410,7 +410,7 @@ public class AActivity extends AObject {
                     if ((reblAndType.second.equals(ActivityType.ANNOUNCE) && type == ActivityType.ANNOUNCE)
                             || (reblAndType.second.equals(ActivityType.UNDO_ANNOUNCE) && type == ActivityType.UNDO_ANNOUNCE)
                             ) {
-                        MyLog.v(this, "Skipped as already " + type.name() + " " + this);
+                        MyLog.v(this, () -> "Skipped as already " + type.name() + " " + this);
                         return true;
                     }
                     break;
@@ -418,7 +418,7 @@ public class AActivity extends AObject {
                     break;
             }
             if (timelinePosition.isTemp()) {
-                MyLog.v(this, "Skipped as temp oid " + this);
+                MyLog.v(this, () -> "Skipped as temp oid " + this);
                 return true;
             }
         }
@@ -529,7 +529,7 @@ public class AActivity extends AObject {
             case UNDO_LIKE:
                 final MyAccount myActorAccount = myContext.accounts().fromActorOfAnyOrigin(actor);
                 if (myActorAccount.isValid()) {
-                    MyLog.v(this, myActorAccount + " " + type
+                    MyLog.v(this, () -> myActorAccount + " " + type
                             + " '" + getNote().oid + "' " + I18n.trimTextAt(getNote().getContent(), 80));
                     MyProvider.updateNoteFavorited(myContext, actor.origin, getNote().noteId);
                 }

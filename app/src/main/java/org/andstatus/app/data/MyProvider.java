@@ -191,7 +191,7 @@ public class MyProvider extends ContentProvider {
         final String method = "delete";
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
-            MyLog.v(MyProvider.TAG, method + "; Database is null");
+            MyLog.v(MyProvider.TAG, () -> method + "; Database is null");
             return;
         }
         try {

@@ -145,7 +145,7 @@ public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable 
             loader.load(null);
             List<ActorViewItem> filteredValues = loader.getList();
             for (ActorViewItem viewItem : filteredValues) {
-                MyLog.v(this, "filtered: " + viewItem.actor);
+                MyLog.v(this, () -> "filtered: " + viewItem.actor);
             }
             return filteredValues;
         }

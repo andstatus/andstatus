@@ -131,7 +131,8 @@ public class FirstActivity extends AppCompatActivity {
             if (versionCodeLast < versionCode) {
                 // Even if the Actor will see only the first page of the Help activity,
                 // count this as showing the Change Log
-                MyLog.v(FirstActivity.class, "Last opened version=" + versionCodeLast + ", current is " + versionCode
+                MyLog.v(FirstActivity.class, () -> "Last opened version=" + versionCodeLast
+                        + ", current is " + versionCode
                         + (update ? ", updating" : "")
                 );
                 changed = true;

@@ -18,7 +18,6 @@ package org.andstatus.app.util;
 
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.util.Log;
 
@@ -47,6 +46,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 
 /**
  * There is a need to turn debug (and maybe even verbose) logging on and off
@@ -213,10 +213,7 @@ public class MyLog {
         }
         return i;
     }
-    
-    /**
-     * Shortcut for verbose messages of the application
-     */
+
     public static int v(Object objTag, String msg) {
         String tag = objToTruncatedTag(objTag);
         int i = 0;
@@ -225,6 +222,15 @@ public class MyLog {
             i = Log.v(tag, msg);
         }
         return i;
+    }
+
+    public static int v(Object objTag, Supplier<String> producer) {
+        String tag = objToTruncatedTag(objTag);
+        if (!isLoggable(tag, Log.VERBOSE)) return 0;
+
+        String msg = producer.get();
+        logToFile(VERBOSE, tag, msg, null);
+        return Log.v(tag, msg);
     }
 
     public static int v(Object objTag, String msg, Throwable tr) {
@@ -618,7 +624,7 @@ public class MyLog {
                 }
                 jso2 = (new JSONTokener((String) jso)).nextValue();
              }
-            String strJso = "";
+            String strJso;
             if (JSONObject.class.isInstance(jso2)) {
                 JSONObject jso3 = (JSONObject) jso2;
                 isEmpty = jso3.length() == 0;
@@ -634,7 +640,7 @@ public class MyLog {
                 writeStringToFile(strJso, uniqueDateTimeFormatted()  + "_" + namePrefix
                         + "_" + objToTag(objTag) + "_log.json");
             } else {
-                v(objTag, namePrefix + "; jso: " + strJso);
+                v(objTag, () -> namePrefix + "; jso: " + strJso);
             }
         } catch (JSONException ignored1) {
             ignored(objTag, ignored1);
@@ -643,7 +649,7 @@ public class MyLog {
                     writeStringToFile(jso.toString(), uniqueDateTimeFormatted() + "_" + namePrefix 
                             + "_" + objToTag(objTag) + "_invalid_log.json");
                 }
-                v(objTag, namePrefix + "; invalid obj: " + jso.toString());
+                v(objTag, () -> namePrefix + "; invalid obj: " + jso.toString());
             } catch (Exception ignored2) {
                 ignored(objTag, ignored2);
             }

@@ -66,7 +66,7 @@ public class MyServiceEventsBroadcaster {
         intent.putExtra(IntentExtra.SERVICE_STATE.key, mState.save());
         intent.putExtra(IntentExtra.SERVICE_EVENT.key, mEvent.save());
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "state:" + mState + ", event:" + mEvent
+            MyLog.v(this, () -> "state:" + mState + ", event:" + mEvent
             + ", " + mCommandData.toCommandSummary(MyContextHolder.get())
             + (StringUtils.isEmpty(progress) ? "" : ", progress:" + progress) );
         }

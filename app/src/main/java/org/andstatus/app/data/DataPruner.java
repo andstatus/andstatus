@@ -82,7 +82,7 @@ public class DataPruner {
         if (!isTimeToPrune()) {
             return pruned;
         }
-        MyLog.v(this, method + " started");
+        MyLog.v(this, () -> method + " started");
 
         mDeleted = 0;
         int nDeletedTime = 0;
@@ -167,7 +167,7 @@ public class DataPruner {
         long maxSize = MyPreferences.getMaximumSizeOfCachedMediaBytes();
         final long bytesToPrune = dirSize - maxSize;
         long bytesToPruneMin = ATTACHMENTS_TO_STORE_MIN * MyPreferences.getMaximumSizeOfAttachmentBytes();
-        MyLog.v(this, "Size of media files: " + dirSize + " bytes"
+        MyLog.v(this, () -> "Size of media files: " + dirSize + " bytes"
         + (bytesToPrune > bytesToPruneMin
                         ? " exceeds"
                         : " less than")
@@ -178,10 +178,10 @@ public class DataPruner {
         long pruned1 = DownloadData.pruneFiles(myContext, DownloadType.ATTACHMENT,
                 Math.round(maxSize * ATTACHMENTS_SIZE_PART));
 
-        MyLog.v(this, "Pruned " + pruned1 + " attachment files");
+        MyLog.v(this, () -> "Pruned " + pruned1 + " attachment files");
         long pruned2 = DownloadData.pruneFiles(myContext, DownloadType.AVATAR,
                 Math.round(maxSize * (1 - ATTACHMENTS_SIZE_PART)));
-        MyLog.v(this, "Pruned " + pruned2 + " avatar files");
+        MyLog.v(this, () -> "Pruned " + pruned2 + " avatar files");
         return pruned1 + pruned2;
     }
 
@@ -202,7 +202,7 @@ public class DataPruner {
             DownloadData.deleteAllOfThisNote(db, noteId);
             nDeleted++;
         }
-        if (nDeleted > 0) {
+        if (nDeleted > 0 && MyLog.isVerboseEnabled()) {
             MyLog.v(this, method + "; Attachments deleted for " + nDeleted + " notes");
         }
         return nDeleted;

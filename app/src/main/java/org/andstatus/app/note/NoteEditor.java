@@ -136,7 +136,7 @@ public class NoteEditor {
             @Override
             public void afterTextChanged(Editable s) {
                 editorData.setContent(s.toString());
-                MyLog.v(NoteEditorData.TAG, "Content updated to '" + editorData.getContent() + "'");
+                MyLog.v(NoteEditorData.TAG, () -> "Content updated to '" + editorData.getContent() + "'");
                 mCharsLeftText.setText(String.valueOf(editorData.getMyAccount()
                         .charactersLeftForNote(editorData.getContent())));
             }
@@ -388,7 +388,7 @@ public class NoteEditor {
 
     public void startEditingSharedData(final MyAccount ma, String name, final String content,
                                        final Uri media) {
-        MyLog.v(NoteEditorData.TAG, "startEditingSharedData " + name + " - " + content + " uri: " + media);
+        MyLog.v(NoteEditorData.TAG, () -> "startEditingSharedData " + name + " - " + content + " uri: " + media);
         updateDataFromScreen();
 
         String contentWithName = "";
@@ -415,11 +415,11 @@ public class NoteEditor {
 
     public void startEditingNote(NoteEditorData data) {
         if (!data.isValid()) {
-            MyLog.v(NoteEditorData.TAG, "Not a valid data " + data);
+            MyLog.v(NoteEditorData.TAG, () -> "Not a valid data " + data);
             return;
         }
         if (!data.mayBeEdited()) {
-            MyLog.v(NoteEditorData.TAG, "Cannot be edited " + data);
+            MyLog.v(NoteEditorData.TAG, () -> "Cannot be edited " + data);
             return;
         }
         data.activity.getNote().setStatus(DownloadStatus.DRAFT);
@@ -624,7 +624,7 @@ public class NoteEditor {
                 command.beingEdited ? command.getCurrentNoteId() : 0);
         hide();
         if (!command.isEmpty()) {
-            MyLog.v(NoteEditorData.TAG, "Requested: " + command);
+            MyLog.v(NoteEditorData.TAG, () -> "Requested: " + command);
             new AsyncTaskLauncher<NoteEditorCommand>().execute(this, true,
                     new NoteSaver(this), command);
         } else {
@@ -646,7 +646,7 @@ public class NoteEditor {
             MyLog.v(NoteEditorData.TAG, "loadCurrentDraft: no current draft");
             return;
         }
-        MyLog.v(NoteEditorData.TAG, "loadCurrentDraft requested, noteId=" + noteId);
+        MyLog.v(NoteEditorData.TAG, () -> "loadCurrentDraft requested, noteId=" + noteId);
         new AsyncTaskLauncher<Long>().execute(this, true,
                 new MyAsyncTask<Long, Void, NoteEditorData>(NoteEditor.this.toString(),
                         MyAsyncTask.PoolEnum.QUICK_UI) {
@@ -655,7 +655,7 @@ public class NoteEditor {
                     @Override
                     protected NoteEditorData doInBackground2(Long... params) {
                         long noteId = params[0];
-                        MyLog.v(NoteEditorData.TAG, "loadCurrentDraft started, noteId=" + noteId);
+                        MyLog.v(NoteEditorData.TAG, () -> "loadCurrentDraft started, noteId=" + noteId);
                         NoteEditorLock potentialLock = new NoteEditorLock(false, noteId);
                         if (!potentialLock.acquire(true)) {
                             return NoteEditorData.EMPTY;
@@ -668,7 +668,7 @@ public class NoteEditor {
                         if (data.mayBeEdited()) {
                             return data;
                         } else {
-                            MyLog.v(NoteEditorData.TAG, "Cannot be edited " + data);
+                            MyLog.v(NoteEditorData.TAG, () -> "Cannot be edited " + data);
                             SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID, 0);
                             return NoteEditorData.EMPTY;
                         }

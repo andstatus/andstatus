@@ -59,9 +59,7 @@ public abstract class BaseTimelineAdapter<T extends ViewItem<T>> extends BaseAda
             displayDensity = 1;
         } else {
             displayDensity = myContext.context().getResources().getDisplayMetrics().density;
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this,"density=" + displayDensity);
-            }
+            MyLog.v(this, () ->"density=" + displayDensity);
         }
     }
 

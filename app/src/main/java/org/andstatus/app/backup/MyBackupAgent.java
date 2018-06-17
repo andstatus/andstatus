@@ -105,7 +105,7 @@ public class MyBackupAgent extends BackupAgent {
                 boolean isServiceAvailableStored = checkAndSetServiceUnavailable();
                 doBackup(data);
                 backupDescriptor.save();
-                MyLog.v(this, method + "; newState: " + backupDescriptor.toString());
+                MyLog.v(this, () -> method + "; newState: " + backupDescriptor.toString());
                 if (isServiceAvailableStored) {
                     MyServiceManager.setServiceAvailable();
                 }
@@ -168,7 +168,7 @@ public class MyBackupAgent extends BackupAgent {
             backupDescriptor.getLogger().logProgress(
                     "Backed up " + fileWritten(key, dataFile, bytesWritten));
         } else {
-            MyLog.v(this, "File doesn't exist key='" + key + "', path='" + dataFile.getAbsolutePath());
+            MyLog.v(this, () -> "File doesn't exist key='" + key + "', path='" + dataFile.getAbsolutePath());
         }
         return backedUpCount;
     }
@@ -279,7 +279,7 @@ public class MyBackupAgent extends BackupAgent {
         SharedPreferencesUtil.copyAll(SharedPreferencesUtil.getSharedPreferences(filename),
                 SharedPreferencesUtil.getDefaultSharedPreferences());
         if (!tempFile.delete()) {
-            MyLog.v(this, "Couldn't delete " + tempFile.getAbsolutePath());
+            MyLog.v(this, () -> "Couldn't delete " + tempFile.getAbsolutePath());
         }
         fixExternalStorage();
         MyContextHolder.release();

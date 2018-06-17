@@ -294,7 +294,7 @@ public class ConnectionPumpio extends Connection {
             throw new ConnectionException(StatusCode.BAD_REQUEST, apiRoutine + ": host is empty for the username='"
                     + username + "'");
         } else if (http.data.originUrl == null || host.compareToIgnoreCase(http.data.originUrl.getHost()) != 0) {
-            MyLog.v(this, "Requesting data from the host: " + host);
+            MyLog.v(this, () -> "Requesting data from the host: " + host);
             HttpConnectionData connectionData1 = http.data.copy();
             connectionData1.oauthClientKeys = null;
             connectionData1.originUrl = UrlUtils.buildUrl(host, connectionData1.isSsl());
@@ -596,7 +596,8 @@ public class ConnectionPumpio extends Connection {
                 UriUtils.isRealOid(actorOid) ? actorOidToUsername(actorOid) : username);
         JSONObject jso = conu.httpConnection.getRequest(conu.url);
         Actor actor = actorFromJson(jso);
-        MyLog.v(this, "getActor oid='" + actorOid + "', username='" + username + "' -> " + actor.getRealName());
+        MyLog.v(this, () -> "getActor oid='" + actorOid
+                + "', username='" + username + "' -> " + actor.getRealName());
         return actor;
     }
 

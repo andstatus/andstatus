@@ -68,7 +68,7 @@ public class RecursiveConversationLoader<T extends ConversationItem<T>> extends 
             return;
         }
         findRepliesRecursively(oMsg);
-        MyLog.v(this, "findPreviousNotesRecursively id=" + oMsg.getNoteId() + " replies:" + oMsg.mNReplies);
+        MyLog.v(this, () -> "findPreviousNotesRecursively id=" + oMsg.getNoteId() + " replies:" + oMsg.mNReplies);
         loadItemFromDatabase(oMsg);
         if (oMsg.isLoaded()) {
             if (addNoteToList(oMsg)) {
@@ -83,7 +83,7 @@ public class RecursiveConversationLoader<T extends ConversationItem<T>> extends 
     }
 
     public void findRepliesRecursively(T oMsg) {
-        MyLog.v(this, "findReplies for id=" + oMsg.getNoteId());
+        MyLog.v(this, () -> "findReplies for id=" + oMsg.getNoteId());
         for (T oMsgReply : cachedItems.values()) {
             if (oMsgReply.inReplyToNoteId == oMsg.getNoteId()) {
                 oMsg.mNReplies++;

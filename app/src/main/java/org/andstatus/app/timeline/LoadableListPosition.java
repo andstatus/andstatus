@@ -92,7 +92,10 @@ public class LoadableListPosition<T extends ViewItem<T>> {
         for (int ind = 0; ind < list.getChildCount(); ind++) {
             View view = list.getChildAt(ind);
             final int positionForView = list.getPositionForView(view);
-            MyLog.v(LoadableListPosition.class, "getViewOfPosition " + position + ", ind " + ind + " => " + positionForView);
+            if (MyLog.isVerboseEnabled()) {
+                MyLog.v(LoadableListPosition.class, "getViewOfPosition " + position + ", ind " + ind
+                        + " => " + positionForView);
+            }
             if (positionForView == position) {
                 viewOfPosition = view;
                 break;
@@ -130,10 +133,8 @@ public class LoadableListPosition<T extends ViewItem<T>> {
         int childHeight = 30;
         int y = position == 0 ? 0 : viewHeight - childHeight;
         int headerViewsCount = listView.getHeaderViewsCount();
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(LoadableListPosition.class, "Set position of " + position + " item to " + y + " px," +
-                    " header views: " + headerViewsCount);
-        }
+        MyLog.v(LoadableListPosition.class, () -> "Set position of " + position + " item to " + y + " px," +
+                " header views: " + headerViewsCount);
         listView.setSelectionFromTop(position, y);
     }
 
@@ -147,7 +148,7 @@ public class LoadableListPosition<T extends ViewItem<T>> {
 
     LoadableListPosition<T> logV(String description) {
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(LoadableListPosition.class, description + "; " + this.description);
+            MyLog.v(LoadableListPosition.class, () -> description + "; " + this.description);
         }
         return this;
     }

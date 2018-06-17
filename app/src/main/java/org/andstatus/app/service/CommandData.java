@@ -507,10 +507,10 @@ public class CommandData implements Comparable<CommandData> {
             if (cd.getCommandId() == itemId) {
                 queue.remove(cd);
                 getResult().incrementDownloadedCount();
-                MyLog.v(this, method + "deleted: " + cd);
+                MyLog.v(this, () -> method + "deleted: " + cd);
             }
         }
-        MyLog.v(this, method + "id=" + itemId + ", processed queue: " + queue.size());
+        MyLog.v(this, () -> method + "id=" + itemId + ", processed queue: " + queue.size());
     }
 
     public boolean isInForeground() {

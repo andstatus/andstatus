@@ -141,7 +141,7 @@ public class StorageSwitch {
                 }
             }
             result.messageBuilder.insert(0, " Move " + (result.success ? "succeeded" : "failed"));
-            MyLog.v(this, result.getMessage());
+            MyLog.v(this, () -> result.getMessage());
             return result;
         }
 

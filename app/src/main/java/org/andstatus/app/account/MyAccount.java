@@ -245,11 +245,10 @@ public final class MyAccount implements Comparable<MyAccount> {
 
         private void logLoadResult(String method) {
             if (myAccount.isValid()) {
-                if (MyLog.isVerboseEnabled()) {
-                    MyLog.v(TAG, method + " Loaded " + this.toString());
-                }
+                MyLog.v(TAG, () -> method + " Loaded " + this.toString());
             } else {
-                MyLog.i(TAG, method + " Failed to load: Invalid account; version=" + myAccount.version + "; " + this);
+                MyLog.i(TAG, method + " Failed to load: Invalid account; version=" + myAccount.version
+                        + "; " + this);
             }
         }
 
@@ -310,7 +309,7 @@ public final class MyAccount implements Comparable<MyAccount> {
             SaveResult result = new SaveResult();
             try {
                 if (!myAccount.isValid()) {
-                    MyLog.v(TAG, "Didn't save invalid account: " + myAccount);
+                    MyLog.v(TAG, () -> "Didn't save invalid account: " + myAccount);
                     return result;
                 }
                 Account androidAccount = getNewOrExistingAndroidAccount();
@@ -332,7 +331,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                 if (androidAccount != null) {
                     myAccount.accountData.saveDataToAndroidAccount(myContext, androidAccount, result);
                 }
-                MyLog.v(this, (result.savedToAccountManager ? " Saved "
+                MyLog.v(this, () -> (result.savedToAccountManager ? " Saved "
                         : (result.changed ? " Didn't save?! " : " Didn't change ")) + this.toString());
                 myContext.accounts().addIfAbsent(myAccount);
                 if (myContext.isReady() && !myAccount.hasAnyTimelines(myContext)) {
@@ -364,7 +363,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                         // SyncManager(865): can't find a sync adapter for SyncAdapterType Key
                         // {name=org.andstatus.app.data.MyProvider, type=org.andstatus.app},
                         // removing settings for it
-                        MyLog.v(TAG, "Persisted " + myAccount.getAccountName());
+                        MyLog.v(TAG, () -> "Persisted " + myAccount.getAccountName());
                     } else {
                         MyLog.e(TAG, "Account was not added to AccountManager: " + androidAccount);
                         androidAccount = null;
@@ -477,7 +476,7 @@ public final class MyAccount implements Comparable<MyAccount> {
         }
 
         public void registerClient() throws ConnectionException {
-            MyLog.v(TAG, "Registering client application for " + myAccount.getUsername());
+            MyLog.v(TAG, () -> "Registering client application for " + myAccount.getUsername());
             setConnection();
             myAccount.connection.registerClientForAccount();
         }
@@ -981,7 +980,7 @@ public final class MyAccount implements Comparable<MyAccount> {
                 return true;
             }
         }
-        MyLog.v(this, this.getAccountName() + " doesn't have any timeline");
+        MyLog.v(this, () -> this.getAccountName() + " doesn't have any timeline");
         return false;
     }
 }

@@ -62,7 +62,7 @@ public class PersistentOrigins {
             DbUtils.closeSilently(cursor);
         }
         
-        MyLog.v(this, "Initialized " + mOrigins.size() + " origins");
+        MyLog.v(this, () -> "Initialized " + mOrigins.size() + " origins");
         return this;
     }
     

@@ -48,7 +48,7 @@ public class CachedUsersAndActors {
         initializeMyUsers();
         initializeFriendsOfMyActors();
         loadTimelineActors();
-        MyLog.v(this, "Users list initialized, "
+        MyLog.v(this, () -> "Users list initialized, "
                 + myUsers.size() + " users, "
                 + myActors.size() + " my actors, "
                 + friendsOfMyActors.size() + " friends");

@@ -43,7 +43,7 @@ abstract class TimelineDownloader extends CommandExecutorStrategy {
                 download();
                 onSyncEnded();
             } else {
-                MyLog.v(this, execContext.getTimeline() + " is not supported for "
+                MyLog.v(this, () -> execContext.getTimeline() + " is not supported for "
                         + execContext.getMyAccount().getAccountName());
             }
             logOk(true);

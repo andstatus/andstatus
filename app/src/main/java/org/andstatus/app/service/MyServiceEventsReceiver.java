@@ -39,7 +39,7 @@ public final class MyServiceEventsReceiver extends BroadcastReceiver {
         super();
         this.myContext = myContext;
         this.listener = listener;
-        MyLog.v(this, "Created, instanceId=" + mInstanceId
+        MyLog.v(this, () -> "Created, instanceId=" + mInstanceId
                 + (listener == null ? "" : "; listener=" + MyLog.objToTag(listener)));
     }
     
@@ -61,7 +61,8 @@ public final class MyServiceEventsReceiver extends BroadcastReceiver {
         MyServiceEvent event = MyServiceEvent.load(intent.getStringExtra(IntentExtra.SERVICE_EVENT.key));
         if (event == MyServiceEvent.UNKNOWN) return;
 
-        MyLog.v(this, "onReceive " + event + " for " + MyLog.objToTag(listener) + ", instanceId:" + mInstanceId);
+        MyLog.v(this, () -> "onReceive " + event + " for " + MyLog.objToTag(listener)
+                + ", instanceId:" + mInstanceId);
         listener.onReceive(CommandData.fromIntent(myContext, intent), event);
     }
 }

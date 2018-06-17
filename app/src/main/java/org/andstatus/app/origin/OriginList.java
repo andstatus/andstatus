@@ -96,7 +96,7 @@ public abstract class OriginList extends MyListActivity {
         data.clear();
         fillData(data);
         data.sort((lhs, rhs) -> lhs.get(KEY_VISIBLE_NAME).compareToIgnoreCase(rhs.get(KEY_VISIBLE_NAME)));
-        MyLog.v(this, "fillList, " + data.size() + " items");
+        MyLog.v(this, () -> "fillList, " + data.size() + " items");
         ((BaseAdapter) getListAdapter()).notifyDataSetChanged();
     }
 

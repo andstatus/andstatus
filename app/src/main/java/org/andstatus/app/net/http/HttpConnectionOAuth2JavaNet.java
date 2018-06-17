@@ -53,7 +53,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
     @Override
     public void registerClient(String path) throws ConnectionException {
         String logmsg = "registerClient; for " + data.originUrl + "; URL='" + pathToUrlString(path) + "'";
-        MyLog.v(this, logmsg);
+        MyLog.v(this, () -> logmsg);
         data.oauthClientKeys.clear();
         try {
             JSONObject params = new JSONObject();
@@ -66,13 +66,11 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             String consumerKey = jso.getString("client_id");
             String consumerSecret = jso.getString("client_secret");
             data.oauthClientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);
-        } catch (IOException e) {
-            MyLog.i(this, logmsg, e);
-        } catch (JSONException e) {
+        } catch (IOException | JSONException e) {
             MyLog.i(this, logmsg, e);
         }
         if (data.oauthClientKeys.areKeysPresent()) {
-            MyLog.v(this, "Completed " + logmsg);
+            MyLog.v(this, () -> "Completed " + logmsg);
         } else {
             throw ConnectionException.fromStatusCodeAndHost(ConnectionException.StatusCode.NO_CREDENTIALS_FOR_HOST,
                     "No client keys for the host yet; " + logmsg, data.originUrl);
@@ -166,8 +164,9 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                             String logMsg3 = (result.redirected ? "Following redirect to "
                                     : "Not redirected to ") + "'" + result.getUrl() + "'";
                             logBuilder.append(logMsg3 + "; ");
-                            MyLog.v(this, method + logMsg3);
                             if (MyLog.isVerboseEnabled()) {
+                                MyLog.v(this, method + logMsg3);
+
                                 StringBuilder message = new StringBuilder(method + "Headers: ");
                                 for (Map.Entry<String, String> entry : response.getHeaders().entrySet()) {
                                     message.append(entry.getKey() +": " + entry.getValue() + ";\n");
@@ -184,7 +183,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                             result.authenticate = false;
                             String logMsg4 = "Retrying without authentication connection to '" + result.getUrl() + "'";
                             logBuilder.append(logMsg4 + "; ");
-                            MyLog.v(this, method + logMsg4);
+                            MyLog.v(this, () -> method + logMsg4);
                         }
                         break;
                 }
@@ -232,7 +231,8 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                     request.addParameter("Authorization", "Dialback");
                     request.addParameter("host", data.urlForUserToken.getHost());
                     request.addParameter("token", getUserToken());
-                    MyLog.v(this, "Dialback authorization at " + data.originUrl + "; urlForUserToken=" + data.urlForUserToken + "; token=" + getUserToken());
+                    MyLog.v(this, () -> "Dialback authorization at " + data.originUrl
+                            + "; urlForUserToken=" + data.urlForUserToken + "; token=" + getUserToken());
                     OAuth2AccessToken token = new OAuth2AccessToken(getUserToken(), null);
                     service.signRequest(token, request);
                 }
@@ -259,7 +259,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                     conn.setRequestProperty("Authorization", "Dialback");
                     conn.setRequestProperty("host", data.urlForUserToken.getHost());
                     conn.setRequestProperty("token", getUserToken());
-                    MyLog.v(this, "Dialback authorization at " + data.originUrl + "; urlForUserToken="
+                    MyLog.v(this, () -> "Dialback authorization at " + data.originUrl + "; urlForUserToken="
                             + data.urlForUserToken + "; token=" + getUserToken());
                     token = new OAuth2AccessToken(getUserToken(), null);
                 }

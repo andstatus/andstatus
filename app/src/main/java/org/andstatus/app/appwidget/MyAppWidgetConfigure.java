@@ -66,9 +66,7 @@ public class MyAppWidgetConfigure extends Activity {
             mAppWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID,
                     AppWidgetManager.INVALID_APPWIDGET_ID);
         }
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(TAG, "mAppWidgetId=" + mAppWidgetId);
-        }
+        MyLog.v(TAG, () -> "mAppWidgetId=" + mAppWidgetId);
 
         // If they gave us an intent without the widget id, just bail.
         if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {

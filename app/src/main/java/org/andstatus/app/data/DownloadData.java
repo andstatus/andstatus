@@ -257,7 +257,7 @@ public class DownloadData {
         if (downloadId == -1) {
             softError = true;
         } else {
-            MyLog.v(this, "Added " + actorNoteUriToString());
+            MyLog.v(this, () -> "Added " + actorNoteUriToString());
         }
     }
 
@@ -266,7 +266,7 @@ public class DownloadData {
         if (DbUtils.updateRowWithRetry(MyContextHolder.get(), DownloadTable.TABLE_NAME, downloadId, values, 3) != 1) {
             softError = true;
         } else {
-            MyLog.v(this, "Updated " + actorNoteUriToString());
+            MyLog.v(this, () -> "Updated " + actorNoteUriToString());
         }
         boolean filenameChanged = !isError() && fileNew.existsNow()
                 && !fileStored.getFilename().equals(fileNew.getFilename());

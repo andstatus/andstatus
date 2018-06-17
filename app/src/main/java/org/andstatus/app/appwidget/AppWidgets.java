@@ -71,8 +71,8 @@ public class AppWidgets {
     }
 
     public void updateViews(){
-        MyLog.v(this, "Sending update to " +  size() + " remote view" + (size() > 1 ? "s" : "") +
-        " " + mAppWidgets.values());
+        MyLog.v(this, () -> "Sending update to " +  size() + " remote view" + (size() > 1 ? "s" : "")
+                + " " + mAppWidgets.values());
         for (MyAppWidgetData widgetData : mAppWidgets.values()) {
             updateView(AppWidgetManager.getInstance(myContext.context()), widgetData);
         }
@@ -95,9 +95,7 @@ public class AppWidgets {
             MyAppWidgetData widgetData) {
         final String method = "updateView";
         try {
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, method + "; Started id=" + widgetData.getId());
-            }
+            MyLog.v(this, () -> method + "; Started id=" + widgetData.getId());
             MyRemoteViewData viewData = MyRemoteViewData.fromViewData(myContext.context(), widgetData);
             RemoteViews views = constructRemoteViews(myContext.context(), viewData);
             appWidgetManager.updateAppWidget(widgetData.getId(), views);

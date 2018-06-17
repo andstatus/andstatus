@@ -149,7 +149,7 @@ public class FileUtils {
         }
         File[] files = rootDirectory.listFiles();
         if (files == null) {
-            MyLog.v(TAG, "No files inside " + rootDirectory.getAbsolutePath());
+            MyLog.v(TAG, () -> "No files inside " + rootDirectory.getAbsolutePath());
             return 0;
         }
         long nDeleted = 0;

@@ -86,7 +86,7 @@ public abstract class FileDownloader {
             String uriString = data.getUri().toString();
             File file = fileTemp.getFile();
             MyAccount ma = findBestAccountForDownload();
-            MyLog.v(this, "About to download " + data.toString() + "; account:" + ma.getAccountName());
+            MyLog.v(this, () -> "About to download " + data.toString() + "; account:" + ma.getAccountName());
             if (ma.isValidAndSucceeded()) {
                 ((connectionMock != null) ? connectionMock : getConnection(ma, data.getUri())).downloadFile(uriString, file);
             } else {

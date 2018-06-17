@@ -118,10 +118,10 @@ public abstract class ConnectionTwitterLike extends Connection {
         JSONObject jso = http.postRequest(getApiPathWithNoteId(ApiRoutineEnum.DELETE_NOTE, noteOid));
         if (jso != null && MyLog.isVerboseEnabled()) {
             try {
-                MyLog.v(TAG, "destroyStatus response: " + jso.toString(2));
+                MyLog.v(TAG, "deleteNote response: " + jso.toString(2));
             } catch (JSONException e) {
                 MyLog.e(this, e);
-                jso = null;
+                return false;
             }
         }
         return jso != null;
@@ -514,7 +514,8 @@ public abstract class ConnectionTwitterLike extends Connection {
         }
         JSONObject jso = http.getRequest(builder.build().toString());
         Actor actor = actorFromJson(jso);
-        MyLog.v(this, "getActor oid='" + actorOid + "', username='" + username + "' -> " + actor.getRealName());
+        MyLog.v(this, () -> "getActor oid='" + actorOid
+                + "', username='" + username + "' -> " + actor.getRealName());
         return actor;
     }
     

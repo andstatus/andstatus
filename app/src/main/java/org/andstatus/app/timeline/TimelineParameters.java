@@ -78,7 +78,6 @@ public class TimelineParameters {
         params.mLoaderCallbacks = prev.mLoaderCallbacks;
         params.timeline = prev.getTimeline();
 
-        String msgLog = "Constructing " + params.toSummary();
         switch (params.whichPage) {
             case OLDER:
                 if (prev.mayHaveOlderPage()) {
@@ -97,7 +96,7 @@ public class TimelineParameters {
             default:
                 break;
         }
-        MyLog.v(TimelineParameters.class, msgLog);
+        MyLog.v(TimelineParameters.class, () -> "Constructing " + params.toSummary());
 
         params.mProjection = ViewItemType.fromTimelineType(params.timeline.getTimelineType())
                 .equals(ViewItemType.ACTIVITY)

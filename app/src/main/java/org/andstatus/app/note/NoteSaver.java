@@ -47,7 +47,7 @@ public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorDa
     @Override
     protected NoteEditorData doInBackground2(NoteEditorCommand... params) {
         command = params[0];
-        MyLog.v(NoteEditorData.TAG, "Started: " + command);
+        MyLog.v(NoteEditorData.TAG, () -> "Started: " + command);
         if (!command.acquireLock(true)) {
             return command.currentData;
         }
@@ -63,14 +63,14 @@ public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorDa
 
     private void savePreviousData() {
         if (command.needToSavePreviousData()) {
-            MyLog.v(NoteEditorData.TAG, "Saving previous data:" + command.previousData);
+            MyLog.v(NoteEditorData.TAG, () -> "Saving previous data:" + command.previousData);
             command.previousData.save(Uri.EMPTY);
             broadcastDataChanged(command.previousData);
         }
     }
 
     private void saveCurrentData() {
-        MyLog.v(NoteEditorData.TAG, "Saving current data:" + command.currentData);
+        MyLog.v(NoteEditorData.TAG, () -> "Saving current data:" + command.currentData);
         if (command.currentData.activity.getNote().getStatus() == DownloadStatus.DELETED) {
             MyProvider.deleteNote(MyContextHolder.get().context(), command.currentData.getNoteId());
         } else {
@@ -109,10 +109,10 @@ public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorDa
     protected void onPostExecute2(NoteEditorData data) {
         if (data.isValid()) {
             if (command.hasLock()) {
-                MyLog.v(NoteEditorData.TAG, "Saved; Future data: " + data);
+                MyLog.v(NoteEditorData.TAG, () -> "Saved; Future data: " + data);
                 editor.showData(data);
             } else {
-                MyLog.v(NoteEditorData.TAG, "Saved; Result skipped: no lock");
+                MyLog.v(NoteEditorData.TAG, () -> "Saved; Result skipped: no lock");
             }
         } else {
             MyLog.v(NoteEditorData.TAG, "Saved; No future data");

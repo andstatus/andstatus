@@ -148,7 +148,7 @@ public class HttpReadResult {
     JSONArray getJsonArray(String arrayKey) throws ConnectionException {
         String method = "getJsonArray; ";
         if (StringUtils.isEmpty(strResponse)) {
-            MyLog.v(this, method + "; response is empty");
+            MyLog.v(this, () -> method + "; response is empty");
             return new JSONArray();
         }
         JSONTokener jst = new JSONTokener(strResponse);
@@ -170,7 +170,7 @@ public class HttpReadResult {
                         String key = iterator.next();
                         Object obj2 = jso.get(key);                    
                         if (JSONArray.class.isInstance(obj2)) {
-                            MyLog.v(this, method + "; found array inside '" + key + "' object");
+                            MyLog.v(this, () -> method + "; found array inside '" + key + "' object");
                             obj = obj2;
                             break;
                         }
@@ -216,7 +216,7 @@ public class HttpReadResult {
                           + Formatter.formatShortFileSize(MyContextHolder.get().context(), fileResult.length()),
                         null);
             }
-            MyLog.v(this, toString());
+            MyLog.v(this, this::toString);
         } else {
             if (!StringUtils.isEmpty(strResponse)) {
                 throw getExceptionFromJsonErrorResponse();

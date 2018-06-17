@@ -65,8 +65,8 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
                 yes = true;
         }
         if (!yes && logMe) {
-            MyLog.v(this, "Credentials presence: clientKeys:" + data.oauthClientKeys.areKeysPresent() + "; userKeys:" +
-                    !StringUtils.isEmpty(userToken) + "," + !StringUtils.isEmpty(userSecret));
+            MyLog.v(this, () -> "Credentials presence: clientKeys:" + data.oauthClientKeys.areKeysPresent()
+                    + "; userKeys:" + !StringUtils.isEmpty(userToken) + "," + !StringUtils.isEmpty(userSecret));
         }
         return yes;
     }
@@ -122,7 +122,8 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
             userSecret = secret;
         }
         if (logMe) {
-            MyLog.v(this, "Credentials set?: " + !StringUtils.isEmpty(token) + ", " + !StringUtils.isEmpty(secret));
+            MyLog.v(this, () -> "Credentials set?: " + !StringUtils.isEmpty(token)
+                    + ", " + !StringUtils.isEmpty(secret));
         }
     }
 

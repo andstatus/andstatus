@@ -37,7 +37,7 @@ public class OAuthClientKeysDynamic implements OAuthClientKeysStrategy {
     @Override
     public void initialize(HttpConnectionData connectionData) {
         if (connectionData.originUrl == null) {
-            MyLog.v(this, "OriginUrl is null; " + connectionData.toString());
+            MyLog.v(this, () -> "OriginUrl is null; " + connectionData.toString());
             return;
         }
         keySuffix = Long.toString(connectionData.getAccountName().getOrigin().getId()) +

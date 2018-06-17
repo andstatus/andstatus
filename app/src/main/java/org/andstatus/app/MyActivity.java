@@ -53,7 +53,7 @@ public class MyActivity extends AppCompatActivity implements IdentifiableInstanc
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        MyLog.v(this, "onCreate" + (isFinishing() ? " finishing" : ""));
+        MyLog.v(this, () -> "onCreate" + (isFinishing() ? " finishing" : ""));
         MyTheme.loadTheme(this);
         super.onCreate(savedInstanceState);
         if (isFinishing()) {
@@ -203,7 +203,7 @@ public class MyActivity extends AppCompatActivity implements IdentifiableInstanc
 
     @Override
     public void finish() {
-        MyLog.v(this, "Finish requested" + (mFinishing ? ", already finishing" : ""));
+        MyLog.v(this, () -> "Finish requested" + (mFinishing ? ", already finishing" : ""));
         if (!mFinishing) {
             mFinishing = true;
         }

@@ -201,7 +201,7 @@ public class ImageCache extends LruCache<String, CachedImage> {
 
     @Nullable
     private Bitmap imagePathToBitmap(ImageFile imageFile) {
-        Bitmap bitmap = null;
+        final Bitmap bitmap;
         if (MyPreferences.isShowDebuggingInfoInUi()) {
             bitmap = BitmapFactory
                     .decodeFile(imageFile.getPath(), calculateScaling(imageFile, imageFile.getSize()));
@@ -212,13 +212,12 @@ public class ImageCache extends LruCache<String, CachedImage> {
             } catch (OutOfMemoryError e) {
                 MyLog.w(imageFile, getInfo(), e);
                 evictAll();
+                return null;
             }
         }
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(imageFile, (bitmap == null ? "Failed to load " + name + "'s bitmap"
-                    : "Loaded " + name + "'s bitmap " + bitmap.getWidth()
-                    + "x" + bitmap.getHeight()) + " '" + imageFile.getPath() + "'");
-        }
+        MyLog.v(imageFile, () -> (bitmap == null ? "Failed to load " + name + "'s bitmap"
+                : "Loaded " + name + "'s bitmap " + bitmap.getWidth()
+                + "x" + bitmap.getHeight()) + " '" + imageFile.getPath() + "'");
         return bitmap;
     }
 
@@ -234,11 +233,9 @@ public class ImageCache extends LruCache<String, CachedImage> {
         Bitmap bitmap = ThumbnailUtils.extractThumbnail(source, imageFile.getSize().x / options.inSampleSize,
                 imageFile.getSize().y / options.inSampleSize);
         source.recycle();
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(imageFile, (bitmap == null ? "Failed to load " + name + "'s bitmap"
-                    : "Loaded " + name + "'s bitmap " + bitmap.getWidth()
-                    + "x" + bitmap.getHeight()) + " '" + imageFile.getPath() + "'");
-        }
+        MyLog.v(imageFile,  () -> (bitmap == null ? "Failed to load " + name + "'s bitmap"
+                : "Loaded " + name + "'s bitmap " + bitmap.getWidth()
+                + "x" + bitmap.getHeight()) + " '" + imageFile.getPath() + "'");
         return bitmap;
     }
 

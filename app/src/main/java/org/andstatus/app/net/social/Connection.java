@@ -153,9 +153,7 @@ public abstract class Connection {
             MyLog.e(this.getClass().getSimpleName(), detailMessage);
             throw new ConnectionException(StatusCode.UNSUPPORTED_API, this.getClass().getSimpleName() + ": " + detailMessage);
         } else {
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this.getClass().getSimpleName(), "API '" + routine + "' Path=" + path);  
-            }
+            MyLog.v(this.getClass().getSimpleName(), () -> "API '" + routine + "' Path=" + path);
         }
         return path;
     }

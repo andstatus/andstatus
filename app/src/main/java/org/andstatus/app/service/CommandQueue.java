@@ -64,10 +64,10 @@ public class CommandQueue {
                 break;
         }
         if (preQueue.contains(commandData)) {
-            MyLog.v(CommandQueue.class, "Didn't add to preQueue. Already found " + commandData);
+            MyLog.v(CommandQueue.class, () -> "Didn't add to preQueue. Already found " + commandData);
             return;
         }
-        MyLog.v(CommandQueue.class, "Adding to preQueue " + commandData);
+        MyLog.v(CommandQueue.class, () -> "Adding to preQueue " + commandData);
         if (preQueue.offer(commandData)) return;
 
         // TODO: Remove less prioritized item to free space for this one?!
@@ -377,11 +377,11 @@ public class CommandQueue {
     /** @return true if success */
     private boolean addToMainQueue(CommandData commandData) {
         if (get(QueueType.CURRENT).contains(commandData)) {
-            MyLog.v(this, "Didn't add to Main queue. Already found " + commandData);
+            MyLog.v(this, () -> "Didn't add to Main queue. Already found " + commandData);
             return true;
         }
         commandData.getResult().prepareForLaunch();
-        MyLog.v(this, "Adding to Main queue " + commandData);
+        MyLog.v(this, () -> "Adding to Main queue " + commandData);
         if (get(QueueType.CURRENT).offer(commandData)) return true;
 
         MyLog.e(this, "Couldn't add to the main queue, size=" + queues.get(QueueType.CURRENT).size());
@@ -392,7 +392,7 @@ public class CommandQueue {
         for (CommandData cd : get(QueueType.RETRY)) {
             if (cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS) && addToMainQueue(cd)) {
                 get(QueueType.RETRY).remove(cd);
-                MyLog.v(this, "Moved from Retry to Main queue: " + cd);
+                MyLog.v(this, () -> "Moved from Retry to Main queue: " + cd);
             }
         }
         mRetryQueueProcessedAt.set(System.currentTimeMillis());
@@ -407,10 +407,10 @@ public class CommandQueue {
                     if (cdIn.isManuallyLaunched() || cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
                         cdOut = cd;
                         get(QueueType.RETRY).remove(cd);
-                        MyLog.v(this, "Returned from Retry queue: " + cd);
+                        MyLog.v(this, () -> "Returned from Retry queue: " + cd);
                     } else {
                         cdOut = null;
-                        MyLog.v(this, "Found in Retry queue: " + cd);
+                        MyLog.v(this, () -> "Found in Retry queue: " + cd);
                     }
                     break;
                 }
@@ -428,10 +428,10 @@ public class CommandQueue {
                     if (cdIn.isManuallyLaunched() || cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
                         cdOut = cd;
                         get(QueueType.ERROR).remove(cd);
-                        MyLog.v(this, "Returned from Error queue: " + cd);
+                        MyLog.v(this, () -> "Returned from Error queue: " + cd);
                     } else {
                         cdOut = null;
-                        MyLog.v(this, "Found in Error queue: " + cd);
+                        MyLog.v(this, () -> "Found in Error queue: " + cd);
                     }
                 } else {
                     if (cd.executedMoreSecondsAgoThan(TimeUnit.DAYS.toSeconds(MAX_DAYS_IN_ERROR_QUEUE))) {

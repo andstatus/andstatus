@@ -131,7 +131,7 @@ public class OriginEditor extends MyActivity {
         }
 
         Origin origin = builder.build();
-        MyLog.v(this, "processNewIntent: " + origin.toString());
+        MyLog.v(this, () -> "processNewIntent: " + origin.toString());
         spinnerOriginType.setSelection(originTypes.getIndex(origin.getOriginType()));
         if (spinnerOriginType.isEnabled()) {
             spinnerOriginType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -265,7 +265,7 @@ public class OriginEditor extends MyActivity {
                 .setInCombinedGlobalSearch(MyCheckBox.isChecked(this, R.id.in_combined_global_search, false))
                 .setInCombinedPublicReload(MyCheckBox.isChecked(this, R.id.in_combined_public_reload, false))
                 .save();
-        MyLog.v(this, (builder.isSaved() ? "Saved" : "Not saved") + ": " + builder.build().toString());
+        MyLog.v(this, () -> (builder.isSaved() ? "Saved" : "Not saved") + ": " + builder.build().toString());
         if (builder.isSaved()) {
             MyContextHolder.get().origins().initialize();
             setResult(RESULT_OK);

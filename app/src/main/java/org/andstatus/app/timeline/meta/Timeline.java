@@ -553,7 +553,7 @@ public class Timeline implements Comparable<Timeline> {
         } else {
             String sql = "DELETE FROM " + TimelineTable.TABLE_NAME + " WHERE _ID=" + getId();
             db.execSQL(sql);
-            MyLog.v(this, "Timeline deleted: " + this);
+            MyLog.v(this, () -> "Timeline deleted: " + this);
         }
     }
 
@@ -715,13 +715,10 @@ public class Timeline implements Comparable<Timeline> {
         long correctionForExecutionTime = syncFrequencyMs / 10;
         long passedMs = System.currentTimeMillis() - getLastSyncedDate();
         boolean blnOut = passedMs > syncFrequencyMs - correctionForExecutionTime;
-
-        if (blnOut && MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "It's time to auto update " + this +
-                    ". " +
-                    java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(passedMs) +
-                    " minutes passed.");
-        }
+        MyLog.v(this, () -> "It's time to auto update " + this +
+                ". " +
+                java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(passedMs) +
+                " minutes passed.");
         return blnOut;
     }
 

@@ -89,22 +89,18 @@ public class AttachedImageView extends IdentifiableImageView {
         setMeasuredDimension(widthSpec, heightSpec);
     }
 
-    /**
-     * We need to catch an error here in order to work in Android Editor preview
-     */
     private void logIt(String method, Integer refWidthPixels, int widthMeasureSpec, float height) {
-        if (isInEditMode()) {
+        if (isInEditMode() || !MyLog.isVerboseEnabled()) {
             return;
         }
+        // We need to catch an error here in order to work in Android Editor preview
         try {
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, method + ";"
-                        + (heightLocked ? "locked" : "      ")
-                        + " height=" + height
-                        + ", widthSpec=" + MeasureSpec.toString(widthMeasureSpec)
-                        + (refWidthPixels == null ? "" : " refWidth=" + refWidthPixels + ",")
-                );
-            }
+            MyLog.v(this, method + ";"
+                    + (heightLocked ? "locked" : "      ")
+                    + " height=" + height
+                    + ", widthSpec=" + MeasureSpec.toString(widthMeasureSpec)
+                    + (refWidthPixels == null ? "" : " refWidth=" + refWidthPixels + ",")
+            );
         } catch (Exception e) {
             Log.i(AttachedImageView.class.getSimpleName(), method + "; MyLog class was not found", e);
         }

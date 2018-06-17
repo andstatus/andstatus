@@ -101,7 +101,7 @@ public class NotificationEvents {
         map.clear();
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
-            MyLog.v(this, method + "; Database is null");
+            MyLog.v(this, () -> method + "; Database is null");
             return;
         }
         String sql = "SELECT " + ActivityTable.NEW_NOTIFICATION_EVENT + ", " +

@@ -63,7 +63,7 @@ public class PersistentTimelines {
                 }
             } else MyLog.e(PersistentTimelines.class, method + "; invalid skipped " + timeline);
         });
-        MyLog.v(this, "Timelines initialized, " + timelines.size() + " timelines");
+        MyLog.v(this, () -> "Timelines initialized, " + timelines.size() + " timelines");
         return this;
     }
 

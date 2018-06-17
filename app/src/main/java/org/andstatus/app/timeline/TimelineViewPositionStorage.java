@@ -43,7 +43,7 @@ class TimelineViewPositionStorage<T extends ViewItem<T>> {
     void save() {
         final String method = "save" + params.timeline.getId();
         if (isEmpty()) {
-            MyLog.v(this, method + "; skipped");
+            MyLog.v(this, () -> method + "; skipped");
             return;
         }
         int itemCount = adapter.getCount();
@@ -70,10 +70,9 @@ class TimelineViewPositionStorage<T extends ViewItem<T>> {
                     + ", listViews=" + listView.getCount()
                     + " " + params.getTimeline();
             if (pos.itemId <= 0) {
-                MyLog.v(this, method + "; failed " + msgLog
-                        + "\n no visible items");
+                MyLog.v(this, () -> method + "; failed " + msgLog + "\n no visible items");
             } else {
-                MyLog.v(this, method + "; succeeded " + msgLog);
+                MyLog.v(this, () -> method + "; succeeded " + msgLog);
             }
         }
 
@@ -102,9 +101,7 @@ class TimelineViewPositionStorage<T extends ViewItem<T>> {
         params.getTimeline().setVisibleItemId(0);
         params.getTimeline().setVisibleOldestDate(0);
         params.getTimeline().setVisibleY(0);
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "Position forgot " + params.getTimeline());
-        }
+        MyLog.v(this, () -> "Position forgot " + params.getTimeline());
     }
     
     /**
@@ -114,7 +111,7 @@ class TimelineViewPositionStorage<T extends ViewItem<T>> {
     public void restore() {
         final String method = "restore" + params.timeline.getId();
         if (isEmpty()) {
-            MyLog.v(this, method + "; skipped");
+            MyLog.v(this, () -> method + "; skipped");
             return;
         }
         final LoadableListPosition pos = loadListPosition(params);

@@ -142,7 +142,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     public static void goHome(Activity activity) {
         try {
-            MyLog.v(TimelineActivity.class, "goHome from " + MyLog.objToTag(activity));
+            MyLog.v(TimelineActivity.class, () -> "goHome from " + MyLog.objToTag(activity));
             Intent intent = new Intent(activity, FirstActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             activity.startActivity(intent);
@@ -238,9 +238,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             }
             getListData().collapseDuplicates(savedInstanceState.getBoolean(
                     IntentExtra.COLLAPSE_DUPLICATES.key, MyPreferences.isCollapseDuplicates()), 0);
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "restoreActivityState; " + getParamsNew());
-            }
+            MyLog.v(this, () -> "restoreActivityState; " + getParamsNew());
     }
 
     /**
@@ -340,13 +338,15 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         if (!mFinishing) {
             if (getCurrentMyAccount().isValid()) {
                 if (isConfigChanged()) {
-                    MyLog.v(this, method + "; Restarting this Activity to apply all new changes of configuration");
+                    MyLog.v(this, () ->
+                            method + "; Restarting this Activity to apply all new changes of configuration");
                     finish();
                     MyContextHolder.setExpiredIfConfigChanged();
                     switchView(getParamsLoaded().getTimeline(), null);
                 }
             } else { 
-                MyLog.v(this, method + "; Finishing this Activity because there is no Account selected");
+                MyLog.v(this, () ->
+                        method + "; Finishing this Activity because there is no Account selected");
                 finish();
             }
         }
@@ -356,9 +356,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     @Override
     protected void onPause() {
         final String method = "onPause";
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, method);
-        }
+        MyLog.v(this, method);
         hideLoading(method);
         hideSyncing(method);
         DemoData.crashTest(() -> getNoteEditor() != null
@@ -500,15 +498,9 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     public void onItemClick(NoteViewItem item) {
         MyAccount ma = myContext.accounts().getAccountForThisNote(item.getOrigin(),
                 getParamsNew().getMyAccount(), item.getLinkedMyAccount(), false);
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this,
-                    "onItemClick, " + item
-                            + "; " + item
-                            + " account=" + ma.getAccountName());
-        }
-        if (item.getNoteId() <= 0) {
-            return;
-        }
+        MyLog.v(this, () -> "onItemClick, " + item + "; " + item + " account=" + ma.getAccountName());
+        if (item.getNoteId() <= 0) return;
+
         Uri uri = MatchedUri.getTimelineItemUri(
                 Timeline.getTimeline(TimelineType.EVERYTHING, 0, item.getOrigin()),
                 item.getNoteId());
@@ -576,9 +568,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             return;
         }
         if (!myContext.isReady()) {
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "onNewIntent, context is " + myContext.state());
-            }
+            MyLog.v(this,  () ->"onNewIntent, context is " + myContext.state());
             finish();
             this.startActivity(intent);
             return;
@@ -753,13 +743,13 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         if (isLoading() && chainedRequest != TriState.TRUE) {
             if(MyLog.isVerboseEnabled()) {
                 if (isDifferentRequest) {
-                    MyLog.v(this, method + "; different while loading " + params.toSummary());
+                    MyLog.v(this, () -> method + "; different while loading " + params.toSummary());
                 } else {
-                    MyLog.v(this, method + "; ignored duplicating " + params.toSummary());
+                    MyLog.v(this, () -> method + "; ignored duplicating " + params.toSummary());
                 }
             }
         } else {
-            MyLog.v(this, method
+            MyLog.v(this, () -> method
                     + (chainedRequest == TriState.TRUE ? "; chained" : "")
                     + "; requesting " + (isDifferentRequest ? "" : "duplicating ")
                     + params.toSummary());
@@ -781,7 +771,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 || whichPage == WhichPage.EMPTY ?
                 new TimelineParameters(myContext) : paramsToLoad;
         if (params.whichPage != WhichPage.EMPTY) {
-            MyLog.v(this, method + ": " + params);
+            MyLog.v(this, () -> method + ": " + params);
             Intent intent = getIntent();
             if (!params.getContentUri().equals(intent.getData())) {
                 intent.setData(params.getContentUri());
@@ -795,7 +785,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         final String method = "onLoadFinished";
         if (MyLog.isVerboseEnabled()) posIn.logV(method + " started;");
         TimelineData<T> dataLoaded = setAndGetListData(((TimelineLoader<T>) getLoaded()).getPage());
-        MyLog.v(this, method + "; " + dataLoaded.params.toSummary());
+        MyLog.v(this, () -> method + "; " + dataLoaded.params.toSummary());
 
         LoadableListPosition pos = posIn.nonEmpty() && getListData().isSameTimeline &&
             isPositionRestored() && dataLoaded.params.whichPage != WhichPage.TOP
@@ -813,7 +803,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
         TimelineParameters otherParams = paramsToLoad;
         boolean isParamsChanged = otherParams != null && !dataLoaded.params.equals(otherParams);
-        WhichPage otherPageToRequest = WhichPage.EMPTY;
+        WhichPage otherPageToRequest;
         if (!isParamsChanged && getListData().size() < 10) {
             if (getListData().mayHaveYoungerPage()) {
                 otherPageToRequest = WhichPage.YOUNGER;
@@ -822,17 +812,22 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             } else if (!dataLoaded.params.whichPage.isYoungest()) {
                 otherPageToRequest = WhichPage.YOUNGEST;
             } else if (dataLoaded.params.rowsLoaded == 0) {
+                otherPageToRequest = WhichPage.EMPTY;
                 onNoRowsLoaded(dataLoaded.params.timeline);
+            } else {
+                otherPageToRequest = WhichPage.EMPTY;
             }
+        } else {
+            otherPageToRequest = WhichPage.EMPTY;
         }
         hideLoading(method);
         updateScreen();
         clearNotifications();
         if (isParamsChanged) {
-            MyLog.v(this, method + "; Parameters changed, requesting " + otherParams.toSummary());
+            MyLog.v(this, () -> method + "; Parameters changed, requesting " + otherParams.toSummary());
             showList(otherParams, TriState.TRUE);
         } else if (otherPageToRequest != WhichPage.EMPTY) {
-            MyLog.v(this, method + "; Other page requested " + otherPageToRequest);
+            MyLog.v(this, () -> method + "; Other page requested " + otherPageToRequest);
             showList(otherPageToRequest, TriState.TRUE);
         }
     }
@@ -999,7 +994,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        MyLog.v(this, "onActivityResult; request:" + requestCode + ", result:" + (resultCode == Activity.RESULT_OK ? "ok" : "fail"));
+        MyLog.v(this, () -> "onActivityResult; request:" + requestCode
+                + ", result:" + (resultCode == Activity.RESULT_OK ? "ok" : "fail"));
         if (resultCode != Activity.RESULT_OK || data == null) {
             return;
         }
@@ -1158,9 +1154,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             myContext.accounts().setCurrentAccount(currentMyAccountToSet);
         }
         if (isFinishing() || !timeline.equals(getParamsLoaded().getTimeline())) {
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "switchTimelineActivity; " + timeline);
-            }
+            MyLog.v(this, () -> "switchTimelineActivity; " + timeline);
             if (isFinishing()) {
                 final Intent intent = getIntentForTimeline(myContext, timeline, newCurrentMyAccount, false);
                 MyContextHolder.getMyFutureContext(this).thenStartActivity(intent);

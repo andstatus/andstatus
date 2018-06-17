@@ -50,14 +50,16 @@ public class ConversationIndentImageView extends android.support.v7.widget.AppCo
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         final String method = "onMeasure";
-        int height = ViewUtils.getHeightWithMargins(referencedView);
-        MyLog.v(this, method + "; indent=" + widthPixels + ", refHeight=" + height + ", spec=" +
+        int refHeight = ViewUtils.getHeightWithMargins(referencedView);
+        MyLog.v(this, () -> method + "; indent=" + widthPixels + ", refHeight=" + refHeight + ", spec=" +
                 MeasureSpec.toString(heightMeasureSpec));
         int mode = MeasureSpec.EXACTLY;
-        if (height == 0) {
+        int height;
+        if (refHeight == 0) {
             height = MAX_HEIGHT;
             mode = MeasureSpec.AT_MOST;
         } else {
+            height = refHeight;
             getLayoutParams().height = height;
         }
         int measuredWidth = MeasureSpec.makeMeasureSpec(widthPixels,  MeasureSpec.EXACTLY);

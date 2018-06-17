@@ -78,7 +78,7 @@ public class ActivitySwipeDetector implements View.OnTouchListener {
             long time = timeUp - timeDown;
 
             if (absDeltaY > maxOffPath) {
-                MyLog.v(this, String.format("absDeltaY=%.2f, MAX_OFF_PATH=%.2f", absDeltaY, maxOffPath));
+                MyLog.v(this, () -> String.format("absDeltaY=%.2f, MAX_OFF_PATH=%.2f", absDeltaY, maxOffPath));
                 return v.performClick();
             }
 
@@ -93,10 +93,10 @@ public class ActivitySwipeDetector implements View.OnTouchListener {
                     return true; 
                 }
             } else {
-                MyLog.v(this, String.format("absDeltaX=%.2f, MIN_DISTANCE=%.2f, absDeltaX > MIN_DISTANCE=%b", 
+                MyLog.v(this, () -> String.format("absDeltaX=%.2f, MIN_DISTANCE=%.2f, absDeltaX > MIN_DISTANCE=%b",
                         absDeltaX, minDistance, 
                         absDeltaX > minDistance));
-                MyLog.v(this, String.format("absDeltaX=%.2f, time=%d, VELOCITY=%d, time*VELOCITY/M_SEC=%d, absDeltaX > time * VELOCITY / M_SEC=%b", 
+                MyLog.v(this, () -> String.format("absDeltaX=%.2f, time=%d, VELOCITY=%d, time*VELOCITY/M_SEC=%d, absDeltaX > time * VELOCITY / M_SEC=%b",
                         absDeltaX, time, velocity, time * velocity / milliSec, 
                         absDeltaX > time * velocity / (float) milliSec));
             }

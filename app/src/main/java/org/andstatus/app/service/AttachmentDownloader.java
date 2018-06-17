@@ -35,7 +35,7 @@ public class AttachmentDownloader extends FileDownloader {
 
     @Override
     protected void onSuccessfulLoad() {
-        MyLog.v(this, "Loaded attachment " + data);
+        MyLog.v(this, () -> "Loaded attachment " + data);
     }
 
 }

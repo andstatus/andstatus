@@ -142,16 +142,16 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
     protected void showList(Bundle args) {
         WhichPage whichPage = WhichPage.load(args);
         TriState chainedRequest = TriState.fromBundle(args, IntentExtra.CHAINED_REQUEST);
-        String msgLog = "showList" + (chainedRequest == TriState.TRUE ? ", chained" : "")
+        StringBuilder msgLog = new StringBuilder("showList" + (chainedRequest == TriState.TRUE ? ", chained" : "")
                 + ", " + whichPage + " page"
-                + (centralItemId == 0 ? "" : ", center:" + centralItemId);
+                + (centralItemId == 0 ? "" : ", center:" + centralItemId));
         if (whichPage == WhichPage.EMPTY) {
-            MyLog.v(this, "Ignored Empty page request: " + msgLog);
+            MyLog.v(this, () -> "Ignored Empty page request: " + msgLog);
         } else {
-            MyLog.v(this, "Started " + msgLog);
+            MyLog.v(this, () -> "Started " + msgLog);
             synchronized (loaderLock) {
                 if (isLoading() && chainedRequest != TriState.TRUE) {
-                    msgLog = "Ignored " + msgLog + ", " + mWorkingLoader;
+                    msgLog.append(", Ignored " + mWorkingLoader);
                 } else {
                     AsyncLoader newLoader = new AsyncLoader(MyLog.getInstanceTag(this));
                     if (new AsyncTaskLauncher<Bundle>().execute(this, true, newLoader, args)) {
@@ -159,9 +159,9 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
                         loaderIsWorking = true;
                         refreshNeededSince.set(0);
                         refreshNeededAfterForegroundCommand.set(false);
-                        msgLog = "Launched, " + msgLog;
+                        msgLog.append(", Launched");
                     } else {
-                        msgLog = "Couldn't launch, " + msgLog;
+                        msgLog.append(", Couldn't launch");
                     }
                 }
             }
@@ -303,7 +303,8 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
             }
             long endedAt = System.currentTimeMillis();
             long timeTotal = endedAt - createdAt;
-            MyLog.v(this, "Load completed, " + (mSyncLoader == null ? "?" : mSyncLoader.size()) + " items, "
+            MyLog.v(this, () -> "Load completed, " + (mSyncLoader == null ? "?" : mSyncLoader.size())
+                    + " items, "
                     + timeTotal + "ms total, "
                     + (endedAt - backgroundEndedAt) + "ms on UI thread");
             resetIsWorkingFlag();
@@ -402,7 +403,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
     protected void onResume() {
         String method = "onResume";
         super.onResume();
-        MyLog.v(this, method + (mFinishing ? ", finishing" : "") );
+        MyLog.v(this, () -> method + (mFinishing ? ", finishing" : "") );
         if (!mFinishing && !MyContextHolder.initializeThenRestartMe(this)) {
             myServiceReceiver.registerReceiver(this);
             myContext.setInForeground(true);
@@ -608,15 +609,14 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         if (textualSyncIndicator == null) {
             return;
         }
-        boolean isVisible = !TextUtils.isEmpty(loadingText) || !TextUtils.isEmpty(syncingText);
-        if (isVisible) {
-            isVisible = !isEditorVisible();
-        }
+        boolean isVisible = (!TextUtils.isEmpty(loadingText) || !TextUtils.isEmpty(syncingText)) && !isEditorVisible();
         if (isVisible) {
             ((TextView) findViewById(R.id.sync_text)).setText(TextUtils.isEmpty(loadingText) ? syncingText : loadingText );
         }
-        if (isVisible ? (textualSyncIndicator.getVisibility() != View.VISIBLE) : ((textualSyncIndicator.getVisibility() == View.VISIBLE))) {
-            MyLog.v(this, source + " set textual Sync indicator to " + isVisible);
+        if (isVisible
+                ? (textualSyncIndicator.getVisibility() != View.VISIBLE)
+                : ((textualSyncIndicator.getVisibility() == View.VISIBLE))) {
+            MyLog.v(this, () -> source + " set textual Sync indicator to " + isVisible);
             textualSyncIndicator.setVisibility(isVisible ? View.VISIBLE : View.GONE);
         }
     }

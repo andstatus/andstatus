@@ -185,9 +185,7 @@ public abstract class ImageFile {
                     private void logResult(String msgLog) {
                         if (!logged) {
                             logged = true;
-                            if (MyLog.isVerboseEnabled()) {
-                                MyLog.v(ImageFile.this, getMsgLog(msgLog, taskSuffix));
-                            }
+                            MyLog.v(ImageFile.this, () -> getMsgLog(msgLog, taskSuffix));
                         }
                     }
 
@@ -221,9 +219,7 @@ public abstract class ImageFile {
     }
 
     private void logResult(String msgLog, String taskSuffix) {
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(ImageFile.this, getMsgLog(msgLog, taskSuffix));
-        }
+        MyLog.v(ImageFile.this, () -> getMsgLog(msgLog, taskSuffix));
     }
 
     @NonNull

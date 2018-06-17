@@ -140,7 +140,7 @@ public class MyService extends Service {
     private BroadcastReceiver intentReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context arg0, Intent intent) {
-            MyLog.v(this, "onReceive " + intent.toString());
+            MyLog.v(this, () -> "onReceive " + intent.toString());
             receiveCommand(intent, 0);
         }
     };
@@ -149,14 +149,14 @@ public class MyService extends Service {
         CommandData commandData = CommandData.fromIntent(myContext, intent);
         switch (commandData.getCommand()) {
             case STOP_SERVICE:
-                MyLog.v(this, "Command " + commandData.getCommand() + " received");
+                MyLog.v(this, () -> "Command " + commandData.getCommand() + " received");
                 stopDelayed(false);
                 break;
             case BROADCAST_SERVICE_STATE:
                 broadcastAfterExecutingCommand(commandData);
                 break;
             case UNKNOWN:
-                MyLog.v(this, "Command " + commandData.getCommand() + " ignored");
+                MyLog.v(this, () -> "Command " + commandData.getCommand() + " ignored");
                 break;
             default:
                 receiveOtherCommand(commandData);
@@ -237,7 +237,7 @@ public class MyService extends Service {
                 startExecution();
                 break;
             default:
-                MyLog.v(this, "Didn't change execution " + mExecutor);
+                MyLog.v(this, () -> "Didn't change execution " + mExecutor);
                 break;
         }
     }
@@ -306,7 +306,7 @@ public class MyService extends Service {
             logMsg.append("; " + (commandQueue.totalSizeToExecute() == 0 ? "queue is empty" : "queueSize="
                     + commandQueue.totalSizeToExecute()));
         }
-        MyLog.v(this, logMsg.toString());
+        MyLog.v(this, logMsg::toString);
         return success;
     }
 
@@ -354,7 +354,7 @@ public class MyService extends Service {
             }
         }
         if (logMessageBuilder.length() > 0) {
-            MyLog.v(this, method + "; " + logMessageBuilder);
+            MyLog.v(this, () -> method + "; " + logMessageBuilder);
         }
     }
     
@@ -472,7 +472,7 @@ public class MyService extends Service {
             }
         }
         if (logMessageBuilder.length() > 0) {
-            MyLog.v(this, method + "; " + logMessageBuilder);
+            MyLog.v(this, () -> method + "; " + logMessageBuilder);
         }
         return could;
     }
@@ -617,7 +617,7 @@ public class MyService extends Service {
 
         @Override
         protected Void doInBackground2(Void... arg0) {
-            MyLog.v(this, "Started instance " + instanceId);
+            MyLog.v(this, () -> "Started instance " + instanceId);
             String breakReason = "";
             for (long iteration = 1; iteration < 10000; iteration++) {
                 synchronized(heartBeatLock) {
@@ -643,7 +643,8 @@ public class MyService extends Service {
                 }
                 publishProgress(iteration);
             }
-            MyLog.v(this, "Ended; " + this + " - " + breakReason);
+            String breakReasonVal = breakReason;
+            MyLog.v(this, () -> "Ended; " + this + " - " + breakReasonVal);
             synchronized(heartBeatLock) {
                 if (mHeartBeat == this) {
                     mHeartBeat = null;
@@ -657,7 +658,7 @@ public class MyService extends Service {
             mIteration = values[0];
             previousBeat = MyLog.uniqueCurrentTimeMS();
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "onProgressUpdate; " + this);
+                MyLog.v(this, () -> "onProgressUpdate; " + this);
             }
             if (MyLog.isDebugEnabled() && RelativeTime.moreSecondsAgoThan(createdAt,
                     QueueExecutor.MAX_EXECUTION_TIME_SECONDS)) {

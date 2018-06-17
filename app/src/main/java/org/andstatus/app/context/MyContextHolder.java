@@ -119,7 +119,7 @@ public final class MyContextHolder {
             return new MyEmptyFutureContext(myFutureContext.getNow());
         }
         if (needToInitialize()) {
-            MyLog.v(TAG, "myFutureContext " + (myFutureContext.isEmpty() ? "isEmpty " : "") + get());
+            MyLog.v(TAG, () -> "myFutureContext " + (myFutureContext.isEmpty() ? "isEmpty " : "") + get());
             boolean launchExecution = false;
             synchronized(CONTEXT_LOCK) {
                 if (needToInitialize()) {
@@ -128,7 +128,7 @@ public final class MyContextHolder {
                 }
             }
             if (launchExecution) {
-                MyLog.v(TAG, "myFutureContext launch " + (myFutureContext.isEmpty() ? "isEmpty " : "") + get());
+                MyLog.v(TAG, () -> "myFutureContext launch " + (myFutureContext.isEmpty() ? "isEmpty " : "") + get());
                 myFutureContext.executeOnNonUiThread(calledBy);
             }
         }
@@ -145,7 +145,7 @@ public final class MyContextHolder {
                 if (get().initialized() && isConfigChanged()) {
                     long preferencesChangeTimeLast = MyPreferences.getPreferencesChangeTime() ;
                     if (get().preferencesChangeTime() != preferencesChangeTimeLast) {
-                        MyLog.v(TAG, "Preferences changed "
+                        MyLog.v(TAG, () -> "Preferences changed "
                                 + RelativeTime.secondsAgo(preferencesChangeTimeLast)
                                 + " seconds ago, refreshing...");
                         get().setExpired();
