@@ -18,10 +18,15 @@ package org.andstatus.app.data.checker;
 
 import android.database.Cursor;
 
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.NoteTable;
+import org.andstatus.app.net.social.Note;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.util.MyHtml;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.andstatus.app.data.MyQuery.quoteIfNotQuoted;
 
@@ -37,35 +42,22 @@ class SearchIndexUpdate extends DataChecker {
 
     @Override
     long fixInternal(boolean countOnly) {
-        String sql = "SELECT " + NoteTable._ID
-                + ", " + NoteTable.CONTENT
-                + ", " + NoteTable.CONTENT_TO_SEARCH
-                + " FROM " + NoteTable.TABLE_NAME
-                ;
+        String sql = Note.getSqlToLoadContent(0);
+        List<Note> notesToFix = new ArrayList<>();
         long rowsCount = 0;
-        long changedCount = 0;
-        try (Cursor c = myContext.getDatabase().rawQuery(sql, null)) {
-            while (c.moveToNext()) {
+        try (Cursor cursor = myContext.getDatabase().rawQuery(sql, null)) {
+            while (cursor.moveToNext()) {
                 rowsCount++;
-                long id = c.getLong(0);
-                String content = c.getString(1);
-                String contentToSearch = c.getString(2);
-                String contentToSearchExpected = MyHtml.getContentToSearch(content);
-                if (!contentToSearchExpected.equals(contentToSearch)) {
-                    changedCount++;
-                    MyLog.i(this, "Wrong content to search for " + id + ": " + quoteIfNotQuoted(content));
-                    sql = "UPDATE " + NoteTable.TABLE_NAME
-                            + " SET "
-                            + NoteTable.CONTENT_TO_SEARCH + "=" + quoteIfNotQuoted(contentToSearchExpected)
-                            + " WHERE " + NoteTable._ID + "=" + id;
-                    myContext.getDatabase().execSQL(sql);
-                }
-                if (logger.loggedMoreSecondsAgoThan(PROGRESS_REPORT_PERIOD_SECONDS)) {
-                    logger.logProgress("Updating search index"
-                            + (changedCount == 0 ? ". " : ", changed " + changedCount + " of ")
-                            + rowsCount + " notes"
-                    );
-                    MyServiceManager.setServiceUnavailable();
+                Note note = Note.contentFromCursor(myContext, cursor);
+                String contentToSearchStored = DbUtils.getString(cursor, NoteTable.CONTENT_TO_SEARCH);
+                if (!contentToSearchStored.equals(note.getContentToSearch())) {
+                    notesToFix.add(note);
+                    if (logger.loggedMoreSecondsAgoThan(PROGRESS_REPORT_PERIOD_SECONDS)) {
+                        logger.logProgress("Need to fix " + notesToFix.size() + " of " + rowsCount + " notes, "
+                                + ", id=" + note.noteId + "; "
+                                + I18n.trimTextAt(note.getContentToSearch(), 120));
+                        MyServiceManager.setServiceUnavailable();
+                    }
                 }
             }
         } catch (Exception e) {
@@ -73,10 +65,34 @@ class SearchIndexUpdate extends DataChecker {
             logger.logProgress(logMsg);
             MyLog.e(this, logMsg, e);
         }
-        logger.logProgress(changedCount == 0
+
+        if (!countOnly) notesToFix.forEach(this::fixOneNote);
+
+        logger.logProgress(notesToFix.isEmpty()
                 ? "No changes to search index were needed. " + rowsCount + " notes"
-                : "Changed search index for " + changedCount + " of " + rowsCount + " notes");
-        return changedCount;
+                : "Updated search index for " + notesToFix.size() + " of " + rowsCount + " notes");
+        return notesToFix.size();
     }
 
+    private void fixOneNote(Note note) {
+        String sql = "";
+        try {
+            sql = "UPDATE " + NoteTable.TABLE_NAME
+                    + " SET "
+                    + NoteTable.CONTENT_TO_SEARCH + "=" + quoteIfNotQuoted(note.getContentToSearch())
+                    + " WHERE " + NoteTable._ID + "=" + note.noteId;
+            myContext.getDatabase().execSQL(sql);
+            if (logger.loggedMoreSecondsAgoThan(PROGRESS_REPORT_PERIOD_SECONDS)) {
+                logger.logProgress("Updating search index for " +
+                        I18n.trimTextAt(note.getContentToSearch(), 120) +
+                        " id=" + note.noteId
+                );
+                MyServiceManager.setServiceUnavailable();
+            }
+        } catch (Exception e) {
+            String logMsg = "Error: " + e.getMessage() + ", SQL:" + sql;
+            logger.logProgress(logMsg);
+            MyLog.e(this, logMsg, e);
+        }
+    }
 }

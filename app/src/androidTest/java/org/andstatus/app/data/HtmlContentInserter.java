@@ -22,6 +22,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.Note;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyHtml;
@@ -101,15 +102,18 @@ public class HtmlContentInserter {
         DemoNoteInserter mi = new DemoNoteInserter(ma);
         final AActivity activity = mi.buildActivity(author, "", bodyString, null, noteOid, DownloadStatus.LOADED);
         mi.onActivity(activity);
-        long msgId1 = activity.getNote().noteId;
-        String content = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, msgId1);
+
+        Note noteStored = Note.loadContentById(MyContextHolder.get(), activity.getNote().noteId);
+        assertTrue("Note was loaded " + activity.getNote(), noteStored.nonEmpty());
         if (htmlContentAllowed) {
-            assertEquals("HTML preserved", bodyString, content);
+            assertEquals("HTML preserved", bodyString, noteStored.getContent());
         } else {
-            assertEquals("HTML removed", MyHtml.fromHtml(bodyString), content);
+            assertEquals("HTML removed", MyHtml.fromHtml(bodyString), noteStored.getContent());
         }
-        String bodyToSearch = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT_TO_SEARCH, msgId1);
-        assertEquals("Body to search", MyHtml.getContentToSearch(content), bodyToSearch);
+        assertEquals("Stored content " + activity.getNote(), activity.getNote().getContentToSearch(),
+                noteStored.getContentToSearch());
+        String storedContentToSearch = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT_TO_SEARCH, noteStored.noteId);
+        assertEquals("Stored content to search", noteStored.getContentToSearch(), storedContentToSearch);
 		return mi;
 	}
 }

@@ -255,10 +255,9 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     @Override
     public boolean matches(TimelineFilter filter) {
         if (!filter.keywordsFilter.isEmpty() || !filter.searchQuery.isEmpty()) {
-            String bodyToSearch = MyHtml.getContentToSearch(getContent());
-            if (filter.keywordsFilter.matchedAny(bodyToSearch)) return false;
+            if (filter.keywordsFilter.matchedAny(contentToSearch)) return false;
 
-            if (!filter.searchQuery.isEmpty() && !filter.searchQuery.matchedAll(bodyToSearch)) return false;
+            if (!filter.searchQuery.isEmpty() && !filter.searchQuery.matchedAll(contentToSearch)) return false;
         }
         return !filter.hideRepliesNotToMeOrFriends
                 || inReplyToActor.isEmpty()

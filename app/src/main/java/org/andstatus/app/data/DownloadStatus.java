@@ -41,17 +41,8 @@ public enum DownloadStatus {
         titleResourceId = titleResourceIdIn;
     }
     
-    public String save() {
-        return Long.toString(code);
-    }
-    
-    public static DownloadStatus load(String strCode) {
-        try {
-            return load(Long.parseLong(strCode));
-        } catch (NumberFormatException e) {
-            MyLog.v(TAG, "Error converting '" + strCode + "'", e);
-        }
-        return UNKNOWN;
+    public long save() {
+        return code;
     }
     
     public static DownloadStatus load(long codeIn) {

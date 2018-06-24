@@ -124,6 +124,7 @@ public class NoteEditorData {
                     MyQuery.idToOid(OidEnum.NOTE_OID, inReplyToNoteId, 0), 0, UNKNOWN);
             final Note inReplyToNote = inReplyTo.getNote();
             inReplyToNote.noteId = inReplyToNoteId;
+            inReplyToNote.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, inReplyToNoteId));
             inReplyToNote.setContent(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, inReplyToNoteId));
             note.setInReplyTo(inReplyTo);
         }

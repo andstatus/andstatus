@@ -16,16 +16,19 @@
 
 package org.andstatus.app.net.social;
 
+import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
-import android.text.TextUtils;
 
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
+import org.andstatus.app.util.LazyVal;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
@@ -55,6 +58,7 @@ public class Note extends AObject {
     private final Audience recipients;
     private String name = "";
     private String content = "";
+    private final LazyVal<String> contentToSearch = LazyVal.of(this::evalContentToSearch);
 
     @NonNull
     private AActivity inReplyTo = AActivity.EMPTY;
@@ -80,6 +84,36 @@ public class Note extends AObject {
             note.status = DownloadStatus.UNKNOWN;
         }
         return note;
+    }
+
+    @NonNull
+    public static String getSqlToLoadContent(long id) {
+        String sql = "SELECT " + NoteTable._ID
+                + ", " + NoteTable.CONTENT
+                + ", " + NoteTable.CONTENT_TO_SEARCH
+                + ", " + NoteTable.NOTE_OID
+                + ", " + NoteTable.ORIGIN_ID
+                + ", " + NoteTable.NAME
+                + ", " + NoteTable.NOTE_STATUS
+                + " FROM " + NoteTable.TABLE_NAME;
+        return sql + (id == 0 ? "" : " WHERE " + NoteTable._ID + "=" + id);
+    }
+
+    @NonNull
+    public static Note contentFromCursor(MyContext myContext, Cursor cursor) {
+        Note note = fromOriginAndOid(myContext.origins().fromId(DbUtils.getLong(cursor, NoteTable.ORIGIN_ID)),
+                DbUtils.getString(cursor, NoteTable.NOTE_OID),
+                DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS)));
+        note.noteId = DbUtils.getLong(cursor, NoteTable._ID);
+        note.setName(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.NAME)));
+        note.setContent(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.CONTENT)));
+        return note;
+    }
+
+    @NonNull
+    public static Note loadContentById(MyContext myContext, long noteId) {
+        return MyQuery.get(myContext, getSqlToLoadContent(noteId), cursor -> Note.contentFromCursor(myContext, cursor))
+                .stream().findAny().orElse(Note.EMPTY);
     }
 
     private static String getTempOid() {
@@ -112,8 +146,9 @@ public class Note extends AObject {
     public String getContent() {
         return content;
     }
+
     public String getContentToSearch() {
-        return MyHtml.getContentToSearch(content);
+        return contentToSearch.get();
     }
 
     private boolean isHtmlContentAllowed() {
@@ -126,6 +161,10 @@ public class Note extends AObject {
                 (downloadStatus == DownloadStatus.LOADED && originType.allowEditing());
     }
 
+    private String evalContentToSearch() {
+        return MyHtml.getContentToSearch(StringUtils.nonEmpty(name) ? name + " " + content : content);
+    }
+
     public void setName(String name) {
         if (StringUtils.isEmpty(name)) {
             this.name = "";
@@ -134,6 +173,7 @@ public class Note extends AObject {
         } else {
             this.name = MyHtml.fromHtml(name);
         }
+        contentToSearch.reset();
     }
 
     public void setContent(String content) {
@@ -144,6 +184,7 @@ public class Note extends AObject {
         } else {
             this.content = MyHtml.fromHtml(content);
         }
+        contentToSearch.reset();
     }
 
     public Note setConversationOid(String conversationOid) {
