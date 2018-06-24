@@ -154,88 +154,95 @@ public final class DemoData {
         MyLog.v(TAG, method + ": ended");
     }
 
+    private static class MyAsyncTaskDemoData extends MyAsyncTask<Void, Void, Void> {
+        final ProgressLogger.ProgressCallback progressCallback;
+        final String method;
+        final MyContext myContext;
+        final DemoData demoData;
+
+        private MyAsyncTaskDemoData(ProgressLogger.ProgressCallback progressCallback, String method, MyContext myContext, DemoData demoData) {
+            super(method, MyAsyncTask.PoolEnum.QUICK_UI);
+            this.progressCallback = progressCallback;
+            this.method = method;
+            this.myContext = myContext;
+            this.demoData = demoData;
+        }
+
+        @Override
+        protected Void doInBackground2(Void... voids) {
+            MyLog.i(TAG_ASYNC, method + ": started");
+            if (progressCallback != null) {
+                DbUtils.waitMs(TAG_ASYNC, 3000);
+                progressCallback.onProgressMessage("Generating demo data...");
+                DbUtils.waitMs(TAG_ASYNC, 1000);
+            }
+            MyLog.v(TAG_ASYNC, "Before initialize 1");
+            MyContextHolder.initialize(myContext.context(), method);
+            MyLog.v(TAG_ASYNC, "After initialize 1");
+            MyServiceManager.setServiceUnavailable();
+            DemoOriginInserter originInserter = new DemoOriginInserter(myContext);
+            originInserter.insert();
+            final DemoAccountInserter accountInserter = new DemoAccountInserter(myContext);
+            accountInserter.insert();
+            myContext.timelines().saveChanged();
+
+            MyPreferences.onPreferencesChanged();
+            MyContextHolder.setExpiredIfConfigChanged();
+            MyLog.v(TAG_ASYNC, "Before initialize 2");
+            MyContextHolder.initialize(myContext.context(), method);
+            MyLog.v(TAG_ASYNC, "After initialize 2");
+            MyServiceManager.setServiceUnavailable();
+            if (progressCallback != null) {
+                progressCallback.onProgressMessage("Demo accounts added...");
+                DbUtils.waitMs(TAG_ASYNC, 1000);
+            }
+            assertTrue("Context is not ready " + MyContextHolder.get(), MyContextHolder.get().isReady());
+            demoData.checkDataPath();
+            int size = MyContextHolder.get().accounts().size();
+            assertTrue("Only " + size + " accounts added: " + MyContextHolder.get().accounts(),
+                    size > 5);
+            assertEquals("No WebfingerId", Optional.empty(), MyContextHolder.get().accounts()
+                    .get().stream().filter(ma -> !ma.getActor().isWebFingerIdValid()).findFirst());
+            int size2 = MyContextHolder.get().users().size();
+            assertTrue("Only " + size2 + " users added: " + MyContextHolder.get().users()
+                            + "\nAccounts: " + MyContextHolder.get().accounts(),
+                    size2 >= size);
+
+            originInserter.checkDefaultTimelinesForOrigins();
+            accountInserter.checkDefaultTimelinesForAccounts();
+            demoData.insertPumpIoConversation("");
+            new DemoGnuSocialConversationInserter().insertConversation();
+            if (progressCallback != null) {
+                progressCallback.onProgressMessage("Demo notes added...");
+                DbUtils.waitMs(TAG_ASYNC, 1000);
+            }
+            if (MyContextHolder.get().accounts().size() == 0) {
+                fail("No persistent accounts");
+            }
+            demoData.setSuccessfulAccountAsCurrent();
+            Timeline defaultTimeline = MyContextHolder.get().timelines().filter(
+                    false, TriState.TRUE, TimelineType.EVERYTHING, Actor.EMPTY,
+                    MyContextHolder.get().accounts().getCurrentAccount().getOrigin())
+                    .findFirst().orElse(Timeline.EMPTY);
+            assertThat(defaultTimeline.getTimelineType(), is(TimelineType.EVERYTHING));
+            MyContextHolder.get().timelines().setDefault(defaultTimeline);
+            MyLog.v(TAG_ASYNC, "Before initialize 3");
+            MyContextHolder.initialize(myContext.context(), method);
+            demoData.assertConversations();
+            MyLog.v(TAG_ASYNC, "After initialize 3");
+            if (progressCallback != null) {
+                progressCallback.onProgressMessage("Demo data is ready");
+                DbUtils.waitMs(TAG_ASYNC, 1000);
+            }
+            MyLog.i(TAG_ASYNC, method + ": ended");
+            return null;
+        }
+    }
+
     @NonNull
     public MyAsyncTask<Void, Void, Void> addAsync(final String method, final MyContext myContext,
                                                           final ProgressLogger.ProgressCallback progressCallback) {
-        final MyAsyncTask<Void, Void, Void> asyncTask
-                = new MyAsyncTask<Void, Void, Void>(method, MyAsyncTask.PoolEnum.QUICK_UI) {
-            @Override
-            protected Void doInBackground2(Void... params) {
-                MyLog.i(TAG_ASYNC, method + ": started");
-                if (progressCallback != null) {
-                    DbUtils.waitMs(TAG_ASYNC, 3000);
-                    progressCallback.onProgressMessage("Generating demo data...");
-                    DbUtils.waitMs(TAG_ASYNC, 1000);
-                }
-                MyLog.v(TAG_ASYNC, "Before initialize 1");
-                MyContextHolder.initialize(myContext.context(), method);
-                MyLog.v(TAG_ASYNC, "After initialize 1");
-                MyServiceManager.setServiceUnavailable();
-                DemoOriginInserter originInserter = new DemoOriginInserter(myContext);
-                originInserter.insert();
-                final DemoAccountInserter accountInserter = new DemoAccountInserter(myContext);
-                accountInserter.insert();
-                myContext.timelines().saveChanged();
-
-                MyPreferences.onPreferencesChanged();
-                MyContextHolder.setExpiredIfConfigChanged();
-                MyLog.v(TAG_ASYNC, "Before initialize 2");
-                MyContextHolder.initialize(myContext.context(), method);
-                MyLog.v(TAG_ASYNC, "After initialize 2");
-                MyServiceManager.setServiceUnavailable();
-                if (progressCallback != null) {
-                    progressCallback.onProgressMessage("Demo accounts added...");
-                    DbUtils.waitMs(TAG_ASYNC, 1000);
-                }
-                assertTrue("Context is not ready " + MyContextHolder.get(), MyContextHolder.get().isReady());
-                checkDataPath();
-                int size = MyContextHolder.get().accounts().size();
-                assertTrue("Only " + size + " accounts added: " + MyContextHolder.get().accounts(),
-                        size > 5);
-                assertEquals("No WebfingerId", Optional.empty(), MyContextHolder.get().accounts()
-                        .get().stream().filter(ma -> !ma.getActor().isWebFingerIdValid()).findFirst());
-                int size2 = MyContextHolder.get().users().size();
-                assertTrue("Only " + size2 + " users added: " + MyContextHolder.get().users()
-                        + "\nAccounts: " + MyContextHolder.get().accounts(),
-                        size2 >= size);
-
-                originInserter.checkDefaultTimelinesForOrigins();
-                accountInserter.checkDefaultTimelinesForAccounts();
-                insertPumpIoConversation("");
-                new DemoGnuSocialConversationInserter().insertConversation();
-                if (progressCallback != null) {
-                    progressCallback.onProgressMessage("Demo notes added...");
-                    DbUtils.waitMs(TAG_ASYNC, 1000);
-                }
-                if (MyContextHolder.get().accounts().size() == 0) {
-                    fail("No persistent accounts");
-                }
-                setSuccessfulAccountAsCurrent();
-                Timeline defaultTimeline = MyContextHolder.get().timelines().filter(
-                        false, TriState.TRUE, TimelineType.EVERYTHING, Actor.EMPTY,
-                        MyContextHolder.get().accounts().getCurrentAccount().getOrigin())
-                        .findFirst().orElse(Timeline.EMPTY);
-                assertThat(defaultTimeline.getTimelineType(), is(TimelineType.EVERYTHING));
-                MyContextHolder.get().timelines().setDefault(defaultTimeline);
-                MyLog.v(TAG_ASYNC, "Before initialize 3");
-                MyContextHolder.initialize(myContext.context(), method);
-                assertConversations();
-                MyLog.v(TAG_ASYNC, "After initialize 3");
-                if (progressCallback != null) {
-                    progressCallback.onProgressMessage("Demo data is ready");
-                    DbUtils.waitMs(TAG_ASYNC, 1000);
-                }
-                MyLog.i(TAG_ASYNC, method + ": ended");
-                return null;
-            }
-
-            @Override
-            protected void onFinish(Void aVoid, boolean success) {
-                if (progressCallback != null) {
-                    progressCallback.onComplete(success);
-                }
-            }
-        };
+        MyAsyncTaskDemoData asyncTask = new MyAsyncTaskDemoData(progressCallback, method, myContext, this);
         AsyncTaskLauncher.execute(method, true, asyncTask);
         return asyncTask;
     }
