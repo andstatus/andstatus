@@ -16,9 +16,11 @@
 
 package org.andstatus.app.note;
 
+import org.andstatus.app.note.KeywordsFilter.Keyword;
 import org.andstatus.app.util.MyHtml;
 import org.junit.Test;
 
+import static org.andstatus.app.note.KeywordsFilter.CONTAINS_PREFIX;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -30,8 +32,14 @@ public class KeywordsFilterTest {
 
     @Test
     public void testPhrases() {
+
+        assertOneQueryToKeywords("<a/>");
+        assertOneQueryToKeywords("contains:");
+        assertOneQueryToKeywords("contains:<br/>");
+        assertOneQueryToKeywords("contains:a", new Keyword("a", true));
+
         String query = "\"deleted notice\"";
-        final String keywordDN = ",deleted,notice,";
+        final Keyword keywordDN = new Keyword(",deleted,notice,");
         assertOneQueryToKeywords(query, keywordDN);
         final String body1 = "Looking for the deleted notice";
         assertMatchAll(query, body1);
@@ -40,10 +48,10 @@ public class KeywordsFilterTest {
         assertNotMatchAny(query, body1 + "s");
 
         query = "word " + query;
-        final String keywordW = ",word,";
+        final Keyword keywordW = new Keyword(",word,");
         assertOneQueryToKeywords(query, keywordW, keywordDN);
         assertNotMatchAll(query, body1);
-        final String body2 = body1 + " with a word, that is interesting";
+        final String body2 = body1 + " with a word, that is interesting. And with a link to http://andstatus.org/somepath";
         assertMatchAll(query, body2);
         assertMatchAny("those this that", body2);
         assertNotMatchAny("something other", body2);
@@ -53,13 +61,20 @@ public class KeywordsFilterTest {
         assertNotMatchAll(query, body1);
         assertMatchAll(query, body2);
 
+        query += ", " + CONTAINS_PREFIX + "//andstatus.org/, ";
+        final Keyword keywordContainsDomainName = new Keyword("//andstatus.org/", true);
+        assertOneQueryToKeywords(query, keywordW, keywordDN, keywordContainsDomainName);
+        assertNotMatchAll(query, body1);
+        assertMatchAll(query, body2);
+
         query += ", Something";
-        assertOneQueryToKeywords(query, keywordW, keywordDN, ",something,");
+        final Keyword keywordSomething = new Keyword(",something,");
+        assertOneQueryToKeywords(query, keywordW, keywordDN, keywordContainsDomainName, keywordSomething);
         assertNotMatchAll(query, body1);
         assertNotMatchAll(query, body2);
     }
 
-    private void assertOneQueryToKeywords(String query, String... keywords) {
+    private void assertOneQueryToKeywords(String query, Keyword... keywords) {
         int size = keywords.length;
         KeywordsFilter filter1 = new KeywordsFilter(query);
         assertEquals(filter1.keywordsToFilter.toString(), size, filter1.keywordsToFilter.size());

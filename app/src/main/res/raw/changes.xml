@@ -29,8 +29,21 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="40.01" android:versionCode="255"
-             versionDate="2018-06-17"
+    <release android:versionName="41.00" android:versionCode="257"
+             versionDate="2018-XX-XX"
+             versionTitle="Search by a part of a word">
+        <changes>
+            <change>Search works for a note's name (title) and a content. You have to launch "AndStatus Settings
+            -> Storage -> Check and fix data" once to rebuild search index in existing local cache.</change>
+            <change>Added Search and filtering by a part of a word. Now you can type e.g. <b>contains:other</b>
+                to match "other" and "mother" or you can search for <b>contains://andstatus.org/</b> to filter posts,
+                which contain links in "andstatus.org" domain.
+                <a href="https://github.com/andstatus/andstatus/issues/494">#494</a>
+            </change>
+        </changes>
+    </release>
+    <release android:versionName="40.02" android:versionCode="256"
+             versionDate="2018-06-18"
              versionTitle="Note Editor UI improvements">
         <changes>
             <change>Hide Note Editor and save Draft on BACK device key.</change>

@@ -186,7 +186,9 @@
   <string name="header_accounts_summary">Manage accounts and Social networks</string>
   <string name="header_add_new_account">Add new account</string>
   <string name="hide_messages_based_on_keywords_title">Hide notes based on keywords or exact phrases</string>
-  <string name="hide_messages_based_on_keywords_dialog_message">Separate keywords by spaces. Put phrases in double quotes e.g.:\nkeyword \"exact phrase\"</string>
+  <string name="hide_messages_based_on_keywords_dialog_message">Separate keywords by spaces.
+    Put phrases in double quotes e.g.:\nkeyword \"exact phrase\".
+    Match a part of a word or URL: contains:ederatio contains://andstatus.org/</string>
   <string name="hide_replies_not_to_me_or_friends_title">Hide replies not to me or my friends from Home timeline</string>
   <string name="history_size_entries_500">500 notes</string>
   <string name="history_size_entries_1000">1000 notes</string>
