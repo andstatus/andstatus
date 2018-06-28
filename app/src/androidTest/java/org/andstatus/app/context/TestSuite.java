@@ -106,13 +106,14 @@ public class TestSuite {
         final MyContext myContext = MyContextHolder.get();
         assertNotEquals("MyContext state " + myContext, MyContextState.EMPTY, myContext.state());
 
-        SharedPreferencesUtil.putString(MyPreferences.KEY_MIN_LOG_LEVEL, Integer.toString(MyLog.VERBOSE));
+        int logLevel = MyLog.VERBOSE;
+        MyLog.setMinLogLevel(logLevel);
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_DOWNLOAD_AND_DISPLAY_ATTACHED_IMAGES, true);
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_ATTACH_IMAGES_TO_MY_NOTES, true);
         AsyncTaskLauncher.forget();
         ExceptionsCounter.forget();
         MyLog.forget();
-        assertTrue("Log level set to verbose", MyLog.isLoggable(TAG, MyLog.VERBOSE));
+        assertTrue("Level " + logLevel + " should be loggable", MyLog.isLoggable(TAG, logLevel));
         MyServiceManager.setServiceUnavailable();
 
         if (MyContextHolder.get().state() != MyContextState.READY) {

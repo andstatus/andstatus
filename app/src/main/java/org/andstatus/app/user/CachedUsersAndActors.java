@@ -100,11 +100,7 @@ public class CachedUsersAndActors {
     }
 
     public boolean containsMe(@NonNull Collection<Actor> actors) {
-        return actors.stream().anyMatch(actor -> myActors.keySet().contains(actor.actorId));
-    }
-
-    public boolean containsMe(@NonNull Actor actor) {
-      return myActors.containsKey(actor.actorId);
+        return actors.stream().anyMatch(this::isMe);
     }
 
     @Override
@@ -113,9 +109,17 @@ public class CachedUsersAndActors {
     }
 
     public boolean isMeOrMyFriend(long actorId) {
-        return myActors.containsKey(actorId)
-                || friendsOfMyActors.containsKey(actorId)
-                || myActors.values().stream().anyMatch(actor -> actor.user.actorIds.contains(actorId));
+        return actorId != 0 && (isMe(actorId) || friendsOfMyActors.containsKey(actorId));
+    }
+
+    public boolean isMe(@NonNull Actor actor) {
+        return isMe(actor.actorId);
+    }
+
+    public boolean isMe(long actorId) {
+        return actorId != 0 && (
+            myActors.containsKey(actorId) || myUsers.values().stream().anyMatch(user -> user.actorIds.contains(actorId))
+        );
     }
 
     @NonNull

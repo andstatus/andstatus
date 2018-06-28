@@ -100,7 +100,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
                     if (!activity.isSubscribedByMe().equals(TriState.FALSE)
                         && activity.getUpdatedDate() > 0
                         && execContext.getTimeline().getTimelineType().isSubscribedByMe()
-                        && execContext.myContext.users().containsMe(execContext.getTimeline().actor)
+                        && execContext.myContext.users().isMe(execContext.getTimeline().actor)
                             ) {
                         activity.setSubscribedByMe(TriState.TRUE);
                     }

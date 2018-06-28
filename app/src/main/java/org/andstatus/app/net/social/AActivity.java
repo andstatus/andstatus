@@ -161,7 +161,7 @@ public class AActivity extends AObject {
     }
 
     public boolean isMyActorOrAuthor(@NonNull MyContext myContext) {
-        return myContext.users().containsMe(getActor()) || myContext.users().containsMe(getAuthor());
+        return myContext.users().isMe(getActor()) || myContext.users().isMe(getAuthor());
     }
 
     public Actor getNotifiedActor() {
@@ -455,18 +455,18 @@ public class AActivity extends AObject {
     }
 
     private NotificationEventType calculateNotificationEventType(MyContext myContext) {
-        if (myContext.users().containsMe(getActor())) return NotificationEventType.EMPTY;
+        if (myContext.users().isMe(getActor())) return NotificationEventType.EMPTY;
         if (getNote().getPublic().isFalse) {
             return NotificationEventType.PRIVATE;
         } else if(myContext.users().containsMe(getNote().audience().getRecipients()) && !isMyActorOrAuthor(myContext)) {
             return NotificationEventType.MENTION;
-        } else if (type == ActivityType.ANNOUNCE && myContext.users().containsMe(getAuthor())) {
+        } else if (type == ActivityType.ANNOUNCE && myContext.users().isMe(getAuthor())) {
             return NotificationEventType.ANNOUNCE;
         } else if ((type == ActivityType.LIKE || type == ActivityType.UNDO_LIKE)
-                && myContext.users().containsMe(getAuthor())) {
+                && myContext.users().isMe(getAuthor())) {
             return NotificationEventType.LIKE;
         } else if ((type == ActivityType.FOLLOW || type == ActivityType.UNDO_FOLLOW)
-                && myContext.users().containsMe(getObjActor())) {
+                && myContext.users().isMe(getObjActor())) {
             return NotificationEventType.FOLLOW;
         } else {
             return NotificationEventType.EMPTY;
