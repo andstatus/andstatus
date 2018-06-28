@@ -118,16 +118,9 @@ public class UnsentNotesTest extends TimelineActivityTest<ActivityViewItem> {
 
         List<HttpReadResult> results = mService.getHttp().getResults();
         assertTrue("No results in " + mService.getHttp().toString() + "\n" + logMsg, !results.isEmpty());
-        String urlFound = "";
-        for (HttpReadResult result : results) {
-            if (result.getUrl().contains("retweet")) {
-                urlFound = result.getUrl();
-                if (result.getUrl().contains(noteOid)) {
-                    break;
-                }
-            }
-        }
-        assertTrue("URL '" + urlFound + "' doesn't contain note oid " + logMsg, urlFound.contains(noteOid));
+        boolean urlFound = results.stream().anyMatch(result -> (result.getUrl().contains("retweet") &&
+                result.getUrl().contains(noteOid)));
+        assertTrue("No URL contain note oid " + logMsg + "\nResults: " + results, urlFound);
 
         MyLog.v(this, method + " ended");
     }

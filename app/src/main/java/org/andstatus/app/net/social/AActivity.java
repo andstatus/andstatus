@@ -164,6 +164,10 @@ public class AActivity extends AObject {
         return myContext.users().containsMe(getActor()) || myContext.users().containsMe(getAuthor());
     }
 
+    public Actor getNotifiedActor() {
+        return notifiedActor;
+    }
+
     @NonNull
     public AObjectType getObjectType() {
         if (note.nonEmpty()) {

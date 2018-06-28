@@ -386,6 +386,7 @@ public class DataUpdater {
             } else if (values.size() > 0) {
                 execContext.getContext().getContentResolver().update(actorUri, values, null, null);
             }
+            execContext.myContext.users().addIfAbsent(actor);
             if (followedByMe.known) {
                 MyLog.v(this, () -> "Account " + me.getActor().getNamePreferablyWebFingerId() + " "
                         + (followedByMe.isTrue ? "follows " : "stop following ")

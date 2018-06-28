@@ -582,11 +582,8 @@ public class DataUpdaterTest {
         Actor author1 = Actor.fromOriginAndActorOid(accountActor.origin, "sam" + demoData.testRunUid);
         author1.setUsername("samBrook");
 
-        AActivity activity1 = AActivity.newPartialNote(accountActor, author1, String.valueOf(System.nanoTime()),
-                System.currentTimeMillis(), DownloadStatus.LOADED);
-        Note note = activity1.getNote();
-        note.setContent("@" + myMentionedUser.getUsername() + " I mention your another account");
-        note.via = "AndStatus";
+        AActivity activity1 = newLoadedNote(accountActor, author1,
+                "@" + myMentionedUser.getUsername() + " I mention your another account");
 
         AActivity activity2 = AActivity.from(accountActor, ActivityType.UPDATE);
         activity2.setActor(author1);
@@ -594,6 +591,43 @@ public class DataUpdaterTest {
 
         DataUpdater di = new DataUpdater(ma);
         long noteId = di.onActivity(activity2).getNote().noteId;
-        assertTrue("Note added", noteId != 0);
+        assertTrue("Note should be added", noteId != 0);
+    }
+
+    @Test
+    public void replyToOneOfMyActorsWithTheSameUsername() {
+        MyAccount ma = demoData.getMyAccount(demoData.gnusocialTestAccount2Name);
+        DataUpdater di = new DataUpdater(ma);
+        Actor accountActor = ma.getActor();
+
+        Actor actorFromAnotherOrigin = demoData.getMyAccount(demoData.twitterTestAccountName).getActor();
+        assertEquals(demoData.t131tUsername, actorFromAnotherOrigin.getUsername());
+        Actor myAuthor1 = Actor.fromOriginAndActorOid(accountActor.origin, actorFromAnotherOrigin.oid + "22");
+        myAuthor1.setUsername(actorFromAnotherOrigin.getUsername());
+        myAuthor1.setWebFingerId(actorFromAnotherOrigin.getWebFingerId());
+        AActivity activity1 = newLoadedNote(accountActor, myAuthor1,
+                "My account's first note from another Social Network " + demoData.testRunUid);
+        assertTrue("Activity should be added", di.onActivity(activity1).getId() != 0);
+
+        Actor author2 = Actor.fromOriginAndActorOid(accountActor.origin, "replier" + demoData.testRunUid);
+        author2.setUsername("replier@anotherdoman.com");
+        AActivity activity2 = newLoadedNote(accountActor, author2,
+                "@" + demoData.t131tUsername + " Replying to my user from another instance");
+        activity2.getNote().setInReplyTo(activity1);
+        assertTrue("Activity should be added", di.onActivity(activity2).getId() != 0);
+
+        assertEquals("Audience should contain one actor " + activity2.getNote().audience(),
+                1, activity2.getNote().audience().getRecipients().size());
+        assertEquals("Audience", myAuthor1, activity2.getNote().audience().getFirstNonPublic());
+        assertEquals("Notified actor", myAuthor1, activity2.getNotifiedActor());
+    }
+
+    private AActivity newLoadedNote(Actor accountActor, Actor author, String content) {
+        AActivity activity1 = AActivity.newPartialNote(accountActor, author, String.valueOf(System.nanoTime()),
+                System.currentTimeMillis(), DownloadStatus.LOADED);
+        Note note = activity1.getNote();
+        note.setContent(content);
+        note.via = "AndStatus";
+        return activity1;
     }
 }

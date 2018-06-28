@@ -51,6 +51,7 @@ import org.andstatus.app.util.UrlUtils;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -443,7 +444,7 @@ public class Actor implements Comparable<Actor> {
         return UriUtils.TEMP_OID_PREFIX + oid;
     }
 
-    public List<Actor> extractActorsFromContent(String textIn, boolean replyOnly) {
+    public List<Actor> extractActorsFromContent(String textIn, boolean replyOnly, Actor inReplyToActor) {
         final String SEPARATORS = ", ;'=`~!#$%^&*(){}[]/";
         List<Actor> actors = new ArrayList<>();
         String text = MyHtml.fromHtml(textIn);
@@ -473,30 +474,38 @@ public class Actor implements Comparable<Actor> {
                 text = "";
             }
             if (StringUtils.nonEmpty(validWebFingerId) || StringUtils.nonEmpty(validUsername)) {
-                addExtractedActor(actors, validWebFingerId, validUsername);
+                addExtractedActor(actors, validWebFingerId, validUsername, inReplyToActor);
             }
         }
         return actors;
     }
 
-    private void addExtractedActor(List<Actor> actors, String webFingerId, String validUsername) {
+    private void addExtractedActor(List<Actor> actors, String webFingerId, String validUsername, Actor inReplyToActor) {
         Actor actor = Actor.fromOriginAndActorOid(origin, "");
         if (Actor.isWebFingerIdValid(webFingerId)) {
             actor.setWebFingerId(webFingerId);
+            actor.setUsername(validUsername);
         } else {
-            // Try a host of the Author, next - a host of this Social network
-            for (String host : Arrays.asList(getHost(), origin.getHost())) {
-                if (UrlUtils.hostIsValid(host)) {
-                    final String possibleWebFingerId = validUsername + "@" + host;
-                    actor.actorId = MyQuery.webFingerIdToId(origin.getId(), possibleWebFingerId);
-                    if (actor.actorId != 0) {
-                        actor.setWebFingerId(possibleWebFingerId);
-                        break;
+            // Is this a reply to Actor?
+            if (validUsername.equalsIgnoreCase(inReplyToActor.getUsername())) {
+                actor = inReplyToActor;
+            } else if (validUsername.equalsIgnoreCase(getUsername())) {
+                actor = this;
+            } else {
+                // Try 1. a host of the Author, 2. A host of Replied to user, 3. A host of this Social network
+                for (String host : new HashSet<>(Arrays.asList(getHost(), origin.getHost()))) {
+                    if (UrlUtils.hostIsValid(host)) {
+                        final String possibleWebFingerId = validUsername + "@" + host;
+                        actor.actorId = MyQuery.webFingerIdToId(origin.getId(), possibleWebFingerId);
+                        if (actor.actorId != 0) {
+                            actor.setWebFingerId(possibleWebFingerId);
+                            break;
+                        }
                     }
                 }
+                actor.setUsername(validUsername);
             }
         }
-        actor.setUsername(validUsername);
         actor.lookupActorId(MyContextHolder.get());
         if (!actors.contains(actor)) {
             actors.add(actor);

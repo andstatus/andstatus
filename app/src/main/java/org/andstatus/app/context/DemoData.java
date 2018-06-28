@@ -59,16 +59,18 @@ public final class DemoData {
     public final String testRunUid = String.valueOf(System.currentTimeMillis());
     public final AtomicInteger conversationIterationCounter = new AtomicInteger(0);
 
+    public final String t131tUsername = "t131t";
+
     public final String testOriginParentHost = "example.com";
     public final String pumpioOriginName = "PumpioTest";
     public final String pumpioMainHost = "pump1." + testOriginParentHost;
     public final String pumpioSecondHost = "pump2." + testOriginParentHost;
-    public final String pumpioTestAccountUsername = "t131t@" + pumpioMainHost;
+    public final String pumpioTestAccountUsername = t131tUsername + "@" + pumpioMainHost;
     public final String pumpioTestAccountName = pumpioTestAccountUsername + "/" + pumpioOriginName;
     public final String pumpioTestAccountActorOid = OriginPumpio.ACCOUNT_PREFIX + pumpioTestAccountUsername;
 
     public final String gnusocialTestOriginName = "GNUsocialTest";
-    public final String gnusocialTestAccountUsername = "t131t";
+    public final String gnusocialTestAccountUsername = t131tUsername;
     public final String gnusocialTestAccountName = gnusocialTestAccountUsername + "/" + gnusocialTestOriginName;
     public final String gnusocialTestAccountActorOid = "115391";
     public final String gnusocialTestAccountAvatarUrl = "https://findicons.com/files/icons/2036/farm/48/rabbit.png";
@@ -77,7 +79,7 @@ public final class DemoData {
     public final String gnusocialTestAccount2ActorOid = "8902454";
 
     public final String twitterTestOriginName = "TwitterTest";
-    public final String twitterTestAccountUsername = "t131t";
+    public final String twitterTestAccountUsername = t131tUsername;
     public final String twitterTestAccountActorOid = "144771645";
     public final String twitterTestAccountName = twitterTestAccountUsername + "/" + twitterTestOriginName;
 

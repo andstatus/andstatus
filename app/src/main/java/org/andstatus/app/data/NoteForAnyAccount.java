@@ -78,9 +78,8 @@ public class NoteForAnyAccount {
         }
         status = statusLoc;
         isPublic = isPublicLoc;
-        recipients = Audience.fromNoteId(origin, noteId);
+        recipients = Audience.fromNoteId(origin, noteId); // Now recipients have all users, mentioned in a body
         author = Actor.load(myContext, authorId);
-        author.extractActorsFromContent(content, false).forEach(recipients::add);
 
         DownloadData downloadData = DownloadData.getSingleAttachment(noteId);
         imageFilename = downloadData.getStatus() == DownloadStatus.LOADED ? downloadData.getFilename() : "";

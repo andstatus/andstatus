@@ -22,6 +22,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.origin.Origin;
 
 /**
@@ -56,23 +57,16 @@ public class ActorsOfNoteListLoader extends ActorListLoader {
     }
 
     private void addFromNoteRow() {
-        final long authorId = MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, selectedNoteId);
-        if (mentionedOnly) {
-            addActorsFromNoteBody(Actor.fromOriginAndActorId(originOfSelectedNote, authorId));
-        } else {
-            Actor author = addActorIdToList(originOfSelectedNote, authorId);
+        if (!mentionedOnly) {
+            addActorIdToList(originOfSelectedNote,
+                    MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, selectedNoteId));
             addActorIdToList(originOfSelectedNote,
                     MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, selectedNoteId));
-            addActorIdToList(originOfSelectedNote,
-                    MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_ACTOR_ID, selectedNoteId));
-            // TODO: Add recipients
-            addActorsFromNoteBody(author);
+        }
+        Audience.fromNoteId(originOfSelectedNote, selectedNoteId).getRecipients().forEach(this::addActorToList);
+        if (!mentionedOnly) {
             addRebloggers();
         }
-    }
-
-    private void addActorsFromNoteBody(Actor author) {
-        author.extractActorsFromContent(noteContent, false).forEach(this::addActorToList);
     }
 
     private void addRebloggers() {
