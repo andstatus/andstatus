@@ -334,11 +334,11 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         updateList(pos, TriState.UNKNOWN, 0, true);
     }
 
-    public void updateList(TriState collapseDuplicates, long itemId) {
-        updateList(LoadableListPosition.EMPTY, collapseDuplicates, itemId, false);
+    public void updateList(TriState collapseDuplicates, long collapsedItemId) {
+        updateList(getCurrentListPosition(), collapseDuplicates, collapsedItemId, false);
     }
 
-    private void updateList(LoadableListPosition pos, TriState collapseDuplicates, long itemId, boolean newAdapter) {
+    private void updateList(LoadableListPosition pos, TriState collapseDuplicates, long collapsedItemId, boolean newAdapter) {
         final String method = "updateList";
         ListView list = getListView();
         if (list == null) return;
@@ -351,7 +351,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
                 : "notifying change"));
 
         if (!TriState.UNKNOWN.equals(collapseDuplicates)) {
-            getListData().collapseDuplicates(collapseDuplicates.toBoolean(true), itemId);
+            getListData().collapseDuplicates(collapseDuplicates.toBoolean(true), collapsedItemId);
         }
 
         if (newAdapter) {

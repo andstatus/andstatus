@@ -89,11 +89,12 @@ class TimelineViewPositionStorage<T extends ViewItem<T>> {
     }
 
     public static LoadableListPosition loadListPosition(TimelineParameters params) {
-        return params.getTimeline().getVisibleItemId() > 0
+        final long itemId = params.getTimeline().getVisibleItemId();
+        return itemId > 0
                 ? LoadableListPosition.saved(
-                    params.getTimeline().getVisibleItemId(),
+                    itemId,
                     params.getTimeline().getVisibleY(),
-                    params.getTimeline().getVisibleOldestDate())
+                    params.getTimeline().getVisibleOldestDate(), "saved itemId:" + itemId)
                 : LoadableListPosition.EMPTY;
     }
 

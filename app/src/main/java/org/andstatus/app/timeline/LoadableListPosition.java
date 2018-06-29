@@ -23,7 +23,7 @@ import android.widget.ListView;
 import org.andstatus.app.util.MyLog;
 
 public class LoadableListPosition<T extends ViewItem<T>> {
-    public final static LoadableListPosition EMPTY = saved(0, 0, 0);
+    public final static LoadableListPosition EMPTY = saved(0, 0, 0, "(empty position");
     final int position;
     final long itemId;
     final int y;
@@ -34,8 +34,8 @@ public class LoadableListPosition<T extends ViewItem<T>> {
         return new LoadableListPosition(itemId, y, position, minSentDate, description);
     }
 
-    static LoadableListPosition saved(long itemId, int y, long minSentDate) {
-        return new LoadableListPosition(itemId, y, 0, minSentDate, "");
+    static LoadableListPosition saved(long itemId, int y, long minSentDate, String description) {
+        return new LoadableListPosition(itemId, y, 0, minSentDate, description);
     }
 
     private LoadableListPosition(long itemId, int y, int position, long minSentDate, String description) {
