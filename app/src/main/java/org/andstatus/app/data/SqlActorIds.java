@@ -41,8 +41,7 @@ public class SqlActorIds {
         if (timeline.isCombined()) {
             return SqlActorIds.fromIds(MyContextHolder.get().users().myActors.keySet());
         } else if (timeline.getTimelineType().isAtOrigin()) {
-            return SqlActorIds.fromActors(MyContextHolder.get().users().myActors.values().stream()
-                    .filter(actor -> actor.origin.equals(timeline.getOrigin())).collect(toList()));
+            return SqlActorIds.EMPTY;
         } else {
             return SqlActorIds.fromIds(timeline.actor.user.actorIds);
         }
