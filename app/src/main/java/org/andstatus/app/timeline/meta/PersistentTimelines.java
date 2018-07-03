@@ -92,8 +92,13 @@ public class PersistentTimelines {
 
 
     @NonNull
+    public Timeline forUser(@NonNull TimelineType timelineType, long actorId) {
+        return get(0, timelineType, actorId, Origin.EMPTY, "");
+    }
+
+    @NonNull
     public Timeline get(@NonNull TimelineType timelineType, long actorId, @NonNull Origin origin) {
-        return get(timelineType, actorId, origin, "");
+        return get(0, timelineType, actorId, origin, "");
     }
 
     @NonNull
@@ -121,7 +126,7 @@ public class PersistentTimelines {
         if (ma.isValidAndSucceeded()) {
             for (Timeline timeline : values()) {
                 if (timeline.isSyncedAutomatically() &&
-                        ((!timeline.getTimelineType().isAtOrigin() && timeline.getMyAccount().equals(ma)) ||
+                        ((!timeline.getTimelineType().isAtOrigin() && timeline.myAccountToSync.equals(ma)) ||
                                 timeline.getTimelineType().isAtOrigin() && timeline.getOrigin().equals(ma.getOrigin())) &&
                         timeline.isTimeToAutoSync()) {
                     timelines.add(timeline);
@@ -135,7 +140,7 @@ public class PersistentTimelines {
     public Stream<Timeline> toTimelinesToSync(Timeline timelineToSync) {
         if (timelineToSync.isSyncableForOrigins()) {
             return myContext.origins().originsToSync(
-                    timelineToSync.getMyAccount().getOrigin(), true, timelineToSync.hasSearchQuery())
+                    timelineToSync.myAccountToSync.getOrigin(), true, timelineToSync.hasSearchQuery())
                     .stream().map(origin -> timelineToSync.cloneForOrigin(myContext, origin));
         } else if (timelineToSync.isSyncableForAccounts()) {
             return myContext.accounts().accountsToSync()
@@ -160,7 +165,7 @@ public class PersistentTimelines {
     public void onAccountDelete(MyAccount ma) {
         List<Timeline> toRemove = new ArrayList<>();
         for (Timeline timeline : values()) {
-            if (timeline.getMyAccount().equals(ma)) {
+            if (timeline.myAccountToSync.equals(ma)) {
                 timeline.delete(myContext);
                 toRemove.add(timeline);
             }

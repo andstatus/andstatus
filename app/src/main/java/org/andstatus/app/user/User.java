@@ -27,6 +27,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
@@ -36,6 +37,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -148,5 +151,12 @@ public class User {
 
     public void setKnownAs(String knownAs) {
         this.knownAs = knownAs;
+    }
+
+    public Set<Origin> knownInOrigins(MyContext myContext) {
+        return actorIds.stream().map(id -> Actor.load(myContext, id))
+                .map(actor -> actor.origin)
+                .filter(Origin::isValid)
+                .collect(Collectors.toSet());
     }
 }

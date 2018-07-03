@@ -21,7 +21,6 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -55,6 +54,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -112,8 +113,11 @@ public class Actor implements Comparable<Actor> {
 
     public static Actor load(@NonNull MyContext myContext, long actorId, Supplier<Actor> supplier) {
         if (actorId == 0) return supplier.get();
+
         Actor actor1 = myContext.users().actors.getOrDefault(actorId, Actor.EMPTY);
-        return actor1.nonEmpty() ? actor1 : loadInternal(myContext, actorId, supplier);
+        return actor1.nonEmpty()
+                ? actor1
+                : loadInternal(myContext, actorId, supplier);
     }
 
     private static Actor loadInternal(@NonNull MyContext myContext, long actorId, Supplier<Actor> supplier) {
@@ -121,7 +125,8 @@ public class Actor implements Comparable<Actor> {
                 + " FROM " + Actor.getActorAndUserSqlTables()
                 + " WHERE " + ActorTable.TABLE_NAME + "." + ActorTable._ID + "=" + actorId;
         final Function<Cursor, Actor> function = cursor -> fromCursor(myContext, cursor);
-        return MyQuery.get(myContext, sql, function).stream().findFirst().orElseGet(supplier);
+        Actor actor = MyQuery.get(myContext, sql, function).stream().findFirst().orElseGet(supplier);
+        return actor;
     }
 
     @NonNull
@@ -161,6 +166,7 @@ public class Actor implements Comparable<Actor> {
                 + ", " + ActorTable.TABLE_NAME + "." + ActorTable.REAL_NAME
                 + ", " + ActorTable.TABLE_NAME + "." + ActorTable.USERNAME
                 + ", " + ActorTable.TABLE_NAME + "." + ActorTable.WEBFINGER_ID
+                + ", " + ActorTable.TABLE_NAME + "." + ActorTable.UPDATED_DATE
                 + ", " + UserTable.TABLE_NAME + "." + UserTable.IS_MY
                 + ", " + UserTable.TABLE_NAME + "." + UserTable.KNOWN_AS
                 + (withAvatar ? ", " + ProjectionMap.ACTORLIST.get(DownloadTable.AVATAR_FILE_NAME) : "");
@@ -178,6 +184,7 @@ public class Actor implements Comparable<Actor> {
             actor.setRealName(DbUtils.getString(cursor, ActorTable.REAL_NAME));
             actor.setUsername(DbUtils.getString(cursor, ActorTable.USERNAME));
             actor.setWebFingerId(DbUtils.getString(cursor, ActorTable.WEBFINGER_ID));
+            actor.setUpdatedDate(DbUtils.getLong(cursor, ActorTable.UPDATED_DATE));
             actor.user = User.fromCursor(myContext, cursor);
             actor.avatarFile = AvatarFile.fromCursor(actorId, cursor);
             myContext.users().addIfAbsent(actor);
@@ -564,7 +571,7 @@ public class Actor implements Comparable<Actor> {
     }
 
     public void setUpdatedDate(long updatedDate) {
-        this.updatedDate = updatedDate;
+        this.updatedDate = updatedDate < SOME_TIME_AGO ? SOME_TIME_AGO : updatedDate;
     }
 
     @Override
@@ -656,11 +663,7 @@ public class Actor implements Comparable<Actor> {
     public void loadFromInternet() {
         MyLog.v(this, () -> "Actor " + this + " will be loaded from the Internet");
         MyServiceManager.sendForegroundCommand(
-                CommandData.newActorCommand(
-                        CommandEnum.GET_ACTOR,
-                        MyAccount.EMPTY, origin,
-                        actorId,
-                        getUsername()));
+                CommandData.newActorCommand(CommandEnum.GET_ACTOR, actorId, getUsername()));
     }
 
    public boolean isPublic() {

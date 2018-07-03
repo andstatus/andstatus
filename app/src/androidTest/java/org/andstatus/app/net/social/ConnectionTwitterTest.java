@@ -210,7 +210,7 @@ public class ConnectionTwitterTest {
 
         MyAccount ma = demoData.getMyAccount(connectionData.getAccountName().toString());
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                CommandData.newActorCommand(CommandEnum.FOLLOW, ma, ma.getOrigin(), 123, ""));
+                CommandData.actOnActorCommand(CommandEnum.FOLLOW, ma, 123, ""));
         DataUpdater di = new DataUpdater(executionContext);
         di.onActivity(activity);
         long friendId = MyQuery.oidToId(MyContextHolder.get(), OidEnum.ACTOR_OID, ma.getOriginId(), actorOid);

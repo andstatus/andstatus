@@ -90,7 +90,7 @@ public class AttachmentDownloaderTest {
         if (mockNetworkError) {
             loader.connectionMock = new ConnectionTwitterGnuSocialMock(new ConnectionException("Mocked IO exception"));
         }
-        CommandData commandData = CommandData.newCommand(CommandEnum.GET_AVATAR);
+        CommandData commandData = CommandData.newActorCommand(CommandEnum.GET_AVATAR, 0, "someActor");
         loader.load(commandData);
 
         DownloadData data = DownloadData.fromId(dataIn.getDownloadId());

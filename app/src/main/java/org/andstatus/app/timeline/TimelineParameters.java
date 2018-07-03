@@ -139,7 +139,7 @@ public class TimelineParameters {
     public String toString() {
         return MyLog.formatKeyValue(this,
                 toSummary()
-                + ", account=" + timeline.getMyAccount().getAccountName()
+                + ", account=" + timeline.myAccountToSync.getAccountName()
                 + (timeline.getActorId() == 0 ? "" : ", selectedActorId=" + timeline.getActorId())
             //    + ", projection=" + Arrays.toString(mProjection)
                 + (minDate > 0 ? ", minDate=" + MyLog.formatDateTime(minDate) : "")
@@ -223,7 +223,7 @@ public class TimelineParameters {
 
     @NonNull
     public MyAccount getMyAccount() {
-        return timeline.getMyAccount();
+        return timeline.myAccountToSync;
     }
 
     public void rememberItemDateLoaded(long date) {

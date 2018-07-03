@@ -18,7 +18,6 @@ package org.andstatus.app.note;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 import android.text.style.URLSpan;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -227,7 +226,7 @@ public class NoteContextMenu extends MyContextMenu {
             }
 
             if (noteForAnyAccount.isLoaded()) {
-                switch (getActingAccount().numberOfAccountsOfThisOrigin()) {
+                switch ( (int) getActingAccount().numberOfSucceededOfThisOrigin(getMyContext())) {
                     case 0:
                     case 1:
                         break;

@@ -120,7 +120,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
 
             long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
                     TimelineTable._ID, TimelineTable.ACTOR_ID + "=" + ma.getActorId());
-            if (timelineId == 0) addDefaultForAccount(ma);
+            if (timelineId == 0) addDefaultForMyUser(ma);
         }
     }
 
@@ -146,9 +146,9 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
         }
     }
 
-    public void addDefaultForAccount(MyAccount myAccount) {
+    public void addDefaultForMyUser(MyAccount myAccount) {
         for (TimelineType timelineType : TimelineType.getDefaultMyAccountTimelineTypes()) {
-            timelines().get(timelineType, myAccount.getActorId(), Origin.EMPTY).save(myContext);
+            timelines().forUser(timelineType, myAccount.getActorId()).save(myContext);
         }
     }
 

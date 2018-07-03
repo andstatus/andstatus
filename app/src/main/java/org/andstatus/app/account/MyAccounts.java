@@ -27,6 +27,7 @@ import org.json.JSONObject;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -230,7 +231,7 @@ public class MyAccounts {
     }
 
     /**
-     * Return first verified and autoSynced MyAccount of the provided originId.
+     * Return first verified and autoSynced MyAccount of the provided origin.
      * If not auto synced, at least verified and succeeded,
      * If there is no verified account, any account of this Origin is been returned.
      * Otherwise invalid account is returned;
@@ -239,24 +240,74 @@ public class MyAccounts {
      */
     @NonNull
     public MyAccount getFirstSucceededForOrigin(@NonNull Origin origin) {
+        return getFirstSucceededForOriginsStrict(Collections.singletonList(origin));
+    }
+
+    /**
+     * Return first verified and autoSynced MyAccount of the provided origins.
+     * If not auto synced, at least verified and succeeded,
+     * If there is no verified account, any account of this Origin is been returned.
+     * Otherwise invalid account is returned;
+     * @param origins May be EMPTY to search in any Origin
+     * @return Invalid account if not found
+     */
+    @NonNull
+    public MyAccount getFirstSucceededForOrigins(@NonNull Collection<Origin> origins) {
+        return getFirstSucceededForOriginsStrict(origins.isEmpty() ? Collections.singletonList(Origin.EMPTY) : origins);
+    }
+
+    /**
+     * Return first verified and autoSynced MyAccount of the provided origins.
+     * If not auto synced, at least verified and succeeded,
+     * If there is no verified account, any account of this Origin is been returned.
+     * Otherwise invalid account is returned;
+     * @param origins May contain Origin.EMPTY to search in any Origin
+     * @return Invalid account if not found
+     */
+    @NonNull
+    private MyAccount getFirstSucceededForOriginsStrict(@NonNull Collection<Origin> origins) {
         MyAccount ma = MyAccount.EMPTY;
+        MyAccount maSucceeded = MyAccount.EMPTY;
+        MyAccount maSynced = MyAccount.EMPTY;
         for (MyAccount myAccount : myAccounts) {
-            if (!origin.isValid() || myAccount.getOrigin().equals(origin)) {
-                if (!ma.isValid()) {
-                    ma = myAccount;
-                }
-                if (myAccount.isValidAndSucceeded()) {
-                    if (!ma.isValidAndSucceeded()) {
+            for (Origin origin : origins) {
+                if (!origin.isValid() || myAccount.getOrigin().equals(origin)) {
+                    if (!ma.isValid()) {
                         ma = myAccount;
                     }
-                    if (myAccount.isSyncedAutomatically()) {
-                        ma = myAccount;
-                        break;
+                    if (myAccount.isValidAndSucceeded()) {
+                        if (!ma.isValidAndSucceeded()) {
+                            maSucceeded = myAccount;
+                        }
+                        if (myAccount.isSyncedAutomatically()) {
+                            maSynced = myAccount;
+                            break;
+                        }
                     }
                 }
+                if (maSynced.isValid()) return maSynced;
             }
         }
-        return ma;
+        return maSynced.isValid()
+                ? maSynced
+                : (maSucceeded.isValid()
+                ? maSucceeded
+                : ma);
+    }
+
+    /**
+     * Return verified and autoSynced MyAccounts of the provided origins.
+     * @param origins May be empty to search in any Origin
+     * @return Emty Set if not found
+     */
+    @NonNull
+    public Set<MyAccount> getSucceededForOrigins(@NonNull Collection<Origin> origins) {
+        return origins.isEmpty()
+                ? myAccounts.stream().filter(MyAccount::isValidAndSucceeded).collect(Collectors.toSet())
+                : myAccounts.stream()
+                    .filter(ma -> origins.contains(ma.getOrigin()))
+                    .filter(MyAccount::isValidAndSucceeded)
+                    .collect(Collectors.toSet());
     }
 
     public boolean hasSyncedAutomatically() {

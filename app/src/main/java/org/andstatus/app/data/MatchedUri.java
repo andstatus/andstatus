@@ -179,7 +179,7 @@ public enum MatchedUri {
     }
 
     public static Uri getTimelineUri(Timeline timeline) {
-        Uri uri = getBaseAccountUri(timeline.getMyAccount().getActorId(), NoteTable.TABLE_NAME);
+        Uri uri = getBaseAccountUri(timeline.myAccountToSync.getActorId(), NoteTable.TABLE_NAME);
         uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + timeline.getTimelineType().save());
         uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + timeline.getOrigin().getId());
         uri = Uri.withAppendedPath(uri, ACTOR_SEGMENT);

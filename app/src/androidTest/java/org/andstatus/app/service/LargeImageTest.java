@@ -64,7 +64,7 @@ public class LargeImageTest {
         );
         assertEquals("Image URI stored", activity.getNote().attachments.list.get(0).getUri(), dd.getUri());
 
-        CommandData commandData = CommandData.newCommand(CommandEnum.GET_AVATAR);
+        CommandData commandData = CommandData.newActorCommand(CommandEnum.GET_AVATAR, 34234, "");
         AttachmentDownloader loader = new AttachmentDownloader(dd);
         ConnectionTwitterGnuSocialMock connection = new ConnectionTwitterGnuSocialMock();
         InputStream inputStream = InstrumentationRegistry.getInstrumentation().getContext().getResources()

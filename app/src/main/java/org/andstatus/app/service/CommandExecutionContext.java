@@ -30,7 +30,7 @@ public class CommandExecutionContext {
     }
 
     public MyAccount getMyAccount() {
-        MyAccount myAccount = getTimeline().getMyAccountToSync(myContext);
+        MyAccount myAccount = getTimeline().myAccountToSync;
         if (!myAccount.isValid()) {
             myAccount = myContext.accounts().getFirstSucceeded();
         }

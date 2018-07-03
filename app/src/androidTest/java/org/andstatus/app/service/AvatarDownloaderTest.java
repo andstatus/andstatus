@@ -175,7 +175,7 @@ public class AvatarDownloaderTest {
         if (mockNetworkError) {
             loader.connectionMock = new ConnectionTwitterGnuSocialMock(new ConnectionException("Mocked IO exception"));
         }
-        CommandData commandData = CommandData.newCommand(CommandEnum.GET_AVATAR);
+        CommandData commandData = CommandData.newActorCommand(CommandEnum.GET_AVATAR, 123, "user123");
         loader.load(commandData);
 
         DownloadData data = AvatarData.getForActor(ma.getActorId());

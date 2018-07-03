@@ -563,7 +563,7 @@ public class MyService extends Service {
                 return;
             }
             CommandQueue.addToPreQueue(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
-                    commandDataExecuted.getTimeline().getMyAccount(), TimelineType.HOME)
+                    commandDataExecuted.getTimeline().myAccountToSync, TimelineType.HOME)
                     .setInForeground(commandDataExecuted.isInForeground()));
         }
         

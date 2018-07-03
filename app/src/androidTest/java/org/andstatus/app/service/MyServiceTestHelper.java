@@ -23,7 +23,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
     private volatile HttpConnectionMock httpConnectionMock;
     volatile long connectionInstanceId;
 
-    private volatile CommandData listenedCommand = CommandData.getEmpty();
+    private volatile CommandData listenedCommand = CommandData.EMPTY;
     volatile long executionStartCount = 0;
     volatile long executionEndCount = 0;
     public volatile boolean serviceStopped = false;

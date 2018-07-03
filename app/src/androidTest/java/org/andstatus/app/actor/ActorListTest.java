@@ -43,6 +43,8 @@ import org.junit.Test;
 import java.util.List;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
+import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -137,7 +139,11 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         assertEquals("Following (friends) count", expected.followingCount, actual.followingCount);
         assertEquals("Followers count", expected.followersCount, actual.followersCount);
         assertEquals("Created at", expected.getCreatedDate(), actual.getCreatedDate());
-        assertEquals("Updated at", expected.getUpdatedDate(), actual.getUpdatedDate());
+        assertEquals("Updated at",
+                expected.getUpdatedDate() == DATETIME_MILLIS_NEVER
+                    ? SOME_TIME_AGO
+                    : expected.getUpdatedDate(),
+                actual.getUpdatedDate());
     }
 
     static Actor getByActorOid(List<ActorViewItem> listItems, String oid) {

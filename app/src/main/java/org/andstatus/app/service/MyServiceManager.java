@@ -80,7 +80,7 @@ public class MyServiceManager extends BroadcastReceiver {
         switch (MyAction.fromIntent(intent)) {
             case BOOT_COMPLETED:
                 MyLog.d(this, "Trying to start service on boot");
-                sendCommand(CommandData.getEmpty());
+                sendCommand(CommandData.EMPTY);
                 break;
             case SYNC:
                 SyncInitiator.tryToSync(context);

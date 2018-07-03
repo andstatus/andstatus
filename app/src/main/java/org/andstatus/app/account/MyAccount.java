@@ -603,10 +603,10 @@ public final class MyAccount implements Comparable<MyAccount> {
         return Builder.getEmptyAccount(myContext, accountName);
     }
 
-    public static MyAccount fromBundle(Bundle bundle) {
-        return bundle == null ? EMPTY :
-                MyContextHolder.get().accounts().fromAccountName(
-                        bundle.getString(IntentExtra.ACCOUNT_NAME.key));
+    public static MyAccount fromBundle(MyContext myContext, Bundle bundle) {
+        return bundle == null
+                ? EMPTY
+                : myContext.accounts().fromAccountName(bundle.getString(IntentExtra.ACCOUNT_NAME.key));
     }
 
     @Override
@@ -914,14 +914,11 @@ public final class MyAccount implements Comparable<MyAccount> {
         return accountButtonText;
     }
 
-    public int numberOfAccountsOfThisOrigin() {
-        int count = 0;
-        for (MyAccount persistentAccount : MyContextHolder.get().accounts().get()) {
-            if (persistentAccount.getOrigin().equals(this.getOrigin())) {
-                count++;
-            }
-        }
-        return count;
+    public long numberOfSucceededOfThisOrigin(MyContext myContext) {
+        return myContext.accounts().get().stream()
+                .filter(ma -> ma.getOrigin().equals(this.getOrigin()))
+                .filter(MyAccount::isValidAndSucceeded)
+                .count();
     }
     
     /**
@@ -976,7 +973,7 @@ public final class MyAccount implements Comparable<MyAccount> {
 
     public boolean hasAnyTimelines(MyContext myContext) {
         for (Timeline timeline : myContext.timelines().values()) {
-            if (timeline.getMyAccount().equals(this)) {
+            if (timeline.myAccountToSync.equals(this)) {
                 return true;
             }
         }

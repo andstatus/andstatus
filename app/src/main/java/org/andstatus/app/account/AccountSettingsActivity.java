@@ -197,7 +197,7 @@ public class AccountSettingsActivity extends MyActivity {
             if (state.originShouldBeSelected) {
                 EnumSelector.newInstance(ActivityRequestCode.SELECT_ORIGIN_TYPE, OriginType.class).show(this);
             } else if (state.accountShouldBeSelected) {
-                AccountSelector.selectAccount(this, ActivityRequestCode.SELECT_ACCOUNT, 0);
+                AccountSelector.selectAccountOfOrigin(this, ActivityRequestCode.SELECT_ACCOUNT, 0);
                 message += "Select account; ";
             }
             message += "action=" + state.getAccountAction() + "; ";
@@ -1261,7 +1261,7 @@ public class AccountSettingsActivity extends MyActivity {
                             AccountSettingsActivity.this);
                     status = ResultStatus.ACCOUNT_VALID;
                     final Timeline timeline = myContext.timelines()
-                            .get(TimelineType.HOME, myAccount.getActorId(), Origin.EMPTY);
+                            .forUser(TimelineType.HOME, myAccount.getActorId());
                     if (timeline.isTimeToAutoSync()) {
                         MyServiceManager.sendForegroundCommand(
                                 CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, timeline)

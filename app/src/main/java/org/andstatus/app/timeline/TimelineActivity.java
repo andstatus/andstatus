@@ -61,7 +61,6 @@ import org.andstatus.app.note.NoteContextMenu;
 import org.andstatus.app.note.NoteContextMenuContainer;
 import org.andstatus.app.note.NoteEditorListActivity;
 import org.andstatus.app.note.NoteViewItem;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
@@ -314,7 +313,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     /** View.OnClickListener */
     public void onSelectAccountButtonClick(View item) {
         if (myContext.accounts().size() > 1) {
-            AccountSelector.selectAccount(TimelineActivity.this, ActivityRequestCode.SELECT_ACCOUNT, 0);
+            AccountSelector.selectAccountOfOrigin(TimelineActivity.this, ActivityRequestCode.SELECT_ACCOUNT, 0);
         }
         closeDrawer();
     }
@@ -594,7 +593,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         if (!getParamsNew().parseUri(intentNew.getData(), searchQuery)) {
             getParamsNew().setTimeline(myContext.timelines().getDefault());
         }
-        setCurrentMyAccount(getParamsNew().getTimeline().getMyAccount(), getParamsNew().getTimeline().getOrigin());
+        setCurrentMyAccount(getParamsNew().getTimeline().myAccountToSync, getParamsNew().getTimeline().getOrigin());
         actorProfileViewer.ensureView(getParamsNew().getTimeline().withActorProfile());
 
         if (Intent.ACTION_SEND.equals(intentNew.getAction())) {
@@ -615,7 +614,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 + (!StringUtils.isEmpty(mNoteNameToShareViaThisApp) ? "; title:'" + mNoteNameToShareViaThisApp +"'" : "")
                 + (!StringUtils.isEmpty(mContentToShareViaThisApp) ? "; text:'" + mContentToShareViaThisApp +"'" : "")
                 + (!UriUtils.isEmpty(mMediaToShareViaThisApp) ? "; media:" + mMediaToShareViaThisApp.toString() : ""));
-        AccountSelector.selectAccount(this, ActivityRequestCode.SELECT_ACCOUNT_TO_SHARE_VIA, 0);
+        AccountSelector.selectAccountOfOrigin(this, ActivityRequestCode.SELECT_ACCOUNT_TO_SHARE_VIA, 0);
     }
 
     private void updateScreen() {
@@ -655,7 +654,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                     TimelineActivity.startForTimeline(
                         getMyContext(), this,
                         getMyContext().timelines()
-                                .get(TimelineType.SENT, getCurrentMyAccount().getActorId(), Origin.EMPTY),
+                                .forUser(TimelineType.SENT, getCurrentMyAccount().getActorId()),
                         getCurrentMyAccount(), false);
                     closeDrawer();
                     }
@@ -943,7 +942,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     private void onNoRowsLoaded(@NonNull Timeline timeline) {
-        MyAccount ma = timeline.getMyAccount();
+        MyAccount ma = timeline.myAccountToSync;
         if (!timeline.isSyncable() || !timeline.isTimeToAutoSync() || !ma.isValidAndSucceeded()) {
             return;
         }
@@ -1146,8 +1145,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         MyAccount currentMyAccountToSet = MyAccount.EMPTY;
         if (newCurrentMyAccount != null && newCurrentMyAccount.isValid()) {
             currentMyAccountToSet = newCurrentMyAccount;
-        } else if (timeline.getMyAccount().isValid()) {
-            currentMyAccountToSet = timeline.getMyAccount();
+        } else if (timeline.myAccountToSync.isValid()) {
+            currentMyAccountToSet = timeline.myAccountToSync;
         }
         if (currentMyAccountToSet.isValid()) {
             setCurrentMyAccount(currentMyAccountToSet, currentMyAccountToSet.getOrigin());

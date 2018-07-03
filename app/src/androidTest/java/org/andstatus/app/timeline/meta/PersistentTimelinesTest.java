@@ -183,11 +183,14 @@ public class PersistentTimelinesTest {
         Timeline timeline1 = myContext.timelines()
                 .filter(true, TriState.FALSE, timelineType, ma1.getActor(), ma1.getOrigin())
                 .findFirst().orElseGet(() ->
-                    myContext.timelines().get(timelineType, ma1.getActorId(), ma1.getOrigin(), ""));
+                        myContext.timelines().get(timelineType, ma1.getActorId(), ma1.getOrigin())
+                );
+        assertEquals("Should be not combined " + timeline1, false, timeline1.isCombined());
         Timeline timeline2 = timeline1.fromMyAccount(myContext, ma2);
-        assertEquals("Should be not combined " + timeline2, false, timeline2.isCombined());
+        assertEquals("Should be not combined \n" + timeline2 + "from:\n" + timeline1 ,
+                false, timeline2.isCombined());
         if (timelineType.isForUser()) {
-            assertEquals("Account should change " + timeline2, ma2, timeline2.getMyAccount());
+            assertEquals("Account should change " + timeline2, ma2, timeline2.myAccountToSync);
         } else {
             assertEquals("Origin should change " + timeline2, ma2.getOrigin(), timeline2.getOrigin());
         }
@@ -213,17 +216,17 @@ public class PersistentTimelinesTest {
 
     @Test
     public void syncForAllAccounts() {
-        Timeline combined = myContext.timelines().get(TimelineType.NOTIFICATIONS, 0, Origin.EMPTY, "");
+        Timeline combined = myContext.timelines().forUser(TimelineType.NOTIFICATIONS, 0);
         assertEquals("Should be combined: " + combined, true, combined.isCombined());
         assertNotEquals("Should exist: " + combined, 0, combined.getId());
-        assertEquals("Should not have account: " + combined, MyAccount.EMPTY, combined.getMyAccount());
+        assertEquals("Should not have account: " + combined, MyAccount.EMPTY, combined.myAccountToSync);
 
         final List<MyAccount> accountsToSync = myContext.accounts().accountsToSync();
         assertThat(accountsToSync, is(not(empty())));
         boolean syncableFound = false;
         for (MyAccount accountToSync : accountsToSync) {
             Timeline forOneAccount = combined.cloneForAccount(myContext, accountToSync);
-            assertEquals("Should have selected account: " + forOneAccount, accountToSync, forOneAccount.getMyAccount());
+            assertEquals("Should have selected account: " + forOneAccount, accountToSync, forOneAccount.myAccountToSync);
             assertEquals("Timeline type: " + forOneAccount, combined.getTimelineType(), forOneAccount.getTimelineType());
             if (accountToSync.getOrigin().getOriginType().isTimelineTypeSyncable(forOneAccount.getTimelineType())) {
                 assertEquals("Should be syncable: " + forOneAccount, true, forOneAccount.isSyncable());

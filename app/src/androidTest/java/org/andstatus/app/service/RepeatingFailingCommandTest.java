@@ -16,7 +16,6 @@
 
 package org.andstatus.app.service;
 
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.DemoNoteInserter;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.util.MyLog;
@@ -70,8 +69,7 @@ public class RepeatingFailingCommandTest extends MyServiceTest {
 
     // We need to generate new command in order to have new unique ID for it. This is how it works in app itself
     private void setAndSendGetAvatarCommand(Actor actor, boolean manuallyLaunched) {
-        final CommandData command = CommandData.newActorCommand(
-                CommandEnum.GET_AVATAR, MyAccount.EMPTY, actor.origin, actor.actorId, "");
+        final CommandData command = CommandData.newActorCommand(CommandEnum.GET_AVATAR, actor.actorId, "");
         if (manuallyLaunched) {
             command.setManuallyLaunched(true);
         }

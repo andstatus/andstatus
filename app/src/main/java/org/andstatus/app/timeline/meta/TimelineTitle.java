@@ -64,8 +64,8 @@ public class TimelineTitle {
         timelineTitle.title = toTimelineTitle(myContext, timeline, currentMyAccount);
         timelineTitle.subTitle = toTimelineSubtitle(myContext, timeline, currentMyAccount);
 
-        timelineTitle.accountName = timeline.getMyAccount().isValid() ?
-                timeline.getMyAccount().toAccountButtonText(myContext) : "";
+        timelineTitle.accountName = timeline.myAccountToSync.isValid() ?
+                timeline.myAccountToSync.toAccountButtonText(myContext) : "";
         timelineTitle.originName = timeline.getOrigin().isValid() ?
                 timeline.getOrigin().getName() : "";
 

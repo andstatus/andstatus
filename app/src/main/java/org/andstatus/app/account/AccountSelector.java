@@ -21,22 +21,26 @@ import android.os.Bundle;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.TextView;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.view.MySimpleAdapter;
 import org.andstatus.app.view.SelectorDialog;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -45,9 +49,15 @@ public class AccountSelector extends SelectorDialog {
     private static final String KEY_VISIBLE_NAME = "visible_name";
     private static final String KEY_SYNC_AUTO = "sync_auto";
 
-    public static void selectAccount(FragmentActivity activity, ActivityRequestCode requestCode, long originId) {
+    public static void selectAccountOfOrigin(FragmentActivity activity, ActivityRequestCode requestCode, long originId) {
         SelectorDialog selector = new AccountSelector();
         selector.setRequestCode(requestCode).putLong(IntentExtra.ORIGIN_ID.key, originId);
+        selector.show(activity);
+    }
+
+    public static void selectAccountForActor(FragmentActivity activity, ActivityRequestCode requestCode, Actor actor) {
+        SelectorDialog selector = new AccountSelector();
+        selector.setRequestCode(requestCode).putLong(IntentExtra.ACTOR_ID.key, actor.actorId);
         selector.show(activity);
     }
 
@@ -77,13 +87,20 @@ public class AccountSelector extends SelectorDialog {
     private List<MyAccount> newListData() {
         long originId = Optional.ofNullable(getArguments())
                 .map(bundle -> bundle.getLong(IntentExtra.ORIGIN_ID.key)).orElse(0L);
-        List<MyAccount> listData = new ArrayList<>();
-        for (MyAccount ma : MyContextHolder.get().accounts().get()) {
-            if (originId==0 || ma.getOriginId() == originId) {
-                listData.add(ma);
-            }
-        }
-        return listData;
+        final Origin origin = MyContextHolder.get().origins().fromId(originId);
+        Set<Origin> origins = origin.isValid()
+                ? Collections.singleton(origin)
+                : getOriginsForActor();
+        Predicate<MyAccount> predicate = origins.isEmpty()
+                ? ma -> true
+                : ma -> origins.contains(ma.getOrigin());
+        return MyContextHolder.get().accounts().get().stream().filter(predicate).collect(Collectors.toList());
+    }
+
+    private Set<Origin> getOriginsForActor() {
+        final Long actorId = Optional.ofNullable(getArguments())
+                .map(bundle -> bundle.getLong(IntentExtra.ACTOR_ID.key)).orElse(0L);
+        return Actor.load(MyContextHolder.get(), actorId).user.knownInOrigins(MyContextHolder.get());
     }
 
     private MySimpleAdapter newListAdapter(List<MyAccount> listData) {

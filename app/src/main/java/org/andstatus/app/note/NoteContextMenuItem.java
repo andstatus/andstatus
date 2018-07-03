@@ -36,7 +36,6 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.list.ContextMenuItem;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
@@ -194,7 +193,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         NoteEditorData executeAsync(NoteContextMenu menu) {
             return NoteEditorData.newEmpty(MyAccount.EMPTY)
                     .setTimeline(menu.getActivity().getMyContext().timelines()
-                            .get(TimelineType.SENT, menu.getActorId(), Origin.EMPTY));
+                            .forUser(TimelineType.SENT, menu.getActorId()));
         }
 
         @Override
@@ -207,7 +206,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         NoteEditorData executeAsync(NoteContextMenu menu) {
             return NoteEditorData.newEmpty(MyAccount.EMPTY)
                     .setTimeline(menu.getActivity().getMyContext().timelines()
-                            .get(TimelineType.SENT, menu.getAuthorId(), Origin.EMPTY));
+                            .forUser(TimelineType.SENT, menu.getAuthorId()));
         }
 
         @Override
@@ -218,25 +217,25 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     FOLLOW_ACTOR(false, true) {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            sendActorCommand(CommandEnum.FOLLOW, menu.getOrigin(), menu.getActorId());
+            sendActOnActorCommand(CommandEnum.FOLLOW, menu.getActingAccount(), menu.getActorId());
         }
     },
     UNDO_FOLLOW_ACTOR(false, true) {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            sendActorCommand(CommandEnum.UNDO_FOLLOW, menu.getOrigin(), menu.getActorId());
+            sendActOnActorCommand(CommandEnum.UNDO_FOLLOW, menu.getActingAccount(), menu.getActorId());
         }
     },
     FOLLOW_AUTHOR(false, true) {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            sendActorCommand(CommandEnum.FOLLOW, menu.getOrigin(), menu.getAuthorId());
+            sendActOnActorCommand(CommandEnum.FOLLOW, menu.getActingAccount(), menu.getAuthorId());
         }
     },
     UNDO_FOLLOW_AUTHOR(false, true) {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            sendActorCommand(CommandEnum.UNDO_FOLLOW, menu.getOrigin(), menu.getAuthorId());
+            sendActOnActorCommand(CommandEnum.UNDO_FOLLOW, menu.getActingAccount(), menu.getAuthorId());
         }
     },
     PROFILE(false, false),
@@ -256,7 +255,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     ACT_AS(false, true) {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            AccountSelector.selectAccount(menu.getActivity(),
+            AccountSelector.selectAccountOfOrigin(menu.getActivity(),
                     ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS, menu.getOrigin().getId());
         }
     },
@@ -433,9 +432,9 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         // Empty
     }
     
-    void sendActorCommand(CommandEnum command, Origin origin, long actorId) {
+    void sendActOnActorCommand(CommandEnum command, MyAccount myAccount, long actorId) {
         MyServiceManager.sendManualForegroundCommand(
-                CommandData.newActorCommand(command, MyAccount.EMPTY, origin, actorId, ""));
+                CommandData.actOnActorCommand(command, myAccount, actorId, ""));
     }
 
     void sendNoteCommand(CommandEnum command, NoteEditorData editorData) {

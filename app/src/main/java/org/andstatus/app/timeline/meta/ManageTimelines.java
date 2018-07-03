@@ -175,7 +175,7 @@ public class ManageTimelines extends LoadableListActivity {
                 setPosition(view, position);
                 final ManageTimelinesViewItem item = getItem(position);
                 MyUrlSpan.showText(view, R.id.title, item.timelineTitle.title, false, true);
-                MyAccount myAccount = item.timeline.getMyAccount();
+                MyAccount myAccount = item.timeline.myAccountToSync;
                 MyUrlSpan.showText(view, R.id.account, myAccount.isValid() ?
                         myAccount.toAccountButtonText(myContext) : "", false, true);
                 Origin origin = item.timeline.getOrigin();

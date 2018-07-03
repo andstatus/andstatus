@@ -75,6 +75,8 @@ public class PersistentOrigins {
      */
     @NonNull
     public Origin fromId(long originId) {
+        if (originId == 0) return Origin.EMPTY;
+
         for (Origin origin : mOrigins.values()) {
             if (origin.id == originId) {
                 return origin;

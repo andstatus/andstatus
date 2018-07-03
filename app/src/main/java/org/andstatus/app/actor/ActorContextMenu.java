@@ -30,6 +30,8 @@ import org.andstatus.app.timeline.ContextMenuHeader;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.view.MyContextMenu;
 
+import java.util.Set;
+
 public class ActorContextMenu extends MyContextMenu {
     public final NoteEditorContainer menuContainer;
 
@@ -45,10 +47,11 @@ public class ActorContextMenu extends MyContextMenu {
         if (getViewItem().isEmpty()) {
             return;
         }
-        MyAccount myActor = getSelectedActingAccount();
-        if (!myActor.isValid() || !myActor.getOrigin().equals(getOrigin())) {
-            setSelectedActingAccount(getMyContext().accounts().getFirstSucceededForOrigin(
-                    getOrigin()));
+        Set<Origin> origins = getViewItem().actor.user.knownInOrigins(getMyContext());
+
+        MyAccount myAccount = getSelectedActingAccount();
+        if (!myAccount.isValid() || !origins.contains(myAccount.getOrigin())) {
+            setSelectedActingAccount(getMyContext().accounts().getFirstSucceededForOrigins(origins));
         }
 
         int order = 0;
@@ -80,7 +83,7 @@ public class ActorContextMenu extends MyContextMenu {
                     ActorContextMenuItem.PRIVATE_NOTE.addTo(menu, menuGroup, order++,
                             R.string.menu_item_private_message);
                 }
-                switch (getActingAccount().numberOfAccountsOfThisOrigin()) {
+                switch (getMyContext().accounts().getSucceededForOrigins(origins).size()) {
                     case 0:
                     case 1:
                         break;
@@ -88,7 +91,8 @@ public class ActorContextMenu extends MyContextMenu {
                         ActorContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT.addTo(menu, menuGroup, order++,
                                 String.format(
                                         getActivity().getText(R.string.menu_item_act_as_user).toString(),
-                                        getActingAccount().firstOtherAccountOfThisOrigin().getShortestUniqueAccountName(getMyContext())));
+                                        getActingAccount().firstOtherAccountOfThisOrigin()
+                                                .getShortestUniqueAccountName(getMyContext())));
                         break;
                     default:
                         ActorContextMenuItem.ACT_AS.addTo(menu, menuGroup, order++, R.string.menu_item_act_as);

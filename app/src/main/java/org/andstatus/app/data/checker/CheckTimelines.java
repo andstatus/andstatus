@@ -40,7 +40,7 @@ class CheckTimelines extends DataChecker {
         try {
             new TimelineSaver(myContext).addDefaultCombined();
             for (MyAccount myAccount: myContext.accounts().get()) {
-                new TimelineSaver(myContext).addDefaultForAccount(myAccount);
+                new TimelineSaver(myContext).addDefaultForMyUser(myAccount);
             }
         } catch (Exception e) {
             String logMsg = "Error: " + e.getMessage();

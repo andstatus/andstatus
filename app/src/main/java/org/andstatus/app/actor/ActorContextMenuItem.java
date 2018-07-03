@@ -41,10 +41,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
     GET_ACTOR(true) {
         @Override
         NoteEditorData executeAsync(Params params) {
-            CommandData commandData = CommandData.newActorCommand(
-                    CommandEnum.GET_ACTOR,
-                    params.menu.getActingAccount(),
-                    params.menu.getOrigin(),
+            CommandData commandData = CommandData.newActorCommand(CommandEnum.GET_ACTOR,
                     params.menu.getViewItem().getActorId(),
                     params.menu.getViewItem().actor.getUsername());
             MyServiceManager.sendManualForegroundCommand(commandData);
@@ -78,7 +75,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
                     params.menu.getActivity().getMyContext(),
                     params.menu.getActivity(),
                     params.menu.getActivity().getMyContext().timelines()
-                            .get(TimelineType.SENT, params.menu.getViewItem().getActorId(), params.menu.getOrigin()),
+                            .forUser(TimelineType.SENT, params.menu.getViewItem().getActorId()),
                     params.menu.getActingAccount(), false);
             return super.executeAsync(params);
         }
@@ -86,13 +83,13 @@ public enum ActorContextMenuItem implements ContextMenuItem {
     FOLLOW() {
         @Override
         void executeOnUiThread(ActorContextMenu menu, NoteEditorData editorData) {
-            sendActorCommand(CommandEnum.FOLLOW, menu);
+            sendActOnActorCommand(CommandEnum.FOLLOW, menu);
         }
     },
     STOP_FOLLOWING() {
         @Override
         void executeOnUiThread(ActorContextMenu menu, NoteEditorData editorData) {
-            sendActorCommand(CommandEnum.UNDO_FOLLOW, menu);
+            sendActOnActorCommand(CommandEnum.UNDO_FOLLOW, menu);
         }
     },
     ACT_AS_FIRST_OTHER_ACCOUNT() {
@@ -105,8 +102,8 @@ public enum ActorContextMenuItem implements ContextMenuItem {
     ACT_AS() {
         @Override
         void executeOnUiThread(ActorContextMenu menu, NoteEditorData editorData) {
-            AccountSelector.selectAccount(menu.getActivity(),
-                    ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS, menu.getOrigin().getId());
+            AccountSelector.selectAccountForActor(menu.getActivity(),
+                    ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS, menu.getViewItem().getActor());
         }
     },
     FOLLOWERS(true) {
@@ -250,9 +247,9 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         menu.getActivity().startActivity(MyAction.VIEW_FOLLOWERS.getIntent(uri));
     }
 
-    void sendActorCommand(CommandEnum command, ActorContextMenu menu) {
+    void sendActOnActorCommand(CommandEnum command, ActorContextMenu menu) {
         MyServiceManager.sendManualForegroundCommand(
-                CommandData.newActorCommand(command, menu.getActingAccount(), menu.getOrigin(),
-                        menu.getViewItem().getActorId(), ""));
+                CommandData.actOnActorCommand(command, menu.getActingAccount(),
+                        menu.getViewItem().getActorId(), menu.getViewItem().actor.getUsername()));
     }
 }

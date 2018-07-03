@@ -22,7 +22,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.account.MyAccount;
@@ -63,14 +62,14 @@ public class Timeline implements Comparable<Timeline> {
 
     private final TimelineType timelineType;
     /** "Authenticated User" used to retrieve/post to... this Timeline */
-    private final MyAccount myAccount;
+    public final MyAccount myAccountToSync;
     /** An Actor as a parameter of this timeline.
-     * This may be the same as the Authenticated User ({@link #myAccount})
+     * This may be the same as the Authenticated User ({@link #myAccountToSync})
      * or some other User e.g. to get a list of messages by some other person/user of the Social Network
      */
     public final Actor actor;
     /** The Social Network of this timeline. Some timelines don't depend on
-     * an Authenticated User ({@link #myAccount}), e.g. {@link TimelineType#PUBLIC} - this
+     * an Authenticated User ({@link #myAccountToSync}), e.g. {@link TimelineType#PUBLIC} - this
      * timeline may be fetched by any authenticated user of this Social Network */
     private final Origin origin;
     /** Pre-fetched string to be used to present in UI */
@@ -215,12 +214,13 @@ public class Timeline implements Comparable<Timeline> {
     public static Timeline fromBundle(MyContext myContext, Bundle bundle) {
         if (bundle == null) return EMPTY;
         Timeline timeline = myContext.timelines().fromId(bundle.getLong(IntentExtra.TIMELINE_ID.key));
-        if (timeline.nonEmpty()) return timeline;
-        return myContext.timelines().get(
-                TimelineType.load(bundle.getString(IntentExtra.TIMELINE_TYPE.key)),
-                bundle.getLong(IntentExtra.ACTOR_ID.key),
-                myContext.origins().fromId(BundleUtils.fromBundle(bundle, IntentExtra.ORIGIN_ID)),
-                BundleUtils.getString(bundle, IntentExtra.SEARCH_QUERY));
+        return timeline.nonEmpty()
+                ? timeline
+                : myContext.timelines().get(
+                    TimelineType.load(bundle.getString(IntentExtra.TIMELINE_TYPE.key)),
+                    bundle.getLong(IntentExtra.ACTOR_ID.key),
+                    myContext.origins().fromId(BundleUtils.fromBundle(bundle, IntentExtra.ORIGIN_ID)),
+                    BundleUtils.getString(bundle, IntentExtra.SEARCH_QUERY));
     }
 
     public static Timeline fromParsedUri(MyContext myContext, ParsedUri parsedUri, String searchQueryIn) {
@@ -238,7 +238,7 @@ public class Timeline implements Comparable<Timeline> {
 
     private Timeline() {
         timelineType = TimelineType.UNKNOWN;
-        this.myAccount = MyAccount.EMPTY;
+        this.myAccountToSync = MyAccount.EMPTY;
         actor = Actor.EMPTY;
         origin = Origin.EMPTY;
         searchQuery = "";
@@ -255,12 +255,11 @@ public class Timeline implements Comparable<Timeline> {
         Objects.requireNonNull(origin);
         this.id = id;
         this.actor = fixedActor(myContext, timelineType, actorId);
-        this.myAccount = calcMyAccount(myContext, timelineType, actor);
         this.origin = fixedOrigin(timelineType, origin);
+        this.myAccountToSync = calcMyAccount(myContext, timelineType, this.origin, actor);
         this.searchQuery = StringUtils.isEmpty(searchQuery) ? "" : searchQuery.trim();
         this.isCombined = calcIsCombined(timelineType, this.origin);
         this.timelineType = fixedTimelineType(timelineType);
-        MyAccount myAccountToSync = getMyAccountToSync(myContext);
         this.isSyncable = calcIsSyncable(myAccountToSync);
         this.isSyncableAutomatically = this.isSyncable && myAccountToSync.isSyncedAutomatically();
         this.isSyncableForAccounts = calcIsSyncableForAccounts(myContext);
@@ -276,14 +275,6 @@ public class Timeline implements Comparable<Timeline> {
         return !isCombined() && timelineType.isSyncable()
                 && myAccountToSync.isValidAndSucceeded()
                 && myAccountToSync.getOrigin().getOriginType().isTimelineTypeSyncable(timelineType);
-    }
-
-    /** @return The best MyAccount to be used to sync this Timeline */
-    @NonNull
-    public MyAccount getMyAccountToSync(MyContext myContext) {
-        if (timelineType.isAtOrigin()) return myContext.accounts().getFirstSucceededForOrigin(getOrigin());
-        else if (myAccount.isValid()) return myAccount;
-        else return myContext.accounts().toSyncThisActor(actor);
     }
 
     private boolean calcIsSyncableForAccounts(MyContext myContext) {
@@ -303,8 +294,10 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     @NonNull
-    private MyAccount calcMyAccount(MyContext myContext, TimelineType timelineType, Actor actor) {
-        return timelineType.isAtOrigin() ? MyAccount.EMPTY : myContext.accounts().toSyncThisActor(actor);
+    private MyAccount calcMyAccount(MyContext myContext, TimelineType timelineType, Origin origin, Actor actor) {
+        return timelineType.isAtOrigin()
+                ? myContext.accounts().getFirstSucceededForOrigin(origin)
+                : myContext.accounts().toSyncThisActor(actor);
     }
 
     private Actor fixedActor(MyContext myContext, TimelineType timelineType, long actorId) {
@@ -384,7 +377,6 @@ public class Timeline implements Comparable<Timeline> {
     public void toCommandContentValues(ContentValues values) {
         values.put(CommandTable.TIMELINE_ID, id);
         values.put(CommandTable.TIMELINE_TYPE, timelineType.save());
-        values.put(CommandTable.ACCOUNT_ID, myAccount.getActorId());
         values.put(CommandTable.ACTOR_ID, actor.actorId);
         values.put(CommandTable.ORIGIN_ID, origin.getId());
         values.put(CommandTable.SEARCH_QUERY, searchQuery);
@@ -409,7 +401,7 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public Timeline fromMyAccount(MyContext myContext, MyAccount myAccountNew) {
-        if (isCombined() || myAccount.equals(myAccountNew)
+        if (isCombined() || myAccountToSync.equals(myAccountNew)
                 || (timelineType.isForUser() && actor.user.isMyUser() != TriState.TRUE)) return this;
         return myContext.timelines().get(
                 timelineType,
@@ -444,11 +436,6 @@ public class Timeline implements Comparable<Timeline> {
     @NonNull
     public Origin getOrigin() {
         return origin;
-    }
-
-    @NonNull
-    public MyAccount getMyAccount() {
-        return myAccount;
     }
 
     public boolean checkBoxDisplayedInSelector() {
@@ -584,9 +571,9 @@ public class Timeline implements Comparable<Timeline> {
         } else {
             if (actor.isEmpty()) {
                 builder.append("(all accounts)");
-            } else if (myAccount.isValid()) {
-                builder.append(myAccount.getAccountName());
-                if (!myAccount.getOrigin().equals(origin) && origin.isValid()) {
+            } else if (myAccountToSync.isValid()) {
+                builder.append(myAccountToSync.getAccountName());
+                if (!myAccountToSync.getOrigin().equals(origin) && origin.isValid()) {
                     builder.append(", origin:" + origin.getName());
                 }
             } else {
@@ -642,7 +629,6 @@ public class Timeline implements Comparable<Timeline> {
             return id == that.id;
         }
         if (!origin.equals(that.origin)) return false;
-        if (!myAccount.equals(that.myAccount)) return false;
         if (!actor.equals(that.actor)) return false;
         return StringUtils.equalsNotEmpty(searchQuery, that.searchQuery);
     }
@@ -652,7 +638,6 @@ public class Timeline implements Comparable<Timeline> {
         if (id > 0 && id < that.id) return false;
         if (timelineType != that.timelineType) return false;
         if (!origin.equals(that.origin)) return false;
-        if (!myAccount.equals(that.myAccount)) return false;
         if (!actor.equals(that.actor)) return false;
         return StringUtils.equalsNotEmpty(searchQuery, that.searchQuery);
     }
@@ -660,15 +645,10 @@ public class Timeline implements Comparable<Timeline> {
     @Override
     public int hashCode() {
         int result = timelineType.hashCode();
-        if (id != 0) {
-            result = 31 * result + Long.hashCode(id);
-        }
+        if (id != 0) result = 31 * result + Long.hashCode(id);
         result = 31 * result + origin.hashCode();
-        result = 31 * result + myAccount.hashCode();
         result = 31 * result + actor.hashCode();
-        if (!StringUtils.isEmpty(searchQuery)) {
-            result = 31 * result + searchQuery.hashCode();
-        }
+        if (!StringUtils.isEmpty(searchQuery)) result = 31 * result + searchQuery.hashCode();
         return result;
     }
 
@@ -687,9 +667,6 @@ public class Timeline implements Comparable<Timeline> {
 
     public void toBundle(Bundle bundle) {
         BundleUtils.putNotZero(bundle, IntentExtra.TIMELINE_ID, id);
-        if (myAccount.isValid()) {
-            bundle.putString(IntentExtra.ACCOUNT_NAME.key, myAccount.getAccountName());
-        }
         if (timelineType != TimelineType.UNKNOWN) {
             bundle.putString(IntentExtra.TIMELINE_TYPE.key, timelineType.save());
         }
@@ -699,7 +676,7 @@ public class Timeline implements Comparable<Timeline> {
     }
 
     public boolean isActorDifferentFromAccount() {
-        return actor.nonEmpty() && myAccount.nonEmpty() && !myAccount.getActor().equals(actor);
+        return actor.nonEmpty() && myAccountToSync.nonEmpty() && !myAccountToSync.getActor().equals(actor);
     }
 
     /**
@@ -709,7 +686,7 @@ public class Timeline implements Comparable<Timeline> {
         if (System.currentTimeMillis() - getLastSyncedDate() < MIN_RETRY_PERIOD_MS) {
             return false;
         }
-        long syncFrequencyMs = myAccount.getEffectiveSyncFrequencyMillis();
+        long syncFrequencyMs = myAccountToSync.getEffectiveSyncFrequencyMillis();
         // This correction needs to take into account
         // that we stored time when sync ended, and not when Android initiated the sync.
         long correctionForExecutionTime = syncFrequencyMs / 10;
