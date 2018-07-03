@@ -1003,7 +1003,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 onAccountSelected(data);
                 break;
             case SELECT_ACCOUNT_TO_ACT_AS:
-                accountToActAsSelected(data);
+                setSelectedActingAccount(data);
                 break;
             case SELECT_ACCOUNT_TO_SHARE_VIA:
                 accountToShareViaSelected(data);
@@ -1033,12 +1033,30 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         }
     }
 
-    private void accountToActAsSelected(Intent data) {
+    private void setSelectedActingAccount(Intent data) {
         MyAccount ma = myContext.accounts().fromAccountName(
                 data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
         if (ma.isValid()) {
-            contextMenu.note.setSelectedActingAccount(ma);
-            contextMenu.note.showContextMenu();
+            MyContextMenu contextMenu = getContextMenu(
+                    data.getIntExtra(IntentExtra.MENU_GROUP.key, MyContextMenu.MENU_GROUP_NOTE));
+            contextMenu.setSelectedActingAccount(ma);
+            contextMenu.showContextMenu();
+        }
+    }
+
+    @NonNull
+    private MyContextMenu getContextMenu(int menuGroup) {
+        switch (menuGroup) {
+            case MyContextMenu.MENU_GROUP_ACTOR:
+                return contextMenu.actor;
+            case MyContextMenu.MENU_GROUP_OBJACTOR:
+                return contextMenu.objActor;
+            case MyContextMenu.MENU_GROUP_ACTOR_PROFILE:
+                return actorProfileViewer == null
+                    ? contextMenu.note
+                    : actorProfileViewer.contextMenu;
+            default:
+                return contextMenu.note;
         }
     }
 

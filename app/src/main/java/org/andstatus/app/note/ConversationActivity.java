@@ -41,7 +41,6 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyCheckBox;
-import org.andstatus.app.util.TriState;
 
 /**
  * One selected note and, optionally, the whole conversation

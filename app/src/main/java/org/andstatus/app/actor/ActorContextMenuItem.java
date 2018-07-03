@@ -102,7 +102,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
     ACT_AS() {
         @Override
         void executeOnUiThread(ActorContextMenu menu, NoteEditorData editorData) {
-            AccountSelector.selectAccountForActor(menu.getActivity(),
+            AccountSelector.selectAccountForActor(menu.getActivity(), menu.menuGroup,
                     ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS, menu.getViewItem().getActor());
         }
     },

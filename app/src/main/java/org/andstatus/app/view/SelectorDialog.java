@@ -154,4 +154,14 @@ public class SelectorDialog extends DialogFragment {
         ft.addToBackStack(null);
         show(ft, dialogTag);
     }
+
+    @NonNull
+    public Bundle myGetArguments() {
+        Bundle arguments = getArguments();
+        if (arguments != null) return arguments;
+
+        Bundle newArguments = new Bundle();
+        if (!isStateSaved()) setArguments(newArguments);
+        return newArguments;
+    }
 }

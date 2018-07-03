@@ -35,6 +35,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
+import org.andstatus.app.user.User;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.StringUtils;
 
@@ -180,6 +181,8 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
 
         actor.setCreatedDate(DbUtils.getLong(cursor, ActorTable.CREATED_DATE));
         actor.setUpdatedDate(DbUtils.getLong(cursor, ActorTable.UPDATED_DATE));
+        actor.user = MyContextHolder.get().users().userFromActorId(actor.actorId,
+                () -> User.load(MyContextHolder.get(), actor.actorId));  // TODO: Clean
 
         actor.avatarFile = AvatarFile.fromCursor(actor.actorId, cursor);
 

@@ -58,6 +58,8 @@ public enum IntentExtra{
     ORIGIN_ID("ORIGIN_ID"),
     ORIGIN_NAME("ORIGIN_NAME"),
     ORIGIN_TYPE("ORIGIN_TYPE"),
+    /** @see org.andstatus.app.view.MyContextMenu#MENU_GROUP_ACTOR MENU_GROUP_... */
+    MENU_GROUP("MENU_GROUP"),
     /**
      * Name of the preference to set
      */

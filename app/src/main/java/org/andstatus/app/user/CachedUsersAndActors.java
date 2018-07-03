@@ -126,8 +126,9 @@ public class CachedUsersAndActors {
     public User userFromActorId(long actorId, Supplier<User> userSupplier) {
         if (actorId == 0) return User.EMPTY;
         final User user1 = actors.getOrDefault(actorId, Actor.EMPTY).user;
-        return user1.nonEmpty() ? user1
-            : users.values().stream().filter(user -> user.actorIds.contains(actorId)).findFirst().orElseGet(userSupplier);
+        return user1.nonEmpty()
+                ? user1
+                : users.values().stream().filter(user -> user.actorIds.contains(actorId)).findFirst().orElseGet(userSupplier);
     }
 
     public void addIfAbsent(@NonNull Actor actor) {

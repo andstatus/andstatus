@@ -29,6 +29,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.view.MyContextMenu;
 import org.andstatus.app.view.MySimpleAdapter;
 import org.andstatus.app.view.SelectorDialog;
 
@@ -55,9 +56,11 @@ public class AccountSelector extends SelectorDialog {
         selector.show(activity);
     }
 
-    public static void selectAccountForActor(FragmentActivity activity, ActivityRequestCode requestCode, Actor actor) {
+    public static void selectAccountForActor(FragmentActivity activity, int menuGroup,
+                                             ActivityRequestCode requestCode, Actor actor) {
         SelectorDialog selector = new AccountSelector();
         selector.setRequestCode(requestCode).putLong(IntentExtra.ACTOR_ID.key, actor.actorId);
+        selector.myGetArguments().putInt(IntentExtra.MENU_GROUP.key, menuGroup);
         selector.show(activity);
     }
 
@@ -126,7 +129,11 @@ public class AccountSelector extends SelectorDialog {
     }
 
     private void returnSelectedAccount(@NonNull MyAccount ma) {
-        returnSelected(new Intent().putExtra(IntentExtra.ACCOUNT_NAME.key, ma.getAccountName()));
+        returnSelected(new Intent()
+                .putExtra(IntentExtra.ACCOUNT_NAME.key, ma.getAccountName())
+                .putExtra(IntentExtra.MENU_GROUP.key,
+                        myGetArguments().getInt(IntentExtra.MENU_GROUP.key, MyContextMenu.MENU_GROUP_NOTE))
+        );
     }
 
 }

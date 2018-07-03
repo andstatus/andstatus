@@ -41,7 +41,7 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
 
     @NonNull
     protected final LoadableListActivity listActivity;
-    protected final int menuGroup;
+    public final int menuGroup;
     private View viewOfTheContext = null;
     protected ViewItem mViewItem = EmptyViewItem.EMPTY;
     /**
