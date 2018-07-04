@@ -105,11 +105,11 @@ public class Notifier {
             }
         }
         if (notificationArea) {
-            builder.setSmallIcon(
-                SharedPreferencesUtil.getBoolean(
-                        MyPreferences.KEY_NOTIFICATION_ICON_ALTERNATIVE, false)
-                        ? R.drawable.notification_icon_circle
-                        : R.drawable.notification_icon)
+            builder.setSmallIcon(data.event == NotificationEventType.SERVICE_RUNNING
+                ? R.drawable.ic_sync_white_24dp
+                : SharedPreferencesUtil.getBoolean(MyPreferences.KEY_NOTIFICATION_ICON_ALTERNATIVE, false)
+                    ? R.drawable.notification_icon_circle
+                    : R.drawable.notification_icon)
                 .setContentTitle(getContext().getText(data.event.titleResId))
                 .setContentText(noteText)
                 .setWhen(data.updatedDate)
