@@ -636,16 +636,7 @@ public class Actor implements Comparable<Actor> {
     }
 
     public Actor lookupUser(MyContext myContext) {
-        if (user == User.EMPTY && actorId != 0) {
-            user = User.load(myContext, actorId);
-        }
-        if (user == User.EMPTY && isWebFingerIdValid()) {
-            user = User.load(myContext, MyQuery.webFingerIdToId(0, webFingerId));
-        }
-        if (user == User.EMPTY) {
-            user = User.getNew();
-        }
-        return this;
+        return myContext.users().lookupUser(this);
     }
 
     public void saveUser(MyContext myContext) {

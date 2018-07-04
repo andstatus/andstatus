@@ -122,6 +122,21 @@ public class CachedUsersAndActors {
         );
     }
 
+    public Actor lookupUser(Actor actor) {
+        if (actor.user == User.EMPTY && actor.actorId != 0) {
+            actor.user = User.load(myContext, actor.actorId);
+        }
+        if (actor.user == User.EMPTY && actor.isWebFingerIdValid()) {
+            actor.user = User.load(myContext, MyQuery.webFingerIdToId(0, actor.getWebFingerId()));
+        }
+        if (actor.user == User.EMPTY) {
+            actor.user = User.getNew();
+        } else {
+            addIfAbsent(actor);
+        }
+        return actor;
+    }
+
     @NonNull
     public User userFromActorId(long actorId, Supplier<User> userSupplier) {
         if (actorId == 0) return User.EMPTY;
@@ -135,19 +150,25 @@ public class CachedUsersAndActors {
         if (actor.isEmpty()) return;
 
         final User user = actor.user;
-        user.actorIds.add(actor.actorId);
-        actors.putIfAbsent(actor.actorId, actor);
-        if (user.isMyUser().isTrue) myActors.putIfAbsent(actor.actorId, actor);
-        User cached = users.getOrDefault(user.userId, User.EMPTY);
+        final long userId = user.userId;
+        final long actorId = actor.actorId;
+        if (actorId != 0) {
+            user.actorIds.add(actorId);
+            actors.putIfAbsent(actorId, actor);
+            if (user.isMyUser().isTrue) myActors.putIfAbsent(actorId, actor);
+        }
+        if (userId == 0) return;
+
+        User cached = users.getOrDefault(userId, User.EMPTY);
         if (cached.isEmpty()) {
-            users.putIfAbsent(user.userId, user);
-            if (user.isMyUser().isTrue) myUsers.putIfAbsent(user.userId, user);
+            users.putIfAbsent(userId, user);
+            if (user.isMyUser().isTrue) myUsers.putIfAbsent(userId, user);
         } else if (user.isMyUser().isTrue && cached.isMyUser().untrue) {
             user.actorIds.addAll(cached.actorIds);
-            users.put(user.userId, user);
-            myUsers.put(user.userId, user);
-        } else {
-            cached.actorIds.add(actor.actorId);
+            users.put(userId, user);
+            myUsers.put(userId, user);
+        } else if (actorId != 0) {
+            cached.actorIds.add(actorId);
         }
     }
 }
