@@ -55,6 +55,7 @@ import static org.andstatus.app.util.UriUtils.nonRealOid;
  * @author yvolk@yurivolkov.com
  */
 public class DataUpdater {
+    private static final int MAX_RECURSING = 4;
     static final String MSG_ASSERTION_KEY = "updateNote";
     private final CommandExecutionContext execContext;
     private LatestActorActivities lum = new LatestActorActivities();
@@ -81,25 +82,29 @@ public class DataUpdater {
     }
 
     public AActivity onActivity(AActivity activity, boolean saveLum) {
-        if (activity == null || activity.isEmpty()) {
+        return onActivityInternal(activity, saveLum, 0);
+    }
+
+    private AActivity onActivityInternal(AActivity activity, boolean saveLum, int recursing) {
+        if (activity == null || activity.isEmpty() || recursing > MAX_RECURSING) {
             return activity;
         }
-        updateObjActor(activity.accountActor.update(activity.getActor()));
+        updateObjActor(activity.accountActor.update(activity.getActor()), recursing + 1);
         switch (activity.getObjectType()) {
             case ACTIVITY:
-                onActivity(activity.getActivity(), false);
+                onActivityInternal(activity.getActivity(), false, recursing + 1);
                 break;
             case NOTE:
-                updateNote(activity, true);
+                updateNote(activity, recursing + 1);
                 break;
             case ACTOR:
-                updateObjActor(activity);
+                updateObjActor(activity, recursing + 1);
                 break;
             default:
                 throw new IllegalArgumentException("Unexpected activity: " + activity);
         }
         updateActivity(activity);
-        if (saveLum) {
+        if (saveLum && recursing == 0) {
             saveLum();
         }
         return activity;
@@ -124,12 +129,14 @@ public class DataUpdater {
         lum.save();
     }
 
-    private void updateNote(@NonNull AActivity activity, boolean updateActors) {
-        updateNote1(activity, updateActors);
+    private void updateNote(@NonNull AActivity activity, int recursing) {
+        if (recursing > MAX_RECURSING) return;
+
+        updateNote1(activity, recursing);
         DataUpdater.onActivities(execContext, activity.getNote().replies);
     }
 
-    private void updateNote1(@NonNull AActivity activity, boolean updateActors) {
+    private void updateNote1(@NonNull AActivity activity, int recursing) {
         final String method = "updateNote1";
         final Note note = activity.getNote();
         try {
@@ -138,12 +145,10 @@ public class DataUpdater {
                 MyLog.w(this, method +"; my account is invalid, skipping: " + activity.toString());
                 return;
             }
-            if (updateActors) {
-                if (activity.isAuthorActor()) {
-                    activity.setAuthor(activity.getActor());
-                } else {
-                    updateObjActor(activity.getActor().update(activity.accountActor, activity.getAuthor()));
-                }
+            if (activity.isAuthorActor()) {
+                activity.setAuthor(activity.getActor());
+            } else {
+                updateObjActor(activity.getActor().update(activity.accountActor, activity.getAuthor()), recursing + 1);
             }
             if (note.noteId == 0) {
                 note.noteId = MyQuery.oidToId(OidEnum.NOTE_OID, note.origin.getId(), note.oid);
@@ -195,10 +200,8 @@ public class DataUpdater {
 
             activity.getNote().addRecipientsFromBodyText(activity.getActor());
             updateInReplyTo(activity, values);
-            if (updateActors) {
-                for ( Actor actor : note.audience().getRecipients()) {
-                    updateObjActor(activity.getActor().update(activity.accountActor, actor));
-                }
+            for ( Actor actor : note.audience().getRecipients()) {
+                updateObjActor(activity.getActor().update(activity.accountActor, actor), recursing + 1);
             }
 
             if (!StringUtils.isEmpty(note.via)) {
@@ -286,7 +289,9 @@ public class DataUpdater {
         }
     }
 
-    private void updateObjActor(AActivity activity) {
+    private void updateObjActor(AActivity activity, int recursing) {
+        if (recursing > MAX_RECURSING) return;
+
         Actor actor = activity.getObjActor();
         final String method = "updateObjActor";
         if (actor.isEmpty()) {
@@ -403,7 +408,7 @@ public class DataUpdater {
             }
 
             if (actor.hasLatestNote()) {
-                updateNote(actor.getLatestActivity(), false);
+                updateNote(actor.getLatestActivity(), recursing + 1);
             }
             if (me.isValidAndSucceeded() && MyPreferences.getShowAvatars() && actor.hasAvatar()) {
                 AvatarData.getForActor(actor.actorId).requestDownload();
