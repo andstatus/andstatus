@@ -187,7 +187,7 @@ public class Actor implements Comparable<Actor> {
             actor.setUpdatedDate(DbUtils.getLong(cursor, ActorTable.UPDATED_DATE));
             actor.user = User.fromCursor(myContext, cursor);
             actor.avatarFile = AvatarFile.fromCursor(actorId, cursor);
-            myContext.users().addIfAbsent(actor);
+            myContext.users().updateCache(actor);
         }
         return actor;
     }

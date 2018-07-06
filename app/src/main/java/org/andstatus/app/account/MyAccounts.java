@@ -548,6 +548,6 @@ public class MyAccounts {
 
     void addIfAbsent(@NonNull MyAccount myAccount) {
         if (!myAccounts.contains(myAccount)) myAccounts.add(myAccount);
-        myContext.users().addIfAbsent(myAccount.getActor());
+        myContext.users().updateCache(myAccount.getActor());
     }
 }

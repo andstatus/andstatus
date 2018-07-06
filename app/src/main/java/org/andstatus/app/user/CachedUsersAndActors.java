@@ -20,6 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
+
 public class CachedUsersAndActors {
     private final MyContext myContext;
     public final Map<Long, User> users = new ConcurrentHashMap<>();
@@ -64,7 +66,7 @@ public class CachedUsersAndActors {
                 + " FROM " + Actor.getActorAndUserSqlTables(false, true)
                 + " WHERE " + UserTable.IS_MY + "=" + TriState.TRUE.id;
         final Function<Cursor, Actor> function = cursor -> Actor.fromCursor(myContext, cursor);
-        MyQuery.get(myContext, sql, function).forEach(this::addIfAbsent);
+        MyQuery.get(myContext, sql, function).forEach(this::updateCache);
     }
 
     private void initializeFriendsOfMyActors() {
@@ -81,7 +83,7 @@ public class CachedUsersAndActors {
         final Function<Cursor, Void> function = cursor -> {
             long actorId = cursor.getLong(7);
             Actor friend = Actor.fromCursor(myContext, cursor);
-            addIfAbsent(friend);
+            updateCache(friend);
             friendsOfMyActors.put(friend.actorId, actorId);
             return null;
         };
@@ -132,7 +134,7 @@ public class CachedUsersAndActors {
         if (actor.user == User.EMPTY) {
             actor.user = User.getNew();
         } else {
-            addIfAbsent(actor);
+            updateCache(actor);
         }
         return actor;
     }
@@ -146,7 +148,7 @@ public class CachedUsersAndActors {
                 : users.values().stream().filter(user -> user.actorIds.contains(actorId)).findFirst().orElseGet(userSupplier);
     }
 
-    public void addIfAbsent(@NonNull Actor actor) {
+    public void updateCache(@NonNull Actor actor) {
         if (actor.isEmpty()) return;
 
         final User user = actor.user;
@@ -154,8 +156,8 @@ public class CachedUsersAndActors {
         final long actorId = actor.actorId;
         if (actorId != 0) {
             user.actorIds.add(actorId);
-            actors.putIfAbsent(actorId, actor);
-            if (user.isMyUser().isTrue) myActors.putIfAbsent(actorId, actor);
+            updateCachedActor(actors, actor);
+            if (user.isMyUser().isTrue) updateCachedActor(myActors, actor);
         }
         if (userId == 0) return;
 
@@ -169,6 +171,17 @@ public class CachedUsersAndActors {
             myUsers.put(userId, user);
         } else if (actorId != 0) {
             cached.actorIds.add(actorId);
+        }
+    }
+
+    private void updateCachedActor(Map<Long, Actor> actors, Actor actor) {
+        if (actor.getUpdatedDate() <= SOME_TIME_AGO) {
+            actors.putIfAbsent(actor.actorId, actor);
+            return;
+        }
+        Actor existing = actors.get(actor.actorId);
+        if (existing == null || existing.getUpdatedDate() < actor.getUpdatedDate()) {
+            actors.put(actor.actorId, actor);
         }
     }
 }
