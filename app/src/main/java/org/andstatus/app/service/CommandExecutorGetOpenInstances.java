@@ -31,6 +31,10 @@ import java.util.List;
 
 public class CommandExecutorGetOpenInstances extends CommandExecutorStrategy {
 
+    public CommandExecutorGetOpenInstances(CommandExecutionContext execContext) {
+        super(execContext);
+    }
+
     @Override
     void execute() {
         boolean ok = false;

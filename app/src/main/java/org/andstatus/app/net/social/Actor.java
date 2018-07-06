@@ -371,6 +371,18 @@ public class Actor implements Comparable<Actor> {
         return isWebFingerIdValid && other.isWebFingerIdValid && webFingerId.equals(other.webFingerId);
     }
 
+    public boolean notSameUser(@NonNull Actor other) {
+        return !isSameUser(other);
+    }
+
+    public boolean isSameUser(@NonNull Actor other) {
+        return user.actorIds.isEmpty() || other.actorId == 0
+                ? (other.user.actorIds.isEmpty() || actorId == 0
+                    ? isSame(other)
+                    : other.user.actorIds.contains(actorId))
+                : user.actorIds.contains(other.actorId);
+    }
+
     private void fixWebFingerId() {
         if (StringUtils.isEmpty(username)) return;
         if (username.contains("@")) {

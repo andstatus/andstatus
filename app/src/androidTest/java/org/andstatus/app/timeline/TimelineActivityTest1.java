@@ -27,11 +27,13 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.note.ConversationActivity;
 import org.andstatus.app.note.NoteContextMenuItem;
@@ -47,6 +49,8 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.view.SelectorDialog;
 import org.junit.Test;
+
+import java.util.Set;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
@@ -214,31 +218,38 @@ public class TimelineActivityTest1 extends TimelineActivityTest<ActivityViewItem
         TestSuite.waitForListLoaded(getActivity(), 2);
         ListActivityTestHelper<TimelineActivity> helper =
                 ListActivityTestHelper.newForSelectorDialog(getActivity(), AccountSelector.getDialogTag());
-        long noteId = helper.getListItemIdOfLoadedReply();
-        String logMsg = "noteId:" + noteId
-                + "; text:'" + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId) + "'";
+        long listItemId = helper.getListItemIdOfLoadedReply();
+        long noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId);
+        final MyContext myContext = MyContextHolder.get();
+        Origin origin = myContext.origins().fromId(MyQuery.noteIdToOriginId(noteId));
+        Set<MyAccount> accounts = myContext.accounts().succeededForSameOrigin(origin);
+        String logMsg = "itemId=" + listItemId + ", noteId=" + noteId
+                + ", origin=" + origin.getName()
+                + ", text='" + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId) + "'"
+                + ", " + accounts.size() + " accounts found: " + accounts;
 
         // This context menu item doesn't exist
-        assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, noteId,
+        assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, listItemId,
                 NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT, R.id.note_wrapper));
 
-        MyAccount actor1 = getActivity().getContextMenu().getActingAccount();
-        logMsg += "; actor1:" + actor1;
-        assertTrue(logMsg, actor1.isValid());
+        final MyAccount account1 = getActivity().getContextMenu().getActingAccount();
+        logMsg = "\nActing account 1: " + account1 + ", " + logMsg;
+        assertTrue(logMsg, accounts.contains(account1));
+        assertEquals(logMsg, origin, account1.getOrigin());
 
         ActivityTestHelper.closeContextMenu(getActivity());
 
-        helper.invokeContextMenuAction4ListItemId(method, noteId, NoteContextMenuItem.ACT_AS, R.id.note_wrapper);
+        helper.invokeContextMenuAction4ListItemId(method, listItemId, NoteContextMenuItem.ACT_AS, R.id.note_wrapper);
 
-        MyAccount actor2 = actor1.firstOtherAccountOfThisOrigin();
-        logMsg += ", actor2:" + actor2.getAccountName();
-        assertNotSame(logMsg, actor1, actor2);
+        MyAccount account2 = myContext.accounts().firstOtherSucceededForSameOrigin(origin, account1);
+        logMsg += ", account 2:" + account2.getAccountName();
+        assertNotSame(logMsg, account1, account2);
 
-        helper.selectIdFromSelectorDialog(logMsg, actor2.getActorId());
+        helper.selectIdFromSelectorDialog(logMsg, account2.getActorId());
         DbUtils.waitMs(method, 500);
 
-        MyAccount actor3 = getActivity().getContextMenu().getSelectedActingAccount();
-        logMsg += ", actor2Actual:" + actor3.getAccountName();
-        assertEquals(logMsg, actor2, actor3);
+        MyAccount account3 = getActivity().getContextMenu().getSelectedActingAccount();
+        logMsg += ", actor2Actual:" + account3.getAccountName();
+        assertEquals(logMsg, account2, account3);
     }
 }

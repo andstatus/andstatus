@@ -32,12 +32,14 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.data.AccountToNote;
 import org.andstatus.app.data.NoteForAnyAccount;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.ContextMenuHeader;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.timeline.meta.Timeline;
+import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.StringUtils;
@@ -106,7 +108,8 @@ public class NoteContextMenu extends MyContextMenu {
                 NoteContextMenuItem.OPEN_CONVERSATION.addTo(menu, order++, R.string.menu_item_open_conversation);
             }
 
-            if (menuContainer.getTimeline().getActorId() != noteForAnyAccount.actor.actorId) {
+            if (menuContainer.getTimeline().actor.notSameUser(noteForAnyAccount.actor)
+                    || menuContainer.getTimeline().getTimelineType() != TimelineType.SENT) {
                 // Notes, where an Actor of this note is an Actor ("Sent timeline" of that actor)
                 NoteContextMenuItem.ACTOR_ACTIONS.addTo(menu, order++,
                         String.format(
@@ -135,8 +138,7 @@ public class NoteContextMenu extends MyContextMenu {
                 NoteContextMenuItem.COPY_AUTHOR.addTo(menu, order++, R.string.menu_item_copy_author);
             }
 
-            if (menuContainer.getTimeline().getActorId() != noteForAnyAccount.actor.actorId
-                    && !accountToNote.isActor) {
+            if (accountToNote.getMyActor().notSameUser(noteForAnyAccount.actor)) {
                 if (accountToNote.actorFollowed) {
                     NoteContextMenuItem.UNDO_FOLLOW_ACTOR.addTo(menu, order++,
                             String.format(
@@ -145,18 +147,21 @@ public class NoteContextMenu extends MyContextMenu {
                 } else {
                     NoteContextMenuItem.FOLLOW_ACTOR.addTo(menu, order++,
                             String.format(
-                                    getActivity().getText(R.string.menu_item_follow_user).toString(), noteForAnyAccount.actor.getTimelineUsername()));
+                                    getActivity().getText(R.string.menu_item_follow_user).toString(),
+                                    noteForAnyAccount.actor.getTimelineUsername()));
                 }
             }
 
-            if (menuContainer.getTimeline().getActorId() != noteForAnyAccount.author.actorId
-                    && noteForAnyAccount.actor.actorId != noteForAnyAccount.author.actorId) {
-                // "Actor timeline" of that actor
-                NoteContextMenuItem.AUTHOR_ACTIONS.addTo(menu, order++,
-                        String.format(
-                                getActivity().getText(R.string.menu_item_user_messages).toString(),
-                                noteForAnyAccount.author.getTimelineUsername()));
-                if (!accountToNote.isAuthor) {
+            if (noteForAnyAccount.actor.notSameUser(noteForAnyAccount.author)) {
+                if (menuContainer.getTimeline().actor.notSameUser(noteForAnyAccount.author)
+                        || menuContainer.getTimeline().getTimelineType() != TimelineType.SENT) {
+                    // Sent timeline of that actor
+                    NoteContextMenuItem.AUTHOR_ACTIONS.addTo(menu, order++,
+                            String.format(
+                                    getActivity().getText(R.string.menu_item_user_messages).toString(),
+                                    noteForAnyAccount.author.getTimelineUsername()));
+                }
+                if (accountToNote.getMyActor().notSameUser(noteForAnyAccount.author)) {
                     if (accountToNote.authorFollowed) {
                         NoteContextMenuItem.UNDO_FOLLOW_AUTHOR.addTo(menu, order++,
                                 String.format(
@@ -165,7 +170,8 @@ public class NoteContextMenu extends MyContextMenu {
                     } else {
                         NoteContextMenuItem.FOLLOW_AUTHOR.addTo(menu, order++,
                                 String.format(
-                                        getActivity().getText(R.string.menu_item_follow_user).toString(), noteForAnyAccount.author.getTimelineUsername()));
+                                        getActivity().getText(R.string.menu_item_follow_user).toString(),
+                                        noteForAnyAccount.author.getTimelineUsername()));
                     }
                 }
             }
@@ -226,16 +232,17 @@ public class NoteContextMenu extends MyContextMenu {
             }
 
             if (noteForAnyAccount.isLoaded()) {
-                switch ( (int) getActingAccount().numberOfSucceededOfThisOrigin(getMyContext())) {
+                switch (getMyContext().accounts().succeededForSameOrigin(noteForAnyAccount.origin).size()) {
                     case 0:
                     case 1:
                         break;
                     case 2:
                         NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT.addTo(menu, order++,
-                                String.format(
-                                        getActivity().getText(R.string.menu_item_act_as_user).toString(),
-                                        getActingAccount().firstOtherAccountOfThisOrigin()
-                                                .getShortestUniqueAccountName(getMyContext())));
+                            String.format(
+                                getActivity().getText(R.string.menu_item_act_as_user).toString(),
+                                getMyContext().accounts()
+                                    .firstOtherSucceededForSameOrigin(noteForAnyAccount.origin, getActingAccount())
+                                    .getShortestUniqueAccountName(getMyContext())));
                         break;
                     default:
                         NoteContextMenuItem.ACT_AS.addTo(menu, order++, R.string.menu_item_act_as);
@@ -352,12 +359,12 @@ public class NoteContextMenu extends MyContextMenu {
                 : menuData.accountToNote.getMyAccount();
     }
 
-    public long getActorId() {
-        return menuData.accountToNote.noteForAnyAccount.actor.actorId;
+    public Actor getActor() {
+        return menuData.accountToNote.noteForAnyAccount.actor;
     }
 
-    public long getAuthorId() {
-        return menuData.accountToNote.noteForAnyAccount.author.actorId;
+    public Actor getAuthor() {
+        return menuData.accountToNote.noteForAnyAccount.author;
     }
 
     @NonNull

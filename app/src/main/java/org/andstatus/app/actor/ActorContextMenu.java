@@ -30,8 +30,6 @@ import org.andstatus.app.timeline.ContextMenuHeader;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.view.MyContextMenu;
 
-import java.util.Set;
-
 public class ActorContextMenu extends MyContextMenu {
     public final NoteEditorContainer menuContainer;
 
@@ -47,11 +45,9 @@ public class ActorContextMenu extends MyContextMenu {
         if (getViewItem().isEmpty()) {
             return;
         }
-        Set<Origin> origins = getViewItem().actor.user.knownInOrigins(getMyContext());
-
-        MyAccount myAccount = getSelectedActingAccount();
-        if (!myAccount.isValid() || !origins.contains(myAccount.getOrigin())) {
-            setSelectedActingAccount(getMyContext().accounts().getFirstSucceededForOrigins(origins));
+        if (getViewItem().actor.notSameUser(getSelectedActingAccount().getActor())) {
+            setSelectedActingAccount(getMyContext().accounts()
+                    .firstOtherSucceededForSameUser(getViewItem().actor, getActingAccount()));
         }
 
         int order = 0;
@@ -69,30 +65,32 @@ public class ActorContextMenu extends MyContextMenu {
                 ActorContextMenuItem.FOLLOWERS.addTo(menu, menuGroup, order++,
                         String.format(
                                 getActivity().getText(R.string.followers_of).toString(), shortName));
-                if (getViewItem().actorIsFollowedBy(getActingAccount())) {
-                    ActorContextMenuItem.STOP_FOLLOWING.addTo(menu, menuGroup, order++,
-                            String.format(
-                                    getActivity().getText(R.string.menu_item_stop_following_user).toString(), shortName));
-                } else if (getViewItem().getActorId() != getActingAccount().getActorId()) {
-                    ActorContextMenuItem.FOLLOW.addTo(menu, menuGroup, order++,
-                            String.format(
-                                    getActivity().getText(R.string.menu_item_follow_user).toString(), shortName));
+
+                if (getActingAccount().getActor().notSameUser(getViewItem().getActor())) {
+                    if (getViewItem().actorIsFollowedBy(getActingAccount())) {
+                        ActorContextMenuItem.STOP_FOLLOWING.addTo(menu, menuGroup, order++,
+                                String.format(getActivity().getText(R.string.menu_item_stop_following_user).toString(), shortName));
+                    } else {
+                        ActorContextMenuItem.FOLLOW.addTo(menu, menuGroup, order++,
+                                String.format(getActivity().getText(R.string.menu_item_follow_user).toString(), shortName));
+                    }
                 }
                 if (!menuContainer.getNoteEditor().isVisible()) {
                     // TODO: Only if he follows me?
                     ActorContextMenuItem.PRIVATE_NOTE.addTo(menu, menuGroup, order++,
                             R.string.menu_item_private_message);
                 }
-                switch (getMyContext().accounts().getSucceededForOrigins(origins).size()) {
+                switch (getMyContext().accounts().succeededForSameUser(getViewItem().actor).size()) {
                     case 0:
                     case 1:
                         break;
                     case 2:
                         ActorContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT.addTo(menu, menuGroup, order++,
-                                String.format(
-                                        getActivity().getText(R.string.menu_item_act_as_user).toString(),
-                                        getActingAccount().firstOtherAccountOfThisOrigin()
-                                                .getShortestUniqueAccountName(getMyContext())));
+                            String.format(
+                                getActivity().getText(R.string.menu_item_act_as_user).toString(),
+                                getMyContext().accounts()
+                                    .firstOtherSucceededForSameUser(getViewItem().actor, getActingAccount())
+                                    .getShortestUniqueAccountName(getMyContext())));
                         break;
                     default:
                         ActorContextMenuItem.ACT_AS.addTo(menu, menuGroup, order++, R.string.menu_item_act_as);

@@ -21,10 +21,13 @@ import org.andstatus.app.net.social.Connection;
 
 class TimelineDownloaderFollowers extends TimelineDownloader {
 
+    public TimelineDownloaderFollowers(CommandExecutionContext execContext) {
+        super(execContext);
+    }
+
     @Override
     public void download() throws ConnectionException {
-        CommandExecutorStrategy strategy = new CommandExecutorFollowers();
-        strategy.execContext = execContext;
+        CommandExecutorStrategy strategy = new CommandExecutorFollowers(execContext);
         strategy.execute();
     }
 

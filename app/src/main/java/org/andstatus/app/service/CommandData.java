@@ -74,9 +74,8 @@ public class CommandData implements Comparable<CommandData> {
     /** This is: 1. Generally: Note ID ({@link NoteTable#NOTE_ID} of the {@link NoteTable})...
      */
     protected long itemId = 0;
-    /** Sometimes we don't know {@link #timeline#getActorId} yet...
-     * Used for Actor search also
-     */
+    /** Sometimes we don't know {@link Timeline#actor} yet...
+     * Used for Actor search also */
     private String username = "";
 
     private volatile int result = 0;
@@ -541,10 +540,6 @@ public class CommandData implements Comparable<CommandData> {
 
     public Timeline getTimeline() {
         return timeline;
-    }
-
-    public long getActorId() {
-        return timeline.getActorId();
     }
 
     public String getUsername() {

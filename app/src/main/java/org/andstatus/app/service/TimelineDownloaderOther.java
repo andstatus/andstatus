@@ -40,6 +40,10 @@ class TimelineDownloaderOther extends TimelineDownloader {
     private static final int OLDER_NOTES_TO_DOWNLOAD_MAX = 40;
     private static final int LATEST_NOTES_TO_DOWNLOAD_MAX = 20;
 
+    TimelineDownloaderOther(CommandExecutionContext execContext) {
+        super(execContext);
+    }
+
     @Override
     public void download() throws ConnectionException {
         if (!getTimeline().isSyncable()) {
@@ -126,15 +130,14 @@ class TimelineDownloaderOther extends TimelineDownloader {
 
     @NonNull
     private String getActorOid() throws ConnectionException {
-        long actorId = execContext.getCommandData().getActorId();
-        if (actorId == 0) {
+        if (getActor().actorId == 0) {
             if (getTimeline().myAccountToSync.isValid()) {
                 return getTimeline().myAccountToSync.getActorOid();
             }
         } else {
-            String actorOid =  MyQuery.idToOid(OidEnum.ACTOR_OID, actorId, 0);
+            String actorOid =  MyQuery.idToOid(OidEnum.ACTOR_OID, getActor().actorId, 0);
             if (StringUtils.isEmpty(actorOid)) {
-                throw new ConnectionException("Actor oId is not found for id=" + actorId + ", timeline:" + getTimeline());
+                throw new ConnectionException("No ActorOid for " + getActor() + ", timeline:" + getTimeline());
             }
             return actorOid;
         }

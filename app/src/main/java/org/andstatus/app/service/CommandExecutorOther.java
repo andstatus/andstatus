@@ -54,6 +54,10 @@ class CommandExecutorOther extends CommandExecutorStrategy{
 
     public static final int ACTORS_LIMIT = 400;
 
+    CommandExecutorOther(CommandExecutionContext execContext) {
+        super(execContext);
+    }
+
     @Override
     public void execute() {
         switch (execContext.getCommandData().getCommand()) {
@@ -64,7 +68,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 break;
             case FOLLOW:
             case UNDO_FOLLOW:
-                followOrStopFollowingActor(execContext.getCommandData().getActorId(),
+                followOrStopFollowingActor(getActor(),
                         execContext.getCommandData().getCommand() == CommandEnum.FOLLOW);
                 break;
             case UPDATE_NOTE:
@@ -83,7 +87,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 getNote(execContext.getCommandData().itemId);
                 break;
             case GET_ACTOR:
-                getActor(execContext.getCommandData().getActorId(), execContext.getCommandData().getUsername());
+                getActorCommand(getActor(), execContext.getCommandData().getUsername());
                 break;
             case SEARCH_ACTORS:
                 searchActors(execContext.getCommandData().getUsername());
@@ -99,7 +103,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                         .load(execContext.getCommandData());
                 break;
             case GET_AVATAR:
-                (new AvatarDownloader(execContext.getCommandData().getActorId())).load(execContext.getCommandData());
+                (new AvatarDownloader(getActor().actorId)).load(execContext.getCommandData());
                 break;
             case CLEAR_NOTIFICATIONS:
                 execContext.getMyContext().clearNotification(execContext.getCommandData().getTimeline());
@@ -168,21 +172,20 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         return Collections.emptyList();
     }
 
-    private void getActor(long actorId, String username) {
-        final String method = "getUser";
-        String oid = getActorOid(method, actorId, false);
+    private void getActorCommand(Actor actorIn, String username) {
+        final String method = "getActor";
         String msgLog = method + "; username='" + username + "'";
         Actor actor = null;
-        if (UriUtils.isRealOid(oid) || !StringUtils.isEmpty(username)) {
+        if (UriUtils.isRealOid(actorIn.oid) || !StringUtils.isEmpty(username)) {
             try {
-                actor = execContext.getMyAccount().getConnection().getActor(oid, username);
-                logIfActorIsEmpty(msgLog, actorId, actor);
+                actor = execContext.getMyAccount().getConnection().getActor(actorIn.oid, username);
+                logIfActorIsEmpty(msgLog, actorIn.actorId, actor);
             } catch (ConnectionException e) {
-                logConnectionException(e, msgLog + actorInfoLogged(actorId));
+                logConnectionException(e, msgLog + actorInfoLogged(actorIn.actorId));
             }
         } else {
             msgLog += ", invalid actor IDs";
-            logExecutionError(true, msgLog + actorInfoLogged(actorId));
+            logExecutionError(true, msgLog + actorInfoLogged(actorIn.actorId));
         }
         if (noErrors() && actor != null) {
             new DataUpdater(execContext).onActivity(execContext.getMyAccount().getActor().update(actor));
@@ -254,21 +257,19 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     }
 
     /**
-     * @param actorId
      * @param follow true - Follow, false - Stop following
      */
-    private void followOrStopFollowingActor(long actorId, boolean follow) {
+    private void followOrStopFollowingActor(Actor actor, boolean follow) {
         final String method = (follow ? "follow" : "stopFollowing") + "Actor";
-        String oid = getActorOid(method, actorId, true);
         AActivity activity = null;
         if (noErrors()) {
             try {
-                activity = execContext.getMyAccount().getConnection().follow(oid, follow);
+                activity = execContext.getMyAccount().getConnection().follow(actor.oid, follow);
                 final Actor friend = activity.getObjActor();
                 friend.followedByMe = TriState.UNKNOWN; // That "hack" attribute may only confuse us here as it can show outdated info
-                logIfActorIsEmpty(method, actorId, friend);
+                logIfActorIsEmpty(method, actor.actorId, friend);
             } catch (ConnectionException e) {
-                logConnectionException(e, method + actorInfoLogged(actorId));
+                logConnectionException(e, method + actorInfoLogged(actor.actorId));
             }
         }
         if (activity != null && noErrors()) {

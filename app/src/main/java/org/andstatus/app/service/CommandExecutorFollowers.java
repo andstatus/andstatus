@@ -44,17 +44,20 @@ import java.util.Set;
  * @author yvolk@yurivolkov.com
  */
 public class CommandExecutorFollowers extends CommandExecutorStrategy {
-    long actorId = 0;
-    String actorOid = "";
     List<Actor> actorsNew = new ArrayList<>();
     String commandSummary = "";
+
+    public CommandExecutorFollowers(CommandExecutionContext execContext) {
+        super(execContext);
+    }
 
     @Override
     void execute() {
         commandSummary = execContext.getCommandSummary();
         try {
             TimelineType timelineType = getTimelineType();
-            if (lookupActor()) return;
+            if (isActorOidEmpty()) return;
+
             switch (timelineType) {
                 case FOLLOWERS:
                     syncFollowers();
@@ -93,13 +96,10 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         return timelineType;
     }
 
-    private boolean lookupActor() {
-        final String method = "lookupActor";
-        actorId = execContext.getCommandData().getActorId();
-        actorOid = MyQuery.idToOid(OidEnum.ACTOR_OID, actorId, 0);
-        if (StringUtils.isEmpty(actorOid)) {
+    private boolean isActorOidEmpty() {
+        if (StringUtils.isEmpty(getActor().oid)) {
             execContext.getResult().incrementParseExceptions();
-            MyLog.e(this, method + "; actorOid not found for id: " + actorId);
+            MyLog.e(this, "No actorOid not for: " + getActor());
             return true;
         }
         return false;
@@ -108,11 +108,11 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
     private void syncFollowers() throws ConnectionException {
         if (execContext.getMyAccount().getConnection()
                 .isApiSupported(Connection.ApiRoutineEnum.GET_FOLLOWERS)) {
-            actorsNew = execContext.getMyAccount().getConnection().getFollowers(actorOid);
+            actorsNew = execContext.getMyAccount().getConnection().getFollowers(getActor().oid);
         } else if (execContext.getMyAccount().getConnection()
                 .isApiSupported(Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS)) {
             List<String> actorOidsNew =
-                    execContext.getMyAccount().getConnection().getFollowersIds(actorOid);
+                    execContext.getMyAccount().getConnection().getFollowersIds(getActor().oid);
             if (getActorsForOids(actorOidsNew, actorsNew)) return;
         } else {
             throw new ConnectionException(ConnectionException.StatusCode.UNSUPPORTED_API,
@@ -120,7 +120,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                     + " and " + Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS);
         }
 
-        Set<Long> actorIdsOld = MyQuery.getFollowersIds(actorId);
+        Set<Long> actorIdsOld = MyQuery.getFollowersIds(getActor().actorId);
         execContext.getResult().incrementDownloadedCount();
         broadcastProgress(execContext.getContext().getText(R.string.followers).toString()
                 + ": " + actorIdsOld.size() + " -> " + actorsNew.size(), false);
@@ -129,21 +129,21 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
 
         for (Actor actor : actorsNew) {
             actorIdsOld.remove(actor.actorId);
-            Friendship.setFollowed(execContext.myContext, actor.actorId, TriState.TRUE, actorId);
+            Friendship.setFollowed(execContext.myContext, actor, TriState.TRUE, getActor());
         }
         for (long actorIdOld : actorIdsOld) {
-            Friendship.setFollowed(execContext.myContext, actorIdOld, TriState.FALSE, actorId);
+            Friendship.setFollowed(execContext.myContext, Actor.load(execContext.myContext, actorIdOld), TriState.FALSE, getActor());
         }
     }
 
     private void syncFriends() throws ConnectionException {
         if (execContext.getMyAccount().getConnection()
                 .isApiSupported(Connection.ApiRoutineEnum.GET_FRIENDS)) {
-            actorsNew = execContext.getMyAccount().getConnection().getFriends(actorOid);
+            actorsNew = execContext.getMyAccount().getConnection().getFriends(getActor().oid);
         } else if (execContext.getMyAccount().getConnection()
                 .isApiSupported(Connection.ApiRoutineEnum.GET_FRIENDS_IDS)) {
             List<String> actorOidsNew =
-                    execContext.getMyAccount().getConnection().getFriendsIds(actorOid);
+                    execContext.getMyAccount().getConnection().getFriendsIds(getActor().oid);
             if (getActorsForOids(actorOidsNew, actorsNew)) return;
         } else {
             throw new ConnectionException(ConnectionException.StatusCode.UNSUPPORTED_API,
@@ -151,7 +151,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                             + " and " + Connection.ApiRoutineEnum.GET_FRIENDS_IDS);
         }
 
-        Set<Long> actorIdsOld = MyQuery.getFriendsIds(actorId);
+        Set<Long> actorIdsOld = MyQuery.getFriendsIds(getActor().actorId);
         execContext.getResult().incrementDownloadedCount();
         broadcastProgress(execContext.getContext().getText(R.string.friends).toString()
                 + ": " + actorIdsOld.size() + " -> " + actorsNew.size(), false);
@@ -160,10 +160,11 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
 
         for (Actor actor : actorsNew) {
             actorIdsOld.remove(actor.actorId);
-            Friendship.setFollowed(execContext.myContext, actorId, TriState.TRUE, actor.actorId);
+            Friendship.setFollowed(execContext.myContext, getActor(), TriState.TRUE, actor);
         }
         for (long actorIdOld : actorIdsOld) {
-            Friendship.setFollowed(execContext.myContext, actorId, TriState.FALSE, actorIdOld);
+            Friendship.setFollowed(execContext.myContext, getActor(), TriState.FALSE,
+                    Actor.load(execContext.myContext, actorIdOld));
         }
     }
 

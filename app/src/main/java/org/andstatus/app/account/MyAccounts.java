@@ -248,19 +248,6 @@ public class MyAccounts {
      * If not auto synced, at least verified and succeeded,
      * If there is no verified account, any account of this Origin is been returned.
      * Otherwise invalid account is returned;
-     * @param origins May be EMPTY to search in any Origin
-     * @return Invalid account if not found
-     */
-    @NonNull
-    public MyAccount getFirstSucceededForOrigins(@NonNull Collection<Origin> origins) {
-        return getFirstSucceededForOriginsStrict(origins.isEmpty() ? Collections.singletonList(Origin.EMPTY) : origins);
-    }
-
-    /**
-     * Return first verified and autoSynced MyAccount of the provided origins.
-     * If not auto synced, at least verified and succeeded,
-     * If there is no verified account, any account of this Origin is been returned.
-     * Otherwise invalid account is returned;
      * @param origins May contain Origin.EMPTY to search in any Origin
      * @return Invalid account if not found
      */
@@ -295,13 +282,43 @@ public class MyAccounts {
                 : ma);
     }
 
+    /** @return this account if there are no others */
+    @NonNull
+    public MyAccount firstOtherSucceededForSameOrigin(Origin origin, MyAccount thisAccount) {
+        return succeededForSameOrigin(origin).stream().filter(ma -> !ma.equals(thisAccount))
+                .findAny().orElse(thisAccount);
+    }
+
     /**
-     * Return verified and autoSynced MyAccounts of the provided origins.
-     * @param origins May be empty to search in any Origin
-     * @return Emty Set if not found
+     * Return verified and autoSynced MyAccounts for the Origin
+     * @param origin May be empty to search in any Origin
+     * @return Empty Set if not found
      */
     @NonNull
-    public Set<MyAccount> getSucceededForOrigins(@NonNull Collection<Origin> origins) {
+    public Set<MyAccount> succeededForSameOrigin(Origin origin) {
+        return origin.isEmpty()
+                ? myAccounts.stream().filter(MyAccount::isValidAndSucceeded).collect(Collectors.toSet())
+                : myAccounts.stream()
+                .filter(ma -> origin.equals(ma.getOrigin()))
+                .filter(MyAccount::isValidAndSucceeded)
+                .collect(Collectors.toSet());
+    }
+
+    /** @return this account if there are no others */
+    @NonNull
+    public MyAccount firstOtherSucceededForSameUser(Actor actor, MyAccount thisAccount) {
+        return succeededForSameUser(actor).stream().filter(ma -> !ma.equals(thisAccount))
+                .findAny().orElse(thisAccount);
+    }
+
+    /**
+     * Return verified and autoSynced MyAccounts for Origin-s, where User of this Actor is known.
+     * @param actor May be empty to search in any Origin
+     * @return Empty Set if not found
+     */
+    @NonNull
+    public Set<MyAccount> succeededForSameUser(Actor actor) {
+        Set<Origin> origins = actor.user.knownInOrigins(myContext);
         return origins.isEmpty()
                 ? myAccounts.stream().filter(MyAccount::isValidAndSucceeded).collect(Collectors.toSet())
                 : myAccounts.stream()

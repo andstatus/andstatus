@@ -95,7 +95,8 @@ public enum ActorContextMenuItem implements ContextMenuItem {
     ACT_AS_FIRST_OTHER_ACCOUNT() {
         @Override
         void executeOnUiThread(ActorContextMenu menu, NoteEditorData editorData) {
-            menu.setSelectedActingAccount(menu.getActingAccount().firstOtherAccountOfThisOrigin());
+            menu.setSelectedActingAccount(menu.getMyContext().accounts()
+                    .firstOtherSucceededForSameUser(menu.getViewItem().actor, menu.getActingAccount()));
             menu.showContextMenu();
         }
     },
@@ -109,7 +110,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
     FOLLOWERS(true) {
         @Override
         NoteEditorData executeAsync(Params params) {
-            setMaForActorId(params);
+            setActingAccountForActor(params);
             return super.executeAsync(params);
         }
 
@@ -121,7 +122,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
     FRIENDS(true) {
         @Override
         NoteEditorData executeAsync(Params params) {
-            setMaForActorId(params);
+            setActingAccountForActor(params);
             return super.executeAsync(params);
         }
 
@@ -181,7 +182,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
             executeAsync1(params);
         } else {
             executeOnUiThread(params.menu,
-                    new NoteEditorData(menu.menuContainer.getActivity().getMyContext(),
+                    new NoteEditorData(menu.getMyContext(),
                             menu.getActingAccount(), 0, 0, false));
         }
         return false;
@@ -219,7 +220,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         // Empty
     }
 
-    void setMaForActorId(Params params) {
+    void setActingAccountForActor(Params params) {
         Actor actor = params.menu.getViewItem().getActor();
         Origin origin = params.menu.getOrigin();
         if (!origin.isValid()) {
@@ -227,10 +228,10 @@ public enum ActorContextMenuItem implements ContextMenuItem {
             return;
         }
         if (!params.menu.getActingAccount().isValid() || !params.menu.getActingAccount().getOrigin().equals(origin)) {
-            params.menu.setSelectedActingAccount(params.menu.getActivity().getMyContext().accounts()
+            params.menu.setSelectedActingAccount(params.menu.getMyContext().accounts()
                     .fromActorOfSameOrigin(actor));
             if (!params.menu.getActingAccount().isValid()) {
-                params.menu.setSelectedActingAccount(params.menu.getActivity().getMyContext().accounts().
+                params.menu.setSelectedActingAccount(params.menu.getMyContext().accounts().
                         getFirstSucceededForOrigin(origin));
             }
         }

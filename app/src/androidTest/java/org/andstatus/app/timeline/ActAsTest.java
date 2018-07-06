@@ -22,6 +22,7 @@ import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
@@ -29,6 +30,7 @@ import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.note.ConversationActivity;
 import org.andstatus.app.note.NoteContextMenuItem;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
@@ -68,8 +70,11 @@ public class ActAsTest extends TimelineActivityTest<ActivityViewItem> {
                 ConversationActivity.class);
         long listItemId = helper.getListItemIdOfLoadedReply();
         long noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId);
-        String logMsg = "itemId=" + listItemId + ", noteId=" + noteId + " text='"
-                + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId) + "'";
+        final MyContext myContext = MyContextHolder.get();
+        Origin origin = myContext.origins().fromId(MyQuery.noteIdToOriginId(noteId));
+        String logMsg = "itemId=" + listItemId + ", noteId=" + noteId
+            + ", origin=" + origin.getName()
+                + ", text='" + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId) + "'";
         assertEquals("Default actor", MyAccount.EMPTY, getActivity().getContextMenu().getSelectedActingAccount());
 
         boolean invoked = helper.invokeContextMenuAction4ListItemId(method, listItemId,
@@ -77,11 +82,12 @@ public class ActAsTest extends TimelineActivityTest<ActivityViewItem> {
         MyAccount actor1 = getActivity().getContextMenu().getSelectedActingAccount();
         logMsg += ";" + (invoked ? "" : " failed to invoke context menu 1," ) + " actor1=" + actor1;
         assertTrue(logMsg, actor1.isValid());
+        assertEquals(logMsg, origin, actor1.getOrigin());
 
         ActivityTestHelper.closeContextMenu(getActivity());
 
-        logMsg += "MyContext: " + MyContextHolder.get();
-        MyAccount firstOtherActor = actor1.firstOtherAccountOfThisOrigin();
+        logMsg += "MyContext: " + myContext;
+        MyAccount firstOtherActor = myContext.accounts().firstOtherSucceededForSameOrigin(origin, actor1);
         logMsg += "; firstOtherActor=" + firstOtherActor;
         assertNotEquals(logMsg, actor1, firstOtherActor);
 

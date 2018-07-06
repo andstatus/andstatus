@@ -34,6 +34,10 @@ import org.andstatus.app.util.MyLog;
  */
 abstract class TimelineDownloader extends CommandExecutorStrategy {
 
+    TimelineDownloader(CommandExecutionContext execContext) {
+        super(execContext);
+    }
+
     @Override
     void execute() {
         try {

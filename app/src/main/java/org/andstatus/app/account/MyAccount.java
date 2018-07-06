@@ -914,26 +914,6 @@ public final class MyAccount implements Comparable<MyAccount> {
         return accountButtonText;
     }
 
-    public long numberOfSucceededOfThisOrigin(MyContext myContext) {
-        return myContext.accounts().get().stream()
-                .filter(ma -> ma.getOrigin().equals(this.getOrigin()))
-                .filter(MyAccount::isValidAndSucceeded)
-                .count();
-    }
-    
-    /**
-     * @return this account if there are no others
-     */
-    @NonNull
-    public MyAccount firstOtherAccountOfThisOrigin() {
-        for (MyAccount persistentAccount : MyContextHolder.get().accounts().get()) {
-            if (persistentAccount.getOrigin().equals(this.getOrigin()) && !persistentAccount.equals(this)) {
-                return persistentAccount;
-            }
-        }
-        return this;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

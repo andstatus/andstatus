@@ -22,6 +22,7 @@ import android.database.sqlite.SQLiteDatabaseLockedException;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.database.table.FriendshipTable;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
@@ -34,9 +35,13 @@ public class Friendship {
     private TriState followedBy = TriState.UNKNOWN;
     private long actorId;
 
-    public static void setFollowed(MyContext myContext, long actorId, TriState followed, long friendId) {
-        Friendship fu = new Friendship(actorId, friendId);
-        fu.followedBy = followed;
+    public static void setFollowed(MyContext myContext, Actor actor, TriState followed, Actor friend) {
+        if (actor.actorId == 0 || friend.actorId == 0) return;
+
+        Friendship fu = new Friendship(actor.actorId, friend.actorId);
+        fu.followedBy = followed.isTrue && actor.isSameUser(friend)
+                ? TriState.FALSE
+                : followed;
         fu.update(myContext.getDatabase());
     }
 

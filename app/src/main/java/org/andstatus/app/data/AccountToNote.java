@@ -20,6 +20,7 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 
 import java.util.List;
@@ -70,8 +71,8 @@ public class AccountToNote {
     }
 
     private static List<AccountToNote> getAccountsForNote(MyContext myContext, NoteForAnyAccount noteForAnyAccount) {
-        return myContext.accounts().get().stream().filter(a -> a.getOrigin().equals(noteForAnyAccount.origin)
-                && a.isValidAndSucceeded()).map(a -> new AccountToNote(noteForAnyAccount, a)).collect(toList());
+        return myContext.accounts().succeededForSameOrigin(noteForAnyAccount.origin).stream()
+                .map(a -> new AccountToNote(noteForAnyAccount, a)).collect(toList());
     }
 
     public static AccountToNote getAccountToActOnNote(MyContext myContext, long noteId,
@@ -141,6 +142,11 @@ public class AccountToNote {
     @NonNull
     public MyAccount getMyAccount() {
         return myAccount;
+    }
+
+    @NonNull
+    public Actor getMyActor() {
+        return myAccount.getActor();
     }
 
     public boolean isTiedToThisAccount() {

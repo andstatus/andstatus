@@ -391,13 +391,13 @@ public class DataUpdater {
                 MyLog.v(this, () -> "Account " + me.getActor().getNamePreferablyWebFingerId() + " "
                         + (followedByMe.isTrue ? "follows " : "stop following ")
                         + actor.getNamePreferablyWebFingerId());
-                Friendship.setFollowed(execContext.myContext, me.getActorId(), followedByMe, actor.actorId);
+                Friendship.setFollowed(execContext.myContext, me.getActor(), followedByMe, actor);
             }
             if (followedByActor.known) {
                 MyLog.v(this, () -> "Actor " + activity.getActor().getNamePreferablyWebFingerId() + " "
                         + (followedByActor.isTrue ? "follows " : "stop following ")
                         + actor.getNamePreferablyWebFingerId());
-                Friendship.setFollowed(execContext.myContext, activity.getActor().actorId, followedByActor, actor.actorId);
+                Friendship.setFollowed(execContext.myContext, activity.getActor(), followedByActor, actor);
             }
 
             if (actor.hasLatestNote()) {

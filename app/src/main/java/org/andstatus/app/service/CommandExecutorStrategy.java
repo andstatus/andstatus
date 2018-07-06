@@ -18,12 +18,13 @@ package org.andstatus.app.service;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
 class CommandExecutorStrategy implements CommandExecutorParent {
-    protected CommandExecutionContext execContext = null;
+    final protected CommandExecutionContext execContext;
     private CommandExecutorParent parent = null;
     protected static final long MIN_PROGRESS_BROADCAST_PERIOD_SECONDS = 1;
     protected long lastProgressBroadcastAt  = 0;
@@ -81,15 +82,15 @@ class CommandExecutorStrategy implements CommandExecutorParent {
         return getStrategy(new CommandExecutionContext(commandData)).setParent(parent);
     }
 
-    static CommandExecutorStrategy getStrategy(CommandExecutionContext execContext) {
+    private static CommandExecutorStrategy getStrategy(CommandExecutionContext execContext) {
         CommandExecutorStrategy strategy;
         switch (execContext.getCommandData().getCommand()) {
             case GET_ATTACHMENT:
             case GET_AVATAR:
-                strategy = new CommandExecutorOther();
+                strategy = new CommandExecutorOther(execContext);
                 break;
             case GET_OPEN_INSTANCES:
-                strategy = new CommandExecutorGetOpenInstances();
+                strategy = new CommandExecutorGetOpenInstances(execContext);
                 break;
             default:
                 if (execContext.getMyAccount().isValidAndSucceeded()) {
@@ -100,37 +101,38 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                                 switch (execContext.getCommandData().getTimelineType()) {
                                     case FOLLOWERS:
                                     case FRIENDS:
-                                        strategy = new TimelineDownloaderFollowers();
+                                        strategy = new TimelineDownloaderFollowers(execContext);
                                         break;
                                     default:
-                                        strategy = new TimelineDownloaderOther();
+                                        strategy = new TimelineDownloaderOther(execContext);
                                         break;
                                 }
                             } else {
                                 MyLog.v(CommandExecutorStrategy.class, () -> "Dummy commandExecutor for " +
                                         execContext.getCommandData().getTimeline());
-                                strategy = new CommandExecutorStrategy();
+                                strategy = new CommandExecutorStrategy(execContext);
                             }
                             break;
                         case GET_FOLLOWERS:
                         case GET_FRIENDS:
-                            strategy = new CommandExecutorFollowers();
+                            strategy = new CommandExecutorFollowers(execContext);
                             break;
                         default:
-                            strategy = new CommandExecutorOther();
+                            strategy = new CommandExecutorOther(execContext);
                             break;
                     }
                 } else {
-                    MyLog.v(CommandExecutorStrategy.class, () -> "Dummy commandExecutor for " + execContext.getMyAccount());
-                    strategy = new CommandExecutorStrategy();
+                    MyLog.v(CommandExecutorStrategy.class, () -> "Dummy commandExecutor for "
+                            + execContext.getMyAccount());
+                    strategy = new CommandExecutorStrategy(execContext);
                 }
                 break;
         }
-        strategy.execContext = execContext;
         return strategy;
     }
 
-    CommandExecutorStrategy() {
+    CommandExecutorStrategy(CommandExecutionContext execContext) {
+        this.execContext = execContext;
     }
 
     private CommandExecutorStrategy setParent(CommandExecutorParent parent) {
@@ -180,5 +182,9 @@ class CommandExecutorStrategy implements CommandExecutorParent {
 
     public boolean noErrors() {
         return !execContext.getResult().hasError();
+    }
+
+    Actor getActor() {
+        return execContext.getCommandData().getTimeline().actor;
     }
 }

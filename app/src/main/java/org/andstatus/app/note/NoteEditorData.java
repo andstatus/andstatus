@@ -364,6 +364,11 @@ public class NoteEditorData {
         return this;
     }
 
+    public NoteEditorData addRecipient(Actor actor) {
+        activity.getNote().addRecipient(actor);
+        return this;
+    }
+
     public TriState getPublic() {
         return activity.getNote().getPublic();
     }
