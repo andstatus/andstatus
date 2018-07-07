@@ -31,6 +31,7 @@
   <string name="attach_images_summary_off">投稿に画像を添付するために使用する \"クリップ+\" ボタンを非表示にします</string>
   <string name="attach_images_summary_on">メッセージに画像を添付する \"クリップ+\" ボタン (\"添付\" メニュー項目) を使用します。または別のアプリケーションから AndStatus に画像を共有します</string>
   <string name="attach_images_title">私のメッセージに画像を添付する</string>
+  <string name="attachment_is_too_large">添付が大きすぎます</string>
   <string name="attachments">添付ファイル</string>
   <string name="authentication_never">まだ認証していません</string>
   <string name="authentication_successful">認証に成功しました!</string>
@@ -57,6 +58,7 @@
   <string name="category_title_preference_information">情報</string>
   <string name="category_title_preference_origin">ソーシャル ネットワーク</string>
   <string name="category_title_preference_settings">設定</string>
+  <string name="changed">変更</string>
   <string name="check_and_fix_data">データの確認と修正</string>
   <string name="check_and_fix_data_summary">AndStatus が誤動作していると思う場合で、再インストールしたくない場合は、
 この操作を行ってください。</string>
@@ -242,6 +244,9 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="manage_accounts">アカウントの管理</string>
   <string name="manage_accounts_android">Android の設定で AndStatus アカウントを管理</string>
   <string name="manage_timelines">タイムラインの管理</string>
+  <string name="max_distance_between_duplicates_title">重複の最大間隔</string>
+  <string name="maximum_size_of_attachment_mb">添付ファイルの最大サイズ。MB</string>
+  <string name="maximum_size_of_cached_media_mb">キャッシュされるメディアファイルの最大サイズ (添付を含む)。MB</string>
   <string name="mention_as_webfingerid_title">\@webFingerId としてメンション</string>
   <string name="menu_item_act_as">&#8230;として活動</string>
   <string name="menu_item_act_as_user">\"%1s\" として活動</string>
@@ -362,6 +367,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="reltime_months_ago_formats_2">{0} ヶ月前</string>
   <string name="reltime_seconds_ago_formats_1">1 秒前</string>
   <string name="reltime_seconds_ago_formats_2">{0} 秒前</string>
+  <string name="reltime_some_time_ago">少し前</string>
   <string name="reltime_just_now">ちょうど今</string>
   <string name="reltime_years_ago">1 年以上前</string>
   <string name="remove_account_menu_item">アカウントを削除</string>
@@ -385,6 +391,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="show_duplicates">重複を表示</string>
   <string name="show_threads_of_conversation">会話のスレッドを表示</string>
   <string name="show_timeline_messages">タイムラインメッセージを表示</string>
+  <string name="show_my_account_which_downloaded">アクティビティ/メモをダウンロードした自分のアカウントを表示</string>
   <string name="since">%s 以降</string>
   <string name="splash_button_learn_more">もっと詳しく</string>
   <string name="splash_button_get_started">始めましょう</string>
