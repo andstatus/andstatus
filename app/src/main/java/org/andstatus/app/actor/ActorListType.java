@@ -19,35 +19,29 @@ package org.andstatus.app.actor;
 import android.content.Context;
 
 import org.andstatus.app.R;
+import org.andstatus.app.timeline.ListScope;
 
 /**
  * These values define different named UserList filters
  */
 public enum ActorListType {
-    /**
-     * The type is unknown
-     */
-    UNKNOWN("unknown", R.string.unknown_userlist, false),
+    UNKNOWN("unknown", R.string.unknown_userlist, ListScope.ORIGIN),
     /** Actors, related to the selected note, including mentioned actors */
-    ACTORS_OF_NOTE("users_of_message", R.string.users_of_message, true),
-    FOLLOWERS("followers", R.string.followers, true),
-    FRIENDS("friends", R.string.friends, true),
-    ACTORS("users", R.string.user_list, true);
+    ACTORS_OF_NOTE("actors_of_note", R.string.users_of_message, ListScope.ORIGIN),
+    FOLLOWERS("followers", R.string.followers, ListScope.USER),
+    FRIENDS("friends", R.string.friends, ListScope.USER),
+    ACTORS_AT_ORIGIN("actors", R.string.user_list, ListScope.ORIGIN);
 
-    /**
-     * code of the enum that is used in notes
-     */
+    /** code of the enum that is used in notes */
     private final String code;
-    /**
-     * The id of the string resource with the localized name of this enum to use in UI
-     */
+    /** The id of the string resource with the localized name of this enum to use in UI */
     private final int titleResId;
-    private final boolean mAtOrigin;
-    
-    ActorListType(String code, int resId, boolean atOrigin) {
+    public final ListScope scope;
+
+    ActorListType(String code, int resId, ListScope scope) {
         this.code = code;
         this.titleResId = resId;
-        this.mAtOrigin = atOrigin;
+        this.scope = scope;
     }
     
     /**
@@ -70,21 +64,7 @@ public enum ActorListType {
             return context.getText(titleResId);        
         }
     }
-    
-    public CharSequence getPrepositionForNotCombined(Context context) {
-        if (context == null) {
-            return "";
-        } else if (atOrigin()) {
-            return context.getText(R.string.combined_timeline_off_origin);
-        } else {
-            return context.getText(R.string.combined_timeline_off_account);
-        }
-    }
-    
-    public boolean atOrigin() {
-        return mAtOrigin;
-    }
-    
+
     /**
      * Returns the enum or UNKNOWN
      */

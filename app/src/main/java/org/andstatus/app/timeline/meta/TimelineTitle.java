@@ -85,7 +85,7 @@ public class TimelineTitle {
             if (timeline.getTimelineType().isAtOrigin()) {
                 if (currentMyAccount != MyAccount.EMPTY) {
                     I18n.appendWithSpace(title, timeline.getTimelineType()
-                            .getPrepositionForNotCombinedTimeline(myContext.context()));
+                            .timelinePreposition(myContext));
                     I18n.appendWithSpace(title, timeline.getOrigin().getName());
                 }
             } else {
@@ -105,7 +105,7 @@ public class TimelineTitle {
 
     private static String toTimelineSubtitle(MyContext myContext, Timeline timeline, @NonNull MyAccount currentMyAccount) {
         final StringBuilder title = new StringBuilder();
-        if (currentMyAccount != MyAccount.EMPTY) {
+        if (currentMyAccount.nonEmpty()) {
             I18n.appendWithSpace(title, currentMyAccount.toAccountButtonText(myContext));
         }
         return title.toString();

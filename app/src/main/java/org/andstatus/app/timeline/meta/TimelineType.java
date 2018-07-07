@@ -20,48 +20,45 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.R;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.lang.SelectableEnum;
 import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.timeline.ListScope;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public enum TimelineType implements SelectableEnum {
-    UNKNOWN(Scope.ORIGIN, "unknown", R.string.timeline_title_unknown, Connection.ApiRoutineEnum.DUMMY),
+    UNKNOWN(ListScope.ORIGIN, "unknown", R.string.timeline_title_unknown, Connection.ApiRoutineEnum.DUMMY),
     /** The Home timeline and other information (replies...). */
-    HOME(Scope.USER, "home", R.string.timeline_title_home, Connection.ApiRoutineEnum.HOME_TIMELINE),
-    NOTIFICATIONS(Scope.USER, "notifications", R.string.notifications_title, Connection.ApiRoutineEnum.NOTIFICATIONS_TIMELINE),
-    PUBLIC(Scope.ORIGIN, "public", R.string.timeline_title_public, Connection.ApiRoutineEnum.PUBLIC_TIMELINE),
-    EVERYTHING(Scope.ORIGIN, "everything", R.string.timeline_title_everything, Connection.ApiRoutineEnum.DUMMY),
-    SEARCH(Scope.ORIGIN, "search", R.string.options_menu_search, Connection.ApiRoutineEnum.SEARCH_NOTES),
-    FAVORITES(Scope.USER, "favorites", R.string.timeline_title_favorites, Connection.ApiRoutineEnum.FAVORITES_TIMELINE),
+    HOME(ListScope.USER, "home", R.string.timeline_title_home, Connection.ApiRoutineEnum.HOME_TIMELINE),
+    NOTIFICATIONS(ListScope.USER, "notifications", R.string.notifications_title, Connection.ApiRoutineEnum.NOTIFICATIONS_TIMELINE),
+    PUBLIC(ListScope.ORIGIN, "public", R.string.timeline_title_public, Connection.ApiRoutineEnum.PUBLIC_TIMELINE),
+    EVERYTHING(ListScope.ORIGIN, "everything", R.string.timeline_title_everything, Connection.ApiRoutineEnum.DUMMY),
+    SEARCH(ListScope.ORIGIN, "search", R.string.options_menu_search, Connection.ApiRoutineEnum.SEARCH_NOTES),
+    FAVORITES(ListScope.USER, "favorites", R.string.timeline_title_favorites, Connection.ApiRoutineEnum.FAVORITES_TIMELINE),
     /** The Mentions timeline and other information (replies...). */
-    INTERACTIONS(Scope.USER, "interactions", R.string.timeline_title_interactions,
+    INTERACTIONS(ListScope.USER, "interactions", R.string.timeline_title_interactions,
             Connection.ApiRoutineEnum.NOTIFICATIONS_TIMELINE),
     /** Private notes (direct tweets, dents...) */
-    PRIVATE(Scope.USER, "private", R.string.timeline_title_private, Connection.ApiRoutineEnum.PRIVATE_NOTES),
+    PRIVATE(ListScope.USER, "private", R.string.timeline_title_private, Connection.ApiRoutineEnum.PRIVATE_NOTES),
     /** Notes by the selected Actor (where he is an Author or an Actor only (e.g. for Reblog/Retweet).
      * This Actor is not necessarily one of our Accounts */
-    SENT(Scope.USER, "sent", R.string.sent, Connection.ApiRoutineEnum.ACTOR_TIMELINE),
+    SENT(ListScope.USER, "sent", R.string.sent, Connection.ApiRoutineEnum.ACTOR_TIMELINE),
     /** Latest notes of every Friend of this Actor
      * (i.e of every actor, followed by this Actor).
      * So this is essentially a list of "Friends". See {@link FriendshipTable} */
-    FRIENDS(Scope.USER, "friends", R.string.friends, Connection.ApiRoutineEnum.GET_FRIENDS),
-    FOLLOWERS(Scope.USER, "followers", R.string.followers, Connection.ApiRoutineEnum.GET_FOLLOWERS),
-    DRAFTS(Scope.USER, "drafts", R.string.timeline_title_drafts, Connection.ApiRoutineEnum.DUMMY),
-    OUTBOX(Scope.USER, "outbox", R.string.timeline_title_outbox, Connection.ApiRoutineEnum.DUMMY),
-    ACTORS(Scope.ORIGIN, "users", R.string.user_list, Connection.ApiRoutineEnum.DUMMY),
-    CONVERSATION(Scope.ORIGIN, "conversation", R.string.label_conversation, Connection.ApiRoutineEnum.DUMMY),
-    COMMANDS_QUEUE(Scope.ORIGIN, "commands_queue", R.string.commands_in_a_queue, Connection.ApiRoutineEnum.DUMMY),
-    MANAGE_TIMELINES(Scope.ORIGIN, "manages_timelines", R.string.manage_timelines, Connection.ApiRoutineEnum.DUMMY),
+    FRIENDS(ListScope.USER, "friends", R.string.friends, Connection.ApiRoutineEnum.GET_FRIENDS),
+    FOLLOWERS(ListScope.USER, "followers", R.string.followers, Connection.ApiRoutineEnum.GET_FOLLOWERS),
+    DRAFTS(ListScope.USER, "drafts", R.string.timeline_title_drafts, Connection.ApiRoutineEnum.DUMMY),
+    OUTBOX(ListScope.USER, "outbox", R.string.timeline_title_outbox, Connection.ApiRoutineEnum.DUMMY),
+    ACTORS(ListScope.ORIGIN, "users", R.string.user_list, Connection.ApiRoutineEnum.DUMMY),
+    CONVERSATION(ListScope.ORIGIN, "conversation", R.string.label_conversation, Connection.ApiRoutineEnum.DUMMY),
+    COMMANDS_QUEUE(ListScope.ORIGIN, "commands_queue", R.string.commands_in_a_queue, Connection.ApiRoutineEnum.DUMMY),
+    MANAGE_TIMELINES(ListScope.ORIGIN, "manages_timelines", R.string.manage_timelines, Connection.ApiRoutineEnum.DUMMY),
     ;
-
-    private enum Scope {
-        ORIGIN,
-        USER
-    };
 
     /** Code - identifier of the type */
     private final String code;
@@ -69,9 +66,9 @@ public enum TimelineType implements SelectableEnum {
     private final int titleResId;
     /** Api routine to download this timeline */
     private final Connection.ApiRoutineEnum connectionApiRoutine;
-    private final Scope scope;
+    public final ListScope scope;
 
-    TimelineType(Scope scope, String code, int resId, Connection.ApiRoutineEnum connectionApiRoutine) {
+    TimelineType(ListScope scope, String code, int resId, Connection.ApiRoutineEnum connectionApiRoutine) {
         this.scope = scope;
         this.code = code;
         this.titleResId = resId;
@@ -122,14 +119,8 @@ public enum TimelineType implements SelectableEnum {
         }
     }
     
-    public CharSequence getPrepositionForNotCombinedTimeline(Context context) {
-        if (context == null) {
-            return "";
-        } else if (isAtOrigin()) {
-            return context.getText(R.string.combined_timeline_off_origin);
-        } else {
-            return context.getText(R.string.combined_timeline_off_account);
-        }
+    public CharSequence timelinePreposition(MyContext myContext) {
+        return scope.timelinePreposition(myContext);
     }
 
     public boolean isSyncable() {
@@ -187,11 +178,11 @@ public enum TimelineType implements SelectableEnum {
     ).collect(Collectors.toSet());
 
     public boolean isAtOrigin() {
-        return scope == Scope.ORIGIN;
+        return scope == ListScope.ORIGIN;
     }
 
     public boolean isForUser() {
-        return scope == Scope.USER;
+        return scope == ListScope.USER;
     }
 
     public boolean canBeCombinedForOrigins() {

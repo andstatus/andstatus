@@ -49,7 +49,7 @@ public class FollowersList extends ActorList {
 
     @Override
     protected ActorListLoader newSyncLoader(Bundle args) {
-        return new FollowersListLoader(mActorListType, getCurrentMyAccount(), getFollowedActorId(),
+        return new FriendsAndFollowersListLoader(mActorListType, getCurrentMyAccount(), getFollowedActorId(),
                 getParsedUri().getSearchQuery());
     }
 }

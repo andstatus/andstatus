@@ -109,7 +109,7 @@ public class AvatarDownloaderTest {
         changeMaAvatarUrl("http://example.com/inexistent.jpg");
         loadAndAssertStatusForMa(DownloadStatus.HARD_ERROR, false);
 
-        ActorListLoader aLoader = new ActorListLoader(ActorListType.ACTORS, ma, ma.getOrigin()
+        ActorListLoader aLoader = new ActorListLoader(ActorListType.ACTORS_AT_ORIGIN, ma, ma.getOrigin()
                 , 0, "");
         aLoader.addActorToList(ma.getActor());
         aLoader.load(progress -> {});

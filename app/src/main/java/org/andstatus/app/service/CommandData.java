@@ -452,7 +452,7 @@ public class CommandData implements Comparable<CommandData> {
     private void appendAccountName(MyContext myContext, StringBuilder builder) {
         if (getTimeline().myAccountToSync.isValid()) {
             I18n.appendWithSpace(builder, 
-                    getTimelineType().getPrepositionForNotCombinedTimeline(myContext.context()));
+                    getTimelineType().timelinePreposition(myContext));
             if (getTimelineType().isAtOrigin()) {
                 I18n.appendWithSpace(builder, getTimeline().getOrigin().getName());
             } else {

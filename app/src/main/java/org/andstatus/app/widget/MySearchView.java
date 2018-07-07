@@ -20,7 +20,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.CollapsibleActionView;
 import android.view.KeyEvent;
@@ -231,7 +230,7 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
             return timeline.fromSearch(parentActivity.getMyContext(), isInternetSearch())
                                     .fromIsCombined(parentActivity.getMyContext(), isCombined()).getUri();
         }
-        return MatchedUri.getActorListUri(parentActivity.getCurrentMyAccount().getActorId(), ActorListType.ACTORS,
+        return MatchedUri.getActorListUri(parentActivity.getCurrentMyAccount().getActorId(), ActorListType.ACTORS_AT_ORIGIN,
                         isCombined() ? 0 : getOrigin().getId(), 0, "");
     }
 

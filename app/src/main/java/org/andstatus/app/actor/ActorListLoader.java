@@ -127,7 +127,7 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
         return SqlActorIds.fromIds(items.stream().map(ViewItem::getId).collect(toList())).getSql();
     }
 
-    protected String getTitle() {
+    protected String getSubtitle() {
         return MyPreferences.isShowDebuggingInfoInUi() ? mActorListType.toString() : "";
     }
 

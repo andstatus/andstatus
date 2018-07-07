@@ -114,7 +114,7 @@ public class AActivity extends AObject {
 
     @NonNull
     public Actor getActor() {
-        if (!actor.isEmpty()) {
+        if (actor.nonEmpty()) {
             return actor;
         }
         switch (getObjectType()) {

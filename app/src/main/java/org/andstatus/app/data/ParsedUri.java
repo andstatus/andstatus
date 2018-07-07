@@ -101,7 +101,7 @@ public class ParsedUri {
                     break;
                 case ACTORLIST:
                 case ACTORLIST_SEARCH:
-                    if (getActorListType() == ActorListType.FOLLOWERS) {
+                    if (getActorListType() == ActorListType.FOLLOWERS || getActorListType() == ActorListType.FRIENDS) {
                         actorId = getItemId();
                     }
                     break;

@@ -17,20 +17,18 @@
 package org.andstatus.app.actor;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.FriendshipTable;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class FollowersListLoader extends ActorListLoader {
+public class FriendsAndFollowersListLoader extends ActorListLoader {
     private long actorId;
-    private final String username;
 
-    public FollowersListLoader(ActorListType actorListType, MyAccount ma, long centralItemId, String searchQuery) {
+    public FriendsAndFollowersListLoader(ActorListType actorListType, MyAccount ma, long centralItemId, String searchQuery) {
         super(actorListType, ma, ma.getOrigin(), centralItemId, searchQuery);
         actorId = centralItemId;
-        username = MyQuery.actorIdToWebfingerId(actorId);
     }
 
     protected String getSqlActorIds() {
@@ -52,7 +50,7 @@ public class FollowersListLoader extends ActorListLoader {
     }
 
     @Override
-    protected String getTitle() {
-        return username;
+    protected String getSubtitle() {
+        return ma.toAccountButtonText(MyContextHolder.get());
     }
 }

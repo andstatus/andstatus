@@ -26,10 +26,13 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.SearchObjects;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.note.NoteEditorListActivity;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
+import org.andstatus.app.timeline.ListScope;
 import org.andstatus.app.timeline.WhichPage;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.I18n;
@@ -132,14 +135,23 @@ public class ActorList extends NoteEditorListActivity {
 
     @Override
     protected CharSequence getCustomTitle() {
-        mSubtitle = I18n.trimTextAt(MyHtml.fromHtml(getListLoader().getTitle()), 80);
+        mSubtitle = I18n.trimTextAt(MyHtml.fromHtml(getListLoader().getSubtitle()), 80);
         final StringBuilder title = new StringBuilder(mActorListType.getTitle(this));
         if (StringUtils.nonEmpty(getParsedUri().getSearchQuery())) {
             I18n.appendWithSpace(title, "'" + getParsedUri().getSearchQuery() + "'");
         }
-        if (getParsedUri().getOrigin(myContext).isValid()) {
-            I18n.appendWithSpace(title, myContext.context().getText(R.string.combined_timeline_off_origin));
-            I18n.appendWithSpace(title, getParsedUri().getOrigin(myContext).getName());
+        if (mActorListType.scope == ListScope.ORIGIN) {
+            Origin origin = getParsedUri().getOrigin(myContext);
+            if (origin.isValid()) {
+                I18n.appendWithSpace(title, mActorListType.scope.timelinePreposition(myContext));
+                I18n.appendWithSpace(title, origin.getName());
+            }
+        } else {
+            Actor actor = Actor.load(myContext, getParsedUri().getActorId());
+            if (actor.nonEmpty()) {
+                I18n.appendWithSpace(title, mActorListType.scope.timelinePreposition(myContext));
+                I18n.appendWithSpace(title, actor.getTimelineUsername());
+            }
         }
         return title.toString();
     }

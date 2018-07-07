@@ -133,7 +133,7 @@ public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable 
             if (!origin.isValid()) {
                 return Collections.emptyList();
             }
-            ActorListLoader loader = new ActorListLoader(ActorListType.ACTORS,
+            ActorListLoader loader = new ActorListLoader(ActorListType.ACTORS_AT_ORIGIN,
                     MyContextHolder.get().accounts().getFirstSucceededForOrigin(origin), origin, 0, "") {
                 @NonNull
                 @Override

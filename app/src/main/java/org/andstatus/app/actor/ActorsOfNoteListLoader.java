@@ -77,7 +77,7 @@ public class ActorsOfNoteListLoader extends ActorListLoader {
     }
 
     @Override
-    protected String getTitle() {
+    protected String getSubtitle() {
         return noteContent;
     }
 }

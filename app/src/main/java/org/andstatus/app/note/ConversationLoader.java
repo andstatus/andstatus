@@ -130,7 +130,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
 
     private void loadActors(List<T> items) {
         if (items.isEmpty()) return;
-        ActorListLoader loader = new ActorListLoader(ActorListType.ACTORS, ma,
+        ActorListLoader loader = new ActorListLoader(ActorListType.ACTORS_AT_ORIGIN, ma,
                 ma.getOrigin(), 0, "");
         items.forEach(item -> item.addActorsToLoad(loader));
         if (loader.getList().isEmpty()) return;

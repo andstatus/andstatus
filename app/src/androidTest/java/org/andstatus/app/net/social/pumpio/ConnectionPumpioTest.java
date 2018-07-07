@@ -325,7 +325,7 @@ public class ConnectionPumpioTest {
         AActivity activity = connection.follow(actorOid, false);
         assertEquals("Not unfollow action", ActivityType.UNDO_FOLLOW, activity.type);
         Actor objActor = activity.getObjActor();
-        assertTrue("objActor is present", !objActor.isEmpty());
+        assertTrue("objActor is present", objActor.nonEmpty());
         assertEquals("Actor", "acct:t131t@pump1.example.com", activity.getActor().oid);
         assertEquals("Object of action", actorOid, objActor.oid);
     }
