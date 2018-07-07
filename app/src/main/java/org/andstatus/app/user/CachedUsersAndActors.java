@@ -135,6 +135,14 @@ public class CachedUsersAndActors {
         return actor;
     }
 
+    /** Tries to find this actor in the home origin (the same host...).
+     * Returns the same Actor, if not found */
+    public Actor toHomeOrigin(Actor actor) {
+        return actor.user.actorIds.stream().map(id -> actors.getOrDefault(id, Actor.EMPTY))
+                .filter(a -> a.origin.getHost().equals(actor.getHost()))
+                .findAny().orElse(actor);
+    }
+
     @NonNull
     public User userFromActorId(long actorId, Supplier<User> userSupplier) {
         if (actorId == 0) return User.EMPTY;

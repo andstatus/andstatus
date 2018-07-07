@@ -111,7 +111,7 @@ public class NoteContextMenu extends MyContextMenu {
             if (menuContainer.getTimeline().actor.notSameUser(noteForAnyAccount.actor)
                     || menuContainer.getTimeline().getTimelineType() != TimelineType.SENT) {
                 // Notes, where an Actor of this note is an Actor ("Sent timeline" of that actor)
-                NoteContextMenuItem.ACTOR_ACTIONS.addTo(menu, order++,
+                NoteContextMenuItem.NOTES_BY_ACTOR.addTo(menu, order++,
                         String.format(
                                 getActivity().getText(R.string.menu_item_user_messages).toString(),
                                 noteForAnyAccount.actor.getTimelineUsername()));
@@ -156,7 +156,7 @@ public class NoteContextMenu extends MyContextMenu {
                 if (menuContainer.getTimeline().actor.notSameUser(noteForAnyAccount.author)
                         || menuContainer.getTimeline().getTimelineType() != TimelineType.SENT) {
                     // Sent timeline of that actor
-                    NoteContextMenuItem.AUTHOR_ACTIONS.addTo(menu, order++,
+                    NoteContextMenuItem.NOTES_BY_AUTHOR.addTo(menu, order++,
                             String.format(
                                     getActivity().getText(R.string.menu_item_user_messages).toString(),
                                     noteForAnyAccount.author.getTimelineUsername()));

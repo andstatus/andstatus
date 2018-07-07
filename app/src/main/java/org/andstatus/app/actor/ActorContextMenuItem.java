@@ -68,14 +68,14 @@ public enum ActorContextMenuItem implements ContextMenuItem {
             // TODO
         }
     },
-    ACTOR_NOTES(true) {
+    NOTES_BY_ACTOR(true) {
         @Override
         NoteEditorData executeAsync(Params params) {
             TimelineActivity.startForTimeline(
                     params.menu.getActivity().getMyContext(),
                     params.menu.getActivity(),
                     params.menu.getActivity().getMyContext().timelines()
-                            .forUser(TimelineType.SENT, params.menu.getViewItem().getActorId()),
+                            .forUserAtHomeOrigin(TimelineType.SENT, params.menu.getViewItem().getActor()),
                     params.menu.getActingAccount(), false);
             return super.executeAsync(params);
         }

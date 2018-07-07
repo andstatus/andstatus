@@ -189,12 +189,12 @@ public enum NoteContextMenuItem implements ContextMenuItem {
             copyNoteText(editorData);
         }
     },
-    ACTOR_ACTIONS(true, true) {
+    NOTES_BY_ACTOR(true, true) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
             return NoteEditorData.newEmpty(MyAccount.EMPTY)
                     .setTimeline(menu.getActivity().getMyContext().timelines()
-                            .forUser(TimelineType.SENT, menu.getActor().actorId));
+                            .forUserAtHomeOrigin(TimelineType.SENT, menu.getActor()));
         }
 
         @Override
@@ -202,12 +202,12 @@ public enum NoteContextMenuItem implements ContextMenuItem {
             menu.switchTimelineActivityView(editorData.timeline);
         }
     },
-    AUTHOR_ACTIONS(true, true) {
+    NOTES_BY_AUTHOR(true, true) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
             return NoteEditorData.newEmpty(MyAccount.EMPTY)
                     .setTimeline(menu.getActivity().getMyContext().timelines()
-                            .forUser(TimelineType.SENT, menu.getAuthor().actorId));
+                            .forUserAtHomeOrigin(TimelineType.SENT, menu.getAuthor()));
         }
 
         @Override

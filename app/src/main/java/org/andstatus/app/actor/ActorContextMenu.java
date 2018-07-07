@@ -57,7 +57,7 @@ public class ActorContextMenu extends MyContextMenu {
                     .setSubtitle(getActingAccount().getAccountName());
             String shortName = getViewItem().actor.getUsername();
             if (getViewItem().actor.isIdentified()) {
-                ActorContextMenuItem.ACTOR_NOTES.addTo(menu, menuGroup, order++,
+                ActorContextMenuItem.NOTES_BY_ACTOR.addTo(menu, menuGroup, order++,
                         String.format(getActivity().getText(R.string.menu_item_user_messages).toString(), shortName));
                 ActorContextMenuItem.FRIENDS.addTo(menu, menuGroup, order++,
                         String.format(
