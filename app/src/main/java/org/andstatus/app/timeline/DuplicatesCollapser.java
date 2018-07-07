@@ -73,8 +73,8 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
     public DuplicatesCollapser(TimelineData<T> data, DuplicatesCollapser<T> oldDuplicatesCollapser) {
         this.data = data;
         if (oldDuplicatesCollapser != null) {
-            this.collapseDuplicates = oldDuplicatesCollapser.collapseDuplicates;
-            this.individualCollapsedStateIds.addAll(oldDuplicatesCollapser.individualCollapsedStateIds);
+            collapseDuplicates = oldDuplicatesCollapser.collapseDuplicates;
+            individualCollapsedStateIds.addAll(oldDuplicatesCollapser.individualCollapsedStateIds);
         }
     }
 
@@ -91,12 +91,16 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
         return false;
     }
 
-    private void setIndividualCollapsedStatus(boolean collapse, T item) {
+    private void setIndividualCollapsedState(boolean collapse, T item) {
         if (collapse == isCollapseDuplicates()) {
             individualCollapsedStateIds.remove(item.getId());
         } else {
             individualCollapsedStateIds.add(item.getId());
         }
+    }
+
+    public void restoreCollapsedStates(@NonNull DuplicatesCollapser<T> oldCollapser) {
+        oldCollapser.individualCollapsedStateIds.forEach(id -> collapseDuplicates(!collapseDuplicates, id));
     }
 
     /** For all or for only one item */
@@ -173,7 +177,7 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
 
         boolean groupOfSelectedItem = group.contains(itemId);
         if (groupOfSelectedItem) group.children
-                .forEach(child -> setIndividualCollapsedStatus(true, child.item));
+                .forEach(child -> setIndividualCollapsedState(true, child.item));
 
         boolean noIndividualCollapseState = groupOfSelectedItem || individualCollapsedStateIds.isEmpty()
                 || group.children.stream().noneMatch(child -> individualCollapsedStateIds.contains(child.item.getId()));
@@ -203,8 +207,8 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
         boolean groupOfSelectedItem = itemId == item.getId()
                 || (itemId != 0 && item.getChildren().stream().anyMatch(child -> child.getId() == itemId));
         if (groupOfSelectedItem) {
-            setIndividualCollapsedStatus(false, item);
-            item.getChildren().forEach(child -> setIndividualCollapsedStatus(false, child));
+            setIndividualCollapsedState(false, item);
+            item.getChildren().forEach(child -> setIndividualCollapsedState(false, child));
         }
 
         boolean noIndividualCollapseState = groupOfSelectedItem || individualCollapsedStateIds.isEmpty()

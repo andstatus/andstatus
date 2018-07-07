@@ -37,7 +37,8 @@ public class TimelineData<T extends ViewItem<T>> {
     private final DuplicatesCollapser<T> duplicatesCollapser;
 
     public TimelineData(TimelineData<T> oldData, @NonNull TimelinePage<T> thisPage) {
-        duplicatesCollapser = new DuplicatesCollapser<>(this, oldData == null ? null : oldData.duplicatesCollapser);
+        final DuplicatesCollapser<T> oldCollapser = oldData == null ? null : oldData.duplicatesCollapser;
+        duplicatesCollapser = new DuplicatesCollapser<>(this, oldCollapser);
         this.params = thisPage.params;
         actorViewItem = thisPage.actorViewItem;
         isSameTimeline = oldData != null &&
@@ -48,6 +49,9 @@ public class TimelineData<T extends ViewItem<T>> {
         addThisPage(thisPage);
         if (collapsed) duplicatesCollapser.collapseDuplicates(true, 0);
         dropExcessivePage(thisPage);
+        if (oldCollapser != null && collapsed == oldCollapser.collapseDuplicates) {
+            duplicatesCollapser.restoreCollapsedStates(oldCollapser);
+        }
     }
 
     private void dropExcessivePage(TimelinePage<T> lastLoadedPage) {

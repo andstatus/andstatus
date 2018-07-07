@@ -691,7 +691,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         return listData;
     }
 
-    private TimelineData<T> setAndGetListData(TimelinePage<T> pageLoaded) {
+    @NonNull
+    private TimelineData<T> setListData(TimelinePage<T> pageLoaded) {
         listData = new TimelineData<T>(listData, pageLoaded);
         return listData;
     }
@@ -783,7 +784,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     public void onLoadFinished(LoadableListPosition posIn) {
         final String method = "onLoadFinished";
         if (MyLog.isVerboseEnabled()) posIn.logV(method + " started;");
-        TimelineData<T> dataLoaded = setAndGetListData(((TimelineLoader<T>) getLoaded()).getPage());
+        TimelineData<T> dataLoaded = setListData(((TimelineLoader<T>) getLoaded()).getPage());
         MyLog.v(this, () -> method + "; " + dataLoaded.params.toSummary());
 
         LoadableListPosition pos = posIn.nonEmpty() && getListData().isSameTimeline &&

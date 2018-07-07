@@ -101,7 +101,7 @@ public class TimelineTitle {
         MyStringBuilder title = new MyStringBuilder();
         if (addUserToTitle(timeline, currentMyAccount)) {
             title.withSpace(
-                    timeline.getTimelineType().title(myContext.context(), timeline.getActorInTimeline()));
+                    timeline.getTimelineType().title(myContext.context(), timeline.actor.getTimelineUsername()));
         } else {
             title.withSpace(timeline.getTimelineType().title(myContext.context()));
         }

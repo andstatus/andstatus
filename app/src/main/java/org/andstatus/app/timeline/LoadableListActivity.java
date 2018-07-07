@@ -343,24 +343,19 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         ListView list = getListView();
         if (list == null) return;
 
-        BaseTimelineAdapter<T> adapter = getListAdapter();
-
-        // LoadableListPosition tlp = LoadableListPosition.getCurrent(list, adapter, centralItemId);
         pos.logV(method + "; Before " + (newAdapter
                 ? "setting new adapter"
                 : "notifying change"));
 
+        final BaseTimelineAdapter<T> adapter = newAdapter ? newListAdapter() : getListAdapter();
         if (!TriState.UNKNOWN.equals(collapseDuplicates)) {
-            getListData().collapseDuplicates(collapseDuplicates.toBoolean(true), collapsedItemId);
+            adapter.getListData().collapseDuplicates(collapseDuplicates.toBoolean(true), collapsedItemId);
         }
-
         if (newAdapter) {
-            adapter = newListAdapter();
             setListAdapter(adapter);
         } else {
             adapter.notifyDataSetChanged();
         }
-
         adapter.setPositionRestored(LoadableListPosition.restore(list, adapter, pos));
     }
 
