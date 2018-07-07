@@ -1,7 +1,6 @@
 package org.andstatus.app.net.http;
 
 import com.github.scribejava.core.builder.api.DefaultApi20;
-import com.github.scribejava.core.model.OAuthConfig;
 
 import org.andstatus.app.util.MyLog;
 
@@ -38,7 +37,8 @@ public class OAuthApi20 extends DefaultApi20 {
     }
 
     @Override
-    public String getAuthorizationUrl(OAuthConfig config, Map<String, String> additionalParams) {
+    public String getAuthorizationUrl(String responseType, String apiKey, String callback, String scope, String state,
+                                      Map<String, String> additionalParams) {
         Map<String, String> additionalParams2 = http.getAdditionalAuthorizationParams();
         if (additionalParams != null) {
             if (additionalParams2 == null) {
@@ -47,6 +47,6 @@ public class OAuthApi20 extends DefaultApi20 {
                 additionalParams2.putAll(additionalParams);
             }
         }
-        return super.getAuthorizationUrl(config, additionalParams2);
+        return super.getAuthorizationUrl(responseType, apiKey, callback, scope, state, additionalParams2);
     }
 }

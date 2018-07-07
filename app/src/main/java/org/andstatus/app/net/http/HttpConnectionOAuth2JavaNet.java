@@ -204,8 +204,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
         clientConfig.setConnectTimeout(MyPreferences.getConnectionTimeoutMs());
         clientConfig.setReadTimeout(2*MyPreferences.getConnectionTimeoutMs());
         clientConfig.setFollowRedirects(false);
-        final ServiceBuilder serviceBuilder = new ServiceBuilder()
-                .apiKey(data.oauthClientKeys.getConsumerKey())
+        final ServiceBuilder serviceBuilder = new ServiceBuilder(data.oauthClientKeys.getConsumerKey())
                 .apiSecret(data.oauthClientKeys.getConsumerSecret())
                 .httpClientConfig(clientConfig);
         if (redirect) {
