@@ -43,6 +43,7 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.CollectionsUtil;
+import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -55,7 +56,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class Timeline implements Comparable<Timeline> {
+public class Timeline implements Comparable<Timeline>, IsEmpty {
     public static final Timeline EMPTY = new Timeline();
     private static final long MIN_RETRY_PERIOD_MS = TimeUnit.SECONDS.toMillis(30);
     private volatile long id;
@@ -409,10 +410,7 @@ public class Timeline implements Comparable<Timeline> {
                 myAccountNew.getOrigin(), searchQuery);
     }
 
-    public boolean nonEmpty() {
-        return !isEmpty();
-    }
-
+    @Override
     public boolean isEmpty() {
         return timelineType == TimelineType.UNKNOWN;
     }

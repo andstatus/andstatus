@@ -144,7 +144,7 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
         final IdentifiableImageView imageView = view.findViewById(R.id.attached_image);
         if (imageView == null) return;
         item.getAttachedImageFile().showImage(contextMenu.getActivity(), imageView);
-        if (!item.getAttachedImageFile().isEmpty()) {
+        if (item.getAttachedImageFile().nonEmpty()) {
             setOnButtonClick(imageView, 0, NoteContextMenuItem.VIEW_IMAGE);
         }
 

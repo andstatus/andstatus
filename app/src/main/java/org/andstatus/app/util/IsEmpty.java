@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2018 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.net.social;
+package org.andstatus.app.util;
 
-import org.andstatus.app.util.IsEmpty;
+public interface IsEmpty {
+    boolean isEmpty();
 
-/** Object of ActivityStreams as defined in https://www.w3.org/TR/activitystreams-vocabulary/#dfn-object
- * @author yvolk@yurivolkov.com */
-abstract class AObject implements IsEmpty {}
+    default boolean nonEmpty() {
+        return !isEmpty();
+    }
+}

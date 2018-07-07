@@ -35,6 +35,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
+import org.andstatus.app.timeline.ListScope;
 import org.andstatus.app.timeline.LoadableListPosition;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -217,7 +218,7 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
             mSubtitle = "";
         }
         final StringBuilder title = new StringBuilder(getText(R.string.label_conversation));
-        I18n.appendWithSpace(title, getText(R.string.combined_timeline_off_origin));
+        I18n.appendWithSpace(title, ListScope.ORIGIN.timelinePreposition(myContext));
         I18n.appendWithSpace(title, getCurrentMyAccount().getOrigin().getName());
         return title;
     }

@@ -28,12 +28,13 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.database.table.DownloadTable;
+import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import java.util.concurrent.TimeUnit;
 
-public class MediaMetadata {
+public class MediaMetadata implements IsEmpty {
     public static final MediaMetadata EMPTY = new MediaMetadata(0, 0, 0);
     public final int width;
     public final int height;
@@ -79,6 +80,7 @@ public class MediaMetadata {
         return new Point(width, height);
     }
 
+    @Override
     public boolean isEmpty() {
         return width <= 0 || height <= 0;
     }
@@ -96,10 +98,6 @@ public class MediaMetadata {
         if (height > 0) builder.append("height:" + height + ",");
         if (duration > 0) builder.append("duration:" + height + ",");
         return MyLog.formatKeyValue(this, builder.toString());
-    }
-
-    public boolean nonEmpty() {
-        return !isEmpty();
     }
 
     public String toDetails() {

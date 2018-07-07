@@ -20,9 +20,10 @@ import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.ListView;
 
+import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 
-public class LoadableListPosition<T extends ViewItem<T>> {
+public class LoadableListPosition<T extends ViewItem<T>> implements IsEmpty {
     public final static LoadableListPosition EMPTY = saved(0, 0, 0, "(empty position");
     final int position;
     final long itemId;
@@ -138,12 +139,9 @@ public class LoadableListPosition<T extends ViewItem<T>> {
         listView.setSelectionFromTop(position, y);
     }
 
-    boolean isEmpty() {
+    @Override
+    public boolean isEmpty() {
         return itemId == 0;
-    }
-
-    boolean nonEmpty() {
-        return !isEmpty();
     }
 
     LoadableListPosition<T> logV(String description) {

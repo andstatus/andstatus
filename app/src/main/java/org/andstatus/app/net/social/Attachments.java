@@ -22,13 +22,14 @@ import org.andstatus.app.data.DownloadType;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.service.AttachmentDownloader;
 import org.andstatus.app.service.CommandExecutionContext;
+import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Attachments {
+public class Attachments implements IsEmpty {
     public final List<Attachment> list = new ArrayList<>();
 
     private void renumber() {

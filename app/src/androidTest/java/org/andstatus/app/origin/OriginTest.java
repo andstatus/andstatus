@@ -76,7 +76,7 @@ public class OriginTest {
 
         textLimit = 0;
         config = OriginConfig.fromTextLimit(textLimit, uploadLimit);
-        assertFalse(config.isEmpty());
+        assertTrue(config.nonEmpty());
         config.shortUrlLength = 24;
         origin = new Origin.Builder(origin).save(config).build();
         assertEquals("Textlimit", OriginType.TEXT_LIMIT_MAXIMUM, origin.getTextLimit());

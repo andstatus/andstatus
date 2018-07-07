@@ -45,6 +45,7 @@ import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.timeline.meta.Timeline;
+import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -57,7 +58,7 @@ import static org.andstatus.app.data.DownloadStatus.LOADED;
 import static org.andstatus.app.data.DownloadStatus.UNKNOWN;
 import static org.andstatus.app.util.MyLog.COMMA;
 
-public class NoteEditorData {
+public class NoteEditorData implements IsEmpty {
     public static final String TAG = NoteEditorData.class.getSimpleName();
     static final NoteEditorData EMPTY = NoteEditorData.newEmpty(MyAccount.EMPTY);
 
@@ -236,8 +237,9 @@ public class NoteEditorData {
     MyAccount getMyAccount() {
         return ma;
     }
-    
-    boolean isEmpty() {
+
+    @Override
+    public boolean isEmpty() {
         return activity.getNote().isEmpty();
     }
 

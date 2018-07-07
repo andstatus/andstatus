@@ -36,6 +36,7 @@ import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.CommandTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.timeline.ListScope;
 import org.andstatus.app.timeline.WhichPage;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineTitle;
@@ -398,14 +399,13 @@ public class CommandData implements Comparable<CommandData> {
         }
         switch (command) {
             case GET_AVATAR:
-                I18n.appendWithSpace(builder, 
-                        myContext.context().getText(R.string.combined_timeline_off_account));
+                I18n.appendWithSpace(builder,
+                        I18n.appendWithSpace(builder, ListScope.ORIGIN.timelinePreposition(myContext)));
                 I18n.appendWithSpace(builder, MyQuery.actorIdToWebfingerId(timeline.getActorId()));
                 if (myContext.accounts().getDistinctOriginsCount() > 1) {
                     long originId = MyQuery.actorIdToLongColumnValue(ActorTable.ORIGIN_ID,
                             timeline.getActorId());
-                    I18n.appendWithSpace(builder, 
-                            myContext.context().getText(R.string.combined_timeline_off_origin));
+                    I18n.appendWithSpace(builder, ListScope.ORIGIN.timelinePreposition(myContext));
                     I18n.appendWithSpace(builder, 
                             myContext.origins().fromId(originId).getName());
                 }
@@ -428,7 +428,7 @@ public class CommandData implements Comparable<CommandData> {
             case UNDO_FOLLOW:
             case GET_FOLLOWERS:
             case GET_FRIENDS:
-                I18n.appendWithSpace(builder, MyQuery.actorIdToWebfingerId(timeline.getActorId()));
+                I18n.appendWithSpace(builder, timeline.actor.getTimelineUsername());
                 break;
             case GET_ACTOR:
             case SEARCH_ACTORS:
@@ -439,7 +439,7 @@ public class CommandData implements Comparable<CommandData> {
                 }
                 break;
             default:
-                appendAccountName(myContext, builder);
+                appendScopeName(myContext, builder);
                 break;
         }
         if (!summaryOnly) {            
@@ -449,10 +449,10 @@ public class CommandData implements Comparable<CommandData> {
         return builder.toString();
     }
 
-    private void appendAccountName(MyContext myContext, StringBuilder builder) {
+    private void appendScopeName(MyContext myContext, StringBuilder builder) {
         if (getTimeline().myAccountToSync.isValid()) {
             I18n.appendWithSpace(builder, 
-                    getTimelineType().timelinePreposition(myContext));
+                    getTimelineType().scope.timelinePreposition(myContext));
             if (getTimelineType().isAtOrigin()) {
                 I18n.appendWithSpace(builder, getTimeline().getOrigin().getName());
             } else {

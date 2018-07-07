@@ -297,7 +297,7 @@ public class Note extends AObject {
         if(recipients.nonEmpty()) {
             builder.append("\nrecipients:" + recipients + ",");
         }
-        if (!attachments.isEmpty()) {
+        if (attachments.nonEmpty()) {
             builder.append("\n" + attachments + ",");
         }
         if(getInReplyTo().nonEmpty()) {

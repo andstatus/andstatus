@@ -16,6 +16,7 @@
 
 package org.andstatus.app.net.social;
 
+import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
 
@@ -24,7 +25,7 @@ import org.andstatus.app.util.UriUtils;
  * Position in the Timeline and Id of the Note may be different things.
  * @author yvolk@yurivolkov.com
  */
-public class TimelinePosition {
+public class TimelinePosition implements IsEmpty {
     public static final TimelinePosition EMPTY = new TimelinePosition("");
     private final String position;
 
@@ -49,12 +50,9 @@ public class TimelinePosition {
         return nonEmpty() && position.startsWith(UriUtils.TEMP_OID_PREFIX);
     }
 
+    @Override
     public boolean isEmpty() {
         return StringUtils.isEmpty(position);
-    }
-
-    public boolean nonEmpty() {
-        return !isEmpty();
     }
 
     @Override

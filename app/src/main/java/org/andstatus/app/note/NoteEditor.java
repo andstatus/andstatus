@@ -623,7 +623,7 @@ public class NoteEditor {
         SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID,
                 command.beingEdited ? command.getCurrentNoteId() : 0);
         hide();
-        if (!command.isEmpty()) {
+        if (command.nonEmpty()) {
             MyLog.v(NoteEditorData.TAG, () -> "Requested: " + command);
             new AsyncTaskLauncher<NoteEditorCommand>().execute(this, true,
                     new NoteSaver(this), command);

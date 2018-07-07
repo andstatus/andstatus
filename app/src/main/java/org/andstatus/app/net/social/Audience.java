@@ -31,6 +31,7 @@ import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
@@ -38,7 +39,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 
-public class Audience {
+public class Audience implements IsEmpty {
     public final static Audience EMPTY = new Audience(Origin.EMPTY);
     public final Origin origin;
     private final Set<Actor> recipients = new HashSet<>();
@@ -91,10 +92,7 @@ public class Audience {
         return recipients;
     }
 
-    public boolean nonEmpty() {
-        return !isEmpty();
-    }
-
+    @Override
     public boolean isEmpty() {
         return this.equals(EMPTY) || recipients.isEmpty();
     }

@@ -20,10 +20,11 @@ import android.net.Uri;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.UriUtils;
 
-public class NoteEditorCommand {
+public class NoteEditorCommand implements IsEmpty {
     private volatile Long currentNoteId = null;
     private Uri imageUriToSave = Uri.EMPTY;
     boolean beingEdited = false;
@@ -93,7 +94,7 @@ public class NoteEditorCommand {
     }
 
     public boolean needToSavePreviousData() {
-        return previousData.isValid() && !previousData.isEmpty()
+        return previousData.isValid() && previousData.nonEmpty()
                 && (previousData.getNoteId() == 0 || currentData.getNoteId() != previousData.getNoteId());
     }
 

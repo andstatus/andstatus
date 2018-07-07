@@ -64,7 +64,7 @@ public class TimelinePositionTest extends TimelineActivityTest<ActivityViewItem>
         int position1 = getFirstVisibleAdapterPosition();
         final BaseTimelineAdapter listAdapter = getActivity().getListAdapter();
         ViewItem item1 = listAdapter.getItem(position1);
-        if (!previousItem.isEmpty()) {
+        if (previousItem.nonEmpty()) {
             int previousItemPosition = listAdapter.getPositionById(previousItem.getId());
             assertEquals("; previous:" + previousItem
                     + "\n  " + (previousItemPosition >=0 ? "at position " + previousItemPosition : "not found now")

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,7 @@ package org.andstatus.app.note;
 
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.StringUtils;
 
@@ -25,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class KeywordsFilter {
+public class KeywordsFilter implements IsEmpty {
     static final String CONTAINS_PREFIX = "contains:";
 
     static class Keyword {

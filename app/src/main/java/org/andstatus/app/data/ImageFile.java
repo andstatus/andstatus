@@ -30,9 +30,10 @@ import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.graphics.MediaMetadata;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
+import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 
-public abstract class ImageFile {
+public abstract class ImageFile implements IsEmpty {
     private final DownloadFile downloadFile;
     private volatile MediaMetadata mediaMetadata;
     public final long downloadId;

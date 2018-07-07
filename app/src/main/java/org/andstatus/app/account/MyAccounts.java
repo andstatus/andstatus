@@ -17,6 +17,7 @@ import org.andstatus.app.data.SqlActorIds;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
+import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.Permissions;
 import org.andstatus.app.util.StringUtils;
@@ -41,7 +42,7 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
-public class MyAccounts {
+public class MyAccounts implements IsEmpty {
     /** Current account is the first in this list */
     public final List<MyAccount> recentAccounts = new CopyOnWriteArrayList<>();
 

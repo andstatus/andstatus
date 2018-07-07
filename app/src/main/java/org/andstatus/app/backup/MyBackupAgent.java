@@ -237,7 +237,7 @@ public class MyBackupAgent extends BackupAgent {
         MyContextHolder.initialize(this, this);
         if (!MyContextHolder.get().isReady()) {
             throw new FileNotFoundException("Application context is not initialized");
-        } else if (!MyContextHolder.get().accounts().isEmpty()) {
+        } else if (MyContextHolder.get().accounts().nonEmpty()) {
             throw new FileNotFoundException("Cannot restore: AndStatus accounts are present. Please reinstall application before restore");
         }
 

@@ -38,10 +38,6 @@ public class CachedUsersAndActors {
         this.myContext = myContext;
     }
 
-    public boolean isEmpty() {
-        return myUsers.isEmpty();
-    }
-
     public int size() {
         return myUsers.size();
     }

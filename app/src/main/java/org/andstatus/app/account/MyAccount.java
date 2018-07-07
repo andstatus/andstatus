@@ -49,6 +49,7 @@ import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineSaver;
 import org.andstatus.app.timeline.meta.TimelineType;
+import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -64,7 +65,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author yvolk@yurivolkov.com
  */
-public final class MyAccount implements Comparable<MyAccount> {
+public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     private static final String TAG = MyAccount.class.getSimpleName();
     public static final MyAccount EMPTY = Builder.getEmptyAccount(MyContext.EMPTY,"(empty)");
 
@@ -145,8 +146,9 @@ public final class MyAccount implements Comparable<MyAccount> {
         return actor.getWebFingerId();
     }
 
-    public boolean nonEmpty() {
-        return this != EMPTY;
+    @Override
+    public boolean isEmpty() {
+        return this == EMPTY;
     }
 
     /** Companion class used to load/create/change/delete {@link MyAccount}'s data */
@@ -380,7 +382,7 @@ public final class MyAccount implements Comparable<MyAccount> {
             boolean ok = false;
             try {
                 OriginConfig config = myAccount.getConnection().getConfig();
-                ok = (!config.isEmpty());
+                ok = (config.nonEmpty());
                 if (ok) {
                     Origin.Builder originBuilder = new Origin.Builder(myAccount.getOrigin());
                     originBuilder.save(config);

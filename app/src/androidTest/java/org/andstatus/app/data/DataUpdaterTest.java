@@ -55,7 +55,6 @@ import java.util.Set;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -106,7 +105,7 @@ public class DataUpdaterTest {
         assertNotEquals("Note added", 0, noteId);
         assertNotEquals("Activity added", 0, activity.getId());
         AssertionData data = TestSuite.getMyContextForTest().getAssertionData(DataUpdater.MSG_ASSERTION_KEY);
-        assertFalse("Data put", data.isEmpty());
+        assertTrue("Data put", data.nonEmpty());
         assertEquals("Note Oid", noteOid, data.getValues()
                 .getAsString(NoteTable.NOTE_OID));
         assertEquals("Note is loaded", DownloadStatus.LOADED,

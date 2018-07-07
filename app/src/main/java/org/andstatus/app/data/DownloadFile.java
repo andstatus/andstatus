@@ -19,6 +19,7 @@ package org.andstatus.app.data;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.MyStorage;
+import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 
@@ -27,7 +28,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class DownloadFile {
+public class DownloadFile implements IsEmpty {
     private final String filename;
     private final File file;
     /** Existence is checked at the moment of the object creation */
@@ -63,7 +64,7 @@ public class DownloadFile {
     }
 
     public final boolean existsNow() {
-        return !isEmpty() && file.exists() && file.isFile();
+        return nonEmpty() && file.exists() && file.isFile();
     }
     
     public File getFile() {

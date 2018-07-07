@@ -16,7 +16,9 @@
 
 package org.andstatus.app.origin;
 
-public class OriginConfig {
+import org.andstatus.app.util.IsEmpty;
+
+public class OriginConfig implements IsEmpty {
     private boolean isEmpty = true;
     
     public int shortUrlLength = 0;

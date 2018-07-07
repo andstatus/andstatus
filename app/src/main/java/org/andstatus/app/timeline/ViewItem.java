@@ -21,12 +21,13 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.actor.ActorListLoader;
 import org.andstatus.app.timeline.meta.TimelineType;
+import org.andstatus.app.util.IsEmpty;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class ViewItem<T extends ViewItem<T>> {
+public class ViewItem<T extends ViewItem<T>> implements IsEmpty {
     private final List<T> children = new ArrayList<>();
     private final boolean isEmpty;
     private ViewItem parent = EmptyViewItem.EMPTY;
@@ -82,6 +83,7 @@ public class ViewItem<T extends ViewItem<T>> {
         return true;
     }
 
+    @Override
     public boolean isEmpty() {
         return isEmpty;
     }

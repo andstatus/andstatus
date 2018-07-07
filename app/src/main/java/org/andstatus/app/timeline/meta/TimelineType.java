@@ -20,7 +20,6 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyContext;
 import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.lang.SelectableEnum;
 import org.andstatus.app.net.social.Connection;
@@ -119,10 +118,6 @@ public enum TimelineType implements SelectableEnum {
         }
     }
     
-    public CharSequence timelinePreposition(MyContext myContext) {
-        return scope.timelinePreposition(myContext);
-    }
-
     public boolean isSyncable() {
         return getConnectionApiRoutine() != Connection.ApiRoutineEnum.DUMMY;
     }

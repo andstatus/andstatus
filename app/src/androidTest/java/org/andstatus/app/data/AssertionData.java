@@ -18,10 +18,12 @@ package org.andstatus.app.data;
 
 import android.content.ContentValues;
 
+import org.andstatus.app.util.IsEmpty;
+
 /**
  * @author yvolk@yurivolkov.com
  */
-public class AssertionData {
+public class AssertionData implements IsEmpty {
     private final String key;
     private final ContentValues values;
 
@@ -45,7 +47,8 @@ public class AssertionData {
     public ContentValues getValues() {
         return values;
     }
-    
+
+    @Override
     public boolean isEmpty() {
         return values.size() == 0;
     }

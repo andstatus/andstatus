@@ -17,12 +17,13 @@
 package org.andstatus.app.note;
 
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicReference;
 
-class NoteEditorLock {
+class NoteEditorLock implements IsEmpty {
     static final NoteEditorLock EMPTY = new NoteEditorLock(false, 0);
     static final AtomicReference<NoteEditorLock> lock = new AtomicReference<>(NoteEditorLock.EMPTY);
 
@@ -35,7 +36,8 @@ class NoteEditorLock {
         this.noteId = noteId;
     }
 
-    boolean isEmpty() {
+    @Override
+    public boolean isEmpty() {
         return this.equals(EMPTY);
     }
 
@@ -76,7 +78,7 @@ class NoteEditorLock {
     }
 
     public boolean release() {
-        if (!isEmpty()) {
+        if (nonEmpty()) {
             if (lock.compareAndSet(this, EMPTY)) {
                 MyLog.v(this, () -> "Released lock " + this);
                 return true;

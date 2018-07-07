@@ -83,13 +83,12 @@ public class TimelineTitle {
                     myContext.context() == null ? "combined" : myContext.context().getText(R.string.combined_timeline_on));
         } else {
             if (timeline.getTimelineType().isAtOrigin()) {
-                if (currentMyAccount != MyAccount.EMPTY) {
-                    I18n.appendWithSpace(title, timeline.getTimelineType()
-                            .timelinePreposition(myContext));
+                if (currentMyAccount.nonEmpty()) {
+                    I18n.appendWithSpace(title, timeline.getTimelineType().scope.timelinePreposition(myContext));
                     I18n.appendWithSpace(title, timeline.getOrigin().getName());
                 }
             } else {
-                if (currentMyAccount == MyAccount.EMPTY) {
+                if (currentMyAccount.isEmpty()) {
                     if (timeline.isActorDifferentFromAccount()) {
                         I18n.appendWithSpace(title, timeline.getActorInTimeline());
                     }

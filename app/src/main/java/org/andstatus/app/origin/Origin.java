@@ -35,6 +35,7 @@ import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.net.http.SslModeEnum;
+import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -50,7 +51,7 @@ import java.util.regex.Pattern;
  * 
  * @author yvolk@yurivolkov.com
  */
-public class Origin {
+public class Origin implements IsEmpty {
     static final int TEXT_LIMIT_FOR_WEBFINGER_ID = 200;
     public static final Origin EMPTY = newEmpty(OriginType.UNKNOWN);
     private static final String VALID_NAME_CHARS = "a-zA-Z_0-9/.-";
@@ -123,6 +124,7 @@ public class Origin {
         return getId() != 0;
     }
 
+    @Override
     public boolean isEmpty() {
         return this == EMPTY || originType == OriginType.UNKNOWN;   // TODO avoid second case
     }
@@ -132,7 +134,7 @@ public class Origin {
     }
 
     private boolean calcIsValid() {
-        return !isEmpty()
+        return nonEmpty()
                 && isNameValid()
                 && urlIsValid()
                 && (isSsl() == originType.sslDefault || originType.canChangeSsl);

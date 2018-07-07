@@ -19,7 +19,6 @@ package org.andstatus.app.user;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.DbUtils;
@@ -29,6 +28,7 @@ import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.MyAsyncTask;
+import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -38,12 +38,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class User {
+public class User implements IsEmpty {
     public static final User EMPTY = new User(0, "(empty)", TriState.FALSE, Collections.emptySet());
     public long userId = 0L;
     private String knownAs = "";
@@ -93,10 +92,7 @@ public class User {
         return new User(0, "", TriState.UNKNOWN, new HashSet<>());
     }
 
-    public boolean nonEmpty() {
-        return !isEmpty();
-    }
-
+    @Override
     public boolean isEmpty() {
         return this == EMPTY || (userId == 0 && StringUtils.isEmpty(knownAs));
     }

@@ -17,6 +17,7 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.StringUtils;
@@ -25,7 +26,7 @@ import org.andstatus.app.util.UriUtils;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class DownloadData {
+public class DownloadData implements IsEmpty {
     private static final String TAG = DownloadData.class.getSimpleName();
     public static final DownloadData EMPTY = new DownloadData(null, 0, 0, 0, "",
             DownloadType.UNKNOWN, Uri.EMPTY);
@@ -497,10 +498,7 @@ public class DownloadData {
       return FileProvider.downloadFilenameToUri(getFile().getFilename());
     }
 
-    public boolean nonEmpty() {
-        return !isEmpty();
-    }
-
+    @Override
     public boolean isEmpty() {
         return this == EMPTY || uri.equals(Uri.EMPTY);
     }

@@ -39,6 +39,7 @@ import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.user.User;
 import org.andstatus.app.util.I18n;
+import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -60,7 +61,7 @@ import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class Actor implements Comparable<Actor> {
+public class Actor implements Comparable<Actor>, IsEmpty {
     public static final Actor EMPTY = new Actor(Origin.EMPTY, "").setUsername("Empty");
     public static final Actor PUBLIC = new Actor(Origin.EMPTY, "https://www.w3.org/ns/activitystreams#Public").setUsername("Public");
 
@@ -233,10 +234,7 @@ public class Actor implements Comparable<Actor> {
         return mbActivity;
     }
 
-    public boolean nonEmpty() {
-        return !isEmpty();
-    }
-
+    @Override
     public boolean isEmpty() {
         return this == EMPTY || !origin.isValid() || (actorId == 0 && UriUtils.nonRealOid(oid)
                 && StringUtils.isEmpty(webFingerId) && !origin.isUsernameValid(username));
