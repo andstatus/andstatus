@@ -154,7 +154,7 @@ public class MyAccounts implements IsEmpty {
     @NonNull
     public MyAccount fromActorId(long actorId) {
         if (actorId == 0) return MyAccount.EMPTY;
-        return fromActor(Actor.fromOriginAndActorId(Origin.EMPTY, actorId), false, false);
+        return fromActor(Actor.load(myContext, actorId), false, false);
     }
 
     @NonNull
@@ -178,9 +178,10 @@ public class MyAccounts implements IsEmpty {
     @NonNull
     private MyAccount fromMyActors(@NonNull Actor other, boolean sameOriginOnly) {
         return myAccounts.stream().filter(ma ->
-                myContext.users().myActors.values().stream()
+                (!sameOriginOnly || ma.getOrigin().equals(other.origin))
+                && myContext.users().myActors.values().stream()
                         .filter(actor -> actor.user.userId == ma.getActor().user.userId)
-                        .filter(actor -> actor.isSame(other, sameOriginOnly)).count() > 0)
+                        .anyMatch(actor -> actor.isSame(other, sameOriginOnly)))
                 .findFirst().orElse(MyAccount.EMPTY);
     }
 
@@ -189,8 +190,8 @@ public class MyAccounts implements IsEmpty {
     public MyAccount toSyncThisActor(@NonNull Actor other) {
         return other.isEmpty() ? MyAccount.EMPTY
                 : Stream.of(fromActor(other, true, true))
-                .filter(MyAccount::isValid)
-                .findFirst().orElseGet(() -> forFriend(other, true, true)
+                .filter(MyAccount::isValid).findFirst()
+                .orElseGet(() -> forFriend(other, true, true)
                                 .orElseGet(() -> getFirstSucceededForOrigin(other.origin))
                 );
     }
