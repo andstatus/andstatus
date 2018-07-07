@@ -32,7 +32,7 @@ import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.util.I18n;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
@@ -60,7 +60,7 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
     public StringBuilder getDetails(Context context) {
         StringBuilder builder = super.getDetails(context);
         if (MyPreferences.isShowDebuggingInfoInUi()) {
-            I18n.appendWithSpace(builder, "(i" + indentLevel + ",r" + replyLevel + ")");
+            MyStringBuilder.appendWithSpace(builder, "(i" + indentLevel + ",r" + replyLevel + ")");
         }
         return builder;
     }

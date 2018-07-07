@@ -31,8 +31,8 @@ import org.andstatus.app.FirstActivity;
 import org.andstatus.app.data.converter.DatabaseConverterController;
 import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.os.AsyncTaskLauncher;
-import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TamperingDetector;
 
@@ -201,9 +201,9 @@ public final class MyContextHolder {
     public static String getSystemInfo(Context context, boolean showVersion) {
         StringBuilder builder = new StringBuilder();
         if (showVersion) builder.append(getVersionText(context));
-        I18n.appendWithSpace(builder, MyLog.currentDateTimeForLogLine());
-        I18n.appendWithSpace(builder, ", started");
-        I18n.appendWithSpace(builder, RelativeTime.getDifference(context, appStartedAt, SystemClock.elapsedRealtime()));
+        MyStringBuilder.appendWithSpace(builder, MyLog.currentDateTimeForLogLine());
+        MyStringBuilder.appendWithSpace(builder, ", started");
+        MyStringBuilder.appendWithSpace(builder, RelativeTime.getDifference(context, appStartedAt, SystemClock.elapsedRealtime()));
         builder.append("\n");
         builder.append(ImageCaches.getCacheInfo());
         builder.append("\n");
@@ -225,8 +225,8 @@ public final class MyContextHolder {
         if (builder.length() == 0) {
             builder.append("AndStatus v.?");
         }
-        I18n.appendWithSpace(builder, (getExecutionMode() == ExecutionMode.DEVICE ? "" : getExecutionMode().code));
-        I18n.appendWithSpace(builder, TamperingDetector.getAppSignatureInfo());
+        MyStringBuilder.appendWithSpace(builder, (getExecutionMode() == ExecutionMode.DEVICE ? "" : getExecutionMode().code));
+        MyStringBuilder.appendWithSpace(builder, TamperingDetector.getAppSignatureInfo());
         return builder.toString();
     }
 

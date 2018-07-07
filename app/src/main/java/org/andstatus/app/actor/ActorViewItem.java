@@ -19,7 +19,6 @@ package org.andstatus.app.actor;
 import android.database.Cursor;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.account.MyAccount;
@@ -35,8 +34,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
-import org.andstatus.app.user.User;
-import org.andstatus.app.util.I18n;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtils;
 
 import java.util.HashSet;
@@ -104,7 +102,7 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
     public String getDescription() {
         StringBuilder builder = new StringBuilder(actor.getDescription());
         if (MyPreferences.isShowDebuggingInfoInUi()) {
-            I18n.appendWithSpace(builder, "(id=" + getActor().actorId + ")");
+            MyStringBuilder.appendWithSpace(builder, "(id=" + getActor().actorId + ")");
         }
         return builder.toString();
     }

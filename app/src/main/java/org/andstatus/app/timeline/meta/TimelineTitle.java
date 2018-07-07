@@ -22,8 +22,9 @@ import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.util.I18n;
+import org.andstatus.app.timeline.ListScope;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtils;
 
 import java.util.Objects;
@@ -45,15 +46,15 @@ public class TimelineTitle {
 
     public void updateActivityTitle(MyActivity activity, String additionalTitleText) {
         activity.setTitle(title);
-        activity.setSubtitle(I18n.appendWithSpace(new StringBuilder(subTitle), additionalTitleText));
+        activity.setSubtitle(new MyStringBuilder(subTitle).withSpace(additionalTitleText));
         MyLog.v(activity, () -> "Title: " + toString());
     }
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder(title);
-        if (!StringUtils.isEmpty(subTitle)) {
-            I18n.appendWithSpace(builder, subTitle);
+        MyStringBuilder builder = new MyStringBuilder(title);
+        if (StringUtils.nonEmpty(subTitle)) {
+            builder.withSpace(subTitle);
         }
         return builder.toString();
     }
@@ -73,39 +74,61 @@ public class TimelineTitle {
     }
 
     private static String toTimelineTitle(MyContext myContext, Timeline timeline, MyAccount currentMyAccount) {
-        StringBuilder title = new StringBuilder();
-        I18n.appendWithSpace(title, timeline.getTimelineType().getTitle(myContext.context()));
+        return timeline.getTimelineType().scope == ListScope.ORIGIN
+                ? toOriginTitle(myContext, timeline, currentMyAccount)
+                : toUserTitle(myContext, timeline, currentMyAccount);
+    }
+
+    private static String toOriginTitle(MyContext myContext, Timeline timeline, MyAccount currentMyAccount) {
+        MyStringBuilder title = new MyStringBuilder();
+        title.withSpace(timeline.getTimelineType().title(myContext.context()));
         if (timeline.hasSearchQuery()) {
-            I18n.appendWithSpace(title, "'" + timeline.getSearchQuery() + "'");
+            title.withSpace("'" + timeline.getSearchQuery() + "'");
         }
         if (timeline.isCombined()) {
-            I18n.appendWithSpace(title,
+            title.withSpace(
                     myContext.context() == null ? "combined" : myContext.context().getText(R.string.combined_timeline_on));
         } else {
-            if (timeline.getTimelineType().isAtOrigin()) {
-                if (currentMyAccount.nonEmpty()) {
-                    I18n.appendWithSpace(title, timeline.getTimelineType().scope.timelinePreposition(myContext));
-                    I18n.appendWithSpace(title, timeline.getOrigin().getName());
-                }
-            } else {
-                if (currentMyAccount.isEmpty()) {
-                    if (timeline.isActorDifferentFromAccount()) {
-                        I18n.appendWithSpace(title, timeline.getActorInTimeline());
-                    }
-                } else {
-                    if (timeline.getActorId() != currentMyAccount.getActorId()) {
-                        I18n.appendWithSpace(title, timeline.getActorInTimeline());
-                    }
-                }
+            if (currentMyAccount.nonEmpty()) {
+                title.withSpace(timeline.getTimelineType().scope.timelinePreposition(myContext));
+                title.withSpace(timeline.getOrigin().getName());
             }
         }
         return title.toString();
     }
 
+    private static String toUserTitle(MyContext myContext, Timeline timeline, MyAccount currentMyAccount) {
+        MyStringBuilder title = new MyStringBuilder();
+        if (addUserToTitle(timeline, currentMyAccount)) {
+            title.withSpace(
+                    timeline.getTimelineType().title(myContext.context(), timeline.getActorInTimeline()));
+        } else {
+            title.withSpace(timeline.getTimelineType().title(myContext.context()));
+        }
+        if (timeline.hasSearchQuery()) {
+            title.withSpace("'" + timeline.getSearchQuery() + "'");
+        }
+        if (timeline.isCombined()) {
+            title.withSpace(
+                myContext.context() == null ? "combined" : myContext.context().getText(R.string.combined_timeline_on));
+        }
+        return title.toString();
+    }
+
+    private static boolean addUserToTitle(Timeline timeline, MyAccount currentMyAccount) {
+        if (timeline.isCombined() || timeline.actor.isEmpty()) return false;
+
+        if (timeline.actor.user.isMyUser().untrue) return true;
+
+        if (currentMyAccount.isEmpty() && timeline.myAccountToSync.getActor().notSameUser(timeline.actor)) return true;
+
+        return currentMyAccount.nonEmpty() && currentMyAccount.getActor().notSameUser(timeline.actor);
+    }
+
     private static String toTimelineSubtitle(MyContext myContext, Timeline timeline, @NonNull MyAccount currentMyAccount) {
-        final StringBuilder title = new StringBuilder();
+        final MyStringBuilder title = new MyStringBuilder();
         if (currentMyAccount.nonEmpty()) {
-            I18n.appendWithSpace(title, currentMyAccount.toAccountButtonText(myContext));
+            title.withSpace(currentMyAccount.toAccountButtonText(myContext));
         }
         return title.toString();
     }

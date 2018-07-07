@@ -23,8 +23,8 @@ import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
+import org.andstatus.app.util.MyStringBuilder;
 
 import java.util.Set;
 
@@ -112,7 +112,7 @@ public abstract class ConversationItem<T extends ConversationItem<T>> extends Ba
     public StringBuilder getDetails(Context context) {
         final StringBuilder builder = super.getDetails(context);
         if (inReplyToViewItem != null) {
-            I18n.appendWithSpace(builder, "(" + inReplyToViewItem.historyOrder
+            MyStringBuilder.appendWithSpace(builder, "(" + inReplyToViewItem.historyOrder
                     + ")");
         }
         return builder;

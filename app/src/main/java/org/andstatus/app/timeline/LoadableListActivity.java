@@ -46,8 +46,8 @@ import org.andstatus.app.service.MyServiceEventsListener;
 import org.andstatus.app.service.MyServiceEventsReceiver;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.BundleUtils;
-import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -382,7 +382,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
     protected void updateTitle(String progress) {
         StringBuilder title = new StringBuilder(getCustomTitle());
         if (!StringUtils.isEmpty(progress)) {
-            I18n.appendWithSpace(title, progress);
+            MyStringBuilder.appendWithSpace(title, progress);
         }
         setTitle(title.toString());
         setSubtitle(mSubtitle);

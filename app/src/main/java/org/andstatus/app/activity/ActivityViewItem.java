@@ -33,7 +33,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.DuplicationLink;
 import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
-import org.andstatus.app.util.I18n;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
 
 /** View on ActivityStream
@@ -80,7 +80,7 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
             noteViewItem = NoteViewItem.EMPTY.getNew().fromCursorRow(MyContextHolder.get(), cursor);
             noteViewItem.setParent(this);
             if (MyPreferences.isShowDebuggingInfoInUi()) {
-                I18n.appendWithSpace(noteViewItem.detailsSuffix, "(actId=" + id + ")");
+                MyStringBuilder.appendWithSpace(noteViewItem.detailsSuffix, "(actId=" + id + ")");
             }
         }
     }
@@ -145,10 +145,10 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
     String getDetails(Context context) {
         StringBuilder builder = new StringBuilder(RelativeTime.getDifference(context, updatedDate));
         if (isCollapsed()) {
-            I18n.appendWithSpace(builder, "(+" + getChildrenCount() + ")");
+            MyStringBuilder.appendWithSpace(builder, "(+" + getChildrenCount() + ")");
         }
         if (MyPreferences.isShowDebuggingInfoInUi()) {
-            I18n.appendWithSpace(builder, "(actId=" + id + ")");
+            MyStringBuilder.appendWithSpace(builder, "(actId=" + id + ")");
         }
         return builder.toString();
     }

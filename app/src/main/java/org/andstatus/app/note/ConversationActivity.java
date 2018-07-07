@@ -40,8 +40,8 @@ import org.andstatus.app.timeline.LoadableListPosition;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.BundleUtils;
-import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyCheckBox;
+import org.andstatus.app.util.MyStringBuilder;
 
 /**
  * One selected note and, optionally, the whole conversation
@@ -218,8 +218,8 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
             mSubtitle = "";
         }
         final StringBuilder title = new StringBuilder(getText(R.string.label_conversation));
-        I18n.appendWithSpace(title, ListScope.ORIGIN.timelinePreposition(myContext));
-        I18n.appendWithSpace(title, getCurrentMyAccount().getOrigin().getName());
+        MyStringBuilder.appendWithSpace(title, ListScope.ORIGIN.timelinePreposition(myContext));
+        MyStringBuilder.appendWithSpace(title, getCurrentMyAccount().getOrigin().getName());
         return title;
     }
 }

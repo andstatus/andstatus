@@ -20,7 +20,6 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
-import android.text.TextUtils;
 import android.util.Base64;
 
 import org.acra.ACRA;
@@ -52,10 +51,10 @@ public class TamperingDetector {
         for (String signature : getAppSignatures(context)) {
             if (knownSignatures.containsKey(signature)) {
                 knownAppSignature = knownSignatures.get(signature);
-                I18n.appendWithSpace(builder, "(" + knownAppSignature + ")");
+                MyStringBuilder.appendWithSpace(builder, "(" + knownAppSignature + ")");
             } else {
                 MyLog.i(TamperingDetector.class, "Unknown APK signature:'" + signature + "'");
-                I18n.appendWithSpace(builder, signature);
+                MyStringBuilder.appendWithSpace(builder, signature);
             }
         }
         ACRA.getErrorReporter().putCustomData("apkSignatures", builder.toString());

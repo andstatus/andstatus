@@ -36,9 +36,9 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
@@ -775,13 +775,13 @@ public class MyQuery {
 
     public static String noteInfoForLog(long noteId) {
         StringBuilder builder = new StringBuilder();
-        I18n.appendWithComma(builder, "noteId:" + noteId);
+        MyStringBuilder.appendWithComma(builder, "noteId:" + noteId);
         String oid = idToOid(OidEnum.NOTE_OID, noteId, 0);
-        I18n.appendWithComma(builder, "oid" + (StringUtils.isEmpty(oid) ? " is empty" : ":'" + oid + "'"));
+        MyStringBuilder.appendWithComma(builder, "oid" + (StringUtils.isEmpty(oid) ? " is empty" : ":'" + oid + "'"));
         String content = MyHtml.fromHtml(noteIdToStringColumnValue(NoteTable.CONTENT, noteId));
-        I18n.appendAtNewLine(builder, "content:'" + content + "'");
+        MyStringBuilder.appendAtNewLine(builder, "content:'" + content + "'");
         Origin origin = MyContextHolder.get().origins().fromId(noteIdToLongColumnValue(NoteTable.ORIGIN_ID, noteId));
-        I18n.appendAtNewLine(builder, origin.toString());
+        MyStringBuilder.appendAtNewLine(builder, origin.toString());
         return builder.toString();
     }
 

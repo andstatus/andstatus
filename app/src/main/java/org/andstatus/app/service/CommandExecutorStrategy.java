@@ -19,8 +19,8 @@ package org.andstatus.app.service;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
 
 class CommandExecutorStrategy implements CommandExecutorParent {
@@ -152,9 +152,9 @@ class CommandExecutorStrategy implements CommandExecutorParent {
     void logConnectionException(ConnectionException e, String detailedMessage) {
         boolean isHard = e != null && e.isHardError();
         StringBuilder builder = new StringBuilder(100);
-        I18n.appendAtNewLine(builder, detailedMessage);
+        MyStringBuilder.appendAtNewLine(builder, detailedMessage);
         if (e != null) {
-            I18n.appendAtNewLine(builder, e.toString());
+            MyStringBuilder.appendAtNewLine(builder, e.toString());
         }
         logExecutionError(isHard, builder.toString());
     }
@@ -166,8 +166,8 @@ class CommandExecutorStrategy implements CommandExecutorParent {
             execContext.getResult().incrementNumIoExceptions();
         }
         StringBuilder builder = new StringBuilder(100);
-        I18n.appendAtNewLine(builder, detailedMessage);
-        I18n.appendAtNewLine(builder, execContext.toExceptionContext());
+        MyStringBuilder.appendAtNewLine(builder, detailedMessage);
+        MyStringBuilder.appendAtNewLine(builder, execContext.toExceptionContext());
         execContext.getResult().setMessage(builder.toString());
         MyLog.e(this, builder.toString());
     }

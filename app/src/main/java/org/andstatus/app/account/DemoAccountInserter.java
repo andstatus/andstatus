@@ -31,8 +31,8 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
@@ -182,13 +182,13 @@ public class DemoAccountInserter {
 
                 long count = 0;
                 StringBuilder logMsg =new StringBuilder(myAccount.toString());
-                I18n.appendWithSpace(logMsg, timelineType.toString());
+                MyStringBuilder.appendWithSpace(logMsg, timelineType.toString());
                 for (Timeline timeline : MyContextHolder.get().timelines().values()) {
                     if (timeline.getActorId() == myAccount.getActorId()
                             && timeline.getTimelineType().equals(timelineType)
                             && !timeline.hasSearchQuery()) {
                         count++;
-                        I18n.appendWithSpace(logMsg, timeline.toString());
+                        MyStringBuilder.appendWithSpace(logMsg, timeline.toString());
                     }
                 }
                 assertEquals(logMsg.toString() + "\n" + MyContextHolder.get().timelines().values(), 1, count);

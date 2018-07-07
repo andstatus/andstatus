@@ -275,7 +275,7 @@ public enum OriginType implements SelectableEnum {
     }
 
     @Override
-    public CharSequence getTitle(Context context) {
+    public CharSequence title(Context context) {
         return getTitle();
     }
 

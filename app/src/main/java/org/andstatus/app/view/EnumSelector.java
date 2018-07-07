@@ -69,7 +69,7 @@ public class EnumSelector<E extends Enum<E> & SelectableEnum> extends SelectorDi
         List<Map<String, String>> list = new ArrayList<>();
         for(SelectableEnum value : enumList.getList()){
             Map<String, String> map = new HashMap<>();
-            map.put(KEY_VISIBLE_NAME, value.getTitle(getActivity()).toString());
+            map.put(KEY_VISIBLE_NAME, value.title(getActivity()).toString());
             list.add(map);
         }
 

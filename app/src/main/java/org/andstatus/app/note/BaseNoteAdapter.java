@@ -30,7 +30,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.graphics.IdentifiableImageView;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.TimelineData;
-import org.andstatus.app.util.I18n;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
@@ -116,7 +116,7 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
             viewGroup.setVisibility(View.VISIBLE);
             StringBuilder rebloggers = new StringBuilder();
             for (String name : item.rebloggers.values()) {
-                I18n.appendWithComma(rebloggers, name);
+                MyStringBuilder.appendWithComma(rebloggers, name);
             }
             MyUrlSpan.showText(viewGroup, R.id.rebloggers, rebloggers.toString(), false, false);
         } else {

@@ -60,7 +60,7 @@ public enum DisplayedInSelector implements SelectableEnum {
 
     /** Localized title for UI */
     @Override
-    public CharSequence getTitle(Context context) {
+    public CharSequence title(Context context) {
         if (titleResId == 0 || context == null) {
             return this.code;
         } else {

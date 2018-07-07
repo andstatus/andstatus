@@ -103,28 +103,6 @@ public class I18n {
         return " ,.;:()[]{}-_=+\"'".indexOf(charAt) >=0;
     }
 
-    @NonNull
-    public static StringBuilder appendWithComma(StringBuilder builder, CharSequence text) {
-        return appendWithSeparator(builder, text, ", ");
-    }
-
-    @NonNull
-    public static StringBuilder appendWithSpace(StringBuilder builder, CharSequence text) {
-        return appendWithSeparator(builder, text, " ");
-    }
-
-    @NonNull
-    public static StringBuilder appendWithSeparator(StringBuilder builderIn, CharSequence text, @NonNull String separator) {
-        StringBuilder builder = builderIn == null ? new StringBuilder() : builderIn;
-        if (!TextUtils.isEmpty(text)) {
-            if (builder.length() > 0) {
-                builder.append(separator);
-            }
-            builder.append(text);
-        }
-        return builder;
-    }
-
     public static String localeToLanguage(String locale) {
         if (StringUtils.isEmpty(locale)) {
             return "";
@@ -171,15 +149,6 @@ public class I18n {
             return "";
         } else {
             return Long.toString(value);
-        }
-    }
-
-    public static void appendAtNewLine(StringBuilder builder, String string) {
-        if (!StringUtils.isEmpty(string)) {
-            if (builder.length() > 0) {
-                builder.append(", \n");
-            }
-            builder.append(string);
         }
     }
 

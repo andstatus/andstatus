@@ -673,10 +673,6 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         BundleUtils.putNotEmpty(bundle, IntentExtra.SEARCH_QUERY, searchQuery);
     }
 
-    public boolean isActorDifferentFromAccount() {
-        return actor.nonEmpty() && myAccountToSync.nonEmpty() && !myAccountToSync.getActor().equals(actor);
-    }
-
     /**
      * @return true if it's time to auto update this timeline
      */

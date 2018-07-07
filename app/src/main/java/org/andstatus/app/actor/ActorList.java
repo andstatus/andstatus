@@ -38,6 +38,7 @@ import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.view.MyContextMenu;
 
@@ -136,22 +137,24 @@ public class ActorList extends NoteEditorListActivity {
     @Override
     protected CharSequence getCustomTitle() {
         mSubtitle = I18n.trimTextAt(MyHtml.fromHtml(getListLoader().getSubtitle()), 80);
-        final StringBuilder title = new StringBuilder(mActorListType.getTitle(this));
-        if (StringUtils.nonEmpty(getParsedUri().getSearchQuery())) {
-            I18n.appendWithSpace(title, "'" + getParsedUri().getSearchQuery() + "'");
-        }
+        final MyStringBuilder title = new MyStringBuilder();
         if (mActorListType.scope == ListScope.ORIGIN) {
+            title.withSpace(mActorListType.title(this));
             Origin origin = getParsedUri().getOrigin(myContext);
             if (origin.isValid()) {
-                I18n.appendWithSpace(title, mActorListType.scope.timelinePreposition(myContext));
-                I18n.appendWithSpace(title, origin.getName());
+                title.withSpace(mActorListType.scope.timelinePreposition(myContext));
+                title.withSpace(origin.getName());
             }
         } else {
             Actor actor = Actor.load(myContext, getParsedUri().getActorId());
-            if (actor.nonEmpty()) {
-                I18n.appendWithSpace(title, mActorListType.scope.timelinePreposition(myContext));
-                I18n.appendWithSpace(title, actor.getTimelineUsername());
+            if (actor.isEmpty()) {
+                title.withSpace(mActorListType.title(this));
+            } else {
+                title.withSpace(mActorListType.title(this, actor.getTimelineUsername()));
             }
+        }
+        if (StringUtils.nonEmpty(getParsedUri().getSearchQuery())) {
+            title.withSpace("'" + getParsedUri().getSearchQuery() + "'");
         }
         return title.toString();
     }

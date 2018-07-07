@@ -83,7 +83,7 @@ public class SelectableEnumList<E extends Enum<E> & SelectableEnum > {
     private List<CharSequence> getTitles(Context context) {
         List<CharSequence> titles = new ArrayList<>();
         for (SelectableEnum selectableEnum : list) {
-            titles.add(selectableEnum.getTitle(context));
+            titles.add(selectableEnum.title(context));
         }
         return titles;
     }

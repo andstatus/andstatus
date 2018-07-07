@@ -45,6 +45,7 @@ import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.StringUtils;
 
@@ -391,28 +392,28 @@ public class CommandData implements Comparable<CommandData> {
                 toShortCommandName(myContext));
         if (!summaryOnly) {
             if (mInForeground) {
-                I18n.appendWithSpace(builder, ", foreground");
+                MyStringBuilder.appendWithSpace(builder, ", foreground");
             }
             if (mManuallyLaunched) {
-                I18n.appendWithSpace(builder, ", manual");
+                MyStringBuilder.appendWithSpace(builder, ", manual");
             }
         }
         switch (command) {
             case GET_AVATAR:
-                I18n.appendWithSpace(builder,
-                        I18n.appendWithSpace(builder, ListScope.ORIGIN.timelinePreposition(myContext)));
-                I18n.appendWithSpace(builder, MyQuery.actorIdToWebfingerId(timeline.getActorId()));
+                MyStringBuilder.appendWithSpace(builder,
+                        MyStringBuilder.appendWithSpace(builder, ListScope.ORIGIN.timelinePreposition(myContext)));
+                MyStringBuilder.appendWithSpace(builder, MyQuery.actorIdToWebfingerId(timeline.getActorId()));
                 if (myContext.accounts().getDistinctOriginsCount() > 1) {
                     long originId = MyQuery.actorIdToLongColumnValue(ActorTable.ORIGIN_ID,
                             timeline.getActorId());
-                    I18n.appendWithSpace(builder, ListScope.ORIGIN.timelinePreposition(myContext));
-                    I18n.appendWithSpace(builder, 
+                    MyStringBuilder.appendWithSpace(builder, ListScope.ORIGIN.timelinePreposition(myContext));
+                    MyStringBuilder.appendWithSpace(builder,
                             myContext.origins().fromId(originId).getName());
                 }
                 break;
             case GET_ATTACHMENT:
             case UPDATE_NOTE:
-                I18n.appendWithSpace(builder, "\"");
+                MyStringBuilder.appendWithSpace(builder, "\"");
                 builder.append(trimConditionally(description, summaryOnly));
                 builder.append("\"");
                 break;
@@ -428,7 +429,7 @@ public class CommandData implements Comparable<CommandData> {
             case UNDO_FOLLOW:
             case GET_FOLLOWERS:
             case GET_FRIENDS:
-                I18n.appendWithSpace(builder, timeline.actor.getTimelineUsername());
+                MyStringBuilder.appendWithSpace(builder, timeline.actor.getTimelineUsername());
                 break;
             case GET_ACTOR:
             case SEARCH_ACTORS:
@@ -451,12 +452,12 @@ public class CommandData implements Comparable<CommandData> {
 
     private void appendScopeName(MyContext myContext, StringBuilder builder) {
         if (getTimeline().myAccountToSync.isValid()) {
-            I18n.appendWithSpace(builder, 
+            MyStringBuilder.appendWithSpace(builder,
                     getTimelineType().scope.timelinePreposition(myContext));
             if (getTimelineType().isAtOrigin()) {
-                I18n.appendWithSpace(builder, getTimeline().getOrigin().getName());
+                MyStringBuilder.appendWithSpace(builder, getTimeline().getOrigin().getName());
             } else {
-                I18n.appendWithSpace(builder, getTimeline().myAccountToSync.getAccountName());
+                MyStringBuilder.appendWithSpace(builder, getTimeline().myAccountToSync.getAccountName());
             }
         }
     }
@@ -486,12 +487,12 @@ public class CommandData implements Comparable<CommandData> {
         StringBuilder builder = new StringBuilder();
         switch (command) {
             case GET_TIMELINE:
-                builder.append(getTimelineType().getTitle(myContext.context()));
+                builder.append(getTimelineType().title(myContext.context()));
                 break;
             case GET_OLDER_TIMELINE:
                 builder.append(WhichPage.OLDER.getTitle(myContext.context()));
                 builder.append(" ");
-                builder.append(getTimelineType().getTitle(myContext.context()));
+                builder.append(getTimelineType().title(myContext.context()));
                 break;
             default:
                 builder.append(command.getTitle(myContext, getTimeline().myAccountToSync.getAccountName()));

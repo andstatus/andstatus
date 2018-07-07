@@ -33,8 +33,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.DuplicationLink;
 import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
-import org.andstatus.app.util.I18n;
-import org.andstatus.app.util.MyHtml;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
@@ -118,7 +117,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     private void setCollapsedStatus(StringBuilder noteDetails) {
         if (isCollapsed()) {
-            I18n.appendWithSpace(noteDetails, "(+" + getChildrenCount() + ")");
+            MyStringBuilder.appendWithSpace(noteDetails, "(+" + getChildrenCount() + ")");
         }
     }
 
@@ -181,14 +180,14 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         setAccountDownloaded(builder);
         setNoteStatus(context, builder);
         setCollapsedStatus(builder);
-        if (detailsSuffix.length() > 0) I18n.appendWithSpace(builder, detailsSuffix.toString());
+        if (detailsSuffix.length() > 0) MyStringBuilder.appendWithSpace(builder, detailsSuffix.toString());
         return builder;
     }
 
     protected void setInReplyTo(Context context, StringBuilder noteDetails) {
         if (inReplyToNoteId == 0 || inReplyToActor.isEmpty()) return;
 
-        I18n.appendWithSpace(noteDetails, String.format(context.getText(R.string.message_source_in_reply_to).toString(),
+        MyStringBuilder.appendWithSpace(noteDetails, String.format(context.getText(R.string.message_source_in_reply_to).toString(),
                 inReplyToActor.getName()));
     }
 

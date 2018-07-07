@@ -21,6 +21,6 @@ import android.content.Context;
 public interface SelectableEnum {
     boolean isSelectable();
     String getCode();
-    CharSequence getTitle(Context context);
+    CharSequence title(Context context);
     int getDialogTitleResId();
 }

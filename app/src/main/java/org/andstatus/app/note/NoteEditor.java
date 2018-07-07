@@ -63,8 +63,8 @@ import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.ViewUtils;
 
-import static org.andstatus.app.util.I18n.appendWithSeparator;
-import static org.andstatus.app.util.I18n.appendWithSpace;
+import static org.andstatus.app.util.MyStringBuilder.appendWithSeparator;
+import static org.andstatus.app.util.MyStringBuilder.appendWithSpace;
 
 /**
  * "Enter your message here" box 

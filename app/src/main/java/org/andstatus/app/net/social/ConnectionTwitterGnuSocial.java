@@ -23,8 +23,8 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.OriginConfig;
-import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
@@ -257,11 +257,11 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
         StringBuilder logMessage = new StringBuilder(ApiRoutineEnum.GET_OPEN_INSTANCES.toString());
         boolean error = false;
         if (result == null) {
-            I18n.appendWithSpace(logMessage, "Response is null JSON");
+            MyStringBuilder.appendWithSpace(logMessage, "Response is null JSON");
             error = true;
         }
         if (!error && !result.optString("status").equals("OK")) {
-            I18n.appendWithSpace(logMessage, "gtools service returned the error: '" + result.optString("error") + "'");
+            MyStringBuilder.appendWithSpace(logMessage, "gtools service returned the error: '" + result.optString("error") + "'");
             error = true;
         }
         if (!error) {

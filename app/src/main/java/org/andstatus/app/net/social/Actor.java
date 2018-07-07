@@ -38,10 +38,10 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.user.User;
-import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -617,7 +617,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
             builder.append("@" + getUsername());
         }
         if (!StringUtils.isEmpty(getRealName())) {
-            I18n.appendWithSpace(builder, "(" + getRealName() + ")");
+            MyStringBuilder.appendWithSpace(builder, "(" + getRealName() + ")");
         }
         return builder.toString();
     }
