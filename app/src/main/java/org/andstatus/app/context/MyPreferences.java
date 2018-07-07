@@ -276,4 +276,13 @@ public class MyPreferences {
     public static boolean isShowMyAccountWhichDownloadedActivity() {
         return SharedPreferencesUtil.getBoolean(KEY_SHOW_MY_ACCOUNT_WHICH_DOWNLOADED, false);
     }
+
+    public static void setBeingEditedNoteId(long id) {
+        SharedPreferencesUtil.putLong(KEY_BEING_EDITED_NOTE_ID, id);
+    }
+
+    public static long getBeingEditedNoteId() {
+        return SharedPreferencesUtil.getLong(KEY_BEING_EDITED_NOTE_ID, 0);
+    }
+
 }

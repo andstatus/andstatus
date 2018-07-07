@@ -30,7 +30,6 @@ import org.andstatus.app.service.MyServiceEventsBroadcaster;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
 
 /**
  * Asynchronously save, delete and send a note, prepared by {@link NoteEditor}
@@ -76,8 +75,7 @@ public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorDa
         } else {
             command.currentData.save(command.getMediaUri());
             if (command.beingEdited) {
-                SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID,
-                        command.currentData.getNoteId());
+                MyPreferences.setBeingEditedNoteId(command.currentData.getNoteId());
             }
             if (command.currentData.activity.getNote().getStatus() == DownloadStatus.SENDING) {
                 CommandData commandData = CommandData.newUpdateStatus(

@@ -21,7 +21,6 @@ import android.net.Uri;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.IsEmpty;
-import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.UriUtils;
 
 public class NoteEditorCommand implements IsEmpty {
@@ -71,7 +70,7 @@ public class NoteEditorCommand implements IsEmpty {
             return currentData.getNoteId();
         }
         if (currentNoteId == null) {
-            currentNoteId = SharedPreferencesUtil.getLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID);
+            currentNoteId = MyPreferences.getBeingEditedNoteId();
         }
         return currentNoteId;
     }

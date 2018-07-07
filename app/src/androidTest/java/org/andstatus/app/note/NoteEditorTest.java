@@ -52,7 +52,6 @@ import org.andstatus.app.timeline.TimelineActivityTest;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
@@ -83,8 +82,8 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        if (editingStep.get() == 0) {
-            SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID, 0);
+        if (editingStep.get() != 1) {
+            MyPreferences.setBeingEditedNoteId(0);
         }
 
         final MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
@@ -121,13 +120,13 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
     private void editingTester() throws InterruptedException {
         TestSuite.waitForListLoaded(getActivity(), 2);
         switch (editingStep.incrementAndGet()) {
-            case 1:
-                openEditor();
-                editingStep1();
+            case 2:
+                editingStep2();
                 break;
             default:
-                editingStep2();
-                editingStep.set(0);
+                editingStep.set(1);
+                openEditor();
+                editingStep1();
                 break;
         }
         MyLog.v(this, "After step " + editingStep + " ended");

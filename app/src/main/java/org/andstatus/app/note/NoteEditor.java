@@ -620,8 +620,7 @@ public class NoteEditor {
 
     private void saveData(NoteEditorCommand command) {
         command.acquireLock(false);
-        SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID,
-                command.beingEdited ? command.getCurrentNoteId() : 0);
+        MyPreferences.setBeingEditedNoteId(command.beingEdited ? command.getCurrentNoteId() : 0);
         hide();
         if (command.nonEmpty()) {
             MyLog.v(NoteEditorData.TAG, () -> "Requested: " + command);
@@ -641,7 +640,7 @@ public class NoteEditor {
             show();
             return;
         }
-        long noteId = SharedPreferencesUtil.getLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID);
+        long noteId = MyPreferences.getBeingEditedNoteId();
         if (noteId == 0) {
             MyLog.v(NoteEditorData.TAG, "loadCurrentDraft: no current draft");
             return;
@@ -669,7 +668,7 @@ public class NoteEditor {
                             return data;
                         } else {
                             MyLog.v(NoteEditorData.TAG, () -> "Cannot be edited " + data);
-                            SharedPreferencesUtil.putLong(MyPreferences.KEY_BEING_EDITED_NOTE_ID, 0);
+                            MyPreferences.setBeingEditedNoteId(0);
                             return NoteEditorData.EMPTY;
                         }
                     }
