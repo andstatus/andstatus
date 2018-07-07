@@ -65,6 +65,8 @@ public class MyQuery {
                 return ActorTable.REAL_NAME;
             case REAL_NAME_AT_USERNAME:
                 return "(" + ActorTable.REAL_NAME + " || ' @' || " + ActorTable.USERNAME + ")";
+            case REAL_NAME_AT_WEBFINGER_ID:
+                return "(" + ActorTable.REAL_NAME + " || ' @' || " + ActorTable.WEBFINGER_ID + ")";
             default:
                 return ActorTable.USERNAME;
         }
@@ -301,7 +303,7 @@ public class MyQuery {
     @NonNull
     public static List<Actor> noteIdToActors(
             SQLiteDatabase db, @NonNull Origin origin, long noteId, ActivityType typeToReturn, ActivityType undoType) {
-        String method = "noteIdToLastOfTypes";
+        String method = "noteIdToActors";
         final List<Long> foundActors = new ArrayList<>();
         final List<Actor> actors = new ArrayList<>();
         if (db == null || !origin.isValid() || noteId == 0) {

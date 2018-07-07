@@ -219,6 +219,7 @@
         <item>@string/user_in_timeline_entries_webfingerid</item>
         <item>@string/user_in_timeline_entries_real_name</item>
         <item>@string/user_in_timeline_entries_real_name_at_username</item>
+        <item>@string/user_in_timeline_entries_real_name_at_webfingerid</item>
     </string-array>
     <string-array name="actor_in_timeline_values">
         <item>1</item>
@@ -226,6 +227,7 @@
         <item>3</item>
         <item>4</item>
         <item>5</item>
+        <item>6</item>
     </string-array>
     <string-array name="timeline_type_entries">
         <item>@string/timeline_title_home</item>

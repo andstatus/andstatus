@@ -640,6 +640,10 @@ public class Actor implements Comparable<Actor>, IsEmpty {
                 return StringUtils.nonEmpty(realName) && StringUtils.nonEmpty(username)
                     ? realName + " @" + username
                     : username;
+            case REAL_NAME_AT_WEBFINGER_ID:
+                return StringUtils.nonEmpty(realName) && StringUtils.nonEmpty(webFingerId)
+                        ? realName + " @" + webFingerId
+                        : webFingerId;
             default:
                 return username;
         }

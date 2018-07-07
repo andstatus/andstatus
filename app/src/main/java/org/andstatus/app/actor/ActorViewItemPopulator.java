@@ -20,8 +20,6 @@ import android.support.annotation.NonNull;
 import android.view.View;
 
 import org.andstatus.app.R;
-import org.andstatus.app.context.ActorInTimeline;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.util.MyUrlSpan;
@@ -30,7 +28,6 @@ public class ActorViewItemPopulator {
     private final LoadableListActivity myActivity;
     private final boolean isCombined;
     private final boolean showAvatars;
-    private final boolean showWebFingerId = MyPreferences.getActorInTimeline().equals(ActorInTimeline.WEBFINGER_ID);
 
     public ActorViewItemPopulator(@NonNull LoadableListActivity myActivity, boolean isCombined,
                                   boolean showAvatars) {
@@ -41,7 +38,7 @@ public class ActorViewItemPopulator {
 
     public void populateView(View view, ActorViewItem item, int position) {
         MyUrlSpan.showText(view, R.id.username,
-                item.actor.toActorTitle(showWebFingerId) + ( isCombined ? " / " + item.actor.origin.getName() : ""),
+                item.actor.getTimelineUsername() + ( isCombined ? " / " + item.actor.origin.getName() : ""),
                 false, false);
         if (showAvatars) {
             showAvatar(item, view);

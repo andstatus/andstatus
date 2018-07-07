@@ -26,7 +26,8 @@ public enum ActorInTimeline {
     AT_USERNAME(2),
     WEBFINGER_ID(3),
     REAL_NAME(4),
-    REAL_NAME_AT_USERNAME(5);
+    REAL_NAME_AT_USERNAME(5),
+    REAL_NAME_AT_WEBFINGER_ID(6);
 
     private static final String TAG = ActorInTimeline.class.getSimpleName();
     
