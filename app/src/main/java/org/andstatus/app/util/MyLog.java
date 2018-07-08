@@ -517,7 +517,6 @@ public class MyLog {
         return logToFileEnabled.get();
     }
     
-    private static Object logFileWriterLock = new Object();
     static void logToFile(int logLevel, String tag, String msg, Throwable tr) {
         if(!isLogToFileEnabled()) return;
 
@@ -542,12 +541,11 @@ public class MyLog {
         writeRawStringToLogFile(builder);
     }
 
-    private static void writeRawStringToLogFile(StringBuilder builder)
-    {
-        synchronized (logFileWriterLock)
-        {
-            writeStringToFile(builder.toString(), getMostRecentLogFileName(),
-                              true, false);
+    private static final Object logFileWriterLock = new Object();
+
+    private static void writeRawStringToLogFile(StringBuilder builder) {
+        synchronized (logFileWriterLock) {
+            writeStringToFile(builder.toString(), getMostRecentLogFileName(), true, false);
         }
     }
     

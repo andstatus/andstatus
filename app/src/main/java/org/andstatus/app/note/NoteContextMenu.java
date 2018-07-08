@@ -324,7 +324,7 @@ public class NoteContextMenu extends MyContextMenu {
 
     void switchTimelineActivityView(Timeline timeline) {
         if (TimelineActivity.class.isAssignableFrom(getActivity().getClass())) {
-            ((TimelineActivity) getActivity()).switchView(timeline, null);
+            ((TimelineActivity) getActivity()).switchView(timeline, MyAccount.EMPTY);
         } else {
             TimelineActivity.startForTimeline(getMyContext(), getActivity(),  timeline, null, false);
         }

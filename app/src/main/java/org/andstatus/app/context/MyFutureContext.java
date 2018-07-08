@@ -22,6 +22,7 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.FirstActivity;
 import org.andstatus.app.HelpActivity;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.net.http.TlsSniSocketFactory;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.ExceptionsCounter;
@@ -191,11 +192,19 @@ public class MyFutureContext extends MyAsyncTask<Object, Void, MyContext> {
 
     @NonNull
     public MyContext getBlocking() {
+        MyContext myContext = previousContext;
         try {
-            return get();
+            for(int i = 1; i < 10; i++) {
+                myContext = get();
+                if (completedBackgroundWork()) break;
+                MyLog.v(this, "Didn't complete background work yet " + i);
+                DbUtils.waitMs(this, 50 * i);
+            }
+            if (!completedBackgroundWork()) MyLog.w(this, "Didn't complete background work");;
         } catch (Exception e) {
-            return previousContext;
+            MyLog.i(this, "getBlocking failed", e);
         }
+        return myContext;
     }
 
 }

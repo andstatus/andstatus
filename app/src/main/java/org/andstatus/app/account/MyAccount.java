@@ -427,6 +427,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
                 actor.lookupActorId(myContext);
                 actor.lookupUser(myContext);
                 actor.user.setIsMyUser(TriState.TRUE);
+                actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
                 myAccount.actor = actor;
                 if (DatabaseConverterController.isUpgrading()) {
                     MyLog.v(TAG, "Upgrade in progress");
@@ -626,7 +627,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     }
 
     public boolean getCredentialsPresent() {
-        return getConnection().getCredentialsPresent();
+        return getConnection() != null && getConnection().getCredentialsPresent();
     }
 
     public CredentialsVerificationStatus getCredentialsVerified() {
@@ -849,7 +850,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
 
         String members = (isValid() ? "" : "(invalid) ") + "accountName:" + oAccountName + ",";
         try {
-            if (actor.nonEmpty()) {
+            if (actor != null && actor.nonEmpty()) {
                 members += actor + ",";
             }
             if (!isPersistent()) {

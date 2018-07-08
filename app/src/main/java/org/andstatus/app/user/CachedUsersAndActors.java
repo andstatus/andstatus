@@ -11,6 +11,7 @@ import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.database.table.TimelineTable;
 import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
@@ -143,6 +144,16 @@ public class CachedUsersAndActors {
                 : actor.user.actorIds.stream().map(id -> actors.getOrDefault(id, Actor.EMPTY))
                     .filter(a -> a != Actor.EMPTY && a.origin.getHost().equals(actor.getHost()))
                     .findAny().orElse(actor);
+    }
+
+    /** Tries to find this actor in this origin
+     * Returns the same Actor, if not found */
+    public Actor toOrigin(Actor actor, Origin origin) {
+        return actor.origin.equals(origin)
+                ? actor
+                : actor.user.actorIds.stream().map(id -> actors.getOrDefault(id, Actor.EMPTY))
+                .filter(a -> a != Actor.EMPTY && a.origin.equals(origin))
+                .findAny().orElse(actor);
     }
 
     @NonNull

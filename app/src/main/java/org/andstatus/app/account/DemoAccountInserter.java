@@ -89,6 +89,7 @@ public class DemoAccountInserter {
             actor.setWebFingerId(actor.getUsername() + "@" + actor.origin.getHost());
         }
         assertTrue("No WebfingerId " + actor, actor.isWebFingerIdValid());
+        actor.setCreatedDate(MyLog.uniqueCurrentTimeMS());
         MyAccount ma = addAccountFromActor(actor);
         long accountActorId = ma.getActorId();
         String msg = "AccountUserId for '" + accountNameString + ", (first: '" + firstAccountActorOid + "')";

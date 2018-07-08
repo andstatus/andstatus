@@ -216,7 +216,7 @@ public class PersistentTimelinesTest {
 
     @Test
     public void syncForAllAccounts() {
-        Timeline combined = myContext.timelines().forUser(TimelineType.NOTIFICATIONS, 0);
+        Timeline combined = myContext.timelines().forUser(TimelineType.NOTIFICATIONS, Actor.EMPTY);
         assertEquals("Should be combined: " + combined, true, combined.isCombined());
         assertNotEquals("Should exist: " + combined, 0, combined.getId());
         assertEquals("Should not have account: " + combined, MyAccount.EMPTY, combined.myAccountToSync);

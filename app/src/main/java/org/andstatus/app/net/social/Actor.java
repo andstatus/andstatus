@@ -573,7 +573,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public void setCreatedDate(long createdDate) {
-        this.createdDate = createdDate;
+        this.createdDate = createdDate < SOME_TIME_AGO ? SOME_TIME_AGO : createdDate;
     }
 
     public long getUpdatedDate() {
@@ -581,6 +581,8 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public void setUpdatedDate(long updatedDate) {
+        if  (this.updatedDate >= updatedDate) return;
+
         this.updatedDate = updatedDate < SOME_TIME_AGO ? SOME_TIME_AGO : updatedDate;
     }
 

@@ -80,10 +80,12 @@ public class DemoNoteInserter {
             username = connection.actorOidToUsername(actorOid);
             profileUrl = "http://" + connection.usernameToHost(username) + "/"
                     + connection.usernameToNickname(username);
+            actor.setCreatedDate(MyLog.uniqueCurrentTimeMS());
         } else {
             username = "actorOf" + origin.getName() + actorOid;
             profileUrl = "https://" + demoData.gnusocialTestOriginName
                     + ".example.com/profiles/" + username;
+            actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
         }
         actor.setUsername(username);
         actor.setProfileUrl(profileUrl);
@@ -173,15 +175,15 @@ public class DemoNoteInserter {
         if (level == 1 && note.nonEmpty()) {
             assertNotEquals( "Activity was not added: " + activity, 0, activity.getId());
         }
-        if (level > 10 || activity.getId() == 0) {
+        if (level > DataUpdater.MAX_RECURSING || activity.getId() == 0) {
             return;
         }
         assertNotEquals( "Account is unknown: " + activity, 0, activity.accountActor.actorId);
 
         Actor actor = activity.getActor();
         if (actor.nonEmpty()) {
-            assertNotEquals( "Actor id not set for " + actor + " in " + activity, 0, actor.actorId);
-            assertNotEquals( "User id not set for " + actor + " in " + activity, 0, actor.user.userId);
+            assertNotEquals( "Level " + level + ", Actor id not set for " + actor + " in " + activity, 0, actor.actorId);
+            assertNotEquals( "Level " + level + ", User id not set for " + actor + " in " + activity, 0, actor.user.userId);
         }
 
         if (note.nonEmpty()) {

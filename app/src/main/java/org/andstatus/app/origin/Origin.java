@@ -51,7 +51,7 @@ import java.util.regex.Pattern;
  * 
  * @author yvolk@yurivolkov.com
  */
-public class Origin implements IsEmpty {
+public class Origin implements Comparable<Origin>, IsEmpty {
     static final int TEXT_LIMIT_FOR_WEBFINGER_ID = 200;
     public static final Origin EMPTY = newEmpty(OriginType.UNKNOWN);
     private static final String VALID_NAME_CHARS = "a-zA-Z_0-9/.-";
@@ -393,6 +393,11 @@ public class Origin implements IsEmpty {
         if (originType.isPublicTimeLineSyncable()) {
             this.inCombinedPublicReload = inCombinedPublicReload;
         }
+    }
+
+    @Override
+    public int compareTo(@NonNull Origin o) {
+        return getName().compareToIgnoreCase(o.getName());
     }
 
     public static final class Builder {

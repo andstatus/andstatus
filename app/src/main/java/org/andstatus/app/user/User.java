@@ -35,6 +35,7 @@ import org.andstatus.app.util.TriState;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -149,10 +150,12 @@ public class User implements IsEmpty {
         this.knownAs = knownAs;
     }
 
-    public Set<Origin> knownInOrigins(MyContext myContext) {
+    public List<Origin> knownInOrigins(MyContext myContext) {
         return actorIds.stream().map(id -> Actor.load(myContext, id))
                 .map(actor -> actor.origin)
                 .filter(Origin::isValid)
-                .collect(Collectors.toSet());
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
     }
 }

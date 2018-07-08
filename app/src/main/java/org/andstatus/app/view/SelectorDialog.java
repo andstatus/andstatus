@@ -121,7 +121,7 @@ public class SelectorDialog extends DialogFragment {
             Activity activity = getActivity();
             if (activity != null) {
                 ((MyActivity) activity).onActivityResult(
-                        getArguments().getInt(IntentExtra.REQUEST_CODE.key),
+                        myGetArguments().getInt(IntentExtra.REQUEST_CODE.key),
                         Activity.RESULT_OK,
                         selectedData
                 );
@@ -137,7 +137,7 @@ public class SelectorDialog extends DialogFragment {
             Activity activity = getActivity();
             if (activity != null) {
                 ((MyActivity) activity).onActivityResult(
-                        getArguments().getInt(IntentExtra.REQUEST_CODE.key),
+                        myGetArguments().getInt(IntentExtra.REQUEST_CODE.key),
                         Activity.RESULT_CANCELED,
                         new Intent()
                 );

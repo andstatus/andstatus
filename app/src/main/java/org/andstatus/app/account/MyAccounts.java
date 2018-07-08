@@ -320,7 +320,7 @@ public class MyAccounts implements IsEmpty {
      */
     @NonNull
     public Set<MyAccount> succeededForSameUser(Actor actor) {
-        Set<Origin> origins = actor.user.knownInOrigins(myContext);
+        List<Origin> origins = actor.user.knownInOrigins(myContext);
         return origins.isEmpty()
                 ? myAccounts.stream().filter(MyAccount::isValidAndSucceeded).collect(Collectors.toSet())
                 : myAccounts.stream()

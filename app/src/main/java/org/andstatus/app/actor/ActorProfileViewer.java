@@ -21,14 +21,19 @@ import android.widget.ListView;
 
 import org.andstatus.app.R;
 import org.andstatus.app.note.NoteContextMenuContainer;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.LoadableListActivity;
+import org.andstatus.app.util.MyUrlSpan;
+import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.view.MyContextMenu;
+
+import java.util.List;
 
 public class ActorProfileViewer {
     public final ActorContextMenu contextMenu;
     private final ActorViewItemPopulator populator;
-    public final View profileView;
-    private boolean viewAdded = false;
+    private final View profileView;
 
     public ActorProfileViewer(NoteContextMenuContainer container) {
         this.contextMenu = new ActorContextMenu(container, MyContextMenu.MENU_GROUP_ACTOR_PROFILE);
@@ -48,12 +53,11 @@ public class ActorProfileViewer {
     }
 
     public void ensureView(boolean added) {
-        if (viewAdded == added) return;
-
         final ListView listView = getActivity().getListView();
         if (listView == null) return;
 
-        viewAdded = added;
+        if (listView.findViewById(profileView.getId()) == null ^ added) return;
+
         if (added) {
             listView.addHeaderView(profileView);
         } else {
@@ -62,7 +66,17 @@ public class ActorProfileViewer {
     }
 
     public void populateView() {
-        populator.populateView(profileView, getActivity().getListData().actorViewItem, 0);
+        final ActorViewItem item = getActivity().getListData().actorViewItem;
+        populator.populateView(profileView, item, 0);
+        showOrigin(item);
+        MyUrlSpan.showText(profileView, R.id.profileAge, RelativeTime.getDifference(
+                contextMenu.getMyContext().context(), item.actor.getUpdatedDate()), false, false);
+    }
+
+    private void showOrigin(ActorViewItem item) {
+        MyUrlSpan.showText(profileView, R.id.selectProfileOriginButton, item.actor.origin.getName(), false, true);
+        List<Origin> origins = item.actor.user.knownInOrigins(contextMenu.getMyContext());
+        ViewUtils.showView(profileView, R.id.selectProfileOriginDropDown, origins.size() > 1);
     }
 
 }

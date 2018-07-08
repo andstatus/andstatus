@@ -148,7 +148,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
 
     public void addDefaultForMyUser(MyAccount myAccount) {
         for (TimelineType timelineType : TimelineType.getDefaultMyAccountTimelineTypes()) {
-            timelines().forUser(timelineType, myAccount.getActorId()).save(myContext);
+            timelines().forUser(timelineType, myAccount.getActor()).save(myContext);
         }
     }
 

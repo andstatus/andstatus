@@ -92,12 +92,12 @@ public class PersistentTimelines {
 
     @NonNull
     public Timeline forUserAtHomeOrigin(@NonNull TimelineType timelineType, Actor actor) {
-        return forUser(timelineType, myContext.users().toHomeOrigin(actor).actorId);
+        return forUser(timelineType, myContext.users().toHomeOrigin(actor));
     }
 
     @NonNull
-    public Timeline forUser(@NonNull TimelineType timelineType, long actorId) {
-        return get(0, timelineType, actorId, Origin.EMPTY, "");
+    public Timeline forUser(@NonNull TimelineType timelineType, Actor actor) {
+        return get(0, timelineType, actor.actorId, Origin.EMPTY, "");
     }
 
     @NonNull

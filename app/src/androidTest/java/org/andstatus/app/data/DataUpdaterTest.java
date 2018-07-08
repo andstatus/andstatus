@@ -45,6 +45,7 @@ import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.TriState;
 import org.junit.Before;
@@ -442,6 +443,12 @@ public class DataUpdaterTest {
         actor1.setUsername(actor1.getUsername() + "renamed");
         long actorId1Renamed = di.onActivity(accountActor.update(actor1)).getObjActor().actorId;
         assertEquals("Same Actor renamed", actorId1, actorId1Renamed);
+        assertEquals("Actor should not be renamed, if updatedDate didn't change", username,
+                MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1));
+
+        actor1.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
+        long actorId2Renamed = di.onActivity(accountActor.update(actor1)).getObjActor().actorId;
+        assertEquals("Same Actor renamed", actorId1, actorId2Renamed);
         assertEquals("Same Actor renamed", actor1.getUsername(),
                 MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1));
 

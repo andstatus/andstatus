@@ -45,6 +45,7 @@ import org.andstatus.app.util.UriUtils;
 import java.util.Date;
 import java.util.List;
 
+import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 import static org.andstatus.app.util.UriUtils.nonEmptyOid;
 import static org.andstatus.app.util.UriUtils.nonRealOid;
 
@@ -55,7 +56,7 @@ import static org.andstatus.app.util.UriUtils.nonRealOid;
  * @author yvolk@yurivolkov.com
  */
 public class DataUpdater {
-    private static final int MAX_RECURSING = 4;
+    public static final int MAX_RECURSING = 4;
     static final String MSG_ASSERTION_KEY = "updateNote";
     private final CommandExecutionContext execContext;
     private LatestActorActivities lum = new LatestActorActivities();
@@ -177,7 +178,7 @@ public class DataUpdater {
 
             boolean isNewerThanInDatabase = note.getUpdatedDate() > updatedDateStored;
             if (!isFirstTimeLoaded && !isDraftUpdated && !isNewerThanInDatabase) {
-                MyLog.v("Note", () -> "Skipped as not younger " + note);
+                MyLog.v("Note", () -> "Skipped note as not younger " + note);
                 return;
             }
 
@@ -308,15 +309,24 @@ public class DataUpdater {
             }
         }
 
+        fixActorUpdatedDate(activity, actor);
+
+        actor.lookupActorId(execContext.getMyContext());
         TriState followedByMe = actor.followedByMe;
         TriState followedByActor = activity.type.equals(ActivityType.FOLLOW) ? TriState.TRUE :
                 activity.type.equals(ActivityType.UNDO_FOLLOW) ? TriState.FALSE : TriState.UNKNOWN;
-        actor.lookupActorId(execContext.getMyContext());
         if (actor.actorId != 0 && actor.isPartiallyDefined() && followedByMe.unknown && followedByActor.unknown) {
             MyLog.v(this, () -> method + "; Skipping partially defined: " + actor);
             return;
         }
+
         actor.lookupUser(execContext.getMyContext());
+
+        long updatedDateStored = MyQuery.actorIdToLongColumnValue(ActorTable.UPDATED_DATE, actor.actorId);
+        if (updatedDateStored > 0 && updatedDateStored >= actor.getUpdatedDate()) {
+            MyLog.v(this, () -> method + "; Skipped actor as not younger " + actor);
+            return;
+        }
 
         String actorOid = (actor.actorId == 0 && !actor.isOidReal()) ? actor.getTempOid() : actor.oid;
         try {
@@ -417,6 +427,16 @@ public class DataUpdater {
             MyLog.e(this, method + "; actorId=" + actor.actorId + "; oid=" + actorOid, e);
         }
         MyLog.v(this, () -> method + "; actorId=" + actor.actorId + "; oid=" + actorOid);
+    }
+
+    private void fixActorUpdatedDate(AActivity activity, Actor actor) {
+        if (actor.getCreatedDate() <= SOME_TIME_AGO && actor.getUpdatedDate() <= SOME_TIME_AGO) return;
+
+        if (actor.getUpdatedDate() <= SOME_TIME_AGO
+                || activity.type == ActivityType.FOLLOW
+                || activity.type == ActivityType.UNDO_FOLLOW) {
+            actor.setUpdatedDate(Math.max(activity.getUpdatedDate(), actor.getCreatedDate()));
+        }
     }
 
     public void downloadOneNoteBy(String actorOid) throws ConnectionException {

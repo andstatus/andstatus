@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2018 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.account;
+package org.andstatus.app.origin;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -28,36 +28,26 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.view.MyContextMenu;
 import org.andstatus.app.view.MySimpleAdapter;
 import org.andstatus.app.view.SelectorDialog;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class AccountSelector extends SelectorDialog {
+public class OriginSelector extends SelectorDialog {
     private static final String KEY_VISIBLE_NAME = "visible_name";
     private static final String KEY_SYNC_AUTO = "sync_auto";
 
-    public static void selectAccountOfOrigin(FragmentActivity activity, ActivityRequestCode requestCode, long originId) {
-        SelectorDialog selector = new AccountSelector();
-        selector.setRequestCode(requestCode).putLong(IntentExtra.ORIGIN_ID.key, originId);
-        selector.show(activity);
-    }
-
-    public static void selectAccountForActor(FragmentActivity activity, int menuGroup,
-                                             ActivityRequestCode requestCode, Actor actor) {
-        SelectorDialog selector = new AccountSelector();
+    public static void selectOriginForActor(FragmentActivity activity, int menuGroup,
+                                            ActivityRequestCode requestCode, Actor actor) {
+        SelectorDialog selector = new OriginSelector();
         selector.setRequestCode(requestCode).putLong(IntentExtra.ACTOR_ID.key, actor.actorId);
         selector.myGetArguments().putInt(IntentExtra.MENU_GROUP.key, menuGroup);
         selector.show(activity);
@@ -67,36 +57,27 @@ public class AccountSelector extends SelectorDialog {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        setTitle(R.string.label_accountselector);
+        setTitle(R.string.select_social_network);
 
-        List<MyAccount> listData = newListData();
+        List<Origin> listData = newListData();
         if (listData.isEmpty()) {
-            returnSelectedAccount(MyAccount.EMPTY);
+            returnSelectedItem(Origin.EMPTY);
             return;
         } else if (listData.size() == 1) {
-            returnSelectedAccount(listData.get(0));
+            returnSelectedItem(listData.get(0));
             return;
         }
 
         setListAdapter(newListAdapter(listData));
 
         getListView().setOnItemClickListener((parent, view, position, id) -> {
-            long actorId = Long.parseLong(((TextView) view.findViewById(R.id.id)).getText().toString());
-            returnSelectedAccount(MyContextHolder.get().accounts().fromActorId(actorId));
+            long selectedId = Long.parseLong(((TextView) view.findViewById(R.id.id)).getText().toString());
+            returnSelectedItem(MyContextHolder.get().origins().fromId(selectedId));
         });
     }
 
-    private List<MyAccount> newListData() {
-        long originId = Optional.ofNullable(getArguments())
-                .map(bundle -> bundle.getLong(IntentExtra.ORIGIN_ID.key)).orElse(0L);
-        final Origin origin = MyContextHolder.get().origins().fromId(originId);
-        List<Origin> origins = origin.isValid()
-                ? Collections.singletonList(origin)
-                : getOriginsForActor();
-        Predicate<MyAccount> predicate = origins.isEmpty()
-                ? ma -> true
-                : ma -> origins.contains(ma.getOrigin());
-        return MyContextHolder.get().accounts().get().stream().filter(predicate).collect(Collectors.toList());
+    private List<Origin> newListData() {
+        return getOriginsForActor();
     }
 
     private List<Origin> getOriginsForActor() {
@@ -105,18 +86,16 @@ public class AccountSelector extends SelectorDialog {
         return Actor.load(MyContextHolder.get(), actorId).user.knownInOrigins(MyContextHolder.get());
     }
 
-    private MySimpleAdapter newListAdapter(List<MyAccount> listData) {
+    private MySimpleAdapter newListAdapter(List<Origin> listData) {
         List<Map<String, String>> list = new ArrayList<>();
-        final String syncText = getText(R.string.synced_abbreviated).toString();
-        for (MyAccount ma : listData) {
+        for (Origin item : listData) {
             Map<String, String> map = new HashMap<>();
-            String visibleName = ma.getAccountName();
-            if (!ma.isValidAndSucceeded()) {
+            String visibleName = item.name;
+            if (!item.isValid()) {
                 visibleName = "(" + visibleName + ")";
             }
             map.put(KEY_VISIBLE_NAME, visibleName);
-            map.put(KEY_SYNC_AUTO, ma.isSyncedAutomatically() && ma.isValidAndSucceeded() ? syncText : "");
-            map.put(BaseColumns._ID, Long.toString(ma.getActorId()));
+            map.put(BaseColumns._ID, Long.toString(item.id));
             list.add(map);
         }
 
@@ -127,9 +106,9 @@ public class AccountSelector extends SelectorDialog {
                 new int[] {R.id.visible_name, R.id.sync_auto, R.id.id}, true);
     }
 
-    private void returnSelectedAccount(@NonNull MyAccount ma) {
+    private void returnSelectedItem(@NonNull Origin item) {
         returnSelected(new Intent()
-                .putExtra(IntentExtra.ACCOUNT_NAME.key, ma.getAccountName())
+                .putExtra(IntentExtra.ORIGIN_NAME.key, item.name)
                 .putExtra(IntentExtra.MENU_GROUP.key,
                         myGetArguments().getInt(IntentExtra.MENU_GROUP.key, MyContextMenu.MENU_GROUP_NOTE))
         );

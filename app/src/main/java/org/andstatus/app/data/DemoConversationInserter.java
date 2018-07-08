@@ -180,11 +180,13 @@ public class DemoConversationInserter {
         // Note downloaded by another account
         final MyAccount ma2 = demoData.getMyAccount(demoData.conversationAccount2Name);
         author3.followedByMe = TriState.TRUE;
+        author3.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
         AActivity reply10 = buildActivity(ma2.getActor(), author3, "", "Reply 10 to Reply 8", reply8,
                 null, DownloadStatus.LOADED);
         assertEquals("The third is a note Author", author3,  reply10.getAuthor());
         addActivity(reply10);
         author3.followedByMe = TriState.UNKNOWN;
+        author3.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
 
         DemoConversationInserter.assertIfActorIsMyFriend(author3, true, ma2);
 
