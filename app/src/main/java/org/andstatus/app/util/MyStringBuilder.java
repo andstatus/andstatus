@@ -41,6 +41,11 @@ public class MyStringBuilder implements CharSequence {
     }
 
     @NonNull
+    public MyStringBuilder withSpaceQuoted(CharSequence text) {
+        return withSpace("\"").append(text).append("\"");
+    }
+
+    @NonNull
     public MyStringBuilder withSpace(CharSequence text) {
         return withSeparator(text, " ");
     }
@@ -57,6 +62,12 @@ public class MyStringBuilder implements CharSequence {
             }
             builder.append(text);
         }
+        return this;
+    }
+
+    @NonNull
+    public MyStringBuilder append(CharSequence text) {
+        builder.append(text);
         return this;
     }
 

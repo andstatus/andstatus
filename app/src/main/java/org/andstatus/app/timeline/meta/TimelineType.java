@@ -76,7 +76,7 @@ public enum TimelineType implements SelectableEnum {
         this.scope = scope;
         this.code = code;
         this.titleResId = resId;
-        this.titleResWithParamsId = resWithParamsId == 0 ? resId : resWithParamsId;
+        this.titleResWithParamsId = resWithParamsId;
         this.connectionApiRoutine = connectionApiRoutine;
     }
 
@@ -126,7 +126,7 @@ public enum TimelineType implements SelectableEnum {
 
     public CharSequence title(Context context, Object ... params) {
         if (titleResWithParamsId == 0 || context == null) {
-            return this.code + " " + (params.length == 1
+            return title(context) + " " + (params.length == 1
                     ? params[0]
                     : Arrays.toString(params));
         } else {

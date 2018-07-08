@@ -46,7 +46,7 @@ public enum ActorListType {
     ActorListType(String code, int resId, int resWithParamsId, ListScope scope) {
         this.code = code;
         this.titleResId = resId;
-        titleResWithParamsId = resWithParamsId == 0 ? resId : resWithParamsId;
+        titleResWithParamsId = resWithParamsId;
         this.scope = scope;
     }
     
@@ -73,7 +73,7 @@ public enum ActorListType {
 
     public CharSequence title(Context context, Object ... params) {
         if (titleResWithParamsId == 0 || context == null) {
-            return this.code + " " + (params.length == 1
+            return title(context) + " " + (params.length == 1
                     ? params[0]
                     : Arrays.toString(params));
         } else {

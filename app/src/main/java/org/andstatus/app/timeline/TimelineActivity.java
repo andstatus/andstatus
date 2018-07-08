@@ -126,7 +126,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     @NonNull
-    private static Intent getIntentForTimeline(MyContext myContext, Timeline timeline, MyAccount newCurrentMyAccount, boolean clearTask) {
+    private static Intent getIntentForTimeline(MyContext myContext, Timeline timeline, MyAccount newCurrentMyAccount,
+                                               boolean clearTask) {
         if (newCurrentMyAccount != null && newCurrentMyAccount.isValid()) {
             myContext.accounts().setCurrentAccount(newCurrentMyAccount);
         }

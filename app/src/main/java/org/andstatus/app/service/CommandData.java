@@ -32,7 +32,6 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.ContentValuesUtils;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.CommandTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.origin.Origin;
@@ -146,9 +145,8 @@ public class CommandData implements Comparable<CommandData> {
         if (!myAccount.isValid() || (actorId == 0 && StringUtils.isEmpty(username))) return CommandData.EMPTY;
 
         CommandData commandData = new CommandData(0, command, myAccount, actorId == 0
-                ? Timeline.EMPTY :
-                Timeline.getTimeline(TimelineType.SENT, actorId, Origin.EMPTY),
-                0);
+                ? Timeline.EMPTY
+                : Timeline.getTimeline(TimelineType.SENT, actorId, Origin.EMPTY), 0);
         commandData.setUsername(username);
         commandData.description = commandData.getUsername();
         return commandData;
@@ -387,77 +385,61 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     private String toUserFriendlyForm(MyContext myContext, boolean summaryOnly) {
-        StringBuilder builder = new StringBuilder(
+        MyStringBuilder builder = new MyStringBuilder(
                 command == CommandEnum.GET_TIMELINE || command == CommandEnum.GET_OLDER_TIMELINE ? "" :
                 toShortCommandName(myContext));
         if (!summaryOnly) {
-            if (mInForeground) {
-                MyStringBuilder.appendWithSpace(builder, ", foreground");
-            }
-            if (mManuallyLaunched) {
-                MyStringBuilder.appendWithSpace(builder, ", manual");
-            }
+            if (mInForeground) builder.withSpace(", foreground");
+            if (mManuallyLaunched) builder.withSpace( ", manual");
         }
         switch (command) {
             case GET_AVATAR:
-                MyStringBuilder.appendWithSpace(builder,
-                        MyStringBuilder.appendWithSpace(builder, ListScope.ORIGIN.timelinePreposition(myContext)));
-                MyStringBuilder.appendWithSpace(builder, MyQuery.actorIdToWebfingerId(timeline.getActorId()));
+                builder.withSpace(ListScope.USER.timelinePreposition(myContext));
+                builder.withSpace(timeline.actor.getWebFingerId());
                 if (myContext.accounts().getDistinctOriginsCount() > 1) {
-                    long originId = MyQuery.actorIdToLongColumnValue(ActorTable.ORIGIN_ID,
-                            timeline.getActorId());
-                    MyStringBuilder.appendWithSpace(builder, ListScope.ORIGIN.timelinePreposition(myContext));
-                    MyStringBuilder.appendWithSpace(builder,
-                            myContext.origins().fromId(originId).getName());
+                    builder.withSpace(ListScope.ORIGIN.timelinePreposition(myContext));
+                    builder.withSpace(timeline.actor.origin.getName());
                 }
                 break;
             case GET_ATTACHMENT:
             case UPDATE_NOTE:
-                MyStringBuilder.appendWithSpace(builder, "\"");
-                builder.append(trimConditionally(description, summaryOnly));
-                builder.append("\"");
+                builder.withSpaceQuoted(trimConditionally(description, summaryOnly));
                 break;
             case GET_TIMELINE:
                 builder.append(TimelineTitle.load(myContext, timeline, myContext.accounts().getCurrentAccount()).title);
                 break;
             case GET_OLDER_TIMELINE:
                 builder.append(WhichPage.OLDER.getTitle(myContext.context()));
-                builder.append(" ");
-                builder.append(TimelineTitle.load(myContext, timeline, myContext.accounts().getCurrentAccount()).title);
+                builder.withSpace(TimelineTitle.load(myContext, timeline, myContext.accounts().getCurrentAccount()).title);
                 break;
             case FOLLOW:
             case UNDO_FOLLOW:
             case GET_FOLLOWERS:
             case GET_FRIENDS:
-                MyStringBuilder.appendWithSpace(builder, timeline.actor.getTimelineUsername());
+                builder.withSpace(timeline.actor.getTimelineUsername());
                 break;
             case GET_ACTOR:
             case SEARCH_ACTORS:
-                if (StringUtils.nonEmpty(getUsername())) {
-                    builder.append(" \"");
-                    builder.append(getUsername());
-                    builder.append("\"");
-                }
+                if (StringUtils.nonEmpty(getUsername())) builder.withSpaceQuoted(getUsername());
                 break;
             default:
                 appendScopeName(myContext, builder);
                 break;
         }
         if (!summaryOnly) {            
-            builder.append("\n" + createdDateWithLabel(myContext.context())); 
-            builder.append("\n" + getResult().toSummary());
+            builder.atNewLine(createdDateWithLabel(myContext.context()));
+            builder.atNewLine(getResult().toSummary());
         }
         return builder.toString();
     }
 
-    private void appendScopeName(MyContext myContext, StringBuilder builder) {
+    private void appendScopeName(MyContext myContext, MyStringBuilder builder) {
         if (getTimeline().myAccountToSync.isValid()) {
-            MyStringBuilder.appendWithSpace(builder,
-                    getTimelineType().scope.timelinePreposition(myContext));
+            builder.withSpace(getTimelineType().scope.timelinePreposition(myContext));
             if (getTimelineType().isAtOrigin()) {
-                MyStringBuilder.appendWithSpace(builder, getTimeline().getOrigin().getName());
+                builder.withSpace(getTimeline().getOrigin().getName());
             } else {
-                MyStringBuilder.appendWithSpace(builder, getTimeline().myAccountToSync.getAccountName());
+                builder.withSpace(getTimeline().myAccountToSync.getAccountName());
             }
         }
     }
