@@ -42,6 +42,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
+
 /**
  * Handles connection to the API of the Social Network (i.e. to the "Origin")
  * Authenticated User info (User account in the Social Network) and connection properties
@@ -340,10 +342,17 @@ public abstract class Connection {
      */
     public abstract AActivity follow(String actorOid, Boolean follow) throws ConnectionException;
 
-    /**
-     * Get information about the specified Actor
-     */
-    public abstract Actor getActor(String actorOid, String username) throws ConnectionException;
+    /** Get information about the specified Actor */
+    public Actor getActor(String actorOid, String username) throws ConnectionException {
+        long time = MyLog.uniqueCurrentTimeMS();
+        Actor actor = getActor2(actorOid, username);
+        if (actor.nonEmpty() && actor.getUpdatedDate() <= SOME_TIME_AGO) {
+            actor.setUpdatedDate(time);
+        }
+        return actor;
+    }
+
+    protected abstract Actor getActor2(String actorOid, String username) throws ConnectionException;
     
     protected final String fixSinceId(String sinceId) {
         String out = "";

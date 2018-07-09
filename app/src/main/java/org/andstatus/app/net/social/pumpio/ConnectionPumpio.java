@@ -591,7 +591,7 @@ public class ConnectionPumpio extends Connection {
     }
     
     @Override
-    public Actor getActor(String actorOid, String username) throws ConnectionException {
+    public Actor getActor2(String actorOid, String username) throws ConnectionException {
         ConnectionAndUrl conu = getConnectionAndUrlForUsername(ApiRoutineEnum.GET_ACTOR,
                 UriUtils.isRealOid(actorOid) ? actorOidToUsername(actorOid) : username);
         JSONObject jso = conu.httpConnection.getRequest(conu.url);
