@@ -212,15 +212,15 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
                 myContext.origins().fromId(originId));
     }
 
-    public void setCurrentMyAccount(MyAccount ma, Origin origin) {
-        if (ma != null && ma.isValid()) {
+    public void setCurrentMyAccount(@NonNull MyAccount ma, @NonNull Origin origin) {
+        if (ma.isValid()) {
             this.ma = ma;
         } else {
-            if (origin != null && origin.isValid()) {
-                if (!this.ma.isValid() || !this.ma.getOrigin().equals(origin)) {
+            if (origin.isValid()) {
+                if (this.ma.nonValid() || !this.ma.getOrigin().equals(origin)) {
                     this.ma = myContext.accounts().getFirstSucceededForOrigin(origin);
                 }
-            } else if (!getCurrentMyAccount().isValid()) {
+            } else if (getCurrentMyAccount().nonValid()) {
                 this.ma = myContext.accounts().getCurrentAccount();
             }
         }

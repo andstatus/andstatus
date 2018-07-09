@@ -310,7 +310,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         SaveResult saveSilently() {
             SaveResult result = new SaveResult();
             try {
-                if (!myAccount.isValid()) {
+                if (myAccount.nonValid()) {
                     MyLog.v(TAG, () -> "Didn't save invalid account: " + myAccount);
                     return result;
                 }
@@ -683,6 +683,10 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             }
         }
         return uniqueName;
+    }
+
+    public boolean nonValid() {
+        return !isValid();
     }
 
     public boolean isValid() {

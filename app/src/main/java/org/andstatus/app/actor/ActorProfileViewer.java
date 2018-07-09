@@ -39,7 +39,7 @@ public class ActorProfileViewer {
         this.contextMenu = new ActorContextMenu(container, MyContextMenu.MENU_GROUP_ACTOR_PROFILE);
         populator = new ActorViewItemPopulator(getActivity(), false, true);
         profileView = View.inflate(getActivity(), R.layout.actor_profile, null);
-        setContextMenuTo(R.id.actor_wrapper);
+        setContextMenuTo(R.id.actor_profile_wrapper);
     }
 
     private LoadableListActivity getActivity() {
@@ -56,7 +56,7 @@ public class ActorProfileViewer {
         final ListView listView = getActivity().getListView();
         if (listView == null) return;
 
-        if (listView.findViewById(profileView.getId()) == null ^ added) return;
+        if (listView.findViewById(R.id.actor_profile_wrapper) == null ^ added) return;
 
         if (added) {
             listView.addHeaderView(profileView);

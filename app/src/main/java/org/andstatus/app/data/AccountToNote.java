@@ -116,7 +116,7 @@ public class AccountToNote {
 
     @NonNull
     private MyAccount calculateMyAccount(Origin origin, MyAccount ma) {
-        if (ma == null || !origin.isValid() || !ma.getOrigin().equals(origin) || !ma.isValid()) {
+        if (ma == null || !origin.isValid() || !ma.getOrigin().equals(origin) || ma.nonValid()) {
             return MyAccount.EMPTY;
         }
         return ma;

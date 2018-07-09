@@ -56,9 +56,8 @@ public class AccountSettingsActivityTest extends ActivityTest<AccountSettingsAct
         TestSuite.initializeWithData(this);
 
         ma = MyContextHolder.get().accounts().getCurrentAccount();
-        if (!ma.isValid()) {
-            fail("No persistent accounts yet");
-        }
+        if (ma.nonValid()) fail("No persistent accounts yet");
+
         return new Intent().putExtra(IntentExtra.ACCOUNT_NAME.key, ma.getAccountName());
     }
 

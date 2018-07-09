@@ -142,7 +142,7 @@ public class DataUpdater {
         final Note note = activity.getNote();
         try {
             MyAccount me = execContext.getMyContext().accounts().fromActorOfSameOrigin(activity.accountActor);
-            if (!me.isValid()) {
+            if (me.nonValid()) {
                 MyLog.w(this, method +"; my account is invalid, skipping: " + activity.toString());
                 return;
             }
@@ -300,7 +300,7 @@ public class DataUpdater {
             return;
         }
         MyAccount me = execContext.getMyContext().accounts().fromActorOfSameOrigin(activity.accountActor);
-        if (!me.isValid()) {
+        if (me.nonValid()) {
             if (activity.accountActor.equals(actor)) {
                 MyLog.d(this, method +"; adding my account " + activity.accountActor);
             } else {

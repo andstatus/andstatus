@@ -111,7 +111,7 @@ public class MyAccounts implements IsEmpty {
     public boolean delete(MyAccount ma) {
         MyAccount toDelete = myAccounts.stream().filter(myAccount -> myAccount.equals(ma))
                 .findFirst().orElse(MyAccount.EMPTY);
-        if (!toDelete.isValid()) return false;
+        if (toDelete.nonValid()) return false;
 
         MyAccount.Builder.fromMyAccount(myContext, toDelete, "delete", false).deleteData();
         myAccounts.remove(toDelete);
@@ -261,7 +261,7 @@ public class MyAccounts implements IsEmpty {
         for (MyAccount myAccount : myAccounts) {
             for (Origin origin : origins) {
                 if (!origin.isValid() || myAccount.getOrigin().equals(origin)) {
-                    if (!ma.isValid()) {
+                    if (ma.nonValid()) {
                         ma = myAccount;
                     }
                     if (myAccount.isValidAndSucceeded()) {
@@ -383,7 +383,7 @@ public class MyAccounts implements IsEmpty {
         if (accountFits(oldMa, origin, succeededOnly) || !accountFits(newMa, origin, false)) {
             return oldMa;
         }
-        if (!oldMa.isValid() && newMa.isValid()) {
+        if (oldMa.nonValid() && newMa.isValid()) {
             return newMa;
         }
         return oldMa;
@@ -392,7 +392,7 @@ public class MyAccounts implements IsEmpty {
     /** Set provided MyAccount as the Current one */
     public void setCurrentAccount(MyAccount ma) {
         MyAccount prevAccount = getCurrentAccount();
-        if (ma == null || !ma.isValid() || ma.equals(prevAccount)) return;
+        if (ma == null || ma.nonValid() || ma.equals(prevAccount)) return;
 
         MyLog.v(this, () -> "Changing current account from '" + prevAccount.getAccountName()
                 + "' to '" + ma.getAccountName() + "'");

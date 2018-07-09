@@ -108,7 +108,7 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
                     MyContextHolder.getSystemInfo(this, false), false, false);
         }
 
-        if (!MyContextHolder.get().accounts().getCurrentAccount().isValid()
+        if (MyContextHolder.get().accounts().getCurrentAccount().nonValid()
                 && MyContextHolder.getExecutionMode() == ExecutionMode.ROBO_TEST
                 && !generatingDemoData) {
             generatingDemoData = true;

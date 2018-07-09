@@ -62,9 +62,9 @@ class NoteContextMenuData {
                             selectedMyAccount, currentMyAccount);
                     if (MyLog.isVerboseEnabled()) {
                         MyLog.v(noteContextMenu, "acting:" + accountToNote.getMyAccount().getAccountName()
-                            + (accountToNote.getMyAccount().equals(selectedMyAccount) || !selectedMyAccount.isValid()
+                            + (accountToNote.getMyAccount().equals(selectedMyAccount) || selectedMyAccount.nonValid()
                                 ? "" : ", selected:" + selectedMyAccount.getAccountName())
-                            + (accountToNote.getMyAccount().equals(currentMyAccount) || !currentMyAccount.isValid()
+                            + (accountToNote.getMyAccount().equals(currentMyAccount) || currentMyAccount.nonValid()
                                 ? "" : ", current:" + currentMyAccount.getAccountName())
                             + "\n " + accountToNote);
                     }

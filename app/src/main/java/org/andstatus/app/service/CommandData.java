@@ -142,7 +142,7 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public static CommandData actOnActorCommand(CommandEnum command, MyAccount myAccount, long actorId, String username) {
-        if (!myAccount.isValid() || (actorId == 0 && StringUtils.isEmpty(username))) return CommandData.EMPTY;
+        if (myAccount.nonValid() || (actorId == 0 && StringUtils.isEmpty(username))) return CommandData.EMPTY;
 
         CommandData commandData = new CommandData(0, command, myAccount, actorId == 0
                 ? Timeline.EMPTY

@@ -235,12 +235,13 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     private void restoreActivityState(@NonNull Bundle savedInstanceState) {
-            if (getParamsNew().restoreState(savedInstanceState)) {
-                contextMenu.note.loadState(savedInstanceState);
-            }
-            getListData().collapseDuplicates(savedInstanceState.getBoolean(
-                    IntentExtra.COLLAPSE_DUPLICATES.key, MyPreferences.isCollapseDuplicates()), 0);
-            MyLog.v(this, () -> "restoreActivityState; " + getParamsNew());
+        if (getParamsNew().restoreState(savedInstanceState)) {
+            contextMenu.note.loadState(savedInstanceState);
+        }
+        getListData().collapseDuplicates(savedInstanceState.getBoolean(
+                IntentExtra.COLLAPSE_DUPLICATES.key, MyPreferences.isCollapseDuplicates()), 0);
+        actorProfileViewer.ensureView(getParamsNew().getTimeline().withActorProfile());
+        MyLog.v(this, () -> "restoreActivityState; " + getParamsNew());
     }
 
     /**
@@ -653,7 +654,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             if (avatarView == null) break;
 
             ViewUtils.showView(avatarView, ma.isValid());
-            if (!ma.isValid()) continue;
+            if (ma.nonValid()) continue;
 
             ma.getActor().avatarFile.showImage(this, avatarView);
             avatarView.setContentDescription(ma.getAccountName());

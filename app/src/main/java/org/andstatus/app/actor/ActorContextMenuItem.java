@@ -227,10 +227,10 @@ public enum ActorContextMenuItem implements ContextMenuItem {
             MyLog.e(this, "Unknown origin for " + params.menu.getViewItem().actor);
             return;
         }
-        if (!params.menu.getActingAccount().isValid() || !params.menu.getActingAccount().getOrigin().equals(origin)) {
+        if (params.menu.getActingAccount().nonValid() || !params.menu.getActingAccount().getOrigin().equals(origin)) {
             params.menu.setSelectedActingAccount(params.menu.getMyContext().accounts()
                     .fromActorOfSameOrigin(actor));
-            if (!params.menu.getActingAccount().isValid()) {
+            if (params.menu.getActingAccount().nonValid()) {
                 params.menu.setSelectedActingAccount(params.menu.getMyContext().accounts().
                         getFirstSucceededForOrigin(origin));
             }
