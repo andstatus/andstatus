@@ -192,7 +192,9 @@ public class MyAccounts implements IsEmpty {
                 : Stream.of(fromActor(other, true, true))
                 .filter(MyAccount::isValid).findFirst()
                 .orElseGet(() -> forFriend(other, true, true)
-                                .orElseGet(() -> getFirstSucceededForOrigin(other.origin))
+                                .orElseGet(() -> other.origin.isEmpty()
+                                        ? MyAccount.EMPTY
+                                        : getFirstSucceededForOrigin(other.origin))
                 );
     }
 

@@ -257,7 +257,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         this.id = id;
         this.actor = fixedActor(myContext, timelineType, actorId);
         this.origin = fixedOrigin(timelineType, origin);
-        this.myAccountToSync = calcMyAccount(myContext, timelineType, this.origin, actor);
+        this.myAccountToSync = calcAccountToSync(myContext, timelineType, this.origin, actor);
         this.searchQuery = StringUtils.isEmpty(searchQuery) ? "" : searchQuery.trim();
         this.isCombined = calcIsCombined(timelineType, this.origin);
         this.timelineType = fixedTimelineType(timelineType);
@@ -295,8 +295,8 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     }
 
     @NonNull
-    private MyAccount calcMyAccount(MyContext myContext, TimelineType timelineType, Origin origin, Actor actor) {
-        return timelineType.isAtOrigin()
+    private MyAccount calcAccountToSync(MyContext myContext, TimelineType timelineType, Origin origin, Actor actor) {
+        return timelineType.isAtOrigin() && origin.nonEmpty()
                 ? myContext.accounts().getFirstSucceededForOrigin(origin)
                 : myContext.accounts().toSyncThisActor(actor);
     }
