@@ -176,8 +176,11 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
         if (group.children.isEmpty()) return;
 
         boolean groupOfSelectedItem = group.contains(itemId);
-        if (groupOfSelectedItem) group.children
-                .forEach(child -> setIndividualCollapsedState(true, child.item));
+        if (groupOfSelectedItem) {
+            setIndividualCollapsedState(true, group.parent.item);
+            group.children
+                    .forEach(child -> setIndividualCollapsedState(true, child.item));
+        }
 
         boolean noIndividualCollapseState = groupOfSelectedItem || individualCollapsedStateIds.isEmpty()
                 || group.children.stream().noneMatch(child -> individualCollapsedStateIds.contains(child.item.getId()));
