@@ -33,6 +33,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.DuplicationLink;
 import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
+import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
 
@@ -124,22 +125,30 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
 
     @NonNull
     @Override
-    public DuplicationLink duplicates(@NonNull ActivityViewItem other) {
-        if (isEmpty() || other.isEmpty() || duplicatesByChildren(other) == DuplicationLink.NONE)
-            return DuplicationLink.NONE;
-        if (activityType != other.activityType && other.activityType == ActivityType.UPDATE)
+    public DuplicationLink duplicates(Timeline timeline, @NonNull ActivityViewItem other) {
+        if (isEmpty() || other.isEmpty()) return DuplicationLink.NONE;
+
+        DuplicationLink link = duplicatesByChildren(timeline, other);
+        if (link == DuplicationLink.NONE) return link;
+
+        if (activityType != other.activityType && other.activityType == ActivityType.UPDATE) {
             return DuplicationLink.IS_DUPLICATED;
-        return updatedDate >= other.updatedDate ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
+        }
+        return updatedDate > other.updatedDate
+                ? DuplicationLink.IS_DUPLICATED
+                : updatedDate < other.updatedDate
+                    ? DuplicationLink.DUPLICATES
+                    : link;
     }
 
     @NonNull
-    protected DuplicationLink duplicatesByChildren(@NonNull ActivityViewItem other) {
+    protected DuplicationLink duplicatesByChildren(Timeline timeline, @NonNull ActivityViewItem other) {
         if (noteId !=0) {
-            return noteViewItem.duplicates(other.noteViewItem);
+            return noteViewItem.duplicates(timeline, other.noteViewItem);
         } else if (objActorId != 0) {
-            return objActorItem.duplicates(other.objActorItem);
+            return objActorItem.duplicates(timeline, other.objActorItem);
         }
-        return super.duplicates(other);
+        return super.duplicates(timeline, other);
     }
 
     String getDetails(Context context) {

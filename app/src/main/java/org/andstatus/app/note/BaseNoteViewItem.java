@@ -33,6 +33,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.DuplicationLink;
 import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
+import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -42,6 +43,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static org.andstatus.app.timeline.DuplicationLink.DUPLICATES;
+import static org.andstatus.app.timeline.DuplicationLink.IS_DUPLICATED;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 
 public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends ViewItem<T> {
@@ -123,26 +126,34 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     @Override
     @NonNull
-    public DuplicationLink duplicates(@NonNull T other) {
+    public DuplicationLink duplicates(Timeline timeline, @NonNull T other) {
         if (isEmpty() || other.isEmpty()) return DuplicationLink.NONE;
-        return (getNoteId() == other.getNoteId()) ? duplicatesByFavoritedAndReblogged(other) : duplicatesByOther(other);
+        return (getNoteId() == other.getNoteId())
+                ? duplicatesByFavoritedAndReblogged(timeline, other)
+                : duplicatesByOther(timeline, other);
     }
 
     @NonNull
-    private DuplicationLink duplicatesByFavoritedAndReblogged(@NonNull T other) {
+    private DuplicationLink duplicatesByFavoritedAndReblogged(Timeline timeline, @NonNull T other) {
         if (favorited != other.favorited) {
-            return favorited ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
+            return favorited ? IS_DUPLICATED : DUPLICATES;
         } else if (reblogged != other.reblogged) {
-            return reblogged ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
-        } else if (!getLinkedMyAccount().equals(other.getLinkedMyAccount())) {
-            return getLinkedMyAccount().compareTo(other.getLinkedMyAccount()) <= 0 ?
-                    DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
+            return reblogged ? IS_DUPLICATED : DUPLICATES;
         }
-        return rebloggers.size() > other.rebloggers.size() ? DuplicationLink.IS_DUPLICATED : DuplicationLink.DUPLICATES;
+        if (timeline.preferredOrigin().nonEmpty()
+                && !author.getActor().origin.equals(other.author.getActor().origin)) {
+            if (timeline.preferredOrigin().equals(author.getActor().origin)) return IS_DUPLICATED;
+            if (timeline.preferredOrigin().equals(other.author.getActor().origin)) return DUPLICATES;
+        }
+        if (!getLinkedMyAccount().equals(other.getLinkedMyAccount())) {
+            return getLinkedMyAccount().compareTo(other.getLinkedMyAccount()) <= 0
+                    ? IS_DUPLICATED : DUPLICATES;
+        }
+        return rebloggers.size() > other.rebloggers.size() ? IS_DUPLICATED : DUPLICATES;
     }
 
     @NonNull
-    private DuplicationLink duplicatesByOther(@NonNull T other) {
+    private DuplicationLink duplicatesByOther(Timeline timeline, @NonNull T other) {
         if (updatedDate != SOME_TIME_AGO && other.updatedDate != SOME_TIME_AGO
               &&  (Math.abs(updatedDate - other.updatedDate) >= TimeUnit.HOURS.toMillis(24))
                 || isTooShortToCompare()
@@ -150,16 +161,16 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
                 ) return DuplicationLink.NONE;
         if (contentToSearch.equals(other.contentToSearch)) {
             if (updatedDate == other.updatedDate) {
-                return duplicatesByFavoritedAndReblogged(other);
+                return duplicatesByFavoritedAndReblogged(timeline, other);
             } else if (updatedDate < other.updatedDate) {
-                return DuplicationLink.IS_DUPLICATED;
+                return IS_DUPLICATED;
             } else {
-                return DuplicationLink.DUPLICATES;
+                return DUPLICATES;
             }
         } else if (contentToSearch.contains(other.contentToSearch)) {
-            return DuplicationLink.DUPLICATES;
+            return DUPLICATES;
         } else if (other.contentToSearch.contains(contentToSearch)) {
-            return DuplicationLink.IS_DUPLICATED;
+            return IS_DUPLICATED;
         }
         return DuplicationLink.NONE;
     }

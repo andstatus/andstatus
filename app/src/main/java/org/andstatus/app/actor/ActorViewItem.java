@@ -32,13 +32,18 @@ import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
+import org.andstatus.app.timeline.DuplicationLink;
 import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
+import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtils;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.andstatus.app.timeline.DuplicationLink.DUPLICATES;
+import static org.andstatus.app.timeline.DuplicationLink.IS_DUPLICATED;
 
 public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable<ActorViewItem> {
     public static final ActorViewItem EMPTY = new ActorViewItem(Actor.EMPTY, true);
@@ -193,6 +198,16 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
     public boolean matches(TimelineFilter filter) {
         // TODO: implement filtering
         return super.matches(filter);
+    }
+
+    @NonNull
+    @Override
+    public DuplicationLink duplicates(Timeline timeline, @NonNull ActorViewItem other) {
+        if (timeline.preferredOrigin().nonEmpty() && !actor.origin.equals(other.actor.origin)) {
+            if (timeline.preferredOrigin().equals(actor.origin)) return IS_DUPLICATED;
+            if (timeline.preferredOrigin().equals(other.actor.origin)) return DUPLICATES;
+        }
+        return super.duplicates(timeline, other);
     }
 
     public void hideActor(Actor actor) {

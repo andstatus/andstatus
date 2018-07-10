@@ -38,6 +38,11 @@ import static java.util.stream.Collectors.toList;
 public class DuplicatesCollapser<T extends ViewItem<T>> {
     private int maxDistanceBetweenDuplicates = MyPreferences.getMaxDistanceBetweenDuplicates();
 
+    // Parameters, which may be changed during presentation of the timeline
+    protected volatile boolean collapseDuplicates = MyPreferences.isCollapseDuplicates();
+    private final Set<Long> individualCollapsedStateIds = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
+    final TimelineData<T> data;
+
     private static class GroupToCollapse<T extends ViewItem<T>> {
         @NonNull
         ItemWithPage<T> parent;
@@ -65,11 +70,6 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
         }
     }
 
-    // Parameters, which may be changed during presentation of the timeline
-    protected volatile boolean collapseDuplicates = MyPreferences.isCollapseDuplicates();
-    private final Set<Long> individualCollapsedStateIds = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
-    final TimelineData<T> data;
-
     public DuplicatesCollapser(TimelineData<T> data, DuplicatesCollapser<T> oldDuplicatesCollapser) {
         this.data = data;
         if (oldDuplicatesCollapser != null) {
@@ -86,7 +86,7 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
         if (maxDistanceBetweenDuplicates < 1) return false;
         T item = data.getItem(position);
         for (int i = Math.max(position - maxDistanceBetweenDuplicates, 0); i <= position + maxDistanceBetweenDuplicates; i++) {
-            if (i != position && item.duplicates(data.getItem(i)) != DuplicationLink.NONE) return true;
+            if (i != position && item.duplicates(data.params.timeline, data.getItem(i)) != DuplicationLink.NONE) return true;
         }
         return false;
     }
@@ -128,7 +128,7 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
                 ItemWithPage<T> itemPair = new ItemWithPage<>(page, item);
                 boolean found = false;
                 for (GroupToCollapse<T> group : groups) {
-                    switch (item.duplicates(group.parent.item)) {
+                    switch (item.duplicates(data.params.timeline, group.parent.item)) {
                         case DUPLICATES:
                             found = true;
                             group.children.add(itemPair);

@@ -20,6 +20,7 @@ import android.database.Cursor;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.actor.ActorListLoader;
+import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.IsEmpty;
 
@@ -55,7 +56,7 @@ public class ViewItem<T extends ViewItem<T>> implements IsEmpty {
     }
 
     @NonNull
-    public DuplicationLink duplicates(@NonNull T other) {
+    public DuplicationLink duplicates(Timeline timeline, @NonNull T other) {
         return DuplicationLink.NONE;
     }
 

@@ -436,6 +436,15 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         return origin;
     }
 
+    @NonNull
+    public Origin preferredOrigin() {
+        return origin.nonEmpty()
+                ? origin
+                : actor.nonEmpty()
+                    ? actor.origin
+                    : MyContextHolder.get().accounts().getCurrentAccount().getOrigin();
+    }
+
     public boolean checkBoxDisplayedInSelector() {
         return !isDisplayedInSelector.equals(DisplayedInSelector.NEVER);
     }
