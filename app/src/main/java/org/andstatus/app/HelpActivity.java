@@ -27,7 +27,6 @@ import android.support.annotation.NonNull;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
@@ -69,7 +68,6 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
      */
     public static final String EXTRA_IS_FIRST_ACTIVITY = ClassInApplicationPackage.PACKAGE_NAME + ".IS_FIRST_ACTIVITY";
     public static final String EXTRA_CLOSE_ME = ClassInApplicationPackage.PACKAGE_NAME + ".CLOSE_ME";
-    public static final String EXTRA_CHECK_DATA = ClassInApplicationPackage.PACKAGE_NAME + ".CHECK_DATA";
 
     public static final int PAGE_LOGO = 0;
     public static final int PAGE_USER_GUIDE = 1;
@@ -121,8 +119,11 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
         showGetStartedButton();
         setupHelpFlipper();
 
-        if (getIntent().hasExtra(EXTRA_CHECK_DATA) && savedInstanceState == null) {
-            DataChecker.fixDataAsync(new ProgressLogger(this), true);
+        if (getIntent().hasExtra(IntentExtra.CHECK_DATA.key) && savedInstanceState == null) {
+            DataChecker.fixDataAsync(new ProgressLogger(this),
+                    getIntent().getBooleanExtra(IntentExtra.FULL_CHECK.key, false),
+                    getIntent().getBooleanExtra(IntentExtra.COUNT_ONLY.key, false)
+            );
         }
     }
 

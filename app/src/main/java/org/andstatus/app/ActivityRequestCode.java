@@ -21,6 +21,8 @@ import android.app.Activity;
 // Request codes for called activities
 public enum ActivityRequestCode {
     ATTACH(6),
+    CHECK_DATA_COUNT_ONLY(13),
+    CHECK_DATA_INCLUDE_LONG(14),
     EDIT_ORIGIN(4),
     MOVE_DATA_BETWEEN_STORAGES(7),
     REMOVE_ACCOUNT(8),

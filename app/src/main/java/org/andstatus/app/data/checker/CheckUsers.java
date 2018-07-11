@@ -24,13 +24,18 @@ import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.user.User;
+import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -41,11 +46,15 @@ class CheckUsers extends DataChecker {
         Map<String, Set<Actor>> actorsToMergeUsers = new HashMap<>();
         Set<User> usersToSave = new HashSet<>();
         Set<Actor> actorsToFixWebFingerId = new HashSet<>();
+        List<String> problems = new ArrayList<>();
     }
 
     @Override
     long fixInternal(boolean countOnly) {
         CheckResults results = getResults();
+        logResults(results);
+        if (countOnly) return results.problems.size();
+
         long changedCount = 0;
         for (User user : results.usersToSave) {
             user.save(myContext);
@@ -61,13 +70,22 @@ class CheckUsers extends DataChecker {
         return changedCount;
     }
 
+    private void logResults(CheckResults results) {
+        if (results.problems.isEmpty()) {
+            MyLog.d(this, "No problems found");
+            return;
+        }
+        MyLog.d(this, "Problems found: " + results.problems.size());
+        IntStream.range(0, results.problems.size())
+                .mapToObj(i -> Integer.toString(i + 1) + ". " + results.problems.get(i))
+                .forEachOrdered(s -> MyLog.d(this, s));
+    }
+
     private CheckResults getResults() {
-        final String method = "getResults";
+        final String method = "CheckUsers";
         CheckResults results = new CheckResults();
-        String sql = "SELECT " + ActorTable.TABLE_NAME + "." + ActorTable._ID
-                + ", " + ActorTable.ORIGIN_ID
-                + ", " + ActorTable.WEBFINGER_ID
-                + ", " + UserTable.TABLE_NAME + "." + UserTable._ID + " AS " + UserTable.USER_ID
+        String sql = "SELECT " + Actor.getActorAndUserSqlColumns(false)
+                + ", " + ActorTable.TABLE_NAME + "." + ActorTable.PROFILE_URL
                 + " FROM " + Actor.getActorAndUserSqlTables(true, false)
                 + " ORDER BY " + ActorTable.WEBFINGER_ID + " COLLATE NOCASE";
                 ;
@@ -80,11 +98,17 @@ class CheckUsers extends DataChecker {
                 rowsCount++;
                 final Actor actor = Actor.fromOriginAndActorId(
                         myContext.origins().fromId(DbUtils.getLong(c, ActorTable.ORIGIN_ID)),
-                        DbUtils.getLong(c, ActorTable._ID));
+                        DbUtils.getLong(c, ActorTable._ID),
+                        DbUtils.getString(c, ActorTable.ACTOR_OID)
+                        );
                 final String webFingerId = DbUtils.getString(c, ActorTable.WEBFINGER_ID);
                 actor.setWebFingerId(webFingerId);
+                actor.setProfileUrl(DbUtils.getString(c, ActorTable.PROFILE_URL));
+                actor.setUsername(DbUtils.getString(c, ActorTable.USERNAME));
+
                 if (actor.isWebFingerIdValid() && !actor.getWebFingerId().equals(webFingerId)) {
                     results.actorsToFixWebFingerId.add(actor);
+                    results.problems.add("Fix webfingerId: '" + webFingerId + "' " + actor);
                 }
 
                 actor.user = myContext.users().userFromActorId(actor.actorId,
@@ -97,13 +121,16 @@ class CheckUsers extends DataChecker {
                         && actor.user.isMyUser().untrue) {
                     actor.user.setIsMyUser(TriState.TRUE);
                     results.usersToSave.add(actor.user);
+                    results.problems.add("Fix user isMy: " + actor);
                 } else if (actor.user.userId == 0) {
                     results.usersToSave.add(actor.user);
+                    results.problems.add("Fix userId==0: " + actor);
                 }
 
-                if (!actor.getWebFingerId().equals(key)) {
+                if (StringUtils.isEmpty(key) || !actor.getWebFingerId().equals(key)) {
                     if (shouldMerge(actors)) {
                         results.actorsToMergeUsers.put(key, actors);
+                        results.problems.add("Fix merge users 1 \"" + key + "\": " + actors);
                     }
                     key = actor.getWebFingerId();
                     actors = new HashSet<>();
@@ -112,16 +139,20 @@ class CheckUsers extends DataChecker {
             }
             if (shouldMerge(actors)) {
                 results.actorsToMergeUsers.put(key, actors);
+                results.problems.add("Fix merge users 2 \"" + key + "\": " + actors);
             }
         }
 
-        logger.logProgress(method + " ended, " + rowsCount + " actors, " + results.actorsToMergeUsers.size() + " to be merged");
+        logger.logProgress(method + " ended, " + rowsCount + " actors, "
+                + results.actorsToMergeUsers.size() + " users of actors to be merged, "
+                + results.actorsToFixWebFingerId.size() + " to fix WebfingerId"
+        );
         return results;
     }
 
     private boolean shouldMerge(Set<Actor> actors) {
-        return actors.stream().anyMatch(a -> a.user.userId == 0)
-                || actors.stream().mapToLong(a -> a.user.userId).distinct().count() > 1;
+        return actors.size() > 1 && (actors.stream().anyMatch(a -> a.user.userId == 0)
+                || actors.stream().mapToLong(a -> a.user.userId).distinct().count() > 1);
     }
 
     private long mergeUsers(Set<Actor> actors) {

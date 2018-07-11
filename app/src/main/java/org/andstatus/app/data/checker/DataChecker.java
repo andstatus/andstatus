@@ -22,6 +22,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
+import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -42,7 +43,7 @@ public abstract class DataChecker {
         return this;
     }
 
-    public static void fixDataAsync(final ProgressLogger logger, final boolean includeLong) {
+    public static void fixDataAsync(ProgressLogger logger, boolean includeLong, boolean countOnly) {
         AsyncTaskLauncher.execute(
                 logger.callback,
                 false,
@@ -51,7 +52,7 @@ public abstract class DataChecker {
 
                     @Override
                     protected Void doInBackground2(Void... params) {
-                        fixData(logger, includeLong);
+                        fixData(logger, includeLong, countOnly);
                         DbUtils.waitMs(DataChecker.class, 3000);
                         MyContextHolder.release();
                         MyContextHolder.initialize(MyContextHolder.get().context(), DataChecker.class);
@@ -70,20 +71,25 @@ public abstract class DataChecker {
                 });
     }
 
-    public static void fixData(final ProgressLogger logger, final boolean includeLong) {
+    public static void fixData(final ProgressLogger logger, final boolean includeLong, boolean countOnly) {
         MyContext myContext = MyContextHolder.get();
         if (!myContext.isReady()) {
             MyLog.w(DataChecker.class, "fixData skipped: context is not ready " + myContext);
             return;
         }
-        MyLog.i(DataChecker.class, "fixData started" + (includeLong ? ", including long tasks" : ""));
-        for(DataChecker checker : new DataChecker[]{new MergeActors(), new CheckUsers(),
-                new CheckConversations(), new CheckTimelines(), new SearchIndexUpdate()}) {
-            if (includeLong || checker.notLong()) checker.setMyContext(myContext).setLogger(logger).fix();
+        MyServiceManager.setServiceUnavailable();
+        try {
+            MyLog.i(DataChecker.class, "fixData started" + (includeLong ? ", including long tasks" : ""));
+            for(DataChecker checker : new DataChecker[]{new MergeActors(), new CheckUsers(),
+                    new CheckConversations(), new CheckTimelines(), new SearchIndexUpdate()}) {
+                if (includeLong || checker.notLong()) checker.setMyContext(myContext).setLogger(logger).fix(countOnly);
+            }
+        } finally {
+            MyServiceManager.setServiceAvailable();
         }
     }
 
-    String checkerName() {
+    private String checkerName() {
         return this.getClass().getSimpleName();
     }
 

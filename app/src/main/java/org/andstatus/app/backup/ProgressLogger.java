@@ -24,9 +24,10 @@ public class ProgressLogger {
     private volatile long lastLoggedAt = 0L;
     private volatile boolean makeServiceUnavalable = false;
 
+    @FunctionalInterface
     public interface ProgressCallback {
         void onProgressMessage(CharSequence message);
-        void onComplete(boolean success);
+        default void onComplete(boolean success) {}
     }
 
     public static ProgressCallback getEmptyCallback() {

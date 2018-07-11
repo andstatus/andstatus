@@ -258,27 +258,29 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (this == EMPTY) {
             return "Actor:EMPTY";
         }
-        String members = "origin=" + origin.getName() + ",";
+        String members = "origin:" + origin.getName() + ",";
         if (actorId != 0) {
-            members += "id=" + actorId + ",";
+            members += "id:" + actorId + ",";
         }
-        if (!StringUtils.isEmpty(oid)) {
-            members += "oid=" + oid + ",";
+        if (StringUtils.nonEmpty(oid)) {
+            members += "oid:" + oid + ",";
         }
         if (isWebFingerIdValid()) {
             members += getWebFingerId() + ",";
+        } else if (StringUtils.nonEmpty(getWebFingerId())) {
+            members += "invalidWebFingerId:" + getWebFingerId() + ",";
         }
-        if (!StringUtils.isEmpty(username)) {
-            members += "username=" + username + ",";
+        if (StringUtils.nonEmpty(username)) {
+            members += "username:" + username + ",";
         }
-        if (!StringUtils.isEmpty(realName)) {
-            members += "realName=" + realName + ",";
+        if (StringUtils.nonEmpty(realName)) {
+            members += "realName:" + realName + ",";
         }
         if (user.nonEmpty()) {
             members += user + ",";
         }
         if (!Uri.EMPTY.equals(profileUri)) {
-            members += "profileUri=" + profileUri.toString() + ",";
+            members += "profileUri:" + profileUri.toString() + ",";
         }
         if (hasLatestNote()) {
             members += "latest note present,";

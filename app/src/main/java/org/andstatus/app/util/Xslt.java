@@ -18,6 +18,7 @@ package org.andstatus.app.util;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Build;
 import android.webkit.WebView;
 
 import org.andstatus.app.R;
@@ -92,6 +93,9 @@ public class Xslt {
             view.getSettings().setDefaultTextEncodingName("utf-8");
             view.getSettings().setBuiltInZoomControls(true); 
             view.getSettings().setJavaScriptEnabled(true);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                view.getSettings().setSafeBrowsingEnabled(false);
+            }
             // Used this answer for adding a stylesheet: http://stackoverflow.com/a/7736654/297710
             // See also http://stackoverflow.com/questions/13638892/where-is-the-path-file-android-asset-documented
             view.loadDataWithBaseURL("file:///android_asset/", output,"text/html","utf-8", null);

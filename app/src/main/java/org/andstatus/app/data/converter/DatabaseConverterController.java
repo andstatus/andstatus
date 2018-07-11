@@ -28,7 +28,6 @@ import org.andstatus.app.data.checker.DataChecker;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.timeline.meta.TimelineSaver;
 import org.andstatus.app.util.MyLog;
 
 public class DatabaseConverterController {
@@ -166,7 +165,7 @@ public class DatabaseConverterController {
             }
             MyServiceManager.setServiceUnavailable();
             MyServiceManager.stopService();
-            DataChecker.fixData(progressLogger,false);
+            DataChecker.fixData(progressLogger,false, false);
             MyContextHolder.release();
             MyContextHolder.initialize(upgradeRequestor, upgradeRequestor);
             MyServiceManager.setServiceAvailable();

@@ -115,6 +115,10 @@ public enum IntentExtra{
     COLLAPSE_DUPLICATES("COLLAPSE_DUPLICATES"),
     SYNC("SYNC"),
 
+    CHECK_DATA("CHECK_DATA"),
+    FULL_CHECK("FULL_CHECK"),
+    COUNT_ONLY("COUNT_ONLY"),
+
     UNKNOWN("UNKNOWN");
     
     public final String key;

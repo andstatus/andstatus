@@ -31,8 +31,11 @@ import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.util.MyLog;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.stream.IntStream;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -42,8 +45,16 @@ class MergeActors extends DataChecker {
     @Override
     long fixInternal(boolean countOnly) {
         int changedCount = 0;
-        for (AActivity activity : getActorsToMerge()) {
-            mergeActor(activity);
+        final List<AActivity> actorsToMerge = new ArrayList<>(getActorsToMerge());
+        for (AActivity activity : actorsToMerge) {
+            MyLog.d(this, "Problems found: " + actorsToMerge.size());
+            IntStream.range(0, actorsToMerge.size())
+                    .mapToObj(i -> Integer.toString(i) + ". To merge " + actorsToMerge.get(i).getObjActor()
+                            + " with " + actorsToMerge.get(i).getActor())
+                    .forEachOrdered(s -> MyLog.d(this, s));
+            if (!countOnly) {
+                mergeActor(activity);
+            }
             changedCount++;
         }
         return changedCount;

@@ -19,6 +19,7 @@ package org.andstatus.app.account;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.webkit.CookieManager;
 import android.webkit.WebView;
@@ -42,14 +43,17 @@ public class AccountSettingsWebActivity extends MyActivity {
             String url = getIntent().getStringExtra(EXTRA_URLTOOPEN);
             CookieManager.getInstance().setAcceptCookie(true);
             MyLog.d(TAG, "Loading the URL: " + url);
-            WebView webView = (WebView) findViewById(R.id.accountSettingsWebView);
-            webView.getSettings().setBuiltInZoomControls(true); 
-            webView.getSettings().setJavaScriptEnabled(true);
-            webView.getSettings().setUserAgentString(HttpConnection.USER_AGENT);
+            WebView view = (WebView) findViewById(R.id.accountSettingsWebView);
+            view.getSettings().setBuiltInZoomControls(true);
+            view.getSettings().setJavaScriptEnabled(true);
+            view.getSettings().setUserAgentString(HttpConnection.USER_AGENT);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                view.getSettings().setSafeBrowsingEnabled(false);
+            }
             // see http://stackoverflow.com/questions/5561709/opening-webview-not-in-new-browser
-            webView.setWebViewClient(new WebViewListener()); 
+            view.setWebViewClient(new WebViewListener());
             
-            webView.loadUrl(url);
+            view.loadUrl(url);
         } catch (Exception e) {
             MyLog.e(this, "onCreate", e);
             finish();

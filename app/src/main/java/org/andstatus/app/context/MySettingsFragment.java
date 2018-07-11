@@ -37,6 +37,7 @@ import android.text.format.Formatter;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.HelpActivity;
+import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.account.ManageAccountsActivity;
@@ -45,6 +46,7 @@ import org.andstatus.app.backup.BackupActivity;
 import org.andstatus.app.backup.RestoreActivity;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.graphics.ImageCaches;
+import org.andstatus.app.nosupport.util.DialogFactory;
 import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.notification.NotificationMethodType;
 import org.andstatus.app.origin.PersistentOriginList;
@@ -73,6 +75,7 @@ public class MySettingsFragment extends PreferenceFragment implements
     
     private boolean onSharedPreferenceChangedIsBusy = false;
     private boolean mIgnorePreferenceChange = false;
+    private boolean checkDataIncludeLong = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -364,7 +367,8 @@ public class MySettingsFragment extends PreferenceFragment implements
                 break;
             case KEY_CHECK_DATA:
                 preference.setEnabled(false);
-                startActivity(new Intent(getActivity(), HelpActivity.class).putExtra(HelpActivity.EXTRA_CHECK_DATA, "1"));
+                DialogFactory.showYesCancelDialog(this, R.string.check_and_fix_data,
+                        R.string.full_check, ActivityRequestCode.CHECK_DATA_INCLUDE_LONG);
                 break;
             case KEY_MANAGE_ORIGIN_SYSTEMS:
                 startActivity(new Intent(getActivity(), PersistentOriginList.class));
@@ -483,6 +487,18 @@ public class MySettingsFragment extends PreferenceFragment implements
                 if (resultCode == Activity.RESULT_OK) {
                     storageSwitch.move();
                 }
+                break;
+            case CHECK_DATA_INCLUDE_LONG:
+                checkDataIncludeLong = resultCode == Activity.RESULT_OK;
+                DialogFactory.showYesCancelDialog(this, R.string.check_and_fix_data,
+                        R.string.count_only, ActivityRequestCode.CHECK_DATA_COUNT_ONLY);
+                break;
+            case CHECK_DATA_COUNT_ONLY:
+                startActivity(new Intent(getActivity(), HelpActivity.class)
+                        .putExtra(IntentExtra.CHECK_DATA.key, "1")
+                        .putExtra(IntentExtra.FULL_CHECK.key, checkDataIncludeLong)
+                        .putExtra(IntentExtra.COUNT_ONLY.key, resultCode == Activity.RESULT_OK)
+                );
                 break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);
