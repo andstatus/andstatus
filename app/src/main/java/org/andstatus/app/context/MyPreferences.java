@@ -264,12 +264,12 @@ public class MyPreferences {
     }
 
     public static long getMaximumSizeOfAttachmentBytes() {
-        return SharedPreferencesUtil.getLong(KEY_MAXIMUM_SIZE_OF_ATTACHMENT_MB, 5)
+        return Math.max(SharedPreferencesUtil.getLong(KEY_MAXIMUM_SIZE_OF_ATTACHMENT_MB, 5), 1)
                 * BYTES_IN_MB;
     }
 
     public static long getMaximumSizeOfCachedMediaBytes() {
-        return SharedPreferencesUtil.getLong(KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB, 1000)
+        return Math.max(SharedPreferencesUtil.getLong(KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB, 1000), 1)
                 * BYTES_IN_MB;
     }
 

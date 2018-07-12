@@ -25,7 +25,7 @@ public class DataPrunerTest {
 
     @Before
     public void setUp() throws Exception {
-        TestSuite.initializeWithData(this);
+        TestSuite.initialize(this);
         assertTrue(TestSuite.setAndWaitForIsInForeground(false));
     }
 

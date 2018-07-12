@@ -382,6 +382,8 @@ public class DownloadData implements IsEmpty {
             fileStored.delete();
             if (fileStored.existsNow()) return;
 
+            hardError = false;
+            softError = false;
             onNoFile();
             saveToDatabase();
         }
@@ -444,7 +446,7 @@ public class DownloadData implements IsEmpty {
         if (!hardError && downloadId == 0) {
             saveToDatabase();
         }
-        if (!DownloadStatus.LOADED.equals(status) && !hardError) {
+        if ((!DownloadStatus.LOADED.equals(status) || !fileStored.existed) && !hardError) {
             MyServiceManager.sendCommand(actorId != 0
                     ? CommandData.newActorCommand(CommandEnum.GET_AVATAR, actorId, "")
                     : CommandData.newFetchAttachment(noteId, downloadId));
@@ -503,36 +505,39 @@ public class DownloadData implements IsEmpty {
         return this == EMPTY || uri.equals(Uri.EMPTY);
     }
 
-    static long pruneFiles(MyContext myContext, DownloadType downloadType, long bytesToKeep) {
+    static ConsumedSummary pruneFiles(MyContext myContext, DownloadType downloadType, long bytesToKeep) {
         return consumeOldest(myContext, downloadType, bytesToKeep, DownloadData::deleteFile);
     }
 
-    private static long consumeOldest(MyContext myContext, DownloadType downloadType, long totalSizeToSkip,
-                              Consumer<DownloadData> consumer) {
+    private static ConsumedSummary consumeOldest(MyContext myContext, DownloadType downloadType, long totalSizeToSkip,
+                                                 Consumer<DownloadData> consumer) {
         final String sql = "SELECT *"
                 + " FROM " + DownloadTable.TABLE_NAME
                 + " WHERE " + DownloadTable.DOWNLOAD_TYPE + "='" + downloadType.save() + "'"
                 + " AND " + DownloadTable.DOWNLOAD_STATUS + "=" + DownloadStatus.LOADED.save()
                 + " ORDER BY " + DownloadTable.DOWNLOADED_DATE + " DESC";
         return MyQuery.foldLeft(myContext, sql,
-                new CountWithSize(),
-                countWithSize -> cursor -> {
+                new ConsumedSummary(),
+                summary -> cursor -> {
                         DownloadData data = DownloadData.fromCursor(cursor);
                         if (data.fileStored.existed) {
-                            countWithSize.size += data.fileSize;
-                            if (countWithSize.size > totalSizeToSkip) {
-                                countWithSize.consumedCount += 1;
+                            if (summary.skippedSize < totalSizeToSkip) {
+                                summary.skippedSize += data.fileSize;
+                            } else {
+                                summary.consumedCount += 1;
+                                summary.consumedSize += data.fileSize;
                                 consumer.accept(data);
                             }
                         }
-                    return countWithSize;
+                    return summary;
                 }
-            ).consumedCount;
+            );
     }
 
-    private static class CountWithSize {
+    public static class ConsumedSummary {
+        long skippedSize = 0;
         long consumedCount = 0;
-        long size = 0;
+        long consumedSize = 0;
     }
 
 }

@@ -31,6 +31,7 @@ import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.timeline.meta.DisplayedInSelector;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SelectionAndArgs;
@@ -56,7 +57,7 @@ public class DataPruner {
     static final long MAX_DAYS_LOGS_TO_KEEP = 10;
     static final long MAX_DAYS_UNUSED_TIMELINES_TO_KEEP = 31;
     private static final long PRUNE_MIN_PERIOD_DAYS = 1;
-    private static final double ATTACHMENTS_SIZE_PART = 0.95;
+    private static final double ATTACHMENTS_SIZE_PART = 0.90;
 
     public static void prune(@NonNull MyContext myContext) {
         SQLiteDatabase db = myContext.getDatabase();
@@ -167,22 +168,24 @@ public class DataPruner {
         long maxSize = MyPreferences.getMaximumSizeOfCachedMediaBytes();
         final long bytesToPrune = dirSize - maxSize;
         long bytesToPruneMin = ATTACHMENTS_TO_STORE_MIN * MyPreferences.getMaximumSizeOfAttachmentBytes();
-        MyLog.v(this, () -> "Size of media files: " + dirSize + " bytes"
+        MyLog.i(this, "Size of media files: " + I18n.formatBytes(dirSize)
         + (bytesToPrune > bytesToPruneMin
                         ? " exceeds"
                         : " less than")
-                + " maximum " + maxSize + ", min bytes to prune: " + bytesToPruneMin
+                + " maximum: " + I18n.formatBytes(maxSize) + " + min to prune: " + I18n.formatBytes(bytesToPruneMin)
         );
         if (bytesToPrune < bytesToPruneMin) return 0;
 
-        long pruned1 = DownloadData.pruneFiles(myContext, DownloadType.ATTACHMENT,
+        DownloadData.ConsumedSummary pruned1 = DownloadData.pruneFiles(myContext, DownloadType.ATTACHMENT,
                 Math.round(maxSize * ATTACHMENTS_SIZE_PART));
 
-        MyLog.v(this, () -> "Pruned " + pruned1 + " attachment files");
-        long pruned2 = DownloadData.pruneFiles(myContext, DownloadType.AVATAR,
+        MyLog.i(this, "Pruned " + pruned1.consumedCount + " attachment files, "
+                + I18n.formatBytes(pruned1.consumedSize));
+        DownloadData.ConsumedSummary pruned2 = DownloadData.pruneFiles(myContext, DownloadType.AVATAR,
                 Math.round(maxSize * (1 - ATTACHMENTS_SIZE_PART)));
-        MyLog.v(this, () -> "Pruned " + pruned2 + " avatar files");
-        return pruned1 + pruned2;
+        MyLog.i(this, "Pruned " + pruned2.consumedCount + " avatar files, "
+                + I18n.formatBytes(pruned2.consumedSize));
+        return pruned1.consumedCount + pruned2.consumedCount;
     }
 
     public static long getLatestTimestamp(long maxDays) {
