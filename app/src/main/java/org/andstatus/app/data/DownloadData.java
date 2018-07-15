@@ -390,14 +390,15 @@ public class DownloadData implements IsEmpty {
     }
 
     public static void deleteAllOfThisNote(SQLiteDatabase db, long noteId) {
+        if (noteId == 0) return;
+
         final String method = "deleteAllOfThisNote noteId=" + noteId;
         deleteSelected(method, db, DownloadTable.NOTE_ID + "=" + noteId);
     }
 
     public static void deleteOtherOfThisNote(MyContext myContext, long noteId, @NonNull List<Long> downloadIds) {
-        if (noteId == 0 || downloadIds.isEmpty()) {
-            return;
-        }
+        if (noteId == 0 || downloadIds.isEmpty()) return;
+
         final String method = "deleteOtherOfThisNote noteId=" + noteId + ", rowIds:" + toSqlList(downloadIds);
         String where = DownloadTable.NOTE_ID + "=" + noteId
                 + " AND " + DownloadTable._ID + " NOT IN(" + toSqlList(downloadIds) + ")" ;

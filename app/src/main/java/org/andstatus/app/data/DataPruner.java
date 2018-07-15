@@ -195,7 +195,7 @@ public class DataPruner {
     long pruneParentlessAttachments() {
         final String method = "pruneParentlessAttachments";
         String sql = "SELECT DISTINCT " + DownloadTable.NOTE_ID + " FROM " + DownloadTable.TABLE_NAME
-                + " WHERE " + DownloadTable.NOTE_ID + " NOT NULL"
+                + " WHERE " + DownloadTable.NOTE_ID + " <> 0"
                 + " AND NOT EXISTS (" 
                 + "SELECT * FROM " + NoteTable.TABLE_NAME
                 + " WHERE " + NoteTable.TABLE_NAME + "." + NoteTable._ID + "=" + DownloadTable.NOTE_ID
