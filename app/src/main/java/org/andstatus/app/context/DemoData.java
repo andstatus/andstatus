@@ -119,10 +119,6 @@ public final class DemoData {
 
     private volatile String dataPath = "";
 
-    private DemoData() {
-        DemoConversationInserter.onNewDemoData();
-    }
-
     void createNewInstance() {
         demoData = new DemoData();
     }

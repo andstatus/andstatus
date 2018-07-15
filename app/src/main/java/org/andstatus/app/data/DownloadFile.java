@@ -29,11 +29,12 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 public class DownloadFile implements IsEmpty {
+    public static final DownloadFile EMPTY = new DownloadFile("");
+
     private final String filename;
     private final File file;
     /** Existence is checked at the moment of the object creation */
     public final boolean existed;
-    public static final DownloadFile EMPTY = new DownloadFile("");
 
     public DownloadFile(String filename) {
         Objects.requireNonNull(filename);

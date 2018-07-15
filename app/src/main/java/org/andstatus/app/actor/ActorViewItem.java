@@ -17,17 +17,14 @@
 package org.andstatus.app.actor;
 
 import android.database.Cursor;
-import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AvatarFile;
-import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
@@ -162,33 +159,9 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
 
     @Override
     @NonNull
-    public ActorViewItem fromCursor(@NonNull Cursor cursor) {
-        Actor actor = Actor.fromOriginAndActorOid(
-                MyContextHolder.get().origins().fromId(DbUtils.getLong(cursor, ActorTable.ORIGIN_ID)),
-                DbUtils.getString(cursor, ActorTable.ACTOR_OID)
-        );
-        actor.actorId = DbUtils.getLong(cursor, BaseColumns._ID);
-        actor.setUsername(DbUtils.getString(cursor, ActorTable.USERNAME));
-        actor.setWebFingerId(DbUtils.getString(cursor, ActorTable.WEBFINGER_ID));
-        actor.setRealName(DbUtils.getString(cursor, ActorTable.REAL_NAME));
-        actor.setDescription(DbUtils.getString(cursor, ActorTable.DESCRIPTION));
-        actor.location = DbUtils.getString(cursor, ActorTable.LOCATION);
-
-        actor.setProfileUrl(DbUtils.getString(cursor, ActorTable.PROFILE_URL));
-        actor.setHomepage(DbUtils.getString(cursor, ActorTable.HOMEPAGE));
-
-        actor.notesCount = DbUtils.getLong(cursor, ActorTable.NOTES_COUNT);
-        actor.favoritesCount = DbUtils.getLong(cursor, ActorTable.FAVORITES_COUNT);
-        actor.followingCount = DbUtils.getLong(cursor, ActorTable.FOLLOWING_COUNT);
-        actor.followersCount = DbUtils.getLong(cursor, ActorTable.FOLLOWERS_COUNT);
-
-        actor.setCreatedDate(DbUtils.getLong(cursor, ActorTable.CREATED_DATE));
-        actor.setUpdatedDate(DbUtils.getLong(cursor, ActorTable.UPDATED_DATE));
-        actor.avatarFile = AvatarFile.fromCursor(actor.actorId, cursor);
-        MyContextHolder.get().users().lookupUser(actor);
-
+    public ActorViewItem fromCursor(MyContext myContext, @NonNull Cursor cursor) {
+        Actor actor = Actor.fromCursor(myContext, cursor);
         ActorViewItem item = new ActorViewItem(actor, false);
-
         item.myFollowers = MyQuery.getMyFollowersOf(actor.actorId);
         item.populated = true;
         return item;

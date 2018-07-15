@@ -24,6 +24,7 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.ActorSql;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.SqlActorIds;
@@ -55,7 +56,8 @@ public class Audience implements IsEmpty {
         String where = AudienceTable.NOTE_ID + "=" + noteId;
         String sql = "SELECT " + AudienceTable.ACTOR_ID + "," + ActorTable.ACTOR_OID
                 + " FROM " + AudienceTable.TABLE_NAME
-                + " INNER JOIN " + ActorTable.TABLE_NAME + " ON " + AudienceTable.ACTOR_ID + "="
+                + " INNER JOIN " + ActorTable.TABLE_NAME + " ON "
+                + AudienceTable.TABLE_NAME + "." + AudienceTable.ACTOR_ID + "="
                 + ActorTable.TABLE_NAME + "." + ActorTable._ID
                 + " WHERE " + where;
         Audience audience = new Audience(origin);
@@ -69,9 +71,10 @@ public class Audience implements IsEmpty {
 
     public static Audience load(@NonNull MyContext myContext, @NonNull Origin origin, long noteId) {
         Audience audience = new Audience(origin);
-        final String sql = "SELECT " + Actor.getActorAndUserSqlColumns(false)
-                + " FROM (" + Actor.getActorAndUserSqlTables()
-                + ") INNER JOIN " + AudienceTable.TABLE_NAME + " ON " + AudienceTable.ACTOR_ID + "="
+        final String sql = "SELECT " + ActorSql.select()
+                + " FROM (" + ActorSql.tables()
+                + ") INNER JOIN " + AudienceTable.TABLE_NAME + " ON "
+                + AudienceTable.TABLE_NAME + "." + AudienceTable.ACTOR_ID + "="
                 + ActorTable.TABLE_NAME + "." + ActorTable._ID
                 + " AND " + AudienceTable.NOTE_ID + "=" + noteId;
         final Function<Cursor, Actor> function = cursor -> Actor.fromCursor(myContext, cursor);

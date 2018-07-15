@@ -43,6 +43,9 @@ public final class FriendshipTable {
      */
     public static final String FOLLOWED = "followed";
 
+    /** Alias of {@link #ACTOR_ID} */
+    public static final String FOLLOWER_ID = "follower_id";
+
     public static void create(SQLiteDatabase db) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + ACTOR_ID + " INTEGER NOT NULL,"

@@ -104,7 +104,7 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
                 if (cursor.moveToFirst()) {
                     do {
                         rowsCount++;
-                        T item = (T) page.getEmptyItem().fromCursor(cursor);
+                        T item = (T) page.getEmptyItem().fromCursor(params.getMyContext(), cursor);
                         getParams().rememberItemDateLoaded(item.getDate());
                         items.add(item);
                     } while (cursor.moveToNext());
@@ -122,8 +122,8 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
 
     private List<T> loadActors(List<T> items) {
         if (items.isEmpty() && !params.timeline.withActorProfile()) return items;
-        ActorListLoader loader = new ActorListLoader(ActorListType.ACTORS_AT_ORIGIN, getParams().getMyAccount(),
-                getParams().getTimeline().getOrigin(), 0, "");
+        ActorListLoader loader = new ActorListLoader(params.getMyContext(), ActorListType.ACTORS_AT_ORIGIN,
+                getParams().getMyAccount(), getParams().getTimeline().getOrigin(), 0, "");
         items.forEach(item -> item.addActorsToLoad(loader));
         if (params.timeline.getTimelineType().withActorProfile()) loader.addActorToList(params.timeline.actor);
         if (loader.getList().isEmpty()) return items;

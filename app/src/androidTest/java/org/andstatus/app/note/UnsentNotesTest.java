@@ -66,7 +66,8 @@ public class UnsentNotesTest extends TimelineActivityTest<ActivityViewItem> {
         helper.clickMenuItem(method + "; " + step, R.id.createNoteButton);
         ActivityTestHelper.waitViewVisible(method + "; " + step, editorView);
 
-        String body = "Test unsent note, which we will try to edit " + demoData.testRunUid;
+        final String suffix = "unsent" + demoData.testRunUid;
+        String body = "Test unsent note, which we will try to edit" + suffix;
         TestSuite.waitForIdleSync();
         onView(withId(R.id.noteBodyEditText)).perform(new TypeTextAction(body));
         TestSuite.waitForIdleSync();
@@ -78,7 +79,7 @@ public class UnsentNotesTest extends TimelineActivityTest<ActivityViewItem> {
 
         mService.waitForServiceStopped(false);
 
-        String condition = NoteTable.CONTENT + "='" + body + "'";
+        String condition = NoteTable.CONTENT + " LIKE('%" + suffix + "%')";
         long unsentMsgId = MyQuery.conditionToLongColumnValue(NoteTable.TABLE_NAME, BaseColumns._ID, condition);
         step = "Unsent note " + unsentMsgId;
         assertTrue(method + "; " + step + ": " + condition, unsentMsgId != 0);

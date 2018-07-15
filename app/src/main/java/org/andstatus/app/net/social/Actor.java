@@ -18,21 +18,17 @@ package org.andstatus.app.net.social;
 
 import android.database.Cursor;
 import android.net.Uri;
-import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.ActorSql;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.data.ProjectionMap;
 import org.andstatus.app.database.table.ActorTable;
-import org.andstatus.app.database.table.DownloadTable;
-import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -122,8 +118,8 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     private static Actor loadInternal(@NonNull MyContext myContext, long actorId, Supplier<Actor> supplier) {
-        final String sql = "SELECT " + Actor.getActorAndUserSqlColumns(false)
-                + " FROM " + Actor.getActorAndUserSqlTables()
+        final String sql = "SELECT " + ActorSql.select()
+                + " FROM " + ActorSql.tables()
                 + " WHERE " + ActorTable.TABLE_NAME + "." + ActorTable._ID + "=" + actorId;
         final Function<Cursor, Actor> function = cursor -> fromCursor(myContext, cursor);
         Actor actor = MyQuery.get(myContext, sql, function).stream().findFirst().orElseGet(supplier);
@@ -131,53 +127,11 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     @NonNull
-    public static String getActorAndUserSqlTables() {
-        return getActorAndUserSqlTables(false, false);
-    }
-
-    @NonNull
-    public static String getActorAndUserSqlTables(boolean optionalUser, boolean withAvatar) {
-        final String tables = ActorTable.TABLE_NAME + " "
-                + (optionalUser ? "LEFT" : "INNER") + " JOIN " + UserTable.TABLE_NAME
-                + " ON " + ActorTable.TABLE_NAME + "." + ActorTable.USER_ID
-                + "=" + UserTable.TABLE_NAME + "." + UserTable._ID;
-        return withAvatar ? addAvatarImageTable(tables) : tables;
-    }
-
-    @NonNull
-    private static String addAvatarImageTable(String tables) {
-        return "(" + tables + ") LEFT OUTER JOIN (SELECT "
-                + DownloadTable.ACTOR_ID + ", "
-                + DownloadTable.DOWNLOAD_STATUS + ", "
-                + DownloadTable.FILE_NAME
-                + " FROM " + DownloadTable.TABLE_NAME + ") AS " + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS
-                + " ON "
-                + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_STATUS
-                + " IN (" + DownloadStatus.LOADED.save() + ", " + DownloadStatus.ABSENT.save() + ") AND "
-                + ProjectionMap.AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.ACTOR_ID
-                + "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID;
-    }
-
-    @NonNull
-    public static String getActorAndUserSqlColumns(boolean withAvatar) {
-        return ActorTable.TABLE_NAME + "." + ActorTable._ID
-                + ", " + ActorTable.TABLE_NAME + "." + ActorTable.USER_ID
-                + ", " + ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID
-                + ", " + ActorTable.TABLE_NAME + "." + ActorTable.ACTOR_OID
-                + ", " + ActorTable.TABLE_NAME + "." + ActorTable.REAL_NAME
-                + ", " + ActorTable.TABLE_NAME + "." + ActorTable.USERNAME
-                + ", " + ActorTable.TABLE_NAME + "." + ActorTable.WEBFINGER_ID
-                + ", " + ActorTable.TABLE_NAME + "." + ActorTable.UPDATED_DATE
-                + ", " + UserTable.TABLE_NAME + "." + UserTable.IS_MY
-                + ", " + UserTable.TABLE_NAME + "." + UserTable.KNOWN_AS
-                + (withAvatar ? ", " + ProjectionMap.ACTORLIST.get(DownloadTable.AVATAR_FILE_NAME) : "");
-    }
-
-    @NonNull
     public static Actor fromCursor(MyContext myContext, Cursor cursor) {
-        final long actorId = DbUtils.getLong(cursor, ActorTable._ID);
+        final long actorId = DbUtils.getLong(cursor, ActorTable.ACTOR_ID);
+        final long updatedDate = DbUtils.getLong(cursor, ActorTable.UPDATED_DATE);
         Actor actor = myContext.users().actors.getOrDefault(actorId, Actor.EMPTY);
-        if (actor.isEmpty()) {
+        if (actor.isEmpty() || actor.updatedDate < updatedDate) {
             actor = Actor.fromOriginAndActorId(
                     myContext.origins().fromId(DbUtils.getLong(cursor, ActorTable.ORIGIN_ID)),
                     actorId,
@@ -185,9 +139,24 @@ public class Actor implements Comparable<Actor>, IsEmpty {
             actor.setRealName(DbUtils.getString(cursor, ActorTable.REAL_NAME));
             actor.setUsername(DbUtils.getString(cursor, ActorTable.USERNAME));
             actor.setWebFingerId(DbUtils.getString(cursor, ActorTable.WEBFINGER_ID));
-            actor.setUpdatedDate(DbUtils.getLong(cursor, ActorTable.UPDATED_DATE));
+
+            actor.setDescription(DbUtils.getString(cursor, ActorTable.DESCRIPTION));
+            actor.location = DbUtils.getString(cursor, ActorTable.LOCATION);
+
+            actor.setProfileUrl(DbUtils.getString(cursor, ActorTable.PROFILE_URL));
+            actor.setHomepage(DbUtils.getString(cursor, ActorTable.HOMEPAGE));
+            actor.avatarUrl = DbUtils.getString(cursor, ActorTable.AVATAR_URL);
+
+            actor.notesCount = DbUtils.getLong(cursor, ActorTable.NOTES_COUNT);
+            actor.favoritesCount = DbUtils.getLong(cursor, ActorTable.FAVORITES_COUNT);
+            actor.followingCount = DbUtils.getLong(cursor, ActorTable.FOLLOWING_COUNT);
+            actor.followersCount = DbUtils.getLong(cursor, ActorTable.FOLLOWERS_COUNT);
+
+            actor.setCreatedDate(DbUtils.getLong(cursor, ActorTable.CREATED_DATE));
+            actor.setUpdatedDate(updatedDate);
+
             actor.user = User.fromCursor(myContext, cursor);
-            actor.avatarFile = AvatarFile.fromCursor(actorId, cursor);
+            actor.avatarFile = AvatarFile.fromCursor(actor, cursor);
             myContext.users().updateCache(actor);
         }
         return actor;

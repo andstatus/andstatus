@@ -421,7 +421,7 @@ public class DataUpdater {
                 updateNote(actor.getLatestActivity(), recursing + 1);
             }
             if (me.isValidAndSucceeded() && MyPreferences.getShowAvatars() && actor.hasAvatar()) {
-                AvatarData.getForActor(actor.actorId).requestDownload();
+                AvatarData.getForActor(actor).requestDownload();
             }
         } catch (Exception e) {
             MyLog.e(this, method + "; actorId=" + actor.actorId + "; oid=" + actorOid, e);

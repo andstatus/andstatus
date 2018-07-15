@@ -103,7 +103,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                         .load(execContext.getCommandData());
                 break;
             case GET_AVATAR:
-                (new AvatarDownloader(getActor().actorId)).load(execContext.getCommandData());
+                (new AvatarDownloader(getActor())).load(execContext.getCommandData());
                 break;
             case CLEAR_NOTIFICATIONS:
                 execContext.getMyContext().clearNotification(execContext.getCommandData().getTimeline());

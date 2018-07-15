@@ -22,6 +22,7 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.actor.ActorListLoader;
 import org.andstatus.app.actor.ActorViewItem;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
@@ -103,7 +104,7 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
 
     @NonNull
     @Override
-    public ActivityViewItem fromCursor(Cursor cursor) {
+    public ActivityViewItem fromCursor(MyContext myContext, Cursor cursor) {
         return new ActivityViewItem(cursor);
     }
 

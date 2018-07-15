@@ -26,12 +26,12 @@ import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 
-import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
@@ -43,13 +43,13 @@ import java.util.List;
 
 public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable {
     private final Origin origin;
-    private final MyActivity myActivity;
+    private final LoadableListActivity myActivity;
     private final LayoutInflater mInflater;
 
     private ArrayFilter mFilter;
     private List<ActorViewItem> items = new ArrayList<>();
 
-    public ActorAutoCompleteAdapter(@NonNull MyActivity myActivity, @NonNull Origin origin) {
+    public ActorAutoCompleteAdapter(@NonNull LoadableListActivity myActivity, @NonNull Origin origin) {
         this.origin = origin;
         this.myActivity =myActivity;
         mInflater = LayoutInflater.from(myActivity);
@@ -133,7 +133,7 @@ public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable 
             if (!origin.isValid()) {
                 return Collections.emptyList();
             }
-            ActorListLoader loader = new ActorListLoader(ActorListType.ACTORS_AT_ORIGIN,
+            ActorListLoader loader = new ActorListLoader(myActivity.getMyContext(), ActorListType.ACTORS_AT_ORIGIN,
                     MyContextHolder.get().accounts().getFirstSucceededForOrigin(origin), origin, 0, "") {
                 @NonNull
                 @Override

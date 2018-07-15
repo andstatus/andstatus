@@ -20,6 +20,7 @@ import android.database.Cursor;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.actor.ActorListLoader;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.IsEmpty;
@@ -71,7 +72,7 @@ public class ViewItem<T extends ViewItem<T>> implements IsEmpty {
     }
 
     @NonNull
-    public T fromCursor(Cursor cursor) {
+    public T fromCursor(MyContext myContext, Cursor cursor) {
         return getEmpty(TimelineType.UNKNOWN);
     }
 

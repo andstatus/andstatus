@@ -7,9 +7,9 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.ActorListSql;
+import org.andstatus.app.data.ActorSql;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.SqlActorIds;
 import org.andstatus.app.data.SqlWhere;
@@ -27,6 +27,7 @@ import org.andstatus.app.util.StringUtils;
 import static java.util.stream.Collectors.toList;
 
 public class ActorListLoader extends SyncLoader<ActorViewItem> {
+    final MyContext myContext;
     protected final ActorListType mActorListType;
     private String searchQuery = "";
     protected final MyAccount ma;
@@ -36,7 +37,8 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
 
     private LoadableListActivity.ProgressPublisher mProgress;
 
-    public ActorListLoader(ActorListType actorListType, MyAccount ma, Origin origin, long centralItemId, String searchQuery) {
+    public ActorListLoader(MyContext myContext, ActorListType actorListType, MyAccount ma, Origin origin, long centralItemId, String searchQuery) {
+        this.myContext = myContext;
         mActorListType = actorListType;
         this.searchQuery = searchQuery;
         this.ma = ma;
@@ -62,7 +64,7 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
             MyLog.d(this, "Loaded " + size() + " items, " + stopWatch.getTime() + "ms");
         }
         if (items.isEmpty()) {
-            addEmptyItem(MyContextHolder.get().context()
+            addEmptyItem(myContext.context()
                     .getText(R.string.nothing_in_the_loadable_list).toString());
         }
     }
@@ -92,8 +94,8 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
         // TODO: Why only MyAccount's ID ??
         Uri mContentUri = MatchedUri.getActorListUri(ma.getActorId(), mActorListType, ma.getOriginId(), mCentralItemId,
                 searchQuery);
-        try (Cursor c = MyContextHolder.get().context().getContentResolver()
-                    .query(mContentUri, ActorListSql.getListProjection(), getSelection(), null, null)) {
+        try (Cursor c = myContext.context().getContentResolver()
+                    .query(mContentUri, ActorSql.projection(), getSelection(), null, null)) {
             while (c != null && c.moveToNext()) {
                 populateItem(c);
             }
@@ -114,7 +116,7 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
     }
 
     private void populateItem(Cursor cursor) {
-        ActorViewItem item = ActorViewItem.EMPTY.fromCursor(cursor);
+        ActorViewItem item = ActorViewItem.EMPTY.fromCursor(myContext, cursor);
         int index = items.indexOf(item);
         if (index < 0) {
             items.add(item);

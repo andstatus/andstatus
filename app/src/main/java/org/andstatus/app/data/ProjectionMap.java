@@ -30,7 +30,6 @@ public class ProjectionMap {
     public static final String ACTIVITY_TABLE_ALIAS = "act1";
     public static final String NOTE_TABLE_ALIAS = "msg1";
     public static final String ATTACHMENT_IMAGE_TABLE_ALIAS = "img";
-    public static final String AVATAR_IMAGE_TABLE_ALIAS = "av";
     /**
      * Projection map used by SQLiteQueryBuilder
      * Projection map for a Timeline
@@ -61,8 +60,6 @@ public class ProjectionMap {
         TIMELINE.put(ActorTable.AUTHOR_NAME, ActorTable.AUTHOR_NAME);
         TIMELINE.put(DownloadTable.DOWNLOAD_STATUS, DownloadTable.DOWNLOAD_STATUS);
         TIMELINE.put(DownloadTable.FILE_NAME, DownloadTable.FILE_NAME);
-        TIMELINE.put(DownloadTable.AVATAR_FILE_NAME, AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.FILE_NAME
-                + " AS " + DownloadTable.AVATAR_FILE_NAME);
         TIMELINE.put(DownloadTable.IMAGE_FILE_NAME, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.FILE_NAME
                 + " AS " + DownloadTable.IMAGE_FILE_NAME);
         TIMELINE.put(DownloadTable.IMAGE_ID, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable._ID
@@ -87,41 +84,6 @@ public class ProjectionMap {
         TIMELINE.put(NoteTable.INS_DATE, NoteTable.INS_DATE);
     }
 
-    /**
-     * Projection map for the {@link ActorTable} table
-     */
-    public static final Map<String, String> ACTORLIST = new HashMap<>();
-    static {
-        ACTORLIST.put(BaseColumns._ID, ActorTable.TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
-        ACTORLIST.put(ActorTable.ORIGIN_ID, ActorTable.ORIGIN_ID);
-        ACTORLIST.put(ActorTable.ACTOR_ID, ActorTable.TABLE_NAME + "." + BaseColumns._ID + " AS " + ActorTable.ACTOR_ID);
-        ACTORLIST.put(ActorTable.ACTOR_OID, ActorTable.ACTOR_OID);
-        ACTORLIST.put(ActorTable.USERNAME, ActorTable.USERNAME);
-        ACTORLIST.put(ActorTable.WEBFINGER_ID, ActorTable.WEBFINGER_ID);
-        ACTORLIST.put(ActorTable.REAL_NAME, ActorTable.REAL_NAME);
-        ACTORLIST.put(ActorTable.DESCRIPTION, ActorTable.DESCRIPTION);
-        ACTORLIST.put(ActorTable.LOCATION, ActorTable.LOCATION);
-
-        ACTORLIST.put(ActorTable.PROFILE_URL, ActorTable.PROFILE_URL);
-        ACTORLIST.put(ActorTable.HOMEPAGE, ActorTable.HOMEPAGE);
-        ACTORLIST.put(ActorTable.AVATAR_URL, ActorTable.AVATAR_URL);
-        ACTORLIST.put(DownloadTable.AVATAR_FILE_NAME, AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.FILE_NAME
-                + " AS " + DownloadTable.AVATAR_FILE_NAME);
-        ACTORLIST.put(ActorTable.BANNER_URL, ActorTable.BANNER_URL);
-
-        ACTORLIST.put(ActorTable.NOTES_COUNT, ActorTable.NOTES_COUNT);
-        ACTORLIST.put(ActorTable.FAVORITES_COUNT, ActorTable.FAVORITES_COUNT);
-        ACTORLIST.put(ActorTable.FOLLOWING_COUNT, ActorTable.FOLLOWING_COUNT);
-        ACTORLIST.put(ActorTable.FOLLOWERS_COUNT, ActorTable.FOLLOWERS_COUNT);
-
-        ACTORLIST.put(ActorTable.CREATED_DATE, ActorTable.CREATED_DATE);
-        ACTORLIST.put(ActorTable.UPDATED_DATE, ActorTable.UPDATED_DATE);
-        ACTORLIST.put(ActorTable.INS_DATE, ActorTable.INS_DATE);
-        
-        ACTORLIST.put(ActorTable.ACTOR_ACTIVITY_ID, ActorTable.ACTOR_ACTIVITY_ID);
-        ACTORLIST.put(ActorTable.ACTOR_ACTIVITY_DATE, ActorTable.ACTOR_ACTIVITY_DATE);
-    }
-    
     private ProjectionMap() {
         // Empty
     }

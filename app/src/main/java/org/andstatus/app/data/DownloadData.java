@@ -339,7 +339,9 @@ public class DownloadData implements IsEmpty {
         deleteOtherOfThisActor(actorId, 0);
     }
     
-    public static void deleteOtherOfThisActor(long actorId, long rowId) {
+    private static void deleteOtherOfThisActor(long actorId, long rowId) {
+        if (actorId == 0) return;
+
         final String method = "deleteOtherOfThisActor actorId=" + actorId + (rowId != 0 ? ", downloadId=" + rowId : "");
         String where = DownloadTable.ACTOR_ID + "=" + actorId
                 + (rowId == 0 ? "" : " AND " + DownloadTable._ID + "<>" + Long.toString(rowId)) ;

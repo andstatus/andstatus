@@ -224,11 +224,11 @@ public class MyLog {
         return i;
     }
 
-    public static int v(Object objTag, Supplier<String> producer) {
+    public static int v(Object objTag, Supplier<String> supplier) {
         String tag = objToTruncatedTag(objTag);
         if (!isLoggable(tag, Log.VERBOSE)) return 0;
 
-        String msg = producer.get();
+        String msg = supplier.get();
         logToFile(VERBOSE, tag, msg, null);
         return Log.v(tag, msg);
     }

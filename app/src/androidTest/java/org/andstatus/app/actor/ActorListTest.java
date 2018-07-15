@@ -24,7 +24,6 @@ import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.DemoConversationInserter;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.NoteTable;
@@ -108,8 +107,11 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         if (noteWasFound) {
             assertEquals(listItems.toString(), 5, listItems.size());
 
-            Actor actorE = DemoConversationInserter.getActors().get(demoData.conversationAuthorThirdActorOid);
-            assertTrue("Found " + demoData.conversationAuthorThirdActorOid + " cached ", actorE != null);
+            Actor actorE = MyContextHolder.get().users().actors.values().stream()
+                    .filter(actor -> actor.oid.equals(demoData.conversationAuthorThirdActorOid))
+                    .findAny().orElse(Actor.EMPTY);
+            assertTrue("Found " + demoData.conversationAuthorThirdActorOid
+                    + " cached " + MyContextHolder.get().users().actors, actorE.nonEmpty());
             Actor actorA = getByActorOid(listItems, demoData.conversationAuthorThirdActorOid);
             assertTrue("Found " + demoData.conversationAuthorThirdActorOid + ", " + logMsg, actorA != null);
             compareAttributes(actorE, actorA, true);

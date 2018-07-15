@@ -309,7 +309,7 @@ public class NoteEditorData implements IsEmpty {
     }
 
     private void addMentionedActorsBeforeText() {
-        ActorsOfNoteListLoader loader = new ActorsOfNoteListLoader(ActorListType.ACTORS_OF_NOTE, ma,
+        ActorsOfNoteListLoader loader = new ActorsOfNoteListLoader(myContext, ActorListType.ACTORS_OF_NOTE, ma,
                 getInReplyToNoteId(), "").setMentionedOnly(true);
         loader.load(null);
         List<Long> toMention = new ArrayList<>();

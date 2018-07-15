@@ -18,6 +18,7 @@ package org.andstatus.app.data.checker;
 
 import android.database.Cursor;
 
+import org.andstatus.app.data.ActorSql;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.database.table.ActorTable;
@@ -84,9 +85,8 @@ class CheckUsers extends DataChecker {
     private CheckResults getResults() {
         final String method = "CheckUsers";
         CheckResults results = new CheckResults();
-        String sql = "SELECT " + Actor.getActorAndUserSqlColumns(false)
-                + ", " + ActorTable.TABLE_NAME + "." + ActorTable.PROFILE_URL
-                + " FROM " + Actor.getActorAndUserSqlTables(true, false)
+        String sql = "SELECT " + ActorSql.select()
+                + " FROM " + ActorSql.tables(false, true)
                 + " ORDER BY " + ActorTable.WEBFINGER_ID + " COLLATE NOCASE";
                 ;
 

@@ -171,8 +171,12 @@ public class DemoAccountInserter {
                 actor.oid,
                 MyQuery.idToOid(myContext.getDatabase(), OidEnum.ACTOR_OID, actorId, 0));
         assertEquals("Account name", actor.getUsername() + "/" + actor.origin.getName(), ma.getAccountName());
+
+        assertEquals("User should be known as this actor " + actor, actor.getWebFingerId(), actor.user.getKnownAs());
+        assertEquals("User is not mine " + actor, TriState.TRUE, actor.user.isMyUser());
+        assertNotEquals("User is not added " + actor, 0, actor.user.userId);
+
         MyLog.v(this, ma.getAccountName() + " added, id=" + ma.getActorId());
-        DemoConversationInserter.getActors().put(actor.oid, actor);
         return ma;
     }
 

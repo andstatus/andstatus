@@ -17,6 +17,7 @@
 package org.andstatus.app.actor;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActivityTable;
@@ -34,8 +35,9 @@ public class ActorsOfNoteListLoader extends ActorListLoader {
     final String noteContent;
     private boolean mentionedOnly = false;
 
-    public ActorsOfNoteListLoader(ActorListType actorListType, MyAccount ma, long centralItemId, String searchQuery) {
-        super(actorListType, ma, ma.getOrigin(), centralItemId, searchQuery);
+    public ActorsOfNoteListLoader(MyContext myContext, ActorListType actorListType, MyAccount ma, long centralItemId,
+                                  String searchQuery) {
+        super(myContext, actorListType, ma, ma.getOrigin(), centralItemId, searchQuery);
 
         selectedNoteId = centralItemId;
         noteContent = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, selectedNoteId);

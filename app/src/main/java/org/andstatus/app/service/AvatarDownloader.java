@@ -22,12 +22,14 @@ import org.andstatus.app.data.AvatarData;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActorTable;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 
 public class AvatarDownloader extends FileDownloader {
-    public AvatarDownloader(long actorIdIn) {
-        this(AvatarData.getForActor(actorIdIn));
+
+    public AvatarDownloader(Actor actor) {
+        this(AvatarData.getForActor(actor));
     }
 
     protected AvatarDownloader(DownloadData data) {

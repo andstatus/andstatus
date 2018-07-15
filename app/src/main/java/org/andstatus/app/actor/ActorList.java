@@ -107,10 +107,10 @@ public class ActorList extends NoteEditorListActivity {
     protected ActorListLoader newSyncLoader(Bundle args) {
         switch (mActorListType) {
             case ACTORS_OF_NOTE:
-                return new ActorsOfNoteListLoader(mActorListType, getCurrentMyAccount(), centralItemId,
+                return new ActorsOfNoteListLoader(myContext, mActorListType, getCurrentMyAccount(), centralItemId,
                         getParsedUri().getSearchQuery());
             default:
-                return new ActorListLoader(mActorListType, getCurrentMyAccount(), getParsedUri().getOrigin(myContext),
+                return new ActorListLoader(myContext, mActorListType, getCurrentMyAccount(), getParsedUri().getOrigin(myContext),
                         centralItemId, getParsedUri().getSearchQuery());
         }
     }

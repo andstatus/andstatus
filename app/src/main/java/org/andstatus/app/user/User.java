@@ -21,6 +21,7 @@ import android.database.Cursor;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.data.ActorSql;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActorTable;
@@ -57,8 +58,8 @@ public class User implements IsEmpty {
 
     private static User loadInternal(@NonNull MyContext myContext, long actorId) {
         if (actorId == 0 || MyAsyncTask.isUiThread()) return User.EMPTY;
-        final String sql = "SELECT " + Actor.getActorAndUserSqlColumns(false)
-                + " FROM " + Actor.getActorAndUserSqlTables()
+        final String sql = "SELECT " + ActorSql.select(true)
+                + " FROM " + ActorSql.tables(true, false)
                 + " WHERE " + ActorTable.TABLE_NAME + "." + ActorTable._ID + "=" + actorId;
         final Function<Cursor, User> function = cursor -> fromCursor(myContext, cursor);
         return MyQuery.get(myContext, sql, function).stream().findFirst().orElse(EMPTY);
@@ -66,7 +67,7 @@ public class User implements IsEmpty {
 
     @NonNull
     public static User fromCursor(MyContext myContext, Cursor cursor) {
-        final long userId = cursor.getLong(1);
+        final long userId = DbUtils.getLong(cursor, ActorTable.USER_ID);
         User user1 = myContext.users().users.getOrDefault(userId, User.EMPTY);
         return user1.nonEmpty() ? user1
                 : new User(userId, DbUtils.getString(cursor, UserTable.KNOWN_AS),

@@ -26,7 +26,6 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -416,8 +415,8 @@ public class MyProvider extends ContentProvider {
             case ACTOR:
             case ACTORLIST:
             case ACTORLIST_SEARCH:
-                qb.setTables(ActorListSql.tablesForList(uri, projection));
-                qb.setProjectionMap(ProjectionMap.ACTORLIST);
+                qb.setTables(ActorSql.tables());
+                qb.setProjectionMap(ActorSql.fullProjectionMap);
                 rawQuery = uriParser.getSearchQuery();
                 if (StringUtils.nonEmpty(rawQuery)) {
                     if (StringUtils.nonEmpty(selection)) {
@@ -435,14 +434,14 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case ACTORLIST_ITEM:
-                qb.setTables(ActorListSql.tablesForList(uri, projection));
-                qb.setProjectionMap(ProjectionMap.ACTORLIST);
+                qb.setTables(ActorSql.tables());
+                qb.setProjectionMap(ActorSql.fullProjectionMap);
                 qb.appendWhere(BaseColumns._ID + "=" + uriParser.getActorId());
                 break;
 
             case ACTOR_ITEM:
                 qb.setTables(ActorTable.TABLE_NAME);
-                qb.setProjectionMap(ProjectionMap.ACTORLIST);
+                qb.setProjectionMap(ActorSql.fullProjectionMap);
                 qb.appendWhere(BaseColumns._ID + "=" + uriParser.getActorId());
                 break;
 
@@ -529,7 +528,6 @@ public class MyProvider extends ContentProvider {
         }
         int count = 0;
         ParsedUri uriParser = ParsedUri.fromUri(uri);
-        long accountActorId;
         switch (uriParser.matched()) {
             case ACTIVITY:
                 count = db.update(NoteTable.TABLE_NAME, values, selection, selectionArgs);
@@ -549,7 +547,6 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case ACTOR_ITEM:
-                accountActorId = uriParser.getAccountActorId();
                 long selectedActorId = uriParser.getActorId();
                 if (values.size() > 0) {
                     count = db.update(ActorTable.TABLE_NAME, values, BaseColumns._ID + "=" + selectedActorId

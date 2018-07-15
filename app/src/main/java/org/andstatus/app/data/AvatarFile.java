@@ -25,24 +25,24 @@ import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.graphics.MediaMetadata;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.net.social.Actor;
 
 public class AvatarFile extends ImageFile {
-    public static final AvatarFile EMPTY = new AvatarFile(0, "", MediaMetadata.EMPTY);
-    private final long actorId;
+    public static final AvatarFile EMPTY = new AvatarFile(Actor.EMPTY, "", MediaMetadata.EMPTY);
+    private final Actor actor;
     public static final int AVATAR_SIZE_DIP = 48;
     
-    private AvatarFile(long actorId, String filename, MediaMetadata mediaMetadata) {
-        super(filename, mediaMetadata, 0);
-        this.actorId = actorId;
+    @NonNull
+    public static AvatarFile fromCursor(Actor actor, Cursor cursor) {
+        final String filename = DbUtils.getString(cursor, DownloadTable.AVATAR_FILE_NAME);
+        return actor.isEmpty()
+                ? AvatarFile.EMPTY
+                : new AvatarFile(actor, filename, MediaMetadata.EMPTY);
     }
 
-    @NonNull
-    public static AvatarFile fromCursor(long actorId, Cursor cursor) {
-        final String filename = DbUtils.getString(cursor, DownloadTable.AVATAR_FILE_NAME);
-        return actorId == 0 || StringUtils.isEmpty(filename)
-                ? AvatarFile.EMPTY
-                : new AvatarFile(actorId, filename, MediaMetadata.EMPTY);
+    private AvatarFile(Actor actor, String filename, MediaMetadata mediaMetadata) {
+        super(filename, mediaMetadata, 0);
+        this.actor = actor;
     }
 
     @Override
@@ -52,7 +52,11 @@ public class AvatarFile extends ImageFile {
 
     @Override
     public long getId() {
-        return actorId;
+        return getActor().actorId;
+    }
+
+    public Actor getActor() {
+        return actor == null ? Actor.EMPTY : actor;
     }
 
     @Override
@@ -62,9 +66,7 @@ public class AvatarFile extends ImageFile {
 
     @Override
     protected void requestAsyncDownload() {
-        if (actorId != 0) {
-            AvatarData.asyncRequestDownload(actorId);
-        }
+        AvatarData.asyncRequestDownload(actor);
     }
 
     @Override

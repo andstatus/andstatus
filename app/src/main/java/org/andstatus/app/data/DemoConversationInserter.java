@@ -30,9 +30,7 @@ import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 import java.util.GregorianCalendar;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -42,20 +40,10 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class DemoConversationInserter {
-    private static final Map<String, Actor> actors = new ConcurrentHashMap<>();
-
     private int iteration = 0;
     private MyAccount ma;
     private Actor accountActor = Actor.EMPTY;
     private String bodySuffix = "";
-
-    public static void onNewDemoData() {
-        actors.clear();
-    }
-
-    public static Map<String, Actor> getActors() {
-        return actors;
-    }
 
     public void insertConversation(String bodySuffixIn) {
         bodySuffix = StringUtils.isEmpty(bodySuffixIn)
@@ -81,7 +69,6 @@ public class DemoConversationInserter {
         author3.setCreatedDate(new GregorianCalendar(2011,5,12).getTimeInMillis());
         author3.setDescription("I am an ordinary guy, interested in computer science");
         author3.avatarUrl = "http://www.large-icons.com/stock-icons/free-large-android/48x48/happy-robot.gif";
-        actors.put(author3.oid, author3);
 
         Actor author4 = buildActorFromOid("acct:fourthWithoutAvatar@pump.example.com");
         author4.setRealName("Real Fourth");

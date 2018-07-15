@@ -519,7 +519,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         ContentValues contentValues = new ContentValues();
         toContentValues(contentValues);
         if (myContext.isTestRun()) {
-            MyLog.i(this, "Saving " + this + "\n" + MyLog.getStackTrace(new Exception()));
+            MyLog.v(this, () -> "Saving " + this);
         }
         if (getId() == 0) {
             id = DbUtils.addRowWithRetry(myContext, TimelineTable.TABLE_NAME, contentValues, 3);

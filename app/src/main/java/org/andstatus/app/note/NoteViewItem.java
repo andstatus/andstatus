@@ -51,8 +51,8 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
 
     @Override
     @NonNull
-    public NoteViewItem fromCursor(Cursor cursor) {
-        return getNew().fromCursorRow(getMyContext(), cursor);
+    public NoteViewItem fromCursor(MyContext myContext, Cursor cursor) {
+        return getNew().fromCursorRow(myContext, cursor);
     }
 
     @NonNull

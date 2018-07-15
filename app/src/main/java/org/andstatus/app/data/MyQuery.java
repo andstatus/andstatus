@@ -744,8 +744,8 @@ public class MyQuery {
             return identity;
         }
         U result = identity;
-        try (Cursor c = myContext.getDatabase().rawQuery(sql, null)) {
-            while (c.moveToNext()) result = f.apply(result).apply(c);
+        try (Cursor cursor = myContext.getDatabase().rawQuery(sql, null)) {
+            while (cursor.moveToNext()) result = f.apply(result).apply(cursor);
         } catch (Exception e) {
             MyLog.i(TAG, method + "; SQL:'" + sql + "'", e);
         }

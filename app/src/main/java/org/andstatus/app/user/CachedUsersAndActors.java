@@ -4,6 +4,8 @@ import android.database.Cursor;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.data.ActorSql;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.SqlActorIds;
 import org.andstatus.app.database.table.ActorTable;
@@ -59,8 +61,8 @@ public class CachedUsersAndActors {
         actors.clear();
         myUsers.clear();
         myActors.clear();
-        final String sql = "SELECT " + Actor.getActorAndUserSqlColumns(true)
-                + " FROM " + Actor.getActorAndUserSqlTables(false, true)
+        final String sql = "SELECT " + ActorSql.select()
+                + " FROM " + ActorSql.tables()
                 + " WHERE " + UserTable.IS_MY + "=" + TriState.TRUE.id;
         final Function<Cursor, Actor> function = cursor -> Actor.fromCursor(myContext, cursor);
         MyQuery.get(myContext, sql, function).forEach(this::updateCache);
@@ -68,9 +70,9 @@ public class CachedUsersAndActors {
 
     private void initializeFriendsOfMyActors() {
         friendsOfMyActors.clear();
-        final String sql = "SELECT DISTINCT " + Actor.getActorAndUserSqlColumns(false)
-                + ", " + FriendshipTable.ACTOR_ID
-                + " FROM (" + Actor.getActorAndUserSqlTables() + ")"
+        final String sql = "SELECT DISTINCT " + ActorSql.select()
+                + ", " + FriendshipTable.TABLE_NAME + "." + FriendshipTable.ACTOR_ID + " AS " + FriendshipTable.FOLLOWER_ID
+                + " FROM (" + ActorSql.tables() + ")"
                 + " INNER JOIN " + FriendshipTable.TABLE_NAME
                 + " ON " + FriendshipTable.FRIEND_ID + "=" + ActorTable.TABLE_NAME + "." + ActorTable._ID
                 + " AND " + FriendshipTable.FOLLOWED + "=1"
@@ -78,18 +80,18 @@ public class CachedUsersAndActors {
                 + SqlActorIds.fromIds(myActors.keySet()).getSql();
 
         final Function<Cursor, Void> function = cursor -> {
-            long actorId = cursor.getLong(7);
+            long followerId = DbUtils.getLong(cursor, FriendshipTable.FOLLOWER_ID);
             Actor friend = Actor.fromCursor(myContext, cursor);
             updateCache(friend);
-            friendsOfMyActors.put(friend.actorId, actorId);
+            friendsOfMyActors.put(friend.actorId, followerId);
             return null;
         };
         MyQuery.get(myContext, sql, function);
     }
 
     private void loadTimelineActors() {
-        final String sql = "SELECT " + Actor.getActorAndUserSqlColumns(false)
-                + " FROM " + Actor.getActorAndUserSqlTables()
+        final String sql = "SELECT " + ActorSql.select()
+                + " FROM " + ActorSql.tables()
                 + " WHERE " + ActorTable.TABLE_NAME + "." + ActorTable._ID + " IN ("
                 + " SELECT DISTINCT " + TimelineTable.ACTOR_ID
                 + " FROM " + TimelineTable.TABLE_NAME
