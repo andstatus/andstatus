@@ -141,6 +141,7 @@ public class DataUpdaterTest {
         cursor.close();
 
         somebody.followedByMe = TriState.TRUE;
+        somebody.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
         di.onActivity(accountActor.update(somebody));
         DemoConversationInserter.assertIfActorIsMyFriend(somebody, true, ma);
 

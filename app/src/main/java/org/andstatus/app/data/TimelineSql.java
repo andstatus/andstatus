@@ -134,6 +134,7 @@ public class TimelineSql {
                     + DownloadTable.NOTE_ID + ", "
                     + DownloadTable.DOWNLOAD_TYPE + ", "
                     + DownloadTable.DOWNLOAD_NUMBER + ", "
+                    + DownloadTable.DOWNLOAD_STATUS + ", "
                     + DownloadTable.WIDTH + ", "
                     + DownloadTable.HEIGHT + ", "
                     + DownloadTable.DURATION + ", "
@@ -189,6 +190,7 @@ public class TimelineSql {
         if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
             columnNames.add(DownloadTable.IMAGE_ID);
             columnNames.add(DownloadTable.IMAGE_FILE_NAME);
+            columnNames.add(DownloadTable.DOWNLOAD_STATUS);
             columnNames.add(DownloadTable.WIDTH);
             columnNames.add(DownloadTable.HEIGHT);
             columnNames.add(DownloadTable.DURATION);

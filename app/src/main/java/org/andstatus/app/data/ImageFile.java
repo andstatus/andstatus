@@ -37,11 +37,16 @@ public abstract class ImageFile implements IsEmpty {
     private final DownloadFile downloadFile;
     private volatile MediaMetadata mediaMetadata;
     public final long downloadId;
+    public final DownloadStatus downloadStatus;
+    public final long downloadedDate;
 
-    ImageFile(String filename, MediaMetadata mediaMetadata, long downloadId) {
+    ImageFile(String filename, MediaMetadata mediaMetadata, long downloadId, DownloadStatus downloadStatus,
+              long downloadedDate) {
         downloadFile = new DownloadFile(filename);
         this.mediaMetadata = mediaMetadata;
         this.downloadId = downloadId;
+        this.downloadStatus = downloadStatus;
+        this.downloadedDate = downloadedDate;
     }
 
     public boolean isVideo() {
@@ -79,7 +84,7 @@ public abstract class ImageFile implements IsEmpty {
         } else {
             logResult("No image", taskSuffix);
             onNoImage(imageView);
-            requestAsyncDownload();
+            if (downloadStatus != DownloadStatus.HARD_ERROR) requestDownload();
         }
     }
 
@@ -120,7 +125,7 @@ public abstract class ImageFile implements IsEmpty {
         if (downloadFile.existed) {
             return ImageCaches.loadAndGetImage(getCacheName(), this);
         }
-        requestAsyncDownload();
+        requestDownload();
         return null;
     }
 
@@ -252,7 +257,7 @@ public abstract class ImageFile implements IsEmpty {
 
     protected abstract CachedImage getDefaultImage();
 
-    protected abstract void requestAsyncDownload();
+    protected abstract void requestDownload();
 
     protected boolean isDefaultImageRequired() {
         return false;

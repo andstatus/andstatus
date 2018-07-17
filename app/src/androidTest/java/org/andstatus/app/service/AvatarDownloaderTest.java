@@ -39,8 +39,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
@@ -72,59 +70,64 @@ public class AvatarDownloaderTest {
     }
     
     private void loadForOneMyAccount(String urlStringInitial) throws IOException {
-        String urlString1 = MyQuery.actorIdToStringColumnValue(ActorTable.AVATAR_URL, ma.getActorId());
-        assertEquals(urlStringInitial, urlString1);
-        
+        changeAvatarUrl(ma.getActor(), urlStringInitial);
+
         AvatarData.deleteAllOfThisActor(ma.getActorId());
-        
         FileDownloader loader = new AvatarDownloader(ma.getActor());
         assertEquals("Not loaded yet", DownloadStatus.ABSENT, loader.getStatus());
-        loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
+
+        loadAndAssertStatusForMa("First loading",
+                DownloadStatus.LOADED, DownloadStatus.LOADED, false);
         
         String urlString = "http://andstatus.org/nonexistent_avatar_" + System.currentTimeMillis() +  ".png";
         changeMaAvatarUrl(urlString);
-        // Non-existent file is a hard error
-        loadAndAssertStatusForMa(DownloadStatus.HARD_ERROR, false);
+        loadAndAssertStatusForMa("Non-existent file is a hard error",
+                DownloadStatus.HARD_ERROR, DownloadStatus.LOADED, false);
         
         urlString = "https://raw.githubusercontent.com/andstatus/andstatus/master/app/src/main/res/drawable-mdpi/notification_icon.png";
-        assertEquals("Changed 1 row ", 1, changeMaAvatarUrl(urlString));
-        loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
+        changeMaAvatarUrl(urlString);
+        loadAndAssertStatusForMa("URL changed",
+                DownloadStatus.LOADED, DownloadStatus.LOADED, false);
 
         deleteMaAvatarFile();
-        loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
+        loadAndAssertStatusForMa("Avatar was deleted",
+                DownloadStatus.LOADED, DownloadStatus.LOADED, false);
         
         deleteMaAvatarFile();
-        assertEquals("Changed 1 row ", 1, changeMaAvatarStatus(urlString, DownloadStatus.HARD_ERROR));
-        // Don't reload if hard error
-        loadAndAssertStatusForMa(DownloadStatus.HARD_ERROR, false);
+        changeAvatarStatus(ma.getActor(), DownloadStatus.HARD_ERROR);
+        loadAndAssertStatusForMa("Don't reload if hard error", DownloadStatus.HARD_ERROR,
+                DownloadStatus.HARD_ERROR, false);
 
-        changeMaAvatarStatus(urlString, DownloadStatus.SOFT_ERROR);
-        // Reload on Soft error
-        loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
+        changeAvatarStatus(ma.getActor(), DownloadStatus.SOFT_ERROR);
+        loadAndAssertStatusForMa("Reload on Soft error",
+                DownloadStatus.LOADED, DownloadStatus.LOADED, false);
         
         changeMaAvatarUrl("");
-        // In a case avatar removed from actor, we see the last loaded
-        loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
+        loadAndAssertStatusForMa("In a case avatar removed from actor, we see the last loaded",
+                DownloadStatus.LOADED, DownloadStatus.LOADED, false);
 
         changeMaAvatarUrl("http://example.com/inexistent.jpg");
-        loadAndAssertStatusForMa(DownloadStatus.HARD_ERROR, false);
+        loadAndAssertStatusForMa("Inexistent avatar",
+                DownloadStatus.HARD_ERROR, DownloadStatus.LOADED, false);
 
         ActorListLoader aLoader = new ActorListLoader(MyContextHolder.get(), ActorListType.ACTORS_AT_ORIGIN, ma,
                 ma.getOrigin(), 0, "");
         aLoader.addActorToList(ma.getActor());
         aLoader.load(progress -> {});
         ActorViewItem viewItem = aLoader.getList().get(0);
-        assertTrue("Should show previous avatar " + viewItem.getAvatarFile(),
+        assertTrue("Should show previous avatar " + viewItem.getActor(),
                 viewItem.getAvatarFile().getSize().x > 0);
 
         changeMaAvatarUrl(urlStringInitial);
-        long rowIdError = loadAndAssertStatusForMa(DownloadStatus.ABSENT, true);
-        long rowIdRecovered = loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
+        long rowIdError = loadAndAssertStatusForMa("Restored avatar URL",
+                DownloadStatus.ABSENT, DownloadStatus.LOADED, true);
+        long rowIdRecovered = loadAndAssertStatusForMa("Reloading avatar",
+                DownloadStatus.LOADED, DownloadStatus.LOADED, false);
         assertEquals("Updated the same row ", rowIdError, rowIdRecovered);
     }
 
     private void deleteMaAvatarFile() {
-        DownloadData data = AvatarData.getForActor(ma.getActor());
+        DownloadData data = AvatarData.getCurrentForActor(ma.getActor());
         assertTrue("Loaded avatar file deleted", data.getFile().delete());
     }
 
@@ -136,8 +139,8 @@ public class AvatarDownloaderTest {
         String urlString = MyQuery.actorIdToStringColumnValue(ActorTable.AVATAR_URL, ma.getActorId());
         assertEquals(demoData.conversationAccountAvatarUrl, urlString);
         
-        loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
-        DownloadData data = AvatarData.getForActor(ma.getActor());
+        loadAndAssertStatusForMa("", DownloadStatus.LOADED, DownloadStatus.LOADED, false);
+        DownloadData data = AvatarData.getCurrentForActor(ma.getActor());
         assertTrue("Existence of " + data.getFilename(), data.getFile().existed);
         assertTrue("Is File" + data.getFilename(), data.getFile().getFile().isFile());
 
@@ -145,58 +148,72 @@ public class AvatarDownloaderTest {
         AvatarData.deleteAllOfThisActor(ma.getActorId());
         assertFalse(avatarFile.existsNow());
 
-        loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
-        data = AvatarData.getForActor(ma.getActor());
+        loadAndAssertStatusForMa("", DownloadStatus.LOADED, DownloadStatus.LOADED, false);
+        data = AvatarData.getCurrentForActor(ma.getActor());
         assertTrue(data.getFile().existed);
     }
     
-    private int changeMaAvatarUrl(String urlString) {
-        return changeAvatarUrl(ma.getActor(), urlString);
+    private void changeMaAvatarUrl(String urlString) {
+        changeAvatarUrl(ma.getActor(), urlString);
     }
 
-    static int changeAvatarUrl(Actor actor, String urlString) {
+    static void changeAvatarUrl(Actor actor, String urlString) {
         ContentValues values = new ContentValues();
+        actor.avatarUrl = urlString;
+        actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
         values.put(ActorTable.AVATAR_URL, urlString);
-        return MyContextHolder.get().getDatabase()
+        values.put(ActorTable.UPDATED_DATE, actor.getUpdatedDate());
+        MyContextHolder.get().getDatabase()
                 .update(ActorTable.TABLE_NAME, values, ActorTable._ID + "=" + actor.actorId, null);
+        Actor.reload(MyContextHolder.get(), actor.actorId);
+        assertEquals("URL should change for " + actor +
+                        "\n reloaded: " + Actor.load(MyContextHolder.get(), actor.actorId),
+                urlString, MyQuery.actorIdToStringColumnValue(ActorTable.AVATAR_URL, actor.actorId));
     }
 
-    private int changeMaAvatarStatus(String urlString, DownloadStatus status) throws MalformedURLException {
-        URL url = new URL(urlString); 
+    private void changeAvatarStatus(Actor actor, DownloadStatus status) {
         ContentValues values = new ContentValues();
         values.put(DownloadTable.DOWNLOAD_STATUS, status.save());
-        return MyContextHolder.get().getDatabase()
-                .update(DownloadTable.TABLE_NAME, values, DownloadTable.ACTOR_ID + "=" + ma.getActorId()
-                        + " AND " + DownloadTable.URI + "=" + MyQuery.quoteIfNotQuoted(url.toExternalForm()), null);
+        values.put(DownloadTable.DOWNLOADED_DATE, MyLog.uniqueCurrentTimeMS());
+        MyContextHolder.get().getDatabase()
+                .update(DownloadTable.TABLE_NAME, values, DownloadTable.ACTOR_ID + "=" + actor.actorId
+                        + " AND " + DownloadTable.URI + "=" + MyQuery.quoteIfNotQuoted(actor.avatarUrl), null);
+        Actor actor2 = Actor.reload(MyContextHolder.get(), actor.actorId);
+        AvatarData avatarData = AvatarData.getCurrentForActor(actor);
+        assertEquals("Download status for " + actor2, status, avatarData.getStatus());
     }
 
-    private long loadAndAssertStatusForMa(DownloadStatus status, boolean mockNetworkError) {
-        FileDownloader loader = new AvatarDownloader(ma.getActor());
+    private long loadAndAssertStatusForMa(String description, DownloadStatus loadStatus, DownloadStatus displayedStatus,
+                                          boolean mockNetworkError) {
+        final Actor actor = Actor.load(MyContextHolder.get(), ma.getActor().actorId);
+        FileDownloader loader = new AvatarDownloader(actor);
         if (mockNetworkError) {
             loader.connectionMock = new ConnectionTwitterGnuSocialMock(new ConnectionException("Mocked IO exception"));
         }
-        CommandData commandData = CommandData.newActorCommand(CommandEnum.GET_AVATAR, 123, "user123");
+        CommandData commandData = CommandData.newActorCommand(CommandEnum.GET_AVATAR, actor.actorId,
+                actor.getUsername());
         loader.load(commandData);
 
-        DownloadData data = AvatarData.getForActor(ma.getActor());
-        if (DownloadStatus.LOADED.equals(status)) {
-            assertFalse("Loaded " + data + ", error message:" + commandData.getResult().getMessage(),
-                    commandData.getResult()
-                    .hasError());
-            assertEquals("Loaded " + data.getUri() + ", error message:" + commandData.getResult().getMessage(), status,
-                    loader.getStatus());
+        DownloadData data = AvatarData.getDisplayedForActor(actor);
+        String logMsg = description + " Expecting load status: " + loadStatus + ", displayed: " + displayedStatus +
+                "\n  for " + actor + "\n  (loaded " + data +
+                ", error message:'" + commandData.getResult().getMessage() + "')"
+                + (mockNetworkError ? "mocked the error" : "");
+
+        assertEquals("Checking load status " + logMsg, loadStatus, loader.getStatus());
+        if (DownloadStatus.LOADED.equals(loadStatus)) {
+            assertFalse("Should be no errors " + logMsg, commandData.getResult().hasError());
         } else {
-            assertTrue("Error loading " + data.getUri(), commandData.getResult().hasError());
+            assertTrue("Should be an error " + logMsg, commandData.getResult().hasError());
         }
-        
-        if (DownloadStatus.LOADED.equals(status)) {
-            assertTrue("Exists avatar " + data.getUri(), data.getFile().existed);
+        assertEquals(logMsg, loadStatus, loader.getStatus());
+
+        if (DownloadStatus.LOADED.equals(displayedStatus)) {
+            assertTrue("Avatar should be displayed " + logMsg, data.getFile().existed);
         } else {
-            assertFalse("Doesn't exist avatar " + data.getUri(), data.getFile().existed);
+            assertFalse("Avatar shouldn't be diplayed " + logMsg, data.getFile().existed);
         }
 
-        assertEquals("Loaded '" + data.getUri() + "'", status, loader.getStatus());
-        
-        return data.getDownloadId();
+        return loader.data.getDownloadId();
     }
 }

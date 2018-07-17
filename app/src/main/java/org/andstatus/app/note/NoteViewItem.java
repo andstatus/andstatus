@@ -89,7 +89,9 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
             attachedImageFile = new AttachedImageFile(
                     DbUtils.getLong(cursor, DownloadTable.IMAGE_ID),
                     DbUtils.getString(cursor, DownloadTable.IMAGE_FILE_NAME),
-                    MediaMetadata.fromCursor(cursor));
+                    MediaMetadata.fromCursor(cursor),
+                    DownloadStatus.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_STATUS)),
+                    DbUtils.getLong(cursor, DownloadTable.DOWNLOADED_DATE));
         }
 
         for (Actor actor : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getNoteId())) {

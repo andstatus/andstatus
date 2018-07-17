@@ -29,7 +29,7 @@ import org.andstatus.app.util.MyLog;
 public class AvatarDownloader extends FileDownloader {
 
     public AvatarDownloader(Actor actor) {
-        this(AvatarData.getForActor(actor));
+        this(AvatarData.getCurrentForActor(actor));
     }
 
     protected AvatarDownloader(DownloadData data) {
@@ -46,6 +46,7 @@ public class AvatarDownloader extends FileDownloader {
     @Override
     protected void onSuccessfulLoad() {
         data.deleteOtherOfThisActor();
+        Actor.reload(MyContextHolder.get(), data.actorId);
         MyLog.v(this, () -> "Loaded avatar actorId:" + data.actorId + "; uri:'" + data.getUri() + "'");
     }
 }

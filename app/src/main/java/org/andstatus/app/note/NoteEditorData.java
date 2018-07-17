@@ -133,7 +133,8 @@ public class NoteEditorData implements IsEmpty {
         attachment = DownloadData.getSingleAttachment(noteId);
         if (attachment.getStatus() == LOADED) {
             AttachedImageFile imageFile = new AttachedImageFile(attachment.getDownloadId(),
-                    attachment.getFilename(), attachment.mediaMetadata);
+                    attachment.getFilename(), attachment.mediaMetadata, attachment.getStatus(),
+                    attachment.getDownloadedDate());
             image = imageFile.loadAndGetImage();
             note.attachments.add(Attachment.fromUri(attachment.getUri()));
         }

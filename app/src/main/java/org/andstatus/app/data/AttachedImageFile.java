@@ -22,20 +22,28 @@ import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.graphics.MediaMetadata;
+import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.MyServiceManager;
+
+import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 
 public class AttachedImageFile extends ImageFile {
-    public static final AttachedImageFile EMPTY = new AttachedImageFile(0, "", MediaMetadata.EMPTY);
+    public static final AttachedImageFile EMPTY = new AttachedImageFile(0, "", MediaMetadata.EMPTY,
+            DownloadStatus.ABSENT, DATETIME_MILLIS_NEVER);
 
     public static AttachedImageFile fromCursor(Cursor cursor) {
         return new AttachedImageFile(
                 DbUtils.getLong(cursor, DownloadTable.IMAGE_ID),
                 DbUtils.getString(cursor, DownloadTable.IMAGE_FILE_NAME),
-                MediaMetadata.fromCursor(cursor)
+                MediaMetadata.fromCursor(cursor),
+                DownloadStatus.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_STATUS)),
+                DbUtils.getLong(cursor, DownloadTable.DOWNLOADED_DATE)
         );
     }
 
-    public AttachedImageFile(long downloadId, String filename, MediaMetadata mediaMetadata) {
-        super(filename, mediaMetadata, downloadId);
+    public AttachedImageFile(long downloadId, String filename, MediaMetadata mediaMetadata,
+                             DownloadStatus downloadStatus, long downloadedDate) {
+        super(filename, mediaMetadata, downloadId, downloadStatus, downloadedDate);
     }
 
     public CacheName getCacheName() {
@@ -48,9 +56,9 @@ public class AttachedImageFile extends ImageFile {
     }
 
     @Override
-    protected void requestAsyncDownload() {
-        if (downloadId != 0) {
-            DownloadData.asyncRequestDownload(downloadId);
-        }
+    protected void requestDownload() {
+        if (downloadId == 0) return;
+
+        MyServiceManager.sendCommand(CommandData.newFetchAttachment(0, downloadId));
     }
 }

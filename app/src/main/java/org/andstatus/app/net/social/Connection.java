@@ -346,8 +346,8 @@ public abstract class Connection {
     public Actor getActor(String actorOid, String username) throws ConnectionException {
         long time = MyLog.uniqueCurrentTimeMS();
         Actor actor = getActor2(actorOid, username);
-        if (actor.nonEmpty() && actor.getUpdatedDate() <= SOME_TIME_AGO) {
-            actor.setUpdatedDate(time);
+        if (!actor.isPartiallyDefined()) {
+            if (actor.getUpdatedDate() <= SOME_TIME_AGO) actor.setUpdatedDate(time);
         }
         return actor;
     }

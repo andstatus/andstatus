@@ -18,37 +18,17 @@ package org.andstatus.app.data;
 
 import android.net.Uri;
 
-import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.os.AsyncTaskLauncher;
-import org.andstatus.app.os.MyAsyncTask;
-import org.andstatus.app.util.UriUtils;
 
 public class AvatarData extends DownloadData {
     public static final String TAG = AvatarData.class.getSimpleName();
 
-    public static void asyncRequestDownload(Actor actor) {
-        if (actor.actorId == 0) return;
-
-        AsyncTaskLauncher.execute(TAG, false,
-                new MyAsyncTask<Void, Void, Void>(TAG + actor.actorId, MyAsyncTask.PoolEnum.QUICK_UI) {
-                    @Override
-                    protected Void doInBackground2(Void... params) {
-                        getForActor(actor).requestDownload();
-                        return null;
-                    }
-                }
-        );
+    public static AvatarData getCurrentForActor(Actor actor) {
+        return new AvatarData(actor.actorId, actor.getAvatarUri());
     }
 
-
-    public static AvatarData getForActor(Actor actor) {
-        Uri avatarUriNew = UriUtils.fromString(MyQuery.actorIdToStringColumnValue(ActorTable.AVATAR_URL, actor.actorId));
-        AvatarData data = new AvatarData(actor.actorId, Uri.EMPTY);
-        if (!data.getUri().equals(avatarUriNew)) {
-            data = new AvatarData(actor.actorId, avatarUriNew);
-        }
-        return data;
+    public static AvatarData getDisplayedForActor(Actor actor) {
+        return new AvatarData(actor.actorId, Uri.EMPTY);
     }
 
     private AvatarData(long actorIdIn, Uri avatarUriNew) {

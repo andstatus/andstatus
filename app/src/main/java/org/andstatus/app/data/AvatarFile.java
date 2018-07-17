@@ -17,18 +17,26 @@
 package org.andstatus.app.data;
 
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.R;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.graphics.MediaMetadata;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.CommandEnum;
+import org.andstatus.app.service.MyServiceManager;
+
+import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 
 public class AvatarFile extends ImageFile {
-    public static final AvatarFile EMPTY = new AvatarFile(Actor.EMPTY, "", MediaMetadata.EMPTY);
+    public static final AvatarFile EMPTY = new AvatarFile(Actor.EMPTY, "", MediaMetadata.EMPTY,
+            DownloadStatus.ABSENT, DATETIME_MILLIS_NEVER);
     private final Actor actor;
     public static final int AVATAR_SIZE_DIP = 48;
     
@@ -37,11 +45,14 @@ public class AvatarFile extends ImageFile {
         final String filename = DbUtils.getString(cursor, DownloadTable.AVATAR_FILE_NAME);
         return actor.isEmpty()
                 ? AvatarFile.EMPTY
-                : new AvatarFile(actor, filename, MediaMetadata.EMPTY);
+                : new AvatarFile(actor, filename, MediaMetadata.EMPTY,
+                    DownloadStatus.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_STATUS)),
+                    DbUtils.getLong(cursor, DownloadTable.DOWNLOADED_DATE));
     }
 
-    private AvatarFile(Actor actor, String filename, MediaMetadata mediaMetadata) {
-        super(filename, mediaMetadata, 0);
+    private AvatarFile(Actor actor, String filename, MediaMetadata mediaMetadata, DownloadStatus downloadStatus,
+                       long downloadedDate) {
+        super(filename, mediaMetadata, 0, downloadStatus, downloadedDate);
         this.actor = actor;
     }
 
@@ -55,6 +66,7 @@ public class AvatarFile extends ImageFile {
         return getActor().actorId;
     }
 
+    @NonNull
     public Actor getActor() {
         return actor == null ? Actor.EMPTY : actor;
     }
@@ -65,12 +77,26 @@ public class AvatarFile extends ImageFile {
     }
 
     @Override
-    protected void requestAsyncDownload() {
-        AvatarData.asyncRequestDownload(actor);
+    protected void requestDownload() {
+        if (getActor().actorId == 0) return;
+
+        MyServiceManager.sendCommand(
+                CommandData.newActorCommand(CommandEnum.GET_AVATAR, getActor().actorId, getActor().getUsername()));
     }
 
     @Override
     protected boolean isDefaultImageRequired() {
         return true;
+    }
+
+    public void resetAvatarErrors(MyContext myContext) {
+        SQLiteDatabase db = myContext.getDatabase();
+        if (getActor().actorId == 0 || db == null) return;
+
+        db.execSQL("UPDATE " + DownloadTable.TABLE_NAME +
+                " SET " + DownloadTable.DOWNLOAD_STATUS + "=" + DownloadStatus.ABSENT.save() +
+                " WHERE " + DownloadTable.ACTOR_ID + "=" + getActor().actorId +
+                " AND " + DownloadTable.DOWNLOAD_STATUS + "<>" + DownloadStatus.LOADED.save()
+        );
     }
 }

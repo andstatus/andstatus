@@ -194,13 +194,15 @@ public class CachedUsersAndActors {
     }
 
     private void updateCachedActor(Map<Long, Actor> actors, Actor actor) {
+        if (actor.isEmpty()) return;
+
         if (actor.getUpdatedDate() <= SOME_TIME_AGO) {
             actors.putIfAbsent(actor.actorId, actor);
             return;
         }
-        Actor existing = actors.get(actor.actorId);
-        if (existing == null || existing.getUpdatedDate() < actor.getUpdatedDate()) {
+        if (actor.isBetterToCacheThan(actors.get(actor.actorId))) {
             actors.put(actor.actorId, actor);
+            myActors.computeIfPresent(actor.actorId, (id, actor1) -> actor);
         }
     }
 }

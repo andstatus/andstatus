@@ -104,17 +104,31 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     @NonNull
-    public static Actor load(@NonNull MyContext myContext, long actorId) {
-        return load(myContext, actorId, () -> Actor.EMPTY);
+    public static Actor getEmpty() {
+        return EMPTY;
     }
 
-    public static Actor load(@NonNull MyContext myContext, long actorId, Supplier<Actor> supplier) {
+    @NonNull
+    public static Actor load(@NonNull MyContext myContext, long actorId) {
+        return load(myContext, actorId, false, Actor::getEmpty);
+    }
+
+    @NonNull
+    public static Actor reload(@NonNull MyContext myContext, long actorId) {
+        return load(myContext, actorId, true, Actor::getEmpty);
+    }
+
+    public static Actor load(@NonNull MyContext myContext, long actorId, boolean reloadFirst, Supplier<Actor> supplier) {
         if (actorId == 0) return supplier.get();
 
-        Actor actor1 = myContext.users().actors.getOrDefault(actorId, Actor.EMPTY);
-        return actor1.nonEmpty()
-                ? actor1
-                : loadInternal(myContext, actorId, supplier);
+        Actor cached = myContext.users().actors.getOrDefault(actorId, Actor.EMPTY);
+        return cached.isPartiallyDefined() || reloadFirst
+                ? loadInternal(myContext, actorId, supplier).betterToCache(cached)
+                : cached;
+    }
+
+    private Actor betterToCache(Actor other) {
+        return isBetterToCacheThan(other) ?  this : other;
     }
 
     private static Actor loadInternal(@NonNull MyContext myContext, long actorId, Supplier<Actor> supplier) {
@@ -122,44 +136,43 @@ public class Actor implements Comparable<Actor>, IsEmpty {
                 + " FROM " + ActorSql.tables()
                 + " WHERE " + ActorTable.TABLE_NAME + "." + ActorTable._ID + "=" + actorId;
         final Function<Cursor, Actor> function = cursor -> fromCursor(myContext, cursor);
-        Actor actor = MyQuery.get(myContext, sql, function).stream().findFirst().orElseGet(supplier);
-        return actor;
+        return MyQuery.get(myContext, sql, function).stream().findFirst().orElseGet(supplier);
     }
 
     @NonNull
     public static Actor fromCursor(MyContext myContext, Cursor cursor) {
-        final long actorId = DbUtils.getLong(cursor, ActorTable.ACTOR_ID);
         final long updatedDate = DbUtils.getLong(cursor, ActorTable.UPDATED_DATE);
-        Actor actor = myContext.users().actors.getOrDefault(actorId, Actor.EMPTY);
-        if (actor.isEmpty() || actor.updatedDate < updatedDate) {
-            actor = Actor.fromOriginAndActorId(
+        Actor actor = Actor.fromOriginAndActorId(
                     myContext.origins().fromId(DbUtils.getLong(cursor, ActorTable.ORIGIN_ID)),
-                    actorId,
+                    DbUtils.getLong(cursor, ActorTable.ACTOR_ID),
                     DbUtils.getString(cursor, ActorTable.ACTOR_OID));
-            actor.setRealName(DbUtils.getString(cursor, ActorTable.REAL_NAME));
-            actor.setUsername(DbUtils.getString(cursor, ActorTable.USERNAME));
-            actor.setWebFingerId(DbUtils.getString(cursor, ActorTable.WEBFINGER_ID));
+        actor.setRealName(DbUtils.getString(cursor, ActorTable.REAL_NAME));
+        actor.setUsername(DbUtils.getString(cursor, ActorTable.USERNAME));
+        actor.setWebFingerId(DbUtils.getString(cursor, ActorTable.WEBFINGER_ID));
 
-            actor.setDescription(DbUtils.getString(cursor, ActorTable.DESCRIPTION));
-            actor.location = DbUtils.getString(cursor, ActorTable.LOCATION);
+        actor.setDescription(DbUtils.getString(cursor, ActorTable.DESCRIPTION));
+        actor.location = DbUtils.getString(cursor, ActorTable.LOCATION);
 
-            actor.setProfileUrl(DbUtils.getString(cursor, ActorTable.PROFILE_URL));
-            actor.setHomepage(DbUtils.getString(cursor, ActorTable.HOMEPAGE));
-            actor.avatarUrl = DbUtils.getString(cursor, ActorTable.AVATAR_URL);
+        actor.setProfileUrl(DbUtils.getString(cursor, ActorTable.PROFILE_URL));
+        actor.setHomepage(DbUtils.getString(cursor, ActorTable.HOMEPAGE));
+        actor.avatarUrl = DbUtils.getString(cursor, ActorTable.AVATAR_URL);
 
-            actor.notesCount = DbUtils.getLong(cursor, ActorTable.NOTES_COUNT);
-            actor.favoritesCount = DbUtils.getLong(cursor, ActorTable.FAVORITES_COUNT);
-            actor.followingCount = DbUtils.getLong(cursor, ActorTable.FOLLOWING_COUNT);
-            actor.followersCount = DbUtils.getLong(cursor, ActorTable.FOLLOWERS_COUNT);
+        actor.notesCount = DbUtils.getLong(cursor, ActorTable.NOTES_COUNT);
+        actor.favoritesCount = DbUtils.getLong(cursor, ActorTable.FAVORITES_COUNT);
+        actor.followingCount = DbUtils.getLong(cursor, ActorTable.FOLLOWING_COUNT);
+        actor.followersCount = DbUtils.getLong(cursor, ActorTable.FOLLOWERS_COUNT);
 
-            actor.setCreatedDate(DbUtils.getLong(cursor, ActorTable.CREATED_DATE));
-            actor.setUpdatedDate(updatedDate);
+        actor.setCreatedDate(DbUtils.getLong(cursor, ActorTable.CREATED_DATE));
+        actor.setUpdatedDate(updatedDate);
 
-            actor.user = User.fromCursor(myContext, cursor);
-            actor.avatarFile = AvatarFile.fromCursor(actor, cursor);
+        actor.user = User.fromCursor(myContext, cursor);
+        actor.avatarFile = AvatarFile.fromCursor(actor, cursor);
+        Actor cachedActor = myContext.users().actors.getOrDefault(actor.actorId, Actor.EMPTY);
+        if (actor.isBetterToCacheThan(cachedActor)) {
             myContext.users().updateCache(actor);
+            return actor;
         }
-        return actor;
+        return cachedActor;
     }
 
     public static Actor fromOriginAndActorId(@NonNull Origin origin, long actorId) {
@@ -214,6 +227,21 @@ public class Actor implements Comparable<Actor>, IsEmpty {
                 || !origin.isUsernameValid(username);
     }
 
+    public boolean isBetterToCacheThan(Actor other) {
+        if (this == other) return false;
+
+        if (other == null || other == EMPTY ||
+                (!isPartiallyDefined() && other.isPartiallyDefined())) return true;
+
+        if (getUpdatedDate() != other.getUpdatedDate()) {
+            return getUpdatedDate() > other.getUpdatedDate();
+        }
+        if (avatarFile.downloadedDate != other.avatarFile.downloadedDate) {
+            return avatarFile.downloadedDate > other.avatarFile.downloadedDate;
+        }
+        return notesCount > other.notesCount;
+    }
+
     public boolean isIdentified() {
         return actorId != 0 && isOidReal();
     }
@@ -249,7 +277,16 @@ public class Actor implements Comparable<Actor>, IsEmpty {
             members += user + ",";
         }
         if (!Uri.EMPTY.equals(profileUri)) {
-            members += "profileUri:" + profileUri.toString() + ",";
+            members += "profileUri:'" + profileUri.toString() + "',";
+        }
+        if (StringUtils.nonEmpty(avatarUrl)) {
+            members += "avatar:'" + avatarUrl + "',";
+        }
+        if (AvatarFile.EMPTY != avatarFile) {
+            members += " avatarFile:'" + avatarFile + "',";
+        }
+        if (StringUtils.nonEmpty(bannerUrl)) {
+            members += "banner:'" + bannerUrl + "',";
         }
         if (hasLatestNote()) {
             members += "latest note present,";
@@ -650,5 +687,9 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
     public boolean nonPublic() {
         return !isPublic();
+    }
+
+    public Uri getAvatarUri() {
+        return UriUtils.fromString(avatarUrl);
     }
 }

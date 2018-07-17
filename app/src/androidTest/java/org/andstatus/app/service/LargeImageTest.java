@@ -27,6 +27,7 @@ import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.Attachment;
+import org.andstatus.app.util.MyLog;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -84,7 +85,8 @@ public class LargeImageTest {
     }
 
     private void loadingTest(DownloadData dd) {
-        CachedImage image = new AttachedImageFile(dd.getDownloadId(), dd.getFilename(), dd.mediaMetadata).loadAndGetImage();
+        CachedImage image = new AttachedImageFile(dd.getDownloadId(), dd.getFilename(), dd.mediaMetadata,
+                dd.getStatus(), MyLog.uniqueCurrentTimeMS()).loadAndGetImage();
         int width = image.getImageSize().x;
         assertTrue("Not wide already " + width, width < 4000 && width > 10);
         int height = image.getImageSize().y;

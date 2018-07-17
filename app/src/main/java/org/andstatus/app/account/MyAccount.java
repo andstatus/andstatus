@@ -115,6 +115,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     public static final String KEY_IS_SYNCED_AUTOMATICALLY = "sync_automatically";
     public static final String KEY_ORDER = "order";
 
+    private final MyContext myContext;
     private final AccountData accountData;
     private AccountName oAccountName;
     private Actor actor;
@@ -139,7 +140,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     }
 
     public Actor getActor() {
-        return actor;
+        return Actor.load(myContext, actor.actorId, false, () -> actor);
     }
 
     public String getWebFingerId() {
@@ -709,9 +710,10 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     }
 
     private MyAccount(MyContext myContext, @NonNull AccountData accountData, @NonNull AccountName accountName) {
+        this.myContext = myContext;
         this.accountData = accountData;
         oAccountName = accountName;
-        actor = Actor.load(myContext, accountData.getDataLong(KEY_ACTOR_ID, 0L), () ->
+        actor = Actor.load(myContext, accountData.getDataLong(KEY_ACTOR_ID, 0L), false, () ->
             Actor.fromOriginAndActorOid(accountName.getOrigin(), accountData.getDataString(KEY_ACTOR_OID, ""))
                 .setUsername(oAccountName.getUsername())
                 .lookupUser(myContext)

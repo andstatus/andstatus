@@ -70,6 +70,8 @@ public class ActorSql {
 
         avatarProjectionMap.put(DownloadTable.AVATAR_FILE_NAME, AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.FILE_NAME
                 + " AS " + DownloadTable.AVATAR_FILE_NAME);
+        avatarProjectionMap.put(DownloadTable.DOWNLOAD_STATUS, DownloadTable.DOWNLOAD_STATUS);
+        avatarProjectionMap.put(DownloadTable.DOWNLOADED_DATE, DownloadTable.DOWNLOADED_DATE);
 
         userOnlyProjectionMap.put(ActorTable.USER_ID, ActorTable.TABLE_NAME + "." + ActorTable.USER_ID);
         userOnlyProjectionMap.put(UserTable.IS_MY, UserTable.TABLE_NAME + "." + UserTable.IS_MY);
@@ -127,13 +129,15 @@ public class ActorSql {
     private static String addAvatarImageTable(String tables) {
         return "(" + tables + ") LEFT OUTER JOIN (SELECT "
                 + DownloadTable.ACTOR_ID + ", "
+                + DownloadTable.DOWNLOAD_STATUS + ", "
                 + DownloadTable.DOWNLOAD_NUMBER + ", "
+                + DownloadTable.DOWNLOADED_DATE + ", "
                 + DownloadTable.FILE_NAME
                 + " FROM " + DownloadTable.TABLE_NAME + ") AS " + AVATAR_IMAGE_TABLE_ALIAS
                 + " ON "
-                + AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_NUMBER + "=0" +
-                " AND "
                 + AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.ACTOR_ID
-                + "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID;
+                + "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID
+                + " AND "
+                + AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_NUMBER + "=0";
     }
 }

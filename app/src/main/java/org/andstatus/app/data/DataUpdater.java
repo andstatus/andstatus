@@ -403,7 +403,7 @@ public class DataUpdater {
             } else if (values.size() > 0) {
                 execContext.getContext().getContentResolver().update(actorUri, values, null, null);
             }
-            execContext.myContext.users().updateCache(actor);
+
             if (followedByMe.known) {
                 MyLog.v(this, () -> "Account " + me.getActor().getNamePreferablyWebFingerId() + " "
                         + (followedByMe.isTrue ? "follows " : "stop following ")
@@ -417,11 +417,15 @@ public class DataUpdater {
                 Friendship.setFollowed(execContext.myContext, activity.getActor(), followedByActor, actor);
             }
 
+            actor.avatarFile.resetAvatarErrors(execContext.myContext);
+            Actor.reload(execContext.myContext, actor.actorId);
+
+            if (MyPreferences.getShowAvatars() && actor.hasAvatar() &&
+                    actor.avatarFile.downloadStatus != DownloadStatus.LOADED) {
+                actor.avatarFile.requestDownload();
+            }
             if (actor.hasLatestNote()) {
                 updateNote(actor.getLatestActivity(), recursing + 1);
-            }
-            if (me.isValidAndSucceeded() && MyPreferences.getShowAvatars() && actor.hasAvatar()) {
-                AvatarData.getForActor(actor).requestDownload();
             }
         } catch (Exception e) {
             MyLog.e(this, method + "; actorId=" + actor.actorId + "; oid=" + actorOid, e);
