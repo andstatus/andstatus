@@ -355,8 +355,8 @@ public class DataUpdater {
                 // End of required attributes
             }
 
-            if (UriUtils.nonEmptyOid(actor.avatarUrl)) {
-                values.put(ActorTable.AVATAR_URL, actor.avatarUrl);
+            if (actor.hasAvatar()) {
+                values.put(ActorTable.AVATAR_URL, actor.getAvatarUrl());
             }
             if (!SharedPreferencesUtil.isEmpty(actor.getDescription())) {
                 values.put(ActorTable.DESCRIPTION, actor.getDescription());

@@ -106,7 +106,7 @@ public class ConnectionTwitterTest {
         assertEquals("Location", "Library of Congress", author.location);
         assertEquals("Profile URL", "https://" + hostName + "/Know", author.getProfileUrl());
         assertEquals("Homepage", "http://t.co/4TzphfU9qt", author.getHomepage());
-        assertEquals("Avatar URL", "https://si0.twimg.com/profile_images/378800000411110038/a8b7eced4dc43374e7ae21112ff749b6_normal.jpeg", author.avatarUrl);
+        assertEquals("Avatar URL", "https://si0.twimg.com/profile_images/378800000411110038/a8b7eced4dc43374e7ae21112ff749b6_normal.jpeg", author.getAvatarUrl());
         assertEquals("Banner URL", "https://pbs.twimg.com/profile_banners/221452291/1377270845", author.bannerUrl);
         assertEquals("Notes count", 1592, author.notesCount);
         assertEquals("Favorites count", 163, author.favoritesCount);

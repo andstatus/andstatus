@@ -394,8 +394,7 @@ public abstract class ConnectionTwitterLike extends Connection {
             actor.setProfileUrl(data.getOriginUrl());
         }
         actor.location = jso.optString("location");
-        actor.avatarUrl = UriUtils.fromAlternativeTags(jso,
-                "profile_image_url_https", "profile_image_url").toString();
+        actor.setAvatarUri(UriUtils.fromAlternativeTags(jso,"profile_image_url_https","profile_image_url"));
         actor.bannerUrl = UriUtils.fromJson(jso, "profile_banner_url").toString();
         actor.setDescription(jso.optString("description"));
         actor.setHomepage(jso.optString("url"));

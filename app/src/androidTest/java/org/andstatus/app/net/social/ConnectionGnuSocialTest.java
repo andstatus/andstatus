@@ -80,7 +80,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("Location", "Spain", activity.getAuthor().location);
         assertEquals("Profile URL", "https://status.vinilox.eu/aru", activity.getAuthor().getProfileUrl());
         assertEquals("Homepage", "", activity.getAuthor().getHomepage());
-        assertEquals("Avatar URL", "http://quitter.se/avatar/116387-48-20140609172839.png", activity.getAuthor().avatarUrl);
+        assertEquals("Avatar URL", "http://quitter.se/avatar/116387-48-20140609172839.png", activity.getAuthor().getAvatarUrl());
         assertEquals("Banner URL", "", activity.getAuthor().bannerUrl);
         assertEquals("Notes count", 523, activity.getAuthor().notesCount);
         assertEquals("Favorites count", 11, activity.getAuthor().favoritesCount);
@@ -127,7 +127,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("Location", "Umeå, Sweden", activity.getAuthor().location);
         assertEquals("Profile URL", "https://social.umeahackerspace.se/mmn", activity.getAuthor().getProfileUrl());
         assertEquals("Homepage", "http://blog.mmn-o.se/", activity.getAuthor().getHomepage());
-        assertEquals("Avatar URL", "http://quitter.se/avatar/114973-48-20140702161520.jpeg", activity.getAuthor().avatarUrl);
+        assertEquals("Avatar URL", "http://quitter.se/avatar/114973-48-20140702161520.jpeg", activity.getAuthor().getAvatarUrl());
         assertEquals("Banner URL", "", activity.getAuthor().bannerUrl);
         assertEquals("Notes count", 1889, activity.getAuthor().notesCount);
         assertEquals("Favorites count", 31, activity.getAuthor().favoritesCount);

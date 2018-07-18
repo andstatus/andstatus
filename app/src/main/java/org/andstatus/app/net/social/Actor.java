@@ -74,7 +74,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
     private Uri profileUri = Uri.EMPTY;
     private String homepage = "";
-    public String avatarUrl = "";
+    private Uri avatarUri = Uri.EMPTY;
     public String bannerUrl = "";
 
     public long notesCount = 0;
@@ -155,7 +155,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
         actor.setProfileUrl(DbUtils.getString(cursor, ActorTable.PROFILE_URL));
         actor.setHomepage(DbUtils.getString(cursor, ActorTable.HOMEPAGE));
-        actor.avatarUrl = DbUtils.getString(cursor, ActorTable.AVATAR_URL);
+        actor.setAvatarUrl(DbUtils.getString(cursor, ActorTable.AVATAR_URL));
 
         actor.notesCount = DbUtils.getLong(cursor, ActorTable.NOTES_COUNT);
         actor.favoritesCount = DbUtils.getLong(cursor, ActorTable.FAVORITES_COUNT);
@@ -279,8 +279,8 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (!Uri.EMPTY.equals(profileUri)) {
             members += "profileUri:'" + profileUri.toString() + "',";
         }
-        if (StringUtils.nonEmpty(avatarUrl)) {
-            members += "avatar:'" + avatarUrl + "',";
+        if (hasAvatar()) {
+            members += "avatar:'" + avatarUri + "',";
         }
         if (AvatarFile.EMPTY != avatarFile) {
             members += " avatarFile:'" + avatarFile + "',";
@@ -672,7 +672,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public boolean hasAvatar() {
-        return StringUtils.nonEmpty(avatarUrl);
+        return UriUtils.nonEmpty(avatarUri);
     }
 
     public void loadFromInternet() {
@@ -690,6 +690,21 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public Uri getAvatarUri() {
-        return UriUtils.fromString(avatarUrl);
+        return avatarUri;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUri.toString();
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        setAvatarUri(UriUtils.fromString(avatarUrl));
+    }
+
+    public void setAvatarUri(Uri avatarUri) {
+        this.avatarUri = UriUtils.notNull(avatarUri);
+        if (hasAvatar() && avatarFile.isEmpty()) {
+            avatarFile = AvatarFile.fromActorOnly(this);
+        }
     }
 }

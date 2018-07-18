@@ -489,7 +489,7 @@ public class DataUpdaterTest {
                 MyQuery.actorIdToStringColumnValue(ActorTable.REAL_NAME, id));
         assertEquals("Location", actor.location,
                 MyQuery.actorIdToStringColumnValue(ActorTable.LOCATION, id));
-        assertEquals("profile image URL", actor.avatarUrl,
+        assertEquals("profile image URL", actor.getAvatarUrl(),
                 MyQuery.actorIdToStringColumnValue(ActorTable.AVATAR_URL, id));
         assertEquals("profile URL", actor.getProfileUrl(),
                 MyQuery.actorIdToStringColumnValue(ActorTable.PROFILE_URL, id));

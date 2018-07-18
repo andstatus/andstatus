@@ -18,7 +18,6 @@ package org.andstatus.app.net.social.pumpio;
 
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
@@ -144,7 +143,7 @@ public class ConnectionPumpio extends Connection {
         Actor actor = Actor.fromOriginAndActorOid(data.getOrigin(), oid);
         actor.setUsername(actorOidToUsername(oid));
         actor.setRealName(jso.optString(NAME_PROPERTY));
-        actor.avatarUrl = JsonUtils.optStringInside(jso, "image", "url");
+        actor.setAvatarUrl(JsonUtils.optStringInside(jso, "image", "url"));
         actor.location = JsonUtils.optStringInside(jso, "location", NAME_PROPERTY);
         actor.setDescription(jso.optString("summary"));
         actor.setHomepage(jso.optString("url"));

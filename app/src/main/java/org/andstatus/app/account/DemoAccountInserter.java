@@ -22,7 +22,6 @@ import android.support.annotation.NonNull;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.DemoConversationInserter;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.http.ConnectionException;
@@ -84,7 +83,7 @@ public class DemoAccountInserter {
                 accountName.getOrigin().getId(), actorOid);
         Actor actor = Actor.fromOriginAndActorOid(accountName.getOrigin(), actorOid);
         actor.setUsername(accountName.getUsername());
-        actor.avatarUrl = avatarUrl;
+        actor.setAvatarUrl(avatarUrl);
         if (!actor.isWebFingerIdValid() && UrlUtils.hasHost(actor.origin.getUrl())) {
             actor.setWebFingerId(actor.getUsername() + "@" + actor.origin.getHost());
         }

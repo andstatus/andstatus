@@ -143,7 +143,7 @@ public class DemoGnuSocialConversationInserter {
         Actor actor = Actor.fromOriginAndActorOid(origin, actorOid);
         actor.setUsername(username);
         if (avatarUrl != null) {
-            actor.avatarUrl = avatarUrl;
+            actor.setAvatarUrl(avatarUrl);
         }
         actor.setProfileUrl(origin.getUrl());
         return actor;

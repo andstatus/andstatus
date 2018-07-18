@@ -60,7 +60,7 @@ public class DemoConversationInserter {
         assertEquals("Only PumpIo supported in this test", OriginType.PUMPIO, demoData.conversationOriginType);
 
         Actor author2 = buildActorFromOid(demoData.conversationAuthorSecondActorOid);
-        author2.avatarUrl = "http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png";
+        author2.setAvatarUrl("http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png");
 
         Actor author3 = buildActorFromOid(demoData.conversationAuthorThirdActorOid);
         author3.setRealName("John Smith");
@@ -68,7 +68,7 @@ public class DemoConversationInserter {
         author3.setHomepage("http://johnsmith.com/welcome");
         author3.setCreatedDate(new GregorianCalendar(2011,5,12).getTimeInMillis());
         author3.setDescription("I am an ordinary guy, interested in computer science");
-        author3.avatarUrl = "http://www.large-icons.com/stock-icons/free-large-android/48x48/happy-robot.gif";
+        author3.setAvatarUrl("http://www.large-icons.com/stock-icons/free-large-android/48x48/happy-robot.gif");
 
         Actor author4 = buildActorFromOid("acct:fourthWithoutAvatar@pump.example.com");
         author4.setRealName("Real Fourth");
@@ -126,7 +126,7 @@ public class DemoConversationInserter {
                 reply5.getNote().audience().getRecipients(), not(hasItem(author2)));
 
         Actor reblogger1 = buildActorFromOid("acct:reblogger@" + demoData.pumpioMainHost);
-        reblogger1.avatarUrl = "http://www.avatarsdb.com/avatars/cow_face.jpg";
+        reblogger1.setAvatarUrl("http://www.avatarsdb.com/avatars/cow_face.jpg");
         AActivity reblogOf5 = buildActivity(reblogger1, ActivityType.ANNOUNCE);
         reblogOf5.setNote(reply5.getNote().shallowCopy());
         reblogOf5.setSubscribedByMe(TriState.TRUE);
@@ -226,7 +226,7 @@ public class DemoConversationInserter {
 
     private Actor getAuthor1() {
         Actor author1 = buildActorFromOid(demoData.conversationEntryAuthorOid);
-        author1.avatarUrl = "https://raw.github.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png";
+        author1.setAvatarUrl("https://raw.github.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png");
         return author1;
     }
     

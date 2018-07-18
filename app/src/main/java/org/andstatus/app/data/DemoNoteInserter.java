@@ -93,7 +93,7 @@ public class DemoNoteInserter {
         actor.setDescription("This is about " + username);
         actor.setHomepage("https://example.com/home/" + username + "/start/");
         actor.location = "Faraway place #" + demoData.testRunUid;
-        actor.avatarUrl = actor.getHomepage() + "avatar.jpg";
+        actor.setAvatarUrl(actor.getHomepage() + "avatar.jpg");
         actor.bannerUrl = actor.getHomepage() + "banner.png";
         long rand = InstanceId.next();
         actor.notesCount = rand * 2 + 3;

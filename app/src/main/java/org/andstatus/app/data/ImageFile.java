@@ -57,8 +57,12 @@ public abstract class ImageFile implements IsEmpty {
         if (imageView == null) return;
         imageView.setImageId(getId());
         if (!myActivity.isMyResumed()) return;
-        if (isEmpty()) {
+        if (isEmpty() || downloadStatus == DownloadStatus.HARD_ERROR) {
             onNoImage(imageView);
+            return;
+        }
+        if (downloadStatus != DownloadStatus.LOADED) {
+            requestDownload();
             return;
         }
         if (AttachedImageView.class.isAssignableFrom(imageView.getClass())) {
@@ -241,7 +245,7 @@ public abstract class ImageFile implements IsEmpty {
     }
 
     public boolean isEmpty() {
-        return getId()==0 || downloadFile.isEmpty();
+        return getId()==0;
     }
 
     @Override

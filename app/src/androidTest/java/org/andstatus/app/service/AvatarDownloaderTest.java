@@ -159,7 +159,7 @@ public class AvatarDownloaderTest {
 
     static void changeAvatarUrl(Actor actor, String urlString) {
         ContentValues values = new ContentValues();
-        actor.avatarUrl = urlString;
+        actor.setAvatarUrl(urlString);
         actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
         values.put(ActorTable.AVATAR_URL, urlString);
         values.put(ActorTable.UPDATED_DATE, actor.getUpdatedDate());
@@ -177,7 +177,7 @@ public class AvatarDownloaderTest {
         values.put(DownloadTable.DOWNLOADED_DATE, MyLog.uniqueCurrentTimeMS());
         MyContextHolder.get().getDatabase()
                 .update(DownloadTable.TABLE_NAME, values, DownloadTable.ACTOR_ID + "=" + actor.actorId
-                        + " AND " + DownloadTable.URI + "=" + MyQuery.quoteIfNotQuoted(actor.avatarUrl), null);
+                        + " AND " + DownloadTable.URI + "=" + MyQuery.quoteIfNotQuoted(actor.getAvatarUrl()), null);
         Actor actor2 = Actor.reload(MyContextHolder.get(), actor.actorId);
         AvatarData avatarData = AvatarData.getCurrentForActor(actor);
         assertEquals("Download status for " + actor2, status, avatarData.getStatus());

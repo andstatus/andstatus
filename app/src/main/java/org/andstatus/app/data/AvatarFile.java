@@ -50,6 +50,12 @@ public class AvatarFile extends ImageFile {
                     DbUtils.getLong(cursor, DownloadTable.DOWNLOADED_DATE));
     }
 
+    public static AvatarFile fromActorOnly(Actor actor) {
+        return actor.isEmpty()
+                ? AvatarFile.EMPTY
+                : new AvatarFile(actor, "", MediaMetadata.EMPTY, DownloadStatus.UNKNOWN, DATETIME_MILLIS_NEVER);
+    }
+
     private AvatarFile(Actor actor, String filename, MediaMetadata mediaMetadata, DownloadStatus downloadStatus,
                        long downloadedDate) {
         super(filename, mediaMetadata, 0, downloadStatus, downloadedDate);

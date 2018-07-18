@@ -182,7 +182,7 @@ public class ConnectionPumpioTest {
         assertEquals("Sender's oid", "acct:jpope@io.jpope.org", actor.oid);
         assertEquals("Sender's username", "jpope@io.jpope.org", actor.getUsername());
         assertEquals("Sender's Display name", "jpope", actor.getRealName());
-        assertEquals("Sender's profile image URL", "https://io.jpope.org/uploads/jpope/2013/7/8/LPyLPw_thumb.png", actor.avatarUrl);
+        assertEquals("Sender's profile image URL", "https://io.jpope.org/uploads/jpope/2013/7/8/LPyLPw_thumb.png", actor.getAvatarUrl());
         assertEquals("Sender's profile URL", "https://io.jpope.org/jpope", actor.getProfileUrl());
         assertEquals("Sender's Homepage", "https://io.jpope.org/jpope", actor.getHomepage());
         assertEquals("Sender's WebFinger ID", "jpope@io.jpope.org", actor.getWebFingerId());

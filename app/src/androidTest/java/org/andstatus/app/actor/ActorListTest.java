@@ -133,7 +133,7 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         assertEquals("Profile URL", expected.getProfileUrl(), actual.getProfileUrl());
         assertEquals("Homepage", expected.getHomepage(), actual.getHomepage());
         if (!forActorList) {
-            assertEquals("Avatar URL", expected.avatarUrl, actual.avatarUrl);
+            assertEquals("Avatar URL", expected.getAvatarUrl(), actual.getAvatarUrl());
             assertEquals("Banner URL", expected.bannerUrl, actual.bannerUrl);
         }
         assertEquals("Notes count", expected.notesCount, actual.notesCount);

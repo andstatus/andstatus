@@ -68,7 +68,7 @@ public class HtmlContentInserter {
     private void testHtmlContent() {
         boolean isHtmlContentAllowedStored = origin.isHtmlContentAllowed(); 
         Actor author1 = buildActorFromOid("acct:html@example.com");
-        author1.avatarUrl = "http://png-5.findicons.com/files/icons/2198/dark_glass/128/html.png";
+        author1.setAvatarUrl("http://png-5.findicons.com/files/icons/2198/dark_glass/128/html.png");
 
         String bodyString = "<h4>This is a note with HTML content</h4>"
                 + "<p>This is a second line, <b>Bold</b> formatting." 

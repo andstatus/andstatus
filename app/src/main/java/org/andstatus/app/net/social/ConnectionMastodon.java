@@ -307,7 +307,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         if (!SharedPreferencesUtil.isEmpty(actor.getRealName())) {
             actor.setProfileUrl(data.getOriginUrl());
         }
-        actor.avatarUrl = UriUtils.fromJson(jso, "avatar").toString();
+        actor.setAvatarUri(UriUtils.fromJson(jso, "avatar"));
         actor.bannerUrl = UriUtils.fromJson(jso, "header").toString();
         actor.setDescription(jso.optString("note"));
         actor.setProfileUrl(jso.optString("url"));
