@@ -95,7 +95,7 @@ public class AttachedImageView extends IdentifiableImageView {
         }
         // We need to catch an error here in order to work in Android Editor preview
         try {
-            MyLog.v(this, method + ";"
+            MyLog.v(this, () -> method + ";"
                     + (heightLocked ? "locked" : "      ")
                     + " height=" + height
                     + ", widthSpec=" + MeasureSpec.toString(widthMeasureSpec)

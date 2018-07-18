@@ -98,6 +98,8 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
     public User user = User.EMPTY;
 
+    private volatile TriState isPartiallyDefined = TriState.UNKNOWN;
+
     @NonNull
     public static Actor fromOriginAndActorOid(@NonNull Origin origin, String actorOid) {
         return new Actor(origin, actorOid);
@@ -223,8 +225,12 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public boolean isPartiallyDefined() {
-        return !origin.isValid() || UriUtils.nonRealOid(oid) || StringUtils.isEmpty(webFingerId)
-                || !origin.isUsernameValid(username);
+        if (isPartiallyDefined.unknown) {
+            isPartiallyDefined = TriState.fromBoolean(!origin.isValid() || UriUtils.nonRealOid(oid) ||
+                    StringUtils.isEmpty(webFingerId) ||
+                    !origin.isUsernameValid(username));
+        }
+        return isPartiallyDefined.isTrue;
     }
 
     public boolean isBetterToCacheThan(Actor other) {
