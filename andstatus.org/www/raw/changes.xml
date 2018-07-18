@@ -31,7 +31,7 @@
     </header>
     <release android:versionName="41.00" android:versionCode="257"
              versionDate="2018-07-XX"
-             versionTitle="Search by a part of a word">
+             versionTitle="Search by a part of a word. Avatars fixed.">
         <changes>
             <change>Search works for a note's name (title) and a content. You have to launch "AndStatus Settings
             -> Storage -> Check and fix data" once to rebuild search index in existing local cache.</change>
@@ -41,6 +41,7 @@
                 <a href="https://github.com/andstatus/andstatus/issues/494">#494</a>
             </change>
             <change>Added (the 6th) option to show a User in timeline as "Real name @webFingerId"</change>
+            <change>Fixed avatars not showing problem (downloading / reloading and purging).</change>
         </changes>
     </release>
     <release android:versionName="40.02" android:versionCode="256"
