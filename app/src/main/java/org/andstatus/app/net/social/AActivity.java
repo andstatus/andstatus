@@ -138,6 +138,14 @@ public class AActivity extends AObject {
         return getActor().isSame(getAuthor());
     }
 
+    public TriState followedByActor() {
+        return type.equals(ActivityType.FOLLOW)
+                ? TriState.TRUE
+                : type.equals(ActivityType.UNDO_FOLLOW)
+                    ? TriState.FALSE
+                    : TriState.UNKNOWN;
+    }
+
     @NonNull
     public Actor getAuthor() {
         if (isEmpty()) {

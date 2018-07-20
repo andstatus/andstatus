@@ -293,15 +293,15 @@ public class DataUpdater {
     private void updateObjActor(AActivity activity, int recursing) {
         if (recursing > MAX_RECURSING) return;
 
-        Actor actor = activity.getObjActor();
+        Actor objActor = activity.getObjActor();
         final String method = "updateObjActor";
-        if (actor.isEmpty()) {
+        if (objActor.isEmpty()) {
             MyLog.v(this, () -> method + "; objActor is empty");
             return;
         }
         MyAccount me = execContext.getMyContext().accounts().fromActorOfSameOrigin(activity.accountActor);
         if (me.nonValid()) {
-            if (activity.accountActor.equals(actor)) {
+            if (activity.accountActor.equals(objActor)) {
                 MyLog.d(this, method +"; adding my account " + activity.accountActor);
             } else {
                 MyLog.w(this, method +"; my account is invalid, skipping: " + activity.toString());
@@ -309,45 +309,59 @@ public class DataUpdater {
             }
         }
 
-        fixActorUpdatedDate(activity, actor);
+        fixActorUpdatedDate(activity, objActor);
+        objActor.lookupActorId(execContext.getMyContext());
 
-        actor.lookupActorId(execContext.getMyContext());
-        TriState followedByMe = actor.followedByMe;
-        TriState followedByActor = activity.type.equals(ActivityType.FOLLOW) ? TriState.TRUE :
-                activity.type.equals(ActivityType.UNDO_FOLLOW) ? TriState.FALSE : TriState.UNKNOWN;
-        if (actor.actorId != 0 && actor.isPartiallyDefined() && followedByMe.unknown && followedByActor.unknown) {
-            MyLog.v(this, () -> method + "; Skipping partially defined: " + actor);
+        if (objActor.actorId != 0 && objActor.isPartiallyDefined() && objActor.followedByMe.unknown
+                && activity.followedByActor().unknown) {
+            MyLog.v(this, () -> method + "; Skipping partially defined: " + objActor);
             return;
         }
 
-        actor.lookupUser(execContext.getMyContext());
-
-        long updatedDateStored = MyQuery.actorIdToLongColumnValue(ActorTable.UPDATED_DATE, actor.actorId);
-        if (updatedDateStored > 0 && updatedDateStored >= actor.getUpdatedDate()) {
-            MyLog.v(this, () -> method + "; Skipped actor as not younger " + actor);
-            return;
+        objActor.lookupUser(execContext.getMyContext());
+        if (shouldWeUpdateActor(method, objActor)) {
+            updateObjActor2(activity, recursing, me);
+        } else {
+            updateFriendship(activity, me);
+            Actor.reload(execContext.myContext, objActor.actorId);
         }
 
-        String actorOid = (actor.actorId == 0 && !actor.isOidReal()) ? actor.getTempOid() : actor.oid;
+        MyLog.v(this, () -> method + "; " + objActor);
+    }
+
+    private boolean shouldWeUpdateActor(String method, Actor objActor) {
+        long updatedDateStored = MyQuery.actorIdToLongColumnValue(ActorTable.UPDATED_DATE, objActor.actorId);
+        if (updatedDateStored > SOME_TIME_AGO && updatedDateStored >= objActor.getUpdatedDate()) {
+            MyLog.v(this, () -> method + "; Skipped actor update as not younger " + objActor);
+            return false;
+        }
+        return true;
+    }
+
+    private void updateObjActor2(AActivity activity, int recursing, MyAccount me) {
+        final String method = "updateObjActor2";
         try {
+            Actor objActor = activity.getObjActor();
+            String actorOid = (objActor.actorId == 0 && !objActor.isOidReal()) ? objActor.getTempOid() : objActor.oid;
+
             ContentValues values = new ContentValues();
-            if (actor.actorId == 0 || !actor.isPartiallyDefined()) {
-                if (actor.actorId == 0 || actor.isOidReal()) {
+            if (objActor.actorId == 0 || !objActor.isPartiallyDefined()) {
+                if (objActor.actorId == 0 || objActor.isOidReal()) {
                     values.put(ActorTable.ACTOR_OID, actorOid);
                 }
 
                 // Substitute required empty values with some temporary for a new entry only!
-                String username = actor.getUsername();
+                String username = objActor.getUsername();
                 if (SharedPreferencesUtil.isEmpty(username)) {
                     username = (actorOid.startsWith(UriUtils.TEMP_OID_PREFIX) ? "" : UriUtils.TEMP_OID_PREFIX) + actorOid;
                 }
                 values.put(ActorTable.USERNAME, username);
-                String webFingerId = actor.getWebFingerId();
+                String webFingerId = objActor.getWebFingerId();
                 if (SharedPreferencesUtil.isEmpty(webFingerId)) {
                     webFingerId = username;
                 }
                 values.put(ActorTable.WEBFINGER_ID, webFingerId);
-                String realName = actor.getRealName();
+                String realName = objActor.getRealName();
                 if (SharedPreferencesUtil.isEmpty(realName)) {
                     realName = username;
                 }
@@ -355,82 +369,88 @@ public class DataUpdater {
                 // End of required attributes
             }
 
-            if (actor.hasAvatar()) {
-                values.put(ActorTable.AVATAR_URL, actor.getAvatarUrl());
+            if (objActor.hasAvatar()) {
+                values.put(ActorTable.AVATAR_URL, objActor.getAvatarUrl());
             }
-            if (!SharedPreferencesUtil.isEmpty(actor.getDescription())) {
-                values.put(ActorTable.DESCRIPTION, actor.getDescription());
+            if (!SharedPreferencesUtil.isEmpty(objActor.getDescription())) {
+                values.put(ActorTable.DESCRIPTION, objActor.getDescription());
             }
-            if (!SharedPreferencesUtil.isEmpty(actor.getHomepage())) {
-                values.put(ActorTable.HOMEPAGE, actor.getHomepage());
+            if (!SharedPreferencesUtil.isEmpty(objActor.getHomepage())) {
+                values.put(ActorTable.HOMEPAGE, objActor.getHomepage());
             }
-            if (!SharedPreferencesUtil.isEmpty(actor.getProfileUrl())) {
-                values.put(ActorTable.PROFILE_URL, actor.getProfileUrl());
+            if (!SharedPreferencesUtil.isEmpty(objActor.getProfileUrl())) {
+                values.put(ActorTable.PROFILE_URL, objActor.getProfileUrl());
             }
-            if (!SharedPreferencesUtil.isEmpty(actor.bannerUrl)) {
-                values.put(ActorTable.BANNER_URL, actor.bannerUrl);
+            if (!SharedPreferencesUtil.isEmpty(objActor.bannerUrl)) {
+                values.put(ActorTable.BANNER_URL, objActor.bannerUrl);
             }
-            if (!SharedPreferencesUtil.isEmpty(actor.location)) {
-                values.put(ActorTable.LOCATION, actor.location);
+            if (!SharedPreferencesUtil.isEmpty(objActor.location)) {
+                values.put(ActorTable.LOCATION, objActor.location);
             }
-            if (actor.notesCount > 0) {
-                values.put(ActorTable.NOTES_COUNT, actor.notesCount);
+            if (objActor.notesCount > 0) {
+                values.put(ActorTable.NOTES_COUNT, objActor.notesCount);
             }
-            if (actor.favoritesCount > 0) {
-                values.put(ActorTable.FAVORITES_COUNT, actor.favoritesCount);
+            if (objActor.favoritesCount > 0) {
+                values.put(ActorTable.FAVORITES_COUNT, objActor.favoritesCount);
             }
-            if (actor.followingCount > 0) {
-                values.put(ActorTable.FOLLOWING_COUNT, actor.followingCount);
+            if (objActor.followingCount > 0) {
+                values.put(ActorTable.FOLLOWING_COUNT, objActor.followingCount);
             }
-            if (actor.followersCount > 0) {
-                values.put(ActorTable.FOLLOWERS_COUNT, actor.followersCount);
+            if (objActor.followersCount > 0) {
+                values.put(ActorTable.FOLLOWERS_COUNT, objActor.followersCount);
             }
-            if (actor.getCreatedDate() > 0) {
-                values.put(ActorTable.CREATED_DATE, actor.getCreatedDate());
+            if (objActor.getCreatedDate() > 0) {
+                values.put(ActorTable.CREATED_DATE, objActor.getCreatedDate());
             }
-            if (actor.getUpdatedDate() > 0) {
-                values.put(ActorTable.UPDATED_DATE, actor.getUpdatedDate());
+            if (objActor.getUpdatedDate() > 0) {
+                values.put(ActorTable.UPDATED_DATE, objActor.getUpdatedDate());
             }
 
-            actor.saveUser(execContext.myContext);
-            Uri actorUri = MatchedUri.getActorUri(me.getActorId(), actor.actorId);
-            if (actor.actorId == 0) {
-                values.put(ActorTable.ORIGIN_ID, actor.origin.getId());
-                values.put(ActorTable.USER_ID, actor.user.userId);
-                actor.actorId = ParsedUri.fromUri(
+            objActor.saveUser(execContext.myContext);
+            Uri actorUri = MatchedUri.getActorUri(me.getActorId(), objActor.actorId);
+            if (objActor.actorId == 0) {
+                values.put(ActorTable.ORIGIN_ID, objActor.origin.getId());
+                values.put(ActorTable.USER_ID, objActor.user.userId);
+                objActor.actorId = ParsedUri.fromUri(
                         execContext.getContext().getContentResolver().insert(actorUri, values))
                         .getActorId();
             } else if (values.size() > 0) {
                 execContext.getContext().getContentResolver().update(actorUri, values, null, null);
             }
 
-            if (followedByMe.known) {
-                MyLog.v(this, () -> "Account " + me.getActor().getNamePreferablyWebFingerId() + " "
-                        + (followedByMe.isTrue ? "follows " : "stop following ")
-                        + actor.getNamePreferablyWebFingerId());
-                Friendship.setFollowed(execContext.myContext, me.getActor(), followedByMe, actor);
-            }
-            if (followedByActor.known) {
-                MyLog.v(this, () -> "Actor " + activity.getActor().getNamePreferablyWebFingerId() + " "
-                        + (followedByActor.isTrue ? "follows " : "stop following ")
-                        + actor.getNamePreferablyWebFingerId());
-                Friendship.setFollowed(execContext.myContext, activity.getActor(), followedByActor, actor);
-            }
+            updateFriendship(activity, me);
 
-            actor.avatarFile.resetAvatarErrors(execContext.myContext);
-            Actor.reload(execContext.myContext, actor.actorId);
+            objActor.avatarFile.resetAvatarErrors(execContext.myContext);
+            Actor.reload(execContext.myContext, objActor.actorId);
 
-            if (MyPreferences.getShowAvatars() && actor.hasAvatar() &&
-                    actor.avatarFile.downloadStatus != DownloadStatus.LOADED) {
-                actor.avatarFile.requestDownload();
+            if (MyPreferences.getShowAvatars() && objActor.hasAvatar() &&
+                    objActor.avatarFile.downloadStatus != DownloadStatus.LOADED) {
+                objActor.avatarFile.requestDownload();
             }
-            if (actor.hasLatestNote()) {
-                updateNote(actor.getLatestActivity(), recursing + 1);
+            if (objActor.hasLatestNote()) {
+                updateNote(objActor.getLatestActivity(), recursing + 1);
             }
         } catch (Exception e) {
-            MyLog.e(this, method + "; actorId=" + actor.actorId + "; oid=" + actorOid, e);
+            MyLog.e(this, method + "; " + activity, e);
         }
-        MyLog.v(this, () -> method + "; actorId=" + actor.actorId + "; oid=" + actorOid);
+    }
+
+    private void updateFriendship(AActivity activity, MyAccount me) {
+        Actor objActor = activity.getObjActor();
+        if (objActor.followedByMe.known) {
+            MyLog.v(this, () -> "Account " + me.getActor().getNamePreferablyWebFingerId() + " "
+                    + (objActor.followedByMe.isTrue ? "follows " : "stop following ")
+                    + objActor.getNamePreferablyWebFingerId());
+            Friendship.setFollowed(execContext.myContext, me.getActor(), objActor.followedByMe, objActor);
+            Actor.reload(execContext.myContext, me.getActor().actorId);
+        }
+        if (activity.followedByActor().known) {
+            MyLog.v(this, () -> "Actor " + activity.getActor().getNamePreferablyWebFingerId() + " "
+                    + (activity.followedByActor().isTrue ? "follows " : "stop following ")
+                    + objActor.getNamePreferablyWebFingerId());
+            Friendship.setFollowed(execContext.myContext, activity.getActor(), activity.followedByActor(), objActor);
+            Actor.reload(execContext.myContext, activity.getActor().actorId);
+        }
     }
 
     private void fixActorUpdatedDate(AActivity activity, Actor actor) {
