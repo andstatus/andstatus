@@ -1,6 +1,7 @@
 package org.andstatus.app.service;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
@@ -29,12 +30,13 @@ public class CommandExecutionContext {
         return getMyAccount().getConnection();
     }
 
+    @NonNull
     public MyAccount getMyAccount() {
-        MyAccount myAccount = getTimeline().myAccountToSync;
-        if (myAccount.nonValid()) {
-            myAccount = myContext.accounts().getFirstSucceeded();
-        }
-        return myAccount;
+        if (commandData.myAccount.isValid()) return commandData.myAccount;
+
+        if (getTimeline().myAccountToSync.isValid()) return getTimeline().myAccountToSync;
+
+        return myContext.accounts().getFirstSucceeded();
     }
 
     public MyContext getMyContext() {

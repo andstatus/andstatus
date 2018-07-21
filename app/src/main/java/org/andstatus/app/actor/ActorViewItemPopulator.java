@@ -22,6 +22,7 @@ import android.view.View;
 import org.andstatus.app.R;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.timeline.LoadableListActivity;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.MyUrlSpan;
 
 import java.util.stream.Collectors;
@@ -69,9 +70,11 @@ public class ActorViewItemPopulator {
     }
 
     private void showMyFollowers(View view, ActorViewItem item) {
-        String myFollowers = item.getMyActorsFollowingTheActor(myActivity.getMyContext())
+        MyStringBuilder builder = new MyStringBuilder(
+        item.getMyActorsFollowingTheActor(myActivity.getMyContext())
                 .map(actor -> myActivity.getMyContext().accounts().fromActorOfSameOrigin(actor).getAccountName())
-                .collect(Collectors.joining(", ", myActivity.getText(R.string.followed_by), ""));
-        MyUrlSpan.showText(view, R.id.followed_by, myFollowers, false, false);
+                .collect(Collectors.joining(", ")));
+        if (builder.length() > 0) builder.prependWithSpace(myActivity.getText(R.string.followed_by));
+        MyUrlSpan.showText(view, R.id.followed_by, builder.toString(), false, false);
     }
 }

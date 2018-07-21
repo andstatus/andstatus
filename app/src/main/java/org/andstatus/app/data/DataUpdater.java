@@ -439,14 +439,14 @@ public class DataUpdater {
         Actor objActor = activity.getObjActor();
         if (objActor.followedByMe.known) {
             MyLog.v(this, () -> "Account " + me.getActor().getNamePreferablyWebFingerId() + " "
-                    + (objActor.followedByMe.isTrue ? "follows " : "stop following ")
+                    + (objActor.followedByMe.isTrue ? "follows " : "stopped following ")
                     + objActor.getNamePreferablyWebFingerId());
             Friendship.setFollowed(execContext.myContext, me.getActor(), objActor.followedByMe, objActor);
             execContext.myContext.users().reload(me.getActor());
         }
         if (activity.followedByActor().known) {
             MyLog.v(this, () -> "Actor " + activity.getActor().getNamePreferablyWebFingerId() + " "
-                    + (activity.followedByActor().isTrue ? "follows " : "stop following ")
+                    + (activity.followedByActor().isTrue ? "follows " : "stopped following ")
                     + objActor.getNamePreferablyWebFingerId());
             Friendship.setFollowed(execContext.myContext, activity.getActor(), activity.followedByActor(), objActor);
             execContext.myContext.users().reload(activity.getActor());

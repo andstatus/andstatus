@@ -106,13 +106,10 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
     }
 
     private void syncFollowers() throws ConnectionException {
-        if (execContext.getMyAccount().getConnection()
-                .isApiSupported(Connection.ApiRoutineEnum.GET_FOLLOWERS)) {
-            actorsNew = execContext.getMyAccount().getConnection().getFollowers(getActor().oid);
-        } else if (execContext.getMyAccount().getConnection()
-                .isApiSupported(Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS)) {
-            List<String> actorOidsNew =
-                    execContext.getMyAccount().getConnection().getFollowersIds(getActor().oid);
+        if (isApiSupported(Connection.ApiRoutineEnum.GET_FOLLOWERS)) {
+            actorsNew = getConnection().getFollowers(getActor().oid);
+        } else if (isApiSupported(Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS)) {
+            List<String> actorOidsNew = getConnection().getFollowersIds(getActor().oid);
             if (getActorsForOids(actorOidsNew, actorsNew)) return;
         } else {
             throw new ConnectionException(ConnectionException.StatusCode.UNSUPPORTED_API,
@@ -137,13 +134,10 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
     }
 
     private void syncFriends() throws ConnectionException {
-        if (execContext.getMyAccount().getConnection()
-                .isApiSupported(Connection.ApiRoutineEnum.GET_FRIENDS)) {
-            actorsNew = execContext.getMyAccount().getConnection().getFriends(getActor().oid);
-        } else if (execContext.getMyAccount().getConnection()
-                .isApiSupported(Connection.ApiRoutineEnum.GET_FRIENDS_IDS)) {
-            List<String> actorOidsNew =
-                    execContext.getMyAccount().getConnection().getFriendsIds(getActor().oid);
+        if (isApiSupported(Connection.ApiRoutineEnum.GET_FRIENDS)) {
+            actorsNew = getConnection().getFriends(getActor().oid);
+        } else if (isApiSupported(Connection.ApiRoutineEnum.GET_FRIENDS_IDS)) {
+            List<String> actorOidsNew = getConnection().getFriendsIds(getActor().oid);
             if (getActorsForOids(actorOidsNew, actorsNew)) return;
         } else {
             throw new ConnectionException(ConnectionException.StatusCode.UNSUPPORTED_API,
@@ -174,7 +168,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
             Actor actor = null;
             try {
                 count++;
-                actor = execContext.getMyAccount().getConnection().getActor(actorOidNew, null);
+                actor = getConnection().getActor(actorOidNew, null);
                 execContext.getResult().incrementDownloadedCount();
             } catch (ConnectionException e) {
                 long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID,

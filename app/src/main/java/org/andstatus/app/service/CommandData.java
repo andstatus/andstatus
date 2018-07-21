@@ -133,23 +133,20 @@ public class CommandData implements Comparable<CommandData> {
         return commandData;
     }
 
-    public static CommandData newAccountCommand(CommandEnum command, @NonNull MyAccount myAccount) {
-        return new CommandData(0, command, myAccount,
-                myAccount.isValid()
-                        ? Timeline.getTimeline(TimelineType.OUTBOX, myAccount.getActorId(), Origin.EMPTY)
-                        : Timeline.EMPTY,
-                0);
-    }
-
     public static CommandData actOnActorCommand(CommandEnum command, MyAccount myAccount, long actorId, String username) {
         if (myAccount.nonValid() || (actorId == 0 && StringUtils.isEmpty(username))) return CommandData.EMPTY;
 
-        CommandData commandData = new CommandData(0, command, myAccount, actorId == 0
-                ? Timeline.EMPTY
-                : Timeline.getTimeline(TimelineType.SENT, actorId, Origin.EMPTY), 0);
+        CommandData commandData = actorId == 0
+                ? newAccountCommand(command, myAccount)
+                : new CommandData(0, command, myAccount,
+                    Timeline.getTimeline(TimelineType.SENT, actorId, Origin.EMPTY), 0);
         commandData.setUsername(username);
         commandData.description = commandData.getUsername();
         return commandData;
+    }
+
+    public static CommandData newAccountCommand(CommandEnum command, @NonNull MyAccount myAccount) {
+        return new CommandData(0, command, myAccount, Timeline.EMPTY, 0);
     }
 
     public static CommandData newOriginCommand(CommandEnum command, @NonNull Origin origin) {
@@ -299,6 +296,7 @@ public class CommandData implements Comparable<CommandData> {
     @Override
     public String toString() {
         if (this == EMPTY) return MyLog.formatKeyValue(this, "EMPTY");
+
         StringBuilder builder = new StringBuilder();
         builder.append("command:" + command.save());
         if (mInForeground) {
@@ -308,6 +306,9 @@ public class CommandData implements Comparable<CommandData> {
             builder.append(",manual");
         }
         builder.append(",created:" + RelativeTime.getDifference(MyContextHolder.get().context(), getCreatedDate()));
+        if (myAccount.nonEmpty()) {
+            builder.append(",account:'" + myAccount.getAccountName() + "'");
+        }
         if (StringUtils.nonEmpty(username)) {
             builder.append(",actor:'" + username + "'");
         }

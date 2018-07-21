@@ -19,6 +19,7 @@ package org.andstatus.app.service;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
@@ -176,15 +177,23 @@ class CommandExecutorStrategy implements CommandExecutorParent {
         MyLog.d(this, "Doing nothing");
     }
 
-    protected void logOk(boolean ok) {
+    void logOk(boolean ok) {
         execContext.getResult().setSoftErrorIfNotOk(ok);
     }
 
-    public boolean noErrors() {
+    boolean noErrors() {
         return !execContext.getResult().hasError();
     }
 
     Actor getActor() {
         return execContext.getCommandData().getTimeline().actor;
+    }
+
+    boolean isApiSupported(Connection.ApiRoutineEnum routine) {
+        return getConnection().isApiSupported(routine);
+    }
+
+    public Connection getConnection() {
+        return execContext.getConnection();
     }
 }

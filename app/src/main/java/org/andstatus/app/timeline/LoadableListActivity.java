@@ -505,6 +505,8 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
                 break;
             case GET_ACTOR:
             case UPDATE_NOTE:
+            case FOLLOW:
+            case UNDO_FOLLOW:
             case LIKE:
             case UNDO_LIKE:
             case ANNOUNCE:

@@ -80,18 +80,18 @@ class TimelineDownloaderOther extends TimelineDownloader {
         DataUpdater di = new DataUpdater(execContext);
         for (int loopCounter=0; loopCounter < 100; loopCounter++ ) {
             try {
-                int limit = execContext.getMyAccount().getConnection().fixedDownloadLimit(
+                int limit = getConnection().fixedDownloadLimit(
                         toDownload, getTimeline().getTimelineType().getConnectionApiRoutine());
                 List<AActivity> activities;
                 switch (getTimeline().getTimelineType()) {
                     case SEARCH:
-                        activities = execContext.getMyAccount().getConnection().searchNotes(
+                        activities = getConnection().searchNotes(
                                 isSyncYounger() ? previousPosition : TimelinePosition.EMPTY,
                                 isSyncYounger() ? TimelinePosition.EMPTY : previousPosition,
                                 limit, getTimeline().getSearchQuery());
                         break;
                     default:
-                        activities = execContext.getMyAccount().getConnection().getTimeline(
+                        activities = getConnection().getTimeline(
                                 getTimeline().getTimelineType().getConnectionApiRoutine(),
                                 isSyncYounger() ? previousPosition : TimelinePosition.EMPTY,
                                 isSyncYounger() ? TimelinePosition.EMPTY : previousPosition,

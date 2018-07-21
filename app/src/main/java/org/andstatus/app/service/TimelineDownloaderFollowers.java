@@ -21,7 +21,7 @@ import org.andstatus.app.net.social.Connection;
 
 class TimelineDownloaderFollowers extends TimelineDownloader {
 
-    public TimelineDownloaderFollowers(CommandExecutionContext execContext) {
+    TimelineDownloaderFollowers(CommandExecutionContext execContext) {
         super(execContext);
     }
 
@@ -32,12 +32,8 @@ class TimelineDownloaderFollowers extends TimelineDownloader {
     }
 
     @Override
-    protected boolean isApiSupported(Connection.ApiRoutineEnum routine) {
-        if (super.isApiSupported(routine)) {
-            return true;
-        } else {
-            return super.isApiSupported(getAlternativeApiRputineEnum(routine));
-        }
+    boolean isApiSupported(Connection.ApiRoutineEnum routine) {
+        return super.isApiSupported(routine) || super.isApiSupported(getAlternativeApiRputineEnum(routine));
     }
 
     private Connection.ApiRoutineEnum getAlternativeApiRputineEnum(Connection.ApiRoutineEnum routine) {

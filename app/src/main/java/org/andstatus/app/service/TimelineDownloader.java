@@ -59,10 +59,6 @@ abstract class TimelineDownloader extends CommandExecutorStrategy {
         }
     }
 
-    protected boolean isApiSupported(Connection.ApiRoutineEnum routine) {
-        return execContext.getMyAccount().getConnection().isApiSupported(routine);
-    }
-
     public abstract void download() throws ConnectionException;
 
     protected Timeline getTimeline() {

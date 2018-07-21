@@ -110,4 +110,17 @@ public class MyStringBuilder implements CharSequence {
     public static StringBuilder appendAtNewLine(StringBuilder builder, CharSequence text) {
         return new MyStringBuilder(builder).atNewLine(text).builder;
     }
+
+    @NonNull
+    public MyStringBuilder prependWithSpace(CharSequence text) {
+        return prependWithSeparator(text, " ");
+    }
+
+    @NonNull
+    public MyStringBuilder prependWithSeparator(CharSequence text, @NonNull String separator) {
+        if (separator.length() > 0) builder.insert(0, separator);
+        if (text.length() > 0) builder.insert(0, text);
+        return this;
+    }
+
 }

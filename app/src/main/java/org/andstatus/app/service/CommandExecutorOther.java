@@ -122,7 +122,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             try {
                 final DataUpdater dataUpdater = new DataUpdater(execContext);
                 final Actor myAccountActor = execContext.getMyAccount().getActor();
-                actors = execContext.getMyAccount().getConnection().searchActors(ACTORS_LIMIT, searchQuery);
+                actors = getConnection().searchActors(ACTORS_LIMIT, searchQuery);
                 for (Actor actor : actors) {
                     dataUpdater.onActivity(myAccountActor.update(actor));
                 }
@@ -143,7 +143,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             logExecutionError(true, method + " empty conversationId " + MyQuery.noteInfoForLog(noteId));
         } else {
             Set<Long> noteIds = onActivities(method,
-                    () -> execContext.getMyAccount().getConnection().getConversation(conversationOid),
+                    () -> getConnection().getConversation(conversationOid),
                     () -> MyQuery.noteInfoForLog(noteId))
                     .stream().map(activity -> activity.getNote().noteId).collect(Collectors.toSet());
             if (noteIds.size() > 1) {
@@ -178,7 +178,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         Actor actor = null;
         if (UriUtils.isRealOid(actorIn.oid) || !StringUtils.isEmpty(username)) {
             try {
-                actor = execContext.getMyAccount().getConnection().getActor(actorIn.oid, username);
+                actor = getConnection().getActor(actorIn.oid, username);
                 logIfActorIsEmpty(msgLog, actorIn.actorId, actor);
             } catch (ConnectionException e) {
                 logConnectionException(e, msgLog + actorInfoLogged(actorIn.actorId));
@@ -203,9 +203,9 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         if (noErrors()) {
             try {
                 if (create) {
-                    activity = execContext.getMyAccount().getConnection().like(oid);
+                    activity = getConnection().like(oid);
                 } else {
-                    activity = execContext.getMyAccount().getConnection().undoLike(oid);
+                    activity = getConnection().undoLike(oid);
                 }
                 logIfEmptyNote(method, noteId, activity.getNote());
             } catch (ConnectionException e) {
@@ -264,7 +264,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         AActivity activity = null;
         if (noErrors()) {
             try {
-                activity = execContext.getMyAccount().getConnection().follow(actor.oid, follow);
+                activity = getConnection().follow(actor.oid, follow);
                 final Actor friend = activity.getObjActor();
                 friend.followedByMe = TriState.UNKNOWN; // That "hack" attribute may only confuse us here as it can show outdated info
                 logIfActorIsEmpty(method, actor.actorId, friend);
@@ -311,7 +311,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 ok = true;
                 MyLog.i(this, method + "; OID='" + oid + "', status='" + statusStored + "' for noteId=" + noteId);
             } else {
-                ok = execContext.getMyAccount().getConnection().deleteNote(oid);
+                ok = getConnection().deleteNote(oid);
                 logOk(ok);
             }
         } catch (ConnectionException e) {
@@ -341,7 +341,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         }
         String reblogOid = MyQuery.idToOid(OidEnum.REBLOG_OID, noteId, actorId);
         try {
-            if (!execContext.getMyAccount().getConnection().undoAnnounce(reblogOid)) {
+            if (!getConnection().undoAnnounce(reblogOid)) {
                 logExecutionError(false, "Connection returned 'false' " + method
                         + MyQuery.noteInfoForLog(noteId));
             }
@@ -368,7 +368,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         String oid = getNoteOid(method, noteId, true);
         if (noErrors()) {
             try {
-                AActivity activity = execContext.getMyAccount().getConnection().getNote(oid);
+                AActivity activity = getConnection().getNote(oid);
                 if (activity.isEmpty()) {
                     logExecutionError(false, "Received Note is empty, "
                             + MyQuery.noteInfoForLog(noteId));
@@ -419,8 +419,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             long inReplyToNoteId = MyQuery.noteIdToLongColumnValue(
                     NoteTable.IN_REPLY_TO_NOTE_ID, noteId);
             String inReplyToNoteOid = getNoteOid(method, inReplyToNoteId, false);
-            activity = execContext.getMyAccount().getConnection()
-                    .updateNote(name, content.trim(), oid, recipients, inReplyToNoteOid, mediaUri);
+            activity = getConnection().updateNote(name, content.trim(), oid, recipients, inReplyToNoteOid, mediaUri);
             logIfEmptyNote(method, noteId, activity.getNote());
         } catch (ConnectionException e) {
             logConnectionException(e, method + "; " + msgLog);
@@ -451,7 +450,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         AActivity activity = AActivity.EMPTY;
         if (noErrors()) {
             try {
-                activity = execContext.getMyAccount().getConnection().announce(oid);
+                activity = getConnection().announce(oid);
                 logIfEmptyNote(method, rebloggedNoteId, activity.getNote());
             } catch (ConnectionException e) {
                 logConnectionException(e, "Reblog " + oid);
@@ -468,7 +467,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     
     private void rateLimitStatus() {
         try {
-            RateLimitStatus rateLimitStatus = execContext.getMyAccount().getConnection().rateLimitStatus();
+            RateLimitStatus rateLimitStatus = getConnection().rateLimitStatus();
             boolean ok = !rateLimitStatus.isEmpty();
             if (ok) {
                 execContext.getResult().setRemainingHits(rateLimitStatus.remaining); 

@@ -45,7 +45,7 @@ public class ActorContextMenu extends MyContextMenu {
         if (getViewItem().isEmpty()) {
             return;
         }
-        if (getViewItem().actor.notSameUser(getSelectedActingAccount().getActor())) {
+        if (!getMyContext().accounts().succeededForSameUser(getViewItem().actor).contains(getSelectedActingAccount())) {
             setSelectedActingAccount(getMyContext().accounts()
                     .firstOtherSucceededForSameUser(getViewItem().actor, getActingAccount()));
         }
