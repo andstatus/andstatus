@@ -323,7 +323,7 @@ public class DataUpdater {
             updateObjActor2(activity, recursing, me);
         } else {
             updateFriendship(activity, me);
-            Actor.reload(execContext.myContext, objActor.actorId);
+            execContext.myContext.users().reload(objActor);
         }
 
         MyLog.v(this, () -> method + "; " + objActor);
@@ -421,7 +421,7 @@ public class DataUpdater {
             updateFriendship(activity, me);
 
             objActor.avatarFile.resetAvatarErrors(execContext.myContext);
-            Actor.reload(execContext.myContext, objActor.actorId);
+            execContext.myContext.users().reload(objActor);
 
             if (MyPreferences.getShowAvatars() && objActor.hasAvatar() &&
                     objActor.avatarFile.downloadStatus != DownloadStatus.LOADED) {
@@ -442,14 +442,14 @@ public class DataUpdater {
                     + (objActor.followedByMe.isTrue ? "follows " : "stop following ")
                     + objActor.getNamePreferablyWebFingerId());
             Friendship.setFollowed(execContext.myContext, me.getActor(), objActor.followedByMe, objActor);
-            Actor.reload(execContext.myContext, me.getActor().actorId);
+            execContext.myContext.users().reload(me.getActor());
         }
         if (activity.followedByActor().known) {
             MyLog.v(this, () -> "Actor " + activity.getActor().getNamePreferablyWebFingerId() + " "
                     + (activity.followedByActor().isTrue ? "follows " : "stop following ")
                     + objActor.getNamePreferablyWebFingerId());
             Friendship.setFollowed(execContext.myContext, activity.getActor(), activity.followedByActor(), objActor);
-            Actor.reload(execContext.myContext, activity.getActor().actorId);
+            execContext.myContext.users().reload(activity.getActor());
         }
     }
 

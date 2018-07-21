@@ -97,7 +97,7 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
             actorView.setVisibility(View.GONE);
         } else {
             item.noteViewItem.hideActor(item.actor.getActor());
-            item.getObjActorItem().hideActor(item.actor.getActor());
+            item.getObjActorItem().hideTheFollower(item.actor.getActor());
             if (showAvatars) {
                 AvatarView avatarView = view.findViewById(R.id.actor_avatar_image);
                 item.actor.showAvatar(contextMenu.actor.getActivity(), avatarView);

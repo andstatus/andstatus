@@ -20,11 +20,9 @@ import android.database.Cursor;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.MyActivity;
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AvatarFile;
-import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
@@ -36,8 +34,8 @@ import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtils;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collections;
+import java.util.stream.Stream;
 
 import static org.andstatus.app.timeline.DuplicationLink.DUPLICATES;
 import static org.andstatus.app.timeline.DuplicationLink.IS_DUPLICATED;
@@ -47,7 +45,7 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
     boolean populated = false;
     @NonNull
     final Actor actor;
-    Set<Long> myFollowers = new HashSet<>();
+    private Actor myFollowingActorToHide = Actor.EMPTY;
 
     @Override
     public boolean equals(Object o) {
@@ -120,10 +118,6 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
         return actor.isEmpty();
     }
 
-    public boolean actorIsFollowedBy(MyAccount ma) {
-        return myFollowers.contains(ma.getActorId());
-    }
-
     @Override
     public long getId() {
         return getActor().actorId;
@@ -162,7 +156,6 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
     public ActorViewItem fromCursor(MyContext myContext, @NonNull Cursor cursor) {
         Actor actor = Actor.fromCursor(myContext, cursor);
         ActorViewItem item = new ActorViewItem(actor, false);
-        item.myFollowers = MyQuery.getMyFollowersOf(actor.actorId);
         item.populated = true;
         return item;
     }
@@ -183,7 +176,15 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
         return super.duplicates(timeline, other);
     }
 
-    public void hideActor(Actor actor) {
-        myFollowers.remove(actor.actorId);
+    public void hideTheFollower(Actor actor) {
+        myFollowingActorToHide = actor;
     }
+
+    public Stream<Actor> getMyActorsFollowingTheActor(MyContext myContext) {
+        return myContext.users().friendsOfMyActors.getOrDefault(actor.actorId, Collections.emptySet()).stream()
+                .filter(id -> id != myFollowingActorToHide.actorId)
+                .map(id -> myContext.users().actors.getOrDefault(id, Actor.EMPTY))
+                .filter(Actor::nonEmpty);
+    }
+
 }

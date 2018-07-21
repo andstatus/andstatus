@@ -18,8 +18,7 @@ package org.andstatus.app.user;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,9 +41,9 @@ public class CachedUsersAndActorsTest {
         Origin origin = MyContextHolder.get().origins().fromName(demoData.conversationOriginName);
         assertEquals(demoData.conversationOriginName, origin.getName());
 
-        long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(), demoData.conversationAccount2ActorOid);
-        assertEquals(users.toString(), true, users.isMeOrMyFriend(actorId));
-        assertEquals(users.toString(), false, users.isMeOrMyFriend(-1));
+        Actor actor = demoData.getMyAccount(demoData.conversationAccount2Name).getActor();
+        assertEquals(users.toString(), true, users.isMeOrMyFriend(actor));
+        assertEquals(users.toString(), false, users.isMeOrMyFriend(Actor.EMPTY));
     }
 
 }

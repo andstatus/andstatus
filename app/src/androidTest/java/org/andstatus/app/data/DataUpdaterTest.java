@@ -52,7 +52,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
-import java.util.Set;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
@@ -144,12 +143,6 @@ public class DataUpdaterTest {
         somebody.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
         di.onActivity(accountActor.update(somebody));
         DemoConversationInserter.assertIfActorIsMyFriend(somebody, true, ma);
-
-        Set<Long> friendsIds = MyQuery.getFriendsIds(ma.getActorId());
-        MyContextHolder.get().users().initialize();
-        for (long id : friendsIds) {
-            assertTrue("isFriend: " + id, MyContextHolder.get().users().isMeOrMyFriend(id));
-        }
 
         cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection,
                 sa.selectionArgs, sortOrder);

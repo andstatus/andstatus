@@ -644,6 +644,12 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         return accountData.isPersistent();
     }
 
+    public boolean isFollowing(MyContext myContext, Actor thatActor) {
+        return myContext.users().friendsOfMyActors.entrySet().stream()
+                .filter(entry -> entry.getKey() == thatActor.actorId)
+                .anyMatch(entry -> entry.getValue().contains(getActor().actorId));
+    }
+
     /**
      * Are authenticated users from more than one different Originating system?
      * @return count

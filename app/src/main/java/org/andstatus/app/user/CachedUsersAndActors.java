@@ -18,8 +18,11 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -31,7 +34,8 @@ public class CachedUsersAndActors {
     public final Map<Long, Actor> actors = new ConcurrentHashMap<>();
     public final Map<Long, User> myUsers = new ConcurrentHashMap<>();
     public final Map<Long, Actor> myActors = new ConcurrentHashMap<>();
-    public final Map<Long, Long> friendsOfMyActors = new ConcurrentHashMap<>();
+    /** key - friendId, set of values - IDs of my actors  */
+    public final Map<Long, Set<Long>> friendsOfMyActors = new ConcurrentHashMap<>();
 
     public static CachedUsersAndActors newEmpty(MyContext myContext) {
         return new CachedUsersAndActors(myContext);
@@ -80,13 +84,40 @@ public class CachedUsersAndActors {
                 + SqlActorIds.fromIds(myActors.keySet()).getSql();
 
         final Function<Cursor, Void> function = cursor -> {
-            long followerId = DbUtils.getLong(cursor, FriendshipTable.FOLLOWER_ID);
             Actor friend = Actor.fromCursor(myContext, cursor);
-            updateCache(friend);
-            friendsOfMyActors.put(friend.actorId, followerId);
+            Actor me = Actor.load(myContext, DbUtils.getLong(cursor, FriendshipTable.FOLLOWER_ID));
+            friendsOfMyActors.compute(friend.actorId, addActorToValues(me));
             return null;
         };
         MyQuery.get(myContext, sql, function);
+    }
+
+    public Actor reload(Actor actor) {
+        return reload(actor.actorId);
+    }
+
+    public Actor reload(long actorId) {
+        Actor reloaded = Actor.load(myContext, actorId, true, Actor::getEmpty);
+        if (isMe(reloaded)) updateFriendsOfMy(reloaded);
+        return reloaded;
+    }
+
+    private void updateFriendsOfMy(Actor actor) {
+        friendsOfMyActors.entrySet().stream().filter( entry -> entry.getValue().contains(actor.actorId))
+                .forEach(entry -> entry.getValue().remove(actor.actorId));
+        MyQuery.getFriendsIds(actor.actorId).forEach(friendId ->
+                friendsOfMyActors.compute(friendId, addActorToValues(actor))
+        );
+    }
+
+    @NonNull
+    private static BiFunction<Long, Set<Long>, Set<Long>> addActorToValues(Actor actor) {
+        return (id, myIdsNullable) -> {
+            Set<Long> myIds = new HashSet<>();
+            if (myIdsNullable != null) myIds.addAll(myIdsNullable);
+            myIds.add(actor.actorId);
+            return myIds;
+        };
     }
 
     private void loadTimelineActors() {
@@ -109,8 +140,8 @@ public class CachedUsersAndActors {
         return "MyUsers{\n" + myUsers + "\nMy actors: " + myActors + "\nMy friends: " + friendsOfMyActors + '}';
     }
 
-    public boolean isMeOrMyFriend(long actorId) {
-        return actorId != 0 && (isMe(actorId) || friendsOfMyActors.containsKey(actorId));
+    public boolean isMeOrMyFriend(Actor actor) {
+        return actor.nonEmpty() && (isMe(actor) || friendsOfMyActors.containsKey(actor.actorId));
     }
 
     public boolean isMe(@NonNull Actor actor) {

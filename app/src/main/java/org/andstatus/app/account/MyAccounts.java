@@ -199,11 +199,11 @@ public class MyAccounts implements IsEmpty {
     }
 
     private Optional<MyAccount> forFriend(Actor friend, boolean sameOriginOnly, boolean succeededOnly) {
-        return myAccounts.stream()
+        return myContext.users().friendsOfMyActors.getOrDefault(friend.actorId, Collections.emptySet()).stream()
+                .map(this::fromActorId)
                 .filter(ma -> ma.isValidAndSucceeded() || !succeededOnly)
                 .filter(ma -> !sameOriginOnly || ma.getOrigin().equals(friend.origin))
-                .filter(ma -> myContext.users().friendsOfMyActors.getOrDefault(friend.actorId, 0L)
-                        == ma.getActorId()).findFirst();
+                .findFirst();
     }
 
     /** Doesn't take origin into account */

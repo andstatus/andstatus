@@ -42,7 +42,6 @@ import org.andstatus.app.util.UrlUtils;
 
 import java.net.URL;
 import java.util.List;
-import java.util.Set;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
@@ -175,11 +174,9 @@ public class DemoNoteInserter {
         if (level == 1 && note.nonEmpty()) {
             assertNotEquals( "Activity was not added: " + activity, 0, activity.getId());
         }
-        if (level > DataUpdater.MAX_RECURSING || activity.getId() == 0) {
-            return;
-        }
-        assertNotEquals( "Account is unknown: " + activity, 0, activity.accountActor.actorId);
+        if (level > DataUpdater.MAX_RECURSING || activity.getId() == 0) return;
 
+        assertNotEquals( "Account is unknown: " + activity, 0, activity.accountActor.actorId);
         Actor actor = activity.getActor();
         if (actor.nonEmpty()) {
             assertNotEquals( "Level " + level + ", Actor id not set for " + actor + " in " + activity, 0, actor.actorId);
@@ -212,28 +209,26 @@ public class DemoNoteInserter {
             }
         }
 
-        if (activity.type == ActivityType.LIKE) {
-            List<Actor> stargazers = MyQuery.getStargazers(MyContextHolder.get().getDatabase(), accountActor.origin, note.noteId);
-            boolean found = stargazers.stream().anyMatch(stargazer -> stargazer.actorId == actor.actorId);
-            assertTrue("Actor, who favorited, is not found among stargazers: " + activity
-                    + "\nstargazers: " + stargazers, found);
-        }
-
-        if (activity.type == ActivityType.ANNOUNCE) {
-            List<Actor> rebloggers = MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), accountActor.origin, note.noteId);
-            boolean found = rebloggers.stream().anyMatch(a -> a.actorId == actor.actorId);
-            assertTrue("Reblogger is not found among rebloggers: " + activity
-                    + "\nrebloggers: " + rebloggers, found);
-        }
-
-        if (activity.type == ActivityType.FOLLOW || activity.type == ActivityType.UNDO_FOLLOW) {
-            Set<Long> friendsIds = MyQuery.getFriendsIds(actor.actorId);
-            boolean found = friendsIds.stream().anyMatch(id -> id == activity.getObjActor().actorId );
-            if (activity.type == ActivityType.FOLLOW) {
-                assertTrue("Friend not found: " + activity + "\nfriendsIds: " + friendsIds, found);
-            } else {
-                assertFalse("Friend found: " + activity + "\nfriendsIds: " + friendsIds, found);
-            }
+        switch (activity.type) {
+            case LIKE:
+                List<Actor> stargazers = MyQuery.getStargazers(MyContextHolder.get().getDatabase(), accountActor.origin, note.noteId);
+                boolean found = stargazers.stream().anyMatch(stargazer -> stargazer.actorId == actor.actorId);
+                assertTrue("Actor, who favorited, is not found among stargazers: " + activity
+                        + "\nstargazers: " + stargazers, found);
+                break;
+            case ANNOUNCE:
+                List<Actor> rebloggers = MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), accountActor.origin, note.noteId);
+                assertTrue("Reblogger is not found among rebloggers: " + activity
+                        + "\nrebloggers: " + rebloggers, rebloggers.stream().anyMatch(a -> a.actorId == actor.actorId));
+                break;
+            case FOLLOW:
+                assertTrue("Friend not found: " + activity,
+                        MyQuery.isFollowing(actor.actorId, activity.getObjActor().actorId));
+                break;
+            case UNDO_FOLLOW:
+                assertFalse("Friend found: " + activity,
+                        MyQuery.isFollowing(actor.actorId, activity.getObjActor().actorId));
+                break;
         }
 
         if (!note.replies.isEmpty()) {

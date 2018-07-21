@@ -165,7 +165,7 @@ public class AvatarDownloaderTest {
         values.put(ActorTable.UPDATED_DATE, actor.getUpdatedDate());
         MyContextHolder.get().getDatabase()
                 .update(ActorTable.TABLE_NAME, values, ActorTable._ID + "=" + actor.actorId, null);
-        Actor.reload(MyContextHolder.get(), actor.actorId);
+        MyContextHolder.get().users().reload(actor);
         assertEquals("URL should change for " + actor +
                         "\n reloaded: " + Actor.load(MyContextHolder.get(), actor.actorId),
                 urlString, MyQuery.actorIdToStringColumnValue(ActorTable.AVATAR_URL, actor.actorId));
@@ -178,7 +178,7 @@ public class AvatarDownloaderTest {
         MyContextHolder.get().getDatabase()
                 .update(DownloadTable.TABLE_NAME, values, DownloadTable.ACTOR_ID + "=" + actor.actorId
                         + " AND " + DownloadTable.URI + "=" + MyQuery.quoteIfNotQuoted(actor.getAvatarUrl()), null);
-        Actor actor2 = Actor.reload(MyContextHolder.get(), actor.actorId);
+        Actor actor2 = MyContextHolder.get().users().reload(actor);
         AvatarData avatarData = AvatarData.getCurrentForActor(actor);
         assertEquals("Download status for " + actor2, status, avatarData.getStatus());
     }

@@ -67,7 +67,7 @@ public class ActorContextMenu extends MyContextMenu {
                                 getActivity().getText(R.string.followers_of).toString(), shortName));
 
                 if (getActingAccount().getActor().notSameUser(getViewItem().getActor())) {
-                    if (getViewItem().actorIsFollowedBy(getActingAccount())) {
+                    if (getActingAccount().isFollowing(getMyContext(), getViewItem().getActor())) {
                         ActorContextMenuItem.STOP_FOLLOWING.addTo(menu, menuGroup, order++,
                                 String.format(getActivity().getText(R.string.menu_item_stop_following_user).toString(), shortName));
                     } else {

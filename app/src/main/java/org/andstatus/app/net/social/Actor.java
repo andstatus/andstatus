@@ -115,11 +115,6 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return load(myContext, actorId, false, Actor::getEmpty);
     }
 
-    @NonNull
-    public static Actor reload(@NonNull MyContext myContext, long actorId) {
-        return load(myContext, actorId, true, Actor::getEmpty);
-    }
-
     public static Actor load(@NonNull MyContext myContext, long actorId, boolean reloadFirst, Supplier<Actor> supplier) {
         if (actorId == 0) return supplier.get();
 
@@ -141,6 +136,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return MyQuery.get(myContext, sql, function).stream().findFirst().orElseGet(supplier);
     }
 
+    /** Updates cache on load */
     @NonNull
     public static Actor fromCursor(MyContext myContext, Cursor cursor) {
         final long updatedDate = DbUtils.getLong(cursor, ActorTable.UPDATED_DATE);

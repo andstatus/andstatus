@@ -263,7 +263,7 @@ public class DemoConversationInserter {
     }
 
     static void assertIfActorIsMyFriend(Actor actor, boolean isFriendOf, MyAccount ma) {
-        Set<Long> friendsIds = MyQuery.getFriendsIds(ma.getActorId());
-        assertEquals("Actor " + actor + " is a friend of " + ma, isFriendOf, friendsIds.contains(actor.actorId));
+        boolean isFollowing = MyQuery.isFollowing(ma.getActor().actorId, actor.actorId);
+        assertEquals("Actor " + actor + " is a friend of " + ma, isFriendOf, isFollowing);
     }
 }

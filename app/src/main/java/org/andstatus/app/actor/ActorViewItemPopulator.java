@@ -24,6 +24,8 @@ import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.util.MyUrlSpan;
 
+import java.util.stream.Collectors;
+
 public class ActorViewItemPopulator {
     private final LoadableListActivity myActivity;
     private final boolean isCombined;
@@ -67,20 +69,9 @@ public class ActorViewItemPopulator {
     }
 
     private void showMyFollowers(View view, ActorViewItem item) {
-        StringBuilder builder = new StringBuilder();
-        if (!item.myFollowers.isEmpty()) {
-            int count = 0;
-            builder.append(myActivity.getText(R.string.followed_by));
-            for (long followerId : item.myFollowers) {
-                if (count == 0) {
-                    builder.append(" ");
-                } else {
-                    builder.append(", ");
-                }
-                builder.append(myActivity.getMyContext().accounts().fromActorId(followerId).getAccountName());
-                count++;
-            }
-        }
-        MyUrlSpan.showText(view, R.id.followed_by, builder.toString(), false, false);
+        String myFollowers = item.getMyActorsFollowingTheActor(myActivity.getMyContext())
+                .map(actor -> myActivity.getMyContext().accounts().fromActorOfSameOrigin(actor).getAccountName())
+                .collect(Collectors.joining(", ", myActivity.getText(R.string.followed_by), ""));
+        MyUrlSpan.showText(view, R.id.followed_by, myFollowers, false, false);
     }
 }

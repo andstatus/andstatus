@@ -271,7 +271,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         }
         return !filter.hideRepliesNotToMeOrFriends
                 || inReplyToActor.isEmpty()
-                || MyContextHolder.get().users().isMeOrMyFriend(inReplyToActor.getId());
+                || MyContextHolder.get().users().isMeOrMyFriend(inReplyToActor.getActor());
     }
 
     @Override
