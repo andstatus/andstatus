@@ -30,7 +30,7 @@
         </subtitle>
     </header>
     <release android:versionName="41.00" android:versionCode="257"
-             versionDate="2018-07-XX"
+             versionDate="2018-07-21"
              versionTitle="Search by a part of a word. Avatars fixed.">
         <changes>
             <change>Search works for a note's name (title) and a content. You have to launch "AndStatus Settings

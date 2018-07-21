@@ -128,6 +128,7 @@ public class AccountSettingsActivity extends MyActivity {
         OUR_DEFAULT_SCREEN
     }
     private volatile ActivityOnFinish activityOnFinish = ActivityOnFinish.NONE;
+    private volatile boolean initialSyncNeeded = false;
     
     private StateOfAccountChangeProcess state = null;
 
@@ -764,6 +765,8 @@ public class AccountSettingsActivity extends MyActivity {
                 myContext.accounts().setCurrentAccount(myAccount);
             }
             if (activityOnFinish == ActivityOnFinish.HOME) {
+                if (initialSyncNeeded) initialAccountSync(myContext, myAccount);
+
                 Timeline home = Timeline.getTimeline(TimelineType.HOME, myAccount.getActorId(), Origin.EMPTY);
                 TimelineActivity.startForTimeline(myContext, AccountSettingsActivity.this, home, myAccount, true);
                 state.forget();
@@ -778,6 +781,17 @@ public class AccountSettingsActivity extends MyActivity {
                 }
             }
         });
+    }
+
+    private void initialAccountSync(MyContext myContext, MyAccount myAccount) {
+        final Timeline timeline = myContext.timelines().forUser(TimelineType.HOME, myAccount.getActor());
+        if (!timeline.isTimeToAutoSync()) return;
+
+        MyServiceManager.setServiceAvailable();
+        MyServiceManager.sendManualForegroundCommand(
+                CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, timeline));
+        MyServiceManager.sendCommand(
+                (CommandData.newActorCommand(CommandEnum.GET_FRIENDS, myAccount.getActor().actorId, "")));
     }
 
     /**
@@ -1260,12 +1274,10 @@ public class AccountSettingsActivity extends MyActivity {
                     MyContext myContext = MyContextHolder.initialize(MyContextHolder.get().context(),
                             AccountSettingsActivity.this);
                     status = ResultStatus.ACCOUNT_VALID;
-                    final Timeline timeline = myContext.timelines()
-                            .forUser(TimelineType.HOME, myAccount.getActor());
+
+                    final Timeline timeline = myContext.timelines().forUser(TimelineType.HOME, myAccount.getActor());
                     if (timeline.isTimeToAutoSync()) {
-                        MyServiceManager.sendForegroundCommand(
-                                CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, timeline)
-                                        .setManuallyLaunched(true));
+                        initialSyncNeeded = true;
                         activityOnFinish = ActivityOnFinish.HOME;
                     }
                 }

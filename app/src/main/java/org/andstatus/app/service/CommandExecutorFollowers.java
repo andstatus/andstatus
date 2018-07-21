@@ -131,6 +131,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         for (long actorIdOld : actorIdsOld) {
             Friendship.setFollowed(execContext.myContext, Actor.load(execContext.myContext, actorIdOld), TriState.FALSE, getActor());
         }
+        execContext.myContext.users().reload(getActor());
     }
 
     private void syncFriends() throws ConnectionException {
@@ -160,6 +161,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
             Friendship.setFollowed(execContext.myContext, getActor(), TriState.FALSE,
                     Actor.load(execContext.myContext, actorIdOld));
         }
+        execContext.myContext.users().reload(getActor());
     }
 
     private boolean getActorsForOids(List<String> actorOidsNew, List<Actor> actorsNew) {

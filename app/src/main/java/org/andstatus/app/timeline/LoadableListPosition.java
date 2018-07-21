@@ -24,7 +24,7 @@ import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 
 public class LoadableListPosition<T extends ViewItem<T>> implements IsEmpty {
-    public final static LoadableListPosition EMPTY = saved(0, 0, 0, "(empty position");
+    public final static LoadableListPosition EMPTY = saved(0, 0, 0, "(empty position)");
     final int position;
     final long itemId;
     final int y;
