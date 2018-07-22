@@ -61,7 +61,7 @@ public class CommandExecutionContext {
 
     @Override
     public String toString() {
-        return MyLog.formatKeyValue(this, getMyAccount().toString() + ", " + commandData.toString());
+        return MyLog.formatKeyValue(this, commandData.toString() + ", " + getMyAccount());
     }
 
     // TODO: Do we need this?

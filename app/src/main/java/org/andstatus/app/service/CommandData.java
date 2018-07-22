@@ -297,34 +297,32 @@ public class CommandData implements Comparable<CommandData> {
     public String toString() {
         if (this == EMPTY) return MyLog.formatKeyValue(this, "EMPTY");
 
-        StringBuilder builder = new StringBuilder();
+        MyStringBuilder builder = new MyStringBuilder();
         builder.append("command:" + command.save());
-        if (mInForeground) {
-            builder.append(",foreground");
-        }
-        if (mManuallyLaunched) {
-            builder.append(",manual");
-        }
-        builder.append(",created:" + RelativeTime.getDifference(MyContextHolder.get().context(), getCreatedDate()));
         if (myAccount.nonEmpty()) {
-            builder.append(",account:'" + myAccount.getAccountName() + "'");
+            builder.withComma("account:'" + myAccount.getAccountName() + "'");
         }
         if (StringUtils.nonEmpty(username)) {
-            builder.append(",actor:'" + username + "'");
+            builder.withComma("username:'" + username + "'");
         }
         if (StringUtils.nonEmpty(description) && !description.equals(username)) {
-            builder.append(",\"");
-            builder.append(description);
-            builder.append("\"");
+            builder.withSpaceQuoted(description);
         }
         if (getTimeline().isValid()) {
-            builder.append("," + getTimeline().toString());
+            builder.withComma(getTimeline().toString());
         }
         if (itemId != 0) {
-            builder.append(",itemId:" + itemId);
+            builder.withComma("itemId:" + itemId);
         }
-        builder.append(",hashCode:" + hashCode());
-        builder.append("," + CommandResult.toString(commandResult));
+        if (mInForeground) {
+            builder.withComma("foreground");
+        }
+        if (mManuallyLaunched) {
+            builder.withComma("manual");
+        }
+        builder.withComma("created:" + RelativeTime.getDifference(MyContextHolder.get().context(), getCreatedDate()));
+        builder.withComma("hashCode:" + hashCode());
+        builder.withComma(CommandResult.toString(commandResult));
         return MyLog.formatKeyValue(this, builder);
     }
 

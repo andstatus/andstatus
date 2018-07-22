@@ -102,7 +102,7 @@ public class AccountSettingsActivityTest extends ActivityTest<AccountSettingsAct
         MyLog.v(this, method + "-Log after waitForMonitor: " 
                 + nextActivity);
         assertNotNull("Next activity is opened and captured", nextActivity);
-        TestSuite.waitForListLoaded(nextActivity, 8);
+        TestSuite.waitForListLoaded(nextActivity, 6);
         DbUtils.waitMs(method, 500);
         nextActivity.finish();
     }
