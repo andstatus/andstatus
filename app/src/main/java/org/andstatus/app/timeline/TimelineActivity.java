@@ -85,11 +85,10 @@ import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.view.MyContextMenu;
-import org.andstatus.app.widget.MySearchView;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -644,8 +643,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     private void showRecentAccounts() {
-        List<MyAccount> recentAccounts = myContext.accounts().recentAccounts.stream().limit(3)
-                .collect(Collectors.toList());
+        List<MyAccount> recentAccounts = new ArrayList<>(myContext.accounts().recentAccounts);
         for (int ind = 0; ind < 3; ind++) {
             MyAccount ma = recentAccounts.size() > ind ? recentAccounts.get(ind) : MyAccount.EMPTY;
             AvatarView avatarView = findViewById(ind == 0
@@ -663,8 +661,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                     TimelineActivity.startForTimeline(
                         getMyContext(), this,
                         getMyContext().timelines()
-                                .forUser(TimelineType.SENT, getCurrentMyAccount().getActor()),
-                        getCurrentMyAccount(), false);
+                                .forUser(TimelineType.SENT, ma.getActor()), ma, false);
                     closeDrawer();
                     }
                 : v -> {
