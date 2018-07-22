@@ -120,7 +120,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
         Actor cached = myContext.users().actors.getOrDefault(actorId, Actor.EMPTY);
         return cached.isPartiallyDefined() || reloadFirst
-                ? loadInternal(myContext, actorId, supplier).betterToCache(cached)
+                ? loadFromDatabase(myContext, actorId, supplier).betterToCache(cached)
                 : cached;
     }
 
@@ -128,7 +128,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return isBetterToCacheThan(other) ?  this : other;
     }
 
-    private static Actor loadInternal(@NonNull MyContext myContext, long actorId, Supplier<Actor> supplier) {
+    private static Actor loadFromDatabase(@NonNull MyContext myContext, long actorId, Supplier<Actor> supplier) {
         final String sql = "SELECT " + ActorSql.select()
                 + " FROM " + ActorSql.tables()
                 + " WHERE " + ActorTable.TABLE_NAME + "." + ActorTable._ID + "=" + actorId;

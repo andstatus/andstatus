@@ -298,7 +298,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     private MyAccount calcAccountToSync(MyContext myContext, TimelineType timelineType, Origin origin, Actor actor) {
         return timelineType.isAtOrigin() && origin.nonEmpty()
                 ? myContext.accounts().getFirstSucceededForOrigin(origin)
-                : myContext.accounts().toSyncThisActor(actor);
+                : myContext.accounts().toSyncThatActor(actor);
     }
 
     private Actor fixedActor(MyContext myContext, TimelineType timelineType, long actorId) {

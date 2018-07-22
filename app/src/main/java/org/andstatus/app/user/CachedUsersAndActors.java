@@ -14,15 +14,14 @@ import org.andstatus.app.database.table.TimelineTable;
 import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -86,7 +85,7 @@ public class CachedUsersAndActors {
         final Function<Cursor, Void> function = cursor -> {
             Actor friend = Actor.fromCursor(myContext, cursor);
             Actor me = Actor.load(myContext, DbUtils.getLong(cursor, FriendshipTable.FOLLOWER_ID));
-            friendsOfMyActors.compute(friend.actorId, addActorToValues(me));
+            friendsOfMyActors.compute(friend.actorId, CollectionsUtil.addValue(me.actorId));
             return null;
         };
         MyQuery.get(myContext, sql, function);
@@ -104,20 +103,11 @@ public class CachedUsersAndActors {
 
     private void updateFriendsOfMy(Actor actor) {
         friendsOfMyActors.entrySet().stream().filter( entry -> entry.getValue().contains(actor.actorId))
-                .forEach(entry -> entry.getValue().remove(actor.actorId));
-        MyQuery.getFriendsIds(actor.actorId).forEach(friendId ->
-                friendsOfMyActors.compute(friendId, addActorToValues(actor))
+                .forEach(entry ->
+                        friendsOfMyActors.compute(entry.getKey(), CollectionsUtil.removeValue(actor.actorId)));
+        MyQuery.getFriendsIds(actor.actorId)
+                .forEach(friendId -> friendsOfMyActors.compute(friendId, CollectionsUtil.addValue(actor.actorId))
         );
-    }
-
-    @NonNull
-    private static BiFunction<Long, Set<Long>, Set<Long>> addActorToValues(Actor actor) {
-        return (id, myIdsNullable) -> {
-            Set<Long> myIds = new HashSet<>();
-            if (myIdsNullable != null) myIds.addAll(myIdsNullable);
-            myIds.add(actor.actorId);
-            return myIds;
-        };
     }
 
     private void loadTimelineActors() {

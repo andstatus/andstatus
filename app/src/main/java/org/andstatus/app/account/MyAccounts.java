@@ -187,7 +187,7 @@ public class MyAccounts implements IsEmpty {
 
     /** My account, which can be used to sync the "other" actor's data and to interact with that actor */
     @NonNull
-    public MyAccount toSyncThisActor(@NonNull Actor other) {
+    public MyAccount toSyncThatActor(@NonNull Actor other) {
         return other.isEmpty() ? MyAccount.EMPTY
                 : Stream.of(fromActor(other, true, true))
                 .filter(MyAccount::isValid).findFirst()
