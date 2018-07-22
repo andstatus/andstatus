@@ -22,7 +22,6 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.ParcelFileDescriptor;
 
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.DatabaseCreator;
 import org.andstatus.app.util.FileDescriptorUtils;
 import org.andstatus.app.util.MyLog;
@@ -148,20 +147,13 @@ public class MyBackupDescriptor {
     
     private void writeStringToFileDescriptor(String string, FileDescriptor fd, boolean logged) throws IOException {
         final String method = "writeStringToFileDescriptor";
-        FileOutputStream fileOutputStream = null;
-        Writer out = null;
-        try {
-            fileOutputStream = new FileOutputStream(fd);
-            out = new BufferedWriter(new OutputStreamWriter(fileOutputStream, "UTF-8"));
+        try (FileOutputStream fileOutputStream = new FileOutputStream(fd);
+             Writer out = new BufferedWriter(new OutputStreamWriter(fileOutputStream, "UTF-8"))
+        ) {
             out.write(string);
         } catch (IOException e) {
-            if (logged) {
-                MyLog.d(this, method, e);
-            }
+            if (logged) MyLog.d(this, method, e);
             throw new FileNotFoundException(method + "; " + e.getLocalizedMessage());
-        } finally {
-            DbUtils.closeSilently(out, method);
-            DbUtils.closeSilently(fileOutputStream, method);
         }
     }
     

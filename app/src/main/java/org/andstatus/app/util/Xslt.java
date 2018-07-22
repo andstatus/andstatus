@@ -26,9 +26,9 @@ import org.andstatus.app.context.MyLocale;
 
 import java.io.StringWriter;
 
+import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -61,11 +61,12 @@ public class Xslt {
             Source xmlSource = new StreamSource(context.getResources().openRawResource(resXml));
             Source xsltSource = new StreamSource(context.getResources().openRawResource(resXsl));
 
-            TransformerFactory transFact = TransformerFactory.newInstance();
-            Transformer trans = transFact.newTransformer(xsltSource);
-            StringWriter sr = new StringWriter();
-            StreamResult result = new StreamResult(sr);            
-            trans.transform(xmlSource, result);
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            Transformer transformer = transformerFactory.newTransformer(xsltSource);
+            StringWriter stringWriter = new StringWriter();
+            StreamResult result = new StreamResult(stringWriter);
+            transformer.transform(xmlSource, result);
             output = result.getWriter().toString();
         } catch (TransformerFactoryConfigurationError | TransformerException e) {
             MyLog.e(TAG, e);

@@ -196,7 +196,7 @@ public class MyBackupDataInput {
         if (mHeaderReady) {
             return header.dataSize;
         } else {
-            throw new IllegalStateException("Entity header not read");
+            throw new IllegalStateException(ENTITY_HEADER_NOT_READ);
         }
     }
 

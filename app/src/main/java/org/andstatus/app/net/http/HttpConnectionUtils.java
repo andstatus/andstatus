@@ -58,14 +58,9 @@ public class HttpConnectionUtils {
         char[] buffer = new char[BUFFER_LENGTH];
         int count;
         StringBuilder builder = new StringBuilder();
-        try {
-            Reader reader = new InputStreamReader(in, UTF_8);
-            try {
-                while((count = reader.read(buffer)) != -1) {
-                    builder.append(buffer, 0, count);
-                }
-            } finally {
-                DbUtils.closeSilently(reader);
+        try (Reader reader = new InputStreamReader(in, UTF_8)) {
+            while ((count = reader.read(buffer)) != -1) {
+                builder.append(buffer, 0, count);
             }
         } finally {
             DbUtils.closeSilently(in);

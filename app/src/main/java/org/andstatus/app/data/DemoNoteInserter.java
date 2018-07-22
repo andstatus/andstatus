@@ -229,6 +229,8 @@ public class DemoNoteInserter {
                 assertFalse("Friend found: " + activity,
                         MyQuery.isFollowing(actor.actorId, activity.getObjActor().actorId));
                 break;
+            default:
+                break;
         }
 
         if (!note.replies.isEmpty()) {

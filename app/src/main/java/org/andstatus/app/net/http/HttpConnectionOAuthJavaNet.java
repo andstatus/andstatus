@@ -171,15 +171,11 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
     private void writeJson(HttpURLConnection conn, JSONObject formParams) throws IOException {
         conn.setRequestProperty("Content-Type", "application/json");
         signConnection(conn, getConsumer(), false);
-        OutputStreamWriter writer = null;
-        try {
-            OutputStream os = conn.getOutputStream();
-            writer = new OutputStreamWriter(os, UTF_8);
-            String toWrite = formParams.toString(); 
-            writer.write(toWrite);
-            writer.close();
-        } finally {
-            DbUtils.closeSilently(writer);
+        try (
+                OutputStream os = conn.getOutputStream();
+                OutputStreamWriter writer = new OutputStreamWriter(os, UTF_8);
+        ) {
+            writer.write(formParams.toString());
         }
     }
 

@@ -18,6 +18,7 @@ package org.andstatus.app.context;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.widget.Toast;
 
 import net.jcip.annotations.GuardedBy;
@@ -140,7 +141,7 @@ public class StorageSwitch {
                     mDataBeingMoved = false;
                 }
             }
-            result.messageBuilder.insert(0, " Move " + (result.success ? "succeeded" : "failed"));
+            result.messageBuilder.insert(0, " Move " + strSucceeded(result.success));
             MyLog.v(this, () -> result.getMessage());
             return result;
         }
@@ -253,7 +254,7 @@ public class StorageSwitch {
                             + ". ");
                 }
             }
-            MyLog.d(this, method + "; " + databaseName + " " + (succeeded ? "succeeded" : "failed"));
+            MyLog.d(this, method + "; " + databaseName + " " + strSucceeded(succeeded));
             return succeeded;
         }
 
@@ -277,22 +278,14 @@ public class StorageSwitch {
                 } else if (src.getCanonicalPath().compareTo(dst.getCanonicalPath()) == 0) {
                     MyLog.d(this, "Cannot copy to itself: '" + src.getCanonicalPath() + "'");
                 } else {
-                    FileInputStream fileInputStream = null;
-                    java.nio.channels.FileChannel inChannel = null;
-                    FileOutputStream fileOutputStream = null;
-                    java.nio.channels.FileChannel outChannel = null;
-                    try {
-                        fileInputStream = new FileInputStream(src);
-                        inChannel = fileInputStream.getChannel();
-                        fileOutputStream = new FileOutputStream(dst);
-                        outChannel = fileOutputStream.getChannel();
+                    try (
+                            FileInputStream fileInputStream = new FileInputStream(src);
+                            java.nio.channels.FileChannel inChannel = fileInputStream.getChannel();
+                            FileOutputStream fileOutputStream = new FileOutputStream(dst);
+                            java.nio.channels.FileChannel outChannel = fileOutputStream.getChannel();
+                    ) {
                         sizeCopied = inChannel.transferTo(0, inChannel.size(), outChannel);
                         ok = (sizeIn == sizeCopied);
-                    } finally {
-                        DbUtils.closeSilently(outChannel);
-                        DbUtils.closeSilently(fileOutputStream);
-                        DbUtils.closeSilently(inChannel);
-                        DbUtils.closeSilently(fileInputStream);
                     }
 
                 }
@@ -381,7 +374,7 @@ public class StorageSwitch {
                     messageToAppend.append(logMsg + ": " + e.getMessage());
                 }
             }
-            MyLog.d(this, method + " " + (succeeded ? "succeeded" : "failed"));
+            MyLog.d(this, method + " " + strSucceeded(succeeded));
         }
 
         private void saveNewSettings(boolean useExternalStorageNew, StringBuilder messageToAppend) {
@@ -416,5 +409,10 @@ public class StorageSwitch {
         protected void onCancelled2(TaskResult result) {
             DialogFactory.dismissSafely(dlg);
         }
+    }
+
+    @NonNull
+    private static String strSucceeded(boolean succeeded) {
+        return succeeded ? "succeeded" : "failed";
     }
 }

@@ -200,7 +200,7 @@ public class MyFutureContext extends MyAsyncTask<Object, Void, MyContext> {
                 MyLog.v(this, "Didn't complete background work yet " + i);
                 DbUtils.waitMs(this, 50 * i);
             }
-            if (!completedBackgroundWork()) MyLog.w(this, "Didn't complete background work");;
+            if (!completedBackgroundWork()) MyLog.w(this, "Didn't complete background work");
         } catch (Exception e) {
             MyLog.i(this, "getBlocking failed", e);
         }
