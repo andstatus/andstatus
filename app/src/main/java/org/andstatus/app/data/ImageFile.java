@@ -62,6 +62,7 @@ public abstract class ImageFile implements IsEmpty {
             return;
         }
         if (downloadStatus != DownloadStatus.LOADED) {
+            showDefaultImage(imageView);
             requestDownload();
             return;
         }

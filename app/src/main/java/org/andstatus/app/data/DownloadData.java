@@ -255,6 +255,7 @@ public class DownloadData implements IsEmpty {
             if (!isError()) {
                 fileStored = fileNew;
             }
+            MyLog.v(this, () -> "Saved " + this);
         } catch (Exception e) {
             softErrorLogged("Couldn't save to database", e);
         }
@@ -483,7 +484,7 @@ public class DownloadData implements IsEmpty {
             builder.withComma("msgId:" + noteId);
         }
         builder.withComma("status:" + getStatus());
-        if(!StringUtils.isEmpty(errorMessage)) {
+        if(StringUtils.nonEmpty(errorMessage)) {
             builder.withComma("errorMessage:'" + getMessage() + "'");
         }
         if (fileStored.existed) {

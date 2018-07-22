@@ -25,6 +25,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
 
 import java.io.File;
@@ -48,13 +49,12 @@ public abstract class FileDownloader {
     void load(CommandData commandData) {
         switch (data.getStatus()) {
             case LOADED:
-            case HARD_ERROR:
                 break;
             default:
                 loadUrl();
                 break;
         }
-        if (data.isError()) {
+        if (data.isError() && StringUtils.nonEmpty(data.getMessage())) {
             commandData.getResult().setMessage(data.getMessage());
         }
         if (data.isHardError()) {
@@ -66,9 +66,6 @@ public abstract class FileDownloader {
     }
 
     private void loadUrl() {
-        if (data.isHardError()) {
-            return;
-        }
         data.beforeDownload();
         downloadFile();
         data.saveToDatabase();

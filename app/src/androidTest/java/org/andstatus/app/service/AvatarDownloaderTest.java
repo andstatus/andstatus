@@ -95,8 +95,8 @@ public class AvatarDownloaderTest {
         
         deleteMaAvatarFile();
         changeAvatarStatus(ma.getActor(), DownloadStatus.HARD_ERROR);
-        loadAndAssertStatusForMa("Don't reload if hard error", DownloadStatus.HARD_ERROR,
-                DownloadStatus.HARD_ERROR, false);
+        loadAndAssertStatusForMa("Reload even after hard error", DownloadStatus.LOADED,
+                DownloadStatus.LOADED, false);
 
         changeAvatarStatus(ma.getActor(), DownloadStatus.SOFT_ERROR);
         loadAndAssertStatusForMa("Reload on Soft error",
@@ -200,18 +200,18 @@ public class AvatarDownloaderTest {
                 ", error message:'" + commandData.getResult().getMessage() + "')"
                 + (mockNetworkError ? "mocked the error" : "");
 
-        assertEquals("Checking load status " + logMsg, loadStatus, loader.getStatus());
+        assertEquals("Checking load status: " + logMsg, loadStatus, loader.getStatus());
         if (DownloadStatus.LOADED.equals(loadStatus)) {
-            assertFalse("Should be no errors " + logMsg, commandData.getResult().hasError());
+            assertFalse("Should be no errors: " + logMsg, commandData.getResult().hasError());
         } else {
-            assertTrue("Should be an error " + logMsg, commandData.getResult().hasError());
+            assertTrue("Should be an error: " + logMsg, commandData.getResult().hasError());
         }
         assertEquals(logMsg, loadStatus, loader.getStatus());
 
         if (DownloadStatus.LOADED.equals(displayedStatus)) {
-            assertTrue("Avatar should be displayed " + logMsg, data.getFile().existed);
+            assertTrue("Avatar should be displayed: " + logMsg, data.getFile().existed);
         } else {
-            assertFalse("Avatar shouldn't be diplayed " + logMsg, data.getFile().existed);
+            assertFalse("Avatar shouldn't be diplayed: " + logMsg, data.getFile().existed);
         }
 
         return loader.data.getDownloadId();

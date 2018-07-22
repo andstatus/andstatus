@@ -79,7 +79,6 @@ public class CommandData implements Comparable<CommandData> {
      * Used for Actor search also */
     private String username = "";
 
-    private volatile int result = 0;
     private CommandResult commandResult = new CommandResult();
 
     public static CommandData newSearch(SearchObjects searchObjects,
@@ -273,24 +272,6 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     /**
-     * It's used in equals() method. We need to distinguish duplicated commands but to ignore
-     * differences in results!
-     */
-    @Override
-    public int hashCode() {
-        if (result == 0) {
-            final int prime = 31;
-            result = 1;
-            result += command.save().hashCode();
-            result = 31 * result + myAccount.hashCode();
-            result += prime * timeline.hashCode();
-            if (itemId != 0) result += prime * itemId;
-            if (!StringUtils.isEmpty(description)) result += prime * description.hashCode();
-        }
-        return result;
-    }
-
-    /**
      * @see java.lang.Object#toString()
      */
     @Override
@@ -299,6 +280,9 @@ public class CommandData implements Comparable<CommandData> {
 
         MyStringBuilder builder = new MyStringBuilder();
         builder.append("command:" + command.save());
+        if (mManuallyLaunched) {
+            builder.withComma("manual");
+        }
         if (myAccount.nonEmpty()) {
             builder.withComma("account:'" + myAccount.getAccountName() + "'");
         }
@@ -317,25 +301,34 @@ public class CommandData implements Comparable<CommandData> {
         if (mInForeground) {
             builder.withComma("foreground");
         }
-        if (mManuallyLaunched) {
-            builder.withComma("manual");
-        }
         builder.withComma("created:" + RelativeTime.getDifference(MyContextHolder.get().context(), getCreatedDate()));
         builder.withComma("hashCode:" + hashCode());
         builder.withComma(CommandResult.toString(commandResult));
         return MyLog.formatKeyValue(this, builder);
     }
 
+
+    /** We need to distinguish duplicated commands but to ignore differences in results! */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1 + command.save().hashCode();
+        result = prime * result + myAccount.hashCode();
+        result += prime * timeline.hashCode();
+        result += prime * itemId;
+        return result;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || !(o instanceof CommandData)) return false;
+
         CommandData other = (CommandData) o;
         if (!command.equals(other.command)) return false;
         if (!myAccount.equals(other.myAccount)) return false;
         if (!timeline.equals(other.timeline)) return false;
-        if (itemId != other.itemId) return false;
-        return StringUtils.equalsNotEmpty(description, other.description);
+        return itemId == other.itemId;
     }
 
     @Override

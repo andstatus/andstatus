@@ -31,7 +31,9 @@ import org.andstatus.app.database.table.CommandTable;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -306,8 +308,10 @@ public class CommandQueue {
     }
 
     void addToQueue(QueueType queueType, CommandData commandData) {
-        if (!get(queueType).contains(commandData)
-                && !get(queueType).offer(commandData)) {
+        if (get(queueType).contains(commandData)) {
+            get(queueType).remove(commandData);
+        }
+        if (!get(queueType).offer(commandData)) {
             MyLog.e(this, queueType.name() + " is full?");
         }
     }
@@ -424,22 +428,19 @@ public class CommandQueue {
         if (get(QueueType.ERROR).contains(cdIn)) {
             for (CommandData cd : get(QueueType.ERROR)) {
                 if (cd.equals(cdIn)) {
-                    cd.resetRetries();
                     if (cdIn.isManuallyLaunched() || cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
                         cdOut = cd;
                         get(QueueType.ERROR).remove(cd);
                         MyLog.v(this, () -> "Returned from Error queue: " + cd);
+                        cd.resetRetries();
                     } else {
                         cdOut = null;
                         MyLog.v(this, () -> "Found in Error queue: " + cd);
                     }
                 } else {
                     if (cd.executedMoreSecondsAgoThan(TimeUnit.DAYS.toSeconds(MAX_DAYS_IN_ERROR_QUEUE))) {
-                        if (get(QueueType.ERROR).remove(cd)) {
-                            MyLog.i(this, "Removed old from Error queue: " + cd);
-                        } else {
-                            MyLog.i(this, "Failed to Remove old from Error queue: " + cd);
-                        }
+                        get(QueueType.ERROR).remove(cd);
+                        MyLog.i(this, "Removed old from Error queue: " + cd);
                     }
                 }
             }
