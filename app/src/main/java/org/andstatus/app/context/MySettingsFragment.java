@@ -215,8 +215,10 @@ public class MySettingsFragment extends PreferenceFragment implements
     protected void showUseExternalStorage() {
         CheckBoxPreference preference = (CheckBoxPreference) getPreferenceScreen().findPreference(
                 MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW);
-        if (preference != null) {
-            mIgnorePreferenceChange = true;
+        if (preference == null) return;
+
+        mIgnorePreferenceChange = true;
+        try {
             boolean use = MyStorage.isStorageExternal();
             if (use != preference.isChecked()) {
                 preference.setChecked(use);
@@ -230,6 +232,9 @@ public class MySettingsFragment extends PreferenceFragment implements
             summary.append(":\n ");
             summary.append(MyStorage.getDataFilesDir(null));
             preference.setSummary(summary);
+        } catch (Throwable t) {
+            MyLog.d(this, "showUseExternalStorage", t);
+        } finally {
             mIgnorePreferenceChange = false;
         }
     }
