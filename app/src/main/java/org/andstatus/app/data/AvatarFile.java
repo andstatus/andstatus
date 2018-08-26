@@ -105,4 +105,9 @@ public class AvatarFile extends ImageFile {
                 " AND " + DownloadTable.DOWNLOAD_STATUS + "<>" + DownloadStatus.LOADED.save()
         );
     }
+
+    @Override
+    boolean cannotBeShown() {
+        return isEmpty() || downloadStatus == DownloadStatus.HARD_ERROR;
+    }
 }

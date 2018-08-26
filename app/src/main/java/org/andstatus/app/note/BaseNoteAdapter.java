@@ -139,18 +139,22 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
     }
 
     protected void showAttachedImage(View view, T item) {
+        final View imageWrapper = view.findViewById(R.id.attached_image_wrapper);
+        if (imageWrapper == null) return;
+
+        final boolean show = item.getAttachedImageFile().mayBeShown() && contextMenu.getActivity().isMyResumed();
+        imageWrapper.setVisibility(show ? View.VISIBLE : View.GONE);
+        if (!show) return;
+
         preloadedImages.add(item.getNoteId());
-
-        final IdentifiableImageView imageView = view.findViewById(R.id.attached_image);
-        if (imageView == null) return;
+        final IdentifiableImageView imageView = imageWrapper.findViewById(R.id.attached_image);
         item.getAttachedImageFile().showImage(contextMenu.getActivity(), imageView);
-        if (item.getAttachedImageFile().nonEmpty()) {
-            setOnButtonClick(imageView, 0, NoteContextMenuItem.VIEW_IMAGE);
-        }
+        setOnButtonClick(imageView, 0, NoteContextMenuItem.VIEW_IMAGE);
 
-        final View playImage = view.findViewById(R.id.play_image);
-        if (playImage == null) return;
-        playImage.setVisibility(item.getAttachedImageFile().isVideo() ? View.VISIBLE : View.GONE);
+        final View playImage = imageWrapper.findViewById(R.id.play_image);
+        if (playImage != null) {
+            playImage.setVisibility(item.getAttachedImageFile().isVideo() ? View.VISIBLE : View.GONE);
+        }
     }
 
     protected void showMarkReplies(ViewGroup view, T item) {

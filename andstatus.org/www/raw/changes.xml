@@ -29,6 +29,14 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="41.02" android:versionCode="259"
+             versionDate="2018-08-26"
+             versionTitle="Fixed: Blank space, when there is no an attachment">
+        <changes>
+            <change>Fixed: Users were confused by blank space below a note's text, when there is no an attachment.
+                It was present, when a note contained non-image attachments.</change>
+        </changes>
+    </release>
     <release android:versionName="41.01" android:versionCode="258"
              versionDate="2018-07-22"
              versionTitle="Search by a part of a word. Avatars fixed.">

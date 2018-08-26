@@ -37,6 +37,9 @@
             tools:text="This is a sample note's body, which is long enough to fill more than one line on a phone. It looks like I need it a bit longer.\nThis should be at least the second line"/>
 
         <RelativeLayout
+            android:id="@+id/attached_image_wrapper"
+            android:visibility="gone"
+            tools:visibility="visible"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 

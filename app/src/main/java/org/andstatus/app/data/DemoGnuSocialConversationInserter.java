@@ -24,6 +24,8 @@ import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.Attachment;
+import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
@@ -90,7 +92,9 @@ public class DemoGnuSocialConversationInserter {
         DemoNoteInserter.increaseUpdateDate(reply4);
         addPublicNote(reply4, TriState.FALSE);
 
-        addActivity(buildActivity(author2, "Reply 5 to Reply 4", reply4, null));
+        final AActivity reply5 = buildActivity(author2, "Reply 5 to Reply 4", reply4, null);
+        addWithMultipleAttachments(reply5);
+
         addActivity(buildActivity(author3, "Reply 6 to Reply 4 - the second", reply4, null));
 
         AActivity reply7 = buildActivity(author1, "Reply 7 to Reply 2 is about "
@@ -128,6 +132,25 @@ public class DemoGnuSocialConversationInserter {
 
         AActivity reply13 = buildActivity(author2, "Reply 13 to MyReply12", myReplyTo12, null);
         addActivity(reply13);
+    }
+
+    private void addWithMultipleAttachments(AActivity activity) {
+        final Attachments attachments = activity.getNote().attachments;
+        attachments.add(
+                Attachment.fromUriAndContentType("https://gnusocial.example.com/api/statuses/update.json",
+                        "text/html; charset=utf-8"));
+        attachments.add(
+                Attachment.fromUriAndContentType("https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html",
+                        "text/html; charset=iso-8859-1"));
+        attachments.add(
+                Attachment.fromUriAndContentType("https://www.w3.org/2008/site/images/logo-w3c-mobile-lg",
+                        "image"));
+        addActivity(activity);
+        final Attachment attachment0 = attachments.list.get(0);
+        assertEquals("Index and number of attachment should be the same " + attachments, 0,
+                attachment0.getDownloadNumber());
+        assertEquals("Image attachment should be number 0 " + attachments, "image",
+                attachment0.mimeType);
     }
 
     private void addPublicNote(AActivity activity, TriState isPublic) {

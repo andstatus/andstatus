@@ -42,11 +42,15 @@ public class Attachment implements Comparable<Attachment> {
     }
 
     public static Attachment fromUri(String uriString) {
-        return fromUri(Uri.parse(uriString));
+        return fromUriAndContentType(uriString, "");
     }
 
     public static Attachment fromUri(Uri uriIn) {
         return fromUriAndContentType(uriIn, "");
+    }
+
+    public static Attachment fromUriAndContentType(String uriString, @NonNull String mimeContentTypeIn) {
+        return fromUriAndContentType(Uri.parse(uriString), mimeContentTypeIn);
     }
 
     public static Attachment fromUriAndContentType(Uri uriIn, @NonNull String mimeContentTypeIn) {
@@ -67,6 +71,10 @@ public class Attachment implements Comparable<Attachment> {
         result = prime * result + uri.hashCode();
         result = prime * result + mimeType.hashCode();
         return result;
+    }
+
+    public int getDownloadNumber() {
+        return downloadNumber;
     }
 
     @Override
