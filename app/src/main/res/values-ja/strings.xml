@@ -87,6 +87,7 @@
   <string name="command_follow_user">フォローする</string>
   <string name="command_stop_following_user">フォローをやめる</string>
   <string name="commands_in_a_queue">キュー内のコマンド</string>
+  <string name="count_only">実際に変更しないでカウントのみ?</string>
   <string name="crash_dialog_text">AndStatus アプリケーションがクラッシュしました。問題の解決に役立つかもしれません。OK ボタンを押して、開発者にメールでクラッシュ レポートを送信してください。</string>
   <string name="crash_dialog_comment_prompt">問題について下にコメントを入力してください。修正するために分かると非常に役立つこと: いつそれが発生したか、再現性があるかどうか。</string>
   <string name="created">作成しました</string>
@@ -174,6 +175,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="forget_sync_events">同期イベントと日付を記憶しない</string>
   <string name="friends">友達</string>
   <string name="friends_of">\"%1s\" の友達</string>
+  <string name="full_check">長いステップを含む完全なチェック?</string>
   <string name="gestures">ジェスチャー</string>
   <string name="gestures_summary">タップのメカニズム。ユーザーがアプリケーションと対話する方法</string>
   <string name="get_conversation">会話を取得</string>
@@ -187,7 +189,9 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="header_accounts_summary">アカウントとソーシャル ネットワークを管理します</string>
   <string name="header_add_new_account">新しいアカウントを追加</string>
   <string name="hide_messages_based_on_keywords_title">キーワードまたはフレーズに基づいてメッセージを非表示</string>
-  <string name="hide_messages_based_on_keywords_dialog_message">スペースで複数のキーワードを分離します。フレーズは二重引用符で囲みます。例:\nキーワード \"exact phrase\"</string>
+  <string name="hide_messages_based_on_keywords_dialog_message">スペースでキーワードを区切ります。
+フレーズは二重引用符で囲みます 例:\nキーワード \"完全 一致\"。
+単語またはURLの一部に一致: contains:ederatio contains://andstatus.org/</string>
   <string name="hide_replies_not_to_me_or_friends_title">ホーム タイムラインから、私または私の友達以外への返信を非表示</string>
   <string name="history_size_entries_500">500 メッセージ</string>
   <string name="history_size_entries_1000">1000 メッセージ</string>
@@ -536,6 +540,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="user_in_timeline_entries_webfingerid">webFingerId</string>
   <string name="user_in_timeline_entries_real_name">実名</string>
   <string name="user_in_timeline_entries_real_name_at_username">実名 @ユーザー名</string>
+  <string name="user_in_timeline_entries_real_name_at_webfingerid">実際の名前 @webFingerId</string>
   <string name="user_list">ユーザーリスト</string>
   <string name="users">ユーザー</string>
   <string name="users_of_message">メッセージのユーザー</string>

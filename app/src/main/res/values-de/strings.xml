@@ -32,6 +32,7 @@
   <string name="attach_images_summary_off">\"Büroklammer+\" Button, mit dem Bilder an deine Beiträge angehängt werden, ist ausgeblendet</string>
   <string name="attach_images_summary_on">Verwende \"Büroklammer +\" Button (Menüpunkt \"Anhängen\") um Bilder an die Nachricht anzufügen. Oder teile ein Bild aus einer anderen Anwendung mit AndStatus</string>
   <string name="attach_images_title">Bilder an meine Nachrichten anhängen</string>
+  <string name="attachment_is_too_large">Anhang ist zu groß</string>
   <string name="attachments">Anhänge</string>
   <string name="authentication_never">Bisher nicht angemeldet</string>
   <string name="authentication_successful">Anmeldung erfolgreich!</string>
@@ -58,6 +59,7 @@
   <string name="category_title_preference_information">Informationen</string>
   <string name="category_title_preference_origin">Soziales Netzwerk</string>
   <string name="category_title_preference_settings">Einstellungen</string>
+  <string name="changed">Geändert</string>
   <string name="check_and_fix_data">Daten überprüfen und korrigieren</string>
   <string name="check_and_fix_data_summary">Verwenden Sie diese Aktion, wenn Sie das Gefühl haben, dass AndStatus fehlerhaft funktioniert, aber nicht neu installieren möchten.</string>
   <string name="client_registration_failed">AndStatus Client-Registrierung fehlgeschlagen</string>
@@ -85,6 +87,7 @@
   <string name="command_follow_user">Folgen</string>
   <string name="command_stop_following_user">Folgen beenden</string>
   <string name="commands_in_a_queue">Befehle in einer Warteschlange</string>
+  <string name="count_only">Nur ohne tatsächliche Änderungen zählen?</string>
   <string name="crash_dialog_text">AndStatus ist abgestürzt. Du kannst helfen, das Problem zu beheben. Bitte klicke auf Ok um einen Absturzbericht per Email an die Entwickler zu senden.</string>
   <string name="crash_dialog_comment_prompt">Bitte gib unten deine Kommentare zum Problem an. Es wäre sehr hilfreich für eine Korrektur zu wissen, wann es aufgetreten ist und vielleicht sogar wie es reproduziert werden könnte.</string>
   <string name="created">erstellt</string>
@@ -173,6 +176,7 @@
   <string name="forget_sync_events">Sync-Ereignisse und -Daten vergessen</string>
   <string name="friends">Freunde</string>
   <string name="friends_of">Freunde von \"%1s\"</string>
+  <string name="full_check">Vollständige Überprüfung, einschließlich langer Schritte?</string>
   <string name="gestures">Gesten</string>
   <string name="gestures_summary">Touchfunktionen. Wie ein Nutzer mit der Applikation interagiert</string>
   <string name="get_conversation">Unterhaltung anzeigen</string>
@@ -186,7 +190,9 @@
   <string name="header_accounts_summary">Konten und Soziale Netzwerke verwalten</string>
   <string name="header_add_new_account">Neuen Account hinzufügen</string>
   <string name="hide_messages_based_on_keywords_title">Verstecke Nachrichten anhand von Schlüsselwörtern oder genauen Phrasen</string>
-  <string name="hide_messages_based_on_keywords_dialog_message">Trenne die Schlüsselwörter durch Leerzeichen. Setze Ausdrücke in doppelte Anführungszeichen z.B.:\nSchlüsselwort \"Exakter Ausdruck\"</string>
+  <string name="hide_messages_based_on_keywords_dialog_message">Trennen Sie Schlüsselwörter durch Leerzeichen.
+     Setzen Sie Phrasen in Anführungszeichen, z.B.:\nkeyword \"exakter Ausdruck\".
+     Einen Teil eines Wortes oder einer URL zuordnen: contains:ederatio contains://andstatus.org/</string>
   <string name="hide_replies_not_to_me_or_friends_title">Antworten in der Home-Timeline ausblenden, die nicht an mich oder meine Freunde gerichtet sind</string>
   <string name="history_size_entries_500">500 Nachrichten</string>
   <string name="history_size_entries_1000">1000 Nachrichten</string>
@@ -244,6 +250,8 @@
   <string name="manage_accounts_android">AndStatus Konten in den Android Einstellungen verwalten</string>
   <string name="manage_timelines">Timelines verwalten</string>
   <string name="max_distance_between_duplicates_title">Maximaler Abstand zwischen Duplikaten</string>
+  <string name="maximum_size_of_attachment_mb">Maximale Größe eines Anhangs, MB</string>
+  <string name="maximum_size_of_cached_media_mb">Maximale Größe der zwischengespeicherten Mediendateien (einschließlich Anlagen), MB</string>
   <string name="mention_as_webfingerid_title">Erwähnung als @webFingerId</string>
   <string name="menu_item_act_as">Handle als&#8230;</string>
   <string name="menu_item_act_as_user">Handle als \"%1s\"</string>
@@ -364,6 +372,7 @@
   <string name="reltime_months_ago_formats_2">vor {0} Monaten</string>
   <string name="reltime_seconds_ago_formats_1">vor {0} Sekunden</string>
   <string name="reltime_seconds_ago_formats_2">vor {0} Sekunden</string>
+  <string name="reltime_some_time_ago">vor einiger Zeit</string>
   <string name="reltime_just_now">gerade eben</string>
   <string name="reltime_years_ago">vor über einem Jahr</string>
   <string name="remove_account_menu_item">Konto entfernen</string>
@@ -387,6 +396,7 @@
   <string name="show_duplicates">Duplikate anzeigen</string>
   <string name="show_threads_of_conversation">Verlauf einer Unterhaltung zeigen</string>
   <string name="show_timeline_messages">Timeline-Nachrichten anzeigen</string>
+  <string name="show_my_account_which_downloaded">Zeigen Sie mein Konto, das die Aktivität/Nachricht heruntergeladen hat</string>
   <string name="since">Seit %s</string>
   <string name="splash_button_learn_more">Mehr erfahren</string>
   <string name="splash_button_get_started">Loslegen</string>
@@ -531,6 +541,7 @@
   <string name="user_in_timeline_entries_webfingerid">webFingerId</string>
   <string name="user_in_timeline_entries_real_name">Echter Name</string>
   <string name="user_in_timeline_entries_real_name_at_username">Echter Name @benutzername</string>
+  <string name="user_in_timeline_entries_real_name_at_webfingerid">Richtiger Name @webFingerId</string>
   <string name="user_list">Benutzerliste</string>
   <string name="users">Benutzer</string>
   <string name="users_of_message">Benutzer der Nachricht</string>

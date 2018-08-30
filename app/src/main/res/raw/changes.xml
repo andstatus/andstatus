@@ -30,7 +30,7 @@
         </subtitle>
     </header>
     <release android:versionName="41.02" android:versionCode="259"
-             versionDate="2018-08-26"
+             versionDate="2018-08-30"
              versionTitle="Fixed: Blank space, when there is no an attachment">
         <changes>
             <change>Fixed: Users were confused by blank space below a note's text, when there is no an attachment.

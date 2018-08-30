@@ -87,6 +87,7 @@
   <string name="command_follow_user">Seguir</string>
   <string name="command_stop_following_user">Parar de seguir</string>
   <string name="commands_in_a_queue">Comando na fila</string>
+  <string name="count_only">Contar sem as alterações atuais?</string>
   <string name="crash_dialog_text">O AndStatus terminou abruptamente. Você pode ajudar-nos a corrigir este erro. Prima Ok para enviar o relatório de erros para os programadores.</string>
   <string name="crash_dialog_comment_prompt">Por favor, forneça alguns comentários sobre o problema. O que nos ajuda a resolver o problema: o que estava a fazer quando ocorreu e se pode ser reproduzido.</string>
   <string name="created">criou</string>
@@ -173,6 +174,7 @@
   <string name="forget_sync_events">Esquecer eventos e datas sincronizadas</string>
   <string name="friends">Amigos</string>
   <string name="friends_of">Amigos de \"%1s\"</string>
+  <string name="full_check">Completa, incluindo passos longos?</string>
   <string name="gestures">Gestos</string>
   <string name="gestures_summary">Mecanismos de toque. Como o utilizador interage com a aplicação.</string>
   <string name="get_conversation">Obter conversa</string>
@@ -186,7 +188,9 @@
   <string name="header_accounts_summary">Gerir contas e redes sociais</string>
   <string name="header_add_new_account">Adicionar nova conta</string>
   <string name="hide_messages_based_on_keywords_title">Ocultar mensagens tendo por base palavras-chave ou frases</string>
-  <string name="hide_messages_based_on_keywords_dialog_message">Separe as palavras-chave com espaços. Coloque as frases com aspas\nExemplo: palavra-chave \"frase\"</string>
+  <string name="hide_messages_based_on_keywords_dialog_message">Separe as palavras-chave com espaços.
+Coloque as frases entre aspas. Por exemplo:\npalavra-chave \"frase exata\".
+Para coincidir com parte de uma palavra ou URL: contains:ederatio contains://andstatus.org/</string>
   <string name="hide_replies_not_to_me_or_friends_title">Ocultar da cronologia as respostas não dirigidas a mim ou aos meus amigos</string>
   <string name="history_size_entries_500">500 mensagens</string>
   <string name="history_size_entries_1000">1 000 mensagens</string>
@@ -535,6 +539,7 @@ toque no botão abaixo para verificar novamente as suas credenciais.</string>
   <string name="user_in_timeline_entries_webfingerid">webFingerId</string>
   <string name="user_in_timeline_entries_real_name">Nome real</string>
   <string name="user_in_timeline_entries_real_name_at_username">Nome real @username</string>
+  <string name="user_in_timeline_entries_real_name_at_webfingerid">Nome real @webFingerId</string>
   <string name="user_list">Lista de utilizador</string>
   <string name="users">Utilizadores</string>
   <string name="users_of_message">Utilizadores da mensagem</string>
