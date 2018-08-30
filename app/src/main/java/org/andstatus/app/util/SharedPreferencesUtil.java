@@ -266,9 +266,10 @@ public class SharedPreferencesUtil {
     }
 
     public static String getString(@NonNull String key, String defaultValue) {
-        if (cachedValues.containsKey(key)) {
+        Object cachedValue = cachedValues.get(key);
+        if (cachedValue != null) {
             try {
-                return (String) cachedValues.get(key);
+                return (String) cachedValue;
             } catch (ClassCastException e) {
                 MyLog.ignored("getString, key=" + key, e);
                 cachedValues.remove(key);
@@ -326,9 +327,10 @@ public class SharedPreferencesUtil {
     }
 
     public static long getLong(@NonNull String key, long defaultValue) {
-        if (cachedValues.containsKey(key)) {
+        Object cachedValue = cachedValues.get(key);
+        if (cachedValue != null) {
             try {
-                return (long) cachedValues.get(key);
+                return (long) cachedValue;
             } catch (ClassCastException e) {
                 MyLog.ignored("getLong, key=" + key, e);
                 cachedValues.remove(key);
@@ -349,9 +351,10 @@ public class SharedPreferencesUtil {
     }
 
     public static boolean getBoolean(@NonNull String key, boolean defaultValue) {
-        if (cachedValues.containsKey(key)) {
+        Object cachedValue = cachedValues.get(key);
+        if (cachedValue != null) {
             try {
-                return (boolean) cachedValues.get(key);
+                return (boolean) cachedValue;
             } catch (ClassCastException e) {
                 MyLog.ignored("getBoolean, key=" + key, e);
                 cachedValues.remove(key);
