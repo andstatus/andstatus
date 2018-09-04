@@ -292,6 +292,10 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
         firstError = MyLog.getStackTrace(tr);
     }
 
+    public static boolean nonUiThread() {
+        return !isUiThread();
+    }
+
     // See http://stackoverflow.com/questions/11411022/how-to-check-if-current-thread-is-not-main-thread
     public static boolean isUiThread() {
         return Looper.myLooper() == Looper.getMainLooper();

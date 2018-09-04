@@ -30,6 +30,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
@@ -119,7 +120,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (actorId == 0) return supplier.get();
 
         Actor cached = myContext.users().actors.getOrDefault(actorId, Actor.EMPTY);
-        return cached.isPartiallyDefined() || reloadFirst
+        return MyAsyncTask.nonUiThread() && (cached.isPartiallyDefined() || reloadFirst)
                 ? loadFromDatabase(myContext, actorId, supplier).betterToCache(cached)
                 : cached;
     }

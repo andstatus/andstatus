@@ -206,7 +206,7 @@ public class MyServiceManager extends BroadcastReceiver {
                 tryToInitialize = mServiceAvailable;
             }
             if (tryToInitialize
-                    && !MyAsyncTask.isUiThread()    // Don't block on UI thread
+                    && MyAsyncTask.nonUiThread()    // Don't block on UI thread
                     && !MyContextHolder.get().initialized()) {
                 MyContextHolder.initialize(null, TAG);
                 isAvailable = MyContextHolder.get().isReady();
