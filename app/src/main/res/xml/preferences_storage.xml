@@ -44,8 +44,4 @@
 		android:title="@string/title_preference_enable_android_backup"
 		android:summaryOff="@string/summary_preference_enable_android_backup_off"
 		android:summaryOn="@string/summary_preference_enable_android_backup_on" />
-	<Preference android:key="check_data"
-		android:persistent="false"
-		android:title="@string/check_and_fix_data"
-		android:summary="@string/check_and_fix_data_summary"/>
 </PreferenceScreen>

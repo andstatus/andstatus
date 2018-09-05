@@ -30,11 +30,13 @@
         </subtitle>
     </header>
     <release android:versionName="41.02" android:versionCode="259"
-             versionDate="2018-08-30"
+             versionDate="2018-09-05"
              versionTitle="Fixed: Blank space, when there is no an attachment">
         <changes>
             <change>Fixed: Users were confused by blank space below a note's text, when there is no an attachment.
-            It was present, when a note contained non-image attachments.</change>
+                It was present, when a note contained non-image attachments.</change>
+            <change>"Logging and debugging" section renamed to "Troubleshooting".
+                "Check and fix data" action in Settings moved to the "Troubleshooting" section.</change>
         </changes>
     </release>
     <release android:versionName="41.01" android:versionCode="258"

@@ -18,8 +18,11 @@
 				  android:title="@string/title_preference_debugging">
 	<Preference android:key="commands_queue"
 		android:persistent="false"
-		android:title="@string/commands_in_a_queue" >
-	</Preference>
+		android:title="@string/commands_in_a_queue" />
+	<Preference android:key="check_data"
+		android:persistent="false"
+		android:title="@string/check_and_fix_data"
+		android:summary="@string/check_and_fix_data_summary" />
 	<org.andstatus.app.context.MultilineListPreference android:key="min_log_level"
 		android:entryValues="@array/log_level_values"
 		android:entries="@array/log_level_entries" android:summary="@string/summary_preference_min_log_level"

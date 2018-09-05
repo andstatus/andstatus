@@ -217,7 +217,6 @@ public class MyBackupAgent extends BackupAgent {
                     } else {
                         ensureNoDataIsPresent();
                         doRestore(data);
-                        DataChecker.fixData(backupDescriptor.getLogger(),false, false);
                         success = true;
                     }
                     break;

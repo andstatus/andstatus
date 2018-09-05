@@ -490,7 +490,7 @@
   <string name="title_preference_change_log">Change Log</string>
   <string name="title_preference_connection_timeout">Connection timeout</string>
   <string name="title_preference_contact_developer">Contact Developer</string>
-  <string name="title_preference_debugging">Logging and debugging</string>
+  <string name="title_preference_debugging">Troubleshooting</string>
   <string name="title_preference_download_attachments_over_wifi_only">Download attachments over Wi-Fi only</string>
   <string name="title_preference_enable_android_backup">Enable automatic Android backup</string>
   <string name="title_preference_enter_sends_message">ENTER key sends a note</string>
