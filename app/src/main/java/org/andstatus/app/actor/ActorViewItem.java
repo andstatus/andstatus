@@ -169,6 +169,7 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
     @NonNull
     @Override
     public DuplicationLink duplicates(Timeline timeline, @NonNull ActorViewItem other) {
+        if (isEmpty() || other.isEmpty()) return DuplicationLink.NONE;
         if (timeline.preferredOrigin().nonEmpty() && !actor.origin.equals(other.actor.origin)) {
             if (timeline.preferredOrigin().equals(actor.origin)) return IS_DUPLICATED;
             if (timeline.preferredOrigin().equals(other.actor.origin)) return DUPLICATES;
