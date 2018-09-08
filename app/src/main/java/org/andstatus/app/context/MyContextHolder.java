@@ -193,7 +193,7 @@ public final class MyContextHolder {
     }
 
     public static void upgradeIfNeeded(Activity upgradeRequestor) {
-        if (get().state() == MyContextState.UPGRADING) {
+        if (get().state() == MyContextState.UPGRADING && upgradeRequestor != null) {
             DatabaseConverterController.attemptToTriggerDatabaseUpgrade(upgradeRequestor);
         }
     }

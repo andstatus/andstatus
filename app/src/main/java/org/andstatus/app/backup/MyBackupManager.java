@@ -16,6 +16,7 @@
 
 package org.andstatus.app.backup;
 
+import android.app.Activity;
 import android.app.backup.BackupAgent;
 import android.content.Context;
 import android.os.Environment;
@@ -47,14 +48,16 @@ class MyBackupManager {
     private MyBackupDescriptor newDescriptor = MyBackupDescriptor.getEmpty();    
 
     private MyBackupAgent backupAgent;
+    private final Activity activity;
     private final ProgressLogger progressLogger;
 
-    MyBackupManager(ProgressLogger.ProgressCallback progressCallback) {
+    MyBackupManager(Activity activity, ProgressLogger.ProgressCallback progressCallback) {
+        this.activity = activity;
         this.progressLogger = new ProgressLogger(progressCallback);
     }
 
-    static void backupInteractively(File backupFolder, ProgressLogger.ProgressCallback progressCallback) {
-        MyBackupManager backupManager = new MyBackupManager(progressCallback);
+    static void backupInteractively(File backupFolder, Activity activity, ProgressLogger.ProgressCallback progressCallback) {
+        MyBackupManager backupManager = new MyBackupManager(activity, progressCallback);
         try {
             backupManager.prepareForBackup(backupFolder);
             backupManager.backup();
@@ -126,8 +129,8 @@ class MyBackupManager {
         }
     }
 
-    static void restoreInteractively(File backupFile, ProgressLogger.ProgressCallback progressCallback) {
-        MyBackupManager backupManager = new MyBackupManager(progressCallback);
+    static void restoreInteractively(File backupFile, Activity activity, ProgressLogger.ProgressCallback progressCallback) {
+        MyBackupManager backupManager = new MyBackupManager(activity, progressCallback);
         try {
             backupManager.prepareForRestore(backupFile);
             backupManager.restore();
@@ -178,6 +181,7 @@ class MyBackupManager {
                 + "', created with app version code:" + newDescriptor.getApplicationVersionCode());
         backupAgent = new MyBackupAgent();
         backupAgent.setContext(MyContextHolder.get().context());
+        backupAgent.setActivity(activity);
         backupAgent.onRestore(dataInput, newDescriptor.getApplicationVersionCode(), newDescriptor);
         progressLogger.logSuccess();
     }

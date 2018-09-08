@@ -16,6 +16,7 @@
 
 package org.andstatus.app.backup;
 
+import android.app.Activity;
 import android.app.backup.BackupAgent;
 import android.app.backup.BackupDataInput;
 import android.app.backup.BackupDataOutput;
@@ -25,12 +26,12 @@ import android.os.ParcelFileDescriptor;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccounts;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MyPreferencesGroupsEnum;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.checker.DataChecker;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
@@ -48,6 +49,7 @@ public class MyBackupAgent extends BackupAgent {
     public static final String DATABASE_KEY = "database";
     public static final String SHARED_PREFERENCES_KEY = "shared_preferences";
 
+    private Activity activity;
     private MyBackupDescriptor backupDescriptor = null;
 
     private String previousKey = "";
@@ -58,6 +60,10 @@ public class MyBackupAgent extends BackupAgent {
     long databasesRestored = 0;
     private long sharedPreferencesBackedUp = 0;
     long sharedPreferencesRestored = 0;
+
+    void setActivity(Activity activity) {
+        this.activity = activity;
+    }
 
     void setContext(Context baseContext) {
         attachBaseContext(baseContext);
@@ -255,9 +261,11 @@ public class MyBackupAgent extends BackupAgent {
         MyContextHolder.release();
         MyContextHolder.setOnRestore(true);
         MyContextHolder.initialize(this, this);
-        
+        if (MyContextHolder.get().state() == MyContextState.UPGRADING && activity != null) {
+            MyContextHolder.upgradeIfNeeded(activity);
+        }
         DataPruner.setDataPrunedNow();
-        
+
         data.setMyContext(MyContextHolder.get());
         assertNextHeader(data, MyAccounts.KEY_ACCOUNT);
         accountsRestored += data.getMyContext().accounts().onRestore(data, backupDescriptor);

@@ -58,7 +58,7 @@ public class RestoreActivity extends MyActivity {
 
                         @Override
                         protected Boolean doInBackground2(File... params) {
-                            MyBackupManager.restoreInteractively(params[0], new ProgressLogger.ProgressCallback() {
+                            MyBackupManager.restoreInteractively(params[0], RestoreActivity.this, new ProgressLogger.ProgressCallback() {
 
                                         @Override
                                         public void onProgressMessage(CharSequence message) {

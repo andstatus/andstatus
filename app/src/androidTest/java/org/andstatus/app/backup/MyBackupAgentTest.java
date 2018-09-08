@@ -89,7 +89,7 @@ public class MyBackupAgentTest {
     }
 
     private File testBackup(File backupFolder) throws IOException, JSONException {
-        MyBackupManager backupManager = new MyBackupManager(null);
+        MyBackupManager backupManager = new MyBackupManager(null, null);
         backupManager.prepareForBackup(backupFolder);
         assertTrue("Data folder created: '" + backupManager.getDataFolder() + "'",
                 backupManager.getDataFolder().exists());
@@ -160,7 +160,7 @@ public class MyBackupAgentTest {
 
     private void testRestore(File dataFolder) throws IOException {
         
-        MyBackupManager backupManager = new MyBackupManager(null);
+        MyBackupManager backupManager = new MyBackupManager(null, null);
         backupManager.prepareForRestore(dataFolder);
         assertTrue("Data folder exists: '" + backupManager.getDataFolder().getAbsolutePath() + "'", backupManager.getDataFolder().exists());
 

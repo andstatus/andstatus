@@ -98,7 +98,7 @@ public class BackupActivity extends MyActivity {
 
         @Override
         protected Boolean doInBackground2(File... params) {
-            MyBackupManager.backupInteractively(params[0], new ProgressLogger.ProgressCallback() {
+            MyBackupManager.backupInteractively(params[0], BackupActivity.this, new ProgressLogger.ProgressCallback() {
                 
                 @Override
                 public void onProgressMessage(CharSequence message) {

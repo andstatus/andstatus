@@ -107,6 +107,7 @@ class Convert40 extends ConvertOneStep {
         sql = "ALTER TABLE download ADD COLUMN content_type INTEGER NOT NULL DEFAULT 0";
         DbUtils.execSQL(db, sql);
 
+        sql ="SELECT * FROM download";
         MyQuery.<Set<Data>>foldLeft(db, sql, new HashSet<>(), set -> cursor -> {
             set.add(Data.fromCursor(cursor));
             return set;

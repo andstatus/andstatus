@@ -23,6 +23,7 @@ import org.andstatus.app.util.RelativeTime;
 public class ProgressLogger {
     private volatile long lastLoggedAt = 0L;
     private volatile boolean makeServiceUnavalable = false;
+    public final ProgressCallback callback;
 
     @FunctionalInterface
     public interface ProgressCallback {
@@ -31,20 +32,8 @@ public class ProgressLogger {
     }
 
     public static ProgressCallback getEmptyCallback() {
-        return new ProgressCallback() {
-            @Override
-            public void onProgressMessage(CharSequence message) {
-                // Empty
-            }
-
-            @Override
-            public void onComplete(boolean success) {
-                // Empty
-            }
-        };
+        return message -> {};
     }
-
-    public final ProgressCallback callback;
 
     public ProgressLogger(ProgressCallback callback) {
         this.callback = callback;

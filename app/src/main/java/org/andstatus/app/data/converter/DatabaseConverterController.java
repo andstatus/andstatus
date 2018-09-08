@@ -18,6 +18,7 @@ package org.andstatus.app.data.converter;
 
 import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
 
 import net.jcip.annotations.GuardedBy;
 
@@ -53,7 +54,7 @@ public class DatabaseConverterController {
     static final long SECONDS_BEFORE_UPGRADE_TRIGGERED = 5L;
     static final int UPGRADE_LENGTH_SECONDS_MAX = 90;
 
-    public static void attemptToTriggerDatabaseUpgrade(Activity upgradeRequestorIn) {
+    public static void attemptToTriggerDatabaseUpgrade(@NonNull Activity upgradeRequestorIn) {
         String requestorName = MyLog.objToTag(upgradeRequestorIn);
         boolean skip = false;
         if (isUpgrading()) {
@@ -67,7 +68,12 @@ public class DatabaseConverterController {
             skip = true;
         }
         if (!skip && acquireUpgradeLock(requestorName)) {
-            new AsyncTaskLauncher<Activity>().execute(TAG, true, new AsyncUpgrade(), upgradeRequestorIn);
+            final AsyncUpgrade asyncUpgrade = new AsyncUpgrade(upgradeRequestorIn, MyContextHolder.isOnRestore());
+            if (MyContextHolder.isOnRestore()) {
+                asyncUpgrade.syncUpgrade();
+            } else {
+                AsyncTaskLauncher.execute(TAG, true, asyncUpgrade);
+            }
         }
     }
 
@@ -97,28 +103,37 @@ public class DatabaseConverterController {
         return !skip;
     }
 
-    private static class AsyncUpgrade extends MyAsyncTask<Activity, Void, Void> {
-        Activity upgradeRequestor = null;
-        ProgressLogger progressLogger = new ProgressLogger(ProgressLogger.getEmptyCallback());
+    private static class AsyncUpgrade extends MyAsyncTask<Void, Void, Void> {
+        @NonNull
+        final Activity upgradeRequestor;
+        final boolean isRestoring;
+        final ProgressLogger progressLogger;
 
-        public AsyncUpgrade() {
+        AsyncUpgrade(@NonNull Activity upgradeRequestor, boolean isRestoring) {
             super(PoolEnum.LONG_UI);
+            this.upgradeRequestor = upgradeRequestor;
+            this.isRestoring = isRestoring;
+            if (ProgressLogger.ProgressCallback.class.isAssignableFrom(upgradeRequestor.getClass())) {
+                progressLogger = new ProgressLogger((ProgressLogger.ProgressCallback) upgradeRequestor);
+            } else {
+                progressLogger = new ProgressLogger(ProgressLogger.getEmptyCallback());
+            }
         }
 
         @Override
-        protected Void doInBackground2(Activity... activity) {
+        protected Void doInBackground2(Void... activity) {
+            syncUpgrade();
+            return null;
+        }
+
+        private void syncUpgrade() {
             boolean success = false;
-            upgradeRequestor = activity[0];
-            if (ProgressLogger.ProgressCallback.class.isAssignableFrom(upgradeRequestor.getClass())) {
-                progressLogger = new ProgressLogger((ProgressLogger.ProgressCallback) upgradeRequestor);
-            }
             try {
                 progressLogger.logProgress(upgradeRequestor.getText(R.string.label_upgrading));
                 success = doUpgrade();
             } finally {
                 progressLogger.onComplete(success);
             }
-            return null;
         }
 
         private boolean doUpgrade() {
@@ -165,6 +180,8 @@ public class DatabaseConverterController {
             }
             MyServiceManager.setServiceUnavailable();
             MyServiceManager.stopService();
+            if (isRestoring) return;
+
             DataChecker.fixData(progressLogger,false, false);
             MyContextHolder.release();
             MyContextHolder.initialize(upgradeRequestor, upgradeRequestor);
