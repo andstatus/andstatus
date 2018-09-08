@@ -20,7 +20,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.text.TextUtils;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.ActorInTimeline;
@@ -51,7 +50,9 @@ public class NoteShare {
     }
 
     public void viewImage(Activity activity) {
-        activity.startActivity(intentToViewAndShare(false));
+        if (StringUtils.nonEmpty(imageFilename)) {
+            activity.startActivity(intentToViewAndShare(false));
+        }
     }
 
     /**
