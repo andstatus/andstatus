@@ -18,7 +18,6 @@ package org.andstatus.app.net.social;
 
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadData;
-import org.andstatus.app.data.DownloadType;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.service.AttachmentDownloader;
 import org.andstatus.app.service.CommandExecutionContext;
@@ -43,8 +42,7 @@ public class Attachments implements IsEmpty {
         renumber();
         List<Long> downloadIds = new ArrayList<>();
         for (Attachment attachment : list) {
-            DownloadData dd = DownloadData.getThisForNote(noteId, attachment.mimeType, DownloadType.ATTACHMENT,
-                    attachment.getUri());
+            DownloadData dd = DownloadData.getThisForAttachment(noteId, attachment);
             dd.setDownloadNumber(attachment.downloadNumber);
             dd.saveToDatabase();
             downloadIds.add(dd.getDownloadId());

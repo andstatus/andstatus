@@ -5,6 +5,7 @@ import android.net.Uri;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -90,8 +91,8 @@ public class DataPrunerTest {
     public void testPruneParentlessAttachments() {
         DataPruner dp = new DataPruner(MyContextHolder.get(), MyContextHolder.get().getDatabase());
         dp.pruneParentlessAttachments();
-        DownloadData dd = DownloadData.getThisForNote(-555L, "", DownloadType.ATTACHMENT,
-                Uri.parse("http://example.com/image.png"));
+        DownloadData dd = DownloadData.getThisForAttachment(-555L,
+                Attachment.fromUriAndMimeType(Uri.parse("http://example.com/image.png"), ""));
         dd.saveToDatabase();
         assertEquals(1, dp.pruneParentlessAttachments());
         assertEquals(0, dp.pruneParentlessAttachments());

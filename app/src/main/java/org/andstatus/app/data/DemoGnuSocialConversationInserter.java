@@ -137,13 +137,13 @@ public class DemoGnuSocialConversationInserter {
     private void addWithMultipleAttachments(AActivity activity) {
         final Attachments attachments = activity.getNote().attachments;
         attachments.add(
-                Attachment.fromUriAndContentType("https://gnusocial.example.com/api/statuses/update.json",
+                Attachment.fromUriAndMimeType("https://gnusocial.example.com/api/statuses/update.json",
                         "text/html; charset=utf-8"));
         attachments.add(
-                Attachment.fromUriAndContentType("https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html",
+                Attachment.fromUriAndMimeType("https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html",
                         "text/html; charset=iso-8859-1"));
         attachments.add(
-                Attachment.fromUriAndContentType("https://www.w3.org/2008/site/images/logo-w3c-mobile-lg",
+                Attachment.fromUriAndMimeType("https://www.w3.org/2008/site/images/logo-w3c-mobile-lg",
                         "image"));
         addActivity(activity);
         final Attachment attachment0 = attachments.list.get(0);

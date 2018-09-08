@@ -22,6 +22,7 @@ import android.provider.BaseColumns;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.DownloadType;
+import org.andstatus.app.data.MyContentType;
 
 /** Avatar, Note's attachment... */
 public final class DownloadTable implements BaseColumns {
@@ -36,8 +37,10 @@ public final class DownloadTable implements BaseColumns {
     public static final String ACTOR_ID = ActorTable.ACTOR_ID;
     /** Attachment is connected to a note */
     public static final String NOTE_ID =  NoteTable.NOTE_ID;
+    /** See {@link MyContentType} */
+    public static final String CONTENT_TYPE = "content_type";
     public static final String MEDIA_TYPE = "media_type";
-    public static final String URI = "url";
+    public static final String URI = "url";  // TODO: Rename to "uri"
     /**
      * See {@link DownloadStatus}. Defaults to {@link DownloadStatus#UNKNOWN}
      */
@@ -67,6 +70,7 @@ public final class DownloadTable implements BaseColumns {
                 + DOWNLOAD_NUMBER + " INTEGER NOT NULL DEFAULT 0,"
                 + ACTOR_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + NOTE_ID + " INTEGER NOT NULL DEFAULT 0,"
+                + CONTENT_TYPE + " INTEGER NOT NULL DEFAULT 0,"
                 + MEDIA_TYPE + " TEXT NOT NULL,"
                 + URI + " TEXT NOT NULL,"
                 + DOWNLOAD_STATUS + " INTEGER NOT NULL DEFAULT 0,"

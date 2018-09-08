@@ -379,7 +379,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                     for (int ind = 0; ind < jArr.length(); ind++) {
                         JSONObject attachment = (JSONObject) jArr.get(ind);
                         Uri uri = UriUtils.fromAlternativeTags(attachment, "url", "preview_url");
-                        Attachment mbAttachment =  Attachment.fromUriAndContentType(uri, attachment.optString("type"));
+                        Attachment mbAttachment =  Attachment.fromUriAndMimeType(uri, attachment.optString("type"));
                         if (mbAttachment.isValid()) {
                             note.attachments.add(mbAttachment);
                         } else {

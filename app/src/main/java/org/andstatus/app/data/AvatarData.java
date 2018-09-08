@@ -32,7 +32,7 @@ public class AvatarData extends DownloadData {
     }
 
     private AvatarData(long actorIdIn, Uri avatarUriNew) {
-        super(null, 0, actorIdIn, 0, "", DownloadType.AVATAR, avatarUriNew);
+        super(null, 0, actorIdIn, 0, MyContentType.UNKNOWN, "", DownloadType.AVATAR, avatarUriNew);
     }
     
 }

@@ -79,6 +79,7 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         assertEquals(logMsg, "unknownUser@example.com", actors.get(2).getUsername());
 
         ActivityViewItem item = ActivityViewItem.EMPTY;
+        ActivityViewItem otherItemWithNote = ActivityViewItem.EMPTY;
         TimelineData<ActivityViewItem> timelineData = getActivity().getListData();
         for (int position=0; position < timelineData.size(); position++) {
             ActivityViewItem item2 = timelineData.getItem(position);
@@ -86,15 +87,19 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
                 item = item2;
                 break;
             }
+            if (item2.noteViewItem.getId() != 0) {
+                otherItemWithNote = item2;
+            }
         }
-        boolean noteWasFound = !item.equals(ActivityViewItem.EMPTY);
+        boolean noteWasFound = item.nonEmpty();
         if (!noteWasFound) {
-            item = timelineData.getItem(0);
+            item = otherItemWithNote;
             String logMsg1 = "The note was not found in the timeline " + timelineData +
                     " new item: " + item;
             logMsg += "\n" + logMsg1;
             MyLog.i(method, logMsg1);
         }
+        if (item.isEmpty()) return;
 
         assertTrue("Invoked Context menu for " + logMsg, helper.invokeContextMenuAction4ListItemId(method,
                 item.getId(), NoteContextMenuItem.ACTORS_OF_NOTE, R.id.note_wrapper));

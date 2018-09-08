@@ -12,6 +12,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.graphics.MediaMetadata;
+import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
@@ -27,11 +28,12 @@ import java.util.function.Consumer;
 
 public class DownloadData implements IsEmpty {
     private static final String TAG = DownloadData.class.getSimpleName();
-    public static final DownloadData EMPTY = new DownloadData(null, 0, 0, 0, "",
+    public static final DownloadData EMPTY = new DownloadData(null, 0, 0, 0, MyContentType.UNKNOWN, "",
             DownloadType.UNKNOWN, Uri.EMPTY);
     private DownloadType downloadType = DownloadType.UNKNOWN;
     public long actorId = 0;
     public long noteId = 0;
+    private MyContentType contentType = MyContentType.UNKNOWN;
     private String mimeType = "";
     private DownloadStatus status = DownloadStatus.UNKNOWN;
     private long downloadId = 0;
@@ -52,30 +54,35 @@ public class DownloadData implements IsEmpty {
     private DownloadFile fileNew = DownloadFile.EMPTY;
 
     public static DownloadData fromCursor(@NonNull Cursor cursor) {
-        return new DownloadData(cursor, 0, 0, 0, "", DownloadType.UNKNOWN, Uri.EMPTY);
+        return new DownloadData(cursor, 0, 0, 0, MyContentType.UNKNOWN, "",
+                DownloadType.UNKNOWN, Uri.EMPTY);
     }
 
     public static DownloadData fromId(long downloadId) {
-        return new DownloadData(null, downloadId, 0, 0, "", DownloadType.UNKNOWN, Uri.EMPTY);
+        return new DownloadData(null, downloadId, 0, 0, MyContentType.UNKNOWN, "",
+                DownloadType.UNKNOWN, Uri.EMPTY);
     }
 
     /**
      * Currently we assume that there is no more than one attachment of a message
      */
     public static DownloadData getSingleAttachment(long noteId) {
-        return new DownloadData(null, 0, 0, noteId, "", DownloadType.ATTACHMENT, Uri.EMPTY);
+        return new DownloadData(null, 0, 0, noteId, MyContentType.UNKNOWN, "",
+                DownloadType.ATTACHMENT, Uri.EMPTY);
     }
 
-    public static DownloadData getThisForNote(long noteId, String mimeType, DownloadType downloadType, Uri uriIn) {
-        return new DownloadData(null, 0, 0, noteId, mimeType, downloadType, uriIn);
+    public static DownloadData getThisForAttachment(long noteId, Attachment attachment) {
+        return new DownloadData(null, 0, 0, noteId,
+                attachment.contentType, attachment.mimeType, DownloadType.ATTACHMENT, attachment.uri);
     }
 
-    protected DownloadData(Cursor cursor, long downloadId, long actorId, long noteId, String mimeType,
-                           DownloadType downloadType, Uri uri) {
+    protected DownloadData(Cursor cursor, long downloadId, long actorId, long noteId, MyContentType contentType,
+                           String mimeType, DownloadType downloadType, Uri uri) {
         this.downloadId = downloadId;
         this.actorId = actorId;
         this.noteId = noteId;
         this.downloadType = downloadType;
+        this.contentType = contentType;
         this.mimeType = mimeType;
         this.uri = UriUtils.notNull(uri);
         if (cursor == null) {
@@ -114,6 +121,9 @@ public class DownloadData implements IsEmpty {
         fileStored = new DownloadFile(DbUtils.getString(cursor, DownloadTable.FILE_NAME));
         if (downloadType == DownloadType.UNKNOWN) {
             downloadType = DownloadType.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_TYPE));
+        }
+        if (contentType == MyContentType.UNKNOWN) {
+            contentType = MyContentType.load(DbUtils.getLong(cursor, DownloadTable.CONTENT_TYPE));
         }
         if (StringUtils.isEmpty(mimeType)) {
             mimeType = DbUtils.getString(cursor, DownloadTable.MEDIA_TYPE,
@@ -185,6 +195,10 @@ public class DownloadData implements IsEmpty {
            onNoFile();
         } else if (DownloadStatus.HARD_ERROR == status) {
             hardError = true;
+        }
+        if (contentType == MyContentType.UNKNOWN) {
+            contentType = MyContentType.fromUri(DownloadType.ATTACHMENT,
+                    MyContextHolder.get().context().getContentResolver(), uri, mimeType);
         }
     }
 
@@ -294,6 +308,7 @@ public class DownloadData implements IsEmpty {
         }
         values.put(DownloadTable.DOWNLOAD_NUMBER, downloadNumber);
         values.put(DownloadTable.URI, uri.toString());
+        values.put(DownloadTable.CONTENT_TYPE, contentType.save());
         values.put(DownloadTable.MEDIA_TYPE, mimeType);
         values.put(DownloadTable.DOWNLOAD_STATUS, status.save());
         values.put(DownloadTable.FILE_NAME, fileNew.getFilename());

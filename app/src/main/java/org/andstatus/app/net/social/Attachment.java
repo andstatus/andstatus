@@ -42,21 +42,21 @@ public class Attachment implements Comparable<Attachment> {
     }
 
     public static Attachment fromUri(String uriString) {
-        return fromUriAndContentType(uriString, "");
+        return fromUriAndMimeType(uriString, "");
     }
 
     public static Attachment fromUri(Uri uriIn) {
-        return fromUriAndContentType(uriIn, "");
+        return fromUriAndMimeType(uriIn, "");
     }
 
-    public static Attachment fromUriAndContentType(String uriString, @NonNull String mimeContentTypeIn) {
-        return fromUriAndContentType(Uri.parse(uriString), mimeContentTypeIn);
+    public static Attachment fromUriAndMimeType(String uriString, @NonNull String mimeTypeIn) {
+        return fromUriAndMimeType(Uri.parse(uriString), mimeTypeIn);
     }
 
-    public static Attachment fromUriAndContentType(Uri uriIn, @NonNull String mimeContentTypeIn) {
+    public static Attachment fromUriAndMimeType(Uri uriIn, @NonNull String mimeTypeIn) {
         Objects.requireNonNull(uriIn);
-        Objects.requireNonNull(mimeContentTypeIn);
-        return new Attachment(MyContextHolder.get().context().getContentResolver(), uriIn, mimeContentTypeIn);
+        Objects.requireNonNull(mimeTypeIn);
+        return new Attachment(MyContextHolder.get().context().getContentResolver(), uriIn, mimeTypeIn);
     }
 
     public boolean isValid() {
@@ -87,7 +87,7 @@ public class Attachment implements Comparable<Attachment> {
 
     @Override
     public String toString() {
-        return "MbAttachment [uri='" + uri + "', contentType=" + contentType + "]";
+        return "Attachment [uri='" + uri + "', " + contentType + ", mime=" + mimeType + "]";
     }
 
     public Uri getUri() {

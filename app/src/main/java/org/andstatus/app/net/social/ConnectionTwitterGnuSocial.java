@@ -197,7 +197,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
                 for (int ind = 0; ind < jArr.length(); ind++) {
                     JSONObject jsonAttachment = (JSONObject) jArr.get(ind);
                     Uri uri = UriUtils.fromAlternativeTags(jsonAttachment, "url", "thumb_url");
-                    Attachment attachment =  Attachment.fromUriAndContentType(uri, jsonAttachment.optString("mimetype"));
+                    Attachment attachment =  Attachment.fromUriAndMimeType(uri, jsonAttachment.optString("mimetype"));
                     if (attachment.isValid()) {
                         note.attachments.add(attachment);
                     } else {

@@ -492,7 +492,7 @@ public class ConnectionPumpio extends Connection {
 
             if (jso.has(VIDEO_OBJECT)) {
                 Uri uri = UriUtils.fromJson(jso, VIDEO_OBJECT + "/url");
-                Attachment mbAttachment =  Attachment.fromUriAndContentType(uri, MyContentType.VIDEO.generalMimeType);
+                Attachment mbAttachment =  Attachment.fromUriAndMimeType(uri, MyContentType.VIDEO.generalMimeType);
                 if (mbAttachment.isValid()) {
                     note.attachments.add(mbAttachment);
                 } else {
@@ -501,7 +501,7 @@ public class ConnectionPumpio extends Connection {
             }
             if (jso.has(FULL_IMAGE_OBJECT) || jso.has(IMAGE_OBJECT)) {
                 Uri uri = UriUtils.fromAlternativeTags(jso, FULL_IMAGE_OBJECT + "/url", IMAGE_OBJECT + "/url");
-                Attachment mbAttachment =  Attachment.fromUriAndContentType(uri, MyContentType.IMAGE.generalMimeType);
+                Attachment mbAttachment =  Attachment.fromUriAndMimeType(uri, MyContentType.IMAGE.generalMimeType);
                 if (mbAttachment.isValid()) {
                     note.attachments.add(mbAttachment);
                 } else {

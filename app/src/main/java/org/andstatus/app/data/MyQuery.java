@@ -731,8 +731,17 @@ public class MyQuery {
     @NonNull
     public static <U> U foldLeft(@NonNull MyContext myContext, @NonNull String sql, @NonNull U identity,
                                  @NonNull Function<U, Function<Cursor, U>> f) {
+        return foldLeft(myContext.getDatabase(), sql, identity, f);
+    }
+
+    /**
+     * @return identity on UI thread
+     */
+    @NonNull
+    public static <U> U foldLeft(SQLiteDatabase database, @NonNull String sql, @NonNull U identity,
+                                 @NonNull Function<U, Function<Cursor, U>> f) {
         final String method = "foldLeft";
-        if (myContext.getDatabase() == null) {
+        if (database == null) {
             MyLog.v(TAG, () -> method + "; Database is null");
             return identity;
         }
@@ -744,7 +753,7 @@ public class MyQuery {
             return identity;
         }
         U result = identity;
-        try (Cursor cursor = myContext.getDatabase().rawQuery(sql, null)) {
+        try (Cursor cursor = database.rawQuery(sql, null)) {
             while (cursor.moveToNext()) result = f.apply(result).apply(cursor);
         } catch (Exception e) {
             MyLog.i(TAG, method + "; SQL:'" + sql + "'", e);
