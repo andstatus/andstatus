@@ -181,6 +181,7 @@ public class TimelineSql {
         columnNames.add(NoteTable.CONTENT);
         columnNames.add(NoteTable.CONTENT_TO_SEARCH);
         columnNames.add(NoteTable.IN_REPLY_TO_NOTE_ID);
+        columnNames.add(NoteTable.PUBLIC);
         columnNames.add(NoteTable.FAVORITED);
         columnNames.add(ActivityTable.INS_DATE);
         columnNames.add(NoteTable.UPDATED_DATE);

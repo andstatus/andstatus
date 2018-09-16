@@ -29,6 +29,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.DuplicationLink;
 import org.andstatus.app.timeline.TimelineFilter;
@@ -37,9 +38,12 @@ import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.TriState;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -60,7 +64,9 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     protected ActorViewItem author = ActorViewItem.EMPTY;
 
-    String recipientName = "";
+    TriState isPublic = TriState.UNKNOWN;
+    Audience audience = Audience.EMPTY;
+    List<ActorViewItem> recipients = Collections.emptyList();
 
     public long inReplyToNoteId = 0;
     ActorViewItem inReplyToActor = ActorViewItem.EMPTY;
@@ -186,7 +192,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     public StringBuilder getDetails(Context context) {
         StringBuilder builder = new StringBuilder(RelativeTime.getDifference(context, updatedDate));
         setInReplyTo(context, builder);
-        setRecipientName(context, builder);
+        setRecipientsNames(context, builder);
         setNoteSource(context, builder);
         setAccountDownloaded(builder);
         setNoteStatus(context, builder);
@@ -202,11 +208,11 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
                 inReplyToActor.getName()));
     }
 
-    private void setRecipientName(Context context, StringBuilder noteDetails) {
-        if (!StringUtils.isEmpty(recipientName)) {
+    private void setRecipientsNames(Context context, StringBuilder noteDetails) {
+        if (isPublic.isFalse && !recipients.isEmpty()) {
             noteDetails.append(" " + String.format(
                     context.getText(R.string.message_source_to).toString(),
-                    recipientName));
+                    recipients.stream().map(ActorViewItem::getName).reduce((a, b) -> a + ", " + b).orElse("")));
         }
     }
 
@@ -287,21 +293,24 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     public void addActorsToLoad(ActorListLoader loader) {
         loader.addActorToList(author.getActor());
         loader.addActorToList(inReplyToActor.getActor());
+        audience.getRecipients().forEach(loader::addActorToList);
     }
 
     @Override
     public void setLoadedActors(ActorListLoader loader) {
-        if (author.getActor().nonEmpty()) {
-            int index = loader.getList().indexOf(author);
-            if (index >= 0) {
-                author = loader.getList().get(index);
-            }
-        }
-        if (inReplyToActor.getActor().nonEmpty()) {
-            int index = loader.getList().indexOf(inReplyToActor);
-            if (index >= 0) {
-                inReplyToActor = loader.getList().get(index);
-            }
-        }
+        if (author.getActor().nonEmpty()) author = loader.getLoaded(author);
+        if (inReplyToActor.getActor().nonEmpty()) inReplyToActor = loader.getLoaded(inReplyToActor);
+        List<ActorViewItem> recipientsLoc = new ArrayList<>();
+        List<Actor> actorsLoc = new ArrayList<>();
+        audience.getRecipients().forEach(actor -> {
+                    ActorViewItem loaded = loader.getLoaded(ActorViewItem.fromActor(actor));
+                    actorsLoc.add(loaded.getActor());
+                    if (actor.nonPublic() && !actor.equals(inReplyToActor.getActor())) {
+                        recipientsLoc.add(loaded);
+                    }
+                }
+        );
+        actorsLoc.forEach(audience::add);
+        recipients = recipientsLoc;
     }
 }

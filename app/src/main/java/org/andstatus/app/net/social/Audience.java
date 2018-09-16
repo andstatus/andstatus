@@ -224,5 +224,4 @@ public class Audience implements IsEmpty {
     public TriState getPublic() {
         return isPublic;
     }
-
 }

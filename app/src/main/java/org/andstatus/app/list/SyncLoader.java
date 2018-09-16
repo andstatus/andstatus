@@ -40,6 +40,14 @@ public abstract class SyncLoader<T> {
         return items;
     }
 
+    @NonNull
+    public T getLoaded(@NonNull T beforeLoad) {
+        int index = getList().indexOf(beforeLoad);
+        return index < 0
+                ? beforeLoad
+                : getList().get(index);
+    }
+
     public int size() {
         return items.size();
     }

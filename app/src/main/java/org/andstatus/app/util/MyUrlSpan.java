@@ -30,7 +30,6 @@ import android.text.Selection;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
-import android.text.TextUtils;
 import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
@@ -42,6 +41,8 @@ import android.widget.Toast;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 
+import java.util.function.Function;
+
 import static android.text.Html.FROM_HTML_MODE_COMPACT;
 
 /** Prevents ActivityNotFoundException for malformed links,
@@ -50,6 +51,7 @@ import static android.text.Html.FROM_HTML_MODE_COMPACT;
 public class MyUrlSpan extends URLSpan {
 
     public static final String SOFT_HYPHEN = "\u00AD";
+    public static final Spannable EMPTY_SPANNABLE = new SpannableString("");
 
     public static final Creator<MyUrlSpan> CREATOR = new Creator<MyUrlSpan>() {
         @Override
@@ -100,34 +102,53 @@ public class MyUrlSpan extends URLSpan {
     }
 
     public static void showText(TextView textView, String text, boolean linkify, boolean showIfEmpty) {
+        showSpanned(textView, toSpannable(text, linkify), showIfEmpty);
+    }
+
+    public static void showSpanned(TextView textView, String text, Function<Spannable, Spannable> modifySpans) {
+        showSpanned(textView, modifySpans.apply(toSpannable(text, true)), false);
+    }
+
+    private static void showSpanned(TextView textView, @NonNull Spanned spanned, boolean showIfEmpty) {
         if (textView == null) return;
-        if (StringUtils.isEmpty(text)) {
+        if (spanned.length() == 0) {
             textView.setText("");
             ViewUtils.showView(textView, showIfEmpty);
         } else {
-            if (linkify) {
+            textView.setText(spanned);
+            if (hasSpans(spanned)) {
                 textView.setFocusable(true);
                 textView.setFocusableInTouchMode(true);
                 textView.setLinksClickable(true);
-            }
-            // Android 6 bug, see https://github.com/andstatus/andstatus/issues/334
-            // Setting setMovementMethod to not null causes a crash if text is SOFT_HYPHEN only:
-            if (text.contains(SOFT_HYPHEN)) {
-                text = text.replace(SOFT_HYPHEN, "-");
-            }
-            Spanned spanned = MyHtml.hasHtmlMarkup(text)
-                    ? Html.fromHtml(text, FROM_HTML_MODE_COMPACT)
-                    : new SpannableString(text);
-            textView.setText(spanned);
-            if (linkify && !hasUrlSpans(spanned)) {
-                Linkify.addLinks(textView, Linkify.WEB_URLS);
-            }
-            fixUrlSpans(textView);
-            if (linkify) {
                 setOnTouchListener(textView);
             }
             ViewUtils.showView(textView, true);
         }
+    }
+
+    private static Spannable toSpannable(String text, boolean linkify) {
+        if (StringUtils.isEmpty(text)) return EMPTY_SPANNABLE;
+
+        // Android 6 bug, see https://github.com/andstatus/andstatus/issues/334
+        // Setting setMovementMethod to not null causes a crash if text is SOFT_HYPHEN only:
+        if (text.contains(SOFT_HYPHEN)) {
+            text = text.replace(SOFT_HYPHEN, "-");
+        }
+        Spannable spannable = MyHtml.hasHtmlMarkup(text)
+                ? htmlToSpannable(text)
+                : new SpannableString(text);
+        if (linkify && !hasUrlSpans(spannable)) {
+            Linkify.addLinks(spannable, Linkify.WEB_URLS);
+        }
+        fixUrlSpans(spannable);
+        return spannable;
+    }
+
+    private static Spannable htmlToSpannable(String text) {
+        final Spanned spanned = Html.fromHtml(text, FROM_HTML_MODE_COMPACT);
+        return Spannable.class.isAssignableFrom(spanned.getClass())
+                ? (Spannable) spanned
+                : SpannableString.valueOf(spanned);
     }
 
     public static String getText(View parentView, @IdRes int viewId) {
@@ -147,14 +168,7 @@ public class MyUrlSpan extends URLSpan {
      */
     public static void setOnTouchListener(TextView textView) {
         textView.setMovementMethod(null);
-        textView.setOnTouchListener(
-                new View.OnTouchListener() {
-                    @Override
-                    public boolean onTouch(View v, MotionEvent event) {
-                        return onTouchEvent(v, event);
-                    }
-                }
-        );
+        textView.setOnTouchListener((v, event) -> onTouchEvent(v, event));
     }
 
     private static boolean onTouchEvent(View view, MotionEvent event) {
@@ -162,11 +176,8 @@ public class MyUrlSpan extends URLSpan {
         Object text = widget.getText();
         if (text instanceof Spanned) {
             Spanned buffer = (Spanned) text;
-
             int action = event.getAction();
-
-            if (action == MotionEvent.ACTION_UP
-                    || action == MotionEvent.ACTION_DOWN) {
+            if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_DOWN) {
                 int x = (int) event.getX();
                 int y = (int) event.getY();
 
@@ -183,38 +194,37 @@ public class MyUrlSpan extends URLSpan {
                 ClickableSpan[] link = buffer.getSpans(off, off,
                         ClickableSpan.class);
 
-                if (link.length != 0) {
+                if (link.length > 0) {
                     if (action == MotionEvent.ACTION_UP) {
                         link[0].onClick(widget);
-                    } else if (action == MotionEvent.ACTION_DOWN) {
-                        if (buffer instanceof Spannable) {
+                    } else if (buffer instanceof Spannable) {
                             Selection.setSelection( (Spannable) buffer,
                                     buffer.getSpanStart(link[0]),
                                     buffer.getSpanEnd(link[0]));
-                        }
                     }
                     return true;
                 }
             }
-
         }
-
         return false;
     }
 
-    private static boolean hasUrlSpans (Spanned spanned) {
-        boolean has = false;
-        if (spanned != null){
-            URLSpan[] spans = spanned.getSpans(0, spanned.length(), URLSpan.class);
-            has = spans != null && spans.length > 0;
-        }
-        return has;
+
+    private static boolean hasSpans (Spanned spanned) {
+        if (spanned == null) return  false;
+
+        Object[] spans = spanned.getSpans(0, spanned.length(), Object.class);
+        return spans != null && spans.length > 0;
     }
 
-    private static void fixUrlSpans(TextView textView) {
-        CharSequence text = textView.getText();
-        SpannableString spannable = SpannableString.class.isAssignableFrom(text.getClass())
-                ? (SpannableString) text : SpannableString.valueOf(text);
+    private static boolean hasUrlSpans (Spanned spanned) {
+        if (spanned == null) return  false;
+
+        URLSpan[] spans = spanned.getSpans(0, spanned.length(), URLSpan.class);
+        return spans != null && spans.length > 0;
+    }
+
+    private static void fixUrlSpans(Spannable spannable) {
         URLSpan[] spans = spannable.getSpans(0, spannable.length(), URLSpan.class);
         for (URLSpan span : spans) {
             int start = spannable.getSpanStart(span);
@@ -222,7 +232,6 @@ public class MyUrlSpan extends URLSpan {
             spannable.removeSpan(span);
             spannable.setSpan(new MyUrlSpan(span.getURL()), start, end, 0);
         }
-        textView.setText(spannable);
     }
 
     public static URLSpan[] getUrlSpans(View view) {

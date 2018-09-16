@@ -21,6 +21,7 @@ import android.provider.BaseColumns;
 
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.util.TriState;
 
 /**
  * Table for both public and private notes
@@ -86,7 +87,8 @@ public final class NoteTable implements BaseColumns {
     public static final String UPDATED_DATE = "note_updated_date";
     /** Date and time the row was inserted into this database */
     public static final String INS_DATE = "note_ins_date";
-    /** The Note is definitely public (e.g. it has Public group as one of its recipients) */
+    /** {@link TriState} true - The Note is definitely public (e.g. it has Public group as one of its recipients)
+     * false - it is definitely private */
     public static final String PUBLIC = "public";
     /** Some of my accounts favorited this note */
     public static final String FAVORITED = "favorited";

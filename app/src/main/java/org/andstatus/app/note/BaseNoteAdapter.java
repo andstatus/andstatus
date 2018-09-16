@@ -17,12 +17,12 @@
 package org.andstatus.app.note;
 
 import android.support.annotation.NonNull;
+import android.text.Spannable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;
@@ -125,14 +125,18 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
     }
 
     protected void showNoteName(View view, T item) {
-        TextView textView = view.findViewById(R.id.note_name);
-        MyUrlSpan.showText(textView, item.getName(), true, false);
+        MyUrlSpan.showSpanned(view.findViewById(R.id.note_name), item.getName(), this::modifySpans);
     }
 
     protected void showNoteContent(View view, T item) {
-        TextView textView = view.findViewById(R.id.note_body);
-        MyUrlSpan.showText(textView, item.getContent(), true, false);
+        MyUrlSpan.showSpanned(view.findViewById(R.id.note_body), item.getContent(), this::modifySpans);
     }
+
+    private Spannable modifySpans(Spannable in) {
+        // TODO
+        return in;
+    }
+
 
     protected void showAvatar(View view, T item) {
         item.author.showAvatar(contextMenu.getActivity(), view.findViewById(R.id.avatar_image));
@@ -157,7 +161,7 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
         }
     }
 
-    protected void showMarkReplies(ViewGroup view, T item) {
+    private void showMarkReplies(ViewGroup view, T item) {
         boolean show = myContext.users().isMeOrMyFriend(item.inReplyToActor.getActor()) &&
                 !myContext.users().isMe(item.author.getActor());
         View oldView = view.findViewById(R.id.reply_timeline_marker);
