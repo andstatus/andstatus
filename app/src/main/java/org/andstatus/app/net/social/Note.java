@@ -343,7 +343,7 @@ public class Note extends AObject {
     }
 
     public void addRecipient(Actor recipient) {
-        if (recipient != null && recipient.nonEmpty()) {
+        if (recipient != null && recipient.nonEmpty() && !recipients.contains(recipient)) {
             recipients.add(recipient);
         }
     }

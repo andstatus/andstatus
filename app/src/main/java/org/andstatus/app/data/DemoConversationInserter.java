@@ -120,9 +120,9 @@ public class DemoConversationInserter {
         AActivity reply5 = buildActivity(author2, "", MENTIONS_NOTE_BODY, reply4,
                 iteration == 1 ? demoData.conversationMentionsNoteOid : null);
         addActivity(reply5);
-        assertThat("The user '" + author3.getUsername() + "' should be a recipient",
+        assertThat("The user '" + author3.getUsername() + "' should be a recipient\n" + reply5.getNote(),
                 reply5.getNote().audience().getRecipients(), hasItem(author3));
-        assertThat("The user '" + author2.getUsername() + "' should not be a recipient",
+        assertThat("The user '" + author2.getUsername() + "' should not be a recipient\n" + reply5.getNote(),
                 reply5.getNote().audience().getRecipients(), not(hasItem(author2)));
 
         Actor reblogger1 = buildActorFromOid("acct:reblogger@" + demoData.pumpioMainHost);

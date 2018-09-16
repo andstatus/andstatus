@@ -95,7 +95,7 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         assertTrue("Invoked Context menu for " + logMsg, helper.invokeContextMenuAction4ListItemId(method,
                 item.getId(), NoteContextMenuItem.ACTORS_OF_NOTE, R.id.note_wrapper));
 
-        ActorList actorList = (ActorList) helper.waitForNextActivity(method, 15000);
+        ActorList actorList = (ActorList) helper.waitForNextActivity(method, 25000);
         TestSuite.waitForListLoaded(actorList, 1);
 
         List<ActorViewItem> listItems = actorList.getListLoader().getList();

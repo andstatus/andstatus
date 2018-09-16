@@ -410,7 +410,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
 
         public void onCredentialsVerified(@NonNull Actor actor, ConnectionException ce) throws ConnectionException {
             boolean ok = ce == null && !actor.isEmpty() && StringUtils.nonEmpty(actor.oid)
-                    && actor.origin.isUsernameValid(actor.getUsername());
+                    && actor.isUsernameValid();
             boolean errorSettingUsername = !ok;
 
             boolean credentialsOfOtherAccount = false;
@@ -820,7 +820,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     }
 
     public boolean isUsernameValid() {
-        return oAccountName.getOrigin().isUsernameValid(getUsername());
+        return actor.isUsernameValid();
     }
 
     public boolean isSearchSupported(SearchObjects searchObjects) {

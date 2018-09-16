@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2013-2018 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static org.andstatus.app.net.social.Patterns.USERNAME_CHARS;
+import static org.andstatus.app.net.social.Patterns.WEBFINGER_ID_CHARS;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 
 /**
@@ -218,14 +220,14 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     @Override
     public boolean isEmpty() {
         return this == EMPTY || !origin.isValid() || (actorId == 0 && UriUtils.nonRealOid(oid)
-                && StringUtils.isEmpty(webFingerId) && !origin.isUsernameValid(username));
+                && StringUtils.isEmpty(webFingerId) && !isUsernameValid());
     }
 
     public boolean isPartiallyDefined() {
         if (isPartiallyDefined.unknown) {
             isPartiallyDefined = TriState.fromBoolean(!origin.isValid() || UriUtils.nonRealOid(oid) ||
                     StringUtils.isEmpty(webFingerId) ||
-                    !origin.isUsernameValid(username));
+                    !isUsernameValid());
         }
         return isPartiallyDefined.isTrue;
     }
@@ -472,23 +474,23 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return UriUtils.TEMP_OID_PREFIX + oid;
     }
 
-    public List<Actor> extractActorsFromContent(String textIn, boolean replyOnly, Actor inReplyToActor) {
-        final String SEPARATORS = ", ;'=`~!#$%^&*(){}[]/";
+    public List<Actor> extractActorsFromContent(String textIn, boolean replyOnly, Actor inReplyToActorIn) {
         List<Actor> actors = new ArrayList<>();
+        Actor inReplyToActor = inReplyToActorIn.withValidUsernameAndWebfingerId();
         String text = MyHtml.fromHtml(textIn);
         while (!StringUtils.isEmpty(text)) {
-            int atPos = text.indexOf('@');
-            if (atPos < 0 || (atPos > 0 && replyOnly)) {
+            int atPos = indOfActorReferenceStart(text);
+            if (atPos < 0 || (atPos > 1 && replyOnly)) {
                 break;
             }
             String validUsername = "";
             String validWebFingerId = "";
-            int ind=atPos+1;
+            int ind = atPos;
             for (; ind < text.length(); ind++) {
-                if (SEPARATORS.indexOf(text.charAt(ind)) >= 0) {
+                if (WEBFINGER_ID_CHARS.indexOf(text.charAt(ind)) < 0 ) {
                     break;
                 }
-                String username = text.substring(atPos+1, ind + 1);
+                String username = text.substring(atPos, ind + 1);
                 if (origin.isUsernameValid(username)) {
                     validUsername = username;
                 }
@@ -508,6 +510,39 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return actors;
     }
 
+    private Actor withValidUsernameAndWebfingerId() {
+        return (isWebFingerIdValid && isUsernameValid()) || actorId == 0
+            ? this
+            : Actor.load(MyContextHolder.get(), actorId);
+    }
+
+    public boolean isUsernameValid() {
+        return origin.isUsernameValid(username);
+    }
+
+    /**
+     * The reference may be in the form of WibfingerId, without "@" before it
+     * @return -1 if not found
+     */
+    private int indOfActorReferenceStart(String text) {
+        if (StringUtils.isEmpty(text)) return -1;
+
+        int atPos1 = text.indexOf('@');
+        if (atPos1 < 0) return -1;
+
+        if (atPos1 == 0) return 1;
+
+        if (USERNAME_CHARS.indexOf(text.charAt(atPos1 - 1)) < 0) return atPos1 + 1;
+
+        // username part of WebfingerId before @ ?
+        int ind = atPos1 - 1;
+        while (ind > 0) {
+            if (USERNAME_CHARS.indexOf(text.charAt(ind - 1)) < 0) break;
+            ind--;
+        }
+        return ind;
+    }
+
     private void addExtractedActor(List<Actor> actors, String webFingerId, String validUsername, Actor inReplyToActor) {
         Actor actor = Actor.fromOriginAndActorOid(origin, "");
         if (Actor.isWebFingerIdValid(webFingerId)) {
@@ -520,8 +555,9 @@ public class Actor implements Comparable<Actor>, IsEmpty {
             } else if (validUsername.equalsIgnoreCase(getUsername())) {
                 actor = this;
             } else {
-                // Try 1. a host of the Author, 2. A host of Replied to user, 3. A host of this Social network
-                for (String host : new HashSet<>(Arrays.asList(getHost(), origin.getHost()))) {
+                // Try 1. a host of the Author (this Actor), 2. A host of Replied to Actor, 3. A host of this Social network
+                for (String host : new HashSet<>(Arrays.asList(getHost(), inReplyToActor.getHost(),
+                        origin.getHost()))) {
                     if (UrlUtils.hostIsValid(host)) {
                         final String possibleWebFingerId = validUsername + "@" + host;
                         actor.actorId = MyQuery.webFingerIdToId(origin.getId(), possibleWebFingerId);
@@ -598,7 +634,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     @Override
-    public int compareTo(Actor another) {
+    public int compareTo(@NonNull Actor another) {
         if (actorId != 0 && another.actorId != 0) {
             if (actorId == another.actorId) {
                 return 0;

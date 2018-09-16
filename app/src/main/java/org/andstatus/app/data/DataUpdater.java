@@ -199,8 +199,8 @@ public class DataUpdater {
             ContentValuesUtils.putNotEmpty(values, NoteTable.CONTENT, note.getContent());
             values.put(NoteTable.CONTENT_TO_SEARCH, note.getContentToSearch());
 
-            activity.getNote().addRecipientsFromBodyText(activity.getActor());
             updateInReplyTo(activity, values);
+            activity.getNote().addRecipientsFromBodyText(activity.getAuthor());
             for ( Actor actor : note.audience().getRecipients()) {
                 updateObjActor(activity.getActor().update(activity.accountActor, actor), recursing + 1);
             }

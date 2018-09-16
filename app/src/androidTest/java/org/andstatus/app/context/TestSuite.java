@@ -193,6 +193,8 @@ public class TestSuite {
     }
 
     private static void ensureDataAdded() {
+        if (dataAdded) return;
+
         final String method = "ensureDataAdded";
         MyLog.v(method, method + ": started");
         if (!dataAdded) {
