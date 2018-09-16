@@ -19,7 +19,6 @@ package org.andstatus.app.actor;
 import android.content.Intent;
 
 import org.andstatus.app.R;
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -48,19 +47,24 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
+    private long noteId;
 
     @Override
     protected Intent getActivityIntent() {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        final MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
-        assertTrue(ma.isValid());
-        MyContextHolder.get().accounts().setCurrentAccount(ma);
+        noteId = MyQuery.oidToId(OidEnum.NOTE_OID, demoData.getConversationOriginId(),
+                demoData.conversationMentionsNoteOid);
+
+        final Timeline timeline = Timeline.getTimeline(TimelineType.EVERYTHING, 0, Origin.EMPTY);
+        long updatedDate = MyQuery.noteIdToLongColumnValue(NoteTable.UPDATED_DATE, noteId);
+        timeline.setVisibleItemId(noteId);
+        timeline.setVisibleOldestDate(updatedDate);
+        timeline.setVisibleY(0);
 
         MyLog.i(this, "setUp ended");
-        return new Intent(Intent.ACTION_VIEW,
-                Timeline.getTimeline(TimelineType.HOME, ma.getActorId(), Origin.EMPTY).getUri());
+        return new Intent(Intent.ACTION_VIEW, timeline.getUri());
     }
 
     @Test
@@ -68,8 +72,6 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         final String method = "testActorsOfNote";
         TestSuite.waitForListLoaded(getActivity(), 2);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(), ActorList.class);
-        long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, demoData.getConversationOriginId(),
-                demoData.conversationMentionsNoteOid);
         String content = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
         String logMsg = MyQuery.noteInfoForLog(noteId);
 
@@ -79,7 +81,6 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         assertEquals(logMsg, "unknownUser@example.com", actors.get(2).getUsername());
 
         ActivityViewItem item = ActivityViewItem.EMPTY;
-        ActivityViewItem otherItemWithNote = ActivityViewItem.EMPTY;
         TimelineData<ActivityViewItem> timelineData = getActivity().getListData();
         for (int position=0; position < timelineData.size(); position++) {
             ActivityViewItem item2 = timelineData.getItem(position);
@@ -87,19 +88,9 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
                 item = item2;
                 break;
             }
-            if (item2.noteViewItem.getId() != 0) {
-                otherItemWithNote = item2;
-            }
         }
-        boolean noteWasFound = item.nonEmpty();
-        if (!noteWasFound) {
-            item = otherItemWithNote;
-            String logMsg1 = "The note was not found in the timeline " + timelineData +
-                    " new item: " + item;
-            logMsg += "\n" + logMsg1;
-            MyLog.i(method, logMsg1);
-        }
-        if (item.isEmpty()) return;
+        assertTrue("No view item. " + logMsg + "\n" +
+                "The note was not found in the timeline " + timelineData, item.nonEmpty());
 
         assertTrue("Invoked Context menu for " + logMsg, helper.invokeContextMenuAction4ListItemId(method,
                 item.getId(), NoteContextMenuItem.ACTORS_OF_NOTE, R.id.note_wrapper));
@@ -109,18 +100,16 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
 
         List<ActorViewItem> listItems = actorList.getListLoader().getList();
 
-        if (noteWasFound) {
-            assertEquals(listItems.toString(), 5, listItems.size());
+        assertEquals(listItems.toString(), 5, listItems.size());
 
-            Actor actorE = MyContextHolder.get().users().actors.values().stream()
-                    .filter(actor -> actor.oid.equals(demoData.conversationAuthorThirdActorOid))
-                    .findAny().orElse(Actor.EMPTY);
-            assertTrue("Found " + demoData.conversationAuthorThirdActorOid
-                    + " cached " + MyContextHolder.get().users().actors, actorE.nonEmpty());
-            Actor actorA = getByActorOid(listItems, demoData.conversationAuthorThirdActorOid);
-            assertTrue("Found " + demoData.conversationAuthorThirdActorOid + ", " + logMsg, actorA != null);
-            compareAttributes(actorE, actorA, true);
-        }
+        Actor actorE = MyContextHolder.get().users().actors.values().stream()
+                .filter(actor -> actor.oid.equals(demoData.conversationAuthorThirdActorOid))
+                .findAny().orElse(Actor.EMPTY);
+        assertTrue("Found " + demoData.conversationAuthorThirdActorOid
+                + " cached " + MyContextHolder.get().users().actors, actorE.nonEmpty());
+        Actor actorA = getByActorOid(listItems, demoData.conversationAuthorThirdActorOid);
+        assertTrue("Found " + demoData.conversationAuthorThirdActorOid + ", " + logMsg, actorA != null);
+        compareAttributes(actorE, actorA, true);
 
         ListActivityTestHelper<ActorList> actorListHelper = new ListActivityTestHelper<>(actorList);
         actorListHelper.clickListAtPosition(method, actorListHelper.getPositionOfListItemId(listItems.get(

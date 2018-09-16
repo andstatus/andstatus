@@ -254,11 +254,12 @@ public class TimelineParameters {
 
     private SelectionAndArgs buildSelectionAndArgs() {
         SelectionAndArgs sa = new SelectionAndArgs();
+        final long minDateActual = minDate > 0 ? minDate : 1;
         sa.addSelection(ActivityTable.getTimeSortField(getTimelineType()) + " >= ?",
-                String.valueOf(minDate > 0 ? minDate : 1));
+                String.valueOf(minDateActual));
         if (maxDate > 0) {
             sa.addSelection(ActivityTable.getTimeSortField(getTimelineType()) + " <= ?",
-                    String.valueOf(maxDate));
+                    String.valueOf(maxDate >= minDateActual ? maxDate : minDateActual));
         }
         return sa;
     }
