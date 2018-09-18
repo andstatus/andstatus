@@ -59,6 +59,7 @@ import java.util.concurrent.TimeUnit;
 public class Timeline implements Comparable<Timeline>, IsEmpty {
     public static final Timeline EMPTY = new Timeline();
     private static final long MIN_RETRY_PERIOD_MS = TimeUnit.SECONDS.toMillis(30);
+    public static final String TIMELINE_CLICK_HOST = "timeline.app.andstatus.org";
     private volatile long id;
 
     private final TimelineType timelineType;
@@ -975,6 +976,10 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
 
     public Uri getUri() {
         return MatchedUri.getTimelineUri(this);
+    }
+
+    public Uri getClickUri() {
+        return Uri.parse("content://" + TIMELINE_CLICK_HOST + getUri().getPath());
     }
 
     private void setChanged() {

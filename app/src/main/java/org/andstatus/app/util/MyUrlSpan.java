@@ -65,7 +65,7 @@ public class MyUrlSpan extends URLSpan {
         }
     };
 
-    private MyUrlSpan(String url) {
+    public MyUrlSpan(String url) {
         super(url);
     }
 
@@ -73,7 +73,7 @@ public class MyUrlSpan extends URLSpan {
     public void onClick(@NonNull View widget) {
         try {
             super.onClick(widget);
-        } catch (ActivityNotFoundException e) {
+        } catch (ActivityNotFoundException | SecurityException e) {
             MyLog.v(this, e);
             try {
                 MyLog.i(this, "Malformed link:'" + getURL() + "'");

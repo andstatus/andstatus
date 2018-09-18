@@ -130,6 +130,12 @@
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH"/>
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="content" android:host="timeline.app.andstatus.org"/>
+            </intent-filter>
         </activity>
         <activity android:name=".note.ConversationActivity"
                   android:label="@string/label_conversation">

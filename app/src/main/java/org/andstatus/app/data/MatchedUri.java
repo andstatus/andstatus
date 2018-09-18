@@ -19,6 +19,7 @@ package org.andstatus.app.data;
 import android.content.ContentUris;
 import android.content.UriMatcher;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 
 import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.account.MyAccount;
@@ -30,6 +31,8 @@ import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.StringUtils;
+
+import static org.andstatus.app.timeline.meta.Timeline.TIMELINE_CLICK_HOST;
 
 /**
  * Classifier of Uri-s, passed to our content provider
@@ -82,7 +85,8 @@ public enum MatchedUri {
     private static final String ACTOR_SEGMENT = "actor";
     private static final String CENTRAL_ITEM_SEGMENT = "cnt";
 
-    private static final String CONTENT_URI_PREFIX = "content://" + AUTHORITY + "/";
+    private static final String CONTENT_URI_SCHEME_AND_HOST = "content://" + AUTHORITY;
+    private static final String CONTENT_URI_PREFIX = CONTENT_URI_SCHEME_AND_HOST + "/";
     public static final Uri ACTIVITY_CONTENT_URI = Uri.parse(CONTENT_URI_PREFIX + ActivityTable.TABLE_NAME + "/" + CONTENT_SEGMENT);
 
     private final int code;
@@ -95,7 +99,7 @@ public enum MatchedUri {
         if (uri == null || uri.equals(Uri.EMPTY)) {
             return UNKNOWN;
         }
-        int codeIn = URI_MATCHER.match(uri);
+        int codeIn = URI_MATCHER.match(replaceClickHost(uri));
         for (MatchedUri matched : values()) {
             if (matched.code == codeIn) {
                 return matched;
@@ -103,7 +107,13 @@ public enum MatchedUri {
         }
         return UNKNOWN;
     }
-    
+
+    private static Uri replaceClickHost(@NonNull Uri uri) {
+        return uri.getHost().equals(TIMELINE_CLICK_HOST)
+                ? Uri.parse(CONTENT_URI_SCHEME_AND_HOST + uri.getPath())
+                : uri;
+    }
+
     private static final UriMatcher URI_MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
     static {
         /** 

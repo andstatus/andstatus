@@ -17,7 +17,6 @@
 package org.andstatus.app.note;
 
 import android.support.annotation.NonNull;
-import android.text.Spannable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -125,18 +124,12 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
     }
 
     protected void showNoteName(View view, T item) {
-        MyUrlSpan.showSpanned(view.findViewById(R.id.note_name), item.getName(), this::modifySpans);
+        MyUrlSpan.showSpanned(view.findViewById(R.id.note_name), item.getName(), SpanUtil.modifySpans(item));
     }
 
     protected void showNoteContent(View view, T item) {
-        MyUrlSpan.showSpanned(view.findViewById(R.id.note_body), item.getContent(), this::modifySpans);
+        MyUrlSpan.showSpanned(view.findViewById(R.id.note_body), item.getContent(), SpanUtil.modifySpans(item));
     }
-
-    private Spannable modifySpans(Spannable in) {
-        // TODO
-        return in;
-    }
-
 
     protected void showAvatar(View view, T item) {
         item.author.showAvatar(contextMenu.getActivity(), view.findViewById(R.id.avatar_image));

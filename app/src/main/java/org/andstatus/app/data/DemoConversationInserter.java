@@ -220,7 +220,8 @@ public class DemoConversationInserter {
         addActivity(followsMe);
         DemoNoteInserter.assertInteraction(followsMe, NotificationEventType.FOLLOW, TriState.TRUE);
 
-        AActivity reply16 = buildActivity(author2, "", "Reply 16 to Reply 15", reply15, null);
+        AActivity reply16 = buildActivity(author2, "", "<a href='" + author4.getProfileUrl() + "'>" +
+                "@" + author4.getUsername() + "</a> Reply 16 to Reply 15", reply15, null);
         addActivity(reply16);
     }
 
