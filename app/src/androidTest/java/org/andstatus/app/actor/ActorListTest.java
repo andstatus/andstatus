@@ -76,7 +76,7 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         String logMsg = MyQuery.noteInfoForLog(noteId);
 
         List<Actor> actors = Actor.fromOriginAndActorOid(demoData.getConversationMyAccount().getOrigin(), "")
-                .extractActorsFromContent(content, false, Actor.EMPTY);
+                .extractActorsFromContent(content, Actor.EMPTY);
         assertEquals(logMsg, 3, actors.size());
         assertEquals(logMsg, "unknownUser@example.com", actors.get(2).getUsername());
 

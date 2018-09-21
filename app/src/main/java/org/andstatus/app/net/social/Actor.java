@@ -474,40 +474,34 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return UriUtils.TEMP_OID_PREFIX + oid;
     }
 
-    public List<Actor> extractActorsFromContent(String textIn, boolean replyOnly, Actor inReplyToActorIn) {
-        List<Actor> actors = new ArrayList<>();
-        Actor inReplyToActor = inReplyToActorIn.withValidUsernameAndWebfingerId();
-        String text = MyHtml.fromHtml(textIn);
-        while (!StringUtils.isEmpty(text)) {
-            int atPos = indOfActorReferenceStart(text);
-            if (atPos < 0 || (atPos > 1 && replyOnly)) {
+    public List<Actor> extractActorsFromContent(String text, Actor inReplyToActorIn) {
+        return _extractActorsFromContent(MyHtml.fromHtml(text), 0, new ArrayList<>(),
+                inReplyToActorIn.withValidUsernameAndWebfingerId());
+    }
+
+    private List<Actor> _extractActorsFromContent(String text, int textStart, List<Actor> actors, Actor inReplyToActor) {
+        int start = indexOfActorReference(text, textStart);
+        if (start < textStart) return actors;
+
+        String validUsername = "";
+        String validWebFingerId = "";
+        int ind = start;
+        for (; ind < text.length(); ind++) {
+            if (WEBFINGER_ID_CHARS.indexOf(text.charAt(ind)) < 0 ) {
                 break;
             }
-            String validUsername = "";
-            String validWebFingerId = "";
-            int ind = atPos;
-            for (; ind < text.length(); ind++) {
-                if (WEBFINGER_ID_CHARS.indexOf(text.charAt(ind)) < 0 ) {
-                    break;
-                }
-                String username = text.substring(atPos, ind + 1);
-                if (origin.isUsernameValid(username)) {
-                    validUsername = username;
-                }
-                if (isWebFingerIdValid(username)) {
-                    validWebFingerId = username;
-                }
+            String username = text.substring(start, ind + 1);
+            if (origin.isUsernameValid(username)) {
+                validUsername = username;
             }
-            if (ind < text.length()) {
-                text = text.substring(ind);
-            } else {
-                text = "";
-            }
-            if (StringUtils.nonEmpty(validWebFingerId) || StringUtils.nonEmpty(validUsername)) {
-                addExtractedActor(actors, validWebFingerId, validUsername, inReplyToActor);
+            if (isWebFingerIdValid(username)) {
+                validWebFingerId = username;
             }
         }
-        return actors;
+        if (StringUtils.nonEmpty(validWebFingerId) || StringUtils.nonEmpty(validUsername)) {
+            addExtractedActor(actors, validWebFingerId, validUsername, inReplyToActor);
+        }
+        return _extractActorsFromContent(text, ind + 1, actors, inReplyToActor);
     }
 
     private Actor withValidUsernameAndWebfingerId() {
@@ -521,22 +515,22 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     /**
-     * The reference may be in the form of WibfingerId, without "@" before it
-     * @return -1 if not found
+     * The reference may be in the form of @username, @webfingerId, or wibfingerId, without "@" before it
+     * @return index of the first position, where the username/webfingerId may start, -1 if not found
      */
-    private int indOfActorReferenceStart(String text) {
-        if (StringUtils.isEmpty(text)) return -1;
+    private int indexOfActorReference(String text, int textStart) {
+        if (StringUtils.isEmpty(text) || textStart >= text.length()) return -1;
 
-        int atPos1 = text.indexOf('@');
-        if (atPos1 < 0) return -1;
+        int indexOfAt = text.indexOf('@', textStart);
+        if (indexOfAt < textStart) return -1;
 
-        if (atPos1 == 0) return 1;
+        if (indexOfAt == textStart) return textStart + 1;
 
-        if (USERNAME_CHARS.indexOf(text.charAt(atPos1 - 1)) < 0) return atPos1 + 1;
+        if (USERNAME_CHARS.indexOf(text.charAt(indexOfAt - 1)) < 0) return indexOfAt + 1;
 
         // username part of WebfingerId before @ ?
-        int ind = atPos1 - 1;
-        while (ind > 0) {
+        int ind = indexOfAt - 1;
+        while (ind > textStart) {
             if (USERNAME_CHARS.indexOf(text.charAt(ind - 1)) < 0) break;
             ind--;
         }

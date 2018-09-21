@@ -63,8 +63,8 @@ public class MyHtml {
     }
 
     @NonNull
-    public static String getContentToSearch(String body) {
-        return normalizeWordsForSearch(fromHtml(body)).toLowerCase();
+    public static String getContentToSearch(String text) {
+        return normalizeWordsForSearch(fromHtml(text)).toLowerCase();
     }
 
     /** Strips HTML markup from the String */

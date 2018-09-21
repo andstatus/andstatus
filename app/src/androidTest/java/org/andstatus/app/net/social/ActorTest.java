@@ -38,19 +38,19 @@ public class ActorTest {
     @Test
     public void testFromBodyText1() {
         Origin origin = MyContextHolder.get().origins().fromName(demoData.gnusocialTestOriginName);
-        String webFingerId2 = "anotherUser@somedomain.org";
+        String anotherUser2 = "anotherUser@somedomain.org";
         String shortUsername3 = "shortusername";
         String body = "@" + demoData.gnusocialTestAccountUsername
                 + " @" + demoData.gnusocialTestAccount2Username
-                + " Please take this into account\n@" + webFingerId2
+                + " Please take this into account\n@" + anotherUser2
                 + " @" + demoData.gnusocialTestAccount2Username
                 + " And let me mention: @" + shortUsername3;
-        List<Actor> actors = Actor.fromOriginAndActorOid(origin, "").extractActorsFromContent(body, false, Actor.EMPTY);
+        List<Actor> actors = Actor.fromOriginAndActorOid(origin, "").extractActorsFromContent(body, Actor.EMPTY);
         String msgLog = body + " ->\n" + actors;
         assertEquals(msgLog, 4, actors.size());
         assertEquals(msgLog, demoData.gnusocialTestAccountUsername, actors.get(0).getUsername());
         assertEquals(msgLog, demoData.gnusocialTestAccount2Username, actors.get(1).getUsername());
-        assertEquals(msgLog, webFingerId2.toLowerCase(), actors.get(2).getWebFingerId());
+        assertEquals(msgLog, anotherUser2.toLowerCase(), actors.get(2).getWebFingerId());
         assertEquals(msgLog, shortUsername3, actors.get(3).getUsername());
     }
 
@@ -66,7 +66,7 @@ public class ActorTest {
                 + " by @" + USERNAME1 + " @@" + SKIPPED_USERNAME2 + " @#" + SKIPPED_USERNAME3
                 + " &amp; @" + USERNAME4
                 + " https://t.co/djkdfeowefPh";
-        List<Actor> actors = Actor.fromOriginAndActorOid(origin, "").extractActorsFromContent(body, false, Actor.EMPTY);
+        List<Actor> actors = Actor.fromOriginAndActorOid(origin, "").extractActorsFromContent(body, Actor.EMPTY);
         String msgLog = body + " -> " + actors;
         assertEquals(msgLog, 2, actors.size());
         assertEquals(msgLog, USERNAME1, actors.get(0).getUsername());
@@ -112,5 +112,15 @@ public class ActorTest {
         assertEquals(actor1, actor2);
         assertEquals(actor1.toString() + " vs " + actor2, actor1.hashCode(), actor2.hashCode());
 
+    }
+
+    @Test
+    public void extractActorsFromContent() {
+        String content = "<a href=\"https://loadaverage.org/andstatus\">AndStatus</a> started following" +
+                " <a href=\"https://gnusocial.no/mcscx2\">ex mcscx2@quitter.no</a>.";
+        List<Actor> actors = Actor.fromOriginAndActorOid(demoData.getConversationMyAccount().getOrigin(), "")
+                .extractActorsFromContent(content, Actor.EMPTY);
+        assertEquals("Actors: " + actors, 1, actors.size());
+        assertEquals("Actors: " + actors, "mcscx2@quitter.no", actors.get(0).getWebFingerId());
     }
 }
