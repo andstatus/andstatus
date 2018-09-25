@@ -9,7 +9,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.4'
+        classpath 'com.android.tools.build:gradle:3.2.0'
         // See https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
         classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.1"
 
@@ -27,7 +27,7 @@ buildscript {
 
 allprojects {
     project.ext.compileSdkVersion = 27 as int
-    project.ext.buildToolsVersion = '27.0.3'
+    project.ext.buildToolsVersion = '28.0.3'
     project.ext.minSdkVersion = 24 as int
     project.ext.targetSdkVersion = 27 as int
 

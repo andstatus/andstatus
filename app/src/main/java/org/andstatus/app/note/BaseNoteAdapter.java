@@ -27,6 +27,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.graphics.IdentifiableImageView;
+import org.andstatus.app.net.social.SpanUtil;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.TimelineData;
 import org.andstatus.app.util.MyStringBuilder;
@@ -124,11 +125,11 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
     }
 
     protected void showNoteName(View view, T item) {
-        MyUrlSpan.showSpanned(view.findViewById(R.id.note_name), item.getName(), SpanUtil.modifySpans(item));
+        MyUrlSpan.showSpanned(view.findViewById(R.id.note_name), item.getName(), SpanUtil.spansModifier(item.audience));
     }
 
     protected void showNoteContent(View view, T item) {
-        MyUrlSpan.showSpanned(view.findViewById(R.id.note_body), item.getContent(), SpanUtil.modifySpans(item));
+        MyUrlSpan.showSpanned(view.findViewById(R.id.note_body), item.getContent(), SpanUtil.spansModifier(item.audience));
     }
 
     protected void showAvatar(View view, T item) {
