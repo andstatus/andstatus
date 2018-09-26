@@ -22,10 +22,12 @@ import android.text.SpannableString;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.origin.OriginPumpio;
+import org.andstatus.app.util.MyUrlSpan;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 
 import static org.andstatus.app.context.DemoData.demoData;
@@ -35,7 +37,10 @@ public class SpanUtilTest {
 
     @Before
     public void setUp() throws Exception {
-        TestSuite.initializeWithData(this);
+        TestSuite.initialize(this);
+        if (demoData.getMyAccount(demoData.conversationAccountName).isEmpty()) {
+            TestSuite.initializeWithData(this);
+        }
     }
 
     @Test
@@ -55,5 +60,45 @@ public class SpanUtilTest {
         final Object[] spans = modified.getSpans(0, modified.length(), Object.class);
         assertEquals("Spans created: " + Arrays.toString(spans), 2, spans.length);
 
+    }
+
+    @Test
+    public void linkifyHtml() {
+        MyAccount ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
+        Audience audience = new Audience(ma.getOrigin());
+
+        String username1 = "speeddefrost";
+        final Actor actor1 = Actor.fromOriginAndActorOid(ma.getOrigin(), "232380");
+        actor1.setUsername(username1);
+        audience.add(actor1);
+
+        String username2 = "mcnalu";
+        final Actor actor2 = Actor.fromOriginAndActorOid(ma.getOrigin(), "099842");
+        actor2.setUsername(username2);
+        audience.add(actor2);
+
+        Function<Spannable, Spannable> modifier = SpanUtil.spansModifier(audience);
+
+        String text = "@<span class=\"vcard\"><a href=\"http://micro.fragdev.com/speeddefrost\" class=\"url\"" +
+                " title=\"speeddefrost\"><span class=\"fn nickname mention\">speeddefrost</span></a></span>" +
+                " @<span class=\"vcard\"><a href=\"http://micro.fragdev.com/mcnalu\" class=\"url\" title=\"mcnalu\">" +
+                "<span class=\"fn nickname mention\">mcnalu</span></a></span>" +
+                " Just transfer your logic to GTK or Qt instead systemd and you'll end up with a wider, bigger problem.";
+
+        Spannable spannable = MyUrlSpan.toSpannable(text, true);
+        List<SpanUtil.Region> regions1 = SpanUtil.regionsOf(spannable);
+        final String message1 = "Regions before change: " + regions1;
+        assertEquals(message1, 3, regions1.size());
+
+        Spannable modified = modifier.apply(spannable);
+        List<SpanUtil.Region> regions2 = SpanUtil.regionsOf(spannable);
+        final Object[] spans = modified.getSpans(0, modified.length(), Object.class);
+        final String message2 = message1 + "\nRegions after change: " + regions2;
+        assertEquals(message2, 2, spans.length);
+        assertEquals(message2, 3, regions2.size());
+        assertEquals(message2, "content://timeline.app.andstatus.org/note/0/lt/sent/origin/0/actor/0",
+                regions2.get(0).urlSpan.get().url);
+        assertEquals(message2, "content://timeline.app.andstatus.org/note/0/lt/sent/origin/0/actor/0",
+                regions2.get(1).urlSpan.get().url);
     }
 }

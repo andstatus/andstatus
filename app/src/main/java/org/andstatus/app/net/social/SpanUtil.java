@@ -33,62 +33,78 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class SpanUtil {
+    private static final int MIN_SPAN_LENGTH = 3;
+
     private SpanUtil() { /* Empty */ }
 
     public static class Region implements Comparable<Region> {
         final int start;
         final int end;
-        final Optional<Object> urlSpan;
+        final CharSequence text;
+        final Optional<MyUrlSpan> urlSpan;
         final Optional<Object> otherSpan;
 
         private Region(Spannable spannable, Object span) {
+            int spanStart = spannable.getSpanStart(span);
+            // Sometimes "@" is not included in the span
+            start = spanStart > 0 && spannable.charAt(spanStart) != '@' && spannable.charAt(spanStart - 1) == '@'
+                    ? spanStart - 1
+                    : spanStart;
             if (MyUrlSpan.class.isAssignableFrom(span.getClass())) {
-                int start = spannable.getSpanStart(span);
-                if ( start > 0 && !spannable.subSequence(start, start+1).toString().equals("@")
-                        && spannable.subSequence(start - 1, start).toString().equals("@")) {
-                    // Sometimes "@" is not included in the span
-                    start = start - 1;
-                }
-                this.start = start;
-                urlSpan = Optional.of(span);
+                urlSpan = Optional.of((MyUrlSpan) span);
                 otherSpan = Optional.empty();
             } else {
-                this.start = spannable.getSpanStart(span);
                 urlSpan = Optional.empty();
                 otherSpan = Optional.of(span);
             }
-            this.end = spannable.getSpanEnd(span);
+            end = spannable.getSpanEnd(span);
+            text = spannable.subSequence(start, end);
         }
 
-        private Region(int start, int end) {
+        private Region(Spannable spannable, int start, int end) {
             this.start = start;
             this.end = end;
             urlSpan = Optional.empty();
             otherSpan = Optional.empty();
+            text = (start < end && spannable.length() >= end)
+                    ? spannable.subSequence(start, end)
+                    : "";
         }
 
         @Override
         public int compareTo(@NonNull Region o) {
             return Integer.compare(start, o.start);
         }
+
+        @Override
+        public String toString() {
+            return "Region{" +
+                    start + "-" + end +
+                    " '" + text + "'" +
+                    urlSpan.map(s -> ", " + s).orElse("") +
+                    otherSpan.map(s -> ", otherSpan").orElse("") +
+                    '}';
+        }
+
+        boolean isValid() {
+            return urlSpan.isPresent() || otherSpan.isPresent() || (end - start >= MIN_SPAN_LENGTH);
+        }
     }
 
-    private static List<Region> regionsOf(Spannable spannable) {
+    public static List<Region> regionsOf(Spannable spannable) {
         return Stream.concat(
                 Arrays.stream(spannable.getSpans(0, spannable.length(), Object.class))
                     .map(span -> new Region(spannable, span)),
-                Stream.of(new Region(spannable.length(), spannable.length() + 1)))
+                Stream.of(new Region(spannable, spannable.length(), spannable.length() + 1)))
             .sorted()
             .reduce(
-                new ArrayList<Region>(),
+                new ArrayList<>(),
                 (xs, region) -> {
-                        final int prevEnd = xs.size() == 0 ? 0 : xs.get(xs.size() - 1).end;
-                        if (prevEnd < region.start) {
-                            xs.add(new Region(prevEnd, region.start));
-                        }
-                        xs.add(region);
-                        return xs;
-                    },
+                    Region prevRegion = new Region(spannable, xs.size() == 0 ? 0 : xs.get(xs.size() - 1).end, region.start);
+                    if (prevRegion.isValid()) xs.add(prevRegion);
+                    if (region.isValid()) xs.add(region);
+                    return xs;
+                },
                 (xs1, xs2) -> {xs1.addAll(xs2); return xs1;});
     }
 
@@ -136,10 +152,10 @@ public class SpanUtil {
     private static void addNotesByActorSpan(Spannable spannable, Audience audience, Region region, String stringFound, Actor actor) {
         Timeline timeline = MyContextHolder.get().timelines().forUserAtHomeOrigin(TimelineType.SENT, actor);
         if (region.urlSpan.isPresent()) {
-            spannable.removeSpan(region.urlSpan);
+            spannable.removeSpan(region.urlSpan.get());
             spannable.setSpan(new MyUrlSpan(timeline.getClickUri().toString()), region.start, region.end, 0);
         } else if (region.otherSpan.isPresent()) {
-            spannable.removeSpan(region.otherSpan);
+            spannable.removeSpan(region.otherSpan.get());
             spannable.setSpan(new MyUrlSpan(timeline.getClickUri().toString()), region.start, region.end, 0);
         } else {
             int indInRegion = spannable.subSequence(region.start, region.end).toString().indexOf(stringFound);
@@ -147,11 +163,11 @@ public class SpanUtil {
                 int start2 = region.start + indInRegion;
                 int start3 = start2 + stringFound.length();
                 spannable.setSpan(new MyUrlSpan(timeline.getClickUri().toString()), start2, start3, 0);
-                if (indInRegion > 2) {
-                    modifySpansInRegion(spannable, audience).accept(new Region(region.start, start2));
+                if (indInRegion >= MIN_SPAN_LENGTH) {
+                    modifySpansInRegion(spannable, audience).accept(new Region(spannable, region.start, start2));
                 }
-                if (start3 + 2 < region.end) {
-                    modifySpansInRegion(spannable, audience).accept(new Region(start3, region.end));
+                if (start3 + MIN_SPAN_LENGTH <= region.end) {
+                    modifySpansInRegion(spannable, audience).accept(new Region(spannable, start3, region.end));
                 }
             }
         }

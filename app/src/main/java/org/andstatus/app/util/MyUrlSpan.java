@@ -52,6 +52,7 @@ public class MyUrlSpan extends URLSpan {
 
     public static final String SOFT_HYPHEN = "\u00AD";
     public static final Spannable EMPTY_SPANNABLE = new SpannableString("");
+    public final String url;
 
     public static final Creator<MyUrlSpan> CREATOR = new Creator<MyUrlSpan>() {
         @Override
@@ -67,6 +68,7 @@ public class MyUrlSpan extends URLSpan {
 
     public MyUrlSpan(String url) {
         super(url);
+        this.url = url;
     }
 
     @Override
@@ -126,7 +128,7 @@ public class MyUrlSpan extends URLSpan {
         }
     }
 
-    private static Spannable toSpannable(String text, boolean linkify) {
+    public static Spannable toSpannable(String text, boolean linkify) {
         if (StringUtils.isEmpty(text)) return EMPTY_SPANNABLE;
 
         // Android 6 bug, see https://github.com/andstatus/andstatus/issues/334
@@ -232,6 +234,13 @@ public class MyUrlSpan extends URLSpan {
             spannable.removeSpan(span);
             spannable.setSpan(new MyUrlSpan(span.getURL()), start, end, 0);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "MyUrlSpan{" +
+                "'" + url + '\'' +
+                '}';
     }
 
     public static URLSpan[] getUrlSpans(View view) {
