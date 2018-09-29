@@ -32,6 +32,7 @@ import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -80,6 +81,7 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
             }
 
             super.load(cursor);
+            audience = Audience.fromNoteId(getOrigin(), getNoteId());
             noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
             String via = DbUtils.getString(cursor, NoteTable.VIA);
             if (!StringUtils.isEmpty(via)) {

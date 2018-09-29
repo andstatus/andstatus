@@ -46,9 +46,9 @@ public class PrivateNotesConversationLoader<T extends ConversationItem<T>> exten
     @Override
     protected void load2(T oMsg) {
         long actorId = MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, oMsg.getNoteId());
-        Audience recipients = Audience.fromNoteId(ma.getOrigin(), oMsg.getNoteId());
-        String selection = getSelectionForActorAndRecipient("=" + Long.toString(actorId),
-                SqlActorIds.fromActors(recipients.getRecipients()).getSql());
+        Audience audience = Audience.fromNoteId(ma.getOrigin(), oMsg.getNoteId());
+        String selection = getSelectionForActorAndAudience("=" + Long.toString(actorId),
+                SqlActorIds.fromActors(audience.getActors()).getSql());
         Uri uri = Timeline.getTimeline(TimelineType.EVERYTHING, 0, ma.getOrigin()).getUri();
         Cursor cursor = null;
         try {
@@ -68,10 +68,10 @@ public class PrivateNotesConversationLoader<T extends ConversationItem<T>> exten
 
     @NonNull
     // TODO: Actually this is not exactly what we need, because we don't check recipients
-    private String getSelectionForActorAndRecipient(String actor, String recipients) {
+    private String getSelectionForActorAndAudience(String actor, String audienceIds) {
         return "(" + NoteTable.PUBLIC + "=" + TriState.FALSE.id
                 + " AND (" + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.ACTOR_ID + actor
-                + " OR " + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.ACTOR_ID + recipients + "))";
+                + " OR " + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.ACTOR_ID + audienceIds + "))";
     }
 
 }

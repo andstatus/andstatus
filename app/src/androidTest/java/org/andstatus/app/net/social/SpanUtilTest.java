@@ -37,10 +37,7 @@ public class SpanUtilTest {
 
     @Before
     public void setUp() throws Exception {
-        TestSuite.initialize(this);
-        if (demoData.getMyAccount(demoData.conversationAccountName).isEmpty()) {
-            TestSuite.initializeWithData(this);
-        }
+        TestSuite.initializeWithAccounts(this);
     }
 
     @Test

@@ -100,7 +100,8 @@ public class NoteEditorData implements IsEmpty {
         return activity;
     }
 
-    private NoteEditorData(MyAccount myAccount, MyContext myContext, @NonNull AActivity activity, long inReplyToNoteIdIn, boolean andLoad) {
+    private NoteEditorData(MyAccount myAccount, MyContext myContext, @NonNull AActivity activity,
+                           long inReplyToNoteIdIn, boolean andLoad) {
         ma = myAccount.isValid() ? myAccount : myContext.accounts().getCurrentAccount();
         this.myContext = myContext;
         this.activity = activity;
@@ -110,7 +111,7 @@ public class NoteEditorData implements IsEmpty {
         Note note = activity.getNote();
         note.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId));
         note.setContent(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId));
-        note.audience().copy(Audience.load(myContext, activity.accountActor.origin, noteId));
+        note.setAudience(Audience.load(myContext, activity.accountActor.origin, noteId));
 
         long inReplyToNoteId = inReplyToNoteIdIn == 0
                 ? MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, noteId)
@@ -203,7 +204,7 @@ public class NoteEditorData implements IsEmpty {
                     + COMMA
                     + activity.getNote().getInReplyTo().getNote().getContent());
         }
-        values.put("recipients", activity.getNote().audience().getUsernames());
+        values.put("audience", activity.getNote().audience().getUsernames());
         values.put("ma", ma.getAccountName());
         return values.toString();
     }
@@ -362,13 +363,12 @@ public class NoteEditorData implements IsEmpty {
         return ma.getOrigin().isMentionAsWebFingerId() ? ActorInTimeline.WEBFINGER_ID : ActorInTimeline.USERNAME;
     }
 
-    public NoteEditorData addRecipientId(long actorId) {
-        activity.getNote().addRecipient(Actor.load(MyContextHolder.get(), actorId));
-        return this;
+    public NoteEditorData addToAudience(long actorId) {
+        return addToAudience(Actor.load(MyContextHolder.get(), actorId));
     }
 
-    public NoteEditorData addRecipient(Actor actor) {
-        activity.getNote().addRecipient(actor);
+    public NoteEditorData addToAudience(Actor actor) {
+        activity.getNote().addToAudience(actor);
         return this;
     }
 

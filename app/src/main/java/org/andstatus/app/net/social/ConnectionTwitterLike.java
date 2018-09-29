@@ -311,7 +311,7 @@ public abstract class ConnectionTwitterLike extends Connection {
             setNoteBodyFromJson(note, jso);
             if (jso.has("recipient")) {
                 JSONObject recipient = jso.getJSONObject("recipient");
-                note.addRecipient(actorFromJson(recipient));
+                note.addToAudience(actorFromJson(recipient));
             }
             if (jso.has("source")) {
                 note.via = jso.getString("source");

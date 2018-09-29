@@ -124,7 +124,7 @@ public class AccountToNote {
 
     private void getData() {
         final String method = "getData";
-        isRecipient = noteForAnyAccount.recipients.contains(accountActorId);
+        isRecipient = noteForAnyAccount.audience.contains(accountActorId);
         isAuthor = (accountActorId == noteForAnyAccount.author.actorId);
         isAuthorMySucceededMyAccount = isAuthor && myAccount.isValidAndSucceeded();
         ActorToNote actorToNote = MyQuery.favoritedAndReblogged(noteForAnyAccount.myContext,

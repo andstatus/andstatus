@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.stream.Collectors.joining;
 import static org.andstatus.app.timeline.DuplicationLink.DUPLICATES;
 import static org.andstatus.app.timeline.DuplicationLink.IS_DUPLICATED;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
@@ -66,7 +67,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     TriState isPublic = TriState.UNKNOWN;
     Audience audience = Audience.EMPTY;
-    List<ActorViewItem> recipients = Collections.emptyList();
+    private List<ActorViewItem> audienceToShow = Collections.emptyList();
 
     public long inReplyToNoteId = 0;
     ActorViewItem inReplyToActor = ActorViewItem.EMPTY;
@@ -192,7 +193,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     public StringBuilder getDetails(Context context) {
         StringBuilder builder = new StringBuilder(RelativeTime.getDifference(context, updatedDate));
         setInReplyTo(context, builder);
-        setRecipientsNames(context, builder);
+        setAudience(context, builder);
         setNoteSource(context, builder);
         setAccountDownloaded(builder);
         setNoteStatus(context, builder);
@@ -208,11 +209,11 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
                 inReplyToActor.getName()));
     }
 
-    private void setRecipientsNames(Context context, StringBuilder noteDetails) {
-        if (isPublic.isFalse && !recipients.isEmpty()) {
+    private void setAudience(Context context, StringBuilder noteDetails) {
+        if (isPublic.isFalse && !audienceToShow.isEmpty()) {
             noteDetails.append(" " + String.format(
                     context.getText(R.string.message_source_to).toString(),
-                    recipients.stream().map(ActorViewItem::getName).reduce((a, b) -> a + ", " + b).orElse("")));
+                    audienceToShow.stream().map(ActorViewItem::getName).collect(joining(", "))));
         }
     }
 
@@ -293,24 +294,24 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     public void addActorsToLoad(ActorListLoader loader) {
         loader.addActorToList(author.getActor());
         loader.addActorToList(inReplyToActor.getActor());
-        audience.getRecipients().forEach(loader::addActorToList);
+        audience.getActors().forEach(loader::addActorToList);
     }
 
     @Override
     public void setLoadedActors(ActorListLoader loader) {
         if (author.getActor().nonEmpty()) author = loader.getLoaded(author);
         if (inReplyToActor.getActor().nonEmpty()) inReplyToActor = loader.getLoaded(inReplyToActor);
-        List<ActorViewItem> recipientsLoc = new ArrayList<>();
-        List<Actor> actorsLoc = new ArrayList<>();
-        audience.getRecipients().forEach(actor -> {
+        Audience audienceNew = new Audience((audience.origin));
+        List<ActorViewItem> audienceToShowNew = new ArrayList<>();
+        audience.getActors().forEach(actor -> {
                     ActorViewItem loaded = loader.getLoaded(ActorViewItem.fromActor(actor));
-                    actorsLoc.add(loaded.getActor());
+                    audienceNew.add(loaded.getActor());
                     if (actor.nonPublic() && !actor.equals(inReplyToActor.getActor())) {
-                        recipientsLoc.add(loaded);
+                        audienceToShowNew.add(loaded);
                     }
                 }
         );
-        actorsLoc.forEach(audience::add);
-        recipients = recipientsLoc;
+        audience = audienceNew;
+        audienceToShow = audienceToShowNew;
     }
 }

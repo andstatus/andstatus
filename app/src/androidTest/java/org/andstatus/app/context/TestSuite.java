@@ -61,6 +61,14 @@ public class TestSuite {
         return initialized && dataAdded;
     }
 
+    public static Context initializeWithAccounts(Object testCase) {
+        initialize(testCase);
+        if (MyContextHolder.get().accounts().fromAccountName(demoData.conversationAccount2Name).isEmpty()) {
+            ensureDataAdded();
+        }
+        return getMyContextForTest().context();
+    }
+
     public static Context initializeWithData(Object testCase) {
         initialize(testCase);
         ensureDataAdded();

@@ -19,10 +19,17 @@ package org.andstatus.app.net.social;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
+import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.CommandEnum;
+import org.andstatus.app.service.CommandExecutionContext;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +37,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Set;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
@@ -50,7 +58,7 @@ public class ConnectionGnuSocialTest {
 
     @Before
     public void setUp() throws Exception {
-        TestSuite.initializeWithData(this);
+        TestSuite.initializeWithAccounts(this);
         connection = new ConnectionTwitterGnuSocialMock();
     }
 
@@ -94,7 +102,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("Timeline position", "2664346", activity.getTimelinePosition().getPosition());
         assertEquals("Note Oid", "2664346", activity.getNote().oid);
         assertEquals("conversationOid", "2218650", activity.getNote().conversationOid);
-        assertTrue("Does not have a recipient", activity.recipients().isEmpty());
+        assertTrue("Does not have a recipient", activity.audience().isEmpty());
         assertNotEquals("Is a reblog", ActivityType.ANNOUNCE,  activity.type);
 
         final AActivity inReplyTo = activity.getNote().getInReplyTo();
@@ -257,7 +265,6 @@ public class ConnectionGnuSocialTest {
         assertEquals("Author Username", "colegota", activity.getAuthor().getUsername());
         final String contentPrefix = "@<a href=\"https://linuxinthenight.com/user/1\" class";
         assertTrue("Content " + activity, activity.getNote().getContent().startsWith(contentPrefix));
-        // TODO: assertTrue("Should have a recipient", activity.recipients().nonEmpty());
 
         ind++;
         activity = timeline.get(ind);
@@ -267,7 +274,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("Actor Username", "fanta", activity.getActor().getUsername());
         assertEquals("Author Oid", "379323", activity.getAuthor().oid);
         assertEquals("Note Oid", "12940131", activity.getNote().oid);
-        assertTrue("Should not have a recipient", activity.recipients().isEmpty());
+        assertTrue("Should not have a recipient", activity.audience().isEmpty());
 
         assertTrue("Content " + activity, activity.getNote().getContent().startsWith(contentPrefix));
 
@@ -279,4 +286,47 @@ public class ConnectionGnuSocialTest {
                 TestSuite.utcTime(activity.getUpdatedDate()));
     }
 
+
+    @Test
+    public void testMentionsInHtml() throws IOException {
+        oneHtmlMentionsTest("1iceloops123", "14044206", org.andstatus.app.tests.R.raw.loadaverage_note_with_mentions, 6);
+        oneHtmlMentionsTest("andstatus", "14043873", org.andstatus.app.tests.R.raw.loadaverage_note_with_mentions2, 5);
+    }
+
+    private void oneHtmlMentionsTest(String actorUsername, String noteOid, int responseResourceId, int numberOfMembers) throws IOException {
+        connection.getHttpMock().addResponse(responseResourceId);
+        AActivity activity = connection.getNote(noteOid);
+
+        assertEquals("Received a note " + activity, AObjectType.NOTE, activity.getObjectType());
+        assertEquals("Should be UPDATE " + activity, ActivityType.UPDATE,  activity.type);
+        assertEquals("Note Oid", noteOid, activity.getNote().oid);
+        assertEquals("Actor Username", actorUsername, activity.getActor().getUsername());
+        assertEquals("Author should be Actor", activity.getActor(), activity.getAuthor());
+        assertTrue("inReplyTo should not be empty " + activity , activity.getNote().getInReplyTo().nonEmpty());
+
+        activity.getNote().setUpdatedDate(MyLog.uniqueCurrentTimeMS());
+        activity.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
+
+        MyAccount ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
+        CommandExecutionContext executionContext = new CommandExecutionContext(
+                CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, 123));
+        DataUpdater di = new DataUpdater(executionContext);
+        di.onActivity(activity);
+
+        assertAudience(activity, activity.audience(), numberOfMembers);
+        Audience storedAudience = Audience.load(MyContextHolder.get(), activity.getNote().origin, activity.getNote().noteId);
+        assertAudience(activity, storedAudience, numberOfMembers);
+    }
+
+    private void assertAudience(AActivity activity, Audience audience, int numberOfMembers) {
+        Set<Actor> actors = audience.getActors();
+        assertEquals("Wrong number of audience members " + audience + "\n" + activity, numberOfMembers, actors.size());
+        assertEquals("All recipients should have valid usernames " + audience + "\n" + activity, Actor.EMPTY,
+                actors.stream().filter(actor -> !actor.isUsernameValid()).findAny().orElse(Actor.EMPTY));
+        assertEquals("All recipients should have id " + audience + "\n" + activity, Actor.EMPTY,
+                actors.stream().filter(actor -> actor.actorId == 0).findAny().orElse(Actor.EMPTY));
+        assertEquals("All recipients should be nonEmpty " + audience + "\n" + activity, Actor.EMPTY,
+                actors.stream()
+                        .filter(Actor::isEmpty).findAny().orElse(Actor.EMPTY));
+    }
 }

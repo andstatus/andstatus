@@ -43,7 +43,7 @@ import java.util.function.Function;
 public class Audience implements IsEmpty {
     public final static Audience EMPTY = new Audience(Origin.EMPTY);
     public final Origin origin;
-    private final Set<Actor> recipients = new HashSet<>();
+    private final Set<Actor> actors = new HashSet<>();
     private TriState isPublic = TriState.UNKNOWN;
 
     public Audience(Origin origin) {
@@ -84,66 +84,52 @@ public class Audience implements IsEmpty {
     }
 
     public Actor getFirstNonPublic() {
-        return recipients.stream().filter(Actor::nonPublic).findFirst().orElse(Actor.EMPTY);
+        return actors.stream().filter(Actor::nonPublic).findFirst().orElse(Actor.EMPTY);
     }
 
     public String getUsernames() {
-        return recipients.stream().map(Actor::getTimelineUsername).reduce((a, b) -> a + ", " + b).orElse("");
+        return actors.stream().map(Actor::getTimelineUsername).reduce((a, b) -> a + ", " + b).orElse("");
     }
 
-    public Set<Actor> getRecipients() {
-        return recipients;
+    public Set<Actor> getActors() {
+        return actors;
     }
 
     @Override
     public boolean isEmpty() {
-        return this.equals(EMPTY) || recipients.isEmpty();
+        return this.equals(EMPTY) || actors.isEmpty();
     }
 
     public boolean hasNonPublic() {
-        return recipients.stream().anyMatch(Actor::nonPublic);
+        return actors.stream().anyMatch(Actor::nonPublic);
     }
 
-    public void copy(@NonNull Audience audience) {
-        audience.recipients.forEach(this::add);
-        isPublic = audience.isPublic;
+    public Audience copy() {
+        Audience audience = new Audience(origin);
+        actors.forEach(audience::add);
+        return audience;
     }
 
     public void add(@NonNull Actor actor) {
         if (actor.isPublic()) {
             isPublic = TriState.TRUE;
         }
-        if (!recipients.contains(actor)) {
-            recipients.add(actor);
-            return;
+        if (!actor.isPartiallyDefined()) {
+            actors.remove(actor);
         }
-        if (actor.isPartiallyDefined()) {
-            return;
-        }
-        recipients.remove(actor);
-        recipients.add(actor);
+        actors.add(actor);
     }
 
     public boolean containsMe(MyContext myContext) {
-        return myContext.users().containsMe(recipients);
+        return myContext.users().containsMe(actors);
     }
 
     public boolean contains(Actor actor) {
-        for (Actor recipient : recipients) {
-            if (recipient.equals(actor)) {
-                return true;
-            }
-        }
-        return false;
+        return actors.contains(actor);
     }
 
     public boolean contains(long actorId) {
-        for (Actor recipient : recipients) {
-            if (recipient.actorId == actorId) {
-                return true;
-            }
-        }
-        return false;
+        return actors.stream().anyMatch(actor -> actor.actorId == actorId);
     }
 
     public void save(@NonNull MyContext myContext, @NonNull Origin origin, long noteId) {
@@ -154,15 +140,15 @@ public class Audience implements IsEmpty {
         Audience prevAudience = Audience.fromNoteId(origin, noteId);
         Set<Actor> toDelete = new HashSet<>();
         Set<Actor> toAdd = new HashSet<>();
-        for (Actor actor : prevAudience.getRecipients()) {
+        for (Actor actor : prevAudience.getActors()) {
             if (actor.isPublic()) continue;
-            if (!getRecipients().contains(actor)) {
+            if (!getActors().contains(actor)) {
                 toDelete.add(actor);
             }
         }
-        for (Actor actor : getRecipients()) {
+        for (Actor actor : getActors()) {
             if (actor.isPublic()) continue;
-            if (!prevAudience.getRecipients().contains(actor)) {
+            if (!prevAudience.getActors().contains(actor)) {
                 if (actor.actorId == 0) {
                     MyLog.w(this, "No actorId for " + actor);
                 } else {
@@ -185,7 +171,7 @@ public class Audience implements IsEmpty {
                 }
             }
         } catch (Exception e) {
-            MyLog.e(this, "save, noteId:" + noteId + "; " + recipients, e);
+            MyLog.e(this, "save, noteId:" + noteId + "; " + actors, e);
         }
     }
 
@@ -196,27 +182,27 @@ public class Audience implements IsEmpty {
 
         Audience audience = (Audience) o;
 
-        return recipients.equals(audience.recipients);
+        return actors.equals(audience.actors);
     }
 
     @Override
     public int hashCode() {
-        return recipients.hashCode();
+        return actors.hashCode();
     }
 
     @Override
     public String toString() {
-        return recipients.toString();
+        return actors.toString();
     }
 
     public void setPublic(TriState isPublic) {
         this.isPublic = isPublic;
         switch (isPublic) {
             case TRUE:
-                recipients.add(Actor.PUBLIC);
+                actors.add(Actor.PUBLIC);
                 break;
             default:
-                recipients.remove(Actor.PUBLIC);
+                actors.remove(Actor.PUBLIC);
                 break;
         }
     }

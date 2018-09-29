@@ -122,21 +122,21 @@ public class SpanUtil {
 
             String text = spannable.subSequence(region.start, region.end).toString();
             if (text.contains("@")) {
-                Actor mentionedByAtWebfingerID = audience.getRecipients().stream()
+                Actor mentionedByAtWebfingerID = audience.getActors().stream()
                         .filter(actor -> actor.isWebFingerIdValid() &&
                                 text.contains("@" + actor.getWebFingerId())).findAny().orElse(Actor.EMPTY);
                 if (mentionedByAtWebfingerID.nonEmpty()) {
                     addNotesByActorSpan(spannable, audience, region,
                             "@" + mentionedByAtWebfingerID.getWebFingerId(), mentionedByAtWebfingerID);
                 } else {
-                    Actor mentionedByWebfingerID = audience.getRecipients().stream()
+                    Actor mentionedByWebfingerID = audience.getActors().stream()
                             .filter(actor -> actor.isWebFingerIdValid() &&
                                     text.contains(actor.getWebFingerId())).findAny().orElse(Actor.EMPTY);
                     if (mentionedByWebfingerID.nonEmpty()) {
                         addNotesByActorSpan(spannable, audience, region,
                                 mentionedByWebfingerID.getWebFingerId(), mentionedByWebfingerID);
                     } else {
-                        Actor mentionedByUsername = audience.getRecipients().stream()
+                        Actor mentionedByUsername = audience.getActors().stream()
                                 .filter(actor -> actor.isUsernameValid() &&
                                         text.contains("@" + actor.getUsername())).findAny().orElse(Actor.EMPTY);
                         if (mentionedByUsername.nonEmpty()) {

@@ -18,7 +18,6 @@ package org.andstatus.app.net.social.pumpio;
 
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
@@ -45,16 +44,16 @@ import static org.andstatus.app.net.social.pumpio.ConnectionPumpio.NAME_PROPERTY
 class ActivitySender {
     final ConnectionPumpio connection;
     final String objectId;
-    final Audience recipients;
+    final Audience audience;
     String inReplyToId = "";
     String name = "";
     String content = "";
     Uri mMediaUri = null;
 
-    ActivitySender(ConnectionPumpio connection, String objectId, Audience recipients) {
+    ActivitySender(ConnectionPumpio connection, String objectId, Audience audience) {
         this.connection = connection;
         this.objectId = objectId;
-        this.recipients = recipients;
+        this.audience = audience;
     }
 
     static ActivitySender fromId(ConnectionPumpio connection, String objectId) {
@@ -185,7 +184,7 @@ class ActivitySender {
         generator.put("objectType", PObjectType.APPLICATION.id());
         activity.put("generator", generator);
 
-        addRecipients(activity, activityType);
+        setAudience(activity, activityType);
 
         JSONObject author = new JSONObject();
         author.put("id", connection.getData().getAccountActor().oid);
@@ -195,15 +194,15 @@ class ActivitySender {
         return activity;
     }
 
-    private void addRecipients(JSONObject activity, PActivityType activityType) throws JSONException {
-        recipients.getRecipients().forEach(actor -> addRecipient(activity, "to", actor));
-        if (recipients.isEmpty() && StringUtils.isEmpty(inReplyToId)
+    private void setAudience(JSONObject activity, PActivityType activityType) throws JSONException {
+        audience.getActors().forEach(actor -> addToAudience(activity, "to", actor));
+        if (audience.isEmpty() && StringUtils.isEmpty(inReplyToId)
                 && (activityType.equals(PActivityType.POST) || activityType.equals(PActivityType.UPDATE))) {
-            addRecipient(activity, "to", Actor.PUBLIC);
+            addToAudience(activity, "to", Actor.PUBLIC);
         }
     }
 
-    private void addRecipient(JSONObject activity, String recipientField, Actor actor) {
+    private void addToAudience(JSONObject activity, String recipientField, Actor actor) {
         String recipientId = actor.equals(Actor.PUBLIC) ? ConnectionPumpio.PUBLIC_COLLECTION_ID : actor.oid;
         if (StringUtils.isEmpty(recipientId)) return;
         JSONObject recipient = new JSONObject();

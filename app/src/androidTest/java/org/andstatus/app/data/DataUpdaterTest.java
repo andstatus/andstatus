@@ -170,7 +170,7 @@ public class DataUpdaterTest {
                 null, noteOid, DownloadStatus.LOADED);
         final Note note = activity.getNote();
         note.via = "AnyOtherClient";
-        note.addRecipient(accountActor);
+        note.addToAudience(accountActor);
         note.setPublic(TriState.FALSE);
         final long noteId = new DataUpdater(ma).onActivity(activity).getNote().noteId;
         assertNotEquals("Note added", 0, noteId);
@@ -182,10 +182,10 @@ public class DataUpdaterTest {
         DemoNoteInserter.assertInteraction(activity, NotificationEventType.PRIVATE, TriState.TRUE);
 
         Audience audience = Audience.fromNoteId(accountActor.origin, noteId);
-        assertNotEquals("No recipients for " + activity, 0, audience.getRecipients().size());
-        assertEquals("Recipient " + ma.getAccountName() + "; " + audience.getRecipients(),
+        assertNotEquals("No audience for " + activity, 0, audience.getActors().size());
+        assertEquals("Recipient " + ma.getAccountName() + "; " + audience.getActors(),
                 ma.getActorId(), audience.getFirstNonPublic().actorId);
-        assertEquals("Number of recipients for " + activity, 1, audience.getRecipients().size());
+        assertEquals("Number of audience for " + activity, 1, audience.getActors().size());
     }
 
     @Test
@@ -556,7 +556,7 @@ public class DataUpdaterTest {
 
         long noteId = di.onActivity(activity).getNote().noteId;
         Actor buddy = Actor.EMPTY;
-        for (Actor actor : activity.recipients().getRecipients()) {
+        for (Actor actor : activity.audience().getActors()) {
             if (actor.getUsername().equals(buddyUsername)) {
                 buddy = actor;
                 break;
@@ -564,7 +564,7 @@ public class DataUpdaterTest {
         }
         assertTrue("Note added", noteId != 0);
         if (isReply) {
-            assertTrue("'" + buddyUsername + "' should be a recipient " + activity.recipients().getRecipients(),
+            assertTrue("'" + buddyUsername + "' should be a recipient " + activity.audience().getActors(),
                     buddy.nonEmpty());
             assertNotEquals("'" + buddyUsername + "' is not added " + buddy, 0, buddy.actorId);
         } else {
@@ -617,7 +617,7 @@ public class DataUpdaterTest {
         assertTrue("Activity should be added", di.onActivity(activity2).getId() != 0);
 
         assertEquals("Audience should contain one actor " + activity2.getNote().audience(),
-                1, activity2.getNote().audience().getRecipients().size());
+                1, activity2.getNote().audience().getActors().size());
         assertEquals("Audience", myAuthor1, activity2.getNote().audience().getFirstNonPublic());
         assertEquals("Notified actor", myAuthor1, activity2.getNotifiedActor());
     }

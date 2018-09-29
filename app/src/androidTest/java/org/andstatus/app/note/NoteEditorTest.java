@@ -100,7 +100,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
     private NoteEditorData getStaticData(MyAccount ma) {
         return NoteEditorData.newReply(ma, MyQuery.oidToId(OidEnum.NOTE_OID, ma.getOrigin().getId(),
                         demoData.conversationEntryNoteOid))
-                .addRecipientId(MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOrigin().getId(),
+                .addToAudience(MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOrigin().getId(),
                         demoData.conversationEntryAuthorOid))
                 .addMentionsToText()
                 .setContent("Some static text " + demoData.testRunUid);

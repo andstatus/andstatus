@@ -30,7 +30,6 @@ import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 import java.util.GregorianCalendar;
-import java.util.Set;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -121,9 +120,9 @@ public class DemoConversationInserter {
                 iteration == 1 ? demoData.conversationMentionsNoteOid : null);
         addActivity(reply5);
         assertThat("The user '" + author3.getUsername() + "' should be a recipient\n" + reply5.getNote(),
-                reply5.getNote().audience().getRecipients(), hasItem(author3));
+                reply5.getNote().audience().getActors(), hasItem(author3));
         assertThat("The user '" + author2.getUsername() + "' should not be a recipient\n" + reply5.getNote(),
-                reply5.getNote().audience().getRecipients(), not(hasItem(author2)));
+                reply5.getNote().audience().getActors(), not(hasItem(author2)));
 
         Actor reblogger1 = buildActorFromOid("acct:reblogger@" + demoData.pumpioMainHost);
         reblogger1.setAvatarUrl("http://www.avatarsdb.com/avatars/cow_face.jpg");

@@ -400,7 +400,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         String content = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
         DemoData.crashTest(() -> content.startsWith("Crash me on sending 2015-04-10"));
         String oid = getNoteOid(method, noteId, false);
-        Audience recipients = Audience.fromNoteId(execContext.getMyAccount().getOrigin(), noteId);
+        Audience audience = Audience.fromNoteId(execContext.getMyAccount().getOrigin(), noteId);
         Uri mediaUri = DownloadData.getSingleAttachment(noteId).
                 mediaUriToBePosted();
         String msgLog = (StringUtils.nonEmpty(name) ? "name:'" + name + "'" : "")
@@ -419,7 +419,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             long inReplyToNoteId = MyQuery.noteIdToLongColumnValue(
                     NoteTable.IN_REPLY_TO_NOTE_ID, noteId);
             String inReplyToNoteOid = getNoteOid(method, inReplyToNoteId, false);
-            activity = getConnection().updateNote(name, content.trim(), oid, recipients, inReplyToNoteOid, mediaUri);
+            activity = getConnection().updateNote(name, content.trim(), oid, audience, inReplyToNoteOid, mediaUri);
             logIfEmptyNote(method, noteId, activity.getNote());
         } catch (ConnectionException e) {
             logConnectionException(e, method + "; " + msgLog);

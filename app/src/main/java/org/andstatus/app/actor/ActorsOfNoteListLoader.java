@@ -65,7 +65,7 @@ public class ActorsOfNoteListLoader extends ActorListLoader {
             addActorIdToList(originOfSelectedNote,
                     MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, selectedNoteId));
         }
-        Audience.fromNoteId(originOfSelectedNote, selectedNoteId).getRecipients().forEach(this::addActorToList);
+        Audience.fromNoteId(originOfSelectedNote, selectedNoteId).getActors().forEach(this::addActorToList);
         if (!mentionedOnly) {
             addRebloggers();
         }

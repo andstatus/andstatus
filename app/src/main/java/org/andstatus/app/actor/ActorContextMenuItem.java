@@ -52,7 +52,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         @Override
         NoteEditorData executeAsync(Params params) {
             return NoteEditorData.newEmpty(params.menu.getActingAccount())
-                    .addRecipientId(params.menu.getViewItem().getActorId());
+                    .addToAudience(params.menu.getViewItem().getActorId());
         }
 
         @Override

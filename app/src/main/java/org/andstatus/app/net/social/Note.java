@@ -55,19 +55,19 @@ public class Note extends AObject {
     
     public final String oid;
     private long updatedDate = 0;
-    private final Audience recipients;
+    private Audience audience;
     private String name = "";
     private String content = "";
     private final LazyVal<String> contentToSearch = LazyVal.of(this::evalContentToSearch);
 
     @NonNull
     private AActivity inReplyTo = AActivity.EMPTY;
-    public final List<AActivity> replies = new ArrayList<>();
+    public final List<AActivity> replies;
     public String conversationOid="";
     public String via = "";
     public String url="";
 
-    public final Attachments attachments = new Attachments();
+    public final Attachments attachments;
 
     /** Some additional attributes may appear from "My account's" (authenticated Account's) point of view */
 
@@ -78,12 +78,20 @@ public class Note extends AObject {
 
     @NonNull
     public static Note fromOriginAndOid(@NonNull Origin origin, String oid, DownloadStatus status) {
-        Note note = new Note(origin, isEmptyOid(oid) ? getTempOid() : oid);
-        note.status = status;
-        if (StringUtils.isEmpty(oid) && status == DownloadStatus.LOADED) {
-            note.status = DownloadStatus.UNKNOWN;
-        }
+        Note note = new Note(origin, fixedOid(oid));
+        note.status = fixedStatus(note.oid, status);
         return note;
+    }
+
+    private static String fixedOid(String oid) {
+        return isEmptyOid(oid) ? getTempOid() : oid;
+    }
+
+    private static DownloadStatus fixedStatus(String oid, DownloadStatus status) {
+        if (StringUtils.isEmpty(oid) && status == DownloadStatus.LOADED) {
+            return DownloadStatus.UNKNOWN;
+        }
+        return status;
     }
 
     @NonNull
@@ -123,7 +131,9 @@ public class Note extends AObject {
     private Note(Origin origin, String oid) {
         this.origin = origin;
         this.oid = oid;
-        recipients = new Audience(origin);
+        audience = new Audience(origin);
+        replies = new ArrayList<>();
+        attachments = new Attachments();
     }
 
     @NonNull
@@ -294,8 +304,8 @@ public class Note extends AObject {
         }
         builder.append("updated:" + MyLog.debugFormatOfDate(updatedDate) + ",");
         builder.append("origin:" + origin.getName() + ",");
-        if(recipients.nonEmpty()) {
-            builder.append("\nrecipients:" + recipients + ",");
+        if(audience.nonEmpty()) {
+            builder.append("\naudience:" + audience + ",");
         }
         if (attachments.nonEmpty()) {
             builder.append("\n" + attachments + ",");
@@ -339,18 +349,18 @@ public class Note extends AObject {
 
     @NonNull
     public Audience audience() {
-        return recipients;
+        return audience;
     }
 
-    public void addRecipient(Actor recipient) {
-        if (recipient != null && recipient.nonEmpty() && !recipients.contains(recipient)) {
-            recipients.add(recipient);
+    public void addToAudience(Actor actor) {
+        if (actor != null && actor.nonEmpty() && !audience.contains(actor)) {
+            audience.add(actor);
         }
     }
 
-    public void addRecipientsFromBodyText(Actor author) {
+    public void addAudienceFromBodyText(Actor author) {
         for (Actor actor : author.extractActorsFromContent(getContent(), getInReplyTo().getActor())) {
-            addRecipient(actor);
+            addToAudience(actor);
         }
     }
 
@@ -362,20 +372,25 @@ public class Note extends AObject {
     }
 
     public Note copy(String oidNew) {
-        Note note = fromOriginAndOid(origin, oidNew, status);
-        note.noteId = noteId;
-        note.setUpdatedDate(updatedDate);
-        note.recipients.copy(recipients);
-        note.setName(name);
-        note.setContent(content);
-        note.inReplyTo = getInReplyTo();
-        note.replies.addAll(replies);
-        note.setConversationOid(conversationOid);
-        note.via = via;
-        note.url = url;
-        note.attachments.copy(attachments);
-        note.conversationId = conversationId;
-        return note;
+        return new Note(this, oidNew);
+    }
+
+    private Note(Note note, String oidNew) {
+        origin = note.origin;
+        oid = fixedOid(oidNew);
+        status = fixedStatus(oid, note.status);
+        audience = note.audience.copy();
+        noteId = note.noteId;
+        updatedDate = note.updatedDate;
+        name = note.name;
+        setContent(note.content);
+        inReplyTo = note.inReplyTo;
+        replies = note.replies;
+        conversationOid = note.conversationOid;
+        via = note.via;
+        url = note.url;
+        attachments = note.attachments.copy();
+        conversationId = note.conversationId;
     }
 
     public void addFavoriteBy(@NonNull Actor accountActor, @NonNull TriState favoritedByMe) {
@@ -419,5 +434,9 @@ public class Note extends AObject {
 
     public void setStatus(DownloadStatus status) {
         this.status = status;
+    }
+
+    public void setAudience(Audience audience) {
+        this.audience = audience;
     }
 }

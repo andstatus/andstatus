@@ -46,7 +46,7 @@ public class NoteForAnyAccount {
     public final Actor actor;
     public final String imageFilename;
     public final TriState isPublic;
-    Audience recipients;
+    Audience audience;
     private String content = "";
 
     public NoteForAnyAccount(MyContext myContext, long activityId, long noteId) {
@@ -78,7 +78,7 @@ public class NoteForAnyAccount {
         }
         status = statusLoc;
         isPublic = isPublicLoc;
-        recipients = Audience.fromNoteId(origin, noteId); // Now recipients have all users, mentioned in a body
+        audience = Audience.fromNoteId(origin, noteId); // Now all users, mentioned in a body, are members of Audience
         author = Actor.load(myContext, authorId);
 
         DownloadData downloadData = DownloadData.getSingleAttachment(noteId);

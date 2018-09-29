@@ -20,7 +20,6 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
-import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
@@ -276,7 +275,7 @@ public class AActivity extends AObject {
         this.objActor = actor == null ? Actor.EMPTY : actor;
     }
 
-    public Audience recipients() {
+    public Audience audience() {
         return getNote().audience();
     }
 
@@ -466,7 +465,7 @@ public class AActivity extends AObject {
         if (myContext.users().isMe(getActor())) return NotificationEventType.EMPTY;
         if (getNote().getPublic().isFalse) {
             return NotificationEventType.PRIVATE;
-        } else if(myContext.users().containsMe(getNote().audience().getRecipients()) && !isMyActorOrAuthor(myContext)) {
+        } else if(myContext.users().containsMe(getNote().audience().getActors()) && !isMyActorOrAuthor(myContext)) {
             return NotificationEventType.MENTION;
         } else if (type == ActivityType.ANNOUNCE && myContext.users().isMe(getAuthor())) {
             return NotificationEventType.ANNOUNCE;

@@ -200,8 +200,8 @@ public class DataUpdater {
             values.put(NoteTable.CONTENT_TO_SEARCH, note.getContentToSearch());
 
             updateInReplyTo(activity, values);
-            activity.getNote().addRecipientsFromBodyText(activity.getAuthor());
-            for ( Actor actor : note.audience().getRecipients()) {
+            activity.getNote().addAudienceFromBodyText(activity.getAuthor());
+            for ( Actor actor : note.audience().getActors()) {
                 updateObjActor(activity.getActor().update(activity.accountActor, actor), recursing + 1);
             }
 
@@ -281,7 +281,7 @@ public class DataUpdater {
             }
             new DataUpdater(execContext).onActivity(inReply);
             if (inReply.getNote().noteId != 0) {
-                activity.getNote().addRecipient(inReply.getAuthor());
+                activity.getNote().addToAudience(inReply.getAuthor());
                 values.put(NoteTable.IN_REPLY_TO_NOTE_ID, inReply.getNote().noteId);
                 if (inReply.getAuthor().actorId != 0) {
                     values.put(NoteTable.IN_REPLY_TO_ACTOR_ID, inReply.getAuthor().actorId);

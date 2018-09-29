@@ -44,7 +44,7 @@ public class NoteEditorDataTest {
             long memberActorId, boolean replyAll) {
         Uri uri = Uri.parse("http://example.com/" + demoData.testRunUid + "/some.png");
         NoteEditorData data = NoteEditorData.newReply(ma, inReplyToMsgId)
-                .addRecipientId(recipientId)
+                .addToAudience(recipientId)
                 .setReplyToConversationParticipants(replyAll)
                 .setContent("Some text here " + demoData.testRunUid);
         assertFalse(data.toString(), data.getContent().contains("@"));

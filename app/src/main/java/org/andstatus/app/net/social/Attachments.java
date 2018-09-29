@@ -79,9 +79,10 @@ public class Attachments implements IsEmpty {
         list.clear();
     }
 
-    public void copy(Attachments attachments) {
-        list.clear();
-        list.addAll(attachments.list);
+    public Attachments copy() {
+        Attachments attachments = new Attachments();
+        attachments.list.addAll(list);
+        return attachments;
     }
 
     public int size() {
