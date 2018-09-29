@@ -102,8 +102,6 @@ public abstract class ConversationItem<T extends ConversationItem<T>> extends Ba
         conversationId = DbUtils.getLong(cursor, NoteTable.CONVERSATION_ID);
         setOrigin(myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)));
         author = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
-        setName(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.NAME)));
-        setContent(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.CONTENT)));
         inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
         updatedDate = DbUtils.getLong(cursor, NoteTable.UPDATED_DATE);
     }

@@ -20,8 +20,10 @@ import android.support.annotation.NonNull;
 import android.text.Spannable;
 
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
+import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyUrlSpan;
 
 import java.util.ArrayList;
@@ -47,7 +49,8 @@ public class SpanUtil {
         private Region(Spannable spannable, Object span) {
             int spanStart = spannable.getSpanStart(span);
             // Sometimes "@" is not included in the span
-            start = spanStart > 0 && spannable.charAt(spanStart) != '@' && spannable.charAt(spanStart - 1) == '@'
+            start = spanStart > 0 &&
+                "@#".indexOf(spannable.charAt(spanStart)) < 0 && "@#".indexOf(spannable.charAt(spanStart - 1)) >= 0
                     ? spanStart - 1
                     : spanStart;
             if (MyUrlSpan.class.isAssignableFrom(span.getClass())) {
@@ -108,6 +111,10 @@ public class SpanUtil {
                 (xs1, xs2) -> {xs1.addAll(xs2); return xs1;});
     }
 
+    public static Spannable contentToSpannable(String name, Audience audience) {
+        return spansModifier(audience).apply(MyUrlSpan.toSpannable(MyHtml.prepareForView(name), true));
+    }
+
     public static Function<Spannable, Spannable> spansModifier(Audience audience) {
         return spannable -> {
             regionsOf(spannable).forEach(modifySpansInRegion(spannable, audience));
@@ -121,55 +128,88 @@ public class SpanUtil {
             if (region.start >= spannable.length() || region.end > spannable.length()) return;
 
             String text = spannable.subSequence(region.start, region.end).toString();
-            if (text.contains("@")) {
-                Actor mentionedByAtWebfingerID = audience.getActors().stream()
-                        .filter(actor -> actor.isWebFingerIdValid() &&
-                                text.contains("@" + actor.getWebFingerId())).findAny().orElse(Actor.EMPTY);
-                if (mentionedByAtWebfingerID.nonEmpty()) {
-                    addNotesByActorSpan(spannable, audience, region,
-                            "@" + mentionedByAtWebfingerID.getWebFingerId(), mentionedByAtWebfingerID);
-                } else {
-                    Actor mentionedByWebfingerID = audience.getActors().stream()
-                            .filter(actor -> actor.isWebFingerIdValid() &&
-                                    text.contains(actor.getWebFingerId())).findAny().orElse(Actor.EMPTY);
-                    if (mentionedByWebfingerID.nonEmpty()) {
-                        addNotesByActorSpan(spannable, audience, region,
-                                mentionedByWebfingerID.getWebFingerId(), mentionedByWebfingerID);
-                    } else {
-                        Actor mentionedByUsername = audience.getActors().stream()
-                                .filter(actor -> actor.isUsernameValid() &&
-                                        text.contains("@" + actor.getUsername())).findAny().orElse(Actor.EMPTY);
-                        if (mentionedByUsername.nonEmpty()) {
-                            addNotesByActorSpan(spannable, audience, region,
-                                    "@" + mentionedByUsername.getUsername(), mentionedByUsername);
-                        }
-                    }
-                }
-            }
+            if (mentionAdded(spannable, audience, region, text)) return;
+
+            hashTagAdded(spannable, audience, region, text);
         };
     }
 
-    private static void addNotesByActorSpan(Spannable spannable, Audience audience, Region region, String stringFound, Actor actor) {
-        Timeline timeline = MyContextHolder.get().timelines().forUserAtHomeOrigin(TimelineType.SENT, actor);
-        if (region.urlSpan.isPresent()) {
-            spannable.removeSpan(region.urlSpan.get());
-            spannable.setSpan(new MyUrlSpan(timeline.getClickUri().toString()), region.start, region.end, 0);
-        } else if (region.otherSpan.isPresent()) {
-            spannable.removeSpan(region.otherSpan.get());
-            spannable.setSpan(new MyUrlSpan(timeline.getClickUri().toString()), region.start, region.end, 0);
-        } else {
-            int indInRegion = spannable.subSequence(region.start, region.end).toString().indexOf(stringFound);
-            if (indInRegion >= 0) {
-                int start2 = region.start + indInRegion;
-                int start3 = start2 + stringFound.length();
-                spannable.setSpan(new MyUrlSpan(timeline.getClickUri().toString()), start2, start3, 0);
-                if (indInRegion >= MIN_SPAN_LENGTH) {
-                    modifySpansInRegion(spannable, audience).accept(new Region(spannable, region.start, start2));
-                }
-                if (start3 + MIN_SPAN_LENGTH <= region.end) {
-                    modifySpansInRegion(spannable, audience).accept(new Region(spannable, start3, region.end));
+    private static boolean mentionAdded(Spannable spannable, Audience audience, Region region, String text) {
+        if (text.contains("@")) {
+            Actor mentionedByAtWebfingerID = audience.getActors().stream()
+                    .filter(actor -> actor.isWebFingerIdValid() &&
+                            text.contains("@" + actor.getWebFingerId())).findAny().orElse(Actor.EMPTY);
+            if (mentionedByAtWebfingerID.nonEmpty()) {
+                return notesByActorSpanAdded(spannable, audience, region,
+                        "@" + mentionedByAtWebfingerID.getWebFingerId(), mentionedByAtWebfingerID);
+            } else {
+                Actor mentionedByWebfingerID = audience.getActors().stream()
+                        .filter(actor -> actor.isWebFingerIdValid() &&
+                                text.contains(actor.getWebFingerId())).findAny().orElse(Actor.EMPTY);
+                if (mentionedByWebfingerID.nonEmpty()) {
+                    return notesByActorSpanAdded(spannable, audience, region,
+                            mentionedByWebfingerID.getWebFingerId(), mentionedByWebfingerID);
+                } else {
+                    Actor mentionedByUsername = audience.getActors().stream()
+                            .filter(actor -> actor.isUsernameValid() &&
+                                    text.contains("@" + actor.getUsername())).findAny().orElse(Actor.EMPTY);
+                    if (mentionedByUsername.nonEmpty()) {
+                        return notesByActorSpanAdded(spannable, audience, region,
+                                "@" + mentionedByUsername.getUsername(), mentionedByUsername);
+                    }
                 }
             }
         }
+        return false;
+    }
+
+    private static boolean notesByActorSpanAdded(Spannable spannable, Audience audience, Region region, String stringFound, Actor actor) {
+        Timeline timeline = MyContextHolder.get().timelines().forUserAtHomeOrigin(TimelineType.SENT, actor);
+        return spanAdded(spannable, audience, region, stringFound, timeline);
+    }
+
+    private static boolean spanAdded(Spannable spannable, Audience audience, Region region, String stringFound, Timeline timeline) {
+        if (region.urlSpan.isPresent()) {
+            spannable.removeSpan(region.urlSpan.get());
+            spannable.setSpan(new MyUrlSpan(timeline), region.start, region.end, 0);
+        } else if (region.otherSpan.isPresent()) {
+            spannable.removeSpan(region.otherSpan.get());
+            spannable.setSpan(new MyUrlSpan(timeline), region.start, region.end, 0);
+        } else {
+            int indInRegion = spannable.subSequence(region.start, region.end).toString().indexOf(stringFound);
+            if (indInRegion < 0) return false;
+
+            int start2 = region.start + indInRegion;
+            int start3 = start2 + stringFound.length();
+            spannable.setSpan(new MyUrlSpan(timeline), start2, start3, 0);
+            if (indInRegion >= MIN_SPAN_LENGTH) {
+                modifySpansInRegion(spannable, audience).accept(new Region(spannable, region.start, start2));
+            }
+            if (start3 + MIN_SPAN_LENGTH <= region.end) {
+                modifySpansInRegion(spannable, audience).accept(new Region(spannable, start3, region.end));
+            }
+        }
+        return true;
+    }
+
+    private static boolean hashTagAdded(Spannable spannable, Audience audience, Region region, String text) {
+        int indStart = text.indexOf('#');
+        if (indStart < 0) return false;
+
+        String hashTag = hashTagAt(text, indStart);
+        if (hashTag.length() < MIN_SPAN_LENGTH) return false;
+
+        Timeline timeline = MyContextHolder.get().timelines().get(TimelineType.SEARCH, 0, Origin.EMPTY, hashTag);
+        return spanAdded(spannable, audience, region, hashTag, timeline);
+    }
+
+    private static String hashTagAt(String text, int indStart) {
+        if (text.charAt(indStart) != '#') return "";
+        int ind = indStart + 1;
+        while (ind < text.length()) {
+            if (Patterns.USERNAME_CHARS.indexOf(text.charAt(ind)) < 0) break;
+            ind++;
+        }
+        return text.substring(indStart, ind);
     }
 }

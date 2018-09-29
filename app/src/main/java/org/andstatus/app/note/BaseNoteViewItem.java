@@ -18,6 +18,8 @@ package org.andstatus.app.note;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.text.Spannable;
+import android.text.SpannableString;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
@@ -30,6 +32,7 @@ import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
+import org.andstatus.app.net.social.SpanUtil;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.DuplicationLink;
 import org.andstatus.app.timeline.TimelineFilter;
@@ -74,8 +77,10 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     String noteSource = "";
 
-    private String name = "";
-    private String content = "";
+    private String nameString = "";
+    private Spannable name = SpannableString.valueOf("");
+    private String contentString = "";
+    private Spannable content = SpannableString.valueOf("");
     String contentToSearch = "";
 
     boolean favorited = false;
@@ -242,20 +247,20 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     }
 
     public BaseNoteViewItem setName(String name) {
-        this.name = name;
+        this.nameString = name;
         return this;
     }
 
-    public String getName() {
+    public Spannable getName() {
         return name;
     }
 
     public BaseNoteViewItem setContent(String content) {
-        this.content = content;
+        contentString = content;
         return this;
     }
 
-    public String getContent() {
+    public Spannable getContent() {
         return content;
     }
 
@@ -313,5 +318,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         );
         audience = audienceNew;
         audienceToShow = audienceToShowNew;
+        name = SpanUtil.contentToSpannable(nameString, audience);
+        content = SpanUtil.contentToSpannable(contentString, audience);
     }
 }

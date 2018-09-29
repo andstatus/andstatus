@@ -53,8 +53,6 @@ public class ConversationMemberItem extends ConversationItem<ConversationMemberI
         columnNames.add(NoteTable.IN_REPLY_TO_NOTE_ID);
         columnNames.add(ActivityTable.ORIGIN_ID);
         columnNames.add(NoteTable.AUTHOR_ID);
-        columnNames.add(NoteTable.NAME);
-        columnNames.add(NoteTable.CONTENT);
         return columnNames;
     }
 

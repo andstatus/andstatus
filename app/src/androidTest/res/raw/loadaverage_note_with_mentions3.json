@@ -1,0 +1,51 @@
+{
+  "text": "@eudaimon@hub.disroot.org Regarding #Hubzilla support in #AndStatus. As reported a couple of days ago \"the client works almost flawlessly after updating to 3.6 (twitter_api had been previously enabled)\" Meaning, after Hubzilla server upgrade.\nhttps:\/\/github.com\/andstatus\/andstatus\/issues\/294",
+  "truncated": false,
+  "created_at": "Sun Jul 22 14:47:56 +0000 2018",
+  "in_reply_to_status_id": "12895730",
+  "uri": "tag:loadaverage.org,2018-07-22:noticeId=13421701:objectType=comment",
+  "source": "AndStatus",
+  "source_link": null,
+  "id": 13421701,
+  "in_reply_to_user_id": 386920,
+  "in_reply_to_screen_name": "eudaimon",
+  "geo": null,
+  "attachments": [
+    {
+      "url": "https:\/\/github.com\/andstatus\/andstatus\/issues\/294",
+      "mimetype": "text\/html; charset=utf-8",
+      "size": null
+    }
+  ],
+  "user": {
+    "id": 5263,
+    "name": "AndStatus",
+    "screen_name": "andstatus",
+    "location": "Moscow, Russia",
+    "description": "Open Source multiple accounts client for multiple Social networks, including\r\nGNU social, Mastodon, Twitter and Pump.io.\r\nAndStatus can combine your feeds from all networks into one Timeline,\r\nand it allows you to read and post even when you are offline.\r\n\r\nFor Android v.7.0+ devices.",
+    "profile_image_url": "https:\/\/loadaverage.org\/avatar\/5263-48-20141214121551.png",
+    "profile_image_url_https": "https:\/\/loadaverage.org\/avatar\/5263-48-20141214121551.png",
+    "profile_image_url_profile_size": "https:\/\/loadaverage.org\/avatar\/5263-96-20141214115410.png",
+    "profile_image_url_original": "https:\/\/loadaverage.org\/avatar\/5263-96-20141214115410.png",
+    "groups_count": 2,
+    "linkcolor": false,
+    "backgroundcolor": false,
+    "url": "http:\/\/andstatus.org\/",
+    "protected": false,
+    "followers_count": 447,
+    "friends_count": 13,
+    "created_at": "Fri Dec 27 08:06:26 +0000 2013",
+    "utc_offset": "10800",
+    "time_zone": "Europe\/Moscow",
+    "statuses_count": 1387,
+    "following": true,
+    "statusnet_blocking": false,
+    "notifications": true,
+    "statusnet_profile_url": "https:\/\/loadaverage.org\/andstatus",
+    "favourites_count": 75
+  },
+  "statusnet_html": "@<a href=\"https:\/\/hub.disroot.org\/ochannel\/eudaimon\" class=\"h-card u-url p-nickname mention\">eudaimon<\/a> Regarding #<span class=\"tag\"><a href=\"https:\/\/loadaverage.org\/tag\/hubzilla\" rel=\"tag\">Hubzilla<\/a><\/span> support in #<span class=\"tag\"><a href=\"https:\/\/loadaverage.org\/tag\/andstatus\" rel=\"tag\">AndStatus.<\/a><\/span> As reported a couple of days ago &quot;the client works almost flawlessly after updating to 3.6 (twitter_api had been previously enabled)&quot; Meaning, after Hubzilla server upgrade.<br \/>\n<a href=\"https:\/\/github.com\/andstatus\/andstatus\/issues\/294\" title=\"https:\/\/github.com\/andstatus\/andstatus\/issues\/294\" rel=\"nofollow external noreferrer\" class=\"attachment\" id=\"attachment-2808113\">https:\/\/github.com\/andstatus\/andstatus\/issues\/294<\/a>",
+  "statusnet_conversation_id": 10515252,
+  "favorited": false,
+  "repeated": false
+}

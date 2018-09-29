@@ -81,6 +81,8 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
             }
 
             super.load(cursor);
+            setName(DbUtils.getString(cursor, NoteTable.NAME));
+            setContent(DbUtils.getString(cursor, NoteTable.CONTENT));
             audience = Audience.fromNoteId(getOrigin(), getNoteId());
             noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
             String via = DbUtils.getString(cursor, NoteTable.VIA);

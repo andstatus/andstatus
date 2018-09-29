@@ -18,6 +18,7 @@ package org.andstatus.app.net.social;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.text.Spannable;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -29,12 +30,15 @@ import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
+import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.TriState;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
@@ -291,9 +295,17 @@ public class ConnectionGnuSocialTest {
     public void testMentionsInHtml() throws IOException {
         oneHtmlMentionsTest("1iceloops123", "14044206", org.andstatus.app.tests.R.raw.loadaverage_note_with_mentions, 6);
         oneHtmlMentionsTest("andstatus", "14043873", org.andstatus.app.tests.R.raw.loadaverage_note_with_mentions2, 5);
+
+        AActivity activity = oneHtmlMentionsTest("andstatus", "13421701", org.andstatus.app.tests.R.raw.loadaverage_note_with_mentions3, 1);
+        Spannable spannable = SpanUtil.contentToSpannable(activity.getNote().getContent(), activity.audience());
+        final MyUrlSpan[] spans = spannable.getSpans(0, spannable.length() - 1, MyUrlSpan.class);
+        assertEquals("Link to hashtag " + Arrays.toString(spans) + "\n" + activity, TimelineType.SEARCH,
+                Arrays.stream(spans).filter(span -> span.getURL().contains("/search/%23Hubzilla")).findAny()
+                        .orElse(MyUrlSpan.EMPTY).timeline.getTimelineType());
+
     }
 
-    private void oneHtmlMentionsTest(String actorUsername, String noteOid, int responseResourceId, int numberOfMembers) throws IOException {
+    private AActivity oneHtmlMentionsTest(String actorUsername, String noteOid, int responseResourceId, int numberOfMembers) throws IOException {
         connection.getHttpMock().addResponse(responseResourceId);
         AActivity activity = connection.getNote(noteOid);
 
@@ -316,6 +328,7 @@ public class ConnectionGnuSocialTest {
         assertAudience(activity, activity.audience(), numberOfMembers);
         Audience storedAudience = Audience.load(MyContextHolder.get(), activity.getNote().origin, activity.getNote().noteId);
         assertAudience(activity, storedAudience, numberOfMembers);
+        return activity;
     }
 
     private void assertAudience(AActivity activity, Audience audience, int numberOfMembers) {

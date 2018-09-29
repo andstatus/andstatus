@@ -979,7 +979,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     }
 
     public Uri getClickUri() {
-        return Uri.parse("content://" + TIMELINE_CLICK_HOST + getUri().getPath());
+        return Uri.parse("content://" + TIMELINE_CLICK_HOST + getUri().getEncodedPath());
     }
 
     private void setChanged() {

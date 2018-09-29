@@ -110,7 +110,7 @@ public enum MatchedUri {
 
     private static Uri replaceClickHost(@NonNull Uri uri) {
         return uri.getHost().equals(TIMELINE_CLICK_HOST)
-                ? Uri.parse(CONTENT_URI_SCHEME_AND_HOST + uri.getPath())
+                ? Uri.parse(CONTENT_URI_SCHEME_AND_HOST + uri.getEncodedPath())
                 : uri;
     }
 

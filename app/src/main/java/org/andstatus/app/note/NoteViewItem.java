@@ -32,7 +32,6 @@ import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.util.I18n;
-import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -65,8 +64,8 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
         setOrigin(myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)));
         setLinkedAccount(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID));
 
-        setName(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.NAME)));
-        setContent(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.CONTENT)));
+        setName(DbUtils.getString(cursor, NoteTable.NAME));
+        setContent(DbUtils.getString(cursor, NoteTable.CONTENT));
         contentToSearch = DbUtils.getString(cursor, NoteTable.CONTENT_TO_SEARCH);
         inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
         inReplyToActor = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID));
@@ -96,7 +95,7 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
 
     @Override
     public String toString() {
-        return MyLog.formatKeyValue(this, I18n.trimTextAt(MyHtml.fromHtml(getContent()), 40) + ","
+        return MyLog.formatKeyValue(this, I18n.trimTextAt(getContent().toString(), 40) + ","
                 + getDetails(getMyContext().context()));
     }
 }

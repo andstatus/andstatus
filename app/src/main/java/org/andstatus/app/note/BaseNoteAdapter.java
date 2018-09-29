@@ -125,11 +125,11 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
     }
 
     protected void showNoteName(View view, T item) {
-        MyUrlSpan.showSpanned(view.findViewById(R.id.note_name), item.getName(), SpanUtil.spansModifier(item.audience));
+        MyUrlSpan.showSpannable(view.findViewById(R.id.note_name), item.getName(), false);
     }
 
     protected void showNoteContent(View view, T item) {
-        MyUrlSpan.showSpanned(view.findViewById(R.id.note_body), item.getContent(), SpanUtil.spansModifier(item.audience));
+        MyUrlSpan.showSpannable(view.findViewById(R.id.note_body), item.getContent(), false);
     }
 
     protected void showAvatar(View view, T item) {

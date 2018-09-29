@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
+/*
+ * Copyright (C) 2015-2018 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2015 CommonsWare, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,6 +40,7 @@ import android.widget.Toast;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.timeline.meta.Timeline;
 
 import java.util.function.Function;
 
@@ -49,10 +50,11 @@ import static android.text.Html.FROM_HTML_MODE_COMPACT;
  * see https://github.com/andstatus/andstatus/issues/300
  * Based on http://commonsware.com/blog/2013/10/23/linkify-autolink-need-custom-urlspan.html  */
 public class MyUrlSpan extends URLSpan {
+    public static final MyUrlSpan EMPTY = new MyUrlSpan(Timeline.EMPTY);
 
     public static final String SOFT_HYPHEN = "\u00AD";
     public static final Spannable EMPTY_SPANNABLE = new SpannableString("");
-    public final String url;
+    public final Timeline timeline;
 
     public static final Creator<MyUrlSpan> CREATOR = new Creator<MyUrlSpan>() {
         @Override
@@ -66,9 +68,14 @@ public class MyUrlSpan extends URLSpan {
         }
     };
 
+    public MyUrlSpan(Timeline timeline) {
+        super(timeline.getClickUri().toString());
+        this.timeline = timeline;
+    }
+
     public MyUrlSpan(String url) {
         super(url);
-        this.url = url;
+        timeline = Timeline.EMPTY;
     }
 
     @Override
@@ -104,21 +111,21 @@ public class MyUrlSpan extends URLSpan {
     }
 
     public static void showText(TextView textView, String text, boolean linkify, boolean showIfEmpty) {
-        showSpanned(textView, toSpannable(text, linkify), showIfEmpty);
+        showSpannable(textView, toSpannable(text, linkify), showIfEmpty);
     }
 
-    public static void showSpanned(TextView textView, String text, Function<Spannable, Spannable> modifySpans) {
-        showSpanned(textView, modifySpans.apply(toSpannable(text, true)), false);
+    public static void showSpannable(TextView textView, String text, Function<Spannable, Spannable> modifySpans) {
+        showSpannable(textView, modifySpans.apply(toSpannable(text, true)), false);
     }
 
-    private static void showSpanned(TextView textView, @NonNull Spanned spanned, boolean showIfEmpty) {
+    public static void showSpannable(TextView textView, @NonNull Spannable spannable, boolean showIfEmpty) {
         if (textView == null) return;
-        if (spanned.length() == 0) {
+        if (spannable.length() == 0) {
             textView.setText("");
             ViewUtils.showView(textView, showIfEmpty);
         } else {
-            textView.setText(spanned);
-            if (hasSpans(spanned)) {
+            textView.setText(spannable);
+            if (hasSpans(spannable)) {
                 textView.setFocusable(true);
                 textView.setFocusableInTouchMode(true);
                 textView.setLinksClickable(true);
@@ -229,17 +236,20 @@ public class MyUrlSpan extends URLSpan {
     private static void fixUrlSpans(Spannable spannable) {
         URLSpan[] spans = spannable.getSpans(0, spannable.length(), URLSpan.class);
         for (URLSpan span : spans) {
-            int start = spannable.getSpanStart(span);
-            int end = spannable.getSpanEnd(span);
-            spannable.removeSpan(span);
-            spannable.setSpan(new MyUrlSpan(span.getURL()), start, end, 0);
+            if (!MyUrlSpan.class.isAssignableFrom(span.getClass())) {
+                int start = spannable.getSpanStart(span);
+                int end = spannable.getSpanEnd(span);
+                spannable.removeSpan(span);
+                spannable.setSpan(new MyUrlSpan(span.getURL()), start, end, 0);
+            }
         }
     }
 
     @Override
     public String toString() {
         return "MyUrlSpan{" +
-                "'" + url + '\'' +
+                (timeline.nonEmpty() ? timeline.toString() : "") +
+                " '" + getURL() + '\'' +
                 '}';
     }
 
