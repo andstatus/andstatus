@@ -19,10 +19,6 @@ package org.andstatus.app.net.social;
 import android.support.annotation.NonNull;
 import android.text.Spannable;
 
-import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyUrlSpan;
 
@@ -164,24 +160,23 @@ public class SpanUtil {
     }
 
     private static boolean notesByActorSpanAdded(Spannable spannable, Audience audience, Region region, String stringFound, Actor actor) {
-        Timeline timeline = MyContextHolder.get().timelines().forUserAtHomeOrigin(TimelineType.SENT, actor);
-        return spanAdded(spannable, audience, region, stringFound, timeline);
+        return spanAdded(spannable, audience, region, stringFound, new MyUrlSpan.Data(Optional.of(actor), Optional.empty(), Optional.empty()));
     }
 
-    private static boolean spanAdded(Spannable spannable, Audience audience, Region region, String stringFound, Timeline timeline) {
+    private static boolean spanAdded(Spannable spannable, Audience audience, Region region, String stringFound, MyUrlSpan.Data spanData) {
         if (region.urlSpan.isPresent()) {
             spannable.removeSpan(region.urlSpan.get());
-            spannable.setSpan(new MyUrlSpan(timeline), region.start, region.end, 0);
+            spannable.setSpan(new MyUrlSpan(spanData), region.start, region.end, 0);
         } else if (region.otherSpan.isPresent()) {
             spannable.removeSpan(region.otherSpan.get());
-            spannable.setSpan(new MyUrlSpan(timeline), region.start, region.end, 0);
+            spannable.setSpan(new MyUrlSpan(spanData), region.start, region.end, 0);
         } else {
             int indInRegion = spannable.subSequence(region.start, region.end).toString().indexOf(stringFound);
             if (indInRegion < 0) return false;
 
             int start2 = region.start + indInRegion;
             int start3 = start2 + stringFound.length();
-            spannable.setSpan(new MyUrlSpan(timeline), start2, start3, 0);
+            spannable.setSpan(new MyUrlSpan(spanData), start2, start3, 0);
             if (indInRegion >= MIN_SPAN_LENGTH) {
                 modifySpansInRegion(spannable, audience).accept(new Region(spannable, region.start, start2));
             }
@@ -199,8 +194,8 @@ public class SpanUtil {
         String hashTag = hashTagAt(text, indStart);
         if (hashTag.length() < MIN_SPAN_LENGTH) return false;
 
-        Timeline timeline = MyContextHolder.get().timelines().get(TimelineType.SEARCH, 0, Origin.EMPTY, hashTag);
-        return spanAdded(spannable, audience, region, hashTag, timeline);
+        return spanAdded(spannable, audience, region, hashTag,
+                new MyUrlSpan.Data(Optional.empty(), Optional.of(hashTag), Optional.empty()));
     }
 
     private static String hashTagAt(String text, int indStart) {

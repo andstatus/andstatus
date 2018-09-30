@@ -101,7 +101,7 @@ public class SpanUtilTest {
         assertEquals(message2, "content://timeline.app.andstatus.org/note/0/lt/sent/origin/0/actor/0",
                 regions2.get(1).urlSpan.get().getURL());
 
-        final Timeline timeline = regions2.get(3).urlSpan.get().timeline;
+        final Timeline timeline = regions2.get(3).urlSpan.get().data.getTimeline();
         assertEquals(message2, "#logic", timeline.getSearchQuery());
         final String onClickUrl = regions2.get(3).urlSpan.get().getURL();
         assertEquals(message2,

@@ -70,7 +70,7 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
         inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
         inReplyToActor = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID));
         isPublic = DbUtils.getTriState(cursor, NoteTable.PUBLIC);
-        audience = Audience.fromNoteId(getOrigin(), getNoteId());
+        audience = Audience.fromNoteId(getOrigin(), getNoteId(), isPublic);
         activityUpdatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
         updatedDate = DbUtils.getLong(cursor, NoteTable.UPDATED_DATE);
         noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));

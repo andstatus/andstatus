@@ -29,6 +29,17 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="43.00" android:versionCode="260"
+             versionDate="2018-09-30"
+             versionTitle="Links to mentioned users and to hashtags are opened in AndStatus">
+        <changes>
+            <change>Plain text notes are linkified: mentions are linked to User's "Sent" timelines; hashtags are linked to
+                Search timelines of these hashtags.
+                Existing links of mentions and hashtags in HTML notes are replaced with in-client links also.
+                <a href="https://github.com/andstatus/andstatus/issues/479">#479</a>
+            </change>
+        </changes>
+    </release>
     <release android:versionName="42.00" android:versionCode="259"
              versionDate="2018-09-08"
              versionTitle="Fixed: Blank space, when there is no an attachment">

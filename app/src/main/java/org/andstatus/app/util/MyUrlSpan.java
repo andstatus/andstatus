@@ -40,21 +40,64 @@ import android.widget.Toast;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
+import org.andstatus.app.timeline.meta.TimelineType;
 
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static android.text.Html.FROM_HTML_MODE_COMPACT;
+import static java.util.stream.Collectors.joining;
 
 /** Prevents ActivityNotFoundException for malformed links,
  * see https://github.com/andstatus/andstatus/issues/300
  * Based on http://commonsware.com/blog/2013/10/23/linkify-autolink-need-custom-urlspan.html  */
 public class MyUrlSpan extends URLSpan {
-    public static final MyUrlSpan EMPTY = new MyUrlSpan(Timeline.EMPTY);
+    public static final MyUrlSpan EMPTY = new MyUrlSpan("");
 
     public static final String SOFT_HYPHEN = "\u00AD";
     public static final Spannable EMPTY_SPANNABLE = new SpannableString("");
-    public final Timeline timeline;
+    public static final String EMPTY_URL = "content://";
+
+    public static final class Data {
+        public final Optional<Actor> actor;
+        public final Optional<String> searchQuery;
+        private final Optional<String> url;
+
+        public Data(Optional<Actor> actor, Optional<String> searchQuery, Optional<String> url) {
+            this.actor = actor;
+            this.searchQuery = searchQuery;
+            this.url = url;
+        }
+
+        public String getURL() {
+            return url.orElse(getTimeline().getClickUri().toString());
+        }
+
+        public Timeline getTimeline() {
+            return searchQuery.map(s ->
+                    MyContextHolder.get().timelines().get(TimelineType.SEARCH, 0, Origin.EMPTY, s))
+                    .orElse(actor.map(a -> MyContextHolder.get().timelines().forUserAtHomeOrigin(TimelineType.SENT, a))
+                            .orElse(Timeline.EMPTY));
+        }
+
+        @Override
+        public String toString() {
+            return "MyUrlSpan{" +
+                    Stream.of(
+                        actor.map(Actor::toString),
+                        searchQuery.map(String::toString),
+                        url.map(String::toString))
+                            .filter(Optional::isPresent).map(Optional::get)
+                            .collect(joining(", ")) +
+                    '}';
+        }
+    }
+
+    public final Data data;
 
     public static final Creator<MyUrlSpan> CREATOR = new Creator<MyUrlSpan>() {
         @Override
@@ -68,14 +111,14 @@ public class MyUrlSpan extends URLSpan {
         }
     };
 
-    public MyUrlSpan(Timeline timeline) {
-        super(timeline.getClickUri().toString());
-        this.timeline = timeline;
+    public MyUrlSpan(Data data) {
+        super(EMPTY_URL);
+        this.data = data;
     }
 
     public MyUrlSpan(String url) {
         super(url);
-        timeline = Timeline.EMPTY;
+        this.data = new Data(Optional.empty(), Optional.empty(), Optional.of(url));
     }
 
     @Override
@@ -85,7 +128,7 @@ public class MyUrlSpan extends URLSpan {
         } catch (ActivityNotFoundException | SecurityException e) {
             MyLog.v(this, e);
             try {
-                MyLog.i(this, "Malformed link:'" + getURL() + "'");
+                MyLog.i(this, "Malformed link:'" + getURL() + "', " + data);
                 Context context = MyContextHolder.get().context();
                 if (context != null) {
                     Toast.makeText(context, context.getText(R.string.malformed_link)
@@ -95,6 +138,11 @@ public class MyUrlSpan extends URLSpan {
                 MyLog.d(this, "Couldn't show a toast", e2);
             }
         }
+    }
+
+    @Override
+    public String getURL() {
+        return data.getURL();
     }
 
     public static void showLabel(Activity activity, @IdRes int viewId, @StringRes int stringResId) {
@@ -247,10 +295,7 @@ public class MyUrlSpan extends URLSpan {
 
     @Override
     public String toString() {
-        return "MyUrlSpan{" +
-                (timeline.nonEmpty() ? timeline.toString() : "") +
-                " '" + getURL() + '\'' +
-                '}';
+        return data.toString();
     }
 
     public static URLSpan[] getUrlSpans(View view) {

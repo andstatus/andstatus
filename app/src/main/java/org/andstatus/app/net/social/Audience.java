@@ -51,6 +51,10 @@ public class Audience implements IsEmpty {
     }
 
     public static Audience fromNoteId(@NonNull Origin origin, long noteId) {
+        return fromNoteId(origin, noteId, MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId));
+    }
+
+    public static Audience fromNoteId(@NonNull Origin origin, long noteId, TriState isPublic) {
         if (noteId == 0) return Audience.EMPTY;
 
         String where = AudienceTable.NOTE_ID + "=" + noteId;
@@ -65,7 +69,7 @@ public class Audience implements IsEmpty {
                 DbUtils.getLong(cursor, AudienceTable.ACTOR_ID),
                 DbUtils.getString(cursor, ActorTable.ACTOR_OID));
         MyQuery.get(MyContextHolder.get(), sql, function).forEach(audience::add);
-        audience.setPublic(MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId));
+        audience.setPublic(isPublic);
         return audience;
     }
 

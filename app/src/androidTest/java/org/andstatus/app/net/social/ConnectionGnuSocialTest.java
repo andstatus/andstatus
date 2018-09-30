@@ -301,7 +301,7 @@ public class ConnectionGnuSocialTest {
         final MyUrlSpan[] spans = spannable.getSpans(0, spannable.length() - 1, MyUrlSpan.class);
         assertEquals("Link to hashtag " + Arrays.toString(spans) + "\n" + activity, TimelineType.SEARCH,
                 Arrays.stream(spans).filter(span -> span.getURL().contains("/search/%23Hubzilla")).findAny()
-                        .orElse(MyUrlSpan.EMPTY).timeline.getTimelineType());
+                        .orElse(MyUrlSpan.EMPTY).data.getTimeline().getTimelineType());
 
     }
 

@@ -35,6 +35,7 @@ import org.andstatus.app.timeline.DuplicationLink;
 import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.timeline.meta.Timeline;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
 
