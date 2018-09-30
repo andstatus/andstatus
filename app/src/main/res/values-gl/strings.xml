@@ -31,6 +31,7 @@
   <string name="attach_images_summary_off">Botón \"Paperclip+\", utilizado para anexar imaxes as súas mensaxes, está oculto</string>
   <string name="attach_images_summary_on">Utilice o botón \"Paperclip+\" (no menú \"Anexar\") para anexar imaxes na súa mensaxe. Ou Compartir imaxe en AndStatus desde outro aplicativo</string>
   <string name="attach_images_title">Anexar imaxes nas miñas mensaxes</string>
+  <string name="attachment_is_too_large">O anexo é demasiado grande</string>
   <string name="attachments">Anexos</string>
   <string name="authentication_never">Aínda non se autenticou</string>
   <string name="authentication_successful">Autenticación exitosa!</string>
@@ -57,6 +58,7 @@
   <string name="category_title_preference_information">Información</string>
   <string name="category_title_preference_origin">Rede social</string>
   <string name="category_title_preference_settings">Preferencias</string>
+  <string name="changed">Cambiado</string>
   <string name="check_and_fix_data">Comprobar e arranxar datos</string>
   <string name="check_and_fix_data_summary">Utilice esta acción se cre que AndStatus está a funcionar mal,
 pero non quere reinstalalo</string>
@@ -85,6 +87,7 @@ pero non quere reinstalalo</string>
   <string name="command_follow_user">Seguir</string>
   <string name="command_stop_following_user">Deixar de seguir</string>
   <string name="commands_in_a_queue">Ordes na cola</string>
+  <string name="count_only">Contar so sen os cambios reais?</string>
   <string name="crash_dialog_text">O aplicativo AndStatus fallou. Pode axudar a resolver o problema. Por favor prema o botón Ok para enviar un informe do erro aos desenvolvedores por correo-e.</string>
   <string name="crash_dialog_comment_prompt">Por favor, introduza os seus comentarios sobre o erro. Sería de utilidade saber: cando aconteceu e quizás incluso cómo reproducilo.</string>
   <string name="created">creado</string>
@@ -172,6 +175,7 @@ non verá na liña temporal algunhas mensaxes antiguas.</string>
   <string name="forget_sync_events">Esquecer eventos de sincronización e datas</string>
   <string name="friends">Amigos</string>
   <string name="friends_of">Amigos de \"%1s\"</string>
+  <string name="full_check">Comprobación completa, incluíndo pasos longos?</string>
   <string name="gestures">Xestos</string>
   <string name="gestures_summary">Mecánica do toque. Cómo interactúa o Usuario co aplicativo</string>
   <string name="get_conversation">Obter conversación</string>
@@ -185,7 +189,9 @@ non verá na liña temporal algunhas mensaxes antiguas.</string>
   <string name="header_accounts_summary">Xestionar contas e redes sociais</string>
   <string name="header_add_new_account">Engadir nova conta</string>
   <string name="hide_messages_based_on_keywords_title">Ocultar mensaxes basadas en palabras chave ou frases</string>
-  <string name="hide_messages_based_on_keywords_dialog_message">Separar palabras chave por espazos. Por frases en comiñas dobles ex.:\npalabra chave \"frase exacta\"</string>
+  <string name="hide_messages_based_on_keywords_dialog_message">Separar palabras chave con espazos.
+    Por frases con dobles comiñas ex:\npalabra chave \"frase exacta\".
+    Facer coincidir unha parte da palabra ou URL: contén:federac contén://andstatus.org/</string>
   <string name="hide_replies_not_to_me_or_friends_title">Ocultar respostas na liña de tempo Inicio que non son para min ou os meus amigos</string>
   <string name="history_size_entries_500">500 mensaxes</string>
   <string name="history_size_entries_1000">1000 mensaxes</string>
@@ -243,6 +249,8 @@ non verá na liña temporal algunhas mensaxes antiguas.</string>
   <string name="manage_accounts_android">Xestionar contas AndStatus nas preferencias android</string>
   <string name="manage_timelines">Xestionar liñas temporáis</string>
   <string name="max_distance_between_duplicates_title">Distancia máxima entre duplicados</string>
+  <string name="maximum_size_of_attachment_mb">Tamaño máximo dos anexos, MB</string>
+  <string name="maximum_size_of_cached_media_mb">Tamaño máximo dos ficheiros de medios en caché (incluindo anexos), MB</string>
   <string name="mention_as_webfingerid_title">Mención como @webFingerId</string>
   <string name="menu_item_act_as">Actuar como&#8230;</string>
   <string name="menu_item_act_as_user">Actuar como \"%1s\"</string>
@@ -363,6 +371,7 @@ non verá na liña temporal algunhas mensaxes antiguas.</string>
   <string name="reltime_months_ago_formats_2">{0} meses atrás</string>
   <string name="reltime_seconds_ago_formats_1">hai un segundo</string>
   <string name="reltime_seconds_ago_formats_2">{0} segundos atrás</string>
+  <string name="reltime_some_time_ago">algún tempo atrás</string>
   <string name="reltime_just_now">agora mesmo</string>
   <string name="reltime_years_ago">hai máis de un ano</string>
   <string name="remove_account_menu_item">Quitar conta</string>
@@ -386,6 +395,7 @@ non verá na liña temporal algunhas mensaxes antiguas.</string>
   <string name="show_duplicates">Mostrar duplicados</string>
   <string name="show_threads_of_conversation">Mostrar fíos de unha conversa</string>
   <string name="show_timeline_messages">Mostrar mensaxes da liña temoral</string>
+  <string name="show_my_account_which_downloaded">Mostrar a miña conta, que descargou a actividade/nota</string>
   <string name="since">Desde %s</string>
   <string name="splash_button_learn_more">Saber máis</string>
   <string name="splash_button_get_started">Comezando</string>
@@ -532,6 +542,7 @@ non verá na liña temporal algunhas mensaxes antiguas.</string>
   <string name="user_in_timeline_entries_webfingerid">webFingerId</string>
   <string name="user_in_timeline_entries_real_name">Nome real</string>
   <string name="user_in_timeline_entries_real_name_at_username">Nome real @usuario</string>
+  <string name="user_in_timeline_entries_real_name_at_webfingerid">Nome real @webFingerId</string>
   <string name="user_list">Lista de usuario</string>
   <string name="users">Usuarios</string>
   <string name="users_of_message">Usuarios da mensaxe</string>
