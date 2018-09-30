@@ -368,7 +368,7 @@ public class NoteEditorData implements IsEmpty {
     }
 
     public NoteEditorData addToAudience(Actor actor) {
-        activity.getNote().addToAudience(actor);
+        activity.getNote().audience().add(actor);
         return this;
     }
 

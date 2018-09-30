@@ -408,13 +408,13 @@ public class ConnectionPumpio extends Connection {
             if (jsoActivity.has("to")) {
                 JSONObject to = jsoActivity.optJSONObject("to");
                 if ( to != null) {
-                    activity.getNote().addToAudience(actorFromJson(to));
+                    activity.getNote().audience().add(actorFromJson(to));
                 } else {
                     JSONArray arrayOfTo = jsoActivity.optJSONArray("to");
                     if (arrayOfTo != null && arrayOfTo.length() > 0) {
                         for (int ind = 0; ind < arrayOfTo.length(); ind++) {
                             Actor recipient = actorFromJson(arrayOfTo.optJSONObject(ind));
-                            activity.getNote().addToAudience(
+                            activity.getNote().audience().add(
                                     ConnectionPumpio.PUBLIC_COLLECTION_ID.equals(recipient.oid)
                                             ? Actor.PUBLIC
                                             : recipient

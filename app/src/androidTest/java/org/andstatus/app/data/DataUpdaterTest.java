@@ -170,7 +170,7 @@ public class DataUpdaterTest {
                 null, noteOid, DownloadStatus.LOADED);
         final Note note = activity.getNote();
         note.via = "AnyOtherClient";
-        note.addToAudience(accountActor);
+        note.audience().add(accountActor);
         note.setPublic(TriState.FALSE);
         final long noteId = new DataUpdater(ma).onActivity(activity).getNote().noteId;
         assertNotEquals("Note added", 0, noteId);

@@ -114,6 +114,10 @@ public class Audience implements IsEmpty {
         return audience;
     }
 
+    public void extractActorsFromContent(@NonNull String content, @NonNull Actor author, @NonNull Actor inReplyToActor) {
+        author.extractActorsFromContent(content, inReplyToActor).forEach(this::add);
+    }
+
     public void add(@NonNull Actor actor) {
         if (actor.isPublic()) {
             isPublic = TriState.TRUE;
@@ -136,10 +140,11 @@ public class Audience implements IsEmpty {
         return actors.stream().anyMatch(actor -> actor.actorId == actorId);
     }
 
-    public void save(@NonNull MyContext myContext, @NonNull Origin origin, long noteId) {
+    /** @return true if data changed */
+    public boolean save(@NonNull MyContext myContext, @NonNull Origin origin, long noteId, boolean countOnly) {
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null || !origin.isValid() || noteId == 0) {
-            return;
+            return false;
         }
         Audience prevAudience = Audience.fromNoteId(origin, noteId);
         Set<Actor> toDelete = new HashSet<>();
@@ -160,7 +165,7 @@ public class Audience implements IsEmpty {
                 }
             }
         }
-        try {
+        if (!countOnly) try {
             if (!toDelete.isEmpty()) {
                 db.delete(AudienceTable.TABLE_NAME, AudienceTable.NOTE_ID + "=" + noteId
                         + " AND " + AudienceTable.ACTOR_ID + SqlActorIds.fromActors(toDelete).getSql(), null);
@@ -177,6 +182,7 @@ public class Audience implements IsEmpty {
         } catch (Exception e) {
             MyLog.e(this, "save, noteId:" + noteId + "; " + actors, e);
         }
+        return  !toDelete.isEmpty() || !toAdd.isEmpty();
     }
 
     @Override

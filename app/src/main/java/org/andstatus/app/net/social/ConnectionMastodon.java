@@ -340,7 +340,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             note.url = jso.optString("url");
             if (jso.has("recipient")) {
                 JSONObject recipient = jso.getJSONObject("recipient");
-                note.addToAudience(actorFromJson(recipient));
+                note.audience().add(actorFromJson(recipient));
             }
             if (!jso.isNull("application")) {
                 JSONObject application = jso.getJSONObject("application");

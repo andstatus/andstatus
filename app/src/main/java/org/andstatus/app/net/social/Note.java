@@ -352,18 +352,6 @@ public class Note extends AObject {
         return audience;
     }
 
-    public void addToAudience(Actor actor) {
-        if (actor != null && actor.nonEmpty() && !audience.contains(actor)) {
-            audience.add(actor);
-        }
-    }
-
-    public void addAudienceFromBodyText(Actor author) {
-        for (Actor actor : author.extractActorsFromContent(getContent(), getInReplyTo().getActor())) {
-            addToAudience(actor);
-        }
-    }
-
     public Note shallowCopy() {
         Note note = fromOriginAndOid(origin, oid, status);
         note.noteId = noteId;
