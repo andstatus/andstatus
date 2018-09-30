@@ -36,13 +36,10 @@ import static org.andstatus.app.data.MyQuery.quoteIfNotQuoted;
 class SearchIndexUpdate extends DataChecker {
 
     @Override
-    boolean notLong() {
-        return false;
-    }
-
-    @Override
     long fixInternal(boolean countOnly) {
-        String sql = Note.getSqlToLoadContent(0);
+        String sql = Note.getSqlToLoadContent(0) +
+                " ORDER BY " + NoteTable._ID + " DESC" +
+                (includeLong ? "" : " LIMIT 0, 10000");
         List<Note> notesToFix = new ArrayList<>();
         long rowsCount = 0;
         try (Cursor cursor = myContext.getDatabase().rawQuery(sql, null)) {

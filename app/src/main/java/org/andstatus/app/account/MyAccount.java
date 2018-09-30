@@ -350,9 +350,9 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             Account androidAccount = myAccount.getExistingAndroidAccount();
             if ((androidAccount == null) && myAccount.isValidAndSucceeded()) {
                 try {
-                    /**
+                    /*
                      * Now add this account to the Account Manager See {@link
-                     * com.android.email.provider.EmailProvider.
+                     * com.android.email.provider.EmailProvider#
                      * createAccountManagerAccount(Context, String, String)}
                      * Note: We could add userdata from {@link userData} Bundle,
                      * but we decided to add it below one by one item

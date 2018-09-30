@@ -32,6 +32,7 @@ public abstract class DataChecker {
     static final int PROGRESS_REPORT_PERIOD_SECONDS = 20;
     MyContext myContext;
     ProgressLogger logger = new ProgressLogger(null);
+    boolean includeLong = false;
 
     public DataChecker setMyContext(MyContext myContext) {
         this.myContext = myContext;
@@ -80,21 +81,22 @@ public abstract class DataChecker {
         MyServiceManager.setServiceUnavailable();
         try {
             MyLog.i(DataChecker.class, "fixData started" + (includeLong ? ", including long tasks" : ""));
-            for(DataChecker checker : new DataChecker[]{new MergeActors(), new CheckUsers(),
-                    new CheckConversations(), new CheckTimelines(), new SearchIndexUpdate()}) {
-                if (includeLong || checker.notLong()) checker.setMyContext(myContext).setLogger(logger).fix(countOnly);
+            for(DataChecker checker : new DataChecker[]{new MergeActors(), new CheckUsers(), new CheckConversations(),
+                    new CheckTimelines(), new SearchIndexUpdate(), new CheckAudience()}) {
+                checker.setMyContext(myContext).setIncludeLong(includeLong).setLogger(logger).fix(countOnly);
             }
         } finally {
             MyServiceManager.setServiceAvailable();
         }
     }
 
-    private String checkerName() {
-        return this.getClass().getSimpleName();
+    private DataChecker setIncludeLong(boolean includeLong) {
+        this.includeLong = includeLong;
+        return this;
     }
 
-    boolean notLong() {
-        return true;
+    private String checkerName() {
+        return this.getClass().getSimpleName();
     }
 
     /**
@@ -118,8 +120,9 @@ public abstract class DataChecker {
     private long fix(boolean countOnly) {
         logger.logProgress(checkerName() + " checker started");
         long changedCount = fixInternal(countOnly);
-        logger.logProgress(checkerName() + " checker ended, " + (changedCount > 0 ?  "changed " + changedCount
-                + " items" : " no changes were needed"));
+        logger.logProgress(checkerName() + " checker ended, " + (changedCount > 0
+                ? (countOnly ? "need to change " : "changed ") + changedCount + " items"
+                : " no changes were needed"));
         DbUtils.waitMs(checkerName(), changedCount == 0 ? 1000 : 3000);
         return changedCount;
     }

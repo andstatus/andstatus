@@ -240,7 +240,7 @@ public class MyAccounts implements IsEmpty {
      * If there is no verified account, any account of this Origin is been returned.
      * Otherwise invalid account is returned;
      * @param origin May be EMPTY to search in any Origin
-     * @return Invalid account if not found
+     * @return EMPTY account if not found
      */
     @NonNull
     public MyAccount getFirstSucceededForOrigin(@NonNull Origin origin) {
@@ -253,7 +253,7 @@ public class MyAccounts implements IsEmpty {
      * If there is no verified account, any account of this Origin is been returned.
      * Otherwise invalid account is returned;
      * @param origins May contain Origin.EMPTY to search in any Origin
-     * @return Invalid account if not found
+     * @return EMPTY account if not found
      */
     @NonNull
     private MyAccount getFirstSucceededForOriginsStrict(@NonNull Collection<Origin> origins) {

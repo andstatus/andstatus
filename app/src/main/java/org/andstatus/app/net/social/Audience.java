@@ -141,12 +141,12 @@ public class Audience implements IsEmpty {
     }
 
     /** @return true if data changed */
-    public boolean save(@NonNull MyContext myContext, @NonNull Origin origin, long noteId, boolean countOnly) {
+    public boolean save(@NonNull MyContext myContext, @NonNull Origin origin, long noteId, TriState isPublic, boolean countOnly) {
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null || !origin.isValid() || noteId == 0) {
             return false;
         }
-        Audience prevAudience = Audience.fromNoteId(origin, noteId);
+        Audience prevAudience = Audience.fromNoteId(origin, noteId, isPublic);
         Set<Actor> toDelete = new HashSet<>();
         Set<Actor> toAdd = new HashSet<>();
         for (Actor actor : prevAudience.getActors()) {

@@ -35,7 +35,9 @@
         <changes>
             <change>Plain text notes are linkified: mentions are linked to User's "Sent" timelines; hashtags are linked to
                 Search timelines of these hashtags.
-                Existing links of mentions and hashtags in HTML notes are replaced with in-client links also.
+                Existing links of mentions and hashtags in HTML notes are replaced with in-client links also.<br/>
+                Added "CheckAudience" step to Troubleshooting -> "Check and fix data".
+                Applying this fixing procedure allows to have clicks on mentions opened in AndStatus even for older notes.
                 <a href="https://github.com/andstatus/andstatus/issues/479">#479</a>
             </change>
         </changes>

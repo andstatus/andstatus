@@ -251,7 +251,7 @@ public class DataUpdater {
                 execContext.getContext().getContentResolver().update(msgUri, values, null, null);
                 MyLog.v("Note", () -> "Updated " + note);
             }
-            note.audience().save(execContext.getMyContext(), note.origin, note.noteId, false);
+            note.audience().save(execContext.getMyContext(), note.origin, note.noteId, note.getPublic(), false);
 
             if (shouldSaveAttachments(isFirstTimeLoaded, isDraftUpdated)) {
                 note.attachments.save(execContext, note.noteId);
@@ -291,7 +291,7 @@ public class DataUpdater {
         }
     }
 
-    private void updateObjActor(AActivity activity, int recursing) {
+    public void updateObjActor(AActivity activity, int recursing) {
         if (recursing > MAX_RECURSING) return;
 
         Actor objActor = activity.getObjActor();
