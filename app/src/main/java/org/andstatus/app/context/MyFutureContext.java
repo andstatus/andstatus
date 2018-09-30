@@ -31,6 +31,7 @@ import org.andstatus.app.syncadapter.SyncInitiator;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
@@ -56,6 +57,7 @@ public class MyFutureContext extends MyAsyncTask<Object, Void, MyContext> {
 
     MyFutureContext(@NonNull MyContext previousContext) {
         super(MyFutureContext.class.getSimpleName(), PoolEnum.QUICK_UI);
+        Objects.requireNonNull(previousContext);
         this.previousContext = previousContext;
     }
 
@@ -204,7 +206,7 @@ public class MyFutureContext extends MyAsyncTask<Object, Void, MyContext> {
         } catch (Exception e) {
             MyLog.i(this, "getBlocking failed", e);
         }
-        return myContext;
+        return myContext == null ? previousContext : myContext;
     }
 
 }
