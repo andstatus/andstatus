@@ -21,6 +21,8 @@ import android.view.View;
 
 import org.andstatus.app.R;
 import org.andstatus.app.graphics.AvatarView;
+import org.andstatus.app.net.social.Audience;
+import org.andstatus.app.net.social.SpanUtil;
 import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.MyUrlSpan;
@@ -47,7 +49,8 @@ public class ActorViewItemPopulator {
             showAvatar(item, view);
         }
         MyUrlSpan.showText(view, R.id.homepage, item.actor.getHomepage(), true, false);
-        MyUrlSpan.showText(view, R.id.description, item.getDescription(), false, false);
+        MyUrlSpan.showSpannable(view.findViewById(R.id.description),
+                SpanUtil.contentToSpannable(item.getDescription(), Audience.EMPTY), false);
         MyUrlSpan.showText(view, R.id.location, item.actor.location, false, false);
         MyUrlSpan.showText(view, R.id.profile_url, item.actor.getProfileUrl(), true, false);
 

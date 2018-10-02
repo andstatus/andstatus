@@ -67,23 +67,22 @@ public class SpanUtilTest {
         MyAccount ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
         Audience audience = new Audience(ma.getOrigin());
 
-        String username1 = "speeddefrost";
+        String username1 = "johnsmith";
         final Actor actor1 = Actor.fromOriginAndActorOid(ma.getOrigin(), "232380");
         actor1.setUsername(username1);
         audience.add(actor1);
 
-        String username2 = "mcnalu";
-        final Actor actor2 = Actor.fromOriginAndActorOid(ma.getOrigin(), "099842");
-        actor2.setUsername(username2);
-        audience.add(actor2);
+        audience.add(ma.getActor());
+        final String username2 = ma.getUsername();
 
         Function<Spannable, Spannable> modifier = SpanUtil.spansModifier(audience);
 
-        String text = "@<span class=\"vcard\"><a href=\"http://micro.fragdev.com/speeddefrost\" class=\"url\"" +
-                " title=\"speeddefrost\"><span class=\"fn nickname mention\">speeddefrost</span></a></span>" +
-                " @<span class=\"vcard\"><a href=\"http://micro.fragdev.com/mcnalu\" class=\"url\" title=\"mcnalu\">" +
-                "<span class=\"fn nickname mention\">mcnalu</span></a></span>" +
-                " Just transfer your #logic to GTK or Qt instead systemd and you'll end up with a wider, bigger problem.";
+        String text = "@<span class=\"vcard\"><a href=\"http://micro.site.com/johnsmith\" class=\"url\"" +
+                " title=\"johnsmith\"><span class=\"fn nickname mention\">johnsmith</span></a></span>" +
+                " @<span class=\"vcard\"><a href=\"http://micro.site.com/" + username2 +
+                "\" class=\"url\" title=\"" + username2 + "\">" +
+                "<span class=\"fn nickname mention\">" + username2 + "</span></a></span>" +
+                " Please apply your #logic #Логика to another subject.";
 
         Spannable spannable = MyUrlSpan.toSpannable(text, true);
         List<SpanUtil.Region> regions1 = SpanUtil.regionsOf(spannable);
@@ -94,21 +93,28 @@ public class SpanUtilTest {
         List<SpanUtil.Region> regions2 = SpanUtil.regionsOf(spannable);
         final Object[] spans = modified.getSpans(0, modified.length(), Object.class);
         final String message2 = message1 + "\nRegions after change: " + regions2;
-        assertEquals(message2, 3, spans.length);
-        assertEquals(message2, 5, regions2.size());
+        assertEquals(message2, 4, spans.length);
+        assertEquals(message2, 6, regions2.size());
         assertEquals(message2, "content://timeline.app.andstatus.org/note/0/lt/sent/origin/0/actor/0",
                 regions2.get(0).urlSpan.get().getURL());
-        assertEquals(message2, "content://timeline.app.andstatus.org/note/0/lt/sent/origin/0/actor/0",
+        assertEquals(message2, "content://timeline.app.andstatus.org/note/" + ma.getActor().actorId +
+                        "/lt/sent/origin/0/actor/" + ma.getActor().actorId,
                 regions2.get(1).urlSpan.get().getURL());
 
-        final Timeline timeline = regions2.get(3).urlSpan.get().data.getTimeline();
-        assertEquals(message2, "#logic", timeline.getSearchQuery());
-        final String onClickUrl = regions2.get(3).urlSpan.get().getURL();
-        assertEquals(message2,
-                "content://timeline.app.andstatus.org/note/0/lt/search/origin/0/actor/0/search/%23logic",
-                onClickUrl);
-        ParsedUri parsedUri = ParsedUri.fromUri(Uri.parse(onClickUrl));
-        assertEquals(parsedUri.toString() + "\n" + timeline.toString(), "#logic", parsedUri.getSearchQuery());
+        oneHashTag(regions2, message2, 3, "#logic",
+                "content://timeline.app.andstatus.org/note/0/lt/search/origin/0/actor/0/search/%23logic");
+        oneHashTag(regions2, message2, 4, "#Логика",
+                "content://timeline.app.andstatus.org/note/0/lt/search/origin/0/actor/0/search/" +
+                "%23%D0%9B%D0%BE%D0%B3%D0%B8%D0%BA%D0%B0");
 
+    }
+
+    private void oneHashTag(List<SpanUtil.Region> regions, String message, int index, String hashTag, String url) {
+        final Timeline timeline = regions.get(index).urlSpan.get().data.getTimeline();
+        assertEquals(message, hashTag, timeline.getSearchQuery());
+        final String onClickUrl = regions.get(index).urlSpan.get().getURL();
+        assertEquals(message, url, onClickUrl);
+        ParsedUri parsedUri = ParsedUri.fromUri(Uri.parse(onClickUrl));
+        assertEquals(parsedUri.toString() + "\n" + timeline.toString(), hashTag, parsedUri.getSearchQuery());
     }
 }

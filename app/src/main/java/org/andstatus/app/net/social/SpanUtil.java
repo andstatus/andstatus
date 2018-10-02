@@ -30,6 +30,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static java.lang.Character.isLetter;
+import static java.lang.Character.isLetterOrDigit;
+
 public class SpanUtil {
     private static final int MIN_SPAN_LENGTH = 3;
 
@@ -131,7 +134,7 @@ public class SpanUtil {
     }
 
     private static boolean mentionAdded(Spannable spannable, Audience audience, Region region, String text) {
-        if (text.contains("@")) {
+        if (audience.nonEmpty() && text.contains("@")) {
             Actor mentionedByAtWebfingerID = audience.getActors().stream()
                     .filter(actor -> actor.isWebFingerIdValid() &&
                             text.contains("@" + actor.getWebFingerId())).findAny().orElse(Actor.EMPTY);
@@ -199,10 +202,11 @@ public class SpanUtil {
     }
 
     private static String hashTagAt(String text, int indStart) {
-        if (text.charAt(indStart) != '#') return "";
-        int ind = indStart + 1;
+        if (indStart + 1 >= text.length() || text.charAt(indStart) != '#' || !isLetter(text.charAt(indStart + 1))) return "";
+        int ind = indStart + 2;
         while (ind < text.length()) {
-            if (Patterns.USERNAME_CHARS.indexOf(text.charAt(ind)) < 0) break;
+            final char c = text.charAt(ind);
+            if (!isLetterOrDigit(c) && c != '_') break;
             ind++;
         }
         return text.substring(indStart, ind);
