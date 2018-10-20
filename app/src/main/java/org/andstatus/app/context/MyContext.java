@@ -71,4 +71,7 @@ public interface MyContext extends IdentifiableInstance {
     default HttpConnection getHttpConnectionMock() {
         return null;
     }
+    default boolean isEmpty() {
+        return context() == null;
+    }
 }

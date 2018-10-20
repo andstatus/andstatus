@@ -31,7 +31,7 @@ public class NotifierTest {
     public void testCreateNotification() {
         final MyContext myContext = TestSuite.getMyContextForTest();
         Notifier notifier = myContext.getNotifier();
-        NotificationEvents events = notifier.events;
+        NotificationEvents events = notifier.getEvents();
         notifier.clearAll();
         assertEquals("Events should be empty " + events, true, events.isEmpty());
 

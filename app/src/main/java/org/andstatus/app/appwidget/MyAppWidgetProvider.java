@@ -22,12 +22,13 @@ import android.content.Context;
 import android.content.Intent;
 
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.notification.NotificationEvents;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Arrays;
 
 /**
- * A widget provider. It uses MyAppWidgetData to store preferences and to
+ * A widget provider. It uses {@link MyAppWidgetData} to store preferences and to
  * accumulate data (notifications...) received.
  * 
  * @author yvolk@yurivolkov.com
@@ -45,7 +46,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
     public void onUpdate(Context context, AppWidgetManager appWidgetManager,
             int[] appWidgetIds) {
         MyLog.v(this, () -> "onUpdate; ids=" + Arrays.toString(appWidgetIds));
-        AppWidgets appWidgets = AppWidgets.newInstance(MyContextHolder.get());
+        AppWidgets appWidgets = new AppWidgets(NotificationEvents.fromContext(context));
         for (int id : appWidgetIds) {
             appWidgets.updateView(appWidgetManager, id);
         }
@@ -56,7 +57,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
         MyLog.v(this, () -> "onDeleted; ids=" + Arrays.toString(appWidgetIds));
         // When a user deletes the widget, delete all data, associated with it.
         for (int id : appWidgetIds) {
-            MyAppWidgetData.newInstance(context, id).delete();
+            MyAppWidgetData.newInstance(NotificationEvents.fromContext(context), id).delete();
         }
     }
 

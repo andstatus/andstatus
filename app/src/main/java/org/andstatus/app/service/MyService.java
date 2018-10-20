@@ -204,7 +204,7 @@ public class MyService extends Service {
         }
         if (wasNotInitialized) {
             if (widgetsInitialized.compareAndSet(false, true)) {
-                AppWidgets.updateWidgets(myContext);
+                AppWidgets.updateWidgets(myContext.getNotifier().getEvents());
             }
             reviveHeartBeat();
         }

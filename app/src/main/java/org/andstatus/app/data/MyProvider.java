@@ -60,8 +60,7 @@ public class MyProvider extends ContentProvider {
      */
     @Override
     public boolean onCreate() {
-        MyContextHolder.storeContextIfNotPresent(getContext(), this);
-        return MyContextHolder.get().isReady();
+        return MyContextHolder.get(getContext()).isReady();
     }
 
     /**

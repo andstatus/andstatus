@@ -145,7 +145,7 @@ public class MyContextImpl implements MyContext {
             default:
                 break;
         }
-        notifier.load();
+        notifier.initialize();
         return this;
     }
 

@@ -32,15 +32,15 @@ class MyRemoteViewData {
             widgetComment = context.getString(R.string.appwidget_nodata);
         } else {
             widgetTime = formatWidgetTime(context, widgetData.dateSince, widgetData.dateLastChecked);
-            widgetData.notifier.events.map.values().stream().filter(detail -> detail.getCount() > 0)
+            widgetData.events.map.values().stream().filter(detail -> detail.getCount() > 0)
                     .forEach(detail ->
                             widgetText += (widgetText.length() > 0 ? "\n" : "")
                             + context.getText(detail.event.titleResId) + ": " + detail.getCount());
-            if (widgetData.notifier.events.isEmpty()) {
+            if (widgetData.events.isEmpty()) {
                 widgetComment = widgetData.nothingPref;
             }
         }
-        onClickIntent = widgetData.notifier.events.getPendingIntent();
+        onClickIntent = widgetData.events.getPendingIntent();
         
         MyLog.v(this, () -> method + "; text=\"" + widgetText.replaceAll("\n", "; ")
                 + "\"; comment=\"" + widgetComment + "\"");

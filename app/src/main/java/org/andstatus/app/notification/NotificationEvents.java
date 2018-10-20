@@ -17,44 +17,43 @@
 package org.andstatus.app.notification;
 
 import android.app.PendingIntent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import android.content.Context;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.util.MyLog;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  *
  */
 public class NotificationEvents {
+    public final static NotificationEvents EMPTY = new NotificationEvents(MyContext.EMPTY, Collections.emptyList());
     public final MyContext myContext;
-    public final Map<NotificationEventType, NotificationData> map = new ConcurrentHashMap<>();
-    private volatile List<NotificationEventType> enabledEvents = Collections.emptyList();
+    private final List<NotificationEventType> enabledEvents;
+    public final Map<NotificationEventType, NotificationData> map;
 
-    public NotificationEvents(MyContext myContext) {
+    public static NotificationEvents fromContext(@NonNull Context context) {
+        return new NotificationEvents(MyContextHolder.get(context), Collections.emptyList());
+    }
+
+    NotificationEvents(MyContext myContext, List<NotificationEventType> enabledEvents) {
         this.myContext = myContext;
+        this.enabledEvents = enabledEvents;
+        map = (myContext == null || myContext.isEmpty()) ? Collections.emptyMap() : new ConcurrentHashMap<>();
     }
 
-    public void load() {
-        enabledEvents = NotificationEventType.validValues.stream().filter(NotificationEventType::isEnabled)
-                .collect(Collectors.toList());
-        map.clear();
-        update();
-    }
-
-    public boolean isEnabled(@NonNull NotificationEventType eventType) {
+    private boolean isEnabled(@NonNull NotificationEventType eventType) {
         return enabledEvents.contains(eventType);
     }
 
@@ -70,11 +69,11 @@ public class NotificationEvents {
 
     public void clear(@NonNull Timeline timeline) {
         MyProvider.clearNotification(myContext, timeline);
-        update();
+        load();
     }
 
     public boolean isEmpty() {
-        return map.values().stream().filter(data -> data.count > 0).count() == 0;
+        return map.values().stream().noneMatch(data -> data.count > 0);
     }
 
     /** When a User clicks on a widget, open a timeline, which has new activities/notes, or a default timeline */
@@ -96,35 +95,27 @@ public class NotificationEvents {
         }
     }
 
-    public void update() {
-        final String method = "update";
+    public NotificationEvents load() {
         map.clear();
-        SQLiteDatabase db = myContext.getDatabase();
-        if (db == null) {
-            MyLog.v(this, () -> method + "; Database is null");
-            return;
-        }
         String sql = "SELECT " + ActivityTable.NEW_NOTIFICATION_EVENT + ", " +
                 ActivityTable.ACCOUNT_ID + ", " +
                 ActivityTable.UPDATED_DATE +
                 " FROM " + ActivityTable.TABLE_NAME +
                 " WHERE " + ActivityTable.NEW_NOTIFICATION_EVENT + "!=0";
-        try (Cursor cursor = db.rawQuery(sql, null)) {
-            while (cursor.moveToNext()) {
-                NotificationEventType eventType = NotificationEventType
-                        .fromId(DbUtils.getLong(cursor, ActivityTable.NEW_NOTIFICATION_EVENT));
-                MyAccount myAccount = myContext.accounts()
-                        .fromActorId(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID));
-                long updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
-                onNewEvent(eventType, myAccount, updatedDate);
-            }
-        } catch (Exception e) {
-            MyLog.i(this, method + "; SQL:'" + sql + "'", e);
-        }
+        map.putAll(MyQuery.foldLeft(myContext, sql, Collections.emptyMap(),  m1 -> cursor -> {
+            NotificationEventType eventType = NotificationEventType
+                    .fromId(DbUtils.getLong(cursor, ActivityTable.NEW_NOTIFICATION_EVENT));
+            MyAccount myAccount = myContext.accounts()
+                    .fromActorId(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID));
+            long updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
+            loadEvent(eventType, myAccount, updatedDate);
+            return m1;
+        } ));
+        return this;
     }
 
     // TODO: event for an Actor, not for an Account
-    public void onNewEvent(NotificationEventType eventType, MyAccount myAccount, long updatedDate) {
+    public void loadEvent(NotificationEventType eventType, MyAccount myAccount, long updatedDate) {
         NotificationData data = map.get(eventType);
         if (data == null) {
             if (isEnabled(eventType)) {

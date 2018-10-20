@@ -17,19 +17,18 @@
 package org.andstatus.app.appwidget;
 
 import android.app.Activity;
-import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetManager;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 
 import org.andstatus.app.R;
+import org.andstatus.app.notification.NotificationEvents;
 import org.andstatus.app.util.MyLog;
 
 /**
- * The configuration screen for the MyAppWidgetProvider widget.
+ * The configuration screen for the {@link MyAppWidgetProvider} widget.
  */
 public class MyAppWidgetConfigure extends Activity {
     static final String TAG = MyAppWidgetConfigure.class.getSimpleName();
@@ -38,13 +37,9 @@ public class MyAppWidgetConfigure extends Activity {
     EditText mAppWidgetTitle;
     MyAppWidgetData appWidgetData;
 
-    public MyAppWidgetConfigure() {
-        super();
-    }
-
     @Override
-    public void onCreate(Bundle icicle) {
-        super.onCreate(icicle);
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
         // Set the result to CANCELED. This will cause the widget host to cancel
         // out of the widget placement if they press the back button.
@@ -54,18 +49,12 @@ public class MyAppWidgetConfigure extends Activity {
         setContentView(R.layout.appwidget_configure);
 
         // Find the EditText
-        mAppWidgetTitle = (EditText) findViewById(R.id.appwidget_title);
+        mAppWidgetTitle = findViewById(R.id.appwidget_title);
 
         // Bind the action for the save button.
         findViewById(R.id.ok_button).setOnClickListener(mOnClickListener);
 
-        // Find the widget id from the intent.
-        Intent intent = getIntent();
-        Bundle extras = intent.getExtras();
-        if (extras != null) {
-            mAppWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID,
-                    AppWidgetManager.INVALID_APPWIDGET_ID);
-        }
+        mAppWidgetId = getIntent().getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         MyLog.v(TAG, () -> "mAppWidgetId=" + mAppWidgetId);
 
         // If they gave us an intent without the widget id, just bail.
@@ -73,7 +62,7 @@ public class MyAppWidgetConfigure extends Activity {
             finish();
         }
 
-        appWidgetData = MyAppWidgetData.newInstance(this, mAppWidgetId);
+        appWidgetData = MyAppWidgetData.newInstance(NotificationEvents.fromContext(this), mAppWidgetId);
         // For now we have only one setting to configure:
         mAppWidgetTitle.setText(appWidgetData.nothingPref);
     }
@@ -103,30 +92,5 @@ public class MyAppWidgetConfigure extends Activity {
             finish();
         }
     };
-    
-    /**
-     * Delete all Widgets
-     * Idea from <a href="http://stackoverflow.com/a/7774503">Removing AppWidgets programmatically</a>
-     * @param context
-     * @param packageName
-     * @param className
-     * @return
-     */
-    public static int deleteWidgets(Context context, String packageName, String className) {
-        int deletedCount = 0;
-        try {
-            AppWidgetManager awm = AppWidgetManager.getInstance(context);
-            int[] appWidgetIds = awm.getAppWidgetIds(new android.content.ComponentName(packageName, 
-                    className)); 
-            MyLog.i(TAG, "About to delete " + appWidgetIds.length +" Widgets of " + packageName + " package; class=" + className);
-            AppWidgetHost host = new AppWidgetHost(context, 0);
-            for (int ind = 0; ind < appWidgetIds.length; ind++) {
-                host.deleteAppWidgetId(appWidgetIds[ind]);         
-            }
-        } catch (Exception e) {
-            MyLog.e(TAG, "Error deleting widgets", e);
-        }
-        return deletedCount;
-    }
-    
+
 }

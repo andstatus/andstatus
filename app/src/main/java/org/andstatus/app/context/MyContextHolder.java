@@ -56,10 +56,15 @@ public final class MyContextHolder {
 
     private MyContextHolder() {
     }
-    
-    /**
-     * Immediately get currently available context, even if it's empty
-     */
+
+    /** Immediately get currently available context, even if it's empty */
+    @NonNull
+    public static MyContext get(Context context) {
+        storeContextIfNotPresent(context, context);
+        return get();
+    }
+
+    /** Immediately get currently available context, even if it's empty */
     @NonNull
     public static MyContext get() {
         return myFutureContext.getNow();
@@ -164,14 +169,13 @@ public final class MyContextHolder {
      * Quickly returns, providing context for the deferred initialization
      */
     public static void storeContextIfNotPresent(Context context, Object calledBy) {
-        if (myFutureContext.getNow().context() == null) {
-            synchronized(CONTEXT_LOCK) {
-                if (myFutureContext.getNow().context() == null) {
-                    requireNonNullContext(context, calledBy, "context is unknown yet");
-                    MyContext contextCreator = myFutureContext.getNow().newCreator(context, calledBy);
-                    requireNonNullContext(contextCreator.context(), calledBy, "no compatible context");
-                    myFutureContext = new MyEmptyFutureContext(contextCreator);
-                }
+        if (context == null || myFutureContext.getNow().context() != null) return;
+
+        synchronized(CONTEXT_LOCK) {
+            if (myFutureContext.getNow().context() == null) {
+                MyContext contextCreator = myFutureContext.getNow().newCreator(context, calledBy);
+                requireNonNullContext(contextCreator.context(), calledBy, "no compatible context");
+                myFutureContext = new MyEmptyFutureContext(contextCreator);
             }
         }
     }

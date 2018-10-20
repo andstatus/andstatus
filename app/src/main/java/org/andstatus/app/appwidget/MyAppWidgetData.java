@@ -16,20 +16,18 @@
 
 package org.andstatus.app.appwidget;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.notification.Notifier;
+import org.andstatus.app.notification.NotificationEvents;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
 
 /**
- * The class maintains the appWidget instance (defined by mappWidgetId): - state
+ * Maintains the appWidget instance (defined by {@link #appWidgetId}): - state
  * (that changes when new tweets etc. arrive); - preferences (that are set once
  * in the appWidget configuration activity).
  * 
@@ -38,37 +36,21 @@ import org.andstatus.app.util.StringUtils;
 public class MyAppWidgetData {
     private static final String TAG = MyAppWidgetData.class.getSimpleName();
 
-    /**
-     * Name of the preferences file (with appWidgetId appended to it, so every
-     * appWidget instance would have its own preferences file) We don't need
-     * qualified name here because the file is in the "qualified" directory:
-     * "/data/data/org.andstatus.app/shared_prefs/"
-     * */
-    public static final String PREFS_FILE_NAME = TAG;
+    /** Words shown in a case there is nothing new */
+    private static final String PREF_NOTHING_KEY = "nothing";
+    /** Date and time when counters where cleared */
+    private static final String PREF_DATESINCE_KEY = "datecleared";
+    /** Date and time when data was checked on the server last time */
+    private static final String PREF_DATECHECKED_KEY = "datechecked";
 
-    /**
-     * Words shown in a case there is nothing new
-     */
-    public static final String PREF_NOTHING_KEY = "nothing";
-    /**
-     *  Date and time when counters where cleared
-     */
-    public static final String PREF_DATESINCE_KEY = "datecleared";
-    /**
-     *  Date and time when data was checked on the server last time
-     */
-    public static final String PREF_DATECHECKED_KEY = "datechecked";
+    public final NotificationEvents events;
+    private int appWidgetId;
 
-    private final MyContext mContext;
-    private int mAppWidgetId;
-
-    private String prefsFileName;
+    private final String prefsFileName;
 
     private boolean isLoaded = false;
 
     String nothingPref = "";
-
-    final Notifier notifier;
 
     /**  Value of {@link #dateLastChecked} before counters were cleared */
     long dateSince = 0;
@@ -77,18 +59,15 @@ public class MyAppWidgetData {
      *  If there was some new notes on the server, they were loaded at that time.
      */
     long dateLastChecked = 0;
-    
-    boolean changed = false;
-    
-    private MyAppWidgetData(MyContext myContext, int appWidgetId) {
-        mContext = myContext;
-        this.mAppWidgetId = appWidgetId;
-        prefsFileName = PREFS_FILE_NAME + this.mAppWidgetId;
-        notifier = myContext.getNotifier();
+
+    private MyAppWidgetData(NotificationEvents events, int appWidgetId) {
+        this.events = events;
+        this.appWidgetId = appWidgetId;
+        prefsFileName = TAG + this.appWidgetId;
     }
 
-    public static MyAppWidgetData newInstance(Context context, int appWidgetId) {
-        MyAppWidgetData data = new MyAppWidgetData(MyContextHolder.initialize(context, context), appWidgetId);
+    public static MyAppWidgetData newInstance(NotificationEvents events, int appWidgetId) {
+        MyAppWidgetData data = new MyAppWidgetData(events, appWidgetId);
         if (MyContextHolder.get().isReady()) {
             data.load();
         }
@@ -102,9 +81,9 @@ public class MyAppWidgetData {
         } else {
             nothingPref = prefs.getString(PREF_NOTHING_KEY, null);
             if (nothingPref == null) {
-                nothingPref = mContext.context().getString(R.string.appwidget_nothingnew_default);
+                nothingPref = events.myContext.context().getString(R.string.appwidget_nothingnew_default);
                 if (MyPreferences.isShowDebuggingInfoInUi()) {
-                    nothingPref += " (" + mAppWidgetId + ")";
+                    nothingPref += " (" + appWidgetId + ")";
                 }
             }
             dateLastChecked = prefs.getLong(PREF_DATECHECKED_KEY, 0);
@@ -114,22 +93,18 @@ public class MyAppWidgetData {
                 dateSince = prefs.getLong(PREF_DATESINCE_KEY, 0);
             }
 
-            MyLog.v(this, () -> "Prefs for appWidgetId=" + mAppWidgetId + " were loaded");
+            MyLog.v(this, () -> "Prefs for appWidgetId=" + appWidgetId + " were loaded");
             isLoaded = true;
         }
     }
 
     public void clearCounters() {
         dateSince = dateLastChecked;
-        changed = true;
     }
 
     private void onDataCheckedOnTheServer() {
         dateLastChecked = System.currentTimeMillis();
-        if (dateSince == 0) {
-            clearCounters();
-        }
-        changed = true;
+        if (dateSince == 0) clearCounters();
     }
     
     public boolean save() {
@@ -148,22 +123,21 @@ public class MyAppWidgetData {
         return true;
     }
 
-    /**
-     * Delete the preferences file!
-     * */
+    /** Delete the preferences file! */
     public boolean delete() {
-        MyLog.v(this, () -> "Deleting data for widgetId=" + mAppWidgetId );
-        return SharedPreferencesUtil.delete(mContext.context(), prefsFileName);
+        MyLog.v(this, () -> "Deleting data for widgetId=" + appWidgetId);
+        return SharedPreferencesUtil.delete(events.myContext.context(), prefsFileName);
     }
 
     @Override
     public String toString() {
-        return "MyAppWidgetData:{id:" + mAppWidgetId +
-                ", notifications:" + notifier.events +
+        return "MyAppWidgetData:{" +
+                "id:" + appWidgetId +
+                (events.isEmpty() ? "" : ", notifications:" + events) +
                 (dateLastChecked > 0 ? ", checked:" + dateLastChecked : "") +
                 (dateSince > 0 ? ", since:" + dateSince : "") +
                 (StringUtils.isEmpty(nothingPref) ? "" : ", nothing:" + nothingPref) +
-                "}";
+            "}";
     }
 
     public void update() {
@@ -172,6 +146,6 @@ public class MyAppWidgetData {
     }
 
     int getId() {
-        return mAppWidgetId;
+        return appWidgetId;
     }
 }

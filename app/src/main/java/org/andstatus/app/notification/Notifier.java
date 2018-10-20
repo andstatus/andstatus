@@ -25,7 +25,6 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import org.andstatus.app.R;
 import org.andstatus.app.appwidget.AppWidgets;
@@ -37,29 +36,35 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class Notifier {
     private static final long[] VIBRATION_PATTERN = {200, 300, 200, 300};
     private static final int LIGHT_COLOR = Color.GREEN;
-    public final NotificationEvents events;
+    private final MyContext myContext;
     private NotificationManager nM = null;
     private boolean notificationArea;
     private boolean vibration;
     private String soundUri;
+    private List<NotificationEventType> enabledEvents = Collections.emptyList();
+    private volatile NotificationEvents events = NotificationEvents.EMPTY;
 
     public Notifier(MyContext myContext) {
-        events = new NotificationEvents(myContext);
+        this.myContext = myContext;
     }
 
     public void clearAll() {
         events.clearAll();
         clearAndroidNotifications(Timeline.EMPTY);
-        AppWidgets.clearAndUpdateWidgets(events.myContext);
+        AppWidgets.clearAndUpdateWidgets(events);
     }
 
     public void clear(Timeline timeline) {
         events.clear(timeline);
         clearAndroidNotifications(timeline);
-        AppWidgets.clearAndUpdateWidgets(events.myContext);  // TODO: Clear for this timeline only
+        AppWidgets.clearAndUpdateWidgets(events);
     }
 
     private void clearAndroidNotifications(@NonNull Timeline timeline) {
@@ -73,16 +78,10 @@ public class Notifier {
     }
 
     public void update() {
-        events.update();
-        notifyViaWidgets(events);
-        if (notificationArea || vibration || StringUtils.nonEmpty(soundUri)) events.map.values().stream()
-                .filter(data -> data.count > 0).forEach(events.myContext::notify);
-    }
-
-    private void notifyViaWidgets(NotificationEvents events) {
-        AppWidgets appWidgets = AppWidgets.newInstance(events.myContext);
-        appWidgets.updateData();
-        appWidgets.updateViews();
+        new AppWidgets(events.load()).updateData().updateViews();
+        if (notificationArea || vibration || StringUtils.nonEmpty(soundUri)) {
+            events.map.values().stream().filter(data -> data.count > 0).forEach(myContext::notify);
+        }
     }
 
     public Notification getAndroidNotification(@NonNull NotificationData data) {
@@ -115,7 +114,7 @@ public class Notifier {
                 .setWhen(data.updatedDate)
                 .setShowWhen(true);
         }
-        builder.setContentIntent(data.getPendingIntent(events.myContext));
+        builder.setContentIntent(data.getPendingIntent(myContext));
         return builder.build();
     }
 
@@ -128,6 +127,7 @@ public class Notifier {
     @TargetApi(Build.VERSION_CODES.O)
     public void createNotificationChannel(NotificationData data) {
         if (nM == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
+
         String channelId = data.channelId();
         CharSequence channelName = getContext().getText(data.event.titleResId);
         String description = "AndStatus, " + channelName;
@@ -153,11 +153,11 @@ public class Notifier {
     }
 
     private Context getContext() {
-        return events.myContext.context();
+        return myContext.context();
     }
 
-    public void load() {
-        if (events.myContext.isReady()) {
+    public void initialize() {
+        if (myContext.isReady()) {
             nM = (NotificationManager) getContext().getSystemService(android.content.Context.NOTIFICATION_SERVICE);
             if (nM == null) {
                 MyLog.w(this, "No Notification Service");
@@ -166,16 +166,23 @@ public class Notifier {
         notificationArea = NotificationMethodType.NOTIFICATION_AREA.isEnabled();
         vibration = NotificationMethodType.VIBRATION.isEnabled();
         soundUri = NotificationMethodType.SOUND.getString();
-        events.load();
+        enabledEvents = NotificationEventType.validValues.stream().filter(NotificationEventType::isEnabled)
+                .collect(Collectors.toList());
+        events = new NotificationEvents(myContext, enabledEvents).load();
     }
 
     public boolean isEnabled(NotificationEventType eventType) {
-        return events.isEnabled(eventType);
+        return enabledEvents.contains(eventType);
     }
 
     public void onUnsentActivity(long activityId) {
-        if (activityId == 0 || !events.isEnabled(NotificationEventType.OUTBOX)) return;
-        MyProvider.setUnsentActivityNotification(events.myContext, activityId);
+        if (activityId == 0 || !isEnabled(NotificationEventType.OUTBOX)) return;
+
+        MyProvider.setUnsentActivityNotification(myContext, activityId);
         update();
+    }
+
+    public NotificationEvents getEvents() {
+        return events;
     }
 }

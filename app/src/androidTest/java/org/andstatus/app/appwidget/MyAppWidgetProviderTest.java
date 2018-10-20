@@ -33,8 +33,10 @@ import org.andstatus.app.util.MyLog;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -51,14 +53,13 @@ public class MyAppWidgetProviderTest {
         TestSuite.initializeWithData(this);
         myContext = MyContextHolder.get();
         MyServiceManager.setServiceUnavailable();
-        initializeDateTests();
     }
 
     @Test
-    public void testTimeFormatting() throws Exception {
+    public void testTimeFormatting() {
         MyLog.v(this, "testTimeFormatting started");
     	
-        for (DateTest dateTest : dateTests) {
+        for (DateTest dateTest : getDateTests()) {
             if (dateTest == null) {
                 break;
             }
@@ -69,11 +70,9 @@ public class MyAppWidgetProviderTest {
             String output2 = MyRemoteViewData.formatWidgetTime(myContext.context(), startMillis, endMillis);
             MyLog.v(this, "\"" + output + "\"; \"" + output2 + "\"");
         }         
-    }   
+    }
 
-    private DateTest[] dateTests = new DateTest[101];
-    
-    static private class DateTest {
+    private static class DateTest {
         Time date1;
         Time date2;
         int flags;
@@ -87,135 +86,107 @@ public class MyAppWidgetProviderTest {
         }
     }
     
-    private void initializeDateTests() {
-    	// Initialize dateTests
-    	int ind = 0;
+    private List<DateTest> getDateTests() {
+        List<DateTest> dateTests = new ArrayList<>();
     	Calendar cal1 = Calendar.getInstance();
     	Calendar cal2 = Calendar.getInstance();
 
     	cal1.setTimeInMillis(System.currentTimeMillis());
     	cal2.setTimeInMillis(System.currentTimeMillis());
-    	dateTests[ind] = new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis());
+    	dateTests.add(new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis()));
     	
-    	ind += 1;
     	cal1.roll(Calendar.SECOND, false);
-    	dateTests[ind] = new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis());
+        dateTests.add(new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis()));
 
-    	ind += 1;
     	cal1.roll(Calendar.SECOND, false);
-    	dateTests[ind] = new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis());
+        dateTests.add(new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis()));
     	
-    	ind += 1;
     	cal1.roll(Calendar.MINUTE, false);
-    	dateTests[ind] = new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis());
+        dateTests.add(new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis()));
 
-    	ind += 1;
     	cal1.add(Calendar.SECOND, 5);
-    	dateTests[ind] = new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis());
+        dateTests.add(new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis()));
 
-    	ind += 1;
     	cal1.roll(Calendar.MINUTE, false);
-    	dateTests[ind] = new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis());
+        dateTests.add(new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis()));
 
-    	ind += 1;
     	cal1.roll(Calendar.HOUR, false);
-    	dateTests[ind] = new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis());
+        dateTests.add(new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis()));
 
-    	ind += 1;
     	cal1.roll(Calendar.HOUR, false);
-    	dateTests[ind] = new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis());
-    	
-    	ind += 1;
-    	cal1.roll(Calendar.DAY_OF_YEAR, false);
-    	dateTests[ind] = new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis());
-    	
-    	ind += 1;
-    	cal1.roll(Calendar.DAY_OF_YEAR, false);
-    	dateTests[ind] = new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis());
+        dateTests.add(new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis()));
 
-    	ind += 1;
+    	cal1.roll(Calendar.DAY_OF_YEAR, false);
+        dateTests.add(new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis()));
+    	
+    	cal1.roll(Calendar.DAY_OF_YEAR, false);
+        dateTests.add(new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis()));
+
     	cal2.roll(Calendar.MINUTE, false);
-    	dateTests[ind] = new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis());
+        dateTests.add(new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis()));
 
-    	ind += 1;
     	cal2.roll(Calendar.HOUR, false);
-    	dateTests[ind] = new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis());
+        dateTests.add(new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis()));
 
-    	ind += 1;
     	cal2.roll(Calendar.HOUR, false);
-    	dateTests[ind] = new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis());
+        dateTests.add(new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis()));
 
-    	ind += 1;
     	cal1.roll(Calendar.YEAR, false);
-    	dateTests[ind] = new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis());
+        dateTests.add(new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis()));
+        return dateTests;
     }
 
     @Test
-    public void testReceiver() throws Exception {
+    public void testReceiver() {
         final String method = "testReceiver";
     	MyLog.i(this, method + "; started");
-
         long dateSinceMin = System.currentTimeMillis();
-        final Notifier notifier = MyContextHolder.get().getNotifier();
-        NotificationEvents events = notifier.events;
+
+        final Notifier notifier = myContext.getNotifier();
+        NotificationEvents events = notifier.getEvents();
+        AppWidgets appWidgets = new AppWidgets(events);
+
     	// To set dateSince correctly!
-        updateWidgets(events, NotificationEventType.ANNOUNCE, 1);
+        updateWidgets(appWidgets, NotificationEventType.ANNOUNCE, 1);
         DbUtils.waitMs(method, 5000);
         long dateSinceMax = System.currentTimeMillis();
         DbUtils.waitMs(method, 5000);
-        AppWidgets.clearAndUpdateWidgets(myContext);
         notifier.clearAll();
 
-        checkWidgetData(0, 0, 0);
-        checkDateChecked(dateSinceMin, dateSinceMax);
+        checkEvents(events, 0, 0, 0);
+        checkDateChecked(appWidgets, dateSinceMin, dateSinceMax);
 
     	int numMentions = 3;
-        updateWidgets(events, NotificationEventType.MENTION, numMentions);
+        updateWidgets(appWidgets, NotificationEventType.MENTION, numMentions);
     	
     	int numPrivate = 1;
-        updateWidgets(events, NotificationEventType.PRIVATE, numPrivate);
+        updateWidgets(appWidgets, NotificationEventType.PRIVATE, numPrivate);
     	
     	int numReblogs = 7;
-        updateWidgets(events, NotificationEventType.ANNOUNCE, numReblogs);
+        updateWidgets(appWidgets, NotificationEventType.ANNOUNCE, numReblogs);
     	
-        checkWidgetData(numMentions, numPrivate, numReblogs);
+        checkEvents(events, numMentions, numPrivate, numReblogs);
         
         long dateCheckedMin = System.currentTimeMillis();  
         numMentions++;
-        updateWidgets(events, NotificationEventType.MENTION, 1);
-        checkWidgetData(numMentions, numPrivate, numReblogs);
+        updateWidgets(appWidgets, NotificationEventType.MENTION, 1);
+        checkEvents(events, numMentions, numPrivate, numReblogs);
         long dateCheckedMax = System.currentTimeMillis();
         
-        checkDateSince(dateSinceMin, dateSinceMax);
-        checkDateChecked(dateCheckedMin, dateCheckedMax);
+        checkDateSince(appWidgets, dateSinceMin, dateSinceMax);
+        checkDateChecked(appWidgets, dateCheckedMin, dateCheckedMax);
     }
 
-    private void checkWidgetData(long numMentions, long numPrivate, long numReblogs)
-            throws InterruptedException {
-        final String method = "checkWidgetData";
-        DbUtils.waitMs(method, 500);
-
-    	AppWidgets appWidgets = AppWidgets.newInstance(myContext);
-    	if (appWidgets.isEmpty()) {
-            MyLog.i(this, method + "; No appWidgets found");
-    	}
-    	for (MyAppWidgetData widgetData : appWidgets.collection()) {
-    	    NotificationEvents events = widgetData.notifier.events;
-            assertEquals("Mentions " + widgetData.toString(), numMentions,
-                    events.getCount(NotificationEventType.MENTION));
-    	    assertEquals("Private " + widgetData.toString(), numPrivate,
-                    events.getCount(NotificationEventType.PRIVATE));
-            assertEquals("Reblogs " + widgetData.toString(), numReblogs,
-                    events.getCount(NotificationEventType.ANNOUNCE));
-    	}
+    private void checkEvents(NotificationEvents events, long numMentions, long numPrivate, long numReblogs) {
+        assertEquals("Mentions", numMentions, events.getCount(NotificationEventType.MENTION));
+        assertEquals("Private", numPrivate, events.getCount(NotificationEventType.PRIVATE));
+        assertEquals("Reblogs", numReblogs, events.getCount(NotificationEventType.ANNOUNCE));
     }
 
-    private void checkDateSince(long dateMin, long dateMax)
-            throws InterruptedException {
+    private void checkDateSince(AppWidgets appWidgets, long dateMin, long dateMax) {
         final String method = "checkDateSince";
         DbUtils.waitMs(method, 500);
 
-        AppWidgets appWidgets = AppWidgets.newInstance(myContext);
         if (appWidgets.isEmpty()) {
             MyLog.i(this, method + "; No appWidgets found");
         }
@@ -224,12 +195,10 @@ public class MyAppWidgetProviderTest {
         }
     }
 
-    private void checkDateChecked(long dateMin, long dateMax)
-            throws InterruptedException {
+    private void checkDateChecked(AppWidgets appWidgets, long dateMin, long dateMax) {
         final String method = "checkDateChecked";
         DbUtils.waitMs(method, 500);
 
-        AppWidgets appWidgets = AppWidgets.newInstance(myContext);
         if (appWidgets.isEmpty()) {
             MyLog.i(this, method + "; No appWidgets found");
         }
@@ -264,16 +233,13 @@ public class MyAppWidgetProviderTest {
 	 * if there are any installed... (e.g. on the Home screen...)
 	 * @see MyAppWidgetProvider
 	 */
-	private void updateWidgets(NotificationEvents events, NotificationEventType event, int increment) throws InterruptedException{
+	private void updateWidgets(AppWidgets appWidgets, NotificationEventType event, int increment) {
         final String method = "updateWidgets";
         DbUtils.waitMs(method, 500);
         for (int ind = 0; ind < increment; ind++ ) {
-            events.onNewEvent(event, DemoData.demoData.getConversationMyAccount(), System.currentTimeMillis());
+            appWidgets.events.loadEvent(event, DemoData.demoData.getConversationMyAccount(), System.currentTimeMillis());
         }
-        AppWidgets appWidgets = AppWidgets.newInstance(myContext);
-        appWidgets.updateData();
-        appWidgets.updateViews();
+        appWidgets.updateData().updateViews();
 	}
-	
 	
 }
