@@ -31,10 +31,13 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class SpanUtilTest {
 
@@ -101,20 +104,75 @@ public class SpanUtilTest {
                         "/lt/sent/origin/0/actor/" + ma.getActor().actorId,
                 regions2.get(1).urlSpan.get().getURL());
 
-        oneHashTag(regions2, message2, 3, "#logic",
-                "content://timeline.app.andstatus.org/note/0/lt/search/origin/0/actor/0/search/%23logic");
+        oneHashTag(regions2, message2, 3, "logic");
         oneHashTag(regions2, message2, 4, "#Логика",
                 "content://timeline.app.andstatus.org/note/0/lt/search/origin/0/actor/0/search/" +
                 "%23%D0%9B%D0%BE%D0%B3%D0%B8%D0%BA%D0%B0");
 
     }
 
+    private void oneHashTag(List<SpanUtil.Region> regions, String message, int index, String term) {
+        oneHashTag(regions, message, index, "#" + term,
+                "content://timeline.app.andstatus.org/note/0/lt/search/origin/0/actor/0/search/%23" + term);
+    }
+
     private void oneHashTag(List<SpanUtil.Region> regions, String message, int index, String hashTag, String url) {
-        final Timeline timeline = regions.get(index).urlSpan.get().data.getTimeline();
+        final SpanUtil.Region region = regions.get(index);
+        final Optional<MyUrlSpan> urlSpan = region.urlSpan;
+        assertTrue("Should be a hashtag " + region + "\n" + message, urlSpan.isPresent());
+        final Timeline timeline = urlSpan.get().data.getTimeline();
         assertEquals(message, hashTag, timeline.getSearchQuery());
-        final String onClickUrl = regions.get(index).urlSpan.get().getURL();
+        final String onClickUrl = urlSpan.get().getURL();
         assertEquals(message, url, onClickUrl);
         ParsedUri parsedUri = ParsedUri.fromUri(Uri.parse(onClickUrl));
         assertEquals(parsedUri.toString() + "\n" + timeline.toString(), hashTag, parsedUri.getSearchQuery());
     }
+
+    @Test
+    public void manyHashtags() {
+        Function<Spannable, Spannable> modifier = SpanUtil.spansModifier(Audience.EMPTY);
+
+        String text = "Bill Gates says there are 5 'grand challenges' to stopping an apocalyptic future of floods," +
+                " hurricanes, and drought    https://t.co/e9Csj7fSIc" +
+                " #ActOnClimate #SR15 #IPCC #1o5 #Agriculture #Electricity" +
+                " #.testnonhashtag" +
+                " #transportation  #buildings  #Manufacturing" +
+                " #s" +
+                " #CleanEnergy #GHG  #ZeroCarbon";
+
+        Spannable spannable = MyUrlSpan.toSpannable(text, true);
+        List<SpanUtil.Region> regions1 = SpanUtil.regionsOf(spannable);
+        final String message1 = "Regions before change: " + regions1;
+        assertEquals(message1, 3, regions1.size());
+
+        Spannable modified = modifier.apply(spannable);
+        List<SpanUtil.Region> regions2 = SpanUtil.regionsOf(spannable);
+        final Object[] spans = modified.getSpans(0, modified.length(), Object.class);
+        final String message2 = message1 + "\nRegions after change: " + regions2;
+        assertEquals("Wrong number of regions before change\n" + message2, 3, regions1.size());
+        assertEquals("Wrong number of regions after change\n" + message2, 16, regions2.size());
+
+        oneHashTag(regions2, message2, 2, "ActOnClimate");
+        oneHashTag(regions2, message2, 3, "SR15");
+        oneHashTag(regions2, message2, 4, "IPCC");
+        notAHashTag(regions2, message2, 5);
+        //oneHashTag(regions2, message2, 5, "1o5");
+        oneHashTag(regions2, message2, 6, "Agriculture");
+        oneHashTag(regions2, message2, 7, "Electricity");
+        notAHashTag(regions2, message2, 8);
+        oneHashTag(regions2, message2, 9, "transportation");
+        oneHashTag(regions2, message2, 10, "buildings");
+        oneHashTag(regions2, message2, 11, "Manufacturing");
+        notAHashTag(regions2, message2, 12);
+        oneHashTag(regions2, message2, 13, "CleanEnergy");
+        oneHashTag(regions2, message2, 14, "GHG");
+        oneHashTag(regions2, message2, 15, "ZeroCarbon");
+    }
+
+    private void notAHashTag(List<SpanUtil.Region> regions, String message, int index) {
+        final SpanUtil.Region region = regions.get(index);
+        final Optional<MyUrlSpan> urlSpan = region.urlSpan;
+        assertFalse("Should not be a hashtag " + region + "\n" + message, urlSpan.isPresent());
+    }
+
 }

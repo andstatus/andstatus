@@ -191,18 +191,24 @@ public class SpanUtil {
     }
 
     private static boolean hashTagAdded(Spannable spannable, Audience audience, Region region, String text) {
-        int indStart = text.indexOf('#');
-        if (indStart < 0) return false;
+        int indStart = 0;
+        String hashTag = "";
+        do {
+            int indTag = text.indexOf('#', indStart);
+            if (indTag < 0) return false;
 
-        String hashTag = hashTagAt(text, indStart);
-        if (hashTag.length() < MIN_SPAN_LENGTH) return false;
+            hashTag = hashTagAt(text, indTag);
+            indStart = indTag + 1;
+        } while (hashTag.length() < MIN_SPAN_LENGTH);
 
         return spanAdded(spannable, audience, region, hashTag,
                 new MyUrlSpan.Data(Optional.empty(), Optional.of(hashTag), Optional.empty()));
     }
 
     private static String hashTagAt(String text, int indStart) {
-        if (indStart + 1 >= text.length() || text.charAt(indStart) != '#' || !isLetter(text.charAt(indStart + 1))) return "";
+        if (indStart + 1 >= text.length() || text.charAt(indStart) != '#' || !isLetter(text.charAt(indStart + 1))) {
+            return "";
+        }
         int ind = indStart + 2;
         while (ind < text.length()) {
             final char c = text.charAt(ind);
