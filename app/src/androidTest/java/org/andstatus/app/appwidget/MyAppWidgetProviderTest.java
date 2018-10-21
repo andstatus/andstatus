@@ -50,7 +50,7 @@ public class MyAppWidgetProviderTest {
     
     @Before
     public void setUp() throws Exception {
-        TestSuite.initializeWithData(this);
+        TestSuite.initializeWithAccounts(this);
         myContext = MyContextHolder.get();
         MyServiceManager.setServiceUnavailable();
     }
@@ -140,21 +140,21 @@ public class MyAppWidgetProviderTest {
     public void testReceiver() {
         final String method = "testReceiver";
     	MyLog.i(this, method + "; started");
-        long dateSinceMin = System.currentTimeMillis();
-
         final Notifier notifier = myContext.getNotifier();
         NotificationEvents events = notifier.getEvents();
-        AppWidgets appWidgets = new AppWidgets(events);
 
-    	// To set dateSince correctly!
-        updateWidgets(appWidgets, NotificationEventType.ANNOUNCE, 1);
-        DbUtils.waitMs(method, 5000);
+        long dateSinceMin = System.currentTimeMillis();
+    	// To set dateSince and dateChecked correctly!
+        updateWidgets(new AppWidgets(events), NotificationEventType.ANNOUNCE, 1);
+        DbUtils.waitMs(method, 2000);
         long dateSinceMax = System.currentTimeMillis();
-        DbUtils.waitMs(method, 5000);
+        DbUtils.waitMs(method, 2000);
         notifier.clearAll();
 
-        checkEvents(events, 0, 0, 0);
+        AppWidgets appWidgets = new AppWidgets(events);
         checkDateChecked(appWidgets, dateSinceMin, dateSinceMax);
+        checkDateSince(appWidgets, dateSinceMin, dateSinceMax);
+        checkEvents(events, 0, 0, 0);
 
     	int numMentions = 3;
         updateWidgets(appWidgets, NotificationEventType.MENTION, numMentions);
@@ -215,11 +215,11 @@ public class MyAppWidgetProviderTest {
             fail( message + " actual date is zero");
         } else if (dateActual < dateMin) {
             fail( message + " actual date " + dateTimeFormatted(dateActual) 
-                    + " is less than expected " + dateTimeFormatted(dateMin) 
+                    + " is less than min date " + dateTimeFormatted(dateMin)
                     + " min by " + (dateMin - dateActual) + " ms");
         } else {
             fail( message + " actual date " + dateTimeFormatted(dateActual) 
-                    + " is larger than expected " + dateTimeFormatted(dateMax) 
+                    + " is larger than max date " + dateTimeFormatted(dateMax)
                     + " max by " + (dateActual - dateMax) + " ms");
         }
     }
