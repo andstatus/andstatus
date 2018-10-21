@@ -35,6 +35,7 @@ import static java.lang.Character.isLetterOrDigit;
 
 public class SpanUtil {
     private static final int MIN_SPAN_LENGTH = 3;
+    private static final int MIN_HASHTAG_LENGTH = 2;
 
     private SpanUtil() { /* Empty */ }
 
@@ -190,6 +191,8 @@ public class SpanUtil {
         return true;
     }
 
+    /** As https://www.hashtags.org/definition/ shows, hashtags may have numbers only,
+     *  and may contain one symbol only  */
     private static boolean hashTagAdded(Spannable spannable, Audience audience, Region region, String text) {
         int indStart = 0;
         String hashTag = "";
@@ -199,14 +202,15 @@ public class SpanUtil {
 
             hashTag = hashTagAt(text, indTag);
             indStart = indTag + 1;
-        } while (hashTag.length() < MIN_SPAN_LENGTH);
+        } while (hashTag.length() < MIN_HASHTAG_LENGTH);
 
         return spanAdded(spannable, audience, region, hashTag,
                 new MyUrlSpan.Data(Optional.empty(), Optional.of(hashTag), Optional.empty()));
     }
 
     private static String hashTagAt(String text, int indStart) {
-        if (indStart + 1 >= text.length() || text.charAt(indStart) != '#' || !isLetter(text.charAt(indStart + 1))) {
+        if (indStart + 1 >= text.length() || text.charAt(indStart) != '#' ||
+                !isLetterOrDigit(text.charAt(indStart + 1))) {
             return "";
         }
         int ind = indStart + 2;

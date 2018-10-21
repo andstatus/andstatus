@@ -132,12 +132,12 @@ public class SpanUtilTest {
     public void manyHashtags() {
         Function<Spannable, Spannable> modifier = SpanUtil.spansModifier(Audience.EMPTY);
 
-        String text = "Bill Gates says there are 5 'grand challenges' to stopping an apocalyptic future of floods," +
-                " hurricanes, and drought    https://t.co/e9Csj7fSIc" +
+        String text = "As somebody said there are 5 'grand challenges' to stopping floods," +
+                " hurricanes, and drought    https://andstatus.org/somelink" +
                 " #ActOnClimate #SR15 #IPCC #1o5 #Agriculture #Electricity" +
-                " #.testnonhashtag" +
+                " #.testnonhashtag" + // Invalid hashtag
                 " #transportation  #buildings  #Manufacturing" +
-                " #s" +
+                " #s #1" + // Valid testing hashtags
                 " #CleanEnergy #GHG  #ZeroCarbon";
 
         Spannable spannable = MyUrlSpan.toSpannable(text, true);
@@ -150,23 +150,23 @@ public class SpanUtilTest {
         final Object[] spans = modified.getSpans(0, modified.length(), Object.class);
         final String message2 = message1 + "\nRegions after change: " + regions2;
         assertEquals("Wrong number of regions before change\n" + message2, 3, regions1.size());
-        assertEquals("Wrong number of regions after change\n" + message2, 16, regions2.size());
+        assertEquals("Wrong number of regions after change\n" + message2, 17, regions2.size());
 
         oneHashTag(regions2, message2, 2, "ActOnClimate");
         oneHashTag(regions2, message2, 3, "SR15");
         oneHashTag(regions2, message2, 4, "IPCC");
-        notAHashTag(regions2, message2, 5);
-        //oneHashTag(regions2, message2, 5, "1o5");
+        oneHashTag(regions2, message2, 5, "1o5");
         oneHashTag(regions2, message2, 6, "Agriculture");
         oneHashTag(regions2, message2, 7, "Electricity");
         notAHashTag(regions2, message2, 8);
         oneHashTag(regions2, message2, 9, "transportation");
         oneHashTag(regions2, message2, 10, "buildings");
         oneHashTag(regions2, message2, 11, "Manufacturing");
-        notAHashTag(regions2, message2, 12);
-        oneHashTag(regions2, message2, 13, "CleanEnergy");
-        oneHashTag(regions2, message2, 14, "GHG");
-        oneHashTag(regions2, message2, 15, "ZeroCarbon");
+        oneHashTag(regions2, message2, 12, "s");
+        oneHashTag(regions2, message2, 13, "1");
+        oneHashTag(regions2, message2, 14, "CleanEnergy");
+        oneHashTag(regions2, message2, 15, "GHG");
+        oneHashTag(regions2, message2, 16, "ZeroCarbon");
     }
 
     private void notAHashTag(List<SpanUtil.Region> regions, String message, int index) {
