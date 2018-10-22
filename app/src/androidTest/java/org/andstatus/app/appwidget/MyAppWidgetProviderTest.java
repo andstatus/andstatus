@@ -27,7 +27,6 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.notification.NotificationEvents;
-import org.andstatus.app.notification.Notifier;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 import org.junit.Before;
@@ -140,21 +139,19 @@ public class MyAppWidgetProviderTest {
     public void testReceiver() {
         final String method = "testReceiver";
     	MyLog.i(this, method + "; started");
-        final Notifier notifier = myContext.getNotifier();
-        NotificationEvents events = notifier.getEvents();
 
         long dateSinceMin = System.currentTimeMillis();
     	// To set dateSince and dateChecked correctly!
-        updateWidgets(new AppWidgets(events), NotificationEventType.ANNOUNCE, 1);
+        updateWidgets(AppWidgets.of(myContext), NotificationEventType.ANNOUNCE, 1);
         DbUtils.waitMs(method, 2000);
         long dateSinceMax = System.currentTimeMillis();
         DbUtils.waitMs(method, 2000);
-        notifier.clearAll();
+        myContext.getNotifier().clearAll();
 
-        AppWidgets appWidgets = new AppWidgets(events);
+        AppWidgets appWidgets = AppWidgets.of(myContext);
         checkDateChecked(appWidgets, dateSinceMin, dateSinceMax);
         checkDateSince(appWidgets, dateSinceMin, dateSinceMax);
-        checkEvents(events, 0, 0, 0);
+        checkEvents(0, 0, 0);
 
     	int numMentions = 3;
         updateWidgets(appWidgets, NotificationEventType.MENTION, numMentions);
@@ -165,19 +162,20 @@ public class MyAppWidgetProviderTest {
     	int numReblogs = 7;
         updateWidgets(appWidgets, NotificationEventType.ANNOUNCE, numReblogs);
     	
-        checkEvents(events, numMentions, numPrivate, numReblogs);
+        checkEvents(numMentions, numPrivate, numReblogs);
         
         long dateCheckedMin = System.currentTimeMillis();  
         numMentions++;
         updateWidgets(appWidgets, NotificationEventType.MENTION, 1);
-        checkEvents(events, numMentions, numPrivate, numReblogs);
+        checkEvents(numMentions, numPrivate, numReblogs);
         long dateCheckedMax = System.currentTimeMillis();
         
         checkDateSince(appWidgets, dateSinceMin, dateSinceMax);
         checkDateChecked(appWidgets, dateCheckedMin, dateCheckedMax);
     }
 
-    private void checkEvents(NotificationEvents events, long numMentions, long numPrivate, long numReblogs) {
+    private void checkEvents(long numMentions, long numPrivate, long numReblogs) {
+        NotificationEvents events = myContext.getNotifier().getEvents();
         assertEquals("Mentions", numMentions, events.getCount(NotificationEventType.MENTION));
         assertEquals("Private", numPrivate, events.getCount(NotificationEventType.PRIVATE));
         assertEquals("Reblogs", numReblogs, events.getCount(NotificationEventType.ANNOUNCE));
@@ -190,7 +188,7 @@ public class MyAppWidgetProviderTest {
         if (appWidgets.isEmpty()) {
             MyLog.i(this, method + "; No appWidgets found");
         }
-        for (MyAppWidgetData widgetData : appWidgets.collection()) {
+        for (MyAppWidgetData widgetData : appWidgets.list()) {
             assertDatePeriod(method, dateMin, dateMax, widgetData.dateSince);
         }
     }
@@ -202,7 +200,7 @@ public class MyAppWidgetProviderTest {
         if (appWidgets.isEmpty()) {
             MyLog.i(this, method + "; No appWidgets found");
         }
-        for (MyAppWidgetData widgetData : appWidgets.collection()) {
+        for (MyAppWidgetData widgetData : appWidgets.list()) {
             assertDatePeriod(method, dateMin, dateMax, widgetData.dateLastChecked);
         }
     }
@@ -233,11 +231,12 @@ public class MyAppWidgetProviderTest {
 	 * if there are any installed... (e.g. on the Home screen...)
 	 * @see MyAppWidgetProvider
 	 */
-	private void updateWidgets(AppWidgets appWidgets, NotificationEventType event, int increment) {
+	private void updateWidgets(AppWidgets appWidgets, NotificationEventType eventType, int increment) {
         final String method = "updateWidgets";
         DbUtils.waitMs(method, 500);
         for (int ind = 0; ind < increment; ind++ ) {
-            appWidgets.events.loadEvent(event, DemoData.demoData.getConversationMyAccount(), System.currentTimeMillis());
+            NotificationEvents.loadEvent(appWidgets.events.map, appWidgets.events.enabledEvents, eventType,
+                    DemoData.demoData.getConversationMyAccount(), System.currentTimeMillis());
         }
         appWidgets.updateData().updateViews();
 	}

@@ -62,7 +62,7 @@ public class MyAppWidgetConfigure extends Activity {
             finish();
         }
 
-        appWidgetData = MyAppWidgetData.newInstance(NotificationEvents.fromContext(this), mAppWidgetId);
+        appWidgetData = MyAppWidgetData.newInstance(NotificationEvents.of(this), mAppWidgetId);
         // For now we have only one setting to configure:
         mAppWidgetTitle.setText(appWidgetData.nothingPref);
     }

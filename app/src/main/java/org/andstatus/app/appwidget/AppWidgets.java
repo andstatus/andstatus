@@ -6,81 +6,71 @@ import android.content.Context;
 import android.widget.RemoteViews;
 
 import org.andstatus.app.R;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.notification.NotificationEvents;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class AppWidgets {
     final NotificationEvents events;
-    private final Map<Integer, MyAppWidgetData> widgetsMap = new ConcurrentHashMap<>();
+    private final List<MyAppWidgetData> list;
 
-    public static void clearAndUpdateWidgets(NotificationEvents events) {
-        new AppWidgets(events).clearCounters().updateViews();
+    public static AppWidgets of(MyContext myContext) {
+        return of(myContext.getNotifier().getEvents());
     }
 
-    public static void updateWidgets(NotificationEvents events) {
-        new AppWidgets(events).updateViews();
+    public static AppWidgets of(NotificationEvents events) {
+        return new AppWidgets(events);
     }
 
-    public AppWidgets(NotificationEvents events) {
+    private AppWidgets(NotificationEvents events) {
         this.events = events;
-        for (int id : getIds(events.myContext.context())) {
-            widgetsMap.put(id, MyAppWidgetData.newInstance(events, id));
-        }
-    }
-
-    private int[] getIds(Context context) {
-        return AppWidgetManager
-                .getInstance(context)
-                .getAppWidgetIds(new ComponentName(context, MyAppWidgetProvider.class));
+        list = Arrays.stream(
+                AppWidgetManager.getInstance(events.myContext.context())
+                        .getAppWidgetIds(new ComponentName(events.myContext.context(), MyAppWidgetProvider.class)))
+                .boxed()
+                .map(id -> MyAppWidgetData.newInstance(events, id))
+                .collect(Collectors.toList());
     }
 
     public AppWidgets updateData() {
-        widgetsMap.values().forEach(MyAppWidgetData::update);
+        list.forEach(MyAppWidgetData::update);
         return this;
     }
 
-    private AppWidgets clearCounters() {
-        for (MyAppWidgetData widgetData : widgetsMap.values()) {
-            widgetData.clearCounters();
-            widgetData.save();
-        }
+    public AppWidgets clearCounters() {
+        list.forEach(data -> {
+            data.clearCounters();
+            data.save();
+        });
         return this;
     }
 
-    public Collection<MyAppWidgetData> collection() {
-        return widgetsMap.values();
+    public List<MyAppWidgetData> list() {
+        return list;
     }
 
     public boolean isEmpty() {
-        return widgetsMap.isEmpty();
+        return list.isEmpty();
     }
 
     public int size() {
-        return widgetsMap.size();
+        return list.size();
     }
 
     public void updateViews(){
-        MyLog.v(this, () -> "Sending update to " +  size() + " remote view" + (size() > 1 ? "s" : "")
-                + " " + widgetsMap.values());
-        final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(events.myContext.context());
-        widgetsMap.values().forEach(data -> updateView(appWidgetManager, data));
+        updateViews(AppWidgetManager.getInstance(events.myContext.context()), data -> true);
     }
 
-    void updateView(AppWidgetManager appWidgetManager, int appWidgetId) {
-        final String method = "updateView";
-        MyAppWidgetData widgetData = widgetsMap.get(appWidgetId);
-        if (widgetData == null) {
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.d(this, method + "; Widget not found, id=" + appWidgetId);
-            }
-            return;
-        }
-        updateView(appWidgetManager, widgetData);
+    public void updateViews(AppWidgetManager appWidgetManager, Predicate<MyAppWidgetData> predicate){
+        MyLog.v(this, () -> "Sending update to " +  size() + " remote view" + (size() > 1 ? "s" : "")
+                + " " + list);
+        list.stream().filter(predicate).forEach(data -> updateView(appWidgetManager, data));
     }
 
     private void updateView(AppWidgetManager appWidgetManager, MyAppWidgetData widgetData) {

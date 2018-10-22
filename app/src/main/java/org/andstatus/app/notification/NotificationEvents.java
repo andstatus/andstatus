@@ -23,16 +23,18 @@ import android.support.annotation.NonNull;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.timeline.meta.Timeline;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.andstatus.app.data.DbUtils.getLong;
 
 /**
  *
@@ -40,21 +42,26 @@ import java.util.concurrent.ConcurrentHashMap;
 public class NotificationEvents {
     public final static NotificationEvents EMPTY = new NotificationEvents(MyContext.EMPTY, Collections.emptyList());
     public final MyContext myContext;
-    private final List<NotificationEventType> enabledEvents;
+    public final List<NotificationEventType> enabledEvents;
     public final Map<NotificationEventType, NotificationData> map;
 
-    public static NotificationEvents fromContext(@NonNull Context context) {
+    public static NotificationEvents of(@NonNull Context context) {
         return new NotificationEvents(MyContextHolder.get(context), Collections.emptyList());
     }
 
     NotificationEvents(MyContext myContext, List<NotificationEventType> enabledEvents) {
-        this.myContext = myContext;
-        this.enabledEvents = enabledEvents;
-        map = (myContext == null || myContext.isEmpty()) ? Collections.emptyMap() : new ConcurrentHashMap<>();
+        this(myContext, enabledEvents,
+                myContext == null || myContext.isEmpty()
+                        ? Collections.emptyMap()
+                        : new ConcurrentHashMap<>()
+        );
     }
 
-    private boolean isEnabled(@NonNull NotificationEventType eventType) {
-        return enabledEvents.contains(eventType);
+    private NotificationEvents(MyContext myContext, List<NotificationEventType> enabledEvents,
+                               Map<NotificationEventType, NotificationData> notificationDataMap) {
+        this.myContext = myContext;
+        this.enabledEvents = enabledEvents;
+        map = notificationDataMap;
     }
 
     /** @return 0 if not found */
@@ -62,14 +69,14 @@ public class NotificationEvents {
         return map.getOrDefault(eventType, NotificationData.EMPTY).count;
     }
 
-    void clearAll() {
-        map.clear();
+    NotificationEvents clearAll() {
         MyProvider.clearNotification(myContext, Timeline.EMPTY);
+        return load();
     }
 
-    public void clear(@NonNull Timeline timeline) {
+    public NotificationEvents clear(@NonNull Timeline timeline) {
         MyProvider.clearNotification(myContext, timeline);
-        load();
+        return load();
     }
 
     public boolean isEmpty() {
@@ -96,29 +103,30 @@ public class NotificationEvents {
     }
 
     public NotificationEvents load() {
-        map.clear();
         String sql = "SELECT " + ActivityTable.NEW_NOTIFICATION_EVENT + ", " +
                 ActivityTable.ACCOUNT_ID + ", " +
                 ActivityTable.UPDATED_DATE +
                 " FROM " + ActivityTable.TABLE_NAME +
                 " WHERE " + ActivityTable.NEW_NOTIFICATION_EVENT + "!=0";
-        map.putAll(MyQuery.foldLeft(myContext, sql, Collections.emptyMap(),  m1 -> cursor -> {
+        Map<NotificationEventType, NotificationData> dataMap = MyQuery.foldLeft(
+                myContext, sql, new ConcurrentHashMap<>(), m1 -> cursor -> {
             NotificationEventType eventType = NotificationEventType
-                    .fromId(DbUtils.getLong(cursor, ActivityTable.NEW_NOTIFICATION_EVENT));
-            MyAccount myAccount = myContext.accounts()
-                    .fromActorId(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID));
-            long updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
-            loadEvent(eventType, myAccount, updatedDate);
+                    .fromId(getLong(cursor, ActivityTable.NEW_NOTIFICATION_EVENT));
+            MyAccount myAccount = myContext.accounts().fromActorId(getLong(cursor, ActivityTable.ACCOUNT_ID));
+            long updatedDate = getLong(cursor, ActivityTable.UPDATED_DATE);
+            loadEvent(m1, enabledEvents, eventType, myAccount, updatedDate);
             return m1;
-        } ));
-        return this;
+        } );
+        return new NotificationEvents(myContext, enabledEvents, dataMap);
     }
 
     // TODO: event for an Actor, not for an Account
-    public void loadEvent(NotificationEventType eventType, MyAccount myAccount, long updatedDate) {
+    public static void loadEvent(
+            Map<NotificationEventType, NotificationData> map, List<NotificationEventType> enabledEvents,
+            NotificationEventType eventType, MyAccount myAccount, long updatedDate) {
         NotificationData data = map.get(eventType);
         if (data == null) {
-            if (isEnabled(eventType)) {
+            if (enabledEvents.contains(eventType)) {
                 map.put(eventType, new NotificationData(eventType, myAccount).onEventAt(updatedDate));
             }
         } else if( data.myAccount.equals(myAccount)) {

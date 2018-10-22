@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2010-2018 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.andstatus.app.notification.NotificationEvents;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Arrays;
+import java.util.function.Predicate;
 
 /**
  * A widget provider. It uses {@link MyAppWidgetData} to store preferences and to
@@ -43,22 +44,20 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
     }
 
     @Override
-    public void onUpdate(Context context, AppWidgetManager appWidgetManager,
-            int[] appWidgetIds) {
+    public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         MyLog.v(this, () -> "onUpdate; ids=" + Arrays.toString(appWidgetIds));
-        AppWidgets appWidgets = new AppWidgets(NotificationEvents.fromContext(context));
-        for (int id : appWidgetIds) {
-            appWidgets.updateView(appWidgetManager, id);
-        }
+        AppWidgets.of(NotificationEvents.of(context)).updateViews(appWidgetManager, filterIds(appWidgetIds));
     }
-    
+
+    private static Predicate<MyAppWidgetData> filterIds(int[] appWidgetIds) {
+        return data -> Arrays.stream(appWidgetIds).boxed().anyMatch(id -> data.getId() == id);
+    }
+
     @Override
     public void onDeleted(Context context, int[] appWidgetIds) {
         MyLog.v(this, () -> "onDeleted; ids=" + Arrays.toString(appWidgetIds));
-        // When a user deletes the widget, delete all data, associated with it.
-        for (int id : appWidgetIds) {
-            MyAppWidgetData.newInstance(NotificationEvents.fromContext(context), id).delete();
-        }
+        AppWidgets.of(NotificationEvents.of(context)).list()
+                .stream().filter(filterIds(appWidgetIds)).forEach(MyAppWidgetData::update);
     }
 
     @Override

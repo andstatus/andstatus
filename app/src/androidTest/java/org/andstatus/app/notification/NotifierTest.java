@@ -1,17 +1,20 @@
 package org.andstatus.app.notification;
 
-import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.ActivityType;
+import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.TriState;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Iterator;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class NotifierTest {
@@ -29,44 +32,54 @@ public class NotifierTest {
 
     @Test
     public void testCreateNotification() {
-        final MyContext myContext = TestSuite.getMyContextForTest();
-        Notifier notifier = myContext.getNotifier();
-        NotificationEvents events = notifier.getEvents();
+        Notifier notifier = TestSuite.getMyContextForTest().getNotifier();
         notifier.clearAll();
-        assertEquals("Events should be empty " + events, true, events.isEmpty());
+        assertTrue("Events should be empty " + notifier.getEvents(), notifier.getEvents().isEmpty());
 
         onNotificationEvent(notifier, NotificationEventType.PRIVATE);
-
-        assertEquals(0, events.getCount(NotificationEventType.ANNOUNCE));
-        assertEquals(0, events.getCount(NotificationEventType.MENTION));
-        assertEquals(1, events.getCount(NotificationEventType.PRIVATE));
+        assertCount(notifier, 0, NotificationEventType.ANNOUNCE);
+        assertCount(notifier, 0, NotificationEventType.MENTION);
+        assertCount(notifier, 1, NotificationEventType.PRIVATE);
 
     	onNotificationEvent(notifier, NotificationEventType.MENTION);
-        notifier.update();
-        assertEquals(0, events.getCount(NotificationEventType.ANNOUNCE));
-        assertEquals(1, events.getCount(NotificationEventType.MENTION));
-        assertEquals(1, events.getCount(NotificationEventType.PRIVATE));
+        assertCount(notifier, 0, NotificationEventType.ANNOUNCE);
+        assertCount(notifier, 1, NotificationEventType.MENTION);
+        assertCount(notifier, 1, NotificationEventType.PRIVATE);
 
         onNotificationEvent(notifier, NotificationEventType.ANNOUNCE);
-        notifier.update();
-        assertEquals(1, events.getCount(NotificationEventType.ANNOUNCE));
-        assertEquals(1, events.getCount(NotificationEventType.MENTION));
-        assertEquals(1, events.getCount(NotificationEventType.PRIVATE));
+        assertCount(notifier, 1, NotificationEventType.ANNOUNCE);
+        assertCount(notifier, 1, NotificationEventType.MENTION);
+        assertCount(notifier, 1, NotificationEventType.PRIVATE);
     }
 
     private void onNotificationEvent(Notifier notifier, NotificationEventType eventType) {
-        String where = "SELECT " + ActivityTable._ID + " FROM " + ActivityTable.TABLE_NAME +
+        String where = "SELECT " + ActivityTable.TABLE_NAME + "." + ActivityTable._ID +
+                " FROM " + ActivityTable.TABLE_NAME +
+                " INNER JOIN " + NoteTable.TABLE_NAME +
+                " ON " + ActivityTable.TABLE_NAME + "." + ActivityTable.NOTE_ID + "=" +
+                    NoteTable.TABLE_NAME + "." + NoteTable._ID +
                 " WHERE " + ActivityTable.ACTIVITY_TYPE + "=" + eventTypeToActivityType(eventType).id  +
-                " AND " + ActivityTable.UPDATED_DATE + ">1" +
-                " AND " + ActivityTable.NEW_NOTIFICATION_EVENT + "=0";
-        final Iterator<Long> iterator = MyQuery.getLongs(where).iterator();
+                " AND " + ActivityTable.UPDATED_DATE + ">" + RelativeTime.SOME_TIME_AGO +
+                " AND " + ActivityTable.NEW_NOTIFICATION_EVENT + "=0" +
+                (eventType == NotificationEventType.PRIVATE
+                        ? " AND " + NoteTable.PUBLIC + "=" + TriState.FALSE.id
+                        : "");
+        final Iterator<Long> iterator = MyQuery.getLongs(notifier.myContext, where).iterator();
         assertTrue("No data for '" + where + "'", iterator.hasNext());
 
-        Long activityId = iterator.next();
-        MyContextHolder.get().getDatabase().execSQL("UPDATE " + ActivityTable.TABLE_NAME +
+        long activityId = iterator.next();
+        assertNotEquals("No activity for '" + where + "'", 0L, activityId);
+        notifier.myContext.getDatabase().execSQL("UPDATE " + ActivityTable.TABLE_NAME +
         " SET " + ActivityTable.NEW_NOTIFICATION_EVENT + "=" + eventType.id +
+        ", " + ActivityTable.NOTIFIED + "=" + TriState.TRUE.id +
+        ", " + ActivityTable.NOTIFIED_ACTOR_ID + "=" + ActivityTable.ACTOR_ID +
         " WHERE " + ActivityTable._ID + "=" + activityId);
         notifier.update();
+    }
+
+    private void assertCount(Notifier notifier, long expectedCount, NotificationEventType eventType) {
+        assertEquals("EventType: " + eventType + ", " + notifier.getEvents().map,
+                expectedCount, notifier.getEvents().getCount(eventType));
     }
 
     private ActivityType eventTypeToActivityType(NotificationEventType eventType) {
