@@ -1,5 +1,6 @@
 package org.andstatus.app.notification;
 
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
@@ -32,27 +33,28 @@ public class NotifierTest {
 
     @Test
     public void testCreateNotification() {
-        Notifier notifier = TestSuite.getMyContextForTest().getNotifier();
+        MyContext myContext = TestSuite.getMyContextForTest();
+        Notifier notifier = myContext.getNotifier();
         notifier.clearAll();
         assertTrue("Events should be empty " + notifier.getEvents(), notifier.getEvents().isEmpty());
 
-        onNotificationEvent(notifier, NotificationEventType.PRIVATE);
+        addNotificationEvent(myContext, NotificationEventType.PRIVATE);
         assertCount(notifier, 0, NotificationEventType.ANNOUNCE);
         assertCount(notifier, 0, NotificationEventType.MENTION);
         assertCount(notifier, 1, NotificationEventType.PRIVATE);
 
-    	onNotificationEvent(notifier, NotificationEventType.MENTION);
+    	addNotificationEvent(myContext, NotificationEventType.MENTION);
         assertCount(notifier, 0, NotificationEventType.ANNOUNCE);
         assertCount(notifier, 1, NotificationEventType.MENTION);
         assertCount(notifier, 1, NotificationEventType.PRIVATE);
 
-        onNotificationEvent(notifier, NotificationEventType.ANNOUNCE);
+        addNotificationEvent(myContext, NotificationEventType.ANNOUNCE);
         assertCount(notifier, 1, NotificationEventType.ANNOUNCE);
         assertCount(notifier, 1, NotificationEventType.MENTION);
         assertCount(notifier, 1, NotificationEventType.PRIVATE);
     }
 
-    private void onNotificationEvent(Notifier notifier, NotificationEventType eventType) {
+    public static void addNotificationEvent(MyContext myContext, NotificationEventType eventType) {
         String where = "SELECT " + ActivityTable.TABLE_NAME + "." + ActivityTable._ID +
                 " FROM " + ActivityTable.TABLE_NAME +
                 " INNER JOIN " + NoteTable.TABLE_NAME +
@@ -64,17 +66,17 @@ public class NotifierTest {
                 (eventType == NotificationEventType.PRIVATE
                         ? " AND " + NoteTable.PUBLIC + "=" + TriState.FALSE.id
                         : "");
-        final Iterator<Long> iterator = MyQuery.getLongs(notifier.myContext, where).iterator();
+        final Iterator<Long> iterator = MyQuery.getLongs(myContext, where).iterator();
         assertTrue("No data for '" + where + "'", iterator.hasNext());
 
         long activityId = iterator.next();
         assertNotEquals("No activity for '" + where + "'", 0L, activityId);
-        notifier.myContext.getDatabase().execSQL("UPDATE " + ActivityTable.TABLE_NAME +
+        myContext.getDatabase().execSQL("UPDATE " + ActivityTable.TABLE_NAME +
         " SET " + ActivityTable.NEW_NOTIFICATION_EVENT + "=" + eventType.id +
         ", " + ActivityTable.NOTIFIED + "=" + TriState.TRUE.id +
         ", " + ActivityTable.NOTIFIED_ACTOR_ID + "=" + ActivityTable.ACTOR_ID +
         " WHERE " + ActivityTable._ID + "=" + activityId);
-        notifier.update();
+        myContext.getNotifier().update();
     }
 
     private void assertCount(Notifier notifier, long expectedCount, NotificationEventType eventType) {
@@ -82,7 +84,7 @@ public class NotifierTest {
                 expectedCount, notifier.getEvents().getCount(eventType));
     }
 
-    private ActivityType eventTypeToActivityType(NotificationEventType eventType) {
+    private static ActivityType eventTypeToActivityType(NotificationEventType eventType) {
         switch (eventType) {
             case ANNOUNCE:
                 return ActivityType.ANNOUNCE;

@@ -46,6 +46,7 @@ import org.andstatus.app.util.TriState;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.andstatus.app.notification.NotificationEventType.SERVICE_RUNNING;
 import static org.andstatus.app.service.CommandEnum.DELETE_COMMAND;
 
 /**
@@ -129,11 +130,9 @@ public class MyService extends Service {
 
     /** See https://stackoverflow.com/questions/44425584/context-startforegroundservice-did-not-then-call-service-startforeground */
     private void startForeground() {
-        final NotificationData data = new NotificationData(NotificationEventType.SERVICE_RUNNING, MyAccount.EMPTY)
-                .onEventAt(System.currentTimeMillis());
+        final NotificationData data = new NotificationData(SERVICE_RUNNING, MyAccount.EMPTY, System.currentTimeMillis());
         myContext.getNotifier().createNotificationChannel(data);
-        startForeground(NotificationEventType.SERVICE_RUNNING.notificationId(),
-                myContext.getNotifier().getAndroidNotification(data));
+        startForeground(SERVICE_RUNNING.notificationId(), myContext.getNotifier().getAndroidNotification(data));
     }
 
     @GuardedBy("serviceStateLock")
@@ -451,7 +450,7 @@ public class MyService extends Service {
         AsyncTaskLauncher.cancelPoolTasks(MyAsyncTask.PoolEnum.SYNC);
         releaseWakeLock();
         stopSelfResult(latestProcessedStartId);
-        myContext.getNotifier().clearAndroidNotification(NotificationEventType.SERVICE_RUNNING);
+        myContext.getNotifier().clearAndroidNotification(SERVICE_RUNNING);
     }
 
     private boolean couldStopExecutor(boolean forceNow) {

@@ -29,30 +29,28 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 
-/**
- *
- */
+import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
+
 public class NotificationData {
-    public static final NotificationData EMPTY = new NotificationData(NotificationEventType.EMPTY, MyAccount.EMPTY);
+    public static final NotificationData EMPTY = new NotificationData(NotificationEventType.EMPTY, MyAccount.EMPTY,
+            DATETIME_MILLIS_NEVER);
     public final NotificationEventType event;
     public final MyAccount myAccount;
-    volatile long updatedDate = 0;
-    volatile long count = 0;
+    volatile long updatedDate;
+    volatile long count;
 
-    public NotificationData(@NonNull NotificationEventType event, @NonNull MyAccount myAccount) {
+    public NotificationData(@NonNull NotificationEventType event, @NonNull MyAccount myAccount, long updatedDate) {
         this.event = event;
         this.myAccount = myAccount;
+        this.updatedDate = updatedDate;
+        count = updatedDate > DATETIME_MILLIS_NEVER ? 1 : 0;
     }
 
-    public NotificationData onEventAt(long updatedDate) {
-        return onEventsAt(updatedDate, 1);
-    }
+    synchronized void addEventsAt(long numberOfEvents, long updatedDate) {
+        if (numberOfEvents < 1 || updatedDate <= DATETIME_MILLIS_NEVER) return;
 
-    public NotificationData onEventsAt(long updatedDate, long numberOfEvents) {
-        if (numberOfEvents < 1) return this;
         count += numberOfEvents;
         if (this.updatedDate < updatedDate) this.updatedDate = updatedDate;
-        return this;
     }
 
     PendingIntent getPendingIntent(MyContext myContext) {

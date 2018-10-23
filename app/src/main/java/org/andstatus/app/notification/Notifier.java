@@ -40,6 +40,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import static org.andstatus.app.notification.NotificationEventType.SERVICE_RUNNING;
+
 public class Notifier {
     private static final long[] VIBRATION_PATTERN = {200, 300, 200, 300};
     private static final int LIGHT_COLOR = Color.GREEN;
@@ -91,7 +93,7 @@ public class Notifier {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             builder.setChannelId(data.channelId());
         } else {
-            if (data.event == NotificationEventType.SERVICE_RUNNING) {
+            if (data.event == SERVICE_RUNNING) {
                 builder.setSound(null);
             } else {
                 if (vibration) {
@@ -102,7 +104,7 @@ public class Notifier {
             }
         }
         if (notificationArea) {
-            builder.setSmallIcon(data.event == NotificationEventType.SERVICE_RUNNING
+            builder.setSmallIcon(data.event == SERVICE_RUNNING
                 ? R.drawable.ic_sync_white_24dp
                 : SharedPreferencesUtil.getBoolean(MyPreferences.KEY_NOTIFICATION_ICON_ALTERNATIVE, false)
                     ? R.drawable.notification_icon_circle
@@ -132,7 +134,7 @@ public class Notifier {
         NotificationChannel channel = new NotificationChannel(channelId, channelName,
                 NotificationManager.IMPORTANCE_DEFAULT);
         channel.setDescription(description);
-        if (data.event == NotificationEventType.SERVICE_RUNNING) {
+        if (data.event == SERVICE_RUNNING) {
             channel.enableLights(false);
             channel.enableVibration(false);
             channel.setImportance(NotificationManager.IMPORTANCE_MIN);
@@ -162,7 +164,7 @@ public class Notifier {
         soundUri = NotificationMethodType.SOUND.getString();
         enabledEvents = NotificationEventType.validValues.stream().filter(NotificationEventType::isEnabled)
                 .collect(Collectors.toList());
-        refEvents.set(new NotificationEvents(myContext, enabledEvents).load());
+        refEvents.set(NotificationEvents.of(myContext, enabledEvents).load());
     }
 
     public boolean isEnabled(NotificationEventType eventType) {

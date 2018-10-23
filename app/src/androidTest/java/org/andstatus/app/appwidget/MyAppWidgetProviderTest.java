@@ -20,13 +20,13 @@ import android.text.format.DateFormat;
 import android.text.format.DateUtils;
 import android.text.format.Time;
 
-import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.notification.NotificationEvents;
+import org.andstatus.app.notification.NotifierTest;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 import org.junit.Before;
@@ -140,6 +140,7 @@ public class MyAppWidgetProviderTest {
         final String method = "testReceiver";
     	MyLog.i(this, method + "; started");
 
+        myContext.getNotifier().clearAll();
         long dateSinceMin = System.currentTimeMillis();
     	// To set dateSince and dateChecked correctly!
         updateWidgets(AppWidgets.of(myContext), NotificationEventType.ANNOUNCE, 1);
@@ -159,7 +160,7 @@ public class MyAppWidgetProviderTest {
     	int numPrivate = 1;
         updateWidgets(appWidgets, NotificationEventType.PRIVATE, numPrivate);
     	
-    	int numReblogs = 7;
+    	int numReblogs = 2;
         updateWidgets(appWidgets, NotificationEventType.ANNOUNCE, numReblogs);
     	
         checkEvents(numMentions, numPrivate, numReblogs);
@@ -235,8 +236,7 @@ public class MyAppWidgetProviderTest {
         final String method = "updateWidgets";
         DbUtils.waitMs(method, 500);
         for (int ind = 0; ind < increment; ind++ ) {
-            NotificationEvents.loadEvent(appWidgets.events.map, appWidgets.events.enabledEvents, eventType,
-                    DemoData.demoData.getConversationMyAccount(), System.currentTimeMillis());
+            NotifierTest.addNotificationEvent(appWidgets.events.myContext, eventType);
         }
         appWidgets.updateData().updateViews();
 	}

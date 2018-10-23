@@ -32,29 +32,21 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.andstatus.app.data.DbUtils.getLong;
 
-/**
- *
- */
 public class NotificationEvents {
-    public final static NotificationEvents EMPTY = new NotificationEvents(MyContext.EMPTY, Collections.emptyList());
+    public final static NotificationEvents EMPTY = of(MyContext.EMPTY, Collections.emptyList());
     public final MyContext myContext;
-    public final List<NotificationEventType> enabledEvents;
+    private final List<NotificationEventType> enabledEvents;
     public final Map<NotificationEventType, NotificationData> map;
 
     public static NotificationEvents of(@NonNull Context context) {
-        return new NotificationEvents(MyContextHolder.get(context), Collections.emptyList());
+        return of(MyContextHolder.get(context), Collections.emptyList());
     }
 
-    NotificationEvents(MyContext myContext, List<NotificationEventType> enabledEvents) {
-        this(myContext, enabledEvents,
-                myContext == null || myContext.isEmpty()
-                        ? Collections.emptyMap()
-                        : new ConcurrentHashMap<>()
-        );
+    static NotificationEvents of(MyContext myContext, List<NotificationEventType> enabledEvents) {
+        return new NotificationEvents(myContext, enabledEvents, Collections.emptyMap());
     }
 
     private NotificationEvents(MyContext myContext, List<NotificationEventType> enabledEvents,
@@ -108,33 +100,31 @@ public class NotificationEvents {
                 ActivityTable.UPDATED_DATE +
                 " FROM " + ActivityTable.TABLE_NAME +
                 " WHERE " + ActivityTable.NEW_NOTIFICATION_EVENT + "!=0";
-        Map<NotificationEventType, NotificationData> dataMap = MyQuery.foldLeft(
-                myContext, sql, new ConcurrentHashMap<>(), m1 -> cursor -> {
-            NotificationEventType eventType = NotificationEventType
-                    .fromId(getLong(cursor, ActivityTable.NEW_NOTIFICATION_EVENT));
-            MyAccount myAccount = myContext.accounts().fromActorId(getLong(cursor, ActivityTable.ACCOUNT_ID));
-            long updatedDate = getLong(cursor, ActivityTable.UPDATED_DATE);
-            loadEvent(m1, enabledEvents, eventType, myAccount, updatedDate);
-            return m1;
-        } );
-        return new NotificationEvents(myContext, enabledEvents, dataMap);
+        Map<NotificationEventType, NotificationData> loadedMap = MyQuery.foldLeft(myContext, sql, new HashMap<>(),
+            map1 -> cursor -> foldEvent(
+                    map1,
+                    NotificationEventType.fromId(getLong(cursor, ActivityTable.NEW_NOTIFICATION_EVENT)),
+                    myContext.accounts().fromActorId(getLong(cursor, ActivityTable.ACCOUNT_ID)),
+                    getLong(cursor, ActivityTable.UPDATED_DATE)));
+        return new NotificationEvents(myContext, enabledEvents, loadedMap);
     }
 
     // TODO: event for an Actor, not for an Account
-    public static void loadEvent(
-            Map<NotificationEventType, NotificationData> map, List<NotificationEventType> enabledEvents,
+    private HashMap<NotificationEventType, NotificationData> foldEvent(
+            HashMap<NotificationEventType, NotificationData> map,
             NotificationEventType eventType, MyAccount myAccount, long updatedDate) {
         NotificationData data = map.get(eventType);
         if (data == null) {
             if (enabledEvents.contains(eventType)) {
-                map.put(eventType, new NotificationData(eventType, myAccount).onEventAt(updatedDate));
+                map.put(eventType, new NotificationData(eventType, myAccount, updatedDate));
             }
         } else if( data.myAccount.equals(myAccount)) {
-            data.onEventAt(updatedDate);
+            data.addEventsAt(1, updatedDate);
         } else {
-            NotificationData data2 = new NotificationData(eventType, MyAccount.EMPTY).onEventAt(updatedDate);
-            data2.onEventsAt(data.updatedDate, data.count);
+            NotificationData data2 = new NotificationData(eventType, MyAccount.EMPTY, updatedDate);
+            data2.addEventsAt(data.count, data.updatedDate);
             map.put(eventType, data2);
         }
+        return map;
     }
 }
