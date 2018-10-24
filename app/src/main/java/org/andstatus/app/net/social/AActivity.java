@@ -459,6 +459,18 @@ public class AActivity extends AObject {
         if (isNotified().toBoolean(true)) {
             this.notified = TriState.fromBoolean(myContext.getNotifier().isEnabled(newNotificationEventType));
         }
+        if (isNotified().isTrue) {
+            MyLog.i("NewNotification",newNotificationEventType.name() +
+                " " + accountActor.origin.getName() +
+                " " + accountActor.getUsername() +
+                " " + MyLog.formatDateTime(getUpdatedDate()) +
+                " " + actor.getTimelineUsername() + " " + type +
+                (getNote().nonEmpty()
+                    ? " '" + getNote().oid + "' " + I18n.trimTextAt(getNote().getContent(), 300)
+                    : "") +
+                (getObjActor().nonEmpty() ? " " + getObjActor().getTimelineUsername() : "")
+            );
+        }
     }
 
     private NotificationEventType calculateNotificationEventType(MyContext myContext) {
