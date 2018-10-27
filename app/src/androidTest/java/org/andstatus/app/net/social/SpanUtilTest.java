@@ -36,7 +36,6 @@ import java.util.function.Function;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class SpanUtilTest {
@@ -52,9 +51,7 @@ public class SpanUtilTest {
         Audience audience = new Audience(ma.getOrigin());
         audience.add(ma.getActor());
         String username2 = "second@identi.ca";
-        final Actor actor2 = Actor.fromOriginAndActorOid(ma.getOrigin(), OriginPumpio.ACCOUNT_PREFIX + username2);
-        actor2.setUsername(username2);
-        audience.add(actor2);
+        addRecipient(ma, audience, username2, OriginPumpio.ACCOUNT_PREFIX + username2);
         Function<Spannable, Spannable> modifier = SpanUtil.spansModifier(audience);
 
         String text = "Hello @" + ma.getActor().getWebFingerId() + ". Thank you for noticing.\n@" + username2;
@@ -69,14 +66,9 @@ public class SpanUtilTest {
     public void linkifyHtml() {
         MyAccount ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
         Audience audience = new Audience(ma.getOrigin());
-
-        String username1 = "johnsmith";
-        final Actor actor1 = Actor.fromOriginAndActorOid(ma.getOrigin(), "232380");
-        actor1.setUsername(username1);
-        audience.add(actor1);
-
-        audience.add(ma.getActor());
+        addRecipient(ma, audience, "johnsmith", "232380");
         final String username2 = ma.getUsername();
+        audience.add(ma.getActor());
 
         Function<Spannable, Spannable> modifier = SpanUtil.spansModifier(audience);
 
@@ -98,8 +90,7 @@ public class SpanUtilTest {
         final String message2 = message1 + "\nRegions after change: " + regions2;
         assertEquals(message2, 4, spans.length);
         assertEquals(message2, 6, regions2.size());
-        assertEquals(message2, "content://timeline.app.andstatus.org/note/0/lt/sent/origin/0/actor/0",
-                regions2.get(0).urlSpan.get().getURL());
+        oneMention(regions2, message2, 0, "johnsmith");
         assertEquals(message2, "content://timeline.app.andstatus.org/note/" + ma.getActor().actorId +
                         "/lt/sent/origin/0/actor/" + ma.getActor().actorId,
                 regions2.get(1).urlSpan.get().getURL());
@@ -111,6 +102,18 @@ public class SpanUtilTest {
 
     }
 
+    private void oneMention(List<SpanUtil.Region> regions, String message, int index, String username) {
+        final SpanUtil.Region region = regions.get(index);
+        final Optional<MyUrlSpan> urlSpan = region.urlSpan;
+        final Optional<Actor> actor = urlSpan.flatMap(u -> u.data.actor);
+        assertTrue("Region " + index + " should be a mention " + region + "\n" + message, actor.isPresent());
+        assertEquals("Region " + index + " " + message,
+                "content://timeline.app.andstatus.org/note/0/lt/sent/origin/0/actor/0",
+                urlSpan.map(MyUrlSpan::getURL).orElse(""));
+        assertEquals("Username in region " + index + " " + message,
+                username, actor.map(Actor::getUsername).orElse(""));
+    }
+
     private void oneHashTag(List<SpanUtil.Region> regions, String message, int index, String term) {
         oneHashTag(regions, message, index, "#" + term,
                 "content://timeline.app.andstatus.org/note/0/lt/search/origin/0/actor/0/search/%23" + term);
@@ -119,10 +122,11 @@ public class SpanUtilTest {
     private void oneHashTag(List<SpanUtil.Region> regions, String message, int index, String hashTag, String url) {
         final SpanUtil.Region region = regions.get(index);
         final Optional<MyUrlSpan> urlSpan = region.urlSpan;
-        assertTrue("Should be a hashtag " + region + "\n" + message, urlSpan.isPresent());
-        final Timeline timeline = urlSpan.get().data.getTimeline();
+        assertEquals("Region " + index + " should be a hashtag " + region + "\n" + message, hashTag,
+                urlSpan.flatMap(u -> u.data.searchQuery).orElse(""));
+        final Timeline timeline = urlSpan.map(u -> u.data.getTimeline()).orElse(Timeline.EMPTY);
         assertEquals(message, hashTag, timeline.getSearchQuery());
-        final String onClickUrl = urlSpan.get().getURL();
+        final String onClickUrl = urlSpan.map(MyUrlSpan::getURL).orElse("");
         assertEquals(message, url, onClickUrl);
         ParsedUri parsedUri = ParsedUri.fromUri(Uri.parse(onClickUrl));
         assertEquals(parsedUri.toString() + "\n" + timeline.toString(), hashTag, parsedUri.getSearchQuery());
@@ -146,8 +150,7 @@ public class SpanUtilTest {
         assertEquals(message1, 3, regions1.size());
 
         Spannable modified = modifier.apply(spannable);
-        List<SpanUtil.Region> regions2 = SpanUtil.regionsOf(spannable);
-        final Object[] spans = modified.getSpans(0, modified.length(), Object.class);
+        List<SpanUtil.Region> regions2 = SpanUtil.regionsOf(modified);
         final String message2 = message1 + "\nRegions after change: " + regions2;
         assertEquals("Wrong number of regions before change\n" + message2, 3, regions1.size());
         assertEquals("Wrong number of regions after change\n" + message2, 17, regions2.size());
@@ -172,7 +175,61 @@ public class SpanUtilTest {
     private void notAHashTag(List<SpanUtil.Region> regions, String message, int index) {
         final SpanUtil.Region region = regions.get(index);
         final Optional<MyUrlSpan> urlSpan = region.urlSpan;
-        assertFalse("Should not be a hashtag " + region + "\n" + message, urlSpan.isPresent());
+        assertEquals("Region " + index + " should not be a hashtag " + region + "\n" + message, "",
+                urlSpan.flatMap(u -> u.data.searchQuery).orElse(""));
+    }
+
+
+    @Test
+    public void urlWithFragment() {
+        MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
+        Audience audience = new Audience(ma.getOrigin());
+
+        addRecipient(ma, audience, "nipos", "526703");
+        addRecipient(ma, audience, "er1n", "181388");
+        addRecipient(ma, audience, "switchingsocial", "355551");
+
+        Function<Spannable, Spannable> modifier = SpanUtil.spansModifier(audience);
+
+        String text = "<p><span class=\"h-card\"><a href=\"https://netzkombin.at/users/nipos\" class=\"u-url mention\">" +
+                "@<span>nipos</span></a></span> Unfortunately, <a href=\"https://mastodon.social/tags/mastodon\"" +
+                " class=\"mention hashtag\" rel=\"tag\">#<span>Mastodon</span></a> API uses instance-specific" +
+                " identifiers (just like <a href=\"https://mastodon.social/tags/twitter\" class=\"mention hashtag\"" +
+                " rel=\"tag\">#<span>Twitter</span></a>, which _is_ a single instance from a user&apos;s point of view)," +
+                " which locks a user to this instance. Long story is starting from this comment:" +
+                " <a href=\"https://github.com/andstatus/andstatus/issues/419#issuecomment-254031208\"" +
+                " rel=\"nofollow noopener\" target=\"_blank\">" +
+                "<span class=\"invisible\">https://</span><span class=\"ellipsis\">github.com/andstatus/andstatus</span>" +
+                "<span class=\"invisible\">/issues/419#issuecomment-254031208</span></a><br />" +
+                "<span class=\"h-card\">" +
+                "<a href=\"https://social.mecanis.me/@er1n\" class=\"u-url mention\">@<span>er1n</span></a></span>" +
+                " <span class=\"h-card\"><a href=\"https://mastodon.at/@switchingsocial\" class=\"u-url mention\">" +
+                "@<span>switchingsocial</span></a></span></p>";
+
+        Spannable spannable = MyUrlSpan.toSpannable(text, true);
+        List<SpanUtil.Region> regions1 = SpanUtil.regionsOf(spannable);
+        final String message1 = "Regions before change: " + regions1;
+        assertEquals(message1, 9, regions1.size());
+
+        Spannable modified = modifier.apply(spannable);
+        List<SpanUtil.Region> regions2 = SpanUtil.regionsOf(modified);
+        final String message2 = message1 + "\nRegions after change: " + regions2;
+        assertEquals("Wrong number of regions after change\n" + message2, 9, regions2.size());
+
+        oneMention(regions2, message2, 0, "nipos");
+        oneHashTag(regions2, message2, 2, "Mastodon");
+        notAHashTag(regions2, message2, 3);
+        oneHashTag(regions2, message2, 4, "Twitter");
+        notAHashTag(regions2, message2, 5);
+        notAHashTag(regions2, message2, 6);
+        oneMention(regions2, message2, 7, "er1n");
+        oneMention(regions2, message2, 8, "switchingsocial");
+    }
+
+    private void addRecipient(MyAccount ma, Audience audience, String username, String actorOid) {
+        final Actor actor1 = Actor.fromOriginAndActorOid(ma.getOrigin(), actorOid);
+        actor1.setUsername(username);
+        audience.add(actor1);
     }
 
 }

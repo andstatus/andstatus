@@ -30,7 +30,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static java.lang.Character.isLetter;
 import static java.lang.Character.isLetterOrDigit;
 
 public class SpanUtil {
@@ -209,8 +208,11 @@ public class SpanUtil {
     }
 
     private static String hashTagAt(String text, int indStart) {
-        if (indStart + 1 >= text.length() || text.charAt(indStart) != '#' ||
-                !isLetterOrDigit(text.charAt(indStart + 1))) {
+        if (indStart + 1 >= text.length() ||
+            text.charAt(indStart) != '#' ||
+            !isLetterOrDigit(text.charAt(indStart + 1)) ||
+            (indStart > 0 && isLetterOrDigit(text.charAt(indStart - 1)))
+        ) {
             return "";
         }
         int ind = indStart + 2;
