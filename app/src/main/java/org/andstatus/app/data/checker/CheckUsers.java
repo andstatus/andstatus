@@ -103,7 +103,7 @@ class CheckUsers extends DataChecker {
                         );
                 final String webFingerId = DbUtils.getString(c, ActorTable.WEBFINGER_ID);
                 actor.setWebFingerId(webFingerId);
-                actor.setProfileUrl(DbUtils.getString(c, ActorTable.PROFILE_URL));
+                actor.setProfileUrl(DbUtils.getString(c, ActorTable.PROFILE_PAGE));
                 actor.setUsername(DbUtils.getString(c, ActorTable.USERNAME));
 
                 if (actor.isWebFingerIdValid() && !actor.getWebFingerId().equals(webFingerId)) {

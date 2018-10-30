@@ -67,7 +67,7 @@ public abstract class ConnectionTwitterLike extends Connection {
             case PRIVATE_NOTES:
                 url = "direct_messages.json";
                 break;
-            case FAVORITES_TIMELINE:
+            case LIKED_TIMELINE:
                 url = "favorites.json";
                 break;
             case FOLLOW:
@@ -391,11 +391,11 @@ public abstract class ConnectionTwitterLike extends Connection {
         actor.setUsername(username);
         actor.setRealName(jso.optString("name"));
         if (!SharedPreferencesUtil.isEmpty(actor.getRealName())) {
-            actor.setProfileUrl(data.getOriginUrl());
+            actor.setProfileUrlToOriginUrl(data.getOriginUrl());
         }
         actor.location = jso.optString("location");
         actor.setAvatarUri(UriUtils.fromAlternativeTags(jso,"profile_image_url_https","profile_image_url"));
-        actor.bannerUrl = UriUtils.fromJson(jso, "profile_banner_url").toString();
+        actor.endpoints.add(ActorEndpointType.BANNER, UriUtils.fromJson(jso, "profile_banner_url"));
         actor.setDescription(jso.optString("description"));
         actor.setHomepage(jso.optString("url"));
         // Hack for twitter.com

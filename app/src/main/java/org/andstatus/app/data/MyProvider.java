@@ -54,7 +54,7 @@ import java.util.Set;
  */
 public class MyProvider extends ContentProvider {
     static final String TAG = MyProvider.class.getSimpleName();
-    
+
     /**
      * @see android.content.ContentProvider#onCreate()
      */
@@ -272,6 +272,17 @@ public class MyProvider extends ContentProvider {
         } catch (Exception e) {
             MyLog.w(TAG, method + "; SQL:'" + sql + "'", e);
         }
+    }
+
+    public static long insert(MyContext myContext, String tableName, ContentValues values) {
+        SQLiteDatabase db = myContext.getDatabase();
+        if (db == null || values.size() == 0) return -1;
+
+        long rowId = db.insert(tableName, null, values);
+        if (rowId == -1) {
+            throw new SQLException("Failed to insert " + values);
+        }
+        return rowId;
     }
 
     /**

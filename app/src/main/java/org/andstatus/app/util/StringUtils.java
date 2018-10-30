@@ -28,12 +28,12 @@ public class StringUtils {
         return notEmpty(first, "").equals(notEmpty(second, ""));
     }
 
-    public static boolean nonEmpty(String value) {
+    public static boolean nonEmpty(CharSequence value) {
         return !isEmpty(value);
     }
 
-    public static boolean isEmpty(String value) {
-        return value == null || value.isEmpty();
+    public static boolean isEmpty(CharSequence value) {
+        return value == null || value.length() == 0;
     }
 
     public static String notEmpty(String value, String valueIfEmpty) {

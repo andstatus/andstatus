@@ -32,6 +32,7 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.ActorEndpoints;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.ConnectionGnuSocialTest;
@@ -122,7 +123,7 @@ public class DataUpdaterTest {
         assertEquals("Url of the note", note.url, url);
         long senderId = MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, noteId);
         assertEquals("Sender of the note", somebody.actorId, senderId);
-        url = MyQuery.actorIdToStringColumnValue(ActorTable.PROFILE_URL, senderId);
+        url = MyQuery.actorIdToStringColumnValue(ActorTable.PROFILE_PAGE, senderId);
         assertEquals("Url of the author " + somebody.getUsername(), somebody.getProfileUrl(), url);
         assertEquals("Latest activity of " + somebody, activity.getId(),
                 MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, somebody.actorId));
@@ -485,9 +486,8 @@ public class DataUpdaterTest {
         assertEquals("profile image URL", actor.getAvatarUrl(),
                 MyQuery.actorIdToStringColumnValue(ActorTable.AVATAR_URL, id));
         assertEquals("profile URL", actor.getProfileUrl(),
-                MyQuery.actorIdToStringColumnValue(ActorTable.PROFILE_URL, id));
-        assertEquals("Banner URL", actor.bannerUrl,
-                MyQuery.actorIdToStringColumnValue(ActorTable.BANNER_URL, id));
+                MyQuery.actorIdToStringColumnValue(ActorTable.PROFILE_PAGE, id));
+        assertEquals("Endpoints", actor.endpoints, ActorEndpoints.load(myContext, id));
         assertEquals("Homepage", actor.getHomepage(),
                 MyQuery.actorIdToStringColumnValue(ActorTable.HOMEPAGE, id));
         assertEquals("WebFinger ID", actor.getWebFingerId(),

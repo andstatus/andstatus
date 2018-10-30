@@ -25,6 +25,7 @@ import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
 import org.andstatus.app.notification.NotificationEventType;
@@ -93,7 +94,7 @@ public class DemoNoteInserter {
         actor.setHomepage("https://example.com/home/" + username + "/start/");
         actor.location = "Faraway place #" + demoData.testRunUid;
         actor.setAvatarUrl(actor.getHomepage() + "avatar.jpg");
-        actor.bannerUrl = actor.getHomepage() + "banner.png";
+        actor.endpoints.add(ActorEndpointType.BANNER, actor.getHomepage() + "banner.png");
         long rand = InstanceId.next();
         actor.notesCount = rand * 2 + 3;
         actor.favoritesCount = rand + 11;

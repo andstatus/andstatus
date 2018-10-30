@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -78,7 +79,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     private Uri profileUri = Uri.EMPTY;
     private String homepage = "";
     private Uri avatarUri = Uri.EMPTY;
-    public String bannerUrl = "";
+    public final ActorEndpoints endpoints = new ActorEndpoints(new ConcurrentHashMap<>());
 
     public long notesCount = 0;
     public long favoritesCount = 0;
@@ -154,7 +155,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         actor.setDescription(DbUtils.getString(cursor, ActorTable.DESCRIPTION));
         actor.location = DbUtils.getString(cursor, ActorTable.LOCATION);
 
-        actor.setProfileUrl(DbUtils.getString(cursor, ActorTable.PROFILE_URL));
+        actor.setProfileUrl(DbUtils.getString(cursor, ActorTable.PROFILE_PAGE));
         actor.setHomepage(DbUtils.getString(cursor, ActorTable.HOMEPAGE));
         actor.setAvatarUrl(DbUtils.getString(cursor, ActorTable.AVATAR_URL));
 
@@ -260,42 +261,22 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (this == EMPTY) {
             return "Actor:EMPTY";
         }
-        String members = "origin:" + origin.getName() + ",";
-        if (actorId != 0) {
-            members += "id:" + actorId + ",";
-        }
-        if (StringUtils.nonEmpty(oid)) {
-            members += "oid:" + oid + ",";
-        }
+        MyStringBuilder members = new MyStringBuilder("origin:" + origin.getName() + ",")
+        .withComma("id", actorId)
+        .withComma("oid", oid);
         if (isWebFingerIdValid()) {
-            members += getWebFingerId() + ",";
+            members.withComma(getWebFingerId());
         } else if (StringUtils.nonEmpty(getWebFingerId())) {
-            members += "invalidWebFingerId:" + getWebFingerId() + ",";
+            members.withComma("invalidWebFingerId", getWebFingerId());
         }
-        if (StringUtils.nonEmpty(username)) {
-            members += "username:" + username + ",";
-        }
-        if (StringUtils.nonEmpty(realName)) {
-            members += "realName:" + realName + ",";
-        }
-        if (user.nonEmpty()) {
-            members += user + ",";
-        }
-        if (!Uri.EMPTY.equals(profileUri)) {
-            members += "profileUri:'" + profileUri.toString() + "',";
-        }
-        if (hasAvatar()) {
-            members += "avatar:'" + avatarUri + "',";
-        }
-        if (AvatarFile.EMPTY != avatarFile) {
-            members += " avatarFile:'" + avatarFile + "',";
-        }
-        if (StringUtils.nonEmpty(bannerUrl)) {
-            members += "banner:'" + bannerUrl + "',";
-        }
-        if (hasLatestNote()) {
-            members += "latest note present,";
-        }
+        members.withComma("username", username)
+                .withComma("realName", realName)
+                .withComma("", user, user::nonEmpty)
+                .withComma("profileUri", profileUri, UriUtils::nonEmpty)
+                .withComma("avatar", avatarUri, this::hasAvatar)
+                .withComma("avatarFile", avatarFile, this::hasAvatarFile)
+                .withComma("banner", endpoints.getFirst(ActorEndpointType.BANNER), UriUtils::nonEmpty)
+                .withComma("", "latest note present", this::hasLatestNote);
         return MyLog.formatKeyValue(this, members);
     }
 
@@ -322,8 +303,8 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return this;
     }
 
-    public void setProfileUrl(URL url) {
-        profileUri = UriUtils.fromUrl(url);
+    public void setProfileUrlToOriginUrl(URL originUrl) {
+        profileUri = UriUtils.fromUrl(originUrl);
         fixWebFingerId();
     }
 
@@ -706,6 +687,10 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
     public boolean hasAvatar() {
         return UriUtils.nonEmpty(avatarUri);
+    }
+
+    public boolean hasAvatarFile() {
+        return AvatarFile.EMPTY != avatarFile;
     }
 
     public void loadFromInternet() {

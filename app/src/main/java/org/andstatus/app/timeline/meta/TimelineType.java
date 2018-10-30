@@ -39,7 +39,7 @@ public enum TimelineType implements SelectableEnum {
     PUBLIC(ListScope.ORIGIN, "public", R.string.timeline_title_public, 0, Connection.ApiRoutineEnum.PUBLIC_TIMELINE),
     EVERYTHING(ListScope.ORIGIN, "everything", R.string.timeline_title_everything, 0, Connection.ApiRoutineEnum.DUMMY),
     SEARCH(ListScope.ORIGIN, "search", R.string.options_menu_search, 0, Connection.ApiRoutineEnum.SEARCH_NOTES),
-    FAVORITES(ListScope.USER, "favorites", R.string.timeline_title_favorites, 0, Connection.ApiRoutineEnum.FAVORITES_TIMELINE),
+    FAVORITES(ListScope.USER, "favorites", R.string.timeline_title_favorites, 0, Connection.ApiRoutineEnum.LIKED_TIMELINE),
     /** The Mentions timeline and other information (replies...). */
     INTERACTIONS(ListScope.USER, "interactions", R.string.timeline_title_interactions,
             0, Connection.ApiRoutineEnum.NOTIFICATIONS_TIMELINE),

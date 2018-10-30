@@ -48,27 +48,22 @@ public final class ActorTable implements BaseColumns {
      * The id is not unique for this table, because we have IDs from different systems in one column.
      */
     public static final String ACTOR_OID = "actor_oid";
-    /** This is called "screen_name" in Twitter API, "login" or "username" in others */
+    /** This is called "screen_name" in Twitter API, "login" or "username" in others, "preferredUsername" in ActivityPub */
     public static final String USERNAME = "username";
     /** It looks like an email address with your nickname then "@" then your server */
     public static final String WEBFINGER_ID = "webfinger_id";
-    /** This is called "name" in Twitter API */
+    /** This is called "name" in Twitter API and in ActivityPub */
     public static final String REAL_NAME = "real_name";
-    /** Actor's description / "About myself" */
+    /** Actor's description / "About myself" "bio" "summary" */
     public static final String DESCRIPTION = "actor_description";
     /** Location string */
     public static final String LOCATION = "location";
-    /**
-     * Actor's profile URL
-     * A link to the representation of the resource. Currently this is simply URL to the HTML
-     * representation of the resource (its "permalink")
-     */
-    public static final String PROFILE_URL = "profile_url";
-    /** URL of Actor's web home page */
+    /** URL of Actor's Profile web page */
+    public static final String PROFILE_PAGE = "profile_url";  // TODO: Rename
+    /** URL of Actor's Home web page */
     public static final String HOMEPAGE = "homepage";
     /** The latest url of the avatar */
     public static final String AVATAR_URL = "avatar_url";
-    public static final String BANNER_URL = "banner_url";
 
     public static final String NOTES_COUNT = "notes_count";
     public static final String FAVORITES_COUNT = "favorited_count";
@@ -124,10 +119,9 @@ public final class ActorTable implements BaseColumns {
                 + REAL_NAME + " TEXT,"
                 + DESCRIPTION + " TEXT,"
                 + LOCATION + " TEXT,"
-                + PROFILE_URL + " TEXT,"
+                + PROFILE_PAGE + " TEXT,"
                 + HOMEPAGE + " TEXT,"
                 + AVATAR_URL + " TEXT,"
-                + BANNER_URL + " TEXT,"
                 + NOTES_COUNT + " INTEGER NOT NULL DEFAULT 0,"
                 + FAVORITES_COUNT + " INTEGER NOT NULL DEFAULT 0,"
                 + FOLLOWING_COUNT + " INTEGER NOT NULL DEFAULT 0,"

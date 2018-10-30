@@ -17,6 +17,7 @@
 package org.andstatus.app.net.social;
 
 import android.content.Context;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.Spannable;
 
@@ -84,25 +85,28 @@ public class ConnectionGnuSocialTest {
         assertEquals("Note Oid", "2663077", activity.getNote().oid);
         assertEquals("conversationOid", "2218650", activity.getNote().conversationOid);
         assertEquals("Favorited " + activity, TriState.TRUE, activity.getNote().getFavoritedBy(activity.accountActor));
-        assertEquals("Oid", "116387", activity.getAuthor().oid);
-        assertEquals("Username", "aru", activity.getAuthor().getUsername());
-        assertEquals("WebFinger ID", "aru@status.vinilox.eu", activity.getAuthor().getWebFingerId());
-        assertEquals("Display name", "aru", activity.getAuthor().getRealName());
-        assertEquals("Description", "Manjaro user, student of physics and metalhead. Excuse my english ( ͡° ͜ʖ ͡°)", activity.getAuthor().getDescription());
-        assertEquals("Location", "Spain", activity.getAuthor().location);
-        assertEquals("Profile URL", "https://status.vinilox.eu/aru", activity.getAuthor().getProfileUrl());
-        assertEquals("Homepage", "", activity.getAuthor().getHomepage());
-        assertEquals("Avatar URL", "http://quitter.se/avatar/116387-48-20140609172839.png", activity.getAuthor().getAvatarUrl());
-        assertEquals("Banner URL", "", activity.getAuthor().bannerUrl);
-        assertEquals("Notes count", 523, activity.getAuthor().notesCount);
-        assertEquals("Favorites count", 11, activity.getAuthor().favoritesCount);
-        assertEquals("Following (friends) count", 23, activity.getAuthor().followingCount);
-        assertEquals("Followers count", 21, activity.getAuthor().followersCount);
-        assertEquals("Created at", connection.parseDate("Sun Feb 09 22:33:42 +0100 2014"), activity.getAuthor().getCreatedDate());
-        assertEquals("Updated at", 0, activity.getAuthor().getUpdatedDate());
+
+        Actor author = activity.getAuthor();
+        assertEquals("Oid", "116387", author.oid);
+        assertEquals("Username", "aru", author.getUsername());
+        assertEquals("WebFinger ID", "aru@status.vinilox.eu", author.getWebFingerId());
+        assertEquals("Display name", "aru", author.getRealName());
+        assertEquals("Description", "Manjaro user, student of physics and metalhead. Excuse my english ( ͡° ͜ʖ ͡°)", author.getDescription());
+        assertEquals("Location", "Spain", author.location);
+        assertEquals("Profile URL", "https://status.vinilox.eu/aru", author.getProfileUrl());
+        assertEquals("Homepage", "", author.getHomepage());
+        assertEquals("Avatar URL", "http://quitter.se/avatar/116387-48-20140609172839.png", author.getAvatarUrl());
+        assertEquals("Banner URL", Uri.EMPTY, author.endpoints.getFirst(ActorEndpointType.BANNER));
+        assertEquals("Notes count", 523, author.notesCount);
+        assertEquals("Favorites count", 11, author.favoritesCount);
+        assertEquals("Following (friends) count", 23, author.followingCount);
+        assertEquals("Followers count", 21, author.followersCount);
+        assertEquals("Created at", connection.parseDate("Sun Feb 09 22:33:42 +0100 2014"), author.getCreatedDate());
+        assertEquals("Updated at", 0, author.getUpdatedDate());
 
         ind++;
         activity = timeline.get(ind);
+        author = activity.getAuthor();
         assertEquals("Timeline position", "2664346", activity.getTimelinePosition().getPosition());
         assertEquals("Note Oid", "2664346", activity.getNote().oid);
         assertEquals("conversationOid", "2218650", activity.getNote().conversationOid);
@@ -120,33 +124,35 @@ public class ConnectionGnuSocialTest {
         assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
         String startsWith = "@<span class=\"vcard\">";
         assertEquals("Body of this note starts with", startsWith, activity.getNote().getContent().substring(0, startsWith.length()));
-        assertEquals("Username", "andstatus", activity.getAuthor().getUsername());
-        assertEquals("Display name", "AndStatus@quitter.se", activity.getAuthor().getRealName());
-        assertEquals("Banner URL", "https://quitter.se/file/3fd65c6088ea02dc3a5ded9798a865a8ff5425b13878da35ad894cd084d015fc.png", activity.getAuthor().bannerUrl);
+        assertEquals("Username", "andstatus", author.getUsername());
+        assertEquals("Display name", "AndStatus@quitter.se", author.getRealName());
+        assertEquals("Banner URL", Uri.parse("https://quitter.se/file/3fd65c6088ea02dc3a5ded9798a865a8ff5425b13878da35ad894cd084d015fc.png"),
+                author.endpoints.getFirst(ActorEndpointType.BANNER));
 
         ind++;
         activity = timeline.get(ind);
+        author = activity.getAuthor();
         assertEquals("conversationOid", "2218650", activity.getNote().conversationOid);
         assertEquals("Note not private", TriState.UNKNOWN, activity.getNote().getPublic());
         assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
         assertEquals("MyAccount", accountActorOid, activity.accountActor.oid);
-        assertEquals("Actor", activity.getAuthor().oid, activity.getActor().oid);
-        assertEquals("Oid", "114973", activity.getAuthor().oid);
-        assertEquals("Username", "mmn", activity.getAuthor().getUsername());
-        assertEquals("WebFinger ID", "mmn@social.umeahackerspace.se", activity.getAuthor().getWebFingerId());
-        assertEquals("Display name", "mmn", activity.getAuthor().getRealName());
-        assertEquals("Description", "", activity.getAuthor().getDescription());
-        assertEquals("Location", "Umeå, Sweden", activity.getAuthor().location);
-        assertEquals("Profile URL", "https://social.umeahackerspace.se/mmn", activity.getAuthor().getProfileUrl());
-        assertEquals("Homepage", "http://blog.mmn-o.se/", activity.getAuthor().getHomepage());
-        assertEquals("Avatar URL", "http://quitter.se/avatar/114973-48-20140702161520.jpeg", activity.getAuthor().getAvatarUrl());
-        assertEquals("Banner URL", "", activity.getAuthor().bannerUrl);
-        assertEquals("Notes count", 1889, activity.getAuthor().notesCount);
-        assertEquals("Favorites count", 31, activity.getAuthor().favoritesCount);
-        assertEquals("Following (friends) count", 17, activity.getAuthor().followingCount);
-        assertEquals("Followers count", 31, activity.getAuthor().followersCount);
-        assertEquals("Created at", connection.parseDate("Wed Aug 14 10:05:28 +0200 2013"), activity.getAuthor().getCreatedDate());
-        assertEquals("Updated at", 0, activity.getAuthor().getUpdatedDate());
+        assertEquals("Actor", author.oid, activity.getActor().oid);
+        assertEquals("Oid", "114973", author.oid);
+        assertEquals("Username", "mmn", author.getUsername());
+        assertEquals("WebFinger ID", "mmn@social.umeahackerspace.se", author.getWebFingerId());
+        assertEquals("Display name", "mmn", author.getRealName());
+        assertEquals("Description", "", author.getDescription());
+        assertEquals("Location", "Umeå, Sweden", author.location);
+        assertEquals("Profile URL", "https://social.umeahackerspace.se/mmn", author.getProfileUrl());
+        assertEquals("Homepage", "http://blog.mmn-o.se/", author.getHomepage());
+        assertEquals("Avatar URL", "http://quitter.se/avatar/114973-48-20140702161520.jpeg", author.getAvatarUrl());
+        assertEquals("Banner URL", Uri.EMPTY, author.endpoints.getFirst(ActorEndpointType.BANNER));
+        assertEquals("Notes count", 1889, author.notesCount);
+        assertEquals("Favorites count", 31, author.favoritesCount);
+        assertEquals("Following (friends) count", 17, author.followingCount);
+        assertEquals("Followers count", 31, author.followersCount);
+        assertEquals("Created at", connection.parseDate("Wed Aug 14 10:05:28 +0200 2013"), author.getCreatedDate());
+        assertEquals("Updated at", 0, author.getUpdatedDate());
     }
 
     @Test

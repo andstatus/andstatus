@@ -54,7 +54,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             case NOTIFICATIONS_TIMELINE:
                 url = "notifications";
                 break;
-            case FAVORITES_TIMELINE:
+            case LIKED_TIMELINE:
                 url = "favourites";
                 break;
             case PUBLIC_TIMELINE:
@@ -305,10 +305,10 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         actor.setRealName(jso.optString("display_name"));
         actor.setWebFingerId(jso.optString("acct"));
         if (!SharedPreferencesUtil.isEmpty(actor.getRealName())) {
-            actor.setProfileUrl(data.getOriginUrl());
+            actor.setProfileUrlToOriginUrl(data.getOriginUrl());
         }
         actor.setAvatarUri(UriUtils.fromJson(jso, "avatar"));
-        actor.bannerUrl = UriUtils.fromJson(jso, "header").toString();
+        actor.endpoints.add(ActorEndpointType.BANNER, UriUtils.fromJson(jso, "header"));
         actor.setDescription(jso.optString("note"));
         actor.setProfileUrl(jso.optString("url"));
         actor.notesCount = jso.optLong("statuses_count");

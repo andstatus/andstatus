@@ -342,27 +342,27 @@ public class DataUpdater {
     private void updateObjActor2(AActivity activity, int recursing, MyAccount me) {
         final String method = "updateObjActor2";
         try {
-            Actor objActor = activity.getObjActor();
-            String actorOid = (objActor.actorId == 0 && !objActor.isOidReal()) ? objActor.getTempOid() : objActor.oid;
+            Actor actor = activity.getObjActor();
+            String actorOid = (actor.actorId == 0 && !actor.isOidReal()) ? actor.getTempOid() : actor.oid;
 
             ContentValues values = new ContentValues();
-            if (objActor.actorId == 0 || !objActor.isPartiallyDefined()) {
-                if (objActor.actorId == 0 || objActor.isOidReal()) {
+            if (actor.actorId == 0 || !actor.isPartiallyDefined()) {
+                if (actor.actorId == 0 || actor.isOidReal()) {
                     values.put(ActorTable.ACTOR_OID, actorOid);
                 }
 
                 // Substitute required empty values with some temporary for a new entry only!
-                String username = objActor.getUsername();
+                String username = actor.getUsername();
                 if (SharedPreferencesUtil.isEmpty(username)) {
                     username = (actorOid.startsWith(UriUtils.TEMP_OID_PREFIX) ? "" : UriUtils.TEMP_OID_PREFIX) + actorOid;
                 }
                 values.put(ActorTable.USERNAME, username);
-                String webFingerId = objActor.getWebFingerId();
+                String webFingerId = actor.getWebFingerId();
                 if (SharedPreferencesUtil.isEmpty(webFingerId)) {
                     webFingerId = username;
                 }
                 values.put(ActorTable.WEBFINGER_ID, webFingerId);
-                String realName = objActor.getRealName();
+                String realName = actor.getRealName();
                 if (SharedPreferencesUtil.isEmpty(realName)) {
                     realName = username;
                 }
@@ -370,66 +370,64 @@ public class DataUpdater {
                 // End of required attributes
             }
 
-            if (objActor.hasAvatar()) {
-                values.put(ActorTable.AVATAR_URL, objActor.getAvatarUrl());
+            if (actor.hasAvatar()) {
+                values.put(ActorTable.AVATAR_URL, actor.getAvatarUrl());
             }
-            if (!SharedPreferencesUtil.isEmpty(objActor.getDescription())) {
-                values.put(ActorTable.DESCRIPTION, objActor.getDescription());
+            if (!SharedPreferencesUtil.isEmpty(actor.getDescription())) {
+                values.put(ActorTable.DESCRIPTION, actor.getDescription());
             }
-            if (!SharedPreferencesUtil.isEmpty(objActor.getHomepage())) {
-                values.put(ActorTable.HOMEPAGE, objActor.getHomepage());
+            if (!SharedPreferencesUtil.isEmpty(actor.getHomepage())) {
+                values.put(ActorTable.HOMEPAGE, actor.getHomepage());
             }
-            if (!SharedPreferencesUtil.isEmpty(objActor.getProfileUrl())) {
-                values.put(ActorTable.PROFILE_URL, objActor.getProfileUrl());
+            if (!SharedPreferencesUtil.isEmpty(actor.getProfileUrl())) {
+                values.put(ActorTable.PROFILE_PAGE, actor.getProfileUrl());
             }
-            if (!SharedPreferencesUtil.isEmpty(objActor.bannerUrl)) {
-                values.put(ActorTable.BANNER_URL, objActor.bannerUrl);
+            if (!SharedPreferencesUtil.isEmpty(actor.location)) {
+                values.put(ActorTable.LOCATION, actor.location);
             }
-            if (!SharedPreferencesUtil.isEmpty(objActor.location)) {
-                values.put(ActorTable.LOCATION, objActor.location);
+            if (actor.notesCount > 0) {
+                values.put(ActorTable.NOTES_COUNT, actor.notesCount);
             }
-            if (objActor.notesCount > 0) {
-                values.put(ActorTable.NOTES_COUNT, objActor.notesCount);
+            if (actor.favoritesCount > 0) {
+                values.put(ActorTable.FAVORITES_COUNT, actor.favoritesCount);
             }
-            if (objActor.favoritesCount > 0) {
-                values.put(ActorTable.FAVORITES_COUNT, objActor.favoritesCount);
+            if (actor.followingCount > 0) {
+                values.put(ActorTable.FOLLOWING_COUNT, actor.followingCount);
             }
-            if (objActor.followingCount > 0) {
-                values.put(ActorTable.FOLLOWING_COUNT, objActor.followingCount);
+            if (actor.followersCount > 0) {
+                values.put(ActorTable.FOLLOWERS_COUNT, actor.followersCount);
             }
-            if (objActor.followersCount > 0) {
-                values.put(ActorTable.FOLLOWERS_COUNT, objActor.followersCount);
+            if (actor.getCreatedDate() > 0) {
+                values.put(ActorTable.CREATED_DATE, actor.getCreatedDate());
             }
-            if (objActor.getCreatedDate() > 0) {
-                values.put(ActorTable.CREATED_DATE, objActor.getCreatedDate());
-            }
-            if (objActor.getUpdatedDate() > 0) {
-                values.put(ActorTable.UPDATED_DATE, objActor.getUpdatedDate());
+            if (actor.getUpdatedDate() > 0) {
+                values.put(ActorTable.UPDATED_DATE, actor.getUpdatedDate());
             }
 
-            objActor.saveUser(execContext.myContext);
-            Uri actorUri = MatchedUri.getActorUri(me.getActorId(), objActor.actorId);
-            if (objActor.actorId == 0) {
-                values.put(ActorTable.ORIGIN_ID, objActor.origin.getId());
-                values.put(ActorTable.USER_ID, objActor.user.userId);
-                objActor.actorId = ParsedUri.fromUri(
+            actor.saveUser(execContext.myContext);
+            Uri actorUri = MatchedUri.getActorUri(me.getActorId(), actor.actorId);
+            if (actor.actorId == 0) {
+                values.put(ActorTable.ORIGIN_ID, actor.origin.getId());
+                values.put(ActorTable.USER_ID, actor.user.userId);
+                actor.actorId = ParsedUri.fromUri(
                         execContext.getContext().getContentResolver().insert(actorUri, values))
                         .getActorId();
             } else if (values.size() > 0) {
                 execContext.getContext().getContentResolver().update(actorUri, values, null, null);
             }
+            actor.endpoints.save(execContext.myContext, actor.actorId);
 
             updateFriendship(activity, me);
 
-            objActor.avatarFile.resetAvatarErrors(execContext.myContext);
-            execContext.myContext.users().reload(objActor);
+            actor.avatarFile.resetAvatarErrors(execContext.myContext);
+            execContext.myContext.users().reload(actor);
 
-            if (MyPreferences.getShowAvatars() && objActor.hasAvatar() &&
-                    objActor.avatarFile.downloadStatus != DownloadStatus.LOADED) {
-                objActor.avatarFile.requestDownload();
+            if (MyPreferences.getShowAvatars() && actor.hasAvatar() &&
+                    actor.avatarFile.downloadStatus != DownloadStatus.LOADED) {
+                actor.avatarFile.requestDownload();
             }
-            if (objActor.hasLatestNote()) {
-                updateNote(objActor.getLatestActivity(), recursing + 1);
+            if (actor.hasLatestNote()) {
+                updateNote(actor.getLatestActivity(), recursing + 1);
             }
         } catch (Exception e) {
             MyLog.e(this, method + "; " + activity, e);

@@ -16,6 +16,8 @@
 
 package org.andstatus.app.net.social;
 
+import android.net.Uri;
+
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.account.MyAccount;
@@ -107,7 +109,8 @@ public class ConnectionTwitterTest {
         assertEquals("Profile URL", "https://" + hostName + "/Know", author.getProfileUrl());
         assertEquals("Homepage", "http://t.co/4TzphfU9qt", author.getHomepage());
         assertEquals("Avatar URL", "https://si0.twimg.com/profile_images/378800000411110038/a8b7eced4dc43374e7ae21112ff749b6_normal.jpeg", author.getAvatarUrl());
-        assertEquals("Banner URL", "https://pbs.twimg.com/profile_banners/221452291/1377270845", author.bannerUrl);
+        assertEquals("Banner URL", Uri.parse("https://pbs.twimg.com/profile_banners/221452291/1377270845"),
+                author.endpoints.getFirst(ActorEndpointType.BANNER));
         assertEquals("Notes count", 1592, author.notesCount);
         assertEquals("Favorites count", 163, author.favoritesCount);
         assertEquals("Following (friends) count", 151, author.followingCount);

@@ -168,7 +168,7 @@ public class DemoGnuSocialConversationInserter {
         if (avatarUrl != null) {
             actor.setAvatarUrl(avatarUrl);
         }
-        actor.setProfileUrl(origin.getUrl());
+        actor.setProfileUrlToOriginUrl(origin.getUrl());
         return actor;
     }
     

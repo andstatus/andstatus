@@ -18,14 +18,13 @@ package org.andstatus.app.net.social;
 
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.ActorSql;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.SqlActorIds;
 import org.andstatus.app.database.table.ActorTable;
@@ -142,8 +141,7 @@ public class Audience implements IsEmpty {
 
     /** @return true if data changed */
     public boolean save(@NonNull MyContext myContext, @NonNull Origin origin, long noteId, TriState isPublic, boolean countOnly) {
-        SQLiteDatabase db = myContext.getDatabase();
-        if (db == null || !origin.isValid() || noteId == 0) {
+        if (!origin.isValid() || noteId == 0) {
             return false;
         }
         Audience prevAudience = Audience.fromNoteId(origin, noteId, isPublic);
@@ -167,22 +165,22 @@ public class Audience implements IsEmpty {
         }
         if (!countOnly) try {
             if (!toDelete.isEmpty()) {
-                db.delete(AudienceTable.TABLE_NAME, AudienceTable.NOTE_ID + "=" + noteId
+                MyProvider.delete(myContext, AudienceTable.TABLE_NAME, AudienceTable.NOTE_ID + "=" + noteId
                         + " AND " + AudienceTable.ACTOR_ID + SqlActorIds.fromActors(toDelete).getSql(), null);
             }
-            for (Actor actor : toAdd) {
-                ContentValues values = new ContentValues();
-                values.put(AudienceTable.NOTE_ID, noteId);
-                values.put(AudienceTable.ACTOR_ID, actor.actorId);
-                long rowId = db.insert(AudienceTable.TABLE_NAME, null, values);
-                if (rowId == -1) {
-                    throw new SQLException("Failed to insert " + actor);
-                }
-            }
+            toAdd.forEach(actor -> MyProvider.insert(myContext, AudienceTable.TABLE_NAME, toContentValues(noteId, actor)));
         } catch (Exception e) {
             MyLog.e(this, "save, noteId:" + noteId + "; " + actors, e);
         }
         return  !toDelete.isEmpty() || !toAdd.isEmpty();
+    }
+
+    @NonNull
+    private ContentValues toContentValues(long noteId, Actor actor) {
+        ContentValues values = new ContentValues();
+        values.put(AudienceTable.NOTE_ID, noteId);
+        values.put(AudienceTable.ACTOR_ID, actor.actorId);
+        return values;
     }
 
     @Override

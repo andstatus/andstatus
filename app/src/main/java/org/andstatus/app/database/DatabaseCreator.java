@@ -21,6 +21,7 @@ import android.provider.BaseColumns;
 
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.database.table.ActorEndpointTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.database.table.CommandTable;
@@ -40,6 +41,7 @@ public class DatabaseCreator {
      * Current database scheme version, defined by AndStatus developers.
      * This is used to check (and upgrade if necessary) existing database after application update.
      *
+     * v.44 2018-10-30 ActorEndpointTable added.
      * v.42 2018-09-05 DownloadTable added (returned) "content_type" to filter attachments that can be shown
      * v.40 2018-06-05 DownloadTable added "downloaded_date" to decide, when to prune the download
      * v.38 2018-04-01 app.v.38 DownloadTable update to support Video. NoteTable - added Note's Name
@@ -69,7 +71,7 @@ public class DatabaseCreator {
      *      All messages are in the same table.
      *      Allows to have multiple User Accounts in different Originating systems (twitter.com etc. )
      */
-    public static final int DATABASE_VERSION = 42;
+    public static final int DATABASE_VERSION = 44;
     public static final long ORIGIN_ID_TWITTER =  1L;
 
     private final SQLiteDatabase db;
@@ -94,6 +96,7 @@ public class DatabaseCreator {
         TimelineTable.create(db);
         ActivityTable.create(db);
         CommandTable.create(db);
+        ActorEndpointTable.create(db);
         return this;
     }
 

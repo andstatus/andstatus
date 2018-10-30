@@ -19,6 +19,9 @@ package org.andstatus.app.util;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+
 /** Adds convenience methods to {@link StringBuilder} */
 public class MyStringBuilder implements CharSequence {
     public final StringBuilder builder;
@@ -33,6 +36,29 @@ public class MyStringBuilder implements CharSequence {
 
     public MyStringBuilder(StringBuilder builder) {
         this.builder = builder;
+    }
+
+    @NonNull
+    public <T> MyStringBuilder withComma(CharSequence label, T obj, Predicate<T> predicate) {
+        return obj == null || !predicate.test(obj)
+                ? this
+                : withComma(label, obj);
+    }
+
+    @NonNull
+    public MyStringBuilder withComma(CharSequence label, Object obj, Supplier<Boolean> booleanSupplier) {
+        return obj == null || !booleanSupplier.get()
+                ? this
+                : withComma(label, obj);
+    }
+
+    @NonNull
+    public MyStringBuilder withComma(CharSequence label, Object obj) {
+        if (obj == null) return this;
+        String text = obj.toString();
+        return TextUtils.isEmpty(text)
+        ? this
+        : withSeparator((StringUtils.nonEmpty(label) ? label + ":" + text : text), ", ");
     }
 
     @NonNull

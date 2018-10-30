@@ -29,6 +29,7 @@ import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.AObjectType;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection;
@@ -98,7 +99,7 @@ public class ConnectionPumpio extends Connection {
             case HOME_TIMELINE:
                 url = "user/%nickname%/inbox";
                 break;
-            case FAVORITES_TIMELINE:
+            case LIKED_TIMELINE:
                 url = "user/%nickname%/favorites";
                 break;
             case UPDATE_NOTE_WITH_MEDIA:
@@ -153,6 +154,15 @@ public class ConnectionPumpio extends Connection {
         if (pumpIo != null && !pumpIo.isNull("followed")) {
             actor.followedByMe = TriState.fromBoolean(pumpIo.optBoolean("followed"));
         }
+        JSONObject links = jso.optJSONObject("links");
+        if (links != null) {
+            actor.endpoints.add(ActorEndpointType.API_PROFILE, JsonUtils.optStringInside(links, "self", "href"))
+            .add(ActorEndpointType.API_INBOX, JsonUtils.optStringInside(links, "activity-inbox", "href"))
+            .add(ActorEndpointType.API_OUTBOX, JsonUtils.optStringInside(links, "activity-outbox", "href"));
+        }
+        actor.endpoints.add(ActorEndpointType.API_FOLLOWING, JsonUtils.optStringInside(jso, "following", "url"))
+            .add(ActorEndpointType.API_FOLLOWERS, JsonUtils.optStringInside(jso, "followers", "url"))
+            .add(ActorEndpointType.API_LIKED, JsonUtils.optStringInside(jso, "favorites", "url"));
         return actor;
     }
 

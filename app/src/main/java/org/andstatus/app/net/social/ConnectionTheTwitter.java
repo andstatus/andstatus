@@ -52,7 +52,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
             case PRIVATE_NOTES:
                 url = "direct_messages.json?tweet_mode=extended";
                 break;
-            case FAVORITES_TIMELINE:
+            case LIKED_TIMELINE:
                 // https://dev.twitter.com/rest/reference/get/favorites/list
                 url = "favorites/list.json?tweet_mode=extended";
                 break;

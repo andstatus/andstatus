@@ -85,9 +85,10 @@ public class Notifier {
     }
 
     public Notification getAndroidNotification(@NonNull NotificationData data) {
-        String noteText = (data.myAccount.isValid() ? data.myAccount.getAccountName() :
-                myContext.context().getText(data.event.titleResId)) + ": " + data.count;
-        MyLog.v(this, noteText);
+        String contentText = (data.myAccount.isValid()
+                ? data.myAccount.getAccountName()
+                : myContext.context().getText(data.event.titleResId)) + ": " + data.count;
+        MyLog.v(this, contentText);
 
         Notification.Builder builder = new Notification.Builder(myContext.context());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -110,7 +111,7 @@ public class Notifier {
                     ? R.drawable.notification_icon_circle
                     : R.drawable.notification_icon)
                 .setContentTitle(myContext.context().getText(data.event.titleResId))
-                .setContentText(noteText)
+                .setContentText(contentText)
                 .setWhen(data.updatedDate)
                 .setShowWhen(true);
         }

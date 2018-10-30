@@ -16,6 +16,8 @@
 
 package org.andstatus.app.net.social.pumpio;
 
+import android.net.Uri;
+
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContextHolder;
@@ -28,6 +30,7 @@ import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.AObjectType;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
@@ -195,6 +198,20 @@ public class ConnectionPumpioTest {
         assertEquals("Created at", 0, actor.getCreatedDate());
         assertEquals("Updated at", TestSuite.utcTime(2013, Calendar.SEPTEMBER, 12, 17, 10, 44),
                 TestSuite.utcTime(actor.getUpdatedDate()));
+
+        assertEquals("Inbox", Uri.parse("https://io.jpope.org/api/user/jpope/inbox"),
+                actor.endpoints.getFirst(ActorEndpointType.API_INBOX));
+        assertEquals("Outbox", Uri.parse("https://io.jpope.org/api/user/jpope/feed"),
+                actor.endpoints.getFirst(ActorEndpointType.API_OUTBOX));
+        assertEquals("Profile", Uri.parse("https://io.jpope.org/api/user/jpope/profile"),
+                actor.endpoints.getFirst(ActorEndpointType.API_PROFILE));
+        assertEquals("Following", Uri.parse("https://io.jpope.org/api/user/jpope/following"),
+                actor.endpoints.getFirst(ActorEndpointType.API_FOLLOWING));
+        assertEquals("Followers", Uri.parse("https://io.jpope.org/api/user/jpope/followers"),
+                actor.endpoints.getFirst(ActorEndpointType.API_FOLLOWERS));
+        assertEquals("Liked", Uri.parse("https://io.jpope.org/api/user/jpope/favorites"),
+                actor.endpoints.getFirst(ActorEndpointType.API_LIKED));
+
         assertEquals("Actor is an Author", actor, activity.getAuthor());
         assertNotEquals("Is a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);
         assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));

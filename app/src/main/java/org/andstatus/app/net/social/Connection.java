@@ -96,7 +96,7 @@ public abstract class Connection {
         ACTOR_TIMELINE,
         PUBLIC_TIMELINE,
         TAG_TIMELINE,
-        FAVORITES_TIMELINE,
+        LIKED_TIMELINE,
         SEARCH_NOTES,
         SEARCH_ACTORS,
 

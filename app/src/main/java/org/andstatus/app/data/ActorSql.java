@@ -51,10 +51,9 @@ public class ActorSql {
         baseProjectionMap.put(ActorTable.DESCRIPTION, ActorTable.TABLE_NAME + "." + ActorTable.DESCRIPTION);
         baseProjectionMap.put(ActorTable.LOCATION, ActorTable.TABLE_NAME + "." + ActorTable.LOCATION);
 
-        baseProjectionMap.put(ActorTable.PROFILE_URL, ActorTable.TABLE_NAME + "." + ActorTable.PROFILE_URL);
+        baseProjectionMap.put(ActorTable.PROFILE_PAGE, ActorTable.TABLE_NAME + "." + ActorTable.PROFILE_PAGE);
         baseProjectionMap.put(ActorTable.HOMEPAGE, ActorTable.TABLE_NAME + "." + ActorTable.HOMEPAGE);
         avatarProjectionMap.put(ActorTable.AVATAR_URL, ActorTable.TABLE_NAME + "." + ActorTable.AVATAR_URL);
-        baseProjectionMap.put(ActorTable.BANNER_URL, ActorTable.TABLE_NAME + "." + ActorTable.BANNER_URL);
 
         baseProjectionMap.put(ActorTable.NOTES_COUNT, ActorTable.TABLE_NAME + "." + ActorTable.NOTES_COUNT);
         baseProjectionMap.put(ActorTable.FAVORITES_COUNT, ActorTable.TABLE_NAME + "." + ActorTable.FAVORITES_COUNT);

@@ -109,7 +109,7 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
                 + " cached " + MyContextHolder.get().users().actors, actorE.nonEmpty());
         Actor actorA = getByActorOid(listItems, demoData.conversationAuthorThirdActorOid);
         assertTrue("Found " + demoData.conversationAuthorThirdActorOid + ", " + logMsg, actorA != null);
-        compareAttributes(actorE, actorA, true);
+        compareAttributes(actorE, actorA, false);
 
         ListActivityTestHelper<ActorList> actorListHelper = new ListActivityTestHelper<>(actorList);
         actorListHelper.clickListAtPosition(method, actorListHelper.getPositionOfListItemId(listItems.get(
@@ -128,7 +128,7 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         assertEquals("Homepage", expected.getHomepage(), actual.getHomepage());
         if (!forActorList) {
             assertEquals("Avatar URL", expected.getAvatarUrl(), actual.getAvatarUrl());
-            assertEquals("Banner URL", expected.bannerUrl, actual.bannerUrl);
+            assertEquals("Endpoints", expected.endpoints, actual.endpoints);
         }
         assertEquals("Notes count", expected.notesCount, actual.notesCount);
         assertEquals("Favorites count", expected.favoritesCount, actual.favoritesCount);
