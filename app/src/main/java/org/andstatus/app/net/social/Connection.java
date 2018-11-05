@@ -29,6 +29,7 @@ import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -149,17 +150,47 @@ public abstract class Connection {
      * @return URL or throws a ConnectionException in case the API routine is not supported
      */
     protected final String getApiPath(ApiRoutineEnum routine) throws ConnectionException {
-        String path = this.getApiPath1(routine);
+        Uri fromActor = getPathFromActor(data.getAccountActor(), routine);
+        String path = UriUtils.isEmpty(fromActor) ? this.getApiPath1(routine) : fromActor.toString();
         if (StringUtils.isEmpty(path)) {
             String detailMessage = "The API is not supported: '" + routine + "'";
             MyLog.e(this.getClass().getSimpleName(), detailMessage);
             throw new ConnectionException(StatusCode.UNSUPPORTED_API, this.getClass().getSimpleName() + ": " + detailMessage);
         } else {
-            MyLog.v(this.getClass().getSimpleName(), () -> "API '" + routine + "' Path=" + path);
+            MyLog.v(this.getClass().getSimpleName(), () -> "API '" + routine + "' Path=" + path +
+                    (UriUtils.isEmpty(fromActor) ? "" : " from Actor"));
         }
         return path;
     }
-    
+
+    public static Uri getPathFromActor(Actor actor, ApiRoutineEnum routine) {
+        switch (routine) {
+            case GET_FOLLOWERS:
+            case GET_FOLLOWERS_IDS:
+                return actor.endpoints.getFirst(ActorEndpointType.API_FOLLOWERS);
+            case GET_FRIENDS:
+            case GET_FRIENDS_IDS:
+                return actor.endpoints.getFirst(ActorEndpointType.API_FOLLOWING);
+            case GET_ACTOR:
+                return actor.endpoints.getFirst(ActorEndpointType.API_PROFILE);
+            case HOME_TIMELINE:
+                return actor.endpoints.getFirst(ActorEndpointType.API_INBOX);
+            case LIKED_TIMELINE:
+                return actor.endpoints.getFirst(ActorEndpointType.API_LIKED);
+            case LIKE:
+            case UNDO_LIKE:
+            case FOLLOW:
+            case UPDATE_PRIVATE_NOTE:
+            case ANNOUNCE:
+            case DELETE_NOTE:
+            case UPDATE_NOTE:
+            case ACTOR_TIMELINE:
+                return actor.endpoints.getFirst(ActorEndpointType.API_OUTBOX);
+            default:
+                return Uri.EMPTY;
+        }
+    }
+
     /**
      * Use this method to check the connection's (Account's) capability before attempting to use it
      * and even before presenting corresponding action to the User.

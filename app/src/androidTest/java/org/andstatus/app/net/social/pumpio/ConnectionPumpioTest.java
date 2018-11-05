@@ -33,6 +33,7 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Audience;
+import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.ConnectionMockable;
 import org.andstatus.app.net.social.Note;
@@ -74,7 +75,7 @@ public class ConnectionPumpioTest {
     
     @Before
     public void setUp() throws Exception {
-        TestSuite.initializeWithData(this);
+        TestSuite.initializeWithAccounts(this);
         originUrl = UrlUtils.fromString("https://" + demoData.pumpioMainHost);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
@@ -201,16 +202,28 @@ public class ConnectionPumpioTest {
 
         assertEquals("Inbox", Uri.parse("https://io.jpope.org/api/user/jpope/inbox"),
                 actor.endpoints.getFirst(ActorEndpointType.API_INBOX));
+        assertEquals("Inbox", Uri.parse("https://io.jpope.org/api/user/jpope/inbox"),
+                Connection.getPathFromActor(actor, ApiRoutineEnum.HOME_TIMELINE));
         assertEquals("Outbox", Uri.parse("https://io.jpope.org/api/user/jpope/feed"),
                 actor.endpoints.getFirst(ActorEndpointType.API_OUTBOX));
+        assertEquals("Outbox", Uri.parse("https://io.jpope.org/api/user/jpope/feed"),
+                Connection.getPathFromActor(actor, ApiRoutineEnum.ACTOR_TIMELINE));
         assertEquals("Profile", Uri.parse("https://io.jpope.org/api/user/jpope/profile"),
                 actor.endpoints.getFirst(ActorEndpointType.API_PROFILE));
+        assertEquals("Profile", Uri.parse("https://io.jpope.org/api/user/jpope/profile"),
+                Connection.getPathFromActor(actor, ApiRoutineEnum.GET_ACTOR));
         assertEquals("Following", Uri.parse("https://io.jpope.org/api/user/jpope/following"),
                 actor.endpoints.getFirst(ActorEndpointType.API_FOLLOWING));
+        assertEquals("Following", Uri.parse("https://io.jpope.org/api/user/jpope/following"),
+                Connection.getPathFromActor(actor, ApiRoutineEnum.GET_FRIENDS));
         assertEquals("Followers", Uri.parse("https://io.jpope.org/api/user/jpope/followers"),
                 actor.endpoints.getFirst(ActorEndpointType.API_FOLLOWERS));
+        assertEquals("Followers", Uri.parse("https://io.jpope.org/api/user/jpope/followers"),
+                Connection.getPathFromActor(actor, ApiRoutineEnum.GET_FOLLOWERS));
         assertEquals("Liked", Uri.parse("https://io.jpope.org/api/user/jpope/favorites"),
                 actor.endpoints.getFirst(ActorEndpointType.API_LIKED));
+        assertEquals("Liked", Uri.parse("https://io.jpope.org/api/user/jpope/favorites"),
+                Connection.getPathFromActor(actor, ApiRoutineEnum.LIKED_TIMELINE));
 
         assertEquals("Actor is an Author", actor, activity.getAuthor());
         assertNotEquals("Is a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);
