@@ -19,7 +19,6 @@ package org.andstatus.app.data;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.AActivity;
@@ -72,7 +71,7 @@ public class DemoNoteInserter {
 
     final Actor buildActorFromOid(String actorOid) {
         if (StringUtils.isEmpty(actorOid)) throw  new IllegalArgumentException("Actor oid cannot be empty");
-        Actor actor = Actor.fromOriginAndActorOid(origin, actorOid);
+        Actor actor = Actor.fromOid(origin, actorOid);
         String username;
         String profileUrl;
         if (origin.getOriginType() == OriginType.PUMPIO) {
@@ -161,10 +160,10 @@ public class DemoNoteInserter {
     }
 
     public void onActivity(final AActivity activity) {
-        MyAccount ma = MyContextHolder.get().accounts().fromActorId(accountActor.actorId);
+        MyAccount ma = origin.myContext.accounts().fromActorId(accountActor.actorId);
         assertTrue("Persistent account exists for " + accountActor + " " + activity, ma.isValid());
         final TimelineType timelineType = activity.getNote().getPublic().isFalse ? TimelineType.PRIVATE : TimelineType.HOME;
-        DataUpdater di = new DataUpdater(new CommandExecutionContext(
+        DataUpdater di = new DataUpdater(new CommandExecutionContext(origin.myContext,
                         CommandData.newTimelineCommand(CommandEnum.EMPTY, ma, timelineType)));
         di.onActivity(activity);
         checkActivityRecursively(activity, 1);
@@ -212,13 +211,13 @@ public class DemoNoteInserter {
 
         switch (activity.type) {
             case LIKE:
-                List<Actor> stargazers = MyQuery.getStargazers(MyContextHolder.get().getDatabase(), accountActor.origin, note.noteId);
+                List<Actor> stargazers = MyQuery.getStargazers(origin.myContext.getDatabase(), accountActor.origin, note.noteId);
                 boolean found = stargazers.stream().anyMatch(stargazer -> stargazer.actorId == actor.actorId);
                 assertTrue("Actor, who favorited, is not found among stargazers: " + activity
                         + "\nstargazers: " + stargazers, found);
                 break;
             case ANNOUNCE:
-                List<Actor> rebloggers = MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), accountActor.origin, note.noteId);
+                List<Actor> rebloggers = MyQuery.getRebloggers(origin.myContext.getDatabase(), accountActor.origin, note.noteId);
                 assertTrue("Reblogger is not found among rebloggers: " + activity
                         + "\nrebloggers: " + rebloggers, rebloggers.stream().anyMatch(a -> a.actorId == actor.actorId));
                 break;
@@ -254,7 +253,7 @@ public class DemoNoteInserter {
     static void deleteOldNote(@NonNull Origin origin, String noteOid) {
         long noteIdOld = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), noteOid);
         if (noteIdOld != 0) {
-            int deleted = MyProvider.deleteNote(MyContextHolder.get().context(), noteIdOld);
+            int deleted = MyProvider.deleteNote(origin.myContext.context(), noteIdOld);
             assertTrue( "Activities of Old note id=" + noteIdOld + " deleted: " + deleted, deleted > 0);
         }
     }

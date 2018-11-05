@@ -81,7 +81,7 @@ public class DemoAccountInserter {
                 accountName.getOrigin().getOriginType(), originType);
         long accountActorId_existing = MyQuery.oidToId(myContext, OidEnum.ACTOR_OID,
                 accountName.getOrigin().getId(), actorOid);
-        Actor actor = Actor.fromOriginAndActorOid(accountName.getOrigin(), actorOid);
+        Actor actor = Actor.fromOid(accountName.getOrigin(), actorOid);
         actor.setUsername(accountName.getUsername());
         actor.setAvatarUrl(avatarUrl);
         if (!actor.isWebFingerIdValid() && UrlUtils.hasHost(actor.origin.getUrl())) {

@@ -3,7 +3,6 @@ package org.andstatus.app.origin;
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.net.http.SslModeEnum;
@@ -49,7 +48,7 @@ public final class DemoOriginInserter {
                                                  String originName, String hostOrUrl, boolean isSsl,
                                                  SslModeEnum sslMode, boolean allowHtml,
                                                  boolean inCombinedGlobalSearch, boolean inCombinedPublicReload) {
-        Origin.Builder builder = new Origin.Builder(originType).setName(originName)
+        Origin.Builder builder = new Origin.Builder(myContext, originType).setName(originName)
                 .setHostOrUrl(hostOrUrl)
                 .setSsl(isSsl)
                 .setSslMode(sslMode)
@@ -65,8 +64,8 @@ public final class DemoOriginInserter {
         checkAttributes(origin, originName, hostOrUrl, isSsl, sslMode, allowHtml,
                 inCombinedGlobalSearch, inCombinedPublicReload);
 
-        MyContextHolder.get().origins().initialize();
-        Origin origin2 = MyContextHolder.get().origins().fromId(origin.getId());
+        myContext.origins().initialize();
+        Origin origin2 = myContext.origins().fromId(origin.getId());
         checkAttributes(origin2, originName, hostOrUrl, isSsl, sslMode, allowHtml,
                 inCombinedGlobalSearch, inCombinedPublicReload);
         return origin;
@@ -118,12 +117,12 @@ public final class DemoOriginInserter {
     }
 
     public void checkDefaultTimelinesForOrigins() {
-        for (Origin origin : MyContextHolder.get().origins().collection()) {
-            MyAccount myAccount = MyContextHolder.get().accounts().
+        for (Origin origin : myContext.origins().collection()) {
+            MyAccount myAccount = myContext.accounts().
                     getFirstSucceededForOrigin(origin);
             for (TimelineType timelineType : TimelineType.getDefaultOriginTimelineTypes()) {
                 int count = 0;
-                for (Timeline timeline : MyContextHolder.get().timelines().values()) {
+                for (Timeline timeline : myContext.timelines().values()) {
                     if (timeline.getOrigin().equals(origin) &&
                             timeline.getTimelineType().equals(timelineType) &&
                             timeline.getSearchQuery().isEmpty()) {
@@ -132,7 +131,7 @@ public final class DemoOriginInserter {
                 }
                 if (myAccount.isValid() && origin.getOriginType().isTimelineTypeSyncable(timelineType)) {
                     assertTrue("No " + timelineType + " at " + origin + "\n"
-                            + MyContextHolder.get().timelines().values(), count > 0);
+                            + myContext.timelines().values(), count > 0);
                 }
             }
         }

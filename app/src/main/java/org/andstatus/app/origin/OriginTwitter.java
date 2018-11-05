@@ -21,12 +21,17 @@ import android.support.annotation.StringRes;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.ActorInTimeline;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 
 class OriginTwitter extends Origin {
+
+    OriginTwitter(MyContext myContext, OriginType originType) {
+        super(myContext, originType);
+    }
 
     /**
      * In order to comply with Twitter's "Developer Display Requirements" 

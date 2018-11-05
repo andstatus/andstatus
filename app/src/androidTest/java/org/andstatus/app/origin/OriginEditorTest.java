@@ -88,8 +88,7 @@ public class OriginEditorTest extends ActivityTest<OriginEditor> {
             final String hostOrUrl, final boolean isSsl, final SslModeEnum sslMode, 
             final boolean allowHtml, final TriState mentionAsWebFingerId,
             final TriState useLegacyHttpProtocol,
-            final boolean inCombinedGlobalSearch, final boolean inCombinedPublicReload)
-            throws InterruptedException {
+            final boolean inCombinedGlobalSearch, final boolean inCombinedPublicReload) {
         final String method = "OriginEditorTest";
 
         final Origin originOld = MyContextHolder.get().origins().fromName(originName);
@@ -115,17 +114,15 @@ public class OriginEditorTest extends ActivityTest<OriginEditor> {
         getInstrumentation().waitForIdleSync();
         DbUtils.waitMs(method, 200);
 
-        final Button buttonSave = (Button) activity.findViewById(R.id.button_save);
-        final Spinner spinnerOriginType = (Spinner) activity.findViewById(R.id.origin_type);
-        final EditText editTextOriginName = (EditText) activity.findViewById(R.id.origin_name);
-        final EditText editTextHost = (EditText) activity.findViewById(R.id.host);
-        final CheckBox checkBoxIsSsl = (CheckBox) activity.findViewById(R.id.is_ssl);
-        final Spinner spinnerSslMode = (Spinner) activity.findViewById(R.id.ssl_mode);
-        final CheckBox checkBoxAllowHtml = (CheckBox) activity.findViewById(R.id.allow_html);
-        final Spinner spinnerMentionAsWebFingerId = (Spinner) activity
-                .findViewById(R.id.mention_as_webfingerid);
-        final Spinner spinnerUseLegacyHttpProtocol = (Spinner) activity
-                .findViewById(R.id.use_legacy_http_protocol);
+        final Button buttonSave = activity.findViewById(R.id.button_save);
+        final Spinner spinnerOriginType = activity.findViewById(R.id.origin_type);
+        final EditText editTextOriginName = activity.findViewById(R.id.origin_name);
+        final EditText editTextHost = activity.findViewById(R.id.host);
+        final CheckBox checkBoxIsSsl = activity.findViewById(R.id.is_ssl);
+        final Spinner spinnerSslMode = activity.findViewById(R.id.ssl_mode);
+        final CheckBox checkBoxAllowHtml = activity.findViewById(R.id.allow_html);
+        final Spinner spinnerMentionAsWebFingerId = activity.findViewById(R.id.mention_as_webfingerid);
+        final Spinner spinnerUseLegacyHttpProtocol = activity.findViewById(R.id.use_legacy_http_protocol);
 
         Runnable clicker = new Runnable() {
             @Override

@@ -19,6 +19,7 @@ package org.andstatus.app.origin;
 import android.content.Context;
 
 import org.andstatus.app.R;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.lang.SelectableEnum;
 import org.andstatus.app.net.http.HttpConnectionBasic;
 import org.andstatus.app.net.http.HttpConnectionEmpty;
@@ -36,6 +37,7 @@ import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
 import java.net.URL;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 public enum OriginType implements SelectableEnum {
@@ -87,7 +89,7 @@ public enum OriginType implements SelectableEnum {
 
     protected final boolean canSetUrlOfOrigin;
 
-    private final Class<? extends Origin> originClass;
+    public final Function<MyContext, Origin> originFactory;
     private final Class<? extends org.andstatus.app.net.social.Connection> connectionClass;
     private final Class<? extends org.andstatus.app.net.http.HttpConnection> httpConnectionClassOauth;
     private final Class<? extends org.andstatus.app.net.http.HttpConnection> httpConnectionClassBasic;
@@ -155,7 +157,7 @@ public enum OriginType implements SelectableEnum {
                 urlDefault = UrlUtils.fromString("https://api.twitter.com");
                 basicPath = "1.1";
                 oauthPath = OAUTH_PATH_DEFAULT;
-                originClass = OriginTwitter.class;
+                originFactory = myContext -> new OriginTwitter(myContext, this);
                 connectionClass = ConnectionTheTwitter.class;
                 httpConnectionClassOauth = HttpConnectionOAuthApache.class;
                 httpConnectionClassBasic = HttpConnectionBasic.class;
@@ -176,7 +178,7 @@ public enum OriginType implements SelectableEnum {
                 textLimitDefault = TEXT_LIMIT_MAXIMUM;
                 basicPath = BASIC_PATH_DEFAULT;
                 oauthPath = OAUTH_PATH_DEFAULT;
-                originClass = OriginPumpio.class;
+                originFactory = myContext -> new OriginPumpio(myContext, this);
                 connectionClass = ConnectionPumpio.class;
                 httpConnectionClassOauth = HttpConnectionOAuthJavaNet.class;
                 httpConnectionClassBasic = HttpConnectionEmpty.class;
@@ -199,7 +201,7 @@ public enum OriginType implements SelectableEnum {
                 canChangeSsl = true;
                 basicPath = BASIC_PATH_DEFAULT;
                 oauthPath = BASIC_PATH_DEFAULT;
-                originClass = OriginGnuSocial.class;
+                originFactory = myContext -> new OriginGnuSocial(myContext, this);
                 connectionClass = ConnectionTwitterGnuSocial.class;
                 httpConnectionClassOauth = HttpConnectionOAuthApache.class;
                 httpConnectionClassBasic = HttpConnectionBasic.class;
@@ -220,7 +222,7 @@ public enum OriginType implements SelectableEnum {
                 textLimitDefault = 500;
                 basicPath = "api/v1";
                 oauthPath = "oauth";
-                originClass = OriginMastodon.class;
+                originFactory = myContext -> new OriginMastodon(myContext, this);
                 connectionClass = ConnectionMastodon.class;
                 httpConnectionClassOauth = HttpConnectionOAuthMastodon.class;
                 httpConnectionClassBasic = HttpConnectionEmpty.class;
@@ -235,7 +237,7 @@ public enum OriginType implements SelectableEnum {
             default:
                 canSetUrlOfOrigin = false;
                 usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
-                originClass = Origin.class;
+                originFactory = myContext -> new Origin(myContext, this);
                 connectionClass = ConnectionEmpty.class;
                 httpConnectionClassOauth = HttpConnectionEmpty.class;
                 httpConnectionClassBasic = HttpConnectionEmpty.class;
@@ -248,10 +250,6 @@ public enum OriginType implements SelectableEnum {
         }
     }
 
-    public Class<? extends Origin> getOriginClass() {
-        return originClass;
-    }
-    
     public Class<? extends org.andstatus.app.net.social.Connection> getConnectionClass() {
         return connectionClass;
     }

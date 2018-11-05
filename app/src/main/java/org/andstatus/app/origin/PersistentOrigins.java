@@ -55,7 +55,7 @@ public class PersistentOrigins {
             cursor = db.rawQuery(sql, null);
             mOrigins.clear();
             while (cursor.moveToNext()) {
-                Origin origin = new Origin.Builder(cursor).build();
+                Origin origin = new Origin.Builder(myContext, cursor).build();
                 mOrigins.put(origin.name, origin);
             }
         } finally {

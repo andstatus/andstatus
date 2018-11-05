@@ -45,7 +45,7 @@ public class ActorTest {
                 + " Please take this into account\n@" + anotherUser2
                 + " @" + demoData.gnusocialTestAccount2Username
                 + " And let me mention: @" + shortUsername3;
-        List<Actor> actors = Actor.fromOriginAndActorOid(origin, "").extractActorsFromContent(body, Actor.EMPTY);
+        List<Actor> actors = Actor.newUnknown(origin).extractActorsFromContent(body, Actor.EMPTY);
         String msgLog = body + " ->\n" + actors;
         assertEquals(msgLog, 4, actors.size());
         assertEquals(msgLog, demoData.gnusocialTestAccountUsername, actors.get(0).getUsername());
@@ -66,7 +66,7 @@ public class ActorTest {
                 + " by @" + USERNAME1 + " @@" + SKIPPED_USERNAME2 + " @#" + SKIPPED_USERNAME3
                 + " &amp; @" + USERNAME4
                 + " https://t.co/djkdfeowefPh";
-        List<Actor> actors = Actor.fromOriginAndActorOid(origin, "").extractActorsFromContent(body, Actor.EMPTY);
+        List<Actor> actors = Actor.newUnknown(origin).extractActorsFromContent(body, Actor.EMPTY);
         String msgLog = body + " -> " + actors;
         assertEquals(msgLog, 2, actors.size());
         assertEquals(msgLog, USERNAME1, actors.get(0).getUsername());
@@ -100,13 +100,13 @@ public class ActorTest {
     @Test
     public void testEquals() {
         Origin origin = MyContextHolder.get().origins().fromId(18);
-        Actor actor1 = Actor.fromOriginAndActorOid(origin, "acct:fourthWithoutAvatar@pump.example.com");
+        Actor actor1 = Actor.fromOid(origin, "acct:fourthWithoutAvatar@pump.example.com");
         actor1.actorId = 11;
         actor1.setUsername("fourthWithoutAvatar@pump.example.com");
         actor1.setRealName("Real Fourth");
         actor1.setProfileUrl("http://pump.example.com/fourthWithoutAvatar");
 
-        Actor actor2 = Actor.fromOriginAndActorId(origin, 11);
+        Actor actor2 = Actor.fromId(origin, 11);
         actor2.setUsername("fourthWithoutAvatar@pump.example.com");
 
         assertEquals(actor1, actor2);
@@ -118,7 +118,7 @@ public class ActorTest {
     public void extractActorsFromContent() {
         String content = "<a href=\"https://loadaverage.org/andstatus\">AndStatus</a> started following" +
                 " <a href=\"https://gnusocial.no/mcscx2\">ex mcscx2@quitter.no</a>.";
-        List<Actor> actors = Actor.fromOriginAndActorOid(demoData.getConversationMyAccount().getOrigin(), "")
+        List<Actor> actors = Actor.newUnknown(demoData.getConversationMyAccount().getOrigin())
                 .extractActorsFromContent(content, Actor.EMPTY);
         assertEquals("Actors: " + actors, 1, actors.size());
         assertEquals("Actors: " + actors, "mcscx2@quitter.no", actors.get(0).getWebFingerId());

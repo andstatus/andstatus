@@ -27,7 +27,7 @@ import android.text.SpannableString;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
 
-import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
@@ -53,18 +53,17 @@ import java.util.regex.Pattern;
  */
 public class Origin implements Comparable<Origin>, IsEmpty {
     static final int TEXT_LIMIT_FOR_WEBFINGER_ID = 200;
-    public static final Origin EMPTY = newEmpty(OriginType.UNKNOWN);
+    public static final Origin EMPTY = fromType(MyContext.EMPTY, OriginType.UNKNOWN);
     private static final String VALID_NAME_CHARS = "a-zA-Z_0-9/.-";
     private static final Pattern VALID_NAME_PATTERN = Pattern.compile("[" + VALID_NAME_CHARS + "]+");
     private static final Pattern INVALID_NAME_PART_PATTERN = Pattern.compile("[^" + VALID_NAME_CHARS + "]+");
     private static final Pattern DOTS_PATTERN = Pattern.compile("[.]+");
 
-    private static final String TAG = Origin.class.getSimpleName();
-
     /** See {@link OriginType#shortUrlLengthDefault} */
     protected int shortUrlLength = 0;
 
-    private OriginType originType = OriginType.UNKNOWN;
+    public final MyContext myContext;
+    private final OriginType originType;
 
     @NonNull
     protected String name = "";
@@ -94,8 +93,9 @@ public class Origin implements Comparable<Origin>, IsEmpty {
     private TriState mMentionAsWebFingerId = TriState.UNKNOWN;
     private boolean isValid = false;
 
-    protected Origin() {
-        // Empty
+    Origin(MyContext myContext, OriginType originType) {
+        this.myContext = myContext;
+        this.originType = originType;
     }
     
     public OriginType getOriginType() {
@@ -302,7 +302,7 @@ public class Origin implements Comparable<Origin>, IsEmpty {
     public boolean hasChildren() {
         long count = 0;
         Cursor cursor = null;
-        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
             MyLog.v(this, "hasChildren; Database is null");
             return false;
@@ -334,16 +334,8 @@ public class Origin implements Comparable<Origin>, IsEmpty {
         return count != 0;
     }
 
-    private static Origin newEmpty(OriginType originType) {
-        Origin origin;
-        try {
-            origin = originType.getOriginClass().newInstance();
-            origin.originType = originType;
-        } catch (Exception e) {
-            MyLog.e(TAG, originType.getTitle(), e);
-            origin = new Origin();
-            origin.originType = OriginType.UNKNOWN;
-        }
+    private static Origin fromType(MyContext myContext, OriginType originType) {
+        Origin origin = originType.originFactory.apply(myContext);
         origin.url = origin.originType.getUrlDefault();
         origin.ssl = origin.originType.sslDefault;
         origin.allowHtml = origin.originType.allowHtmlDefault;
@@ -412,17 +404,17 @@ public class Origin implements Comparable<Origin>, IsEmpty {
             return saved;
         }
 
-        public Builder(OriginType originType) {
-            origin = newEmpty(originType);
+        public Builder(MyContext myContext, OriginType originType) {
+            origin = fromType(myContext, originType);
         }
 
         /**
          * Loading persistent Origin
          */
-        public Builder(Cursor cursor) {
+        public Builder(MyContext myContext, Cursor cursor) {
             OriginType originType1 = OriginType.fromId(
                     DbUtils.getLong(cursor, OriginTable.ORIGIN_TYPE_ID));
-            origin = newEmpty(originType1);
+            origin = fromType(myContext, originType1);
             origin.id = DbUtils.getLong(cursor, OriginTable._ID);
             origin.name = DbUtils.getString(cursor, OriginTable.ORIGIN_NAME);
             setHostOrUrl(DbUtils.getString(cursor, OriginTable.ORIGIN_URL));
@@ -453,7 +445,7 @@ public class Origin implements Comparable<Origin>, IsEmpty {
         }
         
         public Builder(Origin original) {
-            origin = newEmpty(original.originType);
+            origin = fromType(original.myContext, original.originType);
             origin.id = original.id;
             origin.name = original.name;
             setUrl(original.url);
@@ -567,7 +559,7 @@ public class Origin implements Comparable<Origin>, IsEmpty {
                 return this;
             }
             if (origin.id == 0) {
-                Origin existing = MyContextHolder.get().origins()
+                Origin existing = origin.myContext.origins()
                         .fromName(origin.getName());
                 if (existing.isPersistent()) {
                     if (origin.originType != existing.originType) {
@@ -594,13 +586,13 @@ public class Origin implements Comparable<Origin>, IsEmpty {
             if (origin.id == 0) {
                 values.put(OriginTable.ORIGIN_NAME, origin.name);
                 values.put(OriginTable.ORIGIN_TYPE_ID, origin.originType.getId());
-                origin.id = DbUtils.addRowWithRetry(MyContextHolder.get(), OriginTable.TABLE_NAME, values, 3);
+                origin.id = DbUtils.addRowWithRetry(getMyContext(), OriginTable.TABLE_NAME, values, 3);
                 changed = origin.isPersistent();
             } else {
-                changed = (DbUtils.updateRowWithRetry(MyContextHolder.get(), OriginTable.TABLE_NAME, origin.id,
+                changed = (DbUtils.updateRowWithRetry(getMyContext(), OriginTable.TABLE_NAME, origin.id,
                         values, 3) != 0);
             }
-            if (changed && MyContextHolder.get().isReady()) {
+            if (changed && getMyContext().isReady()) {
                 MyPreferences.onPreferencesChanged();
             }
             saved = changed;
@@ -610,7 +602,7 @@ public class Origin implements Comparable<Origin>, IsEmpty {
         public boolean delete() {
             boolean deleted = false;
             if (!origin.hasChildren()) {
-                SQLiteDatabase db = MyContextHolder.get().getDatabase();
+                SQLiteDatabase db = getMyContext().getDatabase();
                 if (db == null) {
                     MyLog.v(this, "delete; Database is null");
                     return false;
@@ -626,7 +618,11 @@ public class Origin implements Comparable<Origin>, IsEmpty {
             }
             return deleted;
         }
-        
+
+        public MyContext getMyContext() {
+            return origin.myContext;
+        }
+
         @Override
         public String toString() {
             return "Builder" + (isSaved() ? "saved " : " not") + " saved; " + origin.toString();

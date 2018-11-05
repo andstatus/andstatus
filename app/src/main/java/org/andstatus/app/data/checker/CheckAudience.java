@@ -70,8 +70,8 @@ class CheckAudience extends DataChecker {
             long insDate = DbUtils.getLong(cursor, NoteTable.INS_DATE);
             TriState isPublic = DbUtils.getTriState(cursor, NoteTable.PUBLIC);
             String content = DbUtils.getString(cursor, NoteTable.CONTENT);
-            Actor author = Actor.fromOriginAndActorId(origin, DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
-            Actor inReplyToActor = Actor.fromOriginAndActorId(origin, DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID));
+            Actor author = Actor.fromId(origin, DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
+            Actor inReplyToActor = Actor.fromId(origin, DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID));
 
             Audience audience = Audience.fromNoteId(origin, noteId, isPublic);
             audience.extractActorsFromContent(content, author, inReplyToActor);

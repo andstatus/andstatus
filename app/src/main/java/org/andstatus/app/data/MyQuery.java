@@ -323,7 +323,7 @@ public class MyQuery {
                     foundActors.add(actorId);
                     ActivityType activityType = ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
                     if (activityType.equals(typeToReturn)) {
-                        Actor actor = Actor.fromOriginAndActorId(origin, actorId);
+                        Actor actor = Actor.fromId(origin, actorId);
                         actor.setRealName(DbUtils.getString(cursor, ActorTable.ACTIVITY_ACTOR_NAME));
                         actor.setWebFingerId(DbUtils.getString(cursor, ActorTable.WEBFINGER_ID));
                         actors.add(actor);

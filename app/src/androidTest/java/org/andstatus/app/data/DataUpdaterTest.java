@@ -84,7 +84,7 @@ public class DataUpdaterTest {
         DataUpdater di = new DataUpdater(executionContext);
         String username = "somebody" + demoData.testRunUid + "@identi.ca";
         String actorOid = OriginPumpio.ACCOUNT_PREFIX + username;
-        Actor somebody = Actor.fromOriginAndActorOid(accountActor.origin, actorOid);
+        Actor somebody = Actor.fromOid(accountActor.origin, actorOid);
         somebody.setUsername(username);
         somebody.followedByMe = TriState.FALSE;
         somebody.setProfileUrl("http://identi.ca/somebody");
@@ -160,8 +160,7 @@ public class DataUpdaterTest {
         String noteOid = "https://pumpity.net/api/comment/sa23wdi78dhgjerdfddajDSQ-" + demoData.testRunUid;
 
         String username = "t131t@pumpity.net";
-        Actor author = Actor.fromOriginAndActorOid(accountActor.origin,
-                OriginPumpio.ACCOUNT_PREFIX + username);
+        Actor author = Actor.fromOid(accountActor.origin, OriginPumpio.ACCOUNT_PREFIX + username);
         author.setUsername(username);
 
         final String noteName = "For You only";
@@ -195,8 +194,7 @@ public class DataUpdaterTest {
         Actor accountActor = ma.getActor();
 
         String authorUsername = "anybody@pumpity.net";
-        Actor author = Actor.fromOriginAndActorOid(accountActor.origin,
-                OriginPumpio.ACCOUNT_PREFIX + authorUsername);
+        Actor author = Actor.fromOid(accountActor.origin, OriginPumpio.ACCOUNT_PREFIX + authorUsername);
         author.setUsername(authorUsername);
 
         AActivity activity = AActivity.newPartialNote(accountActor,
@@ -207,8 +205,7 @@ public class DataUpdaterTest {
         note.via = "SomeOtherClient";
 
         String otherUsername = "firstreader@identi.ca";
-        Actor otherActor = Actor.fromOriginAndActorOid(accountActor.origin,
-                OriginPumpio.ACCOUNT_PREFIX + otherUsername);
+        Actor otherActor = Actor.fromOid(accountActor.origin, OriginPumpio.ACCOUNT_PREFIX + otherUsername);
         otherActor.setUsername(otherUsername);
         AActivity likeActivity = AActivity.fromInner(otherActor, ActivityType.LIKE, activity);
 
@@ -284,8 +281,7 @@ public class DataUpdaterTest {
         Actor accountActor = ma.getActor();
 
         String authorUsername = "example@pumpity.net";
-        Actor author = Actor.fromOriginAndActorOid(accountActor.origin,
-                OriginPumpio.ACCOUNT_PREFIX + authorUsername);
+        Actor author = Actor.fromOid(accountActor.origin, OriginPumpio.ACCOUNT_PREFIX + authorUsername);
         author.setUsername(authorUsername);
 
         AActivity activity = AActivity.newPartialNote(accountActor, author,
@@ -298,7 +294,7 @@ public class DataUpdaterTest {
 
         String inReplyToOid = "https://identi.ca/api/comment/dfjklzdfSf28skdkfgloxWB" + iterationId  + demoData.testRunUid;
         AActivity inReplyTo = AActivity.newPartialNote(accountActor,
-                Actor.fromOriginAndActorOid(accountActor.origin,
+                Actor.fromOid(accountActor.origin,
                         "irtUser" +  iterationId + demoData.testRunUid)
                         .setUsername("irt" + authorUsername +  iterationId),
                 inReplyToOid, 0, DownloadStatus.UNKNOWN);
@@ -424,7 +420,7 @@ public class DataUpdaterTest {
         assertEquals("username stored", actor1.getUsername(),
                 MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1));
 
-        Actor actor1partial = Actor.fromOriginAndActorOid(actor1.origin, actor1.oid);
+        Actor actor1partial = Actor.fromOid(actor1.origin, actor1.oid);
         assertTrue("Partially defined", actor1partial.isPartiallyDefined());
         long actorId1partial = di.onActivity(accountActor.update(actor1partial)).getObjActor().actorId;
         assertEquals("Same Actor", actorId1, actorId1partial);
@@ -487,7 +483,7 @@ public class DataUpdaterTest {
                 MyQuery.actorIdToStringColumnValue(ActorTable.AVATAR_URL, id));
         assertEquals("profile URL", actor.getProfileUrl(),
                 MyQuery.actorIdToStringColumnValue(ActorTable.PROFILE_PAGE, id));
-        assertEquals("Endpoints", actor.endpoints, ActorEndpoints.load(myContext, id));
+        assertEquals("Endpoints", actor.endpoints, ActorEndpoints.from(myContext, id).initialize());
         assertEquals("Homepage", actor.getHomepage(),
                 MyQuery.actorIdToStringColumnValue(ActorTable.HOMEPAGE, id));
         assertEquals("WebFinger ID", actor.getWebFingerId(),
@@ -522,7 +518,7 @@ public class DataUpdaterTest {
         assertEquals("Actor has temp Oid", Actor.getTempOid(buddyUsername, ""), MyQuery.idToOid(OidEnum.ACTOR_OID, actorId1, 0));
 
         String realBuddyOid = "acc:" + buddyUsername;
-        Actor actor = Actor.fromOriginAndActorOid(ma.getOrigin(), realBuddyOid);
+        Actor actor = Actor.fromOid(ma.getOrigin(), realBuddyOid);
         actor.setUsername(buddyUsername);
         DataUpdater di = new DataUpdater(ma);
         long actorId2 = di.onActivity(ma.getActor().update(actor)).getObjActor().actorId;
@@ -544,7 +540,7 @@ public class DataUpdaterTest {
         DataUpdater di = new DataUpdater(ma);
         String username = "somebody" + demoData.testRunUid + "@somewhere.net";
         String actorOid = OriginPumpio.ACCOUNT_PREFIX + username;
-        Actor somebody = Actor.fromOriginAndActorOid(accountActor.origin, actorOid);
+        Actor somebody = Actor.fromOid(accountActor.origin, actorOid);
         somebody.setUsername(username);
         somebody.setProfileUrl("https://somewhere.net/" + username);
 
@@ -579,7 +575,7 @@ public class DataUpdaterTest {
         Actor accountActor = ma.getActor();
         MyAccount myMentionedAccount = demoData.getMyAccount(demoData.gnusocialTestAccount2Name);
         Actor myMentionedUser = myMentionedAccount.getActor().setUsername(myMentionedAccount.getUsername());
-        Actor author1 = Actor.fromOriginAndActorOid(accountActor.origin, "sam" + demoData.testRunUid);
+        Actor author1 = Actor.fromOid(accountActor.origin, "sam" + demoData.testRunUid);
         author1.setUsername("samBrook");
 
         AActivity activity1 = newLoadedNote(accountActor, author1,
@@ -602,14 +598,14 @@ public class DataUpdaterTest {
 
         Actor actorFromAnotherOrigin = demoData.getMyAccount(demoData.twitterTestAccountName).getActor();
         assertEquals(demoData.t131tUsername, actorFromAnotherOrigin.getUsername());
-        Actor myAuthor1 = Actor.fromOriginAndActorOid(accountActor.origin, actorFromAnotherOrigin.oid + "22");
+        Actor myAuthor1 = Actor.fromOid(accountActor.origin, actorFromAnotherOrigin.oid + "22");
         myAuthor1.setUsername(actorFromAnotherOrigin.getUsername());
         myAuthor1.setWebFingerId(actorFromAnotherOrigin.getWebFingerId());
         AActivity activity1 = newLoadedNote(accountActor, myAuthor1,
                 "My account's first note from another Social Network " + demoData.testRunUid);
         assertTrue("Activity should be added", di.onActivity(activity1).getId() != 0);
 
-        Actor author2 = Actor.fromOriginAndActorOid(accountActor.origin, "replier" + demoData.testRunUid);
+        Actor author2 = Actor.fromOid(accountActor.origin, "replier" + demoData.testRunUid);
         author2.setUsername("replier@anotherdoman.com");
         AActivity activity2 = newLoadedNote(accountActor, author2,
                 "@" + demoData.t131tUsername + " Replying to my user from another instance");

@@ -74,7 +74,7 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
     }
 
     public Actor addActorIdToList(Origin origin, long actorId) {
-        return actorId == 0 ? Actor.EMPTY : addActorToList(Actor.fromOriginAndActorId(origin, actorId));
+        return actorId == 0 ? Actor.EMPTY : addActorToList(Actor.fromId(origin, actorId));
     }
 
     public Actor addActorToList(Actor actor) {

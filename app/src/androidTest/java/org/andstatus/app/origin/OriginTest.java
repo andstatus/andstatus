@@ -147,7 +147,7 @@ public class OriginTest {
     }
     
     private void checkOneName(String out, String in) {
-        assertEquals(out, new Origin.Builder(OriginType.GNUSOCIAL).setName(in).build().getName());
+        assertEquals(out, new Origin.Builder(MyContextHolder.get(), OriginType.GNUSOCIAL).setName(in).build().getName());
     }
 
     @Test
@@ -157,7 +157,7 @@ public class OriginTest {
     }
     
     private void checkOneHost(String out, String in, boolean ssl) {
-        assertEquals(out, new Origin.Builder(OriginType.GNUSOCIAL).setHostOrUrl(in).setSsl(ssl).build().getUrl().toExternalForm());
+        assertEquals(out, new Origin.Builder(MyContextHolder.get(), OriginType.GNUSOCIAL).setHostOrUrl(in).setSsl(ssl).build().getUrl().toExternalForm());
     }
 
     @Test

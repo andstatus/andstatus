@@ -300,7 +300,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         if (StringUtils.isEmpty(oid) || StringUtils.isEmpty(username)) {
             throw ConnectionException.loggedJsonException(this, "Id or username is empty", null, jso);
         }
-        Actor actor = Actor.fromOriginAndActorOid(data.getOrigin(), oid);
+        Actor actor = Actor.fromOid(data.getOrigin(), oid);
         actor.setUsername(username);
         actor.setRealName(jso.optString("display_name"));
         actor.setWebFingerId(jso.optString("acct"));
@@ -367,7 +367,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 if (!SharedPreferencesUtil.isEmpty(inReplyToNoteOid)) {
                     // Construct Related note from available info
                     AActivity inReplyTo = AActivity.newPartialNote(data.getAccountActor(),
-                            Actor.fromOriginAndActorOid(data.getOrigin(), inReplyToActorOid), inReplyToNoteOid);
+                            Actor.fromOid(data.getOrigin(), inReplyToActorOid), inReplyToNoteOid);
                     note.setInReplyTo(inReplyTo);
                 }
             }
@@ -424,7 +424,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     public AActivity follow(String actorOid, Boolean follow) throws ConnectionException {
         JSONObject relationship = postRequest(getApiPathWithActorId(follow ? ApiRoutineEnum.FOLLOW :
                 ApiRoutineEnum.UNDO_FOLLOW, actorOid), new JSONObject());
-        Actor friend = Actor.fromOriginAndActorOid(data.getOrigin(), actorOid);
+        Actor friend = Actor.fromOid(data.getOrigin(), actorOid);
         if (relationship == null || relationship.isNull("following")) {
             return AActivity.EMPTY;
         }

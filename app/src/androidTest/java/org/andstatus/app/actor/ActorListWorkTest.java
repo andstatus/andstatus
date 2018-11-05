@@ -54,7 +54,7 @@ public class ActorListWorkTest extends ActivityTest<ActorList> {
         assertTrue(ma.isValid());
         MyContextHolder.get().accounts().setCurrentAccount(ma);
 
-        long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, demoData.getConversationOriginId(),
+        long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, demoData.getConversationOrigin().getId(),
                 demoData.conversationMentionsNoteOid);
         assertTrue(noteId > 0);
         MyLog.i(this, "setUp ended");

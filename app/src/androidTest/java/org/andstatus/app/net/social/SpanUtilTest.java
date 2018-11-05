@@ -227,7 +227,7 @@ public class SpanUtilTest {
     }
 
     private void addRecipient(MyAccount ma, Audience audience, String username, String actorOid) {
-        final Actor actor1 = Actor.fromOriginAndActorOid(ma.getOrigin(), actorOid);
+        final Actor actor1 = Actor.fromOid(ma.getOrigin(), actorOid);
         actor1.setUsername(username);
         audience.add(actor1);
     }

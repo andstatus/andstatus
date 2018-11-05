@@ -19,7 +19,6 @@ package org.andstatus.app.note;
 import android.content.Intent;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DemoNoteInserter;
 import org.andstatus.app.data.DownloadStatus;
@@ -33,6 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -40,14 +40,19 @@ public class NoteShareTest {
 
     @Before
     public void setUp() throws Exception {
-        TestSuite.initializeWithData(this);
+        TestSuite.initializeWithAccounts(this);
     }
 
     @Test
-    public void testShareHtml() throws Exception {
+    public void testShareHtml() {
+        boolean isHtmlContentAllowedStored = demoData.getConversationOrigin().isHtmlContentAllowed();
         new HtmlContentInserter().insertHtml();
-        
-        Origin origin = MyContextHolder.get().origins().fromName(demoData.conversationOriginName);
+        setHtmlContentAllowed(!isHtmlContentAllowedStored);
+        new HtmlContentInserter().insertHtml();
+        setHtmlContentAllowed(isHtmlContentAllowedStored);
+
+        Origin origin = demoData.getConversationOrigin();
+
         assertTrue(demoData.conversationOriginName + " exists", origin != null);
         long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), demoData.htmlNoteOid);
         assertTrue("origin=" + origin.getId() + "; oid=" + demoData.htmlNoteOid, noteId != 0);
@@ -74,10 +79,16 @@ public class NoteShareTest {
         NoteShare noteShare = new NoteShare(myAccount.getOrigin(), activity.getNote().noteId, null);
         Intent intent = noteShare.intentToViewAndShare(true);
         assertTrue(intent.getExtras().containsKey(Intent.EXTRA_TEXT));
-        assertTrue(
-                intent.getStringExtra(Intent.EXTRA_TEXT),
-                intent.getStringExtra(Intent.EXTRA_TEXT).contains(body));
+        assertTrue(intent.getStringExtra(Intent.EXTRA_TEXT), intent.getStringExtra(Intent.EXTRA_TEXT).contains(body));
         assertFalse(intent.getExtras().containsKey(Intent.EXTRA_HTML_TEXT));
         demoData.assertConversations();
     }
+
+    private void setHtmlContentAllowed(boolean allowed) {
+        new Origin.Builder(demoData.getConversationOrigin()).setHtmlContentAllowed(allowed).save();
+        TestSuite.forget();
+        TestSuite.initialize(this);
+        assertEquals(allowed, demoData.getConversationOrigin().isHtmlContentAllowed());
+    }
+
 }

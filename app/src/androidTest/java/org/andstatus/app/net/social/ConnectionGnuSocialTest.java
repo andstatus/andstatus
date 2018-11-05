@@ -236,7 +236,7 @@ public class ConnectionGnuSocialTest {
     private AActivity getFavoritingActivity(String favoritingOid, String favoritingContent, String likedContent) {
         Actor accountActor = demoData.getAccountActorByOid(demoData.gnusocialTestAccountActorOid);
         String actorOid = favoritingOid + "1";
-        Actor actor = Actor.fromOriginAndActorOid(accountActor.origin, actorOid);
+        Actor actor = Actor.fromOid(accountActor.origin, actorOid);
         long favoritingUpdateDate = System.currentTimeMillis() - 1000000;
         AActivity activityIn = AActivity.newPartialNote(accountActor, actor, favoritingOid, favoritingUpdateDate,
                 DownloadStatus.LOADED);

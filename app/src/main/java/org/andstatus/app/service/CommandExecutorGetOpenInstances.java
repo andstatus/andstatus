@@ -53,7 +53,7 @@ public class CommandExecutorGetOpenInstances extends CommandExecutorStrategy {
             List<Origin> newOrigins = new ArrayList<>();
             for (Server mbOrigin : result) {
                 execContext.getResult().incrementDownloadedCount();
-                Origin origin = new Origin.Builder(execOrigin.getOriginType()).setName(mbOrigin.name)
+                Origin origin = new Origin.Builder(execContext.myContext, execOrigin.getOriginType()).setName(mbOrigin.name)
                         .setHostOrUrl(mbOrigin.urlString)
                         .build();
                 if (origin.isValid()

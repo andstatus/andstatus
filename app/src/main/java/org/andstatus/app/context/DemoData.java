@@ -28,6 +28,7 @@ import org.andstatus.app.data.DemoGnuSocialConversationInserter;
 import org.andstatus.app.data.checker.CheckConversations;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.DemoOriginInserter;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginPumpio;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.os.AsyncTaskLauncher;
@@ -304,8 +305,8 @@ public final class DemoData {
         return Actor.EMPTY;
     }
 
-    public long getConversationOriginId() {
-        return getConversationMyAccount().getOriginId();
+    public Origin getConversationOrigin() {
+        return getConversationMyAccount().getOrigin();
     }
 
     public static void crashTest(BooleanSupplier supplier) {

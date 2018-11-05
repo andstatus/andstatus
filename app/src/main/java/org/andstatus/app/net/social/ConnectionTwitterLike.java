@@ -301,7 +301,7 @@ public abstract class ConnectionTwitterLike extends Connection {
                     senderOid = jso.optString("from_user_id");
                 }
                 if (!SharedPreferencesUtil.isEmpty(senderOid)) {
-                    author = Actor.fromOriginAndActorOid(data.getOrigin(), senderOid);
+                    author = Actor.fromOid(data.getOrigin(), senderOid);
                     author.setUsername(senderName);
                 }
             }
@@ -338,7 +338,7 @@ public abstract class ConnectionTwitterLike extends Connection {
                 }
                 if (!SharedPreferencesUtil.isEmpty(inReplyToNoteOid)) {
                     // Construct Related note from available info
-                    Actor inReplyToActor = Actor.fromOriginAndActorOid(data.getOrigin(), inReplyToActorOid);
+                    Actor inReplyToActor = Actor.fromOid(data.getOrigin(), inReplyToActorOid);
                     if (jso.has("in_reply_to_screen_name")) {
                         inReplyToActor.setUsername(jso.getString("in_reply_to_screen_name"));
                     }
@@ -387,7 +387,7 @@ public abstract class ConnectionTwitterLike extends Connection {
                 username = "";
             }
         }
-        Actor actor = Actor.fromOriginAndActorOid(data.getOrigin(), oid);
+        Actor actor = Actor.fromOid(data.getOrigin(), oid);
         actor.setUsername(username);
         actor.setRealName(jso.optString("name"));
         if (!SharedPreferencesUtil.isEmpty(actor.getRealName())) {

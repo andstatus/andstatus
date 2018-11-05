@@ -21,7 +21,6 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.ActorSql;
 import org.andstatus.app.data.AvatarFile;
@@ -50,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -62,8 +60,9 @@ import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
  * @author yvolk@yurivolkov.com
  */
 public class Actor implements Comparable<Actor>, IsEmpty {
-    public static final Actor EMPTY = new Actor(Origin.EMPTY, "").setUsername("Empty");
-    public static final Actor PUBLIC = new Actor(Origin.EMPTY, "https://www.w3.org/ns/activitystreams#Public").setUsername("Public");
+    public static final Actor EMPTY = newUnknown(Origin.EMPTY).setUsername("Empty");
+    public static final Actor PUBLIC = fromOid(Origin.EMPTY,
+            "https://www.w3.org/ns/activitystreams#Public").setUsername("Public");
 
     @NonNull
     public final String oid;
@@ -79,7 +78,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     private Uri profileUri = Uri.EMPTY;
     private String homepage = "";
     private Uri avatarUri = Uri.EMPTY;
-    public final ActorEndpoints endpoints = new ActorEndpoints(new ConcurrentHashMap<>());
+    public final ActorEndpoints endpoints;
 
     public long notesCount = 0;
     public long favoritesCount = 0;
@@ -103,11 +102,6 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     public User user = User.EMPTY;
 
     private volatile TriState isPartiallyDefined = TriState.UNKNOWN;
-
-    @NonNull
-    public static Actor fromOriginAndActorOid(@NonNull Origin origin, String actorOid) {
-        return new Actor(origin, actorOid);
-    }
 
     @NonNull
     public static Actor getEmpty() {
@@ -144,8 +138,8 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     @NonNull
     public static Actor fromCursor(MyContext myContext, Cursor cursor) {
         final long updatedDate = DbUtils.getLong(cursor, ActorTable.UPDATED_DATE);
-        Actor actor = Actor.fromOriginAndActorId(
-                    myContext.origins().fromId(DbUtils.getLong(cursor, ActorTable.ORIGIN_ID)),
+        Actor actor = Actor.fromTwoIds(
+                myContext.origins().fromId(DbUtils.getLong(cursor, ActorTable.ORIGIN_ID)),
                     DbUtils.getLong(cursor, ActorTable.ACTOR_ID),
                     DbUtils.getString(cursor, ActorTable.ACTOR_OID));
         actor.setRealName(DbUtils.getString(cursor, ActorTable.REAL_NAME));
@@ -177,19 +171,27 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return cachedActor;
     }
 
-    public static Actor fromOriginAndActorId(@NonNull Origin origin, long actorId) {
-        return fromOriginAndActorId(origin, actorId, "");
+    public static Actor newUnknown(@NonNull Origin origin) {
+        return fromTwoIds(origin, 0, "");
     }
 
-    public static Actor fromOriginAndActorId(@NonNull Origin origin, long actorId, String actorOid) {
-        Actor actor = new Actor(origin, actorOid);
-        actor.actorId = actorId;
-        return actor;
+    public static Actor fromId(@NonNull Origin origin, long actorId) {
+        return fromTwoIds(origin, actorId, "");
     }
 
-    private Actor(@NonNull Origin origin, String actorOid) {
+    public static Actor fromOid(@NonNull Origin origin, String actorOid) {
+        return fromTwoIds(origin, 0, actorOid);
+    }
+
+    public static Actor fromTwoIds(@NonNull Origin origin, long actorId, String actorOid) {
+        return new Actor(origin, actorId, actorOid);
+    }
+
+    private Actor(@NonNull Origin origin, long actorId, String actorOid) {
         this.origin = origin;
+        this.actorId = actorId;
         this.oid = StringUtils.isEmpty(actorOid) ? "" : actorOid;
+        endpoints = ActorEndpoints.from(origin.myContext, actorId);
     }
 
     /** this Actor is MyAccount and the Actor updates objActor */
@@ -416,9 +418,9 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     /** Lookup the application's id from other IDs */
-    public void lookupActorId(@NonNull MyContext myContext) {
+    public void lookupActorId() {
         if (actorId == 0 && isOidReal()) {
-            actorId = MyQuery.oidToId(myContext, OidEnum.ACTOR_OID, origin.getId(), oid);
+            actorId = MyQuery.oidToId(origin.myContext, OidEnum.ACTOR_OID, origin.getId(), oid);
         }
         if (actorId == 0 && isWebFingerIdValid()) {
             actorId = MyQuery.webFingerIdToId(origin.getId(), webFingerId);
@@ -427,10 +429,10 @@ public class Actor implements Comparable<Actor>, IsEmpty {
             actorId = MyQuery.usernameToId(origin.getId(), username);
         }
         if (actorId == 0) {
-            actorId = MyQuery.oidToId(myContext, OidEnum.ACTOR_OID, origin.getId(), getTempOid());
+            actorId = MyQuery.oidToId(origin.myContext, OidEnum.ACTOR_OID, origin.getId(), getTempOid());
         }
         if (actorId == 0 && hasAltTempOid()) {
-            actorId = MyQuery.oidToId(myContext, OidEnum.ACTOR_OID, origin.getId(), getAltTempOid());
+            actorId = MyQuery.oidToId(origin.myContext, OidEnum.ACTOR_OID, origin.getId(), getAltTempOid());
         }
     }
 
@@ -488,7 +490,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     private Actor withValidUsernameAndWebfingerId() {
         return (isWebFingerIdValid && isUsernameValid()) || actorId == 0
             ? this
-            : Actor.load(MyContextHolder.get(), actorId);
+            : Actor.load(origin.myContext, actorId);
     }
 
     public boolean isUsernameValid() {
@@ -519,7 +521,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     private void addExtractedActor(List<Actor> actors, String webFingerId, String validUsername, Actor inReplyToActor) {
-        Actor actor = Actor.fromOriginAndActorOid(origin, "");
+        Actor actor = Actor.newUnknown(origin);
         if (Actor.isWebFingerIdValid(webFingerId)) {
             actor.setWebFingerId(webFingerId);
             actor.setUsername(validUsername);
@@ -545,7 +547,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
                 actor.setUsername(validUsername);
             }
         }
-        actor.lookupActorId(MyContextHolder.get());
+        actor.lookupActorId();
         if (!actors.contains(actor)) {
             actors.add(actor);
         }
@@ -673,16 +675,16 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         }
     }
 
-    public Actor lookupUser(MyContext myContext) {
-        return myContext.users().lookupUser(this);
+    public Actor lookupUser() {
+        return origin.myContext.users().lookupUser(this);
     }
 
-    public void saveUser(MyContext myContext) {
-        if (user.isMyUser().unknown && myContext.users().isMe(this)) {
+    public void saveUser() {
+        if (user.isMyUser().unknown && origin.myContext.users().isMe(this)) {
             user.setIsMyUser(TriState.TRUE);
         }
         if (user.userId == 0) user.setKnownAs(getNamePreferablyWebFingerId());
-        user.save(myContext);
+        user.save(origin.myContext);
     }
 
     public boolean hasAvatar() {

@@ -32,12 +32,30 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ActorEndpoints {
-    private final Map<ActorEndpointType, List<Uri>> map;
+    public enum State {
+        EMPTY,
+        ADDING,
+        LAZYLOAD,
+        LOADED
+    }
+    private final AtomicBoolean initialized = new AtomicBoolean();
+    private final MyContext myContext;
+    private final long actorId;
+    private final AtomicReference<State> state;
+    private volatile Map<ActorEndpointType, List<Uri>> map = Collections.emptyMap();
 
-    public ActorEndpoints(Map<ActorEndpointType, List<Uri>> map) {
-        this.map = map;
+    public static ActorEndpoints from(MyContext myContext, long actorId) {
+        return new ActorEndpoints(myContext, actorId);
+    }
+
+    private ActorEndpoints(MyContext myContext, long actorId) {
+        this.myContext = myContext;
+        this.actorId = actorId;
+        this.state = new AtomicReference<>(actorId == 0 ? State.EMPTY : State.LAZYLOAD);
     }
 
     public ActorEndpoints add(ActorEndpointType type, String value) {
@@ -45,7 +63,9 @@ public class ActorEndpoints {
     }
 
     public ActorEndpoints add(ActorEndpointType type, Uri uri) {
-        add(map, type, uri);
+        if (initialize().state.get() == State.ADDING) {
+            add(map, type, uri);
+        }
         return this;
     }
 
@@ -67,7 +87,22 @@ public class ActorEndpoints {
     }
 
     public Uri getFirst(ActorEndpointType type) {
-        return map.getOrDefault(type, Collections.emptyList()).stream().findFirst().orElse(Uri.EMPTY);
+        return initialize().map.getOrDefault(type, Collections.emptyList()).stream().findFirst().orElse(Uri.EMPTY);
+    }
+
+    public ActorEndpoints initialize() {
+        while (state.get() == State.EMPTY) {
+            if (initialized.compareAndSet(false, true)) {
+                map = new ConcurrentHashMap<>();
+                state.set(State.ADDING);
+            }
+        }
+        while (state.get() == State.LAZYLOAD && myContext.isReady()) {
+            if (initialized.compareAndSet(false, true)) {
+                return load();
+            }
+        }
+        return this;
     }
 
     @Override
@@ -75,11 +110,7 @@ public class ActorEndpoints {
         return map.toString();
     }
 
-    public static ActorEndpoints load(MyContext myContext, Actor actor) {
-        return load(myContext, actor.actorId);
-    }
-
-    public static ActorEndpoints load(MyContext myContext, long actorId) {
+    private ActorEndpoints load() {
         Map<ActorEndpointType, List<Uri>> map = new ConcurrentHashMap<>();
         String sql = "SELECT " + ActorEndpointTable.ENDPOINT_TYPE +
                 "," + ActorEndpointTable.ENDPOINT_INDEX +
@@ -91,20 +122,18 @@ public class ActorEndpoints {
         MyQuery.foldLeft(myContext, sql, map, m -> cursor ->
             add(m, ActorEndpointType.fromId(DbUtils.getLong(cursor, ActorEndpointTable.ENDPOINT_TYPE)),
                     UriUtils.fromString(DbUtils.getString(cursor, ActorEndpointTable.ENDPOINT_URI))));
-        return new ActorEndpoints(map);
+        this.map = Collections.unmodifiableMap(map);
+        state.set(State.LOADED);
+        return this;
     }
 
-    public void save(MyContext myContext, Actor actor) {
-        save(myContext, actor.actorId);
-    }
+    public void save(long actorId) {
+        if (actorId == 0 || !state.compareAndSet(State.ADDING, State.LOADED)) return;
 
-    public void save(MyContext myContext, long actorId) {
-        ActorEndpoints endpointsOld = load(myContext, actorId);
-        if (actorId == 0 || map.equals(endpointsOld.map)) return;
+        ActorEndpoints old = ActorEndpoints.from(myContext, actorId).initialize();
+        if (this.equals(old)) return;
 
         MyProvider.delete(myContext, ActorEndpointTable.TABLE_NAME, ActorEndpointTable.ACTOR_ID, actorId);
-        if (map.isEmpty()) return;
-
         map.forEach((key, value) -> {
             long index = 0;
             for (Uri uri : value) {

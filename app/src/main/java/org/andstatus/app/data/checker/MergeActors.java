@@ -77,7 +77,7 @@ class MergeActors extends DataChecker {
             Actor prev = null;
             while (c.moveToNext()) {
                 rowsCount++;
-                Actor actor = Actor.fromOriginAndActorOid(myContext.origins().fromId(c.getLong(1)),
+                Actor actor = Actor.fromOid(myContext.origins().fromId(c.getLong(1)),
                         c.getString(2));
                 actor.actorId = c.getLong(0);
                 actor.setWebFingerId(c.getString(3));

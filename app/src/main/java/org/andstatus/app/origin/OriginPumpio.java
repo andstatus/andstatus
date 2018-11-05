@@ -19,9 +19,14 @@ package org.andstatus.app.origin;
 import android.support.annotation.StringRes;
 
 import org.andstatus.app.R;
+import org.andstatus.app.context.MyContext;
 
 public class OriginPumpio extends Origin {
     public static final String ACCOUNT_PREFIX = "acct:";
+
+    OriginPumpio(MyContext myContext, OriginType originType) {
+        super(myContext, originType);
+    }
 
     @Override
     public int alternativeTermForResourceId(@StringRes int resId) {

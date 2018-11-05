@@ -16,6 +16,7 @@
 
 package org.andstatus.app.origin;
 
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.util.MyLog;
@@ -24,6 +25,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 class OriginGnuSocial extends Origin {
+
+    OriginGnuSocial(MyContext myContext, OriginType originType) {
+        super(myContext, originType);
+    }
 
     @Override
     protected String alternativeNotePermalink(long noteId) {

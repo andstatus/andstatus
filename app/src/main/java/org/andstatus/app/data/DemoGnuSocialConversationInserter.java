@@ -163,7 +163,7 @@ public class DemoGnuSocialConversationInserter {
 
     private Actor actorFromOidAndAvatar(String actorOid, @Nullable String avatarUrl) {
         String username = "actor" + actorOid;
-        Actor actor = Actor.fromOriginAndActorOid(origin, actorOid);
+        Actor actor = Actor.fromOid(origin, actorOid);
         actor.setUsername(username);
         if (avatarUrl != null) {
             actor.setAvatarUrl(avatarUrl);

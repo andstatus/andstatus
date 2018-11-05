@@ -274,7 +274,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             boolean ok = true;
 
             if (isPersistent() && myAccount.actor.actorId != 0) {
-                // TODO: Delete databases for this Account
+                // TODO: Delete data for this Account ?!
                 myAccount.actor.actorId = 0;
             }
             setAndroidAccountDeleted();
@@ -425,8 +425,8 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
 
             if (ok) {
                 setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
-                actor.lookupActorId(myContext);
-                actor.lookupUser(myContext);
+                actor.lookupActorId();
+                actor.lookupUser();
                 actor.user.setIsMyUser(TriState.TRUE);
                 actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
                 myAccount.actor = actor;
@@ -720,9 +720,9 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         this.accountData = accountData;
         oAccountName = accountName;
         actor = Actor.load(myContext, accountData.getDataLong(KEY_ACTOR_ID, 0L), false, () ->
-            Actor.fromOriginAndActorOid(accountName.getOrigin(), accountData.getDataString(KEY_ACTOR_OID, ""))
+            Actor.fromOid(accountName.getOrigin(), accountData.getDataString(KEY_ACTOR_OID, ""))
                 .setUsername(oAccountName.getUsername())
-                .lookupUser(myContext)
+                .lookupUser()
         );
         this.version = accountData.getDataInt(KEY_VERSION, ACCOUNT_VERSION);
 

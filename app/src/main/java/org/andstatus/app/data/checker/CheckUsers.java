@@ -96,7 +96,7 @@ class CheckUsers extends DataChecker {
             Set<Actor> actors = new HashSet<>();
             while (c.moveToNext()) {
                 rowsCount++;
-                final Actor actor = Actor.fromOriginAndActorId(
+                final Actor actor = Actor.fromTwoIds(
                         myContext.origins().fromId(DbUtils.getLong(c, ActorTable.ORIGIN_ID)),
                         DbUtils.getLong(c, ActorTable._ID),
                         DbUtils.getString(c, ActorTable.ACTOR_OID)

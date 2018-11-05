@@ -344,10 +344,10 @@ public class AActivity extends AObject {
 
         activity.id = DbUtils.getLong(cursor, ActivityTable._ID);
         activity.timelinePosition = new TimelinePosition(DbUtils.getString(cursor, ActivityTable.ACTIVITY_OID));
-        activity.actor = Actor.fromOriginAndActorId(activity.accountActor.origin,
+        activity.actor = Actor.fromId(activity.accountActor.origin,
                 DbUtils.getLong(cursor, ActivityTable.ACTOR_ID));
         activity.note = Note.fromOriginAndOid(activity.accountActor.origin, "", DownloadStatus.UNKNOWN);
-        activity.objActor = Actor.fromOriginAndActorId(activity.accountActor.origin,
+        activity.objActor = Actor.fromId(activity.accountActor.origin,
                 DbUtils.getLong(cursor, ActivityTable.OBJ_ACTOR_ID));
         activity.aActivity = AActivity.from(activity.accountActor, ActivityType.EMPTY);
         activity.aActivity.id =  DbUtils.getLong(cursor, ActivityTable.OBJ_ACTIVITY_ID);
@@ -356,7 +356,7 @@ public class AActivity extends AObject {
         activity.interactionEventType = NotificationEventType.fromId(
                 DbUtils.getLong(cursor, ActivityTable.INTERACTION_EVENT));
         activity.notified = DbUtils.getTriState(cursor, ActivityTable.NOTIFIED);
-        activity.notifiedActor = Actor.fromOriginAndActorId(activity.accountActor.origin,
+        activity.notifiedActor = Actor.fromId(activity.accountActor.origin,
                 DbUtils.getLong(cursor, ActivityTable.NOTIFIED_ACTOR_ID));
         activity.newNotificationEventType = NotificationEventType.fromId(
                 DbUtils.getLong(cursor, ActivityTable.NEW_NOTIFICATION_EVENT));

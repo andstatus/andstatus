@@ -141,7 +141,7 @@ public class ConnectionPumpio extends Connection {
             return Actor.EMPTY;
         }
         String oid = jso.optString("id");
-        Actor actor = Actor.fromOriginAndActorOid(data.getOrigin(), oid);
+        Actor actor = Actor.fromOid(data.getOrigin(), oid);
         actor.setUsername(actorOidToUsername(oid));
         actor.setRealName(jso.optString(NAME_PROPERTY));
         actor.setAvatarUrl(JsonUtils.optStringInside(jso, "image", "url"));

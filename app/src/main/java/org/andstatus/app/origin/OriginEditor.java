@@ -53,7 +53,7 @@ import org.andstatus.app.util.UrlUtils;
  * @author yvolk@yurivolkov.com
  */
 public class OriginEditor extends MyActivity {
-    private Origin.Builder builder = new Origin.Builder(OriginType.GNUSOCIAL);
+    private Origin.Builder builder;
 
     private Button buttonSave;
     private Button buttonDelete;
@@ -70,23 +70,19 @@ public class OriginEditor extends MyActivity {
     protected void onCreate(Bundle savedInstanceState) {
         MyServiceManager.setServiceUnavailable();
 
+        builder = new Origin.Builder(MyContextHolder.get(), OriginType.GNUSOCIAL);
         mLayoutId = R.layout.origin_editor;
         super.onCreate(savedInstanceState);
 
         buttonSave = (Button) findViewById(R.id.button_save);
         Button buttonDiscard = (Button) findViewById(R.id.button_discard);
-        buttonDiscard.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        buttonDiscard.setOnClickListener(v -> finish());
         buttonDelete = (Button) findViewById(R.id.button_delete);
         buttonDelete.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (builder.delete()) {
-                    MyContextHolder.get().origins().initialize();
+                    builder.getMyContext().origins().initialize();
                     setResult(RESULT_OK);
                     finish();
                 }
@@ -116,7 +112,7 @@ public class OriginEditor extends MyActivity {
                 builder = new Origin.Builder(origin);
             } else {
                 OriginType originType = OriginType.fromCode(intentNew.getStringExtra(IntentExtra.ORIGIN_TYPE.key));
-                builder = new Origin.Builder(OriginType.UNKNOWN.equals(originType) ? OriginType.GNUSOCIAL : originType);
+                builder = new Origin.Builder(MyContextHolder.get(), OriginType.UNKNOWN.equals(originType) ? OriginType.GNUSOCIAL : originType);
                 if (!OriginType.UNKNOWN.equals(originType)) {
                     spinnerOriginType.setEnabled(false);
                 }
@@ -214,7 +210,7 @@ public class OriginEditor extends MyActivity {
     void originNameFromHost() {
         if (TextUtils.isEmpty(editTextOriginName.getText())) {
             Origin origin = new Origin.Builder(
-                    originTypes.get(spinnerOriginType.getSelectedItemPosition()))
+                    builder.getMyContext(), originTypes.get(spinnerOriginType.getSelectedItemPosition()))
                     .setHostOrUrl(editTextHost.getText().toString()).build();
             if (origin.getUrl() != null) {
                 editTextOriginName.setText(origin.getUrl().getHost());
@@ -240,7 +236,7 @@ public class OriginEditor extends MyActivity {
         @Override
         public void onClick(View v) {
             originNameFromHost();
-            builder = new Origin.Builder(originTypes.get(spinnerOriginType.getSelectedItemPosition()))
+            builder = new Origin.Builder(builder.getMyContext(), originTypes.get(spinnerOriginType.getSelectedItemPosition()))
                     .setName(editTextOriginName.getText().toString());
             saveOthers();
         }
@@ -267,7 +263,7 @@ public class OriginEditor extends MyActivity {
                 .save();
         MyLog.v(this, () -> (builder.isSaved() ? "Saved" : "Not saved") + ": " + builder.build().toString());
         if (builder.isSaved()) {
-            MyContextHolder.get().origins().initialize();
+            builder.getMyContext().origins().initialize();
             setResult(RESULT_OK);
             finish();
         } else {

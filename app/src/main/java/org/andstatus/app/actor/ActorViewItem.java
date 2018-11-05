@@ -68,12 +68,12 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
 
     public static ActorViewItem newEmpty(String description) {
         Actor actor = StringUtils.isEmpty(description) ? Actor.EMPTY :
-                Actor.fromOriginAndActorId(Origin.EMPTY, 0L).setDescription(description);
+                Actor.newUnknown(Origin.EMPTY).setDescription(description);
         return fromActor(actor);
     }
 
     public static ActorViewItem fromActorId(Origin origin, long actorId) {
-        return actorId == 0 ? ActorViewItem.EMPTY : fromActor(Actor.fromOriginAndActorId(origin, actorId));
+        return actorId == 0 ? ActorViewItem.EMPTY : fromActor(Actor.fromId(origin, actorId));
     }
 
     public static ActorViewItem fromActor(@NonNull Actor actor) {

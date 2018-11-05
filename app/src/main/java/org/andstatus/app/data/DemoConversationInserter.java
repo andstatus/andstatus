@@ -81,7 +81,7 @@ public class DemoConversationInserter {
         author3.followedByMe = TriState.TRUE;
 
         AActivity reply1Copy = buildActivity(accountActor,
-                Actor.fromOriginAndActorOid(reply1.accountActor.origin, reply1.getAuthor().oid),
+                Actor.fromOid(reply1.accountActor.origin, reply1.getAuthor().oid),
                 "", "", AActivity.EMPTY,
                 reply1.getNote().oid, DownloadStatus.UNKNOWN);
         AActivity reply12 = buildActivity(author2, "", "Reply 12 to 1 in Replies", reply1Copy, null);
@@ -208,7 +208,7 @@ public class DemoConversationInserter {
         addActivity(followAuthor3);
         DemoNoteInserter.assertInteraction(followAuthor3, NotificationEventType.EMPTY, TriState.FALSE);
 
-        Actor notLoadedActor = Actor.fromOriginAndActorOid(accountActor.origin, "acct:notloaded@someother.host"
+        Actor notLoadedActor = Actor.fromOid(accountActor.origin, "acct:notloaded@someother.host"
         + demoData.testOriginParentHost);
         AActivity notLoaded1 = AActivity.newPartialNote(accountActor, notLoadedActor, MyLog.uniqueDateTimeFormatted());
         AActivity reply15 = buildActivity(author4, "", "Reply 15 to not loaded 1", notLoaded1, null);

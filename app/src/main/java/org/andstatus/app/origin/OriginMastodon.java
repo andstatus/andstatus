@@ -19,8 +19,13 @@ package org.andstatus.app.origin;
 import android.support.annotation.StringRes;
 
 import org.andstatus.app.R;
+import org.andstatus.app.context.MyContext;
 
 public class OriginMastodon extends Origin {
+
+    OriginMastodon(MyContext myContext, OriginType originType) {
+        super(myContext, originType);
+    }
 
     @Override
     public int alternativeTermForResourceId(@StringRes int resId) {

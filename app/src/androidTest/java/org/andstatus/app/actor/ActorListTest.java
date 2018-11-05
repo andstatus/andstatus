@@ -54,7 +54,7 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        noteId = MyQuery.oidToId(OidEnum.NOTE_OID, demoData.getConversationOriginId(),
+        noteId = MyQuery.oidToId(OidEnum.NOTE_OID, demoData.getConversationOrigin().getId(),
                 demoData.conversationMentionsNoteOid);
 
         final Timeline timeline = Timeline.getTimeline(TimelineType.EVERYTHING, 0, Origin.EMPTY);
@@ -75,7 +75,7 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         String content = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
         String logMsg = MyQuery.noteInfoForLog(noteId);
 
-        List<Actor> actors = Actor.fromOriginAndActorOid(demoData.getConversationMyAccount().getOrigin(), "")
+        List<Actor> actors = Actor.newUnknown(demoData.getConversationMyAccount().getOrigin())
                 .extractActorsFromContent(content, Actor.EMPTY);
         assertEquals(logMsg, 3, actors.size());
         assertEquals(logMsg, "unknownUser@example.com", actors.get(2).getUsername());

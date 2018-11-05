@@ -64,7 +64,7 @@ public class Audience implements IsEmpty {
                 + ActorTable.TABLE_NAME + "." + ActorTable._ID
                 + " WHERE " + where;
         Audience audience = new Audience(origin);
-        final Function<Cursor, Actor> function = cursor -> Actor.fromOriginAndActorId(origin,
+        final Function<Cursor, Actor> function = cursor -> Actor.fromTwoIds(origin,
                 DbUtils.getLong(cursor, AudienceTable.ACTOR_ID),
                 DbUtils.getString(cursor, ActorTable.ACTOR_OID));
         MyQuery.get(MyContextHolder.get(), sql, function).forEach(audience::add);

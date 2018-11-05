@@ -311,7 +311,7 @@ public class DataUpdater {
         }
 
         fixActorUpdatedDate(activity, objActor);
-        objActor.lookupActorId(execContext.getMyContext());
+        objActor.lookupActorId();
 
         if (objActor.actorId != 0 && objActor.isPartiallyDefined() && objActor.followedByMe.unknown
                 && activity.followedByActor().unknown) {
@@ -319,7 +319,7 @@ public class DataUpdater {
             return;
         }
 
-        objActor.lookupUser(execContext.getMyContext());
+        objActor.lookupUser();
         if (shouldWeUpdateActor(method, objActor)) {
             updateObjActor2(activity, recursing, me);
         } else {
@@ -404,7 +404,7 @@ public class DataUpdater {
                 values.put(ActorTable.UPDATED_DATE, actor.getUpdatedDate());
             }
 
-            actor.saveUser(execContext.myContext);
+            actor.saveUser();
             Uri actorUri = MatchedUri.getActorUri(me.getActorId(), actor.actorId);
             if (actor.actorId == 0) {
                 values.put(ActorTable.ORIGIN_ID, actor.origin.getId());
@@ -415,7 +415,7 @@ public class DataUpdater {
             } else if (values.size() > 0) {
                 execContext.getContext().getContentResolver().update(actorUri, values, null, null);
             }
-            actor.endpoints.save(execContext.myContext, actor.actorId);
+            actor.endpoints.save(actor.actorId);
 
             updateFriendship(activity, me);
 
