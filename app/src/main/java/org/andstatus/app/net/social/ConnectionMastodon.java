@@ -23,6 +23,7 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -309,13 +310,32 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         }
         actor.setAvatarUri(UriUtils.fromJson(jso, "avatar"));
         actor.endpoints.add(ActorEndpointType.BANNER, UriUtils.fromJson(jso, "header"));
-        actor.setDescription(jso.optString("note"));
+        actor.setDescription(extractSummary(jso));
         actor.setProfileUrl(jso.optString("url"));
         actor.notesCount = jso.optLong("statuses_count");
         actor.followingCount = jso.optLong("following_count");
         actor.followersCount = jso.optLong("followers_count");
         actor.setCreatedDate(dateFromJson(jso, "created_at"));
         return actor;
+    }
+
+    private String extractSummary(JSONObject jso) {
+        MyStringBuilder builder = new MyStringBuilder();
+        builder.append(jso.optString("note"));
+        JSONArray fields = jso.optJSONArray("fields");
+        if (fields != null) {
+            for (int ind=0; ind < fields.length(); ind++) {
+                JSONObject field = fields.optJSONObject(ind);
+                if (field != null) {
+                    String name = field.optString("name");
+                    String value = field.optString("value");
+                    if (StringUtils.nonEmpty(value)) {
+                        builder.withSeparator((StringUtils.nonEmpty(name) ? name + ": " : "") + value, "\n<br>");
+                    }
+                }
+            }
+        }
+        return builder.toString();
     }
 
     @Override

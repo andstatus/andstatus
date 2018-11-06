@@ -34,6 +34,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class ConnectionMastodonTest {
     private ConnectionMastodonMock connection;
@@ -41,7 +42,7 @@ public class ConnectionMastodonTest {
 
     @Before
     public void setUp() throws Exception {
-        TestSuite.initializeWithData(this);
+        TestSuite.initializeWithAccounts(this);
         accountActorOid = demoData.mastodonTestAccountActorOid;
         connection = new ConnectionMastodonMock();
     }
@@ -154,5 +155,20 @@ public class ConnectionMastodonTest {
         assertEquals("Actor's Oid", "119218", actor.oid);
         assertEquals("Username", "izwx6502", actor.getUsername());
         assertEquals("WebfingerId", "izwx6502@mstdn.jp", actor.getWebFingerId());
+    }
+
+    @Test
+    public void testGetActor() throws IOException {
+        connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.mastodon_get_actor);
+
+        Actor actor = connection.getActor("5962", "AndStatus");
+        assertTrue(actor.toString(), actor.nonEmpty());
+        assertEquals("Actor's Oid", "5962", actor.oid);
+        assertEquals("Username", "AndStatus", actor.getUsername());
+        assertEquals("WebfingerId", "andstatus@mastodon.social", actor.getWebFingerId());
+        assertThat("Bio", actor.getDescription(), containsString("multiple Social networks"));
+        assertThat("Fields appended", actor.getDescription(), containsString("Website: "));
+        assertThat("Fields appended", actor.getDescription(), containsString("FAQ: "));
+        assertThat("Fields appended", actor.getDescription(), containsString("GitHub: "));
     }
 }

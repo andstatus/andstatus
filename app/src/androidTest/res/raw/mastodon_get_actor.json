@@ -1,0 +1,36 @@
+{
+  "id": "5962",
+  "username": "AndStatus",
+  "acct": "AndStatus",
+  "display_name": "AndStatus@Mastodon",
+  "locked": false,
+  "bot": false,
+  "created_at": "2016-10-14T08:05:36.581Z",
+  "note": "<p>Open Source multiple accounts client for multiple Social networks, including<br \/>GNU social, Mastodon, Twitter, Pump.io.<br \/>Android.<br \/>Moscow, Russia<\/p>",
+  "url": "https:\/\/mastodon.social\/@AndStatus",
+  "avatar": "https:\/\/files.mastodon.social\/accounts\/avatars\/000\/005\/962\/original\/3b7dff20cb0414a0.png",
+  "avatar_static": "https:\/\/files.mastodon.social\/accounts\/avatars\/000\/005\/962\/original\/3b7dff20cb0414a0.png",
+  "header": "https:\/\/mastodon.social\/headers\/original\/missing.png",
+  "header_static": "https:\/\/mastodon.social\/headers\/original\/missing.png",
+  "followers_count": 122,
+  "following_count": 10,
+  "statuses_count": 275,
+  "emojis": [],
+  "fields": [
+    {
+      "name": "Website",
+      "value": "<a href=\"http:\/\/andstatus.org\" rel=\"me nofollow noopener\" target=\"_blank\"><span class=\"invisible\">http:\/\/<\/span><span class=\"\">andstatus.org<\/span><span class=\"invisible\"><\/span><\/a>",
+      "verified_at": null
+    },
+    {
+      "name": "FAQ",
+      "value": "<a href=\"https:\/\/github.com\/andstatus\/andstatus\/wiki\/FAQ\" rel=\"me nofollow noopener\" target=\"_blank\"><span class=\"invisible\">https:\/\/<\/span><span class=\"ellipsis\">github.com\/andstatus\/andstatus<\/span><span class=\"invisible\">\/wiki\/FAQ<\/span><\/a>",
+      "verified_at": null
+    },
+    {
+      "name": "GitHub",
+      "value": "<a href=\"https:\/\/github.com\/andstatus\/andstatus\" rel=\"me nofollow noopener\" target=\"_blank\"><span class=\"invisible\">https:\/\/<\/span><span class=\"\">github.com\/andstatus\/andstatus<\/span><span class=\"invisible\"><\/span><\/a>",
+      "verified_at": null
+    }
+  ]
+}
