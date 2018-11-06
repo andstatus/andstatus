@@ -21,6 +21,7 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.database.table.ActorEndpointTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.database.table.DownloadTable;
@@ -137,6 +138,7 @@ class MergeActors extends DataChecker {
         MyProvider.delete(myContext, FriendshipTable.TABLE_NAME, FriendshipTable.ACTOR_ID, actor.actorId);
         MyProvider.delete(myContext, FriendshipTable.TABLE_NAME, FriendshipTable.FRIEND_ID, actor.actorId);
         MyProvider.delete(myContext, DownloadTable.TABLE_NAME, DownloadTable.ACTOR_ID, actor.actorId);
+        MyProvider.delete(myContext, ActorEndpointTable.TABLE_NAME, ActorEndpointTable.ACTOR_ID, actor.actorId);
         MyProvider.delete(myContext, ActorTable.TABLE_NAME, ActorTable._ID, actor.actorId);
     }
 
