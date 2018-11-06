@@ -91,7 +91,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("Username", "aru", author.getUsername());
         assertEquals("WebFinger ID", "aru@status.vinilox.eu", author.getWebFingerId());
         assertEquals("Display name", "aru", author.getRealName());
-        assertEquals("Description", "Manjaro user, student of physics and metalhead. Excuse my english ( ͡° ͜ʖ ͡°)", author.getDescription());
+        assertEquals("Description", "Manjaro user, student of physics and metalhead. Excuse my english ( ͡° ͜ʖ ͡°)", author.getSummary());
         assertEquals("Location", "Spain", author.location);
         assertEquals("Profile URL", "https://status.vinilox.eu/aru", author.getProfileUrl());
         assertEquals("Homepage", "", author.getHomepage());
@@ -141,7 +141,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("Username", "mmn", author.getUsername());
         assertEquals("WebFinger ID", "mmn@social.umeahackerspace.se", author.getWebFingerId());
         assertEquals("Display name", "mmn", author.getRealName());
-        assertEquals("Description", "", author.getDescription());
+        assertEquals("Description", "", author.getSummary());
         assertEquals("Location", "Umeå, Sweden", author.location);
         assertEquals("Profile URL", "https://social.umeahackerspace.se/mmn", author.getProfileUrl());
         assertEquals("Homepage", "http://blog.mmn-o.se/", author.getHomepage());

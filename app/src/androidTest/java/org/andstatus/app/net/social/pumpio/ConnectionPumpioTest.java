@@ -190,7 +190,7 @@ public class ConnectionPumpioTest {
         assertEquals("Sender's profile URL", "https://io.jpope.org/jpope", actor.getProfileUrl());
         assertEquals("Sender's Homepage", "https://io.jpope.org/jpope", actor.getHomepage());
         assertEquals("Sender's WebFinger ID", "jpope@io.jpope.org", actor.getWebFingerId());
-        assertEquals("Description", "Does the Pope shit in the woods?", actor.getDescription());
+        assertEquals("Description", "Does the Pope shit in the woods?", actor.getSummary());
         assertEquals("Notes count", 0, actor.notesCount);
         assertEquals("Favorites count", 0, actor.favoritesCount);
         assertEquals("Following (friends) count", 0, actor.followingCount);
@@ -293,7 +293,7 @@ public class ConnectionPumpioTest {
         int size = 5;
         assertEquals("Response for t131t", size, actors.size());
 
-        assertEquals("Does the Pope shit in the woods?", actors.get(1).getDescription());
+        assertEquals("Does the Pope shit in the woods?", actors.get(1).getSummary());
         assertEquals("gitorious@identi.ca", actors.get(2).getUsername());
         assertEquals("acct:ken@coding.example", actors.get(3).oid);
         assertEquals("Yuri Volkov", actors.get(4).getRealName());

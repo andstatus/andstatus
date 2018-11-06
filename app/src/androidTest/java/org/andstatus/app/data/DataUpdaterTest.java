@@ -488,8 +488,8 @@ public class DataUpdaterTest {
                 MyQuery.actorIdToStringColumnValue(ActorTable.HOMEPAGE, id));
         assertEquals("WebFinger ID", actor.getWebFingerId(),
                 MyQuery.actorIdToStringColumnValue(ActorTable.WEBFINGER_ID, id));
-        assertEquals("Description", actor.getDescription(),
-                MyQuery.actorIdToStringColumnValue(ActorTable.DESCRIPTION, id));
+        assertEquals("Description", actor.getSummary(),
+                MyQuery.actorIdToStringColumnValue(ActorTable.SUMMARY, id));
         assertEquals("Notes count", actor.notesCount,
                 MyQuery.actorIdToLongColumnValue(ActorTable.NOTES_COUNT, id));
         assertEquals("Favorites count", actor.favoritesCount,

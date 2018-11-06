@@ -396,7 +396,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         actor.location = jso.optString("location");
         actor.setAvatarUri(UriUtils.fromAlternativeTags(jso,"profile_image_url_https","profile_image_url"));
         actor.endpoints.add(ActorEndpointType.BANNER, UriUtils.fromJson(jso, "profile_banner_url"));
-        actor.setDescription(jso.optString("description"));
+        actor.setSummary(jso.optString("description"));
         actor.setHomepage(jso.optString("url"));
         // Hack for twitter.com
         actor.setProfileUrl(http.pathToUrlString("/").replace("/api.", "/") + username);

@@ -122,7 +122,7 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         assertEquals("Username", expected.getUsername(), actual.getUsername());
         assertEquals("WebFinger ID", expected.getWebFingerId(), actual.getWebFingerId());
         assertEquals("Display name", expected.getRealName(), actual.getRealName());
-        assertEquals("Description", expected.getDescription(), actual.getDescription());
+        assertEquals("Description", expected.getSummary(), actual.getSummary());
         assertEquals("Location", expected.location, actual.location);
         assertEquals("Profile URL", expected.getProfileUrl(), actual.getProfileUrl());
         assertEquals("Homepage", expected.getHomepage(), actual.getHomepage());

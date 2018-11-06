@@ -166,9 +166,9 @@ public class ConnectionMastodonTest {
         assertEquals("Actor's Oid", "5962", actor.oid);
         assertEquals("Username", "AndStatus", actor.getUsername());
         assertEquals("WebfingerId", "andstatus@mastodon.social", actor.getWebFingerId());
-        assertThat("Bio", actor.getDescription(), containsString("multiple Social networks"));
-        assertThat("Fields appended", actor.getDescription(), containsString("Website: "));
-        assertThat("Fields appended", actor.getDescription(), containsString("FAQ: "));
-        assertThat("Fields appended", actor.getDescription(), containsString("GitHub: "));
+        assertThat("Bio", actor.getSummary(), containsString("multiple Social networks"));
+        assertThat("Fields appended", actor.getSummary(), containsString("Website: "));
+        assertThat("Fields appended", actor.getSummary(), containsString("FAQ: "));
+        assertThat("Fields appended", actor.getSummary(), containsString("GitHub: "));
     }
 }

@@ -55,7 +55,7 @@ public final class ActorTable implements BaseColumns {
     /** This is called "name" in Twitter API and in ActivityPub */
     public static final String REAL_NAME = "real_name";
     /** Actor's description / "About myself" "bio" "summary" */
-    public static final String DESCRIPTION = "actor_description";
+    public static final String SUMMARY = "actor_description";  // TODO: Rename
     /** Location string */
     public static final String LOCATION = "location";
     /** URL of Actor's Profile web page */
@@ -117,7 +117,7 @@ public final class ActorTable implements BaseColumns {
                 + USERNAME + " TEXT NOT NULL,"
                 + WEBFINGER_ID + " TEXT NOT NULL,"
                 + REAL_NAME + " TEXT,"
-                + DESCRIPTION + " TEXT,"
+                + SUMMARY + " TEXT,"
                 + LOCATION + " TEXT,"
                 + PROFILE_PAGE + " TEXT,"
                 + HOMEPAGE + " TEXT,"

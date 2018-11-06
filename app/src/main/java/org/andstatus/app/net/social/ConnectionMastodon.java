@@ -310,7 +310,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         }
         actor.setAvatarUri(UriUtils.fromJson(jso, "avatar"));
         actor.endpoints.add(ActorEndpointType.BANNER, UriUtils.fromJson(jso, "header"));
-        actor.setDescription(extractSummary(jso));
+        actor.setSummary(extractSummary(jso));
         actor.setProfileUrl(jso.optString("url"));
         actor.notesCount = jso.optLong("statuses_count");
         actor.followingCount = jso.optLong("following_count");

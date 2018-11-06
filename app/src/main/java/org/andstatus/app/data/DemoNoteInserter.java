@@ -89,7 +89,7 @@ public class DemoNoteInserter {
         actor.setUsername(username);
         actor.setProfileUrl(profileUrl);
         actor.setRealName("Real " + username);
-        actor.setDescription("This is about " + username);
+        actor.setSummary("This is about " + username);
         actor.setHomepage("https://example.com/home/" + username + "/start/");
         actor.location = "Faraway place #" + demoData.testRunUid;
         actor.setAvatarUrl(actor.getHomepage() + "avatar.jpg");

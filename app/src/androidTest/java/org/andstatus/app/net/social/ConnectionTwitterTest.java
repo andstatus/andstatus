@@ -104,7 +104,7 @@ public class ConnectionTwitterTest {
         assertEquals("Username", "Know", author.getUsername());
         assertEquals("WebFinger ID", "know@" + hostName, author.getWebFingerId());
         assertEquals("Display name", "Just so you Know", author.getRealName());
-        assertEquals("Description", "Unimportant facts you'll never need to know. Legally responsible publisher: @FUN", author.getDescription());
+        assertEquals("Description", "Unimportant facts you'll never need to know. Legally responsible publisher: @FUN", author.getSummary());
         assertEquals("Location", "Library of Congress", author.location);
         assertEquals("Profile URL", "https://" + hostName + "/Know", author.getProfileUrl());
         assertEquals("Homepage", "http://t.co/4TzphfU9qt", author.getHomepage());

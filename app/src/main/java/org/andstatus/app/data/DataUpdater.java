@@ -373,8 +373,8 @@ public class DataUpdater {
             if (actor.hasAvatar()) {
                 values.put(ActorTable.AVATAR_URL, actor.getAvatarUrl());
             }
-            if (!SharedPreferencesUtil.isEmpty(actor.getDescription())) {
-                values.put(ActorTable.DESCRIPTION, actor.getDescription());
+            if (!SharedPreferencesUtil.isEmpty(actor.getSummary())) {
+                values.put(ActorTable.SUMMARY, actor.getSummary());
             }
             if (!SharedPreferencesUtil.isEmpty(actor.getHomepage())) {
                 values.put(ActorTable.HOMEPAGE, actor.getHomepage());

@@ -87,7 +87,7 @@ public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable 
         String username = item == null ? "???" : item.getWebFingerIdOrUsername();
         MyUrlSpan.showText(view, R.id.username, username, false, true);
         MyUrlSpan.showText(view, R.id.description, item == null ? "" :
-                I18n.trimTextAt(item.actor.getDescription(), 80).toString(), false, false);
+                I18n.trimTextAt(item.actor.getSummary(), 80).toString(), false, false);
         showAvatar(view, item);
         return view;
     }

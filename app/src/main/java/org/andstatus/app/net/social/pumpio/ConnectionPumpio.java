@@ -146,7 +146,7 @@ public class ConnectionPumpio extends Connection {
         actor.setRealName(jso.optString(NAME_PROPERTY));
         actor.setAvatarUrl(JsonUtils.optStringInside(jso, "image", "url"));
         actor.location = JsonUtils.optStringInside(jso, "location", NAME_PROPERTY);
-        actor.setDescription(jso.optString("summary"));
+        actor.setSummary(jso.optString("summary"));
         actor.setHomepage(jso.optString("url"));
         actor.setProfileUrl(jso.optString("url"));
         actor.setUpdatedDate(dateFromJson(jso, "updated"));

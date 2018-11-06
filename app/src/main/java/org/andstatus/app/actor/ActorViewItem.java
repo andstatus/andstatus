@@ -68,7 +68,7 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
 
     public static ActorViewItem newEmpty(String description) {
         Actor actor = StringUtils.isEmpty(description) ? Actor.EMPTY :
-                Actor.newUnknown(Origin.EMPTY).setDescription(description);
+                Actor.newUnknown(Origin.EMPTY).setSummary(description);
         return fromActor(actor);
     }
 
@@ -100,7 +100,7 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
     }
 
     public String getDescription() {
-        StringBuilder builder = new StringBuilder(actor.getDescription());
+        StringBuilder builder = new StringBuilder(actor.getSummary());
         if (MyPreferences.isShowDebuggingInfoInUi()) {
             MyStringBuilder.appendWithSpace(builder, "(id=" + getActor().actorId + ")");
         }

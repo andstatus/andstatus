@@ -48,7 +48,7 @@ public class ActorSql {
         baseProjectionMap.put(ActorTable.USERNAME, ActorTable.TABLE_NAME + "." + ActorTable.USERNAME);
         baseProjectionMap.put(ActorTable.WEBFINGER_ID, ActorTable.TABLE_NAME + "." + ActorTable.WEBFINGER_ID);
 
-        baseProjectionMap.put(ActorTable.DESCRIPTION, ActorTable.TABLE_NAME + "." + ActorTable.DESCRIPTION);
+        baseProjectionMap.put(ActorTable.SUMMARY, ActorTable.TABLE_NAME + "." + ActorTable.SUMMARY);
         baseProjectionMap.put(ActorTable.LOCATION, ActorTable.TABLE_NAME + "." + ActorTable.LOCATION);
 
         baseProjectionMap.put(ActorTable.PROFILE_PAGE, ActorTable.TABLE_NAME + "." + ActorTable.PROFILE_PAGE);

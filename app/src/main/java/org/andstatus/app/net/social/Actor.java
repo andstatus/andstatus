@@ -72,7 +72,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     private boolean isWebFingerIdValid = false;
 
     private String realName = "";
-    private String description = "";
+    private String summary = "";
     public String location = "";
 
     private Uri profileUri = Uri.EMPTY;
@@ -146,7 +146,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         actor.setUsername(DbUtils.getString(cursor, ActorTable.USERNAME));
         actor.setWebFingerId(DbUtils.getString(cursor, ActorTable.WEBFINGER_ID));
 
-        actor.setDescription(DbUtils.getString(cursor, ActorTable.DESCRIPTION));
+        actor.setSummary(DbUtils.getString(cursor, ActorTable.SUMMARY));
         actor.location = DbUtils.getString(cursor, ActorTable.LOCATION);
 
         actor.setProfileUrl(DbUtils.getString(cursor, ActorTable.PROFILE_PAGE));
@@ -561,13 +561,13 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return StringUtils.nonEmpty(profileUri.getHost()) ? profileUri.getHost() : "";
     }
     
-    public String getDescription() {
-        return description;
+    public String getSummary() {
+        return summary;
     }
 
-    public Actor setDescription(String description) {
-        if (!SharedPreferencesUtil.isEmpty(description)) {
-            this.description = description;
+    public Actor setSummary(String summary) {
+        if (!SharedPreferencesUtil.isEmpty(summary)) {
+            this.summary = summary;
         }
         return this;
     }

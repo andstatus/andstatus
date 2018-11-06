@@ -66,7 +66,7 @@ public class DemoConversationInserter {
         author3.setUsername(demoData.conversationAuthorThirdUsername);
         author3.setHomepage("http://johnsmith.com/welcome");
         author3.setCreatedDate(new GregorianCalendar(2011,5,12).getTimeInMillis());
-        author3.setDescription("I am an ordinary guy, interested in computer science");
+        author3.setSummary("I am an ordinary guy, interested in computer science");
         author3.setAvatarUrl("http://www.large-icons.com/stock-icons/free-large-android/48x48/happy-robot.gif");
 
         Actor author4 = buildActorFromOid("acct:fourthWithoutAvatar@pump.example.com");
