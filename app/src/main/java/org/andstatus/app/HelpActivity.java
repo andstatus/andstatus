@@ -50,12 +50,10 @@ import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.Permissions;
 import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.util.Xslt;
-import org.andstatus.app.view.ActivitySwipeDetector;
-import org.andstatus.app.view.SwipeInterface;
 
 import static org.andstatus.app.context.DemoData.demoData;
 
-public class HelpActivity extends MyActivity implements SwipeInterface, ProgressLogger.ProgressCallback, DialogInterface.OnDismissListener {
+public class HelpActivity extends MyActivity implements ProgressLogger.ProgressCallback, DialogInterface.OnDismissListener {
     public static final String TAG = HelpActivity.class.getSimpleName();
 
     /**
@@ -219,17 +217,6 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
     private void setupHelpFlipper() {
         mFlipper = this.findViewById(R.id.help_flipper);
         
-        // In order to have swipe gestures we need to add listeners to every page
-        // Only in a case of WebView we need to set a listener on than WebView,
-        // not on its parent ScrollView
-        ActivitySwipeDetector swipe = new ActivitySwipeDetector(this, this);
-        for (int ind = 0; ind < mFlipper.getChildCount()-1; ind++ ) {
-            mFlipper.getChildAt(ind).setOnTouchListener(swipe);
-        }
-        View view = findViewById(R.id.changelog);
-        view.setOnTouchListener(swipe);
-        view = findViewById(R.id.user_guide);
-        view.setOnTouchListener(swipe);
 
         if (ViewUtils.showView(this, R.id.button_help_learn_more, MyContextHolder.get().isReady())) {
             final Button learnMore = findViewById(R.id.button_help_learn_more);
@@ -290,20 +277,6 @@ public class HelpActivity extends MyActivity implements SwipeInterface, Progress
     protected void onPause() {
         super.onPause();
         wasPaused = true;
-    }
-
-    @Override
-    public void onLeftToRight(View v) {
-        if (mFlipper != null) {
-            mFlipper.showPrevious();
-        }
-    }
-
-    @Override
-    public void onRightToLeft(View v) {
-        if (mFlipper != null) {
-            mFlipper.showNext();
-        }
     }
 
     public static void startMe(Context context, boolean helpAsFirstActivity, int pageIndex) {
