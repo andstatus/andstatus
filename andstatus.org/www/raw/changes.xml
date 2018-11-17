@@ -443,7 +443,9 @@
         <changes>
             <change>"Back" system button now acts as most of Android users expect: navigation,
                 in reverse chronological order, through the history of screens the user has recently
-                worked with. See https://developer.android.com/design/patterns/navigation.html
+                worked with. See
+                <a href="https://developer.android.com/design/patterns/navigation.html">Navigation
+                    patterns</a>
                 Return to the Default timeline clears the whole history stack, so when a User
                 presses "Back" button on the Default timeline, he/she leaves AndStatus
                 (and returns usually to the Home screen of the Device).

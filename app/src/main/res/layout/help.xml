@@ -30,30 +30,12 @@
         android:gravity="center"
         android:orientation="vertical" >
 
-        <ViewFlipper
+        <android.support.v4.view.ViewPager
             android:id="@+id/help_flipper"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:autoStart="false" >
-
-            <ScrollView
-                android:id="@+id/splash_container"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" >
-                <include layout="@layout/splash"/>
-            </ScrollView>
-            <WebView
-                android:id="@+id/user_guide"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="10dip" />
-
-            <WebView
-                android:id="@+id/changelog"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="10dip" />
-        </ViewFlipper>
+            android:padding="10dp" >
+        </android.support.v4.view.ViewPager>
     </LinearLayout>
 
     <LinearLayout

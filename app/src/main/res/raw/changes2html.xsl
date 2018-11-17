@@ -33,12 +33,12 @@
     </title>
   </head>
   <body>
-  	<h1><xsl:copy-of select="/document/header/title/node()"/></h1>
+  	<h2><xsl:copy-of select="/document/header/title/node()"/></h2>
 	<xsl:apply-templates select="/document/header/subtitle" />
   	<xsl:for-each select="/document/release">
-      <h2 id="{@android:versionCode}"><xsl:value-of select="@versionDate"/>
+      <h3 id="{@android:versionCode}"><xsl:value-of select="@versionDate"/>
           v.<xsl:value-of select="@android:versionName"/> (<xsl:value-of select="@android:versionCode"/>)
-          <xsl:value-of select="@versionTitle"/></h2>
+          <xsl:value-of select="@versionTitle"/></h3>
       <ol>
       <xsl:for-each select="changes/change">  
         <li><xsl:copy-of select="node()"/></li>

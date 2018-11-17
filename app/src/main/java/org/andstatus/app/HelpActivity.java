@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2012-2015 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2012-2018 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,15 +24,19 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.AnimationUtils;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ViewFlipper;
 
 import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.backup.ProgressLogger;
@@ -49,7 +53,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.Permissions;
 import org.andstatus.app.util.ViewUtils;
-import org.andstatus.app.util.Xslt;
+import org.andstatus.app.widget.WebViewFragment;
 
 import static org.andstatus.app.context.DemoData.demoData;
 
@@ -67,15 +71,12 @@ public class HelpActivity extends MyActivity implements ProgressLogger.ProgressC
     public static final String EXTRA_IS_FIRST_ACTIVITY = ClassInApplicationPackage.PACKAGE_NAME + ".IS_FIRST_ACTIVITY";
     public static final String EXTRA_CLOSE_ME = ClassInApplicationPackage.PACKAGE_NAME + ".CLOSE_ME";
 
-    public static final int PAGE_LOGO = 0;
+    public static final int PAGE_CHANGELOG = 0;
     public static final int PAGE_USER_GUIDE = 1;
-    public static final int PAGE_CHANGELOG = 2;
-    
-    // Local objects
-    private ViewFlipper mFlipper;
-    /**
-     * Stores state of {@link #EXTRA_IS_FIRST_ACTIVITY}
-     */
+    public static final int PAGE_LOGO = 2;
+
+    private ViewPager helpFlipper;
+    /** Stores state of {@link #EXTRA_IS_FIRST_ACTIVITY} */
     private boolean mIsFirstActivity = false;
     private boolean wasPaused = false;
     private volatile ProgressDialog progress = null;
@@ -96,14 +97,6 @@ public class HelpActivity extends MyActivity implements ProgressLogger.ProgressC
             mIsFirstActivity = getIntent().getBooleanExtra(EXTRA_IS_FIRST_ACTIVITY, mIsFirstActivity);
         }
 
-        showVersionText();
-        ViewUtils.showView(this, R.id.system_info_section, MyPreferences.isShowDebuggingInfoInUi()
-                || MyContextHolder.getExecutionMode() != ExecutionMode.DEVICE);
-        if (MyPreferences.isShowDebuggingInfoInUi()) {
-            MyUrlSpan.showText(this, R.id.system_info,
-                    MyContextHolder.getSystemInfo(this, false), false, false);
-        }
-
         if (MyContextHolder.get().accounts().getCurrentAccount().nonValid()
                 && MyContextHolder.getExecutionMode() == ExecutionMode.ROBO_TEST
                 && !generatingDemoData) {
@@ -111,8 +104,6 @@ public class HelpActivity extends MyActivity implements ProgressLogger.ProgressC
             demoData.addAsync("GenerateDemoData", MyContextHolder.get(), HelpActivity.this);
         }
 
-        showChangeLog();
-        showUserGuide();
         showRestoreButton();
         showGetStartedButton();
         setupHelpFlipper();
@@ -142,29 +133,6 @@ public class HelpActivity extends MyActivity implements ProgressLogger.ProgressC
         return false;
     }
 
-    private void showVersionText() {
-        TextView versionText = findViewById(R.id.splash_application_version);
-        String text = MyContextHolder.getVersionText(this);
-        if (!MyContextHolder.get().isReady()) {
-            text += "\n" + MyContextHolder.get().state();
-            text += "\n" + MyContextHolder.get().getLastDatabaseError();
-        }
-        versionText.setText(text);
-        versionText.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse("http://andstatus.org"));
-            startActivity(intent);
-        });
-    }
-
-    private void showChangeLog() {
-        Xslt.toWebView(this, R.id.changelog, R.raw.changes, R.raw.changes2html);
-    }
-
-    private void showUserGuide() {
-        Xslt.toWebView(this, R.id.user_guide, R.raw.user_guide, R.raw.fb2_2_html);
-    }
-    
     private void showRestoreButton() {
         Button restoreButton = findViewById(R.id.button_restore);
         if (!generatingDemoData
@@ -214,24 +182,83 @@ public class HelpActivity extends MyActivity implements ProgressLogger.ProgressC
         }
     }
 
+    public static class LogoFragment extends Fragment {
+        @Nullable
+        @Override
+        public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                                 @Nullable Bundle savedInstanceState) {
+            final View view = inflater.inflate(R.layout.splash, container, false);
+            showVersionText(inflater.getContext(), view);
+            ViewUtils.showView(view, R.id.system_info_section, MyPreferences.isShowDebuggingInfoInUi()
+                    || MyContextHolder.getExecutionMode() != ExecutionMode.DEVICE);
+            if (MyPreferences.isShowDebuggingInfoInUi()) {
+                MyUrlSpan.showText(view, R.id.system_info,
+                        MyContextHolder.getSystemInfo(inflater.getContext(), false),
+                        false, false);
+            }
+
+            return view;
+        }
+
+        private void showVersionText(Context context, @NonNull View parentView) {
+            TextView versionText = parentView.findViewById(R.id.splash_application_version);
+            String text = MyContextHolder.getVersionText(context);
+            if (!MyContextHolder.get().isReady()) {
+                text += "\n" + MyContextHolder.get().state();
+                text += "\n" + MyContextHolder.get().getLastDatabaseError();
+            }
+            versionText.setText(text);
+            versionText.setOnClickListener(v -> {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("http://andstatus.org"));
+                startActivity(intent);
+            });
+        }
+    }
+
     private void setupHelpFlipper() {
-        mFlipper = this.findViewById(R.id.help_flipper);
+        helpFlipper = this.findViewById(R.id.help_flipper);
+        helpFlipper.setAdapter(new FragmentPagerAdapter(getSupportFragmentManager()) {
+
+            @Override
+            public int getCount() {
+                return 3;
+            }
+
+            @Override
+            public Fragment getItem(int position) {
+                switch (position) {
+                    case PAGE_USER_GUIDE:
+                        return WebViewFragment.from(R.raw.user_guide, R.raw.fb2_2_html);
+                    case PAGE_CHANGELOG:
+                        return WebViewFragment.from(R.raw.changes, R.raw.changes2html);
+                    default:
+                        return new LogoFragment();
+                }
+            }
+        });
         
 
         if (ViewUtils.showView(this, R.id.button_help_learn_more, MyContextHolder.get().isReady())) {
             final Button learnMore = findViewById(R.id.button_help_learn_more);
-            learnMore.setOnClickListener(v -> mFlipper.showNext());
+            learnMore.setOnClickListener(v -> {
+                final PagerAdapter adapter = helpFlipper.getAdapter();
+                if (adapter != null) {
+                    helpFlipper.setCurrentItem(
+                            helpFlipper.getCurrentItem() >= adapter.getCount() - 1
+                                    ? 0
+                                    : helpFlipper.getCurrentItem() + 1,
+                            true);
+                }
+            });
         }
 
         if (getIntent().hasExtra(EXTRA_HELP_PAGE_INDEX)) {
             int pageToStart = getIntent().getIntExtra(EXTRA_HELP_PAGE_INDEX, 0);
             if (pageToStart > 0) {
-                mFlipper.setDisplayedChild(pageToStart);
+                helpFlipper.setCurrentItem(pageToStart, true);
             }
         }
-        
-        AlphaAnimation anim = (AlphaAnimation) AnimationUtils.loadAnimation(HelpActivity.this, R.anim.fade_in);
-        mFlipper.startAnimation(anim);
     }
 
     @Override
