@@ -111,7 +111,7 @@ public class SpanUtilTest {
                 "content://timeline.app.andstatus.org/note/0/lt/sent/origin/0/actor/0",
                 urlSpan.map(MyUrlSpan::getURL).orElse(""));
         assertEquals("Username in region " + index + " " + message,
-                username, actor.map(Actor::getUsername).orElse(""));
+                username.toUpperCase(), actor.map(Actor::getUsername).orElse("").toUpperCase());
     }
 
     private void oneHashTag(List<SpanUtil.Region> regions, String message, int index, String term) {
@@ -224,6 +224,41 @@ public class SpanUtilTest {
         notAHashTag(regions2, message2, 6);
         oneMention(regions2, message2, 7, "er1n");
         oneMention(regions2, message2, 8, "switchingsocial");
+    }
+
+    @Test
+    public void startingWithMention() {
+        MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
+        Audience audience = new Audience(ma.getOrigin());
+
+        addRecipient(ma, audience, "AndStatus", "5962");
+        addRecipient(ma, audience, "qwertystop", "329431");
+
+        Function<Spannable, Spannable> modifier = SpanUtil.spansModifier(audience);
+
+        String text = "@<a href=\"https://mastodon.social/users/AndStatus\" class=\"h-card u-url p-nickname mention\" " +
+                "rel=\"nofollow noopener\" target=\"_blank\">andstatus</a> " +
+                "@<a href=\"https://wandering.shop/users/qwertystop\" class=\"h-card u-url p-nickname mention\" " +
+                "rel=\"nofollow noopener\" target=\"_blank\">qwertystop</a> Which is how it is encoded in the XML. <br>" +
+                "    <br> CW should properly have been implemented using either some new field, or using in-line stuff" +
+                " like #<span class=\"\"><a href=\"https://social.umeahackerspace.se/tag/cw\" rel=\"nofollow noopener\"" +
+                " target=\"_blank\">cw</a></span> &lt;foo&gt; on the first line.";
+
+        Spannable spannable = MyUrlSpan.toSpannable(text, true);
+        List<SpanUtil.Region> regions1 = SpanUtil.regionsOf(spannable);
+        final String message1 = "Regions before change: " + regions1;
+        assertEquals(message1, 5, regions1.size());
+
+        Spannable modified = modifier.apply(spannable);
+        List<SpanUtil.Region> regions2 = SpanUtil.regionsOf(modified);
+        final String message2 = message1 + "\nRegions after change: " + regions2;
+        assertEquals("Wrong number of regions after change\n" + message2, 5, regions2.size());
+
+        oneMention(regions2, message2, 0, "andstatus");
+        oneMention(regions2, message2, 1, "qwertystop");
+        notAHashTag(regions2, message2, 2);
+        oneHashTag(regions2, message2, 3, "cw");
+        notAHashTag(regions2, message2, 4);
     }
 
     private void addRecipient(MyAccount ma, Audience audience, String username, String actorOid) {

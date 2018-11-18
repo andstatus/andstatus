@@ -16,9 +16,15 @@
 
 package org.andstatus.app.net.social;
 
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.MyContentType;
+import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.CommandEnum;
+import org.andstatus.app.service.CommandExecutionContext;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.junit.Before;
@@ -171,4 +177,36 @@ public class ConnectionMastodonTest {
         assertThat("Fields appended", actor.getSummary(), containsString("FAQ: "));
         assertThat("Fields appended", actor.getSummary(), containsString("GitHub: "));
     }
+
+    @Test
+    public void mentionsInANote() throws IOException {
+        connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.mastodon_get_note);
+
+        AActivity activity = connection.getNote("101064848262880936");
+        assertEquals("Is not UPDATE " + activity, ActivityType.UPDATE, activity.type);
+        assertEquals("Is not a note", AObjectType.NOTE, activity.getObjectType());
+
+        Actor actor = activity.getActor();
+        assertEquals("Actor's Oid", "32", actor.oid);
+        assertEquals("Username", "pettter", actor.getUsername());
+        assertEquals("WebfingerId", "pettter@social.umeahackerspace.se", actor.getWebFingerId());
+
+        Note note = activity.getNote();
+        assertThat(note.getContent(), containsString("CW should properly"));
+
+        activity.getNote().setUpdatedDate(MyLog.uniqueCurrentTimeMS());
+        activity.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
+
+        MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
+        CommandExecutionContext executionContext = new CommandExecutionContext(
+                CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, 123));
+        DataUpdater di = new DataUpdater(executionContext);
+        di.onActivity(activity);
+
+        assertTrue("andstatus should be mentioned: " + activity,
+            note.audience().getActors().stream().anyMatch(actor1 -> actor1.getUsername().toLowerCase()
+                    .equals("andstatus")));
+
+    }
+
 }

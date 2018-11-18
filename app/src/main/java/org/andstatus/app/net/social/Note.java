@@ -31,6 +31,7 @@ import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.LazyVal;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
@@ -267,54 +268,32 @@ public class Note extends AObject {
         if (this == EMPTY) {
             return MyLog.formatKeyValue(this, "EMPTY");
         }
-        StringBuilder builder = new StringBuilder();
-        if (isEmpty()) {
-            builder.append("empty,");
-        }
-        if(noteId != 0) {
-            builder.append("id:" + noteId + ",");
-        }
-        if(conversationId != noteId) {
-            builder.append("conversation_id:" + conversationId + ",");
-        }
-        builder.append("status:" + status + ",");
-        if(StringUtils.nonEmpty(name)) {
-            builder.append("name:'" + name + "',");
-        }
-        if(StringUtils.nonEmpty(content)) {
-            builder.append("content:'" + content + "',");
-        }
-        if(isEmpty) {
-            builder.append("isEmpty,");
-        }
-        if(getPublic().known) {
-            builder.append(getPublic() == TriState.TRUE ? "public," : "nonpublic,");
-        }
-        if(isRealOid(oid)) {
-            builder.append("oid:'" + oid + "',");
-        }
-        if(isRealOid(conversationOid)) {
-            builder.append("conversation_oid:'" + conversationOid + "',");
-        }
-        if(!StringUtils.isEmpty(url)) {
-            builder.append("url:'" + url + "',");
-        }
-        if(!StringUtils.isEmpty(via)) {
-            builder.append("via:'" + via + "',");
-        }
-        builder.append("updated:" + MyLog.debugFormatOfDate(updatedDate) + ",");
-        builder.append("origin:" + origin.getName() + ",");
+        MyStringBuilder builder = new MyStringBuilder();
+        builder.withComma("","empty", this::isEmpty);
+        builder.withComma("","isEmpty", () -> isEmpty);
+        builder.withComma("id", noteId, () -> noteId != 0);
+        builder.withComma("conversation_id", conversationId, () -> conversationId != noteId);
+        builder.withComma("status", status);
+        builder.withComma("name",name, () -> StringUtils.nonEmpty(name));
+        builder.withComma("content",name, () -> StringUtils.nonEmpty(content));
+        builder.withComma("", getPublic() == TriState.TRUE ? "public" : "nonpublic", () -> getPublic().known);
+        builder.withComma("oid",oid, () -> isRealOid(oid));
+        builder.withComma("conversation_oid",conversationOid, () -> isRealOid(conversationOid));
+        builder.withComma("url",url, () -> StringUtils.nonEmpty(url));
+        builder.withComma("via",via, () -> StringUtils.nonEmpty(via));
+        builder.withComma("updated", MyLog.debugFormatOfDate(updatedDate));
+        builder.withComma("origin",origin.getName());
         if(audience.nonEmpty()) {
-            builder.append("\naudience:" + audience + ",");
+            builder.atNewLine("audience:" + audience);
         }
         if (attachments.nonEmpty()) {
-            builder.append("\n" + attachments + ",");
+            builder.atNewLine(attachments.toString());
         }
         if(getInReplyTo().nonEmpty()) {
-            builder.append("\ninReplyTo:" + getInReplyTo() + ",");
+            builder.atNewLine("inReplyTo:" + getInReplyTo());
         }
         if(replies.size() > 0) {
-            builder.append("\nReplies:" + replies + ",");
+            builder.atNewLine("Replies:" + replies);
         }
         return MyLog.formatKeyValue(this, builder.toString());
     }

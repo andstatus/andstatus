@@ -135,23 +135,24 @@ public class SpanUtil {
 
     private static boolean mentionAdded(Spannable spannable, Audience audience, Region region, String text) {
         if (audience.nonEmpty() && text.contains("@")) {
+            String upperText = text.toUpperCase();
             Actor mentionedByAtWebfingerID = audience.getActors().stream()
                     .filter(actor -> actor.isWebFingerIdValid() &&
-                            text.contains("@" + actor.getWebFingerId())).findAny().orElse(Actor.EMPTY);
+                            upperText.contains("@" + actor.getWebFingerId().toUpperCase())).findAny().orElse(Actor.EMPTY);
             if (mentionedByAtWebfingerID.nonEmpty()) {
                 return notesByActorSpanAdded(spannable, audience, region,
                         "@" + mentionedByAtWebfingerID.getWebFingerId(), mentionedByAtWebfingerID);
             } else {
                 Actor mentionedByWebfingerID = audience.getActors().stream()
                         .filter(actor -> actor.isWebFingerIdValid() &&
-                                text.contains(actor.getWebFingerId())).findAny().orElse(Actor.EMPTY);
+                                upperText.contains(actor.getWebFingerId().toUpperCase())).findAny().orElse(Actor.EMPTY);
                 if (mentionedByWebfingerID.nonEmpty()) {
                     return notesByActorSpanAdded(spannable, audience, region,
                             mentionedByWebfingerID.getWebFingerId(), mentionedByWebfingerID);
                 } else {
                     Actor mentionedByUsername = audience.getActors().stream()
                             .filter(actor -> actor.isUsernameValid() &&
-                                    text.contains("@" + actor.getUsername())).findAny().orElse(Actor.EMPTY);
+                                    upperText.contains("@" + actor.getUsername().toUpperCase())).findAny().orElse(Actor.EMPTY);
                     if (mentionedByUsername.nonEmpty()) {
                         return notesByActorSpanAdded(spannable, audience, region,
                                 "@" + mentionedByUsername.getUsername(), mentionedByUsername);
@@ -174,7 +175,8 @@ public class SpanUtil {
             spannable.removeSpan(region.otherSpan.get());
             spannable.setSpan(new MyUrlSpan(spanData), region.start, region.end, 0);
         } else {
-            int indInRegion = spannable.subSequence(region.start, region.end).toString().indexOf(stringFound);
+            int indInRegion = spannable.subSequence(region.start, region.end).toString().toUpperCase()
+                    .indexOf(stringFound.toUpperCase());
             if (indInRegion < 0) return false;
 
             int start2 = region.start + indInRegion;

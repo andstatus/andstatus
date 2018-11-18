@@ -262,8 +262,7 @@ public final class DemoData {
         if (!found) {
             for (MyAccount ma : MyContextHolder.get().accounts().get()) {
                 MyLog.i(TAG, ma.toString());
-                if (ma.getCredentialsVerified()
-                == MyAccount.CredentialsVerificationStatus.SUCCEEDED) {
+                if (ma.getCredentialsVerified() == MyAccount.CredentialsVerificationStatus.SUCCEEDED) {
                     found = true;
                     MyContextHolder.get().accounts().setCurrentAccount(ma);
                     break;
