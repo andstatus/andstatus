@@ -49,7 +49,7 @@ public final class MyContextHolder {
     private static final Object CONTEXT_LOCK = new Object();
     @GuardedBy("CONTEXT_LOCK")
     @NonNull
-    private static volatile MyFutureContext myFutureContext = new MyEmptyFutureContext(MyContext.EMPTY);
+    private static volatile MyFutureContext myFutureContext = MyEmptyFutureContext.EMPTY;
     private static volatile boolean onRestore = false;
     @NonNull
     private static volatile ExecutionMode executionMode = ExecutionMode.UNKNOWN;

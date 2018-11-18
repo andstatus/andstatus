@@ -19,8 +19,7 @@ package org.andstatus.app;
 import android.app.Activity;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
-import android.view.View;
-import android.widget.ViewFlipper;
+import android.support.v4.view.ViewPager;
 
 import org.andstatus.app.context.ActivityTest;
 import org.andstatus.app.context.MyContextHolder;
@@ -56,21 +55,21 @@ public class HelpActivityTest extends ActivityTest<HelpActivity> {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         MySettingsActivity.closeAllActivities(InstrumentationRegistry.getInstrumentation().getTargetContext());
     }
 
     @Test
     public void test() throws Throwable {
-        ViewFlipper mFlipper = ((ViewFlipper) mActivityRule.getActivity().findViewById(R.id.help_flipper));
+        ViewPager mFlipper = mActivityRule.getActivity().findViewById(R.id.help_flipper);
         assertTrue(mFlipper != null);
-        assertEquals("At Changelog page", HelpActivity.PAGE_CHANGELOG, mFlipper.getDisplayedChild());
-        View changeLogView = mActivityRule.getActivity().findViewById(R.id.changelog);
-        assertTrue(changeLogView != null);
+        assertEquals("At Changelog page", HelpActivity.PAGE_CHANGELOG, mFlipper.getCurrentItem());
         DbUtils.waitMs("test", 500);
 
         onView(withId(R.id.button_help_learn_more)).perform(click());
-        assertEquals("At Logo page", HelpActivity.PAGE_LOGO, mFlipper.getDisplayedChild());
+        assertEquals("At User Guide", HelpActivity.PAGE_USER_GUIDE, mFlipper.getCurrentItem());
+        onView(withId(R.id.button_help_learn_more)).perform(click());
+        assertEquals("At Logo page", HelpActivity.PAGE_LOGO, mFlipper.getCurrentItem());
         onView(withId(R.id.splash_application_version)).check(matches(withText(containsString(MyContextHolder
                 .getExecutionMode().code))));
 

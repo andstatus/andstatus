@@ -32,10 +32,11 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyEmptyFutureContext;
+import org.andstatus.app.context.MyFutureContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.notification.NotificationData;
-import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -54,8 +55,7 @@ import static org.andstatus.app.service.CommandEnum.DELETE_COMMAND;
  * between this Android Device and Social networks.
  */
 public class MyService extends Service {
-
-    private MyContext myContext = MyContextHolder.get();
+    private volatile MyFutureContext myFutureContext = MyEmptyFutureContext.EMPTY;
     private final Object serviceStateLock = new Object();
     /** We are going to finish this service. But may rethink...  */
     @GuardedBy("serviceStateLock")
@@ -114,8 +114,7 @@ public class MyService extends Service {
     @Override
     public void onCreate() {
         MyLog.d(this, "Service created");
-        myContext = MyContextHolder.get();
-        commandQueue.setMyContext(myContext);
+        initializeMyContext();
     }
 
     @Override
@@ -131,8 +130,8 @@ public class MyService extends Service {
     /** See https://stackoverflow.com/questions/44425584/context-startforegroundservice-did-not-then-call-service-startforeground */
     private void startForeground() {
         final NotificationData data = new NotificationData(SERVICE_RUNNING, MyAccount.EMPTY, System.currentTimeMillis());
-        myContext.getNotifier().createNotificationChannel(data);
-        startForeground(SERVICE_RUNNING.notificationId(), myContext.getNotifier().getAndroidNotification(data));
+        getMyContext().getNotifier().createNotificationChannel(data);
+        startForeground(SERVICE_RUNNING.notificationId(), getMyContext().getNotifier().getAndroidNotification(data));
     }
 
     @GuardedBy("serviceStateLock")
@@ -145,7 +144,7 @@ public class MyService extends Service {
     };
     
     private void receiveCommand(Intent intent, int startId) {
-        CommandData commandData = CommandData.fromIntent(myContext, intent);
+        CommandData commandData = CommandData.fromIntent(getMyContext(), intent);
         switch (commandData.getCommand()) {
             case STOP_SERVICE:
                 MyLog.v(this, () -> "Command " + commandData.getCommand() + " received");
@@ -185,30 +184,36 @@ public class MyService extends Service {
     }
 
     private void broadcastAfterExecutingCommand(CommandData commandData) {
-        MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
+        MyServiceEventsBroadcaster.newInstance(getMyContext(), getServiceState())
         .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
     }
     
     void initialize() {
         boolean changed = false;
         boolean wasNotInitialized = false;
-        synchronized (serviceStateLock) {
-            if (!mInitialized) {
-                wasNotInitialized = true;
-                myContext = MyContextHolder.get();
-                registerReceiver(intentReceiver, new IntentFilter(MyAction.EXECUTE_COMMAND.getAction()));
-                mInitialized = true;
-                changed = true;
+        if (!mInitialized) {
+            synchronized (serviceStateLock) {
+                if (!mInitialized) {
+                    wasNotInitialized = true;
+                    initializeMyContext();
+                    if (getMyContext().initialized()) {
+                        registerReceiver(intentReceiver, new IntentFilter(MyAction.EXECUTE_COMMAND.getAction()));
+                        mInitialized = true;
+                        changed = true;
+                    }
+                }
             }
         }
-        if (wasNotInitialized) {
-            if (widgetsInitialized.compareAndSet(false, true)) {
-                AppWidgets.of(myContext).updateViews();
+        if (mInitialized) {
+            if (wasNotInitialized) {
+                if (widgetsInitialized.compareAndSet(false, true)) {
+                    AppWidgets.of(getMyContext()).updateViews();
+                }
+                reviveHeartBeat();
             }
-            reviveHeartBeat();
-        }
-        if (changed) {
-            MyServiceEventsBroadcaster.newInstance(myContext, getServiceState()).broadcast();
+            if (changed) {
+                MyServiceEventsBroadcaster.newInstance(getMyContext(), getServiceState()).broadcast();
+            }
         }
     }
 
@@ -242,7 +247,7 @@ public class MyService extends Service {
     }
 
     private TriState shouldStop() {
-        boolean doStop = !myContext.isReady() || isForcedToStop() || !isAnythingToExecuteNow();
+        boolean doStop = !getMyContext().isReady() || isForcedToStop() || !isAnythingToExecuteNow();
         if (!setIsStopping(doStop, false)) {
             return TriState.UNKNOWN;
         }
@@ -420,7 +425,7 @@ public class MyService extends Service {
             return;
         }
         unInitialize();
-        MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
+        MyServiceEventsBroadcaster.newInstance(getMyContext(), getServiceState())
                 .setEvent(MyServiceEvent.ON_STOP).broadcast();
     }
 
@@ -450,7 +455,7 @@ public class MyService extends Service {
         AsyncTaskLauncher.cancelPoolTasks(MyAsyncTask.PoolEnum.SYNC);
         releaseWakeLock();
         stopSelfResult(latestProcessedStartId);
-        myContext.getNotifier().clearAndroidNotification(SERVICE_RUNNING);
+        getMyContext().getNotifier().clearAndroidNotification(SERVICE_RUNNING);
     }
 
     private boolean couldStopExecutor(boolean forceNow) {
@@ -485,7 +490,18 @@ public class MyService extends Service {
             }
         }
     }
-    
+
+    private MyContext getMyContext() {
+        return myFutureContext.getNow();
+    }
+
+    private void initializeMyContext() {
+        if (myFutureContext.isEmpty() || !myFutureContext.getNow().initialized()) {
+            myFutureContext = MyContextHolder.getMyFutureContext(this);
+        }
+        commandQueue.setMyContext(getMyContext());
+    }
+
     private class QueueExecutor extends MyAsyncTask<Void, Void, Boolean> implements CommandExecutorParent {
         private volatile CommandData currentlyExecuting = null;
         private static final long MAX_EXECUTION_TIME_SECONDS = 60;
@@ -525,9 +541,9 @@ public class MyService extends Service {
                     breakReason = "No more commands";
                     break;
                 }
-                ConnectionState connectionState = myContext.getConnectionState();
+                ConnectionState connectionState = getMyContext().getConnectionState();
                 if (commandData.getCommand().getConnectionRequired().isConnectionStateOk(connectionState)) {
-                    MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
+                    MyServiceEventsBroadcaster.newInstance(getMyContext(), getServiceState())
                             .setCommandData(commandData)
                             .setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
                     if (commandData.getCommand() == DELETE_COMMAND) {

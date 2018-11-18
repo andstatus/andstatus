@@ -16,10 +16,10 @@
 
 package org.andstatus.app.util;
 
+import android.support.v4.view.ViewPager;
 import android.text.SpannableString;
 import android.text.style.URLSpan;
 import android.widget.TextView;
-import android.widget.ViewFlipper;
 
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.R;
@@ -51,13 +51,13 @@ public class MyUrlSpanTest extends ActivityTest<HelpActivity> {
 
     private void forOneString(final String text) {
         final String method = "forOneString";
-        final ViewFlipper mFlipper = ((ViewFlipper) getActivity().findViewById(R.id.help_flipper));
-        assertTrue(mFlipper != null);
-        final TextView textView = (TextView) getActivity().findViewById(R.id.splash_payoff_line);
+        final ViewPager pager = getActivity().findViewById(R.id.help_flipper);
+        assertTrue(pager != null);
+        final TextView textView = getActivity().findViewById(R.id.splash_payoff_line);
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mFlipper.setDisplayedChild(HelpActivity.PAGE_LOGO);
+                pager.setCurrentItem(HelpActivity.PAGE_LOGO);
                 MyUrlSpan.showText(textView, text, true, false);
                 if (SpannableString.class.isAssignableFrom(textView.getClass())) {
                     SpannableString spannable = (SpannableString) textView.getText();

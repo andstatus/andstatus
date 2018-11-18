@@ -22,6 +22,7 @@ import android.support.annotation.NonNull;
  * @author yvolk@yurivolkov.com
  */
 public class MyEmptyFutureContext extends MyFutureContext {
+    public static final MyEmptyFutureContext EMPTY = new MyEmptyFutureContext(MyContext.EMPTY);
 
     public MyEmptyFutureContext(@NonNull MyContext previousContext) {
         super(previousContext);
