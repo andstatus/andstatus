@@ -63,7 +63,7 @@ class CheckAudience extends DataChecker {
                 " WHERE " + NoteTable.ORIGIN_ID + "=" + origin.getId() +
                 " AND " + NoteTable.NOTE_STATUS + "=" + DownloadStatus.LOADED.save() +
                 " ORDER BY " + NoteTable._ID + " DESC" +
-                (includeLong ? "" : " LIMIT 0, 1000");
+                (includeLong ? "" : " LIMIT 0, 500");
         FixSummary summary = MyQuery.foldLeft(myContext, sql, new FixSummary(), s -> cursor -> {
             s.rowsCount++;
             long noteId = DbUtils.getLong(cursor, NoteTable._ID);
