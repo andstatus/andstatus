@@ -38,6 +38,7 @@ import static org.andstatus.app.context.DemoData.demoData;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -207,6 +208,40 @@ public class ConnectionMastodonTest {
             note.audience().getActors().stream().anyMatch(actor1 -> actor1.getUsername().toLowerCase()
                     .equals("andstatus")));
 
+    }
+
+    @Test
+    public void reblog() throws IOException {
+        connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.mastodon_get_reblog);
+
+        AActivity activity = connection.getNote("101100271392454703");
+        assertEquals("Is not ANNOUNCE " + activity, ActivityType.ANNOUNCE, activity.type);
+        assertEquals("Is not an Activity", AObjectType.ACTIVITY, activity.getObjectType());
+
+        Actor actor = activity.getActor();
+        assertEquals("Actor's Oid", "153111", actor.oid);
+        assertEquals("Username", "ZeniorXV", actor.getUsername());
+        assertEquals("WebfingerId", "zeniorxv@mastodon.social", actor.getWebFingerId());
+
+        Note note = activity.getNote();
+        assertThat(note.getContent(), containsString("car of the future"));
+
+        Actor author = activity.getAuthor();
+        assertEquals("Author's Oid", "159379", author.oid);
+        assertEquals("Username", "bjoern", author.getUsername());
+        assertEquals("WebfingerId", "bjoern@mastodon.social", author.getWebFingerId());
+
+        activity.getNote().setUpdatedDate(MyLog.uniqueCurrentTimeMS());
+        activity.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
+
+        MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
+        CommandExecutionContext executionContext = new CommandExecutionContext(
+                CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, 123));
+        DataUpdater di = new DataUpdater(executionContext);
+        di.onActivity(activity);
+
+        assertNotEquals("Activity wasn't saved " + activity, 0,  activity.getId());
+        assertNotEquals("Reblogged note wasn't saved " + activity, 0,  activity.getNote().noteId);
     }
 
 }

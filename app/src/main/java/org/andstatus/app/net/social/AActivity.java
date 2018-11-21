@@ -177,7 +177,7 @@ public class AActivity extends AObject {
 
     @NonNull
     public AObjectType getObjectType() {
-        if (note.nonEmpty()) {
+        if (note != null && note.nonEmpty()) {
             return AObjectType.NOTE;
         } else if (objActor.nonEmpty()) {
             return AObjectType.ACTOR;
@@ -311,7 +311,7 @@ public class AActivity extends AObject {
                 + (notified.isTrue ? ", notified" : "" )
                 + (newNotificationEventType.isEmpty() ? "" : ", " + newNotificationEventType)
                 + (actor.isEmpty() ? "" : ", \nactor:" + actor)
-                + (note.isEmpty() ? "" : ", \nnote:" + note)
+                + (note == null || note.isEmpty() ? "" : ", \nnote:" + note)
                 + (getActivity().isEmpty() ? "" : ", \nactivity:" + getActivity())
                 + (objActor.isEmpty() ? "" : ", objActor:" + objActor)
                 + '}';
