@@ -29,6 +29,10 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="44.00" android:versionCode="263"
+             versionDate="2018-11-23"
+             versionTitle="Bugfixes">
+    </release>
     <release android:versionName="43.02" android:versionCode="262"
              versionDate="2018-10-24"
              versionTitle="Links to mentioned users and to hashtags are opened in AndStatus">

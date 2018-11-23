@@ -64,23 +64,33 @@ public class ActAsTest extends TimelineActivityTest<ActivityViewItem> {
 
     @Test
     public void actAsActor() throws InterruptedException {
-        final String method = "actAsActor";
         TestSuite.waitForListLoaded(getActivity(), 2);
+        assertEquals("Default actor", MyAccount.EMPTY, getActivity().getContextMenu().getSelectedActingAccount());
+        for(int attempt = 1; attempt < 5; attempt++) {
+            if (oneAttempt(attempt)) break;
+        }
+    }
+
+    private boolean oneAttempt(int attempt) throws InterruptedException {
+        final String method = "actAsActor";
+        TimelineData<ActivityViewItem> listData = getActivity().getListData();
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(),
                 ConversationActivity.class);
         long listItemId = helper.getListItemIdOfLoadedReply();
         long noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId);
         final MyContext myContext = MyContextHolder.get();
         Origin origin = myContext.origins().fromId(MyQuery.noteIdToOriginId(noteId));
-        String logMsg = "itemId=" + listItemId + ", noteId=" + noteId
+        String logMsg = "attempt=" + attempt + ", itemId=" + listItemId + ", noteId=" + noteId
             + ", origin=" + origin.getName()
                 + ", text='" + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId) + "'";
-        assertEquals("Default actor", MyAccount.EMPTY, getActivity().getContextMenu().getSelectedActingAccount());
 
         boolean invoked = helper.invokeContextMenuAction4ListItemId(method, listItemId,
                 NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT, R.id.note_wrapper);
         MyAccount actor1 = getActivity().getContextMenu().getSelectedActingAccount();
         logMsg += ";" + (invoked ? "" : " failed to invoke context menu 1," ) + "\nactor1=" + actor1;
+
+        if (getActivity().getListData() != listData) return false;
+
         assertTrue("Actor is not valid. " + logMsg, actor1.isValid());
         assertEquals(logMsg, origin, actor1.getOrigin());
 
@@ -89,13 +99,20 @@ public class ActAsTest extends TimelineActivityTest<ActivityViewItem> {
         logMsg += "\nMyContext: " + myContext;
         MyAccount firstOtherActor = myContext.accounts().firstOtherSucceededForSameOrigin(origin, actor1);
         logMsg += "\nfirstOtherActor=" + firstOtherActor;
+
+        if (getActivity().getListData() != listData) return false;
+
         assertNotEquals(logMsg, actor1, firstOtherActor);
 
         boolean invoked2 = helper.invokeContextMenuAction4ListItemId(method, listItemId,
                 NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT, R.id.note_wrapper);
         MyAccount actor2 = getActivity().getContextMenu().getSelectedActingAccount();
         logMsg += ";" + (invoked2 ? "" : " failed to invoke context menu 2," ) + "\nactor2=" + actor2;
+
+        if (getActivity().getListData() != listData) return false;
+
         assertNotEquals(logMsg, actor1, actor2);
+        return true;
     }
 
 }
