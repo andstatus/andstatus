@@ -203,6 +203,7 @@ public class MyAccounts implements IsEmpty {
                 .map(this::fromActorId)
                 .filter(ma -> ma.isValidAndSucceeded() || !succeededOnly)
                 .filter(ma -> !sameOriginOnly || ma.getOrigin().equals(friend.origin))
+                .sorted()
                 .findFirst();
     }
 
@@ -210,7 +211,8 @@ public class MyAccounts implements IsEmpty {
     @NonNull
     public MyAccount fromWebFingerId(String webFingerId) {
         if (StringUtils.isEmpty(webFingerId)) return MyAccount.EMPTY;
-        return myAccounts.stream().filter(myAccount -> myAccount.getWebFingerId().equals(webFingerId)).findFirst()
+        return myAccounts.stream().filter(myAccount -> myAccount.getWebFingerId().equals(webFingerId))
+                .findFirst()
                 .orElse(MyAccount.EMPTY);
     }
 
@@ -290,7 +292,7 @@ public class MyAccounts implements IsEmpty {
     @NonNull
     public MyAccount firstOtherSucceededForSameOrigin(Origin origin, MyAccount thisAccount) {
         return succeededForSameOrigin(origin).stream().filter(ma -> !ma.equals(thisAccount))
-                .findAny().orElse(thisAccount);
+                .sorted().findFirst().orElse(thisAccount);
     }
 
     /**
@@ -312,7 +314,7 @@ public class MyAccounts implements IsEmpty {
     @NonNull
     public MyAccount firstOtherSucceededForSameUser(Actor actor, MyAccount thisAccount) {
         return succeededForSameUser(actor).stream().filter(ma -> !ma.equals(thisAccount))
-                .findAny().orElse(thisAccount);
+                .sorted().findFirst().orElse(thisAccount);
     }
 
     /**
