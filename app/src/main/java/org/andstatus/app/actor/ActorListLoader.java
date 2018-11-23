@@ -37,18 +37,19 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
 
     private LoadableListActivity.ProgressPublisher mProgress;
 
-    public ActorListLoader(MyContext myContext, ActorListType actorListType, MyAccount ma, Origin origin, long centralItemId, String searchQuery) {
+    public ActorListLoader(MyContext myContext, ActorListType actorListType, Origin origin, long centralItemId,
+                           String searchQuery) {
         this.myContext = myContext;
         mActorListType = actorListType;
         this.searchQuery = searchQuery;
-        this.ma = ma;
+        this.ma = myContext.accounts().getFirstSucceededForOrigin(origin);
         this.origin = origin;
         mCentralItemId = centralItemId;
     }
 
     @Override
     public void allowLoadingFromInternet() {
-        mAllowLoadingFromInternet = true;
+        mAllowLoadingFromInternet = ma.isValidAndSucceeded();
     }
 
     @Override
@@ -91,9 +92,7 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
     }
 
     protected void loadInternal() {
-        // TODO: Why only MyAccount's ID ??
-        Uri mContentUri = MatchedUri.getActorListUri(ma.getActorId(), mActorListType, ma.getOriginId(), mCentralItemId,
-                searchQuery);
+        Uri mContentUri = MatchedUri.getActorListUri(mActorListType, origin.getId(), mCentralItemId, searchQuery);
         try (Cursor c = myContext.context().getContentResolver()
                     .query(mContentUri, ActorSql.projection(), getSelection(), null, null)) {
             while (c != null && c.moveToNext()) {
@@ -109,7 +108,7 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
         if (StringUtils.nonEmpty(sqlActorIds)) {
             where.append(ActorTable.TABLE_NAME + "." + BaseColumns._ID + sqlActorIds);
         } else if (origin.isValid()) {
-            where.append(ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID + "=" + ma.getOriginId());
+            where.append(ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID + "=" + origin.getId());
         }
         return where.getCondition();
 

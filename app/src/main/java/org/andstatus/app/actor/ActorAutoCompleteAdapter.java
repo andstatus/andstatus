@@ -27,7 +27,6 @@ import android.widget.Filter;
 import android.widget.Filterable;
 
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.origin.Origin;
@@ -134,7 +133,7 @@ public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable 
                 return Collections.emptyList();
             }
             ActorListLoader loader = new ActorListLoader(myActivity.getMyContext(), ActorListType.ACTORS_AT_ORIGIN,
-                    MyContextHolder.get().accounts().getFirstSucceededForOrigin(origin), origin, 0, "") {
+                    origin, 0, "") {
                 @NonNull
                 @Override
                 protected String getSelection() {

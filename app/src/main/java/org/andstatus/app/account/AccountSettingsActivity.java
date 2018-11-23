@@ -759,8 +759,7 @@ public class AccountSettingsActivity extends MyActivity {
     private void returnToOurActivity() {
         MyContextHolder.getMyFutureContext(this, this, false).thenRun( myContext -> {
             MyLog.v(this, "Returning to " + activityOnFinish);
-            MyAccount myAccount = myContext.accounts().
-                    fromAccountName(getState().getAccount().getAccountName());
+            MyAccount myAccount = myContext.accounts().fromAccountName(getState().getAccount().getAccountName());
             if (myAccount.isValid()) {
                 myContext.accounts().setCurrentAccount(myAccount);
             }
@@ -768,7 +767,7 @@ public class AccountSettingsActivity extends MyActivity {
                 if (initialSyncNeeded) initialAccountSync(myContext, myAccount);
 
                 Timeline home = Timeline.getTimeline(TimelineType.HOME, myAccount.getActorId(), Origin.EMPTY);
-                TimelineActivity.startForTimeline(myContext, AccountSettingsActivity.this, home, myAccount, true);
+                TimelineActivity.startForTimeline(myContext, AccountSettingsActivity.this, home, true);
                 state.forget();
             } else {
                 if (myContext.accounts().size() > 1) {

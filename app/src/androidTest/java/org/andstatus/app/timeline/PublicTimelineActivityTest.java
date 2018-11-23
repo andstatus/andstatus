@@ -24,7 +24,6 @@ import android.widget.TextView;
 
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -32,6 +31,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.note.BaseNoteViewItem;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -55,22 +55,17 @@ import static org.junit.Assert.assertTrue;
  * @author yvolk@yurivolkov.com
  */
 public class PublicTimelineActivityTest extends TimelineActivityTest<ActivityViewItem> {
-    private MyAccount ma;
 
     @Override
     protected Intent getActivityIntent() {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        ma = MyContextHolder.get().accounts().getFirstSucceededForOrigin(
-                MyContextHolder.get().origins().fromName(demoData.gnusocialTestOriginName));
-        assertTrue(ma.isValidAndSucceeded());
-        MyContextHolder.get().accounts().setCurrentAccount(ma);
-
-        assertEquals(ma.getActorId(), MyContextHolder.get().accounts().getCurrentAccountActorId());
+        final Origin origin = MyContextHolder.get().origins().fromName(demoData.gnusocialTestOriginName);
+        assertTrue(origin.toString(), origin.isValid());
         MyLog.i(this, "setUp ended");
 
-        return new Intent(Intent.ACTION_VIEW, Timeline.getTimeline(TimelineType.PUBLIC, 0, ma.getOrigin()).getUri());
+        return new Intent(Intent.ACTION_VIEW, Timeline.getTimeline(TimelineType.PUBLIC, 0, origin).getUri());
     }
 
     @Test
@@ -87,7 +82,6 @@ public class PublicTimelineActivityTest extends TimelineActivityTest<ActivityVie
         int menu_id = R.id.search_menu_id;
         assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         TestSuite.waitForListLoaded(getActivity(), 2);
-        assertEquals(ma, getActivity().getCurrentMyAccount());
         assertEquals(TimelineType.PUBLIC, getActivity().getTimeline().getTimelineType());
 
         assertFalse("Screen is locked", TestSuite.isScreenLocked(getActivity()));
@@ -108,7 +102,7 @@ public class PublicTimelineActivityTest extends TimelineActivityTest<ActivityVie
                                               String queryString) throws InterruptedException {
         final String method = "waitForButtonClickedEvidence";
         boolean found = false;
-        assertNotNull("Timeline actibity is null", timelineActivity);
+        assertNotNull("Timeline activity is null", timelineActivity);
         for (int attempt = 0; attempt < 6; attempt++) {
             TestSuite.waitForIdleSync();
             

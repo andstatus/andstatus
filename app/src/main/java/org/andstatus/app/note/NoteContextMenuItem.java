@@ -302,7 +302,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     ACTORS_OF_NOTE(false, true) {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            Uri uri = MatchedUri.getActorListUri(editorData.ma.getActorId(),
+            Uri uri = MatchedUri.getActorListUri(
                     ActorListType.ACTORS_OF_NOTE, menu.getOrigin().getId(),
                     menu.getNoteId(), "");
             if (MyLog.isLoggable(this, MyLog.DEBUG)) {

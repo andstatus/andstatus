@@ -324,9 +324,9 @@ public class NoteContextMenu extends MyContextMenu {
 
     void switchTimelineActivityView(Timeline timeline) {
         if (TimelineActivity.class.isAssignableFrom(getActivity().getClass())) {
-            ((TimelineActivity) getActivity()).switchView(timeline, MyAccount.EMPTY);
+            ((TimelineActivity) getActivity()).switchView(timeline);
         } else {
-            TimelineActivity.startForTimeline(getMyContext(), getActivity(),  timeline, null, false);
+            TimelineActivity.startForTimeline(getMyContext(), getActivity(),  timeline, false);
         }
     }
 
@@ -334,7 +334,7 @@ public class NoteContextMenu extends MyContextMenu {
         if (savedInstanceState != null && savedInstanceState.containsKey(IntentExtra.ACCOUNT_NAME.key)) {
             setSelectedActingAccount(menuContainer.getActivity().getMyContext().accounts().fromAccountName(
                     savedInstanceState.getString(IntentExtra.ACCOUNT_NAME.key,
-                            menuContainer.getCurrentMyAccount().getAccountName())));
+                            menuContainer.getActivity().getMyContext().accounts().getCurrentAccount().getAccountName())));
         }
     }
 

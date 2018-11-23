@@ -24,7 +24,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
@@ -33,6 +32,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.list.SyncLoader;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.ListScope;
@@ -55,6 +55,7 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
     ActionBarDrawerToggle mDrawerToggle;
     private boolean showThreadsOfConversation;
     private boolean oldNotesFirstInConversation;
+    private Origin origin = Origin.EMPTY;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +65,7 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
             return;
         }
 
+        origin = getParsedUri().getOrigin(getMyContext());
         mContextMenu = new NoteContextMenu(this);
 
         showThreadsOfConversation = MyPreferences.isShowThreadsOfConversation();
@@ -80,7 +82,7 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
     }
 
     private void initializeDrawer() {
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerLayout = findViewById(R.id.drawer_layout);
         if (mDrawerLayout != null) {
             mDrawerToggle = new ActionBarDrawerToggle(
                     this,
@@ -137,19 +139,9 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
             return;
         }
         MyCheckBox.set(drawerView, R.id.showThreadsOfConversation,
-                showThreadsOfConversation, new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        onShowThreadsOfConversationChanged(buttonView, isChecked);
-                    }
-                });
+                showThreadsOfConversation, this::onShowThreadsOfConversationChanged);
         MyCheckBox.set(drawerView, R.id.oldNotesFirstInConversation,
-                oldNotesFirstInConversation, new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        onOldNotesFirstInConversationChanged(buttonView, isChecked);
-                    }
-                });
+                oldNotesFirstInConversation, this::onOldNotesFirstInConversationChanged);
     }
 
     @Override
@@ -188,7 +180,7 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
 
     @Override
     public Timeline getTimeline() {
-        return myContext.timelines().get(TimelineType.EVERYTHING, 0, getCurrentMyAccount().getOrigin());
+        return myContext.timelines().get(TimelineType.EVERYTHING, 0, origin);
     }
 
     @SuppressWarnings("unchecked")
@@ -200,26 +192,21 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
     protected SyncLoader newSyncLoader(Bundle args) {
         return new ConversationLoaderFactory<ConversationViewItem>().
                 getLoader(ConversationViewItem.EMPTY,
-                getMyContext(), getCurrentMyAccount(), centralItemId, BundleUtils.hasKey(args, IntentExtra.SYNC.key));
+                getMyContext(), origin, centralItemId, BundleUtils.hasKey(args, IntentExtra.SYNC.key));
     }
 
     @Override
     protected BaseTimelineAdapter newListAdapter() {
-        return new ConversationAdapter(mContextMenu, centralItemId, getListLoader().getList(),
+        return new ConversationAdapter(mContextMenu, origin, centralItemId, getListLoader().getList(),
                 showThreadsOfConversation, oldNotesFirstInConversation);
     }
 
     @Override
     protected CharSequence getCustomTitle() {
-        MyAccount currentMyAccount = getCurrentMyAccount();
-        if (currentMyAccount != null && currentMyAccount.isValid()) {
-            mSubtitle = currentMyAccount.toAccountButtonText(myContext);
-        } else {
-            mSubtitle = "";
-        }
+        mSubtitle = "";
         final StringBuilder title = new StringBuilder(getText(R.string.label_conversation));
         MyStringBuilder.appendWithSpace(title, ListScope.ORIGIN.timelinePreposition(myContext));
-        MyStringBuilder.appendWithSpace(title, getCurrentMyAccount().getOrigin().getName());
+        MyStringBuilder.appendWithSpace(title, origin.getName());
         return title;
     }
 }

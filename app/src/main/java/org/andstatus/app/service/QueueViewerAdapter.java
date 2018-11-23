@@ -22,6 +22,7 @@ import android.view.ViewGroup;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -34,8 +35,7 @@ class QueueViewerAdapter extends BaseTimelineAdapter<QueueData> {
 
     QueueViewerAdapter(QueueViewer container, List<QueueData> items) {
         super(container.getMyContext(),
-                Timeline.getTimeline(TimelineType.COMMANDS_QUEUE, 0,
-                        container.getCurrentMyAccount().getOrigin()),
+                Timeline.getTimeline(TimelineType.COMMANDS_QUEUE, 0, Origin.EMPTY),
                 items);
         this.container = container;
     }

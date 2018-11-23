@@ -27,8 +27,6 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtils;
 
-import java.util.Objects;
-
 /**
  * Data to show on UI. May be create on UI thread
  * @author yvolk@yurivolkov.com
@@ -59,8 +57,8 @@ public class TimelineTitle {
         return builder.toString();
     }
 
-    public static TimelineTitle load(MyContext myContext, Timeline timeline, @NonNull MyAccount currentMyAccount) {
-        Objects.requireNonNull(currentMyAccount);
+    public static TimelineTitle load(MyContext myContext, Timeline timeline) {
+        MyAccount currentMyAccount = myContext.accounts().getCurrentAccount();
         TimelineTitle timelineTitle = new TimelineTitle();
         timelineTitle.title = toTimelineTitle(myContext, timeline, currentMyAccount);
         timelineTitle.subTitle = toTimelineSubtitle(myContext, timeline, currentMyAccount);

@@ -81,7 +81,7 @@ public class ActAsTest extends TimelineActivityTest<ActivityViewItem> {
                 NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT, R.id.note_wrapper);
         MyAccount actor1 = getActivity().getContextMenu().getSelectedActingAccount();
         logMsg += ";" + (invoked ? "" : " failed to invoke context menu 1," ) + "\nactor1=" + actor1;
-        assertTrue(logMsg, actor1.isValid());
+        assertTrue("Actor is not valid. " + logMsg, actor1.isValid());
         assertEquals(logMsg, origin, actor1.getOrigin());
 
         ActivityTestHelper.closeContextMenu(getActivity());

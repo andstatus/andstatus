@@ -25,6 +25,5 @@ import org.andstatus.app.timeline.LoadableListActivity;
 public interface NoteEditorContainer {
     LoadableListActivity getActivity();
     void onNoteEditorVisibilityChange();
-    MyAccount getCurrentMyAccount();
     NoteEditor getNoteEditor();
 }

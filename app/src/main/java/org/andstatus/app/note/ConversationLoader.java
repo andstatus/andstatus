@@ -31,6 +31,7 @@ import org.andstatus.app.data.checker.CheckConversations;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
@@ -70,10 +71,10 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
 
     final List<Long> idsOfItemsToFind = new ArrayList<>();
 
-    public ConversationLoader(T emptyItem, MyContext myContext, MyAccount ma, long selectedNoteId, boolean sync) {
+    public ConversationLoader(T emptyItem, MyContext myContext, Origin origin, long selectedNoteId, boolean sync) {
         tFactory = emptyItem;
         this.myContext = myContext;
-        this.ma = ma;
+        this.ma = myContext.accounts().getFirstSucceededForOrigin(origin);
         this.selectedNoteId = selectedNoteId;
         this.sync = sync || MyPreferences.isSyncWhileUsingApplicationEnabled();
     }
@@ -130,7 +131,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
 
     private void loadActors(List<T> items) {
         if (items.isEmpty()) return;
-        ActorListLoader loader = new ActorListLoader(myContext, ActorListType.ACTORS_AT_ORIGIN, ma,
+        ActorListLoader loader = new ActorListLoader(myContext, ActorListType.ACTORS_AT_ORIGIN,
                 ma.getOrigin(), 0, "");
         items.forEach(item -> item.addActorsToLoad(loader));
         if (loader.getList().isEmpty()) return;

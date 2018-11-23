@@ -35,9 +35,9 @@ public class ActorsOfNoteListLoader extends ActorListLoader {
     final String noteContent;
     private boolean mentionedOnly = false;
 
-    public ActorsOfNoteListLoader(MyContext myContext, ActorListType actorListType, MyAccount ma, long centralItemId,
+    public ActorsOfNoteListLoader(MyContext myContext, ActorListType actorListType, Origin origin, long centralItemId,
                                   String searchQuery) {
-        super(myContext, actorListType, ma, ma.getOrigin(), centralItemId, searchQuery);
+        super(myContext, actorListType, origin, centralItemId, searchQuery);
 
         selectedNoteId = centralItemId;
         noteContent = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, selectedNoteId);

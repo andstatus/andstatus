@@ -21,7 +21,6 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
@@ -30,6 +29,7 @@ import org.andstatus.app.data.SqlActorIds;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Audience;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.TriState;
@@ -38,9 +38,9 @@ import org.andstatus.app.util.TriState;
  * @author yvolk@yurivolkov.com
  */
 public class PrivateNotesConversationLoader<T extends ConversationItem<T>> extends ConversationLoader<T> {
-    public PrivateNotesConversationLoader(T emptyItem, MyContext myContext, MyAccount ma,
+    public PrivateNotesConversationLoader(T emptyItem, MyContext myContext, Origin origin,
                                           long selectedNoteId, boolean sync) {
-        super(emptyItem, myContext, ma, selectedNoteId, sync);
+        super(emptyItem, myContext, origin, selectedNoteId, sync);
     }
 
     @Override

@@ -16,27 +16,26 @@
 
 package org.andstatus.app.note;
 
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.NoteTable;
+import org.andstatus.app.origin.Origin;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 public class ConversationLoaderFactory<T extends ConversationItem<T>> {
 
-    public ConversationLoader<T> getLoader(T emptyItem, MyContext myContext, MyAccount ma,
-            long noteId, boolean sync) {
+    public ConversationLoader<T> getLoader(T emptyItem, MyContext myContext, Origin origin, long noteId, boolean sync) {
         // TODO: to clarify...
-        boolean recursiveLoader = ma.getOrigin().getOriginType().isPrivateNoteAllowsReply();
+        boolean recursiveLoader = origin.getOriginType().isPrivateNoteAllowsReply();
         if (!recursiveLoader) {
             recursiveLoader = MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId).notFalse;
         }
         if (recursiveLoader) {
-            return new RecursiveConversationLoader<>(emptyItem, myContext, ma, noteId, sync);
+            return new RecursiveConversationLoader<>(emptyItem, myContext, origin, noteId, sync);
         }  else {
-            return new PrivateNotesConversationLoader<>(emptyItem, myContext, ma, noteId, sync);
+            return new PrivateNotesConversationLoader<>(emptyItem, myContext, origin, noteId, sync);
         }
     }
 }

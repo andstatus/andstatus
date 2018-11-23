@@ -303,7 +303,7 @@ public class NoteEditorData implements IsEmpty {
     private void addConversationParticipantsBeforeText() {
         ConversationLoader<? extends ConversationMemberItem> loader =
                 new ConversationLoaderFactory<ConversationMemberItem>().getLoader(
-                ConversationMemberItem.EMPTY, MyContextHolder.get(), ma, getInReplyToNoteId(), false);
+                ConversationMemberItem.EMPTY, MyContextHolder.get(), ma.getOrigin(), getInReplyToNoteId(), false);
         loader.load(progress -> {});
         addActorsBeforeText(loader.getList().stream()
                 .filter(o -> o.activityType == ActivityType.UPDATE)
@@ -311,7 +311,7 @@ public class NoteEditorData implements IsEmpty {
     }
 
     private void addMentionedActorsBeforeText() {
-        ActorsOfNoteListLoader loader = new ActorsOfNoteListLoader(myContext, ActorListType.ACTORS_OF_NOTE, ma,
+        ActorsOfNoteListLoader loader = new ActorsOfNoteListLoader(myContext, ActorListType.ACTORS_OF_NOTE, ma.getOrigin(),
                 getInReplyToNoteId(), "").setMentionedOnly(true);
         loader.load(null);
         List<Long> toMention = new ArrayList<>();

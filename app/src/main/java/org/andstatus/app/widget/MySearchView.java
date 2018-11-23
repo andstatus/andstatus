@@ -36,13 +36,13 @@ import android.widget.TextView;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.SearchObjects;
+import org.andstatus.app.actor.ActorListType;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.actor.ActorListType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.view.SuggestionsAdapter;
@@ -230,7 +230,7 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
             return timeline.fromSearch(parentActivity.getMyContext(), isInternetSearch())
                                     .fromIsCombined(parentActivity.getMyContext(), isCombined()).getUri();
         }
-        return MatchedUri.getActorListUri(parentActivity.getCurrentMyAccount().getActorId(), ActorListType.ACTORS_AT_ORIGIN,
+        return MatchedUri.getActorListUri(ActorListType.ACTORS_AT_ORIGIN,
                         isCombined() ? 0 : getOrigin().getId(), 0, "");
     }
 
@@ -239,7 +239,9 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
     }
 
     private Origin getOrigin() {
-        return timeline.getOrigin().isValid() ? timeline.getOrigin() : parentActivity.getCurrentMyAccount().getOrigin();
+        return timeline.getOrigin().isValid()
+                ? timeline.getOrigin()
+                : parentActivity.getMyContext().accounts().getCurrentAccount().getOrigin();
     }
 
     private boolean isInternetSearch() {

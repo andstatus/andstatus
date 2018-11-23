@@ -19,12 +19,12 @@ package org.andstatus.app.note;
 import android.database.Cursor;
 import android.net.Uri;
 
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.ProjectionMap;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
@@ -33,9 +33,9 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public class RecursiveConversationLoader<T extends ConversationItem<T>> extends ConversationLoader<T> {
-    public RecursiveConversationLoader(T emptyItem, MyContext myContext, MyAccount ma,
+    public RecursiveConversationLoader(T emptyItem, MyContext myContext, Origin origin,
                                        long selectedNoteId, boolean sync) {
-        super(emptyItem, myContext, ma, selectedNoteId, sync);
+        super(emptyItem, myContext, origin, selectedNoteId, sync);
     }
 
     @Override

@@ -110,7 +110,7 @@ public class AvatarDownloaderTest {
         loadAndAssertStatusForMa("Inexistent avatar",
                 DownloadStatus.HARD_ERROR, DownloadStatus.LOADED, false);
 
-        ActorListLoader aLoader = new ActorListLoader(MyContextHolder.get(), ActorListType.ACTORS_AT_ORIGIN, ma,
+        ActorListLoader aLoader = new ActorListLoader(MyContextHolder.get(), ActorListType.ACTORS_AT_ORIGIN,
                 ma.getOrigin(), 0, "");
         aLoader.addActorToList(ma.getActor());
         aLoader.load(progress -> {});

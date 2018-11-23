@@ -255,7 +255,8 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
     private void assertTextCleared() {
         final NoteEditor editor = getActivity().getNoteEditor();
         assertTrue("Editor is not null", editor != null);
-        assertEquals(NoteEditorData.newEmpty(getActivity().getCurrentMyAccount()).toVisibleSummary(),
+        assertEquals(NoteEditorData.newEmpty(
+                getActivity().getMyContext().accounts().getCurrentAccount()).toVisibleSummary(),
                 editor.getData().toVisibleSummary());
     }
 

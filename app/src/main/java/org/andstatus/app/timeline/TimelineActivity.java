@@ -119,19 +119,13 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     View syncOlderView = null;
     ActorProfileViewer actorProfileViewer = null;
 
-    public static void startForTimeline(MyContext myContext, Context context, Timeline timeline,
-                                        MyAccount newCurrentMyAccount, boolean clearTask) {
+    public static void startForTimeline(MyContext myContext, Context context, Timeline timeline, boolean clearTask) {
         timeline.save(myContext);
-        Intent intent = getIntentForTimeline(myContext, timeline, newCurrentMyAccount, clearTask);
-        context.startActivity(intent);
+        context.startActivity(getIntentForTimeline(myContext, timeline, clearTask));
     }
 
     @NonNull
-    private static Intent getIntentForTimeline(MyContext myContext, Timeline timeline, MyAccount newCurrentMyAccount,
-                                               boolean clearTask) {
-        if (newCurrentMyAccount != null && newCurrentMyAccount.isValid()) {
-            myContext.accounts().setCurrentAccount(newCurrentMyAccount);
-        }
+    private static Intent getIntentForTimeline(MyContext myContext, Timeline timeline, boolean clearTask) {
         Intent intent = new Intent(myContext.context(), clearTask ? FirstActivity.class : TimelineActivity.class);
         intent.setData(timeline.getUri());
         if (clearTask) {
@@ -241,9 +235,6 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         MyLog.v(this, () -> "restoreActivityState; " + getParamsNew());
     }
 
-    /**
-     * View.OnClickListener
-     */
     public void onTimelineTitleClick(View item) {
         switch (MyPreferences.getTapOnATimelineTitleBehaviour()) {
             case SWITCH_TO_DEFAULT_TIMELINE:
@@ -264,17 +255,11 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         }
     }
 
-    /**
-     * View.OnClickListener
-     */
     public void onSwitchToDefaultTimelineButtonClick(View item) {
         closeDrawer();
         goHome(this);
     }
 
-    /**
-     * View.OnClickListener
-     */
     public void onGoToTheTopButtonClick(View item) {
         closeDrawer();
         if (getListData().mayHaveYoungerPage()) {
@@ -284,14 +269,9 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         }
     }
 
-    /**
-     * View.OnClickListener
-     */
     public void onCombinedTimelineToggleClick(View item) {
         closeDrawer();
-        switchView( getParamsLoaded().getTimeline().fromIsCombined(myContext, !getParamsLoaded().isTimelineCombined()),
-                MyAccount.EMPTY);
-
+        switchView( getParamsLoaded().getTimeline().fromIsCombined(myContext, !getParamsLoaded().isTimelineCombined()));
     }
 
     private void closeDrawer() {
@@ -304,14 +284,12 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         updateList(TriState.fromBoolean(((CheckBox) view).isChecked()), 0);
     }
 
-    /** View.OnClickListener */
     public void onTimelineTypeButtonClick(View item) {
         TimelineSelector.selectTimeline(this, ActivityRequestCode.SELECT_TIMELINE,
-                getParamsNew().getTimeline(), getCurrentMyAccount());
+                getParamsNew().getTimeline(), myContext.accounts().getCurrentAccount());
         closeDrawer();
     }
 
-    /** View.OnClickListener */
     public void onSelectAccountButtonClick(View item) {
         if (myContext.accounts().size() > 1) {
             AccountSelector.selectAccountOfOrigin(this, ActivityRequestCode.SELECT_ACCOUNT, 0);
@@ -341,13 +319,13 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     protected void onResume() {
         String method = "onResume";
         if (!mFinishing) {
-            if (getCurrentMyAccount().isValid()) {
+            if (myContext.accounts().getCurrentAccount().isValid()) {
                 if (isConfigChanged()) {
                     MyLog.v(this, () ->
                             method + "; Restarting this Activity to apply all new changes of configuration");
                     finish();
                     MyContextHolder.setExpiredIfConfigChanged();
-                    switchView(getParamsLoaded().getTimeline(), MyAccount.EMPTY);
+                    switchView(getParamsLoaded().getTimeline());
                 }
             } else { 
                 MyLog.v(this, () ->
@@ -551,15 +529,15 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     private String timelineTypeButtonText() {
-        return TimelineTitle.load(myContext, getParamsLoaded().getTimeline(), getCurrentMyAccount()).title;
+        return TimelineTitle.load(myContext, getParamsLoaded().getTimeline()).title;
     }
 
     private void updateAccountButtonText(View drawerView) {
-        TextView textView = (TextView) drawerView.findViewById(R.id.selectAccountButton);
+        TextView textView = drawerView.findViewById(R.id.selectAccountButton);
         if (textView == null) {
             return;
         }
-        String accountButtonText = getCurrentMyAccount().toAccountButtonText(myContext);
+        String accountButtonText = myContext.accounts().getCurrentAccount().toAccountButtonText(myContext);
         textView.setText(accountButtonText);
     }
 
@@ -599,7 +577,6 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         if (!getParamsNew().parseUri(intentNew.getData(), searchQuery)) {
             getParamsNew().setTimeline(myContext.timelines().getDefault());
         }
-        setCurrentMyAccount(getParamsNew().getTimeline().myAccountToSync, getParamsNew().getTimeline().getOrigin());
         actorProfileViewer.ensureView(getParamsNew().getTimeline().withActorProfile());
 
         if (Intent.ACTION_SEND.equals(intentNew.getAction())) {
@@ -658,8 +635,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 ? v -> {
                     TimelineActivity.startForTimeline(
                         getMyContext(), this,
-                        getMyContext().timelines()
-                                .forUser(TimelineType.SENT, ma.getActor()), ma, false);
+                        getMyContext().timelines().forUser(TimelineType.SENT, ma.getActor()), false);
                     closeDrawer();
                     }
                 : v -> {
@@ -672,8 +648,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     @Override
     protected void updateTitle(String additionalTitleText) {
-        TimelineTitle.load(myContext, getParamsLoaded().timeline, getCurrentMyAccount()).
-                updateActivityTitle(this, additionalTitleText);
+        TimelineTitle.load(myContext, getParamsLoaded().timeline).updateActivityTitle(this, additionalTitleText);
     }
 
     NoteContextMenu getContextMenu() {
@@ -1017,7 +992,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 Timeline timeline = myContext.timelines()
                         .fromId(data.getLongExtra(IntentExtra.TIMELINE_ID.key, 0));
                 if (timeline.isValid()) {
-                    switchView(timeline, MyAccount.EMPTY);
+                    switchView(timeline);
                 }
                 break;
             case SELECT_ORIGIN:
@@ -1035,9 +1010,10 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     private void onAccountSelected(MyAccount ma) {
         if (ma.isValid()) {
+            myContext.accounts().setCurrentAccount(ma);
             switchView(getParamsLoaded().getTimeline().isCombined() ?
                     getParamsLoaded().getTimeline() :
-                    getParamsLoaded().getTimeline().fromMyAccount(myContext, ma), ma);
+                    getParamsLoaded().getTimeline().fromMyAccount(myContext, ma));
         }
     }
 
@@ -1047,11 +1023,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             Timeline timeline = getMyContext().timelines()
                     .forUser(getParamsLoaded().timeline.getTimelineType(),
                             myContext.users().toOrigin(getParamsLoaded().timeline.actor, origin));
-            MyAccount myAccount = getCurrentMyAccount().getOrigin().equals(origin)
-                    ? getCurrentMyAccount()
-                    : myContext.accounts().getFirstSucceededForOrigin(origin);
             finish();
-            switchView(timeline, myAccount);
+            switchView(timeline);
         }
     }
 
@@ -1180,29 +1153,16 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         return getParamsLoaded().getTimeline();
     }
 
-    public void switchView(Timeline timeline, MyAccount newMyAccount) {
+    public void switchView(Timeline timeline) {
         timeline.save(myContext);
-
-        MyAccount myAccountToSet;
-        if (newMyAccount != null && newMyAccount.isValid()) {
-            myAccountToSet = newMyAccount;
-        } else if (timeline.myAccountToSync.isValid()) {
-            myAccountToSet = timeline.myAccountToSync;
-        } else {
-            myAccountToSet = MyAccount.EMPTY;
-        }
-        if (myAccountToSet.isValid()) {
-            setCurrentMyAccount(myAccountToSet, myAccountToSet.getOrigin());
-            myContext.accounts().setCurrentAccount(myAccountToSet);
-        }
 
         if (isFinishing() || !timeline.equals(getParamsLoaded().getTimeline())) {
             MyLog.v(this, () -> "switchTimelineActivity; " + timeline);
             if (isFinishing()) {
-                final Intent intent = getIntentForTimeline(myContext, timeline, newMyAccount, false);
+                final Intent intent = getIntentForTimeline(myContext, timeline, false);
                 MyContextHolder.getMyFutureContext(this).thenStartActivity(intent);
             } else {
-                TimelineActivity.startForTimeline(myContext, this, timeline, myAccountToSet, false);
+                TimelineActivity.startForTimeline(myContext, this, timeline, false);
             }
         } else {
             showList(WhichPage.CURRENT);

@@ -76,7 +76,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
                     params.menu.getActivity(),
                     params.menu.getActivity().getMyContext().timelines()
                             .forUserAtHomeOrigin(TimelineType.SENT, params.menu.getViewItem().getActor()),
-                    params.menu.getActingAccount(), false);
+                    false);
             return super.executeAsync(params);
         }
     },
@@ -238,7 +238,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
     }
 
     void startActorListActivity(ActorContextMenu menu, ActorListType actorListType) {
-        Uri uri = MatchedUri.getActorListUri(menu.getActingAccount().getActorId(),
+        Uri uri = MatchedUri.getActorListUri(
                 actorListType,
                 menu.getOrigin().getId(),
                 menu.getViewItem().getActorId(), "");

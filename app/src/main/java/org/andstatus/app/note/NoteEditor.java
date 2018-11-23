@@ -302,7 +302,7 @@ public class NoteEditor {
         if (isVisible()) {
             return editorData.getMyAccount();
         } else {
-            return editorContainer.getCurrentMyAccount();
+            return editorContainer.getActivity().getMyContext().accounts().getCurrentAccount();
         }
     }
 

@@ -25,7 +25,7 @@
             tools:src="@drawable/icon"/>
 
         <org.andstatus.app.graphics.AvatarView
-            android:id="@+id/account_avatar_image_1"
+            android:id="@+id/account_avatar_image_2"
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:layout_alignParentEnd="true"
@@ -35,11 +35,11 @@
             tools:src="@drawable/icon"/>
 
         <org.andstatus.app.graphics.AvatarView
-            android:id="@+id/account_avatar_image_2"
+            android:id="@+id/account_avatar_image_1"
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:layout_gravity="top"
-            android:layout_toStartOf="@id/account_avatar_image_1"
+            android:layout_toStartOf="@id/account_avatar_image_2"
             android:padding="8dp"
             android:scaleType="fitCenter"
             tools:src="@drawable/icon"/>

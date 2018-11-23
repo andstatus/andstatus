@@ -31,13 +31,11 @@ import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.list.MyBaseListActivity;
 import org.andstatus.app.list.SyncLoader;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
@@ -69,10 +67,9 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
     protected CharSequence loadingText = "";
     private boolean onRefreshHandled = false;
 
-    ParsedUri mParsedUri = ParsedUri.fromUri(Uri.EMPTY);
+    private ParsedUri parsedUri = ParsedUri.fromUri(Uri.EMPTY);
 
     protected MyContext myContext = MyContextHolder.get();
-    private MyAccount ma = MyAccount.EMPTY;
     private long configChangeTime = 0;
     MyServiceEventsReceiver myServiceReceiver;
 
@@ -121,13 +118,12 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         }
         myServiceReceiver = new MyServiceEventsReceiver(myContext, this);
 
-        mParsedUri = ParsedUri.fromIntent(getIntent());
-        setCurrentMyAccount(getParsedUri().getAccountActorId(), getParsedUri().getOriginId());
+        parsedUri = ParsedUri.fromIntent(getIntent());
         centralItemId = getParsedUri().getItemId();
     }
 
     protected ParsedUri getParsedUri() {
-        return mParsedUri;
+        return parsedUri;
     }
 
     @NonNull
@@ -207,25 +203,6 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         return EmptyViewItem.EMPTY;
     }
 
-    protected void setCurrentMyAccount(long accountId, long originId) {
-        setCurrentMyAccount(myContext.accounts().fromActorId(accountId),
-                myContext.origins().fromId(originId));
-    }
-
-    public void setCurrentMyAccount(@NonNull MyAccount ma, @NonNull Origin origin) {
-        if (ma.isValid()) {
-            this.ma = ma;
-        } else {
-            if (origin.isValid()) {
-                if (this.ma.nonValid() || !this.ma.getOrigin().equals(origin)) {
-                    this.ma = myContext.accounts().getFirstSucceededForOrigin(origin);
-                }
-            } else if (getCurrentMyAccount().nonValid()) {
-                this.ma = myContext.accounts().getCurrentAccount();
-            }
-        }
-    }
-
     public MyContext getMyContext() {
         return myContext;
     }
@@ -260,9 +237,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         protected SyncLoader doInBackground2(Bundle... params) {
             publishProgress("...");
             SyncLoader loader = newSyncLoader(BundleUtils.toBundle(params[0], IntentExtra.INSTANCE_ID.key, instanceId));
-            if (ma.isValidAndSucceeded()) {
-                loader.allowLoadingFromInternet();
-            }
+            loader.allowLoadingFromInternet();
             loader.load(this);
             return loader;
         }
@@ -564,10 +539,6 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
                 return super.onOptionsItemSelected(item);
         }
         return false;
-    }
-
-    public MyAccount getCurrentMyAccount() {
-        return ma;
     }
 
     public boolean isPositionRestored() {

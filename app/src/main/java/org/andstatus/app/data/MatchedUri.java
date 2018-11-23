@@ -207,12 +207,11 @@ public enum MatchedUri {
 
     /**
      * Build an ActorList Uri for this Actor / {@link MyAccount}
-     * @param accountActorId {@link ActorTable#ACTOR_ID}. This actor <i>may</i> be an account: {@link MyAccount#getActorId()}
      * @param searchQuery
      */
-    public static Uri getActorListUri(long accountActorId, ActorListType actorListType, long originId, long centralItemId,
+    public static Uri getActorListUri(ActorListType actorListType, long originId, long centralItemId,
                                       String searchQuery) {
-        Uri uri = getBaseAccountUri(accountActorId, ActorTable.TABLE_NAME);
+        Uri uri = getBaseAccountUri(0, ActorTable.TABLE_NAME);
         uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + actorListType.save());
         uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + originId);
         uri = Uri.withAppendedPath(uri, CENTRAL_ITEM_SEGMENT);
@@ -221,15 +220,6 @@ public enum MatchedUri {
             uri = Uri.withAppendedPath(uri, SEARCH_SEGMENT);
             uri = Uri.withAppendedPath(uri, Uri.encode(searchQuery));
         }
-        return uri;
-    }
-
-    public static Uri getActorListItemUri(long accountActorId, ActorListType actorListType, long originId, long actorId) {
-        Uri uri = getBaseAccountUri(accountActorId, ActorTable.TABLE_NAME);
-        uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + actorListType.save());
-        uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + originId);
-        uri = Uri.withAppendedPath(uri, CONTENT_ITEM_SEGMENT);
-        uri = ContentUris.withAppendedId(uri, actorId);
         return uri;
     }
 

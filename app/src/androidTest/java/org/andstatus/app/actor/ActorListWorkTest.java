@@ -19,9 +19,7 @@ package org.andstatus.app.actor;
 import android.content.Intent;
 
 import org.andstatus.app.MyAction;
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.ActivityTest;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MatchedUri;
@@ -50,17 +48,14 @@ public class ActorListWorkTest extends ActivityTest<ActorList> {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
-        assertTrue(ma.isValid());
-        MyContextHolder.get().accounts().setCurrentAccount(ma);
-
         long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, demoData.getConversationOrigin().getId(),
                 demoData.conversationMentionsNoteOid);
         assertTrue(noteId > 0);
         MyLog.i(this, "setUp ended");
 
         return new Intent(MyAction.VIEW_ACTORS.getAction(),
-                MatchedUri.getActorListUri(ma.getActorId(), ActorListType.ACTORS_OF_NOTE, ma.getOriginId(), noteId, ""));
+                MatchedUri.getActorListUri(ActorListType.ACTORS_OF_NOTE, demoData.getConversationOrigin().getId(),
+                        noteId, ""));
     }
 
     @Test

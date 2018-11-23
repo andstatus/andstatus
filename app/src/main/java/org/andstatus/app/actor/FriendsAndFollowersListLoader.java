@@ -16,10 +16,10 @@
 
 package org.andstatus.app.actor;
 
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.FriendshipTable;
+import org.andstatus.app.origin.Origin;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -27,9 +27,9 @@ import org.andstatus.app.database.table.FriendshipTable;
 public class FriendsAndFollowersListLoader extends ActorListLoader {
     private long actorId;
 
-    public FriendsAndFollowersListLoader(MyContext myContext, ActorListType actorListType, MyAccount ma,
+    public FriendsAndFollowersListLoader(MyContext myContext, ActorListType actorListType, Origin origin,
                                          long centralItemId, String searchQuery) {
-        super(myContext, actorListType, ma, ma.getOrigin(), centralItemId, searchQuery);
+        super(myContext, actorListType, origin, centralItemId, searchQuery);
         actorId = centralItemId;
     }
 

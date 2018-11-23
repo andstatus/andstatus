@@ -56,7 +56,7 @@ class NoteContextMenuData {
                 @Override
                 protected AccountToNote doInBackground2(Void... params) {
                     @NonNull final MyAccount selectedMyAccount = noteContextMenu.getSelectedActingAccount();
-                    MyAccount currentMyAccount = menuContainer.getCurrentMyAccount();
+                    MyAccount currentMyAccount = menuContainer.getActivity().getMyContext().accounts().getCurrentAccount();
                     AccountToNote accountToNote = AccountToNote.getAccountToActOnNote(
                             menuContainer.getActivity().getMyContext(), noteId,
                             selectedMyAccount, currentMyAccount);

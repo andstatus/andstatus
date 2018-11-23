@@ -43,18 +43,16 @@ public class ConversationAdapter extends BaseNoteAdapter<ConversationViewItem> {
     private final boolean showThreads;
 
     ConversationAdapter(NoteContextMenu contextMenu,
-                               long selectedNoteId,
-                               List<ConversationViewItem> oMsgs,
-                               boolean showThreads,
-                               boolean oldNotesFirst) {
+                        Origin origin, long selectedNoteId,
+                        List<ConversationViewItem> oMsgs,
+                        boolean showThreads,
+                        boolean oldNotesFirst) {
         super(contextMenu,
                 new TimelineData<>(
                         null,
                         new TimelinePage<>(
                                 new TimelineParameters(contextMenu.getMyContext()).setTimeline(
-                                        Timeline.getTimeline(TimelineType.CONVERSATION,
-                                                contextMenu.getActivity().getCurrentMyAccount().getActorId(),
-                                                Origin.EMPTY )
+                                        Timeline.getTimeline(TimelineType.CONVERSATION, 0, origin)
                                 ),
                                 oMsgs
                         )

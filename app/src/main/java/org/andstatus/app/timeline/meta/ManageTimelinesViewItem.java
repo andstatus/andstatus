@@ -34,7 +34,7 @@ public class ManageTimelinesViewItem extends ViewItem<ManageTimelinesViewItem> {
     protected ManageTimelinesViewItem(MyContext myContext, Timeline timeline, MyAccount currentMyAccount) {
         super(false);
         this.timeline = timeline;
-        timelineTitle = TimelineTitle.load(myContext, timeline, currentMyAccount);
+        timelineTitle = TimelineTitle.load(myContext, timeline);
         countSince = timeline.getCountSince();
     }
 
