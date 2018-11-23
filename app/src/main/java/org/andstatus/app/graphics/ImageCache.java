@@ -201,42 +201,52 @@ public class ImageCache extends LruCache<String, CachedImage> {
 
     @Nullable
     private Bitmap imagePathToBitmap(ImageFile imageFile) {
-        final Bitmap bitmap;
-        if (MyPreferences.isShowDebuggingInfoInUi()) {
-            bitmap = BitmapFactory
-                    .decodeFile(imageFile.getPath(), calculateScaling(imageFile, imageFile.getSize()));
-        } else {
-            try {
+        try {
+            final Bitmap bitmap;
+            if (MyPreferences.isShowDebuggingInfoInUi()) {
                 bitmap = BitmapFactory
                         .decodeFile(imageFile.getPath(), calculateScaling(imageFile, imageFile.getSize()));
-            } catch (OutOfMemoryError e) {
-                MyLog.w(imageFile, getInfo(), e);
-                evictAll();
-                return null;
+            } else {
+                try {
+                    bitmap = BitmapFactory
+                            .decodeFile(imageFile.getPath(), calculateScaling(imageFile, imageFile.getSize()));
+                } catch (OutOfMemoryError e) {
+                    MyLog.w(imageFile, getInfo(), e);
+                    evictAll();
+                    return null;
+                }
             }
+            MyLog.v(imageFile, () -> (bitmap == null ? "Failed to load " + name + "'s bitmap"
+                    : "Loaded " + name + "'s bitmap " + bitmap.getWidth()
+                    + "x" + bitmap.getHeight()) + " '" + imageFile.getPath() + "'");
+            return bitmap;
+        } catch (Exception e) {
+            MyLog.w(this, "Error loading '" + imageFile.getPath() + "'", e);
+            return null;
         }
-        MyLog.v(imageFile, () -> (bitmap == null ? "Failed to load " + name + "'s bitmap"
-                : "Loaded " + name + "'s bitmap " + bitmap.getWidth()
-                + "x" + bitmap.getHeight()) + " '" + imageFile.getPath() + "'");
-        return bitmap;
     }
 
     @Nullable
     private Bitmap videoPathToBitmap(ImageFile imageFile) {
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        retriever.setDataSource(MyContextHolder.get().context(), Uri.parse(imageFile.getPath()));
-        Bitmap source = retriever.getFrameAtTime();
-        if (source == null) {
+        try {
+            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+            retriever.setDataSource(MyContextHolder.get().context(), Uri.parse(imageFile.getPath()));
+            Bitmap source = retriever.getFrameAtTime();
+            if (source == null) {
+                return null;
+            }
+            BitmapFactory.Options options = calculateScaling(imageFile, imageFile.getSize());
+            Bitmap bitmap = ThumbnailUtils.extractThumbnail(source, imageFile.getSize().x / options.inSampleSize,
+                    imageFile.getSize().y / options.inSampleSize);
+            source.recycle();
+            MyLog.v(imageFile,  () -> (bitmap == null ? "Failed to load " + name + "'s bitmap"
+                    : "Loaded " + name + "'s bitmap " + bitmap.getWidth()
+                    + "x" + bitmap.getHeight()) + " '" + imageFile.getPath() + "'");
+            return bitmap;
+        } catch (Exception e) {
+            MyLog.w(this, "Error loading '" + imageFile.getPath() + "'", e);
             return null;
         }
-        BitmapFactory.Options options = calculateScaling(imageFile, imageFile.getSize());
-        Bitmap bitmap = ThumbnailUtils.extractThumbnail(source, imageFile.getSize().x / options.inSampleSize,
-                imageFile.getSize().y / options.inSampleSize);
-        source.recycle();
-        MyLog.v(imageFile,  () -> (bitmap == null ? "Failed to load " + name + "'s bitmap"
-                : "Loaded " + name + "'s bitmap " + bitmap.getWidth()
-                + "x" + bitmap.getHeight()) + " '" + imageFile.getPath() + "'");
-        return bitmap;
     }
 
     BitmapFactory.Options calculateScaling(Object objTag, Point imageSize) {
