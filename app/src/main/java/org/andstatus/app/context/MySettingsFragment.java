@@ -302,7 +302,7 @@ public class MySettingsFragment extends PreferenceFragment implements
         Preference preference = findPreference(KEY_MANAGE_TIMELINES);
         if (preference != null) {
             preference.setSummary(String.format(getText(R.string.default_timeline_summary).toString(),
-                    TimelineTitle.load(MyContextHolder.get(), timeline).toString()));
+                    TimelineTitle.from(MyContextHolder.get(), timeline).toString()));
         }
     }
 

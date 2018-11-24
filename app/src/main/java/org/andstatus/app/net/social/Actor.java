@@ -263,7 +263,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (this == EMPTY) {
             return "Actor:EMPTY";
         }
-        MyStringBuilder members = new MyStringBuilder("origin:" + origin.getName() + ",")
+        MyStringBuilder members = MyStringBuilder.of("origin:" + origin.getName() + ",")
         .withComma("id", actorId)
         .withComma("oid", oid);
         if (isWebFingerIdValid()) {

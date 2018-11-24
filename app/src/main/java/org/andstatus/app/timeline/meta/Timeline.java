@@ -913,6 +913,10 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         return isSyncableForOrigins;
     }
 
+    public boolean isSyncedByOtherUser() {
+        return actor.isEmpty() || myAccountToSync.getActor().notSameUser(actor);
+    }
+
     public long getDownloadedItemsCount(boolean isTotal) {
         return isTotal ? downloadedItemsCountTotal : downloadedItemsCount;
     }

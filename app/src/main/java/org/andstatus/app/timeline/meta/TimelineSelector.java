@@ -86,7 +86,8 @@ public class TimelineSelector extends SelectorDialog {
 
         final List<ManageTimelinesViewItem> viewItems = new ArrayList<>();
         for (Timeline timeline2 : timelines) {
-            ManageTimelinesViewItem viewItem = new ManageTimelinesViewItem(myContext, timeline2, currentMyAccount);
+            ManageTimelinesViewItem viewItem = new ManageTimelinesViewItem(myContext, timeline2,
+                    myContext.accounts().getCurrentAccount(), true);
             viewItems.add(viewItem);
         }
         viewItems.sort(new ManageTimelinesViewItemComparator(R.id.displayedInSelector, true, false));
@@ -95,8 +96,7 @@ public class TimelineSelector extends SelectorDialog {
         setListAdapter(newListAdapter(viewItems));
 
         getListView().setOnItemClickListener((parent, view, position, id) -> {
-            long timelineId = Long.parseLong(((TextView) view.findViewById(R.id.id)).getText()
-                    .toString());
+            long timelineId = Long.parseLong(((TextView) view.findViewById(R.id.id)).getText().toString());
             returnSelectedTimeline(myContext.timelines().fromId(timelineId));
         });
     }
@@ -122,7 +122,7 @@ public class TimelineSelector extends SelectorDialog {
         final String syncText = getText(R.string.synced_abbreviated).toString();
         for (ManageTimelinesViewItem viewItem : listData) {
             Map<String, String> map = new HashMap<>();
-            map.put(KEY_VISIBLE_NAME, viewItem.timelineTitle.title);
+            map.put(KEY_VISIBLE_NAME, viewItem.timelineTitle.toString());
             map.put(KEY_SYNC_AUTO, viewItem.timeline.isSyncedAutomatically() ? syncText : "");
             map.put(BaseColumns._ID, Long.toString(viewItem.timeline.getId()));
             list.add(map);

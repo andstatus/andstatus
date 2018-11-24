@@ -31,17 +31,18 @@ public class ManageTimelinesViewItem extends ViewItem<ManageTimelinesViewItem> {
     final TimelineTitle timelineTitle;
     final long countSince;
 
-    protected ManageTimelinesViewItem(MyContext myContext, Timeline timeline, MyAccount currentMyAccount) {
+    protected ManageTimelinesViewItem(MyContext myContext, Timeline timeline,
+                                 MyAccount accountToHide, boolean namesAreHidden) {
         super(false);
         this.timeline = timeline;
-        timelineTitle = TimelineTitle.load(myContext, timeline);
+        timelineTitle = TimelineTitle.from(myContext, timeline, accountToHide, namesAreHidden);
         countSince = timeline.getCountSince();
     }
 
     @NonNull
     @Override
     public ManageTimelinesViewItem getNew() {
-        return new ManageTimelinesViewItem(MyContextHolder.get(), Timeline.EMPTY, MyAccount.EMPTY);
+        return new ManageTimelinesViewItem(MyContextHolder.get(), Timeline.EMPTY, MyAccount.EMPTY, false);
     }
 
     @Override

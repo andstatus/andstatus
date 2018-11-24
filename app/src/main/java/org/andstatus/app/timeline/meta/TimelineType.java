@@ -66,7 +66,7 @@ public enum TimelineType implements SelectableEnum {
     @StringRes
     private final int titleResId;
     @StringRes
-    private final int titleResWithParamsId;
+    public final int titleResWithParamsId;
     /** Api routine to download this timeline */
     private final Connection.ApiRoutineEnum connectionApiRoutine;
     public final ListScope scope;

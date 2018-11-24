@@ -73,8 +73,8 @@ public class ActorViewItemPopulator {
     }
 
     private void showMyFollowers(View view, ActorViewItem item) {
-        MyStringBuilder builder = new MyStringBuilder(
-        item.getMyActorsFollowingTheActor(myActivity.getMyContext())
+        MyStringBuilder builder = MyStringBuilder.of(
+            item.getMyActorsFollowingTheActor(myActivity.getMyContext())
                 .map(actor -> myActivity.getMyContext().accounts().fromActorOfAnyOrigin(actor).getAccountName())
                 .collect(Collectors.joining(", ")));
         if (builder.length() > 0) builder.prependWithSpace(myActivity.getText(R.string.followed_by));

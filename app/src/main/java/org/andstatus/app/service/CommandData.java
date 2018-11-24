@@ -377,7 +377,7 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     private String toUserFriendlyForm(MyContext myContext, boolean summaryOnly) {
-        MyStringBuilder builder = new MyStringBuilder(
+        MyStringBuilder builder = MyStringBuilder.of(
                 command == CommandEnum.GET_TIMELINE || command == CommandEnum.GET_OLDER_TIMELINE ? "" :
                 toShortCommandName(myContext));
         if (!summaryOnly) {
@@ -398,11 +398,11 @@ public class CommandData implements Comparable<CommandData> {
                 builder.withSpaceQuoted(trimConditionally(description, summaryOnly));
                 break;
             case GET_TIMELINE:
-                builder.append(TimelineTitle.load(myContext, timeline).title);
+                builder.append(TimelineTitle.from(myContext, timeline).title);
                 break;
             case GET_OLDER_TIMELINE:
                 builder.append(WhichPage.OLDER.getTitle(myContext.context()));
-                builder.withSpace(TimelineTitle.load(myContext, timeline).title);
+                builder.withSpace(TimelineTitle.from(myContext, timeline).title);
                 break;
             case FOLLOW:
             case UNDO_FOLLOW:

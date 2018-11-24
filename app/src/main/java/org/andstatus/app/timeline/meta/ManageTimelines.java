@@ -150,7 +150,8 @@ public class ManageTimelines extends LoadableListActivity {
             public void load(ProgressPublisher publisher) {
                 items = myContext.timelines()
                         .filter(false, TriState.UNKNOWN, TimelineType.UNKNOWN, Actor.EMPTY, Origin.EMPTY)
-                        .map(timeline -> new ManageTimelinesViewItem(myContext, timeline, MyAccount.EMPTY))
+                        .map(timeline -> new ManageTimelinesViewItem(myContext, timeline,
+                                MyAccount.EMPTY, false))
                         .sorted(new ManageTimelinesViewItemComparator(sortByField, sortDefault, isTotal))
                         .collect(Collectors.toList());
                 countersSince = items.stream().map(item -> item.countSince).filter(count -> count > 0)
@@ -175,12 +176,8 @@ public class ManageTimelines extends LoadableListActivity {
                 setPosition(view, position);
                 final ManageTimelinesViewItem item = getItem(position);
                 MyUrlSpan.showText(view, R.id.title, item.timelineTitle.title, false, true);
-                MyAccount myAccount = item.timeline.myAccountToSync;
-                MyUrlSpan.showText(view, R.id.account, myAccount.isValid() ?
-                        myAccount.toAccountButtonText(myContext) : "", false, true);
-                Origin origin = item.timeline.getOrigin();
-                MyUrlSpan.showText(view, R.id.origin, origin.isValid() ?
-                        origin.getName() : "", false, true);
+                MyUrlSpan.showText(view, R.id.account, item.timelineTitle.accountName, false, true);
+                MyUrlSpan.showText(view, R.id.origin, item.timelineTitle.originName, false, true);
                 showDisplayedInSelector(view, item);
                 MyCheckBox.set(view, R.id.synced, item.timeline.isSyncedAutomatically(),
                         item.timeline.isSyncableAutomatically() ?

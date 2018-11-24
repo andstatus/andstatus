@@ -217,7 +217,7 @@ public class TimelineParameters {
     }
 
     public String toSummary() {
-        return whichPage.getTitle(myContext.context()) + " " + TimelineTitle.load(myContext, timeline);
+        return whichPage.getTitle(myContext.context()) + " " + TimelineTitle.from(myContext, timeline);
     }
 
     @NonNull

@@ -529,7 +529,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     private String timelineTypeButtonText() {
-        return TimelineTitle.load(myContext, getParamsLoaded().getTimeline()).title;
+        return TimelineTitle.from(myContext, getParamsLoaded().getTimeline(),
+                myContext.accounts().getCurrentAccount(), true).title;
     }
 
     private void updateAccountButtonText(View drawerView) {
@@ -648,7 +649,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     @Override
     protected void updateTitle(String additionalTitleText) {
-        TimelineTitle.load(myContext, getParamsLoaded().timeline).updateActivityTitle(this, additionalTitleText);
+        TimelineTitle.from(myContext, getParamsLoaded().getTimeline())
+                .updateActivityTitle(this, additionalTitleText);
     }
 
     NoteContextMenu getContextMenu() {

@@ -17,7 +17,6 @@
 package org.andstatus.app.util;
 
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -26,7 +25,11 @@ import java.util.function.Supplier;
 public class MyStringBuilder implements CharSequence {
     public final StringBuilder builder;
 
-    public MyStringBuilder(CharSequence text) {
+    public static MyStringBuilder of(CharSequence text) {
+        return new MyStringBuilder(text);
+    }
+
+    private MyStringBuilder(CharSequence text) {
         this(new StringBuilder(text));
     }
 
@@ -56,9 +59,9 @@ public class MyStringBuilder implements CharSequence {
     public MyStringBuilder withComma(CharSequence label, Object obj) {
         if (obj == null) return this;
         String text = obj.toString();
-        return TextUtils.isEmpty(text)
-        ? this
-        : withSeparator((StringUtils.nonEmpty(label) ? label + ":" + text : text), ", ");
+        return StringUtils.isEmpty(text)
+            ? this
+            : withSeparator((StringUtils.nonEmpty(label) ? label + ":" + text : text), ", ");
     }
 
     @NonNull
@@ -68,7 +71,9 @@ public class MyStringBuilder implements CharSequence {
 
     @NonNull
     public MyStringBuilder withSpaceQuoted(CharSequence text) {
-        return withSpace("\"").append(text).append("\"");
+        return StringUtils.isEmpty(text)
+                ? this
+                : withSpace("\"").append(text).append("\"");
     }
 
     @NonNull
@@ -82,7 +87,7 @@ public class MyStringBuilder implements CharSequence {
 
     @NonNull
     public MyStringBuilder withSeparator(CharSequence text, @NonNull String separator) {
-        if (!TextUtils.isEmpty(text)) {
+        if (!StringUtils.isEmpty(text)) {
             if (builder.length() > 0) {
                 builder.append(separator);
             }

@@ -72,7 +72,8 @@ public class ManageTimelinesContextMenu extends MyContextMenu {
 
     public ManageTimelinesViewItem getViewItem() {
         if (mViewItem.isEmpty()) {
-            return new ManageTimelinesViewItem(listActivity.getMyContext(), Timeline.EMPTY, MyAccount.EMPTY);
+            return new ManageTimelinesViewItem(listActivity.getMyContext(), Timeline.EMPTY,
+                    MyAccount.EMPTY, false);
         }
         return (ManageTimelinesViewItem) mViewItem;
     }
