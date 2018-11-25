@@ -56,15 +56,13 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.ViewUtils;
-
-import static org.andstatus.app.util.MyStringBuilder.appendWithSeparator;
-import static org.andstatus.app.util.MyStringBuilder.appendWithSpace;
 
 /**
  * "Enter your message here" box 
@@ -535,21 +533,22 @@ public class NoteEditor {
     }
 
     private void showNoteDetails() {
-        StringBuilder noteDetails = new StringBuilder();
+        MyStringBuilder noteDetails = new MyStringBuilder();
         String replyToName = editorData.getInReplyToNoteId() == 0
                 ? "" : MyQuery.noteIdToUsername(NoteTable.AUTHOR_ID, editorData.getInReplyToNoteId(),
                 MyPreferences.getActorInTimeline());
         if (StringUtils.nonEmpty(replyToName)) {
-            appendWithSpace(noteDetails, String.format(getActivity().getText(R.string.message_source_in_reply_to).toString(), replyToName));
+            noteDetails.withSpace(String.format(getActivity().getText(R.string.message_source_in_reply_to).toString(), replyToName));
         }
         if (editorData.activity.getNote().audience().hasNonPublic()) {
             String recipientNames = editorData.activity.getNote().audience().getUsernames();
             if (StringUtils.nonEmpty(recipientNames) && !recipientNames.equals(replyToName) ) {
-                appendWithSeparator(noteDetails, String.format(getActivity().getText(R.string.message_source_to).toString(), recipientNames), "\n");
+                noteDetails.atNewLine(
+                        String.format(getActivity().getText(R.string.message_source_to).toString(), recipientNames));
             }
         }
         if (editorData.getAttachment().nonEmpty()) {
-            appendWithSpace(noteDetails,"("
+            noteDetails.withSpace("("
                     + getActivity().getText(R.string.label_with_media).toString() + " "
                     + editorData.getAttachment().mediaMetadata.toDetails() + ", "
                     + Formatter.formatShortFileSize(getActivity(), editorData.getAttachment().fileSize)

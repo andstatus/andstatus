@@ -327,11 +327,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             for (int ind=0; ind < fields.length(); ind++) {
                 JSONObject field = fields.optJSONObject(ind);
                 if (field != null) {
-                    String name = field.optString("name");
-                    String value = field.optString("value");
-                    if (StringUtils.nonEmpty(value)) {
-                        builder.withSeparator((StringUtils.nonEmpty(name) ? name + ": " : "") + value, "\n<br>");
-                    }
+                    builder.append(field.optString("name"), field.optString("value"),
+                            "\n<br>", false);
                 }
             }
         }

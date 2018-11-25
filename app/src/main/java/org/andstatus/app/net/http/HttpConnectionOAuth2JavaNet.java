@@ -29,6 +29,7 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -52,8 +53,9 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
 
     @Override
     public void registerClient(String path) throws ConnectionException {
-        String logmsg = "registerClient; for " + data.originUrl + "; URL='" + pathToUrlString(path) + "'";
-        MyLog.v(this, () -> logmsg);
+        MyStringBuilder logmsg = MyStringBuilder.of("registerClient; for " + data.originUrl
+                + "; URL='" + pathToUrlString(path) + "'");
+        MyLog.v(this, logmsg::toString);
         data.oauthClientKeys.clear();
         try {
             JSONObject params = new JSONObject();
@@ -67,13 +69,14 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             String consumerSecret = jso.getString("client_secret");
             data.oauthClientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);
         } catch (IOException | JSONException e) {
-            MyLog.i(this, logmsg, e);
+            logmsg.withComma("Exception", e.getMessage());
+            MyLog.i(this, logmsg.toString(), e);
         }
         if (data.oauthClientKeys.areKeysPresent()) {
             MyLog.v(this, () -> "Completed " + logmsg);
         } else {
             throw ConnectionException.fromStatusCodeAndHost(ConnectionException.StatusCode.NO_CREDENTIALS_FOR_HOST,
-                    "No client keys for the host yet; " + logmsg, data.originUrl);
+                    "Failed to obtain client keys for host; " + logmsg, data.originUrl);
         }
     }
 

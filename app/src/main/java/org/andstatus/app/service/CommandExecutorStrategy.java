@@ -152,10 +152,9 @@ class CommandExecutorStrategy implements CommandExecutorParent {
 
     void logConnectionException(ConnectionException e, String detailedMessage) {
         boolean isHard = e != null && e.isHardError();
-        StringBuilder builder = new StringBuilder(100);
-        MyStringBuilder.appendAtNewLine(builder, detailedMessage);
+        MyStringBuilder builder = MyStringBuilder.of(detailedMessage);
         if (e != null) {
-            MyStringBuilder.appendAtNewLine(builder, e.toString());
+            builder.atNewLine(e.toString());
         }
         logExecutionError(isHard, builder.toString());
     }
@@ -166,9 +165,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
         } else {
             execContext.getResult().incrementNumIoExceptions();
         }
-        StringBuilder builder = new StringBuilder(100);
-        MyStringBuilder.appendAtNewLine(builder, detailedMessage);
-        MyStringBuilder.appendAtNewLine(builder, execContext.toExceptionContext());
+        MyStringBuilder builder = MyStringBuilder.of(detailedMessage).atNewLine(execContext.toExceptionContext());
         execContext.getResult().setMessage(builder.toString());
         MyLog.e(this, builder.toString());
     }

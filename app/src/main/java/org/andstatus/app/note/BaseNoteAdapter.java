@@ -27,7 +27,6 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.graphics.IdentifiableImageView;
-import org.andstatus.app.net.social.SpanUtil;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.TimelineData;
 import org.andstatus.app.util.MyStringBuilder;
@@ -114,10 +113,8 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
             return;
         } else if (item.isReblogged()) {
             viewGroup.setVisibility(View.VISIBLE);
-            StringBuilder rebloggers = new StringBuilder();
-            for (String name : item.rebloggers.values()) {
-                MyStringBuilder.appendWithComma(rebloggers, name);
-            }
+            MyStringBuilder rebloggers = new MyStringBuilder();
+            item.rebloggers.values().forEach(rebloggers::withComma);
             MyUrlSpan.showText(viewGroup, R.id.rebloggers, rebloggers.toString(), false, false);
         } else {
             viewGroup.setVisibility(View.GONE);

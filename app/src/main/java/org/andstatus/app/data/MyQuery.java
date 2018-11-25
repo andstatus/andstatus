@@ -785,14 +785,14 @@ public class MyQuery {
     }
 
     public static String noteInfoForLog(long noteId) {
-        StringBuilder builder = new StringBuilder();
-        MyStringBuilder.appendWithComma(builder, "noteId:" + noteId);
+        MyStringBuilder builder = new MyStringBuilder();
+        builder.withComma("noteId", noteId);
         String oid = idToOid(OidEnum.NOTE_OID, noteId, 0);
-        MyStringBuilder.appendWithComma(builder, "oid" + (StringUtils.isEmpty(oid) ? " is empty" : ":'" + oid + "'"));
+        builder.withCommaQuoted("oid", StringUtils.isEmpty(oid) ? "empty" : oid, StringUtils.nonEmpty(oid));
         String content = MyHtml.fromHtml(noteIdToStringColumnValue(NoteTable.CONTENT, noteId));
-        MyStringBuilder.appendAtNewLine(builder, "content:'" + content + "'");
+        builder.withCommaQuoted("content", content, true);
         Origin origin = MyContextHolder.get().origins().fromId(noteIdToLongColumnValue(NoteTable.ORIGIN_ID, noteId));
-        MyStringBuilder.appendAtNewLine(builder, origin.toString());
+        builder.atNewLine(origin.toString());
         return builder.toString();
     }
 

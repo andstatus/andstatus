@@ -26,6 +26,7 @@ import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -59,8 +60,9 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
      */
     @Override
     public void registerClient(String path) throws ConnectionException {		
-		String logmsg = "registerClient; for " + data.originUrl + "; URL='" + pathToUrlString(path) + "'";
-        MyLog.v(this, logmsg);
+		MyStringBuilder logmsg = MyStringBuilder.of("registerClient; for " + data.originUrl
+                + "; URL='" + pathToUrlString(path) + "'");
+        MyLog.v(this, logmsg::toString);
         String consumerKey = "";
         String consumerSecret = "";
         data.oauthClientKeys.clear();
@@ -69,7 +71,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
 			URL endpoint = new URL(pathToUrlString(path));
             HttpURLConnection conn = (HttpURLConnection) endpoint.openConnection();
                     
-            Map<String, String> params = new HashMap<String, String>();
+            Map<String, String> params = new HashMap<>();
             params.put("type", "client_associate");
             params.put("application_type", "native");
             params.put("redirect_uris", HttpConnection.CALLBACK_URI.toString());
@@ -85,8 +87,9 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             
             if(conn.getResponseCode() != 200) {
                 String msg = HttpConnectionUtils.readStreamToString(conn.getErrorStream());
-                MyLog.i(this, "Server returned an error response: " + msg);
-                MyLog.i(this, "Server returned an error response: " + conn.getResponseMessage());
+                logmsg.atNewLine("Server returned an error response", msg);
+                logmsg.atNewLine("Response message from server", conn.getResponseMessage());
+                MyLog.i(this, logmsg.toString());
             } else {
                 String response = HttpConnectionUtils.readStreamToString(conn.getInputStream());
                 JSONObject jso = new JSONObject(response);
@@ -94,17 +97,17 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                 consumerSecret = jso.getString("client_secret");
                 data.oauthClientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);
             }
-        } catch (IOException e) {
-            MyLog.i(this, logmsg, e);
-        } catch (JSONException e) {
-            MyLog.i(this, logmsg, e);
+        } catch (IOException | JSONException e) {
+            logmsg.withComma("Exception", e.getMessage());
+            MyLog.i(this, logmsg.toString(), e);
         } finally {
             DbUtils.closeSilently(writer);
         }
         if (data.oauthClientKeys.areKeysPresent()) {
             MyLog.v(this, () -> "Completed " + logmsg);
         } else {
-            throw ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST, "No client keys for the host yet; " + logmsg, data.originUrl);
+            throw ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST,
+                    "Failed to obtain client keys for host; " + logmsg, data.originUrl);
         }
     }
 

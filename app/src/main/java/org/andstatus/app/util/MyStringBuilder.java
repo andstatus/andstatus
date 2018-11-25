@@ -49,50 +49,57 @@ public class MyStringBuilder implements CharSequence {
     }
 
     @NonNull
-    public MyStringBuilder withComma(CharSequence label, Object obj, Supplier<Boolean> booleanSupplier) {
-        return obj == null || !booleanSupplier.get()
+    public MyStringBuilder withComma(CharSequence label, Object obj, Supplier<Boolean> filter) {
+        return obj == null || !filter.get()
                 ? this
                 : withComma(label, obj);
     }
 
     @NonNull
     public MyStringBuilder withComma(CharSequence label, Object obj) {
-        if (obj == null) return this;
-        String text = obj.toString();
-        return StringUtils.isEmpty(text)
-            ? this
-            : withSeparator((StringUtils.nonEmpty(label) ? label + ":" + text : text), ", ");
+        return append(label, obj, ", ", false);
+    }
+
+    @NonNull
+    public MyStringBuilder withCommaQuoted(CharSequence label, Object obj, boolean quoted) {
+        return append(label, obj, ", ", quoted);
     }
 
     @NonNull
     public MyStringBuilder withComma(CharSequence text) {
-        return withSeparator(text, ", ");
+        return append("", text, ", ", false);
     }
 
     @NonNull
     public MyStringBuilder withSpaceQuoted(CharSequence text) {
-        return StringUtils.isEmpty(text)
-                ? this
-                : withSpace("\"").append(text).append("\"");
+        return append("", text, " ", true);
     }
 
     @NonNull
     public MyStringBuilder withSpace(CharSequence text) {
-        return withSeparator(text, " ");
+        return append("", text, " ", false);
+    }
+
+    public MyStringBuilder atNewLine(CharSequence label, CharSequence text) {
+        return append(label, text, ", \n", false);
     }
 
     public MyStringBuilder atNewLine(CharSequence text) {
-        return withSeparator(text, ", \n");
+        return append("", text, ", \n", false);
     }
 
     @NonNull
-    public MyStringBuilder withSeparator(CharSequence text, @NonNull String separator) {
-        if (!StringUtils.isEmpty(text)) {
-            if (builder.length() > 0) {
-                builder.append(separator);
-            }
-            builder.append(text);
-        }
+    public MyStringBuilder append(CharSequence label, Object obj, @NonNull String separator, boolean quoted) {
+        if (obj == null) return this;
+
+        String text = obj.toString();
+        if (StringUtils.isEmpty(text)) return this;
+
+        if (builder.length() > 0) builder.append(separator);
+        if (StringUtils.nonEmpty(label)) builder.append(label).append(": ");
+        if (quoted) builder.append("\"");
+        builder.append(text);
+        if (quoted) builder.append("\"");
         return this;
     }
 
@@ -124,33 +131,16 @@ public class MyStringBuilder implements CharSequence {
     }
 
     @NonNull
-    public static StringBuilder appendWithComma(StringBuilder builder, CharSequence text) {
-        return new MyStringBuilder(builder).withComma(text).builder;
-    }
-
-    @NonNull
     public static StringBuilder appendWithSpace(StringBuilder builder, CharSequence text) {
         return new MyStringBuilder(builder).withSpace(text).builder;
     }
 
     @NonNull
-    public static StringBuilder appendWithSeparator(StringBuilder builder, CharSequence text, @NonNull String separator) {
-        return new MyStringBuilder(builder).withSeparator(text, separator).builder;
-    }
-
-    public static StringBuilder appendAtNewLine(StringBuilder builder, CharSequence text) {
-        return new MyStringBuilder(builder).atNewLine(text).builder;
-    }
-
-    @NonNull
-    public MyStringBuilder prependWithSpace(CharSequence text) {
-        return prependWithSeparator(text, " ");
-    }
-
-    @NonNull
     public MyStringBuilder prependWithSeparator(CharSequence text, @NonNull String separator) {
-        if (separator.length() > 0) builder.insert(0, separator);
-        if (text.length() > 0) builder.insert(0, text);
+        if (text.length() > 0) {
+            builder.insert(0, separator);
+            builder.insert(0, text);
+        }
         return this;
     }
 

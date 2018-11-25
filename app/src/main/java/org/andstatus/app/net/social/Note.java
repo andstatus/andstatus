@@ -284,16 +284,16 @@ public class Note extends AObject {
         builder.withComma("updated", MyLog.debugFormatOfDate(updatedDate));
         builder.withComma("origin",origin.getName());
         if(audience.nonEmpty()) {
-            builder.atNewLine("audience:" + audience);
+            builder.atNewLine("audience", audience.toString());
         }
         if (attachments.nonEmpty()) {
             builder.atNewLine(attachments.toString());
         }
         if(getInReplyTo().nonEmpty()) {
-            builder.atNewLine("inReplyTo:" + getInReplyTo());
+            builder.atNewLine("inReplyTo", getInReplyTo().toString());
         }
         if(replies.size() > 0) {
-            builder.atNewLine("Replies:" + replies);
+            builder.atNewLine("Replies", replies.toString());
         }
         return MyLog.formatKeyValue(this, builder.toString());
     }
