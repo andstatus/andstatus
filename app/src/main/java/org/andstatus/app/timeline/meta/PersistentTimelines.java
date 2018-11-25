@@ -114,10 +114,14 @@ public class PersistentTimelines {
     public Timeline get(long id, @NonNull TimelineType timelineType,
                         long actorId, @NonNull Origin origin, String searchQuery) {
         Timeline newTimeline = new Timeline(myContext, id, timelineType, actorId, origin, searchQuery);
-        return values().stream().filter(timeline -> newTimeline.getId() == 0
+        return stream().filter(timeline -> newTimeline.getId() == 0
                 ? newTimeline.duplicates(timeline)
                 : timeline.getId() == newTimeline.getId())
                 .findAny().orElseGet(() -> newTimeline);
+    }
+
+    public Stream<Timeline> stream() {
+        return values().stream();
     }
 
     public Collection<Timeline> values() {
@@ -162,7 +166,7 @@ public class PersistentTimelines {
                                    @NonNull TimelineType timelineType,
                                    @NonNull Actor actor,
                                    @NonNull Origin origin) {
-        return values().stream().filter(
+        return stream().filter(
                 timeline -> timeline.match(isForSelector, isTimelineCombined, timelineType, actor, origin));
     }
 

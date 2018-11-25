@@ -73,45 +73,50 @@ public class TimelineSql {
                         + " INNER JOIN " + FriendshipTable.TABLE_NAME
                         + " ON (" + FriendshipTable.TABLE_NAME + "." + fActorIdColumnName + "=u1." + BaseColumns._ID
                         + " AND " + FriendshipTable.TABLE_NAME + "."
-                        + fActorLinkedActorIdColumnName + SqlActorIds.forTimelineActor(timeline).getSql()
+                        + fActorLinkedActorIdColumnName + SqlIds.actorIdsOfTimelineActor(timeline).getSql()
                         + " AND " + FriendshipTable.FOLLOWED + "=1"
                         + ")";
                 actWhere.append(BaseColumns._ID + " IN (" + activityIds + ")");
                 break;
             case HOME:
                 actWhere.append(ActivityTable.SUBSCRIBED + "=" + TriState.TRUE.id)
-                        .append(ActivityTable.ACCOUNT_ID, SqlActorIds.forTimelineAccount(timeline));
+                        .append(ActivityTable.ACCOUNT_ID, SqlIds.actorIdsOfTimelineAccount(timeline));
                 noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.PUBLIC, "!=" + TriState.FALSE.id);
                 break;
             case PRIVATE:
-                actWhere.append(ActivityTable.ACCOUNT_ID, SqlActorIds.forTimelineAccount(timeline));
+                actWhere.append(ActivityTable.ACCOUNT_ID, SqlIds.actorIdsOfTimelineAccount(timeline));
                 noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.PUBLIC, "=" + TriState.FALSE.id);
                 break;
             case FAVORITES:
-                actWhere.append(ActivityTable.ACTOR_ID, SqlActorIds.forTimelineActor(timeline));
+                actWhere.append(ActivityTable.ACTOR_ID, SqlIds.actorIdsOfTimelineActor(timeline));
                 noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.FAVORITED, "=" + TriState.TRUE.id);
                 break;
             case INTERACTIONS:
                 actWhere.append(ActivityTable.INTERACTED, "=" + TriState.TRUE.id)
-                        .append(ActivityTable.NOTIFIED_ACTOR_ID, SqlActorIds.forTimelineActor(timeline));
+                        .append(ActivityTable.NOTIFIED_ACTOR_ID, SqlIds.actorIdsOfTimelineActor(timeline));
                 break;
             case PUBLIC:
                 noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.PUBLIC, "!=" + TriState.FALSE.id);
                 break;
             case DRAFTS:
-                actWhere.append(ActivityTable.ACTOR_ID, SqlActorIds.forTimelineActor(timeline));
+                actWhere.append(ActivityTable.ACTOR_ID, SqlIds.actorIdsOfTimelineActor(timeline));
                 noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.NOTE_STATUS, "=" + DownloadStatus.DRAFT.save());
                 break;
             case OUTBOX:
-                actWhere.append(ActivityTable.ACTOR_ID, SqlActorIds.forTimelineActor(timeline));
+                actWhere.append(ActivityTable.ACTOR_ID, SqlIds.actorIdsOfTimelineActor(timeline));
                 noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.NOTE_STATUS, "=" + DownloadStatus.SENDING.save());
                 break;
             case SENT:
-                actWhere.append(ActivityTable.ACTOR_ID, SqlActorIds.forTimelineActor(timeline));
+                actWhere.append(ActivityTable.ACTOR_ID, SqlIds.actorIdsOfTimelineActor(timeline));
+                break;
+            case NEW_NOTIFICATIONS:
+                actWhere.append(ActivityTable.NOTIFIED, "=" + TriState.TRUE.id)
+                        .append(ActivityTable.NEW_NOTIFICATION_EVENT, "!=0")
+                        .append(ActivityTable.NOTIFIED_ACTOR_ID, SqlIds.actorIdsOfTimelineActor(timeline));
                 break;
             case NOTIFICATIONS:
                 actWhere.append(ActivityTable.NOTIFIED, "=" + TriState.TRUE.id)
-                        .append(ActivityTable.NOTIFIED_ACTOR_ID, SqlActorIds.forTimelineActor(timeline));
+                        .append(ActivityTable.NOTIFIED_ACTOR_ID, SqlIds.actorIdsOfTimelineActor(timeline));
                 break;
             default:
                 break;

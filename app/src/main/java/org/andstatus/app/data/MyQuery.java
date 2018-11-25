@@ -764,7 +764,7 @@ public class MyQuery {
     /** IDs of my users' actors, who follow the specified Actor */
     @NonNull
     public static Set<Long> getMyFollowersOf(long friendId) {
-        String where = FriendshipTable.ACTOR_ID + SqlActorIds.forTimelineActor(Timeline.EMPTY).getSql()
+        String where = FriendshipTable.ACTOR_ID + SqlIds.actorIdsOfTimelineActor(Timeline.EMPTY).getSql()
                 + " AND " + FriendshipTable.FRIEND_ID + "=" + friendId
                 + " AND " + FriendshipTable.FOLLOWED + "=1";
         String sql = "SELECT " + FriendshipTable.ACTOR_ID

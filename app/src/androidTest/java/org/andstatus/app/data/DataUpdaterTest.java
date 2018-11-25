@@ -130,7 +130,7 @@ public class DataUpdaterTest {
 
         Uri contentUri = Timeline.getTimeline(TimelineType.FRIENDS, ma.getActorId(), Origin.EMPTY).getUri();
         SelectionAndArgs sa = new SelectionAndArgs();
-        String sortOrder = ActivityTable.getTimeSortOrder(TimelineType.FRIENDS, false);
+        String sortOrder = ActivityTable.getTimelineSortOrder(TimelineType.FRIENDS, false);
         sa.addSelection(ActivityTable.ACTOR_ID + "=?", Long.toString(somebody.actorId));
         String[] PROJECTION = new String[] {
                 NoteTable._ID
@@ -241,7 +241,7 @@ public class DataUpdaterTest {
         // TODO: Below is actually a timeline query test, so maybe expand / move...
         Uri contentUri = Timeline.getTimeline(TimelineType.EVERYTHING, 0, ma.getOrigin()).getUri();
         SelectionAndArgs sa = new SelectionAndArgs();
-        String sortOrder = ActivityTable.getTimeSortOrder(TimelineType.EVERYTHING, false);
+        String sortOrder = ActivityTable.getTimelineSortOrder(TimelineType.EVERYTHING, false);
         sa.addSelection(NoteTable.NOTE_ID + " = ?", Long.toString(noteId));
         String[] PROJECTION = new String[] {
                 ActivityTable.ACTIVITY_ID,

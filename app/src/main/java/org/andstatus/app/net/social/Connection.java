@@ -117,7 +117,7 @@ public abstract class Connection {
         /**
          * Simply ignore this API call
          */
-        DUMMY;
+        DUMMY_API;
         
         private final boolean isNotePrivate;
 
@@ -197,7 +197,7 @@ public abstract class Connection {
      * @return true if supported
      */
     public boolean isApiSupported(ApiRoutineEnum routine) {
-        if (routine == null || routine == ApiRoutineEnum.DUMMY) {
+        if (routine == null || routine == ApiRoutineEnum.DUMMY_API) {
             return true;
         }
         boolean is = !StringUtils.isEmpty(this.getApiPath1(routine));

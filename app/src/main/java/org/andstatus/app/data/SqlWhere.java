@@ -26,7 +26,7 @@ import org.andstatus.app.util.StringUtils;
 public class SqlWhere {
     private String where = "";
 
-    public SqlWhere append(String field, SqlActorIds actorIds) {
+    public SqlWhere append(String field, SqlIds actorIds) {
         return append(field, actorIds.getSql());
     }
 

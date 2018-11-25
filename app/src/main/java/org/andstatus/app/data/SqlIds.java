@@ -30,43 +30,43 @@ import java.util.Set;
 import static java.util.stream.Collectors.toList;
 
 /**
- * Helper class to construct sql WHERE clause selecting by UserIds
+ * Helper class to construct sql WHERE clause selecting by Ids
  * @author yvolk@yurivolkov.com
  */
-public class SqlActorIds {
-    public static final SqlActorIds EMPTY = new SqlActorIds();
+public class SqlIds {
+    public static final SqlIds EMPTY = new SqlIds();
     private final Set<Long> ids;
 
-    public static SqlActorIds forTimelineActor(@NonNull Timeline timeline) {
+    public static SqlIds actorIdsOfTimelineActor(@NonNull Timeline timeline) {
         if (timeline.isCombined()) {
-            return SqlActorIds.fromIds(MyContextHolder.get().users().myActors.keySet());
+            return SqlIds.fromIds(MyContextHolder.get().users().myActors.keySet());
         } else if (timeline.getTimelineType().isAtOrigin()) {
-            return SqlActorIds.EMPTY;
+            return SqlIds.EMPTY;
         } else {
-            return SqlActorIds.fromIds(timeline.actor.user.actorIds);
+            return SqlIds.fromIds(timeline.actor.user.actorIds);
         }
     }
 
-    public static SqlActorIds forTimelineAccount(@NonNull Timeline timeline) {
+    public static SqlIds actorIdsOfTimelineAccount(@NonNull Timeline timeline) {
         if (timeline.isCombined() || timeline.getTimelineType().isAtOrigin()) {
-            return SqlActorIds.EMPTY;
+            return SqlIds.EMPTY;
         }
-        return SqlActorIds.fromIds(timeline.actor.user.actorIds);
+        return SqlIds.fromIds(timeline.actor.user.actorIds);
     }
 
-    public static SqlActorIds fromActors(@NonNull Collection<Actor> actors) {
-        return new SqlActorIds(actors.stream().map(actor -> actor.actorId).collect(toList()));
+    public static SqlIds actorIdsOf(@NonNull Collection<Actor> actors) {
+        return new SqlIds(actors.stream().map(actor -> actor.actorId).collect(toList()));
     }
 
-    public static SqlActorIds fromIds(@NonNull Collection<Long> ids) {
-        return new SqlActorIds(ids);
+    public static SqlIds fromIds(@NonNull Collection<Long> ids) {
+        return new SqlIds(ids);
     }
 
-    private SqlActorIds(@NonNull Collection<Long> ids) {
+    private SqlIds(@NonNull Collection<Long> ids) {
         this.ids = new HashSet<>(ids);
     }
 
-    private SqlActorIds(Long ... id) {
+    private SqlIds(Long ... id) {
         this.ids = new HashSet<>(Arrays.asList(id));
     }
 

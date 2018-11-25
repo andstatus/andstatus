@@ -343,6 +343,7 @@ public enum OriginType implements SelectableEnum {
             case SEARCH:
                 return isSearchTimelineSyncable;
             case INTERACTIONS:
+            case NEW_NOTIFICATIONS:
             case NOTIFICATIONS:
                 return isInteractionsTimelineSyncable;
             case PRIVATE:

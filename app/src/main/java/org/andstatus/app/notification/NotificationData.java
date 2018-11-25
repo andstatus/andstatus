@@ -24,7 +24,6 @@ import android.support.annotation.NonNull;
 import org.andstatus.app.FirstActivity;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -54,37 +53,13 @@ public class NotificationData {
     }
 
     PendingIntent getPendingIntent(MyContext myContext) {
-        TimelineType timeLineType;
-        switch (event) {
-            case PRIVATE:
-                timeLineType = TimelineType.PRIVATE;
-                break;
-            case OUTBOX:
-                timeLineType = TimelineType.OUTBOX;
-                break;
-            case EMPTY:
-                timeLineType = TimelineType.UNKNOWN;
-                break;
-            default:
-                timeLineType = TimelineType.NOTIFICATIONS;
-                break;
-        }
-        Timeline timeline;
-        switch(timeLineType) {
-            case UNKNOWN:
-                timeline = MyContextHolder.get().timelines().getDefault();
-                break;
-            default:
-                timeline = Timeline.getTimeline(timeLineType, myAccount.getActorId(), Origin.EMPTY);
-                break;
-        }
-
+        Timeline timeline = Timeline.getTimeline(TimelineType.from(event), myAccount.getActorId(), Origin.EMPTY);
         Intent intent = new Intent(myContext.context(), FirstActivity.class);
         // "rnd" is necessary to actually bring Extra to the target intent
         // see http://stackoverflow.com/questions/1198558/how-to-send-parameters-from-a-notification-click-to-an-activity
         intent.setData(Uri.withAppendedPath(timeline.getUri(),
                 "rnd/" + android.os.SystemClock.elapsedRealtime()));
-        return PendingIntent.getActivity(myContext.context(), timeLineType.hashCode(), intent,
+        return PendingIntent.getActivity(myContext.context(), timeline.hashCode(), intent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
     }
 

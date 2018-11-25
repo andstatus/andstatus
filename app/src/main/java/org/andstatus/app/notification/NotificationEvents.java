@@ -62,7 +62,7 @@ public class NotificationEvents {
     }
 
     NotificationEvents clearAll() {
-        MyProvider.clearNotification(myContext, Timeline.EMPTY);
+        MyProvider.clearAllNotifications(myContext);
         return load();
     }
 

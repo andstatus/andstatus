@@ -43,6 +43,7 @@ import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -244,11 +245,19 @@ public class MyProvider extends ContentProvider {
                 NoteTable._ID + "=" + noteId);
     }
 
-    public static void clearNotification(@NonNull MyContext myContext, @NonNull Timeline timeline) {
+    public static void clearAllNotifications(@NonNull MyContext myContext) {
         update(myContext, ActivityTable.TABLE_NAME,
                 ActivityTable.NEW_NOTIFICATION_EVENT + "=0",
-                timeline.isEmpty() ? "" : ActivityTable.NEW_NOTIFICATION_EVENT +
-                        SqlActorIds.fromIds(NotificationEventType.idsOfShownOn(timeline.getTimelineType())).getSql());
+                ActivityTable.NEW_NOTIFICATION_EVENT + "!=0");
+    }
+
+    public static void clearNotification(@NonNull MyContext myContext, @NonNull Timeline timeline) {
+        final List<Long> ids = NotificationEventType.idsOfShownOn(timeline.getTimelineType());
+        if (ids.size() > 0) {
+            update(myContext, ActivityTable.TABLE_NAME,
+                    ActivityTable.NEW_NOTIFICATION_EVENT + "=0",
+                    ActivityTable.NEW_NOTIFICATION_EVENT + SqlIds.fromIds(ids).getSql());
+        }
     }
 
     public static void setUnsentActivityNotification(@NonNull MyContext myContext, long activityId) {
@@ -466,7 +475,7 @@ public class MyProvider extends ContentProvider {
                 case TIMELINE:
                 case TIMELINE_ITEM:
                 case TIMELINE_SEARCH:
-                    orderBy = ActivityTable.getTimeSortOrder(uriParser.getTimelineType(), false);
+                    orderBy = ActivityTable.getTimelineSortOrder(uriParser.getTimelineType(), false);
                     break;
 
                 case ACTOR:

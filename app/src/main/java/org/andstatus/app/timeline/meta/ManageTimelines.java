@@ -33,7 +33,6 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.list.SyncLoader;
-import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.LoadableListActivity;
@@ -45,7 +44,6 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.StringUtils;
-import org.andstatus.app.util.TriState;
 import org.andstatus.app.view.EnumSelector;
 
 import java.util.stream.Collectors;
@@ -149,7 +147,7 @@ public class ManageTimelines extends LoadableListActivity {
             @Override
             public void load(ProgressPublisher publisher) {
                 items = myContext.timelines()
-                        .filter(false, TriState.UNKNOWN, TimelineType.UNKNOWN, Actor.EMPTY, Origin.EMPTY)
+                        .stream()
                         .map(timeline -> new ManageTimelinesViewItem(myContext, timeline,
                                 MyAccount.EMPTY, false))
                         .sorted(new ManageTimelinesViewItemComparator(sortByField, sortDefault, isTotal))

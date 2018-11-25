@@ -208,7 +208,7 @@ public class PersistentTimelinesTest {
         final Timeline timeline = Timeline.getTimeline(TimelineType.SENT, actorId, ma.getOrigin());
         assertEquals("Should not be combined: " + timeline, false, timeline.isCombined());
 
-        Collection<Timeline> timelines = myContext.timelines().values().stream()
+        Collection<Timeline> timelines = myContext.timelines().stream()
                 .filter(timeline1 -> timeline1.getTimelineType() == TimelineType.SENT
                         && timeline1.isCombined() && timeline1.getActorId() != 0).collect(Collectors.toList());
         assertThat(timelines, is(empty()));

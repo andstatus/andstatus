@@ -47,7 +47,7 @@ class TimelineDownloaderFollowers extends TimelineDownloader {
             case GET_FRIENDS_IDS:
                 return Connection.ApiRoutineEnum.GET_FRIENDS;
             default:
-                return Connection.ApiRoutineEnum.DUMMY;
+                return Connection.ApiRoutineEnum.DUMMY_API;
         }
 
     }

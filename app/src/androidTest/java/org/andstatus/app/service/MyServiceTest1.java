@@ -52,8 +52,7 @@ public class MyServiceTest1 extends MyServiceTest {
                 TimelineType.UNKNOWN, Actor.EMPTY, Origin.EMPTY)
                 .filter(Timeline::isSyncedAutomatically)
                 .filter(Timeline::isTimeToAutoSync)
-                .forEach(timeline -> timeline.onSyncEnded(new CommandResult()));
-        myContext.timelines().saveChanged();
+                .forEach(timeline -> timeline.onSyncEnded(myContext, new CommandResult()));
         SyncResult syncResult = new SyncResult();
         MyServiceCommandsRunner runner = new MyServiceCommandsRunner(myContext);
         runner.setIgnoreServiceAvailability(true);
@@ -63,11 +62,11 @@ public class MyServiceTest1 extends MyServiceTest {
                 runner.toString() + "; " + mService.getHttp().toString(),
                 0, mService.getHttp().getRequestsCounter());
 
-        myContext = MyContextHolder.get();
-        Timeline timelineToSync = DemoAccountInserter.getAutomaticallySyncableTimeline(myContext, myAccount);
+        MyContext myContext2 = MyContextHolder.get();
+        Timeline timelineToSync = DemoAccountInserter.getAutomaticallySyncableTimeline(myContext2, myAccount);
         timelineToSync.setSyncSucceededDate(0);
 
-        runner = new MyServiceCommandsRunner(myContext);
+        runner = new MyServiceCommandsRunner(myContext2);
         runner.setIgnoreServiceAvailability(true);
         syncResult = new SyncResult();
         runner.autoSyncAccount(myAccount, syncResult);

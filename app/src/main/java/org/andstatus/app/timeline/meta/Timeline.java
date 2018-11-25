@@ -385,12 +385,9 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     }
 
     public Timeline fromSearch(MyContext myContext, boolean globalSearch) {
-        Timeline timeline = this;
-        if (globalSearch) {
-            timeline = myContext.timelines().get(TimelineType.SEARCH, this.getActorId(), this.getOrigin(),
-                    this.getSearchQuery());
-        }
-        return timeline;
+        return globalSearch
+                ? myContext.timelines().get(TimelineType.SEARCH, getActorId(), origin, searchQuery)
+                : this;
     }
 
     public Timeline fromIsCombined(MyContext myContext, boolean isCombinedNew) {
@@ -538,7 +535,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     }
 
     public void delete(MyContext myContext) {
-        if (isRequired() && myContext.timelines().values().stream().noneMatch(this::duplicates)) {
+        if (isRequired() && myContext.timelines().stream().noneMatch(this::duplicates)) {
             MyLog.d(this, "Cannot delete required timeline: " + this);
             return;
         }
@@ -858,7 +855,24 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
                 cursor -> Timeline.fromCursor(myContext, cursor)).stream().findFirst().orElse(EMPTY);
     }
 
-    public void onSyncEnded(CommandResult result) {
+    public void onSyncEnded(MyContext myContext, CommandResult result) {
+        myContext.timelines().stream()
+                .filter(Timeline::isSyncable)
+                .filter(this::isSyncedSimultaneously)
+                .forEach(timeline -> timeline.onSyncEnded(result).save(myContext));
+    }
+
+    private boolean isSyncedSimultaneously(Timeline timeline) {
+        return (this == timeline) || (
+            !timeline.isCombined
+            && getTimelineType().getConnectionApiRoutine() == timeline.getTimelineType().getConnectionApiRoutine()
+            && searchQuery.equals(timeline.searchQuery)
+            && myAccountToSync.equals(timeline.myAccountToSync)
+            && actor.equals(timeline.actor)
+            && origin.equals(timeline.origin));
+    }
+
+    private Timeline onSyncEnded(CommandResult result) {
         if (result.hasError()) {
             syncFailedDate = System.currentTimeMillis();
             if (!StringUtils.isEmpty(result.getMessage())) {
@@ -880,6 +894,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
             downloadedItemsCountTotal += result.getDownloadedCount();
         }
         setChanged();
+        return this;
     }
 
     public long getSyncSucceededDate() {
@@ -1017,6 +1032,6 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     }
 
     public boolean withActorProfile() {
-        return !isCombined && actor.nonEmpty() && timelineType.withActorProfile();
+        return !isCombined && actor.nonEmpty() && timelineType.hasActorProfile();
     }
 }

@@ -132,8 +132,8 @@ public class MyContextTestImpl extends MyContextImpl {
 	}
 
 	@Override
-	public void clearNotification(@NonNull Timeline timeline) {
-		super.clearNotification(timeline);
+	public void clearNotifications(@NonNull Timeline timeline) {
+		super.clearNotifications(timeline);
         NotificationEventType.validValues.stream().filter(event -> event.isShownOn(timeline.getTimelineType()))
                 .forEach(androidNotifications::remove);
 	}

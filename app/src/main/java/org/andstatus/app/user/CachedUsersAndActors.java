@@ -7,7 +7,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.ActorSql;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.SqlActorIds;
+import org.andstatus.app.data.SqlIds;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.database.table.TimelineTable;
@@ -80,7 +80,7 @@ public class CachedUsersAndActors {
                 + " ON " + FriendshipTable.FRIEND_ID + "=" + ActorTable.TABLE_NAME + "." + ActorTable._ID
                 + " AND " + FriendshipTable.FOLLOWED + "=1"
                 + " AND " + FriendshipTable.TABLE_NAME + "." + FriendshipTable.ACTOR_ID
-                + SqlActorIds.fromIds(myActors.keySet()).getSql();
+                + SqlIds.fromIds(myActors.keySet()).getSql();
 
         final Function<Cursor, Void> function = cursor -> {
             Actor friend = Actor.fromCursor(myContext, cursor);

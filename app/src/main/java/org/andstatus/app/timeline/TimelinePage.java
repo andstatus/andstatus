@@ -48,7 +48,7 @@ public class TimelinePage<T extends ViewItem<T>> {
     }
 
     public void setLoadedActor(ActorListLoader loader) {
-        if (params.timeline.getTimelineType().withActorProfile()) {
+        if (params.timeline.getTimelineType().hasActorProfile()) {
             int index = loader.getList().indexOf(ActorViewItem.fromActor(params.timeline.actor));
             if (index >= 0) actorViewItem = loader.getList().get(index);
         }

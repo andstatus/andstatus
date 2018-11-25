@@ -352,7 +352,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     /**
      * Cancel notifications of the loaded timeline
      */
-    private void clearNotifications() {
+    private void clearNotificationsOnLoad() {
         MyServiceManager.sendForegroundCommand(
                 CommandData.newTimelineCommand(CommandEnum.CLEAR_NOTIFICATIONS, getParamsLoaded().getTimeline()));
     }
@@ -803,7 +803,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         }
         hideLoading(method);
         updateScreen();
-        clearNotifications();
+        clearNotificationsOnLoad();
         if (isParamsChanged) {
             MyLog.v(this, () -> method + "; Parameters changed, requesting " + otherParams.toSummary());
             showList(otherParams, TriState.TRUE);

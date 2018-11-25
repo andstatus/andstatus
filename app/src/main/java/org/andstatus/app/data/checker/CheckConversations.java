@@ -21,7 +21,7 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.SqlActorIds;
+import org.andstatus.app.data.SqlIds;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
@@ -125,7 +125,7 @@ public class CheckConversations extends DataChecker {
             sql += " WHERE " + NoteTable.CONVERSATION_ID + " IN ("
                     + "SELECT DISTINCT " + NoteTable.CONVERSATION_ID
                     + " FROM " + NoteTable.TABLE_NAME + " WHERE "
-                    + NoteTable._ID + SqlActorIds.fromIds(noteIdsOfOneConversation).getSql()
+                    + NoteTable._ID + SqlIds.fromIds(noteIdsOfOneConversation).getSql()
             + ")";
         }
 

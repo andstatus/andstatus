@@ -25,7 +25,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.ProjectionMap;
-import org.andstatus.app.data.SqlActorIds;
+import org.andstatus.app.data.SqlIds;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Audience;
@@ -48,7 +48,7 @@ public class PrivateNotesConversationLoader<T extends ConversationItem<T>> exten
         long actorId = MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, oMsg.getNoteId());
         Audience audience = Audience.fromNoteId(ma.getOrigin(), oMsg.getNoteId());
         String selection = getSelectionForActorAndAudience("=" + Long.toString(actorId),
-                SqlActorIds.fromActors(audience.getActors()).getSql());
+                SqlIds.actorIdsOf(audience.getActors()).getSql());
         Uri uri = Timeline.getTimeline(TimelineType.EVERYTHING, 0, ma.getOrigin()).getUri();
         Cursor cursor = null;
         try {

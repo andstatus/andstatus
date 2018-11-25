@@ -338,7 +338,7 @@ public class MyContextImpl implements MyContext {
 	}
 
 	@Override
-	public void clearNotification(@NonNull Timeline timeline) {
+	public void clearNotifications(@NonNull Timeline timeline) {
         notifier.clear(timeline);
 	}
 

@@ -65,9 +65,11 @@ public enum NotificationEventType {
     public boolean isShownOn(TimelineType timelineType) {
         if (this == SERVICE_RUNNING) return false;
         switch (timelineType) {
-            case NOTIFICATIONS:
             case EVERYTHING:
+            case NOTIFICATIONS:
                 return true;
+            case NEW_NOTIFICATIONS:
+                return false;
             default:
                 return visibleIn.contains(timelineType);
         }

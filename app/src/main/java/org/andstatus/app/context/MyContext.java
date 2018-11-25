@@ -64,7 +64,7 @@ public interface MyContext extends IdentifiableInstance {
     void setInForeground(boolean inForeground);
     Notifier getNotifier();
     void notify(NotificationData data);
-    void clearNotification(@NonNull Timeline timeline);
+    void clearNotifications(@NonNull Timeline timeline);
     default boolean isTestRun() {
         return false;
     }

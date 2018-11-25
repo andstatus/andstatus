@@ -91,7 +91,7 @@ public class DataPruner {
         SharedPreferences sp = SharedPreferencesUtil.getDefaultSharedPreferences();
 
         // Don't delete my activities
-        final SqlActorIds accountIds = SqlActorIds.fromIds(MyContextHolder.get().accounts().get().stream()
+        final SqlIds accountIds = SqlIds.fromIds(MyContextHolder.get().accounts().get().stream()
                 .map(MyAccount::getActorId).collect(Collectors.toList()));
         String sqlNotMyActivity = ActivityTable.TABLE_NAME + "." + ActivityTable.ACTOR_ID + accountIds.getNotSql();
         String sqlNotLatestActivityByActor = ActivityTable.TABLE_NAME + "." + ActivityTable._ID + " NOT IN("
@@ -212,7 +212,7 @@ public class DataPruner {
     }
 
     private void pruneTimelines(long latestTimestamp) {
-        myContext.timelines().values().stream().filter(t -> !t.isRequired()
+        myContext.timelines().stream().filter(t -> !t.isRequired()
                 && t.isDisplayedInSelector() == DisplayedInSelector.NEVER
                 && t.getLastChangedDate() < latestTimestamp).forEach(t -> t.delete(myContext));
     }

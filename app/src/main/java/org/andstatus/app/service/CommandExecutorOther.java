@@ -106,7 +106,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 (new AvatarDownloader(getActor())).load(execContext.getCommandData());
                 break;
             case CLEAR_NOTIFICATIONS:
-                execContext.getMyContext().clearNotification(execContext.getCommandData().getTimeline());
+                execContext.getMyContext().clearNotifications(execContext.getCommandData().getTimeline());
                 break;
             default:
                 MyLog.e(this, "Unexpected command here " + execContext.getCommandData());

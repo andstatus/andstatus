@@ -31,7 +31,7 @@ import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
-public class SqlActorIdsTest {
+public class SqlIdsTest {
     @Before
     public void setUp() {
         TestSuite.initializeWithData(this);
@@ -44,15 +44,15 @@ public class SqlActorIdsTest {
 
         Timeline timeline = MyContextHolder.get().timelines().filter(false, TriState.FALSE,
                 TimelineType.SENT, myAccount.getActor(), myAccount.getOrigin()).findFirst().orElse(Timeline.EMPTY);
-        assertNotEquals(0, SqlActorIds.forTimelineActor(timeline).size());
+        assertNotEquals(0, SqlIds.actorIdsOfTimelineActor(timeline).size());
 
         Timeline timelineCombined = MyContextHolder.get().timelines().filter(false, TriState.TRUE,
                 TimelineType.SENT, Actor.EMPTY, Origin.EMPTY).findFirst().orElse(Timeline.EMPTY);
-        assertNotEquals("No actors for " + timelineCombined,0, SqlActorIds.forTimelineActor(timelineCombined).size());
+        assertNotEquals("No actors for " + timelineCombined,0, SqlIds.actorIdsOfTimelineActor(timelineCombined).size());
 
         long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, myAccount.getOriginId(),  demoData.conversationAuthorSecondActorOid);
         assertNotEquals("No actor for " + demoData.conversationAuthorSecondActorOid,0, actorId);
         Timeline timelineUser = Timeline.getTimeline(TimelineType.SENT, actorId, myAccount.getOrigin());
-        assertNotEquals("No actors for " + timelineUser,0, SqlActorIds.forTimelineActor(timelineCombined).size());
+        assertNotEquals("No actors for " + timelineUser,0, SqlIds.actorIdsOfTimelineActor(timelineCombined).size());
     }
 }

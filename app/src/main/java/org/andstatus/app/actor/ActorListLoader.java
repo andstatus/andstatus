@@ -11,7 +11,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.ActorSql;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.SqlActorIds;
+import org.andstatus.app.data.SqlIds;
 import org.andstatus.app.data.SqlWhere;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.list.SyncLoader;
@@ -125,7 +125,7 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
     }
 
     protected String getSqlActorIds() {
-        return SqlActorIds.fromIds(items.stream().map(ViewItem::getId).collect(toList())).getSql();
+        return SqlIds.fromIds(items.stream().map(ViewItem::getId).collect(toList())).getSql();
     }
 
     protected String getSubtitle() {

@@ -13,7 +13,7 @@ import org.andstatus.app.backup.MyBackupDescriptor;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.SqlActorIds;
+import org.andstatus.app.data.SqlIds;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
@@ -533,9 +533,9 @@ public class MyAccounts implements IsEmpty {
     }
 
     @NonNull
-    public static SqlActorIds myAccountIds() {
+    public static SqlIds myAccountIds() {
         Context context = MyContextHolder.get().context();
-        return SqlActorIds.fromIds(
+        return SqlIds.fromIds(
             getAccounts(context).stream()
             .map(account -> AccountData.fromAndroidAccount(context, account).getDataLong(MyAccount.KEY_ACTOR_ID, 0))
             .filter(id -> id > 0)

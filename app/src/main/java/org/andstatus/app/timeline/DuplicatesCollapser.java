@@ -19,6 +19,7 @@ package org.andstatus.app.timeline;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.timeline.meta.TimelineType;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,7 +40,7 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
     private int maxDistanceBetweenDuplicates = MyPreferences.getMaxDistanceBetweenDuplicates();
 
     // Parameters, which may be changed during presentation of the timeline
-    protected volatile boolean collapseDuplicates = MyPreferences.isCollapseDuplicates();
+    protected volatile boolean collapseDuplicates = false;
     private final Set<Long> individualCollapsedStateIds = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
     final TimelineData<T> data;
 
@@ -72,7 +73,10 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
 
     public DuplicatesCollapser(TimelineData<T> data, DuplicatesCollapser<T> oldDuplicatesCollapser) {
         this.data = data;
-        if (oldDuplicatesCollapser != null) {
+        if (oldDuplicatesCollapser == null) {
+            collapseDuplicates = (data.params.timeline.getTimelineType() != TimelineType.NEW_NOTIFICATIONS)
+                    && MyPreferences.isCollapseDuplicates();
+        } else {
             collapseDuplicates = oldDuplicatesCollapser.collapseDuplicates;
             individualCollapsedStateIds.addAll(oldDuplicatesCollapser.individualCollapsedStateIds);
         }

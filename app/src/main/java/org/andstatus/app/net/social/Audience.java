@@ -26,7 +26,7 @@ import org.andstatus.app.data.ActorSql;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.SqlActorIds;
+import org.andstatus.app.data.SqlIds;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.database.table.NoteTable;
@@ -166,7 +166,7 @@ public class Audience implements IsEmpty {
         if (!countOnly) try {
             if (!toDelete.isEmpty()) {
                 MyProvider.delete(myContext, AudienceTable.TABLE_NAME, AudienceTable.NOTE_ID + "=" + noteId
-                        + " AND " + AudienceTable.ACTOR_ID + SqlActorIds.fromActors(toDelete).getSql(), null);
+                        + " AND " + AudienceTable.ACTOR_ID + SqlIds.actorIdsOf(toDelete).getSql(), null);
             }
             toAdd.forEach(actor -> MyProvider.insert(myContext, AudienceTable.TABLE_NAME, toContentValues(noteId, actor)));
         } catch (Exception e) {

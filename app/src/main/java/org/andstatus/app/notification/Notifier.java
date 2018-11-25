@@ -62,9 +62,11 @@ public class Notifier {
         clearAndroidNotifications(Timeline.EMPTY);
     }
 
-    public void clear(Timeline timeline) {
-        AppWidgets.of(refEvents.updateAndGet(events -> events.clear(timeline))).clearCounters().updateViews();
-        clearAndroidNotifications(timeline);
+    public void clear(@NonNull Timeline timeline) {
+        if (timeline.nonEmpty()) {
+            AppWidgets.of(refEvents.updateAndGet(events -> events.clear(timeline))).clearCounters().updateViews();
+            clearAndroidNotifications(timeline);
+        }
     }
 
     private void clearAndroidNotifications(@NonNull Timeline timeline) {

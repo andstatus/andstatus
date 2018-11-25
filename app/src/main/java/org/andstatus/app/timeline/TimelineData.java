@@ -38,8 +38,8 @@ public class TimelineData<T extends ViewItem<T>> {
 
     public TimelineData(TimelineData<T> oldData, @NonNull TimelinePage<T> thisPage) {
         final DuplicatesCollapser<T> oldCollapser = oldData == null ? null : oldData.duplicatesCollapser;
-        duplicatesCollapser = new DuplicatesCollapser<>(this, oldCollapser);
         this.params = thisPage.params;
+        duplicatesCollapser = new DuplicatesCollapser<>(this, oldCollapser);
         actorViewItem = thisPage.actorViewItem;
         isSameTimeline = oldData != null &&
                 params.getContentUri().equals(oldData.params.getContentUri());

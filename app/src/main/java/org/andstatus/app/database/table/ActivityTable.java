@@ -67,12 +67,14 @@ public final class ActivityTable implements BaseColumns {
     public static final String AUTHOR_ID = "author_id";
     public static final String LAST_UPDATE_ID = "last_update_id";
 
-    public static String getTimeSortOrder(TimelineType timelineType, boolean ascending) {
+    public static String getTimelineSortOrder(TimelineType timelineType, boolean ascending) {
         return getTimeSortField(timelineType) + (ascending ? " ASC" : " DESC");
     }
 
     public static String getTimeSortField(@NonNull TimelineType timelineType) {
-        return UPDATED_DATE;
+        return timelineType == TimelineType.NEW_NOTIFICATIONS
+                ? INS_DATE
+                : UPDATED_DATE;
     }
 
     private ActivityTable() {

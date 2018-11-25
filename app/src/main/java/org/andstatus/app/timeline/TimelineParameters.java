@@ -247,7 +247,7 @@ public class TimelineParameters {
     }
 
     private String buildSortOrderAndLimit() {
-        return  ActivityTable.getTimeSortOrder(getTimelineType(), isSortOrderAscending())
+        return  ActivityTable.getTimelineSortOrder(getTimelineType(), isSortOrderAscending())
                 + (minDate > 0 && maxDate > 0 ? "" : " LIMIT " + PAGE_SIZE);
     }
 
