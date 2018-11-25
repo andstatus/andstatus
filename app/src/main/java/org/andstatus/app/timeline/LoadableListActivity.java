@@ -323,7 +323,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
                 : "notifying change"));
 
         final BaseTimelineAdapter<T> adapter = newAdapter ? newListAdapter() : getListAdapter();
-        if (!TriState.UNKNOWN.equals(collapseDuplicates)) {
+        if (collapseDuplicates.known) {
             adapter.getListData().collapseDuplicates(collapseDuplicates.toBoolean(true), collapsedItemId);
         }
         if (newAdapter) {
@@ -408,8 +408,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
                 break;
             case PROGRESS_EXECUTING_COMMAND:
                 if (isCommandToShowInSyncIndicator(commandData)) {
-                    showSyncing("Show Progress",
-                            commandData.toCommandProgress(MyContextHolder.get()));
+                    showSyncing("Show Progress", commandData.toCommandProgress(MyContextHolder.get()));
                 }
                 break;
             case AFTER_EXECUTING_COMMAND:

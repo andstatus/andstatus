@@ -173,7 +173,7 @@ public class ManageTimelines extends LoadableListActivity {
                 view.setOnClickListener(this);
                 setPosition(view, position);
                 final ManageTimelinesViewItem item = getItem(position);
-                MyUrlSpan.showText(view, R.id.title, item.timelineTitle.title, false, true);
+                MyUrlSpan.showText(view, R.id.title, item.timelineTitle.toString(), false, true);
                 MyUrlSpan.showText(view, R.id.account, item.timelineTitle.accountName, false, true);
                 MyUrlSpan.showText(view, R.id.origin, item.timelineTitle.originName, false, true);
                 showDisplayedInSelector(view, item);

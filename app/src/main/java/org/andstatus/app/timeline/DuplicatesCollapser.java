@@ -73,7 +73,8 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
 
     public DuplicatesCollapser(TimelineData<T> data, DuplicatesCollapser<T> oldDuplicatesCollapser) {
         this.data = data;
-        if (oldDuplicatesCollapser == null) {
+        if (oldDuplicatesCollapser == null
+                || !data.params.timeline.equals(oldDuplicatesCollapser.data.params.timeline)) {
             collapseDuplicates = (data.params.timeline.getTimelineType() != TimelineType.NEW_NOTIFICATIONS)
                     && MyPreferences.isCollapseDuplicates();
         } else {

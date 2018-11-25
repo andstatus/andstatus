@@ -398,11 +398,11 @@ public class CommandData implements Comparable<CommandData> {
                 builder.withSpaceQuoted(trimConditionally(description, summaryOnly));
                 break;
             case GET_TIMELINE:
-                builder.append(TimelineTitle.from(myContext, timeline).title);
+                builder.append(TimelineTitle.from(myContext, timeline).toString());
                 break;
             case GET_OLDER_TIMELINE:
                 builder.append(WhichPage.OLDER.getTitle(myContext.context()));
-                builder.withSpace(TimelineTitle.from(myContext, timeline).title);
+                builder.withSpace(TimelineTitle.from(myContext, timeline).toString());
                 break;
             case FOLLOW:
             case UNDO_FOLLOW:
