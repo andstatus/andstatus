@@ -29,6 +29,12 @@ import org.andstatus.app.util.StringUtils;
  * @author yvolk@yurivolkov.com
  */
 public class TimelineTitle {
+    public enum Destination {
+        TIMELINE_ACTIVITY,
+        DEFAULT
+    }
+
+
     public final String title;
     public final String subTitle;
 
@@ -43,10 +49,11 @@ public class TimelineTitle {
         this.originName = originName;
     }
 
-    public static TimelineTitle from(MyContext myContext, Timeline timeline, MyAccount accountToHide, boolean namesAreHidden) {
+    public static TimelineTitle from(MyContext myContext, Timeline timeline, MyAccount accountToHide,
+                                     boolean namesAreHidden, Destination destination) {
         return new TimelineTitle(
-                calcTitle(myContext, timeline, accountToHide, namesAreHidden),
-                calcSubtitle(myContext, timeline, accountToHide, namesAreHidden),
+                calcTitle(myContext, timeline, accountToHide, namesAreHidden, destination),
+                calcSubtitle(myContext, timeline, accountToHide, namesAreHidden, destination),
                 timeline.getTimelineType().isForUser() && timeline.myAccountToSync.isValid()
                         ? timeline.myAccountToSync.toAccountButtonText(myContext) : "",
                 timeline.getTimelineType().isAtOrigin() && timeline.getOrigin().isValid()
@@ -55,10 +62,15 @@ public class TimelineTitle {
     }
 
     public static TimelineTitle from(MyContext myContext, Timeline timeline) {
-        return from(myContext, timeline, MyAccount.EMPTY, true);
+        return from(myContext, timeline, MyAccount.EMPTY, true, Destination.DEFAULT);
     }
 
-    private static String calcTitle(MyContext myContext, Timeline timeline, MyAccount accountToHide, boolean namesAreHidden) {
+    private static String calcTitle(MyContext myContext, Timeline timeline, MyAccount accountToHide,
+                                    boolean namesAreHidden, Destination destination) {
+        if (timeline.isEmpty() && destination == Destination.TIMELINE_ACTIVITY) {
+            return "AndStatus";
+        }
+
         MyStringBuilder title = new MyStringBuilder();
         if (showActor(timeline, accountToHide, namesAreHidden)) {
             if (isActorMayBeShownInSubtitle(timeline)) {
@@ -81,7 +93,11 @@ public class TimelineTitle {
     }
 
     private static String calcSubtitle(MyContext myContext, Timeline timeline, MyAccount accountToHide,
-                                       boolean namesAreHidden) {
+                                       boolean namesAreHidden, Destination destination) {
+        if (timeline.isEmpty() && destination == Destination.TIMELINE_ACTIVITY) {
+            return "";
+        }
+
         MyStringBuilder title = new MyStringBuilder();
         if (showActor(timeline, accountToHide, namesAreHidden)) {
             if (isActorMayBeShownInSubtitle(timeline)) {

@@ -37,19 +37,23 @@ public class TimelineData<T extends ViewItem<T>> {
     private final DuplicatesCollapser<T> duplicatesCollapser;
 
     public TimelineData(TimelineData<T> oldData, @NonNull TimelinePage<T> thisPage) {
-        final DuplicatesCollapser<T> oldCollapser = oldData == null ? null : oldData.duplicatesCollapser;
         this.params = thisPage.params;
-        duplicatesCollapser = new DuplicatesCollapser<>(this, oldCollapser);
+        isSameTimeline = oldData != null && params.getContentUri().equals(oldData.params.getContentUri());
         actorViewItem = thisPage.actorViewItem;
-        isSameTimeline = oldData != null &&
-                params.getContentUri().equals(oldData.params.getContentUri());
         this.pages = isSameTimeline ? new ArrayList<>(oldData.pages) : new ArrayList<>();
+        final DuplicatesCollapser<T> oldCollapser = isSameTimeline ? oldData.duplicatesCollapser : null;
+        duplicatesCollapser = new DuplicatesCollapser<>(this, oldCollapser);
         boolean collapsed = isCollapseDuplicates();
-        duplicatesCollapser.collapseDuplicates(false, 0);
+        if (!duplicatesCollapser.individualCollapsedStateIds.isEmpty()) {
+            duplicatesCollapser.collapseDuplicates(false, 0);
+        }
         addThisPage(thisPage);
-        if (collapsed) duplicatesCollapser.collapseDuplicates(true, 0);
+        if (collapsed) {
+            duplicatesCollapser.collapseDuplicates(true, 0);
+        }
         dropExcessivePage(thisPage);
-        if (oldCollapser != null && collapsed == oldCollapser.collapseDuplicates) {
+        if (oldCollapser != null && collapsed == oldCollapser.collapseDuplicates
+                && !oldCollapser.individualCollapsedStateIds.isEmpty()) {
             duplicatesCollapser.restoreCollapsedStates(oldCollapser);
         }
     }

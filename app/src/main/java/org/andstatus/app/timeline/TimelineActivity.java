@@ -54,6 +54,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.data.MatchedUri;
+import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.note.NoteAdapter;
@@ -89,6 +90,9 @@ import org.andstatus.app.view.MyContextMenu;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static org.andstatus.app.timeline.meta.TimelineTitle.Destination.DEFAULT;
+import static org.andstatus.app.timeline.meta.TimelineTitle.Destination.TIMELINE_ACTIVITY;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -160,7 +164,6 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         showSyncIndicatorSetting = SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SYNC_INDICATOR_ON_TIMELINE, true);
         if (isFinishing()) return;
 
-        getParamsNew().setTimeline(myContext.timelines().getDefault());
         contextMenu = new ActivityContextMenu(this);
 
         initializeDrawer();
@@ -226,7 +229,14 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     private void restoreActivityState(@NonNull Bundle savedInstanceState) {
-        if (getParamsNew().restoreState(savedInstanceState)) {
+        ParsedUri parsedUri = ParsedUri.fromUri(
+                Uri.parse(savedInstanceState.getString(IntentExtra.MATCHED_URI.key,"")));
+        final Timeline timeline = Timeline.fromParsedUri(myContext, parsedUri, "");
+        TimelineParameters params = new TimelineParameters(myContext,
+                timeline.isEmpty() ? myContext.timelines().getDefault() : timeline, WhichPage.CURRENT);
+        setParamsNew(params);
+
+        if (timeline.nonEmpty()) {
             contextMenu.note.loadState(savedInstanceState);
         }
         getListData().collapseDuplicates(savedInstanceState.getBoolean(
@@ -530,7 +540,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     private String timelineTypeButtonText() {
         return TimelineTitle.from(myContext, getParamsLoaded().getTimeline(),
-                myContext.accounts().getCurrentAccount(), true).title;
+                myContext.accounts().getCurrentAccount(), true, DEFAULT).title;
     }
 
     private void updateAccountButtonText(View drawerView) {
@@ -572,12 +582,14 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             MyLog.v(this, "parseNewIntent");
         }
         mRateLimitText = "";
-        getParamsNew().whichPage = WhichPage.load(
-                intentNew.getStringExtra(IntentExtra.WHICH_PAGE.key), WhichPage.CURRENT);
+        WhichPage whichPage = WhichPage.load(intentNew.getStringExtra(IntentExtra.WHICH_PAGE.key), WhichPage.CURRENT);
         String searchQuery = intentNew.getStringExtra(IntentExtra.SEARCH_QUERY.key);
-        if (!getParamsNew().parseUri(intentNew.getData(), searchQuery)) {
-            getParamsNew().setTimeline(myContext.timelines().getDefault());
-        }
+        ParsedUri parsedUri = ParsedUri.fromUri(intentNew.getData());
+        Timeline timeline = Timeline.fromParsedUri(myContext, parsedUri, searchQuery);
+        setParamsNew(new TimelineParameters(myContext,
+                timeline.isEmpty() ? myContext.timelines().getDefault() : timeline,
+                whichPage));
+
         actorProfileViewer.ensureView(getParamsNew().getTimeline().withActorProfile());
 
         if (Intent.ACTION_SEND.equals(intentNew.getAction())) {
@@ -649,8 +661,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     @Override
     protected void updateTitle(String additionalTitleText) {
-        TimelineTitle.from(myContext, getParamsLoaded().getTimeline())
-                .updateActivityTitle(this, additionalTitleText);
+        TimelineTitle.from(myContext, getParamsLoaded().getTimeline(), MyAccount.EMPTY,true,
+                TIMELINE_ACTIVITY).updateActivityTitle(this, additionalTitleText);
     }
 
     NoteContextMenu getContextMenu() {
@@ -702,7 +714,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 }
                 return getParamsLoaded();
             case EMPTY:
-                return new TimelineParameters(myContext);
+                return new TimelineParameters(myContext, Timeline.EMPTY, WhichPage.EMPTY);
             default:
                 return getParamsNew();
         }
@@ -748,9 +760,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     protected SyncLoader<T> newSyncLoader(Bundle args) {
         final String method = "newSyncLoader";
         WhichPage whichPage = WhichPage.load(args);
-        TimelineParameters params = paramsToLoad == null
-                || whichPage == WhichPage.EMPTY ?
-                new TimelineParameters(myContext) : paramsToLoad;
+        TimelineParameters params = paramsToLoad == null || whichPage == WhichPage.EMPTY
+                ? new TimelineParameters(myContext, Timeline.EMPTY, whichPage) : paramsToLoad;
         if (params.whichPage != WhichPage.EMPTY) {
             MyLog.v(this, () -> method + ": " + params);
             Intent intent = getIntent();
@@ -1172,9 +1183,15 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     @NonNull
+    public TimelineParameters setParamsNew(TimelineParameters params) {
+        paramsNew = params;
+        return paramsNew;
+    }
+
+    @NonNull
     public TimelineParameters getParamsNew() {
         if (paramsNew == null) {
-            paramsNew = new TimelineParameters(myContext);
+            paramsNew = new TimelineParameters(myContext, Timeline.EMPTY, WhichPage.EMPTY);
         }
         return paramsNew;
     }

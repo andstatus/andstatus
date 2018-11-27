@@ -35,7 +35,8 @@ public class ManageTimelinesViewItem extends ViewItem<ManageTimelinesViewItem> {
                                  MyAccount accountToHide, boolean namesAreHidden) {
         super(false);
         this.timeline = timeline;
-        timelineTitle = TimelineTitle.from(myContext, timeline, accountToHide, namesAreHidden);
+        timelineTitle = TimelineTitle.from(myContext, timeline, accountToHide, namesAreHidden,
+                TimelineTitle.Destination.DEFAULT);
         countSince = timeline.getCountSince();
     }
 

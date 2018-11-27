@@ -30,6 +30,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.TimelineData;
 import org.andstatus.app.timeline.TimelinePage;
 import org.andstatus.app.timeline.TimelineParameters;
+import org.andstatus.app.timeline.WhichPage;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.ViewUtils;
@@ -51,9 +52,8 @@ public class ConversationAdapter extends BaseNoteAdapter<ConversationViewItem> {
                 new TimelineData<>(
                         null,
                         new TimelinePage<>(
-                                new TimelineParameters(contextMenu.getMyContext()).setTimeline(
-                                        Timeline.getTimeline(TimelineType.CONVERSATION, 0, origin)
-                                ),
+                                new TimelineParameters(contextMenu.getMyContext(),
+                                        Timeline.getTimeline(TimelineType.CONVERSATION, 0, origin), WhichPage.EMPTY),
                                 oMsgs
                         )
                 )

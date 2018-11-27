@@ -25,7 +25,6 @@ import android.support.annotation.NonNull;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -47,9 +46,9 @@ public class TimelineParameters {
      * are being loaded in a case User scrolls down to the end of list.
      */
     static final int PAGE_SIZE = 200;
-    Timeline timeline = Timeline.EMPTY;
+    final Timeline timeline;
 
-    WhichPage whichPage = WhichPage.EMPTY;
+    final WhichPage whichPage;
     private Set<String> mProjection;
 
     long maxDate = 0;
@@ -65,9 +64,16 @@ public class TimelineParameters {
     volatile long minDateLoaded = 0;
     volatile long maxDateLoaded = 0;
 
+    public TimelineParameters(MyContext myContext, Timeline timeline, WhichPage whichPage) {
+        this.myContext = myContext;
+        this.timeline = timeline;
+        this.whichPage = whichPage;
+    }
+
     public static TimelineParameters clone(@NonNull TimelineParameters prev, WhichPage whichPage) {
-        TimelineParameters params = new TimelineParameters(prev.myContext);
-        params.whichPage = whichPage == WhichPage.ANY ? prev.whichPage : whichPage;
+        TimelineParameters params = new TimelineParameters(prev.myContext,
+                whichPage == WhichPage.EMPTY ? Timeline.EMPTY : prev.timeline,
+                whichPage == WhichPage.ANY ? prev.whichPage : whichPage);
         if (whichPage != WhichPage.EMPTY) {
             enrichNonEmptyParameters(params, prev);
         }
@@ -76,7 +82,6 @@ public class TimelineParameters {
 
     private static void enrichNonEmptyParameters(TimelineParameters params, TimelineParameters prev) {
         params.mLoaderCallbacks = prev.mLoaderCallbacks;
-        params.timeline = prev.getTimeline();
 
         switch (params.whichPage) {
             case OLDER:
@@ -123,10 +128,6 @@ public class TimelineParameters {
         return maxDate == 0 && minDate > 0;
     }
 
-    public TimelineParameters(MyContext myContext) {
-        this.myContext = myContext;
-    }
-
     public boolean isEmpty() {
         return timeline.isEmpty() || whichPage == WhichPage.EMPTY;
     }
@@ -153,11 +154,6 @@ public class TimelineParameters {
 
     public Timeline getTimeline() {
         return timeline;
-    }
-
-    public TimelineParameters setTimeline(Timeline timeline) {
-        this.timeline = timeline;
-        return this;
     }
 
     public TimelineType getTimelineType() {
@@ -200,20 +196,6 @@ public class TimelineParameters {
         }
         result = 31 * result + (int) (maxDate ^ (maxDate >>> 32));
         return result;
-    }
-
-    boolean restoreState(@NonNull Bundle savedState) {
-        whichPage = WhichPage.CURRENT;
-        minDate = 0;
-        maxDate = 0;
-        return parseUri(Uri.parse(savedState.getString(IntentExtra.MATCHED_URI.key,"")), "");
-    }
-    
-    /** @return true if parsed successfully */
-    boolean parseUri(Uri uri, String searchQuery) {
-        ParsedUri parsedUri = ParsedUri.fromUri(uri);
-        timeline = Timeline.fromParsedUri(myContext, parsedUri, searchQuery);
-        return !timeline.isEmpty();
     }
 
     public String toSummary() {

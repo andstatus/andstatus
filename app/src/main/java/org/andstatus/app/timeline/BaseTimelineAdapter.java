@@ -47,7 +47,7 @@ public abstract class BaseTimelineAdapter<T extends ViewItem<T>> extends BaseAda
         this(myContext,
                 new TimelineData<T>(
                         null,
-                        new TimelinePage<T>(new TimelineParameters(myContext).setTimeline(timeline), items)
+                        new TimelinePage<T>(new TimelineParameters(myContext, timeline, WhichPage.EMPTY), items)
                 )
         );
     }
