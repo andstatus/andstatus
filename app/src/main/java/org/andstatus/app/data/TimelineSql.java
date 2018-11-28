@@ -109,7 +109,7 @@ public class TimelineSql {
             case SENT:
                 actWhere.append(ActivityTable.ACTOR_ID, SqlIds.actorIdsOfTimelineActor(timeline));
                 break;
-            case NEW_NOTIFICATIONS:
+            case UNREAD_NOTIFICATIONS:
                 actWhere.append(ActivityTable.NOTIFIED, "=" + TriState.TRUE.id)
                         .append(ActivityTable.NEW_NOTIFICATION_EVENT, "!=0")
                         .append(ActivityTable.NOTIFIED_ACTOR_ID, SqlIds.actorIdsOfTimelineActor(timeline));

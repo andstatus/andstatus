@@ -72,7 +72,7 @@ public final class ActivityTable implements BaseColumns {
     }
 
     public static String getTimeSortField(@NonNull TimelineType timelineType) {
-        return timelineType == TimelineType.NEW_NOTIFICATIONS
+        return timelineType == TimelineType.UNREAD_NOTIFICATIONS
                 ? INS_DATE
                 : UPDATED_DATE;
     }

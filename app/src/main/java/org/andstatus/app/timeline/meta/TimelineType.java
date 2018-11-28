@@ -48,7 +48,7 @@ public enum TimelineType implements SelectableEnum {
     /** The Home timeline and other information (replies...). */
     HOME(ListScope.USER, "home", R.string.timeline_title_home, 0, HOME_TIMELINE),
     NOTIFICATIONS(ListScope.USER, "notifications", R.string.notifications_title, 0, NOTIFICATIONS_TIMELINE),
-    NEW_NOTIFICATIONS(ListScope.USER, "new_notifications", R.string.new_notifications, 0, NOTIFICATIONS_TIMELINE),
+    UNREAD_NOTIFICATIONS(ListScope.USER, "unread_notifications", R.string.unread_notifications, 0, NOTIFICATIONS_TIMELINE),
     PUBLIC(ListScope.ORIGIN, "public", R.string.timeline_title_public, 0, PUBLIC_TIMELINE),
     EVERYTHING(ListScope.ORIGIN, "everything", R.string.timeline_title_everything, 0, DUMMY_API),
     SEARCH(ListScope.ORIGIN, "search", R.string.options_menu_search, 0, SEARCH_NOTES),
@@ -120,7 +120,7 @@ public enum TimelineType implements SelectableEnum {
             case EMPTY:
                 return NOTIFICATIONS;
             default:
-                return NEW_NOTIFICATIONS;
+                return UNREAD_NOTIFICATIONS;
         }
     }
 
@@ -202,11 +202,11 @@ public enum TimelineType implements SelectableEnum {
             FRIENDS,
             HOME,
             INTERACTIONS,
-            NEW_NOTIFICATIONS,
             NOTIFICATIONS,
             OUTBOX,
             PRIVATE,
-            SENT
+            SENT,
+            UNREAD_NOTIFICATIONS
     ).collect(Collectors.toSet());
 
     private static final Set<TimelineType> defaultOriginTimelineTypes = Stream.of(
@@ -242,10 +242,10 @@ public enum TimelineType implements SelectableEnum {
             case FRIENDS:
             case HOME:
             case INTERACTIONS:
-            case NEW_NOTIFICATIONS:
             case NOTIFICATIONS:
             case OUTBOX:
             case SENT:
+            case UNREAD_NOTIFICATIONS:
                 return true;
             default:
                 return false;
@@ -273,13 +273,13 @@ public enum TimelineType implements SelectableEnum {
             case FRIENDS:
             case HOME:
             case INTERACTIONS:
-            case NEW_NOTIFICATIONS:
             case NOTIFICATIONS:
             case OUTBOX:
             case PRIVATE:
             case PUBLIC:
             case SEARCH:
             case SENT:
+            case UNREAD_NOTIFICATIONS:
                 return true;
             case FAVORITES:
             default:
@@ -294,9 +294,9 @@ public enum TimelineType implements SelectableEnum {
             case FRIENDS:
             case HOME:
             case INTERACTIONS:
-            case NEW_NOTIFICATIONS:
             case NOTIFICATIONS:
             case SENT:
+            case UNREAD_NOTIFICATIONS:
                 return true;
             default:
                 return false;

@@ -68,7 +68,7 @@ public enum NotificationEventType {
             case EVERYTHING:
             case NOTIFICATIONS:
                 return true;
-            case NEW_NOTIFICATIONS:
+            case UNREAD_NOTIFICATIONS:
                 return false;
             default:
                 return visibleIn.contains(timelineType);

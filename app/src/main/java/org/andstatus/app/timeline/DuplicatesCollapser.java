@@ -75,7 +75,7 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
         if (oldDuplicatesCollapser == null) {
             switch (data.params.timeline.getTimelineType()) {
                 case UNKNOWN:
-                case NEW_NOTIFICATIONS:
+                case UNREAD_NOTIFICATIONS:
                     collapseDuplicates = false;
                     break;
                 default:
