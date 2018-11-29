@@ -47,8 +47,8 @@ public enum TimelineType implements SelectableEnum {
     UNKNOWN(ListScope.ORIGIN, "unknown", R.string.timeline_title_unknown, 0, DUMMY_API),
     /** The Home timeline and other information (replies...). */
     HOME(ListScope.USER, "home", R.string.timeline_title_home, 0, HOME_TIMELINE),
-    NOTIFICATIONS(ListScope.USER, "notifications", R.string.notifications_title, 0, NOTIFICATIONS_TIMELINE),
     UNREAD_NOTIFICATIONS(ListScope.USER, "unread_notifications", R.string.unread_notifications, 0, NOTIFICATIONS_TIMELINE),
+    NOTIFICATIONS(ListScope.USER, "notifications", R.string.notifications_title, 0, NOTIFICATIONS_TIMELINE),
     PUBLIC(ListScope.ORIGIN, "public", R.string.timeline_title_public, 0, PUBLIC_TIMELINE),
     EVERYTHING(ListScope.ORIGIN, "everything", R.string.timeline_title_everything, 0, DUMMY_API),
     SEARCH(ListScope.ORIGIN, "search", R.string.options_menu_search, 0, SEARCH_NOTES),
@@ -168,7 +168,7 @@ public enum TimelineType implements SelectableEnum {
             case PRIVATE:
             case FAVORITES:
             case HOME:
-            case NOTIFICATIONS:
+            case UNREAD_NOTIFICATIONS:
             case SENT:
                 return true;
             default:

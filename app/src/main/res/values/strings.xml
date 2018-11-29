@@ -247,6 +247,7 @@
   <string name="manage_accounts">Manage accounts</string>
   <string name="manage_accounts_android">Manage AndStatus accounts in Android Settings</string>
   <string name="manage_timelines">Manage Timelines</string>
+  <string name="mark_all_as_read">Mark all as read</string>
   <string name="max_distance_between_duplicates_title">Maximum distance between duplicates</string>
   <string name="maximum_size_of_attachment_mb">Maximum size of an attachment, MB</string>
   <string name="maximum_size_of_cached_media_mb">Maximum size of cached media files (including attachments), MB</string>

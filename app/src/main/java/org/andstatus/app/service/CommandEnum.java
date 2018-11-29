@@ -70,6 +70,7 @@ public enum CommandEnum {
 
     /** Clear previous notifications (because e.g. a user opened a Timeline) */
     CLEAR_NOTIFICATIONS("clear-notifications", 0, -20, ConnectionRequired.ANY),
+    MARK_ALL_NOTIFICATIONS_AS_READ("mark-all-notifications-as-read", 0, -20, ConnectionRequired.ANY),
 
     /** Stop the service after finishing all asynchronous treads (i.e. not immediately!) */
     STOP_SERVICE("stop-service"),

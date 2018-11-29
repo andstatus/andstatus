@@ -105,6 +105,7 @@
         <item name="sendIcon">@drawable/ic_send_black_24dp</item>
         <item name="settingsIcon">@drawable/ic_settings_black_24dp</item>
         <item name="backIcon">@drawable/ic_arrow_back_black_24dp</item>
+        <item name="markAllAsReadIcon">@drawable/ic_done_all_black_24dp</item>
     </style>
 
     <style name="ActionBarIconsWhite">
@@ -121,6 +122,7 @@
         <item name="sendIcon">@drawable/ic_send_white_24dp</item>
         <item name="settingsIcon">@drawable/ic_settings_white_24dp</item>
         <item name="backIcon">@drawable/ic_arrow_back_white_24dp</item>
+        <item name="markAllAsReadIcon">@drawable/ic_done_all_white_24dp</item>
     </style>
 
     <style name="TextAppearance.Larger" parent="TextAppearance.AppCompat">

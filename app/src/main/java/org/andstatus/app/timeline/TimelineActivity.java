@@ -391,9 +391,28 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.create_note, menu);
+        prepareMarkAllAsReadButton(menu);
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.timeline, menu);
         return true;
+    }
+
+    private void prepareMarkAllAsReadButton(Menu menu) {
+        MenuItem item = menu.findItem(R.id.markAllAsReadButton);
+        if (item != null) {
+            boolean enable = getParamsNew().timeline.getTimelineType() == TimelineType.UNREAD_NOTIFICATIONS;
+            item.setEnabled(enable);
+            item.setVisible(enable);
+            if (enable) {
+                item.setOnMenuItemClickListener(item1 -> {
+                    MyServiceManager.sendForegroundCommand(
+                                CommandData.newTimelineCommand(CommandEnum.MARK_ALL_NOTIFICATIONS_AS_READ,
+                                getParamsLoaded().getTimeline()));
+                    refreahFromCache();
+                    return true;
+                });
+            }
+        }
     }
 
     @Override
@@ -460,11 +479,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 syncWithInternet(getParamsLoaded().getTimeline(), true, true);
                 break;
             case R.id.refresh_menu_item:
-                if (getListData().mayHaveYoungerPage() || getListView().getLastVisiblePosition() > TimelineParameters.PAGE_SIZE / 2) {
-                    showList(WhichPage.CURRENT);
-                } else {
-                    showList(WhichPage.YOUNGEST);
-                }
+                refreahFromCache();
                 break;
             case R.id.commands_queue_id:
                 startActivity(new Intent(getActivity(), QueueViewer.class));
@@ -482,6 +497,14 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 return super.onOptionsItemSelected(item);
         }
         return false;
+    }
+
+    private void refreahFromCache() {
+        if (getListData().mayHaveYoungerPage() || getListView().getLastVisiblePosition() > TimelineParameters.PAGE_SIZE / 2) {
+            showList(WhichPage.CURRENT);
+        } else {
+            showList(WhichPage.YOUNGEST);
+        }
     }
 
     private void onHelp() {

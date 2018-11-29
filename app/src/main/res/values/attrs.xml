@@ -60,6 +60,7 @@
 		<attr name="settingsIcon" format="reference" />
 		<attr name="backIcon" format="reference" />
 		<attr name="arrowDropDownIcon" format="reference" />
+		<attr name="markAllAsReadIcon" format="reference" />
 
 		<attr name="msgCountIcon" format="reference" />
 		<attr name="followingCountIcon" format="reference" />

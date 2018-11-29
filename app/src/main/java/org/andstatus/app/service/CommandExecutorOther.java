@@ -105,6 +105,9 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             case GET_AVATAR:
                 (new AvatarDownloader(getActor())).load(execContext.getCommandData());
                 break;
+            case MARK_ALL_NOTIFICATIONS_AS_READ:
+                execContext.getMyContext().getNotifier().clearAll();
+                break;
             case CLEAR_NOTIFICATIONS:
                 execContext.getMyContext().clearNotifications(execContext.getCommandData().getTimeline());
                 break;

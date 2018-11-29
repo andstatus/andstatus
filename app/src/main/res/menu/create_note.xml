@@ -19,6 +19,12 @@
       xmlns:app="http://schemas.android.com/apk/res-auto"
       tools:context=".timeline.TimelineActivity">
     <item
+        android:id="@+id/markAllAsReadButton"
+        android:icon="?attr/markAllAsReadIcon"
+        app:showAsAction="always"
+        android:title="@string/mark_all_as_read">
+    </item>
+    <item
         android:id="@+id/createNoteButton"
         android:icon="?attr/postMessageIcon"
         app:showAsAction="always"
