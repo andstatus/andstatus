@@ -64,7 +64,7 @@ public abstract class BaseTimelineAdapter<T extends ViewItem<T>> extends BaseAda
     }
 
     @NonNull
-    TimelineData<T> getListData() {
+    protected TimelineData<T> getListData() {
         return listData;
     }
 

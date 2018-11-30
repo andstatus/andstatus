@@ -58,10 +58,10 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
     }
 
     @Override
-    public StringBuilder getDetails(Context context) {
-        StringBuilder builder = super.getDetails(context);
+    public MyStringBuilder getDetails(Context context, boolean showReceivedTime) {
+        MyStringBuilder builder = super.getDetails(context, showReceivedTime);
         if (MyPreferences.isShowDebuggingInfoInUi()) {
-            MyStringBuilder.appendWithSpace(builder, "(i" + indentLevel + ",r" + replyLevel + ")");
+            builder.withSpace("(i" + indentLevel + ",r" + replyLevel + ")");
         }
         return builder;
     }

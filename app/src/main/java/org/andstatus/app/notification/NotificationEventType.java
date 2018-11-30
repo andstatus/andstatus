@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
@@ -39,7 +38,7 @@ public enum NotificationEventType {
     ANNOUNCE(1, "notifications_announce", singletonList(TimelineType.HOME), true, R.string.notification_events_announce),
     FOLLOW(2, "notifications_follow", emptyList(), true, R.string.notification_events_follow),
     LIKE(3, "notifications_like", emptyList(), true, R.string.notification_events_like),
-    MENTION(4, "notifications_mention", asList(TimelineType.HOME, TimelineType.INTERACTIONS), true, R.string.notification_events_mention),
+    MENTION(4, "notifications_mention", singletonList(TimelineType.HOME), true, R.string.notification_events_mention),
     OUTBOX(5, "notifications_outbox", singletonList(TimelineType.OUTBOX), true, org.andstatus.app.R.string.notification_events_outbox),
     PRIVATE(6, "notifications_private", singletonList(TimelineType.PRIVATE), true, R.string.notification_events_private),
     SERVICE_RUNNING(8, "", emptyList(), true, R.string.syncing),
@@ -68,6 +67,8 @@ public enum NotificationEventType {
             case EVERYTHING:
             case NOTIFICATIONS:
                 return true;
+            case INTERACTIONS:
+                return this != OUTBOX;
             case UNREAD_NOTIFICATIONS:
                 return false;
             default:

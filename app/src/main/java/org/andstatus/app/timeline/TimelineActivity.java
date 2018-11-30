@@ -408,7 +408,6 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                     MyServiceManager.sendForegroundCommand(
                                 CommandData.newTimelineCommand(CommandEnum.MARK_ALL_NOTIFICATIONS_AS_READ,
                                 getParamsLoaded().getTimeline()));
-                    refreahFromCache();
                     return true;
                 });
             }
@@ -479,7 +478,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 syncWithInternet(getParamsLoaded().getTimeline(), true, true);
                 break;
             case R.id.refresh_menu_item:
-                refreahFromCache();
+                refreshFromCache();
                 break;
             case R.id.commands_queue_id:
                 startActivity(new Intent(getActivity(), QueueViewer.class));
@@ -499,7 +498,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         return false;
     }
 
-    private void refreahFromCache() {
+    private void refreshFromCache() {
         if (getListData().mayHaveYoungerPage() || getListView().getLastVisiblePosition() > TimelineParameters.PAGE_SIZE / 2) {
             showList(WhichPage.CURRENT);
         } else {
@@ -1136,6 +1135,11 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                     mRateLimitText = commandData.getResult().getRemainingHits() + "/"
                             + commandData.getResult().getHourlyLimit();
                     updateTitle(mRateLimitText);
+                }
+                break;
+            case MARK_ALL_NOTIFICATIONS_AS_READ:
+                if (getParamsNew().timeline.getTimelineType() == TimelineType.UNREAD_NOTIFICATIONS) {
+                    refreshFromCache();
                 }
                 break;
             default:

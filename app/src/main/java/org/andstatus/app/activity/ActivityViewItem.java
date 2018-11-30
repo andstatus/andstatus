@@ -36,7 +36,6 @@ import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.RelativeTime;
 
 /** View on ActivityStream
  * @author yvolk@yurivolkov.com
@@ -45,7 +44,6 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
     public static final ActivityViewItem EMPTY = new ActivityViewItem(true);
     private long id = 0;
     public final Origin origin;
-    private long updatedDate = 0;
     public final ActivityType activityType;
 
     private long noteId;
@@ -68,6 +66,7 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
         id = DbUtils.getLong(cursor, ActivityTable.ACTIVITY_ID);
         origin = MyContextHolder.get().origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID));
         activityType = ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
+        insertedDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
         updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
         actor = ActorViewItem.fromActor(Actor.fromId(origin, DbUtils.getLong(cursor, ActivityTable.ACTOR_ID)));
         noteId = DbUtils.getLong(cursor, ActivityTable.NOTE_ID);
@@ -151,13 +150,13 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
         return super.duplicates(timeline, other);
     }
 
-    String getDetails(Context context) {
-        StringBuilder builder = new StringBuilder(RelativeTime.getDifference(context, updatedDate));
+    protected String getDetails(Context context, boolean showReceivedTime) {
+        MyStringBuilder builder = getMyStringBuilderWithTime(context, showReceivedTime);
         if (isCollapsed()) {
-            MyStringBuilder.appendWithSpace(builder, "(+" + getChildrenCount() + ")");
+            builder.withSpace("(+" + getChildrenCount() + ")");
         }
         if (MyPreferences.isShowDebuggingInfoInUi()) {
-            MyStringBuilder.appendWithSpace(builder, "(actId=" + id + ")");
+            builder.withSpace("(actId=" + id + ")");
         }
         return builder.toString();
     }

@@ -30,7 +30,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             style="@style/messageDetailsAppearance"
-            tools:text="5 minutes ago"/>
+            tools:text="5 minutes ago (received 1 minute ago)"/>
     </LinearLayout>
 
     <org.andstatus.app.graphics.AvatarView

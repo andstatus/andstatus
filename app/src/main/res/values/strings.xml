@@ -356,6 +356,7 @@
   <string name="reblogged_by">reposted by %1$s</string>
   <string name="reblogged_by_pumpio">shared by %1$s</string>
   <string name="reblogged_by_twitter">retweeted by %1$s</string>
+  <string name="received_sometime_ago">received %s</string>
   <string name="refresh_title">Refresh from cache</string>
   <string name="refresh_timeline_automatically_title">Refresh timeline automatically</string>
   <string name="refresh_timeline_automatically_summary">Timeline is refreshed from a local cache. No Internet access is needed.</string>

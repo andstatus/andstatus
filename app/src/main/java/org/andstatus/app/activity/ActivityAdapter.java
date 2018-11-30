@@ -27,6 +27,7 @@ import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.note.NoteAdapter;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.TimelineData;
+import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyUrlSpan;
 
 /**
@@ -37,6 +38,7 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
     private final ActorAdapter actorAdapter;
     private final NoteAdapter noteAdapter;
     private final ActorAdapter objActorAdapter;
+    private final boolean showReceivedTime;
 
     public ActivityAdapter(ActivityContextMenu contextMenu, TimelineData<ActivityViewItem> listData) {
         super(contextMenu.note.getMyContext(), listData);
@@ -44,6 +46,7 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
         actorAdapter = new ActorAdapter(contextMenu.actor, new TimelineDataActorWrapper(listData));
         noteAdapter = new NoteAdapter(contextMenu.note, new TimelineDataNoteWrapper(listData));
         objActorAdapter = new ActorAdapter(contextMenu.objActor, new TimelineDataObjActorWrapper(listData));
+        showReceivedTime = listData.params.getTimelineType() == TimelineType.UNREAD_NOTIFICATIONS;
     }
 
     @Override
@@ -57,7 +60,7 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
         if (item.noteViewItem.getId() == 0) {
             noteView.setVisibility(View.GONE);
         } else {
-            noteAdapter.populateView(view, item.noteViewItem, position);
+            noteAdapter.populateView(view, item.noteViewItem, showReceivedTime, position);
             noteView.setOnCreateContextMenuListener(contextMenu.note);
             noteView.setOnClickListener(noteAdapter);
             noteView.setVisibility(View.VISIBLE);
@@ -104,7 +107,8 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
             }
             MyUrlSpan.showText(view, R.id.action_title, item.actor.getWebFingerIdOrUsername()
                     + " " + item.activityType.getActedTitle(contextMenu.actor.getActivity()), false, false);
-            MyUrlSpan.showText(view, R.id.action_details, item.getDetails(contextMenu.actor.getActivity()), false, false);
+            MyUrlSpan.showText(view, R.id.action_details,
+                    item.getDetails(contextMenu.actor.getActivity(), showReceivedTime), false, false);
             actorView.setOnCreateContextMenuListener(contextMenu.actor);
             actorView.setOnClickListener(actorAdapter);
             actorView.setVisibility(View.VISIBLE);

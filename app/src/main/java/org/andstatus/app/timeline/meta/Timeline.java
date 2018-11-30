@@ -856,20 +856,45 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     }
 
     public void onSyncEnded(MyContext myContext, CommandResult result) {
+        onSyncEnded(result).save(myContext);
         myContext.timelines().stream()
                 .filter(Timeline::isSyncable)
                 .filter(this::isSyncedSimultaneously)
-                .forEach(timeline -> timeline.onSyncEnded(result).save(myContext));
+                .forEach(timeline -> timeline.onSyncedSimultaneously(this).save(myContext));
+    }
+
+    private Timeline onSyncedSimultaneously(Timeline other) {
+        if (syncFailedDate < other.syncFailedDate) {
+            syncFailedDate = other.syncFailedDate;
+            errorMessage = other.errorMessage;
+        }
+        if (syncFailedTimesCount < other.syncFailedTimesCount) syncFailedTimesCount = other.syncFailedTimesCount;
+        if (syncFailedTimesCountTotal < other.syncFailedTimesCountTotal) syncFailedTimesCountTotal = other.syncFailedTimesCountTotal;
+        if (syncSucceededDate < other.syncSucceededDate) syncSucceededDate = other.syncSucceededDate;
+        if (syncedTimesCount < other.syncedTimesCount) syncedTimesCount = other.syncedTimesCount;
+        if (syncedTimesCountTotal < other.syncedTimesCountTotal) syncedTimesCountTotal = other.syncedTimesCountTotal;
+
+        if (newItemsCount < other.newItemsCount) newItemsCount = other.newItemsCount;
+        if (newItemsCountTotal < other.newItemsCountTotal) newItemsCountTotal = other.newItemsCountTotal;
+        if (downloadedItemsCount < other.downloadedItemsCount) downloadedItemsCount = other.downloadedItemsCount;
+        if (downloadedItemsCountTotal < other.downloadedItemsCountTotal) downloadedItemsCountTotal = other.downloadedItemsCountTotal;
+
+        onNewMsg(other.youngestItemDate, other.youngestPosition);
+        onNewMsg(other.oldestItemDate, other.oldestPosition);
+        setYoungestSyncedDate(other.youngestSyncedDate);
+        setOldestSyncedDate(other.oldestSyncedDate);
+
+        return this;
     }
 
     private boolean isSyncedSimultaneously(Timeline timeline) {
-        return (this == timeline) || (
-            !timeline.isCombined
+        return !this.equals(timeline)
+            && !timeline.isCombined
             && getTimelineType().getConnectionApiRoutine() == timeline.getTimelineType().getConnectionApiRoutine()
             && searchQuery.equals(timeline.searchQuery)
             && myAccountToSync.equals(timeline.myAccountToSync)
             && actor.equals(timeline.actor)
-            && origin.equals(timeline.origin));
+            && origin.equals(timeline.origin);
     }
 
     private Timeline onSyncEnded(CommandResult result) {

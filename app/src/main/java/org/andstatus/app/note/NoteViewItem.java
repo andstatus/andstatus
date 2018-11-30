@@ -71,6 +71,7 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
         inReplyToActor = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID));
         isPublic = DbUtils.getTriState(cursor, NoteTable.PUBLIC);
         audience = Audience.fromNoteId(getOrigin(), getNoteId(), isPublic);
+        insertedDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
         activityUpdatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
         updatedDate = DbUtils.getLong(cursor, NoteTable.UPDATED_DATE);
         noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
@@ -96,6 +97,6 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
     @Override
     public String toString() {
         return MyLog.formatKeyValue(this, I18n.trimTextAt(getContent().toString(), 40) + ","
-                + getDetails(getMyContext().context()));
+                + getDetails(getMyContext().context(), false));
     }
 }

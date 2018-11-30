@@ -23,7 +23,6 @@ import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyStringBuilder;
 
 import java.util.Set;
@@ -107,11 +106,10 @@ public abstract class ConversationItem<T extends ConversationItem<T>> extends Ba
     }
 
     @Override
-    public StringBuilder getDetails(Context context) {
-        final StringBuilder builder = super.getDetails(context);
+    public MyStringBuilder getDetails(Context context, boolean showReceivedTime) {
+        final MyStringBuilder builder = super.getDetails(context, showReceivedTime);
         if (inReplyToViewItem != null) {
-            MyStringBuilder.appendWithSpace(builder, "(" + inReplyToViewItem.historyOrder
-                    + ")");
+            builder.withSpace("(" + inReplyToViewItem.historyOrder + ")");
         }
         return builder;
     }

@@ -43,9 +43,10 @@ public class ManageTimelinesContextMenu extends MyContextMenu {
 
         int order = 0;
         try {
+            TimelineTitle title = TimelineTitle.from(getMyContext(), getViewItem().timeline);
             new ContextMenuHeader(getActivity(), menu)
-                    .setTitle(getViewItem().timelineTitle.title)
-                    .setSubtitle(getViewItem().timelineTitle.subTitle);
+                    .setTitle(title.title)
+                    .setSubtitle(title.subTitle);
             ManageTimelinesContextMenuItem.SHOW_NOTES.addTo(menu, ++order, R.string.show_timeline_messages);
             if (getViewItem().timeline.isSyncable()) {
                 ManageTimelinesContextMenuItem.SYNC_NOW.addTo(menu, ++order, R.string.options_menu_sync);

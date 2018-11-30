@@ -16,23 +16,31 @@
 
 package org.andstatus.app.timeline;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.R;
 import org.andstatus.app.actor.ActorListLoader;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.IsEmpty;
+import org.andstatus.app.util.MyStringBuilder;
+import org.andstatus.app.util.RelativeTime;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
+
 public class ViewItem<T extends ViewItem<T>> implements IsEmpty {
     private final List<T> children = new ArrayList<>();
     private final boolean isEmpty;
     private ViewItem parent = EmptyViewItem.EMPTY;
+    protected long insertedDate = 0;
+    public long updatedDate = 0;
 
     protected ViewItem(boolean isEmpty) {
         this.isEmpty = isEmpty;
@@ -104,6 +112,20 @@ public class ViewItem<T extends ViewItem<T>> implements IsEmpty {
 
     public long getTopmostId() {
         return getParent().isEmpty() ? getId() : getParent().getId();
+    }
+
+    @NonNull
+    protected MyStringBuilder getMyStringBuilderWithTime(Context context, boolean showReceivedTime) {
+        final String difference = RelativeTime.getDifference(context, updatedDate);
+        MyStringBuilder builder = MyStringBuilder.of(difference);
+        if (showReceivedTime && insertedDate > SOME_TIME_AGO) {
+            final String receivedDifference = RelativeTime.getDifference(context, insertedDate);
+            if (!receivedDifference.equals(difference)) {
+                builder.withSpace("(" + String.format(context.getText(R.string.received_sometime_ago).toString(),
+                        receivedDifference) + ")");
+            }
+        }
+        return builder;
     }
 
     public void addActorsToLoad(ActorListLoader loader) {

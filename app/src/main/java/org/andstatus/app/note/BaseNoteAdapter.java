@@ -57,16 +57,17 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
         view.setOnClickListener(this);
         setPosition(view, position);
         T item = getItem(position);
-        populateView(view, item, position);
+        populateView(view, item, false, position);
         return view;
     }
 
-    public void populateView(ViewGroup view, T item, int position) {
+    public void populateView(ViewGroup view, T item, boolean showReceivedTime, int position) {
         showRebloggers(view, item);
         MyUrlSpan.showText(view, R.id.note_author, item.author.getName(), false, false);
         showNoteName(view, item);
         showNoteContent(view, item);
-        MyUrlSpan.showText(view, R.id.note_details, item.getDetails(contextMenu.getActivity()).toString(), false, false);
+        MyUrlSpan.showText(view, R.id.note_details, item.getDetails(contextMenu.getActivity(), showReceivedTime)
+                .toString(), false, false);
 
         showAvatarEtc(view, item);
 

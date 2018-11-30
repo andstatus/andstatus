@@ -39,7 +39,6 @@ import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 
@@ -58,7 +57,6 @@ import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends ViewItem<T> {
     private static final int MIN_LENGTH_TO_COMPARE = 5;
     MyContext myContext = MyContextHolder.get();
-    long updatedDate = 0;
     long activityUpdatedDate = 0;
 
     public DownloadStatus noteStatus = DownloadStatus.UNKNOWN;
@@ -130,9 +128,9 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         return linkedMyAccount;
     }
 
-    private void setCollapsedStatus(StringBuilder noteDetails) {
+    private void setCollapsedStatus(MyStringBuilder noteDetails) {
         if (isCollapsed()) {
-            MyStringBuilder.appendWithSpace(noteDetails, "(+" + getChildrenCount() + ")");
+            noteDetails.withSpace("(+" + getChildrenCount() + ")");
         }
     }
 
@@ -195,50 +193,47 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         return !rebloggers.isEmpty();
     }
 
-    public StringBuilder getDetails(Context context) {
-        StringBuilder builder = new StringBuilder(RelativeTime.getDifference(context, updatedDate));
+    public MyStringBuilder getDetails(Context context, boolean showReceivedTime) {
+        MyStringBuilder builder = getMyStringBuilderWithTime(context, showReceivedTime);
         setInReplyTo(context, builder);
         setAudience(context, builder);
         setNoteSource(context, builder);
         setAccountDownloaded(builder);
         setNoteStatus(context, builder);
         setCollapsedStatus(builder);
-        if (detailsSuffix.length() > 0) MyStringBuilder.appendWithSpace(builder, detailsSuffix.toString());
+        if (detailsSuffix.length() > 0) builder.withSpace(detailsSuffix.toString());
         return builder;
     }
 
-    protected void setInReplyTo(Context context, StringBuilder noteDetails) {
+    protected void setInReplyTo(Context context, MyStringBuilder noteDetails) {
         if (inReplyToNoteId == 0 || inReplyToActor.isEmpty()) return;
 
-        MyStringBuilder.appendWithSpace(noteDetails, String.format(context.getText(R.string.message_source_in_reply_to).toString(),
-                inReplyToActor.getName()));
+        noteDetails.withSpace(String.format(context.getText(R.string.message_source_in_reply_to).toString(), inReplyToActor.getName()));
     }
 
-    private void setAudience(Context context, StringBuilder noteDetails) {
+    private void setAudience(Context context, MyStringBuilder noteDetails) {
         if (isPublic.isFalse && !audienceToShow.isEmpty()) {
-            noteDetails.append(" " + String.format(
-                    context.getText(R.string.message_source_to).toString(),
+            noteDetails.withSpace(String.format(context.getText(R.string.message_source_to).toString(),
                     audienceToShow.stream().map(ActorViewItem::getName).collect(joining(", "))));
         }
     }
 
-    private void setNoteSource(Context context, StringBuilder noteDetails) {
+    private void setNoteSource(Context context, MyStringBuilder noteDetails) {
         if (!SharedPreferencesUtil.isEmpty(noteSource) && !"ostatus".equals(noteSource)
                 && !"unknown".equals(noteSource)) {
-            noteDetails.append(" " + String.format(
-                    context.getText(R.string.message_source_from).toString(), noteSource));
+            noteDetails.withSpace(String.format(context.getText(R.string.message_source_from).toString(), noteSource));
         }
     }
 
-    private void setAccountDownloaded(StringBuilder noteDetails) {
+    private void setAccountDownloaded(MyStringBuilder noteDetails) {
         if (MyPreferences.isShowMyAccountWhichDownloadedActivity() && linkedMyAccount.isValid()) {
-            noteDetails.append(" a:" + linkedMyAccount.getShortestUniqueAccountName(myContext));
+            noteDetails.withSpace("a:" + linkedMyAccount.getShortestUniqueAccountName(myContext));
         }
     }
 
-    private void setNoteStatus(Context context, StringBuilder noteDetails) {
+    private void setNoteStatus(Context context, MyStringBuilder noteDetails) {
         if (noteStatus != DownloadStatus.LOADED) {
-            noteDetails.append(" (").append(noteStatus.getTitle(context)).append(")");
+            noteDetails.withSpace("(").append(noteStatus.getTitle(context)).append(")");
         }
     }
 
