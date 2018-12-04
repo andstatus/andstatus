@@ -29,27 +29,27 @@ import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.StringUtils;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.util.MyHtml.LINEBREAK_HTML;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class HtmlContentInserter {
-    private MyAccount ma;
+public class HtmlContentTester {
+    private final MyAccount ma;
     public static final String HTML_BODY_IMG_STRING = "A note with <b>HTML</b> <i>img</i> tag: "
             + "<img src='http://static.fsf.org/dbd/hollyweb.jpeg' alt='Stop DRM in HTML5' />"
             + ", <a href='http://www.fsf.org/'>the link in 'a' tag</a> <br/>" 
             + "and a plain text link to the issue 60: https://github.com/andstatus/andstatus/issues/60";
 
-    public void insertHtml() {
+    public HtmlContentTester() {
         Origin origin = MyContextHolder.get().origins().fromName(demoData.conversationOriginName);
         assertTrue(demoData.conversationOriginName + " exists",
                 origin.getOriginType() != OriginType.UNKNOWN);
         ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(demoData.conversationAccountName + " exists", ma.isValid());
-        testHtmlContent();
     }
 
-    private void testHtmlContent() {
+    public void insertPumpIoHtmlContent() {
         Actor author = new DemoNoteInserter(ma).buildActorFromOid("acct:html@example.com");
         assertEquals("Author1: " + author, MyContextState.READY, author.origin.myContext.state());
         author.setAvatarUrl("http://png-5.findicons.com/files/icons/2198/dark_glass/128/html.png");
@@ -58,7 +58,7 @@ public class HtmlContentInserter {
                 + "<p>This is a second line, <b>Bold</b> formatting." 
                 + "<br /><i>This is italics</i>. <b>And this is bold</b> <u>The text is underlined</u>.</p>"
                 + "<p>A separate paragraph.</p>";
-        assertFalse("HTML removed", MyHtml.fromHtml(bodyString).contains("<"));
+        assertFalse("HTML removed", MyHtml.toPlainText(bodyString).contains("<"));
         assertHtmlNote(author, bodyString, null);
 
         assertHtmlNote(author, HTML_BODY_IMG_STRING, demoData.htmlNoteOid);
@@ -74,10 +74,11 @@ public class HtmlContentInserter {
     }
 
 	private void assertHtmlNoteContentAllowed(Actor author,
-                                                          String bodyString, String noteOid, boolean htmlContentAllowed) {
+                                              String bodyString, String noteOid, boolean htmlContentAllowed) {
         DemoNoteInserter mi = new DemoNoteInserter(ma);
         assertEquals("Author: " + author, MyContextState.READY, author.origin.myContext.state());
-        final AActivity activity = mi.buildActivity(author, "", bodyString, null, noteOid, DownloadStatus.LOADED);
+        final AActivity activity = mi.buildActivity(author, "", bodyString, null, noteOid,
+                DownloadStatus.LOADED);
         mi.onActivity(activity);
 
         Note noteStored = Note.loadContentById(MyContextHolder.get(), activity.getNote().noteId);
@@ -85,7 +86,8 @@ public class HtmlContentInserter {
         if (htmlContentAllowed) {
             assertEquals("HTML preserved", bodyString, noteStored.getContent());
         } else {
-            assertEquals("HTML removed", MyHtml.fromHtml(bodyString), noteStored.getContent());
+            assertFalse("HTML should be removed: " + noteStored.getContent(),
+                    noteStored.getContent().replaceAll(LINEBREAK_HTML, "\n").contains("<"));
         }
         assertEquals("Stored content " + activity.getNote(), activity.getNote().getContentToSearch(),
                 noteStored.getContentToSearch());

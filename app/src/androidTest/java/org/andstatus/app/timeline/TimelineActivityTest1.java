@@ -194,7 +194,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest<ActivityViewItem
 
     private void broadcastCommandExecuted() {
         CommandData commandData = CommandData.newAccountCommand(CommandEnum.LIKE,
-                demoData.getConversationMyAccount());
+                demoData.getPumpioConversationAccount());
         MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND)
                 .broadcast();

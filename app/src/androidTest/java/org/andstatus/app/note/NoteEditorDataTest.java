@@ -7,6 +7,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.StringUtils;
@@ -46,7 +47,7 @@ public class NoteEditorDataTest {
         NoteEditorData data = NoteEditorData.newReply(ma, inReplyToMsgId)
                 .addToAudience(recipientId)
                 .setReplyToConversationParticipants(replyAll)
-                .setContent("Some text here " + demoData.testRunUid);
+                .setContent("Some text here " + demoData.testRunUid, TextMediaType.UNKNOWN);
         assertFalse(data.toString(), data.getContent().contains("@"));
         data.addMentionsToText();
         assertEquals(recipientId, data.activity.getNote().audience().getFirstNonPublic().actorId);

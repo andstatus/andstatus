@@ -48,13 +48,13 @@ public class ActorListWorkTest extends ActivityTest<ActorList> {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, demoData.getConversationOrigin().getId(),
+        long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, demoData.getPumpioConversationOrigin().getId(),
                 demoData.conversationMentionsNoteOid);
         assertTrue(noteId > 0);
         MyLog.i(this, "setUp ended");
 
         return new Intent(MyAction.VIEW_ACTORS.getAction(),
-                MatchedUri.getActorListUri(ActorListType.ACTORS_OF_NOTE, demoData.getConversationOrigin().getId(),
+                MatchedUri.getActorListUri(ActorListType.ACTORS_OF_NOTE, demoData.getPumpioConversationOrigin().getId(),
                         noteId, ""));
     }
 

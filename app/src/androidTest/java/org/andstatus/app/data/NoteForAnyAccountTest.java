@@ -83,7 +83,7 @@ public class NoteForAnyAccountTest {
         activity4.setActor(anotherMan);
         activity4.setActivity(reblogged1);
         activity4.setTimelinePosition(MyLog.uniqueDateTimeFormatted());
-        activity4.setUpdatedDate(System.currentTimeMillis());
+        activity4.setUpdatedNow(0);
         mi.onActivity(activity4);
 
         NoteForAnyAccount noteForAnyAccount4 = new NoteForAnyAccount(MyContextHolder.get(),

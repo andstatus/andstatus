@@ -25,6 +25,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
@@ -114,8 +115,8 @@ public class Note extends AObject {
                 DbUtils.getString(cursor, NoteTable.NOTE_OID),
                 DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS)));
         note.noteId = DbUtils.getLong(cursor, NoteTable._ID);
-        note.setName(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.NAME)));
-        note.setContent(MyHtml.prepareForView(DbUtils.getString(cursor, NoteTable.CONTENT)));
+        note.setName(DbUtils.getString(cursor, NoteTable.NAME));
+        note.setContent(DbUtils.getString(cursor, NoteTable.CONTENT), TextMediaType.HTML);
         return note;
     }
 
@@ -177,24 +178,12 @@ public class Note extends AObject {
     }
 
     public void setName(String name) {
-        if (StringUtils.isEmpty(name)) {
-            this.name = "";
-        } else if (isHtmlContentAllowed()) {
-            this.name = MyHtml.stripUnnecessaryNewlines(MyHtml.unescapeHtml(name));
-        } else {
-            this.name = MyHtml.fromHtml(name);
-        }
+        this.name = MyHtml.toCompactPlainText(name);
         contentToSearch.reset();
     }
 
-    public void setContent(String content) {
-        if (StringUtils.isEmpty(content)) {
-            this.content = "";
-        } else if (isHtmlContentAllowed()) {
-            this.content = MyHtml.stripUnnecessaryNewlines(MyHtml.unescapeHtml(content));
-        } else {
-            this.content = MyHtml.fromHtml(content);
-        }
+    public void setContent(String content, TextMediaType mediaType) {
+        this.content = MyHtml.toContentStoredAsHtml(content, mediaType, isHtmlContentAllowed());
         contentToSearch.reset();
     }
 
@@ -350,7 +339,7 @@ public class Note extends AObject {
         noteId = note.noteId;
         updatedDate = note.updatedDate;
         name = note.name;
-        setContent(note.content);
+        setContent(note.content, TextMediaType.HTML);
         inReplyTo = note.inReplyTo;
         replies = note.replies;
         conversationOid = note.conversationOid;
@@ -405,5 +394,12 @@ public class Note extends AObject {
 
     public void setAudience(Audience audience) {
         this.audience = audience;
+    }
+
+    public void setUpdatedNow(int level) {
+        if (isEmpty() || level > 10) return;
+
+        setUpdatedDate(MyLog.uniqueCurrentTimeMS());
+        inReplyTo.setUpdatedNow(level + 1);
     }
 }

@@ -20,6 +20,7 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.OriginConfig;
@@ -172,13 +173,10 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
 
     @Override
     protected void setNoteBodyFromJson(Note note, JSONObject jso) throws JSONException {
-        boolean bodyFound = false;
         if (data.getOrigin().isHtmlContentAllowed() && !jso.isNull(HTML_BODY_FIELD_NAME)) {
-            note.setContent(jso.getString(HTML_BODY_FIELD_NAME));
-            bodyFound = true;
-        }
-        if (!bodyFound) {
-            super.setNoteBodyFromJson(note, jso);
+            note.setContent(jso.getString(HTML_BODY_FIELD_NAME), TextMediaType.HTML);
+        } else if (jso.has("text")) {
+            note.setContent(jso.getString("text"), TextMediaType.PLAIN);
         }
     }
 
@@ -231,7 +229,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
         favoritedActivity.setUpdatedDate(SOME_TIME_AGO);
 
         Note note = favoritedActivity.getNote();
-        note.setContent(matcher.replaceFirst("$2"));
+        note.setContent(matcher.replaceFirst("$2"), TextMediaType.UNKNOWN);
         note.setUpdatedDate(SOME_TIME_AGO);
         note.setStatus(DownloadStatus.LOADED);  // TODO: Maybe we need to invent some other status for partially loaded...
         note.setInReplyTo(AActivity.EMPTY);

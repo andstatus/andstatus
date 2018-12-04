@@ -40,7 +40,7 @@ public class ParsedUriTest {
 
     @Test
     public void testActorList() {
-        assertOneActorList(demoData.getConversationOrigin().getId());
+        assertOneActorList(demoData.getPumpioConversationOrigin().getId());
         assertOneActorList(0);
     }
 

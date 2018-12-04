@@ -20,6 +20,7 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -363,7 +364,7 @@ public abstract class ConnectionTwitterLike extends Connection {
 
     protected void setNoteBodyFromJson(Note note, JSONObject jso) throws JSONException {
         if (jso.has("text")) {
-            note.setContent(jso.getString("text"));
+            note.setContent(jso.getString("text"), TextMediaType.HTML);
         }
     }
 

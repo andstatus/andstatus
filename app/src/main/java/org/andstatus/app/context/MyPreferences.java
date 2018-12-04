@@ -28,7 +28,6 @@ import org.andstatus.app.util.SharedPreferencesUtil;
  * @author yvolk@yurivolkov.com
  */
 public class MyPreferences {
-    private static final String TAG = MyPreferences.class.getSimpleName();
 
     // ----------------------------------------------------------
     // Accounts

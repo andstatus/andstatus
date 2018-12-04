@@ -47,7 +47,7 @@ public class CommandDataTest {
     @Test
     public void testQueue() throws InterruptedException {
         long time0 = System.currentTimeMillis(); 
-        CommandData commandData = CommandData.newUpdateStatus(demoData.getConversationMyAccount(), 1, 4);
+        CommandData commandData = CommandData.newUpdateStatus(demoData.getPumpioConversationAccount(), 1, 4);
         testQueueOneCommandData(commandData, time0);
 
         long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, MyContextHolder.get().origins()
@@ -122,7 +122,7 @@ public class CommandDataTest {
     @Test
     public void testPriority() {
         Queue<CommandData> queue = new PriorityBlockingQueue<>(100);
-        final MyAccount ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
+        final MyAccount ma = demoData.getGnuSocialAccount();
         queue.add(CommandData.newActorCommand(CommandEnum.GET_FRIENDS, 123, ""));
         queue.add(CommandData.newActorCommand(CommandEnum.GET_TIMELINE, ma.getActorId(), ma.getUsername()));
         queue.add(CommandData.newSearch(SearchObjects.NOTES, MyContextHolder.get(), ma.getOrigin(), "q1"));
@@ -166,7 +166,7 @@ public class CommandDataTest {
         long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOrigin().getId(),
                 demoData.conversationAuthorThirdActorOid);
         CommandData data = CommandData.actOnActorCommand(
-                command, demoData.getConversationMyAccount(), actorId, "");
+                command, demoData.getPumpioConversationAccount(), actorId, "");
         String summary = data.toCommandSummary(MyContextHolder.get());
         String msgLog = command.name() + "; Summary:'" + summary + "'";
         MyLog.v(this, msgLog);

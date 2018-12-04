@@ -136,7 +136,7 @@ public class ActorList extends NoteEditorListActivity {
 
     @Override
     protected CharSequence getCustomTitle() {
-        mSubtitle = I18n.trimTextAt(MyHtml.fromHtml(getListLoader().getSubtitle()), 80);
+        mSubtitle = I18n.trimTextAt(MyHtml.toCompactPlainText(getListLoader().getSubtitle()), 80);
         final MyStringBuilder title = new MyStringBuilder();
         if (mActorListType.scope == ListScope.ORIGIN) {
             title.withSpace(mActorListType.title(this));

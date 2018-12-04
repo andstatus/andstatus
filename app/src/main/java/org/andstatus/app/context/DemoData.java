@@ -282,7 +282,11 @@ public final class DemoData {
         }
     }
 
-    public MyAccount getConversationMyAccount() {
+    public MyAccount getGnuSocialAccount() {
+        return getMyAccount(gnusocialTestAccountName);
+    }
+
+    public MyAccount getPumpioConversationAccount() {
         return getMyAccount(conversationAccountName);
     }
 
@@ -304,8 +308,12 @@ public final class DemoData {
         return Actor.EMPTY;
     }
 
-    public Origin getConversationOrigin() {
-        return getConversationMyAccount().getOrigin();
+    public Origin getPumpioConversationOrigin() {
+        return getPumpioConversationAccount().getOrigin();
+    }
+
+    public Origin getGnuSocialOrigin() {
+        return getGnuSocialAccount().getOrigin();
     }
 
     public static void crashTest(BooleanSupplier supplier) {

@@ -42,6 +42,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.origin.Origin;
@@ -103,7 +104,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
                 .addToAudience(MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOrigin().getId(),
                         demoData.conversationEntryAuthorOid))
                 .addMentionsToText()
-                .setContent("Some static text " + demoData.testRunUid);
+                .setContent("Some static text " + demoData.testRunUid, TextMediaType.UNKNOWN);
     }
 
     @Test

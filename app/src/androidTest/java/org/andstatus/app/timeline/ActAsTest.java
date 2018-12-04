@@ -51,8 +51,7 @@ public class ActAsTest extends TimelineActivityTest<ActivityViewItem> {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        final MyAccount ma = MyContextHolder.get().accounts()
-                .fromAccountName(demoData.gnusocialTestAccountName);
+        final MyAccount ma = demoData.getGnuSocialAccount();
         assertTrue(ma.isValid());
         MyContextHolder.get().accounts().setCurrentAccount(ma);
 

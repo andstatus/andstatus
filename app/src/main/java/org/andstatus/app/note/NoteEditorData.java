@@ -34,6 +34,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.DownloadType;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.NoteTable;
@@ -110,7 +111,7 @@ public class NoteEditorData implements IsEmpty {
         long noteId = activity.getNote().noteId;
         Note note = activity.getNote();
         note.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId));
-        note.setContent(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId));
+        note.setContent(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId), TextMediaType.HTML);
         note.setAudience(Audience.load(myContext, activity.accountActor.origin, noteId));
 
         long inReplyToNoteId = inReplyToNoteIdIn == 0
@@ -127,7 +128,7 @@ public class NoteEditorData implements IsEmpty {
             final Note inReplyToNote = inReplyTo.getNote();
             inReplyToNote.noteId = inReplyToNoteId;
             inReplyToNote.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, inReplyToNoteId));
-            inReplyToNote.setContent(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, inReplyToNoteId));
+            inReplyToNote.setContent(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, inReplyToNoteId), TextMediaType.HTML);
             note.setInReplyTo(inReplyTo);
         }
 
@@ -253,8 +254,8 @@ public class NoteEditorData implements IsEmpty {
         return Note.mayBeEdited(ma.getOrigin().getOriginType(), activity.getNote().getStatus());
     }
 
-    public NoteEditorData setContent(String content) {
-        activity.getNote().setContent(content);
+    public NoteEditorData setContent(String content, TextMediaType mediaType) {
+        activity.getNote().setContent(content, mediaType);
         return this;
     }
 
@@ -339,7 +340,7 @@ public class NoteEditorData implements IsEmpty {
             }
         }
         if (!StringUtils.isEmpty(mentions)) {
-            setContent(mentions.trim() + " " + getContent());
+            setContent(mentions.trim() + " " + getContent(), TextMediaType.HTML);
         }
     }
 
@@ -354,7 +355,7 @@ public class NoteEditorData implements IsEmpty {
             if (!StringUtils.isEmpty(getContent()) && !(getContent() + " ").contains(bodyText2)) {
                 bodyText2 = getContent().trim() + " " + bodyText2;
             }
-            setContent(bodyText2);
+            setContent(bodyText2, TextMediaType.HTML);
         }
         return this;
     }

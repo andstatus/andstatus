@@ -42,7 +42,7 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest<ActivityView
 
         mService = new MyServiceTestHelper();
         mService.setUp(demoData.gnusocialTestAccountName);
-        ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
+        ma = demoData.getGnuSocialAccount();
         assertTrue(ma.isValid());
         MyContextHolder.get().accounts().setCurrentAccount(ma);
 

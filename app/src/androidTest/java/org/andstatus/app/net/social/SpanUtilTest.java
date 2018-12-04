@@ -64,7 +64,7 @@ public class SpanUtilTest {
 
     @Test
     public void linkifyHtml() {
-        MyAccount ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
+        MyAccount ma = demoData.getGnuSocialAccount();
         Audience audience = new Audience(ma.getOrigin());
         addRecipient(ma, audience, "johnsmith", "232380");
         final String username2 = ma.getUsername();

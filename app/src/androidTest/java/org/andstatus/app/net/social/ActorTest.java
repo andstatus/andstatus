@@ -118,7 +118,7 @@ public class ActorTest {
     public void extractActorsFromContent() {
         String content = "<a href=\"https://loadaverage.org/andstatus\">AndStatus</a> started following" +
                 " <a href=\"https://gnusocial.no/mcscx2\">ex mcscx2@quitter.no</a>.";
-        List<Actor> actors = Actor.newUnknown(demoData.getConversationMyAccount().getOrigin())
+        List<Actor> actors = Actor.newUnknown(demoData.getPumpioConversationAccount().getOrigin())
                 .extractActorsFromContent(content, Actor.EMPTY);
         assertEquals("Actors: " + actors, 1, actors.size());
         assertEquals("Actors: " + actors, "mcscx2@quitter.no", actors.get(0).getWebFingerId());

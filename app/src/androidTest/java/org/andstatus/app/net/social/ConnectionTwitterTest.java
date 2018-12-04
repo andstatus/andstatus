@@ -35,7 +35,6 @@ import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
-import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.TriState;
 import org.junit.Before;
 import org.junit.Test;
@@ -188,7 +187,7 @@ public class ConnectionTwitterTest {
         AActivity activity = connection.getNote("834306097003581440");
         assertEquals("No note returned " + activity, AObjectType.NOTE, activity.getObjectType());
         Note note = activity.getNote();
-        assertEquals("Body of this note", MyHtml.unescapeHtml(body), note.getContent());
+        assertEquals("Body of this note", body, note.getContent());
         assertEquals("Body of this note", ",update,streckensperrung,zw,berliner,tor,bergedorf,ersatzverkehr,mit,bussen," +
                 "und,taxis,störungsdauer,bis,ca,10,uhr,hvv,#hvv,sbahnhh,#sbahnhh,", note.getContentToSearch());
 

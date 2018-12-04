@@ -43,7 +43,7 @@ public class UnsentNotesTest extends TimelineActivityTest<ActivityViewItem> {
         TestSuite.initializeWithData(this);
 
         mService.setUp(null);
-        MyAccount ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
+        MyAccount ma = demoData.getGnuSocialAccount();
         assertTrue(ma.isValid());
         MyContextHolder.get().accounts().setCurrentAccount(ma);
 

@@ -19,6 +19,7 @@ package org.andstatus.app.net.social;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.util.MyLog;
@@ -224,7 +225,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     protected void setNoteBodyFromJson(Note note, JSONObject jso) throws JSONException {
         boolean bodyFound = false;
         if (!jso.isNull("full_text")) {
-            note.setContent(jso.getString("full_text"));
+            note.setContent(jso.getString("full_text"), TextMediaType.UNKNOWN);
             bodyFound = true;
         }
         if (!bodyFound) {

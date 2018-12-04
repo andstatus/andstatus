@@ -110,8 +110,8 @@ public class SpanUtil {
                 (xs1, xs2) -> {xs1.addAll(xs2); return xs1;});
     }
 
-    public static Spannable contentToSpannable(String name, Audience audience) {
-        return spansModifier(audience).apply(MyUrlSpan.toSpannable(MyHtml.prepareForView(name), true));
+    public static Spannable contentToSpannable(String contentHtml, Audience audience) {
+        return spansModifier(audience).apply(MyUrlSpan.toSpannable(MyHtml.prepareForView(contentHtml), true));
     }
 
     public static Function<Spannable, Spannable> spansModifier(Audience audience) {

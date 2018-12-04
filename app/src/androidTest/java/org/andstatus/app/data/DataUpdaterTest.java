@@ -74,7 +74,7 @@ public class DataUpdaterTest {
 
     @Test
     public void testFriends() throws ConnectionException {
-        MyAccount ma = demoData.getConversationMyAccount();
+        MyAccount ma = demoData.getPumpioConversationAccount();
         Actor accountActor = ma.getActor();
         String noteOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB";
         DemoNoteInserter.deleteOldNote(accountActor.origin, noteOid);
@@ -97,7 +97,7 @@ public class DataUpdaterTest {
         AActivity activity = AActivity.newPartialNote(accountActor, somebody, noteOid, System.currentTimeMillis(),
                 DownloadStatus.LOADED);
         Note note = activity.getNote();
-        note.setContent("The test note by Somebody at run " + demoData.testRunUid);
+        note.setContent("The test note by Somebody at run " + demoData.testRunUid, TextMediaType.PLAIN);
         note.via = "MyCoolClient";
         note.url = "http://identi.ca/somebody/comment/dasdjfdaskdjlkewjz1EhSrTRB";
 
@@ -154,7 +154,7 @@ public class DataUpdaterTest {
 
     @Test
     public void testPrivateNoteToMyAccount() throws ConnectionException {
-        MyAccount ma = demoData.getConversationMyAccount();
+        MyAccount ma = demoData.getPumpioConversationAccount();
         Actor accountActor = ma.getActor();
 
         String noteOid = "https://pumpity.net/api/comment/sa23wdi78dhgjerdfddajDSQ-" + demoData.testRunUid;
@@ -190,7 +190,7 @@ public class DataUpdaterTest {
 
     @Test
     public void noteFavoritedByOtherActor() throws ConnectionException {
-        MyAccount ma = demoData.getConversationMyAccount();
+        MyAccount ma = demoData.getPumpioConversationAccount();
         Actor accountActor = ma.getActor();
 
         String authorUsername = "anybody@pumpity.net";
@@ -201,7 +201,7 @@ public class DataUpdaterTest {
                 author, "https://pumpity.net/api/comment/sdajklsdkiewwpdsldkfsdasdjWED" +  demoData.testRunUid,
                 13312697000L, DownloadStatus.LOADED);
         Note note = activity.getNote();
-        note.setContent("This test note will be favorited by First Reader from http://pumpity.net");
+        note.setContent("This test note will be favorited by First Reader from http://pumpity.net", TextMediaType.PLAIN);
         note.via = "SomeOtherClient";
 
         String otherUsername = "firstreader@identi.ca";
@@ -277,7 +277,7 @@ public class DataUpdaterTest {
     }
 
     private void oneReplyNoteFavoritedByMyActor(String iterationId, boolean favorited) {
-        MyAccount ma = demoData.getConversationMyAccount();
+        MyAccount ma = demoData.getPumpioConversationAccount();
         Actor accountActor = ma.getActor();
 
         String authorUsername = "example@pumpity.net";
@@ -288,7 +288,7 @@ public class DataUpdaterTest {
                 "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123" + iterationId + demoData.testRunUid,
                 13312795000L, DownloadStatus.LOADED);
         Note note = activity.getNote();
-        note.setContent("The test note by Example from the http://pumpity.net " +  iterationId);
+        note.setContent("The test note by Example\n from the http://pumpity.net " +  iterationId, TextMediaType.PLAIN);
         note.via = "UnknownClient";
         if (favorited) note.addFavoriteBy(accountActor, TriState.TRUE);
 
@@ -366,7 +366,7 @@ public class DataUpdaterTest {
         AActivity activity = AActivity.newPartialNote(accountActor, accountActor, "",
                 System.currentTimeMillis(), DownloadStatus.SENDING);
         Note note = activity.getNote();
-        note.setContent("Unsent note with an attachment " + demoData.testRunUid);
+        note.setContent("Unsent note with an attachment " + demoData.testRunUid, TextMediaType.UNKNOWN);
         note.attachments.add(Attachment.fromUri(demoData.localImageTestUri));
         new DataUpdater(ma).onActivity(activity);
         assertNotEquals("Note added " + activity, 0, note.noteId);
@@ -386,7 +386,7 @@ public class DataUpdaterTest {
         AActivity activity2 = AActivity.newPartialNote(accountActor, activity.getAuthor(), oid,
                 System.currentTimeMillis(), DownloadStatus.LOADED);
         Note note2 = activity2.getNote();
-        note2.setContent("Just sent: " + note.getContent());
+        note2.setContent("Just sent: " + note.getContent(), TextMediaType.UNKNOWN);
         note2.attachments.add(Attachment.fromUri(demoData.image1Url));
         note2.noteId = note.noteId;
         new DataUpdater(ma).onActivity(activity2);
@@ -407,7 +407,7 @@ public class DataUpdaterTest {
 
     @Test
     public void testUsernameChanged() {
-        MyAccount ma = TestSuite.getMyContextForTest().accounts().fromAccountName(demoData.gnusocialTestAccountName);
+        MyAccount ma = demoData.getGnuSocialAccount();
         Actor accountActor = ma.getActor();
         String username = "peter" + demoData.testRunUid;
         Actor actor1 = new DemoNoteInserter(ma).buildActorFromOid("34804" + demoData.testRunUid);
@@ -464,7 +464,7 @@ public class DataUpdaterTest {
 
     @Test
     public void testInsertActor() {
-        MyAccount ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
+        MyAccount ma = demoData.getGnuSocialAccount();
         Actor actor = new DemoNoteInserter(ma).buildActorFromOid("34807" + demoData.testRunUid);
         Actor accountActor = ma.getActor();
 
@@ -506,7 +506,7 @@ public class DataUpdaterTest {
 
     @Test
     public void testReplyInBody() {
-        MyAccount ma = demoData.getConversationMyAccount();
+        MyAccount ma = demoData.getPumpioConversationAccount();
         String buddyUsername = "buddy" +  demoData.testRunUid + "@example.com";
         String content = "@" + buddyUsername + " I'm replying to you in a note's body."
                 + " Hope you will see this as a real reply!";
@@ -534,7 +534,7 @@ public class DataUpdaterTest {
     }
 
     private void addOneNote4testReplyInContent(String buddyUsername, String content, boolean isReply) {
-        MyAccount ma = demoData.getConversationMyAccount();
+        MyAccount ma = demoData.getPumpioConversationAccount();
         Actor accountActor = ma.getActor();
 
         DataUpdater di = new DataUpdater(ma);
@@ -547,7 +547,7 @@ public class DataUpdaterTest {
         AActivity activity = AActivity.newPartialNote(accountActor, somebody, String.valueOf(System.nanoTime()),
                 System.currentTimeMillis(), DownloadStatus.LOADED);
         Note note = activity.getNote();
-        note.setContent(content);
+        note.setContent(content, TextMediaType.UNKNOWN);
         note.via = "MyCoolClient";
 
         long noteId = di.onActivity(activity).getNote().noteId;
@@ -571,7 +571,7 @@ public class DataUpdaterTest {
 
     @Test
     public void testMention() {
-        MyAccount ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
+        MyAccount ma = demoData.getGnuSocialAccount();
         Actor accountActor = ma.getActor();
         MyAccount myMentionedAccount = demoData.getMyAccount(demoData.gnusocialTestAccount2Name);
         Actor myMentionedUser = myMentionedAccount.getActor().setUsername(myMentionedAccount.getUsername());
@@ -622,7 +622,7 @@ public class DataUpdaterTest {
         AActivity activity1 = AActivity.newPartialNote(accountActor, author, String.valueOf(System.nanoTime()),
                 System.currentTimeMillis(), DownloadStatus.LOADED);
         Note note = activity1.getNote();
-        note.setContent(content);
+        note.setContent(content, TextMediaType.UNKNOWN);
         note.via = "AndStatus";
         return activity1;
     }

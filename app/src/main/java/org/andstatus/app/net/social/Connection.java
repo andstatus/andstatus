@@ -335,8 +335,7 @@ public abstract class Connection {
      *      POST statuses/update</a>
      */
     public abstract AActivity updateNote(String name, String content, String noteOid, Audience audience,
-                                         String inReplyToOid, Uri mediaUri)
-            throws ConnectionException;
+                                         String inReplyToOid, Uri mediaUri) throws ConnectionException;
 
     /**
      * Post Reblog ("retweet")
@@ -344,8 +343,7 @@ public abstract class Connection {
      * 
      * @param rebloggedNoteOid id of the Reblogged note
      */
-    public abstract AActivity announce(String rebloggedNoteOid)
-            throws ConnectionException;
+    public abstract AActivity announce(String rebloggedNoteOid) throws ConnectionException;
 
     /**
      * Universal method for several Timeline Types...

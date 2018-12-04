@@ -24,7 +24,7 @@ import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
-import org.andstatus.app.util.MyLog;
+import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.junit.Before;
@@ -87,7 +87,7 @@ public class ConnectionMastodonTest {
         assertEquals("Note Oid " + activity, "22", note.oid);
         assertEquals("Note url" + activity, "https://neumastodon.com/@t131t1/22", note.url);
         assertEquals("Name", "This is a test spoiler", note.getName());
-        assertEquals("Body", "<p>I'm figuring out how to work with Mastodon</p>", note.getContent());
+        assertEquals("Body", "<p>I&apos;m figuring out how to work with Mastodon</p>", note.getContent());
         assertEquals("Note application", "Web", note.via);
 
         assertEquals("Media attachments", 1, note.attachments.size());
@@ -95,6 +95,13 @@ public class ConnectionMastodonTest {
         assertEquals("Content type", MyContentType.IMAGE, attachment.contentType);
         assertEquals("Content type", UriUtils.fromString("https://files.neumastodon.com/media_attachments/files/000/306/223/original/e678f956970a585b.png?1492832537"),
                 attachment.getUri());
+
+        timeline.forEach(act -> act.setUpdatedNow(0));
+        MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
+        CommandExecutionContext executionContext = new CommandExecutionContext(
+                CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME));
+        DataUpdater di = new DataUpdater(executionContext);
+        di.onActivity(activity);
     }
 
     @Test
@@ -195,8 +202,7 @@ public class ConnectionMastodonTest {
         Note note = activity.getNote();
         assertThat(note.getContent(), containsString("CW should properly"));
 
-        activity.getNote().setUpdatedDate(MyLog.uniqueCurrentTimeMS());
-        activity.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
+        activity.setUpdatedNow(0);
 
         MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
         CommandExecutionContext executionContext = new CommandExecutionContext(
@@ -231,8 +237,7 @@ public class ConnectionMastodonTest {
         assertEquals("Username", "bjoern", author.getUsername());
         assertEquals("WebfingerId", "bjoern@mastodon.social", author.getWebFingerId());
 
-        activity.getNote().setUpdatedDate(MyLog.uniqueCurrentTimeMS());
-        activity.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
+        activity.setUpdatedNow(0);
 
         MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
         CommandExecutionContext executionContext = new CommandExecutionContext(

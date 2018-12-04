@@ -64,7 +64,7 @@ public class AvatarDownloaderTest {
 
     @Test
     public void testLoadBasicAuth() throws IOException {
-        ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
+        ma = demoData.getGnuSocialAccount();
         assertTrue(demoData.gnusocialTestAccountName + " exists", ma.isValid());
         loadForOneMyAccount(demoData.gnusocialTestAccountAvatarUrl);
     }

@@ -172,7 +172,7 @@ public class PersistentTimelinesTest {
     @Test
     public void testFromMyAccount() {
         MyAccount myAccount1 = demoData.getMyAccount(demoData.pumpioTestAccountName);
-        MyAccount myAccount2 = demoData.getMyAccount(demoData.gnusocialTestAccountName);
+        MyAccount myAccount2 = demoData.getGnuSocialAccount();
         oneFromMyAccount(myAccount1, myAccount2, TimelineType.PUBLIC);
         oneFromMyAccount(myAccount1, myAccount2, TimelineType.EVERYTHING);
         oneFromMyAccount(myAccount1, myAccount2, TimelineType.HOME);

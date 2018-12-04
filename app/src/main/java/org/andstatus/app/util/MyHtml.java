@@ -21,6 +21,7 @@ import android.text.Html;
 import android.text.SpannableString;
 import android.text.util.Linkify;
 
+import org.andstatus.app.data.TextMediaType;
 import org.apache.commons.lang3.text.translate.AggregateTranslator;
 import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 import org.apache.commons.lang3.text.translate.EntityArrays;
@@ -30,54 +31,84 @@ import org.apache.commons.lang3.text.translate.NumericEntityUnescaper;
 import java.util.regex.Pattern;
 
 public class MyHtml {
-    private static final Pattern SPACES_PATTERN = Pattern.compile("[\\[\\](){}\n\'\"<>,:;\\s]+");
+    private static final Pattern SPACES_PATTERN = Pattern.compile("[\n\\s]+");
+    private static final Pattern SPACES_FOR_SEARCH_PATTERN = Pattern.compile("[\\[\\](){}\n\'\"<>,:;\\s]+");
     private static final Pattern PUNCTUATION_BEFORE_COMMA_PATTERN = Pattern.compile("[,.!?]+,");
     private static final Pattern MENTION_HASH_PREFIX_PATTERN = Pattern.compile("(,[@#!]([^@#!,]+))");
-    private static final String NEWLINE_SEARCH = "\n";
-    private static final String MULTIPLE_NEWLINES_REGEX = NEWLINE_SEARCH + "\\s*" + NEWLINE_SEARCH;
-    private static final Pattern MULTIPLE_NEWLINES_PATTERN = Pattern.compile(MULTIPLE_NEWLINES_REGEX);
-    private static final String NEWLINE_REPLACE = "\n";
+    private static final Pattern LINEBREAK_PATTERN = Pattern.compile("\n");
+    public static final String LINEBREAK_HTML = "<br />";
+    private static final String LINEBREAK_REPLACE = "\n";
+    private static final Pattern LINEBREAK_ESCAPED_PATTERN = Pattern.compile("&#10;");
+    private static final String THREE_LINEBREAKS_REGEX = "\n\\s*\n\\s*\n";
+    private static final Pattern THREE_LINEBREAKS_PATTERN = Pattern.compile(THREE_LINEBREAKS_REGEX);
+    private static final String DOUBLE_LINEBREAK_REPLACE = "\n\n";
 
     private MyHtml() {
         // Empty
     }
 
     public static String prepareForView(String text) {
-        String text2 = stripUnnecessaryNewlines(text);
-        if (text2.endsWith("</p>") && StringUtils.countOfOccurrences(text2, "<p") == 1) {
-            text2 = text2.replaceAll("<p[^>]*>","").replaceAll("</p>","");
+        if (StringUtils.isEmpty(text)) return "";
+
+        String endWith = text.endsWith("</p>") ? "</p>" : text.endsWith("</p>\n") ? "</p>\n" : "";
+        if (StringUtils.nonEmpty(endWith) && StringUtils.countOfOccurrences(text, "<p") == 1) {
+            text = text.replaceAll("<p[^>]*>","").replaceAll(endWith,"");
         }
-        return text2;
+        return text;
     }
 
     @NonNull
 	public static String htmlify(String text) {
 		if (StringUtils.isEmpty(text)) return "";
-        return stripUnnecessaryNewlines(hasHtmlMarkup(text) ? text : htmlifyPlain(text));
-    }
-	
-    private static String htmlifyPlain(String text) {
+
         SpannableString spannable = SpannableString.valueOf(text);
         Linkify.addLinks(spannable, Linkify.WEB_URLS);
-        return Html.toHtml(spannable);
+        return Html.toHtml(spannable, Html.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE);
+    }
+
+    /** Following ActivityStreams convention, default mediaType for content is "text/html" */
+    @NonNull
+    public static String toContentStoredAsHtml(String text, TextMediaType inputMediaType, boolean isHtmlContentAllowed) {
+        if (StringUtils.isEmpty(text)) {
+            return "";
+        } else {
+            String str2 = inputMediaType == TextMediaType.PLAIN
+                    ? LINEBREAK_ESCAPED_PATTERN.matcher(Html.escapeHtml(text)).replaceAll(LINEBREAK_REPLACE)
+                    : text;
+            String str3 = isHtmlContentAllowed || inputMediaType == TextMediaType.PLAIN || !hasHtmlMarkup(str2)
+                    ? str2
+                    : Html.fromHtml(str2, Html.FROM_HTML_MODE_COMPACT).toString();
+            String str4 = stripExcessiveLineBreaks(str3);
+            return  (inputMediaType == TextMediaType.HTML && isHtmlContentAllowed) || hasHtmlMarkup(str4)
+                    ? str4
+                    : LINEBREAK_PATTERN.matcher(str4.trim()).replaceAll(LINEBREAK_HTML);
+        }
     }
 
     @NonNull
     public static String getContentToSearch(String text) {
-        return normalizeWordsForSearch(fromHtml(text)).toLowerCase();
+        return normalizeWordsForSearch(toCompactPlainText(text)).toLowerCase();
     }
 
-    /** Strips HTML markup from the String */
-    public static String fromHtml(String text) {
-        return StringUtils.isEmpty(text) ? "" :
-            stripUnnecessaryNewlines(
-                    unescapeHtml(
-                            MyHtml.hasHtmlMarkup(text) ? Html.fromHtml(text).toString() : text
-                    )
-            );
+    /** Strips ALL markup from the String, including line breaks. And remove all whiteSpace */
+    @NonNull
+    public static String toCompactPlainText(String text) {
+        return SPACES_PATTERN.matcher(toPlainText(text)).replaceAll(" ");
     }
 
-    public static String unescapeHtml(String text2) {
+    /** Strips ALL markup from the String, excluding line breaks */
+    @NonNull
+    public static String toPlainText(String text) {
+        if (StringUtils.isEmpty(text)) return "";
+
+        String str1 = hasHtmlMarkup(text)
+                ? Html.fromHtml(text, Html.FROM_HTML_MODE_COMPACT).toString()
+                : text;
+        String str2 = unescapeHtml(str1);
+        return stripExcessiveLineBreaks(str2);
+    }
+
+    private static String unescapeHtml(String text2) {
         return UNESCAPE_HTML.translate(text2)
                 // This is needed to avoid visible text truncation,
                 // see https://github.com/andstatus/andstatus/issues/441
@@ -94,13 +125,13 @@ public class MyHtml {
             );
 
     @NonNull
-    public static String stripUnnecessaryNewlines(String text) {
+    public static String stripExcessiveLineBreaks(String text) {
         if (StringUtils.isEmpty(text)) {
             return "";
         } else {
-            String text2 = MULTIPLE_NEWLINES_PATTERN.matcher(text.trim()).replaceAll(NEWLINE_REPLACE);
-            if (text2.endsWith(NEWLINE_REPLACE)) {
-                return text2.substring(0, text2.length() - NEWLINE_REPLACE.length());
+            String text2 = THREE_LINEBREAKS_PATTERN.matcher(text.trim()).replaceAll(DOUBLE_LINEBREAK_REPLACE).trim();
+            while (text2.endsWith(LINEBREAK_REPLACE)) {
+                text2 = text2.substring(0, text2.length() - LINEBREAK_REPLACE.length()).trim();
             }
             return text2;
         }
@@ -112,7 +143,7 @@ public class MyHtml {
         } else {
             return MENTION_HASH_PREFIX_PATTERN.matcher(
                 PUNCTUATION_BEFORE_COMMA_PATTERN.matcher(
-                    SPACES_PATTERN.matcher(
+                    SPACES_FOR_SEARCH_PATTERN.matcher(
                             "," + text + ","
                     ).replaceAll(",")
                 ).replaceAll(",")
@@ -128,10 +159,5 @@ public class MyHtml {
             has = text.contains("<") && text.contains(">");
         }
         return has; 
-    }
-
-    @NonNull
-    public static String getCleanedBody(String body) {
-        return SPACES_PATTERN.matcher(fromHtml(body).toLowerCase()).replaceAll(" ");
     }
 }

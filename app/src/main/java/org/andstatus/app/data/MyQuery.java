@@ -789,7 +789,7 @@ public class MyQuery {
         builder.withComma("noteId", noteId);
         String oid = idToOid(OidEnum.NOTE_OID, noteId, 0);
         builder.withCommaQuoted("oid", StringUtils.isEmpty(oid) ? "empty" : oid, StringUtils.nonEmpty(oid));
-        String content = MyHtml.fromHtml(noteIdToStringColumnValue(NoteTable.CONTENT, noteId));
+        String content = MyHtml.toCompactPlainText(noteIdToStringColumnValue(NoteTable.CONTENT, noteId));
         builder.withCommaQuoted("content", content, true);
         Origin origin = MyContextHolder.get().origins().fromId(noteIdToLongColumnValue(NoteTable.ORIGIN_ID, noteId));
         builder.atNewLine(origin.toString());

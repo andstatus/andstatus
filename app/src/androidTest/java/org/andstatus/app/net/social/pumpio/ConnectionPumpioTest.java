@@ -309,8 +309,8 @@ public class ConnectionPumpioTest {
         JSONObject activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         JSONObject obj = activity.getJSONObject("object");
-        assertEquals("Note name", name, MyHtml.fromHtml(obj.getString("displayName")));
-        assertEquals("Note content", content, MyHtml.fromHtml(obj.getString("content")));
+        assertEquals("Note name", name, MyHtml.toPlainText(obj.getString("displayName")));
+        assertEquals("Note content", content, MyHtml.toPlainText(obj.getString("content")));
         assertEquals("Reply is comment", PObjectType.COMMENT.id(), obj.getString("objectType"));
         
         assertTrue("InReplyTo is present", obj.has("inReplyTo"));
@@ -324,8 +324,8 @@ public class ConnectionPumpioTest {
         activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         obj = activity.getJSONObject("object");
-        assertEquals("Note name", name, MyHtml.fromHtml(obj.optString("displayName")));
-        assertEquals("Note content", content, MyHtml.fromHtml(obj.getString("content")));
+        assertEquals("Note name", name, MyHtml.toPlainText(obj.optString("displayName")));
+        assertEquals("Note content", content, MyHtml.toPlainText(obj.getString("content")));
         assertEquals("Note without reply is a note", PObjectType.NOTE.id(), obj.getString("objectType"));
 
         JSONArray recipients = activity.optJSONArray("to");

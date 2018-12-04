@@ -107,7 +107,7 @@ public class MyServiceTest1 extends MyServiceTest {
 
         mService.setListenedCommand(CommandData.newAccountCommand(
                 CommandEnum.RATE_LIMIT_STATUS,
-                demoData.getMyAccount(demoData.gnusocialTestAccountName)));
+                demoData.getGnuSocialAccount()));
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
 
@@ -128,7 +128,7 @@ public class MyServiceTest1 extends MyServiceTest {
 
         mService.setListenedCommand(CommandData.newAccountCommand(
                 CommandEnum.RATE_LIMIT_STATUS,
-                demoData.getMyAccount(demoData.gnusocialTestAccountName)));
+                demoData.getGnuSocialAccount()));
         mService.getHttp().setRuntimeException(new SQLiteDiskIOException(method));
         long startCount = mService.executionStartCount;
         mService.sendListenedCommand();

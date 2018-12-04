@@ -26,6 +26,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.service.CommandData;
@@ -241,7 +242,7 @@ public class ConnectionGnuSocialTest {
         AActivity activityIn = AActivity.newPartialNote(accountActor, actor, favoritingOid, favoritingUpdateDate,
                 DownloadStatus.LOADED);
 
-        activityIn.getNote().setContent(favoritingContent);
+        activityIn.getNote().setContent(favoritingContent, TextMediaType.UNKNOWN);
 
         AActivity activity = ConnectionTwitterGnuSocial.createLikeActivity(activityIn);
         assertEquals("Should become LIKE activity " + activityIn, ActivityType.LIKE , activity.type);
@@ -323,9 +324,9 @@ public class ConnectionGnuSocialTest {
         assertTrue("inReplyTo should not be empty " + activity , activity.getNote().getInReplyTo().nonEmpty());
 
         activity.getNote().setUpdatedDate(MyLog.uniqueCurrentTimeMS());
-        activity.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
+        activity.setUpdatedNow(0);
 
-        MyAccount ma = demoData.getMyAccount(demoData.gnusocialTestAccountName);
+        MyAccount ma = demoData.getGnuSocialAccount();
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, 123));
         DataUpdater di = new DataUpdater(executionContext);

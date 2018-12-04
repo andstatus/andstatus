@@ -19,7 +19,6 @@ package org.andstatus.app.data;
 import android.support.annotation.Nullable;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
@@ -55,11 +54,10 @@ public class DemoGnuSocialConversationInserter {
     private void mySetup() {
         iteration = iterationCounter.incrementAndGet();
         conversationOid = Long.toString(MyLog.uniqueCurrentTimeMS());
-        origin = MyContextHolder.get().origins().fromName(demoData.gnusocialTestOriginName);
+        origin = demoData.getGnuSocialOrigin();
         assertTrue(demoData.gnusocialTestOriginName + " exists", origin.isValid());
         assertNotSame( "No host URL: " + origin, "", origin.getHost());
-        final MyAccount myAccount = MyContextHolder.get().accounts()
-                .fromAccountName(demoData.gnusocialTestAccountName);
+        final MyAccount myAccount = demoData.getGnuSocialAccount();
         accountActor = myAccount.getActor();
         assertFalse( "Account actor is not defined " + myAccount,
                 accountActor.isEmpty() || accountActor.isPartiallyDefined());

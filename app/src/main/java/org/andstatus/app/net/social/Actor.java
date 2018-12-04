@@ -458,7 +458,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public List<Actor> extractActorsFromContent(String text, Actor inReplyToActorIn) {
-        return _extractActorsFromContent(MyHtml.fromHtml(text), 0, new ArrayList<>(),
+        return _extractActorsFromContent(MyHtml.toCompactPlainText(text), 0, new ArrayList<>(),
                 inReplyToActorIn.withValidUsernameAndWebfingerId());
     }
 

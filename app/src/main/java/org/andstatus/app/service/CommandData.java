@@ -447,7 +447,7 @@ public class CommandData implements Comparable<CommandData> {
         if ( StringUtils.isEmpty(text)) {
             return "";
         } else if (trim) {
-            return I18n.trimTextAt(MyHtml.fromHtml(text), 40);
+            return I18n.trimTextAt(MyHtml.toCompactPlainText(text), 40);
         } else {
             return text;
         }

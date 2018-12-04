@@ -38,7 +38,9 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.RateLimitStatus;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.support.java.util.function.SupplierWithException;
+import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -399,15 +401,18 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         final String method = "updateNote";
         AActivity activity = AActivity.EMPTY;
         long noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, activityId);
+        final Origin origin = execContext.getMyAccount().getOrigin();
+
         String name = MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId);
-        String content = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
-        DemoData.crashTest(() -> content.startsWith("Crash me on sending 2015-04-10"));
+        String contentHtml = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
+        DemoData.crashTest(() -> contentHtml.startsWith("Crash me on sending 2015-04-10"));
+        String content = origin.isHtmlContentAllowed() ? contentHtml : MyHtml.toPlainText(contentHtml);
+
         String oid = getNoteOid(method, noteId, false);
-        Audience audience = Audience.fromNoteId(execContext.getMyAccount().getOrigin(), noteId);
-        Uri mediaUri = DownloadData.getSingleAttachment(noteId).
-                mediaUriToBePosted();
+        Audience audience = Audience.fromNoteId(origin, noteId);
+        Uri mediaUri = DownloadData.getSingleAttachment(noteId).mediaUriToBePosted();
         String msgLog = (StringUtils.nonEmpty(name) ? "name:'" + name + "'" : "")
-                + (StringUtils.nonEmpty(content) ? "content:'" + MyLog.trimmedString(content, 40) + "'" : "")
+                + (StringUtils.nonEmpty(content) ? "content:'" + MyLog.trimmedString(content, 80) + "'" : "")
                 + (mediaUri.equals(Uri.EMPTY) ? "" : "; mediaUri:'" + mediaUri + "'");
         try {
             if (MyLog.isVerboseEnabled()) {
@@ -416,11 +421,9 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             DownloadStatus statusStored = DownloadStatus.load(
                     MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId));
             if (!statusStored.mayBeSent()) {
-                throw ConnectionException.hardConnectionException(
-                        "Wrong note status: " + statusStored, null);
+                throw ConnectionException.hardConnectionException("Wrong note status: " + statusStored, null);
             }
-            long inReplyToNoteId = MyQuery.noteIdToLongColumnValue(
-                    NoteTable.IN_REPLY_TO_NOTE_ID, noteId);
+            long inReplyToNoteId = MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, noteId);
             String inReplyToNoteOid = getNoteOid(method, inReplyToNoteId, false);
             activity = getConnection().updateNote(name, content.trim(), oid, audience, inReplyToNoteOid, mediaUri);
             logIfEmptyNote(method, noteId, activity.getNote());

@@ -33,6 +33,7 @@ import org.andstatus.app.actor.ActorListType;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.list.ContextMenuItem;
@@ -165,10 +166,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
             String body = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, menu.getNoteId());
-            if (menu.getOrigin().isHtmlContentAllowed()) {
-                body = MyHtml.fromHtml(body);
-            }
-            return NoteEditorData.newEmpty(menu.getActingAccount()).setContent(body);
+            return NoteEditorData.newEmpty(menu.getActingAccount()).setContent(body, TextMediaType.HTML);
         }
 
         @Override
@@ -383,8 +381,9 @@ public enum NoteContextMenuItem implements ContextMenuItem {
             // http://developer.android.com/guide/topics/text/copy-paste.html
             ClipboardManager clipboard = (ClipboardManager) MyContextHolder.get().context().
                     getSystemService(Context.CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText(I18n.trimTextAt(editorData.getContent(), 40),
-                    editorData.getContent());
+            ClipData clip = ClipData.newPlainText(
+                    I18n.trimTextAt(MyHtml.toCompactPlainText(editorData.getContent()), 40),
+                    MyHtml.toPlainText(editorData.getContent()));
             clipboard.setPrimaryClip(clip);
             MyLog.v(this, () -> "clip='" + clip.toString() + "'");
         }

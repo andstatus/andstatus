@@ -76,7 +76,9 @@ public class DemoConversationInserter {
         AActivity selected = buildActivity(getAuthor1(), "", "Selected note from Home timeline", minus1,
                 iteration == 1 ? demoData.conversationEntryNoteOid : null);
         selected.setSubscribedByMe(TriState.TRUE);
-        AActivity reply1 = buildActivity(author3, "The first reply", "Reply 1 to selected",
+        AActivity reply1 = buildActivity(author3, "The first reply", "Reply 1 to selected<br />" +
+                        "&gt;&gt; Greater than<br />" +
+                        "&lt;&lt; Less than, let&apos;s try!",
                 selected, null);
         author3.followedByMe = TriState.TRUE;
 

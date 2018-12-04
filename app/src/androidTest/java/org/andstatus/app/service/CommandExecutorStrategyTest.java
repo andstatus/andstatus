@@ -135,7 +135,7 @@ public class CommandExecutorStrategyTest {
         httpConnectionMock.setException(null);
         commandData = CommandData.newItemCommand(
                 CommandEnum.DELETE_NOTE,
-                demoData.getMyAccount(demoData.gnusocialTestAccountName),
+                demoData.getGnuSocialAccount(),
                 noteId);
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertFalse(commandData.toString(), commandData.getResult().hasError());
@@ -143,7 +143,7 @@ public class CommandExecutorStrategyTest {
         final long INEXISTENT_MSG_ID = -1;
         commandData = CommandData.newItemCommand(
                 CommandEnum.DELETE_NOTE,
-                demoData.getMyAccount(demoData.gnusocialTestAccountName),
+                demoData.getGnuSocialAccount(),
                 INEXISTENT_MSG_ID);
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertFalse(commandData.toString(), commandData.getResult().hasError());
@@ -164,7 +164,7 @@ public class CommandExecutorStrategyTest {
         TestSuite.setHttpConnectionMockInstance(http);
         CommandData commandData = CommandData.newOriginCommand(
                 CommandEnum.GET_OPEN_INSTANCES,
-                demoData.getMyAccount(demoData.gnusocialTestAccountName).getOrigin());
+                demoData.getGnuSocialOrigin());
         DiscoveredOrigins.clear();
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertEquals(1, commandData.getResult().getExecutionCount());

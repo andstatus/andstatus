@@ -21,6 +21,7 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
+import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnection;
@@ -495,7 +496,7 @@ public class ConnectionPumpio extends Connection {
 
             Note note =  activity.getNote();
             note.setName(jso.optString(NAME_PROPERTY));
-            note.setContent(jso.optString(CONTENT_PROPERTY));
+            note.setContent(jso.optString(CONTENT_PROPERTY), TextMediaType.HTML);
 
             setVia(note, jso);
             note.url = jso.optString("url");

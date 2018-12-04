@@ -230,6 +230,14 @@ public class AActivity extends AObject {
         this.updatedDate = updatedDate;
     }
 
+    public void setUpdatedNow(int level) {
+        if (isEmpty() || level > 10) return;
+
+        setUpdatedDate(MyLog.uniqueCurrentTimeMS());
+        getNote().setUpdatedNow(level + 1);
+        getActivity().setUpdatedNow(level + 1);
+    }
+
     @NonNull
     public Note getNote() {
         return Optional.ofNullable(note).filter(msg -> msg != Note.EMPTY).orElseGet(this::getNestedNote);
