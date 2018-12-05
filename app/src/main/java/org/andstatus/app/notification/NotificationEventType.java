@@ -69,7 +69,7 @@ public enum NotificationEventType {
                 return true;
             case INTERACTIONS:
                 return this != OUTBOX;
-            case UNREAD_NOTIFICATIONS:
+            case UNREAD_NOTIFICATIONS:  // In order not to mark as read immediately
                 return false;
             default:
                 return visibleIn.contains(timelineType);

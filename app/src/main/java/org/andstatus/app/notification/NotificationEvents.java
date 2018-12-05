@@ -96,7 +96,7 @@ public class NotificationEvents {
 
     public NotificationEvents load() {
         String sql = "SELECT " + ActivityTable.NEW_NOTIFICATION_EVENT + ", " +
-                ActivityTable.ACCOUNT_ID + ", " +
+                ActivityTable.NOTIFIED_ACTOR_ID + ", " +
                 ActivityTable.UPDATED_DATE +
                 " FROM " + ActivityTable.TABLE_NAME +
                 " WHERE " + ActivityTable.NEW_NOTIFICATION_EVENT + "!=0";
@@ -104,7 +104,7 @@ public class NotificationEvents {
             map1 -> cursor -> foldEvent(
                     map1,
                     NotificationEventType.fromId(getLong(cursor, ActivityTable.NEW_NOTIFICATION_EVENT)),
-                    myContext.accounts().fromActorId(getLong(cursor, ActivityTable.ACCOUNT_ID)),
+                    myContext.accounts().fromActorId(getLong(cursor, ActivityTable.NOTIFIED_ACTOR_ID)),
                     getLong(cursor, ActivityTable.UPDATED_DATE)));
         return new NotificationEvents(myContext, enabledEvents, loadedMap);
     }
