@@ -18,8 +18,7 @@ package org.andstatus.app.util;
 
 import android.support.annotation.NonNull;
 import android.text.Html;
-import android.text.SpannableString;
-import android.text.util.Linkify;
+import android.text.Spannable;
 
 import org.andstatus.app.data.TextMediaType;
 import org.apache.commons.lang3.text.translate.AggregateTranslator;
@@ -58,11 +57,10 @@ public class MyHtml {
     }
 
     @NonNull
-	public static String htmlify(String text) {
-		if (StringUtils.isEmpty(text)) return "";
+	public static String htmlify(String htmlText) {
+		if (StringUtils.isEmpty(htmlText)) return "";
 
-        SpannableString spannable = SpannableString.valueOf(text);
-        Linkify.addLinks(spannable, Linkify.WEB_URLS);
+        Spannable spannable = MyUrlSpan.toSpannable(MyHtml.prepareForView(htmlText), true);
         return Html.toHtml(spannable, Html.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE);
     }
 

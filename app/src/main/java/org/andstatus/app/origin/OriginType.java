@@ -20,6 +20,7 @@ import android.content.Context;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.lang.SelectableEnum;
 import org.andstatus.app.net.http.HttpConnectionBasic;
 import org.andstatus.app.net.http.HttpConnectionEmpty;
@@ -385,4 +386,7 @@ public enum OriginType implements SelectableEnum {
         return urlDefault;
     }
 
+    public TextMediaType textMediaTypeToPost() {
+        return this == PUMPIO ? TextMediaType.HTML : TextMediaType.PLAIN;
+    }
 }

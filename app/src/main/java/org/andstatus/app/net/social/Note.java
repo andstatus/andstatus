@@ -159,6 +159,12 @@ public class Note extends AObject {
         return content;
     }
 
+    public String getContentToPost() {
+        return origin.getOriginType().textMediaTypeToPost() == TextMediaType.HTML
+                ? content
+                : MyHtml.toPlainText(content);
+    }
+
     public String getContentToSearch() {
         return contentToSearch.get();
     }

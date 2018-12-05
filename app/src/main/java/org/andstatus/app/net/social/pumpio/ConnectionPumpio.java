@@ -234,15 +234,11 @@ public class ConnectionPumpio extends Connection {
     @Override
     public AActivity updateNote(String name, String content, String noteOid, Audience audience, String inReplyToOid,
                                 Uri mediaUri) throws ConnectionException {
-        String content2 = toHtmlIfAllowed(content);
+        String content2 = data.getOrigin().isHtmlContentAllowed() ? MyHtml.htmlify(content) : content;
         ActivitySender sender = ActivitySender.fromContent(this, noteOid, audience, name, content2);
         sender.setInReplyTo(inReplyToOid);
         sender.setMediaUri(mediaUri);
         return sender.send(PActivityType.POST);
-    }
-
-    private String toHtmlIfAllowed(String body) {
-        return data.getOrigin().isHtmlContentAllowed() ? MyHtml.htmlify(body) : body;
     }
 
     String oidToObjectType(String oid) {
