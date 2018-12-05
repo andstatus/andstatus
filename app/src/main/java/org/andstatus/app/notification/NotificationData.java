@@ -53,7 +53,8 @@ public class NotificationData {
     }
 
     PendingIntent getPendingIntent(MyContext myContext) {
-        Timeline timeline = Timeline.getTimeline(TimelineType.from(event), myAccount.getActorId(), Origin.EMPTY);
+        Timeline timeline = myContext.timelines().get(TimelineType.from(event), myAccount.getActorId(), Origin.EMPTY)
+                .orElse(myContext.timelines().getDefault());
         Intent intent = new Intent(myContext.context(), FirstActivity.class);
         // "rnd" is necessary to actually bring Extra to the target intent
         // see http://stackoverflow.com/questions/1198558/how-to-send-parameters-from-a-notification-click-to-an-activity

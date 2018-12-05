@@ -766,7 +766,7 @@ public class AccountSettingsActivity extends MyActivity {
             if (activityOnFinish == ActivityOnFinish.HOME) {
                 if (initialSyncNeeded) initialAccountSync(myContext, myAccount);
 
-                Timeline home = Timeline.getTimeline(TimelineType.HOME, myAccount.getActorId(), Origin.EMPTY);
+                Timeline home = myContext.timelines().get(TimelineType.HOME, myAccount.getActorId(), Origin.EMPTY);
                 TimelineActivity.startForTimeline(myContext, AccountSettingsActivity.this, home, true);
                 state.forget();
             } else {

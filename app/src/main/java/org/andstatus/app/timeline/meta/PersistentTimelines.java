@@ -113,6 +113,8 @@ public class PersistentTimelines {
     @NonNull
     public Timeline get(long id, @NonNull TimelineType timelineType,
                         long actorId, @NonNull Origin origin, String searchQuery) {
+        if (timelineType == TimelineType.UNKNOWN) return Timeline.EMPTY;
+
         Timeline newTimeline = new Timeline(myContext, id, timelineType, actorId, origin, searchQuery);
         return stream().filter(timeline -> newTimeline.getId() == 0
                 ? newTimeline.duplicates(timeline)

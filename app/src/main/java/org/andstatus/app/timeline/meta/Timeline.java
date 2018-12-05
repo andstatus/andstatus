@@ -1061,4 +1061,8 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     public boolean withActorProfile() {
         return !isCombined && actor.nonEmpty() && timelineType.hasActorProfile();
     }
+
+    public Timeline orElse(Timeline aDefault) {
+        return isEmpty() ? aDefault : this;
+    }
 }

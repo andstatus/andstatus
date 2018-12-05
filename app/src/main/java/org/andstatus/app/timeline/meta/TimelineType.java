@@ -118,7 +118,7 @@ public enum TimelineType implements SelectableEnum {
             case OUTBOX:
                 return OUTBOX;
             case EMPTY:
-                return NOTIFICATIONS;
+                return UNKNOWN;
             default:
                 return UNREAD_NOTIFICATIONS;
         }
