@@ -53,6 +53,8 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
+
 /**
  * @author yvolk@yurivolkov.com
  */
@@ -610,11 +612,11 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         StringBuilder builder = new StringBuilder();
 
         builder.append("TimelinePositions{");
-        if (youngestSyncedDate > 0) {
+        if (youngestSyncedDate > SOME_TIME_AGO) {
             builder.append("synced at " + new Date(youngestSyncedDate).toString());
             builder.append(", pos:" + getYoungestPosition());
         }
-        if (oldestSyncedDate > 0) {
+        if (oldestSyncedDate > SOME_TIME_AGO) {
             builder.append("older synced at " + new Date(oldestSyncedDate).toString());
             builder.append(", pos:" + getOldestPosition());
         }
@@ -735,7 +737,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     }
 
     public void onNewMsg(long newDate, String newPosition) {
-        if (newDate <= 0 || StringUtils.isEmpty(newPosition)) {
+        if (newDate <= SOME_TIME_AGO || StringUtils.isEmpty(newPosition)) {
             return;
         }
         if (youngestItemDate < newDate ||
@@ -744,7 +746,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
             youngestPosition = newPosition;
             setChanged();
         }
-        if (oldestItemDate == 0 || oldestItemDate > newDate ||
+        if (oldestItemDate <= SOME_TIME_AGO || oldestItemDate > newDate ||
                 (oldestItemDate == newDate && StringUtils.isNewFilledValue(oldestPosition, newPosition))) {
             oldestItemDate = newDate;
             oldestPosition = newPosition;
@@ -765,7 +767,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     }
 
     public void setYoungestSyncedDate(long newDate) {
-        if (youngestSyncedDate < newDate) {
+        if (newDate > SOME_TIME_AGO && youngestSyncedDate < newDate) {
             youngestSyncedDate = newDate;
             setChanged();
         }
@@ -784,7 +786,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     }
 
     public void setOldestSyncedDate(long newDate) {
-        if (oldestSyncedDate < newDate) {
+        if (newDate > SOME_TIME_AGO && (oldestSyncedDate <= SOME_TIME_AGO || oldestSyncedDate > newDate)) {
             oldestSyncedDate = newDate;
             setChanged();
         }

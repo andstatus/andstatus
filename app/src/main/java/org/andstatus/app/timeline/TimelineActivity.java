@@ -93,6 +93,7 @@ import java.util.List;
 
 import static org.andstatus.app.timeline.meta.TimelineTitle.Destination.DEFAULT;
 import static org.andstatus.app.timeline.meta.TimelineTitle.Destination.TIMELINE_ACTIVITY;
+import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -865,30 +866,6 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         showFooterSyncButton();
     }
 
-    private static class SyncStats {
-        final long syncSucceededDate;
-        final long youngestItemDate;
-
-        SyncStats(long syncSucceededDate, long youngestItemDate) {
-            this.syncSucceededDate = syncSucceededDate;
-            this.youngestItemDate = youngestItemDate;
-        }
-
-        static SyncStats accumulator(SyncStats stats, Timeline timeline) {
-            return new SyncStats(
-                    Long.max(timeline.getSyncSucceededDate(), stats.syncSucceededDate),
-                    Long.max(timeline.getYoungestItemDate(), stats.youngestItemDate)
-            );
-        }
-
-        static SyncStats combiner(SyncStats stats, SyncStats stats2) {
-            return new SyncStats(
-                    Long.max(stats2.syncSucceededDate, stats.syncSucceededDate),
-                    Long.max(stats2.youngestItemDate, stats.youngestItemDate)
-            );
-        }
-    }
-
     private void showHeaderSyncButton() {
         if (getListData().mayHaveYoungerPage()) {
             disableHeaderSyncButton(R.string.loading);
@@ -898,18 +875,16 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             disableHeaderSyncButton(R.string.not_syncable);
             return;
         }
-        SyncStats stats = myContext.timelines().toTimelinesToSync(getParamsLoaded().getTimeline()).reduce(
-                new SyncStats(0, 0),
-                SyncStats::accumulator,
-                SyncStats::combiner
-        );
-        String format = getText(stats.youngestItemDate == 0
-                ? R.string.options_menu_sync : R.string.sync_younger_messages).toString();
+        SyncStats stats = SyncStats.fromYoungestDates(myContext.timelines().toTimelinesToSync(getParamsLoaded().getTimeline()));
+        String format = getText(stats.itemDate > SOME_TIME_AGO
+                ? R.string.sync_younger_messages
+                : R.string.options_menu_sync).toString();
         MyUrlSpan.showText(syncYoungerView, R.id.sync_younger_button,
                 String.format(format,
-                    stats.syncSucceededDate > 0
-                            ? RelativeTime.getDifference(this, stats.syncSucceededDate) : getText(R.string.never),
-                    DateUtils.getRelativeTimeSpanString(this, stats.youngestItemDate)),
+                    stats.syncSucceededDate > SOME_TIME_AGO
+                            ? RelativeTime.getDifference(this, stats.syncSucceededDate)
+                            : getText(R.string.never),
+                    DateUtils.getRelativeTimeSpanString(this, stats.itemDate)),
                 false,
                 false);
         syncYoungerView.setEnabled(true);
@@ -932,11 +907,12 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             disableFooterButton(R.string.no_more_messages);
             return;
         }
+        SyncStats stats = SyncStats.fromOldestDates(myContext.timelines().toTimelinesToSync(getParamsLoaded().getTimeline()));
         MyUrlSpan.showText(syncOlderView, R.id.sync_older_button,
-                String.format(getText(getParamsLoaded().getTimeline().isCombined() ||
-                        getParamsLoaded().getTimeline().getOldestItemDate() == 0 ? R.string.options_menu_sync :
-                        R.string.sync_older_messages).toString(),
-                        DateUtils.getRelativeTimeSpanString(this, getParamsLoaded().getTimeline().getOldestItemDate())),
+                String.format(getText(stats.itemDate > SOME_TIME_AGO
+                                ? R.string.sync_older_messages
+                                : R.string.options_menu_sync).toString(),
+                        DateUtils.getRelativeTimeSpanString(this, stats.itemDate)),
                 false,
                 false);
         syncOlderView.setEnabled(true);

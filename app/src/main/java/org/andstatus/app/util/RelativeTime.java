@@ -112,4 +112,11 @@ public class RelativeTime {
         return java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()
                 - previousTime);
     }
+
+    /** Minimum, but real date */
+    public static long minDate(long date1, long date2) {
+        return date1 > SOME_TIME_AGO
+                ? (date2 > SOME_TIME_AGO ? Long.min(date1, date2) : date1)
+                : (date2 > SOME_TIME_AGO ? date2 : Long.max(date1, date2));
+    }
 }
