@@ -28,7 +28,6 @@ import android.os.PowerManager;
 import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.MyAction;
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -36,6 +35,7 @@ import org.andstatus.app.context.MyEmptyFutureContext;
 import org.andstatus.app.context.MyFutureContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.notification.NotificationData;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
@@ -129,7 +129,7 @@ public class MyService extends Service {
 
     /** See https://stackoverflow.com/questions/44425584/context-startforegroundservice-did-not-then-call-service-startforeground */
     private void startForeground() {
-        final NotificationData data = new NotificationData(SERVICE_RUNNING, MyAccount.EMPTY, System.currentTimeMillis());
+        final NotificationData data = new NotificationData(SERVICE_RUNNING, Actor.EMPTY, System.currentTimeMillis());
         getMyContext().getNotifier().createNotificationChannel(data);
         startForeground(SERVICE_RUNNING.notificationId(), getMyContext().getNotifier().getAndroidNotification(data));
     }

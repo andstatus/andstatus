@@ -91,6 +91,12 @@ public class CachedUsersAndActors {
         MyQuery.get(myContext, sql, function);
     }
 
+    public Actor load(long actorId) {
+        Actor actor = Actor.load(myContext, actorId, false, Actor::getEmpty);
+        if (isMe(actor)) updateFriendsOfMy(actor);
+        return actor;
+    }
+
     public Actor reload(Actor actor) {
         return reload(actor.actorId);
     }

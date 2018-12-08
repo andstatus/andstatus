@@ -87,8 +87,8 @@ public class Notifier {
     }
 
     public Notification getAndroidNotification(@NonNull NotificationData data) {
-        String contentText = (data.myAccount.isValid()
-                ? data.myAccount.getAccountName()
+        String contentText = (data.myActor.isUsernameValid()
+                ? data.myActor.getTimelineUsername()
                 : myContext.context().getText(data.event.titleResId)) + ": " + data.count;
         MyLog.v(this, contentText);
 

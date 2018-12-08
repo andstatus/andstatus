@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2017-2018 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.FirstActivity;
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -31,16 +31,16 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 
 public class NotificationData {
-    public static final NotificationData EMPTY = new NotificationData(NotificationEventType.EMPTY, MyAccount.EMPTY,
+    public static final NotificationData EMPTY = new NotificationData(NotificationEventType.EMPTY, Actor.EMPTY,
             DATETIME_MILLIS_NEVER);
     public final NotificationEventType event;
-    public final MyAccount myAccount;
+    public final Actor myActor;
     volatile long updatedDate;
     volatile long count;
 
-    public NotificationData(@NonNull NotificationEventType event, @NonNull MyAccount myAccount, long updatedDate) {
+    public NotificationData(@NonNull NotificationEventType event, @NonNull Actor myActor, long updatedDate) {
         this.event = event;
-        this.myAccount = myAccount;
+        this.myActor = myActor;
         this.updatedDate = updatedDate;
         count = updatedDate > DATETIME_MILLIS_NEVER ? 1 : 0;
     }
@@ -53,7 +53,7 @@ public class NotificationData {
     }
 
     PendingIntent getPendingIntent(MyContext myContext) {
-        Timeline timeline = myContext.timelines().get(TimelineType.from(event), myAccount.getActorId(), Origin.EMPTY)
+        Timeline timeline = myContext.timelines().get(TimelineType.from(event), myActor.actorId, Origin.EMPTY)
                 .orElse(myContext.timelines().getDefault());
         Intent intent = new Intent(myContext.context(), FirstActivity.class);
         // "rnd" is necessary to actually bring Extra to the target intent

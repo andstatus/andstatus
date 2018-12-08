@@ -20,12 +20,12 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.timeline.meta.Timeline;
 
 import java.util.Collections;
@@ -105,25 +105,24 @@ public class NotificationEvents {
             map1 -> cursor -> foldEvent(
                     map1,
                     NotificationEventType.fromId(getLong(cursor, ActivityTable.NEW_NOTIFICATION_EVENT)),
-                    myContext.accounts().fromActorId(getLong(cursor, ActivityTable.NOTIFIED_ACTOR_ID)),
+                    myContext.users().load(getLong(cursor, ActivityTable.NOTIFIED_ACTOR_ID)),
                     Math.max(getLong(cursor, ActivityTable.INS_DATE), getLong(cursor, ActivityTable.UPDATED_DATE))
             ));
         return new NotificationEvents(myContext, enabledEvents, loadedMap);
     }
 
-    // TODO: event for an Actor, not for an Account
     private HashMap<NotificationEventType, NotificationData> foldEvent(
             HashMap<NotificationEventType, NotificationData> map,
-            NotificationEventType eventType, MyAccount myAccount, long updatedDate) {
+            NotificationEventType eventType, Actor myActor, long updatedDate) {
         NotificationData data = map.get(eventType);
         if (data == null) {
             if (enabledEvents.contains(eventType)) {
-                map.put(eventType, new NotificationData(eventType, myAccount, updatedDate));
+                map.put(eventType, new NotificationData(eventType, myActor, updatedDate));
             }
-        } else if( data.myAccount.equals(myAccount)) {
+        } else if( data.myActor.equals(myActor)) {
             data.addEventsAt(1, updatedDate);
         } else {
-            NotificationData data2 = new NotificationData(eventType, MyAccount.EMPTY, updatedDate);
+            NotificationData data2 = new NotificationData(eventType, Actor.EMPTY, updatedDate);
             data2.addEventsAt(data.count, data.updatedDate);
             map.put(eventType, data2);
         }
