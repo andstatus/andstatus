@@ -382,8 +382,8 @@ public enum NoteContextMenuItem implements ContextMenuItem {
             ClipboardManager clipboard = (ClipboardManager) MyContextHolder.get().context().
                     getSystemService(Context.CLIPBOARD_SERVICE);
             ClipData clip = ClipData.newPlainText(
-                    I18n.trimTextAt(MyHtml.toCompactPlainText(editorData.getContent()), 40),
-                    MyHtml.toPlainText(editorData.getContent()));
+                    I18n.trimTextAt(MyHtml.htmlToCompactPlainText(editorData.getContent()), 40),
+                    MyHtml.htmlToPlainText(editorData.getContent()));
             clipboard.setPrimaryClip(clip);
             MyLog.v(this, () -> "clip='" + clip.toString() + "'");
         }

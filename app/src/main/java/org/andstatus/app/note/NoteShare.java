@@ -73,7 +73,7 @@ public class NoteShare {
         String noteContent = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
         StringBuilder subject = new StringBuilder(
                 MyContextHolder.get().context().getText(origin.alternativeTermForResourceId(R.string.message)));
-        subject.append(" - " + (StringUtils.nonEmpty(noteName) ? noteName : MyHtml.toCompactPlainText(noteContent)));
+        subject.append(" - " + (StringUtils.nonEmpty(noteName) ? noteName : MyHtml.htmlToCompactPlainText(noteContent)));
 
         Intent intent = new Intent(share ? android.content.Intent.ACTION_SEND : Intent.ACTION_VIEW);
         final Uri imageFileUri = FileProvider.downloadFilenameToUri(imageFilename);
@@ -89,22 +89,20 @@ public class NoteShare {
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
         intent.putExtra(Intent.EXTRA_SUBJECT, I18n.trimTextAt(subject.toString(), 80));
-        intent.putExtra(Intent.EXTRA_TEXT, buildBody(origin, MyHtml.toPlainText(noteContent), false));
-        if (origin.isHtmlContentAllowed() && MyHtml.hasHtmlMarkup(noteContent) ) {
-            intent.putExtra(Intent.EXTRA_HTML_TEXT, buildBody(origin, noteContent, true));
-        }
+        intent.putExtra(Intent.EXTRA_TEXT, buildBody(origin, MyHtml.htmlToPlainText(noteContent), false));
+        intent.putExtra(Intent.EXTRA_HTML_TEXT, buildBody(origin, noteContent, true));
         return intent;
     }
 
     private static String SIGNATURE_FORMAT_HTML = "<p>-- <br />\n%s<br />\nURL: %s</p>";
     private static String SIGNATURE_PLAIN_TEXT = "\n-- \n%s\n URL: %s";
 
-    private String buildBody(Origin origin, String msgBodyText, boolean html) {
+    private String buildBody(Origin origin, String noteContent, boolean isHtml) {
         return new StringBuilder()
-                .append(msgBodyText)
+                .append(noteContent)
                 .append(
                         String.format(
-                                html ? SIGNATURE_FORMAT_HTML
+                                isHtml ? SIGNATURE_FORMAT_HTML
                                         : SIGNATURE_PLAIN_TEXT,
                                 MyQuery.noteIdToUsername(
                                         NoteTable.AUTHOR_ID,

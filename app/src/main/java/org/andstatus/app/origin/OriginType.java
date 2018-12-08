@@ -120,7 +120,11 @@ public enum OriginType implements SelectableEnum {
     protected boolean canChangeSsl = false;
 
     protected boolean allowHtmlDefault = true;
-    /** Maximum number of characters in a note */
+    public final TextMediaType textMediaTypePosted;
+    public final TextMediaType textMediaTypeToPost;
+
+
+        /** Maximum number of characters in a note */
     protected int textLimitDefault = 0;
     private URL urlDefault = null;
     private String basicPath = BASIC_PATH_DEFAULT;
@@ -166,6 +170,9 @@ public enum OriginType implements SelectableEnum {
                 allowEditing = false;
                 isPrivateNoteAllowsReply = false;
                 isSelectable = true;
+
+                textMediaTypePosted = TextMediaType.PLAIN_ESCAPED;
+                textMediaTypeToPost = TextMediaType.PLAIN_ESCAPED;
                 break;
             case PUMPIO:
                 isOAuthDefault = true;  
@@ -190,6 +197,9 @@ public enum OriginType implements SelectableEnum {
                 allowEditing = true;
                 isPrivateNoteAllowsReply = true;
                 isSelectable = true;
+
+                textMediaTypePosted = TextMediaType.HTML;
+                textMediaTypeToPost = TextMediaType.HTML;
                 break;
             case GNUSOCIAL_TWITTER:
                 isOAuthDefault = false;  
@@ -211,6 +221,9 @@ public enum OriginType implements SelectableEnum {
                 allowEditing = false;
                 isPrivateNoteAllowsReply = false;
                 isSelectable = true;
+
+                textMediaTypePosted = TextMediaType.PLAIN;
+                textMediaTypeToPost = TextMediaType.PLAIN;
                 break;
             case MASTODON:
                 isOAuthDefault = true;
@@ -234,6 +247,9 @@ public enum OriginType implements SelectableEnum {
                 allowEditing = false;
                 isPrivateNoteAllowsReply = false;
                 isSelectable = true;
+
+                textMediaTypePosted = TextMediaType.HTML;
+                textMediaTypeToPost = TextMediaType.PLAIN;
                 break;
             default:
                 canSetUrlOfOrigin = false;
@@ -247,6 +263,9 @@ public enum OriginType implements SelectableEnum {
                 isPrivateNoteAllowsReply = false;
                 validUsernameExamples = USERNAME_EXAMPLES_SIMPLE;
                 isSelectable = false;
+
+                textMediaTypePosted = TextMediaType.PLAIN;
+                textMediaTypeToPost = TextMediaType.PLAIN;
                 break;
         }
     }
@@ -384,9 +403,5 @@ public enum OriginType implements SelectableEnum {
 
     public URL getUrlDefault() {
         return urlDefault;
-    }
-
-    public TextMediaType textMediaTypeToPost() {
-        return this == PUMPIO ? TextMediaType.HTML : TextMediaType.PLAIN;
     }
 }

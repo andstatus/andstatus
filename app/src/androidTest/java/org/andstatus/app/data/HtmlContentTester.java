@@ -58,7 +58,7 @@ public class HtmlContentTester {
                 + "<p>This is a second line, <b>Bold</b> formatting." 
                 + "<br /><i>This is italics</i>. <b>And this is bold</b> <u>The text is underlined</u>.</p>"
                 + "<p>A separate paragraph.</p>";
-        assertFalse("HTML removed", MyHtml.toPlainText(bodyString).contains("<"));
+        assertFalse("HTML removed", MyHtml.htmlToPlainText(bodyString).contains("<"));
         assertHtmlNote(author, bodyString, null);
 
         assertHtmlNote(author, HTML_BODY_IMG_STRING, demoData.htmlNoteOid);

@@ -87,7 +87,7 @@ class CheckAudience extends DataChecker {
                 logger.logProgress(origin.getName() + ": need to fix " + s.toFixCount +
                         " of " + s.rowsCount + " audiences;\n" +
                         RelativeTime.getDifference(myContext.context(), insDate) + ", " +
-                        I18n.trimTextAt(MyHtml.toCompactPlainText(content), 120));
+                        I18n.trimTextAt(MyHtml.htmlToCompactPlainText(content), 120));
                 MyServiceManager.setServiceUnavailable();
             }
             return s;

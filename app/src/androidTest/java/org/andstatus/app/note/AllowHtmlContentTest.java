@@ -88,7 +88,7 @@ public class AllowHtmlContentTest {
         assertTrue(
                 intent.getStringExtra(Intent.EXTRA_TEXT),
                 intent.getStringExtra(Intent.EXTRA_TEXT).contains(
-                        MyHtml.toPlainText(HtmlContentTester.HTML_BODY_IMG_STRING)));
+                        MyHtml.htmlToPlainText(HtmlContentTester.HTML_BODY_IMG_STRING)));
         if (origin.isHtmlContentAllowed()) {
             assertTrue(note.getContent(), intent.hasExtra(Intent.EXTRA_HTML_TEXT));
             assertThat(note.getContent(),
@@ -142,7 +142,7 @@ public class AllowHtmlContentTest {
         String expectedContent = jso.getString( isHtmlAllowed ? "statusnet_html" : "text");
         final String actualContent =  isHtmlAllowed
                 ? activity.getNote().getContent()
-                : MyHtml.toPlainText(activity.getNote().getContent());
+                : MyHtml.htmlToPlainText(activity.getNote().getContent());
         assertEquals(isHtmlAllowed ? "HTML content allowed" : "No HTML content", expectedContent, actualContent);
 
         activity.getNote().setUpdatedDate(MyLog.uniqueCurrentTimeMS());

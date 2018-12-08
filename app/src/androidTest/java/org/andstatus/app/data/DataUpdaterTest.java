@@ -97,7 +97,7 @@ public class DataUpdaterTest {
         AActivity activity = AActivity.newPartialNote(accountActor, somebody, noteOid, System.currentTimeMillis(),
                 DownloadStatus.LOADED);
         Note note = activity.getNote();
-        note.setContent("The test note by Somebody at run " + demoData.testRunUid, TextMediaType.PLAIN);
+        note.setContentPosted("The test note by Somebody at run " + demoData.testRunUid);
         note.via = "MyCoolClient";
         note.url = "http://identi.ca/somebody/comment/dasdjfdaskdjlkewjz1EhSrTRB";
 
@@ -201,7 +201,7 @@ public class DataUpdaterTest {
                 author, "https://pumpity.net/api/comment/sdajklsdkiewwpdsldkfsdasdjWED" +  demoData.testRunUid,
                 13312697000L, DownloadStatus.LOADED);
         Note note = activity.getNote();
-        note.setContent("This test note will be favorited by First Reader from http://pumpity.net", TextMediaType.PLAIN);
+        note.setContentPosted("This test note will be favorited by First Reader from http://pumpity.net");
         note.via = "SomeOtherClient";
 
         String otherUsername = "firstreader@identi.ca";
@@ -288,7 +288,7 @@ public class DataUpdaterTest {
                 "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123" + iterationId + demoData.testRunUid,
                 13312795000L, DownloadStatus.LOADED);
         Note note = activity.getNote();
-        note.setContent("The test note by Example\n from the http://pumpity.net " +  iterationId, TextMediaType.PLAIN);
+        note.setContentPosted("The test note by Example\n from the http://pumpity.net " +  iterationId);
         note.via = "UnknownClient";
         if (favorited) note.addFavoriteBy(accountActor, TriState.TRUE);
 
@@ -366,7 +366,7 @@ public class DataUpdaterTest {
         AActivity activity = AActivity.newPartialNote(accountActor, accountActor, "",
                 System.currentTimeMillis(), DownloadStatus.SENDING);
         Note note = activity.getNote();
-        note.setContent("Unsent note with an attachment " + demoData.testRunUid, TextMediaType.UNKNOWN);
+        note.setContentPosted("Unsent note with an attachment " + demoData.testRunUid);
         note.attachments.add(Attachment.fromUri(demoData.localImageTestUri));
         new DataUpdater(ma).onActivity(activity);
         assertNotEquals("Note added " + activity, 0, note.noteId);
@@ -386,7 +386,7 @@ public class DataUpdaterTest {
         AActivity activity2 = AActivity.newPartialNote(accountActor, activity.getAuthor(), oid,
                 System.currentTimeMillis(), DownloadStatus.LOADED);
         Note note2 = activity2.getNote();
-        note2.setContent("Just sent: " + note.getContent(), TextMediaType.UNKNOWN);
+        note2.setContentPosted("Just sent: " + note.getContent());
         note2.attachments.add(Attachment.fromUri(demoData.image1Url));
         note2.noteId = note.noteId;
         new DataUpdater(ma).onActivity(activity2);
@@ -547,7 +547,7 @@ public class DataUpdaterTest {
         AActivity activity = AActivity.newPartialNote(accountActor, somebody, String.valueOf(System.nanoTime()),
                 System.currentTimeMillis(), DownloadStatus.LOADED);
         Note note = activity.getNote();
-        note.setContent(content, TextMediaType.UNKNOWN);
+        note.setContentPosted(content);
         note.via = "MyCoolClient";
 
         long noteId = di.onActivity(activity).getNote().noteId;
@@ -622,7 +622,7 @@ public class DataUpdaterTest {
         AActivity activity1 = AActivity.newPartialNote(accountActor, author, String.valueOf(System.nanoTime()),
                 System.currentTimeMillis(), DownloadStatus.LOADED);
         Note note = activity1.getNote();
-        note.setContent(content, TextMediaType.UNKNOWN);
+        note.setContentPosted(content);
         note.via = "AndStatus";
         return activity1;
     }

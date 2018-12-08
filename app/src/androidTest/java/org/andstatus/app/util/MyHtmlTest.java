@@ -39,6 +39,29 @@ public class MyHtmlTest {
     private static final String SAMPLE2_HTML1 = "<p dir=\"ltr\">" + SAMPLE2_FOR_VIEW + "</p>";
     private static final String SAMPLE2_HTML2 = SAMPLE2_HTML1 + "\n";
 
+    private static String twitterBodySent =
+            "Testing if and what is escaped in a Tweet:\n" +
+            "1. \"less-than\" sign &lt;  and escaped: &amp;lt;\n" +
+            "2. \"greater-than\" sign &gt; and escaped: &amp;gt;\n" +
+            "3. Ampersand &amp; and escaped: &amp;amp;\n" +
+            "4. Apostrophe '\n" +
+            "5. br HTML tag: &lt;br /&gt; and without \"/\": &lt;br&gt; ?!";
+     public static String twitterBodyToPost =
+            "Testing if and what is escaped in a Tweet:\n" +
+            "1. \"less-than\" sign &lt;  and escaped: &amp;lt;\n" +
+            "2. \"greater-than\" sign &gt; and escaped: &amp;gt;\n" +
+            "3. Ampersand &amp; and escaped: &amp;amp;\n" +
+            "4. Apostrophe '\n" +
+            "5. br HTML tag: &lt;br /&gt; and without \"/\": &lt;br&gt; ?!";
+    public static String twitterBodyHtml =
+            "Testing if and what is escaped in a Tweet:<br />" +
+            "1. \"less-than\" sign &lt;  and escaped: &amp;lt;<br />" +
+            "2. \"greater-than\" sign &gt; and escaped: &amp;gt;<br />" +
+            "3. Ampersand &amp; and escaped: &amp;amp;<br />" +
+            "4. Apostrophe '<br />" +
+            "5. br HTML tag: &lt;br /&gt; and without \"/\": &lt;br&gt; ?!";
+
+
     @Before
     public void setUp() throws Exception {
         TestSuite.initialize(this);
@@ -91,95 +114,115 @@ public class MyHtmlTest {
         String singleLine = "This note has newline";
 
         String text1 = "This note<br >has <br>newline ";
-        assertEquals(linebreaks, MyHtml.toPlainText(text1));
-        assertEquals(singleLine, MyHtml.toCompactPlainText(text1));
+        assertEquals(linebreaks, MyHtml.htmlToPlainText(text1));
+        assertEquals(singleLine, MyHtml.htmlToCompactPlainText(text1));
 
         String text2 = "This note<br />has <p>newline</p>";
-        assertEquals(linebreaks, MyHtml.toPlainText(text2));
-        assertEquals(linebreaks, MyHtml.toPlainText(linebreaks));
-        assertEquals(singleLine, MyHtml.toCompactPlainText(text2));
+        assertEquals(linebreaks, MyHtml.htmlToPlainText(text2));
+        assertEquals(linebreaks, MyHtml.htmlToPlainText(linebreaks));
+        assertEquals(singleLine, MyHtml.htmlToCompactPlainText(text2));
 
         String text3 = "This <a href='#as'>note</a><br />has <br><br>newline";
         String doubleLinebreaks = "This note\nhas \n\nnewline";
-        assertEquals(doubleLinebreaks, MyHtml.toPlainText(text3));
-        assertEquals(singleLine, MyHtml.toCompactPlainText(text3));
+        assertEquals(doubleLinebreaks, MyHtml.htmlToPlainText(text3));
+        assertEquals(singleLine, MyHtml.htmlToCompactPlainText(text3));
 
         String text3_2 = "This <a href='#as'>note</a><br />has <br><br><br>newline";
-        assertEquals(doubleLinebreaks, MyHtml.toPlainText(text3_2));
-        assertEquals(singleLine, MyHtml.toCompactPlainText(text3_2));
+        assertEquals(doubleLinebreaks, MyHtml.htmlToPlainText(text3_2));
+        assertEquals(singleLine, MyHtml.htmlToCompactPlainText(text3_2));
 
         String text3_3 = "This note\nhas \n\n\nnewline";
-        assertEquals(doubleLinebreaks, MyHtml.toPlainText(text3_3));
-        assertEquals(singleLine, MyHtml.toCompactPlainText(text3_3));
+        assertEquals(doubleLinebreaks, MyHtml.htmlToPlainText(text3_3));
+        assertEquals(singleLine, MyHtml.htmlToCompactPlainText(text3_3));
 
         String text4 = "<p>This <a href='#as'>note</a></p><br />has <p>newline</p>";
         String double2Linebreaks = "This note\n\nhas \nnewline";
-        assertEquals(double2Linebreaks, MyHtml.toPlainText(text4));
-        assertEquals(singleLine, MyHtml.toCompactPlainText(text4));
+        assertEquals(double2Linebreaks, MyHtml.htmlToPlainText(text4));
+        assertEquals(singleLine, MyHtml.htmlToCompactPlainText(text4));
 
         String text5 = "<p>This <a href='#as'>note</a></p>has <p>newline</p>";
-        assertEquals(linebreaks, MyHtml.toPlainText(text5));
-        assertEquals(singleLine, MyHtml.toCompactPlainText(text5));
+        assertEquals(linebreaks, MyHtml.htmlToPlainText(text5));
+        assertEquals(singleLine, MyHtml.htmlToCompactPlainText(text5));
 
         String text6 = "<p>This <a href='#as'>note</a></p>   has <p>newline</p> ";
-        assertEquals(linebreaks, MyHtml.toPlainText(text6));
-        assertEquals(singleLine, MyHtml.toCompactPlainText(text6));
+        assertEquals(linebreaks, MyHtml.htmlToPlainText(text6));
+        assertEquals(singleLine, MyHtml.htmlToCompactPlainText(text6));
 
-        assertEquals("I'm working", MyHtml.toPlainText("I&apos;m working"));
+        assertEquals("I'm working", MyHtml.htmlToPlainText("I&apos;m working"));
     }
 
     @Test
     public void testStoreLineBreaks() {
-        String text1 = "Today's note<br >has <br>linebreaks ";
-        String text2 = "Today's note\nhas \nlinebreaks ";
-        String text3 = "Today's note<br >\nhas <br>\nlinebreaks ";
+        String textBr =  "Today's note<br >has <br>linebreaks ";
+        String textN =   "Today's note\nhas \nlinebreaks ";
+        String textBrN = "Today's note<br >\nhas <br>\nlinebreaks ";
 
-        final String exp1 = text1.trim();
-        assertEquals(exp1, MyHtml.toContentStoredAsHtml(text1, TextMediaType.HTML, true));
-        assertEquals(exp1, MyHtml.toContentStoredAsHtml(text1, TextMediaType.UNKNOWN, true));
+        assertEquals(textBr, MyHtml.toContentStored(textBr, TextMediaType.HTML, true));
+        assertEquals(textBr, MyHtml.toContentStored(textBr, TextMediaType.UNKNOWN, true));
 
-        final String exp2 = "Today's note&lt;br &gt;has &lt;br&gt;linebreaks";
-        assertEquals(exp2, MyHtml.toContentStoredAsHtml(text1, TextMediaType.PLAIN, true));
-        assertEquals(exp2, MyHtml.toContentStoredAsHtml(text1, TextMediaType.PLAIN, false));
+        final String expEscaped = "Today's note&lt;br &gt;has &lt;br&gt;linebreaks";
+        assertEquals(expEscaped, MyHtml.toContentStored(textBr, TextMediaType.PLAIN, true));
+        assertEquals(expEscaped, MyHtml.toContentStored(textBr, TextMediaType.PLAIN, false));
 
-        final String exp3 = "Today's note<br />has <br />linebreaks";
-        assertEquals(exp3, MyHtml.toContentStoredAsHtml(text1, TextMediaType.HTML, false));
-        assertEquals(exp3, MyHtml.toContentStoredAsHtml(text1, TextMediaType.UNKNOWN, false));
+        final String expBr = "Today's note<br />has <br />linebreaks";
+        assertEquals(expBr, MyHtml.toContentStored(textBr, TextMediaType.HTML, false));
+        assertEquals(expBr, MyHtml.toContentStored(textBr, TextMediaType.UNKNOWN, false));
 
-        assertEquals(exp3, MyHtml.toContentStoredAsHtml(text2, TextMediaType.UNKNOWN, true));
-        assertEquals(exp3, MyHtml.toContentStoredAsHtml(text2, TextMediaType.PLAIN, true));
-        assertEquals(exp3, MyHtml.toContentStoredAsHtml(text2, TextMediaType.PLAIN, false));
-        assertEquals(exp3, MyHtml.toContentStoredAsHtml(text2, TextMediaType.HTML, false));
-        assertEquals(exp3, MyHtml.toContentStoredAsHtml(text2, TextMediaType.UNKNOWN, false));
+        assertEquals(expBr, MyHtml.toContentStored(textN, TextMediaType.UNKNOWN, true));
+        assertEquals(expBr, MyHtml.toContentStored(textN, TextMediaType.UNKNOWN, false));
+        assertEquals(expBr, MyHtml.toContentStored(textN, TextMediaType.PLAIN, true));
+        assertEquals(expBr, MyHtml.toContentStored(textN, TextMediaType.PLAIN, false));
 
-        assertEquals(exp3, MyHtml.toContentStoredAsHtml(text3, TextMediaType.HTML, false));
-        assertEquals(exp3, MyHtml.toContentStoredAsHtml(text3, TextMediaType.UNKNOWN, false));
+        assertEquals(expBr, MyHtml.toContentStored(textBrN, TextMediaType.HTML, false));
+        assertEquals(expBr, MyHtml.toContentStored(textBrN, TextMediaType.UNKNOWN, false));
 
-        final String exp4 = text2.trim();
-        assertEquals(exp4, MyHtml.toContentStoredAsHtml(text2, TextMediaType.HTML, true));
+        String expNoBreaks = "Today's note has linebreaks";
+        assertEquals(expNoBreaks, MyHtml.toContentStored(textN, TextMediaType.HTML, false));
 
-        final String exp5 = text3.trim();
-        assertEquals(exp5, MyHtml.toContentStoredAsHtml(text3, TextMediaType.HTML, true));
-        assertEquals(exp5, MyHtml.toContentStoredAsHtml(text3, TextMediaType.UNKNOWN, true));
+        assertEquals(textN, MyHtml.toContentStored(textN, TextMediaType.HTML, true));
 
-        final String exp6 = "Today's note&lt;br &gt;<br />has &lt;br&gt;<br />linebreaks";
-        assertEquals(exp6, MyHtml.toContentStoredAsHtml(text3, TextMediaType.PLAIN, true));
-        assertEquals(exp6, MyHtml.toContentStoredAsHtml(text3, TextMediaType.PLAIN, false));
+        assertEquals(textBrN, MyHtml.toContentStored(textBrN, TextMediaType.HTML, true));
+        assertEquals(textBrN, MyHtml.toContentStored(textBrN, TextMediaType.UNKNOWN, true));
 
-        String text4 = "Today's note\nhas \n\nlinebreaks ";
-        final String exp7 = "Today's note<br />has <br /><br />linebreaks";
-        assertEquals(exp7, MyHtml.toContentStoredAsHtml(text4, TextMediaType.PLAIN, true));
-        assertEquals(exp7, MyHtml.toContentStoredAsHtml(text4, TextMediaType.PLAIN, false));
+        final String expOverEscapedBr = "Today's note&lt;br &gt;<br />has &lt;br&gt;<br />linebreaks";
+        assertEquals(expOverEscapedBr, MyHtml.toContentStored(textBrN, TextMediaType.PLAIN, true));
+        assertEquals(expOverEscapedBr, MyHtml.toContentStored(textBrN, TextMediaType.PLAIN, false));
 
+        String textNN = "Today's note\nhas \n\nlinebreaks ";
+        final String expBrBr = "Today's note<br />has <br /><br />linebreaks";
+        assertEquals(expBrBr, MyHtml.toContentStored(textNN, TextMediaType.PLAIN, true));
+        assertEquals(expBrBr, MyHtml.toContentStored(textNN, TextMediaType.PLAIN, false));
+
+        assertEquals(twitterBodyHtml, MyHtml.toContentStored(twitterBodySent, TextMediaType.PLAIN_ESCAPED, true));
+        assertEquals(twitterBodyHtml, MyHtml.toContentStored(twitterBodySent, TextMediaType.PLAIN_ESCAPED, false));
     }
 
     @Test
-    public void teststripExcessiveLineBreaks() {
+    public void testStripExcessiveLineBreaks() {
         final String twoLineBreaks = "one\n\ntwo";
         assertEquals(twoLineBreaks, MyHtml.stripExcessiveLineBreaks(twoLineBreaks));
         assertEquals(twoLineBreaks, MyHtml.stripExcessiveLineBreaks("one\n\n\ntwo"));
         assertEquals(twoLineBreaks, MyHtml.stripExcessiveLineBreaks("one\n\n\n \ntwo"));
         final String oneLineBreak = "one\ntwo";
         assertEquals(oneLineBreak, MyHtml.stripExcessiveLineBreaks(oneLineBreak));
+    }
+
+    @Test
+    public void testToPlainEscaped() {
+
+        assertToPlainEscaped(
+                "Line one &lt; escaped &gt;\nLine two",
+                "Line one &lt; escaped &gt;<br />Line two");
+
+        final String oneLineEscaped = "Less &lt; and escaped &amp;lt; greater &gt;";
+        assertToPlainEscaped(oneLineEscaped, oneLineEscaped);
+
+        assertToPlainEscaped(twitterBodyToPost, twitterBodyHtml);
+
+    }
+
+    private void assertToPlainEscaped(String expected, String textHtml) {
+        assertEquals("To plain escaped", expected,
+                MyHtml.fromContentStored(textHtml, TextMediaType.PLAIN_ESCAPED));
     }
 }

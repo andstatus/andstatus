@@ -26,7 +26,6 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.service.CommandData;
@@ -242,7 +241,7 @@ public class ConnectionGnuSocialTest {
         AActivity activityIn = AActivity.newPartialNote(accountActor, actor, favoritingOid, favoritingUpdateDate,
                 DownloadStatus.LOADED);
 
-        activityIn.getNote().setContent(favoritingContent, TextMediaType.UNKNOWN);
+        activityIn.getNote().setContentPosted(favoritingContent);
 
         AActivity activity = ConnectionTwitterGnuSocial.createLikeActivity(activityIn);
         assertEquals("Should become LIKE activity " + activityIn, ActivityType.LIKE , activity.type);

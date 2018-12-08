@@ -116,7 +116,7 @@ public class Note extends AObject {
                 DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS)));
         note.noteId = DbUtils.getLong(cursor, NoteTable._ID);
         note.setName(DbUtils.getString(cursor, NoteTable.NAME));
-        note.setContent(DbUtils.getString(cursor, NoteTable.CONTENT), TextMediaType.HTML);
+        note.setContentStored(DbUtils.getString(cursor, NoteTable.CONTENT));
         return note;
     }
 
@@ -160,9 +160,7 @@ public class Note extends AObject {
     }
 
     public String getContentToPost() {
-        return origin.getOriginType().textMediaTypeToPost() == TextMediaType.HTML
-                ? content
-                : MyHtml.toPlainText(content);
+        return MyHtml.fromContentStored(content, origin.getOriginType().textMediaTypeToPost);
     }
 
     public String getContentToSearch() {
@@ -184,12 +182,20 @@ public class Note extends AObject {
     }
 
     public void setName(String name) {
-        this.name = MyHtml.toCompactPlainText(name);
+        this.name = MyHtml.htmlToCompactPlainText(name);
         contentToSearch.reset();
     }
 
+    public void setContentStored(String content) {
+        setContent(content, TextMediaType.HTML);
+    }
+
+    public void setContentPosted(String content) {
+        setContent(content, origin.getOriginType().textMediaTypePosted);
+    }
+
     public void setContent(String content, TextMediaType mediaType) {
-        this.content = MyHtml.toContentStoredAsHtml(content, mediaType, isHtmlContentAllowed());
+        this.content = MyHtml.toContentStored(content, mediaType, isHtmlContentAllowed());
         contentToSearch.reset();
     }
 
@@ -345,7 +351,7 @@ public class Note extends AObject {
         noteId = note.noteId;
         updatedDate = note.updatedDate;
         name = note.name;
-        setContent(note.content, TextMediaType.HTML);
+        setContentStored(note.content);
         inReplyTo = note.inReplyTo;
         replies = note.replies;
         conversationOid = note.conversationOid;

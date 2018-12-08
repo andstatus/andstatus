@@ -21,7 +21,6 @@ import android.support.annotation.NonNull;
 
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
-import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnection;
@@ -40,7 +39,6 @@ import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.origin.OriginPumpio;
 import org.andstatus.app.util.JsonUtils;
-import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -234,8 +232,7 @@ public class ConnectionPumpio extends Connection {
     @Override
     public AActivity updateNote(String name, String content, String noteOid, Audience audience, String inReplyToOid,
                                 Uri mediaUri) throws ConnectionException {
-        String content2 = data.getOrigin().isHtmlContentAllowed() ? MyHtml.htmlify(content) : content;
-        ActivitySender sender = ActivitySender.fromContent(this, noteOid, audience, name, content2);
+        ActivitySender sender = ActivitySender.fromContent(this, noteOid, audience, name, content);
         sender.setInReplyTo(inReplyToOid);
         sender.setMediaUri(mediaUri);
         return sender.send(PActivityType.POST);
@@ -492,7 +489,7 @@ public class ConnectionPumpio extends Connection {
 
             Note note =  activity.getNote();
             note.setName(jso.optString(NAME_PROPERTY));
-            note.setContent(jso.optString(CONTENT_PROPERTY), TextMediaType.HTML);
+            note.setContentPosted(jso.optString(CONTENT_PROPERTY));
 
             setVia(note, jso);
             note.url = jso.optString("url");

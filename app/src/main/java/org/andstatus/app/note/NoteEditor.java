@@ -451,7 +451,7 @@ public class NoteEditor {
         MyUrlSpan.showText(editorView, R.id.note_name_edit, editorData.activity.getNote().getName(), false,
                 editorData.ma.getOrigin().getOriginType().hasNoteName);
         final String content = editorData.activity.getNote().getContent();
-        String body = contentMediaType == TextMediaType.HTML ? content : MyHtml.toPlainText(content);
+        String body = contentMediaType == TextMediaType.HTML ? content : MyHtml.htmlToPlainText(content);
         if (!body.equals(bodyView.getText().toString().trim())) {
             if (!StringUtils.isEmpty(body)) {
                 body += " ";

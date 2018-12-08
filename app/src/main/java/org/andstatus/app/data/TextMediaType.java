@@ -18,13 +18,19 @@ package org.andstatus.app.data;
 
 /** On mediaType see https://www.w3.org/TR/activitystreams-vocabulary/#dfn-mediatype */
 public enum TextMediaType {
-    PLAIN("text/plain"),
-    HTML("text/html"),
-    UNKNOWN("text/*");
+    PLAIN("text/plain", false, false),
+    PLAIN_ESCAPED("text/plain", false, true), // Twitter has such
+    HTML("text/html", true, true),
+    UNKNOWN("text/*", true, true);
 
     public final String mimeType;
 
-    TextMediaType(String mimeType) {
+    public final boolean hasHtml;
+    public final boolean isHtmlEscaped;
+
+    TextMediaType(String mimeType, boolean hasHtml, boolean isHtmlEscaped) {
         this.mimeType = mimeType;
+        this.hasHtml = hasHtml;
+        this.isHtmlEscaped = isHtmlEscaped;
     }
 }

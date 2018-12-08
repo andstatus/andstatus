@@ -45,6 +45,8 @@ import java.util.Date;
 import java.util.List;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.util.MyHtmlTest.twitterBodyHtml;
+import static org.andstatus.app.util.MyHtmlTest.twitterBodyToPost;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -58,7 +60,7 @@ public class ConnectionTwitterTest {
 
     @Before
     public void setUp() throws Exception {
-        TestSuite.initializeWithData(this);
+        TestSuite.initializeWithAccounts(this);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
         Origin origin = MyContextHolder.get().origins().fromName(demoData.twitterTestOriginName);
@@ -190,6 +192,33 @@ public class ConnectionTwitterTest {
         assertEquals("Body of this note", body, note.getContent());
         assertEquals("Body of this note", ",update,streckensperrung,zw,berliner,tor,bergedorf,ersatzverkehr,mit,bussen," +
                 "und,taxis,störungsdauer,bis,ca,10,uhr,hvv,#hvv,sbahnhh,#sbahnhh,", note.getContentToSearch());
+
+        MyAccount ma = demoData.getMyAccount(connectionData.getAccountName().toString());
+        CommandExecutionContext executionContext = new CommandExecutionContext(
+                CommandData.newAccountCommand(CommandEnum.GET_NOTE, ma));
+        DataUpdater di = new DataUpdater(executionContext);
+        di.onActivity(activity);
+        assertNotEquals("Note was not added " + activity, 0, note.noteId);
+        assertNotEquals("Activity was not added " + activity, 0, activity.getId());
+    }
+
+    @Test
+    public void getNoteWithEscapedChars() throws IOException {
+        httpConnection.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_escaped_chars);
+
+        String contentToSearch = ",testing,if,and,what,is,escaped,in,a,tweet," +
+                "1,less-than,sign,and,escaped,&lt," +
+                "2,greater-than,sign,and,escaped,&gt," +
+                "3,ampersand,&,and,escaped,&amp," +
+                "4,apostrophe," +
+                "5,br,html,tag,br,/,and,without,/,br,";
+
+        AActivity activity = connection.getNote("1070738478198071296");
+        assertEquals("No note returned " + activity, AObjectType.NOTE, activity.getObjectType());
+        Note note = activity.getNote();
+        assertEquals("Body of this note", twitterBodyHtml, note.getContent());
+        assertEquals("Body as sent", twitterBodyToPost, note.getContentToPost());
+        assertEquals("Content to Search of this note", contentToSearch, note.getContentToSearch());
 
         MyAccount ma = demoData.getMyAccount(connectionData.getAccountName().toString());
         CommandExecutionContext executionContext = new CommandExecutionContext(

@@ -229,7 +229,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
         favoritedActivity.setUpdatedDate(SOME_TIME_AGO);
 
         Note note = favoritedActivity.getNote();
-        note.setContent(matcher.replaceFirst("$2"), TextMediaType.UNKNOWN);
+        note.setContent(matcher.replaceFirst("$2"), TextMediaType.HTML);
         note.setUpdatedDate(SOME_TIME_AGO);
         note.setStatus(DownloadStatus.LOADED);  // TODO: Maybe we need to invent some other status for partially loaded...
         note.setInReplyTo(AActivity.EMPTY);

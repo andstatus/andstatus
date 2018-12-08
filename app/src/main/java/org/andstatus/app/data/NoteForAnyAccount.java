@@ -97,6 +97,6 @@ public class NoteForAnyAccount {
     }
 
     public String getBodyTrimmed() {
-        return I18n.trimTextAt(MyHtml.toCompactPlainText(content), 80).toString();
+        return I18n.trimTextAt(MyHtml.htmlToCompactPlainText(content), 80).toString();
     }
 }

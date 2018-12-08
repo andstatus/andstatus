@@ -111,7 +111,7 @@ public class NoteEditorData implements IsEmpty {
         long noteId = activity.getNote().noteId;
         Note note = activity.getNote();
         note.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId));
-        note.setContent(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId), TextMediaType.HTML);
+        note.setContentStored(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId));
         note.setAudience(Audience.load(myContext, activity.accountActor.origin, noteId));
 
         long inReplyToNoteId = inReplyToNoteIdIn == 0
@@ -128,7 +128,7 @@ public class NoteEditorData implements IsEmpty {
             final Note inReplyToNote = inReplyTo.getNote();
             inReplyToNote.noteId = inReplyToNoteId;
             inReplyToNote.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, inReplyToNoteId));
-            inReplyToNote.setContent(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, inReplyToNoteId), TextMediaType.HTML);
+            inReplyToNote.setContentStored(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, inReplyToNoteId));
             note.setInReplyTo(inReplyTo);
         }
 

@@ -19,7 +19,6 @@ package org.andstatus.app.net.social;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 
-import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.note.KeywordsFilter;
@@ -354,7 +353,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
             Note note =  activity.getNote();
             note.setName(jso.optString(NAME_PROPERTY));
-            note.setContent(jso.optString(CONTENT_PROPERTY), TextMediaType.HTML);
+            note.setContentPosted(jso.optString(CONTENT_PROPERTY));
             note.url = jso.optString("url");
             if (jso.has("recipient")) {
                 JSONObject recipient = jso.getJSONObject("recipient");

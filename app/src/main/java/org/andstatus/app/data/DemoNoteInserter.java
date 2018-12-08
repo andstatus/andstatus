@@ -129,7 +129,7 @@ public class DemoNoteInserter {
         activity.setNote(note);
         note.setUpdatedDate(activity.getUpdatedDate());
         note.setName(name);
-        note.setContent(content, TextMediaType.UNKNOWN);
+        note.setContentPosted(content);
         note.via = "AndStatus";
         note.setInReplyTo(inReplyToActivity);
         if (origin.getOriginType() == OriginType.PUMPIO) {
