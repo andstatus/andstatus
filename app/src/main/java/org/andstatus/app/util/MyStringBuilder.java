@@ -105,7 +105,9 @@ public class MyStringBuilder implements CharSequence {
 
     @NonNull
     public MyStringBuilder append(CharSequence text) {
-        builder.append(text);
+        if (StringUtils.nonEmpty(text)) {
+            builder.append(text);
+        }
         return this;
     }
 

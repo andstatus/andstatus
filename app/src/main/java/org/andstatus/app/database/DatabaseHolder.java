@@ -27,10 +27,12 @@ import org.andstatus.app.data.converter.DatabaseConverterController;
 import org.andstatus.app.util.MyLog;
 
 import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class DatabaseHolder extends SQLiteOpenHelper  {
     private final boolean creationEnabled;
-    private boolean wasNotCreated = false;
+    private volatile boolean databaseWasNotCreated = false;
+    private final AtomicBoolean onUpgradeTriggered = new AtomicBoolean(false);
 
     public static final String DATABASE_NAME = "andstatus.sqlite";
 
@@ -39,13 +41,12 @@ public final class DatabaseHolder extends SQLiteOpenHelper  {
         this.creationEnabled = creationEnabled;
         File databasePath = context.getDatabasePath(DATABASE_NAME);
         if (databasePath == null || (!creationEnabled && !databasePath.exists())) {
-            wasNotCreated = true;
+            databaseWasNotCreated = true;
         }
     }
 
-    private final ThreadLocal<Boolean> onUpgradeTriggered = new ThreadLocal<>();
     public MyContextState checkState() {
-        if (wasNotCreated) {
+        if (databaseWasNotCreated) {
             return MyContextState.DATABASE_UNAVAILABLE;
         }
         if (DatabaseConverterController.isUpgradeError()) {
@@ -80,7 +81,7 @@ public final class DatabaseHolder extends SQLiteOpenHelper  {
     @Override
     public void onCreate(SQLiteDatabase db) {
         if (!creationEnabled) {
-            wasNotCreated = true;
+            databaseWasNotCreated = true;
             MyLog.e(this, "Database creation disabled");
             return;
         }
@@ -88,14 +89,15 @@ public final class DatabaseHolder extends SQLiteOpenHelper  {
     }
 
     /**
-     * We don't need here neither try-catch nor transactions because they are
+     * We need here neither try-catch nor transactions because they are
      * being used in calling method
      * 
      * @see android.database.sqlite.SQLiteOpenHelper#getWritableDatabase
      */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)  {
-        onUpgradeTriggered.set(true);
-        new DatabaseConverterController().onUpgrade(db, oldVersion, newVersion);
+        if (onUpgradeTriggered.compareAndSet(false, true)) {
+            new DatabaseConverterController().onUpgrade(db, oldVersion, newVersion);
+        }
     }
 }

@@ -55,6 +55,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.ParsedUri;
+import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.note.NoteAdapter;
@@ -110,9 +111,10 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     private ActivityContextMenu contextMenu;
 
-    private String mNoteNameToShareViaThisApp = "";
-    private String mContentToShareViaThisApp = "";
-    private Uri mMediaToShareViaThisApp = Uri.EMPTY;
+    private String noteNameToShareViaThisApp = "";
+    private String contentToShareViaThisApp = "";
+    private TextMediaType textMediaTypeToShareViaThisApp = TextMediaType.HTML;
+    private Uri mediaToShareViaThisApp = Uri.EMPTY;
 
     private String mRateLimitText = "";
 
@@ -618,21 +620,29 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         if (Intent.ACTION_SEND.equals(intentNew.getAction())) {
             shareViaThisApplication(intentNew.getStringExtra(Intent.EXTRA_SUBJECT),
                     intentNew.getStringExtra(Intent.EXTRA_TEXT),
+                    intentNew.getStringExtra(Intent.EXTRA_HTML_TEXT),
                     intentNew.getParcelableExtra(Intent.EXTRA_STREAM));
         }
     }
 
-    private void shareViaThisApplication(String name, String text, Uri mediaUri) {
-        if (StringUtils.isEmpty(name) && StringUtils.isEmpty(text) && UriUtils.isEmpty(mediaUri)) {
+    private void shareViaThisApplication(String name, String plainText, String html, Uri mediaUri) {
+        if (StringUtils.isEmpty(name) && StringUtils.isEmpty(plainText) && UriUtils.isEmpty(mediaUri)) {
             return;
         }
-        mNoteNameToShareViaThisApp = StringUtils.notEmpty(name, "");
-        mContentToShareViaThisApp = StringUtils.notEmpty(text, "");
-        mMediaToShareViaThisApp = mediaUri;
+        noteNameToShareViaThisApp = StringUtils.notEmpty(name, "");
+        if (StringUtils.nonEmpty(html)) {
+            contentToShareViaThisApp = StringUtils.notEmpty(html, "");
+            textMediaTypeToShareViaThisApp = TextMediaType.HTML;
+        } else {
+            contentToShareViaThisApp = StringUtils.notEmpty(plainText, "");
+            textMediaTypeToShareViaThisApp = TextMediaType.PLAIN;
+        }
+        mediaToShareViaThisApp = mediaUri;
         MyLog.v(this, "Share via this app "
-                + (!StringUtils.isEmpty(mNoteNameToShareViaThisApp) ? "; title:'" + mNoteNameToShareViaThisApp +"'" : "")
-                + (!StringUtils.isEmpty(mContentToShareViaThisApp) ? "; text:'" + mContentToShareViaThisApp +"'" : "")
-                + (!UriUtils.isEmpty(mMediaToShareViaThisApp) ? "; media:" + mMediaToShareViaThisApp.toString() : ""));
+                + (!StringUtils.isEmpty(noteNameToShareViaThisApp) ? "; title:'" + noteNameToShareViaThisApp +"'" : "")
+                + (!StringUtils.isEmpty(contentToShareViaThisApp)
+                    ? "; " + textMediaTypeToShareViaThisApp + ":'" + contentToShareViaThisApp +"'" : "")
+                + (!UriUtils.isEmpty(mediaToShareViaThisApp) ? "; media:" + mediaToShareViaThisApp.toString() : ""));
         AccountSelector.selectAccountOfOrigin(this, ActivityRequestCode.SELECT_ACCOUNT_TO_SHARE_VIA, 0);
     }
 
@@ -1068,8 +1078,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     private void accountToShareViaSelected(Intent data) {
         MyAccount ma = myContext.accounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
-        getNoteEditor().startEditingSharedData(ma, mNoteNameToShareViaThisApp, mContentToShareViaThisApp,
-                mMediaToShareViaThisApp);
+        getNoteEditor().startEditingSharedData(ma, noteNameToShareViaThisApp, contentToShareViaThisApp,
+                textMediaTypeToShareViaThisApp, mediaToShareViaThisApp);
     }
 
     @Override

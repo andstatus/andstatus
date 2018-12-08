@@ -38,7 +38,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.channels.FileChannel;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Random;
 import java.util.function.Supplier;
 
 public final class DbUtils {
@@ -115,10 +115,10 @@ public final class DbUtils {
     /** @return true if current thread was interrupted
      * Starting with Android 7 this is constantly interrupted by Android system
      * */
-    public static boolean waitMs(Object tag, long delayMs) {
+    public static boolean waitMs(Object tag, int delayMs) {
         boolean wasInterrupted = false;
         if (delayMs > 1) {
-            long delay = (delayMs/2) + ThreadLocalRandom.current().nextLong(0, delayMs);
+            long delay = (delayMs/2) + new Random().nextInt(delayMs);
             StopWatch stopWatch = StopWatch.createStarted();
             while (stopWatch.getTime() < delay) {
                 long remainingDelay = delay - stopWatch.getTime();

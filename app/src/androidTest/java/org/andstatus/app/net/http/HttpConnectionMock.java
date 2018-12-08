@@ -137,7 +137,7 @@ public class HttpConnectionMock extends HttpConnection {
         MyLog.v(this, method + " num:" + results.size() + "; path:'" + result.getUrl()
                 + "', originUrl:'" + data.originUrl + "', instanceId:" + mInstanceId );
         MyLog.v(this, Arrays.toString(Thread.currentThread().getStackTrace()));
-        DbUtils.waitMs("networkDelay", networkDelayMs);
+        DbUtils.waitMs("networkDelay", Math.toIntExact(networkDelayMs));
     }
 
     private synchronized String getNextResponse() {

@@ -388,25 +388,15 @@ public class NoteEditor {
     }
 
     public void startEditingSharedData(final MyAccount ma, String name, final String content,
-                                       final Uri media) {
+                                       TextMediaType textMediaType, final Uri media) {
         MyLog.v(NoteEditorData.TAG, () -> "startEditingSharedData " + name + " - " + content + " uri: " + media);
         updateDataFromScreen();
 
-        String contentWithName = "";
-        if (ma.getOrigin().getOriginType().hasNoteName) {
-            contentWithName = StringUtils.notEmpty(content, "");
-        } else {
-            if (subjectHasAdditionalContent(name, content)) {
-                contentWithName += name;
-            }
-            if (!StringUtils.isEmpty(content)) {
-                if (!StringUtils.isEmpty(contentWithName)) {
-                    contentWithName += " ";
-                }
-                contentWithName += content;
-            }
+        MyStringBuilder contentWithName = MyStringBuilder.of(content);
+        if (!ma.getOrigin().getOriginType().hasNoteName && subjectHasAdditionalContent(name, content)) {
+            contentWithName.prependWithSeparator(name, textMediaType == TextMediaType.HTML ? "<br/>" : "\n");
         }
-        NoteEditorData currentData = NoteEditorData.newEmpty(ma).setContent(contentWithName, TextMediaType.UNKNOWN);
+        NoteEditorData currentData = NoteEditorData.newEmpty(ma).setContent(contentWithName.toString(), textMediaType);
         if (ma.getOrigin().getOriginType().hasNoteName) currentData.setName(name);
         NoteEditorCommand command = new NoteEditorCommand(currentData, editorData).setMediaUri(media);
         command.showAfterSave = true;

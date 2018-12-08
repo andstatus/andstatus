@@ -29,9 +29,19 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="44.00" android:versionCode="263"
-             versionDate="2018-11-23"
-             versionTitle="Bugfixes">
+    <release android:versionName="45.00" android:versionCode="264"
+             versionDate="2018-12-08"
+             versionTitle="Unread Notifications and improved HTML support">
+        <changes>
+            <change>Added the "Unread notifications" timeline, sorted by the time of download ("received ... minutes ago"),
+                so it is easy to see new activities. Moreover, the timeline has "Mark all as read" button to explicitly
+                instruct #AndStatus to not notify about all currently shown activities anymore.</change>
+            <change>Improved handling of HTML-formatted content. "Escaped" characters are (mostly...) correctly preserved
+                now, especially if created by this User.<br/>
+                Notes are shared in HTML format.<br/>
+                Working towards <a href="https://www.w3.org/TR/activitypub/#Overview" target="_blank">ActivityPub</a>
+            adoption, AndStatus now internally stores notes in HTML format.</change>
+        </changes>
     </release>
     <release android:versionName="43.02" android:versionCode="262"
              versionDate="2018-10-24"

@@ -107,7 +107,7 @@ public class AllowHtmlContentTest {
         Intent intent = noteShare.intentToViewAndShare(true);
         assertTrue(intent.getExtras().containsKey(Intent.EXTRA_TEXT));
         assertTrue(intent.getStringExtra(Intent.EXTRA_TEXT), intent.getStringExtra(Intent.EXTRA_TEXT).contains(body));
-        assertFalse(intent.getExtras().containsKey(Intent.EXTRA_HTML_TEXT));
+        assertTrue(intent.getExtras().containsKey(Intent.EXTRA_HTML_TEXT));
         demoData.assertConversations();
     }
 

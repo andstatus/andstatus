@@ -646,7 +646,7 @@ public class MyService extends Service {
                     break;
                 }
                 if (DbUtils.waitMs("HeartBeatSleeping",
-                    java.util.concurrent.TimeUnit.SECONDS.toMillis(HEARTBEAT_PERIOD_SECONDS))) {
+                        Math.toIntExact(java.util.concurrent.TimeUnit.SECONDS.toMillis(HEARTBEAT_PERIOD_SECONDS)))) {
                     breakReason = "InterruptedException";
                     break;
                 }
