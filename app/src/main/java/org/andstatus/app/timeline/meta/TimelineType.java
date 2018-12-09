@@ -48,15 +48,9 @@ public enum TimelineType implements SelectableEnum {
     /** The Home timeline and other information (replies...). */
     HOME(ListScope.USER, "home", R.string.timeline_title_home, 0, HOME_TIMELINE),
     UNREAD_NOTIFICATIONS(ListScope.USER, "unread_notifications", R.string.unread_notifications, 0, NOTIFICATIONS_TIMELINE),
-    NOTIFICATIONS(ListScope.USER, "notifications", R.string.notifications_title, 0, NOTIFICATIONS_TIMELINE),
-    PUBLIC(ListScope.ORIGIN, "public", R.string.timeline_title_public, 0, PUBLIC_TIMELINE),
-    EVERYTHING(ListScope.ORIGIN, "everything", R.string.timeline_title_everything, 0, DUMMY_API),
-    SEARCH(ListScope.ORIGIN, "search", R.string.options_menu_search, 0, SEARCH_NOTES),
-    FAVORITES(ListScope.USER, "favorites", R.string.timeline_title_favorites, 0, LIKED_TIMELINE),
     /** The Mentions timeline and other information (replies...). */
     INTERACTIONS(ListScope.USER, "interactions", R.string.timeline_title_interactions, 0, NOTIFICATIONS_TIMELINE),
-    /** Private notes (direct tweets, dents...) */
-    PRIVATE(ListScope.USER, "private", R.string.timeline_title_private, 0, PRIVATE_NOTES),
+    FAVORITES(ListScope.USER, "favorites", R.string.timeline_title_favorites, 0, LIKED_TIMELINE),
     /** Notes by the selected Actor (where he is an Author or an Actor only (e.g. for Reblog/Retweet).
      * This Actor is not necessarily one of our Accounts */
     SENT(ListScope.USER, "sent", R.string.sent, R.string.menu_item_user_messages, ACTOR_TIMELINE),
@@ -65,6 +59,12 @@ public enum TimelineType implements SelectableEnum {
      * So this is essentially a list of "Friends". See {@link FriendshipTable} */
     FRIENDS(ListScope.USER, "friends", R.string.friends, R.string.friends_of, GET_FRIENDS),
     FOLLOWERS(ListScope.USER, "followers", R.string.followers, R.string.followers_of, GET_FOLLOWERS),
+    PUBLIC(ListScope.ORIGIN, "public", R.string.timeline_title_public, 0, PUBLIC_TIMELINE),
+    /** Private notes (direct tweets, dents...) */
+    EVERYTHING(ListScope.ORIGIN, "everything", R.string.timeline_title_everything, 0, DUMMY_API),
+    SEARCH(ListScope.ORIGIN, "search", R.string.options_menu_search, 0, SEARCH_NOTES),
+    PRIVATE(ListScope.USER, "private", R.string.timeline_title_private, 0, PRIVATE_NOTES),
+    NOTIFICATIONS(ListScope.USER, "notifications", R.string.notifications_title, 0, NOTIFICATIONS_TIMELINE),
     DRAFTS(ListScope.USER, "drafts", R.string.timeline_title_drafts, 0, DUMMY_API),
     OUTBOX(ListScope.USER, "outbox", R.string.timeline_title_outbox, 0, DUMMY_API),
     ACTORS(ListScope.ORIGIN, "users", R.string.user_list, 0, DUMMY_API),

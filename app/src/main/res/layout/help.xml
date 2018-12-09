@@ -46,6 +46,16 @@
         android:paddingTop="3dp" >
 
         <Button
+            android:id="@+id/button_help_get_started"
+            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text="@string/splash_button_get_started" >
+        </Button>
+
+        <Button
             android:id="@+id/button_help_learn_more"
             android:layout_weight="1"
             android:layout_width="wrap_content"
@@ -64,16 +74,6 @@
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
             android:text="@string/button_restore" />
-
-        <Button
-            android:id="@+id/button_help_get_started"
-            android:layout_weight="1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:text="@string/splash_button_get_started" >
-        </Button>
 
     </LinearLayout>
 
