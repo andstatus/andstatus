@@ -65,6 +65,8 @@ import org.andstatus.app.note.NoteEditorListActivity;
 import org.andstatus.app.note.NoteViewItem;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginSelector;
+import org.andstatus.app.os.AsyncTaskLauncher;
+import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
@@ -363,14 +365,6 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     /**
-     * Cancel notifications of the loaded timeline
-     */
-    private void clearNotificationsOnLoad() {
-        MyServiceManager.sendForegroundCommand(
-                CommandData.newTimelineCommand(CommandEnum.CLEAR_NOTIFICATIONS, getParamsLoaded().getTimeline()));
-    }
-
-    /**
      * May be executed on any thread
      * That advice doesn't fit here:
      * see http://stackoverflow.com/questions/5996885/how-to-wait-for-android-runonuithread-to-be-finished
@@ -408,13 +402,30 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             item.setVisible(enable);
             if (enable) {
                 item.setOnMenuItemClickListener(item1 -> {
-                    MyServiceManager.sendForegroundCommand(
-                                CommandData.newTimelineCommand(CommandEnum.MARK_ALL_NOTIFICATIONS_AS_READ,
-                                getParamsLoaded().getTimeline()));
+                    clearNotifications(this);
                     return true;
                 });
             }
         }
+    }
+
+    private static <T extends ViewItem<T>> void clearNotifications(TimelineActivity<T> timelineActivity) {
+        final Timeline timeline = timelineActivity.getParamsLoaded().getTimeline();
+        AsyncTaskLauncher.execute(timelineActivity, true,
+                new MyAsyncTask<Void, Void, Void>("clearNotifications" + timeline.getId(),
+                        MyAsyncTask.PoolEnum.QUICK_UI) {
+                    @Override
+                    protected Void doInBackground2(Void... params) {
+                        timelineActivity.myContext.clearNotifications(timeline);
+                        return null;
+                    }
+
+                    @Override
+                    protected void onPostExecute2(Void v) {
+                        timelineActivity.refreshFromCache();
+                    }
+                }
+        );
     }
 
     @Override
@@ -847,7 +858,6 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         }
         hideLoading(method);
         updateScreen();
-        clearNotificationsOnLoad();
         if (isParamsChanged) {
             MyLog.v(this, () -> method + "; Parameters changed, requesting " + otherParams.toSummary());
             showList(otherParams, TriState.TRUE);
@@ -1121,11 +1131,6 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                     mRateLimitText = commandData.getResult().getRemainingHits() + "/"
                             + commandData.getResult().getHourlyLimit();
                     updateTitle(mRateLimitText);
-                }
-                break;
-            case MARK_ALL_NOTIFICATIONS_AS_READ:
-                if (getParamsNew().timeline.getTimelineType() == TimelineType.UNREAD_NOTIFICATIONS) {
-                    refreshFromCache();
                 }
                 break;
             default:

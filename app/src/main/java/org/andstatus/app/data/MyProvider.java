@@ -256,7 +256,11 @@ public class MyProvider extends ContentProvider {
         if (ids.size() > 0) {
             update(myContext, ActivityTable.TABLE_NAME,
                     ActivityTable.NEW_NOTIFICATION_EVENT + "=0",
-                    ActivityTable.NEW_NOTIFICATION_EVENT + SqlIds.fromIds(ids).getSql());
+                    ActivityTable.NEW_NOTIFICATION_EVENT + SqlIds.fromIds(ids).getSql() +
+                            (timeline.actor.isEmpty()
+                                    ? ""
+                                    : " AND " + ActivityTable.NOTIFIED_ACTOR_ID + "=" + timeline.actor.actorId)
+            );
         }
     }
 
