@@ -339,8 +339,7 @@ public class MyProvider extends ContentProvider {
                     if (!values.containsKey(NoteTable.VIA)) {
                         values.put(NoteTable.VIA, "");
                     }
-                    values.put(NoteTable.INS_DATE, MyLog.uniqueCurrentTimeMS());
-                    
+
                     break;
                     
                 case ORIGIN_ITEM:

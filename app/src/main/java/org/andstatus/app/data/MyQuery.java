@@ -445,6 +445,7 @@ public class MyQuery {
         return idToLongColumnValue(null, ActorTable.TABLE_NAME, columnName, systemId);
     }
 
+    /** @return 0 if id == 0 or if not found */
     public static long idToLongColumnValue(SQLiteDatabase databaseIn, String tableName, String columnName, long systemId) {
         if (systemId == 0) {
             return 0;

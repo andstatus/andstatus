@@ -39,15 +39,18 @@ import org.andstatus.app.util.UriUtils;
 
 import java.util.Optional;
 
+import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
+import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 import static org.andstatus.app.util.UriUtils.TEMP_OID_PREFIX;
 
 /** Activity in a sense of Activity Streams https://www.w3.org/TR/activitystreams-core/ */
 public class AActivity extends AObject {
     public static final AActivity EMPTY = from(Actor.EMPTY, ActivityType.EMPTY);
     private TimelinePosition timelinePosition = TimelinePosition.EMPTY;
-    private long updatedDate = 0;
+    private long storedUpdatedDate = DATETIME_MILLIS_NEVER;
+    private long updatedDate = DATETIME_MILLIS_NEVER;
     private long id = 0;
-    private long insDate = 0;
+    private long insDate = DATETIME_MILLIS_NEVER;
 
     @NonNull
     public final Actor accountActor;
@@ -369,13 +372,14 @@ public class AActivity extends AObject {
         activity.newNotificationEventType = NotificationEventType.fromId(
                 DbUtils.getLong(cursor, ActivityTable.NEW_NOTIFICATION_EVENT));
         activity.updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
+        activity.storedUpdatedDate = activity.updatedDate;
         activity.insDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
         return activity;
     }
     
     public long save(MyContext myContext) {
         if (wontSave(myContext)) return id;
-        if (updatedDate > 0) calculateInteraction(myContext);
+        if (updatedDate > SOME_TIME_AGO) calculateInteraction(myContext);
         if (getId() == 0) {
             id = DbUtils.addRowWithRetry(myContext, ActivityTable.TABLE_NAME, toContentValues(), 3);
             MyLog.v(this, () -> "Added " + this);
@@ -403,9 +407,9 @@ public class AActivity extends AObject {
         if (getId() == 0) {
             findExisting(myContext);
         }
+        storedUpdatedDate = MyQuery.idToLongColumnValue(
+                myContext.getDatabase(), ActivityTable.TABLE_NAME, ActivityTable.UPDATED_DATE, id);
         if (getId() != 0) {
-            long storedUpdatedDate = MyQuery.idToLongColumnValue(
-                    myContext.getDatabase(), ActivityTable.TABLE_NAME, ActivityTable.UPDATED_DATE, id);
             if (updatedDate <= storedUpdatedDate) {
                 MyLog.v(this, () -> "Skipped as not younger " + this);
                 return true;
@@ -540,11 +544,13 @@ public class AActivity extends AObject {
             values.put(ActivityTable.NOTIFIED_ACTOR_ID, notifiedActor.actorId);
         }
         values.put(ActivityTable.UPDATED_DATE, updatedDate);
-        if (getId() == 0) {
+        if (id == 0) {
             values.put(ActivityTable.ACTIVITY_TYPE, type.id);
             if (timelinePosition.isEmpty()) {
                 setTempTimelinePosition();
             }
+        }
+        if (id == 0 || (storedUpdatedDate <= SOME_TIME_AGO && updatedDate > SOME_TIME_AGO)) {
             insDate = MyLog.uniqueCurrentTimeMS();
             values.put(ActivityTable.INS_DATE, insDate);
         }

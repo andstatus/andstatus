@@ -85,7 +85,8 @@ public final class NoteTable implements BaseColumns {
      * We store it as long milliseconds.
      */
     public static final String UPDATED_DATE = "note_updated_date";
-    /** Date and time the row was inserted into this database */
+    /** Date and time when the Note was first LOADED into this database
+     * or if it was not LOADED yet, when the row was inserted into this database */
     public static final String INS_DATE = "note_ins_date";
     /** {@link TriState} true - The Note is definitely public (e.g. it has Public group as one of its audience members)
      * false - it is definitely private */

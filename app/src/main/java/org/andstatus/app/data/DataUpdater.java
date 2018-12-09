@@ -184,6 +184,9 @@ public class DataUpdater {
 
             // TODO: move as toContentValues() into Note
             ContentValues values = new ContentValues();
+            if (isFirstTimeLoaded || note.noteId == 0) {
+                values.put(NoteTable.INS_DATE, MyLog.uniqueCurrentTimeMS());
+            }
             values.put(NoteTable.NOTE_STATUS, note.getStatus().save());
             values.put(NoteTable.UPDATED_DATE, note.getUpdatedDate());
 

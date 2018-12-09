@@ -118,7 +118,7 @@ public class ViewItem<T extends ViewItem<T>> implements IsEmpty {
     protected MyStringBuilder getMyStringBuilderWithTime(Context context, boolean showReceivedTime) {
         final String difference = RelativeTime.getDifference(context, updatedDate);
         MyStringBuilder builder = MyStringBuilder.of(difference);
-        if (showReceivedTime && insertedDate > SOME_TIME_AGO) {
+        if (showReceivedTime && updatedDate > SOME_TIME_AGO && insertedDate > updatedDate) {
             final String receivedDifference = RelativeTime.getDifference(context, insertedDate);
             if (!receivedDifference.equals(difference)) {
                 builder.withSpace("(" + String.format(context.getText(R.string.received_sometime_ago).toString(),

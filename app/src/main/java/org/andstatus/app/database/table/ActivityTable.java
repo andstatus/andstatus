@@ -57,9 +57,8 @@ public final class ActivityTable implements BaseColumns {
     public static final String NEW_NOTIFICATION_EVENT = "new_notification_event";
 
     public static final String UPDATED_DATE = "activity_updated_date";
-    /**
-     * Date and time the row was inserted into this database
-     */
+    /** Date and time when this Activity was first loaded into this database
+     * or if it was not loaded yet, when the row was inserted into this database */
     public static final String INS_DATE = "activity_ins_date";
 
     // Aliases
