@@ -6,7 +6,7 @@ android {
     buildToolsVersion project.ext.buildToolsVersion
 
     defaultConfig {
-        versionCode 264
+        versionCode 265
         versionName "45.01"
 
         applicationId "org.andstatus.app"

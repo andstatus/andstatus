@@ -245,6 +245,7 @@ contains://andstatus.org/</string>
   <string name="manage_accounts">Управление учётными записями</string>
   <string name="manage_accounts_android">Управление учётными записями AndStatus-а в настройках Android</string>
   <string name="manage_timelines">Управление Лентами времени</string>
+  <string name="mark_all_as_read">Пометить все как прочитанные</string>
   <string name="max_distance_between_duplicates_title">Максимальное расстояние между дубликатами</string>
   <string name="maximum_size_of_attachment_mb">Максимальный размер вложения, MB</string>
   <string name="maximum_size_of_cached_media_mb">Максимальный размер кэшированных медиа файлов (включая вложения), МБ</string>
@@ -353,6 +354,7 @@ contains://andstatus.org/</string>
   <string name="reblogged_by">пересказано %1$s</string>
   <string name="reblogged_by_pumpio">поделился %1$s</string>
   <string name="reblogged_by_twitter">ретвитнуто %1$s</string>
+  <string name="received_sometime_ago">получено %s</string>
   <string name="refresh_title">Обновить из кэша</string>
   <string name="refresh_timeline_automatically_title">Обновлять Ленту времени автоматически</string>
   <string name="refresh_timeline_automatically_summary">Лента времени обновляется из локального кэша. Доступ к Интернету не требуется.</string>
@@ -485,7 +487,7 @@ contains://andstatus.org/</string>
   <string name="title_preference_change_log">Журнал изменений</string>
   <string name="title_preference_connection_timeout">Таймаут соединения</string>
   <string name="title_preference_contact_developer">Свяжитесь с разработчиками</string>
-  <string name="title_preference_debugging">Журналирование и отладка</string>
+  <string name="title_preference_debugging">Устранение неполадок</string>
   <string name="title_preference_download_attachments_over_wifi_only">Загружать вложения только через Wi-Fi</string>
   <string name="title_preference_enable_android_backup">Разрешить автоматическую архивацию Android-а</string>
   <string name="title_preference_enter_sends_message">ENTER отправляет сообщение</string>
@@ -529,6 +531,7 @@ contains://andstatus.org/</string>
   <string name="unimplemented">Не реализовано.</string>
   <string name="unknown_in_parenthesis">(неизвестно)</string>
   <string name="unknown_userlist">(Неизвестный список пользователей)</string>
+  <string name="unread_notifications">Непрочитанные уведомления</string>
   <string name="updated">обновил</string>
   <string name="use_legacy_http_protocol_title">Использовать старый HTTP протокол</string>
   <string name="user_in_timeline_entries_username">имяпользователя</string>
