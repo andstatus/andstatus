@@ -142,7 +142,8 @@ public class SpanUtilTest {
                 " #.testnonhashtag" + // Invalid hashtag
                 " #transportation  #buildings  #Manufacturing" +
                 " #s #1" + // Valid testing hashtags
-                " #CleanEnergy #GHG  #ZeroCarbon";
+                " #ßCleanEnergy #GHG" +
+                " ß #ZeroCarbon"; // "ß" Upper case is "SS"
 
         Spannable spannable = MyUrlSpan.toSpannable(text, true);
         List<SpanUtil.Region> regions1 = SpanUtil.regionsOf(spannable);
@@ -153,7 +154,7 @@ public class SpanUtilTest {
         List<SpanUtil.Region> regions2 = SpanUtil.regionsOf(modified);
         final String message2 = message1 + "\nRegions after change: " + regions2;
         assertEquals("Wrong number of regions before change\n" + message2, 3, regions1.size());
-        assertEquals("Wrong number of regions after change\n" + message2, 17, regions2.size());
+        assertEquals("Wrong number of regions after change\n" + message2, 18, regions2.size());
 
         oneHashTag(regions2, message2, 2, "ActOnClimate");
         oneHashTag(regions2, message2, 3, "SR15");
@@ -167,9 +168,12 @@ public class SpanUtilTest {
         oneHashTag(regions2, message2, 11, "Manufacturing");
         oneHashTag(regions2, message2, 12, "s");
         oneHashTag(regions2, message2, 13, "1");
-        oneHashTag(regions2, message2, 14, "CleanEnergy");
+        oneHashTag(regions2, message2, 14, "#ßCleanEnergy",
+                "content://timeline.app.andstatus.org/note/0/lt/search/origin/0/actor/0/search/" +
+                        "%23%C3%9FCleanEnergy");
         oneHashTag(regions2, message2, 15, "GHG");
-        oneHashTag(regions2, message2, 16, "ZeroCarbon");
+        notAHashTag(regions2, message2, 16);
+        oneHashTag(regions2, message2, 17, "ZeroCarbon");
     }
 
     private void notAHashTag(List<SpanUtil.Region> regions, String message, int index) {
@@ -185,12 +189,17 @@ public class SpanUtilTest {
         MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
         Audience audience = new Audience(ma.getOrigin());
 
-        addRecipient(ma, audience, "nipos", "526703");
+        addRecipient(ma, audience, "niPos", "526703");
         addRecipient(ma, audience, "er1n", "181388");
         addRecipient(ma, audience, "switchingsocial", "355551");
 
         Function<Spannable, Spannable> modifier = SpanUtil.spansModifier(audience);
 
+        textWithMentions1(modifier);
+        textWithMentions2(modifier);
+    }
+
+    private void textWithMentions1(Function<Spannable, Spannable> modifier) {
         String text = "<p><span class=\"h-card\"><a href=\"https://netzkombin.at/users/nipos\" class=\"u-url mention\">" +
                 "@<span>nipos</span></a></span> Unfortunately, <a href=\"https://mastodon.social/tags/mastodon\"" +
                 " class=\"mention hashtag\" rel=\"tag\">#<span>Mastodon</span></a> API uses instance-specific" +
@@ -224,6 +233,25 @@ public class SpanUtilTest {
         notAHashTag(regions2, message2, 6);
         oneMention(regions2, message2, 7, "er1n");
         oneMention(regions2, message2, 8, "switchingsocial");
+    }
+
+    private void textWithMentions2(Function<Spannable, Spannable> modifier) {
+        String text = "Same mentions @nIpos but in a different case ß @er1N";
+
+        Spannable spannable = MyUrlSpan.toSpannable(text, true);
+        List<SpanUtil.Region> regions1 = SpanUtil.regionsOf(spannable);
+        final String message1 = "Regions before change: " + regions1;
+        assertEquals(message1, 1, regions1.size());
+
+        Spannable modified = modifier.apply(spannable);
+        List<SpanUtil.Region> regions2 = SpanUtil.regionsOf(modified);
+        final String message2 = message1 + "\nRegions after change: " + regions2;
+        assertEquals("Wrong number of regions after change\n" + message2, 4, regions2.size());
+
+        notAHashTag(regions2, message2, 0);
+        oneMention(regions2, message2, 1, "nipos");
+        notAHashTag(regions2, message2, 2);
+        oneMention(regions2, message2, 3, "er1n");
     }
 
     @Test

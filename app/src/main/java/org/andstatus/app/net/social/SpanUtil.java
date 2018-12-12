@@ -175,12 +175,13 @@ public class SpanUtil {
             spannable.removeSpan(region.otherSpan.get());
             spannable.setSpan(new MyUrlSpan(spanData), region.start, region.end, 0);
         } else {
-            int indInRegion = spannable.subSequence(region.start, region.end).toString().toUpperCase()
-                    .indexOf(stringFound.toUpperCase());
+            int indInRegion = getIndInRegion(spannable, region, stringFound);
             if (indInRegion < 0) return false;
 
             int start2 = region.start + indInRegion;
             int start3 = start2 + stringFound.length();
+            if (start3 > region.end) return false;
+
             spannable.setSpan(new MyUrlSpan(spanData), start2, start3, 0);
             if (indInRegion >= MIN_SPAN_LENGTH) {
                 modifySpansInRegion(spannable, audience).accept(new Region(spannable, region.start, start2));
@@ -190,6 +191,22 @@ public class SpanUtil {
             }
         }
         return true;
+    }
+
+    /** Case insensitive search */
+    private static int getIndInRegion(Spannable spannable, Region region, String stringFound) {
+        final String substr1 = spannable.subSequence(region.start, region.end).toString();
+        int indInRegion = substr1.indexOf(stringFound);
+        if (indInRegion >= 0) return indInRegion;
+
+        final String foundUpper = stringFound.toUpperCase();
+        int ind = 1;
+        do {
+            int ind2 = substr1.substring(ind).toUpperCase().indexOf(foundUpper);
+            if (ind2 >= 0) return ind2;
+            ind++;
+        } while(ind + stringFound.length() < substr1.length());
+        return -1;
     }
 
     /** As https://www.hashtags.org/definition/ shows, hashtags may have numbers only,
