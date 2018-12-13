@@ -248,6 +248,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="manage_accounts">アカウントの管理</string>
   <string name="manage_accounts_android">Android の設定で AndStatus アカウントを管理</string>
   <string name="manage_timelines">タイムラインの管理</string>
+  <string name="mark_all_as_read">すべて既読にする</string>
   <string name="max_distance_between_duplicates_title">重複の最大間隔</string>
   <string name="maximum_size_of_attachment_mb">添付ファイルの最大サイズ。MB</string>
   <string name="maximum_size_of_cached_media_mb">キャッシュされるメディアファイルの最大サイズ (添付を含む)。MB</string>
@@ -356,6 +357,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="reblogged_by">%1$s が再投稿</string>
   <string name="reblogged_by_pumpio">%1$s で共有</string>
   <string name="reblogged_by_twitter">%1$s がリツイート</string>
+  <string name="received_sometime_ago">%s を受信しました</string>
   <string name="refresh_title">キャッシュから更新</string>
   <string name="refresh_timeline_automatically_title">タイムラインを自動的に更新します</string>
   <string name="refresh_timeline_automatically_summary">タイムラインはローカル キャッシュから更新されます。インターネット アクセスは必要ありません。</string>
@@ -489,7 +491,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="title_preference_change_log">変更ログ</string>
   <string name="title_preference_connection_timeout">接続タイムアウト</string>
   <string name="title_preference_contact_developer">開発者に連絡</string>
-  <string name="title_preference_debugging">ロギングおよびデバッグ</string>
+  <string name="title_preference_debugging">トラブルシューティング</string>
   <string name="title_preference_download_attachments_over_wifi_only">Wi-Fi 経由のみ添付ファイルをダウンロード</string>
   <string name="title_preference_enable_android_backup">Android の自動バックアップを有効にする</string>
   <string name="title_preference_enter_sends_message">ENTER キーでメッセージを送信</string>
@@ -533,6 +535,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="unimplemented">実装されていません。</string>
   <string name="unknown_in_parenthesis">(不明)</string>
   <string name="unknown_userlist">(不明なユーザー リスト)</string>
+  <string name="unread_notifications">未読の通知</string>
   <string name="updated">更新しました</string>
   <string name="use_legacy_http_protocol_title">従来の HTTP プロトコルを使用</string>
   <string name="user_in_timeline_entries_username">ユーザー名</string>

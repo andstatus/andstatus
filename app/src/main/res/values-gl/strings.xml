@@ -248,6 +248,7 @@ non verá na liña temporal algunhas mensaxes antiguas.</string>
   <string name="manage_accounts">Xestionar contas</string>
   <string name="manage_accounts_android">Xestionar contas AndStatus nas preferencias android</string>
   <string name="manage_timelines">Xestionar liñas temporáis</string>
+  <string name="mark_all_as_read">Marcar todo como lido</string>
   <string name="max_distance_between_duplicates_title">Distancia máxima entre duplicados</string>
   <string name="maximum_size_of_attachment_mb">Tamaño máximo dos anexos, MB</string>
   <string name="maximum_size_of_cached_media_mb">Tamaño máximo dos ficheiros de medios en caché (incluindo anexos), MB</string>
@@ -356,6 +357,7 @@ non verá na liña temporal algunhas mensaxes antiguas.</string>
   <string name="reblogged_by">reenviado por %1$s</string>
   <string name="reblogged_by_pumpio">compartido por %1$s</string>
   <string name="reblogged_by_twitter">rechouchiado por %1$s</string>
+  <string name="received_sometime_ago">recibido %s</string>
   <string name="refresh_title">Actualizar desde a caché</string>
   <string name="refresh_timeline_automatically_title">Actualizar liña de tempo automáticamente</string>
   <string name="refresh_timeline_automatically_summary">A liña de tempo actualizase desde a caché local. Non se precisa acceso a internet.</string>
@@ -491,7 +493,7 @@ non verá na liña temporal algunhas mensaxes antiguas.</string>
   <string name="title_preference_change_log">Rexistro de cambios</string>
   <string name="title_preference_connection_timeout">Caducidade da conexión</string>
   <string name="title_preference_contact_developer">Contacto co desenvolvedor</string>
-  <string name="title_preference_debugging">Rexistro e depuración</string>
+  <string name="title_preference_debugging">Arranxo de problemas</string>
   <string name="title_preference_download_attachments_over_wifi_only">Baixar anexos so baixo conexión Wi-Fi</string>
   <string name="title_preference_enable_android_backup">Habilitar o respaldo automático de Android</string>
   <string name="title_preference_enter_sends_message">Tecla ENTER envía a mensaxe</string>
@@ -535,6 +537,7 @@ non verá na liña temporal algunhas mensaxes antiguas.</string>
   <string name="unimplemented">Non implementado.</string>
   <string name="unknown_in_parenthesis">(descoñecido)</string>
   <string name="unknown_userlist">(Lista de usuario descoñecido)</string>
+  <string name="unread_notifications">Notificacións non lidas</string>
   <string name="updated">actualizado</string>
   <string name="use_legacy_http_protocol_title">Utilizar protocolo HTTP herdado</string>
   <string name="user_in_timeline_entries_username">usuario</string>
