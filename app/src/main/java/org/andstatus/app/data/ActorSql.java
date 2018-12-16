@@ -95,16 +95,18 @@ public class ActorSql {
 
     @NonNull
     public static String select() {
-        return select(false);
+        return select(false, false);
     }
 
     @NonNull
-    public static String select(boolean userOnly) {
+    public static String select(boolean userOnly, boolean optionalUser) {
         return (userOnly
                 ? userOnlyProjectionMap.values().stream()
-                : MyPreferences.getShowAvatars()
-                ? Stream.concat(baseProjectionMap.values().stream(), avatarProjectionMap.values().stream())
-                : baseProjectionMap.values().stream())
+                : optionalUser
+                    ? fullProjectionMap.values().stream()
+                    : MyPreferences.getShowAvatars()
+                        ? Stream.concat(baseProjectionMap.values().stream(), avatarProjectionMap.values().stream())
+                        : baseProjectionMap.values().stream())
                 .collect(Collectors.joining(", "));
     }
 

@@ -83,14 +83,14 @@ class CheckUsers extends DataChecker {
     }
 
     private CheckResults getResults() {
-        final String method = "CheckUsers";
         CheckResults results = new CheckResults();
-        String sql = "SELECT " + ActorSql.select()
+        String sql = "SELECT " + ActorSql.select(false, true)
                 + " FROM " + ActorSql.tables(false, true)
                 + " ORDER BY " + ActorTable.WEBFINGER_ID + " COLLATE NOCASE";
                 ;
 
         long rowsCount = 0;
+        MyLog.v(this, () -> sql);
         try (Cursor c = myContext.getDatabase().rawQuery(sql, null)) {
             String key = "";
             Set<Actor> actors = new HashSet<>();
@@ -143,7 +143,7 @@ class CheckUsers extends DataChecker {
             }
         }
 
-        logger.logProgress(method + " ended, " + rowsCount + " actors, "
+        logger.logProgress("Check completed, " + rowsCount + " actors checked. "
                 + results.actorsToMergeUsers.size() + " users of actors to be merged, "
                 + results.actorsToFixWebFingerId.size() + " to fix WebfingerId"
         );

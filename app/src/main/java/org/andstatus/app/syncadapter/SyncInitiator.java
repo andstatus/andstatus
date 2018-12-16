@@ -32,6 +32,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.service.ConnectionState;
+import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 
@@ -84,9 +85,15 @@ public class SyncInitiator extends BroadcastReceiver {
     }
 
     private boolean syncIfNeeded(MyContext myContext) {
+        if (!MyServiceManager.isServiceAvailable()) {
+            MyLog.v(this, () -> "syncIfNeeded Service is unavailable");
+            return false;
+        }
+
         final ConnectionState connectionState = UriUtils.getConnectionState(myContext.context());
         MyLog.v(this, () -> "syncIfNeeded " + UriUtils.getConnectionState(myContext.context()));
         if (!ConnectionRequired.SYNC.isConnectionStateOk(connectionState)) return false;
+
         for (MyAccount myAccount: myContext.accounts().accountsToSync()) {
             if (!myContext.timelines().toAutoSyncForAccount(myAccount).isEmpty()) {
                 myAccount.requestSync();

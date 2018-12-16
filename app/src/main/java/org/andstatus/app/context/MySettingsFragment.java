@@ -502,6 +502,7 @@ public class MySettingsFragment extends PreferenceFragment implements
                         .putExtra(IntentExtra.CHECK_DATA.key, "1")
                         .putExtra(IntentExtra.FULL_CHECK.key, checkDataIncludeLong)
                         .putExtra(IntentExtra.COUNT_ONLY.key, resultCode == Activity.RESULT_OK)
+                        .putExtra(HelpActivity.EXTRA_HELP_PAGE_INDEX, HelpActivity.PAGE_LOGO)
                 );
                 break;
             default:

@@ -78,11 +78,11 @@ public abstract class DataChecker {
             MyLog.w(DataChecker.class, "fixData skipped: context is not ready " + myContext);
             return;
         }
-        MyServiceManager.setServiceUnavailable();
         try {
             MyLog.i(DataChecker.class, "fixData started" + (includeLong ? ", including long tasks" : ""));
             for(DataChecker checker : new DataChecker[]{new MergeActors(), new CheckUsers(), new CheckConversations(),
                     new CheckTimelines(), new SearchIndexUpdate(), new CheckAudience()}) {
+                MyServiceManager.setServiceUnavailable();
                 checker.setMyContext(myContext).setIncludeLong(includeLong).setLogger(logger).fix(countOnly);
             }
         } finally {
