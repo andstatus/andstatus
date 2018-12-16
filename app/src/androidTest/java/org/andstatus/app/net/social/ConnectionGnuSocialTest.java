@@ -26,6 +26,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.service.CommandData;
@@ -299,11 +300,15 @@ public class ConnectionGnuSocialTest {
 
     @Test
     public void testMentionsInHtml() throws IOException {
-        oneHtmlMentionsTest("1iceloops123", "14044206", org.andstatus.app.tests.R.raw.loadaverage_note_with_mentions, 6);
-        oneHtmlMentionsTest("andstatus", "14043873", org.andstatus.app.tests.R.raw.loadaverage_note_with_mentions2, 5);
+        oneHtmlMentionsTest("1iceloops123", "14044206",
+            org.andstatus.app.tests.R.raw.loadaverage_note_with_mentions, 6);
+        oneHtmlMentionsTest("andstatus", "14043873",
+            org.andstatus.app.tests.R.raw.loadaverage_note_with_mentions2, 5);
 
-        AActivity activity = oneHtmlMentionsTest("andstatus", "13421701", org.andstatus.app.tests.R.raw.loadaverage_note_with_mentions3, 1);
-        Spannable spannable = SpanUtil.contentToSpannable(activity.getNote().getContent(), activity.audience());
+        AActivity activity = oneHtmlMentionsTest("andstatus", "13421701",
+        org.andstatus.app.tests.R.raw.loadaverage_note_with_mentions3, 1);
+        Spannable spannable = SpanUtil.textToSpannable(activity.getNote().getContent(), TextMediaType.HTML,
+            activity.audience());
         final MyUrlSpan[] spans = spannable.getSpans(0, spannable.length() - 1, MyUrlSpan.class);
         assertEquals("Link to hashtag " + Arrays.toString(spans) + "\n" + activity, TimelineType.SEARCH,
                 Arrays.stream(spans).filter(span -> span.getURL().contains("/search/%23Hubzilla")).findAny()

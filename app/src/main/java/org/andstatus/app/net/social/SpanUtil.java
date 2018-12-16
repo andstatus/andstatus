@@ -19,6 +19,7 @@ package org.andstatus.app.net.social;
 import android.support.annotation.NonNull;
 import android.text.Spannable;
 
+import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyUrlSpan;
 
@@ -110,8 +111,10 @@ public class SpanUtil {
                 (xs1, xs2) -> {xs1.addAll(xs2); return xs1;});
     }
 
-    public static Spannable contentToSpannable(String contentHtml, Audience audience) {
-        return spansModifier(audience).apply(MyUrlSpan.toSpannable(MyHtml.prepareForView(contentHtml), true));
+    public static Spannable textToSpannable(String text, TextMediaType mediaType, Audience audience) {
+        return spansModifier(audience).apply(MyUrlSpan.toSpannable(
+                mediaType == TextMediaType.PLAIN ? text : MyHtml.prepareForView(text),
+                mediaType, true));
     }
 
     public static Function<Spannable, Spannable> spansModifier(Audience audience) {

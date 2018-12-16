@@ -23,6 +23,7 @@ import android.text.SpannableString;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.ParsedUri;
+import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.origin.OriginPumpio;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyUrlSpan;
@@ -79,7 +80,7 @@ public class SpanUtilTest {
                 "<span class=\"fn nickname mention\">" + username2 + "</span></a></span>" +
                 " Please apply your #logic #Логика to another subject.";
 
-        Spannable spannable = MyUrlSpan.toSpannable(text, true);
+        Spannable spannable = MyUrlSpan.toSpannable(text, TextMediaType.HTML, true);
         List<SpanUtil.Region> regions1 = SpanUtil.regionsOf(spannable);
         final String message1 = "Regions before change: " + regions1;
         assertEquals(message1, 3, regions1.size());
@@ -145,7 +146,7 @@ public class SpanUtilTest {
                 " #ßCleanEnergy #GHG" +
                 " ß #ZeroCarbon"; // "ß" Upper case is "SS"
 
-        Spannable spannable = MyUrlSpan.toSpannable(text, true);
+        Spannable spannable = MyUrlSpan.toSpannable(text, TextMediaType.HTML, true);
         List<SpanUtil.Region> regions1 = SpanUtil.regionsOf(spannable);
         final String message1 = "Regions before change: " + regions1;
         assertEquals(message1, 3, regions1.size());
@@ -215,7 +216,7 @@ public class SpanUtilTest {
                 " <span class=\"h-card\"><a href=\"https://mastodon.at/@switchingsocial\" class=\"u-url mention\">" +
                 "@<span>switchingsocial</span></a></span></p>";
 
-        Spannable spannable = MyUrlSpan.toSpannable(text, true);
+        Spannable spannable = MyUrlSpan.toSpannable(text, TextMediaType.HTML, true);
         List<SpanUtil.Region> regions1 = SpanUtil.regionsOf(spannable);
         final String message1 = "Regions before change: " + regions1;
         assertEquals(message1, 9, regions1.size());
@@ -238,7 +239,7 @@ public class SpanUtilTest {
     private void textWithMentions2(Function<Spannable, Spannable> modifier) {
         String text = "Same mentions @nIpos but in a different case ß @er1N";
 
-        Spannable spannable = MyUrlSpan.toSpannable(text, true);
+        Spannable spannable = MyUrlSpan.toSpannable(text, TextMediaType.HTML, true);
         List<SpanUtil.Region> regions1 = SpanUtil.regionsOf(spannable);
         final String message1 = "Regions before change: " + regions1;
         assertEquals(message1, 1, regions1.size());
@@ -272,7 +273,7 @@ public class SpanUtilTest {
                 " like #<span class=\"\"><a href=\"https://social.umeahackerspace.se/tag/cw\" rel=\"nofollow noopener\"" +
                 " target=\"_blank\">cw</a></span> &lt;foo&gt; on the first line.";
 
-        Spannable spannable = MyUrlSpan.toSpannable(text, true);
+        Spannable spannable = MyUrlSpan.toSpannable(text, TextMediaType.HTML, true);
         List<SpanUtil.Region> regions1 = SpanUtil.regionsOf(spannable);
         final String message1 = "Regions before change: " + regions1;
         assertEquals(message1, 5, regions1.size());

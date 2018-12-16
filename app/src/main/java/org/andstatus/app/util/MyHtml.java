@@ -60,14 +60,6 @@ public class MyHtml {
         return html;
     }
 
-    @NonNull
-	public static String htmlify(String html) {
-		if (StringUtils.isEmpty(html)) return "";
-
-        Spannable spannable = MyUrlSpan.toSpannable(MyHtml.prepareForView(html), true);
-        return Html.toHtml(spannable, Html.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE);
-    }
-
     /** Following ActivityStreams convention, default mediaType for content is "text/html" */
     @NonNull
     public static String toContentStored(String text, TextMediaType inputMediaType, boolean isHtmlContentAllowed) {

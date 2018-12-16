@@ -31,8 +31,6 @@ public class MyHtmlTest {
     private static final String SAMPLE1_FOR_VIEW = "This note<br>\nhas newline";
     private static final String SAMPLE1_HTML = "<p dir=\"ltr\">" + SAMPLE1_FOR_VIEW + "</p>\n";
 
-    public static final String SAMPLE2_PLAIN = "@auser@example.com This is a link " +
-            "https://example.com/page1.html#something\nThe second line";
     private static final String SAMPLE2_FOR_VIEW = "@auser@example.com This is a link " +
             "<a href=\"https://example.com/page1.html#something\">https://example.com/page1.html#something</a><br>\n" +
             "The second line";
@@ -72,12 +70,6 @@ public class MyHtmlTest {
         assertEquals(SAMPLE1_FOR_VIEW, MyHtml.prepareForView(SAMPLE1_HTML));
         assertEquals(SAMPLE2_FOR_VIEW, MyHtml.prepareForView(SAMPLE2_HTML1));
         assertEquals(SAMPLE2_FOR_VIEW, MyHtml.prepareForView(SAMPLE2_HTML2));
-    }
-
-    @Test
-    public void testHtmlify() {
-        assertEquals(SAMPLE1_HTML, MyHtml.htmlify(SAMPLE1));
-        assertEquals(SAMPLE2_HTML2, MyHtml.htmlify(SAMPLE2_PLAIN));
     }
 
     @Test

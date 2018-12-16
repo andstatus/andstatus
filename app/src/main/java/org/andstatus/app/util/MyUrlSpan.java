@@ -40,13 +40,13 @@ import android.widget.Toast;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static android.text.Html.FROM_HTML_MODE_COMPACT;
@@ -159,11 +159,7 @@ public class MyUrlSpan extends URLSpan {
     }
 
     public static void showText(TextView textView, String text, boolean linkify, boolean showIfEmpty) {
-        showSpannable(textView, toSpannable(text, linkify), showIfEmpty);
-    }
-
-    public static void showSpannable(TextView textView, String text, Function<Spannable, Spannable> modifySpans) {
-        showSpannable(textView, modifySpans.apply(toSpannable(text, true)), false);
+        showSpannable(textView, toSpannable(text, TextMediaType.UNKNOWN, linkify), showIfEmpty);
     }
 
     public static void showSpannable(TextView textView, @NonNull Spannable spannable, boolean showIfEmpty) {
@@ -183,7 +179,7 @@ public class MyUrlSpan extends URLSpan {
         }
     }
 
-    public static Spannable toSpannable(String text, boolean linkify) {
+    public static Spannable toSpannable(String text, TextMediaType mediaType, boolean linkify) {
         if (StringUtils.isEmpty(text)) return EMPTY_SPANNABLE;
 
         // Android 6 bug, see https://github.com/andstatus/andstatus/issues/334
@@ -191,7 +187,8 @@ public class MyUrlSpan extends URLSpan {
         if (text.contains(SOFT_HYPHEN)) {
             text = text.replace(SOFT_HYPHEN, "-");
         }
-        Spannable spannable = MyHtml.hasHtmlMarkup(text)
+        Spannable spannable = mediaType == TextMediaType.HTML ||
+            (mediaType == TextMediaType.UNKNOWN && MyHtml.hasHtmlMarkup(text))
                 ? htmlToSpannable(text)
                 : new SpannableString(text);
         if (linkify && !hasUrlSpans(spannable)) {

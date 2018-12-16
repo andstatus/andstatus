@@ -30,6 +30,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.SpanUtil;
@@ -313,7 +314,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         );
         audience = audienceNew;
         audienceToShow = audienceToShowNew;
-        name = SpanUtil.contentToSpannable(nameString, audience);
-        content = SpanUtil.contentToSpannable(contentString, audience);
+        name = SpanUtil.textToSpannable(nameString, TextMediaType.PLAIN, audience);
+        content = SpanUtil.textToSpannable(contentString, TextMediaType.HTML, audience);
     }
 }
