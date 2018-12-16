@@ -33,8 +33,8 @@ import java.util.List;
 public abstract class BaseTimelineAdapter<T extends ViewItem<T>> extends BaseAdapter  implements View.OnClickListener {
     protected final boolean showAvatars = MyPreferences.getShowAvatars();
     protected final boolean showAttachedImages = MyPreferences.getDownloadAndDisplayAttachedImages();
-    protected final boolean markReplies = SharedPreferencesUtil.getBoolean(
-            MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, true);
+    protected final boolean markRepliesToMe = SharedPreferencesUtil.getBoolean(
+            MyPreferences.KEY_MARK_REPLIES_TO_ME_IN_TIMELINE, true);
     @NonNull
     protected final MyContext myContext;
     @NonNull

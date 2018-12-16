@@ -74,8 +74,8 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
         if (showAttachedImages) {
             showAttachedImage(view, item);
         }
-        if (markReplies) {
-            showMarkReplies(view, item);
+        if (markRepliesToMe) {
+            showMarkRepliesToMe(view, item);
         }
         if (showButtonsBelowNotes) {
             showButtonsBelowNote(view, item);
@@ -153,8 +153,8 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
         }
     }
 
-    private void showMarkReplies(ViewGroup view, T item) {
-        boolean show = myContext.users().isMeOrMyFriend(item.inReplyToActor.getActor()) &&
+    private void showMarkRepliesToMe(ViewGroup view, T item) {
+        boolean show = myContext.users().isMe(item.inReplyToActor.getActor()) &&
                 !myContext.users().isMe(item.author.getActor());
         View oldView = view.findViewById(R.id.reply_timeline_marker);
         if (oldView != null) {
@@ -162,11 +162,11 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
         }
         if (show) {
             View referencedView = view.findViewById(R.id.note_indented);
-            ImageView indentView = new ConversationIndentImageView(myContext.context(), referencedView, dpToPixes(6),
+            ImageView replyToMeMarkerView = new ConversationIndentImageView(myContext.context(), referencedView, dpToPixes(6),
                     R.drawable.reply_timeline_marker_light, R.drawable.reply_timeline_marker);
-            indentView.setId(R.id.reply_timeline_marker);
-            view.addView(indentView, 1);
-            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)  indentView.getLayoutParams();
+            replyToMeMarkerView.setId(R.id.reply_timeline_marker);
+            view.addView(replyToMeMarkerView, 1);
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)  replyToMeMarkerView.getLayoutParams();
             layoutParams.leftMargin = dpToPixes(3);
         }
     }

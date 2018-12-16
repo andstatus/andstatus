@@ -50,7 +50,7 @@ public class MyPreferences {
     public static final String KEY_ACTOR_IN_TIMELINE = "user_in_timeline";
     public static final String KEY_SHOW_AVATARS = "show_avatars";
     public static final String KEY_SHOW_ORIGIN = "show_origin";
-    public static final String KEY_MARK_REPLIES_IN_TIMELINE = "mark_replies_in_timeline";
+    public static final String KEY_MARK_REPLIES_TO_ME_IN_TIMELINE = "mark_replies_in_timeline";
     public static final String KEY_SHOW_BUTTONS_BELOW_NOTE = "show_buttons_below_message";
     public static final String KEY_OLD_NOTES_FIRST_IN_CONVERSATION = "old_messages_first_in_conversation";
     public static final String KEY_REFRESH_TIMELINE_AUTOMATICALLY = "refresh_timeline_automatically";

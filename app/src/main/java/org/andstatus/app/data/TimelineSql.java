@@ -203,7 +203,7 @@ public class TimelineSql {
             columnNames.add(DownloadTable.HEIGHT);
             columnNames.add(DownloadTable.DURATION);
         }
-        if (SharedPreferencesUtil.getBoolean(MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, true)
+        if (SharedPreferencesUtil.getBoolean(MyPreferences.KEY_MARK_REPLIES_TO_ME_IN_TIMELINE, true)
                 || SharedPreferencesUtil.getBoolean(
                 MyPreferences.KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS, false)) {
             columnNames.add(NoteTable.IN_REPLY_TO_ACTOR_ID);
