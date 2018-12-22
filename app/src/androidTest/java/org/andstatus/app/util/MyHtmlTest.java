@@ -37,6 +37,14 @@ public class MyHtmlTest {
     private static final String SAMPLE2_HTML1 = "<p dir=\"ltr\">" + SAMPLE2_FOR_VIEW + "</p>";
     private static final String SAMPLE2_HTML2 = SAMPLE2_HTML1 + "\n";
 
+/* Plain text to manually copy-paste to Note Editor:
+Testing if and what is escaped in a Tweet:
+1. "less-than" sign <  and escaped: &lt;
+2. "greater-than" sign > and escaped: &gt;
+3. Ampersand & and escaped: &amp;
+4. Apostrophe '
+5. br HTML tag: <br /> and without "/": <br> ?!
+ */
     public static String twitterBodyTypedPlain =
             "Testing if and what is escaped in a Tweet:\n" +
             "1. \"less-than\" sign <  and escaped: &lt;\n" +
