@@ -31,7 +31,7 @@
   <string name="attach_images_summary_off">用于将图像附加到帖子的“回形针+”按钮处于隐藏状态</string>
   <string name="attach_images_summary_on">使用“回形针+”按钮 (“附加”菜单项) 为您的消息添加图片。 
 亦可在其他应用程序中分享图片至 AndStatus 来发送带图片的消息</string>
-  <string name="attach_images_title">撰写消息时显示附加图片按钮</string>
+  <string name="attach_images_title">为我的消息附加图片</string>
   <string name="attachment_is_too_large">附加文件体积过大</string>
   <string name="attachments">附件</string>
   <string name="authentication_never">尚未验证</string>
@@ -98,7 +98,7 @@
   <string name="set_as_default_timeline">设为默认时间线</string>
   <string name="default_timeline_summary">将由启动器打开的时间线：\"%s\"</string>
   <string name="deleted">删除了</string>
-  <string name="device_default">系统默认</string>
+  <string name="device_default">设备默认配色</string>
   <string name="dialog_summary_acquiring_an_access_token">请稍候，AndStatus 正在为获取访问令牌交换 OAuth 请求令牌。</string>
   <string name="dialog_summary_acquiring_a_request_token">请稍候，AndStatus 正在获取 OAuth 请求令牌</string>
   <string name="dialog_summary_authentication_failed">请检查您输入的用户名和密码。</string>
@@ -491,7 +491,6 @@
   <string name="title_preference_change_log">更新日志</string>
   <string name="title_preference_connection_timeout">连接超时</string>
   <string name="title_preference_contact_developer">联系开发者</string>
-  <string name="title_preference_debugging">日志与调试</string>
   <string name="title_preference_download_attachments_over_wifi_only">仅通过 Wi-Fi 下载附件</string>
   <string name="title_preference_enable_android_backup">启用自动 Android 系统自带备份</string>
   <string name="title_preference_enter_sends_message">回车键发送消息</string>
