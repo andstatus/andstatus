@@ -146,20 +146,19 @@ public class MyUrlSpan extends URLSpan {
     }
 
     public static void showLabel(Activity activity, @IdRes int viewId, @StringRes int stringResId) {
-        showText((TextView) activity.findViewById(viewId), activity.getText(stringResId).toString(), false, false);
-    }
-
-    public static void showText(Activity activity, @IdRes int viewId, String text, boolean linkify, boolean
-            showIfEmpty) {
-        showText((TextView) activity.findViewById(viewId), text, linkify, showIfEmpty);
+        showText(activity.findViewById(viewId), activity.getText(stringResId).toString(), TextMediaType.UNKNOWN, false, false);
     }
 
     public static void showText(View parentView, @IdRes int viewId, String text, boolean linkify, boolean showIfEmpty) {
-        showText((TextView) parentView.findViewById(viewId), text, linkify, showIfEmpty);
+        showText(parentView, viewId, text, TextMediaType.UNKNOWN, linkify, showIfEmpty);
     }
 
-    public static void showText(TextView textView, String text, boolean linkify, boolean showIfEmpty) {
-        showSpannable(textView, toSpannable(text, TextMediaType.UNKNOWN, linkify), showIfEmpty);
+    public static void showText(View parentView, @IdRes int viewId, String text, TextMediaType mediaType, boolean linkify, boolean showIfEmpty) {
+        showText(parentView.findViewById(viewId), text, mediaType, linkify, showIfEmpty);
+    }
+
+    public static void showText(TextView textView, String text, TextMediaType mediaType, boolean linkify, boolean showIfEmpty) {
+        showSpannable(textView, toSpannable(text, mediaType, linkify), showIfEmpty);
     }
 
     public static void showSpannable(TextView textView, @NonNull Spannable spannable, boolean showIfEmpty) {

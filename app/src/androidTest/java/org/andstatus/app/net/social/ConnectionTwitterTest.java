@@ -35,6 +35,7 @@ import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
+import org.andstatus.app.util.MyHtmlTest;
 import org.andstatus.app.util.TriState;
 import org.junit.Before;
 import org.junit.Test;
@@ -217,7 +218,8 @@ public class ConnectionTwitterTest {
         assertEquals("No note returned " + activity, AObjectType.NOTE, activity.getObjectType());
         Note note = activity.getNote();
         assertEquals("Body of this note", twitterBodyHtml, note.getContent());
-        assertEquals("Body as sent", twitterBodyToPost, note.getContentToPost());
+        assertEquals("Body to post is wrong. Try to type:\n" + MyHtmlTest.twitterBodyTypedPlain + "\n",
+                twitterBodyToPost, note.getContentToPost());
         assertEquals("Content to Search of this note", contentToSearch, note.getContentToSearch());
 
         MyAccount ma = demoData.getMyAccount(connectionData.getAccountName().toString());

@@ -52,6 +52,8 @@ import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.timeline.TimelineActivityTest;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
+import org.andstatus.app.util.MyHtml;
+import org.andstatus.app.util.MyHtmlTest;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.hamcrest.CoreMatchers;
@@ -99,12 +101,12 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
     }
 
     private NoteEditorData getStaticData(MyAccount ma) {
-        return NoteEditorData.newReply(ma, MyQuery.oidToId(OidEnum.NOTE_OID, ma.getOrigin().getId(),
-                        demoData.conversationEntryNoteOid))
+        return NoteEditorData.newReplyTo(MyQuery.oidToId(OidEnum.NOTE_OID, ma.getOrigin().getId(),
+                        demoData.conversationEntryNoteOid), ma)
                 .addToAudience(MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOrigin().getId(),
                         demoData.conversationEntryAuthorOid))
                 .addMentionsToText()
-                .setContent("Some static text " + demoData.testRunUid, TextMediaType.UNKNOWN);
+                .setContent(MyHtmlTest.twitterBodyTypedPlain + " " + demoData.testRunUid, TextMediaType.PLAIN);
     }
 
     @Test
@@ -248,8 +250,9 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
 
     private void assertInitialText(final String description) throws InterruptedException {
         final NoteEditor editor = getActivity().getNoteEditor();
-        TextView textView = (TextView) getActivity().findViewById(R.id.noteBodyEditText);
-        ActivityTestHelper.waitTextInAView(description, textView, data.getContent());
+        TextView textView = getActivity().findViewById(R.id.noteBodyEditText);
+        ActivityTestHelper.waitTextInAView(description, textView,
+                MyHtml.fromContentStored(data.getContent(), TextMediaType.PLAIN));
         assertEquals(description, data.toVisibleSummary(), editor.getData().toVisibleSummary());
     }
 

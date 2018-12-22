@@ -172,7 +172,7 @@ public enum OriginType implements SelectableEnum {
                 isSelectable = true;
 
                 textMediaTypePosted = TextMediaType.PLAIN_ESCAPED;
-                textMediaTypeToPost = TextMediaType.PLAIN_ESCAPED;
+                textMediaTypeToPost = TextMediaType.PLAIN;
                 break;
             case PUMPIO:
                 isOAuthDefault = true;  

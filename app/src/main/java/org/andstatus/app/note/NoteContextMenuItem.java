@@ -56,7 +56,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     REPLY(true, false) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
-            return NoteEditorData.newReply(menu.getActingAccount(), menu.getNoteId()).addMentionsToText();
+            return NoteEditorData.newReplyTo(menu.getNoteId(), menu.getActingAccount()).addMentionsToText();
         }
 
         @Override
@@ -89,7 +89,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     REPLY_TO_CONVERSATION_PARTICIPANTS(true, false) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
-            return NoteEditorData.newReply(menu.getActingAccount(), menu.getNoteId())
+            return NoteEditorData.newReplyTo(menu.getNoteId(), menu.getActingAccount())
                     .setReplyToConversationParticipants(true)
                     .addMentionsToText();
         }
@@ -102,7 +102,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     REPLY_TO_MENTIONED_ACTORS(true, false) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
-            return NoteEditorData.newReply(menu.getActingAccount(), menu.getNoteId())
+            return NoteEditorData.newReplyTo(menu.getNoteId(), menu.getActingAccount())
                     .setReplyToMentionedActors(true)
                     .addMentionsToText();
         }

@@ -25,6 +25,7 @@ import org.andstatus.app.HelpActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.ActivityTest;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.TextMediaType;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
@@ -58,7 +59,7 @@ public class MyUrlSpanTest extends ActivityTest<HelpActivity> {
             @Override
             public void run() {
                 pager.setCurrentItem(HelpActivity.PAGE_LOGO);
-                MyUrlSpan.showText(textView, text, true, false);
+                MyUrlSpan.showText(textView, text, TextMediaType.UNKNOWN, true, false);
                 if (SpannableString.class.isAssignableFrom(textView.getClass())) {
                     SpannableString spannable = (SpannableString) textView.getText();
                     URLSpan[] spans = spannable.getSpans(0, spannable.length(), URLSpan.class);

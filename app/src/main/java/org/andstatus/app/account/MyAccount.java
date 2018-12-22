@@ -793,8 +793,8 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         return order;
     }
 
-    public int charactersLeftForNote(String note) {
-        return oAccountName.getOrigin().charactersLeftForNote(note);
+    public int charactersLeftForNote(String html) {
+        return oAccountName.getOrigin().charactersLeftForNote(html);
     }
 
     /**

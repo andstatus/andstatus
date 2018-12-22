@@ -48,6 +48,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
+import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.origin.Origin;
@@ -624,7 +625,7 @@ public class AccountSettingsActivity extends MyActivity {
         long lastSyncSucceededDate = state.getAccount().getLastSyncSucceededDate(state.builder.myContext);
         MyUrlSpan.showText((TextView) findFragmentViewById(R.id.last_synced),
                 lastSyncSucceededDate == 0 ? getText(R.string.never).toString() :
-                        RelativeTime.getDifference(this, lastSyncSucceededDate), false, false);
+                        RelativeTime.getDifference(this, lastSyncSucceededDate), TextMediaType.UNKNOWN, false, false);
     }
 
     private TextView showTextView(int textViewId, int textResourceId, boolean isVisible) {

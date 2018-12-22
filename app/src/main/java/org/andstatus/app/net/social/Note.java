@@ -187,7 +187,8 @@ public class Note extends AObject {
     }
 
     public void setContentStored(String content) {
-        setContent(content, TextMediaType.HTML);
+        this.content = content;
+        contentToSearch.reset();
     }
 
     public void setContentPosted(String content) {

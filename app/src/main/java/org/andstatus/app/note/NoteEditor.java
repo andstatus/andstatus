@@ -96,7 +96,7 @@ public class NoteEditor {
         }
     }
     ScreenToggleState screenToggleState = ScreenToggleState.EMPTY;
-    private TextMediaType contentMediaType = TextMediaType.PLAIN;
+    private TextMediaType editorContentMediaType = TextMediaType.PLAIN;
 
     /**
      * Text to be sent
@@ -136,10 +136,10 @@ public class NoteEditor {
         bodyView.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
-                editorData.setContent(s.toString(), contentMediaType);
+                editorData.setContent(s.toString(), editorContentMediaType);
                 MyLog.v(NoteEditorData.TAG, () -> "Content updated to '" + editorData.getContent() + "'");
-                mCharsLeftText.setText(String.valueOf(editorData.getMyAccount()
-                        .charactersLeftForNote(editorData.getContent())));
+                mCharsLeftText.setText(String.valueOf(
+                        editorData.getMyAccount().charactersLeftForNote(editorData.getContent())));
             }
 
             @Override
@@ -217,30 +217,22 @@ public class NoteEditor {
     private void createCreateNoteButton(Menu menu) {
         MenuItem item = menu.findItem(R.id.createNoteButton);
         if (item != null) {
-            item.setOnMenuItemClickListener(
-                    new MenuItem.OnMenuItemClickListener() {
-                        @Override
-                        public boolean onMenuItemClick(MenuItem item) {
-                            MyAccount accountForButton = accountForCreateNoteButton();
-                            if (accountForButton != null) {
-                                startEditingNote(NoteEditorData.newEmpty(accountForButton));
-                            }
-                            return false;
-                        }
-                    });
+            item.setOnMenuItemClickListener(item1 -> {
+                MyAccount accountForButton = accountForCreateNoteButton();
+                if (accountForButton != null) {
+                    startEditingNote(NoteEditorData.newEmpty(accountForButton));
+                }
+                return false;
+            });
         }
     }
 
     private void createAttachButton(Menu menu) {
         MenuItem item = menu.findItem(R.id.attach_menu_id);
         if (item != null) {
-            item.setOnMenuItemClickListener(
-                    new MenuItem.OnMenuItemClickListener() {
-                        @Override
-                        public boolean onMenuItemClick(MenuItem item) {
-                            onAttach();
-                            return false;
-                        }
+            item.setOnMenuItemClickListener(item1 -> {
+                        onAttach();
+                        return false;
                     });
         }
     }
@@ -248,43 +240,34 @@ public class NoteEditor {
     private void createSendButton(Menu menu) {
         MenuItem item = menu.findItem(R.id.noteSendButton);
         if (item != null) {
-            item.setOnMenuItemClickListener(
-                    item1 -> {
-                        sendAndHide();
-                        return false;
-                    });
+            item.setOnMenuItemClickListener(item1 -> {
+                sendAndHide();
+                return false;
+            });
         }
     }
 
     private void createSaveDraftButton(Menu menu) {
         MenuItem item = menu.findItem(R.id.saveDraftButton);
         if (item != null) {
-            item.setOnMenuItemClickListener(
-                    new MenuItem.OnMenuItemClickListener() {
-                        @Override
-                        public boolean onMenuItemClick(MenuItem item) {
-                            saveDraft();
-                            return false;
-                        }
-                    });
+            item.setOnMenuItemClickListener(item1 -> {
+                saveDraft();
+                return false;
+            });
         }
     }
 
     private void createDiscardButton(Menu menu) {
         MenuItem item = menu.findItem(R.id.discardButton);
         if (item != null) {
-            item.setOnMenuItemClickListener(
-                    new MenuItem.OnMenuItemClickListener() {
-                        @Override
-                        public boolean onMenuItemClick(MenuItem item) {
-                            discardAndHide();
-                            return false;
-                        }
-                    });
+            item.setOnMenuItemClickListener(item1 -> {
+                discardAndHide();
+                return false;
+            });
         }
     }
 
-    public void onPrepareOptionsMenu(Menu menu) {
+    void onPrepareOptionsMenu(Menu menu) {
         prepareCreateNoteButton(menu);
         prepareAttachButton(menu);
         prepareSendButton(menu);
@@ -425,7 +408,7 @@ public class NoteEditor {
         }
     }
 
-    public void startEditingCurrentWithAttachedMedia(Uri mediaUri) {
+    void startEditingCurrentWithAttachedMedia(Uri mediaUri) {
         updateDataFromScreen();
         NoteEditorCommand command = new NoteEditorCommand(editorData.copy());
         command.beingEdited = true;
@@ -440,8 +423,7 @@ public class NoteEditor {
         MyCheckBox.set(getActivity(), R.id.is_public, editorData.getPublic().isTrue, true);
         MyUrlSpan.showText(editorView, R.id.note_name_edit, editorData.activity.getNote().getName(), false,
                 editorData.ma.getOrigin().getOriginType().hasNoteName);
-        final String content = editorData.activity.getNote().getContent();
-        String body = contentMediaType == TextMediaType.HTML ? content : MyHtml.htmlToPlainText(content);
+        String body = MyHtml.fromContentStored(editorData.getContent(), editorContentMediaType);
         if (!body.equals(bodyView.getText().toString().trim())) {
             if (!StringUtils.isEmpty(body)) {
                 body += " ";
@@ -457,10 +439,9 @@ public class NoteEditor {
                 ? editorData.getMyAccount().getAccountName() : "", false, false);
         showNoteDetails();
         MyUrlSpan.showText(editorView, R.id.inReplyToBody,
-                Html.fromHtml(editorData.activity.getNote().getInReplyTo().getNote().getContent()).toString(),
+                editorData.activity.getNote().getInReplyTo().getNote().getContent(), TextMediaType.HTML,
                 false, false);
-        mCharsLeftText.setText(String.valueOf(editorData.getMyAccount()
-                .charactersLeftForNote(body)));
+        mCharsLeftText.setText(String.valueOf(editorData.getMyAccount().charactersLeftForNote(editorData.getContent())));
         showAttachedImage();
     }
 
@@ -586,7 +567,7 @@ public class NoteEditor {
 
     private void updateDataFromScreen() {
         editorData.setName(MyUrlSpan.getText(editorView, R.id.note_name_edit));
-        editorData.setContent(bodyView.getText().toString(), contentMediaType);
+        editorData.setContent(bodyView.getText().toString(), editorContentMediaType);
         editorData.setPublic(MyCheckBox.isChecked(getActivity(), R.id.is_public, false));
     }
 

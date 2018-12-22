@@ -144,10 +144,10 @@ public class NoteEditorData implements IsEmpty {
     }
 
     public static NoteEditorData newEmpty(MyAccount myAccount) {
-        return newReply(myAccount, 0);
+        return newReplyTo(0, myAccount);
     }
 
-    public static NoteEditorData newReply(MyAccount myAccount, long inReplyToNoteId) {
+    public static NoteEditorData newReplyTo(long inReplyToNoteId, MyAccount myAccount) {
         return new NoteEditorData(MyContextHolder.get(), myAccount, 0, inReplyToNoteId,
                 inReplyToNoteId != 0);
     }

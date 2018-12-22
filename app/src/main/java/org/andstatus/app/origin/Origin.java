@@ -36,6 +36,7 @@ import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.util.IsEmpty;
+import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -162,25 +163,26 @@ public class Origin implements Comparable<Origin>, IsEmpty {
      * 
      * @author yvolk@yurivolkov.com
      */
-    public int charactersLeftForNote(String note) {
-        int noteLength = 0;
-        if (!StringUtils.isEmpty(note)) {
-            noteLength = note.length();
+    public int charactersLeftForNote(String html) {
+        int textLength = 0;
+        if (!StringUtils.isEmpty(html)) {
+            String textToPost = MyHtml.fromContentStored(html, originType.textMediaTypeToPost);
+            textLength = textToPost.length();
 
             if (shortUrlLength > 0) {
                 // Now try to adjust the length taking links into account
-                SpannableString ss = SpannableString.valueOf(note);
+                SpannableString ss = SpannableString.valueOf(textToPost);
                 Linkify.addLinks(ss, Linkify.WEB_URLS);
-                URLSpan[] spans = ss.getSpans(0, noteLength, URLSpan.class);
+                URLSpan[] spans = ss.getSpans(0, textLength, URLSpan.class);
                 long nLinks = spans.length;
                 for (int ind1 = 0; ind1 < nLinks; ind1++) {
                     int start = ss.getSpanStart(spans[ind1]);
                     int end = ss.getSpanEnd(spans[ind1]);
-                    noteLength += shortUrlLength - (end - start);
+                    textLength += shortUrlLength - (end - start);
                 }
             }
         }
-        return textLimit - noteLength;
+        return textLimit - textLength;
     }
 
     public int alternativeTermForResourceId(@StringRes int resId) {

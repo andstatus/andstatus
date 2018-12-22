@@ -37,20 +37,21 @@ public class MyHtmlTest {
     private static final String SAMPLE2_HTML1 = "<p dir=\"ltr\">" + SAMPLE2_FOR_VIEW + "</p>";
     private static final String SAMPLE2_HTML2 = SAMPLE2_HTML1 + "\n";
 
-    private static String twitterBodySent =
+    public static String twitterBodyTypedPlain =
+            "Testing if and what is escaped in a Tweet:\n" +
+            "1. \"less-than\" sign <  and escaped: &lt;\n" +
+            "2. \"greater-than\" sign > and escaped: &gt;\n" +
+            "3. Ampersand & and escaped: &amp;\n" +
+            "4. Apostrophe '\n" +
+            "5. br HTML tag: <br /> and without \"/\": <br> ?!";
+    private static String twitterBodyReceived =
             "Testing if and what is escaped in a Tweet:\n" +
             "1. \"less-than\" sign &lt;  and escaped: &amp;lt;\n" +
             "2. \"greater-than\" sign &gt; and escaped: &amp;gt;\n" +
             "3. Ampersand &amp; and escaped: &amp;amp;\n" +
             "4. Apostrophe '\n" +
             "5. br HTML tag: &lt;br /&gt; and without \"/\": &lt;br&gt; ?!";
-     public static String twitterBodyToPost =
-            "Testing if and what is escaped in a Tweet:\n" +
-            "1. \"less-than\" sign &lt;  and escaped: &amp;lt;\n" +
-            "2. \"greater-than\" sign &gt; and escaped: &amp;gt;\n" +
-            "3. Ampersand &amp; and escaped: &amp;amp;\n" +
-            "4. Apostrophe '\n" +
-            "5. br HTML tag: &lt;br /&gt; and without \"/\": &lt;br&gt; ?!";
+    public static String twitterBodyToPost = twitterBodyTypedPlain;
     public static String twitterBodyHtml =
             "Testing if and what is escaped in a Tweet:<br />" +
             "1. \"less-than\" sign &lt;  and escaped: &amp;lt;<br />" +
@@ -144,6 +145,17 @@ public class MyHtmlTest {
     }
 
     @Test
+    public void testSendingToTwitter() {
+        assertEquals(twitterBodyHtml, MyHtml.toContentStored(twitterBodyTypedPlain, TextMediaType.PLAIN, true));
+        assertEquals(twitterBodyTypedPlain, MyHtml.fromContentStored(twitterBodyHtml, TextMediaType.PLAIN));
+
+        assertEquals(twitterBodyReceived, MyHtml.fromContentStored(twitterBodyHtml, TextMediaType.PLAIN_ESCAPED));
+
+        assertEquals(twitterBodyHtml, MyHtml.toContentStored(twitterBodyReceived, TextMediaType.PLAIN_ESCAPED, true));
+        assertEquals(twitterBodyHtml, MyHtml.toContentStored(twitterBodyReceived, TextMediaType.PLAIN_ESCAPED, false));
+    }
+
+    @Test
     public void testStoreLineBreaks() {
         String textBr =  "Today's note<br >has <br>linebreaks ";
         String textN =   "Today's note\nhas \nlinebreaks ";
@@ -185,8 +197,8 @@ public class MyHtmlTest {
         assertEquals(expBrBr, MyHtml.toContentStored(textNN, TextMediaType.PLAIN, true));
         assertEquals(expBrBr, MyHtml.toContentStored(textNN, TextMediaType.PLAIN, false));
 
-        assertEquals(twitterBodyHtml, MyHtml.toContentStored(twitterBodySent, TextMediaType.PLAIN_ESCAPED, true));
-        assertEquals(twitterBodyHtml, MyHtml.toContentStored(twitterBodySent, TextMediaType.PLAIN_ESCAPED, false));
+        assertEquals(twitterBodyHtml, MyHtml.toContentStored(twitterBodyReceived, TextMediaType.PLAIN_ESCAPED, true));
+        assertEquals(twitterBodyHtml, MyHtml.toContentStored(twitterBodyReceived, TextMediaType.PLAIN_ESCAPED, false));
     }
 
     @Test
@@ -209,7 +221,7 @@ public class MyHtmlTest {
         final String oneLineEscaped = "Less &lt; and escaped &amp;lt; greater &gt;";
         assertToPlainEscaped(oneLineEscaped, oneLineEscaped);
 
-        assertToPlainEscaped(twitterBodyToPost, twitterBodyHtml);
+        assertToPlainEscaped(twitterBodyReceived, twitterBodyHtml);
 
     }
 

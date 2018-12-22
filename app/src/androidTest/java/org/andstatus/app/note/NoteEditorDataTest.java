@@ -44,7 +44,7 @@ public class NoteEditorDataTest {
     private void assertData(MyAccount ma, long inReplyToMsgId, long inReplyToActorId, long recipientId,
             long memberActorId, boolean replyAll) {
         Uri uri = Uri.parse("http://example.com/" + demoData.testRunUid + "/some.png");
-        NoteEditorData data = NoteEditorData.newReply(ma, inReplyToMsgId)
+        NoteEditorData data = NoteEditorData.newReplyTo(inReplyToMsgId, ma)
                 .addToAudience(recipientId)
                 .setReplyToConversationParticipants(replyAll)
                 .setContent("Some text here " + demoData.testRunUid, TextMediaType.UNKNOWN);
