@@ -64,15 +64,15 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
     private boolean conversationSyncRequested = false;
     boolean mAllowLoadingFromInternet = false;
     private final ReplyLevelComparator<T> replyLevelComparator = new ReplyLevelComparator<>();
-    private final T tFactory;
+    private final T emptyItem;
 
-    final Map<Long, T> cachedItems = new ConcurrentHashMap<>();
+    final Map<Long, T> cachedConversationItems = new ConcurrentHashMap<>();
     LoadableListActivity.ProgressPublisher mProgress;
 
     final List<Long> idsOfItemsToFind = new ArrayList<>();
 
     public ConversationLoader(T emptyItem, MyContext myContext, Origin origin, long selectedNoteId, boolean sync) {
-        tFactory = emptyItem;
+        this.emptyItem = emptyItem;
         this.myContext = myContext;
         this.ma = myContext.accounts().getFirstSucceededForOrigin(origin);
         this.selectedNoteId = selectedNoteId;
@@ -97,35 +97,34 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
 
     private void load1() {
         conversationIds.clear();
-        cachedItems.clear();
+        cachedConversationItems.clear();
         idsOfItemsToFind.clear();
         items.clear();
         if (sync) {
             requestConversationSync(selectedNoteId);
         }
-        final T oNote = newONote(selectedNoteId);
-        oNote.conversationId = MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID, selectedNoteId);
-        conversationIds.add(oNote.conversationId);
-        cacheConversation(oNote);
-        load2(oNote);
+        final T nonLoaded = getItem(selectedNoteId,
+                MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID, selectedNoteId), 0);
+        cacheConversation(nonLoaded);
+        load2(nonLoaded);
         addMissedFromCache();
     }
 
-    protected abstract void load2(T oMsg);
+    protected abstract void load2(T nonLoaded);
 
-    void cacheConversation(T oMsg) {
+    void cacheConversation(T item) {
         // Empty
     }
 
     private void addMissedFromCache() {
-        if (cachedItems.isEmpty()) return;
+        if (cachedConversationItems.isEmpty()) return;
         for (ConversationItem item : items) {
-            cachedItems.remove(item.getId());
-            if (cachedItems.isEmpty()) return;
+            cachedConversationItems.remove(item.getId());
+            if (cachedConversationItems.isEmpty()) return;
         }
-        MyLog.v(this, () -> cachedItems.size() + " cached notes are not connected to selected");
-        for (T oNote : cachedItems.values()) {
-            addNoteToList(oNote);
+        MyLog.v(this, () -> cachedConversationItems.size() + " cached notes are not connected to selected");
+        for (T oNote : cachedConversationItems.values()) {
+            addItemToList(oNote);
         }
     }
 
@@ -152,54 +151,48 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
     }
 
     @NonNull
-    protected T getItem(long noteId, int replyLevel) {
-        T item = cachedItems.get(noteId);
+    protected T getItem(long noteId, long conversationId, int replyLevel) {
+        T item = cachedConversationItems.get(noteId);
         if (item == null) {
-            item = newONote(noteId);
+            item = emptyItem.newNonLoaded(myContext, noteId);
+            item.conversationId = conversationId;
         }
         item.replyLevel = replyLevel;
         return item;
     }
 
-    protected T newONote(long noteId) {
-        T oMsg = tFactory.getNew();
-        oMsg.setMyContext(myContext);
-        oMsg.setNoteId(noteId);
-        return oMsg;
-    }
-
-    protected void loadItemFromDatabase(T item) {
-        if (item.isLoaded() || item.getNoteId() == 0 || cachedItems.containsKey(item.getNoteId())) {
-            return;
+    @NonNull
+    protected T loadItemFromDatabase(T item) {
+        if (item.isLoaded() || item.getNoteId() == 0) {
+            return item;
+        }
+        T cachedItem = cachedConversationItems.get(item.getNoteId());
+        if (cachedItem != null) {
+            return cachedItem;
         }
         Uri uri = MatchedUri.getTimelineItemUri(
                 Timeline.getTimeline(TimelineType.EVERYTHING, 0, ma.getOrigin()), item.getNoteId());
-        boolean loaded;
         try (Cursor cursor = myContext.context().getContentResolver()
                 .query(uri, item.getProjection().toArray(new String[]{}), null, null, null)) {
             if (cursor != null && cursor.moveToFirst()) {
-                item.load(cursor);
-                loaded = true;
-                if (item.conversationId == 0 || !conversationIds.contains(item.conversationId)) {
-                    fixConversation = true;
-                    if (item.conversationId != 0) {
-                        conversationIds.add(item.conversationId);
-                        cacheConversation(item);
-                        MyLog.d(this, "Another conversationId:" + item);
-                    }
-                }
-            } else loaded = false;
+                T loadedItem = item.fromCursor(myContext, cursor);
+                loadedItem.replyLevel = item.replyLevel;
+                cacheConversation(loadedItem);
+                MyLog.v(this, () -> "Loaded (" + loadedItem.isLoaded() + ")"
+                        + " from a database noteId=" + item.getNoteId());
+                return loadedItem;
+            }
         }
-        MyLog.v(this, () -> (loaded ? "Loaded (" + item.isLoaded() + ")"  : "Couldn't load")
-                + " from a database noteId=" + item.getNoteId());
+        MyLog.v(this, () -> "Couldn't load from a database noteId=" + item.getNoteId());
+        return item;
     }
 
-    protected boolean addNoteToList(T oMsg) {
+    protected boolean addItemToList(T item) {
         boolean added = false;
-        if (items.contains(oMsg)) {
-            MyLog.v(this, () -> "Note id=" + oMsg.getNoteId() + " is in the list already");
+        if (items.contains(item)) {
+            MyLog.v(this, () -> "Note id=" + item.getNoteId() + " is in the list already");
         } else {
-            items.add(oMsg);
+            items.add(item);
             if (mProgress != null) {
                 mProgress.publish(Integer.toString(items.size()));
             }
@@ -292,14 +285,14 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
         oMsg.historyOrder = order.history++;
         oMsg.mListOrder = order.list--;
         oMsg.indentLevel = indent;
-        if ((oMsg.mNReplies > 1 || oMsg.mNParentReplies > 1)
+        if ((oMsg.nReplies > 1 || oMsg.nParentReplies > 1)
                 && indentNext < MAX_INDENT_LEVEL) {
             indentNext++;
         }
         for (int ind = items.size() - 1; ind >= 0; ind--) {
            ConversationItem reply = items.get(ind);
            if (reply.inReplyToNoteId == oMsg.getNoteId()) {
-               reply.mNParentReplies = oMsg.mNReplies;
+               reply.nParentReplies = oMsg.nReplies;
                enumerateBranch(reply, order, indentNext);
            }
         }

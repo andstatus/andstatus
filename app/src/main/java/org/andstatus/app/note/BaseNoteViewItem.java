@@ -91,8 +91,8 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     private MyAccount linkedMyAccount = MyAccount.EMPTY;
     public final StringBuilder detailsSuffix = new StringBuilder();
 
-    protected BaseNoteViewItem(boolean isEmpty) {
-        super(isEmpty);
+    protected BaseNoteViewItem(boolean isEmpty, long updatedDate) {
+        super(isEmpty, updatedDate);
     }
 
     @NonNull
@@ -165,7 +165,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     @NonNull
     private DuplicationLink duplicatesByOther(Timeline timeline, @NonNull T other) {
-        if (updatedDate != SOME_TIME_AGO && other.updatedDate != SOME_TIME_AGO
+        if (updatedDate > SOME_TIME_AGO && other.updatedDate > SOME_TIME_AGO
               &&  (Math.abs(updatedDate - other.updatedDate) >= TimeUnit.HOURS.toMillis(24))
                 || isTooShortToCompare()
                 || other.isTooShortToCompare()

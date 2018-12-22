@@ -16,11 +16,8 @@
 
 package org.andstatus.app.timeline.meta;
 
-import android.support.annotation.NonNull;
-
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.timeline.ViewItem;
 
 /**
@@ -33,17 +30,11 @@ public class ManageTimelinesViewItem extends ViewItem<ManageTimelinesViewItem> {
 
     protected ManageTimelinesViewItem(MyContext myContext, Timeline timeline,
                                  MyAccount accountToHide, boolean namesAreHidden) {
-        super(false);
+        super(false, timeline.getLastChangedDate());
         this.timeline = timeline;
         timelineTitle = TimelineTitle.from(myContext, timeline, accountToHide, namesAreHidden,
                 TimelineTitle.Destination.DEFAULT);
         countSince = timeline.getCountSince();
-    }
-
-    @NonNull
-    @Override
-    public ManageTimelinesViewItem getNew() {
-        return new ManageTimelinesViewItem(MyContextHolder.get(), Timeline.EMPTY, MyAccount.EMPTY, false);
     }
 
     @Override

@@ -23,6 +23,7 @@ import org.andstatus.app.util.MyHtml;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -44,9 +45,9 @@ public class NoteViewItemTest {
 
     @Test
     public void testDuplicationLink() {
-        NoteViewItem item1 = new NoteViewItem(false);
+        NoteViewItem item1 = new NoteViewItem(false, DATETIME_MILLIS_NEVER);
         setContent(item1, HTML_BODY);
-        NoteViewItem item2 = new NoteViewItem(false);
+        NoteViewItem item2 = new NoteViewItem(false, DATETIME_MILLIS_NEVER);
         setContent(item2, "Some other text");
         assertDuplicates(item1, DuplicationLink.DUPLICATES, item2);
 
@@ -60,27 +61,36 @@ public class NoteViewItemTest {
         setContent(item2, "\"Interactions\" timeline in Twidere is the same or close to existing \"Mentions\" timeline in AndStatus");
         assertDuplicates(item1, DuplicationLink.DUPLICATES, item2);
 
-        setContent(item1, "What is good about Android is that I can use Quitter.se via AndStatus.");
-        setContent(item2, "What is good about Android is that I can use <a href=\"https://quitter.se/\" title=\"https://quitter.se/\" class=\"attachment\" id=\"attachment-1205381\" rel=\"nofollow external\">Quitter.se</a> via AndStatus.");
+        final String content5 = "What is good about Android is that I can use Quitter.se via AndStatus.";
+        setContent(item1, content5);
+        final String content6 = "What is good about Android is that I can use <a href=\"https://quitter.se/\" title=\"https://quitter.se/\" class=\"attachment\" id=\"attachment-1205381\" rel=\"nofollow external\">Quitter.se</a> via AndStatus.";
+        setContent(item2, content6);
         assertDuplicates(item1, DuplicationLink.DUPLICATES, item2);
-
-        item1.updatedDate = 1468509659000L;
-        item2.updatedDate = 1468509658000L;
-        assertDuplicates(item1, DuplicationLink.DUPLICATES, item2);
-        assertDuplicates(item2, DuplicationLink.IS_DUPLICATED, item1);
-        item2.updatedDate = item1.updatedDate;
-
-        item2.favorited = true;
-        assertDuplicates(item1, DuplicationLink.DUPLICATES, item2);
-        assertDuplicates(item2, DuplicationLink.IS_DUPLICATED, item1);
-
-        item1.reblogged = true;
-        assertDuplicates(item1, DuplicationLink.DUPLICATES, item2);
-        assertDuplicates(item2, DuplicationLink.IS_DUPLICATED, item1);
-
-        item2.favorited = false;
         assertDuplicates(item2, DuplicationLink.DUPLICATES, item1);
-        assertDuplicates(item1, DuplicationLink.IS_DUPLICATED, item2);
+
+        NoteViewItem item3 = new NoteViewItem(false,1468509659000L);
+        setContent(item3, content5);
+        NoteViewItem item4 = new NoteViewItem(false,1468509658000L);
+        setContent(item4, content6);
+        item4.setNoteId(item2.getNoteId());
+        assertDuplicates(item3, DuplicationLink.DUPLICATES, item4);
+        assertDuplicates(item4, DuplicationLink.IS_DUPLICATED, item3);
+
+        NoteViewItem item5 = new NoteViewItem(false, item3.updatedDate);
+        setContent(item5, content6);
+        item5.setNoteId(item4.getNoteId());
+
+        item5.favorited = true;
+        assertDuplicates(item3, DuplicationLink.DUPLICATES, item5);
+        assertDuplicates(item5, DuplicationLink.IS_DUPLICATED, item3);
+
+        item3.reblogged = true;
+        assertDuplicates(item3, DuplicationLink.DUPLICATES, item5);
+        assertDuplicates(item5, DuplicationLink.IS_DUPLICATED, item3);
+
+        item5.favorited = false;
+        assertDuplicates(item5, DuplicationLink.DUPLICATES, item3);
+        assertDuplicates(item3, DuplicationLink.IS_DUPLICATED, item5);
     }
 
     private static void setContent(NoteViewItem item, String content) {

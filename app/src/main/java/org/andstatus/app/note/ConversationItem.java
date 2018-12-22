@@ -20,6 +20,7 @@ import android.content.Context;
 import android.database.Cursor;
 
 import org.andstatus.app.actor.ActorViewItem;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
@@ -40,13 +41,27 @@ public abstract class ConversationItem<T extends ConversationItem<T>> extends Ba
      * The number is visible to a User.
      */
     int historyOrder = 0;
-    int mNReplies = 0;
-    int mNParentReplies = 0;
+    int nReplies = 0;
+    int nParentReplies = 0;
     int indentLevel = 0;
     int replyLevel = 0;
 
-    protected ConversationItem(boolean isEmpty) {
-        super(isEmpty);
+    abstract protected T newNonLoaded(MyContext myContext, long id);
+
+    protected ConversationItem(boolean isEmpty, long updatedDate) {
+        super(isEmpty, updatedDate);
+    }
+
+    ConversationItem(MyContext myContext, Cursor cursor) {
+        this(false,
+                DbUtils.getLong(cursor, NoteTable.UPDATED_DATE)
+        );
+        setNoteId(DbUtils.getLong(cursor, ActivityTable.NOTE_ID));
+        this.myContext = myContext;
+        conversationId = DbUtils.getLong(cursor, NoteTable.CONVERSATION_ID);
+        setOrigin(myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)));
+        author = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
+        inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
     }
 
     public void setReversedListOrder(boolean reversedListOrder) {
@@ -96,14 +111,6 @@ public abstract class ConversationItem<T extends ConversationItem<T>> extends Ba
     }
 
     abstract Set<String> getProjection();
-    
-    void load(Cursor cursor) {
-        conversationId = DbUtils.getLong(cursor, NoteTable.CONVERSATION_ID);
-        setOrigin(myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)));
-        author = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
-        inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
-        updatedDate = DbUtils.getLong(cursor, NoteTable.UPDATED_DATE);
-    }
 
     @Override
     public MyStringBuilder getDetails(Context context, boolean showReceivedTime) {

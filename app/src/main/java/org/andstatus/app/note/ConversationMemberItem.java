@@ -19,6 +19,7 @@ package org.andstatus.app.note;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
@@ -27,20 +28,29 @@ import org.andstatus.app.net.social.ActivityType;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
+
 public class ConversationMemberItem extends ConversationItem<ConversationMemberItem> {
-    public final static ConversationMemberItem EMPTY = new ConversationMemberItem(true);
+    public final static ConversationMemberItem EMPTY = new ConversationMemberItem(true, DATETIME_MILLIS_NEVER);
 
     ActivityType activityType = ActivityType.EMPTY;
 
 
-    protected ConversationMemberItem(boolean isEmpty) {
-        super(isEmpty);
+    protected ConversationMemberItem(boolean isEmpty, long updatedDate) {
+        super(isEmpty, updatedDate);
     }
 
-    @NonNull
+    public ConversationMemberItem(MyContext myContext, Cursor cursor) {
+        super(myContext, cursor);
+        activityType = ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
+    }
+
     @Override
-    public ConversationMemberItem getNew() {
-        return new ConversationMemberItem(false);
+    protected ConversationMemberItem newNonLoaded(MyContext myContext, long id) {
+        ConversationMemberItem item = new ConversationMemberItem(false, DATETIME_MILLIS_NEVER);
+        item.setMyContext(myContext);
+        item.setNoteId(id);
+        return item;
     }
 
     @Override
@@ -56,10 +66,10 @@ public class ConversationMemberItem extends ConversationItem<ConversationMemberI
         return columnNames;
     }
 
+    @NonNull
     @Override
-    void load(Cursor cursor) {
-        super.load(cursor);
-        activityType = ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
+    public ConversationMemberItem fromCursor(MyContext myContext, Cursor cursor) {
+        return new ConversationMemberItem(myContext, cursor);
     }
 
     @Override

@@ -7,7 +7,7 @@ android {
 
     defaultConfig {
         versionCode 267
-        versionName "45.03"
+        versionName "45.04"
 
         applicationId "org.andstatus.app"
         minSdkVersion project.ext.minSdkVersion

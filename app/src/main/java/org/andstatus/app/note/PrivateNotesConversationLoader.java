@@ -18,11 +18,9 @@ package org.andstatus.app.note;
 
 import android.database.Cursor;
 import android.net.Uri;
-import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.ProjectionMap;
 import org.andstatus.app.data.SqlIds;
@@ -44,25 +42,17 @@ public class PrivateNotesConversationLoader<T extends ConversationItem<T>> exten
     }
 
     @Override
-    protected void load2(T oMsg) {
-        long actorId = MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, oMsg.getNoteId());
-        Audience audience = Audience.fromNoteId(ma.getOrigin(), oMsg.getNoteId());
+    protected void load2(T nonLoaded) {
+        long actorId = MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, nonLoaded.getNoteId());
+        Audience audience = Audience.fromNoteId(ma.getOrigin(), nonLoaded.getNoteId());
         String selection = getSelectionForActorAndAudience("=" + Long.toString(actorId),
                 SqlIds.actorIdsOf(audience.getActors()).getSql());
         Uri uri = Timeline.getTimeline(TimelineType.EVERYTHING, 0, ma.getOrigin()).getUri();
-        Cursor cursor = null;
-        try {
-            cursor = myContext.context().getContentResolver().query(uri, oMsg.getProjection().toArray(new String[]{}),
-                    selection, null, null);
-            if (cursor != null) {
-                while (cursor.moveToNext()) {
-                    T oMsg2 = newONote(DbUtils.getLong(cursor, BaseColumns._ID));
-                    oMsg2.load(cursor);
-                    addNoteToList(oMsg2);
-                }
+        try (Cursor cursor = myContext.context().getContentResolver()
+                .query(uri, nonLoaded.getProjection().toArray(new String[]{}), selection, null, null)) {
+            while (cursor != null && cursor.moveToNext()) {
+                addItemToList(nonLoaded.fromCursor(myContext, cursor));
             }
-        } finally {
-            DbUtils.closeSilently(cursor);
         }
     }
 

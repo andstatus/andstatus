@@ -22,6 +22,7 @@ import android.support.annotation.NonNull;
 import android.text.Html;
 
 import org.andstatus.app.actor.ActorViewItem;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
@@ -39,17 +40,49 @@ import org.andstatus.app.util.TriState;
 
 import java.util.Set;
 
-public class ConversationViewItem extends ConversationItem<ConversationViewItem> {
-    public static final ConversationViewItem EMPTY = new ConversationViewItem(true);
+import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 
-    private ConversationViewItem(boolean isEmpty) {
-        super(isEmpty);
+public class ConversationViewItem extends ConversationItem<ConversationViewItem> {
+    public static final ConversationViewItem EMPTY = new ConversationViewItem(true, DATETIME_MILLIS_NEVER);
+
+    private ConversationViewItem(boolean isEmpty, long updatedDate) {
+        super(isEmpty, updatedDate);
     }
 
-    @NonNull
+    private ConversationViewItem(MyContext myContext, Cursor cursor) {
+        super(myContext, cursor);
+        setName(DbUtils.getString(cursor, NoteTable.NAME));
+        setContent(DbUtils.getString(cursor, NoteTable.CONTENT));
+        audience = Audience.fromNoteId(getOrigin(), getNoteId());
+        noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
+        String via = DbUtils.getString(cursor, NoteTable.VIA);
+        if (!StringUtils.isEmpty(via)) {
+            noteSource = Html.fromHtml(via).toString().trim();
+        }
+        if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
+            attachedImageFile = AttachedImageFile.fromCursor(cursor);
+        }
+        inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
+        inReplyToActor = ActorViewItem.fromActorId(getOrigin(),
+                DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID));
+        if (DbUtils.getTriState(cursor, NoteTable.REBLOGGED) == TriState.TRUE) {
+            reblogged = true;
+        }
+        if (DbUtils.getTriState(cursor, NoteTable.FAVORITED) == TriState.TRUE) {
+            favorited = true;
+        }
+
+        for (Actor actor : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getNoteId())) {
+            rebloggers.put(actor.actorId, actor.getWebFingerId());
+        }
+    }
+
     @Override
-    public ConversationViewItem getNew() {
-        return new ConversationViewItem(false);
+    protected ConversationViewItem newNonLoaded(MyContext myContext, long id) {
+        ConversationViewItem item = new ConversationViewItem(false, DATETIME_MILLIS_NEVER);
+        item.setMyContext(myContext);
+        item.setNoteId(id);
+        return item;
     }
 
     @Override
@@ -66,47 +99,9 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
         return builder;
     }
 
+    @NonNull
     @Override
-    void load(Cursor cursor) {
-        /* IDs of all known senders of this note except for the Author
-         * These "senders" reblogged the note */
-        int ind=0;
-        do {
-            long noteId = DbUtils.getLong(cursor, ActivityTable.NOTE_ID);
-            if (noteId != getNoteId()) {
-                if (ind > 0) {
-                    cursor.moveToPrevious();
-                }
-                break;
-            }
-
-            super.load(cursor);
-            setName(DbUtils.getString(cursor, NoteTable.NAME));
-            setContent(DbUtils.getString(cursor, NoteTable.CONTENT));
-            audience = Audience.fromNoteId(getOrigin(), getNoteId());
-            noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
-            String via = DbUtils.getString(cursor, NoteTable.VIA);
-            if (!StringUtils.isEmpty(via)) {
-                noteSource = Html.fromHtml(via).toString().trim();
-            }
-            if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
-                attachedImageFile = AttachedImageFile.fromCursor(cursor);
-            }
-            inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
-            inReplyToActor = ActorViewItem.fromActorId(getOrigin(),
-                    DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID));
-            if (DbUtils.getTriState(cursor, NoteTable.REBLOGGED) == TriState.TRUE) {
-                reblogged = true;
-            }
-            if (DbUtils.getTriState(cursor, NoteTable.FAVORITED) == TriState.TRUE) {
-                favorited = true;
-            }
-
-            ind++;
-        } while (cursor.moveToNext());
-
-        for (Actor actor : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getNoteId())) {
-            rebloggers.put(actor.actorId, actor.getWebFingerId());
-        }
+    public ConversationViewItem fromCursor(MyContext myContext, Cursor cursor) {
+        return new ConversationViewItem(myContext, cursor);
     }
 }

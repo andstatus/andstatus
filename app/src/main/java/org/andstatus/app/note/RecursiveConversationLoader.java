@@ -20,9 +20,7 @@ import android.database.Cursor;
 import android.net.Uri;
 
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.ProjectionMap;
-import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -39,56 +37,59 @@ public class RecursiveConversationLoader<T extends ConversationItem<T>> extends 
     }
 
     @Override
-    protected void load2(T oMsg) {
-        findPreviousNotesRecursively(getItem(oMsg.getNoteId(), 0));
+    protected void load2(T nonLoaded) {
+        findPreviousNotesRecursively(nonLoaded);
     }
 
     @Override
-    void cacheConversation(T oMsg) {
-        String selection = (oMsg.conversationId == 0
-                ? ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.NOTE_ID + "=" + oMsg.getNoteId()
-                : ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.CONVERSATION_ID + "=" + oMsg.conversationId);
+    void cacheConversation(T item) {
+        if (conversationIds.contains(item.conversationId) || item.conversationId == 0) {
+            return;
+        }
+        if (!conversationIds.isEmpty()) {
+            fixConversation = true;
+            MyLog.d(this, "Another conversationId:" + item);
+        }
+        conversationIds.add(item.conversationId);
+
+        String selection = (ProjectionMap.NOTE_TABLE_ALIAS + "."
+                + NoteTable.CONVERSATION_ID + "=" + item.conversationId);
         Uri uri = Timeline.getTimeline(TimelineType.EVERYTHING, 0, ma.getOrigin()).getUri();
 
         try (Cursor cursor = myContext.context().getContentResolver().query(uri,
-                oMsg.getProjection().toArray(new String[]{}),
+                item.getProjection().toArray(new String[]{}),
                 selection, null, null)) {
-            if (cursor != null) {
-                while (cursor.moveToNext()) {
-                    T oMsg2 = newONote(DbUtils.getLong(cursor, ActivityTable.NOTE_ID));
-                    oMsg2.load(cursor);
-                    cachedItems.put(oMsg2.getNoteId(), oMsg2);
-                }
+            while (cursor != null && cursor.moveToNext()) {
+                T itemLoaded = item.fromCursor(myContext, cursor);
+                cachedConversationItems.put(itemLoaded.getNoteId(), itemLoaded);
             }
         }
     }
 
-    private void findPreviousNotesRecursively(T oMsg) {
-        if (!addNoteIdToFind(oMsg.getNoteId())) {
+    private void findPreviousNotesRecursively(T itemIn) {
+        if (!addNoteIdToFind(itemIn.getNoteId())) {
             return;
         }
-        findRepliesRecursively(oMsg);
-        MyLog.v(this, () -> "findPreviousNotesRecursively id=" + oMsg.getNoteId() + " replies:" + oMsg.mNReplies);
-        loadItemFromDatabase(oMsg);
-        if (oMsg.isLoaded()) {
-            if (addNoteToList(oMsg)) {
-                if (oMsg.inReplyToNoteId != 0) {
-                    findPreviousNotesRecursively(getItem(oMsg.inReplyToNoteId,
-                            oMsg.replyLevel - 1));
-                }
+        T item = loadItemFromDatabase(itemIn);
+        findRepliesRecursively(item);
+        MyLog.v(this, () -> "findPreviousNotesRecursively id=" + item.getNoteId() + " replies:" + item.nReplies);
+        if (item.isLoaded()) {
+            if (addItemToList(item) && item.inReplyToNoteId != 0) {
+                findPreviousNotesRecursively(
+                        getItem(item.inReplyToNoteId, item.conversationId, item.replyLevel - 1));
             }
         } else if (mAllowLoadingFromInternet) {
-            loadFromInternet(oMsg.getNoteId());
+            loadFromInternet(item.getNoteId());
         }
     }
 
-    public void findRepliesRecursively(T oMsg) {
-        MyLog.v(this, () -> "findReplies for id=" + oMsg.getNoteId());
-        for (T oMsgReply : cachedItems.values()) {
-            if (oMsgReply.inReplyToNoteId == oMsg.getNoteId()) {
-                oMsg.mNReplies++;
-                oMsgReply.replyLevel = oMsg.replyLevel + 1;
-                findPreviousNotesRecursively(oMsgReply);
+    private void findRepliesRecursively(T item) {
+        MyLog.v(this, () -> "findReplies for id=" + item.getNoteId());
+        for (T reply : cachedConversationItems.values()) {
+            if (reply.inReplyToNoteId == item.getNoteId()) {
+                item.nReplies++;
+                reply.replyLevel = item.replyLevel + 1;
+                findPreviousNotesRecursively(reply);
             }
         }
     }

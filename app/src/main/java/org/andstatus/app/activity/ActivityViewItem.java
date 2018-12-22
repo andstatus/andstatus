@@ -37,6 +37,8 @@ import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyStringBuilder;
 
+import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
+
 /** View on ActivityStream
  * @author yvolk@yurivolkov.com
  */
@@ -54,7 +56,7 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
     private ActorViewItem objActorItem = ActorViewItem.EMPTY;
 
     protected ActivityViewItem(boolean isEmpty) {
-        super(isEmpty);
+        super(isEmpty, DATETIME_MILLIS_NEVER);
         origin = Origin.EMPTY;
         activityType  = ActivityType.EMPTY;
         objActorId = 0;
@@ -62,12 +64,11 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
     }
 
     protected ActivityViewItem(Cursor cursor) {
-        super(false);
+        super(false, DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE));
         id = DbUtils.getLong(cursor, ActivityTable.ACTIVITY_ID);
         origin = MyContextHolder.get().origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID));
         activityType = ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
         insertedDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
-        updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
         actor = ActorViewItem.fromActor(Actor.fromId(origin, DbUtils.getLong(cursor, ActivityTable.ACTOR_ID)));
         noteId = DbUtils.getLong(cursor, ActivityTable.NOTE_ID);
         objActorId = DbUtils.getLong(cursor, ActivityTable.OBJ_ACTOR_ID);
@@ -77,7 +78,7 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
         if (noteId == 0) {
             noteViewItem = NoteViewItem.EMPTY;
         } else {
-            noteViewItem = NoteViewItem.EMPTY.getNew().fromCursorRow(MyContextHolder.get(), cursor);
+            noteViewItem = NoteViewItem.EMPTY.fromCursor(MyContextHolder.get(), cursor);
             noteViewItem.setParent(this);
             if (MyPreferences.isShowDebuggingInfoInUi()) {
                 MyStringBuilder.appendWithSpace(noteViewItem.detailsSuffix, "(actId=" + id + ")");
@@ -104,12 +105,6 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
     @Override
     public ActivityViewItem fromCursor(MyContext myContext, Cursor cursor) {
         return new ActivityViewItem(cursor);
-    }
-
-    @NonNull
-    @Override
-    public ActivityViewItem getNew() {
-        return new ActivityViewItem(false);
     }
 
     @Override

@@ -40,14 +40,15 @@ public class ViewItem<T extends ViewItem<T>> implements IsEmpty {
     private final boolean isEmpty;
     private ViewItem parent = EmptyViewItem.EMPTY;
     protected long insertedDate = 0;
-    public long updatedDate = 0;
+    public final long updatedDate;
 
-    protected ViewItem(boolean isEmpty) {
+    protected ViewItem(boolean isEmpty, long updatedDate) {
         this.isEmpty = isEmpty;
+        this.updatedDate = updatedDate;
     }
 
     @NonNull
-    public T getEmpty(@NonNull TimelineType timelineType) {
+    public static <T extends ViewItem<T>> T getEmpty(@NonNull TimelineType timelineType) {
         return (T) ViewItemType.fromTimelineType(timelineType).emptyViewItem;
     }
 
@@ -81,11 +82,6 @@ public class ViewItem<T extends ViewItem<T>> implements IsEmpty {
 
     @NonNull
     public T fromCursor(MyContext myContext, Cursor cursor) {
-        return getEmpty(TimelineType.UNKNOWN);
-    }
-
-    @NonNull
-    public T getNew() {
         return getEmpty(TimelineType.UNKNOWN);
     }
 

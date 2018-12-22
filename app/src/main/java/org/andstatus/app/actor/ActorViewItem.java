@@ -39,6 +39,7 @@ import java.util.stream.Stream;
 
 import static org.andstatus.app.timeline.DuplicationLink.DUPLICATES;
 import static org.andstatus.app.timeline.DuplicationLink.IS_DUPLICATED;
+import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 
 public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable<ActorViewItem> {
     public static final ActorViewItem EMPTY = new ActorViewItem(Actor.EMPTY, true);
@@ -62,7 +63,7 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
     }
 
     private ActorViewItem(@NonNull Actor actor, boolean isEmpty) {
-        super(isEmpty);
+        super(isEmpty, DATETIME_MILLIS_NEVER);
         this.actor = actor;
     }
 
@@ -126,12 +127,6 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
     @Override
     public long getDate() {
         return actor.getUpdatedDate();
-    }
-
-    @NonNull
-    @Override
-    public ActorViewItem getNew() {
-        return newEmpty("");
     }
 
     public String getWebFingerIdOrUsername() {

@@ -36,30 +36,29 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
+import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
+
 /**
  * @author yvolk@yurivolkov.com
  */
 public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
-    public final static NoteViewItem EMPTY = new NoteViewItem(true);
+    public final static NoteViewItem EMPTY = new NoteViewItem(true, DATETIME_MILLIS_NEVER);
 
-    protected NoteViewItem(boolean isEmpty) {
-        super(isEmpty);
+    protected NoteViewItem(boolean isEmpty, long updatedDate) {
+        super(isEmpty, updatedDate);
     }
 
     @Override
     @NonNull
     public NoteViewItem fromCursor(MyContext myContext, Cursor cursor) {
-        return getNew().fromCursorRow(myContext, cursor);
+        return new NoteViewItem(myContext, cursor);
     }
 
-    @NonNull
-    @Override
-    public NoteViewItem getNew() {
-        return new NoteViewItem(false);
-    }
-
-    public NoteViewItem fromCursorRow(MyContext myContext, Cursor cursor) {
-        setMyContext(myContext);
+    private NoteViewItem (MyContext myContext, Cursor cursor) {
+        this(false,
+            DbUtils.getLong(cursor, NoteTable.UPDATED_DATE)
+        );
+        this.myContext = myContext;
         setNoteId(DbUtils.getLong(cursor, ActivityTable.NOTE_ID));
         setOrigin(myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)));
         setLinkedAccount(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID));
@@ -73,7 +72,6 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
         audience = Audience.fromNoteId(getOrigin(), getNoteId(), isPublic);
         insertedDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
         activityUpdatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
-        updatedDate = DbUtils.getLong(cursor, NoteTable.UPDATED_DATE);
         noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
         author = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
         favorited = DbUtils.getTriState(cursor, NoteTable.FAVORITED) == TriState.TRUE;
@@ -91,7 +89,6 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
         for (Actor actor : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getNoteId())) {
             rebloggers.put(actor.actorId, actor.getWebFingerId());
         }
-        return this;
     }
 
     @Override
