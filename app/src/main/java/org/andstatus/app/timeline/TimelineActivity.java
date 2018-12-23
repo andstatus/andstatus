@@ -166,7 +166,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     protected void onCreate(Bundle savedInstanceState) {
         mLayoutId = R.layout.timeline;
         super.onCreate(savedInstanceState);
-        showSyncIndicatorSetting = SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SYNC_INDICATOR_ON_TIMELINE, true);
+        showSyncIndicatorSetting = SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SYNC_INDICATOR_ON_TIMELINE, false);
         if (isFinishing()) return;
 
         contextMenu = new ActivityContextMenu(this);
