@@ -17,7 +17,7 @@
 package org.andstatus.app.os;
 
 import android.app.Dialog;
-import android.support.annotation.MainThread;
+import androidx.annotation.MainThread;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;

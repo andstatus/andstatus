@@ -16,7 +16,7 @@
 
 package org.andstatus.app.activity;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.timeline.TimelineData;
 import org.andstatus.app.timeline.ViewItem;

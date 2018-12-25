@@ -16,7 +16,7 @@
 
 package org.andstatus.app.data;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.database.table.NoteTable;

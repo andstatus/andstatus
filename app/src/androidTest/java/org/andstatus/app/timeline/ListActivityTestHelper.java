@@ -18,8 +18,8 @@ package org.andstatus.app.timeline;
 
 import android.app.Activity;
 import android.app.Instrumentation.ActivityMonitor;
-import android.support.annotation.NonNull;
-import android.support.test.InstrumentationRegistry;
+import androidx.annotation.NonNull;
+import androidx.test.InstrumentationRegistry;
 import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;

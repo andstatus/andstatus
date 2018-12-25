@@ -16,7 +16,7 @@
 package org.andstatus.app.note;
 
 import android.database.Cursor;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.Html;
 
 import org.andstatus.app.actor.ActorViewItem;

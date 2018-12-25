@@ -17,7 +17,7 @@
 package org.andstatus.app.data;
 
 import android.provider.BaseColumns;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.ActorTable;

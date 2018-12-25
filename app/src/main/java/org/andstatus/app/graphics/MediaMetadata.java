@@ -22,7 +22,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;

@@ -17,7 +17,7 @@
 package org.andstatus.app.account;
 
 import android.accounts.Account;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContext;

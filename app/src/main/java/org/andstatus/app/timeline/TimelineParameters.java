@@ -20,7 +20,7 @@ import android.app.LoaderManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.account.MyAccount;

@@ -8,7 +8,7 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.content.Context;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.support.test.rule.GrantPermissionRule;
+import androidx.test.rule.GrantPermissionRule;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccounts;

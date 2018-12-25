@@ -16,7 +16,7 @@
 
 package org.andstatus.app.activity;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.note.NoteEditorContainer;
 import org.andstatus.app.actor.ActorViewItem;

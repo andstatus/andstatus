@@ -17,8 +17,7 @@
 package org.andstatus.app.util;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.text.TextUtils;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.IntentExtra;
 

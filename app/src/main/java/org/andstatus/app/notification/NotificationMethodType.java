@@ -16,8 +16,7 @@
 
 package org.andstatus.app.notification;
 
-import android.support.annotation.NonNull;
-import android.text.TextUtils;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.SharedPreferencesUtil;

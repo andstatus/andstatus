@@ -23,6 +23,7 @@
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
@@ -43,6 +44,7 @@
         android:icon="@drawable/icon"
         android:label="@string/app_name"
         android:vmSafeMode="true"
+        android:usesCleartextTraffic="true"
         android:theme="@style/Theme.Transparent">
     <meta-data android:name="com.google.android.backup.api_key"
 		    android:value="AEdPqrEAAAAIwaY-1-9DmEnU74ycFHDSJiTl_1CW6CzuHsWMLA" />

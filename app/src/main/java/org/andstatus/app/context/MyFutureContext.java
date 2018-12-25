@@ -18,7 +18,7 @@ package org.andstatus.app.context;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.FirstActivity;
 import org.andstatus.app.HelpActivity;

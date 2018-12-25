@@ -17,7 +17,7 @@
 package org.andstatus.app.actor;
 
 import android.content.Context;
-import android.support.annotation.StringRes;
+import androidx.annotation.StringRes;
 
 import org.andstatus.app.R;
 import org.andstatus.app.timeline.ListScope;

@@ -18,14 +18,13 @@ package org.andstatus.app.context;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.widget.Toast;
 
 import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.R;
-import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.nosupport.util.DialogFactory;
 import org.andstatus.app.os.AsyncTaskLauncher;

@@ -16,7 +16,7 @@
 
 package org.andstatus.app.util;
 
-import android.support.v4.view.ViewPager;
+import androidx.viewpager.widget.ViewPager;
 import android.text.SpannableString;
 import android.text.style.URLSpan;
 import android.widget.TextView;

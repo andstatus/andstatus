@@ -19,7 +19,7 @@ package org.andstatus.app.data;
 import android.content.ContentUris;
 import android.content.UriMatcher;
 import android.net.Uri;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.account.MyAccount;

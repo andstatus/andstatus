@@ -17,7 +17,7 @@
 package org.andstatus.app.service;
 
 import android.content.Intent;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyAction;

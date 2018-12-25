@@ -19,7 +19,7 @@ package org.andstatus.app.notification;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.net.Uri;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.FirstActivity;
 import org.andstatus.app.context.MyContext;

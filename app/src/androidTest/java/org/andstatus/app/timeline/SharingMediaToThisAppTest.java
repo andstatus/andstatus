@@ -3,7 +3,7 @@ package org.andstatus.app.timeline;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.BaseColumns;
-import android.support.test.espresso.action.TypeTextAction;
+import androidx.test.espresso.action.TypeTextAction;
 import android.view.View;
 import android.widget.TextView;
 
@@ -25,8 +25,8 @@ import org.junit.Test;
 
 import java.util.Arrays;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

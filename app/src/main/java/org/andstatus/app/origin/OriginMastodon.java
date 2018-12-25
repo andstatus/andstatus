@@ -16,7 +16,7 @@
 
 package org.andstatus.app.origin;
 
-import android.support.annotation.StringRes;
+import androidx.annotation.StringRes;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;

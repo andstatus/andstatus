@@ -16,7 +16,7 @@
 
 package org.andstatus.app.util;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import java.util.function.Predicate;
 import java.util.function.Supplier;

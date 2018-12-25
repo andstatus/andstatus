@@ -16,7 +16,7 @@
 
 package org.andstatus.app.notification;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.R;
 import org.andstatus.app.timeline.meta.TimelineType;

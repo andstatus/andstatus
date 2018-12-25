@@ -16,7 +16,7 @@
 
 package org.andstatus.app.view;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.View;

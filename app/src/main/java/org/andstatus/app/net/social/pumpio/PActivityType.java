@@ -15,7 +15,7 @@ package org.andstatus.app.net.social.pumpio;
  * limitations under the License.
  */
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.net.social.ActivityType;
 

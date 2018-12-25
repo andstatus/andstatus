@@ -17,7 +17,7 @@
 package org.andstatus.app.timeline;
 
 import android.content.Intent;
-import android.support.test.espresso.action.TypeTextAction;
+import androidx.test.espresso.action.TypeTextAction;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -39,10 +39,10 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 import org.junit.Test;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.pressImeActionButton;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withResourceName;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.pressImeActionButton;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withResourceName;
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.util.EspressoUtils.setChecked;
 import static org.junit.Assert.assertEquals;

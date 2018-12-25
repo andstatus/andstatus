@@ -18,7 +18,7 @@ package org.andstatus.app.note;
 
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.actor.ActorListLoader;

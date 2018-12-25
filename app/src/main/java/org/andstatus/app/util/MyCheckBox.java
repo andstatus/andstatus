@@ -17,7 +17,7 @@
 package org.andstatus.app.util;
 
 import android.app.Activity;
-import android.support.annotation.IdRes;
+import androidx.annotation.IdRes;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;

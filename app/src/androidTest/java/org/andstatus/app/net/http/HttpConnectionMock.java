@@ -16,7 +16,7 @@
 
 package org.andstatus.app.net.http;
 
-import android.support.annotation.RawRes;
+import androidx.annotation.RawRes;
 import android.text.TextUtils;
 
 import org.andstatus.app.data.DbUtils;

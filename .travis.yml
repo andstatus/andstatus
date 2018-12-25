@@ -3,7 +3,7 @@ jdk:
 - oraclejdk8
 env:
   global:
-  - ANDROID_API=27
+  - ANDROID_API=28
   - EMULATOR_API=24
   - ANDROID_BUILD_TOOLS=28.0.3
 android:
@@ -98,6 +98,6 @@ cache:
   - $HOME/.gradle/wrapper/
   - $HOME/.android/build-cache
 before_install:
-- yes | sdkmanager "platforms;android-27"
+- yes | sdkmanager "platforms;android-$ANDROID_API"
 after_success:
   - ./gradlew sonarqube -Dsonar.host.url=https://sonarqube.com -Dsonar.login=$SONAR_TOKEN -Dsonar.verbose=true

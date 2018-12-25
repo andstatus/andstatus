@@ -16,8 +16,7 @@
 
 package org.andstatus.app.account;
 
-import android.support.annotation.NonNull;
-import android.text.TextUtils;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.origin.Origin;

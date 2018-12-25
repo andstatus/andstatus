@@ -1,7 +1,7 @@
 package org.andstatus.app.backup;
 
 import android.Manifest;
-import android.support.test.rule.GrantPermissionRule;
+import androidx.test.rule.GrantPermissionRule;
 
 import org.andstatus.app.context.ActivityTest;
 import org.andstatus.app.data.DbUtils;

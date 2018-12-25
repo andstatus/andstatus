@@ -16,7 +16,7 @@
 
 package org.andstatus.app.net.http;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;

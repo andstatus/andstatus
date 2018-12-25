@@ -16,7 +16,7 @@
 
 package org.andstatus.app.timeline;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.view.View;
 import android.widget.BaseAdapter;
 import android.widget.TextView;

@@ -18,7 +18,7 @@ package org.andstatus.app.data;
 
 import android.content.ContentResolver;
 import android.net.Uri;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.webkit.MimeTypeMap;
 
 import org.andstatus.app.util.MyLog;

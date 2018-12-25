@@ -18,7 +18,7 @@ package org.andstatus.app.net.social;
 
 import android.content.Context;
 import android.net.Uri;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.Spannable;
 
 import org.andstatus.app.account.MyAccount;

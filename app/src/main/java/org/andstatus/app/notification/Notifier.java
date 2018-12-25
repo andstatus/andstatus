@@ -23,7 +23,7 @@ import android.app.NotificationManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.R;
 import org.andstatus.app.appwidget.AppWidgets;

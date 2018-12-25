@@ -15,7 +15,7 @@ package org.andstatus.app.service;
  * limitations under the License.
  */
 
-import android.support.test.InstrumentationRegistry;
+import androidx.test.InstrumentationRegistry;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.TestSuite;

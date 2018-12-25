@@ -17,7 +17,7 @@
 package org.andstatus.app.note;
 
 import android.content.Context;
-import android.support.v7.widget.AppCompatMultiAutoCompleteTextView;
+import androidx.appcompat.widget.AppCompatMultiAutoCompleteTextView;
 import android.util.AttributeSet;
 
 public class NoteEditorBodyView extends AppCompatMultiAutoCompleteTextView {

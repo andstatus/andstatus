@@ -3,7 +3,7 @@ package org.andstatus.app.actor;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;

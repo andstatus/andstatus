@@ -23,7 +23,7 @@ import android.content.res.Configuration;
 import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.acra.ACRA;
 import org.acra.ReportingInteractionMode;

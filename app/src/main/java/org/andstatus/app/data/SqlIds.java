@@ -16,7 +16,7 @@
 
 package org.andstatus.app.data;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.social.Actor;

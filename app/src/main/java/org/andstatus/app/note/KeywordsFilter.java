@@ -16,7 +16,7 @@
 
 package org.andstatus.app.note;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyHtml;

@@ -18,7 +18,7 @@ package org.andstatus.app.notification;
 
 import android.app.PendingIntent;
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;

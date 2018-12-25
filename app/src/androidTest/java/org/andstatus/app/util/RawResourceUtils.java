@@ -6,8 +6,8 @@ package org.andstatus.app.util;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.support.annotation.RawRes;
-import android.support.test.InstrumentationRegistry;
+import androidx.annotation.RawRes;
+import androidx.test.InstrumentationRegistry;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

@@ -51,7 +51,7 @@ public class AvatarDownloaderTest {
     @Before
     public void setUp() throws Exception {
         MyLog.i(this, "setUp started");
-        TestSuite.initializeWithData(this);
+        TestSuite.initializeWithAccounts(this);
         MyLog.i(this, "setUp ended");
     }
 

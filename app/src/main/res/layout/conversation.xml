@@ -27,7 +27,7 @@
 
 	<include layout="@layout/action_bar" />
 
-	<android.support.v4.widget.DrawerLayout
+	<androidx.drawerlayout.widget.DrawerLayout
 		android:id="@+id/drawer_layout"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent">
@@ -57,12 +57,12 @@
 
             <include layout="@layout/note_editor" />
         </RelativeLayout>
-		<android.support.design.widget.NavigationView
+		<com.google.android.material.navigation.NavigationView
 			android:id="@+id/navigation_drawer"
 			android:layout_width="240dp"
 			android:layout_height="match_parent"
 			android:layout_gravity="start"
 			android:background="?android:attr/colorBackground"
             app:headerLayout="@layout/conversation_navigation_drawer" />
-	</android.support.v4.widget.DrawerLayout>
+	</androidx.drawerlayout.widget.DrawerLayout>
 </LinearLayout>

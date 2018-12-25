@@ -19,7 +19,7 @@ package org.andstatus.app.timeline.meta;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.BaseColumns;
-import android.support.v4.app.FragmentActivity;
+import androidx.fragment.app.FragmentActivity;
 import android.widget.TextView;
 
 import org.andstatus.app.ActivityRequestCode;

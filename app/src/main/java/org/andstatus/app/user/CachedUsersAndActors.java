@@ -1,7 +1,7 @@
 package org.andstatus.app.user;
 
 import android.database.Cursor;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.ActorSql;

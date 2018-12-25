@@ -17,7 +17,7 @@
 package org.andstatus.app.data.checker;
 
 import android.database.Cursor;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.database.table.ActivityTable;

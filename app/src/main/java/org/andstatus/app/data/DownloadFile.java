@@ -16,7 +16,7 @@
 
 package org.andstatus.app.data;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.util.IsEmpty;

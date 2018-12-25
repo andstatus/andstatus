@@ -3,7 +3,7 @@ package org.andstatus.app.account;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount.Builder;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;

@@ -23,25 +23,33 @@ buildscript {
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
+
+    ext {
+        compileSdkVersion = 28 as int
+        buildToolsVersion = '28.0.3'
+        minSdkVersion = 24 as int
+        targetSdkVersion = 28 as int
+
+        appCompatVersion = '1.1.0-alpha01'
+        materialVersion = '1.1.0-alpha02'
+        acraVersion = '4.9.2' // https://github.com/ACRA/acra/wiki/AdvancedUsage
+        jcipAnnotationsVersion = '1.0-1'   // http://stephenc.github.io/jcip-annotations/dependency-info.html
+        httpclientVersion = '4.4.1.2' // https://github.com/smarek/httpclient-android
+        httpMimeVersion = '4.3.5'
+        signPostVersion = '1.2.1.2'
+        commonsCodecVersion = '1.11'
+        commonsLangVersion = '3.7'
+        scribejavaCoreVersion = '5.5.0'
+        recyclerViewVersion = '1.0.0'
+        junitVersion = '4.12'
+        testRunnerVersion = '1.1.1'
+        testRulesVersion = '1.1.1'
+        espressoCoreVersion = '3.1.1'
+        annotationVersion = '1.0.1'
+    }
 }
 
 allprojects {
-    project.ext.compileSdkVersion = 27 as int
-    project.ext.buildToolsVersion = '28.0.3'
-    project.ext.minSdkVersion = 24 as int
-    project.ext.targetSdkVersion = 27 as int
-
-    // Common versions of dependencies
-    project.ext.supportVersion = '27.1.1' // https://developer.android.com/topic/libraries/support-library/revisions
-    project.ext.acraVersion = '4.9.2' // https://github.com/ACRA/acra/wiki/AdvancedUsage
-    project.ext.jcipAnnotationsVersion = '1.0-1'   // http://stephenc.github.io/jcip-annotations/dependency-info.html
-    project.ext.httpclientVersion = '4.4.1.2' // https://github.com/smarek/httpclient-android
-    project.ext.commonsLangVersion = '3.7'
-    project.ext.scribejavaCoreVersion = '5.5.0'
-    project.ext.junitVersion = '4.12'
-    project.ext.supportTestVersion = '1.0.2'
-    project.ext.espressoCoreVersion = '3.0.2'
-
     repositories {
         jcenter()
         maven {

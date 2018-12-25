@@ -25,7 +25,7 @@ import android.util.AttributeSet;
  * @author yvolk@yurivolkov.com
  * Inspired by http://stackoverflow.com/questions/31832665/android-how-to-create-edit-text-with-single-line-input-and-multiline-hint
  */
-public class LongHintEditText extends android.support.v7.widget.AppCompatEditText {
+public class LongHintEditText extends androidx.appcompat.widget.AppCompatEditText {
     boolean singleLine = false;
 
     public LongHintEditText(Context context) {

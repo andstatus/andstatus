@@ -1,6 +1,6 @@
 package org.andstatus.app.service;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public enum QueueType {
     CURRENT("current", "C", true, true),

@@ -16,7 +16,7 @@
 
 package org.andstatus.app.timeline;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.note.ConversationViewItem;

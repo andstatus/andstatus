@@ -18,7 +18,7 @@ package org.andstatus.app.context;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.net.http.HttpConnection;

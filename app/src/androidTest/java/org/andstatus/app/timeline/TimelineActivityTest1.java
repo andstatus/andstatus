@@ -18,7 +18,7 @@ package org.andstatus.app.timeline;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.widget.CheckBox;
 import android.widget.ListView;
 

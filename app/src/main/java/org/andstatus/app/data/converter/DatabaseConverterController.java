@@ -18,7 +18,7 @@ package org.andstatus.app.data.converter;
 
 import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import net.jcip.annotations.GuardedBy;
 

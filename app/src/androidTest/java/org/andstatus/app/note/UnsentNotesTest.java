@@ -2,7 +2,7 @@ package org.andstatus.app.note;
 
 import android.content.Intent;
 import android.provider.BaseColumns;
-import android.support.test.espresso.action.TypeTextAction;
+import androidx.test.espresso.action.TypeTextAction;
 import android.view.View;
 
 import org.andstatus.app.ActivityTestHelper;
@@ -29,8 +29,8 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

@@ -18,7 +18,7 @@ package org.andstatus.app.timeline;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.R;
 import org.andstatus.app.actor.ActorListLoader;

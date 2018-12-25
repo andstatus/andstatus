@@ -16,7 +16,7 @@
 
 package org.andstatus.app.origin;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.account.AccountDataReaderEmpty;

@@ -18,8 +18,7 @@ package org.andstatus.app.origin;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.support.annotation.NonNull;
-import android.text.TextUtils;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.SearchObjects;
 import org.andstatus.app.account.MyAccount;

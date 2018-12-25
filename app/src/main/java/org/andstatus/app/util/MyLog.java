@@ -17,7 +17,7 @@
 package org.andstatus.app.util;
 
 import android.content.SharedPreferences;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.format.DateFormat;
 import android.util.Log;
 

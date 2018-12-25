@@ -17,7 +17,7 @@
 package org.andstatus.app.actor;
 
 import android.database.Cursor;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.context.MyContext;

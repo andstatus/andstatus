@@ -16,9 +16,8 @@
 
 package org.andstatus.app.util;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.Html;
-import android.text.Spannable;
 
 import org.andstatus.app.data.TextMediaType;
 import org.apache.commons.lang3.text.translate.AggregateTranslator;

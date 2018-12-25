@@ -19,8 +19,8 @@ package org.andstatus.app.context;
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.rule.ActivityTestRule;
+import androidx.test.InstrumentationRegistry;
+import androidx.test.rule.ActivityTestRule;
 
 import org.apache.geode.test.junit.ConditionalIgnore;
 import org.apache.geode.test.junit.rules.ConditionalIgnoreRule;

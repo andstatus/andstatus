@@ -16,7 +16,7 @@
 
 package org.andstatus.app.net.social;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.Spannable;
 
 import org.andstatus.app.data.TextMediaType;

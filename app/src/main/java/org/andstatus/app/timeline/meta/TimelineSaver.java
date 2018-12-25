@@ -16,7 +16,7 @@
 
 package org.andstatus.app.timeline.meta;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;

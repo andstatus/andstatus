@@ -2,19 +2,19 @@ apply plugin: 'com.android.application'
 apply plugin: "org.sonarqube"
 
 android {
-    compileSdkVersion project.ext.compileSdkVersion
-    buildToolsVersion project.ext.buildToolsVersion
+    compileSdkVersion rootProject.compileSdkVersion
+    buildToolsVersion rootProject.buildToolsVersion
 
     defaultConfig {
         versionCode 268
         versionName "45.04"
 
         applicationId "org.andstatus.app"
-        minSdkVersion project.ext.minSdkVersion
-        targetSdkVersion project.ext.targetSdkVersion
+        minSdkVersion rootProject.minSdkVersion
+        targetSdkVersion rootProject.targetSdkVersion
 
         testApplicationId "org.andstatus.app.tests"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // To test arguments:
         // testInstrumentationRunnerArgument "executionMode", "travisTest"
         project.ext.archivesBaseName = "AndStatus-$versionName".toString()
@@ -66,24 +66,26 @@ sonarqube {
 dependencies {
     implementation "com.github.stephenc.jcip:jcip-annotations:$jcipAnnotationsVersion"
     // http://stephenc.github.io/jcip-annotations/dependency-info.html
-    implementation "com.android.support:appcompat-v7:$supportVersion"
-    implementation "com.android.support:design:$supportVersion"
+    implementation "androidx.appcompat:appcompat:$appCompatVersion"
+    implementation "com.google.android.material:material:$materialVersion"
     implementation "ch.acra:acra:$acraVersion" // https://github.com/ACRA/acra/wiki/AdvancedUsage
     implementation "cz.msebera.android:httpclient:$httpclientVersion" // https://github.com/smarek/httpclient-android
     /* Don't use these dependencies for now, because AIDE doesn't support exclusion
                            of transitive dependencies.
                         compile 'org.apache.httpcomponents:httpmime:4.3.5'
                         Use the files from 'libs' folder instead:	*/
-    implementation files('libs/httpmime-4.3.5.jar')
-    implementation files('libs/signpost-httpclient-android-1.2.1.2.jar')
-    implementation files('libs/signpost-core-1.2.1.2.jar')
+    implementation files("libs/httpmime-${httpMimeVersion}.jar")
+    implementation files("libs/signpost-httpclient-android-${signPostVersion}.jar")
+    implementation files("libs/signpost-core-${signPostVersion}.jar")
+//    implementation "oauth.signpost:signpost-core:$signPostVersion"
+    implementation "commons-codec:commons-codec:$commonsCodecVersion"
     implementation "org.apache.commons:commons-lang3:$commonsLangVersion"
     implementation project(':draglistview')
     implementation "com.github.scribejava:scribejava-core:$scribejavaCoreVersion"
     implementation "junit:junit:$junitVersion"
+    implementation "androidx.annotation:annotation:$annotationVersion"
 
-    androidTestImplementation "com.android.support.test:runner:$supportTestVersion"
-    androidTestImplementation "com.android.support.test:rules:$supportTestVersion"
-    androidTestImplementation "com.android.support.test.espresso:espresso-core:$espressoCoreVersion"
-    androidTestImplementation "com.android.support:support-annotations:$supportVersion"
+    androidTestImplementation "androidx.test:runner:$testRunnerVersion"
+    androidTestImplementation "androidx.test:rules:$testRulesVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$espressoCoreVersion"
 }

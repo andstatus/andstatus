@@ -16,7 +16,7 @@
 
 package org.andstatus.app.net.social;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 /**
  * @author yvolk@yurivolkov.com

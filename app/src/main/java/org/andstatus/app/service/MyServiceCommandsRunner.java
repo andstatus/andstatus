@@ -17,7 +17,7 @@
 package org.andstatus.app.service;
 
 import android.content.SyncResult;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
