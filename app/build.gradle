@@ -7,7 +7,7 @@ android {
 
     defaultConfig {
         versionCode 268
-        versionName "45.04"
+        versionName "45.05"
 
         applicationId "org.andstatus.app"
         minSdkVersion rootProject.minSdkVersion
