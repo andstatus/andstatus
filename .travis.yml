@@ -61,9 +61,9 @@ script:
 # Run only tests, marked with a special annotation:
 # See https://developer.android.com/reference/android/test/InstrumentationTestRunner.html
 # For testing one method only:
-# - adb shell am instrument -w -r -e debug false -e coverage true -e class org.andstatus.app.service.CommandExecutorStrategyTest#testSearch org.andstatus.app.tests/android.support.test.runner.AndroidJUnitRunner
+# - adb shell am instrument -w -r -e debug false -e coverage true -e class org.andstatus.app.service.CommandExecutorStrategyTest#testSearch org.andstatus.app.tests/androidx.test.runner.AndroidJUnitRunner
 - |
-  adb shell am instrument -w -r -e executionMode travisTest -e coverage true org.andstatus.app.tests/android.support.test.runner.AndroidJUnitRunner |& tee build/adb-test.log
+  adb shell am instrument -w -r -e executionMode travisTest -e coverage true org.andstatus.app.tests/androidx.test.runner.AndroidJUnitRunner |& tee build/adb-test.log
   retval=$?
   if [ $retval -ne 0 ]; then
     echo "error in adb, exit code: "$retval
