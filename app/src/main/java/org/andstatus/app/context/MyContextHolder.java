@@ -125,11 +125,6 @@ public final class MyContextHolder {
             return new MyEmptyFutureContext(myFutureContext.getNow());
         }
         if (needToInitialize()) {
-            if (MyStorage.isApplicationDataCreated().untrue && !Activity.class.isInstance(calledBy)) {
-                MyLog.d(TAG, "Skipping initialization: need Activity to create data (called by: " + calledBy + ")");
-                return new MyEmptyFutureContext(myFutureContext.getNow());
-            }
-
             MyLog.v(TAG, () -> "myFutureContext " + (myFutureContext.isEmpty() ? "isEmpty " : "") + get());
             boolean launchExecution = false;
             synchronized(CONTEXT_LOCK) {

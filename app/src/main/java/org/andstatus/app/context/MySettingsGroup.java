@@ -17,16 +17,11 @@
 package org.andstatus.app.context;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
 
 import org.andstatus.app.R;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.TriState;
 
-import java.util.concurrent.atomic.AtomicReference;
-
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 
@@ -45,9 +40,6 @@ public enum MySettingsGroup {
     STORAGE("storage", R.string.title_preference_storage, R.xml.preferences_storage),
     INFORMATION("information", R.string.category_title_preference_information, R.xml.preferences_information),
     DEBUGGING("debugging", R.string.title_preference_debugging, R.xml.preferences_debugging);
-
-    private static final String SET_DEFAULT_VALUES = "setDefaultValues";
-    private static final AtomicReference<TriState> resultOfSettingDefaults = new AtomicReference<>(TriState.UNKNOWN);
 
     /** key used in preference headers */
     private final String key;
@@ -101,48 +93,11 @@ public enum MySettingsGroup {
         return titleResId;
     }
 
-    /** @return success */
-    public static boolean setDefaultValues(Context context) {
-        if (context == null) {
-            MyLog.e(MySettingsGroup.class, SET_DEFAULT_VALUES + " no context");
-            return false;
-        }
-        if (!Activity.class.isInstance(context)) {
-            MyLog.e(MySettingsGroup.class, SET_DEFAULT_VALUES + " should be called with Activity context");
-            return false;
-        }
-
-        synchronized (resultOfSettingDefaults) {
-            resultOfSettingDefaults.set(TriState.UNKNOWN);
-            try {
-                ((Activity) context).runOnUiThread( () -> setDefaultValuesOnUiThread(context));
-                for (int i = 0; i < 100; i++) {
-                    DbUtils.waitMs(MySettingsGroup.class, 50);
-                    if (resultOfSettingDefaults.get().known) break;
-                }
-            } catch (Exception e) {
-                MyLog.e(MySettingsGroup.class, SET_DEFAULT_VALUES + " error:" + e.getMessage() +
-                        "\n" + MyLog.getStackTrace(e));
+    public static void setDefaultValues(@NonNull Activity activity) {
+        for (MySettingsGroup item : MySettingsGroup.values()) {
+            if (item != UNKNOWN) {
+                PreferenceManager.setDefaultValues(activity, item.getPreferencesXmlResId(), false);
             }
         }
-        return resultOfSettingDefaults.get().toBoolean(false);
-    }
-
-    private static void setDefaultValuesOnUiThread(Context context) {
-        try {
-            MyLog.i(MySettingsGroup.class, SET_DEFAULT_VALUES + " started");
-            for (MySettingsGroup item : values()) {
-                if (item != UNKNOWN) {
-                    PreferenceManager.setDefaultValues(context, item.getPreferencesXmlResId(), false);
-                }
-            }
-            resultOfSettingDefaults.set(TriState.TRUE);
-            MyLog.i(MySettingsGroup.class, SET_DEFAULT_VALUES + " completed");
-            return;
-        } catch (Exception e ) {
-            MyLog.w(MySettingsGroup.class, SET_DEFAULT_VALUES + " error:" + e.getMessage() +
-                    "\n" + MyLog.getStackTrace(e));
-        }
-        resultOfSettingDefaults.set(TriState.FALSE);
     }
 }

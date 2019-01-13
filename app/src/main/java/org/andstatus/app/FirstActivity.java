@@ -16,29 +16,38 @@
 
 package org.andstatus.app;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.context.MySettingsGroup;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.TriState;
+
+import java.util.concurrent.atomic.AtomicReference;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 /** Activity to be started, when Application is not initialised yet (or needs re-initialization).
  * It allows to avoid "Application not responding" errors.
  * It is transparent and shows progress indicator only, launches next activity after application initialization.
  * */
 public class FirstActivity extends AppCompatActivity {
+    private static final String SET_DEFAULT_VALUES = "setDefaultValues";
+    private static final AtomicReference<TriState> resultOfSettingDefaults = new AtomicReference<>(TriState.UNKNOWN);
 
     public enum NeedToStart {
         HELP,
@@ -60,11 +69,22 @@ public class FirstActivity extends AppCompatActivity {
     }
 
     private void startNextActivity(Intent intent) {
-        if (MyContextHolder.get().isReady() || MyContextHolder.get().state() == MyContextState.UPGRADING) {
-            startNextActivitySync(MyContextHolder.get(), intent);
-            finish();
-        } else {
-            MyContextHolder.initializeByFirstActivity(this);
+        switch (MyAction.fromIntent(intent)) {
+            case INITIALIZE_APP:
+                MyContextHolder.getMyFutureContext(this);
+                finish();
+                break;
+            case SET_DEFAULT_VALUES:
+                setDefaultValuesOnUiThread(this);
+                finish();
+                break;
+            default:
+                if (MyContextHolder.get().isReady() || MyContextHolder.get().state() == MyContextState.UPGRADING) {
+                    startNextActivitySync(MyContextHolder.get(), intent);
+                    finish();
+                } else {
+                    MyContextHolder.initializeByFirstActivity(this);
+                }
         }
     }
 
@@ -143,5 +163,53 @@ public class FirstActivity extends AppCompatActivity {
             MyLog.e(FirstActivity.class, "Unable to obtain package information", e);
         }
         return changed;
+    }
+
+    public static void startMeAsync(Context context, MyAction myAction) {
+        Intent intent = new Intent(context, FirstActivity.class);
+        intent.setAction(myAction.getAction());
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
+    }
+
+    /** @return success */
+    public static boolean setDefaultValues(Context context) {
+        if (context == null) {
+            MyLog.e(FirstActivity.class, SET_DEFAULT_VALUES + " no context");
+            return false;
+        }
+        synchronized (resultOfSettingDefaults) {
+            resultOfSettingDefaults.set(TriState.UNKNOWN);
+            try {
+                if (Activity.class.isInstance(context)) {
+                    final Activity activity = (Activity) context;
+                    activity.runOnUiThread( () -> setDefaultValuesOnUiThread(activity));
+                } else {
+                    startMeAsync(context, MyAction.SET_DEFAULT_VALUES);
+                }
+                for (int i = 0; i < 100; i++) {
+                    DbUtils.waitMs(FirstActivity.class, 50);
+                    if (resultOfSettingDefaults.get().known) break;
+                }
+            } catch (Exception e) {
+                MyLog.e(FirstActivity.class, SET_DEFAULT_VALUES + " error:" + e.getMessage() +
+                        "\n" + MyLog.getStackTrace(e));
+            }
+        }
+        return resultOfSettingDefaults.get().toBoolean(false);
+    }
+
+    private static void setDefaultValuesOnUiThread(Activity activity) {
+        try {
+            MyLog.i(activity, SET_DEFAULT_VALUES + " started");
+            MySettingsGroup.setDefaultValues(activity);
+            resultOfSettingDefaults.set(TriState.TRUE);
+            MyLog.i(activity, SET_DEFAULT_VALUES + " completed");
+            return;
+        } catch (Exception e ) {
+            MyLog.w(activity, SET_DEFAULT_VALUES + " error:" + e.getMessage() +
+                    "\n" + MyLog.getStackTrace(e));
+        }
+        resultOfSettingDefaults.set(TriState.FALSE);
     }
 }

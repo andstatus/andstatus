@@ -40,6 +40,8 @@ public enum MyAction {
     BOOT_COMPLETED("android.intent.action.BOOT_COMPLETED"),
     ACTION_SHUTDOWN("android.intent.action.ACTION_SHUTDOWN"),
     SYNC("SYNC"),
+    INITIALIZE_APP("INITIALIZE_APP"),
+    SET_DEFAULT_VALUES("SET_DEFAULT_VALUES"),
     UNKNOWN("UNKNOWN");
     
     private final String action;

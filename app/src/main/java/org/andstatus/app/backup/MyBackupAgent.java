@@ -23,12 +23,12 @@ import android.app.backup.BackupDataOutput;
 import android.content.Context;
 import android.os.ParcelFileDescriptor;
 
+import org.andstatus.app.FirstActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccounts;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.context.MySettingsGroup;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.data.DbUtils;
@@ -38,7 +38,6 @@ import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.TriState;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -277,7 +276,7 @@ public class MyBackupAgent extends BackupAgent {
 
     private void restoreSharedPreferences(MyBackupDataInput data) throws IOException {
         MyLog.i(this, "On restoring Shared preferences");
-        MySettingsGroup.setDefaultValues(activity == null ? this : activity);
+        FirstActivity.setDefaultValues(activity == null ? this : activity);
         assertNextHeader(data, SHARED_PREFERENCES_KEY);
         final String filename = "preferences";
         File tempFile = new File(SharedPreferencesUtil.prefsDirectory(MyContextHolder.get()

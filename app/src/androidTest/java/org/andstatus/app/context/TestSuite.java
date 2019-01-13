@@ -21,12 +21,12 @@ import android.app.Instrumentation;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
-import androidx.test.InstrumentationRegistry;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
 import org.andstatus.app.FirstActivity;
 import org.andstatus.app.HelpActivity;
+import org.andstatus.app.MyAction;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.os.AsyncTaskLauncher;
@@ -40,6 +40,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
+
+import androidx.test.InstrumentationRegistry;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
@@ -100,8 +102,10 @@ public class TestSuite {
             MyLog.i(TAG, "Before MyContextHolder.initialize " + iter);
             try {
                 MyContextHolder.setCreator(new MyContextTestImpl(null, context, testCase));
-                MyContext myContext = MyContextHolder.initialize(context, testCase);
-                MyLog.i(TAG, "After MyContextHolder.initialize " + iter + " " + myContext);
+                FirstActivity.startMeAsync(context, MyAction.INITIALIZE_APP);
+                DbUtils.waitMs(method, 3000);
+                MyContext myContext = MyContextHolder.get();
+                MyLog.i(TAG, "After starting FirstActivity " + iter + " " + myContext);
                 if (myContext.state() == MyContextState.READY) break;
             } catch (IllegalStateException e) {
                 MyLog.i(TAG, "Error caught, iteration=" + iter, e);

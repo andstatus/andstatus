@@ -16,7 +16,6 @@
 
 package org.andstatus.app.context;
 
-import android.app.Activity;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
@@ -25,6 +24,7 @@ import android.os.Environment;
 import net.jcip.annotations.ThreadSafe;
 
 import org.andstatus.app.ClassInApplicationPackage;
+import org.andstatus.app.FirstActivity;
 import org.andstatus.app.account.MyAccounts;
 import org.andstatus.app.data.converter.DatabaseConverterController;
 import org.andstatus.app.database.DatabaseHolder;
@@ -125,7 +125,7 @@ public class MyContextImpl implements MyContext {
         boolean createApplicationData = MyStorage.isApplicationDataCreated().untrue;
         if (createApplicationData) {
             Context context2 = Context.class.isInstance(initializer) ? (Context) initializer : context;
-            if (!MySettingsGroup.setDefaultValues(context2)) {
+            if (!FirstActivity.setDefaultValues(context2)) {
                 setExpired();
                 return this;
             }

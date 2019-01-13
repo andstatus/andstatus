@@ -19,7 +19,6 @@ package org.andstatus.app;
 import android.app.Activity;
 import android.app.Instrumentation.ActivityMonitor;
 import android.content.Intent;
-import androidx.test.InstrumentationRegistry;
 import android.view.Menu;
 import android.view.View;
 import android.widget.TextView;
@@ -30,6 +29,8 @@ import org.andstatus.app.test.SelectorActivityMock;
 import org.andstatus.app.util.MyLog;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import androidx.test.InstrumentationRegistry;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -124,10 +125,8 @@ public class ActivityTestHelper<T extends MyActivity> implements SelectorActivit
     
     public Activity waitForNextActivity(String method, long timeOut) throws InterruptedException {
         Activity nextActivity = InstrumentationRegistry.getInstrumentation().waitForMonitorWithTimeout(activityMonitor, timeOut);
-        MyLog.v(this, method + "-Log after waitForMonitor: " 
-                + nextActivity);
+        MyLog.v(this, method + "-Log after waitForMonitor: " + nextActivity);
         assertNotNull("Next activity is opened and captured", nextActivity);
-        TestSuite.waitForListLoaded(nextActivity, 1);
         activityMonitor = null;
         return nextActivity;
     }
