@@ -16,12 +16,11 @@
 
 package org.andstatus.app.context;
 
+import android.app.Activity;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.os.Environment;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -42,8 +41,10 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.Permissions;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * Contains global state of the application
@@ -108,22 +109,27 @@ public class MyContextImpl implements MyContext {
 
     @Override
     public MyContext newInitialized(Object initializer) {
-        return new MyContextImpl(this, context(), initializer).initialize();
+        return new MyContextImpl(this, context(), initializer).initialize(initializer);
     }
 
-    MyContextImpl initialize() {
+    MyContextImpl initialize(Object initializer) {
         final String method = "initialize";
         if ( context == null) return this;
+
         if (!Permissions.checkPermission(context, Permissions.PermissionType.GET_ACCOUNTS)) {
             state = MyContextState.NO_PERMISSIONS;
             return this;
         }
         MyLog.v(this, () -> "Starting initialization of " + instanceId + " by " + initializedBy);
 
-        boolean createApplicationData = MyStorage.isApplicationDataCreated() != TriState.TRUE;
+        boolean createApplicationData = MyStorage.isApplicationDataCreated().untrue;
         if (createApplicationData) {
+            Context context2 = Context.class.isInstance(initializer) ? (Context) initializer : context;
+            if (!MySettingsGroup.setDefaultValues(context2)) {
+                setExpired();
+                return this;
+            }
             MyLog.i(this, method + "; Creating application data");
-            MyPreferencesGroupsEnum.setDefaultValues();
             tryToSetExternalStorageOnDataCreation();
         }
         preferencesChangeTime = MyPreferences.getPreferencesChangeTime();
@@ -154,8 +160,7 @@ public class MyContextImpl implements MyContext {
         DatabaseHolder newDb = new DatabaseHolder(context, createApplicationData);
         try {
             state = newDb.checkState();
-            if (state() == MyContextState.DATABASE_READY
-                    && MyStorage.isApplicationDataCreated() != TriState.TRUE) {
+            if (state() == MyContextState.DATABASE_READY && MyStorage.isApplicationDataCreated().untrue) {
                 state = MyContextState.ERROR;
             }
         } catch (SQLiteException | IllegalStateException e) {

@@ -15,7 +15,8 @@
 	limitations under the License.
  -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-				  android:title="@string/title_timeline">
+    android:key="timeline"
+    android:title="@string/title_timeline">
     <Preference
         android:key="manage_timelines"
         android:persistent="false"

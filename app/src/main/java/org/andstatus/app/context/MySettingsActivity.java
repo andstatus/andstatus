@@ -20,36 +20,30 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.widget.Toolbar;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.ViewGroup;
-
-import com.example.android.supportv7.app.AppCompatPreferenceActivity;
 
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.TimelineActivity;
-import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 
-import java.util.List;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceScreen;
 
-/** See http://developer.android.com/guide/topics/ui/settings.html
- *  Source of the {@link AppCompatPreferenceActivity} class is here:
- *  https://github.com/android/platform_development/blob/master/samples/Support7Demos/src/com/example/android/supportv7/app/AppCompatPreferenceActivity.java
- * */
-public class MySettingsActivity extends AppCompatPreferenceActivity {
+/** See <a href="http://developer.android.com/guide/topics/ui/settings.html">Settings</a>
+ */
+public class MySettingsActivity extends MyActivity implements
+        PreferenceFragmentCompat.OnPreferenceStartScreenCallback,
+        PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
 
-    public static final String ANDROID_FRAGMENT_ARGUMENTS_KEY = ":android:show_fragment_args";
-    public static final String PREFERENCES_GROUPS_KEY = "preferencesGroup";
-    public static final String ANDROID_NO_HEADERS_KEY = ":android:no_headers";
     private boolean restartApp = false;
     private long mPreferencesChangedAt = MyPreferences.getPreferencesChangeTime();
-    private long mInstanceId = 0;
     private boolean resumedOnce = false;
 
     /**
@@ -64,64 +58,61 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
 
     protected void onCreate(Bundle savedInstanceState) {
         resumedOnce = false;
-        MyTheme.loadTheme(this);
+        mLayoutId = R.layout.my_settings;
         super.onCreate(savedInstanceState);
-        ViewGroup root = (ViewGroup) findViewById (android.R.id.content).getParent();
-        if (root != null) {
-            Toolbar bar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.action_bar, root, false);
-            root.addView(bar, 0);
-            setSupportActionBar(bar);
-        }
 
-        if (isRootScreen() && MyContextHolder.initializeThenRestartMe(this)) {
-            return;
-        }
-        ActionBar actionBar = this.getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setTitle(getTitleResId());
-            actionBar.setDisplayShowHomeEnabled(true);
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
+        if (savedInstanceState == null) {
+            // Create the fragment only when the activity is created for the first time.
+            // ie. not after orientation changes
+            Fragment fragment = getSupportFragmentManager().findFragmentByTag(MySettingsFragment.FRAGMENT_TAG);
+            if (fragment == null) {
+                fragment = new MySettingsFragment();
+            }
 
-        boolean isNew = mInstanceId == 0;
-        if (isNew) {
-            mInstanceId = InstanceId.next();
+            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.settings_container, fragment, MySettingsFragment.FRAGMENT_TAG);
+            ft.commit();
         }
-        logEvent("onCreate", isNew ? "" : "Reuse the same");
         parseNewIntent(getIntent());
     }
 
-    private boolean isRootScreen() {
-        Bundle bundle = getIntent().getExtras();
-        if (bundle != null) {
-            return !bundle.getBoolean(ANDROID_NO_HEADERS_KEY);
-        }
+
+    // TODO: Not fully implemented, but it is unused yet...
+    @Override
+    public boolean onPreferenceStartScreen(PreferenceFragmentCompat preferenceFragmentCompat,
+                                           PreferenceScreen preferenceScreen) {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        MySettingsFragment fragment = new MySettingsFragment();
+        Bundle args = new Bundle();
+        args.putString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT, preferenceScreen.getKey());
+        fragment.setArguments(args);
+        ft.replace(R.id.settings_container, fragment, preferenceScreen.getKey());
+        ft.addToBackStack(preferenceScreen.getKey());
+        ft.commit();
         return true;
     }
 
-    private int getTitleResId() {
-        int titleResId = R.string.settings_activity_title;
-        if (!isRootScreen()) {
-            Bundle bundle = getIntent().getBundleExtra(ANDROID_FRAGMENT_ARGUMENTS_KEY);
-            if (bundle != null) {
-                MyPreferencesGroupsEnum preferencesGroup = MyPreferencesGroupsEnum.load(
-                        bundle.getString(PREFERENCES_GROUPS_KEY));
-                if (preferencesGroup != MyPreferencesGroupsEnum.UNKNOWN) {
-                    titleResId = preferencesGroup.getTitleResId();
-                }
-            }
-        }
-        return titleResId;
+    @Override
+    public boolean onPreferenceStartFragment(PreferenceFragmentCompat caller, Preference pref) {
+        final Bundle args = pref.getExtras();
+        args.putString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT, pref.getKey());
+        MySettingsFragment fragment = new MySettingsFragment();
+        fragment.setArguments(args);
+        fragment.setTargetFragment(caller, 0);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.settings_container, fragment, pref.getKey())
+                .addToBackStack(pref.getKey())
+                .commit();
+        return true;
     }
 
-    @Override
-    public void onBuildHeaders(List<Header> target) {
-        loadHeadersFromResource(R.xml.preference_headers, target);
+    private boolean isRootScreen() {
+        return getSettingsGroup() == MySettingsGroup.UNKNOWN;
     }
 
-    @Override
-    protected boolean isValidFragment(String fragmentName) {
-        return MySettingsFragment.class.getName().equals(fragmentName);
+    private MySettingsGroup getSettingsGroup() {
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.settings_container);
+        return MySettingsGroup.from(fragment);
     }
 
     @Override
@@ -169,6 +160,8 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
             case android.R.id.home:
                 if (isRootScreen()) {
                     closeAndRestartApp();
+                } else if(getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                    getSupportFragmentManager().popBackStack();
                 } else {
                     finish();
                 }
@@ -206,7 +199,7 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
 
     @Override
     public void finish() {
-        logEvent("finish", restartApp ? " and return" : "");
+        logEvent("finish", restartApp ? " and restart" : "");
         super.finish();
         if (resumedOnce) {
             MyContextHolder.setExpiredIfConfigChanged();
@@ -218,12 +211,7 @@ public class MySettingsActivity extends AppCompatPreferenceActivity {
 
     private void logEvent(String method, String msgLog_in) {
         if (MyLog.isVerboseEnabled()) {
-            String msgLog = msgLog_in + (isRootScreen() ? "; rootScreen" : "");
-            Bundle bundle = getIntent().getBundleExtra(ANDROID_FRAGMENT_ARGUMENTS_KEY);
-            if (bundle != null) {
-                msgLog += "; preferenceGroup:" + bundle.getString(PREFERENCES_GROUPS_KEY);
-            }
-            MyLog.v(this, method + "; " + msgLog);
+            MyLog.v(this, method + "; " + (msgLog_in + "; settingsGroup:" + getSettingsGroup()));
         }
     }
 }

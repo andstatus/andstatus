@@ -19,10 +19,6 @@ package org.andstatus.app.util;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.preference.ListPreference;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
-import androidx.annotation.NonNull;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckBox;
@@ -34,6 +30,11 @@ import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+
+import androidx.annotation.NonNull;
+import androidx.preference.ListPreference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
 
 public class SharedPreferencesUtil {
     private static final String TAG = SharedPreferencesUtil.class.getSimpleName();
@@ -96,7 +97,7 @@ public class SharedPreferencesUtil {
      * @param entriesR Almost like android:entries but to show in the summary (may be the same as android:entries) 
      * @param summaryR If 0 then the selected entry will be put into the summary as is.
      */
-    public static void showListPreference(PreferenceFragment fragment, String preferenceKey,
+    public static void showListPreference(PreferenceFragmentCompat fragment, String preferenceKey,
                                           int valuesR, int entriesR, int summaryR) {
         ListPreference listPref = (ListPreference) fragment.findPreference(preferenceKey);
         if (listPref != null) {

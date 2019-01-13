@@ -15,7 +15,8 @@
 	limitations under the License.
  -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-				  android:title="@string/category_title_preference_information">
+	android:key="information"
+	android:title="@string/category_title_preference_information">
 	<Preference android:key="about_application"
 		android:title="@string/title_preference_about_application"
 		android:persistent="false">

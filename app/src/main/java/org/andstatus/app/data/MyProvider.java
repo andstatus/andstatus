@@ -25,7 +25,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.provider.BaseColumns;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -45,6 +44,8 @@ import org.andstatus.app.util.TriState;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+
+import androidx.annotation.NonNull;
 
 /**
  * Database provider for the MyDatabase database.

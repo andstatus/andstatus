@@ -102,18 +102,17 @@ public class FirstActivity extends AppCompatActivity {
     }
 
     public static NeedToStart needToStartNext(Context context, MyContext myContext) {
-        NeedToStart needToStart = NeedToStart.OTHER;
         if (!myContext.isReady()) {
             MyLog.i(context, "Context is not ready: " + myContext.toString());
-            needToStart = NeedToStart.HELP;
+            return NeedToStart.HELP;
         } else if (myContext.accounts().isEmpty()) {
             MyLog.i(context, "No AndStatus Accounts yet");
-            needToStart = NeedToStart.HELP;
+            return NeedToStart.HELP;
         }
         if (myContext.isReady() && checkAndUpdateLastOpenedAppVersion(context, false)) {
-            needToStart = NeedToStart.CHANGELOG;
+            return NeedToStart.CHANGELOG;
         }
-        return needToStart;
+        return NeedToStart.OTHER;
     }
 
 

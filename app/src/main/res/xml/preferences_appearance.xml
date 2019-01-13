@@ -15,8 +15,9 @@
 	limitations under the License.
  -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-				  android:title="@string/title_preference_appearance"
-                  android:summary="@string/summary_preference_appearance">
+    android:key="appearance"
+    android:title="@string/title_preference_appearance"
+    android:summary="@string/summary_preference_appearance">
     <org.andstatus.app.context.MultilineListPreference android:key="custom_locale"
         android:entries="@array/custom_locale_entries"
         android:entryValues="@array/custom_locale_values"

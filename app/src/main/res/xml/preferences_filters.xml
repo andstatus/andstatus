@@ -15,7 +15,8 @@
 	limitations under the License.
  -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-				  android:title="@string/filters_title">
+	android:key="filters"
+	android:title="@string/filters_title">
     <org.andstatus.app.context.MultilineEditTextPreference
         android:key="hide_messages_based_on_keywords"
         android:summary="@string/this_option_is_turned_off"

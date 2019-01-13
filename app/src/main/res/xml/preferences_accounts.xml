@@ -15,7 +15,8 @@
 	limitations under the License.
  -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-                  android:title="@string/header_accounts">
+    android:key="accounts"
+    android:title="@string/header_accounts">
     <Preference
         android:key="add_new_account"
         android:persistent="false"

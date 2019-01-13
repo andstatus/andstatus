@@ -1,69 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<preference-headers xmlns:android="http://schemas.android.com/apk/res/android">
-    <header
-        android:fragment="org.andstatus.app.context.MySettingsFragment"
-        android:title="@string/header_accounts"
-        android:summary="@string/header_accounts_summary" >
-        <extra android:name="preferencesGroup" android:value="accounts" />
-    </header>
-    <header
-        android:fragment="org.andstatus.app.context.MySettingsFragment"
-        android:title="@string/title_preference_appearance"
-        android:summary="@string/summary_preference_appearance" >
-        <extra android:name="preferencesGroup" android:value="appearance" />
-    </header>
-    <header
-        android:fragment="org.andstatus.app.context.MySettingsFragment"
-        android:title="@string/title_timeline"
-        android:summary="" >
-        <extra android:name="preferencesGroup" android:value="timeline" />
-    </header>
-    <header
-        android:fragment="org.andstatus.app.context.MySettingsFragment"
-        android:title="@string/gestures"
-        android:summary="@string/gestures_summary" >
-        <extra android:name="preferencesGroup" android:value="gestures" />
-    </header>
-    <header
-        android:fragment="org.andstatus.app.context.MySettingsFragment"
-        android:title="@string/attachments"
-        android:summary="" >
-        <extra android:name="preferencesGroup" android:value="attachments" />
-    </header>
-    <header
-        android:fragment="org.andstatus.app.context.MySettingsFragment"
-        android:title="@string/title_preference_syncing"
-        android:summary="@string/summary_preference_syncing" >
-        <extra android:name="preferencesGroup" android:value="syncing" />
-    </header>
-    <header
-        android:fragment="org.andstatus.app.context.MySettingsFragment"
-        android:title="@string/filters_title"
-        android:summary="@string/filters_summary" >
-        <extra android:name="preferencesGroup" android:value="filters" />
-    </header>
-    <header
-        android:fragment="org.andstatus.app.context.MySettingsFragment"
-        android:title="@string/notifications_title"
-        android:summary="@string/notifications_summary" >
-        <extra android:name="preferencesGroup" android:value="notifications" />
-    </header>
-    <header
-        android:fragment="org.andstatus.app.context.MySettingsFragment"
-        android:title="@string/title_preference_storage"
-        android:summary="@string/summary_preference_storage" >
-        <extra android:name="preferencesGroup" android:value="storage" />
-    </header>
-    <header
-        android:fragment="org.andstatus.app.context.MySettingsFragment"
-        android:title="@string/category_title_preference_information"
-        android:summary="@string/title_preference_about_application" >
-        <extra android:name="preferencesGroup" android:value="information" />
-    </header>
-    <header
-        android:fragment="org.andstatus.app.context.MySettingsFragment"
-        android:title="@string/title_preference_debugging"
-        android:summary="" >
-        <extra android:name="preferencesGroup" android:value="debugging" />
-    </header>
-</preference-headers>
+<!--
+    Copyright (c) 2018 yvolk (Yuri Volkov), http://yurivolkov.com
+
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+
+	     http://www.apache.org/licenses/LICENSE-2.0
+
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+
+    See https://developer.android.com/guide/topics/ui/settings/organize-your-settings
+ -->
+<PreferenceScreen app:key="key_root"
+                  xmlns:app="http://schemas.android.com/apk/res-auto">
+    <Preference app:key="accounts"
+        app:title="@string/header_accounts"
+        app:summary="@string/header_accounts_summary"
+        app:fragment="org.andstatus.app.context.MySettingsFragment" />
+    <Preference app:key="appearance"
+        app:title="@string/title_preference_appearance"
+        app:summary="@string/summary_preference_appearance"
+        app:fragment="org.andstatus.app.context.MySettingsFragment" />
+    <Preference app:key="timeline"
+        app:title="@string/title_timeline"
+        app:summary=""
+        app:fragment="org.andstatus.app.context.MySettingsFragment" />
+    <Preference app:key="gestures"
+        app:title="@string/gestures"
+        app:summary="@string/gestures_summary"
+        app:fragment="org.andstatus.app.context.MySettingsFragment" />
+    <Preference app:key="attachments"
+        app:title="@string/attachments"
+        app:summary=""
+        app:fragment="org.andstatus.app.context.MySettingsFragment" />
+    <Preference app:key="syncing"
+        app:title="@string/title_preference_syncing"
+        app:summary="@string/summary_preference_syncing"
+        app:fragment="org.andstatus.app.context.MySettingsFragment" />
+    <Preference app:key="filters"
+        app:title="@string/filters_title"
+        app:summary="@string/filters_summary"
+        app:fragment="org.andstatus.app.context.MySettingsFragment" />
+    <Preference app:key="notifications"
+        app:title="@string/notifications_title"
+        app:summary="@string/notifications_summary"
+        app:fragment="org.andstatus.app.context.MySettingsFragment" />
+    <Preference app:key="storage"
+        app:title="@string/title_preference_storage"
+        app:summary="@string/summary_preference_storage"
+        app:fragment="org.andstatus.app.context.MySettingsFragment" />
+    <Preference app:key="information"
+        app:title="@string/category_title_preference_information"
+        app:summary="@string/title_preference_about_application"
+        app:fragment="org.andstatus.app.context.MySettingsFragment" />
+    <Preference app:key="debugging"
+        app:title="@string/title_preference_debugging"
+        app:summary=""
+        app:fragment="org.andstatus.app.context.MySettingsFragment" />
+</PreferenceScreen>

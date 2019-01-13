@@ -15,8 +15,9 @@
 	limitations under the License.
  -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-                  android:title="@string/title_preference_syncing"
-				  android:summary="@string/summary_preference_syncing">
+    android:key="syncing"
+    android:title="@string/title_preference_syncing"
+    android:summary="@string/summary_preference_syncing">
     <org.andstatus.app.context.MultilineListPreference android:key="fetch_frequency"
         android:entryValues="@array/fetch_frequency_values"
         android:entries="@array/fetch_frequency_entries"

@@ -15,7 +15,8 @@
 	limitations under the License.
  -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-				  android:title="@string/gestures">
+    android:key="gestures"
+    android:title="@string/gestures">
     <org.andstatus.app.context.MultilineCheckBoxPreference android:key="long_press_to_open_context_menu"
         android:title="@string/long_press_to_open_context_menu"
         android:summaryOff="@string/long_press_to_open_context_menu_off"

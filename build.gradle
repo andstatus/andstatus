@@ -30,25 +30,26 @@ buildscript {
         minSdkVersion = 24 as int
         targetSdkVersion = 28 as int
 
-//        appCompatVersion = '1.1.0-alpha01'
-//        materialVersion = '1.1.0-alpha02'
-        appCompatVersion = '1.0.2'
-        materialVersion = '1.0.0'
+        // Lookup the latest here: https://mvnrepository.com/
         acraVersion = '4.9.2' // https://github.com/ACRA/acra/wiki/AdvancedUsage
-        jcipAnnotationsVersion = '1.0-1'   // http://stephenc.github.io/jcip-annotations/dependency-info.html
-        httpclientVersion = '4.4.1.2' // https://github.com/smarek/httpclient-android
-        httpMimeVersion = '4.3.5'
-        signPostVersion = '1.2.1.2'
+        annotationVersion = '1.0.1'
+//        appCompatVersion = '1.1.0-alpha01'
+        appCompatVersion = '1.0.2'
         commonsCodecVersion = '1.11'
         commonsLangVersion = '3.7'
-        scribejavaCoreVersion = '5.5.0'
-        recyclerViewVersion = '1.0.0'
-        junitVersion = '4.12'
-        testRunnerVersion = '1.1.1'
-        testRulesVersion = '1.1.1'
         espressoCoreVersion = '3.1.1'
-        annotationVersion = '1.0.1'
-    }
+        httpMimeVersion = '4.3.5'
+        httpclientVersion = '4.4.1.2' // https://github.com/smarek/httpclient-android
+        jcipAnnotationsVersion = '1.0-1'   // http://stephenc.github.io/jcip-annotations/dependency-info.html
+        junitVersion = '4.12'
+//        materialVersion = '1.1.0-alpha02'
+        materialVersion = '1.0.0'
+        preferenceVersion = '1.0.0'
+        recyclerViewVersion = '1.0.0'
+        scribejavaCoreVersion = '5.5.0'
+        signPostVersion = '1.2.1.2'
+        testRulesVersion = '1.1.1'
+        testRunnerVersion = '1.1.1'    }
 }
 
 allprojects {

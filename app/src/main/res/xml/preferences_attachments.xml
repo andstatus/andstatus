@@ -15,7 +15,8 @@
 	limitations under the License.
  -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-				  android:title="@string/attachments">
+    android:key="attachments"
+    android:title="@string/attachments">
     <org.andstatus.app.context.MultilineCheckBoxPreference android:key="show_attached_images"
         android:defaultValue="true"
         android:title="@string/title_preference_show_attached_images" />

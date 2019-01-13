@@ -28,7 +28,7 @@ import org.andstatus.app.account.MyAccounts;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.context.MyPreferencesGroupsEnum;
+import org.andstatus.app.context.MySettingsGroup;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.data.DbUtils;
@@ -236,7 +236,7 @@ public class MyBackupAgent extends BackupAgent {
     }
 
     private void ensureNoDataIsPresent() throws IOException {
-        if (MyStorage.isApplicationDataCreated() == TriState.FALSE) {
+        if (MyStorage.isApplicationDataCreated().isFalse) {
             return;
         }
         MyContextHolder.initialize(this, this);
@@ -277,7 +277,7 @@ public class MyBackupAgent extends BackupAgent {
 
     private void restoreSharedPreferences(MyBackupDataInput data) throws IOException {
         MyLog.i(this, "On restoring Shared preferences");
-        MyPreferencesGroupsEnum.setDefaultValues();
+        MySettingsGroup.setDefaultValues(activity == null ? this : activity);
         assertNextHeader(data, SHARED_PREFERENCES_KEY);
         final String filename = "preferences";
         File tempFile = new File(SharedPreferencesUtil.prefsDirectory(MyContextHolder.get()

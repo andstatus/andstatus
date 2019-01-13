@@ -15,7 +15,8 @@
 	limitations under the License.
  -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-				  android:title="@string/title_preference_debugging">
+	android:key="debugging"
+	android:title="@string/title_preference_debugging">
 	<Preference android:key="commands_queue"
 		android:persistent="false"
 		android:title="@string/commands_in_a_queue" />

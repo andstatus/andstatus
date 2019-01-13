@@ -19,13 +19,14 @@ package org.andstatus.app.nosupport.util;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
-import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.util.MyLog;
+
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 
 /**
  * The class doesn't use android support libraries.

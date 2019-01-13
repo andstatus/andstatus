@@ -25,13 +25,6 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.preference.CheckBoxPreference;
-import android.preference.EditTextPreference;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceScreen;
-import android.preference.RingtonePreference;
 import android.provider.Settings;
 import android.text.format.Formatter;
 
@@ -56,17 +49,26 @@ import org.andstatus.app.timeline.meta.TimelineTitle;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.UriUtils;
 
-public class MySettingsFragment extends PreferenceFragment implements
+import androidx.preference.CheckBoxPreference;
+import androidx.preference.EditTextPreference;
+import androidx.preference.ListPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+
+public class MySettingsFragment extends PreferenceFragmentCompat implements
         OnSharedPreferenceChangeListener {
+    static final String FRAGMENT_TAG = "settings_fragment";
 
+    private static final String KEY_ROOT = "key_root";
     private static final String KEY_ABOUT_APPLICATION = "about_application";
     private static final String KEY_ADD_NEW_ACCOUNT = "add_new_account";
     private static final String KEY_BACKUP_RESTORE = "backup_restore";
     private static final String KEY_CHANGE_LOG = "change_log";
-    public static final String KEY_CHECK_DATA = "check_data";
+    private static final String KEY_CHECK_DATA = "check_data";
     static final String KEY_MANAGE_ACCOUNTS = "manage_accounts_internally";
-    static final String KEY_MANAGE_ACCOUNTS_ANDROID = "manage_accounts_android";
+    private static final String KEY_MANAGE_ACCOUNTS_ANDROID = "manage_accounts_android";
     private static final String KEY_MANAGE_ORIGIN_SYSTEMS = "manage_origin_systems";
     private static final String KEY_MANAGE_TIMELINES = "manage_timelines";
 
@@ -79,14 +81,21 @@ public class MySettingsFragment extends PreferenceFragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(MyPreferencesGroupsEnum.load(getArguments()
-                .getString(MySettingsActivity.PREFERENCES_GROUPS_KEY)).getPreferencesXmlResId());
         storageSwitch = new StorageSwitch(this);
+    }
+
+    @Override
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+        setPreferencesFromResource(
+                MySettingsGroup.from(rootKey).getPreferencesXmlResId(),
+                rootKey == null ? KEY_ROOT : rootKey
+        );
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        getActivity().setTitle(MySettingsGroup.from(this).getTitleResId());
         showAllPreferences();
         SharedPreferencesUtil.getDefaultSharedPreferences().registerOnSharedPreferenceChangeListener(this);
     }
@@ -187,26 +196,21 @@ public class MySettingsFragment extends PreferenceFragment implements
     }
     
     protected void showRingtone() {
-        RingtonePreference ringtonePreference =
-                (RingtonePreference) findPreference(NotificationMethodType.SOUND.preferenceKey);
-        if (ringtonePreference != null) {
-            String ringtoneString = NotificationMethodType.SOUND.getString();
-            Uri uri;
-            if (StringUtils.isEmpty(ringtoneString)) {
-                uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            } else {
-                uri = Uri.parse(ringtoneString);
-            }
+        final Preference preference = findPreference(NotificationMethodType.SOUND.preferenceKey);
+        if (preference != null) {
+            String uriString = NotificationMethodType.SOUND.getString();
+            Uri uri = StringUtils.isEmpty(uriString)
+                    ? RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                    : Uri.parse(uriString);
             MyLog.v(this, () -> "Ringtone URI: " + uri);
 
-            Ringtone rt = null;
-            if (uri != null && uri != Uri.EMPTY) {
-                rt = RingtoneManager.getRingtone(getActivity(), uri);
-            }
+            Ringtone rt = UriUtils.nonEmpty(uri)
+                    ? RingtoneManager.getRingtone(getActivity(), uri)
+                    : null;
             if (rt != null) {
-                ringtonePreference.setSummary(rt.getTitle(getActivity()));
+                preference.setSummary(rt.getTitle(getActivity()));
             } else {
-                ringtonePreference.setSummary(R.string.summary_preference_no_ringtone);
+                preference.setSummary(R.string.summary_preference_no_ringtone);
             }
         }
     }
@@ -338,7 +342,7 @@ public class MySettingsFragment extends PreferenceFragment implements
     }
 
     @Override
-    public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
+    public boolean onPreferenceTreeClick(Preference preference) {
         switch (preference.getKey()) {
             case MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW:
                 if (CheckBoxPreference.class.isInstance(preference)) {
@@ -392,7 +396,7 @@ public class MySettingsFragment extends PreferenceFragment implements
             default:
                 break;
         }
-        return super.onPreferenceTreeClick(preferenceScreen, preference);
+        return super.onPreferenceTreeClick(preference);
     }
 
     @Override

@@ -1,10 +1,11 @@
 package org.andstatus.app.context;
 
 import android.content.Context;
-import android.preference.ListPreference;
 import android.util.AttributeSet;
-import android.view.View;
 import android.widget.TextView;
+
+import androidx.preference.ListPreference;
+import androidx.preference.PreferenceViewHolder;
 
 public class MultilineListPreference extends ListPreference {
 
@@ -17,12 +18,12 @@ public class MultilineListPreference extends ListPreference {
     }
 
     @Override
-    protected void onBindView(View view) {
-        super.onBindView(view);
-        TextView textView = (TextView) view.findViewById(android.R.id.title);
+    public void onBindViewHolder(PreferenceViewHolder viewHolder) {
+        super.onBindViewHolder(viewHolder);
+        TextView textView = (TextView) viewHolder.findViewById(android.R.id.title);
         if (textView != null) {
             textView.setSingleLine(false);
         }
     }
-    
+
 }

@@ -22,7 +22,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.SystemClock;
 import android.provider.Settings;
-import androidx.annotation.NonNull;
 
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
@@ -35,6 +34,8 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TamperingDetector;
+
+import androidx.annotation.NonNull;
 
 /**
  * Holds globally cached state of the application: {@link MyContext}  
@@ -124,6 +125,11 @@ public final class MyContextHolder {
             return new MyEmptyFutureContext(myFutureContext.getNow());
         }
         if (needToInitialize()) {
+            if (MyStorage.isApplicationDataCreated().untrue && !Activity.class.isInstance(calledBy)) {
+                MyLog.d(TAG, "Skipping initialization: need Activity to create data (called by: " + calledBy + ")");
+                return new MyEmptyFutureContext(myFutureContext.getNow());
+            }
+
             MyLog.v(TAG, () -> "myFutureContext " + (myFutureContext.isEmpty() ? "isEmpty " : "") + get());
             boolean launchExecution = false;
             synchronized(CONTEXT_LOCK) {

@@ -84,6 +84,7 @@ dependencies {
     implementation "com.github.scribejava:scribejava-core:$scribejavaCoreVersion"
     implementation "junit:junit:$junitVersion"
     implementation "androidx.annotation:annotation:$annotationVersion"
+    implementation "androidx.preference:preference:$preferenceVersion"
 
     androidTestImplementation "androidx.test:runner:$testRunnerVersion"
     androidTestImplementation "androidx.test:rules:$testRulesVersion"

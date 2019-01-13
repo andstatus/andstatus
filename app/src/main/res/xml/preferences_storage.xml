@@ -15,8 +15,9 @@
 	limitations under the License.
  -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-				  android:title="@string/title_preference_storage"
-				  android:summary="@string/summary_preference_storage">
+	android:key="storage"
+	android:title="@string/title_preference_storage"
+	android:summary="@string/summary_preference_storage">
 	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="use_external_storage_new"
 		android:persistent="false"
 		android:title="@string/title_preference_storage_external" />
