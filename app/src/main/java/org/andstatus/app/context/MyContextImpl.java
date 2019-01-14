@@ -137,8 +137,9 @@ public class MyContextImpl implements MyContext {
 
         switch (state) {
             case DATABASE_READY:
-                origins.initialize();
-                if (MyContextHolder.isOnRestore()) {
+                if (!origins.initialize()) {
+                    state = MyContextState.DATABASE_UNAVAILABLE;
+                } else if (MyContextHolder.isOnRestore()) {
                     state = MyContextState.RESTORING;
                 } else {
                     users.initialize();

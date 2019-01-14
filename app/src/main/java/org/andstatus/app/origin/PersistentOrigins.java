@@ -17,8 +17,8 @@
 package org.andstatus.app.origin;
 
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.SearchObjects;
 import org.andstatus.app.account.MyAccount;
@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import androidx.annotation.NonNull;
+
 public class PersistentOrigins {
     private final MyContext myContext;
     private final Map<String,Origin> mOrigins = new ConcurrentHashMap<String, Origin>();
@@ -43,11 +45,11 @@ public class PersistentOrigins {
         this.myContext = myContext;
     }
 
-    public PersistentOrigins initialize() {
+    public boolean initialize() {
         return initialize(myContext.getDatabase());
     }
     
-    public PersistentOrigins initialize(SQLiteDatabase db) {
+    public boolean initialize(SQLiteDatabase db) {
         String sql = "SELECT * FROM " + OriginTable.TABLE_NAME;
         Cursor cursor = null;
         try {
@@ -57,12 +59,15 @@ public class PersistentOrigins {
                 Origin origin = new Origin.Builder(myContext, cursor).build();
                 mOrigins.put(origin.name, origin);
             }
+        } catch (SQLException e){
+            MyLog.e(this, "Failed to initialize origins\n" + MyLog.getStackTrace(e));
+            return false;
         } finally {
             DbUtils.closeSilently(cursor);
         }
         
         MyLog.v(this, () -> "Initialized " + mOrigins.size() + " origins");
-        return this;
+        return true;
     }
     
     public static PersistentOrigins newEmpty(MyContextImpl myContext) {
