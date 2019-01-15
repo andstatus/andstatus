@@ -56,7 +56,7 @@ abstract class MyServiceTest {
 
     @After
     public void tearDown() throws Exception {
-        MyLog.i(this, "tearDown started" + mService == null ? ", mService:null" : "");
+        MyLog.i(this, "tearDown started" + (mService == null ? ", mService:null" : ""));
         if (mService != null) {
             mService.tearDown();
         }

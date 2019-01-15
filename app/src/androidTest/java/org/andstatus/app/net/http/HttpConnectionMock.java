@@ -231,12 +231,18 @@ public class HttpConnectionMock extends HttpConnection {
         builder.append("Requests sent: " + getRequestsCounter());
         builder.append("; Data posted " + getPostedCounter() + " times");
         builder.append("\nSent " + responsesCounter + " responses");
-        builder.append("\nresults:" + results.size());
-        results.forEach(r -> builder.append("\nResult: " + r.toString()));
-        builder.append("\n\nresponses:" + responses.size());
-        responses.forEach(r -> builder.append("\nResponse: " + r.toString()));
-        builder.append("\nexception=");
-        builder.append(exception);
+        if (results.size() > 0) {
+            builder.append("\nresults:" + results.size());
+            results.forEach(r -> builder.append("\nResult: " + r.toString()));
+        }
+        if (responses.size() > 0) {
+            builder.append("\n\nresponses:" + responses.size());
+            responses.forEach(r -> builder.append("\nResponse: " + r.toString()));
+        }
+        if (exception != null) {
+            builder.append("\nexception=");
+            builder.append(exception);
+        }
         builder.append("\npassword=");
         builder.append(password);
         builder.append(", userToken=");

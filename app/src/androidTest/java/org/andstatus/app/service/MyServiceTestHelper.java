@@ -48,6 +48,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
             myContext = MyContextHolder.initialize(myContext.context(), this);
             if (!myContext.isReady()) {
                 MyLog.w(this, "Context is not ready after the initialization, repeating... " + myContext);
+                myContext.setExpired();
                 myContext = MyContextHolder.initialize(myContext.context(), this);
                 assertEquals("Context should be ready", true, myContext.isReady());
             }

@@ -205,8 +205,8 @@ public class MyContextImpl implements MyContext {
     @Override
     public String toString() {
         return  MyLog.getInstanceTag(this) + " by " + initializedBy + "; state=" + state +
-                "; " + (isExpired() && (state != MyContextState.EXPIRED) ? "expired" : "") +
-                accounts().size() + " accounts, " +
+                (isExpired() ? "; expired" : "") +
+                "; " + accounts().size() + " accounts, " +
                 (context == null ? "no context" : "context=" + context.getClass().getName());
     }
 
