@@ -247,25 +247,31 @@ public class MyContextImpl implements MyContext {
 
     @Override
     public SQLiteDatabase getDatabase() {
-        if (db == null) {
+        if (db == null || isExpired()) {
             return null;
         }
-        SQLiteDatabase sqLiteDatabase = null;
         try {
-            sqLiteDatabase = this.db.getWritableDatabase();
+            return this.db.getWritableDatabase();
         } catch (Exception e) {
             MyLog.e(this, "getDatabase", e);
         }
-        return sqLiteDatabase;
+        return null;
     }
 
     /**
-     * 2013-12-09 After getting the error "java.lang.IllegalStateException: attempt to re-open an already-closed object: SQLiteDatabase"
-     * and reading Internet, I decided NOT to db.close here.
-     */
+     * 2019-01-16 After getting not only (usual previously) errors "A SQLiteConnection object for database ... was leaked!"
+     * but also "SQLiteException: no such table" and "Failed to open database" in Android 9
+     * and reading https://stackoverflow.com/questions/50476782/android-p-sqlite-no-such-table-error-after-copying-database-from-assets
+     * and https://stackoverflow.com/questions/4557154/android-sqlite-db-when-to-close?noredirect=1&lq=1
+     * I decided to db.close on every context release in order to have new instance for each MyContext */
     @Override
     public void release() {
-        db = null;
+        setExpired();
+        try {
+            if (db != null) db.close();
+        } catch (Exception e) {
+            MyLog.d(this, "db.close()", e);
+        }
     }
 
     @Override

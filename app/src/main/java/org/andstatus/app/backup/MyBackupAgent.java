@@ -137,6 +137,7 @@ public class MyBackupAgent extends BackupAgent {
     }
 
     private void doBackup(MyBackupDataOutput data) throws IOException {
+        MyContextHolder.release();
         sharedPreferencesBackedUp = backupFile(data,
                 SHARED_PREFERENCES_KEY,
                 SharedPreferencesUtil.defaultSharedPreferencesPath(MyContextHolder.get().context()));
@@ -247,10 +248,7 @@ public class MyBackupAgent extends BackupAgent {
 
         MyServiceManager.setServiceUnavailable();
         MyServiceManager.stopService();
-        DatabaseHolder db = MyContextHolder.get().getMyDatabase();
-        if (db != null) {
-            db.close();
-        }
+        MyContextHolder.release();
     }
     
     private void doRestore(MyBackupDataInput data) throws IOException {

@@ -147,16 +147,23 @@ public final class MyContextHolder {
 
     public static void setExpiredIfConfigChanged() {
         if (get().initialized() && isConfigChanged()) {
+            final long preferencesChangeTimeLast;
+            boolean refreshing = false;
             synchronized(CONTEXT_LOCK) {
                 if (get().initialized() && isConfigChanged()) {
-                    long preferencesChangeTimeLast = MyPreferences.getPreferencesChangeTime() ;
+                    preferencesChangeTimeLast = MyPreferences.getPreferencesChangeTime() ;
                     if (get().preferencesChangeTime() != preferencesChangeTimeLast) {
-                        MyLog.v(TAG, () -> "Preferences changed "
-                                + RelativeTime.secondsAgo(preferencesChangeTimeLast)
-                                + " seconds ago, refreshing...");
+                        refreshing = true;
                         get().setExpired();
                     }
+                } else {
+                    preferencesChangeTimeLast = 0;
                 }
+            }
+            if (refreshing) {
+                MyLog.v(TAG, () -> "Preferences changed "
+                        + RelativeTime.secondsAgo(preferencesChangeTimeLast)
+                        + " seconds ago, refreshing...");
             }
         }
     }
@@ -188,13 +195,7 @@ public final class MyContextHolder {
     }
 
     public static void release() {
-        final MyContext myContext = get();
-        if (!myContext.isExpired()) {
-            synchronized(CONTEXT_LOCK) {
-                myContext.setExpired();
-            }
-        }
-        myContext.release();
+        get().release();
     }
 
     public static void upgradeIfNeeded(Activity upgradeRequestor) {
@@ -282,7 +283,7 @@ public final class MyContextHolder {
 
     public static void onShutDown() {
         isShuttingDown = true;
-        get().setExpired();
+        release();
     }
 
     public static boolean isShuttingDown() {

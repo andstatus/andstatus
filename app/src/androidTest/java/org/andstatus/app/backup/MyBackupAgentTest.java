@@ -8,7 +8,6 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.content.Context;
 import android.content.pm.PackageManager.NameNotFoundException;
-import androidx.test.rule.GrantPermissionRule;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccounts;
@@ -32,6 +31,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import androidx.test.rule.GrantPermissionRule;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
@@ -127,7 +128,6 @@ public class MyBackupAgentTest {
         MyServiceManager.setServiceUnavailable();
         deleteAccounts();
         Context context = MyContextHolder.get().context();
-        MyContextHolder.get().getMyDatabase().close();
         MyContextHolder.release();
         deleteFiles(context, false);
         deleteFiles(context, true);
