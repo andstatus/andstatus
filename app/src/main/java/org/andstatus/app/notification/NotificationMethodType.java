@@ -16,11 +16,14 @@
 
 package org.andstatus.app.notification;
 
-import androidx.annotation.NonNull;
+import android.net.Uri;
+import android.provider.Settings;
 
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
+
+import androidx.annotation.NonNull;
 
 /**
  * How to notify a User
@@ -53,12 +56,16 @@ public enum NotificationMethodType {
     }
 
     @NonNull
-    public String getString() {
+    public Uri getUri() {
         switch (this) {
             case SOUND:
-                return SharedPreferencesUtil.getString(preferenceKey, "");
+                String uriString = SharedPreferencesUtil.getString(preferenceKey,
+                        Settings.System.DEFAULT_NOTIFICATION_URI.toString());
+                return StringUtils.isEmpty(uriString)
+                        ? Uri.EMPTY
+                        : Uri.parse(uriString);
             default:
-                return "";
+                return Uri.EMPTY;
         }
     }
 

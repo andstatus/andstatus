@@ -48,9 +48,9 @@ import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineTitle;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
 
+import androidx.fragment.app.FragmentActivity;
 import androidx.preference.CheckBoxPreference;
 import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
@@ -71,6 +71,7 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
     private static final String KEY_MANAGE_ACCOUNTS_ANDROID = "manage_accounts_android";
     private static final String KEY_MANAGE_ORIGIN_SYSTEMS = "manage_origin_systems";
     private static final String KEY_MANAGE_TIMELINES = "manage_timelines";
+    private static final String KEY_NOTIFICATION_SELECT_RINGTONE = "select_ringtone";
 
     private StorageSwitch storageSwitch = null;
     
@@ -196,19 +197,16 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
     }
     
     protected void showRingtone() {
-        final Preference preference = findPreference(NotificationMethodType.SOUND.preferenceKey);
+        final Preference preference = findPreference(KEY_NOTIFICATION_SELECT_RINGTONE);
         if (preference != null) {
-            String uriString = NotificationMethodType.SOUND.getString();
-            Uri uri = StringUtils.isEmpty(uriString)
-                    ? RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-                    : Uri.parse(uriString);
+            Uri uri = NotificationMethodType.SOUND.getUri();
             MyLog.v(this, () -> "Ringtone URI: " + uri);
 
-            Ringtone rt = UriUtils.nonEmpty(uri)
+            Ringtone ringtone = UriUtils.nonEmpty(uri)
                     ? RingtoneManager.getRingtone(getActivity(), uri)
                     : null;
-            if (rt != null) {
-                preference.setSummary(rt.getTitle(getActivity()));
+            if (ringtone != null) {
+                preference.setSummary(ringtone.getTitle(getActivity()));
             } else {
                 preference.setSummary(R.string.summary_preference_no_ringtone);
             }
@@ -393,10 +391,29 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
             case MyPreferences.KEY_COMMANDS_QUEUE:
                 startActivity(new Intent(getActivity(), QueueViewer.class));
                 break;
+            case KEY_NOTIFICATION_SELECT_RINGTONE:
+                pickRingtone();
+                break;
             default:
                 break;
         }
         return super.onPreferenceTreeClick(preference);
+    }
+
+    private void pickRingtone() {
+        FragmentActivity activity = getActivity();
+        if (activity == null) return;
+
+        Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+        intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, activity.getText(R.string.notification_sound));
+        intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true);
+        intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
+
+        Uri currentRingtone = NotificationMethodType.SOUND.getUri();
+        intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, currentRingtone);
+        intent.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, Settings.System.DEFAULT_NOTIFICATION_URI);
+        intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION);
+        startActivityForResult(intent, ActivityRequestCode.PICK_RINGTONE.id);
     }
 
     @Override
@@ -508,6 +525,16 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
                         .putExtra(IntentExtra.COUNT_ONLY.key, resultCode == Activity.RESULT_OK)
                         .putExtra(HelpActivity.EXTRA_HELP_PAGE_INDEX, HelpActivity.PAGE_LOGO)
                 );
+                break;
+            case PICK_RINGTONE:
+                if (resultCode == Activity.RESULT_OK) {
+                    final Uri value = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+                    Uri uri = UriUtils.notNull(value);
+                    MyLog.v(this, "Ringtone set to uri:" + uri);
+                    SharedPreferencesUtil.putString(MyPreferences.KEY_NOTIFICATION_METHOD_SOUND,
+                            UriUtils.isEmpty(uri) ? "" : uri.toString());
+                    showRingtone();
+                }
                 break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);

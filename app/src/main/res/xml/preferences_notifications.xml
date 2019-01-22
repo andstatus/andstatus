@@ -33,9 +33,11 @@
             android:summaryOn="@string/summary_preference_vibration_on"
             android:summaryOff="@string/summary_preference_vibration_off"
             android:defaultValue="true" />
-        <org.andstatus.app.context.RingtonePreference android:key="notification_sound"
-            android:ringtoneType="notification"
-            android:title="@string/notification_sound" />
+        <Preference
+            android:key="select_ringtone"
+            android:persistent="false"
+            android:title="@string/notification_sound" >
+        </Preference>
    </PreferenceCategory>
    <PreferenceCategory android:title="@string/notification_events">
         <org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_follow"

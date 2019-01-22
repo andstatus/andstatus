@@ -23,7 +23,6 @@ import android.app.NotificationManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.R;
 import org.andstatus.app.appwidget.AppWidgets;
@@ -33,12 +32,14 @@ import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.UriUtils;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+
+import androidx.annotation.NonNull;
 
 import static org.andstatus.app.notification.NotificationEventType.SERVICE_RUNNING;
 
@@ -49,7 +50,7 @@ public class Notifier {
     private NotificationManager nM = null;
     private boolean notificationArea;
     private boolean vibration;
-    private String soundUri;
+    private Uri soundUri;
     private List<NotificationEventType> enabledEvents = Collections.emptyList();
     private final AtomicReference<NotificationEvents> refEvents = new AtomicReference<>(NotificationEvents.EMPTY);
 
@@ -81,7 +82,7 @@ public class Notifier {
 
     public void update() {
         AppWidgets.of(refEvents.updateAndGet(NotificationEvents::load)).updateData().updateViews();
-        if (notificationArea || vibration || StringUtils.nonEmpty(soundUri)) {
+        if (notificationArea || vibration || UriUtils.nonEmpty(soundUri)) {
             refEvents.get().map.values().stream().filter(data -> data.count > 0).forEach(myContext::notify);
         }
     }
@@ -102,7 +103,7 @@ public class Notifier {
                 if (vibration) {
                     builder.setVibrate(VIBRATION_PATTERN);
                 }
-                builder.setSound(StringUtils.isEmpty(soundUri) ? null : Uri.parse(soundUri));
+                builder.setSound(UriUtils.isEmpty(soundUri) ? null : soundUri);
                 builder.setLights(LIGHT_COLOR, 500, 1000);
             }
         }
@@ -149,8 +150,7 @@ public class Notifier {
             if (vibration) {
                 channel.setVibrationPattern(VIBRATION_PATTERN);
             }
-            channel.setSound(StringUtils.isEmpty(soundUri) ? null : Uri.parse(soundUri),
-                    Notification.AUDIO_ATTRIBUTES_DEFAULT);
+            channel.setSound(UriUtils.isEmpty(soundUri) ? null : soundUri, Notification.AUDIO_ATTRIBUTES_DEFAULT);
         }
         nM.createNotificationChannel(channel);
     }
@@ -164,7 +164,7 @@ public class Notifier {
         }
         notificationArea = NotificationMethodType.NOTIFICATION_AREA.isEnabled();
         vibration = NotificationMethodType.VIBRATION.isEnabled();
-        soundUri = NotificationMethodType.SOUND.getString();
+        soundUri = NotificationMethodType.SOUND.getUri();
         enabledEvents = NotificationEventType.validValues.stream().filter(NotificationEventType::isEnabled)
                 .collect(Collectors.toList());
         refEvents.set(NotificationEvents.of(myContext, enabledEvents).load());
