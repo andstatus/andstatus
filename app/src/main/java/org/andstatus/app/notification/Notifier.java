@@ -125,7 +125,11 @@ public class Notifier {
     public void notifyAndroid(NotificationData data) {
         if (nM == null) return;
         createNotificationChannel(data);
-        nM.notify(MyLog.APPTAG, data.event.notificationId(), getAndroidNotification(data));
+        try {
+            nM.notify(MyLog.APPTAG, data.event.notificationId(), getAndroidNotification(data));
+        } catch (Exception e) {
+            MyLog.w(this, "Notification failed", e);
+        }
     }
 
     @TargetApi(Build.VERSION_CODES.O)
