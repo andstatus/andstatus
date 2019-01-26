@@ -142,7 +142,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     
     @Override
     public OriginConfig getConfig() throws ConnectionException {
-        JSONObject result = http.getRequest(getApiPath(ApiRoutineEnum.GET_CONFIG));
+        JSONObject result = getRequest(getApiPath(ApiRoutineEnum.GET_CONFIG));
         OriginConfig config = OriginConfig.getEmpty();
         if (result != null) {
             JSONObject site = result.optJSONObject("site");

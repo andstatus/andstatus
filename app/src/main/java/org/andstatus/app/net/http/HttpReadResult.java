@@ -32,6 +32,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
+import java.util.Optional;
 
 public class HttpReadResult {
     private final String urlInitial;
@@ -39,9 +40,9 @@ public class HttpReadResult {
     private URL url;
     boolean authenticate = true;
     private boolean mIsLegacyHttpProtocol = false;
-    
-    JSONObject formParams = new JSONObject();
-    StringBuilder logBuilder =  new StringBuilder();
+
+    public final Optional<JSONObject> formParams;
+    private StringBuilder logBuilder =  new StringBuilder();
     private Exception exception = null;
     String strResponse = "";
     final File fileResult;
@@ -51,13 +52,16 @@ public class HttpReadResult {
 
     boolean redirected = false;
 
-    public HttpReadResult(String urlIn) throws ConnectionException {
-        this (urlIn, null);
+    public HttpReadResult(String urlIn, JSONObject formParams) throws ConnectionException {
+        this (urlIn, null, formParams);
     }
 
-    public HttpReadResult(String urlIn, File file) throws ConnectionException {
+    public HttpReadResult(String urlIn, File file, JSONObject formParams) throws ConnectionException {
         urlInitial = urlIn;
         fileResult = file;
+        this.formParams = formParams == null || formParams.length() == 0
+            ? Optional.empty()
+            : Optional.of(formParams);
         setUrl(urlIn);
     }
 
@@ -86,10 +90,10 @@ public class HttpReadResult {
         return urlString;
     }
 
-    public URL getUrlObj() {
+    URL getUrlObj() {
         return url;
     }
-    
+
     void appendToLog(CharSequence chars) {
         if (TextUtils.isEmpty(chars)) {
             return;
@@ -114,7 +118,7 @@ public class HttpReadResult {
                 + (isLegacyHttpProtocol() ? "; legacy HTTP" : "")
                 + (authenticate ? "; authenticated" : "")
                 + (redirected ? "; redirected from:'" + urlInitial + "'" : "")
-                + ( hasFormParams() ? "; posted:'" + formParams.toString() + "'" : "")
+                + formParams.map(params -> "; posted:'" + params + "'")
                 + (StringUtils.isEmpty(strResponse) ? "" : "; response:'" + I18n.trimTextAt(strResponse, 40) + "'")
                 + (exception == null ? "" : "; \nexception: " + exception.toString())
                 + (fileResult == null ? "" : "; saved to file");
@@ -155,7 +159,7 @@ public class HttpReadResult {
         JSONArray jsa = null;
         try {
             Object obj = jst.nextValue();
-            if (JSONObject.class.isInstance(obj)) {
+            if (obj instanceof JSONObject) {
                 JSONObject jso = (JSONObject) obj;
                 if (jso.has(arrayKey)) {
                     try {
@@ -169,7 +173,7 @@ public class HttpReadResult {
                     while (iterator.hasNext()) {
                         String key = iterator.next();
                         Object obj2 = jso.get(key);                    
-                        if (JSONArray.class.isInstance(obj2)) {
+                        if (obj2 instanceof JSONArray) {
                             MyLog.v(this, () -> method + "; found array inside '" + key + "' object");
                             obj = obj2;
                             break;
@@ -186,7 +190,7 @@ public class HttpReadResult {
         return jsa;
     }
  
-    public ConnectionException getExceptionFromJsonErrorResponse() {
+    ConnectionException getExceptionFromJsonErrorResponse() {
         StatusCode statusCode = this.statusCode;
         ConnectionException ce = null;
         String error = "?";
@@ -207,7 +211,7 @@ public class HttpReadResult {
         exception = e;
     }
 
-    public void parseAndThrow() throws ConnectionException {
+    void parseAndThrow() throws ConnectionException {
         if ( isStatusOk()) {
             if (fileResult != null && fileResult.isFile() && fileResult.exists()
                     && fileResult.length() > MyPreferences.getMaximumSizeOfAttachmentBytes()) {
@@ -230,31 +234,16 @@ public class HttpReadResult {
         return exception == null && (statusCode == StatusCode.OK || statusCode == StatusCode.UNKNOWN);
     }
 
-    public HttpReadResult setFormParams(JSONObject formParamsIn) {
-        if (formParamsIn != null) {
-            formParams = formParamsIn;
-        }
-        return this;
-    }
-
-    public boolean hasFormParams() {
-        return formParams.length() > 0;
-    }
-    
-    public JSONObject getFormParams() {
-        return formParams;
-    }
- 
-    public boolean isLegacyHttpProtocol() {
+    boolean isLegacyHttpProtocol() {
         return mIsLegacyHttpProtocol;
     }
 
-    public HttpReadResult setLegacyHttpProtocol(boolean mIsLegacyHttpProtocol) {
+    HttpReadResult setLegacyHttpProtocol(boolean mIsLegacyHttpProtocol) {
         this.mIsLegacyHttpProtocol = mIsLegacyHttpProtocol;
         return this;
     }
 
-    public void onNoLocationHeaderOnMoved() {
+    void onNoLocationHeaderOnMoved() {
         redirected = true;
         setException(new IllegalArgumentException("No 'Location' header on MOVED response"));
     }

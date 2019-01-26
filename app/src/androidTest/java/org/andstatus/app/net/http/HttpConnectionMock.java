@@ -16,7 +16,6 @@
 
 package org.andstatus.app.net.http;
 
-import androidx.annotation.RawRes;
 import android.text.TextUtils;
 
 import org.andstatus.app.data.DbUtils;
@@ -33,6 +32,8 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import androidx.annotation.RawRes;
 
 public class HttpConnectionMock extends HttpConnection {
 
@@ -174,7 +175,7 @@ public class HttpConnectionMock extends HttpConnection {
     }
 
     public JSONObject getPostedJSONObject() {
-        return results.get(results.size()-1).getFormParams();
+        return results.get(results.size()-1).formParams.orElse(new JSONObject());
     }
 
     public List<HttpReadResult> getResults() {
@@ -197,13 +198,9 @@ public class HttpConnectionMock extends HttpConnection {
     }
     
     public int getPostedCounter() {
-        int count = 0;
-        for (HttpReadResult result : getResults()) {
-            if (result.hasFormParams()) {
-                count++;
-            }
-        }
-        return count;
+        return getResults().stream().reduce(0,
+                (a, r) -> r.formParams.map(p -> a + 1).orElse(a),
+                (a1, a2) -> a1 + a2);
     }
 
     public void clearPostedData() {

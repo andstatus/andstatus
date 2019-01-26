@@ -34,14 +34,12 @@ import org.andstatus.app.util.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import cz.msebera.android.httpclient.HttpEntity;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
 
@@ -89,21 +87,29 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
         }
     }
 
-    private void postRequestOauth(HttpReadResult result) throws ConnectionException {
+    private void postRequestOauth(HttpReadResult result) {
         try {
             OAuth20Service service = getService(false);
             final OAuthRequest request = new OAuthRequest(Verb.POST, result.getUrlObj().toString());
-            if (result.getFormParams().has(HttpConnection.KEY_MEDIA_PART_URI)) {
-                HttpEntity httpEntity = HttpConnectionApacheCommon.multiPartFormEntity(result.getFormParams());
-                request.addHeader(httpEntity.getContentType().getName(), httpEntity.getContentType().getValue());
-                request.setPayload(httpEntityToBytes(httpEntity));
-            } else {
-                Iterator<String> iterator = result.getFormParams().keys();
-                while (iterator.hasNext()) {
-                    String key = iterator.next();
-                    request.addBodyParameter(key, result.getFormParams().optString(key));
+            result.formParams.ifPresent(params -> {
+                try {
+                    if (params.has(HttpConnection.KEY_MEDIA_PART_URI)) {
+                        MultipartFormEntityBytes bytes = ApacheHttpClientUtils.buildMultipartFormEntityBytes(params);
+                        request.addHeader(bytes.contentTypeName, bytes.contentTypeValue);
+                        request.setPayload(bytes.bytes);
+                    } else {
+                        data.getContentType().ifPresent(value -> request.addHeader("Content-Type", value));
+                        Iterator<String> iterator = params.keys();
+                        while (iterator.hasNext()) {
+                            String key = iterator.next();
+                            request.addBodyParameter(key, params.optString(key));
+                        }
+                    }
+                } catch (ConnectionException e) {
+                    result.setException(e);
+                    MyLog.w(this, result.toString(), e);
                 }
-            }
+            });
             signRequest(request, service, false);
             final Response response = service.execute(request);
             result.setStatusCode(response.getCode());
@@ -123,13 +129,6 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
         }
     }
 
-    byte[] httpEntityToBytes(HttpEntity httpEntity) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        httpEntity.writeTo(out);
-        out.flush();
-        return out.toByteArray();
-    }
-
     @Override
     protected void getRequest(HttpReadResult result) throws ConnectionException {
         String method = "getRequest; ";
@@ -137,11 +136,11 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
         try {
             logBuilder.append("URL='" + result.getUrl() + "';");
             OAuth20Service service = getService(false);
-            OAuthRequest request;
             boolean redirected = false;
             boolean stop = false;
             do {
-                request = new OAuthRequest(Verb.GET, result.getUrlObj().toString());
+                OAuthRequest request = new OAuthRequest(Verb.GET, result.getUrlObj().toString());
+                data.getContentType().ifPresent(value -> request.addHeader("Accept", value));
                 if (result.authenticate) {
                     signRequest(request, service, redirected);
                 }

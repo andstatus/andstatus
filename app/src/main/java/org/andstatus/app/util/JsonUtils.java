@@ -16,9 +16,12 @@
 
 package org.andstatus.app.util;
 
-import androidx.annotation.NonNull;
-
+import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Iterator;
+
+import androidx.annotation.NonNull;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -40,4 +43,57 @@ public class JsonUtils {
         }
         return str;
     }
+
+    /** Creates new shallow copy without the keyToRemove */
+    @NonNull
+    public static JSONObject remove(JSONObject jso, String keyToRemove) {
+        if (jso == null || jso.length() == 0) return new JSONObject();
+
+        try {
+            Iterator<String> iterator = jso.keys();
+            JSONObject out = new JSONObject();
+            while (iterator.hasNext()) {
+                String key = iterator.next();
+                if (!key.equals(keyToRemove)) {
+                    out.put(key, jso.get(key));
+                }
+            }
+            return out;
+        } catch (JSONException e) {
+            MyLog.w(JsonUtils.class, "remove '" + keyToRemove + "'", e);
+        }
+        return jso;
+    }
+
+    /** Creates new shallow copy without the keyToRemove */
+    @NonNull
+    public static JSONObject put(JSONObject jso, String key, Object value) {
+        JSONObject out = shallowCopy(jso);
+        try {
+            out.put(key, value);
+        } catch (JSONException e) {
+            MyLog.w(JsonUtils.class, "put '" + key + "'", e);
+        }
+        return out;
+    }
+
+    /** Creates new shallow copy */
+    @NonNull
+    public static JSONObject shallowCopy(JSONObject jso) {
+        if (jso == null || jso.length() == 0) return new JSONObject();
+
+        try {
+            Iterator<String> iterator = jso.keys();
+            JSONObject out = new JSONObject();
+            while (iterator.hasNext()) {
+                String key = iterator.next();
+                out.put(key, jso.get(key));
+            }
+            return out;
+        } catch (JSONException e) {
+            MyLog.w(JsonUtils.class, "shallowCopy", e);
+        }
+        return jso;
+    }
+
 }

@@ -44,13 +44,13 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
 
     @Override
     protected void postRequest(HttpReadResult result) throws ConnectionException {
-        new HttpConnectionApacheCommon(this).postRequest(result);
+        new HttpConnectionApacheCommon(this, data).postRequest(result);
     }
 
     @Override
     public void httpApachePostRequest(HttpPost postMethod, HttpReadResult result) throws ConnectionException {
         try {
-            HttpClient client = HttpConnectionApacheCommon.getHttpClient(data.getSslMode());
+            HttpClient client = ApacheHttpClientUtils.getHttpClient(data.getSslMode());
             postMethod.setHeader("User-Agent", HttpConnection.USER_AGENT);
             if (getCredentialsPresent()) {
                 postMethod.addHeader("Authorization", "Basic " + getCredentials());
@@ -59,7 +59,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
             StatusLine statusLine = httpResponse.getStatusLine();
             result.statusLine = statusLine.toString();
             result.setStatusCode(statusLine.getStatusCode());
-            result.strResponse = HttpConnectionApacheCommon.readHttpResponseToString(httpResponse);
+            result.strResponse = ApacheHttpClientUtils.readHttpResponseToString(httpResponse);
         } catch (Exception e) {
             result.setException(e);
         } finally {
@@ -69,7 +69,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
 
     @Override
     public HttpResponse httpApacheGetResponse(HttpGet httpGet) throws IOException {
-        HttpClient client = HttpConnectionApacheCommon.getHttpClient(data.getSslMode());
+        HttpClient client = ApacheHttpClientUtils.getHttpClient(data.getSslMode());
         return client.execute(httpGet);
     }
 
@@ -142,6 +142,6 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
 
     @Override
     protected void getRequest(HttpReadResult result) throws ConnectionException {
-        new HttpConnectionApacheCommon(this).getRequest(result);
+        new HttpConnectionApacheCommon(this, data).getRequest(result);
     }
 }

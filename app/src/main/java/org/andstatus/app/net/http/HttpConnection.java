@@ -36,7 +36,8 @@ public abstract class HttpConnection {
     public static final String USER_AGENT = "AndStatus";
     public static final String KEY_MEDIA_PART_NAME = "media_part_name";
     public static final String KEY_MEDIA_PART_URI = "media_part_uri";
-    /** 
+
+    /**
      * The URI is consistent with "scheme" and "host" in AndroidManifest
      * Pump.io doesn't work with this scheme: "andstatus-oauth://andstatus.org"
      */
@@ -59,7 +60,7 @@ public abstract class HttpConnection {
     }
 
     public final JSONObject postRequest(String path) throws ConnectionException {
-        return postRequest(path, null);
+        return postRequest(path, new JSONObject());
     }
 
     public final JSONObject postRequest(String path, JSONObject formParams) throws ConnectionException {
@@ -82,11 +83,11 @@ public abstract class HttpConnection {
         if (StringUtils.isEmpty(path)) {
             throw new IllegalArgumentException("path is empty");
         }
-        HttpReadResult result = new HttpReadResult(pathToUrlString(path)).setFormParams(formParams)
+        HttpReadResult result = new HttpReadResult(pathToUrlString(path), formParams)
                 .setLegacyHttpProtocol(isLegacyHttpProtocol);
-        if( result.hasFormParams()) {
-            MyLog.logNetworkLevelMessage("post_form", data.getLogName(), result.getFormParams());
-        }
+        result.formParams.ifPresent(params ->
+            MyLog.logNetworkLevelMessage("post_form", data.getLogName(), params)
+        );
         postRequest(result);
         MyLog.logNetworkLevelMessage("post_response", data.getLogName(), result.strResponse);
         result.parseAndThrow();
@@ -94,7 +95,7 @@ public abstract class HttpConnection {
     }
     
     protected abstract void postRequest(HttpReadResult result) throws ConnectionException;
-    
+
     public final JSONObject getRequest(String path) throws ConnectionException {
         return getRequestCommon(path, true).getJsonObject();
     }
@@ -107,7 +108,7 @@ public abstract class HttpConnection {
         if (StringUtils.isEmpty(path)) {
             throw new IllegalArgumentException("path is empty");
         }
-        HttpReadResult result = new HttpReadResult(pathToUrlString(path));
+        HttpReadResult result = new HttpReadResult(pathToUrlString(path), new JSONObject());
         result.authenticate = authenticated;
         getRequest(result);
         MyLog.logNetworkLevelMessage("get_response", data.getLogName(), result.strResponse);
@@ -124,7 +125,7 @@ public abstract class HttpConnection {
     }
 
     public final void downloadFile(String url, File file) throws ConnectionException {
-        HttpReadResult result = new HttpReadResult(url, file);
+        HttpReadResult result = new HttpReadResult(url, file, new JSONObject());
         getRequest(result);
         result.parseAndThrow();
     }

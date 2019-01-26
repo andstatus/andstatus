@@ -117,6 +117,7 @@ public class MyPreferences {
     public static final String KEY_SENDING_NOTES_LOG_ENABLED = "sending_messages_log_enabled";
     public static final String KEY_LOG_NETWORK_LEVEL_MESSAGES = "log_network_level_messages";
     public static final String KEY_LOG_EVERYTHING_TO_FILE = "log_everything_to_file";
+    private static final String KEY_ENABLE_ACTIVITYPUB = "enable_activitypub";
 
     // ----------------------------------------------------------
     // Non-UI persistent items ("preferences")
@@ -284,4 +285,7 @@ public class MyPreferences {
         return SharedPreferencesUtil.getLong(KEY_BEING_EDITED_NOTE_ID, 0);
     }
 
+    public static boolean isActivityPubEnabled() {
+        return SharedPreferencesUtil.getBoolean(KEY_ENABLE_ACTIVITYPUB, false);
+    }
 }

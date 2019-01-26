@@ -34,19 +34,18 @@ public class HttpReadResultTest {
                 + "{\"text\":\"Text2\",\"to_user\":\"andstatus\",\"from_user\":\"otherauthor\"}]"
                 + ",\"since_id\":\"Wed, 05 Mar 2014 16:37:17 +0100\""
                 + "}";
-        HttpReadResult result = new HttpReadResult(url);
-        result.strResponse = in;
-        JSONArray jsa =  result.getJsonArray("items");
+        HttpReadResult result1 = new HttpReadResult(url, new JSONObject());
+        result1.strResponse = in;
+        JSONArray jsa =  result1.getJsonArray("items");
         assertEquals(2, jsa.length());
-        
-        assertEquals(false, result.hasFormParams());
-        result.setFormParams(new JSONObject());
-        assertEquals(false, result.hasFormParams());
-        result.setFormParams(new JSONObject("{}"));
-        assertEquals(false, result.hasFormParams());
-        assertFalse(result.toString(), result.toString().contains("posted"));
-        result.setFormParams(new JSONObject("{\"text\":\"Text1\"}"));
-        assertEquals(true, result.hasFormParams());
-        assertTrue(result.toString(), result.toString().contains("posted"));
+        assertEquals(false, result1.formParams.isPresent());
+        assertFalse(result1.toString(), result1.toString().contains("posted"));
+
+        HttpReadResult result2 = new HttpReadResult(url, new JSONObject("{}"));
+        assertEquals(false, result2.formParams.isPresent());
+
+        HttpReadResult result3 = new HttpReadResult(url, new JSONObject("{\"text\":\"Text1\"}"));
+        assertEquals(true, result3.formParams.isPresent());
+        assertTrue(result3.toString(), result3.toString().contains("posted"));
     }
 }

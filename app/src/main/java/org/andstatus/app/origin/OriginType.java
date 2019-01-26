@@ -20,6 +20,7 @@ import android.content.Context;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.lang.SelectableEnum;
 import org.andstatus.app.net.http.HttpConnectionBasic;
@@ -27,6 +28,7 @@ import org.andstatus.app.net.http.HttpConnectionEmpty;
 import org.andstatus.app.net.http.HttpConnectionOAuthApache;
 import org.andstatus.app.net.http.HttpConnectionOAuthJavaNet;
 import org.andstatus.app.net.http.HttpConnectionOAuthMastodon;
+import org.andstatus.app.net.social.ConnectionActivityPub;
 import org.andstatus.app.net.social.ConnectionEmpty;
 import org.andstatus.app.net.social.ConnectionMastodon;
 import org.andstatus.app.net.social.ConnectionTheTwitter;
@@ -38,6 +40,7 @@ import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
 import java.net.URL;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
@@ -57,6 +60,18 @@ public enum OriginType implements SelectableEnum {
     GNUSOCIAL(3, "GNU social", ApiEnum.GNUSOCIAL_TWITTER, NoteName.NO, PublicWithAudience.NO),
     /** <a href="https://github.com/Gargron/mastodon">Mastodon at GitHub</a> */
     MASTODON(4, "Mastodon", ApiEnum.MASTODON, NoteName.YES, PublicWithAudience.NO),
+    ACTIVITYPUB(5, "ActivityPub", ApiEnum.ACTIVITYPUB, NoteName.YES, PublicWithAudience.YES) {
+
+        @Override
+        public boolean isSelectable() {
+            return MyPreferences.isActivityPubEnabled();
+        }
+
+        @Override
+        public Optional<String> getContentType() {
+            return Optional.of("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"");
+        }
+    },
     UNKNOWN(0, "?", ApiEnum.UNKNOWN_API, NoteName.NO, PublicWithAudience.NO);
 
     private enum NoteName { YES, NO}
@@ -76,7 +91,9 @@ public enum OriginType implements SelectableEnum {
         /** https://github.com/e14n/pump.io/blob/master/API.md */
         PUMPIO,
         /** https://github.com/Gargron/mastodon/wiki/API */
-        MASTODON
+        MASTODON,
+        /** https://www.w3.org/TR/activitypub/ */
+        ACTIVITYPUB
     }
 
     private static final String BASIC_PATH_DEFAULT = "api";
@@ -175,7 +192,7 @@ public enum OriginType implements SelectableEnum {
                 textMediaTypeToPost = TextMediaType.PLAIN;
                 break;
             case PUMPIO:
-                isOAuthDefault = true;  
+                isOAuthDefault = true;
                 canChangeOAuth = false;
                 canSetUrlOfOrigin = false;
                 shouldSetNewUsernameManuallyIfOAuth = true;
@@ -189,6 +206,33 @@ public enum OriginType implements SelectableEnum {
                 originFactory = myContext -> new OriginPumpio(myContext, this);
                 connectionClass = ConnectionPumpio.class;
                 httpConnectionClassOauth = HttpConnectionOAuthJavaNet.class;
+                httpConnectionClassBasic = HttpConnectionEmpty.class;
+                mAllowAttachmentForPrivateNote = true;
+                isSearchTimelineSyncable = false;
+                isPrivateTimelineSyncable = false;
+                isInteractionsTimelineSyncable = false;
+                allowEditing = true;
+                isPrivateNoteAllowsReply = true;
+                isSelectable = true;
+
+                textMediaTypePosted = TextMediaType.HTML;
+                textMediaTypeToPost = TextMediaType.HTML;
+                break;
+            case ACTIVITYPUB:
+                isOAuthDefault = true;
+                canChangeOAuth = false;
+                canSetUrlOfOrigin = false;
+                shouldSetNewUsernameManuallyIfOAuth = true;
+                shouldSetNewUsernameManuallyNoOAuth = false;
+                usernameRegExPattern = Patterns.WEBFINGER_ID_REGEX_PATTERN;
+                validUsernameExamples = "andstatus@identi.ca test425@1realtime.net";
+                // This is not a hard limit, just for convenience
+                textLimitDefault = TEXT_LIMIT_MAXIMUM;
+                basicPath = BASIC_PATH_DEFAULT;
+                oauthPath = OAUTH_PATH_DEFAULT;
+                originFactory = myContext -> new OriginActivityPub(myContext, this);
+                connectionClass = ConnectionActivityPub.class;
+                httpConnectionClassOauth = HttpConnectionOAuthMastodon.class;
                 httpConnectionClassBasic = HttpConnectionEmpty.class;
                 mAllowAttachmentForPrivateNote = true;
                 isSearchTimelineSyncable = false;
@@ -403,5 +447,9 @@ public enum OriginType implements SelectableEnum {
 
     public URL getUrlDefault() {
         return urlDefault;
+    }
+
+    public Optional<String> getContentType() {
+        return Optional.empty();
     }
 }

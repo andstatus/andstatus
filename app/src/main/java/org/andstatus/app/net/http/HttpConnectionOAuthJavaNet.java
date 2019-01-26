@@ -128,15 +128,17 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             conn.setDoOutput(true);
             conn.setDoInput(true);
             conn.setRequestMethod("POST");
-            
-            if (!result.hasFormParams()) {
-                // Nothing to do at this step
-            } else if (result.getFormParams().has(HttpConnection.KEY_MEDIA_PART_URI)) {
-                writeMedia(conn, result.getFormParams());
-            } else {
-                writeJson(conn, result.getFormParams());
-            }
-                        
+            result.formParams.ifPresent(params -> {
+                try {
+                    if (params.has(HttpConnection.KEY_MEDIA_PART_URI)) {
+                        writeMedia(conn, params);
+                    } else {
+                        writeJson(conn, params);
+                    }
+                } catch (JSONException | IOException e) {
+                    result.setException(e);
+                }
+            });
             result.setStatusCode(conn.getResponseCode());
             switch(result.getStatusCode()) {
                 case OK:
@@ -146,7 +148,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                     result.strResponse = HttpConnectionUtils.readStreamToString(conn.getErrorStream());
                     throw result.getExceptionFromJsonErrorResponse();
             }
-        } catch (JSONException | IOException e) {
+        } catch (IOException e) {
             result.setException(e);
         }
     }
@@ -172,7 +174,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
     }
 
     private void writeJson(HttpURLConnection conn, JSONObject formParams) throws IOException {
-        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setRequestProperty("Content-Type", data.getContentType().orElse("application/json"));
         signConnection(conn, getConsumer(), false);
         try (
                 OutputStream os = conn.getOutputStream();
@@ -198,11 +200,11 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
         try {
             OAuthConsumer consumer = getConsumer();
             logBuilder.append("URL='" + result.getUrl() + "';");
-            HttpURLConnection conn;
             boolean redirected = false;
             boolean stop = false;
             do {
-                conn = (HttpURLConnection) result.getUrlObj().openConnection();
+                HttpURLConnection conn = (HttpURLConnection) result.getUrlObj().openConnection();
+                data.getContentType().ifPresent(value -> conn.addRequestProperty("Accept", value));
                 conn.setInstanceFollowRedirects(false);
                 if (result.authenticate) {
                     signConnection(conn, consumer, redirected);

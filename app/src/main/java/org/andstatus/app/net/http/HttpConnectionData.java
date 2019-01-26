@@ -23,6 +23,7 @@ import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
 
 import java.net.URL;
+import java.util.Optional;
 
 public class HttpConnectionData {
     private AccountName accountName = null;
@@ -101,4 +102,9 @@ public class HttpConnectionData {
     public SslModeEnum getSslMode() {
         return accountName.getOrigin().getSslMode();
     }
+
+    public Optional<String> getContentType() {
+        return getOriginType().getContentType();
+    }
+
 }

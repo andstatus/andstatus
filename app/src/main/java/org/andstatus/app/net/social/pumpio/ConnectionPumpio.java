@@ -17,7 +17,6 @@
 package org.andstatus.app.net.social.pumpio;
 
 import android.net.Uri;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
@@ -50,6 +49,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
 
 /**
  * Implementation of pump.io API: <a href="https://github.com/e14n/pump.io/blob/master/API.md">https://github.com/e14n/pump.io/blob/master/API.md</a>  
@@ -130,7 +131,7 @@ public class ConnectionPumpio extends Connection {
     @Override
     @NonNull
     public Actor verifyCredentials() throws ConnectionException {
-        JSONObject actor = http.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
+        JSONObject actor = getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
         return actorFromJson(actor);
     }
 
@@ -226,7 +227,7 @@ public class ConnectionPumpio extends Connection {
 
     @Override
     protected AActivity getNote1(String noteOid) throws ConnectionException {
-        return activityFromJson(http.getRequest(noteOid));
+        return activityFromJson(getRequest(noteOid));
     }
 
     @Override

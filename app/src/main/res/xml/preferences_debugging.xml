@@ -38,6 +38,10 @@
 		android:title="@string/preference_log_network_level_messages_title" />
 	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="log_everything_to_file"
 		android:title="@string/preference_log_everything_to_file_title" />
+	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="enable_activitypub"
+		android:title="Enable Social Networks of the ActivityPub type"
+	    android:summary="This is an early implementation so far, not for general users"
+		/>
 	<Preference android:key="report_bug"
 				android:persistent="false"
 				android:title="@string/title_preference_report_bug">

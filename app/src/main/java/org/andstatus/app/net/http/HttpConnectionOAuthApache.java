@@ -45,7 +45,7 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
         provider = new CommonsHttpOAuthProvider(getApiUrl(ApiRoutineEnum.OAUTH_REQUEST_TOKEN),
                 getApiUrl(ApiRoutineEnum.OAUTH_ACCESS_TOKEN), getApiUrl(ApiRoutineEnum.OAUTH_AUTHORIZE));
 
-        provider.setHttpClient(HttpConnectionApacheCommon.getHttpClient(data.getSslMode()));
+        provider.setHttpClient(ApacheHttpClientUtils.getHttpClient(data.getSslMode()));
         provider.setOAuth10a(true);
         return provider;
     }
@@ -62,7 +62,7 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
     
     @Override
     protected void postRequest(HttpReadResult result) throws ConnectionException {
-        new HttpConnectionApacheCommon(this).postRequest(result);
+        new HttpConnectionApacheCommon(this, data).postRequest(result);
     }
     
     @Override
@@ -72,7 +72,7 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
             if (result.authenticate) {
                 signRequest(post);
             }
-            result.strResponse = HttpConnectionApacheCommon.getHttpClient(data.getSslMode()).execute(
+            result.strResponse = ApacheHttpClientUtils.getHttpClient(data.getSslMode()).execute(
                     post, new BasicResponseHandler());
         } catch (Exception e) {
             // We don't catch other exceptions because in fact it's vary difficult to tell
@@ -83,7 +83,7 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
 
     @Override
     public HttpResponse httpApacheGetResponse(HttpGet httpGet) throws IOException {
-        return HttpConnectionApacheCommon.getHttpClient(data.getSslMode()).execute(httpGet);
+        return ApacheHttpClientUtils.getHttpClient(data.getSslMode()).execute(httpGet);
     }
 
     private void signRequest(Object httpGetOrPost) throws IOException {
@@ -104,6 +104,6 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
 
     @Override
     protected void getRequest(HttpReadResult result) throws ConnectionException {
-        new HttpConnectionApacheCommon(this).getRequest(result);
+        new HttpConnectionApacheCommon(this, data).getRequest(result);
     }
 }

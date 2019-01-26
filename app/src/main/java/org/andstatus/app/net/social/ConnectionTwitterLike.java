@@ -207,7 +207,7 @@ public abstract class ConnectionTwitterLike extends Connection {
      */
     @Override
     public AActivity getNote1(String noteOid) throws ConnectionException {
-        JSONObject note = http.getRequest(getApiPathWithNoteId(ApiRoutineEnum.GET_NOTE, noteOid));
+        JSONObject note = getRequest(getApiPathWithNoteId(ApiRoutineEnum.GET_NOTE, noteOid));
         return activityFromJson(note);
     }
 
@@ -511,7 +511,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         } else {
             builder.appendQueryParameter("screen_name", username);
         }
-        JSONObject jso = http.getRequest(builder.build().toString());
+        JSONObject jso = getRequest(builder.build().toString());
         Actor actor = actorFromJson(jso);
         MyLog.v(this, () -> "getActor oid='" + actorOid
                 + "', username='" + username + "' -> " + actor.getRealName());
@@ -539,7 +539,7 @@ public abstract class ConnectionTwitterLike extends Connection {
      */
     @Override
     public RateLimitStatus rateLimitStatus() throws ConnectionException {
-        JSONObject result = http.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS));
+        JSONObject result = getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS));
         RateLimitStatus status = new RateLimitStatus();
         if (result != null) {
             switch (data.getOriginType()) {
@@ -608,7 +608,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     @Override
     @NonNull
     public Actor verifyCredentials() throws ConnectionException {
-        JSONObject actor = http.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
+        JSONObject actor = getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
         return actorFromJson(actor);
     }
 

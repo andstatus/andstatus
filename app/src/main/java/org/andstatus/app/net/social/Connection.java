@@ -17,7 +17,6 @@
 package org.andstatus.app.net.social;
 
 import android.net.Uri;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.net.http.ConnectionException;
@@ -42,6 +41,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import androidx.annotation.NonNull;
 
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 
@@ -530,10 +531,14 @@ public abstract class Connection {
         return unixDate;
     }
 
+    public final JSONObject getRequest(String path) throws ConnectionException {
+        return http.getRequest(path);
+    }
+
     JSONArray getRequestArrayInObject(String path, String arrayName) throws ConnectionException {
         String method = "getRequestArrayInObject";
         JSONArray jArr = null;
-        JSONObject jso = http.getRequest(path);
+        JSONObject jso = getRequest(path);
         if (jso != null) {
             try {
                 jArr = jso.getJSONArray(arrayName);

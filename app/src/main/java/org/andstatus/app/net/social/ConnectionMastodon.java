@@ -232,7 +232,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             return timeline;
         }
         String url = getApiPathWithNoteId(ApiRoutineEnum.GET_CONVERSATION, conversationOid);
-        JSONObject mastodonContext = http.getRequest(url);
+        JSONObject mastodonContext = getRequest(url);
         try {
             if (mastodonContext.has("ancestors")) {
                 timeline.addAll(jArrToTimeline(mastodonContext.getJSONArray("ancestors"),
@@ -428,7 +428,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     @Override
     public Actor getActor2(String actorOid, String username) throws ConnectionException {
-        JSONObject jso = http.getRequest(
+        JSONObject jso = getRequest(
                 getApiPathWithActorId(ApiRoutineEnum.GET_ACTOR, UriUtils.isRealOid(actorOid) ? actorOid : username)
         );
         Actor actor = actorFromJson(jso);
