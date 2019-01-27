@@ -6,8 +6,8 @@ android {
     buildToolsVersion rootProject.buildToolsVersion
 
     defaultConfig {
-        versionCode 270
-        versionName "46.00"
+        versionCode 271
+        versionName "46.01"
 
         applicationId "org.andstatus.app"
         minSdkVersion rootProject.minSdkVersion
@@ -63,6 +63,12 @@ sonarqube {
     }
 }
 
+configurations {
+    all {
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    }
+}
+
 dependencies {
     implementation "com.github.stephenc.jcip:jcip-annotations:$jcipAnnotationsVersion"
     // http://stephenc.github.io/jcip-annotations/dependency-info.html
@@ -70,14 +76,8 @@ dependencies {
     implementation "com.google.android.material:material:$materialVersion"
     implementation "ch.acra:acra:$acraVersion" // https://github.com/ACRA/acra/wiki/AdvancedUsage
     implementation "cz.msebera.android:httpclient:$httpclientVersion" // https://github.com/smarek/httpclient-android
-    /* Don't use these dependencies for now, because AIDE doesn't support exclusion
-                           of transitive dependencies.
-                        compile 'org.apache.httpcomponents:httpmime:4.3.5'
-                        Use the files from 'libs' folder instead:	*/
-    implementation files("libs/httpmime-${httpMimeVersion}.jar")
-    implementation files("libs/signpost-httpclient-android-${signPostVersion}.jar")
-    implementation files("libs/signpost-core-${signPostVersion}.jar")
-//    implementation "oauth.signpost:signpost-core:$signPostVersion"
+    implementation "org.apache.httpcomponents:httpmime:${httpMimeVersion}"
+    implementation "oauth.signpost:signpost-core:$signPostVersion"
     implementation "commons-codec:commons-codec:$commonsCodecVersion"
     implementation "org.apache.commons:commons-lang3:$commonsLangVersion"
     implementation project(':draglistview')
