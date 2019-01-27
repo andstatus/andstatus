@@ -118,7 +118,7 @@ public class HttpReadResult {
                 + (isLegacyHttpProtocol() ? "; legacy HTTP" : "")
                 + (authenticate ? "; authenticated" : "")
                 + (redirected ? "; redirected from:'" + urlInitial + "'" : "")
-                + formParams.map(params -> "; posted:'" + params + "'")
+                + formParams.map(params -> "; posted:'" + params + "'").orElse("")
                 + (StringUtils.isEmpty(strResponse) ? "" : "; response:'" + I18n.trimTextAt(strResponse, 40) + "'")
                 + (exception == null ? "" : "; \nexception: " + exception.toString())
                 + (fileResult == null ? "" : "; saved to file");

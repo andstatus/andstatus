@@ -278,8 +278,8 @@ public enum OriginType implements SelectableEnum {
                 usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
                 validUsernameExamples = USERNAME_EXAMPLES_SIMPLE;
                 textLimitDefault = 500;
-                basicPath = "api/v1";
-                oauthPath = "oauth";
+                basicPath = BASIC_PATH_DEFAULT;
+                oauthPath = OAUTH_PATH_DEFAULT;
                 originFactory = myContext -> new OriginMastodon(myContext, this);
                 connectionClass = ConnectionMastodon.class;
                 httpConnectionClassOauth = HttpConnectionOAuthMastodon.class;

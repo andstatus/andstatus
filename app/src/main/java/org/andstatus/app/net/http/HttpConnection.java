@@ -43,8 +43,8 @@ public abstract class HttpConnection {
      */
     public static final Uri CALLBACK_URI = Uri.parse("http://oauth-redirect.andstatus.org");
  
-    public void registerClient(String path) throws ConnectionException {
-        // Do nothing in default in the Base implementation
+    public void registerClient() throws ConnectionException {
+        // Do nothing in the default implementation
     }
     
     public void setConnectionData(HttpConnectionData data) {

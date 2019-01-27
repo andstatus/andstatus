@@ -83,7 +83,6 @@ public abstract class Connection {
         ANNOUNCE,
         UNDO_ANNOUNCE,
         DELETE_NOTE,
-        REGISTER_CLIENT,
         /**
          * Get the Home timeline (whatever it is...).
          * This is the equivalent of /home on the Web.
@@ -431,7 +430,7 @@ public abstract class Connection {
     }
 
     public void registerClientForAccount() throws ConnectionException {
-        http.registerClient(getApiPath(ApiRoutineEnum.REGISTER_CLIENT));
+        http.registerClient();
     }
 
     public void clearClientKeys() {

@@ -93,9 +93,6 @@ public class ConnectionPumpio extends Connection {
             case GET_ACTOR:
                 url = "user/%nickname%/profile";
                 break;
-            case REGISTER_CLIENT:
-                url = "client/register";
-                break;
             case HOME_TIMELINE:
                 url = "user/%nickname%/inbox";
                 break;
@@ -306,7 +303,7 @@ public class ConnectionPumpio extends Connection {
             conu.httpConnection.setConnectionData(connectionData1);
         }
         if (!conu.httpConnection.data.areOAuthClientKeysPresent()) {
-            conu.httpConnection.registerClient(getApiPath(ApiRoutineEnum.REGISTER_CLIENT));
+            conu.httpConnection.registerClient();
             if (!conu.httpConnection.getCredentialsPresent()) {
                 throw ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST,
                         "No credentials", conu.httpConnection.data.originUrl);

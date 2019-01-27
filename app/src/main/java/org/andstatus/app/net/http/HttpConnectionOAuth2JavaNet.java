@@ -27,6 +27,7 @@ import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
@@ -50,9 +51,10 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
     public static final String OAUTH_SCOPES = "read write follow";
 
     @Override
-    public void registerClient(String path) throws ConnectionException {
+    public void registerClient() throws ConnectionException {
+        String path = getApiUrl(Connection.ApiRoutineEnum.OAUTH_REGISTER_CLIENT);
         MyStringBuilder logmsg = MyStringBuilder.of("registerClient; for " + data.originUrl
-                + "; URL='" + pathToUrlString(path) + "'");
+                + "; URL='" + path + "'");
         MyLog.v(this, logmsg::toString);
         data.oauthClientKeys.clear();
         try {

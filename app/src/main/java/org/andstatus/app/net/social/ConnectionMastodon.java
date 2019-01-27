@@ -46,74 +46,71 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         String url;
         // See https://github.com/tootsuite/documentation/blob/master/Using-the-API/API.md
         switch (routine) {
-            case REGISTER_CLIENT:
-                url = "apps";
-                break;
             case HOME_TIMELINE:
-                url = "timelines/home";
+                url = "v1/timelines/home";
                 break;
             case NOTIFICATIONS_TIMELINE:
-                url = "notifications";
+                url = "v1/notifications";
                 break;
             case LIKED_TIMELINE:
-                url = "favourites";
+                url = "v1/favourites";
                 break;
             case PUBLIC_TIMELINE:
-                url = "timelines/public";
+                url = "v1/timelines/public";
                 break;
             case TAG_TIMELINE:
-                url = "timelines/tag/%tag%";
+                url = "v1/timelines/tag/%tag%";
                 break;
             case ACTOR_TIMELINE:
-                url = "accounts/%actorId%/statuses";
+                url = "v1/accounts/%actorId%/statuses";
                 break;
             case ACCOUNT_VERIFY_CREDENTIALS:
-                url = "accounts/verify_credentials";
+                url = "v1/accounts/verify_credentials";
                 break;
             case UPDATE_NOTE:
-                url = "statuses";
+                url = "v1/statuses";
                 break;
             case UPDATE_NOTE_WITH_MEDIA:
-                url = "media";
+                url = "v1/media";
                 break;
             case GET_NOTE:
-                url = "statuses/%noteId%";
+                url = "v1/statuses/%noteId%";
                 break;
             case SEARCH_NOTES:
-                url = "search"; /* actually, this is a complex search "for content" */
+                url = "v1/search"; /* actually, this is a complex search "for content" */
                 break;
             case SEARCH_ACTORS:
-                url = "accounts/search";
+                url = "v1/accounts/search";
                 break;
             case GET_CONVERSATION:
-                url = "statuses/%noteId%/context";
+                url = "v1/statuses/%noteId%/context";
                 break;
             case LIKE:
-                url = "statuses/%noteId%/favourite";
+                url = "v1/statuses/%noteId%/favourite";
                 break;
             case UNDO_LIKE:
-                url = "statuses/%noteId%/unfavourite";
+                url = "v1/statuses/%noteId%/unfavourite";
                 break;
             case FOLLOW:
-                url = "accounts/%actorId%/follow";
+                url = "v1/accounts/%actorId%/follow";
                 break;
             case UNDO_FOLLOW:
-                url = "accounts/%actorId%/unfollow";
+                url = "v1/accounts/%actorId%/unfollow";
                 break;
             case GET_FOLLOWERS:
-                url = "accounts/%actorId%/followers";
+                url = "v1/accounts/%actorId%/followers";
                 break;
             case GET_FRIENDS:
-                url = "accounts/%actorId%/following";
+                url = "v1/accounts/%actorId%/following";
                 break;
             case GET_ACTOR:
-                url = "accounts/%actorId%";
+                url = "v1/accounts/%actorId%";
                 break;
             case ANNOUNCE:
-                url = "statuses/%noteId%/reblog";
+                url = "v1/statuses/%noteId%/reblog";
                 break;
             case UNDO_ANNOUNCE:
-                url = "statuses/%noteId%/unreblog";
+                url = "v1/statuses/%noteId%/unreblog";
                 break;
             default:
                 url = "";

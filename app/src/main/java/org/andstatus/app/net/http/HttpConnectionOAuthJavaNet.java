@@ -59,16 +59,17 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
      * Partially borrowed from the "Impeller" code !
      */
     @Override
-    public void registerClient(String path) throws ConnectionException {		
+    public void registerClient() throws ConnectionException {
+        String path = getApiUrl(ApiRoutineEnum.OAUTH_REGISTER_CLIENT);
 		MyStringBuilder logmsg = MyStringBuilder.of("registerClient; for " + data.originUrl
-                + "; URL='" + pathToUrlString(path) + "'");
+                + "; URL='" + path + "'");
         MyLog.v(this, logmsg::toString);
         String consumerKey = "";
         String consumerSecret = "";
         data.oauthClientKeys.clear();
         Writer writer = null;
         try {
-			URL endpoint = new URL(pathToUrlString(path));
+			URL endpoint = new URL(path);
             HttpURLConnection conn = (HttpURLConnection) endpoint.openConnection();
                     
             Map<String, String> params = new HashMap<>();

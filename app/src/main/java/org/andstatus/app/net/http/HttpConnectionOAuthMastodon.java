@@ -37,7 +37,7 @@ public class HttpConnectionOAuthMastodon extends HttpConnectionOAuth2JavaNet {
                 url = data.getOauthPath() + "/token";
                 break;
             case OAUTH_REGISTER_CLIENT:
-                url = data.getBasicPath() + "/apps";
+                url = data.getBasicPath() + "/v1/apps";
                 break;
             default:
                 url = super.getApiUrl(routine);
