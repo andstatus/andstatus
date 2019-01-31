@@ -107,13 +107,13 @@ public class Notifier {
                 builder.setLights(LIGHT_COLOR, 500, 1000);
             }
         }
+        builder.setSmallIcon(data.event == SERVICE_RUNNING
+            ? R.drawable.ic_sync_white_24dp
+            : SharedPreferencesUtil.getBoolean(MyPreferences.KEY_NOTIFICATION_ICON_ALTERNATIVE, false)
+                ? R.drawable.notification_icon_circle
+                : R.drawable.notification_icon);
         if (notificationArea) {
-            builder.setSmallIcon(data.event == SERVICE_RUNNING
-                ? R.drawable.ic_sync_white_24dp
-                : SharedPreferencesUtil.getBoolean(MyPreferences.KEY_NOTIFICATION_ICON_ALTERNATIVE, false)
-                    ? R.drawable.notification_icon_circle
-                    : R.drawable.notification_icon)
-                .setContentTitle(myContext.context().getText(data.event.titleResId))
+            builder.setContentTitle(myContext.context().getText(data.event.titleResId))
                 .setContentText(contentText)
                 .setWhen(data.updatedDate)
                 .setShowWhen(true);

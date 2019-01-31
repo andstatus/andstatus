@@ -17,7 +17,6 @@
 package org.andstatus.app.util;
 
 import android.content.SharedPreferences;
-import androidx.annotation.NonNull;
 import android.text.format.DateFormat;
 import android.util.Log;
 
@@ -47,6 +46,8 @@ import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
+
+import androidx.annotation.NonNull;
 
 /**
  * There is a need to turn debug (and maybe even verbose) logging on and off
@@ -616,23 +617,23 @@ public class MyLog {
         try {
             boolean isEmpty = false;
             Object jso2 = jso;
-            if (String.class.isInstance(jso)) {
+            if (jso instanceof String) {
                 if (StringUtils.isEmpty((String) jso)) {
                     return;
                 }
                 jso2 = (new JSONTokener((String) jso)).nextValue();
              }
             String strJso;
-            if (JSONObject.class.isInstance(jso2)) {
+            if (jso2 instanceof JSONObject) {
                 JSONObject jso3 = (JSONObject) jso2;
                 isEmpty = jso3.length() == 0;
                 strJso = jso3.toString(2);
-            } else if (JSONArray.class.isInstance(jso2)) {
+            } else if (jso2 instanceof JSONArray) {
                 JSONArray jsa = ((JSONArray) jso2);
                 isEmpty = jsa.length() == 0;
                 strJso = jsa.toString(2);
             } else {
-                strJso = "Class " + jso2.getClass().getCanonicalName() + " " + jso2.toString();
+                strJso = jso.toString();
             }
             if (toFile && !isEmpty) {
                 writeStringToFile(strJso, uniqueDateTimeFormatted()  + "_" + namePrefix
