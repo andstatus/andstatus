@@ -29,16 +29,19 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="45.04" android:versionCode="268"
-             versionDate="2018-12-22"
-             versionTitle="Fixed text encoding in composed Tweets">
+    <release android:versionName="46.02" android:versionCode="272"
+             versionDate="2019-02-04"
+             versionTitle="Fixed Notification sound">
         <changes>
-            <change>Fixed a problem with unexpected changes (e.g. changing "&gt;" to "&amp;gt;") of some characters
-            in Twitter (actually, in all social networks, for which HTML content wasn't allowed)</change>
+            <change>Fixed: Default notification sound was heard even if set to Silent in Settings.
+                This was caused by changed rules after starting to target Android 9.<br/>
+                Any Android notification (including Vibration and Sound) should show an icon in Notification Area
+                (Android 9 restriction).
+            </change>
         </changes>
     </release>
-    <release android:versionName="45.03" android:versionCode="267"
-             versionDate="2018-12-18"
+    <release android:versionName="45.05" android:versionCode="269"
+             versionDate="2019-01-22"
              versionTitle="Unread Notifications and improved HTML support">
         <changes>
             <change>Added the "Unread notifications" timeline, sorted by the time of download ("received ... minutes ago"),

@@ -82,7 +82,7 @@ public class Notifier {
 
     public void update() {
         AppWidgets.of(refEvents.updateAndGet(NotificationEvents::load)).updateData().updateViews();
-        if (notificationArea || vibration || UriUtils.nonEmpty(soundUri)) {
+        if (notificationArea) {
             refEvents.get().map.values().stream().filter(data -> data.count > 0).forEach(myContext::notify);
         }
     }
@@ -108,16 +108,14 @@ public class Notifier {
             }
         }
         builder.setSmallIcon(data.event == SERVICE_RUNNING
-            ? R.drawable.ic_sync_white_24dp
-            : SharedPreferencesUtil.getBoolean(MyPreferences.KEY_NOTIFICATION_ICON_ALTERNATIVE, false)
-                ? R.drawable.notification_icon_circle
-                : R.drawable.notification_icon);
-        if (notificationArea) {
-            builder.setContentTitle(myContext.context().getText(data.event.titleResId))
-                .setContentText(contentText)
-                .setWhen(data.updatedDate)
-                .setShowWhen(true);
-        }
+                ? R.drawable.ic_sync_white_24dp
+                : SharedPreferencesUtil.getBoolean(MyPreferences.KEY_NOTIFICATION_ICON_ALTERNATIVE, false)
+                    ? R.drawable.notification_icon_circle
+                    : R.drawable.notification_icon)
+            .setContentTitle(myContext.context().getText(data.event.titleResId))
+            .setContentText(contentText)
+            .setWhen(data.updatedDate)
+            .setShowWhen(true);
         builder.setContentIntent(data.getPendingIntent(myContext));
         return builder.build();
     }
@@ -139,23 +137,21 @@ public class Notifier {
         String channelId = data.channelId();
         CharSequence channelName = myContext.context().getText(data.event.titleResId);
         String description = "AndStatus, " + channelName;
+        boolean isSilent = data.event == SERVICE_RUNNING || UriUtils.isEmpty(soundUri);
         NotificationChannel channel = new NotificationChannel(channelId, channelName,
-                NotificationManager.IMPORTANCE_DEFAULT);
+                isSilent ? NotificationManager.IMPORTANCE_MIN : NotificationManager.IMPORTANCE_DEFAULT);
         channel.setDescription(description);
         if (data.event == SERVICE_RUNNING) {
             channel.enableLights(false);
             channel.enableVibration(false);
-            channel.setImportance(NotificationManager.IMPORTANCE_MIN);
-            channel.setSound(null, Notification.AUDIO_ATTRIBUTES_DEFAULT);
         } else {
             channel.enableLights(true);
             channel.setLightColor(LIGHT_COLOR);
-            channel.enableVibration(vibration);
             if (vibration) {
                 channel.setVibrationPattern(VIBRATION_PATTERN);
             }
-            channel.setSound(UriUtils.isEmpty(soundUri) ? null : soundUri, Notification.AUDIO_ATTRIBUTES_DEFAULT);
         }
+        channel.setSound(isSilent ? null : soundUri, Notification.AUDIO_ATTRIBUTES_DEFAULT);
         nM.createNotificationChannel(channel);
     }
 
