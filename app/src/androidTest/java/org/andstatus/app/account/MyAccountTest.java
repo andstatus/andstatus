@@ -24,6 +24,7 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,33 +32,56 @@ import org.junit.Test;
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class MyAccountTest {
 
     @Before
     public void setUp() throws Exception {
-        TestSuite.initializeWithData(this);
+        TestSuite.initializeWithAccounts(this);
     }
 
     @Test
     public void testNewAccountCreation() {
-       createAccountOfOriginType("", OriginType.TWITTER);
-       createAccountOfOriginType("testUser1", OriginType.TWITTER);
-       createAccountOfOriginType("", OriginType.PUMPIO);
-       createAccountOfOriginType("test2User@somepipe.example.com", OriginType.PUMPIO);
-       createAccountOfOriginType("PeterPom", OriginType.GNUSOCIAL);
+        createAccountOfOriginType("", OriginType.TWITTER);
+        createAccountOfOriginType("testUser1", OriginType.TWITTER);
+        createAccountOfOriginType("", OriginType.PUMPIO);
+        createAccountOfOriginType("test2User@somepipe.example.com", OriginType.PUMPIO);
+        createAccountOfOriginType("PeterPom", OriginType.GNUSOCIAL);
+        createAccountOfOriginType("", OriginType.ACTIVITYPUB);
+        createAccountOfOriginType("AndStatus@pleroma.site", OriginType.ACTIVITYPUB);
     }
     
-    private void createAccountOfOriginType(String userName, OriginType originType) {
+    private void createAccountOfOriginType(String uniqueNameInOrigin, OriginType originType) {
         MyContext myContext = MyContextHolder.get();
-        String logMsg = "Creating account '" + userName + "' for '" + originType + "'";
+        String logMsg = "Creating account '" + uniqueNameInOrigin + "' for '" + originType + "'";
         MyLog.v(this, logMsg);
         Origin origin = myContext.origins().firstOfType(originType);
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(myContext,
-                userName + AccountName.ORIGIN_SEPARATOR + origin.getName(), TriState.UNKNOWN);
+                uniqueNameInOrigin + AccountName.ORIGIN_SEPARATOR + origin.getName(), TriState.UNKNOWN);
         assertEquals(logMsg, origin, builder.getAccount().getOrigin());
-        assertEquals(logMsg, userName + AccountName.ORIGIN_SEPARATOR + origin.getName(), builder.getAccount().getAccountName());
+        assertEquals(logMsg, uniqueNameInOrigin + AccountName.ORIGIN_SEPARATOR + origin.getName(),
+                builder.getAccount().getAccountName());
+        if (StringUtils.isEmpty(uniqueNameInOrigin)) {
+            assertEquals(logMsg, "", builder.getAccount().getUsername());
+            assertEquals(logMsg, "", builder.getAccount().getWebFingerId());
+        } else {
+            if (origin.shouldHaveUrl()) {
+                assertEquals(logMsg, uniqueNameInOrigin, builder.getAccount().getUsername());
+                assertEquals(logMsg, uniqueNameInOrigin.toLowerCase() + "@" +
+                                (originType == OriginType.TWITTER
+                                        ? origin.getHost().replace("api.", "")
+                                        : origin.getHost()),
+                        builder.getAccount().getActor().getWebFingerId());
+            } else {
+                int indexOfAt = uniqueNameInOrigin.lastIndexOf("@");
+                assertNotEquals(logMsg, uniqueNameInOrigin, builder.getAccount().getUsername());
+                assertEquals(logMsg, uniqueNameInOrigin, builder.getAccount().getUsername() + "@" +
+                        uniqueNameInOrigin.substring(indexOfAt + 1));
+                assertEquals(logMsg, uniqueNameInOrigin.toLowerCase(), builder.getAccount().getActor().getWebFingerId());
+            }
+        }
     }
 
     @Test

@@ -189,7 +189,7 @@ public class Origin implements Comparable<Origin>, IsEmpty {
         return resId;
     }
 
-    public final String notePermalink(long noteId) {
+    public final String getNotePermalink(long noteId) {
         String msgUrl = MyQuery.noteIdToStringColumnValue(NoteTable.URL, noteId);
         if (!StringUtils.isEmpty(msgUrl)) {
             try {
@@ -221,7 +221,7 @@ public class Origin implements Comparable<Origin>, IsEmpty {
         return url;
     }
 
-    public Uri fixUriforPermalink(Uri uri1) {
+    public Uri fixUriForPermalink(Uri uri1) {
         return uri1;
     }
     

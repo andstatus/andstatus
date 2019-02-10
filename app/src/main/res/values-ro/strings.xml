@@ -122,7 +122,6 @@
   <string name="dialog_title_preference_theme_color">Selectează Culoarea Temei</string>
   <string name="dialog_title_preference_theme_size">Selectează o Mărime</string>
   <string name="dialog_title_preference_username">Nume de utilizator</string>
-  <string name="dialog_title_preference_username_pumpio">Webfinger ID</string>
   <string name="dialog_title_registering_client">Inregistrare AndStatus</string>
   <string name="dialog_title_select_timeline">Selectează o Cronologie</string>
   <string name="dialog_title_sending_message">Trimitere mesaj&#8230;</string>

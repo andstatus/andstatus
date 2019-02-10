@@ -126,7 +126,6 @@ pero non quere reinstalalo</string>
   <string name="dialog_title_preference_theme_color">Escolla unha cor de decorado</string>
   <string name="dialog_title_preference_theme_size">Escolla un tamaño</string>
   <string name="dialog_title_preference_username">Nome usuario</string>
-  <string name="dialog_title_preference_username_pumpio">ID Webfinger</string>
   <string name="dialog_title_registering_client">Rexistrando AndStatus</string>
   <string name="dialog_title_select_timeline">Escolla unha liña de tempo</string>
   <string name="dialog_title_sending_message">Enviando mensaxe&#8230;</string>

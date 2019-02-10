@@ -53,7 +53,7 @@ public class AccountSettingsActivityTest extends ActivityTest<AccountSettingsAct
 
     @Override
     protected Intent getActivityIntent() {
-        TestSuite.initializeWithData(this);
+        TestSuite.initializeWithAccounts(this);
 
         ma = MyContextHolder.get().accounts().getCurrentAccount();
         if (ma.nonValid()) fail("No persistent accounts yet");
@@ -66,8 +66,8 @@ public class AccountSettingsActivityTest extends ActivityTest<AccountSettingsAct
         final String method = "test";
         Button addAccountOrVerifyCredentials = (Button) getActivity().findViewById(R.id.add_account);
         assertTrue(addAccountOrVerifyCredentials != null);
-        assertUsernameTextField(R.id.username);
-        assertUsernameTextField(R.id.username_readonly);
+        assertUniqueNameTextField(R.id.uniqueName);
+        assertUniqueNameTextField(R.id.uniqueName_readonly);
         DbUtils.waitMs(method, 500);
         assertEquals("MyService is available", false, MyServiceManager.isServiceAvailable());
         openingOriginList();
@@ -78,10 +78,10 @@ public class AccountSettingsActivityTest extends ActivityTest<AccountSettingsAct
         DbUtils.waitMs(method, 500);
     }
 
-    private void assertUsernameTextField(int viewId) {
-        TextView usernameText = (TextView) getActivity().findViewById(viewId);
-        assertTrue(usernameText != null);
-        assertEquals("Selected username", ma.getUsername(), usernameText.getText().toString());
+    private void assertUniqueNameTextField(int viewId) {
+        TextView uniqueNameText = (TextView) getActivity().findViewById(viewId);
+        assertTrue(uniqueNameText != null);
+        assertEquals("Unique name of selected account " + ma, ma.getOAccountName().getUniqueNameInOrigin(), uniqueNameText.getText().toString());
     }
     
     private void openingOriginList() throws InterruptedException {

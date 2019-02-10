@@ -126,7 +126,6 @@
   <string name="dialog_title_preference_theme_color">Farbthema wählen</string>
   <string name="dialog_title_preference_theme_size">Größe auswählen</string>
   <string name="dialog_title_preference_username">Benutzername</string>
-  <string name="dialog_title_preference_username_pumpio">Webfinger-ID</string>
   <string name="dialog_title_registering_client">Registriere AndStatus</string>
   <string name="dialog_title_select_timeline">Wähle eine Timeline</string>
   <string name="dialog_title_sending_message">Sende eine Nachricht&#8230;</string>

@@ -92,7 +92,7 @@ public class VerifyCredentialsTest {
         Origin origin = MyContextHolder.get().origins().firstOfType(OriginType.TWITTER);
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(
                 MyContextHolder.get(), demoData.twitterTestAccountName +
-                "/" + origin.getName(), TriState.TRUE);
+                        AccountName.ORIGIN_SEPARATOR + origin.getName(), TriState.TRUE);
         builder.onCredentialsVerified(actor, null);
         assertTrue("Account is persistent", builder.isPersistent());
         long actorId = builder.getAccount().getActorId();
@@ -109,9 +109,9 @@ public class VerifyCredentialsTest {
         assertEquals("Note not by " + actor.getUsername() + " found", actorId, actorIdM);
 
         assertEquals("Note permalink at twitter",
-                "https://" + origin.fixUriforPermalink(UriUtils.fromUrl(origin.getUrl())).getHost()
+                "https://" + origin.fixUriForPermalink(UriUtils.fromUrl(origin.getUrl())).getHost()
                         + "/"
                         + builder.getAccount().getUsername() + "/status/" + noteOid,
-                origin.notePermalink(noteId));
+                origin.getNotePermalink(noteId));
     }
 }

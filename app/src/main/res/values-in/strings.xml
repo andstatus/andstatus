@@ -123,7 +123,6 @@
   <string name="dialog_title_preference_theme_color">Pilih tema warna</string>
   <string name="dialog_title_preference_theme_size">Pilih Ukuran</string>
   <string name="dialog_title_preference_username">Nama pengguna</string>
-  <string name="dialog_title_preference_username_pumpio">ID Webfinger</string>
   <string name="dialog_title_registering_client">Mendaftar AndStatus</string>
   <string name="dialog_title_select_timeline">Pilih satu Timeline</string>
   <string name="dialog_title_sending_message">Mengirim pesan&#8230;</string>

@@ -123,7 +123,6 @@
   <string name="dialog_title_preference_theme_color">Pumili ng isang tema ng kulay</string>
   <string name="dialog_title_preference_theme_size">Pumili ng Sukat</string>
   <string name="dialog_title_preference_username">Username</string>
-  <string name="dialog_title_preference_username_pumpio">ID ng Webfinger</string>
   <string name="dialog_title_registering_client">Nagrerehistro ng mga AndStatus</string>
   <string name="dialog_title_select_timeline">Pumili ng Timeline</string>
   <string name="dialog_title_sending_message">Pagpapadala ng mga mensahe&#8230;</string>

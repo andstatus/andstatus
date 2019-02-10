@@ -123,7 +123,6 @@
   <string name="dialog_title_preference_theme_color">تحديد لون السمة</string>
   <string name="dialog_title_preference_theme_size">قم بتحديد حجم</string>
   <string name="dialog_title_preference_username">اسم المستخدم</string>
-  <string name="dialog_title_preference_username_pumpio">Webfinger ID</string>
   <string name="dialog_title_registering_client">تسجيل AndStatus</string>
   <string name="dialog_title_select_timeline">حدد خط زمني</string>
   <string name="dialog_title_sending_message">إرسال رسالة&#8230;</string>

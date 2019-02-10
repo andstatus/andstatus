@@ -136,7 +136,6 @@
   <string name="dialog_title_preference_theme_color">選擇一個顏色主題</string>
   <string name="dialog_title_preference_theme_size">選擇一個尺寸</string>
   <string name="dialog_title_preference_username">用戶名</string>
-  <string name="dialog_title_preference_username_pumpio">Webfinger ID</string>
   <string name="dialog_title_registering_client">註冊AndStatus</string>
   <string name="dialog_title_select_timeline">選擇一個時間軸</string>
   <string name="dialog_title_sending_message">發送消息...</string>

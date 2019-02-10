@@ -138,7 +138,8 @@ public class DemoAccountInserter {
 
     private MyAccount addAccountFromActor(@NonNull Actor actor) {
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(myContext,
-                 actor.getUniqueNameInOrigin() + "/" + actor.origin.getName(), TriState.TRUE);
+                actor.getUniqueNameInOrigin() + AccountName.ORIGIN_SEPARATOR + actor.origin.getName(),
+                TriState.TRUE);
         if (builder.getAccount().isOAuth()) {
             builder.setUserTokenWithSecret("sampleUserTokenFor" + actor.getNamePreferablyWebFingerId(),
                     "sampleUserSecretFor" + actor.getNamePreferablyWebFingerId());

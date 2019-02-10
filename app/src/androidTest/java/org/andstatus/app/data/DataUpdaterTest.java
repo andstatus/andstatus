@@ -115,7 +115,7 @@ public class DataUpdaterTest {
                 DownloadStatus.load(data.getValues().getAsInteger(NoteTable.NOTE_STATUS)));
         assertEquals("Note permalink before storage", note.url,
                 data.getValues().getAsString(NoteTable.URL));
-        assertEquals("Note permalink", note.url, accountActor.origin.notePermalink(noteId));
+        assertEquals("Note permalink", note.url, accountActor.origin.getNotePermalink(noteId));
 
         assertEquals("Note stored as loaded", DownloadStatus.LOADED, DownloadStatus.load(
                 MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)));

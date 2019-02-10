@@ -119,7 +119,6 @@
   <string name="dialog_title_preference_theme_color">Bir Renk Teması seçin</string>
   <string name="dialog_title_preference_theme_size">Bir Boyut seçin</string>
   <string name="dialog_title_preference_username">Kullanıcı Adı</string>
-  <string name="dialog_title_preference_username_pumpio">Webfinger ID</string>
   <string name="dialog_title_registering_client">AndStatus\'a Kaydolunuyor</string>
   <string name="dialog_title_select_timeline">Bir Zaman Çizelgesi Seç</string>
   <string name="dialog_title_sending_message">Bir mesaj göndeirliyor&#8230;</string>

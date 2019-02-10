@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-    Copyright (C) 2010-2018 Yuri Volkov, yvolk@yurivolkov.com and translators
+    Copyright (C) 2010-2019 Yuri Volkov, yvolk@yurivolkov.com and translators
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -125,7 +125,6 @@
   <string name="dialog_title_preference_theme_color">Select a Color Theme</string>
   <string name="dialog_title_preference_theme_size">Select a Size</string>
   <string name="dialog_title_preference_username">Username</string>
-  <string name="dialog_title_preference_username_pumpio">Webfinger ID</string>
   <string name="dialog_title_registering_client">Registering AndStatus</string>
   <string name="dialog_title_select_timeline">Select a Timeline</string>
   <string name="dialog_title_sending_message">Sending an activity&#8230;</string>
@@ -436,9 +435,9 @@
   <string name="summary_preference_syncing">When to sync timeline and how to indicate this</string>
   <string name="summary_preference_theme_size">Select text size</string>
   <string name="summary_preference_user_in_timeline">Actor will be shown as \"{0}\"</string>
-  <string name="summary_preference_username">Your username in the %1$s Social network; e.g.: %2$s</string>
-  <string name="summary_preference_username_webfinger_id">Your ID in %1$s. It
-    looks like an email address, with your username then \"@\" then your server; e.g.: %2$s</string>
+  <string name="summary_preference_username">Your username in the \"%1$s\" Social network; e.g.: %2$s</string>
+  <string name="summary_preference_username_webfinger_id">Your unique name in the \"%1$s\" Social network. It
+    looks like an email address, with your username then \"@\" then your server. E.g. %2$s</string>
   <string name="summary_preference_verify_credentials">This Account is verified and enabled. Tap Back button to continue or
     tap the button below to check the Account\'s credentials again.</string>
   <string name="summary_preference_verify_credentials_failed">Verification failed. Tap the button below to verify credentials and enable this User Account</string>

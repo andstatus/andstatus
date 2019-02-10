@@ -30,25 +30,25 @@
             android:textAppearance="?attr/messageBodyTextAppearance" />
 
         <TextView
-            android:id="@+id/username_label"
+            android:id="@+id/uniqueName_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:labelFor="@+id/username"
+            android:labelFor="@+id/uniqueName"
             android:text="@string/title_preference_username" />
 
         <org.andstatus.app.widget.LongHintEditText
-            android:id="@+id/username"
+            android:id="@+id/uniqueName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/summary_preference_username_webfinger_id"
             android:textAppearance="?attr/messageBodyTextAppearance" />
 
         <TextView
-            android:id="@+id/username_readonly"
+            android:id="@+id/uniqueName_readonly"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
-            android:hint="@string/title_preference_username"
+            android:hint="@string/summary_preference_username"
             android:textAppearance="?attr/messageBodyTextAppearance" />
 
         <TextView

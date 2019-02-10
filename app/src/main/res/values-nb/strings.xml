@@ -105,7 +105,6 @@
   <string name="dialog_title_preference_theme_color">Velge en fargetema</string>
   <string name="dialog_title_preference_theme_size">Velg en størrelse</string>
   <string name="dialog_title_preference_username">Brukernavn</string>
-  <string name="dialog_title_preference_username_pumpio">Webfinger-ID</string>
   <string name="dialog_title_registering_client">Registrere AndStatus</string>
   <string name="dialog_title_select_timeline">Merk en tidslinje</string>
   <string name="dialog_title_sending_message">Sender en melding...</string>

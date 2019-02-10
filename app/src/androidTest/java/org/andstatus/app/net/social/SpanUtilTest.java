@@ -51,11 +51,11 @@ public class SpanUtilTest {
         MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
         Audience audience = new Audience(ma.getOrigin());
         audience.add(ma.getActor());
-        String username2 = "second@identi.ca";
-        addRecipient(ma, audience, username2, OriginPumpio.ACCOUNT_PREFIX + username2);
+        String uniqueName2 = "second@identi.ca";
+        addRecipient(ma, audience, uniqueName2, OriginPumpio.ACCOUNT_PREFIX + uniqueName2);
         Function<Spannable, Spannable> modifier = SpanUtil.spansModifier(audience);
 
-        String text = "Hello @" + ma.getActor().getWebFingerId() + ". Thank you for noticing.\n@" + username2;
+        String text = "Hello @" + ma.getActor().getWebFingerId() + ". Thank you for noticing.\n@" + uniqueName2;
         Spannable spannable = SpannableString.valueOf(text);
         Spannable modified = modifier.apply(spannable);
         final Object[] spans = modified.getSpans(0, modified.length(), Object.class);
@@ -290,9 +290,9 @@ public class SpanUtilTest {
         notAHashTag(regions2, message2, 4);
     }
 
-    private void addRecipient(MyAccount ma, Audience audience, String username, String actorOid) {
+    private void addRecipient(MyAccount ma, Audience audience, String uniqueNameInOrigin, String actorOid) {
         final Actor actor1 = Actor.fromOid(ma.getOrigin(), actorOid);
-        actor1.setUsername(username);
+        actor1.withUniqueNameInOrigin(uniqueNameInOrigin);
         audience.add(actor1);
     }
 

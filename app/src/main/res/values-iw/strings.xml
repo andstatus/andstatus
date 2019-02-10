@@ -63,7 +63,6 @@
   <string name="dialog_title_preference_password">סיסמה</string>
   <string name="dialog_title_preference_theme_size">בחר גודל</string>
   <string name="dialog_title_preference_username">שם משתמש</string>
-  <string name="dialog_title_preference_username_pumpio">מזהה Webfinger</string>
   <string name="dialog_title_select_timeline">בחר ציר זמן</string>
   <string name="dialog_title_sending_message">כעת שולח הודעה&#8230;</string>
   <string name="dialog_title_service_unavailable">שירות לא זמין</string>

@@ -100,7 +100,6 @@
   <string name="dialog_title_preference_theme_color">Välj ett tema</string>
   <string name="dialog_title_preference_theme_size">Välj en storlek</string>
   <string name="dialog_title_preference_username">Användarnamn</string>
-  <string name="dialog_title_preference_username_pumpio">Webfinger-ID</string>
   <string name="dialog_title_registering_client">Registrera AndStatus</string>
   <string name="dialog_title_select_timeline">Välj en tidslinje</string>
   <string name="dialog_title_sending_message">Skickar meddelande&#8230;</string>

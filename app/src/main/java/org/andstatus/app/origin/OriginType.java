@@ -125,7 +125,7 @@ public enum OriginType implements SelectableEnum {
      * This is only for no OAuth */
     protected boolean shouldSetNewUsernameManuallyNoOAuth = false;
     protected final Pattern usernameRegExPattern;
-    public final String validUsernameExamples;
+    public final String uniqueNameInOriginExamples;
     /**
      * Length of the link after changing to the shortened link
      * 0 means that length doesn't change
@@ -174,7 +174,7 @@ public enum OriginType implements SelectableEnum {
                 // TODO: Read from Config
                 shortUrlLengthDefault = 23; 
                 usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
-                validUsernameExamples = USERNAME_EXAMPLES_SIMPLE;
+                uniqueNameInOriginExamples = USERNAME_EXAMPLES_SIMPLE;
                 textLimitDefault = 280;
                 urlDefault = UrlUtils.fromString("https://api.twitter.com");
                 basicPath = "1.1";
@@ -198,7 +198,7 @@ public enum OriginType implements SelectableEnum {
                 shouldSetNewUsernameManuallyIfOAuth = true;
                 shouldSetNewUsernameManuallyNoOAuth = false;
                 usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
-                validUsernameExamples = "andstatus@identi.ca test425@1realtime.net";
+                uniqueNameInOriginExamples = "andstatus@identi.ca AndStatus@datamost.com test425@1realtime.net";
                 // This is not a hard limit, just for convenience
                 textLimitDefault = TEXT_LIMIT_MAXIMUM;
                 basicPath = BASIC_PATH_DEFAULT;
@@ -225,7 +225,7 @@ public enum OriginType implements SelectableEnum {
                 shouldSetNewUsernameManuallyIfOAuth = true;
                 shouldSetNewUsernameManuallyNoOAuth = false;
                 usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
-                validUsernameExamples = "AndStatus kaniini";
+                uniqueNameInOriginExamples = "AndStatus@pleroma.site kaniini@pleroma.site";
                 // This is not a hard limit, just for convenience
                 textLimitDefault = TEXT_LIMIT_MAXIMUM;
                 basicPath = BASIC_PATH_DEFAULT;
@@ -252,7 +252,7 @@ public enum OriginType implements SelectableEnum {
                 shouldSetNewUsernameManuallyIfOAuth = false;
                 shouldSetNewUsernameManuallyNoOAuth = true;
                 usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
-                validUsernameExamples = USERNAME_EXAMPLES_SIMPLE;
+                uniqueNameInOriginExamples = USERNAME_EXAMPLES_SIMPLE;
                 canChangeSsl = true;
                 basicPath = BASIC_PATH_DEFAULT;
                 oauthPath = BASIC_PATH_DEFAULT;
@@ -276,7 +276,7 @@ public enum OriginType implements SelectableEnum {
                 shouldSetNewUsernameManuallyIfOAuth = false;
                 shouldSetNewUsernameManuallyNoOAuth = true;
                 usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
-                validUsernameExamples = USERNAME_EXAMPLES_SIMPLE;
+                uniqueNameInOriginExamples = USERNAME_EXAMPLES_SIMPLE;
                 textLimitDefault = 500;
                 basicPath = BASIC_PATH_DEFAULT;
                 oauthPath = OAUTH_PATH_DEFAULT;
@@ -305,7 +305,7 @@ public enum OriginType implements SelectableEnum {
                 mAllowAttachmentForPrivateNote = false;
                 allowEditing = false;
                 isPrivateNoteAllowsReply = false;
-                validUsernameExamples = USERNAME_EXAMPLES_SIMPLE;
+                uniqueNameInOriginExamples = USERNAME_EXAMPLES_SIMPLE;
                 isSelectable = false;
 
                 textMediaTypePosted = TextMediaType.PLAIN;

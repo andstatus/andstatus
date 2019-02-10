@@ -129,7 +129,7 @@ public class OriginTest {
         assertNotEquals(0, noteId);
         String userName = MyQuery.noteIdToUsername(NoteTable.AUTHOR_ID, noteId,
                 ActorInTimeline.USERNAME);
-        String permalink = origin.notePermalink(noteId);
+        String permalink = origin.getNotePermalink(noteId);
         String desc = "Permalink of Twitter note '" + noteOid + "' by '" + userName
                 + "' at " + origin.toString() + " is " + permalink;
         assertTrue(desc, permalink.contains(userName + "/status/" + noteOid));

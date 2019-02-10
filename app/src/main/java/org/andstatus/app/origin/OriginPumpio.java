@@ -16,10 +16,10 @@
 
 package org.andstatus.app.origin;
 
-import androidx.annotation.StringRes;
-
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
+
+import androidx.annotation.StringRes;
 
 public class OriginPumpio extends Origin {
     public static final String ACCOUNT_PREFIX = "acct:";
@@ -32,15 +32,6 @@ public class OriginPumpio extends Origin {
     public int alternativeTermForResourceId(@StringRes int resId) {
         int resIdOut;
         switch (resId) {
-            case R.string.dialog_title_preference_username:
-                resIdOut = R.string.dialog_title_preference_username_pumpio;
-                break;
-            case R.string.title_preference_username:
-                resIdOut = R.string.title_preference_username_pumpio;
-                break;
-            case R.string.summary_preference_username:
-                resIdOut = R.string.summary_preference_username_webfinger_id;
-                break;
             case R.string.menu_item_destroy_reblog:
                 resIdOut = R.string.menu_item_destroy_reblog_pumpio;
                 break;

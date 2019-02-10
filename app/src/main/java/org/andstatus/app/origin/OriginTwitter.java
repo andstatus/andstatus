@@ -70,7 +70,7 @@ class OriginTwitter extends Origin {
         if (url == null) {
             return "";
         }
-        final Uri uri = fixUriforPermalink(UriUtils.fromUrl(url));
+        final Uri uri = fixUriForPermalink(UriUtils.fromUrl(url));
         if (MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId).notFalse) {
             String username = MyQuery.noteIdToUsername(NoteTable.AUTHOR_ID, noteId, ActorInTimeline.USERNAME);
             final String oid = MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId);
@@ -81,7 +81,7 @@ class OriginTwitter extends Origin {
     }
 
     @Override
-    public Uri fixUriforPermalink(Uri uri1) {
+    public Uri fixUriForPermalink(Uri uri1) {
         Uri uri2 = uri1;
         if( uri2 != null) {
             try {

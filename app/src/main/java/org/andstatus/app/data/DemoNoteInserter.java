@@ -186,7 +186,7 @@ public class DemoNoteInserter {
         if (note.nonEmpty()) {
             assertNotEquals( "Note was not added at level " + level + " " + activity, 0, note.noteId);
 
-            String permalink = origin.notePermalink(note.noteId);
+            String permalink = origin.getNotePermalink(note.noteId);
             URL urlPermalink = UrlUtils.fromString(permalink);
             assertNotNull("Note permalink is a valid URL '" + permalink + "',\n" + note.toString()
                     + "\n origin: " + origin
@@ -199,7 +199,7 @@ public class DemoNoteInserter {
                 assertEquals("Note name " + note, note.getName(), MyQuery.noteIdToStringColumnValue(NoteTable.NAME, note.noteId));
             }
             if (!StringUtils.isEmpty(note.url)) {
-                assertEquals("Note permalink", note.url, origin.notePermalink(note.noteId));
+                assertEquals("Note permalink", note.url, origin.getNotePermalink(note.noteId));
             }
 
             Actor author = activity.getAuthor();

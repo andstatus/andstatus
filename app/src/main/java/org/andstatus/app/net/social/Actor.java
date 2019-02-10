@@ -317,17 +317,23 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return Optional.empty();
     }
 
-    public Optional<String> uniqueNameInOriginToWebFingerId(String webFingerIdIn) {
-        if (StringUtils.nonEmpty(webFingerIdIn) && webFingerIdIn.contains("@")) {
-            final String nameBeforeTheLastAt = webFingerIdIn.substring(0, webFingerIdIn.lastIndexOf("@"));
-            if (isWebFingerIdValid(webFingerIdIn)) {
-                return Optional.of(webFingerIdIn.toLowerCase());
-            } else {
-                int lastButOneIndex = nameBeforeTheLastAt.lastIndexOf("@");
-                if (lastButOneIndex > -1) {
-                    String potentialWebFingerId = webFingerIdIn.substring(lastButOneIndex + 1);
-                    if (isWebFingerIdValid(potentialWebFingerId)) {
-                        return Optional.of(potentialWebFingerId.toLowerCase());
+    public Optional<String> uniqueNameInOriginToWebFingerId(String uniqueNameInOrigin) {
+        if (StringUtils.nonEmpty(uniqueNameInOrigin)) {
+            if (origin.shouldHaveUrl()) {
+                return Optional.of(uniqueNameInOrigin.toLowerCase() + "@" +
+                        origin.fixUriForPermalink(UriUtils.fromUrl(origin.getUrl())).getHost());
+            }
+            if (uniqueNameInOrigin.contains("@")) {
+                final String nameBeforeTheLastAt = uniqueNameInOrigin.substring(0, uniqueNameInOrigin.lastIndexOf("@"));
+                if (isWebFingerIdValid(uniqueNameInOrigin)) {
+                    return Optional.of(uniqueNameInOrigin.toLowerCase());
+                } else {
+                    int lastButOneIndex = nameBeforeTheLastAt.lastIndexOf("@");
+                    if (lastButOneIndex > -1) {
+                        String potentialWebFingerId = uniqueNameInOrigin.substring(lastButOneIndex + 1);
+                        if (isWebFingerIdValid(potentialWebFingerId)) {
+                            return Optional.of(potentialWebFingerId.toLowerCase());
+                        }
                     }
                 }
             }
@@ -339,8 +345,10 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (this == EMPTY) {
             throw new IllegalStateException("Cannot set username of EMPTY Actor");
         }
-        this.username = SharedPreferencesUtil.isEmpty(username) ? "" : username.trim();
-        fixWebFingerId();
+        this.username = StringUtils.isEmpty(username) ? "" : username.trim();
+        if (isUsernameValid()) {
+            fixWebFingerId();
+        }
         return this;
     }
 
@@ -433,27 +441,24 @@ public class Actor implements Comparable<Actor>, IsEmpty {
             setWebFingerId(username);
         } else if (!UriUtils.isEmpty(profileUri)){
             if(origin.isValid()) {
-                setWebFingerId(username + "@" + origin.fixUriforPermalink(profileUri).getHost());
+                setWebFingerId(username + "@" + origin.fixUriForPermalink(profileUri).getHost());
             } else {
                 setWebFingerId(username + "@" + profileUri.getHost());
             }
+        } else if (origin.shouldHaveUrl()) {
+            setWebFingerId(username + "@" + origin.fixUriForPermalink(UriUtils.fromUrl(origin.getUrl()))).getHost();
         }
     }
 
     public Actor setWebFingerId(String webFingerIdIn) {
         if (StringUtils.isEmpty(webFingerIdIn) || !webFingerIdIn.contains("@")) return this;
 
-        if (isWebFingerIdValid(webFingerIdIn)) {
-            webFingerId = webFingerIdIn.toLowerCase();
-            isWebFingerIdValid = true;
-            if (!isUsernameValid()) {
-                setUsername(webFingerIdIn.substring(0, webFingerIdIn.lastIndexOf("@")));
-            }
-        }
+        String potentialUsername = webFingerIdIn;
         final String nameBeforeTheLastAt = webFingerIdIn.substring(0, webFingerIdIn.lastIndexOf("@"));
         if (isWebFingerIdValid(webFingerIdIn)) {
             webFingerId = webFingerIdIn.toLowerCase();
             isWebFingerIdValid = true;
+            potentialUsername = nameBeforeTheLastAt;
         } else {
             int lastButOneIndex = nameBeforeTheLastAt.lastIndexOf("@");
             if (lastButOneIndex > -1) {
@@ -461,11 +466,12 @@ public class Actor implements Comparable<Actor>, IsEmpty {
                 if (isWebFingerIdValid(potentialWebFingerId)) {
                     webFingerId = potentialWebFingerId.toLowerCase();
                     isWebFingerIdValid = true;
+                    potentialUsername = webFingerIdIn.substring(0, lastButOneIndex);
                 }
             }
         }
-        if (!isUsernameValid()) {
-            setUsername(nameBeforeTheLastAt);
+        if (!isUsernameValid() && origin.isUsernameValid(potentialUsername)) {
+            username = potentialUsername;
         }
         return this;
     }

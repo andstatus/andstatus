@@ -123,7 +123,6 @@
   <string name="dialog_title_preference_theme_color">Selecteer een kleurenschema</string>
   <string name="dialog_title_preference_theme_size">Selecteer een grootte</string>
   <string name="dialog_title_preference_username">Gebruikersnaam</string>
-  <string name="dialog_title_preference_username_pumpio">Webfinger-ID</string>
   <string name="dialog_title_registering_client">Bezig met registreren van AndStatus...</string>
   <string name="dialog_title_select_timeline">Selecteer een tijdlijn</string>
   <string name="dialog_title_sending_message">Bezig met versturen van een activiteit&#8230;...</string>

@@ -153,11 +153,11 @@ public class AccountSettingsActivity extends MyActivity {
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
     }
 
-    private boolean invisibleView(@IdRes int id) {
-        return !isViewVisible(id);
+    private boolean isInvisibleView(@IdRes int id) {
+        return !isVisibleView(id);
     }
 
-    private boolean isViewVisible(@IdRes int id) {
+    private boolean isVisibleView(@IdRes int id) {
         View view = findFragmentViewById(id);
         return view != null && view.getVisibility() == View.VISIBLE;
     }
@@ -311,9 +311,9 @@ public class AccountSettingsActivity extends MyActivity {
 
     private void goToAddAccount() {
         if (state.getAccountAction().equals(Intent.ACTION_INSERT)
-                && invisibleView(R.id.username)
-                && invisibleView(R.id.password)
-                && isViewVisible(R.id.add_account)) {
+                && isInvisibleView(R.id.uniqueName)
+                && isInvisibleView(R.id.password)
+                && isVisibleView(R.id.add_account)) {
             View addAccount = findFragmentViewById(R.id.add_account);
             if (addAccount != null) addAccount.performClick();
         }
@@ -371,7 +371,7 @@ public class AccountSettingsActivity extends MyActivity {
         showTitle();
         showErrors();
         showOrigin();
-        showUsernameOrWebFinger();
+        showUniqueNameInOrigin();
         showPassword();
         showAccountState();
         showAddAccountButton();
@@ -410,29 +410,31 @@ public class AccountSettingsActivity extends MyActivity {
         }
     }
 
-    private void showUsernameOrWebFinger() {
+    private void showUniqueNameInOrigin() {
         MyAccount ma = state.getAccount();
-        showTextView(R.id.username_label,
+        showTextView(R.id.uniqueName_label,
                 ma.alternativeTermForResourceId(R.string.title_preference_username),
                 state.builder.isPersistent() || ma.isUsernameNeededToStartAddingNewAccount());
-        EditText usernameEditable = (EditText) findFragmentViewById(R.id.username);
-        if (usernameEditable != null) {
+        EditText nameEditable = (EditText) findFragmentViewById(R.id.uniqueName);
+        if (nameEditable != null) {
             if (state.builder.isPersistent() || !ma.isUsernameNeededToStartAddingNewAccount()) {
-                usernameEditable.setVisibility(View.GONE);
+                nameEditable.setVisibility(View.GONE);
             } else {
-                usernameEditable.setVisibility(View.VISIBLE);
-                usernameEditable.setHint(
-                        String.format(getText(ma.alternativeTermForResourceId(R.string.summary_preference_username)).toString(),
-                                ma.getOrigin().getName(), ma.getOrigin().getOriginType().validUsernameExamples));
-                usernameEditable.addTextChangedListener(textWatcher);
-                if (usernameEditable.getText().length() == 0) {
-                    usernameEditable.requestFocus();
+                nameEditable.setVisibility(View.VISIBLE);
+                nameEditable.setHint(
+                        String.format(getText(ma.getOrigin().shouldHaveUrl()
+                                        ? R.string.summary_preference_username
+                                        : R.string.summary_preference_username_webfinger_id).toString(),
+                                ma.getOrigin().getName(), ma.getOrigin().getOriginType().uniqueNameInOriginExamples));
+                nameEditable.addTextChangedListener(textWatcher);
+                if (nameEditable.getText().length() == 0) {
+                    nameEditable.requestFocus();
                 }
             }
-            if (ma.getUsername().compareTo(usernameEditable.getText().toString()) != 0) {
-                usernameEditable.setText(ma.getUsername());
+            if (ma.getUsername().compareTo(nameEditable.getText().toString()) != 0) {
+                nameEditable.setText(ma.getActor().getUniqueNameInOrigin());
             }
-            showTextView(R.id.username_readonly, ma.getUsername(), state.builder.isPersistent());
+            showTextView(R.id.uniqueName_readonly, ma.getActor().getUniqueNameInOrigin(), state.builder.isPersistent());
         }
     }
 
@@ -509,7 +511,7 @@ public class AccountSettingsActivity extends MyActivity {
     
     private void showAddAccountButton() {
         TextView textView = showTextView(R.id.add_account, null, !state.builder.isPersistent());
-        if (textView != null && isViewVisible(R.id.add_account)) {
+        if (textView != null && isVisibleView(R.id.add_account)) {
             textView.setOnClickListener(v -> {
                 clearError();
                 updateChangedFields();
@@ -713,9 +715,9 @@ public class AccountSettingsActivity extends MyActivity {
 
     private void updateChangedFields() {
         if (!state.builder.isPersistent()) {
-            EditText usernameEditable = (EditText) findFragmentViewById(R.id.username);
-            if (usernameEditable != null) {
-                String uniqueNameInOrigin = usernameEditable.getText().toString();
+            EditText uniqueNameEditable = (EditText) findFragmentViewById(R.id.uniqueName);
+            if (uniqueNameEditable != null) {
+                String uniqueNameInOrigin = uniqueNameEditable.getText().toString();
                 if (uniqueNameInOrigin.compareTo(state.getAccount().getOAccountName().getUniqueNameInOrigin()) != 0) {
                     boolean isOAuth = state.getAccount().isOAuth();
                     state.builder = MyAccount.Builder.newOrExistingFromAccountName(

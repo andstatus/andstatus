@@ -177,6 +177,7 @@ public class TestSuite {
 
         intent = new Intent(MyContextHolder.get().context(), HelpActivity.class);
         intent.putExtra(HelpActivity.EXTRA_CLOSE_ME, true);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         MyContextHolder.get().context().startActivity(intent);
         DbUtils.waitMs(method, 2000);
     }

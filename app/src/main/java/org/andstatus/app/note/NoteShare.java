@@ -109,7 +109,7 @@ public class NoteShare {
                                         noteId,
                                         origin.isMentionAsWebFingerId() ? ActorInTimeline.WEBFINGER_ID
                                                 : ActorInTimeline.USERNAME),
-                                origin.notePermalink(noteId)
+                                origin.getNotePermalink(noteId)
                                 )).toString();
     }
 
@@ -117,7 +117,7 @@ public class NoteShare {
      * @return true if succeeded
      */
     public boolean openPermalink(Context context) {
-        return origin == null ? false : openLink(context, origin.notePermalink(noteId));
+        return origin == null ? false : openLink(context, origin.getNotePermalink(noteId));
     }
 
     public static boolean openLink(Context context, String urlString) {
