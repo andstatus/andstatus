@@ -35,6 +35,9 @@ public class ConnectionActivityPub extends ConnectionPumpio {
             case ACCOUNT_VERIFY_CREDENTIALS:
                 url = "ap/whoami";
                 break;
+            case PUBLIC_TIMELINE:
+                url = "inbox";
+                break;
             default:
                 return super.getApiPath1(routine);
         }

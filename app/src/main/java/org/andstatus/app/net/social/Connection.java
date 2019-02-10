@@ -186,6 +186,8 @@ public abstract class Connection {
             case UPDATE_NOTE:
             case ACTOR_TIMELINE:
                 return actor.endpoints.getFirst(ActorEndpointType.API_OUTBOX);
+            case PUBLIC_TIMELINE:
+                return actor.endpoints.getFirst(ActorEndpointType.API_SHARED_INBOX);
             default:
                 return Uri.EMPTY;
         }

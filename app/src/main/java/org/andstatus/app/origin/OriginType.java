@@ -237,6 +237,7 @@ public enum OriginType implements SelectableEnum {
                 mAllowAttachmentForPrivateNote = true;
                 isSearchTimelineSyncable = false;
                 isPrivateTimelineSyncable = false;
+                isPublicTimeLineSyncable = true;
                 isInteractionsTimelineSyncable = false;
                 allowEditing = true;
                 isPrivateNoteAllowsReply = true;
