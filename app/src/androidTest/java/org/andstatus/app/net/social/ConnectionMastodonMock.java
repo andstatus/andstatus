@@ -20,7 +20,7 @@ public class ConnectionMastodonMock extends ConnectionMastodon implements Connec
         Origin origin = MyContextHolder.get().origins().fromName(demoData.mastodonTestOriginName);
 
         OriginConnectionData connectionData = OriginConnectionData.fromAccountName(
-                AccountName.fromOriginAndUsername(origin, demoData.mastodonTestAccountUsername),
+                AccountName.fromOriginAndUniqueName(origin, demoData.mastodonTestAccountUsername),
                 TriState.UNKNOWN);
         connectionData.setAccountActor(demoData.getAccountActorByOid(demoData.mastodonTestAccountActorOid));
         connectionData.setDataReader(new AccountDataReaderEmpty());

@@ -22,8 +22,6 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.annotation.IdRes;
-import androidx.fragment.app.Fragment;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -79,6 +77,8 @@ import org.json.JSONObject;
 
 import java.util.List;
 
+import androidx.annotation.IdRes;
+import androidx.fragment.app.Fragment;
 import oauth.signpost.OAuth;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.exception.OAuthCommunicationException;
@@ -302,7 +302,7 @@ public class AccountSettingsActivity extends MyActivity {
             // If we have changed the System, we should recreate the Account
             state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                     MyContextHolder.get(),
-                    AccountName.fromOriginAndUsername(origin, state.getAccount().getUsername()).toString(),
+                    AccountName.fromOriginAndUniqueName(origin, state.getAccount().getOAccountName().getUniqueNameInOrigin()).toString(),
                     TriState.fromBoolean(state.getAccount().isOAuth()));
             updateScreen();
             goToAddAccount();
@@ -371,7 +371,7 @@ public class AccountSettingsActivity extends MyActivity {
         showTitle();
         showErrors();
         showOrigin();
-        showUsername();
+        showUsernameOrWebFinger();
         showPassword();
         showAccountState();
         showAddAccountButton();
@@ -410,7 +410,7 @@ public class AccountSettingsActivity extends MyActivity {
         }
     }
 
-    private void showUsername() {
+    private void showUsernameOrWebFinger() {
         MyAccount ma = state.getAccount();
         showTextView(R.id.username_label,
                 ma.alternativeTermForResourceId(R.string.title_preference_username),
@@ -715,13 +715,13 @@ public class AccountSettingsActivity extends MyActivity {
         if (!state.builder.isPersistent()) {
             EditText usernameEditable = (EditText) findFragmentViewById(R.id.username);
             if (usernameEditable != null) {
-                String username = usernameEditable.getText().toString();
-                if (username.compareTo(state.getAccount().getUsername()) != 0) {
+                String uniqueNameInOrigin = usernameEditable.getText().toString();
+                if (uniqueNameInOrigin.compareTo(state.getAccount().getOAccountName().getUniqueNameInOrigin()) != 0) {
                     boolean isOAuth = state.getAccount().isOAuth();
                     state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                             MyContextHolder.get(),
-                            AccountName.fromOriginAndUsername(
-                                    state.getAccount().getOrigin(), username).toString(),
+                            AccountName.fromOriginAndUniqueName(
+                                    state.getAccount().getOrigin(), uniqueNameInOrigin).toString(),
                             TriState.fromBoolean(isOAuth));
                 }
             }

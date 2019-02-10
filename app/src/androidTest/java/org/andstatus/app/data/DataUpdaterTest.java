@@ -19,7 +19,6 @@ package org.andstatus.app.data;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import androidx.test.InstrumentationRegistry;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
@@ -54,8 +53,11 @@ import org.junit.Test;
 
 import java.util.List;
 
+import androidx.test.InstrumentationRegistry;
+
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -506,66 +508,72 @@ public class DataUpdaterTest {
 
     @Test
     public void testReplyInBody() {
-        MyAccount ma = demoData.getPumpioConversationAccount();
-        String buddyUsername = "buddy" +  demoData.testRunUid + "@example.com";
-        String content = "@" + buddyUsername + " I'm replying to you in a note's body."
+        final MyAccount ma = demoData.getPumpioConversationAccount();
+        String buddyName = "buddy" +  demoData.testRunUid + "@example.com";
+        String content = "@" + buddyName + " I'm replying to you in a note's body."
                 + " Hope you will see this as a real reply!";
-        addOneNote4testReplyInContent(buddyUsername, content, true);
+        addOneNote4testReplyInContent(ma, buddyName, content, true);
 
-        addOneNote4testReplyInContent(buddyUsername, "Oh, " + content, true);
+        addOneNote4testReplyInContent(ma, buddyName, "Oh, " + content, true);
 
-        long actorId1 = MyQuery.webFingerIdToId(ma.getOriginId(), buddyUsername);
-        assertEquals("Actor has temp Oid", Actor.getTempOid(buddyUsername, ""), MyQuery.idToOid(OidEnum.ACTOR_OID, actorId1, 0));
+        long actorId1 = MyQuery.webFingerIdToId(ma.getOriginId(), buddyName);
+        assertEquals("Actor should have temp Oid", Actor.getTempOid(buddyName, ""),
+                MyQuery.idToOid(OidEnum.ACTOR_OID, actorId1, 0));
 
-        String realBuddyOid = "acc:" + buddyUsername;
+        String realBuddyOid = "acc:" + buddyName;
         Actor actor = Actor.fromOid(ma.getOrigin(), realBuddyOid);
-        actor.setUsername(buddyUsername);
+        actor.withUniqueNameInOrigin(buddyName);
         DataUpdater di = new DataUpdater(ma);
         long actorId2 = di.onActivity(ma.getActor().update(actor)).getObjActor().actorId;
         assertEquals(actorId1, actorId2);
-        assertEquals("TempOid replaced with real", realBuddyOid, MyQuery.idToOid(OidEnum.ACTOR_OID, actorId1, 0));
+        assertEquals("TempOid should be replaced with real", realBuddyOid,
+                MyQuery.idToOid(OidEnum.ACTOR_OID, actorId1, 0));
 
-        content = "<a href=\"http://example.com/a\">@" + buddyUsername + "</a>, this is an HTML <i>formatted</i> note";
-        addOneNote4testReplyInContent(buddyUsername, content, true);
+        addOneNote4testReplyInContent(ma, buddyName, "<a href=\"http://example.com/a\">@" +
+                buddyName + "</a>, this is an HTML <i>formatted</i> note", true);
 
-        buddyUsername = demoData.conversationAuthorThirdUsername;
-        content = "@" + buddyUsername + " I know you are already in our cache";
-        addOneNote4testReplyInContent(buddyUsername, content, true);
+        String buddyName3 = demoData.conversationAuthorThirdUsername;
+        addOneNote4testReplyInContent(ma, buddyName3,
+                "@" + buddyName3 + " I know you are already in our cache", true);
+
+        String buddyName4 = ma.getActor().getUniqueNameInOrigin();
+        addOneNote4testReplyInContent(ma, buddyName4,
+                "Reply to myaccount @" + buddyName4 + " should add me as a recipient", true);
+        addOneNote4testReplyInContent(ma, buddyName3,
+                "Reply to myaccount @" + buddyName4 + " should not add other buddy as a recipient", false);
     }
 
-    private void addOneNote4testReplyInContent(String buddyUsername, String content, boolean isReply) {
-        MyAccount ma = demoData.getPumpioConversationAccount();
-        Actor accountActor = ma.getActor();
+    private void addOneNote4testReplyInContent(MyAccount ma, String buddyUniqueName, String content, boolean isReply) {
 
-        DataUpdater di = new DataUpdater(ma);
-        String username = "somebody" + demoData.testRunUid + "@somewhere.net";
-        String actorOid = OriginPumpio.ACCOUNT_PREFIX + username;
-        Actor somebody = Actor.fromOid(accountActor.origin, actorOid);
-        somebody.setUsername(username);
-        somebody.setProfileUrl("https://somewhere.net/" + username);
+        String actorUniqueName = "somebody" + demoData.testRunUid + "@somewhere.net";
+        Actor actor = Actor.fromOid(ma.getActor().origin, OriginPumpio.ACCOUNT_PREFIX + actorUniqueName);
+        actor.withUniqueNameInOrigin(actorUniqueName);
+        actor.setProfileUrl("https://somewhere.net/" + actorUniqueName);
 
-        AActivity activity = AActivity.newPartialNote(accountActor, somebody, String.valueOf(System.nanoTime()),
+        AActivity activityIn = AActivity.newPartialNote(ma.getActor(), actor, String.valueOf(System.nanoTime()),
                 System.currentTimeMillis(), DownloadStatus.LOADED);
-        Note note = activity.getNote();
-        note.setContentPosted(content);
-        note.via = "MyCoolClient";
+        Note noteIn = activityIn.getNote();
+        noteIn.setContentPosted(content);
+        noteIn.via = "MyCoolClient";
 
-        long noteId = di.onActivity(activity).getNote().noteId;
+        final AActivity activity = new DataUpdater(ma).onActivity(activityIn);
+        final Note note = activity.getNote();
+        assertTrue("Note was not added: " + activity, note.noteId != 0);
+
         Actor buddy = Actor.EMPTY;
-        for (Actor actor : activity.audience().getActors()) {
-            if (actor.getUsername().equals(buddyUsername)) {
-                buddy = actor;
+        for (Actor recipient : activity.audience().getActors()) {
+            assertFalse("Audience member is empty: " + recipient + ",\n" + note, recipient.isEmpty());
+            if (recipient.getUniqueNameInOrigin().equals(buddyUniqueName)) {
+                buddy = recipient;
                 break;
             }
         }
-        assertTrue("Note added", noteId != 0);
         if (isReply) {
-            assertTrue("'" + buddyUsername + "' should be a recipient " + activity.audience().getActors(),
-                    buddy.nonEmpty());
-            assertNotEquals("'" + buddyUsername + "' is not added " + buddy, 0, buddy.actorId);
+            assertNotEquals("'" + buddyUniqueName + "' should be a recipient " + activity.audience().getActors(),
+                    Actor.EMPTY, buddy);
+            assertNotEquals("'" + buddyUniqueName + "' is not added " + buddy, 0, buddy.actorId);
         } else {
-            assertTrue("Don't treat this note as a reply:'"
-                    + note.getContent() + "'", buddy.isEmpty());
+            assertTrue("Note is a reply to '" + buddyUniqueName + "': " + note, buddy.isEmpty());
         }
     }
 

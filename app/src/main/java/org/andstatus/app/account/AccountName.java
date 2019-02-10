@@ -16,11 +16,12 @@
 
 package org.andstatus.app.account;
 
-import androidx.annotation.NonNull;
-
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.StringUtils;
+
+import androidx.annotation.NonNull;
 
 /**
  * Account name, unique for this application and suitable for {@link android.accounts.AccountManager}
@@ -34,8 +35,9 @@ public class AccountName {
     
     /** The system in which the Account is defined, see {@link Origin} */
     public final Origin origin;
-    /** The username ("screen name") is unique for the {@link Origin} */
-    public final String username;
+    /** The name is a username ("screen name") or username@originHost to be unique for the {@link Origin}
+     *  "@originHost" suffix is used, when the {@link Origin} doesn't have host {@link Origin#shouldHaveUrl()} */
+    private final String uniqueNameInOrigin;
     public final boolean isValid;
 
     private static String accountNameToOriginName(String accountName) {
@@ -49,25 +51,22 @@ public class AccountName {
         return fixOriginName(originName);
     }
 
-    private static String fixUsername(String usernameIn, Origin origin) {
-        String usernameOut = "";
-        if (usernameIn != null) {
-            usernameOut = usernameIn.trim();
+    private static String fixUniqueNameInOrigin(String uniqueNameIn, Origin origin) {
+        String uniqueName = StringUtils.notNull(uniqueNameIn).trim();
+        if (Actor.uniqueNameInOriginToUsername(origin, uniqueName).isPresent()) {
+            return uniqueName;
+        } else {
+            return "";
         }
-        if (!origin.isUsernameValid(usernameOut)) {
-            usernameOut = "";
-        }
-        return usernameOut;
     }
     
-    private static String accountNameToUsername(String accountName, Origin origin) {
+    private static String accountNameToUniqueNameInOrigin(String accountName, Origin origin) {
         String accountNameFixed = fixAccountName(accountName);
         int indSeparator = accountNameFixed.indexOf(ORIGIN_SEPARATOR);
-        String usernameOut = "";
-        if (indSeparator > 0) {
-            usernameOut = accountNameFixed.substring(0, indSeparator);
-        }
-        return fixUsername(usernameOut, origin);
+        String usernameOut = indSeparator > 0
+            ? accountNameFixed.substring(0, indSeparator)
+            : "";
+        return fixUniqueNameInOrigin(usernameOut, origin);
     }
 
     private static String fixAccountName(String accountNameIn) {
@@ -82,13 +81,13 @@ public class AccountName {
         return new AccountName("", Origin.EMPTY);
     }
 
-    protected static AccountName fromOriginAndUserNames(MyContext myContext, String originName,
-                                                        String username) {
-        return fromOriginAndUsername(myContext.origins().fromName(fixOriginName(originName)), username);
+    static AccountName fromOriginNameAndUniqueUserName(MyContext myContext, String originName,
+                                                       String uniqueNameInOrigin) {
+        return fromOriginAndUniqueName(myContext.origins().fromName(fixOriginName(originName)), uniqueNameInOrigin);
     }
 
-    public static AccountName fromOriginAndUsername(@NonNull Origin origin, String username) {
-        return new AccountName(fixUsername(username, origin), origin);
+    public static AccountName fromOriginAndUniqueName(@NonNull Origin origin, String uniqueNameInOrigin) {
+        return new AccountName(fixUniqueNameInOrigin(uniqueNameInOrigin, origin), origin);
     }
 
     private static String fixOriginName(String originNameIn) {
@@ -102,17 +101,19 @@ public class AccountName {
     @NonNull
     public static AccountName fromAccountName(MyContext myContext, String accountNameString) {
         Origin origin = myContext.origins().fromName(accountNameToOriginName(accountNameString));
-        return new AccountName(accountNameToUsername(accountNameString, origin), origin);
+        return new AccountName(accountNameToUniqueNameInOrigin(accountNameString, origin), origin);
     }
     
-    private AccountName(String username, Origin origin) {
-        this.username = username;
+    private AccountName(String uniqueNameInOrigin, Origin origin) {
+        this.uniqueNameInOrigin = uniqueNameInOrigin;
         this.origin = origin;
-        isValid = origin.isUsernameValid(username) && origin.isPersistent();
+        isValid = origin.isPersistent()
+                && Actor.uniqueNameInOriginToUsername(origin, uniqueNameInOrigin)
+                    .map(origin::isUsernameValid).orElse(false);
     }
 
     public String getName() {
-        return username + ORIGIN_SEPARATOR + origin.getName();
+        return uniqueNameInOrigin + ORIGIN_SEPARATOR + origin.getName();
     }
 
     @Override
@@ -122,7 +123,7 @@ public class AccountName {
 
     @NonNull
     private String usernameToString() {
-        return origin.isUsernameValid(username) ? "" : "username " + origin + " ";
+        return origin.isUsernameValid(uniqueNameInOrigin) ? "" : "username " + origin + " ";
     }
 
     public Origin getOrigin() {
@@ -133,8 +134,8 @@ public class AccountName {
         return isValid;
     }
     
-    public String getUsername() {
-        return username;
+    public String getUniqueNameInOrigin() {
+        return uniqueNameInOrigin;
     }
 
     String getOriginName() {
@@ -153,15 +154,15 @@ public class AccountName {
         AccountName that = (AccountName) o;
 
         if (!origin.equals(that.origin)) return false;
-        return StringUtils.equalsNotEmpty(username, that.username);
+        return StringUtils.equalsNotEmpty(uniqueNameInOrigin, that.uniqueNameInOrigin);
 
     }
 
     @Override
     public int hashCode() {
         int result = origin.hashCode();
-        if (!StringUtils.isEmpty(username)) {
-            result = 31 * result + username.hashCode();
+        if (!StringUtils.isEmpty(uniqueNameInOrigin)) {
+            result = 31 * result + uniqueNameInOrigin.hashCode();
         }
         return result;
     }

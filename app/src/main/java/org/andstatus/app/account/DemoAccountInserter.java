@@ -17,7 +17,6 @@
 package org.andstatus.app.account;
 
 import android.accounts.Account;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContext;
@@ -37,6 +36,8 @@ import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
 import java.util.List;
+
+import androidx.annotation.NonNull;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
@@ -82,10 +83,10 @@ public class DemoAccountInserter {
         long accountActorId_existing = MyQuery.oidToId(myContext, OidEnum.ACTOR_OID,
                 accountName.getOrigin().getId(), actorOid);
         Actor actor = Actor.fromOid(accountName.getOrigin(), actorOid);
-        actor.setUsername(accountName.getUsername());
+        actor.withUniqueNameInOrigin(accountName.getUniqueNameInOrigin());
         actor.setAvatarUrl(avatarUrl);
-        if (!actor.isWebFingerIdValid() && UrlUtils.hasHost(actor.origin.getUrl())) {
-            actor.setWebFingerId(actor.getUsername() + "@" + actor.origin.getHost());
+        if (!actor.isWebFingerIdValid() && UrlUtils.hostIsValid(actor.getHost())) {
+            actor.setWebFingerId(actor.getUsername() + "@" + actor.getHost());
         }
         assertTrue("No WebfingerId " + actor, actor.isWebFingerIdValid());
         actor.setCreatedDate(MyLog.uniqueCurrentTimeMS());
@@ -137,12 +138,12 @@ public class DemoAccountInserter {
 
     private MyAccount addAccountFromActor(@NonNull Actor actor) {
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(myContext,
-                actor.getUsername() + "/" + actor.origin.getName(), TriState.TRUE);
+                 actor.getUniqueNameInOrigin() + "/" + actor.origin.getName(), TriState.TRUE);
         if (builder.getAccount().isOAuth()) {
-            builder.setUserTokenWithSecret("sampleUserTokenFor" + actor.getUsername(),
-                    "sampleUserSecretFor" + actor.getUsername());
+            builder.setUserTokenWithSecret("sampleUserTokenFor" + actor.getNamePreferablyWebFingerId(),
+                    "sampleUserSecretFor" + actor.getNamePreferablyWebFingerId());
         } else {
-            builder.setPassword("samplePasswordFor" + actor.getUsername());
+            builder.setPassword("samplePasswordFor" + actor.getNamePreferablyWebFingerId());
         }
         assertTrue("Credentials of " + actor + " are present (origin name=" + actor.origin.getName() + ")",
                 builder.getAccount().getCredentialsPresent());
@@ -155,10 +156,10 @@ public class DemoAccountInserter {
 
         assertTrue("Account is persistent " + builder.getAccount(), builder.isPersistent());
         MyAccount ma = builder.getAccount();
-        assertEquals("Credentials of " + actor.getUsername() + " successfully verified",
+        assertEquals("Credentials of " + actor.getNamePreferablyWebFingerId() + " successfully verified",
                 CredentialsVerificationStatus.SUCCEEDED, ma.getCredentialsVerified());
         long actorId = ma.getActorId();
-        assertTrue("Account " + actor.getUsername() + " has ActorId", actorId != 0);
+        assertTrue("Account " + actor.getNamePreferablyWebFingerId() + " has ActorId", actorId != 0);
         assertEquals("Account actorOid", ma.getActorOid(), actor.oid);
         String oid = MyQuery.idToOid(myContext.getDatabase(), OidEnum.ACTOR_OID, actorId, 0);
         if (StringUtils.isEmpty(oid)) {
@@ -169,7 +170,7 @@ public class DemoAccountInserter {
         assertEquals("Actor in the database for id=" + actorId,
                 actor.oid,
                 MyQuery.idToOid(myContext.getDatabase(), OidEnum.ACTOR_OID, actorId, 0));
-        assertEquals("Account name", actor.getUsername() + "/" + actor.origin.getName(), ma.getAccountName());
+        assertEquals("Account name", actor.getUniqueNameInOrigin() + "/" + actor.origin.getName(), ma.getAccountName());
 
         assertEquals("User should be known as this actor " + actor, actor.getWebFingerId(), actor.user.getKnownAs());
         assertEquals("User is not mine " + actor, TriState.TRUE, actor.user.isMyUser());

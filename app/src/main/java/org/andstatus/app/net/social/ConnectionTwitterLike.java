@@ -17,7 +17,6 @@
 package org.andstatus.app.net.social;
 
 import android.net.Uri;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
@@ -32,6 +31,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
 
 /**
  * Twitter API implementations
@@ -214,22 +215,22 @@ public abstract class ConnectionTwitterLike extends Connection {
     @NonNull
     @Override
     public List<AActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                       TimelinePosition oldestPosition, int limit, String actorOid)
+                                       TimelinePosition oldestPosition, int limit, Actor actor)
             throws ConnectionException {
-        Uri.Builder builder = getTimelineUriBuilder(apiRoutine, limit, actorOid);
+        Uri.Builder builder = getTimelineUriBuilder(apiRoutine, limit, actor);
         appendPositionParameters(builder, youngestPosition, oldestPosition);
         JSONArray jArr = http.getRequestAsArray(builder.build().toString());
         return jArrToTimeline(jArr, apiRoutine, builder.build().toString());
     }
 
     @NonNull
-    protected Uri.Builder getTimelineUriBuilder(ApiRoutineEnum apiRoutine, int limit, String actorId) throws ConnectionException {
+    protected Uri.Builder getTimelineUriBuilder(ApiRoutineEnum apiRoutine, int limit, Actor actor) throws ConnectionException {
         String url = this.getApiPath(apiRoutine);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
-        if (!StringUtils.isEmpty(actorId)) {
-            builder.appendQueryParameter("user_id", actorId);
+        if (!StringUtils.isEmpty(actor.oid)) {
+            builder.appendQueryParameter("user_id", actor.oid);
         }
         return builder;
     }
@@ -625,16 +626,16 @@ public abstract class ConnectionTwitterLike extends Connection {
     }
 
     @Override
-    public List<Actor> getFollowers(String actorOid) throws ConnectionException {
-        return getActors(actorOid, ApiRoutineEnum.GET_FOLLOWERS);
+    public List<Actor> getFollowers(Actor actor) throws ConnectionException {
+        return getActors(actor, ApiRoutineEnum.GET_FOLLOWERS);
     }
 
     @Override
-    public List<Actor> getFriends(String actorOid) throws ConnectionException {
-        return getActors(actorOid, ApiRoutineEnum.GET_FRIENDS);
+    public List<Actor> getFriends(Actor actor) throws ConnectionException {
+        return getActors(actor, ApiRoutineEnum.GET_FRIENDS);
     }
 
-    List<Actor> getActors(String actorId, ApiRoutineEnum apiRoutine) throws ConnectionException {
+    List<Actor> getActors(Actor actor, ApiRoutineEnum apiRoutine) throws ConnectionException {
         return new ArrayList<>();
     }
 

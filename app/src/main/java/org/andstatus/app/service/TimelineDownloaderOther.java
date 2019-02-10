@@ -16,15 +16,12 @@
 
 package org.andstatus.app.service;
 
-import androidx.annotation.NonNull;
-
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataUpdater;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.social.AActivity;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
@@ -34,6 +31,8 @@ import org.andstatus.app.util.TriState;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import androidx.annotation.NonNull;
 
 class TimelineDownloaderOther extends TimelineDownloader {
     private static final int YOUNGER_NOTES_TO_DOWNLOAD_MAX = 200;
@@ -71,7 +70,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
             }
             MyLog.d(this, strLog);
         }
-        String actorOid = getActorOid();
+        Actor actor = getActorWithOid();
         int toDownload = downloadingLatest ? LATEST_NOTES_TO_DOWNLOAD_MAX :
                 (isSyncYounger() ? YOUNGER_NOTES_TO_DOWNLOAD_MAX : OLDER_NOTES_TO_DOWNLOAD_MAX);
         TimelinePosition previousPosition = syncTracker.getPreviousPosition();
@@ -95,7 +94,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
                                 getTimeline().getTimelineType().getConnectionApiRoutine(),
                                 isSyncYounger() ? previousPosition : TimelinePosition.EMPTY,
                                 isSyncYounger() ? TimelinePosition.EMPTY : previousPosition,
-                                limit, actorOid);
+                                limit, actor);
                         break;
                 }
                 for (AActivity activity : activities) {
@@ -129,21 +128,21 @@ class TimelineDownloaderOther extends TimelineDownloader {
     }
 
     @NonNull
-    private String getActorOid() throws ConnectionException {
+    private Actor getActorWithOid() throws ConnectionException {
         if (getActor().actorId == 0) {
             if (getTimeline().myAccountToSync.isValid()) {
-                return getTimeline().myAccountToSync.getActorOid();
+                return getTimeline().myAccountToSync.getActor();
             }
         } else {
-            String actorOid =  MyQuery.idToOid(OidEnum.ACTOR_OID, getActor().actorId, 0);
-            if (StringUtils.isEmpty(actorOid)) {
-                throw new ConnectionException("No ActorOid for " + getActor() + ", timeline:" + getTimeline());
+            Actor actor = Actor.load(execContext.myContext, getActor().actorId);
+            if (StringUtils.isEmpty(actor.oid)) {
+                throw new ConnectionException("No ActorOid for " + actor + ", timeline:" + getTimeline());
             }
-            return actorOid;
+            return actor;
         }
         if (getTimeline().getTimelineType().isForUser()) {
             throw new ConnectionException("No actor for the timeline:" + getTimeline());
         }
-        return "";
+        return Actor.EMPTY;
     }
 }

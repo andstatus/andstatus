@@ -45,12 +45,12 @@ import static org.junit.Assert.assertTrue;
 
 public class ConnectionMastodonTest {
     private ConnectionMastodonMock connection;
-    private String accountActorOid;
+    private Actor accountActor;
 
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithAccounts(this);
-        accountActorOid = demoData.mastodonTestAccountActorOid;
+        accountActor = demoData.getAccountActorByOid(demoData.mastodonTestAccountActorOid);
         connection = new ConnectionMastodonMock();
     }
 
@@ -59,7 +59,7 @@ public class ConnectionMastodonTest {
         connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.mastodon_home_timeline);
 
         List<AActivity> timeline = connection.getTimeline(Connection.ApiRoutineEnum.HOME_TIMELINE,
-                new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountActorOid);
+                new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountActor);
         assertNotNull("timeline returned", timeline);
         int size = 1;
         assertEquals("Number of items in the Timeline", size, timeline.size());
@@ -118,7 +118,7 @@ public class ConnectionMastodonTest {
         connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.mastodon_notifications);
 
         List<AActivity> timeline = connection.getTimeline(Connection.ApiRoutineEnum.NOTIFICATIONS_TIMELINE,
-                new TimelinePosition(""), TimelinePosition.EMPTY, 20, accountActorOid);
+                new TimelinePosition(""), TimelinePosition.EMPTY, 20, accountActor);
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 20, timeline.size());
 
@@ -158,7 +158,7 @@ public class ConnectionMastodonTest {
         assertEquals("Username", "resir014", actor.getUsername());
         assertEquals("WebfingerId", "resir014@icosahedron.website", actor.getWebFingerId());
         Actor objActor = activity.getObjActor();
-        assertEquals("Not following me" + activity, accountActorOid, objActor.oid);
+        assertEquals("Not following me" + activity, accountActor.oid, objActor.oid);
 
         ind = 19;
         activity = timeline.get(ind);

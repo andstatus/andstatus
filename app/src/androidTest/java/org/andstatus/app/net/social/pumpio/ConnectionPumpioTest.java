@@ -39,6 +39,7 @@ import org.andstatus.app.net.social.ConnectionMockable;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio.ConnectionAndUrl;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
@@ -79,7 +80,7 @@ public class ConnectionPumpioTest {
         originUrl = UrlUtils.fromString("https://" + demoData.pumpioMainHost);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        OriginConnectionData connectionData = OriginConnectionData.fromAccountName(AccountName.fromOriginAndUsername(
+        OriginConnectionData connectionData = OriginConnectionData.fromAccountName(AccountName.fromOriginAndUniqueName(
                 MyContextHolder.get().origins().fromName(demoData.pumpioOriginName), ""),
                 TriState.UNKNOWN);
         connectionData.setAccountActor(demoData.getAccountActorByOid(demoData.pumpioTestAccountActorOid));
@@ -151,13 +152,18 @@ public class ConnectionPumpioTest {
 
     @Test
     public void testGetConnectionAndUrl() throws ConnectionException {
-        String actorOids[] = {"acct:t131t@" + demoData.pumpioMainHost,
-                "somebody@" + demoData.pumpioMainHost};
+        Origin origin = connection.getData().getOrigin();
+        Actor actors[] = {
+                Actor.fromOid(origin,"acct:t131t@" + demoData.pumpioMainHost)
+                    .setWebFingerId("t131t@" + demoData.pumpioMainHost),
+                Actor.fromOid(origin,"somebody@" + demoData.pumpioMainHost)
+                    .setWebFingerId("somebody@" + demoData.pumpioMainHost)
+        };
         String urls[] = {"api/user/t131t/profile", 
                 "api/user/somebody/profile"};
         String hosts[] = {demoData.pumpioMainHost, demoData.pumpioMainHost};
-        for (int ind=0; ind < actorOids.length; ind++) {
-            ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.GET_ACTOR, actorOids[ind]);
+        for (int ind=0; ind < actors.length; ind++) {
+            ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.GET_ACTOR, actors[ind]);
             assertEquals("Expecting '" + urls[ind] + "'", urls[ind], conu.url);
             assertEquals("Expecting '" + hosts[ind] + "'", hosts[ind], conu.httpConnection.data.originUrl.getHost());
         }
@@ -167,8 +173,11 @@ public class ConnectionPumpioTest {
     public void testGetTimeline() throws IOException {
         String sinceId = "https%3A%2F%2F" + originUrl.getHost() + "%2Fapi%2Factivity%2Ffrefq3232sf";
         httpConnectionMock.addResponse(org.andstatus.app.tests.R.raw.pumpio_actor_t131t_inbox);
+        final String webFingerId = "t131t@" + originUrl.getHost();
+        Actor actor1 = Actor.fromOid(connection.getData().getOrigin(),"acct:" + webFingerId)
+                .setWebFingerId(webFingerId);
         List<AActivity> timeline = connection.getTimeline(ApiRoutineEnum.HOME_TIMELINE,
-                new TimelinePosition(sinceId), TimelinePosition.EMPTY, 20, "acct:t131t@" + originUrl.getHost());
+                new TimelinePosition(sinceId), TimelinePosition.EMPTY, 20, actor1);
         assertNotNull("timeline returned", timeline);
         int size = 6;
         assertEquals("Number of items in the Timeline", size, timeline.size());
@@ -184,7 +193,8 @@ public class ConnectionPumpioTest {
                 TestSuite.utcTime(activity.getUpdatedDate()));
         Actor actor = activity.getActor();
         assertEquals("Sender's oid", "acct:jpope@io.jpope.org", actor.oid);
-        assertEquals("Sender's username", "jpope@io.jpope.org", actor.getUsername());
+        assertEquals("Sender's username", "jpope", actor.getUsername());
+        assertEquals("Sender's unique name in Origin", "jpope@io.jpope.org", actor.getUniqueNameInOrigin());
         assertEquals("Sender's Display name", "jpope", actor.getRealName());
         assertEquals("Sender's profile image URL", "https://io.jpope.org/uploads/jpope/2013/7/8/LPyLPw_thumb.png", actor.getAvatarUrl());
         assertEquals("Sender's profile URL", "https://io.jpope.org/jpope", actor.getProfileUrl());
@@ -277,7 +287,7 @@ public class ConnectionPumpioTest {
         note = activity.getNote();
         assertEquals(TriState.UNKNOWN, activity.isSubscribedByMe());
         assertTrue("Is a reply", note.getInReplyTo().nonEmpty());
-        assertEquals("Is not a reply to this actor " + activity, "jankusanagi@identi.ca", note.getInReplyTo().getAuthor().getUsername());
+        assertEquals("Is not a reply to this actor " + activity, "jankusanagi@identi.ca", note.getInReplyTo().getAuthor().getUniqueNameInOrigin());
         assertEquals(TriState.UNKNOWN, note.getInReplyTo().isSubscribedByMe());
     }
 
@@ -286,15 +296,19 @@ public class ConnectionPumpioTest {
         httpConnectionMock.addResponse(org.andstatus.app.tests.R.raw.pumpio_actor_t131t_following);
         
         assertTrue(connection.isApiSupported(ApiRoutineEnum.GET_FRIENDS));        
-        assertTrue(connection.isApiSupported(ApiRoutineEnum.GET_FRIENDS_IDS));        
-        
-        List<Actor> actors = connection.getFriends("acct:t131t@" + originUrl.getHost());
+        assertTrue(connection.isApiSupported(ApiRoutineEnum.GET_FRIENDS_IDS));
+
+        final String webFingerId = "t131t@" + originUrl.getHost();
+        Actor actor = Actor.fromOid(connection.getData().getOrigin(),"acct:" + webFingerId)
+                .setWebFingerId(webFingerId);
+        List<Actor> actors = connection.getFriends(actor);
         assertNotNull("List of actors returned", actors);
         int size = 5;
         assertEquals("Response for t131t", size, actors.size());
 
         assertEquals("Does the Pope shit in the woods?", actors.get(1).getSummary());
-        assertEquals("gitorious@identi.ca", actors.get(2).getUsername());
+        assertEquals("gitorious", actors.get(2).getUsername());
+        assertEquals("gitorious@identi.ca", actors.get(2).getUniqueNameInOrigin());
         assertEquals("acct:ken@coding.example", actors.get(3).oid);
         assertEquals("Yuri Volkov", actors.get(4).getRealName());
     }

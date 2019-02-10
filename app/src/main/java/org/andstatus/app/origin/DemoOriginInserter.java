@@ -75,7 +75,7 @@ public final class DemoOriginInserter {
                                         boolean isSsl, SslModeEnum sslMode, boolean allowHtml, boolean inCombinedGlobalSearch, boolean inCombinedPublicReload) {
         assertTrue("Origin " + originName + " added", origin.isPersistent());
         assertEquals(originName, origin.getName());
-        if (origin.canSetUrlOfOrigin()) {
+        if (origin.shouldHaveUrl()) {
             if (UrlUtils.isHostOnly(UrlUtils.buildUrl(hostOrUrl, isSsl))) {
                 assertEquals((isSsl ? "https" : "http") + "://" + hostOrUrl,
                         origin.getUrl().toExternalForm());
@@ -98,7 +98,7 @@ public final class DemoOriginInserter {
     private void insertTestKeys(Origin origin, String host) {
         HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(
                 OriginConnectionData.fromAccountName(
-                        AccountName.fromOriginAndUsername(origin, ""), TriState.UNKNOWN)
+                        AccountName.fromOriginAndUniqueName(origin, ""), TriState.UNKNOWN)
         );
         final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
         final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());

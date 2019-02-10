@@ -205,8 +205,8 @@ public class Origin implements Comparable<Origin>, IsEmpty {
         return "";
     }
 
-    public boolean canSetUrlOfOrigin() {
-        return originType.canSetUrlOfOrigin();
+    public boolean shouldHaveUrl() {
+        return originType.originHasUrl;
     }
 
     public boolean isNameValid() {
@@ -226,7 +226,7 @@ public class Origin implements Comparable<Origin>, IsEmpty {
     }
     
     public boolean urlIsValid() {
-        if (originType.canSetUrlOfOrigin()) {
+        if (originType.originHasUrl) {
             return UrlUtils.hasHost(url);
         } else {
             return true;
@@ -496,7 +496,7 @@ public class Origin implements Comparable<Origin>, IsEmpty {
         }
         
         public Builder setHostOrUrl(String hostOrUrl) {
-            if (origin.originType.canSetUrlOfOrigin()) {
+            if (origin.originType.originHasUrl) {
                URL url1 = UrlUtils.buildUrl(hostOrUrl, origin.isSsl());
                if (url1 != null) {
                    if (!UrlUtils.isHostOnly(url1) && !url1.toExternalForm().endsWith("/")) {

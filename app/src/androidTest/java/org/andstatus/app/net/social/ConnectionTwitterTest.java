@@ -67,7 +67,7 @@ public class ConnectionTwitterTest {
         Origin origin = MyContextHolder.get().origins().fromName(demoData.twitterTestOriginName);
 
         connectionData = OriginConnectionData.fromAccountName(
-                AccountName.fromOriginAndUsername(origin, demoData.twitterTestAccountUsername),
+                AccountName.fromOriginAndUniqueName(origin, demoData.twitterTestAccountUsername),
                 TriState.UNKNOWN);
         connectionData.setAccountActor(demoData.getAccountActorByOid(demoData.twitterTestAccountActorOid));
         connectionData.setDataReader(new AccountDataReaderEmpty());
@@ -88,7 +88,7 @@ public class ConnectionTwitterTest {
         httpConnection.addResponse(org.andstatus.app.tests.R.raw.twitter_home_timeline);
         
         List<AActivity> timeline = connection.getTimeline(ApiRoutineEnum.HOME_TIMELINE,
-                new TimelinePosition("380925803053449216") , TimelinePosition.EMPTY, 20, connectionData.getAccountActor().oid);
+                new TimelinePosition("380925803053449216") , TimelinePosition.EMPTY, 20, connectionData.getAccountActor());
         assertNotNull("timeline returned", timeline);
         int size = 4;
         assertEquals("Number of items in the Timeline", size, timeline.size());

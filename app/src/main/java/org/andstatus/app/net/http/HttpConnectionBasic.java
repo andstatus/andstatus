@@ -75,7 +75,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
 
     @Override
     public boolean getCredentialsPresent() {
-        return !StringUtils.isEmpty(data.getAccountName().getUsername())
+        return !StringUtils.isEmpty(data.getAccountName().getUniqueNameInOrigin())
                 && !StringUtils.isEmpty(mPassword);
     }
 
@@ -104,7 +104,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
      */
     private String getCredentials() {
         return Base64.encodeToString(
-                (data.getAccountName().getUsername() + ":" + mPassword).
+                (data.getAccountName().getUniqueNameInOrigin() + ":" + mPassword).
                         getBytes(Charset.forName("UTF-8")),
                 Base64.NO_WRAP + Base64.NO_PADDING);
     }

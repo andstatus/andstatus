@@ -17,7 +17,6 @@
 package org.andstatus.app.net.social;
 
 import android.net.Uri;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
@@ -34,6 +33,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
 
 public class ConnectionMastodon extends ConnectionTwitterLike {
     private static final String ATTACHMENTS_FIELD_NAME = "media_attachments";
@@ -122,8 +123,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     @NonNull
     @Override
-    protected Uri.Builder getTimelineUriBuilder(ApiRoutineEnum apiRoutine, int limit, String actorId) throws ConnectionException {
-        String url = this.getApiPathWithActorId(apiRoutine, actorId);
+    protected Uri.Builder getTimelineUriBuilder(ApiRoutineEnum apiRoutine, int limit, Actor actor) throws ConnectionException {
+        String url = this.getApiPathWithActorId(apiRoutine, actor.oid);
         return Uri.parse(url).buildUpon().appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
     }
 

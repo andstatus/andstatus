@@ -47,6 +47,7 @@ import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
+import org.andstatus.app.util.ViewUtils;
 
 /**
  * Add/Update Microblogging system
@@ -150,22 +151,32 @@ public class OriginEditor extends MyActivity {
 
         editTextOriginName.setText(origin.getName());
         
-        String strHost = "";
-        if (UrlUtils.isHostOnly(origin.getUrl())) {
-            strHost = origin.getUrl().getHost();
-        } else if (origin.getUrl() != null) {
-            strHost = origin.getUrl().toExternalForm();
+        final boolean showHostOrUrl = origin.shouldHaveUrl();
+        if (showHostOrUrl) {
+            final String strHostOrUrl;
+            if (UrlUtils.isHostOnly(origin.getUrl())) {
+                strHostOrUrl = origin.getUrl().getHost();
+            } else if (origin.getUrl() != null) {
+                strHostOrUrl = origin.getUrl().toExternalForm();
+            } else {
+                strHostOrUrl = "";
+            }
+            editTextHost.setText(strHostOrUrl);
+            editTextHost.setHint(origin.alternativeTermForResourceId(R.string.host_hint));
+
+            if (Intent.ACTION_INSERT.equals(editorAction) && StringUtils.isEmpty(origin.getName())) {
+                editTextHost.setOnFocusChangeListener((v, hasFocus) -> {
+                    if (!hasFocus) {
+                        originNameFromHost();
+                    }
+                });
+            }
+
+            MyUrlSpan.showLabel(this, R.id.label_host, origin.alternativeTermForResourceId(R.string.label_host));
+        } else {
+            ViewUtils.showView(this, R.id.label_host, false);
         }
-        editTextHost.setText(strHost);
-        editTextHost.setHint(origin.alternativeTermForResourceId(R.string.host_hint));
-        MyUrlSpan.showLabel(this, R.id.label_host, origin.alternativeTermForResourceId(R.string.label_host));
-        if (Intent.ACTION_INSERT.equals(editorAction) && StringUtils.isEmpty(origin.getName())) {
-            editTextHost.setOnFocusChangeListener((v, hasFocus) -> {
-                if (!hasFocus) {
-                    originNameFromHost();
-                }
-            });
-        }
+        ViewUtils.showView(editTextHost, showHostOrUrl);
 
         MyCheckBox.set(this, R.id.is_ssl, origin.isSsl() , new CompoundButton.OnCheckedChangeListener() {
             @Override

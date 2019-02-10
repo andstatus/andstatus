@@ -11,6 +11,8 @@ public final class Patterns {
     public static final Pattern USERNAME_REGEX_SIMPLE_PATTERN = Pattern.compile(USERNAME_REGEX_SIMPLE);
     static final String USERNAME_CHARS = "._ABCDEFGHIGKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+";
     static final String WEBFINGER_ID_CHARS = USERNAME_CHARS + "@";
+    private static final String USERNAME_REGEX_ALL_CHARS = "^[_A-Za-z0-9-+]+([_A-Za-z0-9-+@.]+)*$";
+    public static final Pattern USERNAME_REGEX_ALL_CHARS_PATTERN = Pattern.compile(USERNAME_REGEX_ALL_CHARS);
 
     private Patterns() {}
 }

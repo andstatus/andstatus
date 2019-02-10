@@ -78,7 +78,9 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         List<Actor> actors = Actor.newUnknown(demoData.getPumpioConversationAccount().getOrigin())
                 .extractActorsFromContent(content, Actor.EMPTY);
         assertEquals(logMsg, 3, actors.size());
-        assertEquals(logMsg, "unknownUser@example.com", actors.get(2).getUsername());
+        assertEquals(logMsg, "unknownUser", actors.get(2).getUsername());
+        assertEquals(logMsg, "unknownUser@example.com", actors.get(2).getUniqueNameInOrigin());
+        assertEquals(logMsg, "unknownuser@example.com", actors.get(2).getWebFingerId());
 
         ActivityViewItem item = ActivityViewItem.EMPTY;
         TimelineData<ActivityViewItem> timelineData = getActivity().getListData();

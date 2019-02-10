@@ -72,9 +72,9 @@ public class ConnectionGnuSocialTest {
     public void testGetPublicTimeline() throws IOException {
         connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.quitter_home);
 
-        String accountActorOid = demoData.gnusocialTestAccountActorOid;
+        Actor accountActor = demoData.getAccountActorByOid(demoData.gnusocialTestAccountActorOid);
         List<AActivity> timeline = connection.getTimeline(ApiRoutineEnum.PUBLIC_TIMELINE,
-                new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountActorOid);
+                new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountActor);
         assertNotNull("timeline returned", timeline);
         int size = 3;
         assertEquals("Number of items in the Timeline", size, timeline.size());
@@ -136,7 +136,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("conversationOid", "2218650", activity.getNote().conversationOid);
         assertEquals("Note not private", TriState.UNKNOWN, activity.getNote().getPublic());
         assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
-        assertEquals("MyAccount", accountActorOid, activity.accountActor.oid);
+        assertEquals("MyAccount", accountActor.oid, activity.accountActor.oid);
         assertEquals("Actor", author.oid, activity.getActor().oid);
         assertEquals("Oid", "114973", author.oid);
         assertEquals("Username", "mmn", author.getUsername());
@@ -256,9 +256,9 @@ public class ConnectionGnuSocialTest {
     public void testFavoritingActivityInTimeline() throws IOException {
         connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.loadaverage_favoriting_activity);
 
-        String accountActorOid = demoData.gnusocialTestAccountActorOid;
+        Actor accountActor = demoData.getAccountActorByOid(demoData.gnusocialTestAccountActorOid);
         List<AActivity> timeline = connection.getTimeline(ApiRoutineEnum.SEARCH_NOTES,
-                new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountActorOid);
+                new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountActor);
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 2, timeline.size());
 

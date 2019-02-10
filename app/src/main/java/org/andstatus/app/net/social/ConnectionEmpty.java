@@ -76,7 +76,7 @@ public class ConnectionEmpty extends Connection {
     @NonNull
     @Override
     public List<AActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                       TimelinePosition oldestPosition, int limit, String actorOid)
+                                       TimelinePosition oldestPosition, int limit, Actor actor)
             throws ConnectionException {
         return new ArrayList<>();
     }

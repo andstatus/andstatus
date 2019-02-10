@@ -16,30 +16,29 @@
 
 package org.andstatus.app.origin;
 
-import androidx.annotation.NonNull;
-
 import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
-import org.andstatus.app.net.http.HttpConnectionEmpty;
-import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.util.TriState;
 
 import java.net.URL;
 
+import androidx.annotation.NonNull;
+
 public class OriginConnectionData {
     private final AccountName accountName;
-    private boolean isOAuth = true;
-    private URL originUrl = null;
+    private boolean isOAuth;
+    private URL originUrl;
 
     private Actor accountActor = Actor.EMPTY;
-    private AccountDataReader dataReader = null;
+    private AccountDataReader dataReader;
     
-    private Class<? extends org.andstatus.app.net.http.HttpConnection> httpConnectionClass = HttpConnectionEmpty.class;
+    private final Class<? extends org.andstatus.app.net.http.HttpConnection> httpConnectionClass;
 
     public static OriginConnectionData fromAccountName(AccountName accountName, TriState triStateOAuth) {
         return new OriginConnectionData(accountName, triStateOAuth);

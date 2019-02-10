@@ -41,6 +41,7 @@ public class DatabaseCreator {
      * Current database scheme version, defined by AndStatus developers.
      * This is used to check (and upgrade if necessary) existing database after application update.
      *
+     * v.47 2019-02-10 Username for Pump.io and ActivityPub doesn't have "@host" anymore, but "uniqueNameInOrigin" does.
      * v.44 2018-10-30 ActorEndpointTable added.
      * v.42 2018-09-05 DownloadTable added (returned) "content_type" to filter attachments that can be shown
      * v.40 2018-06-05 DownloadTable added "downloaded_date" to decide, when to prune the download
@@ -71,7 +72,7 @@ public class DatabaseCreator {
      *      All messages are in the same table.
      *      Allows to have multiple User Accounts in different Originating systems (twitter.com etc. )
      */
-    public static final int DATABASE_VERSION = 44;
+    public static final int DATABASE_VERSION = 47;
     public static final long ORIGIN_ID_TWITTER =  1L;
 
     private final SQLiteDatabase db;

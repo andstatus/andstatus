@@ -107,7 +107,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
 
     private void syncFollowers() throws ConnectionException {
         if (isApiSupported(Connection.ApiRoutineEnum.GET_FOLLOWERS)) {
-            actorsNew = getConnection().getFollowers(getActor().oid);
+            actorsNew = getConnection().getFollowers(getActor());
         } else if (isApiSupported(Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS)) {
             List<String> actorOidsNew = getConnection().getFollowersIds(getActor().oid);
             if (getActorsForOids(actorOidsNew, actorsNew)) return;
@@ -136,7 +136,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
 
     private void syncFriends() throws ConnectionException {
         if (isApiSupported(Connection.ApiRoutineEnum.GET_FRIENDS)) {
-            actorsNew = getConnection().getFriends(getActor().oid);
+            actorsNew = getConnection().getFriends(getActor());
         } else if (isApiSupported(Connection.ApiRoutineEnum.GET_FRIENDS_IDS)) {
             List<String> actorOidsNew = getConnection().getFriendsIds(getActor().oid);
             if (getActorsForOids(actorOidsNew, actorsNew)) return;
@@ -226,7 +226,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                     broadcastProgress(String.valueOf(count) + ". "
                             + execContext.getContext().getText(R.string.title_command_get_status)
                             + ": " + actor.getNamePreferablyWebFingerId(), true);
-                    dataUpdater.downloadOneNoteBy(actor.oid);
+                    dataUpdater.downloadOneNoteBy(actor);
                     execContext.getResult().incrementDownloadedCount();
                 } catch (ConnectionException e) {
                     e1 = e;

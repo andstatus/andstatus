@@ -63,7 +63,7 @@ public class MyAccountConverter {
                     am.setUserData(androidAccount, MyAccount.KEY_VERSION, null);
 
                     AccountData accountData = AccountData.fromJson(null, false);
-                    androidAccountData.moveStringKeyTo(MyAccount.KEY_USERNAME, accountData);
+                    androidAccountData.moveStringKeyTo(MyAccount.KEY_UNIQUE_NAME_IN_ORIGIN, accountData);
                     androidAccountData.moveStringKeyTo(Origin.KEY_ORIGIN_NAME, accountData);
                     androidAccountData.moveStringKeyTo(MyAccount.KEY_ACTOR_OID, accountData);
                     androidAccountData.moveLongKeyTo(MyAccount.KEY_ACTOR_ID, accountData);

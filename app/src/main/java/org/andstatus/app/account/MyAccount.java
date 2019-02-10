@@ -23,7 +23,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
@@ -58,6 +57,8 @@ import org.json.JSONObject;
 
 import java.util.concurrent.TimeUnit;
 
+import androidx.annotation.NonNull;
+
 /**
  * Immutable class that holds "AndStatus account"-specific information including: 
  * a Social network (twitter.com, identi.ca etc.),
@@ -78,11 +79,9 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     public static final String KEY_ACCOUNT = "account";
 
     /**
-     * This Key is both global for the application and the same - for one MyAccount
-     * Global: Username of currently selected MyAccount (Current MyAccount)
-     * This MyAccount: Username of the {@link ActorTable} corresponding to this {@link MyAccount}
+     * A name that is unique for an origin
      */
-    public static final String KEY_USERNAME = "username";
+    public static final String KEY_UNIQUE_NAME_IN_ORIGIN = "username";
     /**
      * {@link ActorTable#_ID} in our System.
      */
@@ -316,7 +315,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
                     return result;
                 }
                 Account androidAccount = getNewOrExistingAndroidAccount();
-                myAccount.accountData.setDataString(KEY_USERNAME, myAccount.oAccountName.getUsername());
+                myAccount.accountData.setDataString(KEY_UNIQUE_NAME_IN_ORIGIN, myAccount.oAccountName.getUniqueNameInOrigin());
                 myAccount.accountData.setDataString(KEY_ACTOR_OID, myAccount.actor.oid);
                 myAccount.accountData.setDataString(Origin.KEY_ORIGIN_NAME, myAccount.oAccountName.getOriginName());
                 myAccount.credentialsVerified.put(myAccount.accountData);
@@ -417,7 +416,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             // We are comparing actor names ignoring case, but we fix correct case
             // as the Originating system tells us. 
             if (ok && !StringUtils.isEmpty(myAccount.getUsername())
-                    && myAccount.getUsername().compareToIgnoreCase(actor.getUsername()) != 0) {
+                    && myAccount.oAccountName.getUniqueNameInOrigin().compareToIgnoreCase(actor.getUniqueNameInOrigin()) != 0) {
                 // Credentials belong to other Account ??
                 ok = false;
                 credentialsOfOtherAccount = true;
@@ -440,8 +439,8 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
                     // Now we know the name (or proper case of the name) of this Account!
                     // We don't recreate MyAccount object for the new name
                     //   in order to preserve credentials.
-                    myAccount.oAccountName = AccountName.fromOriginAndUsername(
-                            myAccount.oAccountName.getOrigin(), actor.getUsername());
+                    myAccount.oAccountName = AccountName.fromOriginAndUniqueName(
+                            myAccount.oAccountName.getOrigin(), actor.getUniqueNameInOrigin());
                     myAccount.connection.save(myAccount.accountData);
                     setConnection();
                     save();
@@ -457,12 +456,12 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             }
             if (credentialsOfOtherAccount) {
                 MyLog.e(TAG, myContext.context().getText(R.string.error_credentials_of_other_user) + ": " + actor.getNamePreferablyWebFingerId()
-                + " usernames: " + myAccount.getUsername() + " vs " + actor.getUsername());
+                + " names: " + myAccount.oAccountName.getUniqueNameInOrigin() + " vs " + actor.getUniqueNameInOrigin());
                 throw new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_ACCOUNT,
                         actor.getNamePreferablyWebFingerId());
             }
             if (errorSettingUsername) {
-                String msg = myContext.context().getText(R.string.error_set_username) + " " + actor.getUsername();
+                String msg = myContext.context().getText(R.string.error_set_username) + " " + actor.getUniqueNameInOrigin();
                 MyLog.e(TAG, msg);
                 throw new ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg);
             }
@@ -709,9 +708,9 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         this(   myContext,
                 accountDataIn == null ? AccountData.fromJson(null, false) : accountDataIn,
                 accountDataIn == null ? AccountName.fromAccountName(myContext, accountName)
-                        : AccountName.fromOriginAndUserNames(myContext,
+                        : AccountName.fromOriginNameAndUniqueUserName(myContext,
                         accountDataIn.getDataString(Origin.KEY_ORIGIN_NAME, ""),
-                        accountDataIn.getDataString(KEY_USERNAME, ""))
+                        accountDataIn.getDataString(KEY_UNIQUE_NAME_IN_ORIGIN, ""))
         );
     }
 
@@ -721,7 +720,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         oAccountName = accountName;
         actor = Actor.load(myContext, accountData.getDataLong(KEY_ACTOR_ID, 0L), false, () ->
             Actor.fromOid(accountName.getOrigin(), accountData.getDataString(KEY_ACTOR_OID, ""))
-                .setUsername(oAccountName.getUsername())
+                .withUniqueNameInOrigin(oAccountName.getUniqueNameInOrigin())
                 .lookupUser()
         );
         this.version = accountData.getDataInt(KEY_VERSION, ACCOUNT_VERSION);
@@ -905,7 +904,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     public JSONObject toJson() throws JSONException {
         JSONObject jso = new JSONObject();
         jso.put(KEY_ACCOUNT, getAccountName());  
-        jso.put(KEY_USERNAME, getUsername());
+        jso.put(KEY_UNIQUE_NAME_IN_ORIGIN, oAccountName.getUniqueNameInOrigin());
         jso.put(KEY_ACTOR_OID, actor.oid);
         jso.put(Origin.KEY_ORIGIN_NAME, oAccountName.getOriginName());
         credentialsVerified.put(jso);

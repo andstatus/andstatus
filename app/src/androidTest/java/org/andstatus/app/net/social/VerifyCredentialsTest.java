@@ -55,7 +55,7 @@ public class VerifyCredentialsTest {
         TestSuite.initializeWithData(this);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        OriginConnectionData connectionData = OriginConnectionData.fromAccountName(AccountName.fromOriginAndUsername(
+        OriginConnectionData connectionData = OriginConnectionData.fromAccountName(AccountName.fromOriginAndUniqueName(
                 MyContextHolder.get().origins().fromName(demoData.twitterTestOriginName),
                 demoData.twitterTestAccountUsername),
                 TriState.UNKNOWN);

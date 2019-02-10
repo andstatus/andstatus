@@ -17,7 +17,6 @@
 package org.andstatus.app.net.social.pumpio;
 
 import android.net.Uri;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
@@ -32,6 +31,8 @@ import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import androidx.annotation.NonNull;
 
 import static org.andstatus.app.net.social.pumpio.ConnectionPumpio.CONTENT_PROPERTY;
 import static org.andstatus.app.net.social.pumpio.ConnectionPumpio.FULL_IMAGE_OBJECT;
@@ -92,7 +93,7 @@ class ActivitySender {
         try {
             activity = buildActivityToSend(activityType);
             ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.UPDATE_NOTE,
-                    connection.getData().getAccountActor().oid);
+                    connection.getData().getAccountActor());
             activityResponse = connection.postRequest(conu.url, activity);
             if (activityResponse == null) {
                 throw ConnectionException.hardConnectionException(msgLog + " returned no data", null);
@@ -228,7 +229,7 @@ class ActivitySender {
             JSONObject formParams = new JSONObject();
             formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mMediaUri.toString());
             ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.UPDATE_NOTE_WITH_MEDIA,
-                    connection.getData().getAccountActor().oid);
+                    connection.getData().getAccountActor());
             obj1 = connection.postRequest(conu.url, formParams);
             if (obj1 == null) {
                 throw new ConnectionException("Error uploading '" + mMediaUri.toString() + "': null response returned");

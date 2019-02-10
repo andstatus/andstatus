@@ -24,7 +24,8 @@ public enum ActorEndpointType {
     API_FOLLOWING(4),
     API_FOLLOWERS(5),
     API_LIKED(6),
-    BANNER(7);
+    BANNER(7),
+    API_SHARED_INBOX(8);
 
     public final long id;
 

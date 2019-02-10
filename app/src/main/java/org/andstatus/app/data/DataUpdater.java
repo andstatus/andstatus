@@ -18,7 +18,6 @@ package org.andstatus.app.data;
 
 import android.content.ContentValues;
 import android.net.Uri;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -44,6 +43,8 @@ import org.andstatus.app.util.UriUtils;
 
 import java.util.Date;
 import java.util.List;
+
+import androidx.annotation.NonNull;
 
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 import static org.andstatus.app.util.UriUtils.nonEmptyOid;
@@ -465,10 +466,10 @@ public class DataUpdater {
         }
     }
 
-    public void downloadOneNoteBy(String actorOid) throws ConnectionException {
+    public void downloadOneNoteBy(Actor actor) throws ConnectionException {
         List<AActivity> activities = execContext.getConnection().getTimeline(
                 TimelineType.SENT.getConnectionApiRoutine(), TimelinePosition.EMPTY,
-                TimelinePosition.EMPTY, 1, actorOid);
+                TimelinePosition.EMPTY, 1, actor);
         for (AActivity item : activities) {
             onActivity(item, false);
         }

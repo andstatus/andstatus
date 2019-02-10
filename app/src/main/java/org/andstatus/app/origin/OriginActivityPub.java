@@ -18,7 +18,7 @@ package org.andstatus.app.origin;
 
 import org.andstatus.app.context.MyContext;
 
-public class OriginActivityPub extends OriginPumpio {
+class OriginActivityPub extends Origin {
 
     OriginActivityPub(MyContext myContext, OriginType originType) {
         super(myContext, originType);

@@ -18,7 +18,6 @@ package org.andstatus.app.net.social;
 
 import android.database.Cursor;
 import android.net.Uri;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
@@ -49,8 +48,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import androidx.annotation.NonNull;
 
 import static org.andstatus.app.net.social.Patterns.USERNAME_CHARS;
 import static org.andstatus.app.net.social.Patterns.WEBFINGER_ID_CHARS;
@@ -222,8 +224,8 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
     @Override
     public boolean isEmpty() {
-        return this == EMPTY || !origin.isValid() || (actorId == 0 && UriUtils.nonRealOid(oid)
-                && StringUtils.isEmpty(webFingerId) && !isUsernameValid());
+        return this == EMPTY || !origin.isValid() ||
+                (actorId == 0 && UriUtils.nonRealOid(oid) && StringUtils.isEmpty(webFingerId) && !isUsernameValid());
     }
 
     public boolean isPartiallyDefined() {
@@ -263,27 +265,74 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (this == EMPTY) {
             return "Actor:EMPTY";
         }
-        MyStringBuilder members = MyStringBuilder.of("origin:" + origin.getName() + ",")
+        MyStringBuilder members = MyStringBuilder.of("origin:" + origin.getName())
         .withComma("id", actorId)
-        .withComma("oid", oid);
-        if (isWebFingerIdValid()) {
-            members.withComma(getWebFingerId());
-        } else if (StringUtils.nonEmpty(getWebFingerId())) {
-            members.withComma("invalidWebFingerId", getWebFingerId());
-        }
-        members.withComma("username", username)
-                .withComma("realName", realName)
-                .withComma("", user, user::nonEmpty)
-                .withComma("profileUri", profileUri, UriUtils::nonEmpty)
-                .withComma("avatar", avatarUri, this::hasAvatar)
-                .withComma("avatarFile", avatarFile, this::hasAvatarFile)
-                .withComma("banner", endpoints.getFirst(ActorEndpointType.BANNER), UriUtils::nonEmpty)
-                .withComma("", "latest note present", this::hasLatestNote);
+        .withComma("oid", oid)
+        .withComma(isWebFingerIdValid() ? "webFingerId" : "", isWebFingerIdValid() ? webFingerId : "(invalid webFingerId)")
+        .withComma("username", username)
+        .withComma("realName", realName)
+        .withComma("", user, user::nonEmpty)
+        .withComma("profileUri", profileUri, UriUtils::nonEmpty)
+        .withComma("avatar", avatarUri, this::hasAvatar)
+        .withComma("avatarFile", avatarFile, this::hasAvatarFile)
+        .withComma("banner", endpoints.getFirst(ActorEndpointType.BANNER), UriUtils::nonEmpty)
+        .withComma("", "latest note present", this::hasLatestNote);
         return MyLog.formatKeyValue(this, members);
     }
 
     public String getUsername() {
         return username;
+    }
+
+    public String getUniqueNameInOrigin() {
+        return username + (origin.shouldHaveUrl() ? "" : "@" + getHost());
+    }
+
+    public Actor withUniqueNameInOrigin(String uniqueNameInOrigin) {
+        uniqueNameInOriginToUsername(origin, uniqueNameInOrigin).ifPresent(this::setUsername);
+        uniqueNameInOriginToWebFingerId(uniqueNameInOrigin).ifPresent(this::setWebFingerId);
+        return this;
+    }
+
+    public static Optional<String> uniqueNameInOriginToUsername(Origin origin, String uniqueNameInOrigin) {
+        if (StringUtils.nonEmpty(uniqueNameInOrigin)) {
+            if (uniqueNameInOrigin.contains("@")) {
+                final String nameBeforeTheLastAt = uniqueNameInOrigin.substring(0, uniqueNameInOrigin.lastIndexOf("@"));
+                if (isWebFingerIdValid(uniqueNameInOrigin)) {
+                    if (origin.isUsernameValid(nameBeforeTheLastAt)) return Optional.of(nameBeforeTheLastAt);
+                } else {
+                    int lastButOneIndex = nameBeforeTheLastAt.lastIndexOf("@");
+                    if (lastButOneIndex > -1) {
+                        // A case when a Username contains "@"
+                        String potentialWebFingerId = uniqueNameInOrigin.substring(lastButOneIndex+1);
+                        if (isWebFingerIdValid(potentialWebFingerId)) {
+                            final String nameBeforeLastButOneAt = uniqueNameInOrigin.substring(0, lastButOneIndex);
+                            if (origin.isUsernameValid(nameBeforeLastButOneAt)) return Optional.of(nameBeforeLastButOneAt);
+                        }
+                    }
+                }
+            }
+            if (origin.isUsernameValid(uniqueNameInOrigin)) return Optional.of(uniqueNameInOrigin);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<String> uniqueNameInOriginToWebFingerId(String webFingerIdIn) {
+        if (StringUtils.nonEmpty(webFingerIdIn) && webFingerIdIn.contains("@")) {
+            final String nameBeforeTheLastAt = webFingerIdIn.substring(0, webFingerIdIn.lastIndexOf("@"));
+            if (isWebFingerIdValid(webFingerIdIn)) {
+                return Optional.of(webFingerIdIn.toLowerCase());
+            } else {
+                int lastButOneIndex = nameBeforeTheLastAt.lastIndexOf("@");
+                if (lastButOneIndex > -1) {
+                    String potentialWebFingerId = webFingerIdIn.substring(lastButOneIndex + 1);
+                    if (isWebFingerIdValid(potentialWebFingerId)) {
+                        return Optional.of(potentialWebFingerId.toLowerCase());
+                    }
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     public Actor setUsername(String username) {
@@ -379,6 +428,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
     private void fixWebFingerId() {
         if (StringUtils.isEmpty(username)) return;
+
         if (username.contains("@")) {
             setWebFingerId(username);
         } else if (!UriUtils.isEmpty(profileUri)){
@@ -390,11 +440,34 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         }
     }
 
-    public void setWebFingerId(String webFingerId) {
-        if (isWebFingerIdValid(webFingerId)) {
-            this.webFingerId = webFingerId.toLowerCase();
+    public Actor setWebFingerId(String webFingerIdIn) {
+        if (StringUtils.isEmpty(webFingerIdIn) || !webFingerIdIn.contains("@")) return this;
+
+        if (isWebFingerIdValid(webFingerIdIn)) {
+            webFingerId = webFingerIdIn.toLowerCase();
             isWebFingerIdValid = true;
+            if (!isUsernameValid()) {
+                setUsername(webFingerIdIn.substring(0, webFingerIdIn.lastIndexOf("@")));
+            }
         }
+        final String nameBeforeTheLastAt = webFingerIdIn.substring(0, webFingerIdIn.lastIndexOf("@"));
+        if (isWebFingerIdValid(webFingerIdIn)) {
+            webFingerId = webFingerIdIn.toLowerCase();
+            isWebFingerIdValid = true;
+        } else {
+            int lastButOneIndex = nameBeforeTheLastAt.lastIndexOf("@");
+            if (lastButOneIndex > -1) {
+                String potentialWebFingerId = webFingerIdIn.substring(lastButOneIndex + 1);
+                if (isWebFingerIdValid(potentialWebFingerId)) {
+                    webFingerId = potentialWebFingerId.toLowerCase();
+                    isWebFingerIdValid = true;
+                }
+            }
+        }
+        if (!isUsernameValid()) {
+            setUsername(nameBeforeTheLastAt);
+        }
+        return this;
     }
 
     public String getWebFingerId() {
@@ -554,9 +627,14 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public String getHost() {
-        int pos = getWebFingerId().indexOf('@');
-        if (pos >= 0) {
-            return getWebFingerId().substring(pos + 1);
+        if (isWebFingerIdValid) {
+            int pos = getWebFingerId().indexOf('@');
+            if (pos >= 0) {
+                return getWebFingerId().substring(pos + 1);
+            }
+        }
+        if (origin.shouldHaveUrl()) {
+            return origin.getHost();
         }
         return StringUtils.nonEmpty(profileUri.getHost()) ? profileUri.getHost() : "";
     }
@@ -637,12 +715,15 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
     public String toActorTitle(boolean showWebFingerId) {
         StringBuilder builder = new StringBuilder();
-        if (showWebFingerId && !StringUtils.isEmpty(getWebFingerId())) {
+        if (showWebFingerId && StringUtils.nonEmpty(getWebFingerId())) {
             builder.append(getWebFingerId());
-        } else if (!StringUtils.isEmpty(getUsername())) {
-            builder.append("@" + getUsername());
+        } else {
+            final String uniqueNameInOrigin = getUniqueNameInOrigin();
+            if (StringUtils.nonEmpty(uniqueNameInOrigin)) {
+                builder.append("@" + uniqueNameInOrigin);
+            }
         }
-        if (!StringUtils.isEmpty(getRealName())) {
+        if (StringUtils.nonEmpty(getRealName())) {
             MyStringBuilder.appendWithSpace(builder, "(" + getRealName() + ")");
         }
         return builder.toString();

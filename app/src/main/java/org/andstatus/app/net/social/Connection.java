@@ -282,8 +282,9 @@ public abstract class Connection {
     /**
      * Returns a list of actors the specified actor is following.
      */
-    public List<Actor> getFriends(String actorOid) throws ConnectionException {
-        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFriends for actorOid=" + actorOid);
+    public List<Actor> getFriends(Actor actor) throws ConnectionException {
+        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFriends for actor:"
+                + actor.getNamePreferablyWebFingerId());
     }
     
     /**
@@ -298,8 +299,9 @@ public abstract class Connection {
         throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFollowersIds actorOid=" + actorOid);
     }
 
-    public List<Actor> getFollowers(String actorOid) throws ConnectionException {
-        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFollowers actorOid=" + actorOid);
+    public List<Actor> getFollowers(Actor actor) throws ConnectionException {
+        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFollowers actor:"
+                + actor.getNamePreferablyWebFingerId());
     }
 
     /**
@@ -347,11 +349,11 @@ public abstract class Connection {
 
     /**
      * Universal method for several Timeline Types...
-     * @param actorOid For the {@link ApiRoutineEnum#ACTOR_TIMELINE}, null for the other timelines
+     * @param actor For the {@link ApiRoutineEnum#ACTOR_TIMELINE}, null for the other timelines
      */
     @NonNull
     public abstract List<AActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                                TimelinePosition oldestPosition, int limit, String actorOid)
+                                                TimelinePosition oldestPosition, int limit, Actor actor)
             throws ConnectionException;
 
     @NonNull

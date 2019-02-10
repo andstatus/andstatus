@@ -28,12 +28,12 @@ import org.andstatus.app.net.http.HttpConnectionEmpty;
 import org.andstatus.app.net.http.HttpConnectionOAuthApache;
 import org.andstatus.app.net.http.HttpConnectionOAuthJavaNet;
 import org.andstatus.app.net.http.HttpConnectionOAuthMastodon;
-import org.andstatus.app.net.social.ConnectionActivityPub;
 import org.andstatus.app.net.social.ConnectionEmpty;
 import org.andstatus.app.net.social.ConnectionMastodon;
 import org.andstatus.app.net.social.ConnectionTheTwitter;
 import org.andstatus.app.net.social.ConnectionTwitterGnuSocial;
 import org.andstatus.app.net.social.Patterns;
+import org.andstatus.app.net.social.activitypub.ConnectionActivityPub;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.TriState;
@@ -105,7 +105,7 @@ public enum OriginType implements SelectableEnum {
     private final long id;
     private final String title;
 
-    protected final boolean canSetUrlOfOrigin;
+    protected final boolean originHasUrl;
 
     public final Function<MyContext, Origin> originFactory;
     private final Class<? extends org.andstatus.app.net.social.Connection> connectionClass;
@@ -168,7 +168,7 @@ public enum OriginType implements SelectableEnum {
                 isOAuthDefault = true;
                 // Starting from 2010-09 twitter.com allows OAuth only
                 canChangeOAuth = false;  
-                canSetUrlOfOrigin = true;
+                originHasUrl = true;
                 shouldSetNewUsernameManuallyIfOAuth = false;
                 shouldSetNewUsernameManuallyNoOAuth = true;
                 // TODO: Read from Config
@@ -194,10 +194,10 @@ public enum OriginType implements SelectableEnum {
             case PUMPIO:
                 isOAuthDefault = true;
                 canChangeOAuth = false;
-                canSetUrlOfOrigin = false;
+                originHasUrl = false;
                 shouldSetNewUsernameManuallyIfOAuth = true;
                 shouldSetNewUsernameManuallyNoOAuth = false;
-                usernameRegExPattern = Patterns.WEBFINGER_ID_REGEX_PATTERN;
+                usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
                 validUsernameExamples = "andstatus@identi.ca test425@1realtime.net";
                 // This is not a hard limit, just for convenience
                 textLimitDefault = TEXT_LIMIT_MAXIMUM;
@@ -221,11 +221,11 @@ public enum OriginType implements SelectableEnum {
             case ACTIVITYPUB:
                 isOAuthDefault = true;
                 canChangeOAuth = false;
-                canSetUrlOfOrigin = false;
+                originHasUrl = false;
                 shouldSetNewUsernameManuallyIfOAuth = true;
                 shouldSetNewUsernameManuallyNoOAuth = false;
-                usernameRegExPattern = Patterns.WEBFINGER_ID_REGEX_PATTERN;
-                validUsernameExamples = "andstatus@identi.ca test425@1realtime.net";
+                usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
+                validUsernameExamples = "AndStatus kaniini";
                 // This is not a hard limit, just for convenience
                 textLimitDefault = TEXT_LIMIT_MAXIMUM;
                 basicPath = BASIC_PATH_DEFAULT;
@@ -248,7 +248,7 @@ public enum OriginType implements SelectableEnum {
             case GNUSOCIAL_TWITTER:
                 isOAuthDefault = false;  
                 canChangeOAuth = false; 
-                canSetUrlOfOrigin = true;
+                originHasUrl = true;
                 shouldSetNewUsernameManuallyIfOAuth = false;
                 shouldSetNewUsernameManuallyNoOAuth = true;
                 usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
@@ -272,7 +272,7 @@ public enum OriginType implements SelectableEnum {
             case MASTODON:
                 isOAuthDefault = true;
                 canChangeOAuth = false;
-                canSetUrlOfOrigin = true;
+                originHasUrl = true;
                 shouldSetNewUsernameManuallyIfOAuth = false;
                 shouldSetNewUsernameManuallyNoOAuth = true;
                 usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
@@ -296,7 +296,7 @@ public enum OriginType implements SelectableEnum {
                 textMediaTypeToPost = TextMediaType.PLAIN;
                 break;
             default:
-                canSetUrlOfOrigin = false;
+                originHasUrl = false;
                 usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
                 originFactory = myContext -> new Origin(myContext, this);
                 connectionClass = ConnectionEmpty.class;
@@ -354,10 +354,6 @@ public enum OriginType implements SelectableEnum {
         return title;
     }
 
-    public boolean canSetUrlOfOrigin() {
-        return canSetUrlOfOrigin;
-    }
-    
     @Override
     public String toString() {
         return "OriginType: {id:" + id + ", title:'" + title + "'}";

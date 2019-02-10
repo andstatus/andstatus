@@ -175,14 +175,14 @@ public class OriginTest {
         checkUsernameIsValid(origin, "", false);
         checkUsernameIsValid(origin, "someUser.", false);
         checkUsernameIsValid(origin, "someUser ", false);
-        checkUsernameIsValid(origin, "someUser", false);
-        checkUsernameIsValid(origin, "some.user", false);
-        checkUsernameIsValid(origin, "some.user@example.com", true);
+        checkUsernameIsValid(origin, "someUser", true);
+        checkUsernameIsValid(origin, "some.user", true);
+        checkUsernameIsValid(origin, "some.user@example.com", false);
         checkUsernameIsValid(origin, "t131t@identi.ca/PumpIo", false);
         checkUsernameIsValid(origin, "some@example.com.", false);
-        checkUsernameIsValid(origin, "some@example.com", true);
+        checkUsernameIsValid(origin, "some@example.com", false);
         checkUsernameIsValid(origin, "some@user", false);
-        checkUsernameIsValid(origin, "AndStatus@datamost.com", true);
+        checkUsernameIsValid(origin, "AndStatus@datamost.com", false);
     }
 
     private void checkUsernameIsValid(Origin origin, String username, boolean valid) {

@@ -25,7 +25,6 @@
             android:id="@+id/origin_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="12dp"
             android:layout_marginStart="12dp"
             android:hint="@string/label_origin_system"
             android:textAppearance="?attr/messageBodyTextAppearance" />
@@ -48,11 +47,10 @@
             android:id="@+id/username_readonly"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="12dp"
             android:layout_marginStart="12dp"
             android:hint="@string/title_preference_username"
             android:textAppearance="?attr/messageBodyTextAppearance" />
-        
+
         <TextView
             android:id="@+id/password_label"
             android:layout_width="wrap_content"
@@ -77,7 +75,6 @@
             android:id="@+id/latest_error"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="12dp"
             android:layout_marginStart="12dp"
             android:hint="@string/error"
             android:textAppearance="?attr/messageBodyTextAppearance" />
@@ -86,7 +83,7 @@
             android:id="@+id/account_state"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="account_state" />
+            tools:text="account_state" />
 
         <Button
             android:id="@+id/add_account"
@@ -124,7 +121,7 @@
                           android:layout_width="wrap_content"
                           android:layout_height="wrap_content"
                           tools:text="15 minute ago"
-                          android:layout_marginLeft="4dp"/>
+                          android:layout_marginStart="4dp"/>
             </LinearLayout>
 
             <CheckBox
