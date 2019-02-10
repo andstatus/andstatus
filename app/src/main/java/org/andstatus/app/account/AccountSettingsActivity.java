@@ -412,8 +412,9 @@ public class AccountSettingsActivity extends MyActivity {
 
     private void showUniqueNameInOrigin() {
         MyAccount ma = state.getAccount();
-        showTextView(R.id.uniqueName_label,
-                ma.alternativeTermForResourceId(R.string.title_preference_username),
+        showTextView(R.id.uniqueName_label, ma.getOrigin().shouldHaveUrl()
+                ? R.string.title_preference_username
+                : R.string.username_at_your_server,
                 state.builder.isPersistent() || ma.isUsernameNeededToStartAddingNewAccount());
         EditText nameEditable = (EditText) findFragmentViewById(R.id.uniqueName);
         if (nameEditable != null) {

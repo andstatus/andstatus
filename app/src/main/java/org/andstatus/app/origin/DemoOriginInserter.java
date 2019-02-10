@@ -1,14 +1,10 @@
 package org.andstatus.app.origin;
 
-import org.andstatus.app.account.AccountName;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.net.http.HttpConnectionData;
-import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
 import static org.andstatus.app.context.DemoData.demoData;
@@ -41,6 +37,9 @@ public final class DemoOriginInserter {
         createOneOrigin(OriginType.MASTODON, demoData.mastodonTestOriginName,
                 demoData.getTestOriginHost(demoData.mastodonTestOriginName),
                 true, SslModeEnum.SECURE, true, true, true);
+        createOneOrigin(OriginType.ACTIVITYPUB, demoData.activityPubTestOriginName,
+                "",
+                true, SslModeEnum.SECURE, true, true, true);
         myContext.origins().initialize();
     }
 
@@ -56,10 +55,6 @@ public final class DemoOriginInserter {
                 .save();
         assertTrue(builder.toString(), builder.isSaved());
         Origin origin = builder.build();
-        if (origin.isOAuthDefault() || origin.canChangeOAuth()) {
-            insertTestKeys(origin, demoData.pumpioMainHost);
-            insertTestKeys(origin, demoData.pumpioSecondHost);
-        }
 
         checkAttributes(origin, originName, hostOrUrl, isSsl, sslMode, allowHtml,
                 inCombinedGlobalSearch, inCombinedPublicReload);
@@ -92,28 +87,6 @@ public final class DemoOriginInserter {
         assertEquals(isSsl, origin.isSsl());
         assertEquals(sslMode, origin.getSslMode());
         assertEquals(allowHtml, origin.isHtmlContentAllowed());
-    }
-
-
-    private void insertTestKeys(Origin origin, String host) {
-        HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(
-                OriginConnectionData.fromAccountName(
-                        AccountName.fromOriginAndUniqueName(origin, ""), TriState.UNKNOWN)
-        );
-        final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
-        final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());
-        if (connectionData.originUrl == null) {
-            connectionData.originUrl = UrlUtils.fromString("https://" + host);
-        }
-        OAuthClientKeys keys1 = OAuthClientKeys.fromConnectionData(connectionData);
-        if (!keys1.areKeysPresent()) {
-            keys1.setConsumerKeyAndSecret(consumerKey, consumerSecret);
-            // Checking
-            OAuthClientKeys keys2 = OAuthClientKeys.fromConnectionData(connectionData);
-            assertEquals("Keys are loaded for " + origin, true, keys2.areKeysPresent());
-            assertEquals(consumerKey, keys2.getConsumerKey());
-            assertEquals(consumerSecret, keys2.getConsumerSecret());
-        }
     }
 
     public void checkDefaultTimelinesForOrigins() {

@@ -1,0 +1,34 @@
+{
+  "url": "https:\/\/pleroma.site\/users\/AndStatus",
+  "type": "Person",
+  "tag": [],
+  "summary": "AndStatus - Open Source multiple accounts client for multiple social networks for Android<br><a href=\"http:\/\/andstatus.org\/\">http:\/\/andstatus.org\/<\/a>",
+  "publicKey": {
+    "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArplvdNveiMP8euakQAzp\nANsck4WDTUAGRIDzIAU3mxQwk2ve0tYPy1mT28JfWU2kxyw05Mzo4D+KOIgMF2Zr\nSyzpOzPhNtkjubOdo\/nQx5K+9I8O\/PdyaD4BTRxwEFDaeXp+n8GiiBNIFZyRQ7W4\nIufXrf05iQqSkkzbDARZGsdWcPy91p0oY6e+szgmDxFnjcOFEDAYPS3wXsi2QXzM\n78W2Ki8EILQ1V912z9WDE4nmWSzmbbIpRpSthT17lllsKsuIQcnAQ4HVbLqvRRz\/\nOYFQqe113CSPt4u9vsLOMdwiTq2iPeCYDgQjeLzuBvneg2RetAj9Zjse63x18n7a\nYwIDAQAB\n-----END PUBLIC KEY-----\n\n",
+    "owner": "https:\/\/pleroma.site\/users\/AndStatus",
+    "id": "https:\/\/pleroma.site\/users\/AndStatus#main-key"
+  },
+  "preferredUsername": "AndStatus",
+  "outbox": "https:\/\/pleroma.site\/users\/AndStatus\/outbox",
+  "name": "AndStatus",
+  "manuallyApprovesFollowers": false,
+  "inbox": "https:\/\/pleroma.site\/users\/AndStatus\/inbox",
+  "image": {
+    "url": "https:\/\/pleroma.site\/images\/banner.png",
+    "type": "Image"
+  },
+  "id": "https:\/\/pleroma.site\/users\/AndStatus",
+  "icon": {
+    "url": "https:\/\/pleroma.site\/media\/c5f60f06-6620-46b6-b676-f9f4571b518e\/bfa1745b8c221225cc6551805d9eaa8bebe5f36fc1856b4924bcfda5d620334d.png",
+    "type": "Image"
+  },
+  "following": "https:\/\/pleroma.site\/users\/AndStatus\/following",
+  "followers": "https:\/\/pleroma.site\/users\/AndStatus\/followers",
+  "endpoints": {
+    "sharedInbox": "https:\/\/pleroma.site\/inbox"
+  },
+  "@context": [
+    "https:\/\/www.w3.org\/ns\/activitystreams",
+    "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld"
+  ]
+}

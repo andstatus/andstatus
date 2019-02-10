@@ -545,6 +545,7 @@
   <string name="user_in_timeline_entries_real_name_at_username">Real name @username</string>
   <string name="user_in_timeline_entries_real_name_at_webfingerid">Real name @webFingerId</string>
   <string name="user_list">Actors</string>
+  <string name="username_at_your_server">Username@your.server</string>
   <string name="users">Actors</string>
   <string name="users_of_message">Actors of Note</string>
   <string name="yes">Yes</string>

@@ -24,8 +24,11 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.http.HttpConnectionData;
+import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -68,6 +71,8 @@ public class DemoAccountInserter {
                 demoData.conversationAccountAvatarUrl, demoData.conversationOriginType);
         addAccount(demoData.conversationAccount2ActorOid, demoData.conversationAccount2Name,
                 "", demoData.conversationOriginType);
+        addAccount(demoData.activityPubTestAccountActorOid, demoData.activityPubTestAccountName,
+                "", OriginType.ACTIVITYPUB);
     }
 
     private MyAccount addAccount(String actorOid, String accountNameString, String avatarUrl, OriginType originType) {
@@ -91,6 +96,7 @@ public class DemoAccountInserter {
         assertTrue("No WebfingerId " + actor, actor.isWebFingerIdValid());
         actor.setCreatedDate(MyLog.uniqueCurrentTimeMS());
         MyAccount ma = addAccountFromActor(actor);
+
         long accountActorId = ma.getActorId();
         String msg = "AccountUserId for '" + accountNameString + ", (first: '" + firstAccountActorOid + "')";
         if (accountActorId_existing == 0 && !actorOid.contains(firstAccountActorOid)) {
@@ -137,6 +143,10 @@ public class DemoAccountInserter {
     }
 
     private MyAccount addAccountFromActor(@NonNull Actor actor) {
+        if (actor.origin.isOAuthDefault() || actor.origin.canChangeOAuth()) {
+            insertTestClientKeys(actor);
+        }
+
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(myContext,
                 actor.getUniqueNameInOrigin() + AccountName.ORIGIN_SEPARATOR + actor.origin.getName(),
                 TriState.TRUE);
@@ -146,7 +156,7 @@ public class DemoAccountInserter {
         } else {
             builder.setPassword("samplePasswordFor" + actor.getNamePreferablyWebFingerId());
         }
-        assertTrue("Credentials of " + actor + " are present (origin name=" + actor.origin.getName() + ")",
+        assertTrue("Credentials of " + actor + " are present, account: " + builder.getAccount(),
                 builder.getAccount().getCredentialsPresent());
         try {
             builder.onCredentialsVerified(actor, null);
@@ -179,6 +189,27 @@ public class DemoAccountInserter {
 
         MyLog.v(this, ma.getAccountName() + " added, id=" + ma.getActorId());
         return ma;
+    }
+
+    private void insertTestClientKeys(Actor actor) {
+        HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(
+            OriginConnectionData.fromAccountName(
+                AccountName.fromOriginAndUniqueName(actor.origin, actor.getUniqueNameInOrigin()), TriState.UNKNOWN)
+        );
+        if (!UrlUtils.hasHost(connectionData.originUrl)) {
+            connectionData.originUrl = UrlUtils.fromString("https://" + actor.getHost());
+        }
+        OAuthClientKeys keys1 = OAuthClientKeys.fromConnectionData(connectionData);
+        if (!keys1.areKeysPresent()) {
+            final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
+            final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());
+            keys1.setConsumerKeyAndSecret(consumerKey, consumerSecret);
+
+            OAuthClientKeys keys2 = OAuthClientKeys.fromConnectionData(connectionData);
+            assertEquals("Keys are loaded for " + actor, true, keys2.areKeysPresent());
+            assertEquals(consumerKey, keys2.getConsumerKey());
+            assertEquals(consumerSecret, keys2.getConsumerSecret());
+        }
     }
 
     public void checkDefaultTimelinesForAccounts() {

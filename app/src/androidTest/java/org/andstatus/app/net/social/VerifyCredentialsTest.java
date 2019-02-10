@@ -52,7 +52,7 @@ public class VerifyCredentialsTest {
 
     @Before
     public void setUp() throws Exception {
-        TestSuite.initializeWithData(this);
+        TestSuite.initializeWithAccounts(this);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
         OriginConnectionData connectionData = OriginConnectionData.fromAccountName(AccountName.fromOriginAndUniqueName(

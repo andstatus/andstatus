@@ -17,7 +17,6 @@
 package org.andstatus.app.context;
 
 import android.net.Uri;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.DemoAccountInserter;
 import org.andstatus.app.account.MyAccount;
@@ -45,6 +44,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 
+import androidx.annotation.NonNull;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -61,14 +62,21 @@ public final class DemoData {
     public final AtomicInteger conversationIterationCounter = new AtomicInteger(0);
 
     public final String t131tUsername = "t131t";
-
     public final String testOriginParentHost = "example.com";
+
+    public final String activityPubUsername = "apTestUser";
+    public final String activityPubTestOriginName = "activityPubTest";
+    public final String activityPubMainHost = "ap1." + testOriginParentHost;
+    public final String activityPubTestAccountUniqueName = activityPubUsername + "@" + activityPubMainHost;
+    public final String activityPubTestAccountName = activityPubTestAccountUniqueName + "/" + activityPubTestOriginName;
+    public final String activityPubTestAccountActorOid = "https://" + activityPubMainHost + "/users/" + activityPubUsername;
+
     public final String pumpioOriginName = "PumpioTest";
     public final String pumpioMainHost = "pump1." + testOriginParentHost;
     public final String pumpioSecondHost = "pump2." + testOriginParentHost;
-    public final String pumpioTestAccountUsername = t131tUsername + "@" + pumpioMainHost;
-    public final String pumpioTestAccountName = pumpioTestAccountUsername + "/" + pumpioOriginName;
-    public final String pumpioTestAccountActorOid = OriginPumpio.ACCOUNT_PREFIX + pumpioTestAccountUsername;
+    public final String pumpioTestAccountUniqueName = t131tUsername + "@" + pumpioMainHost;
+    public final String pumpioTestAccountName = pumpioTestAccountUniqueName + "/" + pumpioOriginName;
+    public final String pumpioTestAccountActorOid = OriginPumpio.ACCOUNT_PREFIX + pumpioTestAccountUniqueName;
 
     public final String gnusocialTestOriginName = "GNUsocialTest";
     public final String gnusocialTestAccountUsername = t131tUsername;

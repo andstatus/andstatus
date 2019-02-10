@@ -58,12 +58,9 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
     
     @Override
     public boolean getCredentialsPresent() {
-        boolean yes = false;
-        if (data.oauthClientKeys.areKeysPresent() 
+        boolean yes = data.oauthClientKeys.areKeysPresent()
             && !StringUtils.isEmpty(userToken)
-            && !StringUtils.isEmpty(userSecret)) {
-                yes = true;
-        }
+            && !StringUtils.isEmpty(userSecret);
         if (!yes && logMe) {
             MyLog.v(this, () -> "Credentials presence: clientKeys:" + data.oauthClientKeys.areKeysPresent()
                     + "; userKeys:" + !StringUtils.isEmpty(userToken) + "," + !StringUtils.isEmpty(userSecret));
