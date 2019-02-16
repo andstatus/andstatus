@@ -18,8 +18,6 @@ package org.andstatus.app.net.social;
 
 import android.net.Uri;
 
-import org.andstatus.app.account.AccountDataReaderEmpty;
-import org.andstatus.app.account.AccountName;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -66,11 +64,8 @@ public class ConnectionTwitterTest {
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
         Origin origin = MyContextHolder.get().origins().fromName(demoData.twitterTestOriginName);
 
-        connectionData = OriginConnectionData.fromAccountName(
-                AccountName.fromOriginAndUniqueName(origin, demoData.twitterTestAccountUsername),
-                TriState.UNKNOWN);
-        connectionData.setAccountActor(demoData.getAccountActorByOid(demoData.twitterTestAccountActorOid));
-        connectionData.setDataReader(new AccountDataReaderEmpty());
+        connectionData = OriginConnectionData.fromMyAccount(
+                demoData.getMyAccount(demoData.twitterTestAccountName), TriState.UNKNOWN);
         connection = connectionData.newConnection();
         httpConnection = (HttpConnectionMock) connection.http;
 
@@ -112,7 +107,7 @@ public class ConnectionTwitterTest {
         assertEquals("Homepage", "http://t.co/4TzphfU9qt", author.getHomepage());
         assertEquals("Avatar URL", "https://si0.twimg.com/profile_images/378800000411110038/a8b7eced4dc43374e7ae21112ff749b6_normal.jpeg", author.getAvatarUrl());
         assertEquals("Banner URL", Uri.parse("https://pbs.twimg.com/profile_banners/221452291/1377270845"),
-                author.endpoints.getFirst(ActorEndpointType.BANNER));
+                author.getEndpoint(ActorEndpointType.BANNER));
         assertEquals("Notes count", 1592, author.notesCount);
         assertEquals("Favorites count", 163, author.favoritesCount);
         assertEquals("Following (friends) count", 151, author.followingCount);

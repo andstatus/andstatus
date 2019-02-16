@@ -145,7 +145,7 @@ public class DatabaseConverterController {
                 }
                 MyLog.v(TAG, "Upgrade triggered by " + MyLog.objToTag(upgradeRequestor));
                 MyServiceManager.setServiceUnavailable();
-                MyContextHolder.release();
+                MyContextHolder.release(() -> "doUpgrade");
                 // Upgrade will occur inside this call synchronously
                 MyContextHolder.getMyFutureContext(upgradeRequestor, upgradeRequestor, true).getBlocking();
                 synchronized(UPGRADE_LOCK) {
@@ -175,7 +175,7 @@ public class DatabaseConverterController {
         private void onUpgradeSucceeded() {
             MyServiceManager.setServiceUnavailable();
             if (!MyContextHolder.get().isReady()) {
-                MyContextHolder.release();
+                MyContextHolder.release(() -> "onUpgradeSucceeded1");
                 MyContextHolder.initialize(upgradeRequestor, upgradeRequestor);
             }
             MyServiceManager.setServiceUnavailable();
@@ -183,7 +183,7 @@ public class DatabaseConverterController {
             if (isRestoring) return;
 
             DataChecker.fixData(progressLogger,false, false);
-            MyContextHolder.release();
+            MyContextHolder.release(() -> "onUpgradeSucceeded2");
             MyContextHolder.initialize(upgradeRequestor, upgradeRequestor);
             MyServiceManager.setServiceAvailable();
         }

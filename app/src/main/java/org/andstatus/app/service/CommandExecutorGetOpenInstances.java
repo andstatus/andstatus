@@ -41,9 +41,8 @@ public class CommandExecutorGetOpenInstances extends CommandExecutorStrategy {
         Origin execOrigin = execContext.getCommandData().getTimeline().getOrigin();
         List<Server> result = null;
         try {
-            result = OriginConnectionData.fromAccountName(
-                    execContext.getMyAccount().getOAccountName(), TriState.UNKNOWN).
-                    newConnection().getOpenInstances();
+            result = OriginConnectionData.fromMyAccount(execContext.getMyAccount(), TriState.UNKNOWN)
+                    .newConnection().getOpenInstances();
             ok = !result.isEmpty();
             logOk(ok);
         } catch (ConnectionException e) {

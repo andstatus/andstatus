@@ -170,7 +170,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
             Actor actor = null;
             try {
                 count++;
-                actor = getConnection().getActor(actorOidNew, null);
+                actor = getConnection().getActor(Actor.fromOid(execContext.getMyAccount().getOrigin(), actorOidNew), null);
                 execContext.getResult().incrementDownloadedCount();
             } catch (ConnectionException e) {
                 long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID,

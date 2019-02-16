@@ -31,6 +31,7 @@ import org.andstatus.app.util.MyLog;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 /**
  * This is kind of mock of the concrete implementation 
@@ -78,8 +79,8 @@ public class MyContextTestImpl extends MyContextImpl {
     }
 
     @Override
-    public void release() {
-        super.release();
+    public void release(Supplier<String> reason) {
+        super.release(reason);
         assertionData.clear();
     }
 

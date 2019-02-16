@@ -16,34 +16,37 @@
 
 package org.andstatus.app.net.social.activitypub;
 
+import org.andstatus.app.net.social.ActivityType;
 import org.json.JSONObject;
+
+import static org.andstatus.app.net.social.ActivityType.EMPTY;
 
 /** @see <a href="https://www.w3.org/TR/activitystreams-vocabulary/#activity-types">Object Types</a>
  * */
 enum ApObjectType {
-    ACTIVITY("activity", null) {
+    ACTIVITY("Activity", null) {
         @Override
         public boolean isTypeOf(JSONObject jso) {
             boolean is = false;
             if (jso != null) {
                 if (jso.has("type")) {
-                    is = super.isTypeOf(jso);
+                    is = super.isTypeOf(jso) ||
+                            (ActivityType.from(jso.optString("type")) != EMPTY && jso.has("object"));
                 } else {
-                    // It may not have the "objectType" field as in the specification:
-                    //   http://activitystrea.ms/specs/json/1.0/
-                    is = jso.has("verb") && jso.has("object");
+                    is = jso.has("object");
                 }
             }
             return is;
         }
     },
     APPLICATION("application", null),
-    PERSON("person", null),
+    PERSON("Person", null),
     COMMENT("comment", null),
     IMAGE("image", COMMENT),
     VIDEO("video", COMMENT),
-    NOTE("note", COMMENT),
+    NOTE("Note", COMMENT),
     COLLECTION("collection", null),
+    RELATIONSHIP("Relationship", null),
     UNKNOWN("unknown", null);
 
     private String id;
@@ -80,5 +83,28 @@ enum ApObjectType {
             }
         }
         return UNKNOWN;
+    }
+
+    public static ApObjectType fromId(ActivityType activityType, String oid) {
+        switch (activityType) {
+            case FOLLOW:
+            case UNDO_FOLLOW:
+                return ApObjectType.PERSON;
+            case LIKE:
+            case CREATE:
+            case DELETE:
+            case UPDATE:
+            case ANNOUNCE:
+            case UNDO_LIKE:
+            case UNDO_ANNOUNCE:
+                // TODO: Too simple...
+                if (oid.contains("/users/")) {
+                    return ApObjectType.PERSON;
+                }
+
+                return ApObjectType.NOTE;
+            default:
+                return ApObjectType.UNKNOWN;
+        }
     }
 }

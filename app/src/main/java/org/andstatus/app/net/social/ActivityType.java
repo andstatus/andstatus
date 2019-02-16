@@ -27,24 +27,26 @@ import org.andstatus.app.R;
  * and ActivityPub, see <a href="https://www.w3.org/TR/activitypub/#announce-activity-inbox">announce-activity-inbox</a>
  */
 public enum ActivityType {
-    ANNOUNCE(1, R.string.reblogged),  // known also as Reblog, Repost, Retweet, Boost...
-    CREATE(2, R.string.created),
-    DELETE(3, R.string.deleted),
-    FOLLOW(4, R.string.followed),
-    LIKE(5, R.string.liked),
-    UPDATE(6, R.string.updated),
-    UNDO_ANNOUNCE(7, R.string.undid_reblog),
-    UNDO_FOLLOW(8, R.string.undid_follow),
-    UNDO_LIKE(9, R.string.undid_like),
-    JOIN(10, R.string.joined),
-    EMPTY(0, R.string.empty_in_parenthesis);
+    ANNOUNCE(1, R.string.reblogged, "Announce"),  // known also as Reblog, Repost, Retweet, Boost...
+    CREATE(2, R.string.created, "Create"),
+    DELETE(3, R.string.deleted, "Delete"),
+    FOLLOW(4, R.string.followed, "Follow"),
+    LIKE(5, R.string.liked, "Like"),
+    UPDATE(6, R.string.updated, "Update"),
+    UNDO_ANNOUNCE(7, R.string.undid_reblog, "Undo"),
+    UNDO_FOLLOW(8, R.string.undid_follow, "Undo"),
+    UNDO_LIKE(9, R.string.undid_like, "Undo"),
+    JOIN(10, R.string.joined, "Join"),
+    EMPTY(0, R.string.empty_in_parenthesis, "(empty)");
 
     public final long id;
     public final int actedResourceId;
+    public final String activityPubValue;
 
-    ActivityType(long id, int actedResourceId) {
+    ActivityType(long id, int actedResourceId, String activityPubValue) {
         this.id = id;
         this.actedResourceId = actedResourceId;
+        this.activityPubValue = activityPubValue;
     }
 
     public static ActivityType undo(ActivityType type) {
@@ -65,6 +67,16 @@ public enum ActivityType {
     public static ActivityType fromId(long id) {
         for (ActivityType type : values()) {
             if (type.id == id) {
+                return type;
+            }
+        }
+        return EMPTY;
+    }
+
+    @NonNull
+    public static ActivityType from(String activityPubValue) {
+        for (ActivityType type : values()) {
+            if (type.activityPubValue.equals(activityPubValue)) {
                 return type;
             }
         }

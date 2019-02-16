@@ -18,9 +18,6 @@ package org.andstatus.app.net.social.pumpio;
 
 import android.net.Uri;
 
-import org.andstatus.app.account.AccountDataReaderEmpty;
-import org.andstatus.app.account.AccountName;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
@@ -38,7 +35,6 @@ import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.ConnectionMockable;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
-import org.andstatus.app.net.social.pumpio.ConnectionPumpio.ConnectionAndUrl;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyHtml;
@@ -80,11 +76,8 @@ public class ConnectionPumpioTest {
         originUrl = UrlUtils.fromString("https://" + demoData.pumpioMainHost);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        OriginConnectionData connectionData = OriginConnectionData.fromAccountName(AccountName.fromOriginAndUniqueName(
-                MyContextHolder.get().origins().fromName(demoData.pumpioOriginName), ""),
-                TriState.UNKNOWN);
-        connectionData.setAccountActor(demoData.getAccountActorByOid(demoData.pumpioTestAccountActorOid));
-        connectionData.setDataReader(new AccountDataReaderEmpty());
+        OriginConnectionData connectionData = OriginConnectionData.fromMyAccount(
+                demoData.getMyAccount(demoData.conversationAccountName), TriState.UNKNOWN);
         connection = (ConnectionPumpio) connectionData.newConnection();
         httpConnectionMock = ConnectionMockable.getHttpMock(connection);
 
@@ -163,7 +156,7 @@ public class ConnectionPumpioTest {
                 "api/user/somebody/profile"};
         String hosts[] = {demoData.pumpioMainHost, demoData.pumpioMainHost};
         for (int ind=0; ind < actors.length; ind++) {
-            ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.GET_ACTOR, actors[ind]);
+            ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrl(connection, ApiRoutineEnum.GET_ACTOR, actors[ind]);
             assertEquals("Expecting '" + urls[ind] + "'", urls[ind], conu.url);
             assertEquals("Expecting '" + hosts[ind] + "'", hosts[ind], conu.httpConnection.data.originUrl.getHost());
         }
@@ -211,27 +204,27 @@ public class ConnectionPumpioTest {
                 TestSuite.utcTime(actor.getUpdatedDate()));
 
         assertEquals("Inbox", Uri.parse("https://io.jpope.org/api/user/jpope/inbox"),
-                actor.endpoints.getFirst(ActorEndpointType.API_INBOX));
+                actor.getEndpoint(ActorEndpointType.API_INBOX));
         assertEquals("Inbox", Uri.parse("https://io.jpope.org/api/user/jpope/inbox"),
                 Connection.getPathFromActor(actor, ApiRoutineEnum.HOME_TIMELINE));
         assertEquals("Outbox", Uri.parse("https://io.jpope.org/api/user/jpope/feed"),
-                actor.endpoints.getFirst(ActorEndpointType.API_OUTBOX));
+                actor.getEndpoint(ActorEndpointType.API_OUTBOX));
         assertEquals("Outbox", Uri.parse("https://io.jpope.org/api/user/jpope/feed"),
                 Connection.getPathFromActor(actor, ApiRoutineEnum.ACTOR_TIMELINE));
         assertEquals("Profile", Uri.parse("https://io.jpope.org/api/user/jpope/profile"),
-                actor.endpoints.getFirst(ActorEndpointType.API_PROFILE));
+                actor.getEndpoint(ActorEndpointType.API_PROFILE));
         assertEquals("Profile", Uri.parse("https://io.jpope.org/api/user/jpope/profile"),
                 Connection.getPathFromActor(actor, ApiRoutineEnum.GET_ACTOR));
         assertEquals("Following", Uri.parse("https://io.jpope.org/api/user/jpope/following"),
-                actor.endpoints.getFirst(ActorEndpointType.API_FOLLOWING));
+                actor.getEndpoint(ActorEndpointType.API_FOLLOWING));
         assertEquals("Following", Uri.parse("https://io.jpope.org/api/user/jpope/following"),
                 Connection.getPathFromActor(actor, ApiRoutineEnum.GET_FRIENDS));
         assertEquals("Followers", Uri.parse("https://io.jpope.org/api/user/jpope/followers"),
-                actor.endpoints.getFirst(ActorEndpointType.API_FOLLOWERS));
+                actor.getEndpoint(ActorEndpointType.API_FOLLOWERS));
         assertEquals("Followers", Uri.parse("https://io.jpope.org/api/user/jpope/followers"),
                 Connection.getPathFromActor(actor, ApiRoutineEnum.GET_FOLLOWERS));
         assertEquals("Liked", Uri.parse("https://io.jpope.org/api/user/jpope/favorites"),
-                actor.endpoints.getFirst(ActorEndpointType.API_LIKED));
+                actor.getEndpoint(ActorEndpointType.API_LIKED));
         assertEquals("Liked", Uri.parse("https://io.jpope.org/api/user/jpope/favorites"),
                 Connection.getPathFromActor(actor, ApiRoutineEnum.LIKED_TIMELINE));
 
@@ -318,7 +311,6 @@ public class ConnectionPumpioTest {
         String name = "To Peter";
         String content = "@peter Do you think it's true?";
         String inReplyToId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
-        connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.conversationAccountActorOid));
         connection.updateNote(name, content, "", Audience.EMPTY, inReplyToId, null);
         JSONObject activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
@@ -351,7 +343,6 @@ public class ConnectionPumpioTest {
     @Test
     public void testReblog() throws ConnectionException, JSONException {
         String rebloggedId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
-        connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.conversationAccountActorOid));
         connection.announce(rebloggedId);
         JSONObject activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
@@ -364,7 +355,6 @@ public class ConnectionPumpioTest {
     @Test
     public void testUnfollowActor() throws IOException {
         httpConnectionMock.addResponse(org.andstatus.app.tests.R.raw.unfollow_pumpio);
-        connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.conversationAccountActorOid));
         String actorOid = "acct:evan@e14n.com";
         AActivity activity = connection.follow(actorOid, false);
         assertEquals("Not unfollow action", ActivityType.UNDO_FOLLOW, activity.type);
@@ -383,7 +373,6 @@ public class ConnectionPumpioTest {
     @Test
     public void testDestroyStatus() throws IOException {
         httpConnectionMock.addResponse(org.andstatus.app.tests.R.raw.pumpio_delete_comment_response);
-        connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.conversationAccountActorOid));
         assertTrue("Success", connection.deleteNote("https://" + demoData.pumpioMainHost
                 + "/api/comment/xf0WjLeEQSlyi8jwHJ0ttre"));
 
@@ -402,7 +391,6 @@ public class ConnectionPumpioTest {
         // TODO: There should be 3 responses, just like for Video
         httpConnectionMock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
         
-        connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.conversationAccountActorOid));
         AActivity activity = connection.updateNote("", "Test post note with media", "",
                 Audience.EMPTY, "", demoData.localImageTestUri);
     }
@@ -416,7 +404,6 @@ public class ConnectionPumpioTest {
         String name = "Note - Testing Video attachments in #AndStatus";
         String content = "<p dir=\"ltr\">Video attachment is here</p>";
 
-        connection.getData().setAccountActor(demoData.getAccountActorByOid(demoData.conversationAccountActorOid));
         AActivity activity = connection.updateNote(name, content, "",
                 Audience.EMPTY, "", demoData.localVideoTestUri);
         assertEquals("Responses counter " + httpConnectionMock, 3, httpConnectionMock.responsesCounter);

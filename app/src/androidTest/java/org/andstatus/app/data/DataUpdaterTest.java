@@ -68,7 +68,7 @@ public class DataUpdaterTest {
 
     @Before
     public void setUp() throws Exception {
-        TestSuite.initializeWithData(this);
+        TestSuite.initializeWithAccounts(this);
         myContext = TestSuite.getMyContextForTest();
         context = myContext.context();
         demoData.checkDataPath();
@@ -465,19 +465,35 @@ public class DataUpdaterTest {
     }
 
     @Test
-    public void testInsertActor() {
+    public void demoInsertGnuSocialActor() {
         MyAccount ma = demoData.getGnuSocialAccount();
         Actor actor = new DemoNoteInserter(ma).buildActorFromOid("34807" + demoData.testRunUid);
-        Actor accountActor = ma.getActor();
+        updateActor(ma, actor);
+    }
 
+    @Test
+    public void addActivityPubActor() {
+        MyAccount ma = demoData.getMyAccount(demoData.activityPubTestAccountName);
+        Actor actor = Actor.fromOid(ma.getOrigin(),"https://example.com/users/ApTester" + demoData.testRunUid);
+        updateActor(ma, actor);
+    }
+
+    private void updateActor(MyAccount ma, Actor actor) {
         DataUpdater di = new DataUpdater(ma);
+        Actor accountActor = ma.getActor();
         long id = di.onActivity(accountActor.update(actor)).getObjActor().actorId;
         assertTrue("Actor added", id != 0);
-        assertEquals("Username", actor.getUsername(),
-                MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, id));
         assertEquals("oid", actor.oid,
                 MyQuery.actorIdToStringColumnValue(ActorTable.ACTOR_OID, id));
-        assertEquals("Display name", actor.getRealName(),
+        final String tempOid = "andstatustemp:" + actor.oid;
+        assertEquals("Username", actor.getUsername().isEmpty()
+                        ? tempOid : actor.getUsername(),
+                MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, id));
+        assertEquals("WebFinger ID", actor.getWebFingerId().isEmpty()
+                        ? tempOid : actor.getWebFingerId(),
+                MyQuery.actorIdToStringColumnValue(ActorTable.WEBFINGER_ID, id));
+        assertEquals("Display name", actor.getRealName().isEmpty()
+                        ? tempOid : actor.getRealName(),
                 MyQuery.actorIdToStringColumnValue(ActorTable.REAL_NAME, id));
         assertEquals("Location", actor.location,
                 MyQuery.actorIdToStringColumnValue(ActorTable.LOCATION, id));
@@ -488,8 +504,6 @@ public class DataUpdaterTest {
         assertEquals("Endpoints", actor.endpoints, ActorEndpoints.from(myContext, id).initialize());
         assertEquals("Homepage", actor.getHomepage(),
                 MyQuery.actorIdToStringColumnValue(ActorTable.HOMEPAGE, id));
-        assertEquals("WebFinger ID", actor.getWebFingerId(),
-                MyQuery.actorIdToStringColumnValue(ActorTable.WEBFINGER_ID, id));
         assertEquals("Description", actor.getSummary(),
                 MyQuery.actorIdToStringColumnValue(ActorTable.SUMMARY, id));
         assertEquals("Notes count", actor.notesCount,

@@ -21,9 +21,6 @@ import android.net.Uri;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
-import org.andstatus.app.net.http.ConnectionException.StatusCode;
-import org.andstatus.app.net.http.HttpConnection;
-import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.AObjectType;
 import org.andstatus.app.net.social.ActivityType;
@@ -33,7 +30,6 @@ import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Note;
-import org.andstatus.app.net.social.RateLimitStatus;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.origin.OriginPumpio;
@@ -120,12 +116,6 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public RateLimitStatus rateLimitStatus() throws ConnectionException {
-        // TODO Method stub
-        return new RateLimitStatus();
-    }
-
-    @Override
     @NonNull
     public Actor verifyCredentials() throws ConnectionException {
         JSONObject actor = getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
@@ -200,7 +190,7 @@ public class ConnectionPumpio extends Connection {
     @NonNull
     private List<Actor> getActors(Actor actor, ApiRoutineEnum apiRoutine) throws ConnectionException {
         int limit = 200;
-        ConnectionAndUrl conu = getConnectionAndUrl(apiRoutine, actor);
+        ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrl(this, apiRoutine, actor);
         Uri sUri = Uri.parse(conu.url);
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
@@ -269,55 +259,6 @@ public class ConnectionPumpio extends Connection {
         return objectType;
     }
 
-    ConnectionAndUrl getConnectionAndUrl(ApiRoutineEnum apiRoutine, Actor actor) throws ConnectionException {
-        if (actor == null || StringUtils.isEmpty(actor.oid)) {
-            throw new ConnectionException(StatusCode.BAD_REQUEST, apiRoutine + ": actorId is required");
-        }
-        return  getConnectionAndUrlForActor(apiRoutine, actor);
-    }
-
-    private ConnectionAndUrl getConnectionAndUrlForActor(ApiRoutineEnum apiRoutine, Actor actor) throws ConnectionException {
-        String username = actor.getUsername();
-        ConnectionAndUrl conu = new ConnectionAndUrl();
-        conu.url = this.getApiPath(apiRoutine);
-        if (StringUtils.isEmpty(conu.url)) {
-            throw new ConnectionException(StatusCode.UNSUPPORTED_API, "The API is not supported yet: " + apiRoutine);
-        }
-        if (StringUtils.isEmpty(username)) {
-            throw new ConnectionException(StatusCode.BAD_REQUEST, apiRoutine + ": username is required");
-        }
-        String nickname = usernameToNickname(username);
-        if (StringUtils.isEmpty(nickname)) {
-            throw new ConnectionException(StatusCode.BAD_REQUEST, apiRoutine + ": wrong username='" + username + "'");
-        }
-        String host = actor.getHost();
-        conu.httpConnection = http;
-        if (StringUtils.isEmpty(host)) {
-            throw new ConnectionException(StatusCode.BAD_REQUEST, apiRoutine + ": host is empty for " + actor);
-        } else if (http.data.originUrl == null || host.compareToIgnoreCase(http.data.originUrl.getHost()) != 0) {
-            MyLog.v(this, () -> "Requesting data from the host: " + host);
-            HttpConnectionData connectionData1 = http.data.copy();
-            connectionData1.oauthClientKeys = null;
-            connectionData1.originUrl = UrlUtils.buildUrl(host, connectionData1.isSsl());
-            conu.httpConnection = http.getNewInstance();
-            conu.httpConnection.setConnectionData(connectionData1);
-        }
-        if (!conu.httpConnection.data.areOAuthClientKeysPresent()) {
-            conu.httpConnection.registerClient();
-            if (!conu.httpConnection.getCredentialsPresent()) {
-                throw ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST,
-                        "No credentials", conu.httpConnection.data.originUrl);
-            }
-        }
-        conu.url = conu.url.replace("%nickname%", nickname);
-        return conu;
-    }
-
-    static class ConnectionAndUrl {
-        String url;
-        HttpConnection httpConnection;
-    }
-
     @Override
     public AActivity announce(String rebloggedNoteOid) throws ConnectionException {
         return actOnNote(PActivityType.SHARE, rebloggedNoteOid);
@@ -328,7 +269,7 @@ public class ConnectionPumpio extends Connection {
     public List<AActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
                                        TimelinePosition oldestPosition, int limit, Actor actor)
             throws ConnectionException {
-        ConnectionAndUrl conu = getConnectionAndUrl(apiRoutine, actor);
+        ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrl(this, apiRoutine, actor);
         Uri sUri = Uri.parse(conu.url);
         Uri.Builder builder = sUri.buildUpon();
         if (youngestPosition.nonEmpty()) {
@@ -535,7 +476,7 @@ public class ConnectionPumpio extends Connection {
             throw ConnectionException.loggedJsonException(this, "Parsing comment", e, jso);
         }
     }
-    
+
     /**
      * 2014-01-22 According to the crash reports, actorId may not have "acct:" prefix
      */
@@ -551,7 +492,7 @@ public class ConnectionPumpio extends Connection {
         }
         return username;
     }
-    
+
     // TODO: We don't need this, actually "username" shouldn't be a webfinger...
     public String usernameToNickname(String username) {
         String nickname = "";
@@ -576,7 +517,7 @@ public class ConnectionPumpio extends Connection {
         }
         return host;
     }
-    
+
     @NonNull
     @Override
     public List<AActivity> searchNotes(TimelinePosition youngestPosition,
@@ -595,19 +536,15 @@ public class ConnectionPumpio extends Connection {
     }
     
     @Override
-    public Actor getActor2(String actorOid, String usernameIn) throws ConnectionException {
-        String username = UriUtils.isRealOid(actorOid) ? actorOidToUsername(actorOid) : usernameIn;
-        Actor actorIn = Actor.fromOid(data.getOrigin(), UriUtils.isRealOid(actorOid) ? actorOid : "").setUsername(username);
-        ConnectionAndUrl conu = getConnectionAndUrlForActor(ApiRoutineEnum.GET_ACTOR, actorIn);
+    public Actor getActor2(Actor actorIn, String usernameIn) throws ConnectionException {
+        String username = UriUtils.isRealOid(actorIn.oid) ? actorOidToUsername(actorIn.oid) : usernameIn;
+        Actor actorIn2 = Actor.fromOid(data.getOrigin(), UriUtils.isRealOid(actorIn.oid) ? actorIn.oid : "").setUsername(username);
+        ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrlForActor(this, ApiRoutineEnum.GET_ACTOR, actorIn2);
         JSONObject jso = conu.httpConnection.getRequest(conu.url);
         Actor actor = actorFromJson(jso);
-        MyLog.v(this, () -> "getActor oid='" + actorOid
+        MyLog.v(this, () -> "getActor oid='" + actorIn.oid
                 + "', username='" + usernameIn + "' -> " + actor.getRealName());
         return actor;
-    }
-
-    protected OriginConnectionData getData() {
-        return data;
     }
 
 }

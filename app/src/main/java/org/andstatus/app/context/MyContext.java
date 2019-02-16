@@ -33,6 +33,8 @@ import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.user.CachedUsersAndActors;
 import org.andstatus.app.util.IdentifiableInstance;
 
+import java.util.function.Supplier;
+
 public interface MyContext extends IdentifiableInstance {
     MyContext EMPTY = new MyContextImpl(null, null, "static");
 
@@ -55,9 +57,9 @@ public interface MyContext extends IdentifiableInstance {
     @NonNull
     PersistentTimelines timelines();
     default void putAssertionData(@NonNull String key, @NonNull ContentValues contentValues) {}
-    void release();
+    void release(Supplier<String> reason);
     boolean isExpired();
-    void setExpired();
+    void setExpired(Supplier<String> reason);
     ConnectionState getConnectionState();
     /** Is our application in Foreground now? **/
     boolean isInForeground();
@@ -73,5 +75,8 @@ public interface MyContext extends IdentifiableInstance {
     }
     default boolean isEmpty() {
         return context() == null;
+    }
+    default boolean isConfigChanged() {
+        return initialized() && preferencesChangeTime() != MyPreferences.getPreferencesChangeTime();
     }
 }

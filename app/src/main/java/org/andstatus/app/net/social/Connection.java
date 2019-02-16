@@ -149,7 +149,7 @@ public abstract class Connection {
      * Full path of the API. Logged
      * @return URL or throws a ConnectionException in case the API routine is not supported
      */
-    protected final String getApiPath(ApiRoutineEnum routine) throws ConnectionException {
+    public final String getApiPath(ApiRoutineEnum routine) throws ConnectionException {
         Uri fromActor = getPathFromActor(data.getAccountActor(), routine);
         String path = UriUtils.isEmpty(fromActor) ? this.getApiPath1(routine) : fromActor.toString();
         if (StringUtils.isEmpty(path)) {
@@ -167,16 +167,16 @@ public abstract class Connection {
         switch (routine) {
             case GET_FOLLOWERS:
             case GET_FOLLOWERS_IDS:
-                return actor.endpoints.getFirst(ActorEndpointType.API_FOLLOWERS);
+                return actor.getEndpoint(ActorEndpointType.API_FOLLOWERS);
             case GET_FRIENDS:
             case GET_FRIENDS_IDS:
-                return actor.endpoints.getFirst(ActorEndpointType.API_FOLLOWING);
+                return actor.getEndpoint(ActorEndpointType.API_FOLLOWING);
             case GET_ACTOR:
-                return actor.endpoints.getFirst(ActorEndpointType.API_PROFILE);
+                return actor.getEndpoint(ActorEndpointType.API_PROFILE);
             case HOME_TIMELINE:
-                return actor.endpoints.getFirst(ActorEndpointType.API_INBOX);
+                return actor.getEndpoint(ActorEndpointType.API_INBOX);
             case LIKED_TIMELINE:
-                return actor.endpoints.getFirst(ActorEndpointType.API_LIKED);
+                return actor.getEndpoint(ActorEndpointType.API_LIKED);
             case LIKE:
             case UNDO_LIKE:
             case FOLLOW:
@@ -185,9 +185,9 @@ public abstract class Connection {
             case DELETE_NOTE:
             case UPDATE_NOTE:
             case ACTOR_TIMELINE:
-                return actor.endpoints.getFirst(ActorEndpointType.API_OUTBOX);
+                return actor.getEndpoint(ActorEndpointType.API_OUTBOX);
             case PUBLIC_TIMELINE:
-                return actor.endpoints.getFirst(ActorEndpointType.API_SHARED_INBOX);
+                return actor.getEndpoint(ActorEndpointType.API_SHARED_INBOX);
             default:
                 return Uri.EMPTY;
         }
@@ -212,7 +212,9 @@ public abstract class Connection {
     /**
      * Check API requests status.
      */
-    public abstract RateLimitStatus rateLimitStatus() throws ConnectionException;
+    public RateLimitStatus rateLimitStatus() throws ConnectionException {
+        return new RateLimitStatus();
+    }
 
     /**
      * Do we need password to be set?
@@ -376,16 +378,16 @@ public abstract class Connection {
     public abstract AActivity follow(String actorOid, Boolean follow) throws ConnectionException;
 
     /** Get information about the specified Actor */
-    public Actor getActor(String actorOid, String username) throws ConnectionException {
+    public Actor getActor(Actor actorIn, String username) throws ConnectionException {
         long time = MyLog.uniqueCurrentTimeMS();
-        Actor actor = getActor2(actorOid, username);
+        Actor actor = getActor2(actorIn, username);
         if (!actor.isPartiallyDefined()) {
             if (actor.getUpdatedDate() <= SOME_TIME_AGO) actor.setUpdatedDate(time);
         }
         return actor;
     }
 
-    protected abstract Actor getActor2(String actorOid, String username) throws ConnectionException;
+    protected abstract Actor getActor2(Actor actorIn, String username) throws ConnectionException;
     
     protected final String fixSinceId(String sinceId) {
         String out = "";
@@ -523,7 +525,11 @@ public abstract class Connection {
             } else {
                 datePrepared = stringDate.replaceAll("\\+0([0-9]):00", "+0$100");
             }
-            String formatString = stringDate.contains(".") ? "yyyy-MM-dd'T'HH:mm:ss.SSSZ" : "yyyy-MM-dd'T'HH:mm:ssZ";
+            String formatString = stringDate.contains(".")
+                    ? (stringDate.length() - stringDate.lastIndexOf(".") > 4
+                        ? "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ"
+                        : "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+                    : "yyyy-MM-dd'T'HH:mm:ssZ";
             DateFormat iso8601DateFormatSec = new SimpleDateFormat(formatString, Locale.GERMANY);
             try {
                 unixDate = iso8601DateFormatSec.parse(datePrepared).getTime();
@@ -558,6 +564,10 @@ public abstract class Connection {
 
     public HttpConnection getHttp() {
         return http;
+    }
+
+    public OriginConnectionData getData() {
+        return data;
     }
 
     protected String prependWithBasicPath(String url) {

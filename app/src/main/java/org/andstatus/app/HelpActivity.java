@@ -322,7 +322,7 @@ public class HelpActivity extends MyActivity implements ProgressLogger.ProgressC
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        MyContextHolder.get().setExpired();
+        MyContextHolder.get().setExpired(() -> "onRequestPermissionsResult");
         this.recreate();
     }
 

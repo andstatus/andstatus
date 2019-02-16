@@ -137,7 +137,7 @@ public class MyBackupAgent extends BackupAgent {
     }
 
     private void doBackup(MyBackupDataOutput data) throws IOException {
-        MyContextHolder.release();
+        MyContextHolder.release(() -> "doBackup");
         sharedPreferencesBackedUp = backupFile(data,
                 SHARED_PREFERENCES_KEY,
                 SharedPreferencesUtil.defaultSharedPreferencesPath(MyContextHolder.get().context()));
@@ -248,14 +248,14 @@ public class MyBackupAgent extends BackupAgent {
 
         MyServiceManager.setServiceUnavailable();
         MyServiceManager.stopService();
-        MyContextHolder.release();
+        MyContextHolder.release(() -> "ensureNoDataIsPresent");
     }
     
     private void doRestore(MyBackupDataInput data) throws IOException {
         restoreSharedPreferences(data);
         assertNextHeader(data, DATABASE_KEY + "_" + DatabaseHolder.DATABASE_NAME);
         databasesRestored += restoreFile(data, MyStorage.getDatabasePath(DatabaseHolder.DATABASE_NAME));
-        MyContextHolder.release();
+        MyContextHolder.release(() -> "doRestore");
         MyContextHolder.setOnRestore(true);
         MyContextHolder.initialize(this, this);
         if (MyContextHolder.get().state() == MyContextState.UPGRADING && activity != null) {
@@ -267,7 +267,7 @@ public class MyBackupAgent extends BackupAgent {
         assertNextHeader(data, MyAccounts.KEY_ACCOUNT);
         accountsRestored += data.getMyContext().accounts().onRestore(data, backupDescriptor);
 
-        MyContextHolder.release();
+        MyContextHolder.release(() -> "doRestore");
         MyContextHolder.setOnRestore(false);
         MyContextHolder.initialize(this, this);
     }
@@ -286,7 +286,7 @@ public class MyBackupAgent extends BackupAgent {
             MyLog.v(this, () -> "Couldn't delete " + tempFile.getAbsolutePath());
         }
         fixExternalStorage();
-        MyContextHolder.release();
+        MyContextHolder.release(() -> "restoreSharedPreferences");
         MyContextHolder.initialize(this, this);
     }
     

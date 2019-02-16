@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2019 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +16,8 @@
 
 package org.andstatus.app.net.social.activitypub;
 
+import android.net.Uri;
+
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -28,7 +30,6 @@ import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
-import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,8 +41,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class VerifyCredentialsActivityPubTest {
-    private final static String ACTOR_OID = "https://pleroma.site/users/AndStatus";
-    private final static String UNIQUE_NAME_IN_ORIGIN = "AndStatus@pleroma.site";
+    final static String ACTOR_OID = "https://pleroma.site/users/AndStatus";
+    final static String UNIQUE_NAME_IN_ORIGIN = "AndStatus@pleroma.site";
 
     private Connection connection;
     private HttpConnectionMock httpConnection;
@@ -51,24 +52,24 @@ public class VerifyCredentialsActivityPubTest {
         TestSuite.initializeWithAccounts(this);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        OriginConnectionData connectionData = OriginConnectionData.fromAccountName(
-                AccountName.fromOriginAndUniqueName(
-                    MyContextHolder.get().origins().fromName(demoData.activityPubTestOriginName),
-                    UNIQUE_NAME_IN_ORIGIN),
-                TriState.UNKNOWN);
+        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(
+                MyContextHolder.get(), UNIQUE_NAME_IN_ORIGIN +
+                        AccountName.ORIGIN_SEPARATOR + demoData.activityPubTestOriginName, TriState.UNKNOWN);
+
+        OriginConnectionData connectionData = OriginConnectionData.fromMyAccount(builder.getAccount(), TriState.UNKNOWN);
         connection = connectionData.newConnection();
         httpConnection = (HttpConnectionMock) connection.getHttp();
         TestSuite.setHttpConnectionMockClass(null);
     }
 
     @Test
-    public void testVerifyCredentials() throws IOException {
+    public void verifyCredentials() throws IOException {
         httpConnection.addResponse(org.andstatus.app.tests.R.raw.activitypub_whoami_pleroma);
 
         Actor actor = connection.verifyCredentials();
         assertEquals("Actor's oid is actorOid of this account", ACTOR_OID, actor.oid);
 
-        Origin origin = MyContextHolder.get().origins().firstOfType(OriginType.ACTIVITYPUB);
+        Origin origin = connection.getData().getOrigin();
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(
                 MyContextHolder.get(), UNIQUE_NAME_IN_ORIGIN +
                         AccountName.ORIGIN_SEPARATOR + origin.getName(), TriState.TRUE);
@@ -98,7 +99,7 @@ public class VerifyCredentialsActivityPubTest {
         assertEquals("Profile URL", "https://pleroma.site/users/AndStatus", actor.getProfileUrl());
     }
 
-    private void assertEndpoint(ActorEndpointType endpointType, String value, Actor actor) {
-        assertEquals("Endpoint " + endpointType, value, actor.endpoints.getFirst(endpointType));
+    private static void assertEndpoint(ActorEndpointType endpointType, String value, Actor actor) {
+        assertEquals("Endpoint " + endpointType, Uri.parse(value), actor.getEndpoint(endpointType));
     }
 }

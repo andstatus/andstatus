@@ -67,7 +67,7 @@ public class UnsentNotesTest extends TimelineActivityTest<ActivityViewItem> {
         ActivityTestHelper.waitViewVisible(method + "; " + step, editorView);
 
         final String suffix = "unsent" + demoData.testRunUid;
-        String body = "Test unsent note, which we will try to edit" + suffix;
+        String body = "Test unsent note, which we will try to edit " + suffix;
         TestSuite.waitForIdleSync();
         onView(withId(R.id.noteBodyEditText)).perform(new TypeTextAction(body));
         TestSuite.waitForIdleSync();

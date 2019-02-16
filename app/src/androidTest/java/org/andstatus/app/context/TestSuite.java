@@ -65,7 +65,7 @@ public class TestSuite {
 
     public static Context initializeWithAccounts(Object testCase) {
         initialize(testCase);
-        if (MyContextHolder.get().accounts().fromAccountName(demoData.conversationAccount2Name).isEmpty()) {
+        if (MyContextHolder.get().accounts().fromAccountName(demoData.activityPubTestAccountName).isEmpty()) {
             ensureDataAdded();
         }
         return getMyContextForTest().context();
@@ -79,9 +79,9 @@ public class TestSuite {
     
     public static synchronized Context initialize(Object testCase) {
         final String method = "initialize";
-        if (initialized) {
-            return context;
-        }
+        if (initialized) return context;
+
+        boolean creatorSet = false;
         MyLog.setMinLogLevel(MyLog.VERBOSE);
         for (int iter=1; iter<6; iter++) {
             MyLog.i(TAG, "Initializing Test Suite, iteration=" + iter);
@@ -101,12 +101,14 @@ public class TestSuite {
             }
             MyLog.i(TAG, "Before MyContextHolder.initialize " + iter);
             try {
-                MyContextHolder.setCreator(new MyContextTestImpl(null, context, testCase));
-                FirstActivity.startMeAsync(context, MyAction.INITIALIZE_APP);
-                DbUtils.waitMs(method, 3000);
-                MyContext myContext = MyContextHolder.get();
-                MyLog.i(TAG, "After starting FirstActivity " + iter + " " + myContext);
-                if (myContext.state() == MyContextState.READY) break;
+                if (creatorSet || MyContextHolder.trySetCreator(new MyContextTestImpl(null, context, testCase))) {
+                    creatorSet = true;
+                    FirstActivity.startMeAsync(context, MyAction.INITIALIZE_APP);
+                    DbUtils.waitMs(method, 3000);
+                    MyContext myContext = MyContextHolder.get();
+                    MyLog.i(TAG, "After starting FirstActivity " + iter + " " + myContext);
+                    if (myContext.state() == MyContextState.READY) break;
+                }
             } catch (IllegalStateException e) {
                 MyLog.i(TAG, "Error caught, iteration=" + iter, e);
             }
@@ -151,7 +153,7 @@ public class TestSuite {
 
     public static synchronized void forget() {
         MyLog.d(TAG, "Before forget");
-        MyContextHolder.release();
+        MyContextHolder.release(() -> "forget");
         context = null;
         initialized = false;
     }

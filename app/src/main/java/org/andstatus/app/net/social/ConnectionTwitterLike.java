@@ -504,17 +504,17 @@ public abstract class ConnectionTwitterLike extends Connection {
      * @see <a href="https://dev.twitter.com/docs/api/1.1/get/users/show">GET users/show</a>
      */
     @Override
-    public Actor getActor2(String actorOid, String username) throws ConnectionException {
+    public Actor getActor2(Actor actorIn, String username) throws ConnectionException {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_ACTOR));
         Uri.Builder builder = sUri.buildUpon();
-        if (UriUtils.isRealOid(actorOid)) {
-            builder.appendQueryParameter("user_id", actorOid);
+        if (UriUtils.isRealOid(actorIn.oid)) {
+            builder.appendQueryParameter("user_id", actorIn.oid);
         } else {
             builder.appendQueryParameter("screen_name", username);
         }
         JSONObject jso = getRequest(builder.build().toString());
         Actor actor = actorFromJson(jso);
-        MyLog.v(this, () -> "getActor oid='" + actorOid
+        MyLog.v(this, () -> "getActor oid='" + actor.oid
                 + "', username='" + username + "' -> " + actor.getRealName());
         return actor;
     }

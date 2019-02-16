@@ -211,9 +211,8 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         }
 
         private void setConnection() {
-            OriginConnectionData connectionData = OriginConnectionData.fromAccountName(
-                    myAccount.oAccountName, TriState.fromBoolean(myAccount.isOAuth));
-            connectionData.setAccountActor(myAccount.getActor());
+            OriginConnectionData connectionData = OriginConnectionData.fromMyAccount(myAccount,
+                    TriState.fromBoolean(myAccount.isOAuth));
             connectionData.setDataReader(myAccount.accountData);
             try {
                 myAccount.connection = connectionData.newConnection();

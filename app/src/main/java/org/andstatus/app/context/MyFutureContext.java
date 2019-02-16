@@ -83,7 +83,7 @@ public class MyFutureContext extends MyAsyncTask<Object, Void, MyContext> {
         ExceptionsCounter.forget();
         MyLog.forget();
         SharedPreferencesUtil.forget();
-        previousContext.release();
+        previousContext.release(() -> "releaseGlobal");
         MyLog.d(this, "releaseGlobal completed");
     }
 

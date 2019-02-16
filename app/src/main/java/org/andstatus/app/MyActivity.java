@@ -72,7 +72,7 @@ public class MyActivity extends AppCompatActivity implements IdentifiableInstanc
                 if (previousErrorInflatingTime == 0) {
                     previousErrorInflatingTime = System.currentTimeMillis();
                     finish();
-                    MyContextHolder.get().setExpired();
+                    MyContextHolder.get().setExpired(() -> logMsg);
                     TimelineActivity.goHome(this);
                 } else {
                     throw new IllegalStateException(logMsg, e);

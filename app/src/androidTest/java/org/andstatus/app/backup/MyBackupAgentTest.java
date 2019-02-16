@@ -128,7 +128,7 @@ public class MyBackupAgentTest {
         MyServiceManager.setServiceUnavailable();
         deleteAccounts();
         Context context = MyContextHolder.get().context();
-        MyContextHolder.release();
+        MyContextHolder.release(() -> "deleteApplicationData");
         deleteFiles(context, false);
         deleteFiles(context, true);
         SharedPreferencesUtil.resetHasSetDefaultValues();

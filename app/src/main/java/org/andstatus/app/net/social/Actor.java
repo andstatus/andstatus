@@ -642,7 +642,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (origin.shouldHaveUrl()) {
             return origin.getHost();
         }
-        return StringUtils.nonEmpty(profileUri.getHost()) ? profileUri.getHost() : "";
+        return UrlUtils.getHost(oid).orElse(StringUtils.nonEmpty(profileUri.getHost()) ? profileUri.getHost() : "");
     }
     
     public String getSummary() {
@@ -814,4 +814,15 @@ public class Actor implements Comparable<Actor>, IsEmpty {
             avatarFile = AvatarFile.fromActorOnly(this);
         }
     }
+
+    public Uri getEndpoint(ActorEndpointType type) {
+        final Uri uri = endpoints.getFirst(type);
+        return uri == Uri.EMPTY && type == ActorEndpointType.API_PROFILE ? apiProfileUriFromOid() : uri;
+    }
+
+    private Uri apiProfileUriFromOid() {
+        Uri uri = UriUtils.fromString(oid);
+        return UrlUtils.hostIsValid(uri.getHost()) ? uri : Uri.EMPTY;
+    }
+
 }

@@ -35,6 +35,8 @@ import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TamperingDetector;
 
+import java.util.function.Supplier;
+
 import androidx.annotation.NonNull;
 
 /**
@@ -71,12 +73,16 @@ public final class MyContextHolder {
         return myFutureContext.getNow();
     }
     
-    /** This is mainly for mocking / testing */
-    static void setCreator(@NonNull MyContext contextCreatorNew) {
+    /** This is mainly for mocking / testing
+     * @return true if succeeded */
+    static boolean trySetCreator(@NonNull MyContext contextCreatorNew) {
         synchronized (CONTEXT_LOCK) {
-            release();
+            if (myFutureContext.needsBackgroundWork()) return false;
+
+            myFutureContext.getNow().release(() -> "trySetCreator");
             myFutureContext = new MyEmptyFutureContext(contextCreatorNew);
         }
+        return true;
     }
 
     /**
@@ -146,30 +152,19 @@ public final class MyContextHolder {
     }
 
     public static void setExpiredIfConfigChanged() {
-        if (get().initialized() && isConfigChanged()) {
-            final long preferencesChangeTimeLast;
-            boolean refreshing = false;
+        if (get().isConfigChanged()) {
             synchronized(CONTEXT_LOCK) {
-                if (get().initialized() && isConfigChanged()) {
-                    preferencesChangeTimeLast = MyPreferences.getPreferencesChangeTime() ;
-                    if (get().preferencesChangeTime() != preferencesChangeTimeLast) {
-                        refreshing = true;
-                        get().setExpired();
+                final MyContext myContext = get();
+                if (myContext.isConfigChanged()) {
+                    long preferencesChangeTimeLast = MyPreferences.getPreferencesChangeTime() ;
+                    if (myContext.preferencesChangeTime() != preferencesChangeTimeLast) {
+                        myContext.setExpired(() -> "Preferences changed "
+                                + RelativeTime.secondsAgo(preferencesChangeTimeLast)
+                                + " seconds ago, refreshing...");
                     }
-                } else {
-                    preferencesChangeTimeLast = 0;
                 }
             }
-            if (refreshing) {
-                MyLog.v(TAG, () -> "Preferences changed "
-                        + RelativeTime.secondsAgo(preferencesChangeTimeLast)
-                        + " seconds ago, refreshing...");
-            }
         }
-    }
-
-    public static boolean isConfigChanged() {
-        return get().preferencesChangeTime() != MyPreferences.getPreferencesChangeTime();
     }
 
     /**
@@ -194,8 +189,8 @@ public final class MyContextHolder {
         }
     }
 
-    public static void release() {
-        get().release();
+    public static void release(Supplier<String> reason) {
+        get().release(reason);
     }
 
     public static void upgradeIfNeeded(Activity upgradeRequestor) {
@@ -283,7 +278,7 @@ public final class MyContextHolder {
 
     public static void onShutDown() {
         isShuttingDown = true;
-        release();
+        release(() -> "onShutDown");
     }
 
     public static boolean isShuttingDown() {

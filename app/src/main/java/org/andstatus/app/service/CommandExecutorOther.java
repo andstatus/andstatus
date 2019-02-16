@@ -17,8 +17,6 @@
 package org.andstatus.app.service;
 
 import android.net.Uri;
-import androidx.annotation.NonNull;
-import androidx.core.util.Pair;
 
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.data.DataUpdater;
@@ -42,13 +40,17 @@ import org.andstatus.app.support.java.util.function.SupplierWithException;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
-import org.andstatus.app.util.UriUtils;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
+
+import static org.andstatus.app.util.UriUtils.TEMP_OID_PREFIX;
 
 class CommandExecutorOther extends CommandExecutorStrategy{
 
@@ -171,11 +173,16 @@ class CommandExecutorOther extends CommandExecutorStrategy{
 
     private void getActorCommand(Actor actorIn, String username) {
         final String method = "getActor";
-        String msgLog = method + "; username='" + username + "'";
+        String msgLog = method + ";";
         Actor actor = null;
-        if (UriUtils.isRealOid(actorIn.oid) || !StringUtils.isEmpty(username)) {
+        if (actorIn.isOidReal() || !StringUtils.isEmpty(username)) {
             try {
-                actor = getConnection().getActor(actorIn.oid, username);
+                if (actorIn.origin.isUsernameValid(username) &&
+                        (actorIn.getUsername().startsWith(TEMP_OID_PREFIX) || !actorIn.isUsernameValid())) {
+                    actorIn.setUsername(username);
+                }
+                msgLog  = msgLog + "; username='" + actorIn.getUsername() + "'";
+                actor = getConnection().getActor(actorIn, username);
                 logIfActorIsEmpty(msgLog, actorIn.actorId, actor);
             } catch (ConnectionException e) {
                 logConnectionException(e, msgLog + actorInfoLogged(actorIn.actorId));

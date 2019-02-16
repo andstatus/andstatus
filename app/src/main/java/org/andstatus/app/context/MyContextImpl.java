@@ -43,6 +43,8 @@ import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.UriUtils;
 
+import java.util.function.Supplier;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -124,9 +126,9 @@ public class MyContextImpl implements MyContext {
 
         boolean createApplicationData = MyStorage.isApplicationDataCreated().untrue;
         if (createApplicationData) {
-            Context context2 = Context.class.isInstance(initializer) ? (Context) initializer : context;
+            Context context2 = initializer instanceof Context ? (Context) initializer : context;
             if (!FirstActivity.setDefaultValues(context2)) {
-                setExpired();
+                setExpired(() -> "No default values yet");
                 return this;
             }
             MyLog.i(this, method + "; Creating application data");
@@ -265,8 +267,8 @@ public class MyContextImpl implements MyContext {
      * and https://stackoverflow.com/questions/4557154/android-sqlite-db-when-to-close?noredirect=1&lq=1
      * I decided to db.close on every context release in order to have new instance for each MyContext */
     @Override
-    public void release() {
-        setExpired();
+    public void release(Supplier<String> reason) {
+        setExpired(() -> "release " + reason.get());
         try {
             if (db != null) db.close();
         } catch (Exception e) {
@@ -292,12 +294,13 @@ public class MyContextImpl implements MyContext {
     }
 
     @Override
-    public void setExpired() {
-        MyLog.i(this, "setExpired");
+    public void setExpired(Supplier<String> reason) {
+        MyLog.v(this, () -> "setExpired " + reason.get());
         expired = true;
         state = MyContextState.EXPIRED;
     }
 
+    @NonNull
     @Override
     public PersistentOrigins origins() {
         return origins;

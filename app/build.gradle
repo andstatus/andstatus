@@ -85,6 +85,7 @@ dependencies {
     implementation "junit:junit:$junitVersion"
     implementation "androidx.annotation:annotation:$annotationVersion"
     implementation "androidx.preference:preference:$preferenceVersion"
+    implementation "io.vavr:vavr:$vavrVersion"
 
     androidTestImplementation "androidx.test:runner:$testRunnerVersion"
     androidTestImplementation "androidx.test:rules:$testRulesVersion"

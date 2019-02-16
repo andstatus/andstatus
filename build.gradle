@@ -47,7 +47,9 @@ buildscript {
         scribejavaCoreVersion = '6.2.0'   // https://github.com/scribejava/scribejava
         signPostVersion = '1.2.1.2'       // https://mvnrepository.com/artifact/oauth.signpost/signpost-core
         testRulesVersion = '1.1.1'
-        testRunnerVersion = '1.1.1'    }
+        testRunnerVersion = '1.1.1'
+        vavrVersion = '1.0.0-alpha-2'     // https://github.com/vavr-io/vavr/tree/v1.0.0
+    }
 }
 
 allprojects {

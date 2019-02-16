@@ -16,7 +16,6 @@
 
 package org.andstatus.app.net.social;
 
-import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -55,12 +54,8 @@ public class VerifyCredentialsTest {
         TestSuite.initializeWithAccounts(this);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        OriginConnectionData connectionData = OriginConnectionData.fromAccountName(AccountName.fromOriginAndUniqueName(
-                MyContextHolder.get().origins().fromName(demoData.twitterTestOriginName),
-                demoData.twitterTestAccountUsername),
-                TriState.UNKNOWN);
-        connectionData.setAccountActor(demoData.getAccountActorByOid(demoData.twitterTestAccountActorOid));
-        connectionData.setDataReader(new AccountDataReaderEmpty());
+        OriginConnectionData connectionData = OriginConnectionData.fromMyAccount(
+                demoData.getMyAccount(demoData.twitterTestAccountName), TriState.UNKNOWN);
         connection = connectionData.newConnection();
         httpConnection = (HttpConnectionMock) connection.http;
 

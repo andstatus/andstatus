@@ -27,6 +27,7 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.origin.OriginType;
@@ -94,6 +95,12 @@ public class DemoAccountInserter {
             actor.setWebFingerId(actor.getUsername() + "@" + actor.getHost());
         }
         assertTrue("No WebfingerId " + actor, actor.isWebFingerIdValid());
+        if (actor.origin.getOriginType() == OriginType.ACTIVITYPUB) {
+            actor.endpoints.add(ActorEndpointType.API_INBOX, "https://" + actor.getHost() +
+                    "/users/" + actor.getUsername() + "/inbox");
+            actor.endpoints.add(ActorEndpointType.API_OUTBOX, "https://" + actor.getHost() +
+                    "/users/" + actor.getUsername() + "/outbox");
+        }
         actor.setCreatedDate(MyLog.uniqueCurrentTimeMS());
         MyAccount ma = addAccountFromActor(actor);
 
@@ -143,13 +150,13 @@ public class DemoAccountInserter {
     }
 
     private MyAccount addAccountFromActor(@NonNull Actor actor) {
+        final String accountName = actor.getUniqueNameInOrigin() + AccountName.ORIGIN_SEPARATOR + actor.origin.getName();
+        MyAccount.Builder builder1 = MyAccount.Builder.newOrExistingFromAccountName(myContext, accountName, TriState.TRUE);
         if (actor.origin.isOAuthDefault() || actor.origin.canChangeOAuth()) {
-            insertTestClientKeys(actor);
+            insertTestClientKeys(builder1.getAccount());
         }
 
-        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(myContext,
-                actor.getUniqueNameInOrigin() + AccountName.ORIGIN_SEPARATOR + actor.origin.getName(),
-                TriState.TRUE);
+        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(myContext, accountName, TriState.TRUE);
         if (builder.getAccount().isOAuth()) {
             builder.setUserTokenWithSecret("sampleUserTokenFor" + actor.getNamePreferablyWebFingerId(),
                     "sampleUserSecretFor" + actor.getNamePreferablyWebFingerId());
@@ -191,13 +198,12 @@ public class DemoAccountInserter {
         return ma;
     }
 
-    private void insertTestClientKeys(Actor actor) {
+    private void insertTestClientKeys(MyAccount myAccount) {
         HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(
-            OriginConnectionData.fromAccountName(
-                AccountName.fromOriginAndUniqueName(actor.origin, actor.getUniqueNameInOrigin()), TriState.UNKNOWN)
+            OriginConnectionData.fromMyAccount(myAccount, TriState.UNKNOWN)
         );
         if (!UrlUtils.hasHost(connectionData.originUrl)) {
-            connectionData.originUrl = UrlUtils.fromString("https://" + actor.getHost());
+            connectionData.originUrl = UrlUtils.fromString("https://" + myAccount.getActor().getHost());
         }
         OAuthClientKeys keys1 = OAuthClientKeys.fromConnectionData(connectionData);
         if (!keys1.areKeysPresent()) {
@@ -206,7 +212,7 @@ public class DemoAccountInserter {
             keys1.setConsumerKeyAndSecret(consumerKey, consumerSecret);
 
             OAuthClientKeys keys2 = OAuthClientKeys.fromConnectionData(connectionData);
-            assertEquals("Keys are loaded for " + actor, true, keys2.areKeysPresent());
+            assertEquals("Keys are loaded for " + myAccount, true, keys2.areKeysPresent());
             assertEquals(consumerKey, keys2.getConsumerKey());
             assertEquals(consumerSecret, keys2.getConsumerSecret());
         }

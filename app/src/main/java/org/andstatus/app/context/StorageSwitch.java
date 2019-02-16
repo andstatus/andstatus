@@ -217,7 +217,7 @@ public class StorageSwitch {
                         MyLog.v(this, method + " to: " + dbFileNew.getPath());
                     }
                     try {
-                        MyContextHolder.release();
+                        MyContextHolder.release(() -> "moveDatabase");
                         if (copyFile(dbFileOld, dbFileNew)) {
                             copied = true;
                             succeeded = true;

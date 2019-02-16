@@ -44,11 +44,12 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
                 TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
             }
             TestSuite.getMyContextForTest().setConnectionState(ConnectionState.WIFI);
-            MyContextHolder.get().setExpired();
+            MyContextHolder.get().setExpired(() -> this.getClass().getSimpleName() + " setUp");
             myContext = MyContextHolder.initialize(myContext.context(), this);
             if (!myContext.isReady()) {
-                MyLog.w(this, "Context is not ready after the initialization, repeating... " + myContext);
-                myContext.setExpired();
+                final String msg = "Context is not ready after the initialization, repeating... " + myContext;
+                MyLog.w(this, msg);
+                myContext.setExpired(() -> this.getClass().getSimpleName() + msg);
                 myContext = MyContextHolder.initialize(myContext.context(), this);
                 assertEquals("Context should be ready", true, myContext.isReady());
             }

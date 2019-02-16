@@ -17,7 +17,6 @@
 package org.andstatus.app.util;
 
 import android.net.Uri;
-import android.text.TextUtils;
 
 import org.andstatus.app.net.http.ConnectionException;
 import org.json.JSONException;
@@ -26,6 +25,7 @@ import org.json.JSONObject;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 public final class UrlUtils {
@@ -36,6 +36,10 @@ public final class UrlUtils {
 
     private UrlUtils() {
         // Empty
+    }
+
+    public static Optional<String> getHost(String strUrl) {
+        return Optional.ofNullable(fromString(strUrl)).map(URL::getHost).filter(UrlUtils::hostIsValid);
     }
 
     public static boolean hostIsValid(String host) {

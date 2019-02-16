@@ -19,6 +19,7 @@ package org.andstatus.app.origin;
 import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.AccountName;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
@@ -31,46 +32,45 @@ import java.net.URL;
 import androidx.annotation.NonNull;
 
 public class OriginConnectionData {
-    private final AccountName accountName;
     private boolean isOAuth;
     private URL originUrl;
 
-    private Actor accountActor = Actor.EMPTY;
+    private final MyAccount myAccount;
     private AccountDataReader dataReader;
     
     private final Class<? extends org.andstatus.app.net.http.HttpConnection> httpConnectionClass;
 
-    public static OriginConnectionData fromAccountName(AccountName accountName, TriState triStateOAuth) {
-        return new OriginConnectionData(accountName, triStateOAuth);
+    public static OriginConnectionData fromMyAccount(MyAccount myAccount, TriState triStateOAuth) {
+        return new OriginConnectionData(myAccount, triStateOAuth);
     }
 
-    private OriginConnectionData(AccountName accountName, TriState triStateOAuth) {
-        this.accountName = accountName;
-        originUrl = accountName.getOrigin().getUrl();
-        isOAuth = accountName.getOrigin().getOriginType().fixIsOAuth(triStateOAuth);
-        httpConnectionClass = accountName.getOrigin().getOriginType().getHttpConnectionClass(isOAuth());
+    private OriginConnectionData(MyAccount myAccount, TriState triStateOAuth) {
+        this.myAccount = myAccount;
+        originUrl = myAccount.getOrigin().getUrl();
+        isOAuth = myAccount.getOrigin().getOriginType().fixIsOAuth(triStateOAuth);
+        httpConnectionClass = myAccount.getOrigin().getOriginType().getHttpConnectionClass(isOAuth());
         dataReader = new AccountDataReaderEmpty();
     }
 
     @NonNull
     public Actor getAccountActor() {
-        return accountActor;
+        return myAccount.getActor();
     }
 
     public AccountName getAccountName() {
-        return accountName;
+        return myAccount.getOAccountName();
     }
 
     public OriginType getOriginType() {
-        return accountName.getOrigin().getOriginType();
+        return myAccount.getOrigin().getOriginType();
     }
 
     public Origin getOrigin() {
-        return accountName.getOrigin();
+        return myAccount.getOrigin();
     }
 
     public boolean isSsl() {
-        return accountName.getOrigin().isSsl();
+        return myAccount.getOrigin().isSsl();
     }
 
     public boolean isOAuth() {
@@ -89,19 +89,13 @@ public class OriginConnectionData {
     public Connection newConnection() throws ConnectionException {
         Connection connection;
         try {
-            connection = accountName.getOrigin().getOriginType().getConnectionClass().newInstance();
+            connection = myAccount.getOrigin().getOriginType().getConnectionClass().newInstance();
             connection.enrichConnectionData(this);
             connection.setAccountData(this);
         } catch (InstantiationException | IllegalAccessException e) {
-            throw new ConnectionException(accountName.getOrigin().toString(), e);
+            throw new ConnectionException(myAccount.getOrigin().toString(), e);
         }
         return connection;
-    }
-
-    public void setAccountActor(Actor accountActor) {
-        if (accountActor != null) {
-            this.accountActor = accountActor;
-        }
     }
 
     public AccountDataReader getDataReader() {

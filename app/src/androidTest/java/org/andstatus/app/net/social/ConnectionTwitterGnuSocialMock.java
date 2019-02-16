@@ -1,7 +1,5 @@
 package org.andstatus.app.net.social;
 
-import org.andstatus.app.account.AccountDataReaderEmpty;
-import org.andstatus.app.account.AccountName;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -26,11 +24,8 @@ public class ConnectionTwitterGnuSocialMock extends ConnectionTwitterGnuSocial i
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
         Origin origin = MyContextHolder.get().origins().fromName(demoData.gnusocialTestOriginName);
 
-        OriginConnectionData connectionData = OriginConnectionData.fromAccountName(
-                AccountName.fromOriginAndUniqueName(origin, demoData.gnusocialTestAccountUsername),
-                TriState.UNKNOWN);
-        connectionData.setAccountActor(demoData.getAccountActorByOid(demoData.gnusocialTestAccountActorOid));
-        connectionData.setDataReader(new AccountDataReaderEmpty());
+        OriginConnectionData connectionData = OriginConnectionData.fromMyAccount(
+                demoData.getMyAccount(demoData.gnusocialTestAccountName), TriState.UNKNOWN);
         enrichConnectionData(connectionData);
         MyAccount ma = MyContextHolder.get().accounts().fromActorOfSameOrigin(connectionData.getAccountActor());
         assertTrue("Invalid my account " + connectionData.getAccountActor(), ma.isValid());
