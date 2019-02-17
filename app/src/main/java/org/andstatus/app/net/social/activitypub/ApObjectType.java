@@ -21,7 +21,8 @@ import org.json.JSONObject;
 
 import static org.andstatus.app.net.social.ActivityType.EMPTY;
 
-/** @see <a href="https://www.w3.org/TR/activitystreams-vocabulary/#activity-types">Object Types</a>
+/** @see <a href="https://www.w3.org/TR/activitystreams-vocabulary/#activity-types">Activity Types</a>
+ * <a href="https://www.w3.org/TR/activitystreams-vocabulary/#actor-types">Actor Types</a>
  * */
 enum ApObjectType {
     ACTIVITY("Activity", null) {

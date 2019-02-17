@@ -158,10 +158,7 @@ class ActivitySender {
             obj.put(CONTENT_PROPERTY, content);
         }
         if (!StringUtils.isEmpty(inReplyToId)) {
-            JSONObject inReplyToObject = new JSONObject();
-            inReplyToObject.put("id", inReplyToId);
-            inReplyToObject.put("objectType", connection.oidToObjectType(inReplyToId));
-            obj.put("inReplyTo", inReplyToObject);
+            obj.put("inReplyTo", inReplyToId);
         }
         activity.put("object", obj);
         return activity;
@@ -176,22 +173,12 @@ class ActivitySender {
 
     private JSONObject newActivityOfThisAccount(ActivityType activityType) throws JSONException, ConnectionException {
         JSONObject activity = new JSONObject();
-        activity.put("objectType", "activity");
+        activity.put("@context", "https://www.w3.org/ns/activitystreams");
         activity.put("type", activityType.activityPubValue);
-
-        JSONObject generator = new JSONObject();
-        generator.put("id", ConnectionActivityPub.APPLICATION_ID);
-        generator.put("displayName", HttpConnection.USER_AGENT);
-        generator.put("objectType", ApObjectType.APPLICATION.id());
-        activity.put("generator", generator);
 
         setAudience(activity, activityType);
 
-        JSONObject author = new JSONObject();
-        author.put("id", connection.getData().getAccountActor().oid);
-        author.put("objectType", "person");
-
-        activity.put("actor", author);
+        activity.put("actor", connection.getData().getAccountActor().oid);
         return activity;
     }
 
@@ -206,12 +193,9 @@ class ActivitySender {
     private void addToAudience(JSONObject activity, String recipientField, Actor actor) {
         String recipientId = actor.equals(Actor.PUBLIC) ? ConnectionActivityPub.PUBLIC_COLLECTION_ID : actor.oid;
         if (StringUtils.isEmpty(recipientId)) return;
-        JSONObject recipient = new JSONObject();
         try {
-            recipient.put("id", recipientId);
-            recipient.put("objectType", connection.oidToObjectType(recipientId));
             JSONArray field = activity.has(recipientField) ? activity.getJSONArray(recipientField) : new JSONArray();
-            field.put(recipient);
+            field.put(recipientId);
             activity.put(recipientField, field);
         } catch (JSONException e) {
             MyLog.e(this, e);
@@ -247,15 +231,15 @@ class ActivitySender {
         JSONObject obj = new JSONObject();
         if (isExisting()) {
             obj.put("id", objectId);
-            obj.put("objectType", connection.oidToObjectType(objectId));
+            obj.put("type", ApObjectType.NOTE.id());
         } else {
             if (StringUtils.isEmpty(name) && StringUtils.isEmpty(content) && UriUtils.isEmpty(mMediaUri)) {
                 throw new IllegalArgumentException("Nothing to send");
             }
-            obj.put("author", activity.getJSONObject("actor"));
-            ApObjectType objectType = StringUtils.isEmpty(inReplyToId) ? ApObjectType.NOTE : ApObjectType.COMMENT;
-            obj.put("objectType", objectType.id());
+            obj.put("attributedTo", connection.getData().getAccountActor().oid);
+            obj.put("type", ApObjectType.NOTE.id());
         }
+        obj.put("to", activity.getJSONArray("to"));
         return obj;
     }
 
