@@ -16,6 +16,8 @@
 
 package org.andstatus.app.net.social.pumpio;
 
+import android.net.Uri;
+
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionData;
@@ -23,14 +25,15 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
 
 class ConnectionAndUrl {
-    public final String url;
+    public final Uri uri;
     public final HttpConnection httpConnection;
 
-    public ConnectionAndUrl(String url, HttpConnection httpConnection) {
-        this.url = url;
+    public ConnectionAndUrl(Uri uri, HttpConnection httpConnection) {
+        this.uri = uri;
         this.httpConnection = httpConnection;
     }
 
@@ -50,7 +53,7 @@ class ConnectionAndUrl {
         if (StringUtils.isEmpty(nickname)) {
             throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine + ": wrong username='" + username + "'");
         }
-        String url = connection.getApiPath(apiRoutine).replace("%nickname%", nickname);
+        Uri uri = UriUtils.map(connection.getApiPath(apiRoutine), s -> s.replace("%nickname%", nickname));
         HttpConnection httpConnection = connection.getHttp();
         String host = actor.getHost();
         if (StringUtils.isEmpty(host)) {
@@ -70,6 +73,6 @@ class ConnectionAndUrl {
                         "No credentials", httpConnection.data.originUrl);
             }
         }
-        return new ConnectionAndUrl(url, httpConnection);
+        return new ConnectionAndUrl(uri, httpConnection);
     }
 }

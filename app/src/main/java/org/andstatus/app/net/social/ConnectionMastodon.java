@@ -125,8 +125,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     @NonNull
     @Override
     protected Uri.Builder getTimelineUriBuilder(ApiRoutineEnum apiRoutine, int limit, Actor actor) throws ConnectionException {
-        String url = this.getApiPathWithActorId(apiRoutine, actor.oid);
-        return Uri.parse(url).buildUpon().appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
+        return this.getApiPathWithActorId(apiRoutine, actor.oid).buildUpon()
+                .appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
     }
 
     @Override
@@ -193,13 +193,11 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             return new ArrayList<>();
         }
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.TAG_TIMELINE;
-        String url = getApiPathWithTag(apiRoutine, tag);
-        Uri sUri = Uri.parse(url);
-        Uri.Builder builder = sUri.buildUpon();
+        Uri.Builder builder = getApiPathWithTag(apiRoutine, tag).buildUpon();
         appendPositionParameters(builder, youngestPosition, oldestPosition);
         builder.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
-        JSONArray jArr = http.getRequestAsArray(builder.build().toString());
-        return jArrToTimeline(jArr, apiRoutine, url);
+        JSONArray jArr = http.getRequestAsArray(builder.build());
+        return jArrToTimeline(jArr, apiRoutine, builder.build());
     }
 
     @NonNull
@@ -210,16 +208,16 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             return new ArrayList<>();
         }
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_ACTORS;
-        Uri.Builder builder = Uri.parse(getApiPath(apiRoutine)).buildUpon();
+        Uri.Builder builder = getApiPath(apiRoutine).buildUpon();
         builder.appendQueryParameter("q", searchQuery);
         builder.appendQueryParameter("resolve", "true");
         builder.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
-        JSONArray jArr = http.getRequestAsArray(builder.build().toString());
+        JSONArray jArr = http.getRequestAsArray(builder.build());
         return jArrToActors(jArr, apiRoutine, builder.build());
     }
 
-    protected String getApiPathWithTag(ApiRoutineEnum routineEnum, String tag) throws ConnectionException {
-        return getApiPath(routineEnum).replace("%tag%", tag);
+    protected Uri getApiPathWithTag(ApiRoutineEnum routineEnum, String tag) throws ConnectionException {
+        return UriUtils.map(getApiPath(routineEnum), s -> s.replace("%tag%", tag));
     }
 
     @Override
@@ -228,16 +226,16 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         if (StringUtils.isEmpty(conversationOid)) {
             return timeline;
         }
-        String url = getApiPathWithNoteId(ApiRoutineEnum.GET_CONVERSATION, conversationOid);
-        JSONObject mastodonContext = getRequest(url);
+        Uri uri = getApiPathWithNoteId(ApiRoutineEnum.GET_CONVERSATION, conversationOid);
+        JSONObject mastodonContext = getRequest(uri);
         try {
             if (mastodonContext.has("ancestors")) {
                 timeline.addAll(jArrToTimeline(mastodonContext.getJSONArray("ancestors"),
-                        ApiRoutineEnum.GET_CONVERSATION, url));
+                        ApiRoutineEnum.GET_CONVERSATION, uri));
             }
             if (mastodonContext.has("descendants")) {
                 timeline.addAll(jArrToTimeline(mastodonContext.getJSONArray("descendants"),
-                        ApiRoutineEnum.GET_CONVERSATION, url));
+                        ApiRoutineEnum.GET_CONVERSATION, uri));
             }
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Error getting conversation '" + conversationOid + "'",
@@ -469,10 +467,10 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     }
 
     List<Actor> getActors(String actorId, ApiRoutineEnum apiRoutine) throws ConnectionException {
-        Uri.Builder builder = Uri.parse(this.getApiPathWithActorId(apiRoutine, actorId)).buildUpon();
+        Uri.Builder builder = this.getApiPathWithActorId(apiRoutine, actorId).buildUpon();
         int limit = 400;
         builder.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
-        return jArrToActors(http.getRequestAsArray(builder.build().toString()), apiRoutine, builder.build());
+        return jArrToActors(http.getRequestAsArray(builder.build()), apiRoutine, builder.build());
     }
 
 }

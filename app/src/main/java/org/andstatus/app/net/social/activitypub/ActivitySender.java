@@ -94,7 +94,7 @@ class ActivitySender {
             activity = buildActivityToSend(activityType);
             ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrl(connection, ApiRoutineEnum.UPDATE_NOTE,
                     connection.getData().getAccountActor());
-            activityResponse = connection.postRequest(conu.url, activity);
+            activityResponse = connection.postRequest(conu.uri, activity);
             if (activityResponse == null) {
                 throw ConnectionException.hardConnectionException(msgLog + " returned no data", null);
             }
@@ -107,7 +107,7 @@ class ActivitySender {
                             "when an image object is posted. Sending an update");
                 }
                 activity.put("type", ActivityType.UPDATE.activityPubValue);
-                activityResponse = connection.postRequest(conu.url, activity);
+                activityResponse = connection.postRequest(conu.uri, activity);
             }
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, msgLog, e,
@@ -230,7 +230,7 @@ class ActivitySender {
             formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mMediaUri.toString());
             ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrl(connection, ApiRoutineEnum.UPDATE_NOTE_WITH_MEDIA,
                     connection.getData().getAccountActor());
-            obj1 = connection.postRequest(conu.url, formParams);
+            obj1 = connection.postRequest(conu.uri, formParams);
             if (obj1 == null) {
                 throw new ConnectionException("Error uploading '" + mMediaUri.toString() + "': null response returned");
             }

@@ -156,11 +156,9 @@ public class ConnectionActivityPub extends Connection {
     private List<Actor> getActors(Actor actor, ApiRoutineEnum apiRoutine) throws ConnectionException {
         int limit = 200;
         ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrl(this, apiRoutine, actor);
-        Uri sUri = Uri.parse(conu.url);
-        Uri.Builder builder = sUri.buildUpon();
+        Uri.Builder builder = conu.uri.buildUpon();
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
-        String url = builder.build().toString();
-        JSONArray jArr = conu.httpConnection.getRequestAsArray(url);
+        JSONArray jArr = conu.httpConnection.getRequestAsArray(builder.build());
         List<Actor> actors = new ArrayList<>();
         if (jArr != null) {
             for (int index = 0; index < jArr.length(); index++) {
@@ -173,13 +171,13 @@ public class ConnectionActivityPub extends Connection {
                 }
             }
         }
-        MyLog.d(TAG, apiRoutine + " '" + url + "' " + actors.size() + " actors");
+        MyLog.v(TAG, () -> apiRoutine + " '" + builder.build() + "' " + actors.size() + " actors");
         return actors;
     }
 
     @Override
     protected AActivity getNote1(String noteOid) throws ConnectionException {
-        return activityFromJson(getRequest(noteOid));
+        return activityFromJson(getRequest(UriUtils.fromString(noteOid)));
     }
 
     @Override
@@ -235,8 +233,7 @@ public class ConnectionActivityPub extends Connection {
                                        TimelinePosition oldestPosition, int limit, Actor actor)
             throws ConnectionException {
         ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrl(this, apiRoutine, actor);
-        Uri sUri = Uri.parse(conu.url);
-        Uri.Builder builder = sUri.buildUpon();
+        Uri.Builder builder = conu.uri.buildUpon();
         if (youngestPosition.nonEmpty()) {
             // The "since" should point to the "Activity" on the timeline, not to the note
             // Otherwise we will always get "not found"
@@ -245,8 +242,7 @@ public class ConnectionActivityPub extends Connection {
             builder.appendQueryParameter("max_id", oldestPosition.getPosition());
         }
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
-        String url = builder.build().toString();
-        JSONObject root = conu.httpConnection.getRequest(url);
+        JSONObject root = conu.httpConnection.getRequest(builder.build());
         List<AActivity> activities = new ArrayList<>();
         if (root != null) {
             JSONObject page = root.optJSONObject("first");
@@ -265,7 +261,7 @@ public class ConnectionActivityPub extends Connection {
                 }
             }
         }
-        MyLog.d(TAG, "getTimeline '" + url + "' " + activities.size() + " activities");
+        MyLog.d(TAG, "getTimeline '" + builder.build() + "' " + activities.size() + " activities");
         return activities;
     }
 
@@ -529,7 +525,7 @@ public class ConnectionActivityPub extends Connection {
     @Override
     public Actor getActor2(Actor actorIn, String usernameIn) throws ConnectionException {
         ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrlForActor(this, ApiRoutineEnum.GET_ACTOR, actorIn);
-        JSONObject jso = conu.httpConnection.getRequest(conu.url);
+        JSONObject jso = conu.httpConnection.getRequest(conu.uri);
         Actor actor = actorFromJson(jso);
         MyLog.v(this, () -> "getActor oid='" + actor.oid
                 + "', username='" + usernameIn + "' -> " + actor.getRealName());

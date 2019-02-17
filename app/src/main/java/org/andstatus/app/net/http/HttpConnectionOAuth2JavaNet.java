@@ -16,6 +16,8 @@
 
 package org.andstatus.app.net.http;
 
+import android.net.Uri;
+
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.exceptions.OAuthException;
 import com.github.scribejava.core.httpclient.jdk.JDKHttpClientConfig;
@@ -52,9 +54,9 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
 
     @Override
     public void registerClient() throws ConnectionException {
-        String path = getApiUrl(Connection.ApiRoutineEnum.OAUTH_REGISTER_CLIENT);
+        Uri uri = getApiUri(Connection.ApiRoutineEnum.OAUTH_REGISTER_CLIENT);
         MyStringBuilder logmsg = MyStringBuilder.of("registerClient; for " + data.originUrl
-                + "; URL='" + path + "'");
+                + "; URL='" + uri + "'");
         MyLog.v(this, logmsg::toString);
         data.oauthClientKeys.clear();
         try {
@@ -64,7 +66,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             params.put("scopes", OAUTH_SCOPES);
             params.put("website", "http://andstatus.org");
 
-            JSONObject jso = postRequest(path, params);
+            JSONObject jso = postRequest(uri, params);
             String consumerKey = jso.getString("client_id");
             String consumerSecret = jso.getString("client_secret");
             data.oauthClientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);

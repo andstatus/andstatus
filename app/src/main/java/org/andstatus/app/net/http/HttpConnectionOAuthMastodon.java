@@ -16,11 +16,14 @@
 
 package org.andstatus.app.net.http;
 
+import android.net.Uri;
+
 import com.github.scribejava.core.model.OAuthConstants;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.UriUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +31,7 @@ import java.util.Map;
 public class HttpConnectionOAuthMastodon extends HttpConnectionOAuth2JavaNet {
 
     @Override
-    public String getApiUrl(Connection.ApiRoutineEnum routine) throws ConnectionException {
+    public Uri getApiUri(Connection.ApiRoutineEnum routine) throws ConnectionException {
         String url;
 
         switch (routine) {
@@ -40,7 +43,7 @@ public class HttpConnectionOAuthMastodon extends HttpConnectionOAuth2JavaNet {
                 url = data.getBasicPath() + "/v1/apps";
                 break;
             default:
-                url = super.getApiUrl(routine);
+                url = super.getApiUri(routine).toString();
                 break;
         }
 
@@ -48,7 +51,7 @@ public class HttpConnectionOAuthMastodon extends HttpConnectionOAuth2JavaNet {
             url = pathToUrlString(url);
         }
 
-        return url;
+        return UriUtils.fromString(url);
     }
 
     /**

@@ -41,10 +41,10 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
 
     @Override
     public OAuthProvider getProvider() throws ConnectionException {
-        CommonsHttpOAuthProvider provider = null;
-        provider = new CommonsHttpOAuthProvider(getApiUrl(ApiRoutineEnum.OAUTH_REQUEST_TOKEN),
-                getApiUrl(ApiRoutineEnum.OAUTH_ACCESS_TOKEN), getApiUrl(ApiRoutineEnum.OAUTH_AUTHORIZE));
-
+        CommonsHttpOAuthProvider provider = new CommonsHttpOAuthProvider(
+                getApiUri(ApiRoutineEnum.OAUTH_REQUEST_TOKEN).toString(),
+                getApiUri(ApiRoutineEnum.OAUTH_ACCESS_TOKEN).toString(),
+                getApiUri(ApiRoutineEnum.OAUTH_AUTHORIZE).toString());
         provider.setHttpClient(ApacheHttpClientUtils.getHttpClient(data.getSslMode()));
         provider.setOAuth10a(true);
         return provider;

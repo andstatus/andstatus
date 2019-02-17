@@ -16,6 +16,9 @@
 
 package org.andstatus.app.net.http;
 
+import android.net.Uri;
+
+import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,22 +32,22 @@ public class HttpReadResultTest {
 
     @Test
     public void testResultToArray() throws ConnectionException, JSONException {
-        final String url = "https://example.com/somepath/file.html";
+        final Uri uri = UriUtils.fromString("https://example.com/somepath/file.html");
         final String in = "{\"results\":[{\"text\":\"Text1\",\"to_user\":\"someuser\",\"from_user\":\"author1\"}," 
                 + "{\"text\":\"Text2\",\"to_user\":\"andstatus\",\"from_user\":\"otherauthor\"}]"
                 + ",\"since_id\":\"Wed, 05 Mar 2014 16:37:17 +0100\""
                 + "}";
-        HttpReadResult result1 = new HttpReadResult(url, new JSONObject());
+        HttpReadResult result1 = new HttpReadResult(uri, new JSONObject());
         result1.strResponse = in;
         JSONArray jsa =  result1.getJsonArray("items");
         assertEquals(2, jsa.length());
         assertEquals(false, result1.formParams.isPresent());
         assertFalse(result1.toString(), result1.toString().contains("posted"));
 
-        HttpReadResult result2 = new HttpReadResult(url, new JSONObject("{}"));
+        HttpReadResult result2 = new HttpReadResult(uri, new JSONObject("{}"));
         assertEquals(false, result2.formParams.isPresent());
 
-        HttpReadResult result3 = new HttpReadResult(url, new JSONObject("{\"text\":\"Text1\"}"));
+        HttpReadResult result3 = new HttpReadResult(uri, new JSONObject("{\"text\":\"Text1\"}"));
         assertEquals(true, result3.formParams.isPresent());
         assertTrue(result3.toString(), result3.toString().contains("posted"));
     }

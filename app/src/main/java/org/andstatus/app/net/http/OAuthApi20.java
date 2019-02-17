@@ -19,7 +19,7 @@ public class OAuthApi20 extends DefaultApi20 {
     @Override
     public String getAccessTokenEndpoint() {
         try {
-            return http.getApiUrl(OAUTH_ACCESS_TOKEN);
+            return http.getApiUri(OAUTH_ACCESS_TOKEN).toString();
         } catch (ConnectionException e) {
             MyLog.e(this, e);
         }
@@ -29,7 +29,7 @@ public class OAuthApi20 extends DefaultApi20 {
     @Override
     protected String getAuthorizationBaseUrl() {
         try {
-            return http.getApiUrl(OAUTH_AUTHORIZE);
+            return http.getApiUri(OAUTH_AUTHORIZE).toString();
         } catch (ConnectionException e) {
             MyLog.e(this, e);
         }

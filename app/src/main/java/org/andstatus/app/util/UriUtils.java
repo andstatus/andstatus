@@ -27,6 +27,7 @@ import org.json.JSONObject;
 
 import java.net.URL;
 import java.util.Optional;
+import java.util.function.Function;
 
 import androidx.annotation.NonNull;
 
@@ -66,6 +67,11 @@ public class UriUtils {
             return fromString(jso.optString(urlTag));
         }
         return Uri.EMPTY;
+    }
+
+    @NonNull
+    public static Uri map(Uri uri, Function<String, String> mapper) {
+        return fromString(mapper.apply(uri.toString()));
     }
 
     @NonNull

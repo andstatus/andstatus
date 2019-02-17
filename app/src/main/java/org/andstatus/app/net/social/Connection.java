@@ -155,11 +155,12 @@ public abstract class Connection {
      * Full path of the API. Logged
      * @return URL or throws a ConnectionException in case the API routine is not supported
      */
-    public final String getApiPath(ApiRoutineEnum routine) throws ConnectionException {
+    @NonNull
+    public final Uri getApiPath(ApiRoutineEnum routine) throws ConnectionException {
         Optional<Uri> uri = getApiUri(routine);
         if (uri.isPresent()) {
             MyLog.v(this.getClass().getSimpleName(), () -> "API '" + routine + "' URI=" + uri);
-            return uri.get().toString();
+            return uri.get();
         }
         throw new ConnectionException(StatusCode.UNSUPPORTED_API, this.getClass().getSimpleName() + ": " +
                 ("The API is not supported: '" + routine + "'"));
@@ -433,8 +434,8 @@ public abstract class Connection {
         // Nothing to do
     }
 
-    public final JSONObject postRequest(String apiPath, JSONObject formParams) throws ConnectionException {
-        return http.postRequest(apiPath, formParams);
+    public final JSONObject postRequest(Uri apiUri, JSONObject formParams) throws ConnectionException {
+        return http.postRequest(apiUri, formParams);
     }
 
     public OriginConfig getConfig() throws ConnectionException {
@@ -522,14 +523,14 @@ public abstract class Connection {
         return unixDate;
     }
 
-    public final JSONObject getRequest(String path) throws ConnectionException {
-        return http.getRequest(path);
+    public final JSONObject getRequest(Uri uri) throws ConnectionException {
+        return http.getRequest(uri);
     }
 
-    JSONArray getRequestArrayInObject(String path, String arrayName) throws ConnectionException {
+    JSONArray getRequestArrayInObject(Uri uri, String arrayName) throws ConnectionException {
         String method = "getRequestArrayInObject";
         JSONArray jArr = null;
-        JSONObject jso = getRequest(path);
+        JSONObject jso = getRequest(uri);
         if (jso != null) {
             try {
                 jArr = jso.getJSONArray(arrayName);
@@ -540,8 +541,8 @@ public abstract class Connection {
         return jArr;
     }
 
-    public void downloadFile(String url, File file) throws ConnectionException {
-        http.downloadFile(url, file);
+    public void downloadFile(Uri uri, File file) throws ConnectionException {
+        http.downloadFile(uri, file);
     }
 
     public HttpConnection getHttp() {

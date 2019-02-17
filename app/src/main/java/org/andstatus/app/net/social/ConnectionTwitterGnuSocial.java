@@ -17,7 +17,6 @@
 package org.andstatus.app.net.social;
 
 import android.net.Uri;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.TextMediaType;
@@ -37,6 +36,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import androidx.annotation.NonNull;
 
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 
@@ -85,10 +86,10 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
 
     @Override
     public List<String> getFriendsIds(String actorOid) throws ConnectionException {
-        Uri.Builder builder = Uri.parse(getApiPath(ApiRoutineEnum.GET_FRIENDS_IDS)).buildUpon();
+        Uri.Builder builder = getApiPath(ApiRoutineEnum.GET_FRIENDS_IDS).buildUpon();
         builder.appendQueryParameter("user_id", actorOid);
         List<String> list = new ArrayList<>();
-        JSONArray jArr = http.getRequestAsArray(builder.build().toString());
+        JSONArray jArr = http.getRequestAsArray(builder.build());
         try {
             for (int index = 0; index < jArr.length(); index++) {
                 list.add(jArr.getString(index));
@@ -101,10 +102,10 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
 
     @Override
     public List<String> getFollowersIds(String actorOid) throws ConnectionException {
-        Uri.Builder builder = Uri.parse(getApiPath(ApiRoutineEnum.GET_FOLLOWERS_IDS)).buildUpon();
+        Uri.Builder builder = getApiPath(ApiRoutineEnum.GET_FOLLOWERS_IDS).buildUpon();
         builder.appendQueryParameter("user_id", actorOid);
         List<String> list = new ArrayList<>();
-        JSONArray jArr = http.getRequestAsArray(builder.build().toString());
+        JSONArray jArr = http.getRequestAsArray(builder.build());
         try {
             for (int index = 0; index < jArr.length(); index++) {
                 list.add(jArr.getString(index));
@@ -164,9 +165,9 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
         if (StringUtils.isEmpty(conversationOid)) {
             return new ArrayList<>();
         } else {
-            String url = getApiPathWithNoteId(ApiRoutineEnum.GET_CONVERSATION, conversationOid);
-            JSONArray jArr = http.getRequestAsArray(url);
-            return jArrToTimeline(jArr, ApiRoutineEnum.GET_CONVERSATION, url);
+            Uri uri = getApiPathWithNoteId(ApiRoutineEnum.GET_CONVERSATION, conversationOid);
+            JSONArray jArr = http.getRequestAsArray(uri);
+            return jArrToTimeline(jArr, ApiRoutineEnum.GET_CONVERSATION, uri);
         }
     }
 

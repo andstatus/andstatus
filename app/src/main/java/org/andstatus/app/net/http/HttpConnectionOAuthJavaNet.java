@@ -60,16 +60,16 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
      */
     @Override
     public void registerClient() throws ConnectionException {
-        String path = getApiUrl(ApiRoutineEnum.OAUTH_REGISTER_CLIENT);
+        Uri uri = getApiUri(ApiRoutineEnum.OAUTH_REGISTER_CLIENT);
 		MyStringBuilder logmsg = MyStringBuilder.of("registerClient; for " + data.originUrl
-                + "; URL='" + path + "'");
+                + "; URL='" + uri + "'");
         MyLog.v(this, logmsg::toString);
         String consumerKey = "";
         String consumerSecret = "";
         data.oauthClientKeys.clear();
         Writer writer = null;
         try {
-			URL endpoint = new URL(path);
+			URL endpoint = new URL(uri.toString());
             HttpURLConnection conn = (HttpURLConnection) endpoint.openConnection();
                     
             Map<String, String> params = new HashMap<>();
@@ -115,8 +115,10 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
     @Override
     public OAuthProvider getProvider() throws ConnectionException {
         OAuthProvider provider = null;
-        provider = new DefaultOAuthProvider(getApiUrl(ApiRoutineEnum.OAUTH_REQUEST_TOKEN),
-                getApiUrl(ApiRoutineEnum.OAUTH_ACCESS_TOKEN), getApiUrl(ApiRoutineEnum.OAUTH_AUTHORIZE));
+        provider = new DefaultOAuthProvider(
+                getApiUri(ApiRoutineEnum.OAUTH_REQUEST_TOKEN).toString(),
+                getApiUri(ApiRoutineEnum.OAUTH_ACCESS_TOKEN).toString(),
+                getApiUri(ApiRoutineEnum.OAUTH_AUTHORIZE).toString());
         provider.setOAuth10a(true);
         return provider;
 

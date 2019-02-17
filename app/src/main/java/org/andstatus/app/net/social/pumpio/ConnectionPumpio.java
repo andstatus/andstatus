@@ -192,11 +192,9 @@ public class ConnectionPumpio extends Connection {
     private List<Actor> getActors(Actor actor, ApiRoutineEnum apiRoutine) throws ConnectionException {
         int limit = 200;
         ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrl(this, apiRoutine, actor);
-        Uri sUri = Uri.parse(conu.url);
-        Uri.Builder builder = sUri.buildUpon();
+        Uri.Builder builder = conu.uri.buildUpon();
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
-        String url = builder.build().toString();
-        JSONArray jArr = conu.httpConnection.getRequestAsArray(url);
+        JSONArray jArr = conu.httpConnection.getRequestAsArray(builder.build());
         List<Actor> actors = new ArrayList<>();
         if (jArr != null) {
             for (int index = 0; index < jArr.length(); index++) {
@@ -209,13 +207,13 @@ public class ConnectionPumpio extends Connection {
                 }
             }
         }
-        MyLog.d(TAG, apiRoutine + " '" + url + "' " + actors.size() + " actors");
+        MyLog.d(TAG, apiRoutine + " '" + builder.build() + "' " + actors.size() + " actors");
         return actors;
     }
 
     @Override
     protected AActivity getNote1(String noteOid) throws ConnectionException {
-        return activityFromJson(getRequest(noteOid));
+        return activityFromJson(getRequest(UriUtils.fromString(noteOid)));
     }
 
     @Override
@@ -271,8 +269,7 @@ public class ConnectionPumpio extends Connection {
                                        TimelinePosition oldestPosition, int limit, Actor actor)
             throws ConnectionException {
         ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrl(this, apiRoutine, actor);
-        Uri sUri = Uri.parse(conu.url);
-        Uri.Builder builder = sUri.buildUpon();
+        Uri.Builder builder = conu.uri.buildUpon();
         if (youngestPosition.nonEmpty()) {
             // The "since" should point to the "Activity" on the timeline, not to the note
             // Otherwise we will always get "not found"
@@ -281,8 +278,7 @@ public class ConnectionPumpio extends Connection {
             builder.appendQueryParameter("before", oldestPosition.getPosition());
         }
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
-        String url = builder.build().toString();
-        JSONArray jArr = conu.httpConnection.getRequestAsArray(url);
+        JSONArray jArr = conu.httpConnection.getRequestAsArray(builder.build());
         List<AActivity> activities = new ArrayList<>();
         if (jArr != null) {
             // Read the activities in the chronological order
@@ -295,7 +291,7 @@ public class ConnectionPumpio extends Connection {
                 }
             }
         }
-        MyLog.d(TAG, "getTimeline '" + url + "' " + activities.size() + " notes");
+        MyLog.d(TAG, "getTimeline '" + builder.build() + "' " + activities.size() + " notes");
         return activities;
     }
 
@@ -541,7 +537,7 @@ public class ConnectionPumpio extends Connection {
         String username = UriUtils.isRealOid(actorIn.oid) ? actorOidToUsername(actorIn.oid) : usernameIn;
         Actor actorIn2 = Actor.fromOid(data.getOrigin(), UriUtils.isRealOid(actorIn.oid) ? actorIn.oid : "").setUsername(username);
         ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrlForActor(this, ApiRoutineEnum.GET_ACTOR, actorIn2);
-        JSONObject jso = conu.httpConnection.getRequest(conu.url);
+        JSONObject jso = conu.httpConnection.getRequest(conu.uri);
         Actor actor = actorFromJson(jso);
         MyLog.v(this, () -> "getActor oid='" + actorIn.oid
                 + "', username='" + usernameIn + "' -> " + actor.getRealName());

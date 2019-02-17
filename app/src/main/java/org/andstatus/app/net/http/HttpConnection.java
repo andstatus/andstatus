@@ -21,8 +21,8 @@ import android.net.Uri;
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -59,15 +59,15 @@ public abstract class HttpConnection {
         return true;
     }
 
-    public final JSONObject postRequest(String path) throws ConnectionException {
-        return postRequest(path, new JSONObject());
+    public final JSONObject postRequest(Uri uri) throws ConnectionException {
+        return postRequest(uri, new JSONObject());
     }
 
-    public final JSONObject postRequest(String path, JSONObject formParams) throws ConnectionException {
+    public final JSONObject postRequest(Uri uri, JSONObject formParams) throws ConnectionException {
         /* See https://github.com/andstatus/andstatus/issues/249 */
         if (data.getUseLegacyHttpProtocol() == TriState.UNKNOWN) {
             try {
-                return postRequestOneHttpProtocol(path, formParams, false);
+                return postRequestOneHttpProtocol(uri, formParams, false);
             } catch (ConnectionException e) {
                 if (e.getStatusCode() != StatusCode.LENGTH_REQUIRED) {
                     throw e;
@@ -75,15 +75,15 @@ public abstract class HttpConnection {
                 MyLog.v(this, "Automatic fallback to legacy HTTP", e);
             }
         }
-        return postRequestOneHttpProtocol(path, formParams, data.getUseLegacyHttpProtocol().toBoolean(true));
+        return postRequestOneHttpProtocol(uri, formParams, data.getUseLegacyHttpProtocol().toBoolean(true));
     }
 
-    private JSONObject postRequestOneHttpProtocol(String path, JSONObject formParams, 
+    private JSONObject postRequestOneHttpProtocol(Uri path, JSONObject formParams,
             boolean isLegacyHttpProtocol ) throws ConnectionException {
-        if (StringUtils.isEmpty(path)) {
-            throw new IllegalArgumentException("path is empty");
+        if (UriUtils.isEmpty(path)) {
+            throw new IllegalArgumentException("URL is empty");
         }
-        HttpReadResult result = new HttpReadResult(pathToUrlString(path), formParams)
+        HttpReadResult result = new HttpReadResult(path, formParams)
                 .setLegacyHttpProtocol(isLegacyHttpProtocol);
         result.formParams.ifPresent(params ->
             MyLog.logNetworkLevelMessage("post_form", data.getLogName(), params)
@@ -96,19 +96,19 @@ public abstract class HttpConnection {
     
     protected abstract void postRequest(HttpReadResult result) throws ConnectionException;
 
-    public final JSONObject getRequest(String path) throws ConnectionException {
-        return getRequestCommon(path, true).getJsonObject();
+    public final JSONObject getRequest(Uri uri) throws ConnectionException {
+        return getRequestCommon(uri, true).getJsonObject();
     }
 
-    public final JSONObject getUnauthenticatedRequest(String path) throws ConnectionException {
+    public final JSONObject getUnauthenticatedRequest(Uri path) throws ConnectionException {
         return getRequestCommon(path, false).getJsonObject();
     }
     
-    private HttpReadResult getRequestCommon(String path, boolean authenticated) throws ConnectionException {
-        if (StringUtils.isEmpty(path)) {
-            throw new IllegalArgumentException("path is empty");
+    private HttpReadResult getRequestCommon(Uri uri, boolean authenticated) throws ConnectionException {
+        if (UriUtils.isEmpty(uri)) {
+            throw new IllegalArgumentException("URL is empty");
         }
-        HttpReadResult result = new HttpReadResult(pathToUrlString(path), new JSONObject());
+        HttpReadResult result = new HttpReadResult(uri, new JSONObject());
         result.authenticate = authenticated;
         getRequest(result);
         MyLog.logNetworkLevelMessage("get_response", data.getLogName(), result.strResponse);
@@ -116,16 +116,16 @@ public abstract class HttpConnection {
         return result;
     }
 
-    public final JSONArray getRequestAsArray(String path) throws ConnectionException {
-        return getRequestAsArray(path, "items");
+    public final JSONArray getRequestAsArray(Uri uri) throws ConnectionException {
+        return getRequestAsArray(uri, "items");
     }
 
-    public final JSONArray getRequestAsArray(String path, String parentKey) throws ConnectionException {
-        return getRequestCommon(path, true).getJsonArray(parentKey);
+    public final JSONArray getRequestAsArray(Uri uri, String parentKey) throws ConnectionException {
+        return getRequestCommon(uri, true).getJsonArray(parentKey);
     }
 
-    public final void downloadFile(String url, File file) throws ConnectionException {
-        HttpReadResult result = new HttpReadResult(url, file, new JSONObject());
+    public final void downloadFile(Uri uri, File file) throws ConnectionException {
+        HttpReadResult result = new HttpReadResult(uri, file, new JSONObject());
         getRequest(result);
         result.parseAndThrow();
     }

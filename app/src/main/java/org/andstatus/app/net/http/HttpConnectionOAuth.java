@@ -16,6 +16,7 @@
 
 package org.andstatus.app.net.http;
 
+import android.net.Uri;
 import android.text.TextUtils;
 
 import com.github.scribejava.core.oauth.OAuth20Service;
@@ -24,6 +25,7 @@ import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.UriUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -68,7 +70,7 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
         return yes;
     }
 
-    protected String getApiUrl(ApiRoutineEnum routine) throws ConnectionException {
+    protected Uri getApiUri(ApiRoutineEnum routine) throws ConnectionException {
         String url;
         switch(routine) {
             case OAUTH_ACCESS_TOKEN:
@@ -90,7 +92,7 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
         if (!StringUtils.isEmpty(url)) {
             url = pathToUrlString(url);
         }
-        return url;
+        return UriUtils.fromString(url);
     }
 
     @Override

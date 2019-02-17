@@ -80,12 +80,11 @@ public abstract class FileDownloader {
         final String method = "downloadFile";
         DownloadFile fileTemp = new DownloadFile("temp_" + data.getFilenameNew());
         try {
-            String uriString = data.getUri().toString();
             File file = fileTemp.getFile();
             MyAccount ma = findBestAccountForDownload();
             MyLog.v(this, () -> "About to download " + data.toString() + "; account:" + ma.getAccountName());
             if (ma.isValidAndSucceeded()) {
-                ((connectionMock != null) ? connectionMock : getConnection(ma, data.getUri())).downloadFile(uriString, file);
+                ((connectionMock != null) ? connectionMock : getConnection(ma, data.getUri())).downloadFile(data.getUri(), file);
             } else {
                 data.hardErrorLogged(method + ", No account to download the file", null);
             }

@@ -16,6 +16,8 @@
 
 package org.andstatus.app.net.social.pumpio;
 
+import android.net.Uri;
+
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
@@ -154,7 +156,7 @@ public class ConnectionPumpioTest {
         String hosts[] = {demoData.pumpioMainHost, demoData.pumpioMainHost};
         for (int ind=0; ind < actors.length; ind++) {
             ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrl(connection, ApiRoutineEnum.GET_ACTOR, actors[ind]);
-            assertEquals("Expecting '" + urls[ind] + "'", urls[ind], conu.url);
+            assertEquals("Expecting '" + urls[ind] + "'", Uri.parse(urls[ind]), conu.uri);
             assertEquals("Expecting '" + hosts[ind] + "'", hosts[ind], conu.httpConnection.data.originUrl.getHost());
         }
     }
@@ -399,7 +401,7 @@ public class ConnectionPumpioTest {
     private Note privateGetNoteWithAttachment(boolean uniqueUid) throws IOException {
         httpConnectionMock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
 
-        Note note = connection.getNote("w9wME-JVQw2GQe6POK7FSQ").getNote();
+        Note note = connection.getNote("https://io.jpope.org/api/activity/w9wME-JVQw2GQe6POK7FSQ").getNote();
         if (uniqueUid) {
             note = note.copy(note.oid + "_" + demoData.testRunUid);
         }

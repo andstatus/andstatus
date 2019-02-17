@@ -14,6 +14,7 @@
 
 package org.andstatus.app.net.http;
 
+import android.net.Uri;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 
@@ -35,7 +36,7 @@ import java.util.Iterator;
 import java.util.Optional;
 
 public class HttpReadResult {
-    private final String urlInitial;
+    private final Uri uriInitial;
     private String urlString = "";
     private URL url;
     boolean authenticate = true;
@@ -52,17 +53,17 @@ public class HttpReadResult {
 
     boolean redirected = false;
 
-    public HttpReadResult(String urlIn, JSONObject formParams) throws ConnectionException {
-        this (urlIn, null, formParams);
+    public HttpReadResult(Uri uriIn, JSONObject formParams) throws ConnectionException {
+        this (uriIn, null, formParams);
     }
 
-    public HttpReadResult(String urlIn, File file, JSONObject formParams) throws ConnectionException {
-        urlInitial = urlIn;
+    public HttpReadResult(Uri uriIn, File file, JSONObject formParams) throws ConnectionException {
+        uriInitial = uriIn;
         fileResult = file;
         this.formParams = formParams == null || formParams.length() == 0
             ? Optional.empty()
             : Optional.of(formParams);
-        setUrl(urlIn);
+        setUrl(uriIn.toString());
     }
 
     public final void setUrl(String urlIn) throws ConnectionException {
@@ -117,7 +118,7 @@ public class HttpReadResult {
                 + "; url:'" + urlString + "'"
                 + (isLegacyHttpProtocol() ? "; legacy HTTP" : "")
                 + (authenticate ? "; authenticated" : "")
-                + (redirected ? "; redirected from:'" + urlInitial + "'" : "")
+                + (redirected ? "; redirected from:'" + uriInitial + "'" : "")
                 + formParams.map(params -> "; posted:'" + params + "'").orElse("")
                 + (StringUtils.isEmpty(strResponse) ? "" : "; response:'" + I18n.trimTextAt(strResponse, 40) + "'")
                 + (exception == null ? "" : "; \nexception: " + exception.toString())

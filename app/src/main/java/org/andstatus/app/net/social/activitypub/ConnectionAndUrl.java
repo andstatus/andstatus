@@ -31,11 +31,11 @@ import org.andstatus.app.util.UrlUtils;
 import java.util.Optional;
 
 class ConnectionAndUrl {
-    public final String url;
+    public final Uri uri;
     public final HttpConnection httpConnection;
 
-    public ConnectionAndUrl(String url, HttpConnection httpConnection) {
-        this.url = url;
+    public ConnectionAndUrl(Uri uri, HttpConnection httpConnection) {
+        this.uri = uri;
         this.httpConnection = httpConnection;
     }
 
@@ -72,6 +72,6 @@ class ConnectionAndUrl {
                         "No credentials", httpConnection.data.originUrl);
             }
         }
-        return new ConnectionAndUrl(endpoint.get().toString(), httpConnection);
+        return new ConnectionAndUrl(endpoint.get(), httpConnection);
     }
 }

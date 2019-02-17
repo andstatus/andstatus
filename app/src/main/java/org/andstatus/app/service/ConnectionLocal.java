@@ -32,9 +32,9 @@ import java.io.InputStream;
  */
 public class ConnectionLocal extends ConnectionEmpty {
     @Override
-    public void downloadFile(String uri, File file) throws ConnectionException {
+    public void downloadFile(Uri uri, File file) throws ConnectionException {
         try {
-            InputStream ins = MyContextHolder.get().context().getContentResolver().openInputStream(Uri.parse(uri));
+            InputStream ins = MyContextHolder.get().context().getContentResolver().openInputStream(uri);
             FileUtils.readStreamToFile(ins, file);
         } catch (IOException e) {
             throw ConnectionException.hardConnectionException("mediaUri='" + uri + "'", e);
