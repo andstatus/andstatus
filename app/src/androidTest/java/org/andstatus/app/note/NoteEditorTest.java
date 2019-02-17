@@ -22,8 +22,6 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import androidx.test.espresso.action.ReplaceTextAction;
-import androidx.test.espresso.action.TypeTextAction;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
@@ -60,6 +58,9 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
+
+import androidx.test.espresso.action.ReplaceTextAction;
+import androidx.test.espresso.action.TypeTextAction;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
@@ -219,7 +220,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
                 .waitForMonitorWithTimeout(activityMonitor, 15000);
         assertTrue(selectorActivity != null);
         ActivityTestHelper.waitViewInvisible(method, editorView);
-        DbUtils.waitMs(method, 4000);
+        DbUtils.waitMs(method, 10000);
         selectorActivity.finish();
 
         MyLog.i(method, "Callback from a selector");
