@@ -18,6 +18,8 @@ package org.andstatus.app.util;
 
 import android.net.Uri;
 
+import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.ActorEndpointType;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -29,6 +31,11 @@ import static org.junit.Assert.assertTrue;
 public class UriUtilsTest {
     private static Uri[] EMPTY_URIS = { null, Uri.EMPTY, Uri.parse(""),
             UriUtils.fromString(""), UriUtils.fromString(" ")};
+
+    public static void assertEndpoint(ActorEndpointType endpointType, String value, Actor actor) {
+        assertEquals("Endpoint " + endpointType + " of " + actor,
+                UriUtils.toOptional(value), actor.getEndpoint(endpointType));
+    }
 
     @Test
     public void testIsEmpty() {

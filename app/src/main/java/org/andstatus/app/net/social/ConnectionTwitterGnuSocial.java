@@ -53,8 +53,9 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     public static final Pattern GNU_SOCIAL_FAVOURITED_A_STATUS_BY_PATTERN = Pattern.compile(
             "(?s)([^ ]+) favourited (a status by [^ ]+)");
 
+    @NonNull
     @Override
-    protected String getApiPath1(ApiRoutineEnum routine) {
+    protected String getApiPathFromOrigin(ApiRoutineEnum routine) {
         String url;
         switch(routine) {
             case GET_CONFIG:
@@ -77,15 +78,14 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
                 break;
         }
         if (StringUtils.isEmpty(url)) {
-            return super.getApiPath1(routine);
+            return super.getApiPathFromOrigin(routine);
         } 
         return prependWithBasicPath(url);
     }
 
     @Override
     public List<String> getFriendsIds(String actorOid) throws ConnectionException {
-        Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FRIENDS_IDS));
-        Uri.Builder builder = sUri.buildUpon();
+        Uri.Builder builder = Uri.parse(getApiPath(ApiRoutineEnum.GET_FRIENDS_IDS)).buildUpon();
         builder.appendQueryParameter("user_id", actorOid);
         List<String> list = new ArrayList<>();
         JSONArray jArr = http.getRequestAsArray(builder.build().toString());
@@ -94,15 +94,14 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
                 list.add(jArr.getString(index));
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, "Parsing friendsIds", e, null);
+            throw ConnectionException.loggedJsonException(this, "Parsing friendsIds " + builder.build(), e, null);
         }
         return list;
     }
 
     @Override
     public List<String> getFollowersIds(String actorOid) throws ConnectionException {
-        Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FOLLOWERS_IDS));
-        Uri.Builder builder = sUri.buildUpon();
+        Uri.Builder builder = Uri.parse(getApiPath(ApiRoutineEnum.GET_FOLLOWERS_IDS)).buildUpon();
         builder.appendQueryParameter("user_id", actorOid);
         List<String> list = new ArrayList<>();
         JSONArray jArr = http.getRequestAsArray(builder.build().toString());
@@ -111,7 +110,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
                 list.add(jArr.getString(index));
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, "Parsing followersIds", e, null);
+            throw ConnectionException.loggedJsonException(this, "Parsing followersIds " + builder.build(), e, null);
         }
         return list;
     }

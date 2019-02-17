@@ -16,8 +16,6 @@
 
 package org.andstatus.app.net.social.activitypub;
 
-import android.net.Uri;
-
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -37,6 +35,7 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.util.UriUtilsTest.assertEndpoint;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -99,7 +98,4 @@ public class VerifyCredentialsActivityPubTest {
         assertEquals("Profile URL", "https://pleroma.site/users/AndStatus", actor.getProfileUrl());
     }
 
-    private static void assertEndpoint(ActorEndpointType endpointType, String value, Actor actor) {
-        assertEquals("Endpoint " + endpointType, Uri.parse(value), actor.getEndpoint(endpointType));
-    }
 }

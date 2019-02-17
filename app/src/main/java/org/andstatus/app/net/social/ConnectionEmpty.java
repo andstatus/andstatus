@@ -17,19 +17,15 @@
 package org.andstatus.app.net.social;
 
 import android.net.Uri;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.net.http.ConnectionException;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ConnectionEmpty extends Connection {
+import androidx.annotation.NonNull;
 
-    @Override
-    protected String getApiPath1(ApiRoutineEnum routine) {
-        return "";
-    }
+public class ConnectionEmpty extends Connection {
 
     @Override
     public RateLimitStatus rateLimitStatus() throws ConnectionException {

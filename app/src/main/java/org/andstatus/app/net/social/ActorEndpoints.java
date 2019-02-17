@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -87,8 +88,8 @@ public class ActorEndpoints {
         return map;
     }
 
-    public Uri getFirst(ActorEndpointType type) {
-        return initialize().map.getOrDefault(type, Collections.emptyList()).stream().findFirst().orElse(Uri.EMPTY);
+    public Optional<Uri> findFirst(ActorEndpointType type) {
+        return initialize().map.getOrDefault(type, Collections.emptyList()).stream().findFirst();
     }
 
     public ActorEndpoints initialize() {

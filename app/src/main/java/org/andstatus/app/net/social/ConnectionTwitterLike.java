@@ -46,8 +46,9 @@ public abstract class ConnectionTwitterLike extends Connection {
      * URL of the API. Not logged
      * @return URL or an empty string in a case the API routine is not supported
      */
+    @NonNull
     @Override
-    protected String getApiPath1(ApiRoutineEnum routine) {
+    protected String getApiPathFromOrigin(ApiRoutineEnum routine) {
         String url;
         switch(routine) {
             case ACCOUNT_RATE_LIMIT_STATUS:
@@ -483,7 +484,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         }
     }
 
-    List<Actor> jArrToActors(JSONArray jArr, ApiRoutineEnum apiRoutine, String url) throws ConnectionException {
+    List<Actor> jArrToActors(JSONArray jArr, ApiRoutineEnum apiRoutine, Uri uri) throws ConnectionException {
         List<Actor> actors = new ArrayList<>();
         if (jArr != null) {
             for (int index = 0; index < jArr.length(); index++) {
@@ -496,7 +497,7 @@ public abstract class ConnectionTwitterLike extends Connection {
                 }
             }
         }
-        MyLog.d(this, apiRoutine + " '" + url + "' " + actors.size() + " items");
+        MyLog.d(this, apiRoutine + " '" + uri + "' " + actors.size() + " items");
         return actors;
     }
 

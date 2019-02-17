@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 import androidx.annotation.NonNull;
 
@@ -143,54 +144,23 @@ public abstract class Connection {
     /**
      * @return an empty string in case the API routine is not supported
      */
-    protected abstract String getApiPath1(ApiRoutineEnum routine);
+    @NonNull
+    protected String getApiPathFromOrigin(ApiRoutineEnum routine) {
+        return "";
+    };
 
     /**
      * Full path of the API. Logged
      * @return URL or throws a ConnectionException in case the API routine is not supported
      */
     public final String getApiPath(ApiRoutineEnum routine) throws ConnectionException {
-        Uri fromActor = getPathFromActor(data.getAccountActor(), routine);
-        String path = UriUtils.isEmpty(fromActor) ? this.getApiPath1(routine) : fromActor.toString();
-        if (StringUtils.isEmpty(path)) {
-            String detailMessage = "The API is not supported: '" + routine + "'";
-            MyLog.e(this.getClass().getSimpleName(), detailMessage);
-            throw new ConnectionException(StatusCode.UNSUPPORTED_API, this.getClass().getSimpleName() + ": " + detailMessage);
-        } else {
-            MyLog.v(this.getClass().getSimpleName(), () -> "API '" + routine + "' Path=" + path +
-                    (UriUtils.isEmpty(fromActor) ? "" : " from Actor"));
+        Optional<Uri> uri = getApiUri(routine);
+        if (uri.isPresent()) {
+            MyLog.v(this.getClass().getSimpleName(), () -> "API '" + routine + "' URI=" + uri);
+            return uri.get().toString();
         }
-        return path;
-    }
-
-    public static Uri getPathFromActor(Actor actor, ApiRoutineEnum routine) {
-        switch (routine) {
-            case GET_FOLLOWERS:
-            case GET_FOLLOWERS_IDS:
-                return actor.getEndpoint(ActorEndpointType.API_FOLLOWERS);
-            case GET_FRIENDS:
-            case GET_FRIENDS_IDS:
-                return actor.getEndpoint(ActorEndpointType.API_FOLLOWING);
-            case GET_ACTOR:
-                return actor.getEndpoint(ActorEndpointType.API_PROFILE);
-            case HOME_TIMELINE:
-                return actor.getEndpoint(ActorEndpointType.API_INBOX);
-            case LIKED_TIMELINE:
-                return actor.getEndpoint(ActorEndpointType.API_LIKED);
-            case LIKE:
-            case UNDO_LIKE:
-            case FOLLOW:
-            case UPDATE_PRIVATE_NOTE:
-            case ANNOUNCE:
-            case DELETE_NOTE:
-            case UPDATE_NOTE:
-            case ACTOR_TIMELINE:
-                return actor.getEndpoint(ActorEndpointType.API_OUTBOX);
-            case PUBLIC_TIMELINE:
-                return actor.getEndpoint(ActorEndpointType.API_SHARED_INBOX);
-            default:
-                return Uri.EMPTY;
-        }
+        throw new ConnectionException(StatusCode.UNSUPPORTED_API, this.getClass().getSimpleName() + ": " +
+                ("The API is not supported: '" + routine + "'"));
     }
 
     /**
@@ -199,16 +169,23 @@ public abstract class Connection {
      * @return true if supported
      */
     public boolean isApiSupported(ApiRoutineEnum routine) {
-        if (routine == null || routine == ApiRoutineEnum.DUMMY_API) {
-            return true;
+        Optional<Uri> uri = getApiUri(routine);
+        if (uri.isPresent()) return true;
+
+        if (MyLog.isVerboseEnabled()) {
+          MyLog.v(this, "The API routine '" + routine + "' is not supported");
         }
-        boolean is = !StringUtils.isEmpty(this.getApiPath1(routine));
-        if (!is && MyLog.isVerboseEnabled()) {
-          MyLog.v(this.getClass().getSimpleName(), "The API routine '" + routine + "' is not supported");  
-        }
-        return is;
+        return false;
     }
-    
+
+    private Optional<Uri> getApiUri(ApiRoutineEnum routine) {
+        if (routine == null || routine == ApiRoutineEnum.DUMMY_API) {
+            return Optional.empty();
+        }
+        Optional<Uri> fromActor = data.getAccountActor().getEndpoint(ActorEndpointType.from(routine));
+        return fromActor.isPresent() ? fromActor : UriUtils.toOptional(getApiPathFromOrigin(routine));
+    }
+
     /**
      * Check API requests status.
      */

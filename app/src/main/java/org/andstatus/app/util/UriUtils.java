@@ -21,12 +21,14 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.service.ConnectionState;
 import org.json.JSONObject;
 
 import java.net.URL;
+import java.util.Optional;
+
+import androidx.annotation.NonNull;
 
 public class UriUtils {
     public static final String TEMP_OID_PREFIX = "andstatustemp:";
@@ -64,6 +66,13 @@ public class UriUtils {
             return fromString(jso.optString(urlTag));
         }
         return Uri.EMPTY;
+    }
+
+    @NonNull
+    public static Optional<Uri> toOptional(String uriString) {
+        return StringUtils.isEmpty(uriString)
+                ? Optional.empty()
+                : Optional.of(Uri.parse(uriString)).filter(uri -> uri != Uri.EMPTY);
     }
 
     @NonNull

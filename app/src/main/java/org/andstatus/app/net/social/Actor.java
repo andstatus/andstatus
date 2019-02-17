@@ -275,7 +275,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         .withComma("profileUri", profileUri, UriUtils::nonEmpty)
         .withComma("avatar", avatarUri, this::hasAvatar)
         .withComma("avatarFile", avatarFile, this::hasAvatarFile)
-        .withComma("banner", endpoints.getFirst(ActorEndpointType.BANNER), UriUtils::nonEmpty)
+        .withComma("banner", endpoints.findFirst(ActorEndpointType.BANNER).orElse(null))
         .withComma("", "latest note present", this::hasLatestNote);
         return MyLog.formatKeyValue(this, members);
     }
@@ -815,14 +815,9 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         }
     }
 
-    public Uri getEndpoint(ActorEndpointType type) {
-        final Uri uri = endpoints.getFirst(type);
-        return uri == Uri.EMPTY && type == ActorEndpointType.API_PROFILE ? apiProfileUriFromOid() : uri;
+    public Optional<Uri> getEndpoint(ActorEndpointType type) {
+        Optional<Uri> uri = endpoints.findFirst(type);
+        return uri.isPresent() ? uri
+                : type == ActorEndpointType.API_PROFILE ? UriUtils.toOptional(oid) : uri;
     }
-
-    private Uri apiProfileUriFromOid() {
-        Uri uri = UriUtils.fromString(oid);
-        return UrlUtils.hostIsValid(uri.getHost()) ? uri : Uri.EMPTY;
-    }
-
 }

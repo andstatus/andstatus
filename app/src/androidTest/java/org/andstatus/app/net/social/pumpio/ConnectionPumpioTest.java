@@ -16,8 +16,6 @@
 
 package org.andstatus.app.net.social.pumpio;
 
-import android.net.Uri;
-
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
@@ -30,7 +28,6 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Audience;
-import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.ConnectionMockable;
 import org.andstatus.app.net.social.Note;
@@ -55,6 +52,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.util.UriUtilsTest.assertEndpoint;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -203,30 +201,11 @@ public class ConnectionPumpioTest {
         assertEquals("Updated at", TestSuite.utcTime(2013, Calendar.SEPTEMBER, 12, 17, 10, 44),
                 TestSuite.utcTime(actor.getUpdatedDate()));
 
-        assertEquals("Inbox", Uri.parse("https://io.jpope.org/api/user/jpope/inbox"),
-                actor.getEndpoint(ActorEndpointType.API_INBOX));
-        assertEquals("Inbox", Uri.parse("https://io.jpope.org/api/user/jpope/inbox"),
-                Connection.getPathFromActor(actor, ApiRoutineEnum.HOME_TIMELINE));
-        assertEquals("Outbox", Uri.parse("https://io.jpope.org/api/user/jpope/feed"),
-                actor.getEndpoint(ActorEndpointType.API_OUTBOX));
-        assertEquals("Outbox", Uri.parse("https://io.jpope.org/api/user/jpope/feed"),
-                Connection.getPathFromActor(actor, ApiRoutineEnum.ACTOR_TIMELINE));
-        assertEquals("Profile", Uri.parse("https://io.jpope.org/api/user/jpope/profile"),
-                actor.getEndpoint(ActorEndpointType.API_PROFILE));
-        assertEquals("Profile", Uri.parse("https://io.jpope.org/api/user/jpope/profile"),
-                Connection.getPathFromActor(actor, ApiRoutineEnum.GET_ACTOR));
-        assertEquals("Following", Uri.parse("https://io.jpope.org/api/user/jpope/following"),
-                actor.getEndpoint(ActorEndpointType.API_FOLLOWING));
-        assertEquals("Following", Uri.parse("https://io.jpope.org/api/user/jpope/following"),
-                Connection.getPathFromActor(actor, ApiRoutineEnum.GET_FRIENDS));
-        assertEquals("Followers", Uri.parse("https://io.jpope.org/api/user/jpope/followers"),
-                actor.getEndpoint(ActorEndpointType.API_FOLLOWERS));
-        assertEquals("Followers", Uri.parse("https://io.jpope.org/api/user/jpope/followers"),
-                Connection.getPathFromActor(actor, ApiRoutineEnum.GET_FOLLOWERS));
-        assertEquals("Liked", Uri.parse("https://io.jpope.org/api/user/jpope/favorites"),
-                actor.getEndpoint(ActorEndpointType.API_LIKED));
-        assertEquals("Liked", Uri.parse("https://io.jpope.org/api/user/jpope/favorites"),
-                Connection.getPathFromActor(actor, ApiRoutineEnum.LIKED_TIMELINE));
+        assertEndpoint(ActorEndpointType.API_INBOX, "https://io.jpope.org/api/user/jpope/inbox", actor);
+        assertEndpoint(ActorEndpointType.API_PROFILE, "https://io.jpope.org/api/user/jpope/profile", actor);
+        assertEndpoint(ActorEndpointType.API_FOLLOWING, "https://io.jpope.org/api/user/jpope/following", actor);
+        assertEndpoint(ActorEndpointType.API_FOLLOWERS, "https://io.jpope.org/api/user/jpope/followers", actor);
+        assertEndpoint(ActorEndpointType.API_LIKED, "https://io.jpope.org/api/user/jpope/favorites", actor);
 
         assertEquals("Actor is an Author", actor, activity.getAuthor());
         assertNotEquals("Is a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);

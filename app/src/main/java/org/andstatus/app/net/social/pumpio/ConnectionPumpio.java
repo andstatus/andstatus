@@ -70,9 +70,10 @@ public class ConnectionPumpio extends Connection {
             connectionData.setOriginUrl(UrlUtils.buildUrl(host, connectionData.isSsl()));
         }
     }
-    
+
+    @NonNull
     @Override
-    protected String getApiPath1(ApiRoutineEnum routine) {
+    protected String getApiPathFromOrigin(ApiRoutineEnum routine) {
         String url;
         switch(routine) {
             case ACCOUNT_VERIFY_CREDENTIALS:

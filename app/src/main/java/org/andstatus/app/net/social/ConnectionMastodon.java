@@ -42,8 +42,9 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     private static final String CONTENT_PROPERTY_UPDATE = "status";
     private static final String CONTENT_PROPERTY = "content";
 
+    @NonNull
     @Override
-    protected String getApiPath1(ApiRoutineEnum routine) {
+    protected String getApiPathFromOrigin(ApiRoutineEnum routine) {
         String url;
         // See https://github.com/tootsuite/documentation/blob/master/Using-the-API/API.md
         switch (routine) {
@@ -209,14 +210,12 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             return new ArrayList<>();
         }
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_ACTORS;
-        String url = getApiPath(apiRoutine);
-        Uri sUri = Uri.parse(url);
-        Uri.Builder builder = sUri.buildUpon();
+        Uri.Builder builder = Uri.parse(getApiPath(apiRoutine)).buildUpon();
         builder.appendQueryParameter("q", searchQuery);
         builder.appendQueryParameter("resolve", "true");
         builder.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
         JSONArray jArr = http.getRequestAsArray(builder.build().toString());
-        return jArrToActors(jArr, apiRoutine, url);
+        return jArrToActors(jArr, apiRoutine, builder.build());
     }
 
     protected String getApiPathWithTag(ApiRoutineEnum routineEnum, String tag) throws ConnectionException {
@@ -470,12 +469,10 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     }
 
     List<Actor> getActors(String actorId, ApiRoutineEnum apiRoutine) throws ConnectionException {
-        String url = this.getApiPathWithActorId(apiRoutine, actorId);
-        Uri sUri = Uri.parse(url);
-        Uri.Builder builder = sUri.buildUpon();
+        Uri.Builder builder = Uri.parse(this.getApiPathWithActorId(apiRoutine, actorId)).buildUpon();
         int limit = 400;
         builder.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
-        return jArrToActors(http.getRequestAsArray(builder.build().toString()), apiRoutine, url);
+        return jArrToActors(http.getRequestAsArray(builder.build().toString()), apiRoutine, builder.build());
     }
 
 }

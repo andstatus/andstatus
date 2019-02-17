@@ -41,4 +41,35 @@ public enum ActorEndpointType {
         }
         return EMPTY;
     }
+
+    public static ActorEndpointType from(Connection.ApiRoutineEnum routine) {
+        switch (routine) {
+            case GET_FOLLOWERS:
+            case GET_FOLLOWERS_IDS:
+                return API_FOLLOWERS;
+            case GET_FRIENDS:
+            case GET_FRIENDS_IDS:
+                return API_FOLLOWING;
+            case GET_ACTOR:
+                return API_PROFILE;
+            case HOME_TIMELINE:
+                return API_INBOX;
+            case LIKED_TIMELINE:
+                return API_LIKED;
+            case LIKE:
+            case UNDO_LIKE:
+            case FOLLOW:
+            case UPDATE_PRIVATE_NOTE:
+            case ANNOUNCE:
+            case DELETE_NOTE:
+            case UPDATE_NOTE:
+            case ACTOR_TIMELINE:
+                return API_OUTBOX;
+            case PUBLIC_TIMELINE:
+                return API_SHARED_INBOX;
+            default:
+                return EMPTY;
+        }
+    }
+
 }

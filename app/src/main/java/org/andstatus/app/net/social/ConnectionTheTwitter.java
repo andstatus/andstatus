@@ -17,7 +17,6 @@
 package org.andstatus.app.net.social;
 
 import android.net.Uri;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
@@ -30,14 +29,17 @@ import org.json.JSONObject;
 
 import java.util.List;
 
+import androidx.annotation.NonNull;
+
 /**
  * Implementation of current API of the twitter.com
  * https://dev.twitter.com/rest/public
  */
 public class ConnectionTheTwitter extends ConnectionTwitterLike {
 
+    @NonNull
     @Override
-    protected String getApiPath1(ApiRoutineEnum routine) {
+    protected String getApiPathFromOrigin(ApiRoutineEnum routine) {
         String url;
         switch(routine) {
             case ACCOUNT_RATE_LIMIT_STATUS:
@@ -101,7 +103,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
                 break;
         }
         if (StringUtils.isEmpty(url)) {
-            return super.getApiPath1(routine);
+            return super.getApiPathFromOrigin(routine);
         }
         return prependWithBasicPath(url);
     }
@@ -179,14 +181,12 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     @Override
     public List<Actor> searchActors(int limit, String searchQuery) throws ConnectionException {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_ACTORS;
-        String url = this.getApiPath(apiRoutine);
-        Uri sUri = Uri.parse(url);
-        Uri.Builder builder = sUri.buildUpon();
+        Uri.Builder builder = Uri.parse(this.getApiPath(apiRoutine)).buildUpon();
         if (!StringUtils.isEmpty(searchQuery)) {
             builder.appendQueryParameter("q", searchQuery);
         }
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
-        return jArrToActors(http.getRequestAsArray(builder.build().toString()), apiRoutine, url);
+        return jArrToActors(http.getRequestAsArray(builder.build().toString()), apiRoutine, builder.build());
     }
 
     private static final String ATTACHMENTS_FIELD_NAME = "media";
@@ -233,15 +233,13 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     }
 
     List<Actor> getActors(String actorId, ApiRoutineEnum apiRoutine) throws ConnectionException {
-        String url = this.getApiPath(apiRoutine);
-        Uri sUri = Uri.parse(url);
-        Uri.Builder builder = sUri.buildUpon();
+        Uri.Builder builder = Uri.parse(getApiPath(apiRoutine)).buildUpon();
         int limit = 200;
         if (!StringUtils.isEmpty(actorId)) {
             builder.appendQueryParameter("user_id", actorId);
         }
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
-        return jArrToActors(http.getRequestAsArray(builder.build().toString()), apiRoutine, url);
+        return jArrToActors(http.getRequestAsArray(builder.build().toString()), apiRoutine, builder.build());
     }
 
 }

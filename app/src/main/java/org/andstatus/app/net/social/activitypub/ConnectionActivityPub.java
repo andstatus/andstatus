@@ -68,8 +68,9 @@ public class ConnectionActivityPub extends Connection {
         }
     }
 
+    @NonNull
     @Override
-    protected String getApiPath1(ApiRoutineEnum routine) {
+    protected String getApiPathFromOrigin(ApiRoutineEnum routine) {
         String url;
         switch(routine) {
             case ACCOUNT_VERIFY_CREDENTIALS:

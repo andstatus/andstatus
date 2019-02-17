@@ -17,7 +17,6 @@
 package org.andstatus.app.net.social;
 
 import android.content.Context;
-import android.net.Uri;
 import android.text.Spannable;
 
 import org.andstatus.app.account.MyAccount;
@@ -49,6 +48,7 @@ import androidx.annotation.NonNull;
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
+import static org.andstatus.app.util.UriUtilsTest.assertEndpoint;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -98,7 +98,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("Profile URL", "https://status.vinilox.eu/aru", author.getProfileUrl());
         assertEquals("Homepage", "", author.getHomepage());
         assertEquals("Avatar URL", "http://quitter.se/avatar/116387-48-20140609172839.png", author.getAvatarUrl());
-        assertEquals("Banner URL", Uri.EMPTY, author.getEndpoint(ActorEndpointType.BANNER));
+        assertEndpoint(ActorEndpointType.BANNER, "", author);
         assertEquals("Notes count", 523, author.notesCount);
         assertEquals("Favorites count", 11, author.favoritesCount);
         assertEquals("Following (friends) count", 23, author.followingCount);
@@ -128,8 +128,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("Body of this note starts with", startsWith, activity.getNote().getContent().substring(0, startsWith.length()));
         assertEquals("Username", "andstatus", author.getUsername());
         assertEquals("Display name", "AndStatus@quitter.se", author.getRealName());
-        assertEquals("Banner URL", Uri.parse("https://quitter.se/file/3fd65c6088ea02dc3a5ded9798a865a8ff5425b13878da35ad894cd084d015fc.png"),
-                author.getEndpoint(ActorEndpointType.BANNER));
+        assertEndpoint(ActorEndpointType.BANNER, "https://quitter.se/file/3fd65c6088ea02dc3a5ded9798a865a8ff5425b13878da35ad894cd084d015fc.png", author);
 
         ind++;
         activity = timeline.get(ind);
@@ -148,7 +147,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("Profile URL", "https://social.umeahackerspace.se/mmn", author.getProfileUrl());
         assertEquals("Homepage", "http://blog.mmn-o.se/", author.getHomepage());
         assertEquals("Avatar URL", "http://quitter.se/avatar/114973-48-20140702161520.jpeg", author.getAvatarUrl());
-        assertEquals("Banner URL", Uri.EMPTY, author.getEndpoint(ActorEndpointType.BANNER));
+        assertEndpoint(ActorEndpointType.BANNER, "", author);
         assertEquals("Notes count", 1889, author.notesCount);
         assertEquals("Favorites count", 31, author.favoritesCount);
         assertEquals("Following (friends) count", 17, author.followingCount);
