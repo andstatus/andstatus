@@ -22,6 +22,7 @@ import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.AObjectType;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
@@ -62,10 +63,11 @@ public class ConnectionActivityPubTest {
     public void getTimeline() throws IOException {
         String sinceId = "";
         httpConnection.addResponse(org.andstatus.app.tests.R.raw.activitypub_inbox_pleroma);
-        Actor actor1 = Actor.fromOid(connection.getData().getOrigin(),ACTOR_OID)
+        Actor actorForTimeline = Actor.fromOid(connection.getData().getOrigin(), ACTOR_OID)
                 .withUniqueNameInOrigin(UNIQUE_NAME_IN_ORIGIN);
+        actorForTimeline.endpoints.add(ActorEndpointType.API_INBOX, "https://pleroma.site/users/AndStatus/inbox");
         List<AActivity> timeline = connection.getTimeline(Connection.ApiRoutineEnum.HOME_TIMELINE,
-                new TimelinePosition(sinceId), TimelinePosition.EMPTY, 20, actor1);
+                new TimelinePosition(sinceId), TimelinePosition.EMPTY, 20, actorForTimeline);
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 5, timeline.size());
 

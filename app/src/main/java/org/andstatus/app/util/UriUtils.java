@@ -69,10 +69,10 @@ public class UriUtils {
     }
 
     @NonNull
-    public static Optional<Uri> toOptional(String uriString) {
+    public static Optional<Uri> toDownloadableOptional(String uriString) {
         return StringUtils.isEmpty(uriString)
                 ? Optional.empty()
-                : Optional.of(Uri.parse(uriString)).filter(uri -> uri != Uri.EMPTY);
+                : Optional.of(Uri.parse(uriString)).filter(UriUtils::isDownloadable);
     }
 
     @NonNull

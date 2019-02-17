@@ -111,29 +111,32 @@ public final class UrlUtils {
     
     public static String pathToUrlString(URL originUrl, String path, boolean throwOnInvalid)
             throws ConnectionException {
-        URL url = null;
-        try {
-            if (path != null && path.contains("://")) {
-                url = new URL(path);
-            } else {
-                url = new URL(originUrl, path);
-            }
-        } catch (MalformedURLException e) {
-            MyLog.d(TAG, "pathToUrlString, originUrl:'" + originUrl + "', path:'" + path + "'", e);
-        }
-        if (url== null) {
+        Optional<URL> url = pathToUrl(originUrl, path);
+        if (!url.isPresent()) {
             if (throwOnInvalid) {
-                throw ConnectionException.hardConnectionException("URL is unknown. System URL:'"
+                throw ConnectionException.hardConnectionException("URL is unknown or malformed. System URL:'"
                         + originUrl + "', path:'" + path + "'", null);
             }
             return "";
         }
-        if (throwOnInvalid && (url.getHost().equals("example.com")
-                || url.getHost().endsWith(".example.com"))) {
+        String host = url.map(URL::getHost).orElse("");
+        if (throwOnInvalid && (host.equals("example.com") || host.endsWith(".example.com"))) {
             throw ConnectionException.fromStatusCode(ConnectionException.StatusCode.NOT_FOUND,
-                    "URL: '" + url.toExternalForm() + "'");
+                    "URL: '" + url.get().toExternalForm() + "'");
         }
-        return url.toExternalForm();
+        return url.get().toExternalForm();
     }
-    
+
+    public static Optional<URL> pathToUrl(URL originUrl, String path) {
+        try {
+            if (path != null && path.contains("://")) {
+                return Optional.of(new URL(path));
+            }
+            return Optional.of(new URL(originUrl, path));
+        } catch (MalformedURLException e) {
+            MyLog.v(TAG, () -> "MalformedURL pathToUrl, originUrl:'" + originUrl + "', path:'" + path + "'");
+            return Optional.empty();
+        }
+    }
+
 }

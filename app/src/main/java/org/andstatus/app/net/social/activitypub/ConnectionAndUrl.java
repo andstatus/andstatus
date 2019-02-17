@@ -1,17 +1,35 @@
+/*
+ * Copyright (C) 2019 yvolk (Yuri Volkov), http://yurivolkov.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.andstatus.app.net.social.activitypub;
+
+import android.net.Uri;
 
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UrlUtils;
 
-/**
- *
- */
+import java.util.Optional;
+
 class ConnectionAndUrl {
     public final String url;
     public final HttpConnection httpConnection;
@@ -28,16 +46,13 @@ class ConnectionAndUrl {
         return  getConnectionAndUrlForActor(connection, apiRoutine, actor);
     }
 
-    public static ConnectionAndUrl getConnectionAndUrlForActor(ConnectionActivityPub connection, Connection.ApiRoutineEnum apiRoutine, Actor actor) throws ConnectionException {
-        String username = actor.getUsername();
-        if (StringUtils.isEmpty(username)) {
-            throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine + ": username is required");
+    static ConnectionAndUrl getConnectionAndUrlForActor(ConnectionActivityPub connection,
+                                       Connection.ApiRoutineEnum apiRoutine, Actor actor) throws ConnectionException {
+        final Optional<Uri> endpoint = actor.getEndpoint(ActorEndpointType.from(apiRoutine));
+        if (!endpoint.isPresent()) {
+            throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine + ": endpoint is empty for " + actor);
         }
-        String nickname = connection.usernameToNickname(username);
-        if (StringUtils.isEmpty(nickname)) {
-            throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine + ": wrong username='" + username + "'");
-        }
-        String url = connection.getApiPath(apiRoutine).replace("%nickname%", nickname);
+
         HttpConnection httpConnection = connection.getHttp();
         String host = actor.getHost();
         if (StringUtils.isEmpty(host)) {
@@ -57,6 +72,6 @@ class ConnectionAndUrl {
                         "No credentials", httpConnection.data.originUrl);
             }
         }
-        return new ConnectionAndUrl(url, httpConnection);
+        return new ConnectionAndUrl(endpoint.get().toString(), httpConnection);
     }
 }

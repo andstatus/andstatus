@@ -29,11 +29,13 @@ import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
+import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -183,7 +185,10 @@ public abstract class Connection {
             return Optional.empty();
         }
         Optional<Uri> fromActor = data.getAccountActor().getEndpoint(ActorEndpointType.from(routine));
-        return fromActor.isPresent() ? fromActor : UriUtils.toOptional(getApiPathFromOrigin(routine));
+        return fromActor.isPresent() ? fromActor
+                : UrlUtils.pathToUrl(data.getOriginUrl(), getApiPathFromOrigin(routine))
+                    .map(URL::toExternalForm)
+                    .flatMap(UriUtils::toDownloadableOptional);
     }
 
     /**

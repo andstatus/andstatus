@@ -150,8 +150,7 @@ public class ConnectionPumpioTest {
                 Actor.fromOid(origin,"somebody@" + demoData.pumpioMainHost)
                     .setWebFingerId("somebody@" + demoData.pumpioMainHost)
         };
-        String urls[] = {"api/user/t131t/profile", 
-                "api/user/somebody/profile"};
+        String urls[] = {originUrl + "/api/user/t131t/profile", originUrl + "/api/user/somebody/profile"};
         String hosts[] = {demoData.pumpioMainHost, demoData.pumpioMainHost};
         for (int ind=0; ind < actors.length; ind++) {
             ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrl(connection, ApiRoutineEnum.GET_ACTOR, actors[ind]);

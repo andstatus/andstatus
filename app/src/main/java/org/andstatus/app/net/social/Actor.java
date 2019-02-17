@@ -818,6 +818,8 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     public Optional<Uri> getEndpoint(ActorEndpointType type) {
         Optional<Uri> uri = endpoints.findFirst(type);
         return uri.isPresent() ? uri
-                : type == ActorEndpointType.API_PROFILE ? UriUtils.toOptional(oid) : uri;
+                : type == ActorEndpointType.API_PROFILE
+                    ? UriUtils.toDownloadableOptional(oid)
+                    : Optional.empty();
     }
 }

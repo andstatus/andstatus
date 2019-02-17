@@ -34,7 +34,7 @@ public class UriUtilsTest {
 
     public static void assertEndpoint(ActorEndpointType endpointType, String value, Actor actor) {
         assertEquals("Endpoint " + endpointType + " of " + actor,
-                UriUtils.toOptional(value), actor.getEndpoint(endpointType));
+                UriUtils.toDownloadableOptional(value), actor.getEndpoint(endpointType));
     }
 
     @Test
