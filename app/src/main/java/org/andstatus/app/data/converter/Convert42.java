@@ -32,7 +32,6 @@ class Convert42 extends ConvertOneStep {
     }
 
     private static class Data {
-        @NonNull
         final long id;
         @NonNull
         final Uri uri;
