@@ -193,19 +193,20 @@ public class HttpReadResult {
  
     ConnectionException getExceptionFromJsonErrorResponse() {
         StatusCode statusCode = this.statusCode;
-        ConnectionException ce = null;
         String error = "?";
+        if (TextUtils.isEmpty(strResponse)) {
+            return new ConnectionException(statusCode, "Empty response");
+        }
         try {
             JSONObject jsonError = new JSONObject(strResponse);
             error = jsonError.optString("error", error);
             if (statusCode == StatusCode.UNKNOWN && error.contains("not found")) {
                 statusCode = StatusCode.NOT_FOUND;
             }
-            ce = new ConnectionException(statusCode, toString() + "; error='" + error + "'");
+            return new ConnectionException(statusCode, toString() + "; error='" + error + "'");
         } catch (JSONException e) {
-            ce = ConnectionException.fromStatusCodeAndThrowable(statusCode, toString() + "; error='" + error + "'", e);
+            return new ConnectionException(statusCode, "Response: \"" + strResponse + "\"");
         }
-        return ce;
     }
 
     public void setException(Exception e) {

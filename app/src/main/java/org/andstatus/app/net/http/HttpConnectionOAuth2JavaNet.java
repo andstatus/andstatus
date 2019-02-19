@@ -39,6 +39,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -102,11 +103,17 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                         request.addHeader(bytes.contentTypeName, bytes.contentTypeValue);
                         request.setPayload(bytes.bytes);
                     } else {
-                        data.getContentType().ifPresent(value -> request.addHeader("Content-Type", value));
-                        Iterator<String> iterator = params.keys();
-                        while (iterator.hasNext()) {
-                            String key = iterator.next();
-                            request.addBodyParameter(key, params.optString(key));
+                        if (data.getContentType().map(value -> {
+                            request.addHeader("Content-Type", value);
+                            request.setPayload(params.toString().getBytes(StandardCharsets.UTF_8));
+                            return false;
+                        }).orElse(true))
+                        {
+                            Iterator<String> iterator = params.keys();
+                            while (iterator.hasNext()) {
+                                String key = iterator.next();
+                                request.addBodyParameter(key, params.optString(key));
+                            }
                         }
                     }
                 } catch (ConnectionException e) {

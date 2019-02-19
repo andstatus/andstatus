@@ -44,7 +44,7 @@ buildscript {
         materialVersion = '1.0.0'         // https://mvnrepository.com/artifact/com.google.android.material/material
         preferenceVersion = '1.0.0'
         recyclerViewVersion = '1.0.0'
-        scribejavaCoreVersion = '6.2.0'   // https://github.com/scribejava/scribejava
+        scribejavaCoreVersion = '6.3.0'   // https://github.com/scribejava/scribejava
         signPostVersion = '1.2.1.2'       // https://mvnrepository.com/artifact/oauth.signpost/signpost-core
         testRulesVersion = '1.1.1'
         testRunnerVersion = '1.1.1'
