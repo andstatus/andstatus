@@ -46,6 +46,7 @@ public class ConnectionException extends IOException {
         public static StatusCode fromResponseCode(int responseCode) {
             switch (responseCode) {
 	            case 200:
+                case 201:
 	            case 304:
 	            	return OK;
                 case 301:

@@ -248,11 +248,9 @@ public class ConnectionActivityPub extends Connection {
                 if (jArr != null) {
                     // Read the activities in the chronological order
                     for (int index = jArr.length() - 1; index >= 0; index--) {
-                        try {
-                            JSONObject jso = jArr.getJSONObject(index);
-                            activities.add(activityFromJson(jso));
-                        } catch (JSONException e) {
-                            throw ConnectionException.loggedJsonException(this, "Parsing timeline", e, null);
+                        AActivity item = activityFromJson(ObjectOrId.of(jArr, index));
+                        if (item != AActivity.EMPTY) {
+                            activities.add(item);
                         }
                     }
                 }
@@ -287,6 +285,17 @@ public class ConnectionActivityPub extends Connection {
             }
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Parsing activity", e, jsoActivity);
+        }
+    }
+
+    @NonNull
+    private AActivity activityFromJson(ObjectOrId objectOrId) throws ConnectionException {
+        if (objectOrId.id.isPresent()) {
+            return AActivity.newPartialNote(data.getAccountActor(), Actor.EMPTY, objectOrId.id.get());
+        } else if (objectOrId.object.isPresent()) {
+            return activityFromJson(objectOrId.object.get());
+        } else {
+            return AActivity.EMPTY;
         }
     }
 
@@ -438,7 +447,7 @@ public class ConnectionActivityPub extends Connection {
 
             // If the Msg is a Reply to other note
             if (jso.has("inReplyTo")) {
-                note.setInReplyTo(activityFromJson(jso.getJSONObject("inReplyTo")));
+                note.setInReplyTo(activityFromJson(ObjectOrId.of(jso, "inReplyTo")));
             }
 
             if (jso.has("replies")) {
@@ -446,12 +455,9 @@ public class ConnectionActivityPub extends Connection {
                 if (replies.has("items")) {
                     JSONArray jArr = replies.getJSONArray("items");
                     for (int index = 0; index < jArr.length(); index++) {
-                        try {
-                            AActivity item = activityFromJson(jArr.getJSONObject(index));
+                        AActivity item = activityFromJson(ObjectOrId.of(jArr, index));
+                        if (item != AActivity.EMPTY) {
                             note.replies.add(item);
-                        } catch (JSONException e) {
-                            throw ConnectionException.loggedJsonException(this,
-                                    "Parsing list of replies", e, null);
                         }
                     }
                 }
