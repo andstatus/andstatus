@@ -127,9 +127,9 @@ public class ConnectionPumpioTest {
     }
 
     @Test
-    public void testUsernameToHost() {
-        String usernames[] = {"t131t@identi.ca", 
-                "somebody@example.com",
+    public void actorOidToHost() {
+        String oids[] = {"t131t@identi.ca",
+                "acct:somebody@example.com",
                 "https://identi.ca/api/note/nlF5jl1HQciIs_zP85EeYg",
                 "example.com",
                 "@somewhere.com"};
@@ -138,8 +138,8 @@ public class ConnectionPumpioTest {
                 "",
                 "",
                 "somewhere.com"};
-        for (int ind=0; ind < usernames.length; ind++) {
-            assertEquals("Expecting '" + hosts[ind] + "'", hosts[ind], connection.usernameToHost(usernames[ind]));
+        for (int ind=0; ind < oids.length; ind++) {
+            assertEquals("Expecting '" + hosts[ind] + "'", hosts[ind], connection.actorOidToHost(oids[ind]));
         }
     }
 

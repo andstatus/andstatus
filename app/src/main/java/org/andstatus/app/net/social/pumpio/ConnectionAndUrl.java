@@ -49,11 +49,7 @@ class ConnectionAndUrl {
         if (StringUtils.isEmpty(username)) {
             throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine + ": username is required");
         }
-        String nickname = connection.usernameToNickname(username);
-        if (StringUtils.isEmpty(nickname)) {
-            throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine + ": wrong username='" + username + "'");
-        }
-        Uri uri = UriUtils.map(connection.getApiPath(apiRoutine), s -> s.replace("%nickname%", nickname));
+        Uri uri = UriUtils.map(connection.getApiPath(apiRoutine), s -> s.replace("%username%", username));
         HttpConnection httpConnection = connection.getHttp();
         String host = actor.getHost();
         if (StringUtils.isEmpty(host)) {

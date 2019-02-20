@@ -77,8 +77,7 @@ public class DemoNoteInserter {
         if (origin.getOriginType() == OriginType.PUMPIO) {
             ConnectionPumpio connection = new ConnectionPumpio();
             username = connection.actorOidToUsername(actorOid);
-            profileUrl = "http://" + connection.usernameToHost(username) + "/"
-                    + connection.usernameToNickname(username);
+            profileUrl = "http://" + connection.actorOidToHost(actorOid) + "/" + username;
             actor.setCreatedDate(MyLog.uniqueCurrentTimeMS());
         } else {
             username = "actorOf" + origin.getName() + actorOid;

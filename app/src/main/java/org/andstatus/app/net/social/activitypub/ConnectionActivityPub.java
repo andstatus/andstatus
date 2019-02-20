@@ -76,9 +76,6 @@ public class ConnectionActivityPub extends Connection {
             case ACCOUNT_VERIFY_CREDENTIALS:
                 url = "ap/whoami";
                 break;
-            case PUBLIC_TIMELINE:
-                url = "inbox";
-                break;
             default:
                 url = "";
                 break;
@@ -462,47 +459,6 @@ public class ConnectionActivityPub extends Connection {
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Parsing comment", e, jso);
         }
-    }
-
-    /**
-     * 2014-01-22 According to the crash reports, actorId may not have "acct:" prefix
-     */
-    public String actorOidToUsername(String actorId) {
-        String username = "";
-        if (!StringUtils.isEmpty(actorId)) {
-            int indexOfColon = actorId.indexOf(':');
-            if (indexOfColon >= 0) {
-                username = actorId.substring(indexOfColon+1);
-            } else {
-                username = actorId;
-            }
-        }
-        return username;
-    }
-
-    // TODO: We don't need this, actually "username" shouldn't be a webfinger...
-    public String usernameToNickname(String username) {
-        String nickname = "";
-        if (!StringUtils.isEmpty(username)) {
-            int indexOfAt = username.indexOf('@');
-            if (indexOfAt > 0) {
-                nickname = username.substring(0, indexOfAt);
-            } else {
-                nickname = username;
-            }
-        }
-        return nickname;
-    }
-
-    public String usernameToHost(String username) {
-        String host = "";
-        if (!StringUtils.isEmpty(username)) {
-            int indexOfAt = username.indexOf('@');
-            if (indexOfAt >= 0) {
-                host = username.substring(indexOfAt + 1);
-            }
-        }
-        return host;
     }
 
     @NonNull

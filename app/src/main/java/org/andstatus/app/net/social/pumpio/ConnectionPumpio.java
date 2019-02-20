@@ -81,23 +81,23 @@ public class ConnectionPumpio extends Connection {
                 break;
             case GET_FOLLOWERS:
             case GET_FOLLOWERS_IDS:
-                url = "user/%nickname%/followers";
+                url = "user/%username%/followers";
                 break;
             case GET_FRIENDS:
             case GET_FRIENDS_IDS:
-                url = "user/%nickname%/following";
+                url = "user/%username%/following";
                 break;
             case GET_ACTOR:
-                url = "user/%nickname%/profile";
+                url = "user/%username%/profile";
                 break;
             case HOME_TIMELINE:
-                url = "user/%nickname%/inbox";
+                url = "user/%username%/inbox";
                 break;
             case LIKED_TIMELINE:
-                url = "user/%nickname%/favorites";
+                url = "user/%username%/favorites";
                 break;
             case UPDATE_NOTE_WITH_MEDIA:
-                url = "user/%nickname%/uploads";
+                url = "user/%username%/uploads";
                 break;
             case LIKE:
             case UNDO_LIKE:
@@ -107,7 +107,7 @@ public class ConnectionPumpio extends Connection {
             case DELETE_NOTE:
             case UPDATE_NOTE:
             case ACTOR_TIMELINE:
-                url = "user/%nickname%/feed";
+                url = "user/%username%/feed";
                 break;
             default:
                 url = "";
@@ -130,7 +130,8 @@ public class ConnectionPumpio extends Connection {
         }
         String oid = jso.optString("id");
         Actor actor = Actor.fromOid(data.getOrigin(), oid);
-        actor.setUsername(actorOidToUsername(oid));
+        String username = jso.optString("preferredUsername");
+        actor.setUsername(StringUtils.isEmpty(username) ? actorOidToUsername(oid) : username);
         actor.setRealName(jso.optString(NAME_PROPERTY));
         actor.setAvatarUrl(JsonUtils.optStringInside(jso, "image", "url"));
         actor.location = JsonUtils.optStringInside(jso, "location", NAME_PROPERTY);
@@ -478,41 +479,23 @@ public class ConnectionPumpio extends Connection {
      * 2014-01-22 According to the crash reports, actorId may not have "acct:" prefix
      */
     public String actorOidToUsername(String actorId) {
-        String username = "";
-        if (!StringUtils.isEmpty(actorId)) {
-            int indexOfColon = actorId.indexOf(':');
-            if (indexOfColon >= 0) {
-                username = actorId.substring(indexOfColon+1);
-            } else {
-                username = actorId;
-            }
-        }
-        return username;
+        if (StringUtils.isEmpty(actorId)) return "";
+
+        int indexOfColon = actorId.indexOf(':');
+        String webfingerLike = (indexOfColon >= 0)
+                ? actorId.substring(indexOfColon+1)
+                : actorId;
+        int indexOfAt = webfingerLike.indexOf('@');
+        return (indexOfAt > 0)
+                ? webfingerLike.substring(0, indexOfAt)
+                : webfingerLike;
     }
 
-    // TODO: We don't need this, actually "username" shouldn't be a webfinger...
-    public String usernameToNickname(String username) {
-        String nickname = "";
-        if (!StringUtils.isEmpty(username)) {
-            int indexOfAt = username.indexOf('@');
-            if (indexOfAt > 0) {
-                nickname = username.substring(0, indexOfAt);
-            } else {
-                nickname = username;
-            }
-        }
-        return nickname;
-    }
+    public String actorOidToHost(String actorId) {
+        if (StringUtils.isEmpty(actorId)) return "";
 
-    public String usernameToHost(String username) {
-        String host = "";
-        if (!StringUtils.isEmpty(username)) {
-            int indexOfAt = username.indexOf('@');
-            if (indexOfAt >= 0) {
-                host = username.substring(indexOfAt + 1);
-            }
-        }
-        return host;
+        int indexOfAt = actorId.indexOf('@');
+        return (indexOfAt < 0) ? "" : actorId.substring(indexOfAt + 1);
     }
 
     @NonNull
