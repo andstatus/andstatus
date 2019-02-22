@@ -17,7 +17,6 @@
 package org.andstatus.app.data;
 
 import android.graphics.Point;
-import androidx.annotation.NonNull;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -32,6 +31,8 @@ import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
+
+import androidx.annotation.NonNull;
 
 public abstract class ImageFile implements IsEmpty {
     private final DownloadFile downloadFile;
@@ -65,7 +66,7 @@ public abstract class ImageFile implements IsEmpty {
             requestDownload();
             return;
         }
-        if (AttachedImageView.class.isAssignableFrom(imageView.getClass())) {
+        if (imageView instanceof AttachedImageView) {
             ((AttachedImageView) imageView).setMeasuresLocked(false);
         }
         final String taskSuffix = "-sync-" + imageView.myViewId;
@@ -174,7 +175,7 @@ public abstract class ImageFile implements IsEmpty {
                             return;
                         }
                         try {
-                            if (AttachedImageView.class.isAssignableFrom(imageView.getClass())) {
+                            if (imageView instanceof AttachedImageView) {
                                 ((AttachedImageView) imageView).setMeasuresLocked(true);
                             }
                             imageView.setImageDrawable(image.getDrawable());

@@ -93,7 +93,7 @@ public class ConnectionMastodonTest {
         assertEquals("Media attachments", 1, note.attachments.size());
         Attachment attachment = note.attachments.list.get(0);
         assertEquals("Content type", MyContentType.IMAGE, attachment.contentType);
-        assertEquals("Content type", UriUtils.fromString("https://files.neumastodon.com/media_attachments/files/000/306/223/original/e678f956970a585b.png?1492832537"),
+        assertEquals("Media URI", UriUtils.fromString("https://files.neumastodon.com/media_attachments/files/000/306/223/original/e678f956970a585b.png?1492832537"),
                 attachment.getUri());
 
         timeline.forEach(act -> act.setUpdatedNow(0));
@@ -247,6 +247,25 @@ public class ConnectionMastodonTest {
 
         assertNotEquals("Activity wasn't saved " + activity, 0,  activity.getId());
         assertNotEquals("Reblogged note wasn't saved " + activity, 0,  activity.getNote().noteId);
+    }
+
+    @Test
+    public void tootWithVideoAttachment() throws IOException {
+        connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.mastodon_video);
+
+        List<AActivity> timeline = connection.getTimeline(Connection.ApiRoutineEnum.ACTOR_TIMELINE,
+                TimelinePosition.EMPTY, TimelinePosition.EMPTY, 20, Actor.fromOid(connection.data.getOrigin(), "263975"));
+        assertNotNull("timeline returned", timeline);
+        assertEquals("Number of items in the Timeline", 1, timeline.size());
+
+        AActivity activity = timeline.get(0);
+        Note note = activity.getNote();
+
+        assertEquals("Media attachments", 1, note.attachments.size());
+        Attachment attachment = note.attachments.list.get(0);
+        assertEquals("Content type", MyContentType.VIDEO, attachment.contentType);
+        assertEquals("Media URI", UriUtils.fromString("https://files.mastodon.social/media_attachments/files/011/640/109/original/2e846bfc7de88f79.mp4"),
+                attachment.getUri());
     }
 
 }
