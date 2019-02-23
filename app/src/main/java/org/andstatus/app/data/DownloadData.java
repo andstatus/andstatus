@@ -5,7 +5,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.net.Uri;
-import androidx.annotation.NonNull;
 import android.webkit.MimeTypeMap;
 
 import org.andstatus.app.context.MyContext;
@@ -25,6 +24,8 @@ import org.andstatus.app.util.UriUtils;
 
 import java.util.List;
 import java.util.function.Consumer;
+
+import androidx.annotation.NonNull;
 
 public class DownloadData implements IsEmpty {
     private static final String TAG = DownloadData.class.getSimpleName();
@@ -553,6 +554,14 @@ public class DownloadData implements IsEmpty {
 
     public long getDownloadedDate() {
         return downloadedDate;
+    }
+
+    public MyContentType getContentType() {
+        return contentType;
+    }
+
+    public String getMimeType() {
+        return mimeType;
     }
 
     public static class ConsumedSummary {

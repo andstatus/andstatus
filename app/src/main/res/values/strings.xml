@@ -548,5 +548,6 @@
   <string name="username_at_your_server">Username@your.server</string>
   <string name="users">Actors</string>
   <string name="users_of_message">Actors of Note</string>
+  <string name="view_media">View media</string>
   <string name="yes">Yes</string>
 </resources>

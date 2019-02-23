@@ -44,7 +44,7 @@ public class NoteForAnyAccount {
     public final DownloadStatus status;
     public final Actor author;
     public final Actor actor;
-    public final String imageFilename;
+    public final DownloadData downloadData;
     public final TriState isPublic;
     Audience audience;
     private String content = "";
@@ -81,8 +81,7 @@ public class NoteForAnyAccount {
         audience = Audience.fromNoteId(origin, noteId); // Now all users, mentioned in a body, are members of Audience
         author = Actor.load(myContext, authorId);
 
-        DownloadData downloadData = DownloadData.getSingleAttachment(noteId);
-        imageFilename = downloadData.getStatus() == DownloadStatus.LOADED ? downloadData.getFilename() : "";
+        downloadData = DownloadData.getSingleAttachment(noteId);
         long actorId;
         if (activityId == 0) {
             actorId = authorId;

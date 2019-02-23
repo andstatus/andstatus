@@ -17,7 +17,6 @@
 package org.andstatus.app.note;
 
 import android.os.Bundle;
-import androidx.annotation.NonNull;
 import android.text.style.URLSpan;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -31,6 +30,8 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.data.AccountToNote;
+import org.andstatus.app.data.DownloadData;
+import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.NoteForAnyAccount;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Connection;
@@ -46,6 +47,8 @@ import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.view.MyContextMenu;
 
 import java.util.function.Consumer;
+
+import androidx.annotation.NonNull;
 
 import static android.content.Context.ACCESSIBILITY_SERVICE;
 
@@ -185,8 +188,11 @@ public class NoteContextMenu extends MyContextMenu {
                         R.string.menu_item_reply_to_mentioned_users);
             }
             NoteContextMenuItem.SHARE.addTo(menu, order++, R.string.menu_item_share);
-            if (!StringUtils.isEmpty(getImageFilename())) {
-                NoteContextMenuItem.VIEW_IMAGE.addTo(menu, order++, R.string.menu_item_view_image);
+            if (getAttachedMedia().nonEmpty()) {
+                NoteContextMenuItem.VIEW_MEDIA.addTo(menu, order++,
+                        getAttachedMedia().getContentType() == MyContentType.IMAGE
+                                ? R.string.menu_item_view_image
+                                : R.string.view_media);
             }
 
             if (!isEditorVisible()) {
@@ -301,8 +307,8 @@ public class NoteContextMenu extends MyContextMenu {
     }
 
     @NonNull
-    String getImageFilename() {
-        return StringUtils.notNull(menuData.accountToNote.noteForAnyAccount.imageFilename);
+    DownloadData getAttachedMedia() {
+        return menuData.accountToNote.noteForAnyAccount.downloadData;
     }
 
     private boolean isEditorVisible() {

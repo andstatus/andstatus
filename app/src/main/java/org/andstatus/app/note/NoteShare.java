@@ -24,8 +24,8 @@ import android.net.Uri;
 import org.andstatus.app.R;
 import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.FileProvider;
-import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.origin.Origin;
@@ -38,19 +38,19 @@ import org.andstatus.app.util.UriUtils;
 public class NoteShare {
     private final Origin origin;
     private final long noteId;
-    private final String imageFilename;
+    private final DownloadData downloadData;
     
-    public NoteShare(Origin origin, long noteId, String imageFilename) {
+    public NoteShare(Origin origin, long noteId, DownloadData downloadData) {
         this.origin = origin;
         this.noteId = noteId;
-        this.imageFilename = imageFilename;
+        this.downloadData = downloadData;
         if (origin == null) {
             MyLog.v(this, () -> "Origin not found for noteId=" + noteId);
         }
     }
 
     public void viewImage(Activity activity) {
-        if (StringUtils.nonEmpty(imageFilename)) {
+        if (downloadData.nonEmpty()) {
             activity.startActivity(intentToViewAndShare(false));
         }
     }
@@ -76,13 +76,13 @@ public class NoteShare {
         subject.append(" - " + (StringUtils.nonEmpty(noteName) ? noteName : MyHtml.htmlToCompactPlainText(noteContent)));
 
         Intent intent = new Intent(share ? android.content.Intent.ACTION_SEND : Intent.ACTION_VIEW);
-        final Uri imageFileUri = FileProvider.downloadFilenameToUri(imageFilename);
+        final Uri imageFileUri = downloadData.getFile().existsNow()
+                ? FileProvider.downloadFilenameToUri(downloadData.getFilename())
+                : downloadData.getUri();
         if (share || UriUtils.isEmpty(imageFileUri)) {
             intent.setType("text/*");
         } else {
-            intent.setDataAndType(imageFileUri, MyContentType.uri2MimeType(
-                    MyContextHolder.get().context().getContentResolver(), imageFileUri, "image/*"
-            ));
+            intent.setDataAndType(imageFileUri, downloadData.getMimeType());
         }
         if (UriUtils.nonEmpty(imageFileUri)) {
             intent.putExtra(Intent.EXTRA_STREAM, imageFileUri);

@@ -152,7 +152,7 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
         if (imageMayBeShown) {
             preloadedImages.add(item.getNoteId());
             attachedImageFile.showImage(contextMenu.getActivity(), imageView);
-            setOnButtonClick(imageView, 0, NoteContextMenuItem.VIEW_IMAGE);
+            setOnButtonClick(imageView, 0, NoteContextMenuItem.VIEW_MEDIA);
         } else {
             imageView.setVisibility(View.GONE);
         }

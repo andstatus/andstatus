@@ -157,8 +157,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     SHARE {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            NoteShare noteShare = new NoteShare(menu.getOrigin(), menu.getNoteId(),
-                    menu.getImageFilename());
+            NoteShare noteShare = new NoteShare(menu.getOrigin(), menu.getNoteId(), menu.getAttachedMedia());
             noteShare.share(menu.getActivity());
         }
     },
@@ -264,16 +263,14 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     OPEN_NOTE_PERMALINK {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            NoteShare noteShare = new NoteShare(menu.getOrigin(), menu.getNoteId(),
-                    menu.getImageFilename());
+            NoteShare noteShare = new NoteShare(menu.getOrigin(), menu.getNoteId(), menu.getAttachedMedia());
             noteShare.openPermalink(menu.getActivity());
         }
     },
-    VIEW_IMAGE(false, true) {
+    VIEW_MEDIA(false, true) {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            NoteShare noteShare = new NoteShare(menu.getOrigin(), menu.getNoteId(),
-                    menu.getImageFilename());
+            NoteShare noteShare = new NoteShare(menu.getOrigin(), menu.getNoteId(), menu.getAttachedMedia());
             noteShare.viewImage(menu.getActivity());
         }
     },
