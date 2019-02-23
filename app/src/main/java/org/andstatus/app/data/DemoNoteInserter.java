@@ -16,8 +16,6 @@
 
 package org.andstatus.app.data;
 
-import androidx.annotation.NonNull;
-
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
@@ -42,6 +40,8 @@ import org.andstatus.app.util.UrlUtils;
 
 import java.net.URL;
 import java.util.List;
+
+import androidx.annotation.NonNull;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
@@ -195,7 +195,10 @@ public class DemoNoteInserter {
                         origin.getUrl().getHost(), urlPermalink.getHost());
             }
             if (!StringUtils.isEmpty(note.getName())) {
-                assertEquals("Note name " + note, note.getName(), MyQuery.noteIdToStringColumnValue(NoteTable.NAME, note.noteId));
+                assertEquals("Note name " + activity, note.getName(), MyQuery.noteIdToStringColumnValue(NoteTable.NAME, note.noteId));
+            }
+            if (!StringUtils.isEmpty(note.getContent())) {
+                assertEquals("Note content " + activity, note.getContent(), MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, note.noteId));
             }
             if (!StringUtils.isEmpty(note.url)) {
                 assertEquals("Note permalink", note.url, origin.getNotePermalink(note.noteId));

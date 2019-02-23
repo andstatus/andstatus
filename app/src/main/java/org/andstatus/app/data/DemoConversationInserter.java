@@ -255,9 +255,9 @@ public class DemoConversationInserter {
 
     private AActivity buildActivity(Actor accountActor, Actor author, String name, String content, AActivity inReplyTo,
                                     String noteOidIn, DownloadStatus status) {
-        return new DemoNoteInserter(accountActor).buildActivity(author, name, content
-                        + (inReplyTo != null ? " it" + iteration : "") + bodySuffix,
-                inReplyTo, noteOidIn, status);
+        return new DemoNoteInserter(accountActor).buildActivity(author, name,
+            StringUtils.isEmpty(content) ? "" : content + (inReplyTo != null ? " it" + iteration : "") + bodySuffix,
+            inReplyTo, noteOidIn, status);
     }
 
     private void addActivity(AActivity activity) {

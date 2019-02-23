@@ -17,8 +17,6 @@
 package org.andstatus.app.net.social;
 
 import android.database.Cursor;
-import androidx.annotation.NonNull;
-import androidx.core.util.Pair;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -40,6 +38,9 @@ import org.andstatus.app.util.UriUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
+
 import static org.andstatus.app.util.UriUtils.TEMP_OID_PREFIX;
 import static org.andstatus.app.util.UriUtils.isEmptyOid;
 import static org.andstatus.app.util.UriUtils.isRealOid;
@@ -52,7 +53,6 @@ import static org.andstatus.app.util.UriUtils.nonRealOid;
 public class Note extends AObject {
     public static final Note EMPTY = new Note(Origin.EMPTY, getTempOid());
 
-    private boolean isEmpty = false;
     private DownloadStatus status = DownloadStatus.UNKNOWN;
     
     public final String oid;
@@ -241,11 +241,14 @@ public class Note extends AObject {
     }
 
     public boolean isEmpty() {
-        return this.isEmpty
-                || !origin.isValid()
-                || (nonRealOid(oid)
-                    && ((status != DownloadStatus.SENDING && status != DownloadStatus.DRAFT)
-                        || (StringUtils.isEmpty(name) && StringUtils.isEmpty(content) && attachments.isEmpty())));
+        return !origin.isValid()
+                || (nonRealOid(oid) &&
+                        ((status != DownloadStatus.SENDING && status != DownloadStatus.DRAFT) || !hasSomeContent())
+                   );
+    }
+
+    public boolean hasSomeContent() {
+        return !StringUtils.isEmpty(name) || !StringUtils.isEmpty(content) || !attachments.isEmpty();
     }
 
     @Override
@@ -272,19 +275,18 @@ public class Note extends AObject {
         }
         MyStringBuilder builder = new MyStringBuilder();
         builder.withComma("","empty", this::isEmpty);
-        builder.withComma("","isEmpty", () -> isEmpty);
         builder.withComma("id", noteId, () -> noteId != 0);
         builder.withComma("conversation_id", conversationId, () -> conversationId != noteId);
         builder.withComma("status", status);
-        builder.withComma("name",name, () -> StringUtils.nonEmpty(name));
-        builder.withComma("content",name, () -> StringUtils.nonEmpty(content));
+        builder.withComma("name", name, () -> StringUtils.nonEmpty(name));
+        builder.withComma("content", content, () -> StringUtils.nonEmpty(content));
         builder.withComma("", getPublic() == TriState.TRUE ? "public" : "nonpublic", () -> getPublic().known);
-        builder.withComma("oid",oid, () -> isRealOid(oid));
+        builder.withComma("oid", oid, () -> isRealOid(oid));
         builder.withComma("conversation_oid",conversationOid, () -> isRealOid(conversationOid));
-        builder.withComma("url",url, () -> StringUtils.nonEmpty(url));
-        builder.withComma("via",via, () -> StringUtils.nonEmpty(via));
+        builder.withComma("url", url, () -> StringUtils.nonEmpty(url));
+        builder.withComma("via", via, () -> StringUtils.nonEmpty(via));
         builder.withComma("updated", MyLog.debugFormatOfDate(updatedDate));
-        builder.withComma("origin",origin.getName());
+        builder.withComma("origin", origin.getName());
         if(audience.nonEmpty()) {
             builder.atNewLine("audience", audience.toString());
         }

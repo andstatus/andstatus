@@ -49,6 +49,9 @@ import java.util.function.Supplier;
 
 import androidx.annotation.NonNull;
 
+import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
+import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
+
 /**
  * There is a need to turn debug (and maybe even verbose) logging on and off
  * dynamically at any time, plus sometimes we need to start debug logging on
@@ -692,6 +695,10 @@ public class MyLog {
 
     @NonNull
     public static String debugFormatOfDate(long date) {
-        return date == 0 ? "EMPTY" : new Date(date).toString();
+        return date == DATETIME_MILLIS_NEVER
+                ? "NEVER"
+                : date == SOME_TIME_AGO
+                    ? "SOME_TIME_AGO"
+                    : formatDateTime(date);
     }
 }

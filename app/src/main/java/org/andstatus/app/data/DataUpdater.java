@@ -199,9 +199,11 @@ public class DataUpdater {
             if (nonEmptyOid(note.conversationOid)) {
                 values.put(NoteTable.CONVERSATION_OID, note.conversationOid);
             }
-            ContentValuesUtils.putNotEmpty(values, NoteTable.NAME, note.getName());
-            ContentValuesUtils.putNotEmpty(values, NoteTable.CONTENT, note.getContent());
-            values.put(NoteTable.CONTENT_TO_SEARCH, note.getContentToSearch());
+            if (note.hasSomeContent()) {
+                values.put(NoteTable.NAME, note.getName());
+                values.put(NoteTable.CONTENT, note.getContent());
+                values.put(NoteTable.CONTENT_TO_SEARCH, note.getContentToSearch());
+            }
 
             updateInReplyTo(activity, values);
             activity.getNote().audience().extractActorsFromContent(activity.getNote().getContent(),
