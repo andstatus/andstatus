@@ -57,7 +57,7 @@ public abstract class ImageFile implements IsEmpty {
     public void showImage(@NonNull MyActivity myActivity, IdentifiableImageView imageView) {
         if (imageView == null) return;
         imageView.setImageId(getId());
-        if (cannotBeShown()) {
+        if (!imageMayBeShown()) {
             onNoImage(imageView);
             return;
         }
@@ -93,13 +93,9 @@ public abstract class ImageFile implements IsEmpty {
         }
     }
 
-    public boolean mayBeShown() {
-        return !cannotBeShown();
-    }
-
-    boolean cannotBeShown() {
-        return isEmpty() || downloadStatus == DownloadStatus.HARD_ERROR
-                || downloadStatus == DownloadStatus.LOADED && mediaMetadata.isEmpty();
+    public boolean imageMayBeShown() {
+        return !isEmpty() && downloadStatus != DownloadStatus.HARD_ERROR &&
+                (downloadStatus != DownloadStatus.LOADED || mediaMetadata.nonEmpty());
     }
 
     private void showBlankImage(ImageView imageView) {

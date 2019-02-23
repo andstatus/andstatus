@@ -64,8 +64,8 @@ public class ProjectionMap {
                 + " AS " + DownloadTable.IMAGE_FILE_NAME);
         TIMELINE.put(DownloadTable.IMAGE_ID, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable._ID
                 + " AS " + DownloadTable.IMAGE_ID);
-        TIMELINE.put(DownloadTable.IMAGE_URL, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.URI
-                + " AS " + DownloadTable.IMAGE_URL);
+        TIMELINE.put(DownloadTable.IMAGE_URI, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.URI
+                + " AS " + DownloadTable.IMAGE_URI);
         TIMELINE.put(DownloadTable.WIDTH, DownloadTable.WIDTH);
         TIMELINE.put(DownloadTable.HEIGHT, DownloadTable.HEIGHT);
         TIMELINE.put(DownloadTable.DURATION, DownloadTable.DURATION);

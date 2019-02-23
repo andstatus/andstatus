@@ -16,7 +16,7 @@
 
 package org.andstatus.app.note;
 
-import androidx.annotation.NonNull;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +25,7 @@ import android.widget.RelativeLayout;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.graphics.IdentifiableImageView;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
@@ -35,6 +36,8 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import androidx.annotation.NonNull;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -134,22 +137,30 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
         item.author.showAvatar(contextMenu.getActivity(), view.findViewById(R.id.avatar_image));
     }
 
-    protected void showAttachedImage(View view, T item) {
-        final View imageWrapper = view.findViewById(R.id.attached_image_wrapper);
-        if (imageWrapper == null) return;
+    private void showAttachedImage(View view, T item) {
+        final View parent = view.findViewById(R.id.attached_image_wrapper);
+        if (parent == null) return;
 
-        final boolean show = item.getAttachedImageFile().mayBeShown() && contextMenu.getActivity().isMyResumed();
-        imageWrapper.setVisibility(show ? View.VISIBLE : View.GONE);
-        if (!show) return;
+        final AttachedImageFile attachedImageFile = item.getAttachedImageFile();
+        final boolean imageMayBeShown = attachedImageFile.imageMayBeShown();
+        final boolean showWrapper = contextMenu.getActivity().isMyResumed() &&
+                (imageMayBeShown || attachedImageFile.uri != Uri.EMPTY) ;
+        parent.setVisibility(showWrapper ? View.VISIBLE : View.GONE);
+        if (!showWrapper) return;
 
-        preloadedImages.add(item.getNoteId());
-        final IdentifiableImageView imageView = imageWrapper.findViewById(R.id.attached_image);
-        item.getAttachedImageFile().showImage(contextMenu.getActivity(), imageView);
-        setOnButtonClick(imageView, 0, NoteContextMenuItem.VIEW_IMAGE);
+        IdentifiableImageView imageView = parent.findViewById(R.id.attached_image);
+        if (imageMayBeShown) {
+            preloadedImages.add(item.getNoteId());
+            attachedImageFile.showImage(contextMenu.getActivity(), imageView);
+            setOnButtonClick(imageView, 0, NoteContextMenuItem.VIEW_IMAGE);
+        } else {
+            imageView.setVisibility(View.GONE);
+        }
+        MyUrlSpan.showText(parent, R.id.attachment_link, imageMayBeShown ? "" : attachedImageFile.uri.toString(), true, false);
 
-        final View playImage = imageWrapper.findViewById(R.id.play_image);
+        final View playImage = parent.findViewById(R.id.play_image);
         if (playImage != null) {
-            playImage.setVisibility(item.getAttachedImageFile().isVideo() ? View.VISIBLE : View.GONE);
+            playImage.setVisibility(imageMayBeShown && attachedImageFile.isVideo() ? View.VISIBLE : View.GONE);
         }
     }
 

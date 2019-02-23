@@ -144,7 +144,7 @@ public class TimelineSql {
                     + DownloadTable.WIDTH + ", "
                     + DownloadTable.HEIGHT + ", "
                     + DownloadTable.DURATION + ", "
-                    + (columns.contains(DownloadTable.IMAGE_URL) ? DownloadTable.URI + ", " : "")
+                    + DownloadTable.URI + ", "
                     + DownloadTable.FILE_NAME
                     + " FROM " + DownloadTable.TABLE_NAME
                     + ") AS " + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS
@@ -197,6 +197,7 @@ public class TimelineSql {
         columnNames.add(NoteTable.REBLOGGED);
         if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
             columnNames.add(DownloadTable.IMAGE_ID);
+            columnNames.add(DownloadTable.IMAGE_URI);
             columnNames.add(DownloadTable.IMAGE_FILE_NAME);
             columnNames.add(DownloadTable.DOWNLOAD_STATUS);
             columnNames.add(DownloadTable.WIDTH);

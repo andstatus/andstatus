@@ -61,7 +61,7 @@ public final class DownloadTable implements BaseColumns {
     public static final String AVATAR_FILE_NAME = "avatar_file_name";
     /** Alias helping to show first attached image */
     public static final String IMAGE_FILE_NAME = "image_file_name";
-    public static final String IMAGE_URL = "image_url";
+    public static final String IMAGE_URI = "image_uri";
 
     public static void create(SQLiteDatabase db) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("

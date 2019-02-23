@@ -18,7 +18,6 @@ package org.andstatus.app.data;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
@@ -31,6 +30,8 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
+
+import androidx.annotation.NonNull;
 
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 
@@ -45,7 +46,7 @@ public class AvatarFile extends ImageFile {
         final String filename = DbUtils.getString(cursor, DownloadTable.AVATAR_FILE_NAME);
         return actor.isEmpty()
                 ? AvatarFile.EMPTY
-                : new AvatarFile(actor, filename, MediaMetadata.EMPTY,
+                : new AvatarFile(actor, filename, new MediaMetadata(AVATAR_SIZE_DIP, AVATAR_SIZE_DIP, 0),
                     DownloadStatus.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_STATUS)),
                     DbUtils.getLong(cursor, DownloadTable.DOWNLOADED_DATE));
     }
@@ -104,10 +105,5 @@ public class AvatarFile extends ImageFile {
                 " WHERE " + DownloadTable.ACTOR_ID + "=" + getActor().actorId +
                 " AND " + DownloadTable.DOWNLOAD_STATUS + "<>" + DownloadStatus.LOADED.save()
         );
-    }
-
-    @Override
-    boolean cannotBeShown() {
-        return isEmpty() || downloadStatus == DownloadStatus.HARD_ERROR;
     }
 }

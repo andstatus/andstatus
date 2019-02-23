@@ -17,6 +17,7 @@
 package org.andstatus.app.data;
 
 import android.database.Cursor;
+import android.net.Uri;
 
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.graphics.CacheName;
@@ -24,12 +25,14 @@ import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.graphics.MediaMetadata;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.util.UriUtils;
 
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 
 public class AttachedImageFile extends ImageFile {
     public static final AttachedImageFile EMPTY = new AttachedImageFile(0, "", MediaMetadata.EMPTY,
-            DownloadStatus.ABSENT, DATETIME_MILLIS_NEVER);
+            DownloadStatus.ABSENT, DATETIME_MILLIS_NEVER, Uri.EMPTY);
+    public final Uri uri;
 
     public static AttachedImageFile fromCursor(Cursor cursor) {
         return new AttachedImageFile(
@@ -37,13 +40,15 @@ public class AttachedImageFile extends ImageFile {
                 DbUtils.getString(cursor, DownloadTable.IMAGE_FILE_NAME),
                 MediaMetadata.fromCursor(cursor),
                 DownloadStatus.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_STATUS)),
-                DbUtils.getLong(cursor, DownloadTable.DOWNLOADED_DATE)
+                DbUtils.getLong(cursor, DownloadTable.DOWNLOADED_DATE),
+                UriUtils.fromString(DbUtils.getString(cursor, DownloadTable.IMAGE_URI))
         );
     }
 
     public AttachedImageFile(long downloadId, String filename, MediaMetadata mediaMetadata,
-                             DownloadStatus downloadStatus, long downloadedDate) {
+                             DownloadStatus downloadStatus, long downloadedDate, Uri uri) {
         super(filename, mediaMetadata, downloadId, downloadStatus, downloadedDate);
+        this.uri = uri;
     }
 
     public CacheName getCacheName() {

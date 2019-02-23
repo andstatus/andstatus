@@ -18,7 +18,6 @@ package org.andstatus.app.note;
 
 import android.content.ContentValues;
 import android.net.Uri;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.actor.ActorListType;
@@ -54,6 +53,8 @@ import org.andstatus.app.util.TriState;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import androidx.annotation.NonNull;
 
 import static org.andstatus.app.data.DownloadStatus.LOADED;
 import static org.andstatus.app.data.DownloadStatus.UNKNOWN;
@@ -136,7 +137,7 @@ public class NoteEditorData implements IsEmpty {
         if (attachment.getStatus() == LOADED) {
             AttachedImageFile imageFile = new AttachedImageFile(attachment.getDownloadId(),
                     attachment.getFilename(), attachment.mediaMetadata, attachment.getStatus(),
-                    attachment.getDownloadedDate());
+                    attachment.getDownloadedDate(), attachment.getUri());
             image = imageFile.loadAndGetImage();
             note.attachments.add(Attachment.fromUri(attachment.getUri()));
         }
