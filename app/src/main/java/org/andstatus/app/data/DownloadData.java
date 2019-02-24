@@ -44,6 +44,7 @@ public class DownloadData implements IsEmpty {
     public long fileSize = 0;
     protected Uri uri = Uri.EMPTY;
     public MediaMetadata mediaMetadata = MediaMetadata.EMPTY;
+    private long previewOfDownloadId = 0;
 
     private boolean hardError = false;
     private boolean softError = false;
@@ -72,7 +73,7 @@ public class DownloadData implements IsEmpty {
                 DownloadType.ATTACHMENT, Uri.EMPTY);
     }
 
-    public static DownloadData getThisForAttachment(long noteId, Attachment attachment) {
+    public static DownloadData fromAttachment(long noteId, Attachment attachment) {
         return new DownloadData(null, 0, 0, noteId,
                 attachment.contentType, attachment.mimeType, DownloadType.ATTACHMENT, attachment.uri);
     }
@@ -139,11 +140,14 @@ public class DownloadData implements IsEmpty {
         if (downloadId == 0) {
             downloadId = DbUtils.getLong(cursor, DownloadTable._ID);
         }
+        if (previewOfDownloadId == 0) {
+            previewOfDownloadId = DbUtils.getLong(cursor, DownloadTable.PREVIEW_OF_DOWNLOAD_ID);
+        }
         if (downloadNumber == 0) {
             downloadNumber = DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_NUMBER);
         }
         if (uri.equals(Uri.EMPTY)) {
-            uri = UriUtils.fromString(DbUtils.getString(cursor, DownloadTable.URI));
+            uri = UriUtils.fromString(DbUtils.getString(cursor, DownloadTable.URL));
         }
         mediaMetadata = MediaMetadata.fromCursor(cursor);
         fileSize = DbUtils.getLong(cursor, DownloadTable.FILE_SIZE);
@@ -179,7 +183,7 @@ public class DownloadData implements IsEmpty {
             if (UriUtils.isEmpty(uri)) {
                 where.append(DownloadTable.DOWNLOAD_NUMBER + "=" + downloadNumber);
             } else {
-                where.append(DownloadTable.URI + "=" + MyQuery.quoteIfNotQuoted(uri.toString()));
+                where.append(DownloadTable.URL + "=" + MyQuery.quoteIfNotQuoted(uri.toString()));
             }
         }
         return where;
@@ -248,6 +252,14 @@ public class DownloadData implements IsEmpty {
         this.downloadNumber = downloadNumber;
     }
 
+    public void setPreviewOfDownloadId(long previewOfDownloadId) {
+        this.previewOfDownloadId = previewOfDownloadId;
+    }
+
+    public long getPreviewOfDownloadId() {
+        return previewOfDownloadId;
+    }
+
     public void saveToDatabase() {
         if (hardError) {
             status = DownloadStatus.HARD_ERROR;
@@ -306,9 +318,10 @@ public class DownloadData implements IsEmpty {
             values.put(DownloadTable.DOWNLOAD_TYPE, downloadType.save());
             ContentValuesUtils.putNotZero(values, DownloadTable.ACTOR_ID, actorId);
             ContentValuesUtils.putNotZero(values, DownloadTable.NOTE_ID, noteId);
+            ContentValuesUtils.putNotZero(values, DownloadTable.PREVIEW_OF_DOWNLOAD_ID, previewOfDownloadId);
         }
         values.put(DownloadTable.DOWNLOAD_NUMBER, downloadNumber);
-        values.put(DownloadTable.URI, uri.toString());
+        values.put(DownloadTable.URL, uri.toString());
         values.put(DownloadTable.CONTENT_TYPE, contentType.save());
         values.put(DownloadTable.MEDIA_TYPE, mimeType);
         values.put(DownloadTable.DOWNLOAD_STATUS, status.save());
@@ -490,22 +503,18 @@ public class DownloadData implements IsEmpty {
     @Override
     public String toString() {
         MyStringBuilder builder = new MyStringBuilder();
-        if(downloadNumber > 0) builder.withComma("num:" + downloadNumber);
-        builder.withComma("uri:'" + getUri() + "'");
-        if (StringUtils.nonEmpty(mimeType)) builder.withComma("mime:" + mimeType);
-        if(actorId != 0) {
-            builder.withComma("actorId:" + actorId);
-        }
-        if(noteId != 0) {
-            builder.withComma("msgId:" + noteId);
-        }
-        builder.withComma("status:" + getStatus());
-        if(StringUtils.nonEmpty(errorMessage)) {
-            builder.withComma("errorMessage:'" + getMessage() + "'");
-        }
+        builder.withComma("id", downloadId, i -> i != 0);
+        builder.withComma("num", downloadNumber, i -> i > 0);
+        builder.withCommaQuoted("uri", getUri(), true);
+        builder.withComma("mime", mimeType);
+        builder.withComma("actorId", actorId, i -> i != 0);
+        builder.withComma("noteId", noteId, i -> i != 0);
+        builder.withComma("previewOf", previewOfDownloadId, i -> i != 0);
+        builder.withComma("status", getStatus());
+        builder.withCommaQuoted("errorMessage",getMessage(), true);
         if (fileStored.existed) {
-            builder.withComma("file:" + getFilename());
-            builder.withComma("size:" + fileSize);
+            builder.withComma("file", getFilename());
+            builder.withComma("size", fileSize);
             if (mediaMetadata.nonEmpty()) builder.withComma(mediaMetadata.toString());
         }
         return MyLog.formatKeyValue(this, builder.toString());

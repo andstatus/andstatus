@@ -156,7 +156,8 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
         } else {
             imageView.setVisibility(View.GONE);
         }
-        MyUrlSpan.showText(parent, R.id.attachment_link, imageMayBeShown ? "" : attachedImageFile.uri.toString(), true, false);
+        MyUrlSpan.showText(parent, R.id.attachment_link,
+                imageMayBeShown ? "" : attachedImageFile.getTargetUri().toString(), true, false);
 
         final View playImage = parent.findViewById(R.id.play_image);
         if (playImage != null) {

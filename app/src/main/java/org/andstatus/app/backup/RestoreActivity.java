@@ -17,7 +17,6 @@
 package org.andstatus.app.backup;
 
 import android.os.Bundle;
-import androidx.annotation.NonNull;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
@@ -33,7 +32,9 @@ import org.andstatus.app.util.SimpleFileDialog;
 
 import java.io.File;
 
-public class RestoreActivity extends MyActivity {
+import androidx.annotation.NonNull;
+
+public class RestoreActivity extends MyActivity implements ProgressLogger.ProgressCallback {
     private static final int MAX_RESTORE_SECONDS = 300;
     File selectedFolder = null;
     MyAsyncTask<File, CharSequence, Boolean> asyncTask = null;
@@ -165,5 +166,10 @@ public class RestoreActivity extends MyActivity {
     protected void onPause() {
         super.onPause();
         MyContextHolder.get().setInForeground(false);
+    }
+
+    @Override
+    public void onProgressMessage(CharSequence message) {
+        addProgressMessage(message);
     }
 }

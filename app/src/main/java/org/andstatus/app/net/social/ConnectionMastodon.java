@@ -18,6 +18,7 @@ package org.andstatus.app.net.social;
 
 import android.net.Uri;
 
+import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.note.KeywordsFilter;
@@ -384,16 +385,23 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 }
             }
 
-            // TODO: Remove duplicated code of attachments parsing
             if (!jso.isNull(ATTACHMENTS_FIELD_NAME)) {
                 try {
                     JSONArray jArr = jso.getJSONArray(ATTACHMENTS_FIELD_NAME);
                     for (int ind = 0; ind < jArr.length(); ind++) {
-                        JSONObject attachment = (JSONObject) jArr.get(ind);
-                        Uri uri = UriUtils.fromAlternativeTags(attachment, "url", "preview_url");
-                        Attachment mbAttachment =  Attachment.fromUriAndMimeType(uri, attachment.optString("type"));
-                        if (mbAttachment.isValid()) {
-                            note.attachments.add(mbAttachment);
+                        JSONObject jsoAttachment = (JSONObject) jArr.get(ind);
+                        Uri uri = UriUtils.fromJson(jsoAttachment, "url");
+                        Attachment attachment = Attachment.fromUriAndMimeType(uri, jsoAttachment.optString("type"));
+                        if (attachment.isValid()) {
+                            note.attachments.add(attachment);
+                            Attachment preview =
+                                    Attachment.fromUriAndMimeType(
+                                            UriUtils.fromJson(jsoAttachment,"preview_url"),
+                                            MyContentType.IMAGE.generalMimeType)
+                                    .setPreviewOf(attachment);
+                            if (preview.isValid()) {
+                                note.attachments.add(preview);
+                            }
                         } else {
                             MyLog.d(this, method + "; invalid attachment #" + ind + "; " + jArr.toString());
                         }

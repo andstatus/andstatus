@@ -58,9 +58,6 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
         if (!StringUtils.isEmpty(via)) {
             noteSource = Html.fromHtml(via).toString().trim();
         }
-        if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
-            attachedImageFile = AttachedImageFile.fromCursor(cursor);
-        }
         inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
         inReplyToActor = ActorViewItem.fromActorId(getOrigin(),
                 DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID));

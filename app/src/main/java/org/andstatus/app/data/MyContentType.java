@@ -98,14 +98,17 @@ public enum MyContentType {
 
     @NonNull
     public static String uri2MimeType(ContentResolver contentResolver, Uri uri, String defaultValue) {
-        if (contentResolver != null && !UriUtils.isEmpty(uri)) {
+        if (UriUtils.isEmpty(uri)) return getDefaultValue(defaultValue);
+
+        if (contentResolver != null) {
             String mimeType = contentResolver.getType(uri);
             if (!isEmptyMime(mimeType)) return mimeType;
         }
-        return path2MimeType(
-                uri == null ? null : uri.getPath(),
-                StringUtils.isEmpty(defaultValue) ? UNKNOWN.generalMimeType : defaultValue
-        );
+        return path2MimeType(uri.getPath(), getDefaultValue(defaultValue));
+    }
+
+    private static String getDefaultValue(String defaultValue) {
+        return StringUtils.isEmpty(defaultValue) ? UNKNOWN.generalMimeType : defaultValue;
     }
 
     public static boolean isEmptyMime(String mimeType) {

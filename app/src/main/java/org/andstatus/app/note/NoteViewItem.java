@@ -55,10 +55,7 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
     }
 
     private NoteViewItem (MyContext myContext, Cursor cursor) {
-        this(false,
-            DbUtils.getLong(cursor, NoteTable.UPDATED_DATE)
-        );
-        this.myContext = myContext;
+        super(myContext, cursor);
         setNoteId(DbUtils.getLong(cursor, ActivityTable.NOTE_ID));
         setOrigin(myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)));
         setLinkedAccount(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID));
@@ -80,10 +77,6 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
         String via = DbUtils.getString(cursor, NoteTable.VIA);
         if (!StringUtils.isEmpty(via)) {
             noteSource = Html.fromHtml(via).toString().trim();
-        }
-
-        if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
-            attachedImageFile = AttachedImageFile.fromCursor(cursor);
         }
 
         for (Actor actor : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getNoteId())) {

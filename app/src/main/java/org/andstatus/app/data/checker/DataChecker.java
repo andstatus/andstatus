@@ -34,6 +34,15 @@ public abstract class DataChecker {
     ProgressLogger logger = new ProgressLogger(null);
     boolean includeLong = false;
 
+    static String getSomeOfTotal(long some, long total) {
+        return (some == 0
+                ? "none"
+                : some == total
+                    ? "all"
+                    : String.valueOf(some))
+                + " of " + total;
+    }
+
     public DataChecker setMyContext(MyContext myContext) {
         this.myContext = myContext;
         return this;
@@ -80,8 +89,15 @@ public abstract class DataChecker {
         }
         try {
             MyLog.i(DataChecker.class, "fixData started" + (includeLong ? ", including long tasks" : ""));
-            for(DataChecker checker : new DataChecker[]{new MergeActors(), new CheckUsers(), new CheckConversations(),
-                    new CheckTimelines(), new SearchIndexUpdate(), new CheckAudience()}) {
+            for(DataChecker checker : new DataChecker[]{
+                    new CheckTimelines(),
+                    new CheckDownloads(),
+                    new MergeActors(),
+                    new CheckUsers(),
+                    new CheckConversations(),
+                    new CheckAudience(),
+                    new SearchIndexUpdate(),
+            }) {
                 MyServiceManager.setServiceUnavailable();
                 checker.setMyContext(myContext).setIncludeLong(includeLong).setLogger(logger).fix(countOnly);
             }

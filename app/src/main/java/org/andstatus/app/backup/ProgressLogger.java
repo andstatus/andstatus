@@ -63,7 +63,7 @@ public class ProgressLogger {
 
     public void logProgress(CharSequence message) {
         updateLastLoggedTime();
-        MyLog.d(this, "Progress: " + message);
+        MyLog.i(this, "Progress: " + message);
         if (makeServiceUnavalable) MyServiceManager.setServiceUnavailable();
         if (callback != null) callback.onProgressMessage(message);
     }

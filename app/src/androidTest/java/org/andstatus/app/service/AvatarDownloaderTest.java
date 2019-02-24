@@ -177,7 +177,7 @@ public class AvatarDownloaderTest {
         values.put(DownloadTable.DOWNLOADED_DATE, MyLog.uniqueCurrentTimeMS());
         MyContextHolder.get().getDatabase()
                 .update(DownloadTable.TABLE_NAME, values, DownloadTable.ACTOR_ID + "=" + actor.actorId
-                        + " AND " + DownloadTable.URI + "=" + MyQuery.quoteIfNotQuoted(actor.getAvatarUrl()), null);
+                        + " AND " + DownloadTable.URL + "=" + MyQuery.quoteIfNotQuoted(actor.getAvatarUrl()), null);
         Actor actor2 = MyContextHolder.get().users().reload(actor);
         AvatarData avatarData = AvatarData.getCurrentForActor(actor);
         assertEquals("Download status for " + actor2, status, avatarData.getStatus());

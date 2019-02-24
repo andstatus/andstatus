@@ -18,6 +18,8 @@ package org.andstatus.app.note;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
+
+import android.database.Cursor;
 import android.text.Spannable;
 import android.text.SpannableString;
 
@@ -29,8 +31,10 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.TextMediaType;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.SpanUtil;
@@ -93,6 +97,15 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     protected BaseNoteViewItem(boolean isEmpty, long updatedDate) {
         super(isEmpty, updatedDate);
+    }
+
+    BaseNoteViewItem(MyContext myContext, Cursor cursor) {
+        this(false, DbUtils.getLong(cursor, NoteTable.UPDATED_DATE));
+        this.myContext = myContext;
+
+        if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
+            attachedImageFile = AttachedImageFile.fromCursor(myContext, cursor);
+        }
     }
 
     @NonNull

@@ -27,6 +27,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
@@ -76,9 +77,14 @@ public class NoteShare {
         subject.append(" - " + (StringUtils.nonEmpty(noteName) ? noteName : MyHtml.htmlToCompactPlainText(noteContent)));
 
         Intent intent = new Intent(share ? android.content.Intent.ACTION_SEND : Intent.ACTION_VIEW);
-        final Uri imageFileUri = downloadData.getFile().existsNow()
+        final Uri imageFileUri = downloadData.getPreviewOfDownloadId() == 0
+            ? (downloadData.getFile().existsNow()
                 ? FileProvider.downloadFilenameToUri(downloadData.getFilename())
-                : downloadData.getUri();
+                : downloadData.getUri())
+            : UriUtils.fromString(
+                MyQuery.idToStringColumnValue(MyContextHolder.get().getDatabase(), DownloadTable.TABLE_NAME,
+                        DownloadTable.URL,
+                        downloadData.getPreviewOfDownloadId()));
         if (share || UriUtils.isEmpty(imageFileUri)) {
             intent.setType("text/*");
         } else {

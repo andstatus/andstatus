@@ -57,14 +57,18 @@ class Convert44 extends ConvertOneStep {
     @Override
     protected void execute2() {
         progressLogger.logProgress(stepTitle + ": Transforming Pump.io actors");
-        sql ="SELECT _id, username FROM actor INNER JOIN origin on actor.origin_id=origin._id" +
+        sql ="SELECT actor._id, username FROM actor INNER JOIN origin on actor.origin_id=origin._id" +
                 " WHERE origin.origin_type_id=2";
         MyQuery.<Set<Data>>foldLeft(db, sql, new HashSet<>(), set -> cursor -> {
             Data.fromCursor(cursor).ifPresent(set::add);
             return set;
         }).forEach( data ->
-            DbUtils.execSQL(db, "UPDATE actor SET username='" + data.username +
+            DbUtils.execSQL(db, "UPDATE actor SET username='" + data.username + "'" +
                     " WHERE _id=" + data.id)
         );
+
+        progressLogger.logProgress(stepTitle + ": Adding previews to downloads");
+        sql = "ALTER TABLE download ADD COLUMN preview_of_download_id INTEGER";
+        DbUtils.execSQL(db, sql);
     }
 }

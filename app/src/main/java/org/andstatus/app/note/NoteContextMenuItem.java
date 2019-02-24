@@ -22,7 +22,6 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import androidx.annotation.NonNull;
 import android.view.Menu;
 
 import org.andstatus.app.ActivityRequestCode;
@@ -51,6 +50,8 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.view.MyContextMenu;
+
+import androidx.annotation.NonNull;
 
 public enum NoteContextMenuItem implements ContextMenuItem {
     REPLY(true, false) {
@@ -156,9 +157,10 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     },
     SHARE {
         @Override
-        void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
+        NoteEditorData executeAsync(NoteContextMenu menu) {
             NoteShare noteShare = new NoteShare(menu.getOrigin(), menu.getNoteId(), menu.getAttachedMedia());
             noteShare.share(menu.getActivity());
+            return NoteEditorData.EMPTY;
         }
     },
     COPY_TEXT(true, true) {

@@ -53,11 +53,8 @@ public abstract class ConversationItem<T extends ConversationItem<T>> extends Ba
     }
 
     ConversationItem(MyContext myContext, Cursor cursor) {
-        this(false,
-                DbUtils.getLong(cursor, NoteTable.UPDATED_DATE)
-        );
+        super(myContext, cursor);
         setNoteId(DbUtils.getLong(cursor, ActivityTable.NOTE_ID));
-        this.myContext = myContext;
         conversationId = DbUtils.getLong(cursor, NoteTable.CONVERSATION_ID);
         setOrigin(myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)));
         author = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));

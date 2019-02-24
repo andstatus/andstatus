@@ -40,7 +40,8 @@ public final class DownloadTable implements BaseColumns {
     /** See {@link MyContentType} */
     public static final String CONTENT_TYPE = "content_type";
     public static final String MEDIA_TYPE = "media_type";
-    public static final String URI = "url";  // TODO: Rename to "uri"
+    public static final String URL = "url";
+    public static final String PREVIEW_OF_DOWNLOAD_ID = "preview_of_download_id";
     /**
      * See {@link DownloadStatus}. Defaults to {@link DownloadStatus#UNKNOWN}
      */
@@ -72,7 +73,8 @@ public final class DownloadTable implements BaseColumns {
                 + NOTE_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + CONTENT_TYPE + " INTEGER NOT NULL DEFAULT 0,"
                 + MEDIA_TYPE + " TEXT NOT NULL,"
-                + URI + " TEXT NOT NULL,"
+                + URL + " TEXT NOT NULL,"
+                + PREVIEW_OF_DOWNLOAD_ID + " INTEGER,"
                 + DOWNLOAD_STATUS + " INTEGER NOT NULL DEFAULT 0,"
                 + WIDTH + " INTEGER NOT NULL DEFAULT 0,"
                 + HEIGHT + " INTEGER NOT NULL DEFAULT 0,"

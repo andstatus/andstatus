@@ -19,6 +19,7 @@ package org.andstatus.app.data;
 import android.database.Cursor;
 import android.net.Uri;
 
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.graphics.CachedImage;
@@ -31,24 +32,34 @@ import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 
 public class AttachedImageFile extends ImageFile {
     public static final AttachedImageFile EMPTY = new AttachedImageFile(0, "", MediaMetadata.EMPTY,
-            DownloadStatus.ABSENT, DATETIME_MILLIS_NEVER, Uri.EMPTY);
+            DownloadStatus.ABSENT, DATETIME_MILLIS_NEVER, Uri.EMPTY, Uri.EMPTY);
     public final Uri uri;
+    public final Uri previewOfUri;
 
-    public static AttachedImageFile fromCursor(Cursor cursor) {
+    public static AttachedImageFile fromCursor(MyContext myContext, Cursor cursor) {
+        final long downloadId = DbUtils.getLong(cursor, DownloadTable.IMAGE_ID);
+        if (downloadId == 0) return EMPTY;
+
+        final long previewOfDownloadId = DbUtils.getLong(cursor, DownloadTable.PREVIEW_OF_DOWNLOAD_ID);
+        final Uri previewOfUri = UriUtils.fromString(
+                MyQuery.idToStringColumnValue(myContext.getDatabase(), DownloadTable.TABLE_NAME, DownloadTable.URL,
+                        previewOfDownloadId));
+
         return new AttachedImageFile(
-                DbUtils.getLong(cursor, DownloadTable.IMAGE_ID),
+                downloadId,
                 DbUtils.getString(cursor, DownloadTable.IMAGE_FILE_NAME),
                 MediaMetadata.fromCursor(cursor),
                 DownloadStatus.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_STATUS)),
                 DbUtils.getLong(cursor, DownloadTable.DOWNLOADED_DATE),
-                UriUtils.fromString(DbUtils.getString(cursor, DownloadTable.IMAGE_URI))
-        );
+                UriUtils.fromString(DbUtils.getString(cursor, DownloadTable.IMAGE_URI)),
+                previewOfUri);
     }
 
     public AttachedImageFile(long downloadId, String filename, MediaMetadata mediaMetadata,
-                             DownloadStatus downloadStatus, long downloadedDate, Uri uri) {
+                             DownloadStatus downloadStatus, long downloadedDate, Uri uri, Uri previewOfUri) {
         super(filename, mediaMetadata, downloadId, downloadStatus, downloadedDate);
         this.uri = uri;
+        this.previewOfUri = previewOfUri;
     }
 
     public CacheName getCacheName() {
@@ -58,6 +69,10 @@ public class AttachedImageFile extends ImageFile {
     @Override
     protected CachedImage getDefaultImage() {
         return CachedImage.EMPTY;
+    }
+
+    public Uri getTargetUri() {
+        return previewOfUri == Uri.EMPTY ? uri : previewOfUri;
     }
 
     @Override

@@ -27,25 +27,33 @@ import org.andstatus.app.util.UriUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Attachments implements IsEmpty {
     public final List<Attachment> list = new ArrayList<>();
 
     private void renumber() {
-        Collections.sort(list);
-        for (int ind = 0; ind < list.size(); ind++) {
-            list.get(ind).downloadNumber = ind;
+        List<Attachment> copy = new ArrayList<>(list);
+        Collections.sort(copy);
+        for (int ind = 0; ind < copy.size(); ind++) {
+            copy.get(ind).downloadNumber = ind;
         }
     }
 
     public void save(CommandExecutionContext execContext, long noteId) {
         renumber();
-        List<Long> downloadIds = new ArrayList<>();
+        List<DownloadData> downloads = new ArrayList<>();
         for (Attachment attachment : list) {
-            DownloadData dd = DownloadData.getThisForAttachment(noteId, attachment);
+            DownloadData dd = DownloadData.fromAttachment(noteId, attachment);
             dd.setDownloadNumber(attachment.downloadNumber);
+            if (attachment.previewOf.nonEmpty()) {
+                dd.setPreviewOfDownloadId(
+                    downloads.stream().filter(d -> d.getUri().equals(attachment.previewOf.uri)).findAny()
+                        .map(DownloadData::getDownloadId).orElse(0L)
+                );
+            }
             dd.saveToDatabase();
-            downloadIds.add(dd.getDownloadId());
+            downloads.add(dd);
             switch (dd.getStatus()) {
                 case LOADED:
                 case HARD_ERROR:
@@ -63,7 +71,8 @@ public class Attachments implements IsEmpty {
                     break;
             }
         }
-        DownloadData.deleteOtherOfThisNote(execContext.getMyContext(), noteId, downloadIds);
+        DownloadData.deleteOtherOfThisNote(execContext.getMyContext(), noteId,
+                downloads.stream().map(DownloadData::getDownloadId).collect(Collectors.toList()));
     }
 
     public boolean isEmpty() {

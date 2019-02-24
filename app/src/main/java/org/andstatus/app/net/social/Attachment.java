@@ -18,15 +18,18 @@ package org.andstatus.app.net.social;
 
 import android.content.ContentResolver;
 import android.net.Uri;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadType;
 import org.andstatus.app.data.MyContentType;
+import org.andstatus.app.util.IsEmpty;
 
 import java.util.Objects;
 
-public class Attachment implements Comparable<Attachment> {
+import androidx.annotation.NonNull;
+
+public class Attachment implements Comparable<Attachment>, IsEmpty {
+    private static final Attachment EMPTY = new Attachment(null, Uri.EMPTY, "");
     @NonNull
     public final Uri uri;
     @NonNull
@@ -34,6 +37,7 @@ public class Attachment implements Comparable<Attachment> {
     @NonNull
     public final MyContentType contentType;
     int downloadNumber = 0;
+    Attachment previewOf = Attachment.EMPTY;
 
     private Attachment(ContentResolver contentResolver, @NonNull Uri uri, @NonNull String mimeType) {
         this.uri = uri;
@@ -59,8 +63,13 @@ public class Attachment implements Comparable<Attachment> {
         return new Attachment(MyContextHolder.get().context().getContentResolver(), uriIn, mimeTypeIn);
     }
 
+    Attachment setPreviewOf(@NonNull Attachment previewOf) {
+        this.previewOf = previewOf;
+        return this;
+    }
+
     public boolean isValid() {
-        return uri != Uri.EMPTY && contentType != MyContentType.UNKNOWN;
+        return nonEmpty() && contentType != MyContentType.UNKNOWN;
     }
 
     @Override
@@ -95,11 +104,17 @@ public class Attachment implements Comparable<Attachment> {
     }
 
     @Override
-    public int compareTo(@NonNull Attachment o) {
-        if (contentType != o.contentType) {
-            return contentType.attachmentsSortOrder > o.contentType.attachmentsSortOrder ? 1 : -1;
+    public int compareTo(@NonNull Attachment other) {
+        if (previewOf.equals(other)) return -1;
+        if (other.previewOf.equals(this)) return 1;
+        if (contentType != other.contentType) {
+            return contentType.attachmentsSortOrder > other.contentType.attachmentsSortOrder ? 1 : -1;
         }
         return 0;
     }
 
+    @Override
+    public boolean isEmpty() {
+        return uri == Uri.EMPTY;
+    }
 }

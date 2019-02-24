@@ -18,7 +18,6 @@ package org.andstatus.app.data.converter;
 
 import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;
-import androidx.annotation.NonNull;
 
 import net.jcip.annotations.GuardedBy;
 
@@ -30,6 +29,8 @@ import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
+
+import androidx.annotation.NonNull;
 
 public class DatabaseConverterController {
     private static final String TAG = DatabaseConverterController.class.getSimpleName();
@@ -113,7 +114,7 @@ public class DatabaseConverterController {
             super(PoolEnum.LONG_UI);
             this.upgradeRequestor = upgradeRequestor;
             this.isRestoring = isRestoring;
-            if (ProgressLogger.ProgressCallback.class.isAssignableFrom(upgradeRequestor.getClass())) {
+            if (upgradeRequestor instanceof ProgressLogger.ProgressCallback) {
                 progressLogger = new ProgressLogger((ProgressLogger.ProgressCallback) upgradeRequestor);
             } else {
                 progressLogger = new ProgressLogger(ProgressLogger.getEmptyCallback());
@@ -143,7 +144,7 @@ public class DatabaseConverterController {
                 synchronized(UPGRADE_LOCK) {
                     mProgressLogger = progressLogger;
                 }
-                MyLog.v(TAG, "Upgrade triggered by " + MyLog.objToTag(upgradeRequestor));
+                MyLog.i(TAG, "Upgrade triggered by " + MyLog.objToTag(upgradeRequestor));
                 MyServiceManager.setServiceUnavailable();
                 MyContextHolder.release(() -> "doUpgrade");
                 // Upgrade will occur inside this call synchronously

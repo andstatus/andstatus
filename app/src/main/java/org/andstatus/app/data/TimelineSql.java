@@ -140,11 +140,12 @@ public class TimelineSql {
                     + DownloadTable.DOWNLOAD_TYPE + ", "
                     + DownloadTable.CONTENT_TYPE + ", "
                     + DownloadTable.DOWNLOAD_NUMBER + ", "
+                    + DownloadTable.PREVIEW_OF_DOWNLOAD_ID + ", "
                     + DownloadTable.DOWNLOAD_STATUS + ", "
                     + DownloadTable.WIDTH + ", "
                     + DownloadTable.HEIGHT + ", "
                     + DownloadTable.DURATION + ", "
-                    + DownloadTable.URI + ", "
+                    + DownloadTable.URL + ", "
                     + DownloadTable.FILE_NAME
                     + " FROM " + DownloadTable.TABLE_NAME
                     + ") AS " + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS
@@ -199,6 +200,7 @@ public class TimelineSql {
             columnNames.add(DownloadTable.IMAGE_ID);
             columnNames.add(DownloadTable.IMAGE_URI);
             columnNames.add(DownloadTable.IMAGE_FILE_NAME);
+            columnNames.add(DownloadTable.PREVIEW_OF_DOWNLOAD_ID);
             columnNames.add(DownloadTable.DOWNLOAD_STATUS);
             columnNames.add(DownloadTable.WIDTH);
             columnNames.add(DownloadTable.HEIGHT);

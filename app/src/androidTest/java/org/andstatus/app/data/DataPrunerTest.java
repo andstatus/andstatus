@@ -91,7 +91,7 @@ public class DataPrunerTest {
     public void testPruneParentlessAttachments() {
         DataPruner dp = new DataPruner(MyContextHolder.get(), MyContextHolder.get().getDatabase());
         dp.pruneParentlessAttachments();
-        DownloadData dd = DownloadData.getThisForAttachment(-555L,
+        DownloadData dd = DownloadData.fromAttachment(-555L,
                 Attachment.fromUriAndMimeType(Uri.parse("http://example.com/image.png"), ""));
         dd.saveToDatabase();
         assertEquals(1, dp.pruneParentlessAttachments());

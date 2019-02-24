@@ -261,11 +261,16 @@ public class ConnectionMastodonTest {
         AActivity activity = timeline.get(0);
         Note note = activity.getNote();
 
-        assertEquals("Media attachments", 1, note.attachments.size());
+        assertEquals("Media attachments " + note.attachments, 2, note.attachments.size());
         Attachment attachment = note.attachments.list.get(0);
         assertEquals("Content type", MyContentType.VIDEO, attachment.contentType);
         assertEquals("Media URI", UriUtils.fromString("https://files.mastodon.social/media_attachments/files/011/640/109/original/2e846bfc7de88f79.mp4"),
                 attachment.getUri());
+        Attachment preview = note.attachments.list.get(1);
+        assertEquals("Content type", MyContentType.IMAGE, preview.contentType);
+        assertEquals("Media URI", UriUtils.fromString("https://files.mastodon.social/media_attachments/files/011/640/109/small/2e846bfc7de88f79.png"),
+                preview.getUri());
+        assertEquals("Preview of", preview.previewOf, attachment);
     }
 
 }
