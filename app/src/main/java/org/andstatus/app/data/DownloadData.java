@@ -22,6 +22,7 @@ import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -78,8 +79,19 @@ public class DownloadData implements IsEmpty {
                 attachment.contentType, attachment.mimeType, DownloadType.ATTACHMENT, attachment.uri);
     }
 
+    public static List<DownloadData> fromNoteId(MyContext myContext, long noteId) {
+        String sql = "SELECT *"
+                + " FROM " + DownloadTable.TABLE_NAME
+                + " WHERE " + DownloadTable.NOTE_ID + "=" + noteId
+                + " ORDER BY " + DownloadTable.DOWNLOAD_NUMBER;
+        return MyQuery.foldLeft(myContext, sql, new ArrayList<>(), list -> cursor -> {
+            list.add(DownloadData.fromCursor(cursor));
+            return list;
+        });
+    }
+
     protected DownloadData(Cursor cursor, long downloadId, long actorId, long noteId, MyContentType contentType,
-                           String mimeType, DownloadType downloadType, Uri uri) {
+                        String mimeType, DownloadType downloadType, Uri uri) {
         this.downloadId = downloadId;
         this.actorId = actorId;
         this.noteId = noteId;

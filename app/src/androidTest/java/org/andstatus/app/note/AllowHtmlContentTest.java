@@ -46,7 +46,6 @@ import org.junit.Test;
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -82,7 +81,7 @@ public class AllowHtmlContentTest {
         long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), demoData.htmlNoteOid);
         Note note = Note.loadContentById(MyContextHolder.get(), noteId);
         assertTrue("origin=" + origin.getId() + "; oid=" + demoData.htmlNoteOid, noteId != 0);
-        NoteShare noteShare = new NoteShare(origin, noteId, null);
+        NoteShare noteShare = new NoteShare(origin, noteId, NoteDownloads.fromNoteId(MyContextHolder.get(), noteId));
         Intent intent = noteShare.intentToViewAndShare(true);
         assertTrue(intent.hasExtra(Intent.EXTRA_TEXT));
         assertTrue(
@@ -103,7 +102,8 @@ public class AllowHtmlContentTest {
         final MyAccount myAccount = demoData.getMyAccount(demoData.twitterTestAccountName);
         AActivity activity = DemoNoteInserter.addNoteForAccount(myAccount, body,
                 demoData.plainTextNoteOid, DownloadStatus.LOADED);
-        NoteShare noteShare = new NoteShare(myAccount.getOrigin(), activity.getNote().noteId, null);
+        NoteShare noteShare = new NoteShare(myAccount.getOrigin(), activity.getNote().noteId,
+                NoteDownloads.fromNoteId(MyContextHolder.get(), activity.getNote().noteId));
         Intent intent = noteShare.intentToViewAndShare(true);
         assertTrue(intent.getExtras().containsKey(Intent.EXTRA_TEXT));
         assertTrue(intent.getStringExtra(Intent.EXTRA_TEXT), intent.getStringExtra(Intent.EXTRA_TEXT).contains(body));

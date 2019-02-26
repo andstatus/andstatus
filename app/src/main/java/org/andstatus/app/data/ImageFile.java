@@ -251,7 +251,7 @@ public abstract class ImageFile implements IsEmpty {
     }
 
     public boolean isEmpty() {
-        return downloadId == 0;
+        return getId() == 0;
     }
 
     @Override

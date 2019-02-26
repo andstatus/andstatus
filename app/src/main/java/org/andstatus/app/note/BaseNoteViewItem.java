@@ -17,8 +17,6 @@
 package org.andstatus.app.note;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
-
 import android.database.Cursor;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -34,6 +32,7 @@ import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.TextMediaType;
+import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
@@ -54,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import androidx.annotation.NonNull;
+
 import static java.util.stream.Collectors.joining;
 import static org.andstatus.app.timeline.DuplicationLink.DUPLICATES;
 import static org.andstatus.app.timeline.DuplicationLink.IS_DUPLICATED;
@@ -66,6 +67,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     public DownloadStatus noteStatus = DownloadStatus.UNKNOWN;
 
+    private long activityId;
     private long noteId;
     private Origin origin = Origin.EMPTY;
 
@@ -101,6 +103,9 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     BaseNoteViewItem(MyContext myContext, Cursor cursor) {
         this(false, DbUtils.getLong(cursor, NoteTable.UPDATED_DATE));
+        activityId = DbUtils.getLong(cursor, ActivityTable.ACTIVITY_ID);
+        setNoteId(DbUtils.getLong(cursor, ActivityTable.NOTE_ID));
+        setOrigin(myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)));
         this.myContext = myContext;
 
         if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
@@ -115,6 +120,10 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     public void setMyContext(MyContext myContext) {
         this.myContext = myContext;
+    }
+
+    public long getActivityId() {
+        return activityId;
     }
 
     public long getNoteId() {

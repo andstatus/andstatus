@@ -16,8 +16,6 @@
 
 package org.andstatus.app.data;
 
-import androidx.annotation.Nullable;
-
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.AActivity;
@@ -31,6 +29,8 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
 import java.util.concurrent.atomic.AtomicInteger;
+
+import androidx.annotation.Nullable;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
@@ -145,10 +145,13 @@ public class DemoGnuSocialConversationInserter {
                         "image"));
         addActivity(activity);
         final Attachment attachment0 = attachments.list.get(0);
-        assertEquals("Index and number of attachment should be the same " + attachments, 0,
+        final Attachment attachment2 = attachments.list.get(2);
+        assertEquals("Image should be the first " + attachments, 0,
+                attachment2.getDownloadNumber());
+        assertEquals("Download number should change " + attachments, 1,
                 attachment0.getDownloadNumber());
-        assertEquals("Image attachment should be number 0 " + attachments, "image",
-                attachment0.mimeType);
+        assertEquals("Image attachment should be number 2 " + attachments, "image",
+                attachment2.mimeType);
     }
 
     private void addPublicNote(AActivity activity, TriState isPublic) {

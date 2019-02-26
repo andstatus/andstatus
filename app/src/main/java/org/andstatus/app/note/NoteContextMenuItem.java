@@ -155,7 +155,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
             sendNoteCommand(CommandEnum.DELETE_NOTE, editorData);
         }
     },
-    SHARE {
+    SHARE(true, true) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
             NoteShare noteShare = new NoteShare(menu.getOrigin(), menu.getNoteId(), menu.getAttachedMedia());

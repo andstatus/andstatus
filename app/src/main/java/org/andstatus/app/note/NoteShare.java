@@ -27,7 +27,6 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
@@ -39,19 +38,19 @@ import org.andstatus.app.util.UriUtils;
 public class NoteShare {
     private final Origin origin;
     private final long noteId;
-    private final DownloadData downloadData;
+    private final NoteDownloads downloads;
     
-    public NoteShare(Origin origin, long noteId, DownloadData downloadData) {
+    public NoteShare(Origin origin, long noteId, NoteDownloads downloads) {
         this.origin = origin;
         this.noteId = noteId;
-        this.downloadData = downloadData;
+        this.downloads = downloads;
         if (origin == null) {
             MyLog.v(this, () -> "Origin not found for noteId=" + noteId);
         }
     }
 
     public void viewImage(Activity activity) {
-        if (downloadData.nonEmpty()) {
+        if (downloads.nonEmpty()) {
             activity.startActivity(intentToViewAndShare(false));
         }
     }
@@ -77,21 +76,17 @@ public class NoteShare {
         subject.append(" - " + (StringUtils.nonEmpty(noteName) ? noteName : MyHtml.htmlToCompactPlainText(noteContent)));
 
         Intent intent = new Intent(share ? android.content.Intent.ACTION_SEND : Intent.ACTION_VIEW);
-        final Uri imageFileUri = downloadData.getPreviewOfDownloadId() == 0
-            ? (downloadData.getFile().existsNow()
+        DownloadData downloadData = downloads.getFirstToShare();
+        final Uri mediaFileUri = downloadData.getFile().existsNow()
                 ? FileProvider.downloadFilenameToUri(downloadData.getFilename())
-                : downloadData.getUri())
-            : UriUtils.fromString(
-                MyQuery.idToStringColumnValue(MyContextHolder.get().getDatabase(), DownloadTable.TABLE_NAME,
-                        DownloadTable.URL,
-                        downloadData.getPreviewOfDownloadId()));
-        if (share || UriUtils.isEmpty(imageFileUri)) {
+                : downloadData.getUri();
+        if (share || UriUtils.isEmpty(mediaFileUri)) {
             intent.setType("text/*");
         } else {
-            intent.setDataAndType(imageFileUri, downloadData.getMimeType());
+            intent.setDataAndType(mediaFileUri, downloadData.getMimeType());
         }
-        if (UriUtils.nonEmpty(imageFileUri)) {
-            intent.putExtra(Intent.EXTRA_STREAM, imageFileUri);
+        if (UriUtils.nonEmpty(mediaFileUri)) {
+            intent.putExtra(Intent.EXTRA_STREAM, mediaFileUri);
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
         intent.putExtra(Intent.EXTRA_SUBJECT, I18n.trimTextAt(subject.toString(), 80));

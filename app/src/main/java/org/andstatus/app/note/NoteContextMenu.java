@@ -30,7 +30,6 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.data.AccountToNote;
-import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.NoteForAnyAccount;
 import org.andstatus.app.net.social.Actor;
@@ -188,9 +187,9 @@ public class NoteContextMenu extends MyContextMenu {
                         R.string.menu_item_reply_to_mentioned_users);
             }
             NoteContextMenuItem.SHARE.addTo(menu, order++, R.string.menu_item_share);
-            if (getAttachedMedia().nonEmpty()) {
+            if (!getAttachedMedia().isEmpty()) {
                 NoteContextMenuItem.VIEW_MEDIA.addTo(menu, order++,
-                        getAttachedMedia().getContentType() == MyContentType.IMAGE
+                        getAttachedMedia().getFirstToShare().getContentType() == MyContentType.IMAGE
                                 ? R.string.menu_item_view_image
                                 : R.string.view_media);
             }
@@ -307,8 +306,8 @@ public class NoteContextMenu extends MyContextMenu {
     }
 
     @NonNull
-    DownloadData getAttachedMedia() {
-        return menuData.accountToNote.noteForAnyAccount.downloadData;
+    NoteDownloads getAttachedMedia() {
+        return menuData.accountToNote.noteForAnyAccount.downloads;
     }
 
     private boolean isEditorVisible() {

@@ -20,7 +20,9 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DataUpdater;
+import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.MyContentType;
+import org.andstatus.app.data.NoteForAnyAccount;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
@@ -66,13 +68,13 @@ public class ConnectionMastodonTest {
 
         int ind = 0;
         AActivity activity = timeline.get(ind);
+        Note note = activity.getNote();
         assertEquals("Timeline position", "22", activity.getTimelinePosition().getPosition());
-        assertEquals("Note Oid", "22", activity.getNote().oid);
+        assertEquals("Note Oid", "22", note.oid);
         assertEquals("Account unknown " + activity, true, MyContextHolder.get().accounts()
                 .fromActorOfSameOrigin(activity.accountActor).isValid());
-        Note note = activity.getNote();
         assertEquals("Is not a note " + activity, AObjectType.NOTE, activity.getObjectType());
-        assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
+        assertEquals("Favorited " + activity, TriState.UNKNOWN, note.getFavoritedBy(activity.accountActor));
         Actor actor = activity.getActor();
 
         String stringDate = "2017-04-16T11:13:12.133Z";
@@ -90,7 +92,7 @@ public class ConnectionMastodonTest {
         assertEquals("Body", "<p>I&apos;m figuring out how to work with Mastodon</p>", note.getContent());
         assertEquals("Note application", "Web", note.via);
 
-        assertEquals("Media attachments", 1, note.attachments.size());
+        assertEquals("Media attachments", 2, note.attachments.size());
         Attachment attachment = note.attachments.list.get(0);
         assertEquals("Content type", MyContentType.IMAGE, attachment.contentType);
         assertEquals("Media URI", UriUtils.fromString("https://files.neumastodon.com/media_attachments/files/000/306/223/original/e678f956970a585b.png?1492832537"),
@@ -262,15 +264,38 @@ public class ConnectionMastodonTest {
         Note note = activity.getNote();
 
         assertEquals("Media attachments " + note.attachments, 2, note.attachments.size());
-        Attachment attachment = note.attachments.list.get(0);
-        assertEquals("Content type", MyContentType.VIDEO, attachment.contentType);
+        Attachment video = note.attachments.list.get(0);
+        assertEquals("Content type", MyContentType.VIDEO, video.contentType);
         assertEquals("Media URI", UriUtils.fromString("https://files.mastodon.social/media_attachments/files/011/640/109/original/2e846bfc7de88f79.mp4"),
-                attachment.getUri());
+                video.getUri());
         Attachment preview = note.attachments.list.get(1);
         assertEquals("Content type", MyContentType.IMAGE, preview.contentType);
         assertEquals("Media URI", UriUtils.fromString("https://files.mastodon.social/media_attachments/files/011/640/109/small/2e846bfc7de88f79.png"),
                 preview.getUri());
-        assertEquals("Preview of", preview.previewOf, attachment);
+        assertEquals("Preview of", preview.previewOf, video);
+
+        MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
+        CommandExecutionContext executionContext = new CommandExecutionContext(
+                CommandData.newItemCommand(CommandEnum.GET_CONVERSATION, ma, 123));
+        DataUpdater di = new DataUpdater(executionContext);
+        di.onActivity(activity);
+
+        List<DownloadData> downloads = DownloadData.fromNoteId(MyContextHolder.get(), note.noteId);
+        assertEquals("Saved downloads " + downloads, 2, downloads.size());
+        DownloadData dPreview = downloads.stream().filter(d -> d.getContentType() == MyContentType.IMAGE).findAny().orElse(DownloadData.EMPTY);
+        assertEquals("Preview URL " + downloads, preview.uri, dPreview.getUri());
+        DownloadData dVideo = downloads.stream().filter(d -> d.getContentType() == MyContentType.VIDEO).findAny().orElse(DownloadData.EMPTY);
+        assertNotEquals("Video URL not saved " + downloads, 0, dVideo.getDownloadId());
+        assertEquals("Preview " + downloads, dVideo.getDownloadId(), dPreview.getPreviewOfDownloadId());
+        assertEquals("Video URL " + downloads, video.uri, dVideo.getUri());
+
+        NoteForAnyAccount nfa = new NoteForAnyAccount(MyContextHolder.get(),
+                activity.getId(), activity.getNote().noteId);
+        assertEquals(preview.uri, nfa.downloads.getFirstForTimeline().getUri());
+        assertEquals(MyContentType.IMAGE , nfa.downloads.getFirstForTimeline().getContentType());
+        assertEquals(dVideo.getDownloadId(), nfa.downloads.getFirstForTimeline().getPreviewOfDownloadId());
+        assertEquals(video.uri, nfa.downloads.getFirstToShare().getUri());
+        assertEquals(MyContentType.VIDEO , nfa.downloads.getFirstToShare().getContentType());
     }
 
 }

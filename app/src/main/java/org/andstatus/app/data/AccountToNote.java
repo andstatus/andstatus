@@ -16,14 +16,14 @@
 
 package org.andstatus.app.data;
 
-import androidx.annotation.NonNull;
-
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 
 import java.util.List;
+
+import androidx.annotation.NonNull;
 
 import static java.util.stream.Collectors.toList;
 
@@ -75,10 +75,10 @@ public class AccountToNote {
                 .map(a -> new AccountToNote(noteForAnyAccount, a)).collect(toList());
     }
 
-    public static AccountToNote getAccountToActOnNote(MyContext myContext, long noteId,
+    public static AccountToNote getAccountToActOnNote(MyContext myContext, long activityId, long noteId,
                                                       @NonNull MyAccount myActingAccount,
                                                       @NonNull MyAccount currentAccount) {
-        NoteForAnyAccount noteForAnyAccount = new NoteForAnyAccount(myContext, 0, noteId);
+        NoteForAnyAccount noteForAnyAccount = new NoteForAnyAccount(myContext, activityId, noteId);
         final List<AccountToNote> accountsForNote = getAccountsForNote(myContext, noteForAnyAccount);
 
         AccountToNote acting = accountsForNote.stream().filter(atn -> atn.myAccount.equals(myActingAccount))

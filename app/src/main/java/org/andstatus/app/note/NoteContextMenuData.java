@@ -16,7 +16,6 @@
 
 package org.andstatus.app.note;
 
-import androidx.annotation.NonNull;
 import android.view.View;
 
 import org.andstatus.app.account.MyAccount;
@@ -25,6 +24,8 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
 
 import java.util.function.Consumer;
+
+import androidx.annotation.NonNull;
 
 class NoteContextMenuData {
     private static final int MAX_SECONDS_TO_LOAD = 10;
@@ -58,8 +59,8 @@ class NoteContextMenuData {
                     @NonNull final MyAccount selectedMyAccount = noteContextMenu.getSelectedActingAccount();
                     MyAccount currentMyAccount = menuContainer.getActivity().getMyContext().accounts().getCurrentAccount();
                     AccountToNote accountToNote = AccountToNote.getAccountToActOnNote(
-                            menuContainer.getActivity().getMyContext(), noteId,
-                            selectedMyAccount, currentMyAccount);
+                            menuContainer.getActivity().getMyContext(), viewItem.getActivityId(),
+                            noteId, selectedMyAccount, currentMyAccount);
                     if (MyLog.isVerboseEnabled()) {
                         MyLog.v(noteContextMenu, "acting:" + accountToNote.getMyAccount().getAccountName()
                             + (accountToNote.getMyAccount().equals(selectedMyAccount) || selectedMyAccount.nonValid()

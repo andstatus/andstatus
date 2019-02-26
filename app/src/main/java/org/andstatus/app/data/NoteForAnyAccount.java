@@ -18,18 +18,20 @@ package org.andstatus.app.data;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
+import org.andstatus.app.note.NoteDownloads;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
+
+import androidx.annotation.NonNull;
 
 /**
  * Helper class to find out a relation of a Note with {@link #noteId} to MyAccount-s
@@ -44,7 +46,7 @@ public class NoteForAnyAccount {
     public final DownloadStatus status;
     public final Actor author;
     public final Actor actor;
-    public final DownloadData downloadData;
+    public final NoteDownloads downloads;
     public final TriState isPublic;
     Audience audience;
     private String content = "";
@@ -81,7 +83,7 @@ public class NoteForAnyAccount {
         audience = Audience.fromNoteId(origin, noteId); // Now all users, mentioned in a body, are members of Audience
         author = Actor.load(myContext, authorId);
 
-        downloadData = DownloadData.getSingleAttachment(noteId);
+        downloads = NoteDownloads.fromNoteId(myContext, noteId);
         long actorId;
         if (activityId == 0) {
             actorId = authorId;

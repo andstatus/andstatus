@@ -32,18 +32,24 @@ import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 
 public class AttachedImageFile extends ImageFile {
     public static final AttachedImageFile EMPTY = new AttachedImageFile(0, "", MediaMetadata.EMPTY,
-            DownloadStatus.ABSENT, DATETIME_MILLIS_NEVER, Uri.EMPTY, Uri.EMPTY);
+            DownloadStatus.ABSENT, DATETIME_MILLIS_NEVER, Uri.EMPTY, Uri.EMPTY, false);
     public final Uri uri;
-    public final Uri previewOfUri;
+    private final Uri previewOfUri;
+    private final boolean previewOfIsVideo;
 
     public static AttachedImageFile fromCursor(MyContext myContext, Cursor cursor) {
         final long downloadId = DbUtils.getLong(cursor, DownloadTable.IMAGE_ID);
         if (downloadId == 0) return EMPTY;
 
         final long previewOfDownloadId = DbUtils.getLong(cursor, DownloadTable.PREVIEW_OF_DOWNLOAD_ID);
-        final Uri previewOfUri = UriUtils.fromString(
-                MyQuery.idToStringColumnValue(myContext.getDatabase(), DownloadTable.TABLE_NAME, DownloadTable.URL,
-                        previewOfDownloadId));
+        final Uri previewOfUri = previewOfDownloadId == 0
+                ? Uri.EMPTY
+                : UriUtils.fromString(
+                    MyQuery.idToStringColumnValue(myContext.getDatabase(), DownloadTable.TABLE_NAME, DownloadTable.URL,
+                            previewOfDownloadId));
+        final boolean previewOfIsVideo = previewOfDownloadId != 0 && (MyContentType.load(
+                MyQuery.idToLongColumnValue(myContext.getDatabase(), DownloadTable.TABLE_NAME,
+                        DownloadTable.CONTENT_TYPE, previewOfDownloadId)) == MyContentType.VIDEO);
 
         return new AttachedImageFile(
                 downloadId,
@@ -52,14 +58,16 @@ public class AttachedImageFile extends ImageFile {
                 DownloadStatus.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_STATUS)),
                 DbUtils.getLong(cursor, DownloadTable.DOWNLOADED_DATE),
                 UriUtils.fromString(DbUtils.getString(cursor, DownloadTable.IMAGE_URI)),
-                previewOfUri);
+                previewOfUri, previewOfIsVideo);
     }
 
     public AttachedImageFile(long downloadId, String filename, MediaMetadata mediaMetadata,
-                             DownloadStatus downloadStatus, long downloadedDate, Uri uri, Uri previewOfUri) {
+                             DownloadStatus downloadStatus, long downloadedDate, Uri uri,
+                             Uri previewOfUri, boolean previewOfIsVideo) {
         super(filename, mediaMetadata, downloadId, downloadStatus, downloadedDate);
         this.uri = uri;
         this.previewOfUri = previewOfUri;
+        this.previewOfIsVideo = previewOfIsVideo;
     }
 
     public CacheName getCacheName() {
@@ -73,6 +81,10 @@ public class AttachedImageFile extends ImageFile {
 
     public Uri getTargetUri() {
         return previewOfUri == Uri.EMPTY ? uri : previewOfUri;
+    }
+
+    public boolean isTargetVideo() {
+        return previewOfUri == Uri.EMPTY ? isVideo() : previewOfIsVideo;
     }
 
     @Override

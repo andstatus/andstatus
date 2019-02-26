@@ -161,7 +161,7 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
 
         final View playImage = parent.findViewById(R.id.play_image);
         if (playImage != null) {
-            playImage.setVisibility(imageMayBeShown && attachedImageFile.isVideo() ? View.VISIBLE : View.GONE);
+            playImage.setVisibility(imageMayBeShown && attachedImageFile.isTargetVideo() ? View.VISIBLE : View.GONE);
         }
     }
 
