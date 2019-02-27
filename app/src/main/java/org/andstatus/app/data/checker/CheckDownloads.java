@@ -50,6 +50,8 @@ class CheckDownloads extends DataChecker {
         results.toFix.forEach(result -> {
             String sql = "UPDATE " + DownloadTable.TABLE_NAME +
                     " SET " + DownloadTable.DOWNLOAD_STATUS + "=" + DownloadStatus.ABSENT.save() +
+                    ", " + DownloadTable.FILE_NAME + "=null" +
+                    ", " + DownloadTable.FILE_SIZE + "=0" +
                     " WHERE " + DownloadTable._ID + "=" + result.downloadId;
             myContext.getDatabase().execSQL(sql);
             fixedCount.incrementAndGet();

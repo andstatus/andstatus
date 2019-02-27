@@ -24,6 +24,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.ActorSql;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.ActorTable;
@@ -812,6 +813,12 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         this.avatarUri = UriUtils.notNull(avatarUri);
         if (hasAvatar() && avatarFile.isEmpty()) {
             avatarFile = AvatarFile.fromActorOnly(this);
+        }
+    }
+
+    public void requestAvatarDownload() {
+        if (MyPreferences.getShowAvatars() && hasAvatar() && avatarFile.downloadStatus != DownloadStatus.LOADED) {
+            avatarFile.requestDownload();
         }
     }
 

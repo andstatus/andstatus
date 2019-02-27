@@ -191,8 +191,10 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             msgLog += ", invalid actor IDs";
             logExecutionError(true, msgLog + actorInfoLogged(actorIn.actorId));
         }
-        if (noErrors() && actor != null) {
+        if (actor != null && noErrors()) {
             new DataUpdater(execContext).onActivity(execContext.getMyAccount().getActor().update(actor));
+        } else {
+            actorIn.requestAvatarDownload();
         }
         MyLog.d(this, (msgLog + (noErrors() ? " succeeded" : " failed") ));
     }
