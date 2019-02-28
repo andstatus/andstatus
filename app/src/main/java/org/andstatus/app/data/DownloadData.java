@@ -182,7 +182,6 @@ public class DownloadData implements IsEmpty {
         SqlWhere where = new SqlWhere();
         if (downloadId != 0) {
             where.append(DownloadTable._ID + "=" + downloadId);
-            where.append(DownloadTable.DOWNLOAD_NUMBER + "=" + downloadNumber);
         } else {
             if (actorId != 0) {
                 where.append(DownloadTable.ACTOR_ID + "=" + actorId);
@@ -485,6 +484,10 @@ public class DownloadData implements IsEmpty {
         return downloadId;
     }
 
+    public long getDownloadNumber() {
+        return downloadNumber;
+    }
+
     public DownloadStatus getStatus() {
         return status;
     }
@@ -501,7 +504,7 @@ public class DownloadData implements IsEmpty {
         if (!hardError && downloadId == 0) {
             saveToDatabase();
         }
-        if ((!DownloadStatus.LOADED.equals(status) || !fileStored.existed) && !hardError) {
+        if ((!DownloadStatus.LOADED.equals(status) || !fileStored.existed) && !hardError && uri != Uri.EMPTY) {
             MyServiceManager.sendCommand(actorId != 0
                     ? CommandData.newActorCommand(CommandEnum.GET_AVATAR, actorId, "")
                     : CommandData.newFetchAttachment(noteId, downloadId));

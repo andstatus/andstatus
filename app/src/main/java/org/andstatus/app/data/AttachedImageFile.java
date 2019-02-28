@@ -89,7 +89,7 @@ public class AttachedImageFile extends ImageFile {
 
     @Override
     protected void requestDownload() {
-        if (downloadId == 0) return;
+        if (downloadId == 0 || uri == Uri.EMPTY) return;
 
         MyServiceManager.sendCommand(CommandData.newFetchAttachment(0, downloadId));
     }

@@ -284,10 +284,12 @@ public class ConnectionMastodonTest {
         assertEquals("Saved downloads " + downloads, 2, downloads.size());
         DownloadData dPreview = downloads.stream().filter(d -> d.getContentType() == MyContentType.IMAGE).findAny().orElse(DownloadData.EMPTY);
         assertEquals("Preview URL " + downloads, preview.uri, dPreview.getUri());
+        assertEquals("Preview " + downloads, 0, dPreview.getDownloadNumber());
         DownloadData dVideo = downloads.stream().filter(d -> d.getContentType() == MyContentType.VIDEO).findAny().orElse(DownloadData.EMPTY);
         assertNotEquals("Video URL not saved " + downloads, 0, dVideo.getDownloadId());
         assertEquals("Preview " + downloads, dVideo.getDownloadId(), dPreview.getPreviewOfDownloadId());
         assertEquals("Video URL " + downloads, video.uri, dVideo.getUri());
+        assertEquals("Video " + downloads, 1, dVideo.getDownloadNumber());
 
         NoteForAnyAccount nfa = new NoteForAnyAccount(MyContextHolder.get(),
                 activity.getId(), activity.getNote().noteId);
