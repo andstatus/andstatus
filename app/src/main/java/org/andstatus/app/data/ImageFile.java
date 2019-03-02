@@ -37,6 +37,7 @@ import androidx.annotation.NonNull;
 public abstract class ImageFile implements IsEmpty {
     private final DownloadFile downloadFile;
     private volatile MediaMetadata mediaMetadata;
+    protected volatile MyContentType contentType;
     public final long downloadId;
     public final DownloadStatus downloadStatus;
     public final long downloadedDate;
@@ -44,10 +45,16 @@ public abstract class ImageFile implements IsEmpty {
     ImageFile(String filename, MediaMetadata mediaMetadata, long downloadId, DownloadStatus downloadStatus,
               long downloadedDate) {
         downloadFile = new DownloadFile(filename);
-        this.mediaMetadata = mediaMetadata;
+        setMediaMetadata(mediaMetadata);
         this.downloadId = downloadId;
         this.downloadStatus = downloadStatus;
         this.downloadedDate = downloadedDate;
+    }
+
+    public void setMediaMetadata(MediaMetadata mediaMetadata) {
+        this.mediaMetadata = mediaMetadata;
+        // TODO: This is too simplified...
+        contentType = mediaMetadata.duration > 0 ? MyContentType.VIDEO : MyContentType.IMAGE;
     }
 
     public boolean isVideo() {
@@ -245,7 +252,7 @@ public abstract class ImageFile implements IsEmpty {
 
     public Point getSize() {
         if (mediaMetadata.isEmpty() && downloadFile.existed) {
-            mediaMetadata = MediaMetadata.fromFilePath(downloadFile.getFilePath());
+            setMediaMetadata(MediaMetadata.fromFilePath(downloadFile.getFilePath()));
         }
         return mediaMetadata.size();
     }

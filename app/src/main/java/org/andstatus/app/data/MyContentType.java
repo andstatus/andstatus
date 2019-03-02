@@ -18,12 +18,14 @@ package org.andstatus.app.data;
 
 import android.content.ContentResolver;
 import android.net.Uri;
-import androidx.annotation.NonNull;
 import android.webkit.MimeTypeMap;
 
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
+
+import androidx.annotation.NonNull;
 
 public enum MyContentType {
     IMAGE("image/*", 2, 1),
@@ -128,5 +130,16 @@ public enum MyContentType {
         if (StringUtils.isEmpty(path)) return defaultValue;
         String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(path));
         return isEmptyMime(mimeType) ? defaultValue : mimeType;
+    }
+
+    public boolean getDownloadMediaOfThisType() {
+        switch (this) {
+            case IMAGE:
+                return MyPreferences.getDownloadAndDisplayAttachedImages();
+            case VIDEO:
+                return MyPreferences.getDownloadAttachedVideo();
+            default:
+                return false;
+        }
     }
 }

@@ -67,6 +67,7 @@ public class MyPreferences {
     // ----------------------------------------------------------
     // Attachments
     public static final String KEY_DOWNLOAD_AND_DISPLAY_ATTACHED_IMAGES = "show_attached_images";
+    public static final String KEY_DOWNLOAD_ATTACHED_VIDEO = "download_attached_video";
     public static final String KEY_ATTACH_IMAGES_TO_MY_NOTES = "attach_images";
     public static final String KEY_DOWNLOAD_ATTACHMENTS_OVER_WIFI_ONLY = "download_attachments_over_wifi_only";
     public static final String KEY_MAXIMUM_SIZE_OF_ATTACHMENT_MB = "maximum_size_of_attachment_mb";
@@ -183,6 +184,10 @@ public class MyPreferences {
 
     public static boolean getDownloadAndDisplayAttachedImages() {
         return SharedPreferencesUtil.getBoolean(KEY_DOWNLOAD_AND_DISPLAY_ATTACHED_IMAGES, true);
+    }
+
+    public static boolean getDownloadAttachedVideo() {
+        return SharedPreferencesUtil.getBoolean(KEY_DOWNLOAD_ATTACHED_VIDEO, false);
     }
 
     public static boolean getShowOrigin() {

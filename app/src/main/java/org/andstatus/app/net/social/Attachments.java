@@ -16,9 +16,7 @@
 
 package org.andstatus.app.net.social;
 
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadData;
-import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.service.AttachmentDownloader;
 import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.util.IsEmpty;
@@ -59,12 +57,8 @@ public class Attachments implements IsEmpty {
                 case HARD_ERROR:
                     break;
                 default:
-                    if (UriUtils.isDownloadable(dd.getUri())) {
-                        if ((attachment.contentType == MyContentType.IMAGE ||
-                                attachment.contentType == MyContentType.VIDEO)
-                                && MyPreferences.getDownloadAndDisplayAttachedImages()) {
-                            dd.requestDownload();
-                        }
+                    if (UriUtils.isDownloadable(dd.getUri()) && attachment.contentType.getDownloadMediaOfThisType()) {
+                        dd.requestDownload();
                     } else {
                         AttachmentDownloader.load(dd, execContext.getCommandData());
                     }

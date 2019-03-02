@@ -20,6 +20,10 @@
     <org.andstatus.app.context.MultilineCheckBoxPreference android:key="show_attached_images"
         android:defaultValue="true"
         android:title="@string/title_preference_show_attached_images" />
+    <org.andstatus.app.context.MultilineCheckBoxPreference android:key="download_attached_video"
+        android:defaultValue="false"
+        android:title="@string/download_attached_video"
+        android:dependency="show_attached_images" />
     <org.andstatus.app.context.MultilineCheckBoxPreference android:key="attach_images"
         android:defaultValue="true"
         android:title="@string/attach_images_title"

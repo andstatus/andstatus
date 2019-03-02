@@ -139,6 +139,7 @@
     AndStatus will not try to sync all activities since the latest activity downloaded,
     but will request only 200 recent activities from a server. If number of new activities is more than 200,
     you will not see in a Timeline some older activities.</string>
+  <string name="download_attached_video">Download attached video</string>
   <string name="download_status_draft">draft</string>
   <string name="download_status_unsent">unsent</string>
   <string name="downloaded_items_count_abbreviated">Dnl.</string>

@@ -79,7 +79,7 @@ public class AvatarFile extends ImageFile {
 
     @Override
     public void requestDownload() {
-        if (getActor().actorId == 0 || !getActor().hasAvatar()) return;
+        if (getActor().actorId == 0 || !getActor().hasAvatar() || !contentType.getDownloadMediaOfThisType()) return;
 
         MyServiceManager.sendCommand(
                 CommandData.newActorCommand(CommandEnum.GET_AVATAR, getActor().actorId, getActor().getUsername()));
