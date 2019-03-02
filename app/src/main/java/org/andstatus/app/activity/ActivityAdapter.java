@@ -40,6 +40,52 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
     private final ActorAdapter objActorAdapter;
     private final boolean showReceivedTime;
 
+    enum LayoutType {
+        ACTOR,
+        ACTOR_NOTE,
+        ACTOR_OBJACTOR,
+        ACTOR_ACTOR,
+        NOTE;
+
+        boolean isActorShown() {
+            switch (this) {
+                case NOTE:
+                    return false;
+                default:
+                    return true;
+            }
+        }
+
+        boolean isNoteShown() {
+            switch (this) {
+                case NOTE:
+                case ACTOR_NOTE:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        boolean isObjActorViewShown() {
+            switch (this) {
+                case ACTOR_OBJACTOR:
+                case ACTOR_ACTOR:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        boolean isObjActorShown() {
+            switch (this) {
+                case ACTOR_OBJACTOR:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+    }
+
     public ActivityAdapter(ActivityContextMenu contextMenu, TimelineData<ActivityViewItem> listData) {
         super(contextMenu.note.getMyContext(), listData);
         this.contextMenu = contextMenu;
@@ -55,26 +101,52 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
         view.setOnClickListener(this);
         setPosition(view, position);
         ActivityViewItem item = getItem(position);
-        showActor(view, item);
+        LayoutType layoutType = calcLayoutType(item);
+        showActor(view, item, layoutType);
         final ViewGroup noteView = view.findViewById(R.id.note_wrapper);
-        if (item.noteViewItem.getId() == 0) {
-            noteView.setVisibility(View.GONE);
-        } else {
+        if (layoutType.isNoteShown()) {
             noteAdapter.populateView(view, item.noteViewItem, showReceivedTime, position);
             noteView.setOnCreateContextMenuListener(contextMenu.note);
             noteView.setOnClickListener(noteAdapter);
             noteView.setVisibility(View.VISIBLE);
-        }
-        final ViewGroup actorView = view.findViewById(R.id.actor_wrapper);
-        if (item.getObjActorItem().getId() == 0) {
-            actorView.setVisibility(View.GONE);
         } else {
-            objActorAdapter.populator.populateView(actorView, item.getObjActorItem(), position);
-            actorView.setOnCreateContextMenuListener(contextMenu.objActor);
-            actorView.setOnClickListener(objActorAdapter);
-            actorView.setVisibility(View.VISIBLE);
+            noteAdapter.removeReplyToMeMarkerView(view);
+            noteView.setVisibility(View.GONE);
+        }
+        final ViewGroup objActorView = view.findViewById(R.id.actor_wrapper);
+        if (layoutType.isObjActorViewShown()) {
+            if (layoutType.isObjActorShown()) {
+                objActorAdapter.populator.populateView(objActorView, item.getObjActorItem(), position);
+                objActorView.setOnCreateContextMenuListener(contextMenu.objActor);
+                objActorView.setOnClickListener(objActorAdapter);
+            } else {
+                objActorAdapter.populator.populateView(objActorView, item.actor, position);
+                objActorView.setOnCreateContextMenuListener(contextMenu.actor);
+                objActorView.setOnClickListener(actorAdapter);
+            }
+            objActorView.setVisibility(View.VISIBLE);
+        } else {
+            objActorView.setVisibility(View.GONE);
         }
         return view;
+    }
+
+    private LayoutType calcLayoutType(ActivityViewItem item) {
+        if (item.noteViewItem.getId() == 0) {
+            if (item.getObjActorItem().getId() == 0) {
+                return LayoutType.ACTOR;
+            } else if (myContext.users().isMe(item.getObjActorItem().getActor())) {
+                return LayoutType.ACTOR_ACTOR;
+            } else {
+                return LayoutType.ACTOR_OBJACTOR;
+            }
+        } else {
+            if (item.activityType == ActivityType.CREATE || item.activityType == ActivityType.UPDATE) {
+                return LayoutType.NOTE;
+            } else {
+                return LayoutType.ACTOR_NOTE;
+            }
+        }
     }
 
     private ViewGroup getEmptyView(View convertView) {
@@ -94,24 +166,26 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
         return (ViewGroup) convertView;
     }
 
-    private void showActor(ViewGroup view, ActivityViewItem item) {
+    private void showActor(ViewGroup view, ActivityViewItem item, LayoutType layoutType) {
         final ViewGroup actorView = view.findViewById(R.id.action_wrapper);
-        if (item.activityType == ActivityType.CREATE || item.activityType == ActivityType.UPDATE) {
-            actorView.setVisibility(View.GONE);
-        } else {
-            item.noteViewItem.hideActor(item.actor.getActor());
+        if (layoutType.isActorShown()) {
+            item.noteViewItem.hideTheReblogger(item.actor.getActor());
             item.getObjActorItem().hideTheFollower(item.actor.getActor());
-            if (showAvatars) {
+            if (showAvatars && layoutType != LayoutType.ACTOR_ACTOR) {
                 AvatarView avatarView = view.findViewById(R.id.actor_avatar_image);
                 item.actor.showAvatar(contextMenu.actor.getActivity(), avatarView);
             }
-            MyUrlSpan.showText(view, R.id.action_title, item.actor.getWebFingerIdOrUsername()
-                    + " " + item.activityType.getActedTitle(contextMenu.actor.getActivity()), false, false);
+            MyUrlSpan.showText(view, R.id.action_title, item.actor.getWebFingerIdOrUsername() + " " +
+                    item.activityType.getActedTitle(contextMenu.actor.getActivity()) +
+                    (layoutType == LayoutType.ACTOR_ACTOR ? " " + item.getObjActorItem().getWebFingerIdOrUsername() : ""),
+                    false, false);
             MyUrlSpan.showText(view, R.id.action_details,
                     item.getDetails(contextMenu.actor.getActivity(), showReceivedTime), false, false);
             actorView.setOnCreateContextMenuListener(contextMenu.actor);
             actorView.setOnClickListener(actorAdapter);
             actorView.setVisibility(View.VISIBLE);
+        } else {
+            actorView.setVisibility(View.GONE);
         }
     }
 

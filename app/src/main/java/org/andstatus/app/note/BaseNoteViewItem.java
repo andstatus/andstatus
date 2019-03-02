@@ -309,7 +309,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         return "Note " + content;
     }
 
-    public void hideActor(Actor actor) {
+    public void hideTheReblogger(Actor actor) {
         rebloggers.remove(actor.actorId);
     }
 

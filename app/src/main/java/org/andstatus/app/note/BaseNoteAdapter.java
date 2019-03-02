@@ -78,6 +78,7 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
             showAttachedImage(view, item);
         }
         if (markRepliesToMe) {
+            removeReplyToMeMarkerView(view);
             showMarkRepliesToMe(view, item);
         }
         if (showButtonsBelowNotes) {
@@ -165,14 +166,16 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
         }
     }
 
-    private void showMarkRepliesToMe(ViewGroup view, T item) {
-        boolean show = myContext.users().isMe(item.inReplyToActor.getActor()) &&
-                !myContext.users().isMe(item.author.getActor());
+    public void removeReplyToMeMarkerView(ViewGroup view) {
         View oldView = view.findViewById(R.id.reply_timeline_marker);
         if (oldView != null) {
             view.removeView(oldView);
         }
-        if (show) {
+    }
+
+    private void showMarkRepliesToMe(ViewGroup view, T item) {
+        if (myContext.users().isMe(item.inReplyToActor.getActor()) &&
+                !myContext.users().isMe(item.author.getActor())) {
             View referencedView = view.findViewById(R.id.note_indented);
             ImageView replyToMeMarkerView = new ConversationIndentImageView(myContext.context(), referencedView, dpToPixes(6),
                     R.drawable.reply_timeline_marker_light, R.drawable.reply_timeline_marker);
