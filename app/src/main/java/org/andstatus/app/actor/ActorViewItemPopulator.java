@@ -20,7 +20,6 @@ import android.view.View;
 
 import org.andstatus.app.R;
 import org.andstatus.app.data.TextMediaType;
-import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.SpanUtil;
 import org.andstatus.app.timeline.LoadableListActivity;
@@ -70,8 +69,7 @@ public class ActorViewItemPopulator {
     }
 
     private void showAvatar(ActorViewItem item, View view) {
-        AvatarView avatarView = view.findViewById(R.id.avatar_image);
-        item.showAvatar(myActivity, avatarView);
+        item.showAvatar(myActivity, view.findViewById(R.id.avatar_image));
     }
 
     private void showMyFollowers(View view, ActorViewItem item) {

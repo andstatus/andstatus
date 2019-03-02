@@ -17,13 +17,12 @@
 package org.andstatus.app.actor;
 
 import android.database.Cursor;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AvatarFile;
-import org.andstatus.app.graphics.AvatarView;
+import org.andstatus.app.graphics.IdentifiableImageView;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
@@ -36,6 +35,8 @@ import org.andstatus.app.util.StringUtils;
 
 import java.util.Collections;
 import java.util.stream.Stream;
+
+import androidx.annotation.NonNull;
 
 import static org.andstatus.app.timeline.DuplicationLink.DUPLICATES;
 import static org.andstatus.app.timeline.DuplicationLink.IS_DUPLICATED;
@@ -142,7 +143,7 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
         return actor.avatarFile;
     }
 
-    public void showAvatar(MyActivity myActivity, AvatarView imageView) {
+    public void showAvatar(MyActivity myActivity, IdentifiableImageView imageView) {
         getAvatarFile().showImage(myActivity, imageView);
     }
 

@@ -22,7 +22,6 @@ import android.database.sqlite.SQLiteDatabase;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.database.table.DownloadTable;
-import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.graphics.MediaMetadata;
@@ -61,11 +60,6 @@ public class AvatarFile extends ImageFile {
                        long downloadedDate) {
         super(filename, mediaMetadata, 0, downloadStatus, downloadedDate);
         this.actor = actor;
-    }
-
-    @Override
-    public CacheName getCacheName() {
-        return CacheName.AVATAR;
     }
 
     @Override

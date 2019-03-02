@@ -58,4 +58,8 @@ public class IdentifiableImageView extends AppCompatImageView {
     public void setLoaded() {
         this.loaded = true;
     }
+
+    public CacheName getCacheName() {
+        return CacheName.ATTACHED_IMAGE;
+    }
 }

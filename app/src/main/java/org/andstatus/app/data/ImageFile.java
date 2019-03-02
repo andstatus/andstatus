@@ -71,7 +71,7 @@ public abstract class ImageFile implements IsEmpty {
         }
         final String taskSuffix = "-sync-" + imageView.myViewId;
         if (downloadFile.existed) {
-            CachedImage cachedImage = getImageFromCache();
+            CachedImage cachedImage = getImageFromCache(imageView.getCacheName());
             if (cachedImage == CachedImage.BROKEN) {
                 logResult("Broken", taskSuffix);
                 onNoImage(imageView);
@@ -117,23 +117,23 @@ public abstract class ImageFile implements IsEmpty {
         }
     }
 
-    private CachedImage getImageFromCache() {
-        return ImageCaches.getCachedImage(getCacheName(), this);
+    private CachedImage getImageFromCache(CacheName cacheName) {
+        return ImageCaches.getCachedImage(cacheName, this);
     }
 
-    public void preloadImageAsync() {
-        CachedImage image = getImageFromCache();
+    public void preloadImageAsync(CacheName cacheName) {
+        CachedImage image = getImageFromCache(cacheName);
         if (image != null) {
             return;
         }
         if (downloadFile.existed) {
-            preloadAsync();
+            preloadAsync(cacheName);
         }
     }
 
-    public CachedImage loadAndGetImage() {
+    public CachedImage loadAndGetImage(CacheName cacheName) {
         if (downloadFile.existed) {
-            return ImageCaches.loadAndGetImage(getCacheName(), this);
+            return ImageCaches.loadAndGetImage(cacheName, this);
         }
         requestDownload();
         return null;
@@ -150,7 +150,7 @@ public abstract class ImageFile implements IsEmpty {
                         if (skip()) {
                             return null;
                         }
-                        return ImageCaches.loadAndGetImage(getCacheName(), ImageFile.this);
+                        return ImageCaches.loadAndGetImage(imageView.getCacheName(), ImageFile.this);
                     }
 
                     @Override
@@ -214,14 +214,14 @@ public abstract class ImageFile implements IsEmpty {
     }
 
 
-    private void preloadAsync() {
+    private void preloadAsync(CacheName cacheName) {
         final String taskSuffix = "-prel";
         AsyncTaskLauncher.execute(this, false,
                 new MyAsyncTask<Void, Void, Void>(getTaskId(taskSuffix), MyAsyncTask.PoolEnum.QUICK_UI) {
 
                     @Override
                     protected Void doInBackground2(Void... params) {
-                        CachedImage image = ImageCaches.loadAndGetImage(getCacheName(), ImageFile.this);
+                        CachedImage image = ImageCaches.loadAndGetImage(cacheName, ImageFile.this);
                         if (image == null) {
                             logResult("Failed to preload", taskSuffix);
                         } else if (image.id != getId()) {
@@ -258,8 +258,6 @@ public abstract class ImageFile implements IsEmpty {
     public String toString() {
         return MyLog.objToTag(this) + ":{id=" + getId() + ", " + downloadFile + "}";
     }
-
-    public abstract CacheName getCacheName();
 
     public long getId() {
         return downloadId;

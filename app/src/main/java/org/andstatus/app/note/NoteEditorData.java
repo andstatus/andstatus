@@ -37,6 +37,7 @@ import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.NoteTable;
+import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
@@ -138,7 +139,7 @@ public class NoteEditorData implements IsEmpty {
             AttachedImageFile imageFile = new AttachedImageFile(attachment.getDownloadId(),
                     attachment.getFilename(), attachment.mediaMetadata, attachment.getStatus(),
                     attachment.getDownloadedDate(), attachment.getUri(), Uri.EMPTY, false);
-            image = imageFile.loadAndGetImage();
+            image = imageFile.loadAndGetImage(CacheName.ATTACHED_IMAGE);
             note.attachments.add(Attachment.fromUri(attachment.getUri()));
         }
         MyLog.v(TAG, () -> "Loaded " + this);

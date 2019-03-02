@@ -34,4 +34,9 @@ public class AvatarView extends IdentifiableImageView {
     public AvatarView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
+
+    @Override
+    public CacheName getCacheName() {
+         return CacheName.AVATAR;
+    }
 }

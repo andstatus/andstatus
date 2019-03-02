@@ -23,6 +23,7 @@ import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DemoNoteInserter;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.Attachment;
@@ -88,7 +89,8 @@ public class LargeImageTest {
 
     private void loadingTest(DownloadData dd) {
         CachedImage image = new AttachedImageFile(dd.getDownloadId(), dd.getFilename(), dd.mediaMetadata,
-                dd.getStatus(), MyLog.uniqueCurrentTimeMS(), dd.getUri(), Uri.EMPTY, false).loadAndGetImage();
+            dd.getStatus(), MyLog.uniqueCurrentTimeMS(), dd.getUri(), Uri.EMPTY, false)
+                .loadAndGetImage(CacheName.ATTACHED_IMAGE);
         int width = image.getImageSize().x;
         assertTrue("Not wide already " + width, width < 4000 && width > 10);
         int height = image.getImageSize().y;

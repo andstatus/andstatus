@@ -21,7 +21,6 @@ import android.net.Uri;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.database.table.DownloadTable;
-import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.graphics.MediaMetadata;
 import org.andstatus.app.service.CommandData;
@@ -68,10 +67,6 @@ public class AttachedImageFile extends ImageFile {
         this.uri = uri;
         this.previewOfUri = previewOfUri;
         this.previewOfIsVideo = previewOfIsVideo;
-    }
-
-    public CacheName getCacheName() {
-        return CacheName.ATTACHED_IMAGE;
     }
 
     @Override
