@@ -77,7 +77,9 @@ public class ActorViewItemPopulator {
             item.getMyActorsFollowingTheActor(myActivity.getMyContext())
                 .map(actor -> myActivity.getMyContext().accounts().fromActorOfAnyOrigin(actor).getAccountName())
                 .collect(Collectors.joining(", ")));
-        builder.prependWithSeparator(myActivity.getText(R.string.followed_by), " ");
+        if (builder.length() > 0) {
+            builder.prependWithSeparator(myActivity.getText(R.string.followed_by), " ");
+        }
         MyUrlSpan.showText(view, R.id.followed_by, builder.toString(), false, false);
     }
 }
