@@ -203,13 +203,12 @@ public class ImageCache extends LruCache<String, CachedImage> {
     private Bitmap imagePathToBitmap(ImageFile imageFile) {
         try {
             final Bitmap bitmap;
+            final BitmapFactory.Options options = calculateScaling(imageFile, imageFile.getSize());
             if (MyPreferences.isShowDebuggingInfoInUi()) {
-                bitmap = BitmapFactory
-                        .decodeFile(imageFile.getPath(), calculateScaling(imageFile, imageFile.getSize()));
+                bitmap = BitmapFactory.decodeFile(imageFile.getPath(), options);
             } else {
                 try {
-                    bitmap = BitmapFactory
-                            .decodeFile(imageFile.getPath(), calculateScaling(imageFile, imageFile.getSize()));
+                    bitmap = BitmapFactory.decodeFile(imageFile.getPath(), options);
                 } catch (OutOfMemoryError e) {
                     MyLog.w(imageFile, getInfo(), e);
                     evictAll();
@@ -218,7 +217,7 @@ public class ImageCache extends LruCache<String, CachedImage> {
             }
             MyLog.v(imageFile, () -> (bitmap == null ? "Failed to load " + name + "'s bitmap"
                     : "Loaded " + name + "'s bitmap " + bitmap.getWidth()
-                    + "x" + bitmap.getHeight()) + " '" + imageFile.getPath() + "'");
+                    + "x" + bitmap.getHeight()) + " '" + imageFile.getPath() + "' inSampleSize:" + options.inSampleSize);
             return bitmap;
         } catch (Exception e) {
             MyLog.w(this, "Error loading '" + imageFile.getPath() + "'", e);

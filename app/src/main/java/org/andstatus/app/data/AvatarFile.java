@@ -46,7 +46,7 @@ public class AvatarFile extends ImageFile {
         final String filename = DbUtils.getString(cursor, DownloadTable.AVATAR_FILE_NAME);
         return actor.isEmpty()
                 ? AvatarFile.EMPTY
-                : new AvatarFile(actor, filename, new MediaMetadata(AVATAR_SIZE_DIP, AVATAR_SIZE_DIP, 0),
+                : new AvatarFile(actor, filename, MediaMetadata.fromCursor(cursor),
                     DownloadStatus.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_STATUS)),
                     DbUtils.getLong(cursor, DownloadTable.DOWNLOADED_DATE));
     }

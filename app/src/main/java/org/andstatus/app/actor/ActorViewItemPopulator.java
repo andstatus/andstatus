@@ -16,7 +16,6 @@
 
 package org.andstatus.app.actor;
 
-import androidx.annotation.NonNull;
 import android.view.View;
 
 import org.andstatus.app.R;
@@ -29,6 +28,8 @@ import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.MyUrlSpan;
 
 import java.util.stream.Collectors;
+
+import androidx.annotation.NonNull;
 
 public class ActorViewItemPopulator {
     private final LoadableListActivity myActivity;

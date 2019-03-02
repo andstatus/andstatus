@@ -17,7 +17,6 @@
 package org.andstatus.app.data;
 
 import android.provider.BaseColumns;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.ActorTable;
@@ -28,6 +27,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import androidx.annotation.NonNull;
 
 public class ActorSql {
     public static final String AVATAR_IMAGE_TABLE_ALIAS = "av";
@@ -69,6 +70,8 @@ public class ActorSql {
 
         avatarProjectionMap.put(DownloadTable.AVATAR_FILE_NAME, AVATAR_IMAGE_TABLE_ALIAS + "." + DownloadTable.FILE_NAME
                 + " AS " + DownloadTable.AVATAR_FILE_NAME);
+        avatarProjectionMap.put(DownloadTable.WIDTH, DownloadTable.WIDTH);
+        avatarProjectionMap.put(DownloadTable.HEIGHT, DownloadTable.HEIGHT);
         avatarProjectionMap.put(DownloadTable.DOWNLOAD_STATUS, DownloadTable.DOWNLOAD_STATUS);
         avatarProjectionMap.put(DownloadTable.DOWNLOADED_DATE, DownloadTable.DOWNLOADED_DATE);
 
@@ -130,6 +133,8 @@ public class ActorSql {
     private static String addAvatarImageTable(String tables) {
         return "(" + tables + ") LEFT OUTER JOIN (SELECT "
                 + DownloadTable.ACTOR_ID + ", "
+                + DownloadTable.WIDTH + ", "
+                + DownloadTable.HEIGHT + ", "
                 + DownloadTable.DOWNLOAD_STATUS + ", "
                 + DownloadTable.DOWNLOAD_NUMBER + ", "
                 + DownloadTable.DOWNLOADED_DATE + ", "
