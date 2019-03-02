@@ -477,22 +477,6 @@ public class MyLog {
         return objToTag(key) + ":{" + out + "}";
     }
 
-    public static void onSendingNoteStart() {
-        onSendingNoteEvent(true);
-    }
-
-    private static void onSendingNoteEvent(boolean start) {
-        if (!SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SENDING_NOTES_LOG_ENABLED, false) ||
-                MyPreferences.isLogEverythingToFile()) {
-            return;
-        }
-        setLogToFile(start);
-    }
-
-    public static void onSendingNoteEnd() {
-        onSendingNoteEvent(false);
-    }
-    
     public static void setNextLogFileName() {
         setNextLogFileName(true);
     }

@@ -522,7 +522,6 @@
   <string name="title_preference_verify_credentials">重新验证身份凭据</string>
   <string name="title_preference_verify_credentials_failed">验证凭据</string>
   <string name="title_preference_vibration">振动</string>
-  <string name="title_sending_messages_log_enabled">记录正在发送的消息</string>
   <string name="title_timeline">时间线</string>
   <string name="top">1</string>
   <string name="total_counters">总计数器</string>

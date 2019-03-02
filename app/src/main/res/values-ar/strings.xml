@@ -516,7 +516,6 @@ Poster, Rainbow, Quitter.se, MyInstance</string>
   <string name="title_preference_verify_credentials">إعادة التحقق من وثائق التفويض</string>
   <string name="title_preference_verify_credentials_failed">تحقق من وثائق التفويض</string>
   <string name="title_preference_vibration">الاهتزاز</string>
-  <string name="title_sending_messages_log_enabled">سجل إرسال الرسائل في ملف</string>
   <string name="title_timeline">الخط الزمني</string>
   <string name="top">الأعلى</string>
   <string name="total_counters">مجموع العدادات</string>

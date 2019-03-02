@@ -511,7 +511,6 @@
   <string name="title_preference_verify_credentials">Reverify kredensial</string>
   <string name="title_preference_verify_credentials_failed">Verifikasi kredensial</string>
   <string name="title_preference_vibration">Getaran</string>
-  <string name="title_sending_messages_log_enabled">Log Mengirim pesan ke sebuah file</string>
   <string name="title_timeline">Timeline</string>
   <string name="top">Puncak</string>
   <string name="total_counters">Penghitung total</string>

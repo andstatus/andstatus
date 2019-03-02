@@ -380,7 +380,6 @@
   <string name="title_preference_verify_credentials">Verifisere identitet på ny</string>
   <string name="title_preference_verify_credentials_failed">Bekrefte identitet</string>
   <string name="title_preference_vibration">Vibrasjon</string>
-  <string name="title_sending_messages_log_enabled">Logger sender meldinger til en fil</string>
   <string name="title_timeline">Tidslinje</string>
   <string name="translator_credits">Oversetter info</string>
   <string name="unimplemented">Ikke implementert.</string>

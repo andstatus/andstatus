@@ -542,7 +542,6 @@ Sync messages since %2$s</string>
   <string name="title_preference_verify_credentials">要求憑證</string>
   <string name="title_preference_verify_credentials_failed">要求憑證</string>
   <string name="title_preference_vibration">振動</string>
-  <string name="title_sending_messages_log_enabled">日誌將消息發送到文件</string>
   <string name="title_timeline">时间线</string>
   <string name="top">頂端</string>
   <string name="total_counters">總分</string>

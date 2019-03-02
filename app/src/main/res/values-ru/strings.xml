@@ -519,7 +519,6 @@ contains://andstatus.org/</string>
   <string name="title_preference_verify_credentials">Перепроверить учётную запись</string>
   <string name="title_preference_verify_credentials_failed">Проверить учётную запись</string>
   <string name="title_preference_vibration">Виброзвонок</string>
-  <string name="title_sending_messages_log_enabled">Записывать в файл журнала попытки отправки сообщений</string>
   <string name="title_timeline">Линия времени</string>
   <string name="top">Верх</string>
   <string name="total_counters">Итоговые суммы</string>

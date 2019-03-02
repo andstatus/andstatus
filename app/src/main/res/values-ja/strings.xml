@@ -523,7 +523,6 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="title_preference_verify_credentials">資格情報を再確認</string>
   <string name="title_preference_verify_credentials_failed">資格情報を確認</string>
   <string name="title_preference_vibration">バイブレーション</string>
-  <string name="title_sending_messages_log_enabled">送信メッセージをファイルにロギング</string>
   <string name="title_timeline">タイムライン</string>
   <string name="top">トップ</string>
   <string name="total_counters">合計カウンター</string>

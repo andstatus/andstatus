@@ -109,12 +109,11 @@ public class MyPreferences {
     // (no keys/settings here yet)
 
     // ----------------------------------------------------------
-    // Logging and debugging
+    // Troubleshooting (logging and debugging)
     public static final String KEY_COMMANDS_QUEUE = "commands_queue";
     /** Minimum logging level for the whole application (i.e. for any tag) */
     public static final String KEY_MIN_LOG_LEVEL = "min_log_level";
     public static final String KEY_DEBUGGING_INFO_IN_UI = "debugging_info_in_ui";
-    public static final String KEY_SENDING_NOTES_LOG_ENABLED = "sending_messages_log_enabled";
     public static final String KEY_LOG_NETWORK_LEVEL_MESSAGES = "log_network_level_messages";
     public static final String KEY_LOG_EVERYTHING_TO_FILE = "log_everything_to_file";
     private static final String KEY_ENABLE_ACTIVITYPUB = "enable_activitypub";

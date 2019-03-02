@@ -511,7 +511,6 @@
   <string name="title_preference_verify_credentials">Volver a verificar las credenciales</string>
   <string name="title_preference_verify_credentials_failed">Verificar las credenciales</string>
   <string name="title_preference_vibration">Vibración</string>
-  <string name="title_sending_messages_log_enabled">Registrar los mensajes enviados en un archivo</string>
   <string name="title_timeline">Línea temporal</string>
   <string name="top">Arriba</string>
   <string name="total_counters">Contadores totales</string>

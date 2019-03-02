@@ -484,7 +484,6 @@
   <string name="title_preference_verify_credentials">Yeniden kimlik bilgisi doğrulama</string>
   <string name="title_preference_verify_credentials_failed">Kimlik bilgileri doğrulama</string>
   <string name="title_preference_vibration">Titreşim</string>
-  <string name="title_sending_messages_log_enabled">Günlük iletileri için bir dosya gönderme</string>
   <string name="title_timeline">Zaman Çizelgesi</string>
   <string name="top">Üst</string>
   <string name="total_counters">Toplam sayaç</string>

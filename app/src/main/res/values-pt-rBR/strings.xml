@@ -442,7 +442,6 @@ Com suporte a GNU social, Twitter e Pump.io.</string>
   <string name="title_preference_verify_credentials">Reverificar credenciais</string>
   <string name="title_preference_verify_credentials_failed">Verificar credenciais</string>
   <string name="title_preference_vibration">Vibração</string>
-  <string name="title_sending_messages_log_enabled">Registrar envio de mensagens em um arquivo</string>
   <string name="title_timeline">Linha do tempo</string>
   <string name="top">Topo</string>
   <string name="total_counters">Contadores totais</string>

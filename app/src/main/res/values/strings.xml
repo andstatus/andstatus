@@ -524,7 +524,6 @@
   <string name="title_preference_verify_credentials">Reverify credentials</string>
   <string name="title_preference_verify_credentials_failed">Verify credentials</string>
   <string name="title_preference_vibration">Vibration</string>
-  <string name="title_sending_messages_log_enabled">Log Sending notes to a file</string>
   <string name="title_timeline">Timeline</string>
   <string name="top">Top</string>
   <string name="total_counters">Total counters</string>

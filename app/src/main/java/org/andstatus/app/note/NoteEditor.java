@@ -560,7 +560,6 @@ public class NoteEditor {
         } else {
             NoteEditorCommand command = new NoteEditorCommand(editorData.copy());
             command.currentData.activity.getNote().setStatus(DownloadStatus.SENDING);
-            MyLog.onSendingNoteStart();
             saveData(command);
         }
     }

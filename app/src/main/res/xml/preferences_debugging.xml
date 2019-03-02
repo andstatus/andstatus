@@ -32,8 +32,6 @@
 		android:defaultValue="4" />
 	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="debugging_info_in_ui"
 		android:title="@string/preference_debugging_info_in_ui_title" />
-	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="sending_messages_log_enabled"
-		android:title="@string/title_sending_messages_log_enabled" />
 	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="log_network_level_messages"
 		android:title="@string/preference_log_network_level_messages_title" />
 	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="log_everything_to_file"

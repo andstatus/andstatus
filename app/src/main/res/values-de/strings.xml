@@ -522,7 +522,6 @@
   <string name="title_preference_verify_credentials">Zugangsdaten reverifizieren</string>
   <string name="title_preference_verify_credentials_failed">Zugangsdaten verifizieren</string>
   <string name="title_preference_vibration">Vibration</string>
-  <string name="title_sending_messages_log_enabled">Gesendete Mitteilungen in eine Datei loggen</string>
   <string name="title_timeline">Timeline</string>
   <string name="top">Oben</string>
   <string name="total_counters">Gesamtzähler</string>

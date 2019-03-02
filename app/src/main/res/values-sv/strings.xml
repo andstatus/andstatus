@@ -402,7 +402,6 @@
   <string name="title_preference_user_in_timeline">Hur man visar en användare i en tidslinje</string>
   <string name="title_preference_verify_credentials_failed">Bekräfta inloggningsuppgifter</string>
   <string name="title_preference_vibration">Vibration</string>
-  <string name="title_sending_messages_log_enabled">Logga skickameddelanden till en fil</string>
   <string name="title_timeline">Tidslinje</string>
   <string name="undid_follow">slutade följa</string>
   <string name="unimplemented">Ej implementerat.</string>

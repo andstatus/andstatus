@@ -41,9 +41,6 @@ class CommandExecutorStrategy implements CommandExecutorParent {
     }
 
     private static void logLaunch(CommandExecutorStrategy strategy) {
-        if (strategy.execContext.getCommandData().getCommand() == CommandEnum.UPDATE_NOTE) {
-            MyLog.onSendingNoteStart();
-        }
         MyLog.d(strategy, "Launching " + strategy.execContext);
     }
 
@@ -60,9 +57,6 @@ class CommandExecutorStrategy implements CommandExecutorParent {
 
     private static void logEnd(CommandExecutorStrategy strategy) {
         MyLog.d(strategy, "Executed " + strategy.execContext);
-        if (strategy.execContext.getCommandData().getCommand() == CommandEnum.UPDATE_NOTE) {
-            MyLog.onSendingNoteEnd();
-        }
     }
 
     void broadcastProgress(String progress, boolean notTooOften) {

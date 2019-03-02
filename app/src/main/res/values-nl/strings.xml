@@ -513,7 +513,6 @@
   <string name="title_preference_verify_credentials">Gegevens opnieuw verifiëren</string>
   <string name="title_preference_verify_credentials_failed">Gegevens verifiëren</string>
   <string name="title_preference_vibration">Trillen</string>
-  <string name="title_sending_messages_log_enabled">Verstuurde berichten loggen naar bestand</string>
   <string name="title_timeline">Tijdlijn</string>
   <string name="top">Bovenkant</string>
   <string name="total_counters">Totale tellers</string>

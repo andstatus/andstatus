@@ -508,7 +508,6 @@
   <string name="title_preference_verify_credentials">Ponowna weryfikacja poświadczeń</string>
   <string name="title_preference_verify_credentials_failed">Sprawdź poświadczenia</string>
   <string name="title_preference_vibration">Wibracje</string>
-  <string name="title_sending_messages_log_enabled">Wysyłania wiadomości do pliku dziennika</string>
   <string name="title_timeline">Oś czasu</string>
   <string name="top">Góra</string>
   <string name="total_counters">Całkowite liczniki</string>
