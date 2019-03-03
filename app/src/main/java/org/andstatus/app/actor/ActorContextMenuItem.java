@@ -194,7 +194,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
                     @Override
                     protected NoteEditorData doInBackground2(Void... params2) {
                         MyLog.v(this, "execute async started. "
-                                + params.menu.getViewItem().actor.getNamePreferablyWebFingerId());
+                                + params.menu.getViewItem().actor.getUniqueNameWithOrigin());
                         return executeAsync(params);
                     }
 

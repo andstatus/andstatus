@@ -18,7 +18,6 @@ package org.andstatus.app.net.social;
 
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.StringUtils;
-import org.andstatus.app.util.UriUtils;
 
 /**
  * Since introducing support for Pump.Io it appeared that 
@@ -46,8 +45,8 @@ public class TimelinePosition implements IsEmpty {
         return position;
     }
 
-    public boolean isTemp() {
-        return nonEmpty() && position.startsWith(UriUtils.TEMP_OID_PREFIX);
+    boolean isTemp() {
+        return StringUtils.isTemp(position);
     }
 
     @Override
@@ -58,9 +57,7 @@ public class TimelinePosition implements IsEmpty {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof TimelinePosition)) {
-            return false;
-        }
+        if (!(o instanceof TimelinePosition)) return false;
         return hashCode() == o.hashCode();
     }
 

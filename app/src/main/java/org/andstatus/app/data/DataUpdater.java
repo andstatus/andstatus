@@ -39,7 +39,6 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
-import org.andstatus.app.util.UriUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -349,7 +348,7 @@ public class DataUpdater {
         final String method = "updateObjActor2";
         try {
             Actor actor = activity.getObjActor();
-            String actorOid = (actor.actorId == 0 && !actor.isOidReal()) ? actor.getTempOid() : actor.oid;
+            String actorOid = (actor.actorId == 0 && !actor.isOidReal()) ? actor.toTempOid() : actor.oid;
 
             ContentValues values = new ContentValues();
             if (actor.actorId == 0 || !actor.isPartiallyDefined()) {
@@ -360,7 +359,7 @@ public class DataUpdater {
                 // Substitute required empty values with some temporary for a new entry only!
                 String username = actor.getUsername();
                 if (SharedPreferencesUtil.isEmpty(username)) {
-                    username = (actorOid.startsWith(UriUtils.TEMP_OID_PREFIX) ? "" : UriUtils.TEMP_OID_PREFIX) + actorOid;
+                    username = StringUtils.toTempOid(actorOid);
                 }
                 values.put(ActorTable.USERNAME, username);
                 String webFingerId = actor.getWebFingerId();
@@ -440,16 +439,16 @@ public class DataUpdater {
     private void updateFriendship(AActivity activity, MyAccount me) {
         Actor objActor = activity.getObjActor();
         if (objActor.followedByMe.known) {
-            MyLog.v(this, () -> "Account " + me.getActor().getNamePreferablyWebFingerId() + " "
+            MyLog.v(this, () -> "Account " + me.getActor().getUniqueNameWithOrigin() + " "
                     + (objActor.followedByMe.isTrue ? "follows " : "stopped following ")
-                    + objActor.getNamePreferablyWebFingerId());
+                    + objActor.getUniqueNameWithOrigin());
             Friendship.setFollowed(execContext.myContext, me.getActor(), objActor.followedByMe, objActor);
             execContext.myContext.users().reload(me.getActor());
         }
         if (activity.followedByActor().known) {
-            MyLog.v(this, () -> "Actor " + activity.getActor().getNamePreferablyWebFingerId() + " "
+            MyLog.v(this, () -> "Actor " + activity.getActor().getUniqueNameWithOrigin() + " "
                     + (activity.followedByActor().isTrue ? "follows " : "stopped following ")
-                    + objActor.getNamePreferablyWebFingerId());
+                    + objActor.getUniqueNameWithOrigin());
             Friendship.setFollowed(execContext.myContext, activity.getActor(), activity.followedByActor(), objActor);
             execContext.myContext.users().reload(activity.getActor());
         }

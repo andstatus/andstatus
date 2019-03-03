@@ -130,13 +130,13 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
         return actor.getUpdatedDate();
     }
 
-    public String getWebFingerIdOrUsername() {
-        return actor.getNamePreferablyWebFingerId();
+    public String getUniqueNameInOrigin() {
+        return actor.getUniqueNameInOrigin();
     }
 
     @Override
     public int compareTo(@NonNull ActorViewItem o) {
-        return getWebFingerIdOrUsername().compareTo(o.getWebFingerIdOrUsername());
+        return getUniqueNameInOrigin().compareTo(o.getUniqueNameInOrigin());
     }
 
     public AvatarFile getAvatarFile() {

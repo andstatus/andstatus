@@ -32,7 +32,6 @@ import java.util.function.Function;
 import androidx.annotation.NonNull;
 
 public class UriUtils {
-    public static final String TEMP_OID_PREFIX = "andstatustemp:";
 
     private UriUtils() {
         // Empty
@@ -143,11 +142,7 @@ public class UriUtils {
     }
 
     public static boolean nonRealOid(String oid) {
-        return isEmptyOid(oid) || isTempOid(oid);
-    }
-
-    public static boolean isTempOid(String oid) {
-        return nonEmptyOid(oid) && oid.startsWith(TEMP_OID_PREFIX);
+        return StringUtils.isEmptyOrTemp(oid);
     }
 
     public static boolean nonEmptyOid(String oid) {

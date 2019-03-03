@@ -38,7 +38,7 @@
 		android:title="@string/preference_log_everything_to_file_title" />
 	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="enable_activitypub"
 		android:title="Enable Social Networks of the ActivityPub type"
-	    android:summary="This is an early implementation so far, not for general users"
+	    android:summary="This is an early implementation of ActivityPub Client to Server protocol. It's not ready for general use yet"
 		/>
 	<Preference android:key="report_bug"
 				android:persistent="false"

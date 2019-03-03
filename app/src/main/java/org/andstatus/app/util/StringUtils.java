@@ -16,12 +16,35 @@
 
 package org.andstatus.app.util;
 
-import android.text.TextUtils;
-
 /**
  * @author yvolk@yurivolkov.com
  */
 public class StringUtils {
+    private static final String TEMP_OID_PREFIX = "andstatustemp:";
+
+    public static String stripTempPrefix(String oid) {
+        return isTemp(oid) ? oid.substring(TEMP_OID_PREFIX.length()) : oid;
+    }
+
+    public static String toTempOid(String oid) {
+        return toTempOidIf(true, oid);
+    }
+
+    public static String toTempOidIf(boolean condition, String oid) {
+        return !condition || isTemp(oid) ? oid : TEMP_OID_PREFIX + oid;
+    }
+
+    public static boolean nonEmptyNonTemp(String string) {
+        return !isEmptyOrTemp(string);
+    }
+
+    public static boolean isEmptyOrTemp(String string) {
+        return isEmpty(string) || string.startsWith(TEMP_OID_PREFIX);
+    }
+
+    public static boolean isTemp(String string) {
+        return nonEmpty(string) && string.startsWith(TEMP_OID_PREFIX);
+    }
 
     /** empty and null strings are treated as the same */
     public static boolean equalsNotEmpty(String first, String second) {

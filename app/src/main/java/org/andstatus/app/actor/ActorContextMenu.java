@@ -16,7 +16,6 @@
 
 package org.andstatus.app.actor;
 
-import androidx.annotation.NonNull;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,6 +28,8 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.ContextMenuHeader;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.view.MyContextMenu;
+
+import androidx.annotation.NonNull;
 
 public class ActorContextMenu extends MyContextMenu {
     public final NoteEditorContainer menuContainer;
@@ -109,8 +110,8 @@ public class ActorContextMenu extends MyContextMenu {
         MyAccount ma = getActingAccount();
         if (ma.isValid()) {
             ActorContextMenuItem contextMenuItem = ActorContextMenuItem.fromId(item.getItemId());
-            MyLog.v(this, () -> "onContextItemSelected: " + contextMenuItem + "; actor="
-                    + ma.getAccountName() + "; name=" + getViewItem().actor.getNamePreferablyWebFingerId());
+            MyLog.v(this, () -> "onContextItemSelected: " + contextMenuItem + "; account="
+                    + ma.getAccountName() + "; actor=" + getViewItem().actor.getUniqueNameInOrigin());
             return contextMenuItem.execute(this, ma);
         } else {
             return false;

@@ -349,7 +349,7 @@
   <string name="preference_ssl_mode_misconfigured">Misconfigured SSL</string>
   <string name="preference_debugging_info_in_ui_title">Debugging information in a User Interface</string>
   <string name="preference_log_everything_to_file_title">Log everything to file</string>
-  <string name="preference_log_network_level_messages_title">Log network level messages</string>
+  <string name="preference_log_network_level_messages_title">Log network level messages to files</string>
   <string name="preference_true_black_title">True black background</string>
   <string name="preference_use_kitkat_media_chooser_title">Modern interface to select an attachment</string>
   <string name="reblogged">reposted</string>

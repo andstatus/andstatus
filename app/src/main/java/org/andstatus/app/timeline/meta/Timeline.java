@@ -21,7 +21,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.account.MyAccount;
@@ -47,11 +46,12 @@ import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
-import org.andstatus.app.util.UriUtils;
 
 import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+
+import androidx.annotation.NonNull;
 
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 
@@ -532,7 +532,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
 
     private boolean needToLoadActorInTimeline() {
         return actor.nonEmpty()
-                && (StringUtils.isEmpty(actorInTimeline) || actorInTimeline.startsWith(UriUtils.TEMP_OID_PREFIX))
+                && StringUtils.isEmptyOrTemp(actorInTimeline)
                 && actor.user.isMyUser().untrue;
     }
 

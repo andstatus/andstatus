@@ -271,7 +271,7 @@ public abstract class Connection {
      */
     public List<Actor> getFriends(Actor actor) throws ConnectionException {
         throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFriends for actor:"
-                + actor.getNamePreferablyWebFingerId());
+                + actor.getUniqueNameWithOrigin());
     }
     
     /**
@@ -288,7 +288,7 @@ public abstract class Connection {
 
     public List<Actor> getFollowers(Actor actor) throws ConnectionException {
         throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFollowers actor:"
-                + actor.getNamePreferablyWebFingerId());
+                + actor.getUniqueNameWithOrigin());
     }
 
     /**

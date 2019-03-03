@@ -41,7 +41,6 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 
-import static org.andstatus.app.util.UriUtils.TEMP_OID_PREFIX;
 import static org.andstatus.app.util.UriUtils.isEmptyOid;
 import static org.andstatus.app.util.UriUtils.isRealOid;
 import static org.andstatus.app.util.UriUtils.nonRealOid;
@@ -127,7 +126,7 @@ public class Note extends AObject {
     }
 
     private static String getTempOid() {
-        return TEMP_OID_PREFIX + "msg:" + MyLog.uniqueCurrentTimeMS() ;
+        return StringUtils.toTempOid("msg:" + MyLog.uniqueCurrentTimeMS());
     }
 
     private Note(Origin origin, String oid) {

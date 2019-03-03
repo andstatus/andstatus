@@ -19,6 +19,7 @@ package org.andstatus.app.net.social;
 import android.database.Cursor;
 import android.net.Uri;
 
+import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.ActorSql;
@@ -285,8 +286,19 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return username;
     }
 
+    public String getUniqueNameWithOrigin() {
+        return getUniqueNameInOrigin() + AccountName.ORIGIN_SEPARATOR + origin.getName();
+    }
+
     public String getUniqueNameInOrigin() {
-        return username + (origin.shouldHaveUrl() ? "" : "@" + getHost());
+        if (StringUtils.nonEmptyNonTemp(username)) return username + getOptAtHost();
+        if (StringUtils.nonEmptyNonTemp(realName)) return realName + getOptAtHost();
+        if (StringUtils.nonEmptyNonTemp(oid)) return oid;
+        return "id:" + actorId + getOptAtHost();
+    }
+
+    private String getOptAtHost() {
+        return origin.shouldHaveUrl() ? "" : "@" + getHost();
     }
 
     public Actor withUniqueNameInOrigin(String uniqueNameInOrigin) {
@@ -481,16 +493,8 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return webFingerId;
     }
 
-    public String getNamePreferablyWebFingerId() {
-        if (isWebFingerIdValid) return webFingerId;
-        if (StringUtils.nonEmpty(username)) return username;
-        if (StringUtils.nonEmpty(realName)) return realName;
-        if (StringUtils.nonEmpty(oid)) return "oid:" + oid;
-        return "id:" + actorId;
-    }
-
     public boolean isWebFingerIdValid() {
-        return  isWebFingerIdValid;
+        return isWebFingerIdValid;
     }
 
     static boolean isWebFingerIdValid(String webFingerId) {
@@ -509,32 +513,31 @@ public class Actor implements Comparable<Actor>, IsEmpty {
             actorId = MyQuery.usernameToId(origin.getId(), username);
         }
         if (actorId == 0) {
-            actorId = MyQuery.oidToId(origin.myContext, OidEnum.ACTOR_OID, origin.getId(), getTempOid());
+            actorId = MyQuery.oidToId(origin.myContext, OidEnum.ACTOR_OID, origin.getId(), toTempOid());
         }
         if (actorId == 0 && hasAltTempOid()) {
-            actorId = MyQuery.oidToId(origin.myContext, OidEnum.ACTOR_OID, origin.getId(), getAltTempOid());
+            actorId = MyQuery.oidToId(origin.myContext, OidEnum.ACTOR_OID, origin.getId(), toAltTempOid());
         }
     }
 
     public boolean hasAltTempOid() {
-        return !getTempOid().equals(getAltTempOid()) && !StringUtils.isEmpty(username);
+        return !toTempOid().equals(toAltTempOid()) && !StringUtils.isEmpty(username);
     }
 
     public boolean hasLatestNote() {
         return latestActivity != null && !latestActivity.isEmpty() ;
     }
 
-    public String getTempOid() {
-        return getTempOid(webFingerId, username);
+    public String toTempOid() {
+        return toTempOid(webFingerId, username);
     }
 
-    public String getAltTempOid() {
-        return getTempOid("", username);
+    public String toAltTempOid() {
+        return toTempOid("", username);
     }
 
-    public static String getTempOid(String webFingerId, String validUserName) {
-        String oid = isWebFingerIdValid(webFingerId) ? webFingerId : validUserName;
-        return UriUtils.TEMP_OID_PREFIX + oid;
+    public static String toTempOid(String webFingerId, String validUserName) {
+        return StringUtils.toTempOid(isWebFingerIdValid(webFingerId) ? webFingerId : validUserName);
     }
 
     public List<Actor> extractActorsFromContent(String text, Actor inReplyToActorIn) {
@@ -574,7 +577,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public boolean isUsernameValid() {
-        return origin.isUsernameValid(username);
+        return StringUtils.nonEmptyNonTemp(username) && origin.isUsernameValid(username);
     }
 
     /**
@@ -738,8 +741,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
     public String getTimelineUsername() {
         String name1 = getTimelineUsername1();
-        if (StringUtils.nonEmpty(name1)) return name1;
-        return getNamePreferablyWebFingerId();
+        return StringUtils.nonEmpty(name1) ? name1 : getUniqueNameWithOrigin();
     }
 
     private String getTimelineUsername1() {
@@ -771,7 +773,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (user.isMyUser().unknown && origin.myContext.users().isMe(this)) {
             user.setIsMyUser(TriState.TRUE);
         }
-        if (user.userId == 0) user.setKnownAs(getNamePreferablyWebFingerId());
+        if (user.userId == 0) user.setKnownAs(getUniqueNameWithOrigin());
         user.save(origin.myContext);
     }
 

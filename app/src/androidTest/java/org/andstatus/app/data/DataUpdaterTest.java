@@ -531,7 +531,7 @@ public class DataUpdaterTest {
         addOneNote4testReplyInContent(ma, buddyName, "Oh, " + content, true);
 
         long actorId1 = MyQuery.webFingerIdToId(ma.getOriginId(), buddyName);
-        assertEquals("Actor should have temp Oid", Actor.getTempOid(buddyName, ""),
+        assertEquals("Actor should have temp Oid", Actor.toTempOid(buddyName, ""),
                 MyQuery.idToOid(OidEnum.ACTOR_OID, actorId1, 0));
 
         String realBuddyOid = "acc:" + buddyName;

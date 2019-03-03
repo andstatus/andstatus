@@ -50,8 +50,6 @@ import java.util.stream.Collectors;
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 
-import static org.andstatus.app.util.UriUtils.TEMP_OID_PREFIX;
-
 class CommandExecutorOther extends CommandExecutorStrategy{
 
     public static final int ACTORS_LIMIT = 400;
@@ -177,8 +175,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         Actor actor = null;
         if (actorIn.isOidReal() || !StringUtils.isEmpty(username)) {
             try {
-                if (actorIn.origin.isUsernameValid(username) &&
-                        (actorIn.getUsername().startsWith(TEMP_OID_PREFIX) || !actorIn.isUsernameValid())) {
+                if (actorIn.origin.isUsernameValid(username) && !actorIn.isUsernameValid()) {
                     actorIn.setUsername(username);
                 }
                 msgLog  = msgLog + "; username='" + actorIn.getUsername() + "'";

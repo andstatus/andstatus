@@ -18,7 +18,6 @@ package org.andstatus.app.activity;
 
 import android.content.Context;
 import android.database.Cursor;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.actor.ActorListLoader;
 import org.andstatus.app.actor.ActorViewItem;
@@ -36,6 +35,8 @@ import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyStringBuilder;
+
+import androidx.annotation.NonNull;
 
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 
@@ -161,7 +162,7 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
         if (this == EMPTY) {
             return "EMPTY";
         }
-        return actor.getWebFingerIdOrUsername() + " " + activityType + " " + (noteId == 0
+        return actor.getActor().getUniqueNameWithOrigin() + " " + activityType + " " + (noteId == 0
                 ? objActorItem
                 : noteViewItem
         );

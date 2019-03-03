@@ -186,7 +186,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
             if (actor != null) {
                 broadcastProgress(String.valueOf(count) + ". "
                         + execContext.getContext().getText(R.string.get_user)
-                        + ": " + actor.getNamePreferablyWebFingerId(), true);
+                        + ": " + actor.getUniqueNameWithOrigin(), true);
                 actorsNew.add(actor);
             }
             if (logSoftErrorIfStopping()) {
@@ -207,7 +207,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         for (Actor actor : actorsNew) {
             count++;
             broadcastProgress(String.valueOf(count) + ". " + execContext.getContext().getText(R.string.button_save)
-                    + ": " + actor.getNamePreferablyWebFingerId(), true);
+                    + ": " + actor.getUniqueNameWithOrigin(), true);
             dataUpdater.onActivity(myAccountActor.update(actor), false);
             if (!actor.hasLatestNote()) {
                 allNotesLoaded = false;
@@ -225,7 +225,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                 try {
                     broadcastProgress(String.valueOf(count) + ". "
                             + execContext.getContext().getText(R.string.title_command_get_status)
-                            + ": " + actor.getNamePreferablyWebFingerId(), true);
+                            + ": " + actor.getUniqueNameWithOrigin(), true);
                     dataUpdater.downloadOneNoteBy(actor);
                     execContext.getResult().incrementDownloadedCount();
                 } catch (ConnectionException e) {
@@ -247,7 +247,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                                     + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC LIMIT 1");
                     if (lastActivityId == 0) {
                         MyLog.v(this, "Failed to find Actor's activity for "
-                                + actor.getNamePreferablyWebFingerId(), e1);
+                                + actor.getUniqueNameWithOrigin(), e1);
                     } else {
                         long updatedDate = MyQuery.idToLongColumnValue(
                                 execContext.getMyContext().getDatabase(),
@@ -258,7 +258,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                         lum.onNewActorActivity(new ActorActivity(actor.actorId, lastActivityId, updatedDate));
                         lum.save();
                         MyLog.v(this, "Server didn't return Actor's activity for "
-                                        + actor.getNamePreferablyWebFingerId()
+                                        + actor.getUniqueNameWithOrigin()
                                         + " found activity " + RelativeTime.
                                         getDifference(MyContextHolder.get().context(), updatedDate),
                                 e1);

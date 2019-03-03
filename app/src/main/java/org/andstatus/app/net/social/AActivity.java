@@ -18,8 +18,6 @@ package org.andstatus.app.net.social;
 
 import android.content.ContentValues;
 import android.database.Cursor;
-import androidx.annotation.NonNull;
-import androidx.core.util.Pair;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
@@ -35,13 +33,14 @@ import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
-import org.andstatus.app.util.UriUtils;
 
 import java.util.Optional;
 
+import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
+
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
-import static org.andstatus.app.util.UriUtils.TEMP_OID_PREFIX;
 
 /** Activity in a sense of Activity Streams https://www.w3.org/TR/activitystreams-core/ */
 public class AActivity extends AObject {
@@ -99,9 +98,9 @@ public class AActivity extends AObject {
         AActivity activity = from(accountActor, ActivityType.UPDATE);
         activity.setActor(actor);
         activity.setTimelinePosition(
-                (UriUtils.isTempOid(noteOid) ? TEMP_OID_PREFIX : "")
-                + (StringUtils.isEmpty(noteOid) ? "" : activity.getActorPrefix())
-                + noteOid);
+                StringUtils.toTempOidIf(StringUtils.isEmptyOrTemp(noteOid),
+                    (StringUtils.isEmpty(noteOid) ? "" : activity.getActorPrefix()) +
+                            StringUtils.stripTempPrefix(noteOid)));
         final Note note = Note.fromOriginAndOid(activity.accountActor.origin, noteOid, status);
         activity.setNote(note);
         note.setUpdatedDate(updatedDate);
@@ -211,11 +210,11 @@ public class AActivity extends AObject {
 
     @NonNull
     private String getTempPositionString() {
-        return TEMP_OID_PREFIX
-                + getActorPrefix()
-                + type.name().toLowerCase() + "-"
-                + (StringUtils.nonEmpty(getNote().oid) ? getNote().oid + "-" : "")
-                + MyLog.uniqueDateTimeFormatted();
+        return StringUtils.toTempOid(
+                    getActorPrefix() +
+                    type.name().toLowerCase() + "-" +
+                    (StringUtils.nonEmpty(getNote().oid) ? getNote().oid + "-" : "") +
+                    MyLog.uniqueDateTimeFormatted());
     }
 
     @NonNull
