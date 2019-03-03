@@ -84,7 +84,7 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
         int existing = items.indexOf(item);
         if (existing >= 0) return items.get(existing).actor;
         items.add(item);
-        if (actor.actorId == 0 && mAllowLoadingFromInternet) actor.loadFromInternet();
+        if (actor.actorId == 0 && mAllowLoadingFromInternet) actor.requestDownload();
         if (mProgress != null) {
             mProgress.publish(Integer.toString(size()));
         }

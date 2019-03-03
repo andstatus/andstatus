@@ -57,6 +57,8 @@ public abstract class OriginList extends MyListActivity {
     protected void onCreate(Bundle savedInstanceState) {
         mLayoutId = getLayoutResourceId();
         super.onCreate(savedInstanceState);
+        if (isFinishing()) return;
+
         processNewIntent(getIntent());
     }
 

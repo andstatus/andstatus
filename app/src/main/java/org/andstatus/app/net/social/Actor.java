@@ -785,7 +785,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return AvatarFile.EMPTY != avatarFile;
     }
 
-    public void loadFromInternet() {
+    public void requestDownload() {
         MyLog.v(this, () -> "Actor " + this + " will be loaded from the Internet");
         MyServiceManager.sendForegroundCommand(
                 CommandData.newActorCommand(CommandEnum.GET_ACTOR, actorId, getUsername()));

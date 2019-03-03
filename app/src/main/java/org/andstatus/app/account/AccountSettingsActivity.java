@@ -38,6 +38,7 @@ import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
 import org.andstatus.app.ActivityRequestCode;
+import org.andstatus.app.FirstActivity;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
@@ -54,8 +55,6 @@ import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
-import org.andstatus.app.service.CommandData;
-import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.timeline.TimelineActivity;
@@ -768,10 +767,9 @@ public class AccountSettingsActivity extends MyActivity {
                 myContext.accounts().setCurrentAccount(myAccount);
             }
             if (activityOnFinish == ActivityOnFinish.HOME) {
-                if (initialSyncNeeded) initialAccountSync(myContext, myAccount);
-
                 Timeline home = myContext.timelines().get(TimelineType.HOME, myAccount.getActorId(), Origin.EMPTY);
-                TimelineActivity.startForTimeline(myContext, AccountSettingsActivity.this, home, true);
+                TimelineActivity.startForTimeline(myContext, AccountSettingsActivity.this, home, true,
+                        initialSyncNeeded);
                 state.forget();
             } else {
                 if (myContext.accounts().size() > 1) {
@@ -784,17 +782,6 @@ public class AccountSettingsActivity extends MyActivity {
                 }
             }
         });
-    }
-
-    private void initialAccountSync(MyContext myContext, MyAccount myAccount) {
-        final Timeline timeline = myContext.timelines().forUser(TimelineType.HOME, myAccount.getActor());
-        if (!timeline.isTimeToAutoSync()) return;
-
-        MyServiceManager.setServiceAvailable();
-        MyServiceManager.sendManualForegroundCommand(
-                CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, timeline));
-        MyServiceManager.sendCommand(
-                (CommandData.newActorCommand(CommandEnum.GET_FRIENDS, myAccount.getActor().actorId, "")));
     }
 
     /**
@@ -1276,6 +1263,7 @@ public class AccountSettingsActivity extends MyActivity {
                     state.forget();
                     MyContext myContext = MyContextHolder.initialize(MyContextHolder.get().context(),
                             AccountSettingsActivity.this);
+                    FirstActivity.checkAndUpdateLastOpenedAppVersion(AccountSettingsActivity.this, true);
                     status = ResultStatus.ACCOUNT_VALID;
 
                     final Timeline timeline = myContext.timelines().forUser(TimelineType.HOME, myAccount.getActor());

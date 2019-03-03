@@ -96,6 +96,10 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
     @Override
     public void onResume() {
         super.onResume();
+        if (!MyContextHolder.get().isReady()) {
+            MySettingsActivity.restartMe(getActivity());
+            return;
+        }
         getActivity().setTitle(MySettingsGroup.from(this).getTitleResId());
         showAllPreferences();
         SharedPreferencesUtil.getDefaultSharedPreferences().registerOnSharedPreferenceChangeListener(this);

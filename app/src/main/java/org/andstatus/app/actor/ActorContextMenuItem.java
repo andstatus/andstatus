@@ -75,8 +75,8 @@ public enum ActorContextMenuItem implements ContextMenuItem {
                     params.menu.getActivity().getMyContext(),
                     params.menu.getActivity(),
                     params.menu.getActivity().getMyContext().timelines()
-                            .forUserAtHomeOrigin(TimelineType.SENT, params.menu.getViewItem().getActor()),
-                    false);
+                            .forUserAtHomeOrigin(TimelineType.SENT, params.menu.getViewItem().getActor())
+            );
             return super.executeAsync(params);
         }
     },

@@ -427,6 +427,9 @@ public class DataUpdater {
             actor.avatarFile.resetAvatarErrors(execContext.myContext);
             execContext.myContext.users().reload(actor);
 
+            if (actor.isPartiallyDefined()) {
+                actor.requestDownload();
+            }
             actor.requestAvatarDownload();
             if (actor.hasLatestNote()) {
                 updateNote(actor.getLatestActivity(), recursing + 1);

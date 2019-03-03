@@ -21,9 +21,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.view.Gravity;
@@ -94,8 +91,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.drawerlayout.widget.DrawerLayout;
+
 import static org.andstatus.app.timeline.meta.TimelineTitle.Destination.DEFAULT;
 import static org.andstatus.app.timeline.meta.TimelineTitle.Destination.TIMELINE_ACTIVITY;
+import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 
 /**
@@ -128,9 +130,18 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     View syncOlderView = null;
     ActorProfileViewer actorProfileViewer = null;
 
-    public static void startForTimeline(MyContext myContext, Context context, Timeline timeline, boolean clearTask) {
+    public static void startForTimeline(MyContext myContext, Context context, Timeline timeline) {
+        startForTimeline(myContext, context, timeline, false, false);
+    }
+
+    public static void startForTimeline(MyContext myContext, Context context, Timeline timeline, boolean clearTask,
+                                        boolean initialAccountSync) {
         timeline.save(myContext);
-        context.startActivity(getIntentForTimeline(myContext, timeline, clearTask));
+        final Intent intent = getIntentForTimeline(myContext, timeline, clearTask);
+        if (initialAccountSync) {
+            intent.putExtra(IntentExtra.INITIAL_ACCOUNT_SYNC.key, true);
+        }
+        context.startActivity(intent);
     }
 
     @NonNull
@@ -152,8 +163,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             activity.startActivity(intent);
         } catch (Exception e) {
             MyLog.v(TimelineActivity.class, "goHome", e);
-            MyContextHolder.get().context().startActivity(
-                    new Intent(MyContextHolder.get().context(), FirstActivity.class));
+            FirstActivity.startApp();
         }
     }
 
@@ -608,9 +618,26 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         }
         super.onNewIntent(intent);
         parseNewIntent(intent);
-		if (isMyResumed() || getListData().size() > 0 || isLoading()) {
+        checkForInitialSync(intent);
+        if (isMyResumed() || getListData().size() > 0 || isLoading()) {
             showList(getParamsNew().whichPage);
 		}
+    }
+
+    private void checkForInitialSync(Intent intent) {
+        Timeline timeline = getParamsNew().timeline;
+        if (timeline.isTimeToAutoSync() && timeline.getLastSyncedDate() == DATETIME_MILLIS_NEVER) {
+            if (intent.hasExtra(IntentExtra.INITIAL_ACCOUNT_SYNC.key)) {
+                timeline.setSyncSucceededDate(System.currentTimeMillis()); // To avoid repetition
+                MyServiceManager.setServiceAvailable();
+                MyServiceManager.sendManualForegroundCommand(
+                        CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, timeline));
+                MyServiceManager.sendCommand(
+                        CommandData.newActorCommand(CommandEnum.GET_FRIENDS, timeline.myAccountToSync.getActor().actorId, ""));
+            } else {
+                onNoRowsLoaded(timeline);
+            }
+        }
     }
 
     private void parseNewIntent(Intent intentNew) {
@@ -692,7 +719,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 ? v -> {
                     TimelineActivity.startForTimeline(
                         getMyContext(), this,
-                        getMyContext().timelines().forUser(TimelineType.SENT, ma.getActor()), false);
+                        getMyContext().timelines().forUser(TimelineType.SENT, ma.getActor()));
                     closeDrawer();
                     }
                 : v -> {
@@ -1193,7 +1220,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 final Intent intent = getIntentForTimeline(myContext, timeline, false);
                 MyContextHolder.getMyFutureContext(this).thenStartActivity(intent);
             } else {
-                TimelineActivity.startForTimeline(myContext, this, timeline, false);
+                TimelineActivity.startForTimeline(myContext, this, timeline);
             }
         } else {
             showList(WhichPage.CURRENT);

@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 
+import org.andstatus.app.FirstActivity;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
@@ -192,9 +193,15 @@ public class MySettingsActivity extends MyActivity implements
      * See http://stackoverflow.com/questions/1397361/how-do-i-restart-an-android-activity
      */
     public static void restartMe(Activity activity) {
-        Intent intent = activity.getIntent();
-        activity.finish();
-        activity.startActivity(intent);
+        if (activity == null) {
+            FirstActivity.startApp();
+        } else if (!MyContextHolder.get().isReady()) {
+            MyContextHolder.initializeThenRestartMe(activity);
+        } else {
+            Intent intent = activity.getIntent();
+            activity.finish();
+            activity.startActivity(intent);
+        }
     }
 
     @Override

@@ -1,6 +1,8 @@
 package org.andstatus.app.net.http;
 
 import com.github.scribejava.core.builder.api.DefaultApi20;
+import com.github.scribejava.core.extractors.TokenExtractor;
+import com.github.scribejava.core.model.OAuth2AccessToken;
 
 import org.andstatus.app.util.MyLog;
 
@@ -14,6 +16,11 @@ public class OAuthApi20 extends DefaultApi20 {
 
     public OAuthApi20(HttpConnectionOAuth http) {
         this.http = http;
+    }
+
+    @Override
+    public TokenExtractor<OAuth2AccessToken> getAccessTokenExtractor() {
+        return new MyOAuth2AccessTokenJsonExtractor(http.data);
     }
 
     @Override

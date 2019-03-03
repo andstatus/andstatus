@@ -29,7 +29,7 @@ public enum ManageTimelinesContextMenuItem implements ContextMenuItem {
         @Override
         public boolean execute(ManageTimelinesContextMenu menu, ManageTimelinesViewItem viewItem) {
             TimelineActivity.startForTimeline(menu.getActivity().getMyContext(), menu.getActivity(),
-                    viewItem.timeline, false);
+                    viewItem.timeline);
             return true;
         }
     },

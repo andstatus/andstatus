@@ -121,6 +121,11 @@ public class FirstActivity extends AppCompatActivity {
         }
     }
 
+    public static void startApp() {
+        MyContextHolder.get().context().startActivity(
+                new Intent(MyContextHolder.get().context(), FirstActivity.class));
+    }
+
     public static NeedToStart needToStartNext(Context context, MyContext myContext) {
         if (!myContext.isReady()) {
             MyLog.i(context, "Context is not ready: " + myContext.toString());
