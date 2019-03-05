@@ -104,10 +104,8 @@
   <string name="dialog_summary_connection_timeout">Zeitüberschreitung der Verbindung. Bitte versuche es später noch einmal.</string>
   <string name="dialog_summary_executing_command">Bitte warten, während der Befehl auf dem Server ausgeführt wird.</string>
   <string name="dialog_summary_external_storage">Externer Speicher entdeckt. Soll AndStatus seine Daten dort speichern? Alte Daten können nicht verschoben werden, aber bleiben im internen Speicher vorhanden.</string>
-  <string name="dialog_summary_external_storage_missing">Externer Speicher nicht verfügbar oder eingebunden. Willst du den internen Speicher verwenden? Alle Daten auf dem externen Speicher sind bleiben verfügbar.</string>
   <string name="dialog_summary_registering_client">Bitte warte, während sich AndStatus selbst als Client Anwendung registriert</string>
   <string name="dialog_summary_sending_message">Bitte warten, während die Nachricht gesendet wird.</string>
-  <string name="dialog_summary_service_unavailable">Twitter ist derzeit überlastet. Bitte versuche es später noch einmal.</string>
   <string name="dialog_summary_timeline_loading">Bitte warten, während die Chronik aktualisiert wird. Dies kann, je nach Verbindung, einige Minuten dauern.</string>
   <string name="dialog_title_acquiring_an_access_token">Hole ein Access Token</string>
   <string name="dialog_title_acquiring_a_request_token">Hole ein Request Token</string>

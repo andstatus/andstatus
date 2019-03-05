@@ -101,10 +101,8 @@
   <string name="dialog_summary_connection_timeout">Waktu koneksi berakhir. Silakan coba lagi nanti.</string>
   <string name="dialog_summary_executing_command">Harap tunggu sementara perintah dijalankan di server.</string>
   <string name="dialog_summary_external_storage">Penyimpanan eksternal telah terdeteksi. Apakah Anda ingin AndStatus menyimpan data di sana? Data lama tidak dapat dipindahkan, namun tetap tersimpan di memori internal Anda.</string>
-  <string name="dialog_summary_external_storage_missing">Penyimpanan eksternal tidak ada atau tidak terpasang. Apakah Anda ingin menggunakan memori internal? Setiap data yang tersimpan pada penyimpanan eksternal akan tetap tersedia.</string>
   <string name="dialog_summary_registering_client">Harap tunggu sementara AndStatus mendaftarkan diri sebagai aplikasi klien</string>
   <string name="dialog_summary_sending_message">Harap tunggu sementara pesan sedang dikirim.</string>
-  <string name="dialog_summary_service_unavailable">Twitter saat ini kelebihan kapasitas. Silakan coba lagi nanti.</string>
   <string name="dialog_summary_timeline_loading">Harap tunggu sementara timeline sedang disegarkan. Ini mungkin memakan waktu beberapa menit tergantung pada koneksi Anda.</string>
   <string name="dialog_title_acquiring_an_access_token">Mendapatkan token akses</string>
   <string name="dialog_title_acquiring_a_request_token">Mendapatkan token permintaan</string>

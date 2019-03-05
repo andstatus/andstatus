@@ -100,10 +100,8 @@
   <string name="dialog_summary_connection_timeout">Upłynął limit czasu połączenia. Proszę spróbować ponownie później.</string>
   <string name="dialog_summary_executing_command">Proszę zaczekaj chwilę, komenda jest wykonywana na serwerze.</string>
   <string name="dialog_summary_external_storage">Pamięć zewnętrzna została wykryta. Czy chcesz aby AndStatus przechowywał tam dane? Stare dane nie mogą być przemieszczone, pozostaną w pamięci wewnętrznej.</string>
-  <string name="dialog_summary_external_storage_missing">Pamięć zewnętrzna nieobecna lub niezainstalowana. Czy chcesz używać pamięci wewnętrznej? Dane przechowywane w pamięci zewnętrznej wciąż będą dostępne.</string>
   <string name="dialog_summary_registering_client">Proszę zaczekać chwilę, AndStatus rejestruję siebie jako aplikację klienta</string>
   <string name="dialog_summary_sending_message">Proszę czekać, wiadomość jest wysyłana.</string>
-  <string name="dialog_summary_service_unavailable">Twitter jest obecnie przepełniony. Proszę spróbować ponownie później.</string>
   <string name="dialog_summary_timeline_loading">Oś czasu jest odświeżana, proszę czekać. Może to potrwać kilka minut w zależności od Twojego połączenia.</string>
   <string name="dialog_title_acquiring_an_access_token">Otrzymywanie tokenu dostępu</string>
   <string name="dialog_title_acquiring_a_request_token">Otrzymywanie tokenu żądania</string>

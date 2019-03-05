@@ -100,10 +100,8 @@
   <string name="dialog_summary_connection_timeout">Tiempo de espera de conexión agotado. Por favor, inténtelo de nuevo más tarde.</string>
   <string name="dialog_summary_executing_command">Por favor, espere mientras que el comando se ejecuta en el servidor.</string>
   <string name="dialog_summary_external_storage">Se ha detectado el almacenamiento externo. ¿Quiere que AndStatus almacene los datos allí? Los datos antiguos no se podrán mover, pero permanecerán en su memoria interna.</string>
-  <string name="dialog_summary_external_storage_missing">El almacenamiento externo no está presente o está sin montar. ¿Desea utilizar la memoria interna? Los datos almacenados en el almacenamiento externo seguirán estando disponibles.</string>
   <string name="dialog_summary_registering_client">Por favor espere mientras AndStatus se registra como cliente</string>
   <string name="dialog_summary_sending_message">Por favor, espere mientras se envía el mensaje.</string>
-  <string name="dialog_summary_service_unavailable">Twitter está actualmente por encima de su capacidad. Por favor, inténtelo de nuevo más tarde.</string>
   <string name="dialog_summary_timeline_loading">Por favor, espere mientras la línea de tiempo está siendo refrescada. Esto puede tardar varios minutos dependiendo de su conexión.</string>
   <string name="dialog_title_acquiring_an_access_token">Adquiriendo una prueba de acceso</string>
   <string name="dialog_title_acquiring_a_request_token">Adquiriendo una prueba de respuesta</string>

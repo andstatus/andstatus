@@ -22,17 +22,17 @@
   <string name="action_bar_text_preference_title">Action bar text and icon color</string>
   <string name="action_menu_overflow_description">More actions&#8230;</string>
   <string name="always">Always</string>
-  <string name="appwidget_configure_instructions">Customize AndStatus Widget message, shown in a case there is nothing new:</string>
+  <string name="appwidget_configure_instructions">Customize AndStatus Widget message, shown in case nothing new has happened</string>
   <string name="appwidget_nothingnew_default">Nothing new since:</string>
   <string name="appwidget_nodata">No data yet.</string>
   <string name="acquiring_a_request_token_failed">Acquiring a request token failed</string>
   <string name="acquiring_an_access_token_failed">Acquiring an Access token failed</string>
   <string name="attach_images_summary_off">\"Paperclip+\" button, used to attach images to your posts, is hidden</string>
-  <string name="attach_images_summary_on">Use \"Paperclip+\" button (\"Attach\" menu item) to attach images to you note. Or Share image to AndStatus from another application</string>
+  <string name="attach_images_summary_on">Use the \"Paperclip+\" button (\"Attach\" menu item) to attach images to your note or Share an image to AndStatus from another app</string>
   <string name="attach_images_title">Attach images to my notes</string>
   <string name="attachment_is_too_large">Attachment is too large</string>
   <string name="attachments">Attachments</string>
-  <string name="authentication_never">Didn\'t authenticate yet</string>
+  <string name="authentication_never">Not authenticated yet</string>
   <string name="authentication_successful">Authentication successful!</string>
   <string name="automatic">Auto</string>
   <string name="background_color_preference_title">Background color for the Dark theme</string>
@@ -91,7 +91,7 @@
   <string name="crash_dialog_comment_prompt">Please provide below your comments about the problem. It would be very helpful for a fix to know: when it occurred and maybe even how it could be reproduced.</string>
   <string name="created">created</string>
   <string name="created_label">Created</string>
-  <string name="custom_locale_title">Application language</string>
+  <string name="custom_locale_title">App language</string>
   <string name="set_as_default_timeline">Set as Default Timeline</string>
   <string name="default_timeline_summary">Timeline that will be opened by a Launcher: \"%s\"</string>
   <string name="deleted">deleted</string>
@@ -102,11 +102,9 @@
   <string name="dialog_summary_checking_credentials">Please wait while your account is being verified.</string>
   <string name="dialog_summary_connection_timeout">Connection timed out. Please try again later.</string>
   <string name="dialog_summary_executing_command">Please wait while the command is executed on the server.</string>
-  <string name="dialog_summary_external_storage">External storage has been detected. Do you wish AndStatus to store data there? Old data cannot be moved, but will remain in your internal memory.</string>
-  <string name="dialog_summary_external_storage_missing">External storage not present or unmounted. Do you want to use the internal memory? Any data stored on the external storage will still be available.</string>
-  <string name="dialog_summary_registering_client">Please wait while AndStatus is registering itself as a client application</string>
+  <string name="dialog_summary_external_storage">AndStatus app data is being moved between internal and external storage.</string>
+  <string name="dialog_summary_registering_client">Please wait while AndStatus is registering itself as a client app</string>
   <string name="dialog_summary_sending_message">Please wait while an activity is being sent.</string>
-  <string name="dialog_summary_service_unavailable">Twitter is currently over capacity. Please try again later.</string>
   <string name="dialog_summary_timeline_loading">Please wait while the timeline is being refreshed. This may take several minutes depending on your connection.</string>
   <string name="dialog_title_acquiring_an_access_token">Acquiring an Access token</string>
   <string name="dialog_title_acquiring_a_request_token">Acquiring a request token</string>
@@ -133,16 +131,16 @@
   <string name="discover_open_instances_title">Discover open instances</string>
   <string name="displayed_in_selector">Displayed in a selector</string>
   <string name="displayed_in_selector_abbreviated">Displ.</string>
-  <string name="database_disk_io_error">Attention! %1$s error(s) occur during access to the local cache database, which caused malfunction of AndStatus application. \nThis usually means that SD card on your device is not working properly.</string>
+  <string name="database_disk_io_error">Attention! %1$s error(s) occurred while accessing the local cache database, which caused a malfunction in the AndStatus app.\nTypically, this is caused by an SD card related error.</string>
   <string name="dont_synchronize_old_messages">Don\'t synchronize old activities, if previous sync was more than ... hours ago</string>
-  <string name="dont_synchronize_old_messages_summary">After %s hours since previous sync
-    AndStatus will not try to sync all activities since the latest activity downloaded,
-    but will request only 200 recent activities from a server. If number of new activities is more than 200,
-    you will not see in a Timeline some older activities.</string>
+  <string name="dont_synchronize_old_messages_summary">%s hours since the previous sync
+AndStatus won\'t try to sync all activities since the latest activity downloaded,
+but will request only the 200 most recent activities from a server. If the number of new activities exceeds 200,
+you will not see activity 201 and older ones in a Timeline</string>
   <string name="download_attached_video">Download attached video</string>
   <string name="download_status_draft">draft</string>
   <string name="download_status_unsent">unsent</string>
-  <string name="downloaded_items_count_abbreviated">Dnl.</string>
+  <string name="downloaded_items_count_abbreviated">DLs</string>
   <string name="drawer_close">Close navigation drawer</string>
   <string name="drawer_open">Open navigation drawer</string>
   <string name="empty_in_parenthesis">(empty)</string>
@@ -174,9 +172,9 @@
   <string name="forget_sync_events">Forget sync events and dates</string>
   <string name="friends">Friends</string>
   <string name="friends_of">Friends of \"%1s\"</string>
-  <string name="full_check">Full check, including long steps?</string>
+  <string name="full_check">Yes: Proceed with a full and maybe extensive problem fixing.\nNo: Quick but only the most important checks and fixes.</string>
   <string name="gestures">Gestures</string>
-  <string name="gestures_summary">Touch mechanics. How a User interacts with the application</string>
+  <string name="gestures_summary">Touch mechanics. How the User interacts with the app</string>
   <string name="get_conversation">Get conversation</string>
   <string name="get_followers">Get followers</string>
   <string name="get_friends">Get friends</string>
@@ -215,13 +213,13 @@
   <string name="host_hint_mastodon">The address or domain of any instance, e.g. mastodon.social, icosahedron.website,
     social.tchncs.de</string>
   <string name="id_of_this_message_was_not_specified">Id of this note was not specified</string>
-  <string name="in_combined_global_search_label">Include in \"Search in Internet\" while in Combined Timeline</string>
+  <string name="in_combined_global_search_label">Include in \"Search the Internet\" while in Combined Timeline</string>
   <string name="in_combined_public_reload_label">Include in \"Syncing\" while in Combined Public Timeline</string>
   <string name="in_context">In context</string>
   <string name="joined">joined</string>
   <string name="label_accountselector">Select an Account</string>
   <string name="label_allow_html_content">Allow HTML content</string>
-  <string name="label_backup">Backup application data to SD card</string>
+  <string name="label_backup">Back up app data to SD card</string>
   <string name="label_backup_file">Backup file</string>
   <string name="label_backup_folder">Backup folder</string>
   <string name="label_conversation">Conversation</string>
@@ -233,7 +231,7 @@
   <string name="origin_name_hint">E.g. Poster, Rainbow, Quitter.se, MyInstance</string>
   <string name="label_origin_system">Social network</string>
   <string name="label_origin_type">Type of Social network</string>
-  <string name="label_restore">Restore application data from Backup</string>
+  <string name="label_restore">Restore app data from Backup</string>
   <string name="label_upgrading">Upgrade is in progress. Please wait.</string>
   <string name="label_with_media">with media</string>
   <string name="last_synced">Last time successfully synced</string>
@@ -326,9 +324,9 @@
   <string name="options_menu_favorites_timeline_cond">Favorites</string>
   <string name="options_menu_home_timeline">Home Timeline</string>
   <string name="options_menu_home_timeline_cond">Home</string>
-  <string name="options_menu_global_search">Search in Internet</string>
+  <string name="options_menu_global_search">Search the Internet</string>
   <string name="options_menu_help">Help</string>
-  <string name="options_menu_sync">Sync with Internet</string>
+  <string name="options_menu_sync">Sync with the Internet</string>
   <string name="options_menu_mentions">Mentions</string>
   <string name="options_menu_search">Search</string>
   <string name="origin_settings_action">Social network</string>
@@ -409,7 +407,7 @@
   <string name="summary_preference_add_account_oauth">Tap the button below to open a site of the Social network in a browser.</string>
   <string name="summary_preference_add_account_basic">Tap the button below to verify credentials and add the account.</string>
   <string name="summary_preference_appearance">Change AndStatus look and feel</string>
-  <string name="summary_preference_enable_android_backup_off">Android backups will not be requested</string>
+  <string name="summary_preference_enable_android_backup_off">No Android backups will be requested</string>
   <string name="summary_preference_enable_android_backup_on">AndStatus notifies Android on data changes to be backed up (experimental)</string>
   <string name="summary_preference_frequency">Updates are fetched every {0}.</string>
   <string name="summary_preference_history_size">Note history is up to {0}.</string>
@@ -447,7 +445,7 @@
   <string name="switch_to_default_timeline">Switch to Default Timeline</string>
   <string name="sync_younger_messages">Synced %1$s. Sync activities since %2$s</string>
   <string name="sync_older_messages">Sync activities before %1$s</string>
-  <string name="sync_over_wifi_only">Sync over WiFi only</string>
+  <string name="sync_over_wifi_only">Sync over Wi-Fi only</string>
   <string name="sync_failed">Sync failed</string>
   <string name="sync_frequency_minutes">Sync frequency in minutes. Leave it blank to have the default value: </string>
   <string name="synced_automatically">Synced automatically</string>

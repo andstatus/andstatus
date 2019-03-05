@@ -101,10 +101,8 @@
   <string name="dialog_summary_connection_timeout">De verbinding is verlopen; probeer het later opnieuw.</string>
   <string name="dialog_summary_executing_command">Even geduld; de opdracht wordt uitgevoerd op de server...</string>
   <string name="dialog_summary_external_storage">Er is externe opslag aangetoffen. Wil je dat AndStatus de gegevens daar opslaat? Oude gegevens kunnen niet worden verplaatst en zullen dus op de interne opslag achterblijven.</string>
-  <string name="dialog_summary_external_storage_missing">Geen externe opslag aangetroffen of aangekoppeld. Wil je de interne opslag gebruiken? Bestaande gegevens op de externe opslag zullen bewaard blijven.</string>
   <string name="dialog_summary_registering_client">Even geduld; AndStatus is bezig om zichzelf te registreren als een client-applicatie...</string>
   <string name="dialog_summary_sending_message">Even geduld; de activiteit wordt verstuurd...</string>
-  <string name="dialog_summary_service_unavailable">Twitter is momenteel overbelast; probeer het later opnieuw.</string>
   <string name="dialog_summary_timeline_loading">Even geduld; de tijdlijn wordt ververst. Afhankelijk van je verbinding kan dit maximaal enkele minuten duren.</string>
   <string name="dialog_title_acquiring_an_access_token">Bezig met ophalen van toegangssleutel...</string>
   <string name="dialog_title_acquiring_a_request_token">Bezig met ophalen van verzoeksleutel...</string>

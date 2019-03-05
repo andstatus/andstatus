@@ -106,10 +106,8 @@
   <string name="dialog_summary_connection_timeout">连接已超时，请稍后再试。</string>
   <string name="dialog_summary_executing_command">请稍候，服务器正在执行此命令。</string>
   <string name="dialog_summary_external_storage">已检测到外部存储。您希望 AndStatus 在那里储存数据吗？无法移动旧的数据，它们会保留在内部存储中。</string>
-  <string name="dialog_summary_external_storage_missing">外部存储不存在或未被挂载。是否要使用内部存储？保存在外部存储上的所有数据将依然可用。</string>
   <string name="dialog_summary_registering_client">请稍候，AndStatus 正在将自身注册为客户端应用程序。</string>
   <string name="dialog_summary_sending_message">正在发送消息，请稍候。</string>
-  <string name="dialog_summary_service_unavailable">Twitter 目前过载了。请稍后再试。</string>
   <string name="dialog_summary_timeline_loading">正在刷新时间线，请稍候。这可能会花费数分钟，具体取决于您的网络连接。</string>
   <string name="dialog_title_acquiring_an_access_token">获取访问令牌</string>
   <string name="dialog_title_acquiring_a_request_token">获取请求令牌</string>

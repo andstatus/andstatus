@@ -97,10 +97,8 @@
   <string name="dialog_summary_connection_timeout">Bağlantı zaman aşımına uğradı. Lütfen daha sonra tekrar deneyin.</string>
   <string name="dialog_summary_executing_command">Komut sunucuda gerçekleştirilirken lütfen bekleyin.</string>
   <string name="dialog_summary_external_storage">Harici depolama tespit edildi. AndStatus\'un verileri oraya depolamasını ister misiniz? Eski veriler taşınamaz fakat dahili hafızanızda kalacaklar.</string>
-  <string name="dialog_summary_external_storage_missing">Harici depolama mevcut değil veya monte edilmemiş. Dahili hafızayı kullanmak ister misiniz? Harici depoya depolanan herhangi bir veri hala geçerli olacak.</string>
   <string name="dialog_summary_registering_client">AndStatus kendisini istemci uygulaması olarak kaydederken lütfen bekleyiniz</string>
   <string name="dialog_summary_sending_message">Mesaj gönderilirken lütfen bekleyiniz.</string>
-  <string name="dialog_summary_service_unavailable">Twitter şu anda kapasitesinin üzerinde. Lütfen daha sonra tekrar deneyin.</string>
   <string name="dialog_summary_timeline_loading">Zaman çizelgesi yenilenirken lütfen bekleyin. Bağlantınıza bağlı olarak bir kaç dakika sürebilir.</string>
   <string name="dialog_title_acquiring_an_access_token">Bir Erişim bileti alınıyor</string>
   <string name="dialog_title_acquiring_a_request_token">Bir istek bileti alınıyor</string>

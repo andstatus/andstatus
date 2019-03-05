@@ -104,10 +104,8 @@
   <string name="dialog_summary_connection_timeout">Ligação expirada. Por favor tente mais tarde.</string>
   <string name="dialog_summary_executing_command">Por favor aguarde enquanto o comando está a ser executado no servidor.</string>
   <string name="dialog_summary_external_storage">Foi detetado um armazenamento externo. Gostaria de o utilizar para guardar os dados do AndStatus? Os dados atuais não poderão ser movidos, mas permanecerão na memória interna.</string>
-  <string name="dialog_summary_external_storage_missing">Armazenamento externo não detetado ou montado. Gostaria de utilizar a memória interna? Quaisquer dados armazenados no armazenamento externo estarão disponíveis.</string>
   <string name="dialog_summary_registering_client">Por favor aguarde enquanto o AndStatus se está a registar como aplicação.</string>
   <string name="dialog_summary_sending_message">Por favor aguarde pelo envio da mensagem.</string>
-  <string name="dialog_summary_service_unavailable">Neste momento, o Twitter está sobrecarregado. Por favor tente mais tarde.</string>
   <string name="dialog_summary_timeline_loading">Por favor aguarde pela atualização da cronologia. Esta operação poderá ser demorada, tendo em conta o seu tipo de ligação.</string>
   <string name="dialog_title_acquiring_an_access_token">Obtendo um \"token\" de acesso</string>
   <string name="dialog_title_acquiring_a_request_token">Obtendo um \"token\" de pedido</string>

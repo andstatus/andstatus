@@ -88,10 +88,8 @@
   <string name="dialog_summary_connection_timeout">Tilkobling tidsavbrutt. Prøv igjen senere.</string>
   <string name="dialog_summary_executing_command">Vent mens kommandoen utføres på serveren.</string>
   <string name="dialog_summary_external_storage">Ekstern lagring er oppdaget. Vil du at AndStatus skal lagre data på det eksterne lageret? Gamle data kan ikke flyttes, men forblir i det interne minnet.</string>
-  <string name="dialog_summary_external_storage_missing">Finner ikke ekstern lagring. Vil du bruke det interne minnet? Data lagret på ekstern lagringen vil fortsatt være tilgjengelig.</string>
   <string name="dialog_summary_registering_client">Vent mens AndStatus registrerer seg som et klientprogram</string>
   <string name="dialog_summary_sending_message">Vent mens meldingen sendes.</string>
-  <string name="dialog_summary_service_unavailable">Twitter er overbelastet. Prøv igjen senere.</string>
   <string name="dialog_summary_timeline_loading">Vent mens tidslinjen oppdateres. Dette kan ta flere minutter avhengig av tilkoblingen.</string>
   <string name="dialog_title_acquiring_an_access_token">Anskaffe et tilgangstoken</string>
   <string name="dialog_title_acquiring_a_request_token">Anskaffe en forespørselstoken</string>

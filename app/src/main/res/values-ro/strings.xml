@@ -100,10 +100,8 @@
   <string name="dialog_summary_connection_timeout">Conexiunea a expirat. Te rugăm să încerci încă o data mai târziu.</string>
   <string name="dialog_summary_executing_command">Te rugăm să aștepți cât comanda este executată pe server.</string>
   <string name="dialog_summary_external_storage">Stocare externă a fost detectată. Dorești ca AndStatus sa stocheze informațiile acolo? Informațiile vechi nu pot fi mutate, dar vor rămâne in memoria ta internă.</string>
-  <string name="dialog_summary_external_storage_missing">Stocare externă nu este prezenta sau nu este montată. Vrei sa folosești memoria internă? Orice informație stocată pe un dispozitiv de stocare externă va fi disponibilă.</string>
   <string name="dialog_summary_registering_client">Te rugăm să aștepți cât AndStatus se înregistrează ca aplicație client</string>
   <string name="dialog_summary_sending_message">Te rugăm să aștepți cât mesajul este trimis.</string>
-  <string name="dialog_summary_service_unavailable">Twitter este peste capacitate la momentul de față. Te rugăm să încerci mai târziu.</string>
   <string name="dialog_summary_timeline_loading">Te rugăm să aștepți cât Cronologia este reîncărcată. Asta poate dura câteva minute, in funcție de conexiunea dumneavoastră.</string>
   <string name="dialog_title_acquiring_an_access_token">Obținând un token de acces</string>
   <string name="dialog_title_acquiring_a_request_token">Obținând un token de solicitare</string>

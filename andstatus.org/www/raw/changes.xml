@@ -29,8 +29,8 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="47.03" android:versionCode="276"
-             versionDate="2019-03-03"
+    <release android:versionName="47.04" android:versionCode="277"
+             versionDate="2019-03-05"
              versionTitle="Avatars and Attachments improved">
         <changes>
             <change>When some Actor follows (or stops following) me, show detailed info about that Actor, not about my Actor.</change>
@@ -43,6 +43,10 @@
                 May be changed in Settings -> Attachments -> Download attached video</change>
             <change>Actor's avatar in their profile is shown with maximum resolution.</change>
             <change>Fixed: Cannot delete a Note's Title (Name) after it was first saved (even in a draft).</change>
+            <change>English text/phrases in the app improved with a help of
+                <a href="https://crowdin.com/profile/NCAA">@NCAA</a>. This is the first major English proofreading
+            since the project creation ten years ago.<br/>
+            Danish translation added.</change>
         </changes>
     </release>
     <release android:versionName="46.02" android:versionCode="272"

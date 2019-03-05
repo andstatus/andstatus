@@ -112,12 +112,8 @@
   <string name="dialog_summary_external_storage">外部存儲已被檢測到。 
 你希望AndStatus在那裡存儲數據嗎?
  舊數據無法移動, 但會保留在內部存儲器中。</string>
-  <string name="dialog_summary_external_storage_missing">外部存儲不存在或未安裝。 
-你想使用內部存儲器?
- 存儲在外部存儲器上的任何數據仍然可用。</string>
   <string name="dialog_summary_registering_client">請等待AndStatus註冊為客戶端應用程序</string>
   <string name="dialog_summary_sending_message">正在發送消息時請等待。</string>
-  <string name="dialog_summary_service_unavailable">Twitter目前正在超容量。 請稍後再試。</string>
   <string name="dialog_summary_timeline_loading">請等待時間線正在刷新。 這可能需要幾分鐘，具體取決於您的連接。</string>
   <string name="dialog_title_acquiring_an_access_token">獲取訪問令牌。</string>
   <string name="dialog_title_acquiring_a_request_token">獲取請求令牌</string>

@@ -101,10 +101,8 @@
   <string name="dialog_summary_connection_timeout">Nag-time out ang koneksyon. Pakiusap na subukan muli mamaya.</string>
   <string name="dialog_summary_executing_command">Pakiusap na maghintay habang isinasagawa ang utos sa server.</string>
   <string name="dialog_summary_external_storage">Natuklasan na may External Storage. Gusto mo ba doon mag store ng data ang AndStatus? Ang mga lumang data ay hindi maaring ilipat, ngunit mananatili sa iyong internal memory.</string>
-  <string name="dialog_summary_external_storage_missing">Walang External storage o ito ay unmounted. Gusto mo bang gamitin ang internal memory? Anumang data na nakalagay sa external storage ay magagamit pa rin.</string>
   <string name="dialog_summary_registering_client">Pakiusap na maghintay habang nilalagay ng AndStatus ang sarili bilang isang client application</string>
   <string name="dialog_summary_sending_message">Pakiusap na maghintay habang ipinapadala ang mensahe.</string>
-  <string name="dialog_summary_service_unavailable">Kasalukuyang higit sa kapasidad ang Twitter. Pakiusap na subukan muli mamaya.</string>
   <string name="dialog_summary_timeline_loading">Pakiusap na hintayin habang nag-refresh ang timeline. Ito ay maaring tumagal ng ilang minuto depende sa iyong koneksiyon.</string>
   <string name="dialog_title_acquiring_an_access_token">Kumukuha ng isang Access token</string>
   <string name="dialog_title_acquiring_a_request_token">Kumukuha ng request token</string>

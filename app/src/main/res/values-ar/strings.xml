@@ -101,10 +101,8 @@
   <string name="dialog_summary_connection_timeout">انتهت مهلة الاتصال. الرجاء المحاولة مرة أخرى لاحقاً.</string>
   <string name="dialog_summary_executing_command">الرجاء الانتظار بينما يتم تنفيذ الأمر على الخادم.</string>
   <string name="dialog_summary_external_storage">تم العثور على وحدة تخزين خارجية. هل ترغب أن يخزن Andstatus البيانات هناك؟ لا يمكن نقل البيانات القديمة، ولكنها سيبقى في الذاكرة الداخلية الخاصة بك.</string>
-  <string name="dialog_summary_external_storage_missing">التخزين الخارجي غير موجود. هل تريد استخدام الذاكرة الداخلية؟ أي بيانات مخزنة على وحدة التخزين الخارجية ستظل متاحة.</string>
   <string name="dialog_summary_registering_client">الرجاء الانتظار بينما AndStatus يسجل نفسه كتطبيق عميل</string>
   <string name="dialog_summary_sending_message">الرجاء الانتظار بينما يتم إرسال الرسالة.</string>
-  <string name="dialog_summary_service_unavailable">تويتر حاليا  فوق قدرته الاستيعابية. الرجاء المحاولة لاحقاً.</string>
   <string name="dialog_summary_timeline_loading">الرجاء الانتظار بينما يتم تحديث الط الزمني. قد يستغرق هذا عدة دقائق اعتماداً على الاتصال الخاص بك.</string>
   <string name="dialog_title_acquiring_an_access_token">الحصول على رمز الوصول</string>
   <string name="dialog_title_acquiring_a_request_token">الحصول على طلب الرمز</string>

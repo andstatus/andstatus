@@ -100,10 +100,8 @@
   <string name="dialog_summary_connection_timeout">Temps de connexion dépassé. Merci de réessayer ultérieurement.</string>
   <string name="dialog_summary_executing_command">Merci de patienter pendant que l\'opération est exécutée sur le serveur.</string>
   <string name="dialog_summary_external_storage">Un support externe a été détecté. Souhaitez-vous qu\'AndStatus l\'utilise pour enregistrer les informations ? Les anciennes données peuvent être supprimées, mais resteront sur la mémoire interne.</string>
-  <string name="dialog_summary_external_storage_missing">Support externe non présent ou démonté. Souhaitez-vous utiliser la mémoire interne ? Toute donnée enregistrée sur le support externe restera disponible.</string>
   <string name="dialog_summary_registering_client">Veuillez patienter pendant qu\'AndStatus s\'enregistre comme une application cliente</string>
   <string name="dialog_summary_sending_message">Merci de patienter pendant l\'envoi du message.</string>
-  <string name="dialog_summary_service_unavailable">Twitter est actuellement indisponible. Merci de réessayer ultérieurement.</string>
   <string name="dialog_summary_timeline_loading">Merci de patientier pendant le rafraîchissement de la timeline. Cela pourra prendre plusieurs minutes selon votre connexion.</string>
   <string name="dialog_title_acquiring_an_access_token">En attente du jeton d\'accès</string>
   <string name="dialog_title_acquiring_a_request_token">En attente du jeton de requête</string>

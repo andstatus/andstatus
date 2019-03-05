@@ -80,10 +80,8 @@
   <string name="dialog_summary_connection_timeout">Anslutningen har avbrutits. Försök igen senare.</string>
   <string name="dialog_summary_executing_command">Vänta medan kommandot körs på servern.</string>
   <string name="dialog_summary_external_storage">Extern lagring har upptäckts. Vill du att AndStatus skall lagra data där? Gammal data kan inte flyttas, men finns kvar i ditt interna minne.</string>
-  <string name="dialog_summary_external_storage_missing">Kan inte hitta media för extern lagring. Vill du använda det interna minnet? All data som lagras på externa lagringsmedia kommer fortfarande att finnas kvar.</string>
   <string name="dialog_summary_registering_client">Vänta medan AndStatus registrerar sig själv som en klientapplkation</string>
   <string name="dialog_summary_sending_message">Vänta medan meddelandet skickas.</string>
-  <string name="dialog_summary_service_unavailable">Twitter är för närvarande över kapacitet. Försök igen senare.</string>
   <string name="dialog_summary_timeline_loading">Vänta medan tidslinjen uppdateras. Detta kan ta flera minuter beroende på din anslutning.</string>
   <string name="dialog_title_authentication_failed">Verifieringen misslyckades</string>
   <string name="dialog_title_checking_credentials">Verifierar&#8230;</string>
