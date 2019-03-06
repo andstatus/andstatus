@@ -69,10 +69,8 @@ xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd 
     <p>Tap "Get Started" button below: screen to add
         new account will be opened.
     </p>
-    <p>First you will be prompted to select a Social network
-        of an account from a list.
-        Twitter, Pump.io and several "GNU social"-type systems (Quitter.se,
-        LoadAverage, etc.) are preconfigured.
+    <p>First you will be prompted to select a type of a Social network, and then - an instance (a server)
+        of the selected type. Several instances of each type are preconfigured.
     </p>
     <p>In a case your ("GNU social"-type) system is not listed,
         tap "Discover open instances" menu item to choose a system

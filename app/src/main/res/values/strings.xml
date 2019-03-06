@@ -419,7 +419,7 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="summary_preference_oauth_off">Basic authentication</string>
   <string name="summary_preference_oauth_on">OAuth (secure authentication) is on</string>
   <string name="summary_preference_origin_system">Tap here to select a Social network</string>
-  <string name="summary_preference_password">Your password in the Social network</string>
+  <string name="summary_preference_password">Your social network password</string>
   <string name="summary_preference_show_avatars_off">No actor avatars will be displayed</string>
   <string name="summary_preference_show_avatars_on">Actor avatars will be displayed</string>
   <string name="summary_preference_ssl_off">No SSL</string>
@@ -447,14 +447,14 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="sync_older_messages">Sync activities before %1$s</string>
   <string name="sync_over_wifi_only">Sync over Wi-Fi only</string>
   <string name="sync_failed">Sync failed</string>
-  <string name="sync_frequency_minutes">Sync frequency in minutes. Leave it blank to have the default value: </string>
+  <string name="sync_frequency_minutes">Sync frequency in minutes. Leave blank to use default value: </string>
   <string name="synced_automatically">Synced automatically</string>
   <string name="synced_abbreviated">Sync</string>
   <string name="syncing">Syncing&#8230;</string>
   <string name="syncing_timeline_for_somebody">Syncing %1$s for %2$s</string>
   <string name="system_information">System information</string>
   <string name="system_is_busy_try_later">The system is busy. Please try again later.</string>
-  <string name="tap_on_a_timeline_title_behaviour">Tap on a Timeline Title behaviour</string>
+  <string name="tap_on_a_timeline_title_behaviour">Behavior when tapping a Timeline title</string>
   <string name="theme_color_entries_default">Device default</string>
   <string name="theme_color_entries_light">Light</string>
   <string name="theme_color_entries_dark">Dark</string>
