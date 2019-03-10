@@ -18,7 +18,7 @@
  -->
 <FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
 xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../res-src/fb2/FictionBook.xsd">
+xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd ../../../../../res-src/fb2/FictionBook.xsd">
 <description>
     <title-info>
         <genre>computers</genre>
@@ -52,6 +52,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
     <p>AndStatus er en sosial medie klient basert på åpen kilde kode, benytter lav båndbredde og viser samtaler i en tre-lignende struktur. Klienten støtter flere protokoller, inkludert GNU social, twitter og pump.io. AndStatus kombinderer dine kontoer fra alle nettverkene i en og samme tidslinje og tillater lesing av meldingene også når du ikke har nettverksforbindelse.</p>
     <p>Link til denne brukermanualen er tilgjengelig i menyen-&gt;Hjelp.</p>
     <p>Endringsloggen på neste side viser beskrivelse og lenker til nye funksjoner for AndStatus.</p>
+    <p>.</p>
 </section>
 <section>
     <title>

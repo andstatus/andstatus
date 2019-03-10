@@ -117,7 +117,7 @@
   <string name="dialog_title_preference_connection_timeout">Connection timeout in seconds</string>
   <string name="dialog_title_preference_frequency">Updates are fetched every&#8230;</string>
   <string name="dialog_title_preference_history_size">History Size</string>
-  <string name="dialog_title_preference_history_time">History Time</string>
+  <string name="dialog_title_preference_history_time">History Duration</string>
   <string name="dialog_title_preference_min_log_level">Minimum logging level</string>
   <string name="dialog_title_preference_password">Password</string>
   <string name="dialog_title_preference_theme_color">Select a Color Theme</string>
@@ -410,8 +410,8 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="summary_preference_enable_android_backup_off">No Android backups will be requested</string>
   <string name="summary_preference_enable_android_backup_on">AndStatus notifies Android on data changes to be backed up (experimental)</string>
   <string name="summary_preference_frequency">Updates are fetched every {0}.</string>
-  <string name="summary_preference_history_size">Note history is up to {0}.</string>
-  <string name="summary_preference_history_time">Note history is up to {0}.</string>
+  <string name="summary_preference_history_size">{0} latest notes are retained.</string>
+  <string name="summary_preference_history_time">Note history is retained for {0}.</string>
   <string name="summary_preference_host">Host name of the system, e.g. quitter.se</string>
   <string name="summary_preference_theme_color">Color and style</string>
   <string name="summary_preference_min_log_level">The level is {0}.</string>

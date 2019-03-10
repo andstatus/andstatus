@@ -103,6 +103,7 @@ pero non quere reinstalalo</string>
   <string name="dialog_summary_checking_credentials">Por favor agarde mentras se valida a súa conta.</string>
   <string name="dialog_summary_connection_timeout">Caducou a conexión. Inténteo máis tarde por favor.</string>
   <string name="dialog_summary_executing_command">Por favor espere mentras o comando se executa no servidor.</string>
+  <string name="dialog_summary_external_storage">Os datos da app AndStatus estánse a pasar entre o almacenamento interno e externo.</string>
   <string name="dialog_summary_registering_client">Por favor agarde mentras AndStatus se rexistra a si mesmo como aplicativo cliente</string>
   <string name="dialog_summary_sending_message">Por favor agarde mentras se envía a mensaxe.</string>
   <string name="dialog_summary_timeline_loading">Por favor agarde mentras se renova a liña de tempo. Esto pode levar uns minutos dependendo da súa conexión.</string>

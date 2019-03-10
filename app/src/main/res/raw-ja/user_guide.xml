@@ -18,7 +18,7 @@
  -->
 <FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
 xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../res-src/fb2/FictionBook.xsd">
+xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd ../../../../../res-src/fb2/FictionBook.xsd">
 <description>
     <title-info>
         <genre>computers</genre>
@@ -57,6 +57,9 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
     <p>アクションバー&gt;ヘルプで、このガイドへのリンクがご利用できます。</p>
     <p>次ページの変更履歴で、AndStatus のすべての機能の説明と
 議論へのリンクを参照することができます。</p>
+    <p>ユーザーの <strong>質問</strong> のほとんどは、対応する "問題" のトピック、
+        特に "質問と回答" というラベルで既に回答されています。
+        <a xlink:href="https://github.com/andstatus/andstatus/issues?q=label%3AQuestions%26Answers%20">質問と回答</a> で検索してください。.</p>
 </section>
 <section>
     <title>

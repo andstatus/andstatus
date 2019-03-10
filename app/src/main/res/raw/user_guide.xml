@@ -72,10 +72,10 @@ xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd 
     <p>First you will be prompted to select a type of a Social network, and then - an instance (a server)
         of the selected type. Several instances of each type are preconfigured.
     </p>
-    <p>In a case your ("GNU social"-type) system is not listed,
-        tap "Discover open instances" menu item to choose a system
-        from a live online list, maintained by GNU social community;
-        or "Add new system" manually before adding new account.</p>
+    <p>In a case your ("GNU social"-type of) system is not listed,
+        tap the "Discover open instances" menu item to pick a system
+        from a live online list, maintained by the GNU social community;
+        or "Add new system" manually prior to adding a new account.</p>
     <p>For Twitter you are allowed to press "Add this account"
         immediately.
         For other systems you will be prompted to type your Username and Password
@@ -103,14 +103,14 @@ xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd 
     </p>
     <p>In order to perform an action on a message in the list you
         should
-        <strong>hold down</strong>
-        on it to get its "Context menu".
+        <strong>long press</strong>
+        it to access its "Context menu".
     </p>
-    <p>You may <strong>click</strong>
+    <p>You may <strong>tap</strong>
         a message to get more details on it and to see
-        a conversation tree to which the message belongs.
+        the conversation tree to which the message belongs.
     </p>
-    <p>Open a "Navigation Drawer" on a left and tap current Timeline
+    <p>Open a "Navigation Drawer" on the left and tap the current Timeline
         type item ("Home")
         to switch to the other views.
     </p>
@@ -120,16 +120,16 @@ xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd 
         <p>3. Sending and replying</p>
     </title>
     <p>1. In order to update your status, tap the "Post" button ("Tweet" for Twitter).
-        It looks like an "Envelope+".
-        Message editor will be opened at a bottom of the screen.
+        It resembles an "Envelope+".
+        A message editor will open at a bottom of the screen.
     </p>
-    <p>2. Type in a text of your message into the text area.
+    <p>2. Enter your message content in the text area.
     </p>
-    <p>3. Optionally, attach an image to your post. Now, as a message Editor is visible,
+    <p>3. Optionally, attach an image to your post. While the message Editor is visible,
         another button appears on an Action bar: "Paperclip+".
         (The "Attach" menu item may be hidden under an "Overflow" button: "three vertical dots").
-        Tap on that "Attach" button and select a picture. After successful attachment of the image
-        you will see "(with media)" text above a text area, where your are composing your message.
+        Tap the "Attach" button and select a picture. After successful attachment of the image,
+        the text "(with media)" will appear below the text area, in which you're composing your message.
     </p>
     <p>4. Tap <strong>Send</strong> to send your message. If you are offline, the message will be
         put into a Queue to be automatically sent later. (Use "Commands in a queue" menu item

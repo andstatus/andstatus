@@ -103,6 +103,7 @@
   <string name="dialog_summary_checking_credentials">アカウントが確認されるまでお待ちください。</string>
   <string name="dialog_summary_connection_timeout">接続がタイムアウトしました。後でもう一度やり直してください。</string>
   <string name="dialog_summary_executing_command">サーバーでコマンドが実行されるまでお待ちください。</string>
+  <string name="dialog_summary_external_storage">AndStatus アプリのデータは、内部と外部ストレージの間で移動しています。</string>
   <string name="dialog_summary_registering_client">AndStatus 自体がクライアント アプリケーションとして登録されるまでお待ちください。</string>
   <string name="dialog_summary_sending_message">メッセージが送信されるまでお待ちください。</string>
   <string name="dialog_summary_timeline_loading">タイムラインが更新されるまでお待ちください。接続状況によって数分かかることがあります。</string>

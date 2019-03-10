@@ -52,6 +52,7 @@
   <string name="category_title_preference_origin">Sosiale nettverk</string>
   <string name="category_title_preference_settings">Instillinger</string>
   <string name="changed">Endret</string>
+  <string name="check_and_fix_data">Kontroller og reparer data</string>
   <string name="color_black">Svart</string>
   <string name="color_black_cat">Svart katt</string>
   <string name="color_blue">Blå</string>
@@ -76,6 +77,7 @@
   <string name="command_stop_following_user">Avfølg</string>
   <string name="crash_dialog_text">AndStatus programmet stoppet. Du kan hjelpe å fikse problemet. Trykk Ok for å sende en rapport om avbruddet til utviklere via e-post.</string>
   <string name="crash_dialog_comment_prompt">Angi under din kommentarer om hendelsen. Slik informasjon er nyttig for å kunne rette på problemet: feks. når det skjedde og kanskje også hvordan vi kan gjenskape problemet.</string>
+  <string name="created">opprettet</string>
   <string name="created_label">Opprettet</string>
   <string name="custom_locale_title">Applikasjons språk</string>
   <string name="set_as_default_timeline">Angi som standard tidslinje</string>
@@ -87,7 +89,6 @@
   <string name="dialog_summary_checking_credentials">Vent mens kontoen blir kontrollert.</string>
   <string name="dialog_summary_connection_timeout">Tilkobling tidsavbrutt. Prøv igjen senere.</string>
   <string name="dialog_summary_executing_command">Vent mens kommandoen utføres på serveren.</string>
-  <string name="dialog_summary_external_storage">Ekstern lagring er oppdaget. Vil du at AndStatus skal lagre data på det eksterne lageret? Gamle data kan ikke flyttes, men forblir i det interne minnet.</string>
   <string name="dialog_summary_registering_client">Vent mens AndStatus registrerer seg som et klientprogram</string>
   <string name="dialog_summary_sending_message">Vent mens meldingen sendes.</string>
   <string name="dialog_summary_timeline_loading">Vent mens tidslinjen oppdateres. Dette kan ta flere minutter avhengig av tilkoblingen.</string>
@@ -114,6 +115,7 @@
   <string name="dialog_title_service_unavailable">Tjeneste utilgjengelig</string>
   <string name="dialog_title_timeline_loading">Oppdaterer en tidslinje...</string>
   <string name="discover_open_instances_title">Oppdag åpne instanser</string>
+  <string name="download_attached_video">Last ned vedlagt video</string>
   <string name="download_status_draft">utkast</string>
   <string name="download_status_unsent">usendte</string>
   <string name="drawer_close">Lukk navigasjonsskuff</string>
@@ -140,11 +142,13 @@
   <string name="fetch_frequency_entries_1_day">dag</string>
   <string name="filters_title">Filtre</string>
   <string name="filters_summary">Globale filtrene på alle meldinger</string>
+  <string name="followed">fulgt</string>
   <string name="followed_by">Fulgt av</string>
   <string name="followers">Følgere</string>
   <string name="followers_of">Følgere av \"%1s\"</string>
   <string name="friends">Venner</string>
   <string name="friends_of">Venner av \"%1s\"</string>
+  <string name="gestures">Bevegelser</string>
   <string name="get_followers">Få følgere</string>
   <string name="get_friends">Få venner</string>
   <string name="get_open_instances_title">Hent åpne instanser</string>
@@ -176,6 +180,7 @@
   <string name="id_of_this_message_was_not_specified">Id for denne meldingen ble ikke angitt</string>
   <string name="in_combined_global_search_label">Inkludere i \"Globale søk\" i den kombinerte tidslinjen</string>
   <string name="in_combined_public_reload_label">Inkludere i \"Synkronisering\" i kombinert offentlig tidslinje</string>
+  <string name="in_context">I kontekst</string>
   <string name="label_accountselector">Velg en konto</string>
   <string name="label_allow_html_content">Tillat HTML innhold</string>
   <string name="label_backup">Backup programdata til SD minnekort</string>
@@ -185,6 +190,7 @@
   <string name="label_host">Vert</string>
   <string name="label_manage_origin_systems">Administrere sosiale nettverk</string>
   <string name="label_origin_list">Sosiale nettverk</string>
+  <string name="label_origin_name">Navn på det sosiale nettverket</string>
   <string name="label_origin_system">Sosialt nettverk</string>
   <string name="label_origin_type">Type sosialt nettverk</string>
   <string name="label_restore">Gjenopprette programdata fra sikkerhetskopi</string>
@@ -193,6 +199,8 @@
   <string name="latest_error_label">Siste feil</string>
   <string name="loading">Laster</string>
   <string name="malformed_link">Misformet link</string>
+  <string name="manage_accounts">Administrer kontoer</string>
+  <string name="manage_timelines">Administrer tidslinjer</string>
   <string name="mark_all_as_read">Merk alle som lest</string>
   <string name="mention_as_webfingerid_title">Som @webFingerId</string>
   <string name="menu_item_act_as">Fungere som...</string>
@@ -202,6 +210,7 @@
   <string name="menu_item_copy_author">Kopier @bruker til utklippstavlen</string>
   <string name="menu_item_destroy_favorite">Angre favoritt</string>
   <string name="menu_item_destroy_reblog">Angre repost</string>
+  <string name="menu_item_destroy_reblog_pumpio">Angre deling</string>
   <string name="menu_item_destroy_reblog_twitter">Angre retweet</string>
   <string name="menu_item_destroy_status">Fjerne meldingen</string>
   <string name="menu_item_edit">Rediger</string>
@@ -213,6 +222,7 @@
   <string name="menu_item_private_message">Privat notater</string>
   <string name="menu_item_reply">Svar</string>
   <string name="menu_item_reblog">Send på ny</string>
+  <string name="menu_item_reblog_pumpio">Del via Pump.io</string>
   <string name="menu_item_reblog_twitter">Retweet</string>
   <string name="menu_item_resend">Send på ny</string>
   <string name="menu_item_share">Del</string>
@@ -229,12 +239,15 @@
   <string name="message_source_to">til %1$s</string>
   <string name="message_twitter">Tweet</string>
   <string name="never">Aldri</string>
+  <string name="new_items_count_abbreviated">Ny</string>
   <string name="no">Nei</string>
   <string name="no_more_messages">Ingen flere aktiviteter</string>
   <string name="not_set">ikke sendt</string>
+  <string name="nothing_in_the_loadable_list">Ingenting her ennå&#8230;</string>
   <string name="notification_events_follow">Følgere</string>
   <string name="notification_events_like">Favoritter</string>
   <string name="notification_events_private">Privat</string>
+  <string name="notification_icon_alternative_title">Alternativt varslingsikon</string>
   <string name="notification_sound">Varslingslyd</string>
   <string name="notifications_title">Varslinger</string>
   <string name="oauth_activity_label">OAuth</string>
@@ -274,6 +287,7 @@
   <string name="preference_use_kitkat_media_chooser_title">Moderne grensesnittet til å velge et vedlegg</string>
   <string name="reblogged_by">reposted av %1$s</string>
   <string name="reblogged_by_twitter">retweeted av %1$s</string>
+  <string name="received_sometime_ago">mottatt %s</string>
   <string name="refresh_title">Oppdater fra mellomlager</string>
   <string name="refresh_timeline_automatically_title">Oppdatere tidslinjen automatisk</string>
   <string name="refresh_timeline_automatically_summary">Tidslinjen er oppdatert fra en lokal hurtigbuffer. Ingen Internett-tilgang kreves.</string>
@@ -289,6 +303,7 @@
   <string name="reltime_months_ago_formats_2">{0} måneder siden</string>
   <string name="reltime_seconds_ago_formats_1">ett sekund siden</string>
   <string name="reltime_seconds_ago_formats_2">{0} sekunder siden</string>
+  <string name="reltime_some_time_ago">en stund siden</string>
   <string name="reltime_just_now">akkurat nå</string>
   <string name="reltime_years_ago">mer enn et år siden</string>
   <string name="remove_account_menu_item">Fjern konto</string>
@@ -296,9 +311,12 @@
   <string name="remove_account_dialog_text">Fjerner du kontoen, slettes alle data fra enheten. Vil du fortsette?</string>
   <string name="resolve_view">Vis melding</string>
   <string name="search_timeline_label">Søk etter meldinger, brukere og hashtags</string>
+  <string name="select_backup_folder">Velg sikkerhetskopieringsmappe</string>
   <string name="sent">Sendt</string>
   <string name="settings_action">Instillinger</string>
   <string name="settings_activity_title">Instillinger</string>
+  <string name="show_duplicates">Vis duplikater</string>
+  <string name="show_timeline_messages">Åpne tidslinje</string>
   <string name="since">Siden %s</string>
   <string name="splash_button_learn_more">Lær mer</string>
   <string name="splash_button_get_started">Kom i gang</string>
@@ -334,6 +352,7 @@
   <string name="summary_preference_user_in_timeline">Brukeren vises som \"{0}\"</string>
   <string name="summary_preference_vibration_off">Vibrasjon er deaktivert</string>
   <string name="summary_preference_vibration_on">Vibrere på innkommende melding</string>
+  <string name="sync_failed">Synkroniseringen mislyktes</string>
   <string name="syncing">Synkroniserer...</string>
   <string name="syncing_timeline_for_somebody">Synkroniserer %1$s for %2$s</string>
   <string name="system_information">Systeminformasjon</string>
@@ -342,7 +361,9 @@
   <string name="theme_color_entries_light">Lys</string>
   <string name="theme_color_entries_dark">Mørk</string>
   <string name="theme_size_entries_large">Stor</string>
+  <string name="theme_size_entries_larger">Større</string>
   <string name="theme_size_entries_small">Liten</string>
+  <string name="theme_size_entries_smaller">Mindre</string>
   <string name="theme_size_entries_standard">Standard</string>
   <string name="this_option_is_turned_off">(deaktivert)</string>
   <string name="timeline_reloaded">Tidslinjen er lastet på ny.</string>
@@ -368,11 +389,13 @@
   <string name="title_preference_change_log">Endringslogg</string>
   <string name="title_preference_connection_timeout">Tidsavbrudd på tilkobling</string>
   <string name="title_preference_contact_developer">Kontakt utvikleren</string>
+  <string name="title_preference_debugging">Feilsøking</string>
   <string name="title_preference_download_attachments_over_wifi_only">Laste ned vedlegg kun via Wi-Fi</string>
   <string name="title_preference_enable_android_backup">Aktivere automatisk Android sikkerhetskopiering</string>
   <string name="title_preference_enter_sends_message">ENTER tasten sender melding</string>
   <string name="title_preference_history_size">Historie størrelse</string>
   <string name="title_preference_history_time">Historie tid</string>
+  <string name="title_preference_is_default_account">Dette er standardkontoen</string>
   <string name="title_preference_min_log_level">Minimum loggingsnivå</string>
   <string name="title_preference_oauth">OAuth</string>
   <string name="title_preference_old_messages_first_in_conversation">Vis eldre meldinger først samtale treet</string>
@@ -400,6 +423,7 @@
   <string name="title_preference_vibration">Vibrasjon</string>
   <string name="title_timeline">Tidslinje</string>
   <string name="translator_credits">Oversetter info</string>
+  <string name="undid_follow">sluttet å følge</string>
   <string name="unimplemented">Ikke implementert.</string>
   <string name="unknown_in_parenthesis">(ukjent)</string>
   <string name="unknown_userlist">(Ukjent Brukerliste)</string>
@@ -412,5 +436,6 @@
   <string name="user_in_timeline_entries_real_name_at_username">Virkelige navn @username</string>
   <string name="user_list">Brukerlisten</string>
   <string name="users_of_message">Brukere av melding</string>
+  <string name="view_media">Se media</string>
   <string name="yes">Ja</string>
 </resources>

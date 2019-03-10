@@ -1,18 +1,21 @@
-AndStatus er en sosial nettverksklient, basert på åpenkilde kode, benytter lav båndbreddeåpen og viser samtalene i en tre-struktur. Applikasjonen støtter flere protokoller inkluder
-GNU social ("StatusNet". eks. Quitter, LoadAverage, Vinilox, etc.), Twitter og Pump.io. AndStatus kan kombinere din bruker fra alle nettverkene i en og samme tidslinje/strøm,
-samt gir deg muligheten til å lese og oppdatere din status selv om du ikke har nettverkstilgang.
+AndStatus er en åpen kildekode-flere kontoer-klient for flere sosiale nettverk, inkludert
+GNU social, Mastodon, Twitter and Pump.io.
+AndStatus kan kombinere strømmer fra alle nettverk i en tidslinje,
+og det lar deg lese og poste selv når du er frakoblet.
 
-Applikasjonen er bygget for Android v.4.1+ enheter. Åpen kilde kode lisensiert.
+For Android v.7.0+ enheter.
 
 Unike funksjoner for AndStatus:
 
-1. Du kan ha flere kontoer på forskjellige sosiale nettverk. Du kan også ha flere kontoer i ett og samme nettverk, skrive eller svare fra ditt valgte "Jeg" og dele mellom kontoer og nettverk.
-2. Du trenger ikke være online for å oppdatere din status: ikke sendte meldinger er lagret selv etter omstart av enheten.  De vil bli forsøkt sendt på nytt (lagret i en "retry kø") når din enhet er online igjen.
+1. Mange kontoer i ulike sosiale nettverk. Du kan også ha flere kontoer i ett og samme nettverk, skrive eller svare fra ditt valgte "Jeg" og dele mellom kontoer og nettverk.
+2. Du trenger ikke å være online for å lese tidslinjer og å legge inn oppdateringene dine: Utkast og usendte innlegg holdes selv etter omstart. De vil bli sendt når enheten din er online.
 3. Behagelig organiserte samtaler i en tre-lignende samtale struktur.
-4. "Globalt søk" tillater å søke offentlige meldinger i alle dine registrerte nettverk, dette ved ett og samme søk.
-5. Tweeter/meldinger/avatarer/bilder er synkronisert i bakgrunnen, når din enhet har god nettverksforbindelse.
-6. Mellomlagrede data kan være lagret for år eller for flere dager - det er ditt valg.
-7. Enkel sikkerhetskopiering og gjenopprettelse av kontoer og data mellom dine enheter.
-8. Fri/gratis og uten reklame, støttet av fellesskapet.
+4. "Global search" allowing you to search public notes in all networks with one query.
+5. Lists of Friends and Followers, presented as User Lists and as Timelines (with the latest note by each User).
+6. Notes (tweets)/avatars/attached images are being synced in a background, when your device has a good connection. Som standard lastes vedlegg bare ned via WiFi.
+7. Mellomlagrede data kan være lagret for år eller for flere dager - det er ditt valg.
+8. Backup accounts and notes and Restore them on any of your devices. Own your data!
+9. Fri/gratis og uten reklame, støttet av fellesskapet.
 
-Se endrings loggen for en beskrivelse av all ny funksjonalitet i AndStatus med lenker til diskusjonen av disse:
+Se en endringslogg for beskrivelser av alle funksjoner i AndStatus med lenker til diskusjonene deres:
+http://andstatus.org/changelog.html

@@ -18,7 +18,7 @@
  -->
 <FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
 xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../res-src/fb2/FictionBook.xsd">
+xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd ../../../../../res-src/fb2/FictionBook.xsd">
 <description>
     <title-info>
         <genre>computers</genre>
@@ -26,11 +26,11 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
             <first-name>AndStatus project</first-name>
             <last-name></last-name>
         </author>
-        <book-title>Guía de usuario de AndStatus</book-title>
+        <book-title>Guía de usuaria de AndStatus</book-title>
         <lang>gl</lang>
         <src-lang>en</src-lang>
         <translator>
-            <nickname>Lugar para os créditos do tradutor</nickname>
+            <nickname>Lugar para os créditos da tradutora</nickname>
         </translator>
     </title-info>
     <document-info>
@@ -57,6 +57,10 @@ e permítelle ler e respostar incluso mentras está fora de liña.</p>
     <p>Unha ligazón a esta guía está dispoñible na barra de Acción bar-&gt;Help.</p>
     <p>O rexistro de cambios na seguinte páxina permitiralle ver as descripcións
 e ligazóns a discusións sobre as características de AndStatus.</p>
+    <p>A maioría das <strong>preguntas</strong> das usuarias xa están respostadas nos fíos de "Asuntos", especialmente os etiquetados como "Preguntas&amp;Respostas". 
+   Busque e lea en eles:
+        <a xlink:href="https://github.com/andstatus/andstatus/issues?q=label%3AQuestions%26Answers%20">Preguntas
+            e Respostas</a>.</p>
 </section>
 <section>
     <title>

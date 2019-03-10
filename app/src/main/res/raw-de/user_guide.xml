@@ -18,7 +18,7 @@
  -->
 <FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
 xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../res-src/fb2/FictionBook.xsd">
+xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd ../../../../../res-src/fb2/FictionBook.xsd">
 <description>
     <title-info>
         <genre>computers</genre>
@@ -54,6 +54,10 @@ Unterstützt werden unterschiedliche Protokolle, inklusive GNU social, Twitter u
 AndStatus kombiniert deine Konten aller Netzwerke in eine Timeline und ermöglicht Lesen sowie Posting auch offline.</p>
     <p>Link zu dieser Anleitung ist in der Menüleiste-&gt;Hilfe enthalten.</p>
     <p>Das Change Log auf der nächsten Seite bietet einen Blick auf Beschreibungen und Links zu Diskussionen betreffend aller Eigenschaften von AndStatus.</p>
+    <p>Die meisten <strong>Fragen</strong> von Nutzern werden bereits in entsprechenden Themen "Fragen" beantwortet, speziell
+        als "Fragen &amp; Antworten" markiert. Siehe und suche unter ihnen:
+        <a xlink:href="https://github.com/andstatus/andstatus/issues?q=label%3AQuestions%26Answers%20">Fragen
+            und Antworten</a>.</p>
 </section>
 <section>
     <title>

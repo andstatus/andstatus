@@ -12,6 +12,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -30,7 +31,9 @@ public class AppWidgets {
 
     private AppWidgets(NotificationEvents events) {
         this.events = events;
-        list = Arrays.stream(
+        list = events.myContext == null
+            ? Collections.emptyList()
+            : Arrays.stream(
                 AppWidgetManager.getInstance(events.myContext.context())
                         .getAppWidgetIds(new ComponentName(events.myContext.context(), MyAppWidgetProvider.class)))
                 .boxed()

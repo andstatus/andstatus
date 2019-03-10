@@ -1,1 +1,1 @@
-Sosial nettverks klient, lav båndbredde og tre-basert struktur for samtalene
+Åpen kildekode flere kontoer klient for mangfoldig sosiale nettverk
