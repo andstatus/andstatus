@@ -18,6 +18,7 @@ package org.andstatus.app.context;
 
 import android.net.Uri;
 
+import org.andstatus.app.FirstActivity;
 import org.andstatus.app.account.DemoAccountInserter;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.backup.ProgressLogger;
@@ -179,9 +180,9 @@ public final class DemoData {
         protected Void doInBackground2(Void... voids) {
             MyLog.i(TAG_ASYNC, method + ": started");
             if (progressCallback != null) {
-                DbUtils.waitMs(TAG_ASYNC, 3000);
-                progressCallback.onProgressMessage("Generating demo data...");
                 DbUtils.waitMs(TAG_ASYNC, 1000);
+                progressCallback.onProgressMessage("Generating demo data...");
+                DbUtils.waitMs(TAG_ASYNC, 500);
             }
             MyLog.v(TAG_ASYNC, "Before initialize 1");
             MyContextHolder.initialize(myContext.context(), method);
@@ -201,7 +202,7 @@ public final class DemoData {
             MyServiceManager.setServiceUnavailable();
             if (progressCallback != null) {
                 progressCallback.onProgressMessage("Demo accounts added...");
-                DbUtils.waitMs(TAG_ASYNC, 1000);
+                DbUtils.waitMs(TAG_ASYNC, 500);
             }
             assertTrue("Context is not ready " + MyContextHolder.get(), MyContextHolder.get().isReady());
             demoData.checkDataPath();
@@ -221,7 +222,7 @@ public final class DemoData {
             new DemoGnuSocialConversationInserter().insertConversation();
             if (progressCallback != null) {
                 progressCallback.onProgressMessage("Demo notes added...");
-                DbUtils.waitMs(TAG_ASYNC, 1000);
+                DbUtils.waitMs(TAG_ASYNC, 500);
             }
             if (MyContextHolder.get().accounts().size() == 0) {
                 fail("No persistent accounts");
@@ -239,10 +240,16 @@ public final class DemoData {
             MyLog.v(TAG_ASYNC, "After initialize 3");
             if (progressCallback != null) {
                 progressCallback.onProgressMessage("Demo data is ready");
-                DbUtils.waitMs(TAG_ASYNC, 1000);
+                DbUtils.waitMs(TAG_ASYNC, 500);
             }
             MyLog.i(TAG_ASYNC, method + ": ended");
             return null;
+        }
+
+        @Override
+        protected void onFinish(Void aVoid, boolean success) {
+            FirstActivity.checkAndUpdateLastOpenedAppVersion(myContext.context(), true);
+            progressCallback.onComplete(success);
         }
     }
 
