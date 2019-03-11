@@ -410,7 +410,7 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="summary_preference_enable_android_backup_off">No Android backups will be requested</string>
   <string name="summary_preference_enable_android_backup_on">AndStatus notifies Android on data changes to be backed up (experimental)</string>
   <string name="summary_preference_frequency">Updates are fetched every {0}.</string>
-  <string name="summary_preference_history_size">{0} latest notes are retained.</string>
+  <string name="summary_preference_history_size">Latest {0} notes are retained.</string>
   <string name="summary_preference_history_time">Note history is retained for {0}.</string>
   <string name="summary_preference_host">Host name of the system, e.g. quitter.se</string>
   <string name="summary_preference_theme_color">Color and style</string>

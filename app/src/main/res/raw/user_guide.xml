@@ -72,7 +72,7 @@ xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd 
     <p>First you will be prompted to select a type of a Social network, and then - an instance (a server)
         of the selected type. Several instances of each type are preconfigured.
     </p>
-    <p>In a case your ("GNU social"-type of) system is not listed,
+    <p>In case your ("GNU social"-type of) system is not listed,
         tap the "Discover open instances" menu item to pick a system
         from a live online list, maintained by the GNU social community;
         or "Add new system" manually prior to adding a new account.</p>
@@ -121,7 +121,7 @@ xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd 
     </title>
     <p>1. In order to update your status, tap the "Post" button ("Tweet" for Twitter).
         It resembles an "Envelope+".
-        A message editor will open at a bottom of the screen.
+        A message editor will open at the bottom of the screen.
     </p>
     <p>2. Enter your message content in the text area.
     </p>
