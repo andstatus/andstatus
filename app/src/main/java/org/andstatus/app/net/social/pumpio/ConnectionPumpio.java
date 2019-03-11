@@ -516,15 +516,10 @@ public class ConnectionPumpio extends Connection {
     }
     
     @Override
-    public Actor getActor2(Actor actorIn, String usernameIn) throws ConnectionException {
-        String username = UriUtils.isRealOid(actorIn.oid) ? actorOidToUsername(actorIn.oid) : usernameIn;
-        Actor actorIn2 = Actor.fromOid(data.getOrigin(), UriUtils.isRealOid(actorIn.oid) ? actorIn.oid : "").setUsername(username);
-        ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrlForActor(this, ApiRoutineEnum.GET_ACTOR, actorIn2);
+    public Actor getActor2(Actor actorIn) throws ConnectionException {
+        ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrlForActor(this, ApiRoutineEnum.GET_ACTOR, actorIn);
         JSONObject jso = conu.httpConnection.getRequest(conu.uri);
-        Actor actor = actorFromJson(jso);
-        MyLog.v(this, () -> "getActor oid='" + actorIn.oid
-                + "', username='" + usernameIn + "' -> " + actor.getRealName());
-        return actor;
+        return actorFromJson(jso);
     }
 
 }

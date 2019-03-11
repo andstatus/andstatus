@@ -177,7 +177,7 @@ public class ConnectionMastodonTest {
     public void testGetActor() throws IOException {
         connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.mastodon_get_actor);
 
-        Actor actor = connection.getActor(Actor.fromOid( accountActor.origin,"5962"), "AndStatus");
+        Actor actor = connection.getActor(Actor.fromOid( accountActor.origin,"5962"));
         assertTrue(actor.toString(), actor.nonEmpty());
         assertEquals("Actor's Oid", "5962", actor.oid);
         assertEquals("Username", "AndStatus", actor.getUsername());

@@ -361,26 +361,19 @@ public abstract class Connection {
     public abstract AActivity follow(String actorOid, Boolean follow) throws ConnectionException;
 
     /** Get information about the specified Actor */
-    public Actor getActor(Actor actorIn, String username) throws ConnectionException {
+    public Actor getActor(Actor actorIn) throws ConnectionException {
         long time = MyLog.uniqueCurrentTimeMS();
-        Actor actor = getActor2(actorIn, username);
+        Actor actor = getActor2(actorIn);
         if (!actor.isPartiallyDefined()) {
             if (actor.getUpdatedDate() <= SOME_TIME_AGO) actor.setUpdatedDate(time);
         }
+        MyLog.v(this, () -> "getActor oid='" + actorIn.oid
+                + "', username='" + actorIn.getUsername() + "' -> " + actor.getRealName());
         return actor;
     }
 
-    protected abstract Actor getActor2(Actor actorIn, String username) throws ConnectionException;
+    protected abstract Actor getActor2(Actor actorIn) throws ConnectionException;
     
-    protected final String fixSinceId(String sinceId) {
-        String out = "";
-        if (!StringUtils.isEmpty(sinceId) && sinceId.length()>1) {
-            // For some reason "0" results in "bad request"
-            out = sinceId;
-        }
-        return out;
-    }
-
     @NonNull
     protected String strFixedDownloadLimit(int limit, ApiRoutineEnum apiRoutine) {
         return String.valueOf(fixedDownloadLimit(limit, apiRoutine));

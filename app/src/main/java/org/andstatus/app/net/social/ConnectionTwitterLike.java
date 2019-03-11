@@ -499,18 +499,15 @@ public abstract class ConnectionTwitterLike extends Connection {
      * @see <a href="https://dev.twitter.com/docs/api/1.1/get/users/show">GET users/show</a>
      */
     @Override
-    public Actor getActor2(Actor actorIn, String username) throws ConnectionException {
+    public Actor getActor2(Actor actorIn) throws ConnectionException {
         Uri.Builder builder = getApiPath(ApiRoutineEnum.GET_ACTOR).buildUpon();
         if (UriUtils.isRealOid(actorIn.oid)) {
             builder.appendQueryParameter("user_id", actorIn.oid);
         } else {
-            builder.appendQueryParameter("screen_name", username);
+            builder.appendQueryParameter("screen_name", actorIn.getUsername());
         }
         JSONObject jso = getRequest(builder.build());
-        Actor actor = actorFromJson(jso);
-        MyLog.v(this, () -> "getActor oid='" + actor.oid
-                + "', username='" + username + "' -> " + actor.getRealName());
-        return actor;
+        return actorFromJson(jso);
     }
     
     @Override

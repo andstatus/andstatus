@@ -40,6 +40,7 @@ import org.andstatus.app.support.java.util.function.SupplierWithException;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UriUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -172,26 +173,28 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     private void getActorCommand(Actor actorIn, String username) {
         final String method = "getActor";
         String msgLog = method + ";";
+        Actor actorIn2 = UriUtils.nonRealOid(actorIn.oid) && actorIn.origin.isUsernameValid(username)
+                && !actorIn.isUsernameValid()
+            ? Actor.fromId(actorIn.origin, actorIn.actorId).setUsername(username)
+                .setWebFingerId(actorIn.getWebFingerId())
+            : actorIn;
         Actor actor = null;
-        if (actorIn.isOidReal() || !StringUtils.isEmpty(username)) {
+        if (actorIn2.isOidReal() || StringUtils.nonEmpty(username)) {
             try {
-                if (actorIn.origin.isUsernameValid(username) && !actorIn.isUsernameValid()) {
-                    actorIn.setUsername(username);
-                }
-                msgLog  = msgLog + "; username='" + actorIn.getUsername() + "'";
-                actor = getConnection().getActor(actorIn, username);
-                logIfActorIsEmpty(msgLog, actorIn.actorId, actor);
+                msgLog  = msgLog + "; username='" + actorIn2.getUsername() + "'";
+                actor = getConnection().getActor(actorIn2);
+                logIfActorIsEmpty(msgLog, actorIn2.actorId, actor);
             } catch (ConnectionException e) {
-                logConnectionException(e, msgLog + actorInfoLogged(actorIn.actorId));
+                logConnectionException(e, msgLog + actorInfoLogged(actorIn2.actorId));
             }
         } else {
             msgLog += ", invalid actor IDs";
-            logExecutionError(true, msgLog + actorInfoLogged(actorIn.actorId));
+            logExecutionError(true, msgLog + actorInfoLogged(actorIn2.actorId));
         }
         if (actor != null && noErrors()) {
             new DataUpdater(execContext).onActivity(execContext.getMyAccount().getActor().update(actor));
         } else {
-            actorIn.requestAvatarDownload();
+            actorIn2.requestAvatarDownload();
         }
         MyLog.d(this, (msgLog + (noErrors() ? " succeeded" : " failed") ));
     }

@@ -485,13 +485,10 @@ public class ConnectionActivityPub extends Connection {
     }
 
     @Override
-    public Actor getActor2(Actor actorIn, String usernameIn) throws ConnectionException {
+    public Actor getActor2(Actor actorIn) throws ConnectionException {
         ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrlForActor(this, ApiRoutineEnum.GET_ACTOR, actorIn);
         JSONObject jso = conu.httpConnection.getRequest(conu.uri);
-        Actor actor = actorFromJson(jso);
-        MyLog.v(this, () -> "getActor oid='" + actor.oid
-                + "', username='" + usernameIn + "' -> " + actor.getRealName());
-        return actor;
+        return actorFromJson(jso);
     }
 
 }

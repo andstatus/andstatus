@@ -249,7 +249,7 @@ public final class DemoData {
         @Override
         protected void onFinish(Void aVoid, boolean success) {
             FirstActivity.checkAndUpdateLastOpenedAppVersion(myContext.context(), true);
-            progressCallback.onComplete(success);
+            if (progressCallback != null) progressCallback.onComplete(success);
         }
     }
 
