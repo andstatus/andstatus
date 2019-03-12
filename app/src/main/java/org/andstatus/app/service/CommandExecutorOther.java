@@ -52,8 +52,7 @@ import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 
 class CommandExecutorOther extends CommandExecutorStrategy{
-
-    public static final int ACTORS_LIMIT = 400;
+    private static final int ACTORS_LIMIT = 400;
 
     CommandExecutorOther(CommandExecutionContext execContext) {
         super(execContext);
@@ -179,17 +178,17 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 .setWebFingerId(actorIn.getWebFingerId())
             : actorIn;
         Actor actor = null;
-        if (actorIn2.isOidReal() || StringUtils.nonEmpty(username)) {
+        if (actorIn2.canGetActor()) {
             try {
                 msgLog  = msgLog + "; username='" + actorIn2.getUsername() + "'";
                 actor = getConnection().getActor(actorIn2);
-                logIfActorIsEmpty(msgLog, actorIn2.actorId, actor);
+                logIfActorIsEmpty(msgLog, actor);
             } catch (ConnectionException e) {
-                logConnectionException(e, msgLog + actorInfoLogged(actorIn2.actorId));
+                logConnectionException(e, msgLog + actorInfoLogged(actorIn2));
             }
         } else {
-            msgLog += ", invalid actor IDs";
-            logExecutionError(true, msgLog + actorInfoLogged(actorIn2.actorId));
+            msgLog += ", cannot get Actor";
+            logExecutionError(true, msgLog + actorInfoLogged(actorIn2));
         }
         if (actor != null && noErrors()) {
             new DataUpdater(execContext).onActivity(execContext.getMyAccount().getActor().update(actor));
@@ -273,9 +272,9 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 activity = getConnection().follow(actor.oid, follow);
                 final Actor friend = activity.getObjActor();
                 friend.followedByMe = TriState.UNKNOWN; // That "hack" attribute may only confuse us here as it can show outdated info
-                logIfActorIsEmpty(method, actor.actorId, friend);
+                logIfActorIsEmpty(method, friend);
             } catch (ConnectionException e) {
-                logConnectionException(e, method + actorInfoLogged(actor.actorId));
+                logConnectionException(e, method + actorInfoLogged(actor));
             }
         }
         if (activity != null && noErrors()) {
@@ -286,25 +285,14 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }
 
-    private void logIfActorIsEmpty(String method, long actorId, Actor actor) {
+    private void logIfActorIsEmpty(String method, Actor actor) {
         if (actor == null || actor.isEmpty()) {
-            logExecutionError(false, "Received Actor is empty, " + method + actorInfoLogged(actorId));
+            logExecutionError(false, "Actor is empty, " + method);
         }
     }
 
-    @NonNull
-    private String getActorOid(String method, long actorId, boolean required) {
-        String oid = MyQuery.idToOid(OidEnum.ACTOR_OID, actorId, 0);
-        if (required && StringUtils.isEmpty(oid)) {
-            logExecutionError(true, method + "; no Actor ID in the Social Network " + actorInfoLogged(actorId));
-        }
-        return oid;
-    }
-
-    private String actorInfoLogged(long actorId) {
-        String oid = getActorOid("actorInfoLogged", actorId, false);
-        return " actorId=" + actorId + ", oid" + (StringUtils.isEmpty(oid) ? " is empty" : "'" + oid + "'" +
-                ", webFingerId:'" + MyQuery.actorIdToWebfingerId(actorId) + "'");
+    private String actorInfoLogged(Actor actor) {
+        return actor.toString();
     }
 
     private void deleteNote(long noteId) {

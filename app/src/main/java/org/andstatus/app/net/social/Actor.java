@@ -262,6 +262,10 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return UriUtils.isRealOid(oid);
     }
 
+    public boolean canGetActor() {
+        return (isOidReal() || isUsernameValid()) && StringUtils.nonEmpty(getHost());
+    }
+
     @Override
     public String toString() {
         if (this == EMPTY) {
@@ -786,9 +790,13 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public void requestDownload() {
-        MyLog.v(this, () -> "Actor " + this + " will be loaded from the Internet");
-        MyServiceManager.sendForegroundCommand(
-                CommandData.newActorCommand(CommandEnum.GET_ACTOR, actorId, getUsername()));
+        if (canGetActor()) {
+            MyLog.v(this, () -> "Actor " + this + " will be loaded from the Internet");
+            MyServiceManager.sendForegroundCommand(
+                    CommandData.newActorCommand(CommandEnum.GET_ACTOR, actorId, getUsername()));
+        } else {
+            MyLog.v(this, () -> "Cannot get Actor " + this);
+        }
     }
 
    public boolean isPublic() {
