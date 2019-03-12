@@ -108,4 +108,28 @@ public class ConnectionActivityPubTest {
             assertEquals("WebFinger ID", "andstatus@pleroma.site", objActor.getWebFingerId());
         }
     }
+
+    @Test
+    public void getNotesByActor() throws IOException {
+        String ACTOR_OID2 = "https://pleroma.site/users/kaniini";
+        String sinceId = "";
+        httpConnection.addResponse(org.andstatus.app.tests.R.raw.activitypub_outbox_pleroma);
+        Actor actorForTimeline = Actor.fromOid(connection.getData().getOrigin(), ACTOR_OID2)
+                .withUniqueNameInOrigin(UNIQUE_NAME_IN_ORIGIN);
+        actorForTimeline.endpoints.add(ActorEndpointType.API_OUTBOX, ACTOR_OID2 + "/outbox");
+        List<AActivity> timeline = connection.getTimeline(Connection.ApiRoutineEnum.ACTOR_TIMELINE,
+                new TimelinePosition(sinceId), TimelinePosition.EMPTY, 20, actorForTimeline);
+        assertNotNull("timeline returned", timeline);
+        assertEquals("Number of items in the Timeline", 10, timeline.size());
+
+        AActivity activity = timeline.get(7);
+        assertEquals("Announcing " + activity, ActivityType.ANNOUNCE, activity.type);
+        assertEquals("Announcing a Note " + activity, AObjectType.NOTE, activity.getObjectType());
+        Note note = activity.getNote();
+        assertEquals("Note oid " + note, "https://lgbtq.cool/users/abby/statuses/101702144808655868", note.oid);
+        Actor actor = activity.getActor();
+        assertEquals("Actor's oid " + activity, ACTOR_OID2, actor.oid);
+
+        assertEquals("Author is unknown", Actor.EMPTY, activity.getAuthor());
+    }
 }

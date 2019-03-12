@@ -1,0 +1,452 @@
+{
+  "type": "OrderedCollection",
+  "id": "https:\/\/pleroma.site\/users\/kaniini\/outbox",
+  "first": {
+    "type": "OrderedCollectionPage",
+    "partOf": "https:\/\/pleroma.site\/users\/kaniini\/outbox",
+    "orderedItems": [
+      {
+        "type": "Create",
+        "to": [
+          "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+        ],
+        "published": "2019-03-06T05:59:20.430063Z",
+        "object": {
+          "type": "Note",
+          "to": [
+            "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+          ],
+          "tag": [],
+          "summary": "",
+          "sensitive": false,
+          "published": "2019-03-06T05:59:20.432578Z",
+          "likes": {
+            "type": "OrderedCollection",
+            "totalItems": 4,
+            "id": "https:\/\/pleroma.site\/objects\/715b459f-5e76-462f-9ff2-cd10a702d05b\/likes",
+            "first": "https:\/\/pleroma.site\/objects\/715b459f-5e76-462f-9ff2-cd10a702d05b\/likes?page=1"
+          },
+          "id": "https:\/\/pleroma.site\/objects\/715b459f-5e76-462f-9ff2-cd10a702d05b",
+          "conversation": "https:\/\/pleroma.site\/contexts\/dbcc4ee6-3c00-45f7-ad07-936910c1b99f",
+          "context": "https:\/\/pleroma.site\/contexts\/dbcc4ee6-3c00-45f7-ad07-936910c1b99f",
+          "content": "I&#39;ve made quite a bit of money shorting trash stocks actually.  One time I shorted a conflict minerals firm and made serious bank after they got raided.",
+          "cc": [
+            "https:\/\/pleroma.site\/users\/kaniini\/followers"
+          ],
+          "attributedTo": "https:\/\/pleroma.site\/users\/kaniini",
+          "attachment": [],
+          "actor": "https:\/\/pleroma.site\/users\/kaniini"
+        },
+        "id": "https:\/\/pleroma.site\/activities\/8f05e2c5-f8b0-49cd-94a4-916e72f1ca37",
+        "directMessage": false,
+        "context_id": 30795235,
+        "context": "https:\/\/pleroma.site\/contexts\/dbcc4ee6-3c00-45f7-ad07-936910c1b99f",
+        "cc": [
+          "https:\/\/pleroma.site\/users\/kaniini\/followers"
+        ],
+        "actor": "https:\/\/pleroma.site\/users\/kaniini",
+        "@context": [
+          "https:\/\/www.w3.org\/ns\/activitystreams",
+          "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld"
+        ]
+      },
+      {
+        "type": "Create",
+        "to": [
+          "https:\/\/pony.social\/users\/cult",
+          "https:\/\/www.w3.org\/ns\/activitystreams#Public",
+          "https:\/\/mastodon.social\/users\/fribbledom"
+        ],
+        "published": "2019-03-06T05:57:01.498699Z",
+        "object": {
+          "type": "Note",
+          "to": [
+            "https:\/\/pony.social\/users\/cult",
+            "https:\/\/www.w3.org\/ns\/activitystreams#Public",
+            "https:\/\/mastodon.social\/users\/fribbledom"
+          ],
+          "tag": [
+            {
+              "type": "Mention",
+              "name": "@fribbledom@mastodon.social",
+              "href": "https:\/\/mastodon.social\/users\/fribbledom"
+            },
+            {
+              "type": "Mention",
+              "name": "@cult@pony.social",
+              "href": "https:\/\/pony.social\/users\/cult"
+            }
+          ],
+          "summary": "",
+          "sensitive": false,
+          "published": "2019-03-06T05:57:01.503639Z",
+          "likes": {
+            "type": "OrderedCollection",
+            "totalItems": 1,
+            "id": "https:\/\/pleroma.site\/objects\/8334c79e-95b1-4798-b77d-d5c90b39301d\/likes",
+            "first": "https:\/\/pleroma.site\/objects\/8334c79e-95b1-4798-b77d-d5c90b39301d\/likes?page=1"
+          },
+          "inReplyToStatusId": "9gU8P58uojoDOUsL9E",
+          "inReplyTo": "https:\/\/pony.social\/users\/cult\/statuses\/101702157588110475",
+          "id": "https:\/\/pleroma.site\/objects\/8334c79e-95b1-4798-b77d-d5c90b39301d",
+          "conversation": "tag:mastodon.social,2019-03-06:objectId=89086045:objectType=Conversation",
+          "context": "tag:mastodon.social,2019-03-06:objectId=89086045:objectType=Conversation",
+          "content": "<span class='h-card'><a data-user='21' class='u-url mention' href='https:\/\/pony.social\/@cult'>@<span>cult<\/span><\/a><\/span> <span class='h-card'><a data-user='16228' class='u-url mention' href='https:\/\/mastodon.social\/@fribbledom'>@<span>fribbledom<\/span><\/a><\/span> there isn&#39;t.  not to mention other software are still bringing up polls.",
+          "cc": [
+            "https:\/\/pleroma.site\/users\/kaniini\/followers"
+          ],
+          "attributedTo": "https:\/\/pleroma.site\/users\/kaniini",
+          "attachment": [],
+          "actor": "https:\/\/pleroma.site\/users\/kaniini"
+        },
+        "id": "https:\/\/pleroma.site\/activities\/9349bdda-3a9a-4193-a060-bb92152a6dc8",
+        "directMessage": false,
+        "context_id": 30794494,
+        "context": "tag:mastodon.social,2019-03-06:objectId=89086045:objectType=Conversation",
+        "cc": [
+          "https:\/\/pleroma.site\/users\/kaniini\/followers"
+        ],
+        "actor": "https:\/\/pleroma.site\/users\/kaniini",
+        "@context": [
+          "https:\/\/www.w3.org\/ns\/activitystreams",
+          "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld"
+        ]
+      },
+      {
+        "type": "Announce",
+        "to": [
+          "https:\/\/pleroma.site\/users\/kaniini\/followers",
+          "https:\/\/lgbtq.cool\/users\/abby"
+        ],
+        "published": "2019-03-06T05:55:05.489864Z",
+        "object": "https:\/\/lgbtq.cool\/users\/abby\/statuses\/101702144808655868",
+        "id": "https:\/\/pleroma.site\/activities\/22235736-9f83-483d-9206-50e0171e9c8a",
+        "context_id": 30794791,
+        "context": "tag:lgbtq.cool,2019-03-06:objectId=6107572:objectType=Conversation",
+        "cc": [
+          "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+        ],
+        "actor": "https:\/\/pleroma.site\/users\/kaniini",
+        "@context": [
+          "https:\/\/www.w3.org\/ns\/activitystreams",
+          "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld"
+        ]
+      },
+      {
+        "type": "Create",
+        "to": [
+          "https:\/\/welovela.in\/users\/tA",
+          "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+        ],
+        "published": "2019-03-06T05:49:05.800612Z",
+        "object": {
+          "type": "Note",
+          "to": [
+            "https:\/\/welovela.in\/users\/tA",
+            "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+          ],
+          "tag": [
+            {
+              "type": "Mention",
+              "name": "@tA@welovela.in",
+              "href": "https:\/\/welovela.in\/users\/tA"
+            }
+          ],
+          "summary": "",
+          "sensitive": false,
+          "published": "2019-03-06T05:49:05.802712Z",
+          "likes": {
+            "type": "OrderedCollection",
+            "totalItems": 1,
+            "id": "https:\/\/pleroma.site\/objects\/29a87ef8-9847-474d-a490-3edb911cbd6e\/likes",
+            "first": "https:\/\/pleroma.site\/objects\/29a87ef8-9847-474d-a490-3edb911cbd6e\/likes?page=1"
+          },
+          "inReplyToStatusId": "9gU7il3t5WeUx2LH0a",
+          "inReplyTo": "https:\/\/welovela.in\/objects\/ebbf0b82-1460-4e24-b1b8-52e3b342fbb2",
+          "id": "https:\/\/pleroma.site\/objects\/29a87ef8-9847-474d-a490-3edb911cbd6e",
+          "conversation": "https:\/\/welovela.in\/contexts\/e525cb49-2a4c-478d-a897-12362d2e81ce",
+          "context": "https:\/\/welovela.in\/contexts\/e525cb49-2a4c-478d-a897-12362d2e81ce",
+          "content": "<span class='h-card'><a data-user='87113' class='u-url mention' href='https:\/\/welovela.in\/users\/tA'>@<span>tA<\/span><\/a><\/span> what does the text mean",
+          "cc": [
+            "https:\/\/pleroma.site\/users\/kaniini\/followers"
+          ],
+          "attributedTo": "https:\/\/pleroma.site\/users\/kaniini",
+          "attachment": [],
+          "actor": "https:\/\/pleroma.site\/users\/kaniini"
+        },
+        "id": "https:\/\/pleroma.site\/activities\/cd7b769a-cb48-4e97-9176-aebd48f6c7e6",
+        "directMessage": false,
+        "context_id": 30794518,
+        "context": "https:\/\/welovela.in\/contexts\/e525cb49-2a4c-478d-a897-12362d2e81ce",
+        "cc": [
+          "https:\/\/pleroma.site\/users\/kaniini\/followers"
+        ],
+        "actor": "https:\/\/pleroma.site\/users\/kaniini",
+        "@context": [
+          "https:\/\/www.w3.org\/ns\/activitystreams",
+          "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld"
+        ]
+      },
+      {
+        "type": "Create",
+        "to": [
+          "https:\/\/pl.kys.moe\/users\/Rude",
+          "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+        ],
+        "published": "2019-03-06T05:47:55.955709Z",
+        "object": {
+          "type": "Note",
+          "to": [
+            "https:\/\/pl.kys.moe\/users\/Rude",
+            "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+          ],
+          "tag": [
+            {
+              "type": "Mention",
+              "name": "@Rude@pl.kys.moe",
+              "href": "https:\/\/pl.kys.moe\/users\/Rude"
+            }
+          ],
+          "summary": "",
+          "sensitive": false,
+          "published": "2019-03-06T05:47:55.958493Z",
+          "likes": {
+            "type": "OrderedCollection",
+            "totalItems": 1,
+            "id": "https:\/\/pleroma.site\/objects\/87a80ea8-68b0-4b03-acbf-9d99c8f8c086\/likes",
+            "first": "https:\/\/pleroma.site\/objects\/87a80ea8-68b0-4b03-acbf-9d99c8f8c086\/likes?page=1"
+          },
+          "inReplyToStatusId": "9gU6VoccRMGgH3qtTk",
+          "inReplyTo": "https:\/\/pl.kys.moe\/objects\/3969fa0e-8d14-4341-a270-8ab99a7a1d78",
+          "id": "https:\/\/pleroma.site\/objects\/87a80ea8-68b0-4b03-acbf-9d99c8f8c086",
+          "conversation": "https:\/\/pleroma.site\/contexts\/10766686-a136-40ab-9101-5bd41c418162",
+          "context": "https:\/\/pleroma.site\/contexts\/10766686-a136-40ab-9101-5bd41c418162",
+          "content": "<span class='h-card'><a data-user='85798' class='u-url mention' href='https:\/\/pl.kys.moe\/users\/Rude'>@<span>Rude<\/span><\/a><\/span> fidelity for the serious shit, Robinhood for short-term speculation",
+          "cc": [
+            "https:\/\/pleroma.site\/users\/kaniini\/followers"
+          ],
+          "attributedTo": "https:\/\/pleroma.site\/users\/kaniini",
+          "attachment": [],
+          "actor": "https:\/\/pleroma.site\/users\/kaniini"
+        },
+        "id": "https:\/\/pleroma.site\/activities\/a459f52a-1c79-4cf6-b6b8-cd4b37444723",
+        "directMessage": false,
+        "context_id": 30792948,
+        "context": "https:\/\/pleroma.site\/contexts\/10766686-a136-40ab-9101-5bd41c418162",
+        "cc": [
+          "https:\/\/pleroma.site\/users\/kaniini\/followers"
+        ],
+        "actor": "https:\/\/pleroma.site\/users\/kaniini",
+        "@context": [
+          "https:\/\/www.w3.org\/ns\/activitystreams",
+          "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld"
+        ]
+      },
+      {
+        "type": "Create",
+        "to": [
+          "https:\/\/functional.cafe\/users\/loke",
+          "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+        ],
+        "published": "2019-03-06T05:47:00.315281Z",
+        "object": {
+          "type": "Note",
+          "to": [
+            "https:\/\/functional.cafe\/users\/loke",
+            "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+          ],
+          "tag": [
+            {
+              "type": "Mention",
+              "name": "@loke@functional.cafe",
+              "href": "https:\/\/functional.cafe\/users\/loke"
+            }
+          ],
+          "summary": "",
+          "sensitive": false,
+          "published": "2019-03-06T05:47:00.317826Z",
+          "inReplyToStatusId": "9gU6PorecrG7Hy1eGe",
+          "inReplyTo": "https:\/\/functional.cafe\/users\/loke\/statuses\/101702070311115700",
+          "id": "https:\/\/pleroma.site\/objects\/7373c298-1b86-463f-bab4-11b34ecc5983",
+          "conversation": "https:\/\/pleroma.site\/contexts\/10766686-a136-40ab-9101-5bd41c418162",
+          "context": "https:\/\/pleroma.site\/contexts\/10766686-a136-40ab-9101-5bd41c418162",
+          "content": "<span class='h-card'><a data-user='1388' class='u-url mention' href='https:\/\/functional.cafe\/@loke'>@<span>loke<\/span><\/a><\/span> shorting is definitely gambling in a way, but going after the most greedy and corrupt companies through shorting is safe in the long term.  really depends on whether you have the balls to hold the position long enough.",
+          "cc": [
+            "https:\/\/pleroma.site\/users\/kaniini\/followers"
+          ],
+          "attributedTo": "https:\/\/pleroma.site\/users\/kaniini",
+          "attachment": [],
+          "actor": "https:\/\/pleroma.site\/users\/kaniini"
+        },
+        "id": "https:\/\/pleroma.site\/activities\/576a304c-7996-4650-a8d0-4a34ab20fe80",
+        "directMessage": false,
+        "context_id": 30792948,
+        "context": "https:\/\/pleroma.site\/contexts\/10766686-a136-40ab-9101-5bd41c418162",
+        "cc": [
+          "https:\/\/pleroma.site\/users\/kaniini\/followers"
+        ],
+        "actor": "https:\/\/pleroma.site\/users\/kaniini",
+        "@context": [
+          "https:\/\/www.w3.org\/ns\/activitystreams",
+          "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld"
+        ]
+      },
+      {
+        "type": "Announce",
+        "to": [
+          "https:\/\/pleroma.site\/users\/kaniini\/followers",
+          "https:\/\/patch.cx\/users\/rin"
+        ],
+        "published": "2019-03-06T05:44:32.847842Z",
+        "object": "https:\/\/patch.cx\/objects\/78c8b610-4aab-4548-9ad6-d48f4ea2e0c3",
+        "id": "https:\/\/pleroma.site\/activities\/e38dbc2c-6401-4438-88fd-6c40e7abf4a2",
+        "context_id": 30794180,
+        "context": "https:\/\/patch.cx\/contexts\/9ac4dc2e-f338-4ed1-8018-4dae0b860464",
+        "cc": [
+          "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+        ],
+        "actor": "https:\/\/pleroma.site\/users\/kaniini",
+        "@context": [
+          "https:\/\/www.w3.org\/ns\/activitystreams",
+          "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld"
+        ]
+      },
+      {
+        "type": "Create",
+        "to": [
+          "https:\/\/pleroma.weirdart.space\/users\/DJWalnut",
+          "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+        ],
+        "published": "2019-03-06T05:30:55.189640Z",
+        "object": {
+          "type": "Note",
+          "to": [
+            "https:\/\/pleroma.weirdart.space\/users\/DJWalnut",
+            "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+          ],
+          "tag": [
+            {
+              "type": "Mention",
+              "name": "@DJWalnut@pleroma.weirdart.space",
+              "href": "https:\/\/pleroma.weirdart.space\/users\/DJWalnut"
+            }
+          ],
+          "summary": "",
+          "sensitive": false,
+          "published": "2019-03-06T05:30:55.192160Z",
+          "likes": {
+            "type": "OrderedCollection",
+            "totalItems": 1,
+            "id": "https:\/\/pleroma.site\/objects\/7d44b517-5902-44ff-95d1-be94cf4d4d9f\/likes",
+            "first": "https:\/\/pleroma.site\/objects\/7d44b517-5902-44ff-95d1-be94cf4d4d9f\/likes?page=1"
+          },
+          "inReplyToStatusId": "9gU67sq76jIOPAkiTw",
+          "inReplyTo": "https:\/\/pleroma.weirdart.space\/objects\/4afe851b-5d4c-48d7-a77e-8e1b0d3619a4",
+          "id": "https:\/\/pleroma.site\/objects\/7d44b517-5902-44ff-95d1-be94cf4d4d9f",
+          "conversation": "https:\/\/pleroma.site\/contexts\/10766686-a136-40ab-9101-5bd41c418162",
+          "context": "https:\/\/pleroma.site\/contexts\/10766686-a136-40ab-9101-5bd41c418162",
+          "content": "<span class='h-card'><a data-user='9gDQx3XjfiUXV3Rxgm' class='u-url mention' href='https:\/\/pleroma.weirdart.space\/users\/DJWalnut'>@<span>DJWalnut<\/span><\/a><\/span> yes",
+          "cc": [
+            "https:\/\/pleroma.site\/users\/kaniini\/followers"
+          ],
+          "attributedTo": "https:\/\/pleroma.site\/users\/kaniini",
+          "attachment": [],
+          "actor": "https:\/\/pleroma.site\/users\/kaniini"
+        },
+        "id": "https:\/\/pleroma.site\/activities\/abd24752-f346-4f79-ad54-3c68744d4c29",
+        "directMessage": false,
+        "context_id": 30792948,
+        "context": "https:\/\/pleroma.site\/contexts\/10766686-a136-40ab-9101-5bd41c418162",
+        "cc": [
+          "https:\/\/pleroma.site\/users\/kaniini\/followers"
+        ],
+        "actor": "https:\/\/pleroma.site\/users\/kaniini",
+        "@context": [
+          "https:\/\/www.w3.org\/ns\/activitystreams",
+          "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld"
+        ]
+      },
+      {
+        "type": "Announce",
+        "to": [
+          "https:\/\/pleroma.site\/users\/kaniini\/followers",
+          "https:\/\/shpposter.club\/users\/shpuld"
+        ],
+        "published": "2019-03-06T05:30:40.749968Z",
+        "object": "https:\/\/shpposter.club\/objects\/3269bf0e-7738-4d7f-aae0-f9f520445d96",
+        "id": "https:\/\/pleroma.site\/activities\/84a71fb3-6b51-495b-a0ce-9c17e1da42d0",
+        "context_id": 30793262,
+        "context": "https:\/\/shpposter.club\/contexts\/83bc9600-52e7-46e1-9b93-67f508974738",
+        "cc": [
+          "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+        ],
+        "actor": "https:\/\/pleroma.site\/users\/kaniini",
+        "@context": [
+          "https:\/\/www.w3.org\/ns\/activitystreams",
+          "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld"
+        ]
+      },
+      {
+        "type": "Create",
+        "to": [
+          "https:\/\/pleroma.weirdart.space\/users\/DJWalnut",
+          "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+        ],
+        "published": "2019-03-06T05:29:28.230055Z",
+        "object": {
+          "type": "Note",
+          "to": [
+            "https:\/\/pleroma.weirdart.space\/users\/DJWalnut",
+            "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+          ],
+          "tag": [
+            {
+              "type": "Mention",
+              "name": "@DJWalnut@pleroma.weirdart.space",
+              "href": "https:\/\/pleroma.weirdart.space\/users\/DJWalnut"
+            }
+          ],
+          "summary": "",
+          "sensitive": false,
+          "published": "2019-03-06T05:29:28.232417Z",
+          "likes": {
+            "type": "OrderedCollection",
+            "totalItems": 1,
+            "id": "https:\/\/pleroma.site\/objects\/fa49bc30-f113-4fb6-bb10-b91208bde769\/likes",
+            "first": "https:\/\/pleroma.site\/objects\/fa49bc30-f113-4fb6-bb10-b91208bde769\/likes?page=1"
+          },
+          "inReplyToStatusId": "9gU5oWJgciL136LsKu",
+          "inReplyTo": "https:\/\/pleroma.weirdart.space\/objects\/2ab212bf-6d3d-4cb4-aacb-ee7bc44a9c47",
+          "id": "https:\/\/pleroma.site\/objects\/fa49bc30-f113-4fb6-bb10-b91208bde769",
+          "conversation": "https:\/\/pleroma.site\/contexts\/10766686-a136-40ab-9101-5bd41c418162",
+          "context": "https:\/\/pleroma.site\/contexts\/10766686-a136-40ab-9101-5bd41c418162",
+          "content": "<span class='h-card'><a data-user='9gDQx3XjfiUXV3Rxgm' class='u-url mention' href='https:\/\/pleroma.weirdart.space\/users\/DJWalnut'>@<span>DJWalnut<\/span><\/a><\/span> SNAP is doing bad because they can&#39;t really monetize effectively.  FB is doing bad because of all the issues surrounding FB.  Nvidia is doing bad because they are cooking the books (imo) to cover losses from crypto currency fad receding.",
+          "cc": [
+            "https:\/\/pleroma.site\/users\/kaniini\/followers"
+          ],
+          "attributedTo": "https:\/\/pleroma.site\/users\/kaniini",
+          "attachment": [],
+          "actor": "https:\/\/pleroma.site\/users\/kaniini"
+        },
+        "id": "https:\/\/pleroma.site\/activities\/65dabc8c-940e-4ea6-8a28-ebb2e2fdf057",
+        "directMessage": false,
+        "context_id": 30792948,
+        "context": "https:\/\/pleroma.site\/contexts\/10766686-a136-40ab-9101-5bd41c418162",
+        "cc": [
+          "https:\/\/pleroma.site\/users\/kaniini\/followers"
+        ],
+        "actor": "https:\/\/pleroma.site\/users\/kaniini",
+        "@context": [
+          "https:\/\/www.w3.org\/ns\/activitystreams",
+          "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld"
+        ]
+      }
+    ],
+    "next": "https:\/\/pleroma.site\/users\/kaniini\/outbox?max_id=9gU8g7P3fOB7KMY8v2",
+    "id": "https:\/\/pleroma.site\/users\/kaniini\/outbox?max_id=9gU60qBGavYg8EHwHY"
+  },
+  "@context": [
+    "https:\/\/www.w3.org\/ns\/activitystreams",
+    "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld"
+  ]
+}

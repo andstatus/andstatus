@@ -274,7 +274,9 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         MyStringBuilder members = MyStringBuilder.of("origin:" + origin.getName())
         .withComma("id", actorId)
         .withComma("oid", oid)
-        .withComma(isWebFingerIdValid() ? "webFingerId" : "", isWebFingerIdValid() ? webFingerId : "(invalid webFingerId)")
+        .withComma(isWebFingerIdValid() ? "webFingerId" : "", StringUtils.isEmpty(webFingerId)
+                ? ""
+                : isWebFingerIdValid() ? webFingerId : "(invalid webFingerId)")
         .withComma("username", username)
         .withComma("realName", realName)
         .withComma("", user, user::nonEmpty)

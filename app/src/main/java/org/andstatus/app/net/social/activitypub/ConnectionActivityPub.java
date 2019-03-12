@@ -318,6 +318,9 @@ public class ConnectionActivityPub extends Connection {
                case PERSON:
                    activity.setObjActor(actorFromOid(id));
                    break;
+               case NOTE:
+                   activity.setNote(Note.fromOriginAndOid(data.getOrigin(), id, DownloadStatus.UNKNOWN));
+                   break;
                default:
                    MyLog.w(this, "Unknown type of id:" + id);
                    break;

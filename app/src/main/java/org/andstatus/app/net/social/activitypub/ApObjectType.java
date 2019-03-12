@@ -99,10 +99,12 @@ enum ApObjectType {
             case UNDO_LIKE:
             case UNDO_ANNOUNCE:
                 // TODO: Too simple...
-                if (oid.contains("/users/")) {
+                if (oid.contains("/users/") && !oid.contains("/statuses/")) {
                     return ApObjectType.PERSON;
                 }
-
+                if (oid.contains("/activities/")) {
+                    return ApObjectType.ACTIVITY;
+                }
                 return ApObjectType.NOTE;
             default:
                 return ApObjectType.UNKNOWN;
