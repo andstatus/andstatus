@@ -1,14 +1,14 @@
 package org.andstatus.app.service;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.util.MyLog;
+
+import androidx.annotation.NonNull;
 
 public class CommandExecutionContext {
     private CommandData commandData;
@@ -61,7 +61,7 @@ public class CommandExecutionContext {
 
     @Override
     public String toString() {
-        return MyLog.formatKeyValue(this, commandData.toString() + ", " + getMyAccount());
+        return commandData.toString();
     }
 
     // TODO: Do we need this?

@@ -283,26 +283,19 @@ public class CommandData implements Comparable<CommandData> {
         if (mManuallyLaunched) {
             builder.withComma("manual");
         }
-        if (myAccount.nonEmpty()) {
-            builder.withComma("account:'" + myAccount.getAccountName() + "'");
-        }
-        if (StringUtils.nonEmpty(username)) {
-            builder.withComma("username:'" + username + "'");
-        }
+        builder.withComma("account", myAccount.getAccountName(), () -> myAccount.nonEmpty());
+        builder.withComma("username", username);
         if (StringUtils.nonEmpty(description) && !description.equals(username)) {
             builder.withSpaceQuoted(description);
         }
         if (getTimeline().isValid()) {
             builder.withComma(getTimeline().toString());
         }
-        if (itemId != 0) {
-            builder.withComma("itemId:" + itemId);
-        }
+        builder.withComma("itemId", itemId, () -> itemId != 0);
         if (mInForeground) {
             builder.withComma("foreground");
         }
         builder.withComma("created:" + RelativeTime.getDifference(MyContextHolder.get().context(), getCreatedDate()));
-        builder.withComma("hashCode:" + hashCode());
         builder.withComma(CommandResult.toString(commandResult));
         return MyLog.formatKeyValue(this, builder);
     }
