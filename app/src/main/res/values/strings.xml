@@ -57,6 +57,7 @@
   <string name="category_title_preference_information">Information</string>
   <string name="category_title_preference_origin">Social network</string>
   <string name="category_title_preference_settings">Settings</string>
+  <string name="change_log_summary">Change Log is in English only</string>
   <string name="changed">Changed</string>
   <string name="check_and_fix_data">Check and fix data</string>
   <string name="check_and_fix_data_summary">Use this action if you feel that AndStatus is malfunctioning,
@@ -536,6 +537,7 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="unread_notifications">Unread notifications</string>
   <string name="updated">updated</string>
   <string name="use_legacy_http_protocol_title">Use legacy HTTP protocol</string>
+  <string name="user_guide">User Guide</string>
   <string name="user_in_timeline_entries_username">username</string>
   <string name="user_in_timeline_entries_at_username">"@username"</string>
   <string name="user_in_timeline_entries_webfingerid">webFingerId</string>

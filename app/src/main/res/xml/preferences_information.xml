@@ -23,6 +23,11 @@
 	</Preference>
 	<Preference android:key="change_log"
 		android:title="@string/title_preference_change_log"
+		android:summary="@string/change_log_summary"
+		android:persistent="false">
+	</Preference>
+	<Preference android:key="user_guide"
+		android:title="@string/user_guide"
 		android:persistent="false">
 	</Preference>
 	<Preference android:key="contact_developer" android:title="@string/title_preference_contact_developer">

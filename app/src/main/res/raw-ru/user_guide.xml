@@ -18,7 +18,7 @@
  -->
 <FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
 xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../res-src/fb2/FictionBook.xsd">
+xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd ../../../../../res-src/fb2/FictionBook.xsd">
 <description>
     <title-info>
         <genre>computers</genre>
@@ -54,6 +54,10 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
         AndStatus объединяет ваши учётные записи из всех сетей в одну Линию времени и позволяет Вам читать и писать сообщения (твиты и т.п.) даже в автономном режиме.</p>
     <p>Ссылка на это руководство доступна на Верхней панели (Action Bar) -&gt; Помощь.</p>
     <p>Журнал изменений на следующей странице позволит вам увидеть описания и ссылки на обсуждения всех функций AndStatus.</p>
+    <p>Ответы на большинство <strong>вопросов</strong> пользователей уже даны в соответствующих  "Issues" на GitHub-е, особенно в 
+помеченных как "Questions&amp;Answers". Смотрите и ищите их:
+        <a xlink:href="https://github.com/andstatus/andstatus/issues?q=label%3AQuestions%26Answers%20">Вопросы
+            и ответы</a>.</p>
 </section>
 <section>
     <title>

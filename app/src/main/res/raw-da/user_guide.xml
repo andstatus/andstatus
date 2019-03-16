@@ -1,0 +1,251 @@
+<?xml-stylesheet version='1.0' type='text/xsl' href='../raw/fb2_2_html.xsl' encoding="utf-8"?>
+<!-- 
+    Copyright (C) 2015 Yuri Volkov, yvolk@yurivolkov.com
+    
+    Translations are copyrighted by corresponding Translators.
+        
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+    
+         http://www.apache.org/licenses/LICENSE-2.0
+    
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ -->
+<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
+xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd ../../../../../res-src/fb2/FictionBook.xsd">
+<description>
+    <title-info>
+        <genre>computers</genre>
+        <author>
+            <first-name>AndStatus project</first-name>
+            <last-name></last-name>
+        </author>
+        <book-title>AndStatus Brugerguide</book-title>
+        <lang>da</lang>
+        <src-lang>en</src-lang>
+        <translator>
+            <nickname>Pladsholder til Oversætteranerkendelser</nickname>
+        </translator>
+    </title-info>
+    <document-info>
+        <author>
+            <nickname>AndStatus project</nickname>
+            <home-page>http://www.andstatus.org</home-page>
+            <email>andstatus@gmail.com</email>
+        </author>
+        <date>2015-08-16</date>
+        <id></id>
+        <version>2</version>
+    </document-info>
+</description>
+<body>
+<section>
+    <title>
+        <p>Introduktion</p>
+    </title>
+    <p>AndStatus er en open source lavtrafiks social netværksklient
+         med trælignende samtalstruktur.
+         Den understøtter flere protokoller, herunder GNU social, Twitter og Pump.io.
+         AndStatus kombinerer dine konti fra alle netværk til én tidslinje,
+         og giver dig mulighed for at læse og iposte, selv når du er offline.</p>
+    <p>Link til denne guide er tilgængelig i Handlingsbjælken-&gt;Hjælp.</p>
+    <p>Ændringsloggen på næste side giver dig mulighed for at se beskrivelser
+         og links til debatter om alle funktionerne i AndStatus.</p>
+    <p>De fleste af brugernes <strong>spørgsmål</strong> er allerede besvaret i de korresponderende emner, specielt
+         mærket som "Spørgsmål og Svar". Se og søg blandt dem:
+         <a xlink:href="https://github.com/andstatus/andstatus/issues?q=label%3AQuestions%26Answers%20">Spørgsmål
+             og svar</a>.</p>
+</section>
+<section>
+    <title>
+        <p>1. Komme i gang</p>
+    </title>
+    <p>Tryk på knappen "Komme i gang" nedenfor: Skærm for tilføjelse
+         af ny konto åbnes.
+    </p>
+    <p>Først bliver du bedt om at vælge et socialt netværk
+         af en konto fra en liste.
+         Twitter, Pump.io og flere "GNU social" typer af systemer (Quitter,
+         LoadAverage og Vinilox) er præopsat.
+    </p>
+    <p>I et tilfælde er dit ("GNU social"-type) system ikke er angivet,
+         tryk på menupunktet "Find åbne forekomster" for at vælge et system
+         fra en live online liste, der opretholdes af GNU-samfundet;
+         eller "Tilføj nyt system" manuelt, før du tilføjer en ny konto.</p>
+    <p>Til Twitter kan du trykke på "Tilføj denne konto"
+         straks.
+         Til andre systemer bliver du bedt om at angive dit brugernavn og adgangskode,
+         inden du kan vælge "Tilføj denne konto".</p>
+    <p>Efter vellykket oprettelse af en konto skal du trykke på "venstre pil"
+         på en
+         "Handlingsbjælke" eller knappen "Tilbage" på din enhed.
+         Denne gang åbnes en Home Timeline,
+         og beskeder til denne konto vil begynde at downloades fra Internet.
+    </p>
+    <p>Tillykke! Læs venligst nedenfor, om hvad du kan gøre yderligere.
+    </p>
+    <p>Og glem ikke at tilføje AndStatus-widget'en til Startskærmen på din
+         enhed:
+         Widget'en informerer dig om nye beskeder og kan bruges til start af
+         AndStatus.
+    </p>
+</section>
+<section>
+    <title>
+        <p>2. AndStatus, første skridt</p>
+    </title>
+    <p>Første visning af AndStatus (eftertilføjelse af mindst én konto)
+         indeholder et Hometidslinje.
+    </p>
+    <p>For at udføre en handling på en besked i listen, skal du
+         udføre et
+         <strong>langt tryk</strong>
+         på den for at se dens "Kontekstmenu".
+    </p>
+    <p>Du kan <strong>trykke</strong>
+         en besked for at få flere detaljer om den og at se
+         det samtaletræ, som beskeden tilhører.
+    </p>
+    <p>Åbn en "Navigeringsskuffe" til venstre og tryk på det aktuelle
+         tidslinjetypeemne ("Home")
+         for at skifte til de øvrigre visninger.
+    </p>
+</section>
+<section>
+    <title>
+        <p>3. Afsendelse og besvarelse</p>
+    </title>
+    <p>1. For at opdatere din status så tryk på knappen "Poste" ("Tweet" til Twitter).
+         Den ligner en "Konvolut+".
+         Et beskedredigerinsværktøj åbnes nederst på skærmen.
+    </p>
+    <p>2. Angiv dit beskedindhold i tekstområdet.
+    </p>
+    <p>3. Tilføj evt. et billede til dit indlæg. Mens beskedredigeringsværktøjet er synligt,
+         vises en anden knap på en Handlingsbjælke: "Paperclip+".
+         (Menupunktet "Vedhæft" kan være skjult under en "Overløbsknap": "Tre lodrette prikker").
+         Tryk på "Vedhæft"-knappen og vælg et billede. Efter en gennemført vedhæftning af billedet
+         vil du se teksten "(med medier)" over tekstområdet, hvori du angiver din besked.
+    </p>
+    <p>4. Tryk <strong>Send</strong> for at sende din besked. Er du offline, bliver beskeden placeret
+        i en kø for senere automatisk afsendelse (benyt menupunktet "Kommandoer i en kø"
+        for at se dine usendte beskeder i køen).
+    </p>
+    <p>For at besvare, <strong>hold på</strong>
+        en besked, vælg <strong>Besvar</strong>
+        fra Kontekstmenuen og angiv dit svar nederst.
+    </p>
+    <p>For at annullere et indlæg eller svar, så tryk blot på knappen "Skjul"  for at skjule
+       tekstområdet.</p>
+</section>
+<section>
+    <title>
+        <p>4. Vedhæftede billeder: Afsendelse og visning</p>
+    </title>
+    <section>
+        <title>
+            <p>4.1. Afsendelse af billeder</p>
+        </title>
+        <p>Første måde at vedhæfte et billede til et indlæg er beskrevet i et tidligere afsnit: Du kan vedhæfte
+            et billede til en besked, mens du opretter denne.
+        </p>
+        <p>En anden måde at sende et billede på er at "Dele" det via AndStatus: Her starter du med et billede
+             i en anden app. F.eks.vil du måske knipse et foto og sende det til et socialt netværk.
+             Gør dette:
+        </p>
+        <p>1. Knips et foto/find det i et Galleri og klik på fotoets miniature for at åbne det.
+        </p>
+        <p>2. Vælg "Del" i menuen. De fleste apps indeholder menupunktet "Del"...
+        </p>
+        <p>3. Vælg "AndStatus" fra listen, der viser de apps, som
+             kan dele billeder.
+        </p>
+        <p>4. Duer nu i AndStatus. Har du mere end én konto,
+             vælg den ønskede konto, ellers vil du straks videresendes til
+             Beskedværktøjet.</p>
+        <p>5. Du er nu i en Beskedværktøjet, hvor billedet allerede er vedhæftet
+             (du bør se meddelelsen "(med medier)" over tekstfeltet).
+        </p>
+        <p>6. Angiv en tekst og tryk på "Send" (et billede kan ikke afsendes uden en tekstbesked)
+        </p>
+    </section>
+    <section>
+        <title>
+            <p>4.2. Visning af vedhæftede billeder</p>
+        </title>
+        <p>Disse indstillinger er tilgængelige (fra Indstillinger->Vedhæftninger):</p>
+        <p>1. Afkrydsningsfeltet "Download og vis vedhæftede billeder". Er feltet uafkrydset, bliver vedhæftninger
+             ikke engang downloadet, hvilket sparer på din netværkstrafik.
+        </p>
+        <p>Bemærk, at når du afkrydser denne indstilling, vises billeder ikke øjeblikkeligt,
+             da AndStatus stadig behøver et øjeblik til at downloade dem i baggrunden.
+        </p>
+        <p>2. "Vedhæft billeder til mine beskeder". Når "til", kan du benytte "Papirklips+"-knappen
+            ("Vedhæft"-menupunktet) til billedvedhæftininger i dine beskeder.
+            Når "fra", er "Papirklipsen", til billedvedhæftinig i dine indlæg, skjult.
+        </p>
+        <p>Se <a xlink:href="https://github.com/andstatus/andstatus/issues/288">hér for yderligere info</a>.</p>
+    </section>
+</section>
+<section>
+    <title>
+        <p>5. Private (direkte) beskeder</p>
+    </title>
+    <p>Åbn Navigeringsgardinet til venstre, tryk på aktuelle Tidslinetypeemne
+        (Hjem)
+        og vælg
+        <strong>Private</strong>
+        fra listen.
+    </p>
+    <p>For at <strong>slette</strong>
+        din besked (offentlig som privat),
+        <strong>tryk og hold</strong> på den og vælg
+        <strong>Fjern besked</strong>.
+    </p>
+    <p>
+    </p>
+</section>
+<section>
+    <title>
+        <p></p>
+    </title>
+    <p>
+    </p>
+    <p>
+    </p>
+</section>
+<section>
+    <title>
+        <p></p>
+    </title>
+    <p>
+    </p>
+    <p>
+    </p>
+    <p></p>
+    <p>
+    </p>
+    <p>
+    </p>
+</section>
+<section>
+    <title>
+        <p></p>
+    </title>
+    <p>
+    </p>
+    <p>
+    </p>
+    <p>
+    </p>
+    <p></p>
+    <p></p>
+</section>
+</body>
+</FictionBook>

@@ -72,6 +72,7 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
     private static final String KEY_MANAGE_ORIGIN_SYSTEMS = "manage_origin_systems";
     private static final String KEY_MANAGE_TIMELINES = "manage_timelines";
     private static final String KEY_NOTIFICATION_SELECT_RINGTONE = "select_ringtone";
+    private static final String KEY_USER_GUIDE = "user_guide";
 
     private StorageSwitch storageSwitch = null;
     
@@ -391,6 +392,9 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
                 break;
             case KEY_CHANGE_LOG:
                 HelpActivity.startMe(getActivity(), false, HelpActivity.PAGE_CHANGELOG);
+                break;
+            case KEY_USER_GUIDE:
+                HelpActivity.startMe(getActivity(), false, HelpActivity.PAGE_USER_GUIDE);
                 break;
             case MyPreferences.KEY_COMMANDS_QUEUE:
                 startActivity(new Intent(getActivity(), QueueViewer.class));
