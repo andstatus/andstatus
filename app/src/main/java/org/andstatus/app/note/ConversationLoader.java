@@ -18,7 +18,6 @@ package org.andstatus.app.note;
 
 import android.database.Cursor;
 import android.net.Uri;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.actor.ActorListLoader;
@@ -41,6 +40,7 @@ import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.UriUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -51,6 +51,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
+import androidx.annotation.NonNull;
 
 public abstract class ConversationLoader<T extends ConversationItem<T>> extends SyncLoader<T> {
     private static final int MAX_INDENT_LEVEL = 19;
@@ -214,23 +216,23 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
         if (conversationSyncRequested) {
             return true;
         }
-        if (ma.getConnection().isApiSupported(Connection.ApiRoutineEnum.GET_CONVERSATION)) {
-            long noteId = selectedNoteId;
-            String conversationOid = MyQuery.noteIdToConversationOid(noteId);
-            if (StringUtils.isEmpty(conversationOid) && noteId_in != noteId) {
-                noteId = noteId_in;
-                conversationOid = MyQuery.noteIdToConversationOid(noteId);
+        long noteId = selectedNoteId;
+        String conversationOid = MyQuery.noteIdToConversationOid(noteId);
+        if (StringUtils.isEmpty(conversationOid) && noteId_in != noteId) {
+            noteId = noteId_in;
+            conversationOid = MyQuery.noteIdToConversationOid(noteId);
+        }
+        if (StringUtils.nonEmpty(conversationOid) && (
+                ma.getConnection().hasApiEndpoint(Connection.ApiRoutineEnum.GET_CONVERSATION) ||
+                        UriUtils.isDownloadable(UriUtils.fromString(conversationOid)))) {
+            conversationSyncRequested = true;
+            if (MyLog.isVerboseEnabled()) {
+                MyLog.v(this, "Conversation oid=" +  conversationOid + " for noteId=" + noteId
+                        + " will be loaded from the Internet");
             }
-            if (!StringUtils.isEmpty(conversationOid)) {
-                conversationSyncRequested = true;
-                if (MyLog.isVerboseEnabled()) {
-                    MyLog.v(this, "Conversation oid=" +  conversationOid + " for noteId=" + noteId
-                            + " will be loaded from the Internet");
-                }
-                MyServiceManager.sendForegroundCommand(
-                        CommandData.newItemCommand(CommandEnum.GET_CONVERSATION, ma, noteId));
-                return true;
-            }
+            MyServiceManager.sendForegroundCommand(
+                    CommandData.newItemCommand(CommandEnum.GET_CONVERSATION, ma, noteId));
+            return true;
         }
         return false;
     }

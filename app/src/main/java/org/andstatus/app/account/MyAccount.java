@@ -823,7 +823,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     }
 
     public boolean isSearchSupported(SearchObjects searchObjects) {
-        return getConnection().isApiSupported(searchObjects == SearchObjects.NOTES
+        return getConnection().hasApiEndpoint(searchObjects == SearchObjects.NOTES
                 ? ApiRoutineEnum.SEARCH_NOTES : ApiRoutineEnum.SEARCH_ACTORS);
     }
 

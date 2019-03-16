@@ -198,7 +198,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         appendPositionParameters(builder, youngestPosition, oldestPosition);
         builder.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
         JSONArray jArr = http.getRequestAsArray(builder.build());
-        return jArrToTimeline(jArr, apiRoutine, builder.build());
+        return jArrToTimeline("", jArr, apiRoutine, builder.build());
     }
 
     @NonNull
@@ -230,12 +230,14 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         Uri uri = getApiPathWithNoteId(ApiRoutineEnum.GET_CONVERSATION, conversationOid);
         JSONObject mastodonContext = getRequest(uri);
         try {
-            if (mastodonContext.has("ancestors")) {
-                timeline.addAll(jArrToTimeline(mastodonContext.getJSONArray("ancestors"),
+            String ancestors = "ancestors";
+            if (mastodonContext.has(ancestors)) {
+                timeline.addAll(jArrToTimeline(ancestors, mastodonContext.getJSONArray(ancestors),
                         ApiRoutineEnum.GET_CONVERSATION, uri));
             }
-            if (mastodonContext.has("descendants")) {
-                timeline.addAll(jArrToTimeline(mastodonContext.getJSONArray("descendants"),
+            String descendants = "descendants";
+            if (mastodonContext.has(descendants)) {
+                timeline.addAll(jArrToTimeline(descendants, mastodonContext.getJSONArray(descendants),
                         ApiRoutineEnum.GET_CONVERSATION, uri));
             }
         } catch (JSONException e) {

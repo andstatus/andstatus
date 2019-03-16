@@ -219,7 +219,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         Uri.Builder builder = getTimelineUriBuilder(apiRoutine, limit, actor);
         appendPositionParameters(builder, youngestPosition, oldestPosition);
         JSONArray jArr = http.getRequestAsArray(builder.build());
-        return jArrToTimeline(jArr, apiRoutine, builder.build());
+        return jArrToTimeline("", jArr, apiRoutine, builder.build());
     }
 
     @NonNull
@@ -431,7 +431,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         appendPositionParameters(builder, youngestPosition, oldestPosition);
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
         JSONArray jArr = http.getRequestAsArray(builder.build());
-        return jArrToTimeline(jArr, apiRoutine, builder.build());
+        return jArrToTimeline("", jArr, apiRoutine, builder.build());
     }
 
     void appendPositionParameters(Uri.Builder builder, TimelinePosition youngest, TimelinePosition oldest) {
@@ -450,7 +450,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         }
     }
 
-    List<AActivity> jArrToTimeline(JSONArray jArr, ApiRoutineEnum apiRoutine, Uri uri) throws ConnectionException {
+    List<AActivity> jArrToTimeline(String requestDescription, JSONArray jArr, ApiRoutineEnum apiRoutine, Uri uri) throws ConnectionException {
         List<AActivity> timeline = new ArrayList<>();
         if (jArr != null) {
             // Read the activities in chronological order
@@ -466,7 +466,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         if (apiRoutine.isNotePrivate()) {
             setNotesPrivate(timeline);
         }
-        MyLog.d(this, apiRoutine + " '" + uri + "' " + timeline.size() + " items");
+        MyLog.d(this, apiRoutine + " " + requestDescription + " '" + uri + "' " + timeline.size() + " items");
         return timeline;
     }
 

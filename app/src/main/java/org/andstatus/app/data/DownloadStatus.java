@@ -29,6 +29,7 @@ public enum DownloadStatus {
     SENDING(7, R.string.download_status_unsent),
     DRAFT(8, R.string.download_status_draft),
     DELETED(9, 0),
+    NEEDS_UPDATE(10, 0),
     UNKNOWN(0, 0);
 
     private static final String TAG = DownloadStatus.class.getSimpleName();

@@ -75,11 +75,16 @@ public class ConnectionActivityPubTest {
         AActivity activity = timeline.get(ind);
         assertEquals("Creating a Note " + activity, AObjectType.NOTE, activity.getObjectType());
         Note note = activity.getNote();
+        assertEquals("Note oid " + note, "https://pleroma.site/objects/34ab2ec5-4307-4e0b-94d6-a789d4da1240", note.oid);
+        assertEquals("Conversation oid " + note,"https://pleroma.site/contexts/c62ba280-2a11-473e-8bd1-9435e9dc83ae", note.conversationOid);
         assertEquals("Note name " + note, "", note.getName());
         assertThat("Note body " + note, note.getContent(), startsWith("We could successfully create an account"));
-        assertEquals("Note updated at " + TestSuite.utcTime(activity.getUpdatedDate()),
+        assertEquals("Activity updated at " + TestSuite.utcTime(activity.getUpdatedDate()),
                 TestSuite.utcTime(2019, Calendar.FEBRUARY, 10, 17, 37, 25).toString(),
                 TestSuite.utcTime(activity.getUpdatedDate()).toString());
+        assertEquals("Note updated at " + TestSuite.utcTime(note.getUpdatedDate()),
+                TestSuite.utcTime(2019, Calendar.FEBRUARY, 10, 17, 37, 25).toString(),
+                TestSuite.utcTime(note.getUpdatedDate()).toString());
         Actor actor = activity.getActor();
         assertEquals("Actor's oid " + activity, "https://pleroma.site/users/ActivityPubTester", actor.oid);
         assertEquals("Actor's Webfinger " + activity, "", actor.getWebFingerId());

@@ -172,7 +172,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         appendPositionParameters(builder, youngestPosition, oldestPosition);
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
         JSONArray jArr = getRequestArrayInObject(builder.build(), "statuses");
-        return jArrToTimeline(jArr, apiRoutine, builder.build());
+        return jArrToTimeline("", jArr, apiRoutine, builder.build());
     }
 
     @NonNull

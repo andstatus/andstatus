@@ -16,6 +16,8 @@
 
 package org.andstatus.app.util;
 
+import java.util.Optional;
+
 /**
  * @author yvolk@yurivolkov.com
  */
@@ -61,6 +63,10 @@ public class StringUtils {
 
     public static String notEmpty(String value, String valueIfEmpty) {
         return StringUtils.isEmpty(value) ? valueIfEmpty : value;
+    }
+
+    public static Optional<String> optNotEmpty(Object value) {
+        return Optional.ofNullable(value).map(Object::toString).map(String::trim).filter(s -> s.length() > 0);
     }
 
     public static String notNull(String value) {

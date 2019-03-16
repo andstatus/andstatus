@@ -227,7 +227,7 @@ public class NoteContextMenu extends MyContextMenu {
             if (accountToNote.isAuthorSucceededMyAccount()) {
                 if (noteForAnyAccount.isLoaded()) {
                     if (!accountToNote.reblogged && getActingAccount().getConnection()
-                            .isApiSupported(Connection.ApiRoutineEnum.DELETE_NOTE)) {
+                            .hasApiEndpoint(Connection.ApiRoutineEnum.DELETE_NOTE)) {
                         NoteContextMenuItem.DELETE_NOTE.addTo(menu, order++,
                                 R.string.menu_item_destroy_status);
                     }

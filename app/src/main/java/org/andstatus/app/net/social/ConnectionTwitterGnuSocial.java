@@ -167,7 +167,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
         } else {
             Uri uri = getApiPathWithNoteId(ApiRoutineEnum.GET_CONVERSATION, conversationOid);
             JSONArray jArr = http.getRequestAsArray(uri);
-            return jArrToTimeline(jArr, ApiRoutineEnum.GET_CONVERSATION, uri);
+            return jArrToTimeline("", jArr, ApiRoutineEnum.GET_CONVERSATION, uri);
         }
     }
 

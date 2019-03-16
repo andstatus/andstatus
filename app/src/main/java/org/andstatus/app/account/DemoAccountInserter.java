@@ -221,7 +221,7 @@ public class DemoAccountInserter {
     public void checkDefaultTimelinesForAccounts() {
         for (MyAccount myAccount : MyContextHolder.get().accounts().get()) {
             for (TimelineType timelineType : TimelineType.getDefaultMyAccountTimelineTypes()) {
-                if (!myAccount.getConnection().isApiSupported(timelineType.getConnectionApiRoutine())) continue;
+                if (!myAccount.getConnection().hasApiEndpoint(timelineType.getConnectionApiRoutine())) continue;
 
                 long count = 0;
                 StringBuilder logMsg =new StringBuilder(myAccount.toString());

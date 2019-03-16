@@ -29,8 +29,9 @@ import org.andstatus.app.MyAction;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.actor.ActorListType;
-import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MatchedUri;
+import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.database.table.ActivityTable;
@@ -68,7 +69,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     EDIT(true, false) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
-            return NoteEditorData.load(menu.menuContainer.getActivity().getMyContext(), menu.getNoteId());
+            return NoteEditorData.load(menu.getMyContext(), menu.getNoteId());
         }
 
         @Override
@@ -79,7 +80,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     RESEND(true, false) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
-            MyAccount ma = MyContextHolder.get().accounts().fromActorId(
+            MyAccount ma = menu.getMyContext().accounts().fromActorId(
                     MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, menu.getNoteId()));
             long activityId = MyQuery.noteIdToLongColumnValue(ActivityTable.LAST_UPDATE_ID, menu.getNoteId());
             CommandData commandData = CommandData.newUpdateStatus(ma, activityId, menu.getNoteId());
@@ -192,7 +193,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
             return NoteEditorData.newEmpty(MyAccount.EMPTY)
-                    .setTimeline(menu.getActivity().getMyContext().timelines()
+                    .setTimeline(menu.getMyContext().timelines()
                             .forUserAtHomeOrigin(TimelineType.SENT, menu.getActor()));
         }
 
@@ -205,7 +206,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
             return NoteEditorData.newEmpty(MyAccount.EMPTY)
-                    .setTimeline(menu.getActivity().getMyContext().timelines()
+                    .setTimeline(menu.getMyContext().timelines()
                             .forUserAtHomeOrigin(TimelineType.SENT, menu.getAuthor()));
         }
 
@@ -320,7 +321,19 @@ public enum NoteContextMenuItem implements ContextMenuItem {
             menu.getActivity().updateList(TriState.TRUE, menu.getViewItem().getTopmostId());
         }
     },
-    GET_NOTE {
+    GET_NOTE(true, false) {
+        @Override
+        NoteEditorData executeAsync(NoteContextMenu menu) {
+            DownloadStatus status = DownloadStatus.load(
+                    MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, menu.getNoteId()));
+            if (status == DownloadStatus.LOADED) {
+                MyProvider.update(menu.getMyContext(), NoteTable.TABLE_NAME,
+                        NoteTable.NOTE_STATUS + "=" + DownloadStatus.NEEDS_UPDATE.save(),
+                        NoteTable._ID + "=" + menu.getNoteId());
+            }
+            return super.executeAsync(menu);
+        }
+
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
             MyServiceManager.sendManualForegroundCommand(
@@ -349,15 +362,15 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     public static final String NOTE_LINK_SEPARATOR = ": ";
     private static final String TAG = NoteContextMenuItem.class.getSimpleName();
     private final boolean mIsAsync;
-    public final boolean forUnsentAlso;
+    public final boolean appliedToUnsentNotesAlso;
 
     NoteContextMenuItem() {
         this(false, false);
     }
 
-    NoteContextMenuItem(boolean isAsync, boolean forUnsentAlso) {
+    NoteContextMenuItem(boolean isAsync, boolean appliedToUnsentNotesAlso) {
         this.mIsAsync = isAsync;
-        this.forUnsentAlso = forUnsentAlso;
+        this.appliedToUnsentNotesAlso = appliedToUnsentNotesAlso;
     }
 
     @Override
@@ -378,7 +391,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         MyLog.v(this, () -> "text='" + editorData.getContent() + "'");
         if (!StringUtils.isEmpty(editorData.getContent())) {
             // http://developer.android.com/guide/topics/text/copy-paste.html
-            ClipboardManager clipboard = (ClipboardManager) MyContextHolder.get().context().
+            ClipboardManager clipboard = (ClipboardManager) editorData.myContext.context().
                     getSystemService(Context.CLIPBOARD_SERVICE);
             ClipData clip = ClipData.newPlainText(
                     I18n.trimTextAt(MyHtml.htmlToCompactPlainText(editorData.getContent()), 40),

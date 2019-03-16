@@ -181,7 +181,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
     }
 
     boolean isApiSupported(Connection.ApiRoutineEnum routine) {
-        return getConnection().isApiSupported(routine);
+        return getConnection().hasApiEndpoint(routine);
     }
 
     public Connection getConnection() {

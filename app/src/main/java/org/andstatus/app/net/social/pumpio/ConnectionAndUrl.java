@@ -37,14 +37,7 @@ class ConnectionAndUrl {
         this.httpConnection = httpConnection;
     }
 
-    public static ConnectionAndUrl getConnectionAndUrl(ConnectionPumpio connection, Connection.ApiRoutineEnum apiRoutine, Actor actor) throws ConnectionException {
-        if (actor == null || StringUtils.isEmpty(actor.oid)) {
-            throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine + ": actorId is required");
-        }
-        return  getConnectionAndUrlForActor(connection, apiRoutine, actor);
-    }
-
-    public static ConnectionAndUrl getConnectionAndUrlForActor(ConnectionPumpio connection, Connection.ApiRoutineEnum apiRoutine, Actor actor) throws ConnectionException {
+    public static ConnectionAndUrl fromActor(ConnectionPumpio connection, Connection.ApiRoutineEnum apiRoutine, Actor actor) throws ConnectionException {
         String username = actor.getUsername();
         if (StringUtils.isEmpty(username)) {
             throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine + ": username is required");

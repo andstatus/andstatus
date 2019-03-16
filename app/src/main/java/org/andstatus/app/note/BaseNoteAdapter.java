@@ -215,7 +215,7 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
 
     private void onButtonClick(View v, NoteContextMenuItem contextMenuItemIn) {
         T item = getItem(v);
-        if (item != null && (item.noteStatus == DownloadStatus.LOADED || contextMenuItemIn.forUnsentAlso)) {
+        if (item != null && (item.noteStatus == DownloadStatus.LOADED || contextMenuItemIn.appliedToUnsentNotesAlso)) {
             contextMenu.onCreateContextMenu(null, v, null, (contextMenu) -> {
                 contextMenu.onContextItemSelected(contextMenuItemIn, item.getNoteId());
             });

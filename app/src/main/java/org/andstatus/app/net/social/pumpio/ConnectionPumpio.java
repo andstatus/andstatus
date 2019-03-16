@@ -192,7 +192,7 @@ public class ConnectionPumpio extends Connection {
     @NonNull
     private List<Actor> getActors(Actor actor, ApiRoutineEnum apiRoutine) throws ConnectionException {
         int limit = 200;
-        ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrl(this, apiRoutine, actor);
+        ConnectionAndUrl conu = ConnectionAndUrl.fromActor(this, apiRoutine, actor);
         Uri.Builder builder = conu.uri.buildUpon();
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
         JSONArray jArr = conu.httpConnection.getRequestAsArray(builder.build());
@@ -269,7 +269,7 @@ public class ConnectionPumpio extends Connection {
     public List<AActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
                                        TimelinePosition oldestPosition, int limit, Actor actor)
             throws ConnectionException {
-        ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrl(this, apiRoutine, actor);
+        ConnectionAndUrl conu = ConnectionAndUrl.fromActor(this, apiRoutine, actor);
         Uri.Builder builder = conu.uri.buildUpon();
         if (youngestPosition.nonEmpty()) {
             // The "since" should point to the "Activity" on the timeline, not to the note
@@ -517,7 +517,7 @@ public class ConnectionPumpio extends Connection {
     
     @Override
     public Actor getActor2(Actor actorIn) throws ConnectionException {
-        ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrlForActor(this, ApiRoutineEnum.GET_ACTOR, actorIn);
+        ConnectionAndUrl conu = ConnectionAndUrl.fromActor(this, ApiRoutineEnum.GET_ACTOR, actorIn);
         JSONObject jso = conu.httpConnection.getRequest(conu.uri);
         return actorFromJson(jso);
     }

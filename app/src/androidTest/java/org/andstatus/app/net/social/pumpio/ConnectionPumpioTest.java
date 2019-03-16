@@ -155,7 +155,7 @@ public class ConnectionPumpioTest {
         String urls[] = {originUrl + "/api/user/t131t/profile", originUrl + "/api/user/somebody/profile"};
         String hosts[] = {demoData.pumpioMainHost, demoData.pumpioMainHost};
         for (int ind=0; ind < actors.length; ind++) {
-            ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrl(connection, ApiRoutineEnum.GET_ACTOR, actors[ind]);
+            ConnectionAndUrl conu = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.GET_ACTOR, actors[ind]);
             assertEquals("Expecting '" + urls[ind] + "'", Uri.parse(urls[ind]), conu.uri);
             assertEquals("Expecting '" + hosts[ind] + "'", hosts[ind], conu.httpConnection.data.originUrl.getHost());
         }
@@ -268,8 +268,8 @@ public class ConnectionPumpioTest {
     public void testGetActorsFollowedBy() throws IOException {
         httpConnectionMock.addResponse(org.andstatus.app.tests.R.raw.pumpio_actor_t131t_following);
         
-        assertTrue(connection.isApiSupported(ApiRoutineEnum.GET_FRIENDS));        
-        assertTrue(connection.isApiSupported(ApiRoutineEnum.GET_FRIENDS_IDS));
+        assertTrue(connection.hasApiEndpoint(ApiRoutineEnum.GET_FRIENDS));
+        assertTrue(connection.hasApiEndpoint(ApiRoutineEnum.GET_FRIENDS_IDS));
 
         final String webFingerId = "t131t@" + originUrl.getHost();
         Actor actor = Actor.fromOid(connection.getData().getOrigin(),"acct:" + webFingerId)

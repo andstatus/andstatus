@@ -34,25 +34,28 @@ class ConnectionAndUrl {
     public final Uri uri;
     public final HttpConnection httpConnection;
 
-    public ConnectionAndUrl(Uri uri, HttpConnection httpConnection) {
+    private ConnectionAndUrl(Uri uri, HttpConnection httpConnection) {
         this.uri = uri;
         this.httpConnection = httpConnection;
     }
 
-    public static ConnectionAndUrl getConnectionAndUrl(ConnectionActivityPub connection, Connection.ApiRoutineEnum apiRoutine, Actor actor) throws ConnectionException {
-        if (actor == null || StringUtils.isEmpty(actor.oid)) {
-            throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine + ": actorId is required");
-        }
-        return  getConnectionAndUrlForActor(connection, apiRoutine, actor);
+    public ConnectionAndUrl withUri(Uri newUri) {
+        return new ConnectionAndUrl(newUri, httpConnection);
     }
 
-    static ConnectionAndUrl getConnectionAndUrlForActor(ConnectionActivityPub connection,
-                                       Connection.ApiRoutineEnum apiRoutine, Actor actor) throws ConnectionException {
+    static ConnectionAndUrl fromUriActor(Uri uri, ConnectionActivityPub connection, Connection.ApiRoutineEnum apiRoutine, Actor actor) throws ConnectionException {
+        return new ConnectionAndUrl(uri, getConnection(connection, apiRoutine, actor));
+    }
+
+    static ConnectionAndUrl fromActor(ConnectionActivityPub connection, Connection.ApiRoutineEnum apiRoutine, Actor actor) throws ConnectionException {
         final Optional<Uri> endpoint = actor.getEndpoint(ActorEndpointType.from(apiRoutine));
         if (!endpoint.isPresent()) {
             throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine + ": endpoint is empty for " + actor);
         }
+        return new ConnectionAndUrl(endpoint.get(), getConnection(connection, apiRoutine, actor));
+    }
 
+    private static HttpConnection getConnection(ConnectionActivityPub connection, Connection.ApiRoutineEnum apiRoutine, Actor actor) throws ConnectionException {
         HttpConnection httpConnection = connection.getHttp();
         String host = actor.getHost();
         if (StringUtils.isEmpty(host)) {
@@ -72,6 +75,6 @@ class ConnectionAndUrl {
                         "No credentials", httpConnection.data.originUrl);
             }
         }
-        return new ConnectionAndUrl(endpoint.get(), httpConnection);
+        return httpConnection;
     }
 }

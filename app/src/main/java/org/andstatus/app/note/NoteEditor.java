@@ -22,7 +22,6 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.text.Editable;
-import android.text.Html;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.format.Formatter;
@@ -402,7 +401,7 @@ public class NoteEditor {
         command.showAfterSave = true;
         command.beingEdited = true;
         saveData(command);
-        if (data.getMyAccount().getConnection().isApiSupported(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)) {
+        if (data.getMyAccount().getConnection().hasApiEndpoint(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)) {
             MyServiceManager.sendForegroundCommand(
                     CommandData.newAccountCommand(CommandEnum.RATE_LIMIT_STATUS, data.getMyAccount()));
         }

@@ -171,14 +171,8 @@ public abstract class Connection {
      * and even before presenting corresponding action to the User.
      * @return true if supported
      */
-    public boolean isApiSupported(ApiRoutineEnum routine) {
-        Optional<Uri> uri = getApiUri(routine);
-        if (uri.isPresent()) return true;
-
-        if (MyLog.isVerboseEnabled()) {
-          MyLog.v(this, "The API routine '" + routine + "' is not supported");
-        }
-        return false;
+    public boolean hasApiEndpoint(ApiRoutineEnum routine) {
+        return getApiUri(routine).isPresent();
     }
 
     private Optional<Uri> getApiUri(ApiRoutineEnum routine) {

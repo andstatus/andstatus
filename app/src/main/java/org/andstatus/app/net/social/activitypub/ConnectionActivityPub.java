@@ -152,7 +152,7 @@ public class ConnectionActivityPub extends Connection {
     @NonNull
     private List<Actor> getActors(Actor actor, ApiRoutineEnum apiRoutine) throws ConnectionException {
         int limit = 200;
-        ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrl(this, apiRoutine, actor);
+        ConnectionAndUrl conu = ConnectionAndUrl.fromActor(this, apiRoutine, actor);
         Uri.Builder builder = conu.uri.buildUpon();
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
         JSONArray jArr = conu.httpConnection.getRequestAsArray(builder.build());
@@ -224,12 +224,23 @@ public class ConnectionActivityPub extends Connection {
         return actOnNote(ActivityType.ANNOUNCE, rebloggedNoteOid);
     }
 
+    @Override
+    public List<AActivity> getConversation(String conversationOid) throws ConnectionException {
+        Uri uri = UriUtils.fromString(conversationOid);
+        if (UriUtils.isDownloadable(uri)) {
+            return getActivities(ApiRoutineEnum.GET_CONVERSATION, ConnectionAndUrl
+                    .fromUriActor(uri, this, ApiRoutineEnum.GET_CONVERSATION, data.getAccountActor()));
+        } else {
+            return super.getConversation(conversationOid);
+        }
+    }
+
     @NonNull
     @Override
     public List<AActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
                                        TimelinePosition oldestPosition, int limit, Actor actor)
             throws ConnectionException {
-        ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrl(this, apiRoutine, actor);
+        ConnectionAndUrl conu = ConnectionAndUrl.fromActor(this, apiRoutine, actor);
         Uri.Builder builder = conu.uri.buildUpon();
         if (youngestPosition.nonEmpty()) {
             // The "since" should point to the "Activity" on the timeline, not to the note
@@ -239,7 +250,11 @@ public class ConnectionActivityPub extends Connection {
             builder.appendQueryParameter("max_id", oldestPosition.getPosition());
         }
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
-        JSONObject root = conu.httpConnection.getRequest(builder.build());
+        return getActivities(apiRoutine, conu.withUri(builder.build()));
+    }
+
+    private List<AActivity> getActivities(ApiRoutineEnum apiRoutine, ConnectionAndUrl conu) throws ConnectionException {
+        JSONObject root = conu.httpConnection.getRequest(conu.uri);
         List<AActivity> activities = new ArrayList<>();
         if (root != null) {
             JSONObject page = root.optJSONObject("first");
@@ -256,7 +271,7 @@ public class ConnectionActivityPub extends Connection {
                 }
             }
         }
-        MyLog.d(TAG, "getTimeline '" + builder.build() + "' " + activities.size() + " activities");
+        MyLog.d(TAG, "getTimeline " + apiRoutine + " '" + conu.uri + "' " + activities.size() + " activities");
         return activities;
     }
 
@@ -428,6 +443,8 @@ public class ConnectionActivityPub extends Connection {
 
             setVia(note, jso);
             note.url = jso.optString("url");
+            note.setConversationOid(StringUtils.optNotEmpty(jso.optString("conversation"))
+                    .orElseGet(() -> jso.optString("context")));
 
             if (jso.has(VIDEO_OBJECT)) {
                 Uri uri = UriUtils.fromJson(jso, VIDEO_OBJECT + "/url");
@@ -489,7 +506,7 @@ public class ConnectionActivityPub extends Connection {
 
     @Override
     public Actor getActor2(Actor actorIn) throws ConnectionException {
-        ConnectionAndUrl conu = ConnectionAndUrl.getConnectionAndUrlForActor(this, ApiRoutineEnum.GET_ACTOR, actorIn);
+        ConnectionAndUrl conu = ConnectionAndUrl.fromActor(this, ApiRoutineEnum.GET_ACTOR, actorIn);
         JSONObject jso = conu.httpConnection.getRequest(conu.uri);
         return actorFromJson(jso);
     }
