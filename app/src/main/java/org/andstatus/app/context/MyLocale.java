@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2019 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,10 @@
 
 package org.andstatus.app.context;
 
+import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.res.Configuration;
+import android.os.LocaleList;
 
 import org.acra.ACRA;
 import org.andstatus.app.util.I18n;
@@ -29,7 +31,6 @@ import java.util.Locale;
  * @author yvolk@yurivolkov.com
  */
 public class MyLocale {
-    private static final String TAG = MyLocale.class.getSimpleName();
     private static final String CUSTOM_LOCALE_DEFAULT = "default";
 
     private static volatile Locale mLocale = null;
@@ -53,14 +54,12 @@ public class MyLocale {
         }
         String strLocale = SharedPreferencesUtil.getString(MyPreferences.KEY_CUSTOM_LOCALE, CUSTOM_LOCALE_DEFAULT);
         if (!strLocale.equals(CUSTOM_LOCALE_DEFAULT) || mLocale != null) {
-            Configuration config = contextWrapper.getBaseContext().getResources().getConfiguration();
-            if (strLocale.equals(CUSTOM_LOCALE_DEFAULT)) {
-                customizeConfig(contextWrapper, config, mDefaultLocale);
-                mLocale = null;
-            } else {
-                mLocale = new Locale(I18n.localeToLanguage(strLocale), I18n.localeToCountry(strLocale));
-                customizeConfig(contextWrapper, config, mLocale);
-            }
+            mLocale = strLocale.equals(CUSTOM_LOCALE_DEFAULT)
+                    ? null
+                    : new Locale(I18n.localeToLanguage(strLocale), I18n.localeToCountry(strLocale));
+            Locale locale = mLocale == null ? mDefaultLocale : mLocale;
+            Locale.setDefault(locale);
+            updateConfiguration(contextWrapper, locale);
         }
         ACRA.getErrorReporter().putCustomData("locale",
                 strLocale + ", " +
@@ -68,26 +67,40 @@ public class MyLocale {
                     (mDefaultLocale == null ? "(null)" : mDefaultLocale.getDisplayName()));
     }
 
+    private static void updateConfiguration(ContextWrapper contextWrapper, Locale locale) {
+        Configuration configIn = contextWrapper.getBaseContext().getResources().getConfiguration();
+        if (!configIn.getLocales().get(0).equals(locale)) {
+            Configuration configCustom = getCustomizeConfiguration(contextWrapper.getBaseContext(), locale);
+            contextWrapper.getBaseContext().getResources().updateConfiguration(configCustom,
+                    contextWrapper.getBaseContext().getResources().getDisplayMetrics());
+        }
+    }
+
     static Configuration onConfigurationChanged(ContextWrapper contextWrapper, Configuration newConfig) {
         if (mLocale == null || mDefaultLocale == null) {
-            mDefaultLocale = newConfig.locale;
+            mDefaultLocale = newConfig.getLocales().get(0);
         }
         MyTheme.forget();
-        return customizeConfig(contextWrapper, newConfig, mLocale);
+        return mLocale == null ? newConfig : getCustomizeConfiguration(contextWrapper.getBaseContext(), mLocale);
     }
 
-    private static Configuration customizeConfig(ContextWrapper contextWrapper, Configuration newConfig, Locale locale) {
-        Configuration configCustom = newConfig;
-        if (locale != null && !newConfig.locale.equals(locale)) {
-            Locale.setDefault(locale);
-            configCustom = new Configuration(newConfig);
-            setLocale(configCustom, locale);
-            contextWrapper.getBaseContext().getResources().updateConfiguration(configCustom, contextWrapper.getBaseContext().getResources().getDisplayMetrics());
-        }
-        return configCustom;
+    // Based on https://stackoverflow.com/questions/39705739/android-n-change-language-programmatically/40849142
+    public static Context wrap(Context context) {
+        return mLocale == null ? context : wrap(context, mLocale);
     }
 
-    private static void setLocale(Configuration configCustom, Locale locale) {
-        configCustom.setLocale(locale);
+    private static ContextWrapper wrap(Context context, Locale newLocale) {
+        Configuration configuration = getCustomizeConfiguration(context, newLocale);
+        return new ContextWrapper(context.createConfigurationContext(configuration));
+    }
+
+    private static Configuration getCustomizeConfiguration(Context context, Locale newLocale) {
+        Configuration configuration = context.getResources().getConfiguration();
+        configuration.setLocale(newLocale);
+
+        LocaleList localeList = new LocaleList(newLocale);
+        LocaleList.setDefault(localeList);
+        configuration.setLocales(localeList);
+        return configuration;
     }
 }

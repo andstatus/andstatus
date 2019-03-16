@@ -17,17 +17,14 @@
 package org.andstatus.app;
 
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.View;
 
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyLocale;
 import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.util.IdentifiableInstance;
@@ -35,6 +32,12 @@ import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -50,6 +53,11 @@ public class MyActivity extends AppCompatActivity implements IdentifiableInstanc
      */
     protected volatile boolean mFinishing = false;
     private Menu mOptionsMenu = null;
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(MyLocale.wrap(newBase));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
