@@ -1,0 +1,9 @@
+{
+  "token_type": "Bearer",
+  "scope": "read write follow",
+  "refresh_token": "qaK4uqwgZgTN4333snwDVAsCqi2Ddoc55Bd3_O2wkLk",
+  "expires_in": 600,
+  "created_at": 1552762401,
+  "access_token": "ltDoL2bfmWJQPFHdxsYfxUZask--WL2a7V4RTQnlXD4",
+  "me": "https://pleroma.site/users/ActivityPubTester"
+}

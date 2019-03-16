@@ -37,6 +37,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
@@ -71,7 +72,7 @@ public class VerifyCredentialsTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         if (!StringUtils.isEmpty(keyStored)) {
             httpConnection.data.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored);        
         }
@@ -81,7 +82,7 @@ public class VerifyCredentialsTest {
     public void testVerifyCredentials() throws IOException {
         httpConnection.addResponse(org.andstatus.app.tests.R.raw.verify_credentials_twitter);
 
-        Actor actor = connection.verifyCredentials();
+        Actor actor = connection.verifyCredentials(Optional.empty());
         assertEquals("Actor's oid is actorOid of this account", demoData.twitterTestAccountActorOid, actor.oid);
 
         Origin origin = MyContextHolder.get().origins().firstOfType(OriginType.TWITTER);

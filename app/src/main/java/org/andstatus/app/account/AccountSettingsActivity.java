@@ -50,6 +50,8 @@ import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
+import org.andstatus.app.net.http.MyOAuth2AccessTokenJsonExtractor;
+import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.origin.PersistentOriginList;
@@ -71,10 +73,10 @@ import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.view.EnumSelector;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.List;
+import java.util.Optional;
 
 import androidx.annotation.IdRes;
 import androidx.fragment.app.Fragment;
@@ -95,7 +97,7 @@ public class AccountSettingsActivity extends MyActivity {
 
     private enum ResultStatus {
         NONE,
-        ACCOUNT_VALID,
+        SUCCESS,
         ACCOUNT_INVALID,
         CONNECTION_EXCEPTION,
         CREDENTIALS_OF_OTHER_ACCOUNT
@@ -103,24 +105,27 @@ public class AccountSettingsActivity extends MyActivity {
 
     private static class TaskResult {
         final ResultStatus status;
-        CharSequence message = "";
+        final CharSequence message;
+        final Optional<Uri> whoAmI;
 
         TaskResult(ResultStatus status) {
-            this(status, "");
+            this(status, "", Optional.empty());
         }
 
         TaskResult(ResultStatus status, CharSequence message) {
+            this(status, message, Optional.empty());
+        }
+
+        TaskResult(ResultStatus status, CharSequence message, Optional<Uri> whoAmI) {
             this.status = status;
             this.message = message;
+            this.whoAmI = whoAmI;
         }
 
         boolean isSuccess() {
-            return status == ResultStatus.ACCOUNT_VALID;
+            return status == ResultStatus.SUCCESS;
         }
     }
-
-    private static final String SUCCEEDED_KEY = "succeeded";
-    private static final String MESSAGE_KEY = "message";
 
     private enum ActivityOnFinish {
         NONE,
@@ -696,7 +701,8 @@ public class AccountSettingsActivity extends MyActivity {
             if (ma.getCredentialsPresent()) {
                 // Credentials are present, so we may verify them
                 // This is needed even for OAuth - to know Twitter Username
-                AsyncTaskLauncher.execute(this, true, new VerifyCredentialsTask());
+                AsyncTaskLauncher.execute(this, true,
+                        new VerifyCredentialsTask(ma.getActor().getEndpoint(ActorEndpointType.API_PROFILE)));
             } else {
                 if (ma.isOAuth() && reVerify) {
                     // Credentials are not present,
@@ -852,7 +858,7 @@ public class AccountSettingsActivity extends MyActivity {
      * Step 1 of 3 of the OAuth Authentication
      * Needed in a case we don't have the AndStatus Client keys for this Microblogging system
      */
-    private class OAuthRegisterClientTask extends MyAsyncTask<Void, Void, JSONObject> {
+    private class OAuthRegisterClientTask extends MyAsyncTask<Void, Void, TaskResult> {
         private ProgressDialog dlg;
 
         OAuthRegisterClientTask() {
@@ -871,7 +877,7 @@ public class AccountSettingsActivity extends MyActivity {
         }
 
         @Override
-        protected JSONObject doInBackground2(Void... arg0) {
+        protected TaskResult doInBackground2(Void... arg0) {
             JSONObject jso = null;
 
             boolean succeeded = false;
@@ -892,54 +898,38 @@ public class AccountSettingsActivity extends MyActivity {
                 connectionErrorMessage = e.getMessage();
                 MyLog.e(this, e);
             }
-            
-            try {
-                String stepErrorMessage = "";
-                if (!succeeded) {
-                    stepErrorMessage = AccountSettingsActivity.this
-                            .getString(R.string.client_registration_failed);
-                    if (!StringUtils.isEmpty(connectionErrorMessage)) {
-                        stepErrorMessage += ": " + connectionErrorMessage;
-                    }
-                    MyLog.d(TAG, stepErrorMessage);
-                }
 
-                jso = new JSONObject();
-                jso.put(SUCCEEDED_KEY, succeeded);
-                jso.put(MESSAGE_KEY, stepErrorMessage);
-            } catch (JSONException e) {
-                MyLog.e(this, e);
+            String stepErrorMessage = "";
+            if (!succeeded) {
+                stepErrorMessage = AccountSettingsActivity.this
+                        .getString(R.string.client_registration_failed);
+                if (!StringUtils.isEmpty(connectionErrorMessage)) {
+                    stepErrorMessage += ": " + connectionErrorMessage;
+                }
+                MyLog.d(TAG, stepErrorMessage);
             }
-            return jso;
+            return new TaskResult(ResultStatus.SUCCESS, stepErrorMessage);
         }
 
         // This is in the UI thread, so we can mess with the UI
         @Override
-        protected void onPostExecute2(JSONObject jso) {
+        protected void onPostExecute2(TaskResult result) {
             DialogFactory.dismissSafely(dlg);
-            boolean succeeded = false;
-            if (jso != null) {
-                try {
-                    succeeded = jso.getBoolean(SUCCEEDED_KEY);
-                    String message = jso.getString(MESSAGE_KEY);
-
-                    if (succeeded) {
-                        String accountName = state.getAccount().getAccountName();
-                        state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                                MyContextHolder.get(), accountName, TriState.TRUE);
-                        updateScreen();
-                        AsyncTaskLauncher.execute(this, true, new OAuthAcquireRequestTokenTask());
-                        activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN;
-                    } else {
-                        appendError(message);
-                        state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
-                        updateScreen();
-                    }
-                } catch (JSONException e) {
-                    MyLog.e(this, e);
+            if (result != null) {
+                if (result.isSuccess()) {
+                    String accountName = state.getAccount().getAccountName();
+                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(
+                            MyContextHolder.get(), accountName, TriState.TRUE);
+                    updateScreen();
+                    AsyncTaskLauncher.execute(this, true, new OAuthAcquireRequestTokenTask());
+                    activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN;
+                } else {
+                    appendError(result.message);
+                    state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
+                    updateScreen();
                 }
             }
-            MyLog.v(this, I18n.succeededText(succeeded));
+            MyLog.v(this, I18n.succeededText(result != null && result.isSuccess()));
         }
     }
 
@@ -965,7 +955,7 @@ public class AccountSettingsActivity extends MyActivity {
      *         this code from OAuthActivity here in order to be able to show
      *         ProgressDialog and to get rid of any "Black blank screens"
      */
-    private class OAuthAcquireRequestTokenTask extends MyAsyncTask<Void, Void, JSONObject> {
+    private class OAuthAcquireRequestTokenTask extends MyAsyncTask<Void, Void, TaskResult> {
         private ProgressDialog dlg;
 
         OAuthAcquireRequestTokenTask() {
@@ -985,10 +975,10 @@ public class AccountSettingsActivity extends MyActivity {
         }
 
         @Override
-        protected JSONObject doInBackground2(Void... arg0) {
+        protected TaskResult doInBackground2(Void... arg0) {
             JSONObject jso = null;
 
-            boolean requestSucceeded = false;
+            ResultStatus resultStatus = ResultStatus.NONE;
             String stepErrorMessage = "";
             String connectionErrorMessage = "";
             try {
@@ -1020,7 +1010,7 @@ public class AccountSettingsActivity extends MyActivity {
                 Intent i = new Intent(AccountSettingsActivity.this, AccountSettingsWebActivity.class);
                 i.putExtra(AccountSettingsWebActivity.EXTRA_URLTOOPEN, authUrl);
                 AccountSettingsActivity.this.startActivity(i);
-                requestSucceeded = true;
+                resultStatus = ResultStatus.SUCCESS;
             } catch (OAuthMessageSignerException | OAuthNotAuthorizedException
                     | OAuthExpectationFailedException
                     | OAuthCommunicationException
@@ -1029,52 +1019,36 @@ public class AccountSettingsActivity extends MyActivity {
                 MyLog.e(this, e);
             }
 
-            try {
-                if (!requestSucceeded) {
-                    stepErrorMessage = AccountSettingsActivity.this
-                            .getString(R.string.acquiring_a_request_token_failed);
-                    if (connectionErrorMessage != null && connectionErrorMessage.length() > 0) {
-                        stepErrorMessage += ": " + connectionErrorMessage;
-                    }
-                    MyLog.d(TAG, stepErrorMessage);
-                    
-                    state.builder.clearClientKeys();
+            if (resultStatus != ResultStatus.SUCCESS) {
+                stepErrorMessage = AccountSettingsActivity.this
+                        .getString(R.string.acquiring_a_request_token_failed);
+                if (connectionErrorMessage != null && connectionErrorMessage.length() > 0) {
+                    stepErrorMessage += ": " + connectionErrorMessage;
                 }
+                MyLog.d(TAG, stepErrorMessage);
 
-                jso = new JSONObject();
-                jso.put(SUCCEEDED_KEY, requestSucceeded);
-                jso.put(MESSAGE_KEY, stepErrorMessage);
-            } catch (JSONException e) {
-                MyLog.i(this, e);
+                state.builder.clearClientKeys();
             }
-            return jso;
+            return new TaskResult(resultStatus, stepErrorMessage);
         }
 
         // This is in the UI thread, so we can mess with the UI
         @Override
-        protected void onPostExecute2(JSONObject jso) {
+        protected void onPostExecute2(TaskResult result) {
             DialogFactory.dismissSafely(dlg);
-            boolean succeeded = false;
-            if (jso != null) {
-                try {
-                    succeeded = jso.getBoolean(SUCCEEDED_KEY);
-                    String message = jso.getString(MESSAGE_KEY);
-
-                    if (succeeded) {
-                        // Finish this activity in order to start properly 
-                        // after redirection from Browser
-                        // Because of initializations in onCreate...
-                        AccountSettingsActivity.this.finish();
-                    } else {
-                        appendError(message);
-                        state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
-                        updateScreen();
-                    }
-                } catch (JSONException e) {
-                    MyLog.e(this, e);
+            if (result != null) {
+                if (result.isSuccess()) {
+                    // Finish this activity in order to start properly
+                    // after redirection from Browser
+                    // Because of initializations in onCreate...
+                    AccountSettingsActivity.this.finish();
+                } else {
+                    appendError(result.message);
+                    state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
+                    updateScreen();
                 }
             }
-            MyLog.v(this, I18n.succeededText(succeeded));
+            MyLog.v(this, I18n.succeededText(result != null && result.isSuccess()));
         }
     }
     
@@ -1092,7 +1066,7 @@ public class AccountSettingsActivity extends MyActivity {
      *         this code from OAuthActivity here in order to be able to show
      *         ProgressDialog and to get rid of any "Black blank screens"
      */
-    private class OAuthAcquireAccessTokenTask extends MyAsyncTask<Uri, Void, JSONObject> {
+    private class OAuthAcquireAccessTokenTask extends MyAsyncTask<Uri, Void, TaskResult> {
         private ProgressDialog dlg;
 
         OAuthAcquireAccessTokenTask() {
@@ -1112,10 +1086,11 @@ public class AccountSettingsActivity extends MyActivity {
         }
 
         @Override
-        protected JSONObject doInBackground2(Uri... uris) {
+        protected TaskResult doInBackground2(Uri... uris) {
             String message = "";
             String accessToken = "";
             String accessSecret = "";
+            Optional<Uri> whoAmI = Optional.empty();
 
             if (state.getAccount().getOAuthService() == null) {
                 message = "Connection is not OAuth";
@@ -1135,6 +1110,7 @@ public class AccountSettingsActivity extends MyActivity {
                             final OAuth2AccessToken token = service.getAccessToken(authCode);
                             accessToken = token.getAccessToken();
                             accessSecret = token.getRawResponse();
+                            whoAmI = MyOAuth2AccessTokenJsonExtractor.extractWhoAmI(accessSecret);
                         } else {
                             String requestToken = state.getRequestToken();
                             String requestSecret = state.getRequestSecret();
@@ -1167,52 +1143,38 @@ public class AccountSettingsActivity extends MyActivity {
                         MyLog.e(this, e);
                     } finally {
                         state.builder.setUserTokenWithSecret(accessToken, accessSecret);
-                        MyLog.d(this, "Access token for " + state.getAccount().getAccountName() + ": " + accessToken +
-                        ", " + accessSecret);
+                        MyLog.d(this, "Access token for " + state.getAccount().getAccountName() +
+                                ": " + accessToken + ", " + accessSecret);
                     }
                 }
             }
-
-            JSONObject jso = null;
-            try {
-                jso = new JSONObject();
-                jso.put(SUCCEEDED_KEY, !StringUtils.isEmpty(accessToken) && !StringUtils.isEmpty(accessSecret));
-                jso.put(MESSAGE_KEY, message);
-            } catch (JSONException e) {
-                MyLog.e(this, e);
-            }
-            return jso;
+            return new TaskResult(
+                    StringUtils.nonEmpty(accessToken) && StringUtils.nonEmpty(accessSecret)
+                            ? ResultStatus.SUCCESS : ResultStatus.CREDENTIALS_OF_OTHER_ACCOUNT,
+                    message,
+                    whoAmI
+            );
         }
 
         // This is in the UI thread, so we can mess with the UI
         @Override
-        protected void onPostExecute2(JSONObject jso) {
+        protected void onPostExecute2(TaskResult result) {
             DialogFactory.dismissSafely(dlg);
-            boolean succeeded = false;
-            if (jso != null) {
-                try {
-                    succeeded = jso.getBoolean(SUCCEEDED_KEY);
-                    String connectionErrorMessage = jso.getString(MESSAGE_KEY);
-                    if (succeeded) {
-                        // Credentials are present, so we may verify them
-                        // This is needed even for OAuth - to know Twitter Username
-                        AsyncTaskLauncher.execute(this, true, new VerifyCredentialsTask());
-                    } else {
-                        String stepErrorMessage = AccountSettingsActivity.this
-                        .getString(R.string.acquiring_an_access_token_failed);
-                        if (!StringUtils.isEmpty(connectionErrorMessage)) {
-                            stepErrorMessage += ": " + connectionErrorMessage;
-                            MyLog.d(TAG, connectionErrorMessage);
-                        }
-                        appendError(stepErrorMessage);
-                        state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
-                        updateScreen();
-                    }
-                } catch (JSONException e) {
-                    MyLog.e(this, e);
+            if (result != null) {
+                if (result.isSuccess()) {
+                    // Credentials are present, so we may verify them
+                    // This is needed even for OAuth - to know Twitter Username
+                    AsyncTaskLauncher.execute(this, true, new VerifyCredentialsTask(result.whoAmI));
+                } else {
+                    String stepErrorMessage = AccountSettingsActivity.this
+                        .getString(R.string.acquiring_an_access_token_failed) +
+                            (StringUtils.nonEmpty(result.message) ? ": " + result.message : "");
+                    appendError(stepErrorMessage);
+                    state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
+                    updateScreen();
                 }
             }
-            MyLog.v(this, I18n.succeededText(succeeded));
+            MyLog.v(this, I18n.succeededText(result.isSuccess()));
         }
     }
 
@@ -1223,9 +1185,11 @@ public class AccountSettingsActivity extends MyActivity {
     private class VerifyCredentialsTask extends MyAsyncTask<Void, Void, TaskResult> {
         private ProgressDialog dlg;
         private volatile boolean skip = false;
+        private final Optional<Uri> whoAmI;
 
-        VerifyCredentialsTask() {
+        VerifyCredentialsTask(Optional<Uri> whoAmI) {
             super(PoolEnum.LONG_UI);
+            this.whoAmI = whoAmI;
         }
 
         @Override
@@ -1257,14 +1221,14 @@ public class AccountSettingsActivity extends MyActivity {
             String message = "";
             try {
                 state.builder.getOriginConfig();
-                state.builder.verifyCredentials();
+                state.builder.verifyCredentials(whoAmI);
                 final MyAccount myAccount = state.builder.getAccount();
                 if (myAccount.isValidAndSucceeded()) {
                     state.forget();
                     MyContext myContext = MyContextHolder.initialize(MyContextHolder.get().context(),
                             AccountSettingsActivity.this);
                     FirstActivity.checkAndUpdateLastOpenedAppVersion(AccountSettingsActivity.this, true);
-                    status = ResultStatus.ACCOUNT_VALID;
+                    status = ResultStatus.SUCCESS;
 
                     final Timeline timeline = myContext.timelines().forUser(TimelineType.HOME, myAccount.getActor());
                     if (timeline.isTimeToAutoSync()) {
@@ -1299,7 +1263,7 @@ public class AccountSettingsActivity extends MyActivity {
             TaskResult result = resultIn == null ? new TaskResult(ResultStatus.NONE) : resultIn;
             CharSequence errorMessage = "";
             switch (result.status) {
-                case ACCOUNT_VALID:
+                case SUCCESS:
                     Toast.makeText(AccountSettingsActivity.this, R.string.authentication_successful,
                             Toast.LENGTH_SHORT).show();
                     break;

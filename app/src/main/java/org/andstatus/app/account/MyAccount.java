@@ -20,6 +20,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.ContentResolver;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -55,6 +56,7 @@ import org.andstatus.app.util.TriState;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
@@ -398,9 +400,9 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
          *
          * @see CredentialsVerificationStatus
          */
-        void verifyCredentials() throws ConnectionException {
+        void verifyCredentials(Optional<Uri> whoAmI) throws ConnectionException {
             try {
-                onCredentialsVerified(myAccount.getConnection().verifyCredentials(), null);
+                onCredentialsVerified(myAccount.getConnection().verifyCredentials(whoAmI), null);
             } catch (ConnectionException e) {
                 onCredentialsVerified(Actor.EMPTY, e);
             }

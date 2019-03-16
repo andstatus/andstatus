@@ -45,6 +45,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import androidx.annotation.NonNull;
 
@@ -118,7 +119,7 @@ public class ConnectionPumpio extends Connection {
 
     @Override
     @NonNull
-    public Actor verifyCredentials() throws ConnectionException {
+    public Actor verifyCredentials(Optional<Uri> whoAmI) throws ConnectionException {
         JSONObject actor = getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
         return actorFromJson(actor);
     }

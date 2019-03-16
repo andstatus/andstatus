@@ -234,7 +234,7 @@ public abstract class Connection {
     }
     
     @NonNull
-    public abstract Actor verifyCredentials() throws ConnectionException;
+    public abstract Actor verifyCredentials(Optional<Uri> whoAmI) throws ConnectionException;
 
     public abstract AActivity undoLike(String noteOid) throws ConnectionException;
 

@@ -29,6 +29,7 @@ import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UriUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -65,7 +66,7 @@ public class VerifyCredentialsActivityPubTest {
     public void verifyCredentials() throws IOException {
         httpConnection.addResponse(org.andstatus.app.tests.R.raw.activitypub_whoami_pleroma);
 
-        Actor actor = connection.verifyCredentials();
+        Actor actor = connection.verifyCredentials(UriUtils.toDownloadableOptional(ACTOR_OID));
         assertEquals("Actor's oid is actorOid of this account", ACTOR_OID, actor.oid);
 
         Origin origin = connection.getData().getOrigin();
