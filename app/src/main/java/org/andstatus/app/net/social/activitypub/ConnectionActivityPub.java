@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Optional;
 
 import androidx.annotation.NonNull;
+import io.vavr.control.Try;
 
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 
@@ -265,7 +266,7 @@ public class ConnectionActivityPub extends Connection {
                 JSONArray jArr = page.optJSONArray("orderedItems");
                 if (jArr != null) {
                     // Read the activities in the chronological order
-                    for (int index = jArr.length() - 1; index >= 0; index--) {
+                    for (int index = 0; index < jArr.length(); index++) {
                         AActivity item = activityFromJson(ObjectOrId.of(jArr, index));
                         if (item != AActivity.EMPTY) {
                             activities.add(item);
@@ -326,9 +327,7 @@ public class ConnectionActivityPub extends Connection {
         activity.setTimelinePosition(oid);
         activity.setUpdatedDate(updatedOrCreatedDate(jsoActivity));
 
-        ObjectOrId.of(jsoActivity, "actor")
-            .ifObject(o -> activity.setActor(actorFromJson(o)))
-            .ifId(id -> activity.setActor(actorFromOid(id)));
+        actorFromProperty(jsoActivity, "actor").onSuccess(activity::setActor);
 
         ObjectOrId object = ObjectOrId.of(jsoActivity, "object")
             .ifId(id -> {
@@ -357,7 +356,7 @@ public class ConnectionActivityPub extends Connection {
 
         if (activity.getObjectType().equals(AObjectType.NOTE)) {
             ObjectOrId.of(jsoActivity, "to")
-                .ifObject(o -> activity.getNote().audience().add(actorFromJson(o)))
+                .ifObject(o -> addRecipient(activity, actorFromJson(o)))
                 .ifArray(arrayOfTo -> {
                     for (int ind = 0; ind < arrayOfTo.length(); ind++) {
                         ObjectOrId.of(arrayOfTo, ind)
@@ -371,6 +370,10 @@ public class ConnectionActivityPub extends Connection {
             }
         }
         return activity;
+    }
+
+    private Try<Actor> actorFromProperty(JSONObject parentObject, String propertyName) {
+        return ObjectOrId.of(parentObject, propertyName).mapOne(this::actorFromJson, this::actorFromOid);
     }
 
     private void addRecipient(AActivity activity, Actor recipient) {
@@ -417,8 +420,11 @@ public class ConnectionActivityPub extends Connection {
                 return;
             }
             long updatedDate = updatedOrCreatedDate(jso);
+            Actor author = actorFromProperty(jso, "attributedTo")
+                    .orElse(() -> actorFromProperty(jso, "author")).getOrElse(Actor.EMPTY);
+
             final AActivity noteActivity = AActivity.newPartialNote(data.getAccountActor(),
-                    jso.has("author") ? actorFromJson(jso.getJSONObject("author")) : Actor.EMPTY,
+                    author,
                     oid,
                     updatedDate, DownloadStatus.LOADED);
 

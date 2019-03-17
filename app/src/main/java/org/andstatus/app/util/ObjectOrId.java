@@ -20,10 +20,13 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Consumer;
 
 import io.vavr.control.CheckedConsumer;
+import io.vavr.control.CheckedFunction;
+import io.vavr.control.Try;
 
 public class ObjectOrId implements IsEmpty {
     public final Optional<JSONObject> object;
@@ -114,5 +117,15 @@ public class ObjectOrId implements IsEmpty {
     public ObjectOrId ifError(Consumer<Exception> consumer) {
         error.ifPresent(consumer::accept);
         return this;
+    }
+
+    public <T> Try<T> mapOne(CheckedFunction<JSONObject, T> fromObject, CheckedFunction<String, T> fromId) {
+        if (object.isPresent()) {
+            return Try.success(object.get()).map(fromObject);
+        }
+        if (id.isPresent()) {
+            return Try.success(id.get()).map(fromId);
+        }
+        return Try.failure(new NoSuchElementException());
     }
 }

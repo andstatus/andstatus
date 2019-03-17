@@ -27,12 +27,13 @@ import java.util.List;
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class ActorTest {
 
     @Before
     public void setUp() throws Exception {
-        TestSuite.initializeWithData(this);
+        TestSuite.initializeWithAccounts(this);
     }
 
     @Test
@@ -69,9 +70,13 @@ public class ActorTest {
         List<Actor> actors = Actor.newUnknown(origin).extractActorsFromContent(body, Actor.EMPTY);
         String msgLog = body + " -> " + actors;
         assertEquals(msgLog, 2, actors.size());
-        assertEquals(msgLog, USERNAME1, actors.get(0).getUsername());
-        assertFalse(msgLog, actors.get(0).isOidReal());
-        assertFalse(msgLog, actors.get(0).hasAltTempOid());
+        Actor actor0 = actors.get(0);
+        assertEquals(msgLog, USERNAME1, actor0.getUsername());
+        assertFalse(msgLog, actor0.isOidReal());
+        assertTrue(msgLog +
+                "\nusername:" + actor0.getUsername() +
+                "\ntempOid: " + actor0.toTempOid() +
+                "\naltOid:  " + actor0.toAltTempOid(), actor0.hasAltTempOid());
 
         assertEquals(msgLog, USERNAME4, actors.get(1).getUsername());
     }

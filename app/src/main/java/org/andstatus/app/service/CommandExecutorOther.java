@@ -380,7 +380,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                     // This means that there is no such "Status"
                     // TODO: so we don't need to retry this command
                 }
-                logConnectionException(e, method + MyQuery.noteInfoForLog(noteId));
+                logConnectionException(e, method + " " + MyQuery.noteInfoForLog(noteId));
             }
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));

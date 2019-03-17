@@ -167,7 +167,7 @@ public class AccountToNote {
         return "AccountToNote{" +
                 "noteForAnyAccount=" + noteForAnyAccount +
                 ", isAuthorMySucceededMyAccount=" + isAuthorMySucceededMyAccount +
-                ", myAccount=" + myAccount +
+                ", myAccount=" + myAccount.getAccountName() +
                 ", accountActorId=" + accountActorId +
                 ", isSubscribed=" + isSubscribed +
                 ", isAuthor=" + isAuthor +

@@ -456,7 +456,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     private void fixWebFingerId() {
-        if (StringUtils.isEmpty(username)) return;
+        if (StringUtils.isEmpty(username) || isWebFingerIdValid) return;
 
         if (username.contains("@")) {
             setWebFingerId(username);
@@ -494,6 +494,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (!isUsernameValid() && origin.isUsernameValid(potentialUsername)) {
             username = potentialUsername;
         }
+        host.reset();
         return this;
     }
 
