@@ -286,25 +286,7 @@ public abstract class ConnectionTwitterLike extends Connection {
             }
             activity = newLoadedUpdateActivity(oid, dateFromJson(jso, "created_at"));
 
-            Actor author = Actor.EMPTY;
-            if (jso.has("sender")) {
-                author = actorFromJson(jso.getJSONObject("sender"));
-            } else if (jso.has("user")) {
-                author = actorFromJson(jso.getJSONObject("user"));
-            } else if (jso.has("from_user")) {
-                // This is in the search results,
-                // see https://dev.twitter.com/docs/api/1/get/search
-                String senderName = jso.getString("from_user");
-                String senderOid = jso.optString("from_user_id_str");
-                if (SharedPreferencesUtil.isEmpty(senderOid)) {
-                    senderOid = jso.optString("from_user_id");
-                }
-                if (!SharedPreferencesUtil.isEmpty(senderOid)) {
-                    author = Actor.fromOid(data.getOrigin(), senderOid);
-                    author.setUsername(senderName);
-                }
-            }
-            activity.setActor(author);
+            activity.setActor(authorFromJson(jso));
 
             Note note = activity.getNote();
             setNoteBodyFromJson(note, jso);
@@ -360,6 +342,29 @@ public abstract class ConnectionTwitterLike extends Connection {
         return activity;
     }
 
+    private Actor authorFromJson(JSONObject jso) throws ConnectionException, JSONException {
+        Actor author = Actor.EMPTY;
+        if (jso.has("sender")) {
+            author = actorFromJson(jso.getJSONObject("sender"));
+        } else if (jso.has("user")) {
+            author = actorFromJson(jso.getJSONObject("user"));
+        } else if (jso.has("from_user")) {
+            // This is in the search results,
+            // see https://dev.twitter.com/docs/api/1/get/search
+            String senderName = jso.getString("from_user");
+            String senderOid = jso.optString("from_user_id_str");
+            if (SharedPreferencesUtil.isEmpty(senderOid)) {
+                senderOid = jso.optString("from_user_id");
+            }
+            if (!SharedPreferencesUtil.isEmpty(senderOid)) {
+                author = Actor.fromOid(data.getOrigin(), senderOid);
+                author.setUsername(senderName);
+                author.build();
+            }
+        }
+        return author;
+    }
+
     protected void setNoteBodyFromJson(Note note, JSONObject jso) throws JSONException {
         if (jso.has("text")) {
             note.setContentPosted(jso.getString("text"));
@@ -368,6 +373,21 @@ public abstract class ConnectionTwitterLike extends Connection {
 
     @NonNull
     protected Actor actorFromJson(JSONObject jso) throws ConnectionException {
+        Actor actor = actorBuilderFromJson(jso).build();
+        if (jso != null && !jso.isNull("status")) {
+            try {
+                final AActivity activity = activityFromJson(jso.getJSONObject("status"));
+                activity.setActor(actor);
+                actor.setLatestActivity(activity);
+            } catch (JSONException e) {
+                throw ConnectionException.loggedJsonException(this, "getting status from actor", e, jso);
+            }
+        }
+        return actor;
+    }
+
+    @NonNull
+    Actor actorBuilderFromJson(JSONObject jso) throws ConnectionException {
         if (jso == null) return Actor.EMPTY;
 
         String oid = "";
@@ -375,7 +395,7 @@ public abstract class ConnectionTwitterLike extends Connection {
             oid = jso.optString("id_str");
         } else if (jso.has("id")) {
             oid = jso.optString("id");
-        } 
+        }
         if (SharedPreferencesUtil.isEmpty(oid)) {
             oid = "";
         }
@@ -406,15 +426,6 @@ public abstract class ConnectionTwitterLike extends Connection {
         actor.setCreatedDate(dateFromJson(jso, "created_at"));
         if (!jso.isNull("following")) {
             actor.followedByMe = TriState.fromBoolean(jso.optBoolean("following"));
-        }
-        if (!jso.isNull("status")) {
-            try {
-                final AActivity activity = activityFromJson(jso.getJSONObject("status"));
-                activity.setActor(actor);
-                actor.setLatestActivity(activity);
-            } catch (JSONException e) {
-                throw ConnectionException.loggedJsonException(this, "getting status from actor", e, jso);
-            }
         }
         return actor;
     }

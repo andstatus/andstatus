@@ -367,9 +367,6 @@ public class Actor implements Comparable<Actor>, IsEmpty {
             throw new IllegalStateException("Cannot set username of EMPTY Actor");
         }
         this.username = StringUtils.isEmpty(username) ? "" : username.trim();
-        if (isUsernameValid()) {
-            fixWebFingerId();
-        }
         return this;
     }
 
@@ -379,13 +376,11 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
     public Actor setProfileUrl(String url) {
         this.profileUri = UriUtils.fromString(url);
-        fixWebFingerId();
         return this;
     }
 
     public void setProfileUrlToOriginUrl(URL originUrl) {
         profileUri = UriUtils.fromUrl(originUrl);
-        fixWebFingerId();
     }
 
     @Override
@@ -455,8 +450,11 @@ public class Actor implements Comparable<Actor>, IsEmpty {
                 : user.actorIds.contains(other.actorId);
     }
 
-    private void fixWebFingerId() {
-        if (StringUtils.isEmpty(username) || isWebFingerIdValid) return;
+    public Actor build() {
+        if (this == EMPTY) return this;
+
+        host.reset();
+        if (StringUtils.isEmpty(username) || isWebFingerIdValid) return this;
 
         if (username.contains("@")) {
             setWebFingerId(username);
@@ -469,6 +467,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         } else if (origin.shouldHaveUrl()) {
             setWebFingerId(username + "@" + origin.fixUriForPermalink(UriUtils.fromUrl(origin.getUrl())).getHost());
         }
+        return this;
     }
 
     public Actor setWebFingerId(String webFingerIdIn) {
@@ -494,7 +493,6 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (!isUsernameValid() && origin.isUsernameValid(potentialUsername)) {
             username = potentialUsername;
         }
-        host.reset();
         return this;
     }
 
@@ -639,6 +637,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
                 actor.setUsername(validUsername);
             }
         }
+        actor.build();
         actor.lookupActorId();
         if (!actors.contains(actor)) {
             actors.add(actor);

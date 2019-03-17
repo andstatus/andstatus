@@ -98,7 +98,7 @@ public class DemoNoteInserter {
         actor.favoritesCount = rand + 11;
         actor.followingCount = rand + 17;
         actor.followersCount = rand;
-        return actor;
+        return actor.build();
     }
 
     private String nextActorUid() {

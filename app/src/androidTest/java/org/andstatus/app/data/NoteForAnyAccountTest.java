@@ -77,8 +77,8 @@ public class NoteForAnyAccountTest {
 
         AActivity reblogged1 = mi.buildActivity(author3, "", "@" + author2.getUsername()
                 + " This reply is reblogged by anotherMan", replyTo1, null, DownloadStatus.LOADED);
-        Actor anotherMan = mi.buildActorFromOid("acct:c4." + demoData.testRunUid + "@pump.example.com");
-        anotherMan.setUsername("anotherMan" + demoData.testRunUid);
+        Actor anotherMan = mi.buildActorFromOid("acct:c4." + demoData.testRunUid + "@pump.example.com")
+                .setUsername("anotherMan" + demoData.testRunUid).build();
         AActivity activity4 = AActivity.from(accountActor, ActivityType.ANNOUNCE);
         activity4.setActor(anotherMan);
         activity4.setActivity(reblogged1);

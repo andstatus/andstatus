@@ -170,7 +170,7 @@ public class DemoGnuSocialConversationInserter {
             actor.setAvatarUrl(avatarUrl);
         }
         actor.setProfileUrlToOriginUrl(origin.getUrl());
-        return actor;
+        return actor.build();
     }
     
     private AActivity buildActivity(Actor author, String body, AActivity inReplyToNote, String noteOidIn) {

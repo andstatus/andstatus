@@ -31,8 +31,6 @@ import org.andstatus.app.MyAction;
 import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyEmptyFutureContext;
-import org.andstatus.app.context.MyFutureContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.net.social.Actor;
@@ -55,7 +53,7 @@ import static org.andstatus.app.service.CommandEnum.DELETE_COMMAND;
  * between this Android Device and Social networks.
  */
 public class MyService extends Service {
-    private volatile MyFutureContext myFutureContext = MyEmptyFutureContext.EMPTY;
+    private volatile MyContext myContext = MyContext.EMPTY;
     private final Object serviceStateLock = new Object();
     /** We are going to finish this service. But may rethink...  */
     @GuardedBy("serviceStateLock")
@@ -191,12 +189,14 @@ public class MyService extends Service {
     void initialize() {
         boolean changed = false;
         boolean wasNotInitialized = false;
+        MyContext myContext = getMyContext();
         if (!mInitialized) {
+            initializeMyContext();
             synchronized (serviceStateLock) {
                 if (!mInitialized) {
                     wasNotInitialized = true;
-                    initializeMyContext();
-                    if (getMyContext().initialized()) {
+                    myContext = getMyContext();
+                    if (myContext.isReady()) {
                         registerReceiver(intentReceiver, new IntentFilter(MyAction.EXECUTE_COMMAND.getAction()));
                         mInitialized = true;
                         changed = true;
@@ -204,15 +204,15 @@ public class MyService extends Service {
                 }
             }
         }
-        if (mInitialized) {
+        if (mInitialized && myContext.isReady()) {
             if (wasNotInitialized) {
                 if (widgetsInitialized.compareAndSet(false, true)) {
-                    AppWidgets.of(getMyContext()).updateViews();
+                    AppWidgets.of(myContext).updateViews();
                 }
                 reviveHeartBeat();
             }
             if (changed) {
-                MyServiceEventsBroadcaster.newInstance(getMyContext(), getServiceState()).broadcast();
+                MyServiceEventsBroadcaster.newInstance(myContext, getServiceState()).broadcast();
             }
         }
     }
@@ -492,14 +492,14 @@ public class MyService extends Service {
     }
 
     private MyContext getMyContext() {
-        return myFutureContext.getNow();
+        return myContext;
     }
 
     private void initializeMyContext() {
-        if (myFutureContext.isEmpty() || !myFutureContext.getNow().initialized()) {
-            myFutureContext = MyContextHolder.getMyFutureContext(this);
+        if (!myContext.isReady()) {
+            myContext = MyContextHolder.initialize(this, this);
         }
-        commandQueue.setMyContext(getMyContext());
+        commandQueue.setMyContext(myContext);
     }
 
     private class QueueExecutor extends MyAsyncTask<Void, Void, Boolean> implements CommandExecutorParent {

@@ -90,6 +90,7 @@ public class DataUpdaterTest {
         somebody.setUsername(username);
         somebody.followedByMe = TriState.FALSE;
         somebody.setProfileUrl("http://identi.ca/somebody");
+        somebody.build();
         di.onActivity(accountActor.update(somebody));
 
         somebody.actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, accountActor.origin.getId(), actorOid);
@@ -164,6 +165,7 @@ public class DataUpdaterTest {
         String username = "t131t@pumpity.net";
         Actor author = Actor.fromOid(accountActor.origin, OriginPumpio.ACCOUNT_PREFIX + username);
         author.setUsername(username);
+        author.build();
 
         final String noteName = "For You only";
         AActivity activity = new DemoNoteInserter(accountActor).buildActivity(
@@ -198,6 +200,7 @@ public class DataUpdaterTest {
         String authorUsername = "anybody@pumpity.net";
         Actor author = Actor.fromOid(accountActor.origin, OriginPumpio.ACCOUNT_PREFIX + authorUsername);
         author.setUsername(authorUsername);
+        author.build();
 
         AActivity activity = AActivity.newPartialNote(accountActor,
                 author, "https://pumpity.net/api/comment/sdajklsdkiewwpdsldkfsdasdjWED" +  demoData.testRunUid,
@@ -209,6 +212,7 @@ public class DataUpdaterTest {
         String otherUsername = "firstreader@identi.ca";
         Actor otherActor = Actor.fromOid(accountActor.origin, OriginPumpio.ACCOUNT_PREFIX + otherUsername);
         otherActor.setUsername(otherUsername);
+        otherActor.build();
         AActivity likeActivity = AActivity.fromInner(otherActor, ActivityType.LIKE, activity);
 
         DataUpdater di = new DataUpdater(ma);
@@ -285,6 +289,7 @@ public class DataUpdaterTest {
         String authorUsername = "example@pumpity.net";
         Actor author = Actor.fromOid(accountActor.origin, OriginPumpio.ACCOUNT_PREFIX + authorUsername);
         author.setUsername(authorUsername);
+        author.build();
 
         AActivity activity = AActivity.newPartialNote(accountActor, author,
                 "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123" + iterationId + demoData.testRunUid,
@@ -298,7 +303,8 @@ public class DataUpdaterTest {
         AActivity inReplyTo = AActivity.newPartialNote(accountActor,
                 Actor.fromOid(accountActor.origin,
                         "irtUser" +  iterationId + demoData.testRunUid)
-                        .setUsername("irt" + authorUsername +  iterationId),
+                        .setUsername("irt" + authorUsername +  iterationId)
+                        .build(),
                 inReplyToOid, 0, DownloadStatus.UNKNOWN);
         note.setInReplyTo(inReplyTo);
 
@@ -415,7 +421,8 @@ public class DataUpdaterTest {
         Actor actor1 = new DemoNoteInserter(ma).buildActorFromOid("34804" + demoData.testRunUid);
         actor1.setUsername(username);
         actor1.setProfileUrl("https://" + demoData.gnusocialTestOriginName + ".example.com/");
-        
+        actor1.build();
+
         DataUpdater di = new DataUpdater(ma);
         long actorId1 = di.onActivity(accountActor.update(actor1)).getObjActor().actorId;
         assertTrue("Actor added", actorId1 != 0);
@@ -434,6 +441,7 @@ public class DataUpdaterTest {
                 MyQuery.actorIdToStringColumnValue(ActorTable.REAL_NAME, actorId1));
 
         actor1.setUsername(actor1.getUsername() + "renamed");
+        actor1.build();
         long actorId1Renamed = di.onActivity(accountActor.update(actor1)).getObjActor().actorId;
         assertEquals("Same Actor renamed", actorId1, actorId1Renamed);
         assertEquals("Actor should not be renamed, if updatedDate didn't change", username,
@@ -448,6 +456,7 @@ public class DataUpdaterTest {
         Actor actor2SameOldUsername = new DemoNoteInserter(ma).buildActorFromOid("34805"
                 + demoData.testRunUid);
         actor2SameOldUsername.setUsername(username);
+        actor2SameOldUsername.build();
         long actorId2 = di.onActivity(accountActor.update(actor2SameOldUsername)).getObjActor().actorId;
         assertTrue("Other Actor with the same Actor name as old name of Actor", actorId1 != actorId2);
         assertEquals("Username stored", actor2SameOldUsername.getUsername(),
@@ -457,6 +466,7 @@ public class DataUpdaterTest {
                 + demoData.testRunUid);
         actor3SameNewUsername.setUsername(actor1.getUsername());
         actor3SameNewUsername.setProfileUrl("https://" + demoData.gnusocialTestOriginName + ".other.example.com/");
+        actor3SameNewUsername.build();
         long actorId3 = di.onActivity(accountActor.update(actor3SameNewUsername)).getObjActor().actorId;
         assertTrue("Actor added " + actor3SameNewUsername, actorId3 != 0);
         assertTrue("Other Actor with the same username as the new name of actor1, but different WebFingerId", actorId1 != actorId3);
@@ -596,9 +606,10 @@ public class DataUpdaterTest {
         MyAccount ma = demoData.getGnuSocialAccount();
         Actor accountActor = ma.getActor();
         MyAccount myMentionedAccount = demoData.getMyAccount(demoData.gnusocialTestAccount2Name);
-        Actor myMentionedUser = myMentionedAccount.getActor().setUsername(myMentionedAccount.getUsername());
+        Actor myMentionedUser = myMentionedAccount.getActor().setUsername(myMentionedAccount.getUsername()).build();
         Actor author1 = Actor.fromOid(accountActor.origin, "sam" + demoData.testRunUid);
         author1.setUsername("samBrook");
+        author1.build();
 
         AActivity activity1 = newLoadedNote(accountActor, author1,
                 "@" + myMentionedUser.getUsername() + " I mention your another account");
@@ -623,12 +634,14 @@ public class DataUpdaterTest {
         Actor myAuthor1 = Actor.fromOid(accountActor.origin, actorFromAnotherOrigin.oid + "22");
         myAuthor1.setUsername(actorFromAnotherOrigin.getUsername());
         myAuthor1.setWebFingerId(actorFromAnotherOrigin.getWebFingerId());
+        myAuthor1.build();
         AActivity activity1 = newLoadedNote(accountActor, myAuthor1,
                 "My account's first note from another Social Network " + demoData.testRunUid);
         assertTrue("Activity should be added", di.onActivity(activity1).getId() != 0);
 
         Actor author2 = Actor.fromOid(accountActor.origin, "replier" + demoData.testRunUid);
         author2.setUsername("replier@anotherdoman.com");
+        author2.build();
         AActivity activity2 = newLoadedNote(accountActor, author2,
                 "@" + demoData.t131tUsername + " Replying to my user from another instance");
         activity2.getNote().setInReplyTo(activity1);

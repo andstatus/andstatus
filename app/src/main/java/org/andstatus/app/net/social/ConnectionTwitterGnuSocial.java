@@ -244,8 +244,10 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
 
     @Override
     @NonNull
-    protected Actor actorFromJson(JSONObject jso) throws ConnectionException {
-        return super.actorFromJson(jso).setProfileUrl(jso.optString("statusnet_profile_url"));
+    Actor actorBuilderFromJson(JSONObject jso) throws ConnectionException {
+        if (jso == null) return Actor.EMPTY;
+        return super.actorBuilderFromJson(jso)
+                .setProfileUrl(jso.optString("statusnet_profile_url"));
     }
     
     @Override

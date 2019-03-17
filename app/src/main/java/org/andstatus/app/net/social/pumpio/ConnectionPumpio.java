@@ -153,7 +153,7 @@ public class ConnectionPumpio extends Connection {
         actor.endpoints.add(ActorEndpointType.API_FOLLOWING, JsonUtils.optStringInside(jso, "following", "url"))
             .add(ActorEndpointType.API_FOLLOWERS, JsonUtils.optStringInside(jso, "followers", "url"))
             .add(ActorEndpointType.API_LIKED, JsonUtils.optStringInside(jso, "favorites", "url"));
-        return actor;
+        return actor.build();
     }
 
     @Override

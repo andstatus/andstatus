@@ -314,7 +314,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         actor.followingCount = jso.optLong("following_count");
         actor.followersCount = jso.optLong("followers_count");
         actor.setCreatedDate(dateFromJson(jso, "created_at"));
-        return actor;
+        return actor.build();
     }
 
     private String extractSummary(JSONObject jso) {

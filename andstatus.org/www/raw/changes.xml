@@ -29,6 +29,14 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="47.05" android:versionCode="278"
+             versionDate="2019-03-17"
+             versionTitle="Fixed custom language selection">
+        <changes>
+            <change>Fixed custom language selection (for Android 9...)</change>
+            <change>Fixed reported crash</change>
+        </changes>
+    </release>
     <release android:versionName="47.04" android:versionCode="277"
              versionDate="2019-03-05"
              versionTitle="Avatars and Attachments improved">

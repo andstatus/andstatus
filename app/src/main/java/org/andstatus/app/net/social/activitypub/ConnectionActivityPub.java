@@ -116,7 +116,7 @@ public class ConnectionActivityPub extends Connection {
             .add(ActorEndpointType.API_FOLLOWERS, jso.optString("followers"))
             .add(ActorEndpointType.BANNER, JsonUtils.optStringInside(jso, "image", "url"))
             .add(ActorEndpointType.API_SHARED_INBOX, JsonUtils.optStringInside(jso, "endpoints", "sharedInbox"));
-        return actor;
+        return actor.build();
     }
 
     @Override

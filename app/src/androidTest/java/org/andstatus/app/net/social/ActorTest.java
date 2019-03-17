@@ -110,9 +110,11 @@ public class ActorTest {
         actor1.setUsername("fourthWithoutAvatar@pump.example.com");
         actor1.setRealName("Real Fourth");
         actor1.setProfileUrl("http://pump.example.com/fourthWithoutAvatar");
+        actor1.build();
 
         Actor actor2 = Actor.fromId(origin, 11);
         actor2.setUsername("fourthWithoutAvatar@pump.example.com");
+        actor2.build();
 
         assertEquals(actor1, actor2);
         assertEquals(actor1.toString() + " vs " + actor2, actor1.hashCode(), actor2.hashCode());

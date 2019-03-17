@@ -68,6 +68,7 @@ public class DemoConversationInserter {
         author3.setCreatedDate(new GregorianCalendar(2011,5,12).getTimeInMillis());
         author3.setSummary("I am an ordinary guy, interested in computer science");
         author3.setAvatarUrl("http://www.large-icons.com/stock-icons/free-large-android/48x48/happy-robot.gif");
+        author3.build();
 
         Actor author4 = buildActorFromOid("acct:fourthWithoutAvatar@pump.example.com");
         author4.setRealName("Real Fourth");
