@@ -36,6 +36,7 @@ import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.user.User;
 import org.andstatus.app.util.IsEmpty;
+import org.andstatus.app.util.LazyVal;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
@@ -83,6 +84,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     private String homepage = "";
     private Uri avatarUri = Uri.EMPTY;
     public final ActorEndpoints endpoints;
+    private final LazyVal<String> host = LazyVal.of(this::evalGetHost);
 
     public long notesCount = 0;
     public long favoritesCount = 0;
@@ -465,7 +467,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
                 setWebFingerId(username + "@" + profileUri.getHost());
             }
         } else if (origin.shouldHaveUrl()) {
-            setWebFingerId(username + "@" + origin.fixUriForPermalink(UriUtils.fromUrl(origin.getUrl()))).getHost();
+            setWebFingerId(username + "@" + origin.fixUriForPermalink(UriUtils.fromUrl(origin.getUrl())).getHost());
         }
     }
 
@@ -643,6 +645,10 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public String getHost() {
+        return host.get();
+    }
+
+    private String evalGetHost() {
         if (isWebFingerIdValid) {
             int pos = getWebFingerId().indexOf('@');
             if (pos >= 0) {
@@ -654,7 +660,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         }
         return UrlUtils.getHost(oid).orElse(StringUtils.nonEmpty(profileUri.getHost()) ? profileUri.getHost() : "");
     }
-    
+
     public String getSummary() {
         return summary;
     }

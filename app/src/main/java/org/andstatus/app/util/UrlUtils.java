@@ -56,14 +56,13 @@ public final class UrlUtils {
     }
 
     public static URL fromString(String strUrl) {
-        if (strUrl != null && !StringUtils.isEmpty(strUrl)) {
-            try {
-                return new URL(strUrl);
-            } catch (MalformedURLException e) {
-                MyLog.d(TAG, "Malformed URL:'" + strUrl + "'", e);
-            }
-        } 
-        return null;
+        if (StringUtils.isEmpty(strUrl)) return null;
+
+        try {
+            return new URL(strUrl);
+        } catch (MalformedURLException e) {
+            return null;
+        }
     }
 
     public static URL fromUri(Uri uri) {

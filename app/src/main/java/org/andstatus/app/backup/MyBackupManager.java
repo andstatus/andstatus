@@ -118,14 +118,11 @@ class MyBackupManager {
         backupAgent.setContext(MyContextHolder.get().context());
         
         MyBackupDataOutput dataOutput = new MyBackupDataOutput(dataFolder);
-        ParcelFileDescriptor newState = ParcelFileDescriptor.open(getDescriptorFile(),
-                ParcelFileDescriptor.MODE_READ_WRITE);
-        try {
+        try (ParcelFileDescriptor newState = ParcelFileDescriptor.open(getDescriptorFile(),
+                ParcelFileDescriptor.MODE_READ_WRITE)) {
             newDescriptor = MyBackupDescriptor.fromEmptyParcelFileDescriptor(newState, progressLogger);
             backupAgent.onBackup(MyBackupDescriptor.getEmpty(), dataOutput, newDescriptor);
             progressLogger.logSuccess();
-        } finally {
-            newState.close();
         }
     }
 

@@ -90,9 +90,9 @@ public class BackupActivity extends MyActivity {
     }
     
     private class BackupTask extends MyAsyncTask<File, CharSequence, Boolean> {
-        Boolean success = false;
+        volatile Boolean success = false;
 
-        public BackupTask() {
+        BackupTask() {
             super(PoolEnum.LONG_UI);
         }
 
