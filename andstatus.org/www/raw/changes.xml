@@ -29,7 +29,7 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="47.05" android:versionCode="278"
+    <release android:versionName="47.06" android:versionCode="279"
              versionDate="2019-03-17"
              versionTitle="Fixed custom language selection">
         <changes>
