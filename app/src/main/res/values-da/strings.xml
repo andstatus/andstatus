@@ -103,6 +103,7 @@
   <string name="dialog_summary_checking_credentials">Afvent at din konto bekræftes.</string>
   <string name="dialog_summary_connection_timeout">Forbindelse fik timeout. Forsøg igen senere.</string>
   <string name="dialog_summary_executing_command">Afvent at kommandoen eksekveres på serveren.</string>
+  <string name="dialog_summary_external_storage">AndStatus app-data flyttes mellem intern og ekstern lagerplads.</string>
   <string name="dialog_summary_registering_client">Afvent at AndStatus registrerer sig som en klient-app</string>
   <string name="dialog_summary_sending_message">Afvent at en aktivitet sendes.</string>
   <string name="dialog_summary_timeline_loading">Afvent at tidslinjen opfriskes. Det kan tage flere minutter afhængigt af din forbindelse.</string>

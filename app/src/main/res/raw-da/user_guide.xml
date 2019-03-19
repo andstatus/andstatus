@@ -39,7 +39,7 @@ xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd 
             <home-page>http://www.andstatus.org</home-page>
             <email>andstatus@gmail.com</email>
         </author>
-        <date>2015-08-16</date>
+        <date>2019-03-16</date>
         <id></id>
         <version>2</version>
     </document-info>
@@ -208,44 +208,77 @@ xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd 
         <strong>tryk og hold</strong> på den og vælg
         <strong>Fjern besked</strong>.
     </p>
-    <p>
+    <p>Nye beskeder hentes til tidslinjer i baggrunden,
+        hvis du har slået <strong>Automatisk synk</strong> til
+        i Android-indstillingerne "Konto og Synk" for denne
+        AndStatus-konto.
+        Du kan dog altid hente opdateringer fra Internet
+        manuelt via kommandoen "Genindlæs" på Handlingsbjælken.
     </p>
 </section>
 <section>
     <title>
-        <p></p>
+        <p>6. Omtaler</p>
     </title>
-    <p>
+    <p>Tryk på den aktuelle Tidslinjetypeemne på Navigeringsgardinet
+        og vælg så
+        <strong>Omtaler</strong>
+        .
     </p>
-    <p>
+    <p>Omtaler oplister alle beskeder, som nævner dit
+        <strong>@brugernavn</strong>
+        (eller som nævner én/nogle af dine AndStatus-konti i den
+        "kombinererde" tidslinje).
     </p>
 </section>
 <section>
     <title>
-        <p></p>
+        <p>7. Søgning (lokalt)</p>
     </title>
-    <p>
+    <p>Lokal søgning søger blandt allerede indlæste beskeder fra
+        Internet.
+        Det er derfor tilgængeligt selv offline.
     </p>
-    <p>
+    <p>1. For at finde et ord eller en sætning i en beskedtekster,
+         vælg <strong>Søg</strong>
+        på Handlingsbjælken eller tryk på den dedikerede
+        <strong>Søg</strong>-knap på din enhed.
     </p>
-    <p></p>
-    <p>
+    <p>Vil du se meddelelser fra en bestemt bruger,
+         så søg efter "brugernavn".</p>
+    <p>For at se omtaler af en bestemt bruger, søg efter "@brugernavn".
     </p>
-    <p>
+    <p>2. For hurtigt at søge efter beskeder fra en bruger
+        (Forfattereren eller Afsenderen af den valgte besked), så vælg
+        "Beskeder af UserName" fra beskedens kontekstmenu.
+        Dette faktisk en slags Global Søgning (se nedenfor).
     </p>
 </section>
 <section>
     <title>
-        <p></p>
+        <p>8. Global søgning</p>
     </title>
-    <p>
+    <p>Funktionen Global Søgning sender en søgeforespørgsel direkte til
+        Social netværks servere.
+        Detter er årsagen til, at en aktiv Internetforbindelse til netværkene er krævet.
     </p>
-    <p>
+    <p>Først vises resultaterne af lokalsøgningen.
+         Parallelt downloader AndStatus resultater
+         fra det sociale netværk for den valgte konto
+         (eller fra alle sociale netværk, hvis en tidslinje er
+         "kombineret").
+         Søgeresultaterne opdateres, når der modtages svar fra serverne.
+         I tilfælde af forbindelsesfejl,
+         dvs. ingen respons fra serveren på det sociale netværk,
+         vil alene resultaterne fra lokalsøgningen vises.
     </p>
-    <p>
+    <p>Bemærk, at pump.io-systemet endnu ikke understøtter Global Søgning.
     </p>
-    <p></p>
-    <p></p>
+    <p>1. Global søgning efter et ord eller en sætning startes
+        vha. dets "Global Søgnings"-punkt på "Handligsbjælken".</p>
+    <p>2. En anden måde at søge globalt efter beskeder fra forfatteren eller afsenderen
+         af den valgte besked er at vælge
+         "Beskeder fra brugernavn" fra beskedens kontekstmenu.</p>
 </section>
 </body>
 </FictionBook>

@@ -205,12 +205,12 @@ xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd 
         <strong>hold down</strong> on it and select
         <strong>Remove message</strong>.
     </p>
-    <p>New messages are fetched to timelines in a background
-        if you have turned on  <strong>Automatic sync</strong>
-        in Android "Account and Sync" settings for this
+    <p>New messages are fetched to timelines in the background
+        if you have <strong>Automatic sync</strong> turned on
+        in the Android "Account and Sync" settings for this
         AndStatus Account.
-        In any case you may always get updates from the Internet
-        manually using "Reload" command on an Action bar.
+        In any case, you may always get updates from the Internet
+        manually using the "Reload" command on the Action bar.
     </p>
 </section>
 <section>
@@ -224,7 +224,7 @@ xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd 
     </p>
     <p>Mentions will list every message that mentions your
         <strong>@username</strong>
-        (or even mentions of all your AndStatus accounts for a
+        (or mentions any of your AndStatus accounts in the
         "combined" timeline).
     </p>
 </section>
@@ -236,18 +236,18 @@ xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd 
         Internet.
         Hence it is available even offline.
     </p>
-    <p>1. In order to find any word or phrase in a text of messages,
+    <p>1. In order to find any word or phrase in message texts,
         select <strong>Search</strong>
-        on an Action bar or click a dedicated
+        on the Action bar or tap the dedicated
         <strong>Search</strong> button on your device.
     </p>
     <p>If you wish to show messages from a specific user,
         please search for "username".</p>
     <p>To see mentions of a specific User, search for "@username".
     </p>
-    <p>2. To search quickly for messages by a user
-        (an Author or a Sender of a selected message), select
-        "Messages by UserName" from the context menu of the message.
+    <p>2. To quickly search for messages by a user
+        (the Author or the Sender of the selected message), select
+        "Notes by UserName" from the message context menu.
         This is actually sort of a Global Search (see below).
     </p>
 </section>
@@ -261,21 +261,20 @@ xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd 
     </p>
     <p>First, you are presented with the results of the Local search.
         In parallel, AndStatus downloads results
-        from a Social network of the selected Account
-        (or from all Social networks, if a Timeline is
-        "combined").
+        from the Social network of the selected Account
+        (or from all Social networks, if a Timeline is "combined").
         Search results are being updated upon receiving responses from the servers.
-        In a case of connection error
-        (i.e. no response from a server of a Social network)
-        you will see results of a Local Search only.
+        In case of a connection error,
+        e.g. no response from the server of the Social network,
+        only results from the Local Search are shown.
     </p>
     <p>Please note that pump.io system doesn't support Global search yet.
     </p>
-    <p>1. Global search by a word or a phrase is initiated
-        using its "Global search" item on an "Action bar".</p>
-    <p>2. Another way to search globally for messages by an Author or a Sender
+    <p>1. A global search for a word/phrase is initiated
+        using its "Global search" item on the "Action bar".</p>
+    <p>2. Another way to globally search for messages by the Author or Sender
         of the selected message is to select
-        "Messages by UserName" from a Context menu of this message.</p>
+        "Notes by UserName" from the Context menu of this message.</p>
 </section>
 </body>
 </FictionBook>
