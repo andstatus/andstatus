@@ -76,7 +76,7 @@ public class ConnectionActivityPub extends Connection {
         String url;
         switch(routine) {
             case ACCOUNT_VERIFY_CREDENTIALS:
-                url = "ap/whoami";
+                url = "whoami";
                 break;
             default:
                 url = "";
