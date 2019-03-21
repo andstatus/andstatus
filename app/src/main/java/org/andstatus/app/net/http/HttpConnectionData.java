@@ -52,6 +52,7 @@ public class HttpConnectionData {
         data.originUrl = originUrl;
         data.urlForUserToken = urlForUserToken;
         data.dataReader = dataReader;
+        data.oauthClientKeys = oauthClientKeys;
         return data;
     }
 

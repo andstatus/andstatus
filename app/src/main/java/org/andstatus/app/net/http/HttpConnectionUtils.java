@@ -16,18 +16,28 @@
 
 package org.andstatus.app.net.http;
 
+import android.text.format.Formatter;
+
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import io.vavr.control.Try;
+
 public class HttpConnectionUtils {
-    public static final String UTF_8 = "UTF-8";
+    private static final String UTF_8 = "UTF-8";
+    private static final int BUFFER_LENGTH = 4096;
 
     private HttpConnectionUtils() {
     }
@@ -50,22 +60,67 @@ public class HttpConnectionUtils {
         }
     }
 
-    private static final int BUFFER_LENGTH = 4096;
-    static String readStreamToString(InputStream in) throws IOException {
+    public static Try<HttpReadResult> readStream(HttpReadResult result, InputStream in) throws IOException {
         if (in == null) {
-            return "";
+            return Try.failure(ConnectionException.fromStatusCode(ConnectionException.StatusCode.CLIENT_ERROR, "Input stream is null"));
         }
+        return result.fileResult == null
+                ? readStreamToString(result, in)
+                : readStreamToFile(result, in);
+    }
+
+    private static Try<HttpReadResult> readStreamToString(HttpReadResult resultIn, InputStream in) throws IOException {
         char[] buffer = new char[BUFFER_LENGTH];
-        int count;
+        ReadChecker checker = new ReadChecker(resultIn);
         StringBuilder builder = new StringBuilder();
-        try (Reader reader = new InputStreamReader(in, UTF_8)) {
+        int count;
+        try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
             while ((count = reader.read(buffer)) != -1) {
+                if (checker.isFailed(count)) return resultIn.toFailure();
                 builder.append(buffer, 0, count);
             }
         } finally {
             DbUtils.closeSilently(in);
         }
-        return builder.toString();
+        resultIn.strResponse = builder.toString();
+        return Try.success(resultIn);
     }
 
+    private static Try<HttpReadResult> readStreamToFile(HttpReadResult resultIn, InputStream in) throws IOException {
+        byte[] buffer = new byte[BUFFER_LENGTH];
+        ReadChecker checker = new ReadChecker(resultIn);
+        int count;
+        try (FileOutputStream fileOutputStream = new FileOutputStream(resultIn.fileResult);
+             OutputStream out = new BufferedOutputStream(fileOutputStream)) {
+            while ((count = in.read(buffer)) != -1) {
+                if (checker.isFailed(count)) return resultIn.toFailure();
+                out.write(buffer, 0, count);
+            }
+        } finally {
+            DbUtils.closeSilently(in);
+        }
+        return Try.success(resultIn);
+    }
+
+    private static class ReadChecker {
+        final HttpReadResult result;
+        long size = 0;
+
+        ReadChecker(HttpReadResult result) {
+            this.result = result;
+        }
+
+        boolean isFailed(int count) {
+            size += count;
+            if (size > result.maxSizeBytes) {
+                result.setException(ConnectionException.hardConnectionException(
+                        "File, downloaded from \"" + result.getUrl() + "\", is too large: at least "
+                                + Formatter.formatShortFileSize(MyContextHolder.get().context(), size),
+                        null));
+                return true;
+            }
+            return false;
+        }
+
+    }
 }

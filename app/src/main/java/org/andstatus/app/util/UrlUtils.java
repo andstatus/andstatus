@@ -33,6 +33,7 @@ public final class UrlUtils {
     // From http://stackoverflow.com/questions/106179/regular-expression-to-match-hostname-or-ip-address?rq=1
     private static final String validHostnameRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$";
     private static final Pattern validHostnameRegexPattern = Pattern.compile(validHostnameRegex);
+    public static URL MALFORMED = fromString("http://127.0.0.1/malformedUrl");
 
     private UrlUtils() {
         // Empty

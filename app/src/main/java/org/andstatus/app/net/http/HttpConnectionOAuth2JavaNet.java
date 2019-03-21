@@ -30,7 +30,6 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.net.social.Connection;
-import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtils;
@@ -46,6 +45,8 @@ import java.util.concurrent.ExecutionException;
 
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
+
+import static org.andstatus.app.net.http.ConnectionException.StatusCode.OK;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -124,13 +125,9 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             signRequest(request, service, false);
             final Response response = service.execute(request);
             result.setStatusCode(response.getCode());
-            switch(result.getStatusCode()) {
-                case OK:
-                    result.strResponse = HttpConnectionUtils.readStreamToString(response.getStream());
-                    break;
-                default:
-                    result.strResponse = HttpConnectionUtils.readStreamToString(response.getStream());
-                    throw result.getExceptionFromJsonErrorResponse();
+            HttpConnectionUtils.readStream(result, response.getStream());
+            if (result.getStatusCode() != OK) {
+                throw result.getExceptionFromJsonErrorResponse();
             }
         } catch (IOException | ExecutionException | OAuthException e) {
             result.setException(e);
@@ -159,11 +156,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                 result.setStatusCode(response.getCode());
                 switch(result.getStatusCode()) {
                     case OK:
-                        if (result.fileResult != null) {
-                            FileUtils.readStreamToFile(response.getStream(), result.fileResult);
-                        } else {
-                            result.strResponse = HttpConnectionUtils.readStreamToString(response.getStream());
-                        }
+                        HttpConnectionUtils.readStream(result, response.getStream());
                         stop = true;
                         break;
                     case MOVED:
@@ -190,7 +183,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                         }
                         break;
                     default:
-                        result.strResponse = HttpConnectionUtils.readStreamToString(response.getStream());
+                        HttpConnectionUtils.readStream(result, response.getStream());
                         stop = result.fileResult == null || !result.authenticate;
                         if (!stop) {
                             result.authenticate = false;

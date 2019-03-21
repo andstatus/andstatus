@@ -19,7 +19,6 @@ package org.andstatus.app.net.http;
 import android.text.TextUtils;
 
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RawResourceUtils;
@@ -129,7 +128,7 @@ public class HttpConnectionMock extends HttpConnection {
         result.strResponse = getNextResponse();
         if (result.fileResult != null && responseFileStream != null) {
             try {
-                FileUtils.readStreamToFile(responseFileStream, result.fileResult);
+                HttpConnectionUtils.readStream(result, responseFileStream);
             } catch (IOException e) {
                 result.setException(e);
             }

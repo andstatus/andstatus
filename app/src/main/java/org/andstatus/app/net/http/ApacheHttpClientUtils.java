@@ -34,7 +34,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import cz.msebera.android.httpclient.HttpEntity;
-import cz.msebera.android.httpclient.HttpResponse;
 import cz.msebera.android.httpclient.NameValuePair;
 import cz.msebera.android.httpclient.client.HttpClient;
 import cz.msebera.android.httpclient.entity.ContentType;
@@ -96,7 +95,7 @@ class ApacheHttpClientUtils {
     }
 
     static List<NameValuePair> jsonToNameValuePair(JSONObject jso) {
-        List<NameValuePair> formParams = new ArrayList<NameValuePair>();
+        List<NameValuePair> formParams = new ArrayList<>();
         Iterator<String> iterator =  jso.keys();
         while (iterator.hasNext()) {
             String name = iterator.next();
@@ -112,17 +111,5 @@ class ApacheHttpClientUtils {
         return sslMode == SslModeEnum.MISCONFIGURED ?
                 MisconfiguredSslHttpClientFactory.getHttpClient() :
                     MyHttpClientFactory.getHttpClient(sslMode) ;
-    }
-
-    static String readHttpResponseToString(HttpResponse httpResponse) throws IOException {
-        HttpEntity httpEntity = httpResponse.getEntity();
-        if (httpEntity != null) {
-            try {
-                return HttpConnectionUtils.readStreamToString(httpEntity.getContent());
-            } catch (IllegalStateException e) {
-                throw new IOException(e);
-            }
-        }
-        return null;
     }
 }

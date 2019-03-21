@@ -16,22 +16,17 @@
 
 package org.andstatus.app.util;
 
-import android.text.TextUtils;
-
 import org.andstatus.app.data.DbUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
@@ -184,30 +179,6 @@ public class FileUtils {
             return false;
         }
         return file.exists();
-    }
-
-    public static void readStreamToFile(InputStream in, File file) throws IOException {
-        if (in == null || file == null) {
-            return;
-        }
-        byte[] buffer = new byte[BUFFER_LENGTH];
-        int count;
-        try {
-            FileOutputStream fileOutputStream = null;
-            OutputStream out = null;
-            try {
-                fileOutputStream = new FileOutputStream(file);
-                out = new BufferedOutputStream(fileOutputStream);
-                while ((count = in.read(buffer)) != -1) {
-                    out.write(buffer, 0, count);
-                }
-            } finally {
-                DbUtils.closeSilently(out);
-                DbUtils.closeSilently(fileOutputStream);
-            }
-        } finally {
-            DbUtils.closeSilently(in);
-        }
     }
 
 }

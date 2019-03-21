@@ -17,6 +17,7 @@
 package org.andstatus.app.net.http;
 
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.UrlUtils;
 
 import java.io.IOException;
 import java.net.URL;
@@ -85,6 +86,18 @@ public class ConnectionException extends IOException {
     private final StatusCode statusCode;
     private final boolean isHardError;
     private final URL host;
+
+    public static ConnectionException from(HttpReadResult result) {
+        return new ConnectionException(result);
+    }
+
+    private ConnectionException(HttpReadResult result) {
+        super(result.logMsg(), result.getException());
+        this.statusCode = result.getStatusCode();
+        this.host = UrlUtils.fromString(result.getUrl());
+        this.isHardError = isHardFromStatusCode(result.getException() instanceof ConnectionException &&
+                ((ConnectionException) result.getException()).isHardError(), statusCode);
+    }
 
     public static ConnectionException loggedHardJsonException(Object objTag, String detailMessage, Exception e, Object jso) {
         return loggedJsonException(objTag, detailMessage, e, jso, true);

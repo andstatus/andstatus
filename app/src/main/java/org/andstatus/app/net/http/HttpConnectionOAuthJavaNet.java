@@ -24,7 +24,6 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
-import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtils;
@@ -85,15 +84,16 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             writer = new OutputStreamWriter(conn.getOutputStream(), UTF_8);
             writer.write(requestBody);
             writer.close();
-            
+
+            HttpReadResult result = new HttpReadResult(uri, new JSONObject());
             if(conn.getResponseCode() != 200) {
-                String msg = HttpConnectionUtils.readStreamToString(conn.getErrorStream());
-                logmsg.atNewLine("Server returned an error response", msg);
+                HttpConnectionUtils.readStream(result, conn.getErrorStream());
+                logmsg.atNewLine("Server returned an error response", result.strResponse);
                 logmsg.atNewLine("Response message from server", conn.getResponseMessage());
                 MyLog.i(this, logmsg.toString());
             } else {
-                String response = HttpConnectionUtils.readStreamToString(conn.getInputStream());
-                JSONObject jso = new JSONObject(response);
+                HttpConnectionUtils.readStream(result, conn.getInputStream());
+                JSONObject jso = new JSONObject(result.strResponse);
                 consumerKey = jso.getString("client_id");
                 consumerSecret = jso.getString("client_secret");
                 data.oauthClientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);
@@ -145,10 +145,10 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             result.setStatusCode(conn.getResponseCode());
             switch(result.getStatusCode()) {
                 case OK:
-                    result.strResponse = HttpConnectionUtils.readStreamToString(conn.getInputStream());
+                    HttpConnectionUtils.readStream(result, conn.getInputStream());
                     break;
                 default:
-                    result.strResponse = HttpConnectionUtils.readStreamToString(conn.getErrorStream());
+                    HttpConnectionUtils.readStream(result, conn.getErrorStream());
                     throw result.getExceptionFromJsonErrorResponse();
             }
         } catch (IOException e) {
@@ -216,11 +216,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                 result.setStatusCode(conn.getResponseCode());
                 switch(result.getStatusCode()) {
                     case OK:
-                        if (result.fileResult != null) {
-                            FileUtils.readStreamToFile(conn.getInputStream(), result.fileResult);
-                        } else {
-                            result.strResponse = HttpConnectionUtils.readStreamToString(conn.getInputStream());
-                        }
+                        HttpConnectionUtils.readStream(result, conn.getInputStream());
                         stop = true;
                         break;
                     case MOVED:
@@ -248,7 +244,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                         }
                         break;
                     default:
-                        result.strResponse = HttpConnectionUtils.readStreamToString(conn.getErrorStream());
+                        HttpConnectionUtils.readStream(result, conn.getErrorStream());
                         stop = result.fileResult == null || !result.authenticate;
                         if (!stop) {
                             result.authenticate = false;

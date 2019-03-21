@@ -24,6 +24,7 @@ import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,18 +36,21 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.Optional;
 
+import io.vavr.control.Try;
+
 public class HttpReadResult {
     private final Uri uriInitial;
     private String urlString = "";
     private URL url;
     boolean authenticate = true;
     private boolean mIsLegacyHttpProtocol = false;
+    public final long maxSizeBytes;
 
     public final Optional<JSONObject> formParams;
     private StringBuilder logBuilder =  new StringBuilder();
     private Exception exception = null;
     String strResponse = "";
-    final File fileResult;
+    public final File fileResult;
     String statusLine = "";
     private int intStatusCode = 0;
     private StatusCode statusCode = StatusCode.UNKNOWN;
@@ -64,23 +68,25 @@ public class HttpReadResult {
             ? Optional.empty()
             : Optional.of(formParams);
         setUrl(uriIn.toString());
+        maxSizeBytes = MyPreferences.getMaximumSizeOfAttachmentBytes();
     }
 
-    public final void setUrl(String urlIn) throws ConnectionException {
+    public final void setUrl(String urlIn) {
         if (!StringUtils.isEmpty(urlIn) && !urlString.contentEquals(urlIn)) {
             redirected = !StringUtils.isEmpty(urlString);
             urlString = urlIn;
             try {
                 url = new URL(urlIn);
             } catch (MalformedURLException e) {
-                throw new ConnectionException("Malformed URL; " + toString(), e);
+                setException(new ConnectionException("Malformed URL; " + toString(), e));
+                url = UrlUtils.MALFORMED;
             }
         }
     }
     
     void setStatusCode(int intStatusCodeIn) {
         intStatusCode = intStatusCodeIn;
-        statusCode = ConnectionException.StatusCode.fromResponseCode(intStatusCodeIn);
+        statusCode = StatusCode.fromResponseCode(intStatusCodeIn);
     }
 
     public StatusCode getStatusCode() {
@@ -213,7 +219,14 @@ public class HttpReadResult {
         exception = e;
     }
 
+    public Exception getException() {
+        return exception;
+    }
+
     void parseAndThrow() throws ConnectionException {
+        if (exception instanceof ConnectionException) {
+            throw (ConnectionException) exception;
+        }
         if ( isStatusOk()) {
             if (fileResult != null && fileResult.isFile() && fileResult.exists()
                     && fileResult.length() > MyPreferences.getMaximumSizeOfAttachmentBytes()) {
@@ -248,5 +261,9 @@ public class HttpReadResult {
     void onNoLocationHeaderOnMoved() {
         redirected = true;
         setException(new IllegalArgumentException("No 'Location' header on MOVED response"));
+    }
+
+    public Try<HttpReadResult> toFailure() {
+        return Try.failure(ConnectionException.from(this));
     }
 }

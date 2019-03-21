@@ -17,7 +17,6 @@
 package org.andstatus.app.net.http;
 
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.json.JSONObject;
@@ -97,11 +96,7 @@ public class HttpConnectionApacheCommon {
                     case UNKNOWN:
                         HttpEntity entity = httpResponse.getEntity();
                         if (entity != null) {
-                            if (result.fileResult != null) {
-                                FileUtils.readStreamToFile(entity.getContent(), result.fileResult);
-                            } else {
-                                result.strResponse = HttpConnectionUtils.readStreamToString(entity.getContent());
-                            }
+                            HttpConnectionUtils.readStream(result, entity.getContent());
                         }
                         stop = true;
                         break;
@@ -131,7 +126,7 @@ public class HttpConnectionApacheCommon {
                         result.appendToLog( "statusLine:'" + statusLine + "'");
                         entity = httpResponse.getEntity();
                         if (entity != null) {
-                            result.strResponse = HttpConnectionUtils.readStreamToString(entity.getContent());
+                            HttpConnectionUtils.readStream(result, entity.getContent());
                         }
                         stop =  result.fileResult == null || !result.authenticate;
                         if (!stop) {
@@ -143,9 +138,7 @@ public class HttpConnectionApacheCommon {
                         break;
                 }
             } while (!stop);
-        } catch (IOException e) {
-            result.setException(e);
-        } catch (IllegalArgumentException e) {
+        } catch (IOException | IllegalArgumentException e) {
             result.setException(e);
         } finally {
             DbUtils.closeSilently(httpResponse);

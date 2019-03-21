@@ -20,8 +20,10 @@ import android.net.Uri;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.http.HttpConnectionUtils;
+import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.social.ConnectionEmpty;
-import org.andstatus.app.util.FileUtils;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,8 +36,9 @@ public class ConnectionLocal extends ConnectionEmpty {
     @Override
     public void downloadFile(Uri uri, File file) throws ConnectionException {
         try {
+            HttpReadResult result = new HttpReadResult(uri, file, new JSONObject());
             InputStream ins = MyContextHolder.get().context().getContentResolver().openInputStream(uri);
-            FileUtils.readStreamToFile(ins, file);
+            HttpConnectionUtils.readStream(result, ins);
         } catch (IOException e) {
             throw ConnectionException.hardConnectionException("mediaUri='" + uri + "'", e);
         } catch (SecurityException e) {

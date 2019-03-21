@@ -27,6 +27,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
+import cz.msebera.android.httpclient.HttpEntity;
 import cz.msebera.android.httpclient.HttpResponse;
 import cz.msebera.android.httpclient.StatusLine;
 import cz.msebera.android.httpclient.client.HttpClient;
@@ -59,7 +60,8 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
             StatusLine statusLine = httpResponse.getStatusLine();
             result.statusLine = statusLine.toString();
             result.setStatusCode(statusLine.getStatusCode());
-            result.strResponse = ApacheHttpClientUtils.readHttpResponseToString(httpResponse);
+            HttpEntity httpEntity = httpResponse.getEntity();
+            HttpConnectionUtils.readStream(result, httpEntity == null ? null : httpEntity.getContent());
         } catch (Exception e) {
             result.setException(e);
         } finally {
