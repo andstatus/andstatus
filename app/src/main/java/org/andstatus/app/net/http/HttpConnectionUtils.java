@@ -39,7 +39,7 @@ import io.vavr.control.Try;
 
 public class HttpConnectionUtils {
     private static final String UTF_8 = "UTF-8";
-    private static final int BUFFER_LENGTH = 4096;
+    private static final int BUFFER_LENGTH = 20000;
 
     private HttpConnectionUtils() {
     }

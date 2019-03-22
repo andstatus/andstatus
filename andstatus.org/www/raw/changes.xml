@@ -29,18 +29,24 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="47.06" android:versionCode="279"
-             versionDate="2019-03-17"
-             versionTitle="Fixed custom language selection">
+    <release android:versionName="47.07" android:versionCode="280"
+             versionDate="2019-03-22"
+             versionTitle="Better mobile traffic protection">
         <changes>
-            <change>Fixed custom language selection (for Android 9...)</change>
-            <change>Fixed reported crash</change>
+            <change>Size of downloaded files/streams is controlled during download, and not after download completion,
+                as before. This allows to stop downloading a file (or reading a timeline),
+                which appeared to be larger than configured "Maximum size of an attachment"</change>
+            <change>If attachments are configured to be downloaded via Wi-Fi only: During download, AndStatus checks
+                periodically, if Wi-Fi connection is still active.
+                In case Wi-Fi connection is lost, the download is interrupted and will be retried later.
+            </change>
         </changes>
     </release>
-    <release android:versionName="47.04" android:versionCode="277"
-             versionDate="2019-03-05"
+    <release android:versionName="47.06" android:versionCode="279"
+             versionDate="2019-03-17"
              versionTitle="Avatars and Attachments improved">
         <changes>
+            <change>Fixed custom language selection (for Android 9...)</change>
             <change>When some Actor follows (or stops following) me, show detailed info about that Actor, not about my Actor.</change>
             <change>If an attached video has a preview image, that image will be shown (currently available for Mastodon only).
                 View image / View media context menu item for remotely accessed media files.<br/>
