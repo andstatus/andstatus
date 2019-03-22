@@ -34,9 +34,10 @@ import java.io.InputStream;
  */
 public class ConnectionLocal extends ConnectionEmpty {
     @Override
-    public void downloadFile(Uri uri, File file) throws ConnectionException {
+    public void downloadFile(ConnectionRequired connectionRequired, Uri uri, File file) throws ConnectionException {
         try {
-            HttpReadResult result = new HttpReadResult(uri, file, new JSONObject());
+            HttpReadResult result = new HttpReadResult(MyContextHolder.get(), ConnectionRequired.ANY,
+                    uri, file, new JSONObject());
             InputStream ins = MyContextHolder.get().context().getContentResolver().openInputStream(uri);
             HttpConnectionUtils.readStream(result, ins);
         } catch (IOException e) {

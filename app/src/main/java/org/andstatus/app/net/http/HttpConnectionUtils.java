@@ -18,8 +18,10 @@ package org.andstatus.app.net.http;
 
 import android.text.format.Formatter;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.service.ConnectionRequired;
+import org.andstatus.app.service.ConnectionState;
+import org.andstatus.app.util.StopWatch;
 
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
@@ -103,6 +105,7 @@ public class HttpConnectionUtils {
     }
 
     private static class ReadChecker {
+        final StopWatch stopWatch = StopWatch.createStarted();
         final HttpReadResult result;
         long size = 0;
 
@@ -112,12 +115,25 @@ public class HttpConnectionUtils {
 
         boolean isFailed(int count) {
             size += count;
+            if (!result.myContext.isReady()) {
+                result.setException(new ConnectionException("App restarted?!"));
+                return true;
+            }
             if (size > result.maxSizeBytes) {
                 result.setException(ConnectionException.hardConnectionException(
                         "File, downloaded from \"" + result.getUrl() + "\", is too large: at least "
-                                + Formatter.formatShortFileSize(MyContextHolder.get().context(), size),
+                                + Formatter.formatShortFileSize(result.myContext.context(), size),
                         null));
                 return true;
+            }
+            if (result.connectionRequired != ConnectionRequired.ANY && stopWatch.hasPassed(5000)) {
+                ConnectionState connectionState = result.myContext.getConnectionState();
+                if (!result.connectionRequired.isConnectionStateOk(connectionState)) {
+                    result.setException(
+                            new ConnectionException("Expected '" + result.connectionRequired +
+                                    "', but was '" + connectionState + "' connection"));
+                    return true;
+                }
             }
             return false;
         }

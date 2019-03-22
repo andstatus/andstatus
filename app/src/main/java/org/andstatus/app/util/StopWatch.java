@@ -11,10 +11,12 @@ public class StopWatch extends org.apache.commons.lang3.time.StopWatch {
         return sw;
     }
 
-    public long getTimeAndRestart() {
-        long time = getTime();
-        restart();
-        return time;
+    public boolean hasPassed(long millis) {
+        if (getTime() > millis) {
+            restart();
+            return true;
+        }
+        return false;
     }
 
     private void restart() {

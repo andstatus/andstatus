@@ -57,8 +57,10 @@ public class Attachments implements IsEmpty {
                 case HARD_ERROR:
                     break;
                 default:
-                    if (UriUtils.isDownloadable(dd.getUri()) && attachment.contentType.getDownloadMediaOfThisType()) {
-                        dd.requestDownload();
+                    if (UriUtils.isDownloadable(dd.getUri())) {
+                        if (attachment.contentType.getDownloadMediaOfThisType()) {
+                            dd.requestDownload();
+                        }
                     } else {
                         AttachmentDownloader.load(dd, execContext.getCommandData());
                     }

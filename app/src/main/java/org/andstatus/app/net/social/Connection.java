@@ -26,6 +26,7 @@ import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.http.OAuthService;
 import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.origin.OriginConnectionData;
+import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
@@ -528,8 +529,8 @@ public abstract class Connection {
         return jArr;
     }
 
-    public void downloadFile(Uri uri, File file) throws ConnectionException {
-        http.downloadFile(uri, file);
+    public void downloadFile(ConnectionRequired connectionRequired, Uri uri, File file) throws ConnectionException {
+        http.downloadFile(connectionRequired, uri, file);
     }
 
     public HttpConnection getHttp() {

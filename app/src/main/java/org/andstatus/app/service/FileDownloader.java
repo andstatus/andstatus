@@ -33,6 +33,7 @@ import java.io.File;
 public abstract class FileDownloader {
     protected final DownloadData data;
     public Connection connectionMock;
+    private ConnectionRequired connectionRequired = ConnectionRequired.ANY;
 
     static FileDownloader newForDownloadData(DownloadData data) {
         if (data.actorId != 0) {
@@ -84,7 +85,8 @@ public abstract class FileDownloader {
             MyAccount ma = findBestAccountForDownload();
             MyLog.v(this, () -> "About to download " + data.toString() + "; account:" + ma.getAccountName());
             if (ma.isValidAndSucceeded()) {
-                ((connectionMock != null) ? connectionMock : getConnection(ma, data.getUri())).downloadFile(data.getUri(), file);
+                ((connectionMock != null) ? connectionMock : getConnection(ma, data.getUri()))
+                        .downloadFile(connectionRequired, data.getUri(), file);
             } else {
                 data.hardErrorLogged(method + ", No account to download the file", null);
             }
@@ -104,6 +106,11 @@ public abstract class FileDownloader {
             data.softErrorLogged(method + "; Couldn't rename file " + fileTemp + " to " + fileNew, null);
         }
         data.onDownloaded();
+    }
+
+    public FileDownloader setConnectionRequired(ConnectionRequired connectionRequired) {
+        this.connectionRequired = connectionRequired;
+        return this;
     }
 
     private Connection getConnection(MyAccount ma, Uri uri) throws ConnectionException {

@@ -18,9 +18,11 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
+import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
@@ -39,12 +41,14 @@ import java.util.Optional;
 import io.vavr.control.Try;
 
 public class HttpReadResult {
+    final MyContext myContext;
     private final Uri uriInitial;
+    final ConnectionRequired connectionRequired;
     private String urlString = "";
     private URL url;
     boolean authenticate = true;
     private boolean mIsLegacyHttpProtocol = false;
-    public final long maxSizeBytes;
+    final long maxSizeBytes;
 
     public final Optional<JSONObject> formParams;
     private StringBuilder logBuilder =  new StringBuilder();
@@ -58,10 +62,13 @@ public class HttpReadResult {
     boolean redirected = false;
 
     public HttpReadResult(Uri uriIn, JSONObject formParams) throws ConnectionException {
-        this (uriIn, null, formParams);
+        this (MyContextHolder.get(), ConnectionRequired.ANY, uriIn, null, formParams);
     }
 
-    public HttpReadResult(Uri uriIn, File file, JSONObject formParams) throws ConnectionException {
+    public HttpReadResult(MyContext myContext, ConnectionRequired connectionRequired, Uri uriIn, File file,
+                          JSONObject formParams) {
+        this.myContext = myContext;
+        this.connectionRequired = connectionRequired;
         uriInitial = uriIn;
         fileResult = file;
         this.formParams = formParams == null || formParams.length() == 0

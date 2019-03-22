@@ -20,6 +20,7 @@ import android.net.Uri;
 
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
+import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
@@ -124,8 +125,8 @@ public abstract class HttpConnection {
         return getRequestCommon(uri, true).getJsonArray(parentKey);
     }
 
-    public final void downloadFile(Uri uri, File file) throws ConnectionException {
-        HttpReadResult result = new HttpReadResult(uri, file, new JSONObject());
+    public final void downloadFile(ConnectionRequired connectionRequired, Uri uri, File file) throws ConnectionException {
+        HttpReadResult result = new HttpReadResult(data.getMyContext(), connectionRequired, uri, file, new JSONObject());
         getRequest(result);
         result.parseAndThrow();
     }

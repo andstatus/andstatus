@@ -18,6 +18,7 @@ package org.andstatus.app.net.http;
 
 import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.account.AccountName;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
@@ -108,4 +109,7 @@ public class HttpConnectionData {
         return getOriginType().getContentType();
     }
 
+    public MyContext getMyContext() {
+        return accountName.getOrigin().myContext;
+    }
 }

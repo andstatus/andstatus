@@ -100,6 +100,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 break;
             case GET_ATTACHMENT:
                 FileDownloader.newForDownloadData(DownloadData.fromId(execContext.getCommandData().itemId))
+                        .setConnectionRequired(ConnectionRequired.DOWNLOAD_ATTACHMENT)
                         .load(execContext.getCommandData());
                 break;
             case GET_AVATAR:
