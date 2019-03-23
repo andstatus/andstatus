@@ -76,7 +76,7 @@ public class Attachments implements IsEmpty {
     }
 
     public void add(Attachment attachment) {
-        if (list.contains(attachment)) return;
+        if (!attachment.isValid() || list.contains(attachment)) return;
         list.add(attachment);
     }
 

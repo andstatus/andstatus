@@ -17,17 +17,20 @@
 package org.andstatus.app.net.social.activitypub;
 
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.AObjectType;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
+import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UriUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -184,6 +187,16 @@ public class ConnectionActivityPubTest {
         assertEquals("Note updated at " + TestSuite.utcTime(note8.getUpdatedDate()),
                 TestSuite.utcTime(2019, Calendar.MARCH, 10, 18, 46, 31).toString(),
                 TestSuite.utcTime(note8.getUpdatedDate()).toString());
+
+        assertEquals("Media attachments " + note8.attachments, 2, note8.attachments.size());
+        Attachment attachment0 = note8.attachments.list.get(0);
+        assertEquals("Content type", MyContentType.IMAGE, attachment0.contentType);
+        assertEquals("Media URI", UriUtils.fromString("https://img.pawoo.net/media_attachments/files/013/102/220/original/b70c78bee2bf7c99.jpg"),
+                attachment0.getUri());
+        Attachment attachment1 = note8.attachments.list.get(1);
+        assertEquals("Content type", MyContentType.IMAGE, attachment1.contentType);
+        assertEquals("Media URI", UriUtils.fromString("https://img.pawoo.net/media_attachments/files/013/102/261/original/104659a0cd852f39.jpg"),
+                attachment1.getUri());
 
         AActivity activity9 = timeline.get(9);
         assertEquals("Creating a Note " + activity9, AObjectType.NOTE, activity9.getObjectType());

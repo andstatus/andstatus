@@ -20,6 +20,9 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -127,5 +130,28 @@ public class ObjectOrId implements IsEmpty {
             return Try.success(id.get()).map(fromId);
         }
         return Try.failure(new NoSuchElementException());
+    }
+
+    public <T> List<T> mapAll(CheckedFunction<JSONObject, T> fromObject, CheckedFunction<String, T> fromId) {
+        if (object.isPresent()) {
+            return Try.success(object.get()).map(fromObject).map(Collections::singletonList)
+                    .getOrElse(Collections.emptyList());
+        }
+        if (id.isPresent()) {
+            return Try.success(id.get()).map(fromId).map(Collections::singletonList)
+                    .getOrElse(Collections.emptyList());
+        }
+        if (array.isPresent()) {
+            return Try.success(array.get()).map(arrayOfTo -> {
+                List<T> list = new ArrayList<>();
+                for (int ind = 0; ind < arrayOfTo.length(); ind++) {
+                    ObjectOrId.of(arrayOfTo, ind)
+                            .ifObject(o -> list.add(fromObject.apply(o)))
+                            .ifId(id -> list.add(fromId.apply(id)));
+                }
+                return list;
+            }).getOrElse(Collections.emptyList());
+        }
+        return Collections.emptyList();
     }
 }

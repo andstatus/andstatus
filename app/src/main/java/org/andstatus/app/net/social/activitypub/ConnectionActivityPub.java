@@ -19,7 +19,6 @@ package org.andstatus.app.net.social.activitypub;
 import android.net.Uri;
 
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.AObjectType;
@@ -95,7 +94,7 @@ public class ConnectionActivityPub extends Connection {
     }
 
     @NonNull
-    protected Actor actorFromJson(JSONObject jso) {
+    private Actor actorFromJson(JSONObject jso) {
         if (!ApObjectType.PERSON.isTypeOf(jso)) {
             return Actor.EMPTY;
         }
@@ -308,6 +307,12 @@ public class ConnectionActivityPub extends Connection {
     }
 
     @NonNull
+    AActivity activityFromOid(String oid) {
+        if (StringUtils.isEmptyOrTemp(oid)) return AActivity.EMPTY;
+        return AActivity.from(data.getAccountActor(), ActivityType.UPDATE).setTimelinePosition(oid);
+    }
+
+    @NonNull
     private AActivity activityFromJson(ObjectOrId objectOrId) throws ConnectionException {
         if (objectOrId.id.isPresent()) {
             return AActivity.newPartialNote(data.getAccountActor(), Actor.EMPTY, objectOrId.id.get());
@@ -356,15 +361,8 @@ public class ConnectionActivityPub extends Connection {
 
         if (activity.getObjectType().equals(AObjectType.NOTE)) {
             ObjectOrId.of(jsoActivity, "to")
-                .ifObject(o -> addRecipient(activity, actorFromJson(o)))
-                .ifArray(arrayOfTo -> {
-                    for (int ind = 0; ind < arrayOfTo.length(); ind++) {
-                        ObjectOrId.of(arrayOfTo, ind)
-                            .ifObject(o -> addRecipient(activity, actorFromJson(o)))
-                            .ifId(id -> addRecipient(activity, actorFromOid(id)));
-                    }
-                });
-            setVia(activity.getNote(), jsoActivity);
+                .mapAll(this::actorFromJson, this::actorFromOid)
+                .forEach(o -> addRecipient(activity, o));
             if(activity.getAuthor().isEmpty()) {
                 activity.setAuthor(activity.getActor());
             }
@@ -398,35 +396,27 @@ public class ConnectionActivityPub extends Connection {
         if (ApObjectType.PERSON.isTypeOf(objectOfActivity)) {
             activity.setObjActor(actorFromJson(objectOfActivity));
         } else if (ApObjectType.compatibleWith(objectOfActivity) == ApObjectType.COMMENT) {
-            noteFromJsonComment(activity, objectOfActivity);
+            noteFromJson(activity, objectOfActivity);
         }
         return activity;
     }
 
-    private void setVia(Note note, JSONObject activity) throws JSONException {
-        if (StringUtils.isEmpty(note.via) && activity.has("generator")) {
-            JSONObject generator = activity.getJSONObject("generator");
-            if (generator.has(NAME_PROPERTY)) {
-                note.via = generator.getString(NAME_PROPERTY);
-            }
-        }
-    }
-
-    private void noteFromJsonComment(AActivity parentActivity, JSONObject jso) throws ConnectionException {
+    private void noteFromJson(AActivity parentActivity, JSONObject jso) throws ConnectionException {
         try {
             String oid = jso.optString("id");
             if (StringUtils.isEmpty(oid)) {
                 MyLog.d(TAG, "ActivityPub object has no id:" + jso.toString(2));
                 return;
             }
-            long updatedDate = updatedOrCreatedDate(jso);
             Actor author = actorFromProperty(jso, "attributedTo")
                     .orElse(() -> actorFromProperty(jso, "author")).getOrElse(Actor.EMPTY);
 
-            final AActivity noteActivity = AActivity.newPartialNote(data.getAccountActor(),
+            final AActivity noteActivity = AActivity.newPartialNote(
+                    data.getAccountActor(),
                     author,
                     oid,
-                    updatedDate, DownloadStatus.LOADED);
+                    updatedOrCreatedDate(jso),
+                    DownloadStatus.LOADED);
 
             final AActivity activity;
             switch (parentActivity.type) {
@@ -450,34 +440,18 @@ public class ConnectionActivityPub extends Connection {
             note.setName(jso.optString(NAME_PROPERTY));
             note.setContentPosted(jso.optString(CONTENT_PROPERTY));
 
-            setVia(note, jso);
             note.url = jso.optString("url");
             note.setConversationOid(StringUtils.optNotEmpty(jso.optString("conversation"))
                     .orElseGet(() -> jso.optString("context")));
 
-            if (jso.has(VIDEO_OBJECT)) {
-                Uri uri = UriUtils.fromJson(jso, VIDEO_OBJECT + "/url");
-                Attachment mbAttachment =  Attachment.fromUriAndMimeType(uri, MyContentType.VIDEO.generalMimeType);
-                if (mbAttachment.isValid()) {
-                    note.attachments.add(mbAttachment);
-                } else {
-                    MyLog.d(this, "Invalid video attachment; " + jso.toString());
-                }
-            }
-            if (jso.has(FULL_IMAGE_OBJECT) || jso.has(IMAGE_OBJECT)) {
-                Uri uri = UriUtils.fromAlternativeTags(jso, FULL_IMAGE_OBJECT + "/url", IMAGE_OBJECT + "/url");
-                Attachment mbAttachment =  Attachment.fromUriAndMimeType(uri, MyContentType.IMAGE.generalMimeType);
-                if (mbAttachment.isValid()) {
-                    note.attachments.add(mbAttachment);
-                } else {
-                    MyLog.d(this, "Invalid image attachment; " + jso.toString());
-                }
-            }
+            ObjectOrId.of(jso, "attachment")
+                .mapAll(this::attachmentFromJson, Attachment::fromUri)
+                .forEach(note.attachments::add);
 
-            // If the Msg is a Reply to other note
-            if (jso.has("inReplyTo")) {
-                note.setInReplyTo(activityFromJson(ObjectOrId.of(jso, "inReplyTo")));
-            }
+            // If the Note is a Reply to the other note
+            ObjectOrId.of(jso, "inReplyTo")
+                    .mapOne(this::activityFromJson, this::activityFromOid)
+                    .onSuccess(note::setInReplyTo);
 
             if (jso.has("replies")) {
                 JSONObject replies = jso.getJSONObject("replies");
@@ -492,8 +466,13 @@ public class ConnectionActivityPub extends Connection {
                 }
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, "Parsing comment", e, jso);
+            throw ConnectionException.loggedJsonException(this, "Parsing note", e, jso);
         }
+    }
+
+    @NonNull
+    private Attachment attachmentFromJson(JSONObject jso) {
+        return Attachment.fromUriAndMimeType(UriUtils.fromJson(jso, "url"), jso.optString("mediaType"));
     }
 
     @NonNull
