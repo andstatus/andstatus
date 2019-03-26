@@ -3,7 +3,6 @@ package org.andstatus.app.timeline;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.BaseColumns;
-import androidx.test.espresso.action.TypeTextAction;
 import android.view.View;
 import android.widget.TextView;
 
@@ -25,10 +24,13 @@ import org.junit.Test;
 
 import java.util.Arrays;
 
+import androidx.test.espresso.action.TypeTextAction;
+
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class SharingMediaToThisAppTest extends TimelineActivityTest<ActivityViewItem> {
@@ -38,7 +40,7 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest<ActivityView
     @Override
     protected Intent getActivityIntent() {
         MyLog.i(this, "setUp started");
-        TestSuite.initializeWithData(this);
+        TestSuite.initializeWithAccounts(this);
 
         mService = new MyServiceTestHelper();
         mService.setUp(demoData.gnusocialTestAccountName);
@@ -49,9 +51,9 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest<ActivityView
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("image/png");
         Uri mediaUri = demoData.localImageTestUri2;
-        assertTrue(mediaUri != null);
-        MyLog.i(this, "setUp ended");
+        assertNotNull(mediaUri);
         intent.putExtra(Intent.EXTRA_STREAM, mediaUri);
+        MyLog.i(this, "setUp ended");
         return intent;
     }
 

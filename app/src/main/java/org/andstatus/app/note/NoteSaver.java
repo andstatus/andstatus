@@ -31,6 +31,8 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.util.MyLog;
 
+import java.util.Optional;
+
 /**
  * Asynchronously save, delete and send a note, prepared by {@link NoteEditor}
  */
@@ -63,7 +65,7 @@ public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorDa
     private void savePreviousData() {
         if (command.needToSavePreviousData()) {
             MyLog.v(NoteEditorData.TAG, () -> "Saving previous data:" + command.previousData);
-            command.previousData.save(Uri.EMPTY);
+            command.previousData.save(Uri.EMPTY, Optional.empty());
             broadcastDataChanged(command.previousData);
         }
     }
@@ -73,7 +75,7 @@ public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorDa
         if (command.currentData.activity.getNote().getStatus() == DownloadStatus.DELETED) {
             MyProvider.deleteNote(MyContextHolder.get().context(), command.currentData.getNoteId());
         } else {
-            command.currentData.save(command.getMediaUri());
+            command.currentData.save(command.getMediaUri(), command.getMediaType());
             if (command.beingEdited) {
                 MyPreferences.setBeingEditedNoteId(command.currentData.getNoteId());
             }

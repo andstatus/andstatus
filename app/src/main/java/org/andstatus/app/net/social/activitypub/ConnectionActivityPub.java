@@ -21,6 +21,7 @@ import android.net.Uri;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.AActivity;
+import org.andstatus.app.net.social.AJsonCollection;
 import org.andstatus.app.net.social.AObjectType;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
@@ -245,35 +246,22 @@ public class ConnectionActivityPub extends Connection {
             throws ConnectionException {
         ConnectionAndUrl conu = ConnectionAndUrl.fromActor(this, apiRoutine, actor);
         Uri.Builder builder = conu.uri.buildUpon();
-        if (youngestPosition.nonEmpty()) {
-            // The "since" should point to the "Activity" on the timeline, not to the note
-            // Otherwise we will always get "not found"
-            builder.appendQueryParameter("min_id", youngestPosition.getPosition());
-        } else if (oldestPosition.nonEmpty()) {
-            builder.appendQueryParameter("max_id", oldestPosition.getPosition());
-        }
+        // TODO: See https://github.com/andstatus/andstatus/issues/499#issuecomment-475881413
+//        if (youngestPosition.nonEmpty()) {
+//            // The "since" should point to the "Activity" on the timeline, not to the note
+//            // Otherwise we will always get "not found"
+//            builder.appendQueryParameter("min_id", youngestPosition.getPosition());
+//        } else if (oldestPosition.nonEmpty()) {
+//            builder.appendQueryParameter("max_id", oldestPosition.getPosition());
+//        }
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
         return getActivities(apiRoutine, conu.withUri(builder.build()));
     }
 
     private List<AActivity> getActivities(ApiRoutineEnum apiRoutine, ConnectionAndUrl conu) throws ConnectionException {
         JSONObject root = conu.httpConnection.getRequest(conu.uri);
-        List<AActivity> activities = new ArrayList<>();
-        if (root != null) {
-            JSONObject page = root.optJSONObject("first");
-            if (page != null) {
-                JSONArray jArr = page.optJSONArray("orderedItems");
-                if (jArr != null) {
-                    // Read the activities in the chronological order
-                    for (int index = 0; index < jArr.length(); index++) {
-                        AActivity item = activityFromJson(ObjectOrId.of(jArr, index));
-                        if (item != AActivity.EMPTY) {
-                            activities.add(item);
-                        }
-                    }
-                }
-            }
-        }
+        List<AActivity> activities = AJsonCollection.of(root)
+                .mapItems(item -> activityFromJson(ObjectOrId.of(item)));
         MyLog.d(TAG, "getTimeline " + apiRoutine + " '" + conu.uri + "' " + activities.size() + " activities");
         return activities;
     }

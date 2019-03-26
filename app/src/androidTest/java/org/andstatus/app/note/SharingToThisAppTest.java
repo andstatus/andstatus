@@ -2,6 +2,8 @@ package org.andstatus.app.note;
 
 import org.junit.Test;
 
+import java.util.Optional;
+
 import static org.junit.Assert.assertEquals;
 
 public class SharingToThisAppTest {
@@ -26,6 +28,7 @@ public class SharingToThisAppTest {
         assertEquals(part1 + ellipsis, NoteEditor.stripBeginning(subject));
         assertEquals(String.valueOf(prefix + part1).trim(), NoteEditor.stripEllipsis(subject));
         assertEquals(part1, NoteEditor.stripEllipsis(NoteEditor.stripBeginning(subject)));
-        assertEquals(hasAdditionalContent, NoteEditor.subjectHasAdditionalContent(subject, text));
+        assertEquals(hasAdditionalContent, NoteEditor.subjectHasAdditionalContent(Optional.of(subject),
+                Optional.ofNullable(text)));
     }
 }

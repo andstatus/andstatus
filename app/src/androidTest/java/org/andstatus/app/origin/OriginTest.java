@@ -1,9 +1,9 @@
 
 package org.andstatus.app.origin;
 
+import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.data.DemoNoteInserter;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
@@ -23,7 +23,7 @@ public class OriginTest {
 
     @Before
     public void setUp() throws Exception {
-        TestSuite.initializeWithData(this);
+        TestSuite.initializeWithAccounts(this);
     }
 
     @Test

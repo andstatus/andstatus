@@ -52,7 +52,6 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.ParsedUri;
-import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.note.NoteAdapter;
@@ -60,6 +59,7 @@ import org.andstatus.app.note.NoteContextMenu;
 import org.andstatus.app.note.NoteContextMenuContainer;
 import org.andstatus.app.note.NoteEditorListActivity;
 import org.andstatus.app.note.NoteViewItem;
+import org.andstatus.app.note.SharedNote;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginSelector;
 import org.andstatus.app.os.AsyncTaskLauncher;
@@ -81,15 +81,14 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
-import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.view.MyContextMenu;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -115,10 +114,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     private ActivityContextMenu contextMenu;
 
-    private String noteNameToShareViaThisApp = "";
-    private String contentToShareViaThisApp = "";
-    private TextMediaType textMediaTypeToShareViaThisApp = TextMediaType.HTML;
-    private Uri mediaToShareViaThisApp = Uri.EMPTY;
+    private volatile Optional<SharedNote> sharedNote = Optional.empty();
 
     private String mRateLimitText = "";
 
@@ -656,32 +652,12 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         actorProfileViewer.ensureView(getParamsNew().getTimeline().withActorProfile());
 
         if (Intent.ACTION_SEND.equals(intentNew.getAction())) {
-            shareViaThisApplication(intentNew.getStringExtra(Intent.EXTRA_SUBJECT),
-                    intentNew.getStringExtra(Intent.EXTRA_TEXT),
-                    intentNew.getStringExtra(Intent.EXTRA_HTML_TEXT),
-                    intentNew.getParcelableExtra(Intent.EXTRA_STREAM));
+            sharedNote = SharedNote.fromIntent(intentNew);
+            sharedNote.ifPresent(shared -> {
+                MyLog.v(this, shared.toString());
+                AccountSelector.selectAccountOfOrigin(this, ActivityRequestCode.SELECT_ACCOUNT_TO_SHARE_VIA, 0);
+            });
         }
-    }
-
-    private void shareViaThisApplication(String name, String plainText, String html, Uri mediaUri) {
-        if (StringUtils.isEmpty(name) && StringUtils.isEmpty(plainText) && UriUtils.isEmpty(mediaUri)) {
-            return;
-        }
-        noteNameToShareViaThisApp = StringUtils.notEmpty(name, "");
-        if (StringUtils.nonEmpty(html)) {
-            contentToShareViaThisApp = StringUtils.notEmpty(html, "");
-            textMediaTypeToShareViaThisApp = TextMediaType.HTML;
-        } else {
-            contentToShareViaThisApp = StringUtils.notEmpty(plainText, "");
-            textMediaTypeToShareViaThisApp = TextMediaType.PLAIN;
-        }
-        mediaToShareViaThisApp = mediaUri;
-        MyLog.v(this, "Share via this app "
-                + (!StringUtils.isEmpty(noteNameToShareViaThisApp) ? "; title:'" + noteNameToShareViaThisApp +"'" : "")
-                + (!StringUtils.isEmpty(contentToShareViaThisApp)
-                    ? "; " + textMediaTypeToShareViaThisApp + ":'" + contentToShareViaThisApp +"'" : "")
-                + (!UriUtils.isEmpty(mediaToShareViaThisApp) ? "; media:" + mediaToShareViaThisApp.toString() : ""));
-        AccountSelector.selectAccountOfOrigin(this, ActivityRequestCode.SELECT_ACCOUNT_TO_SHARE_VIA, 0);
     }
 
     private void updateScreen() {
@@ -1044,7 +1020,10 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 setSelectedActingAccount(data);
                 break;
             case SELECT_ACCOUNT_TO_SHARE_VIA:
-                accountToShareViaSelected(data);
+                sharedNote.ifPresent(shared -> getNoteEditor().startEditingSharedData(
+                        myContext.accounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key)),
+                        shared)
+                );
                 break;
             case SELECT_TIMELINE:
                 Timeline timeline = myContext.timelines()
@@ -1111,12 +1090,6 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             default:
                 return contextMenu.note;
         }
-    }
-
-    private void accountToShareViaSelected(Intent data) {
-        MyAccount ma = myContext.accounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
-        getNoteEditor().startEditingSharedData(ma, noteNameToShareViaThisApp, contentToShareViaThisApp,
-                textMediaTypeToShareViaThisApp, mediaToShareViaThisApp);
     }
 
     @Override

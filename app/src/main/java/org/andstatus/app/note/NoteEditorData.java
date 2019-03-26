@@ -53,6 +53,7 @@ import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
@@ -230,11 +231,11 @@ public class NoteEditorData implements IsEmpty {
         }
     }
 
-    public void save(Uri imageUriToSave) {
+    public void save(Uri imageUriToSave, Optional<String> mediaType) {
         Note note = activity.getNote();
         Uri mediaUri = imageUriToSave.equals(Uri.EMPTY) ? attachment.getUri() : imageUriToSave;
         note.attachments.clear();
-        if (!mediaUri.equals(Uri.EMPTY)) note.attachments.add(Attachment.fromUri(mediaUri));
+        if (!mediaUri.equals(Uri.EMPTY)) note.attachments.add(Attachment.fromUriAndMimeType(mediaUri, mediaType.orElse("")));
         new DataUpdater(getMyAccount()).onActivity(activity);
         // TODO: Delete previous draft activities of this note
     }

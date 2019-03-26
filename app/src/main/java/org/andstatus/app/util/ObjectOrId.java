@@ -32,6 +32,7 @@ import io.vavr.control.CheckedFunction;
 import io.vavr.control.Try;
 
 public class ObjectOrId implements IsEmpty {
+    private final static ObjectOrId EMPTY = of(null);
     public final Optional<JSONObject> object;
     public final Optional<JSONArray> array;
     public final Optional<String> id;
@@ -54,11 +55,14 @@ public class ObjectOrId implements IsEmpty {
     }
 
     public static ObjectOrId of(JSONArray parentArray, int index) {
-        return new ObjectOrId(parentArray, index);
+        return new ObjectOrId(Optional.ofNullable(parentArray.opt(index)));
     }
 
-    private ObjectOrId(JSONArray parentArray, int index) {
-        Optional<Object> jso = Optional.ofNullable(parentArray.opt(index));
+    public static ObjectOrId of(Object jso) {
+        return new ObjectOrId(Optional.ofNullable(jso));
+    }
+
+    private ObjectOrId(Optional<Object> jso) {
         object = jso.flatMap(js -> js instanceof JSONObject ? Optional.of((JSONObject) js) : Optional.empty());
         final Optional<JSONArray> jsonArray = jso.flatMap(js -> js instanceof JSONArray
                 ? Optional.of((JSONArray) js) : Optional.empty()).filter(a -> a.length() > 0);
@@ -77,6 +81,10 @@ public class ObjectOrId implements IsEmpty {
         error = Optional.of(e instanceof ConnectionException
                 ? (ConnectionException) e
                 : ConnectionException.loggedJsonException(this, "Parsing JSON", e, ooi.object.orElse(null)));
+    }
+
+    public static ObjectOrId empty() {
+        return EMPTY;
     }
 
     @Override
@@ -148,6 +156,24 @@ public class ObjectOrId implements IsEmpty {
                     ObjectOrId.of(arrayOfTo, ind)
                             .ifObject(o -> list.add(fromObject.apply(o)))
                             .ifId(id -> list.add(fromId.apply(id)));
+                }
+                return list;
+            }).getOrElse(Collections.emptyList());
+        }
+        return Collections.emptyList();
+    }
+
+    public <T> List<T> mapObjects(CheckedFunction<JSONObject, T> fromObject) {
+        if (object.isPresent()) {
+            return Try.success(object.get()).map(fromObject).map(Collections::singletonList)
+                    .getOrElse(Collections.emptyList());
+        }
+        if (array.isPresent()) {
+            return Try.success(array.get()).map(arrayOfTo -> {
+                List<T> list = new ArrayList<>();
+                for (int ind = 0; ind < arrayOfTo.length(); ind++) {
+                    ObjectOrId.of(arrayOfTo, ind)
+                            .ifObject(o -> list.add(fromObject.apply(o)));
                 }
                 return list;
             }).getOrElse(Collections.emptyList());

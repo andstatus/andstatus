@@ -23,9 +23,12 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.UriUtils;
 
+import java.util.Optional;
+
 public class NoteEditorCommand implements IsEmpty {
     private volatile Long currentNoteId = null;
-    private Uri imageUriToSave = Uri.EMPTY;
+    private Uri mediaUri = Uri.EMPTY;
+    private Optional<String> mediaType = Optional.empty();
     boolean beingEdited = false;
     boolean showAfterSave = false;
     private volatile NoteEditorLock lock = NoteEditorLock.EMPTY;
@@ -80,16 +83,16 @@ public class NoteEditorCommand implements IsEmpty {
     }
 
     public boolean isEmpty() {
-        return currentData.isEmpty() && previousData.isEmpty() && imageUriToSave == Uri.EMPTY;
+        return currentData.isEmpty() && previousData.isEmpty() && mediaUri == Uri.EMPTY;
     }
 
     public NoteEditorCommand setMediaUri(Uri mediaUri) {
-        imageUriToSave = UriUtils.notNull(mediaUri);
+        this.mediaUri = UriUtils.notNull(mediaUri);
         return this;
     }
 
     public Uri getMediaUri() {
-        return imageUriToSave;
+        return mediaUri;
     }
 
     public boolean needToSavePreviousData() {
@@ -111,9 +114,17 @@ public class NoteEditorCommand implements IsEmpty {
         if(beingEdited) {
             builder.append("edit,");
         }
-        if(!UriUtils.isEmpty(imageUriToSave)) {
-            builder.append("image:'" + imageUriToSave + "',");
+        if(!UriUtils.isEmpty(mediaUri)) {
+            builder.append("media:'" + mediaUri + "',");
         }
         return builder.toString();
+    }
+
+    public void setMediaType(Optional<String> mediaType) {
+        this.mediaType = mediaType;
+    }
+
+    public Optional<String> getMediaType() {
+        return mediaType;
     }
 }

@@ -29,6 +29,8 @@ import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 
+import java.util.Optional;
+
 /**
  * @author yvolk@yurivolkov.com
  */
@@ -69,7 +71,7 @@ abstract public class NoteEditorListActivity<T extends ViewItem<T>> extends Load
         Uri uri = UriUtils.notNull(data.getData());
         if (!UriUtils.isEmpty(uri)) {
             UriUtils.takePersistableUriPermission(getActivity(), uri, data.getFlags());
-            getNoteEditor().startEditingCurrentWithAttachedMedia(uri);
+            getNoteEditor().startEditingCurrentWithAttachedMedia(uri, Optional.ofNullable(data.getType()));
         }
     }
 

@@ -65,6 +65,8 @@ import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.ViewUtils;
 
+import java.util.Optional;
+
 /**
  * "Enter your message here" box 
  */
@@ -369,18 +371,23 @@ public class NoteEditor {
         return editorView.getVisibility() == View.VISIBLE;
     }
 
-    public void startEditingSharedData(final MyAccount ma, String name, final String content,
-                                       TextMediaType textMediaType, final Uri media) {
-        MyLog.v(NoteEditorData.TAG, () -> "startEditingSharedData " + name + " - " + content + " uri: " + media);
+    public void startEditingSharedData(final MyAccount ma, SharedNote shared) {
+        MyLog.v(NoteEditorData.TAG, () -> "startEditingSharedData " + shared.toString());
         updateDataFromScreen();
 
-        MyStringBuilder contentWithName = MyStringBuilder.of(content);
-        if (!ma.getOrigin().getOriginType().hasNoteName && subjectHasAdditionalContent(name, content)) {
-            contentWithName.prependWithSeparator(name, textMediaType == TextMediaType.HTML ? "<br/>" : "\n");
+        MyStringBuilder contentWithName = MyStringBuilder.of(shared.content);
+        if (!ma.getOrigin().getOriginType().hasNoteName && subjectHasAdditionalContent(shared.name, shared.content)) {
+            shared.name.ifPresent( name ->
+                contentWithName.prependWithSeparator(name, shared.textMediaType == TextMediaType.HTML ? "<br/>" : "\n")
+            );
         }
-        NoteEditorData currentData = NoteEditorData.newEmpty(ma).setContent(contentWithName.toString(), textMediaType);
-        if (ma.getOrigin().getOriginType().hasNoteName) currentData.setName(name);
-        NoteEditorCommand command = new NoteEditorCommand(currentData, editorData).setMediaUri(media);
+        NoteEditorData currentData = NoteEditorData.newEmpty(ma).setContent(contentWithName.toString(), shared.textMediaType);
+        if (ma.getOrigin().getOriginType().hasNoteName) {
+            shared.name.ifPresent(currentData::setName);
+        }
+        NoteEditorCommand command = new NoteEditorCommand(currentData, editorData);
+        shared.mediaUri.ifPresent(command::setMediaUri);
+        command.setMediaType(shared.mediaType);
         command.showAfterSave = true;
         command.beingEdited = true;
         saveData(command);
@@ -407,12 +414,13 @@ public class NoteEditor {
         }
     }
 
-    void startEditingCurrentWithAttachedMedia(Uri mediaUri) {
+    void startEditingCurrentWithAttachedMedia(Uri mediaUri, Optional<String> mediaType) {
         updateDataFromScreen();
         NoteEditorCommand command = new NoteEditorCommand(editorData.copy());
         command.beingEdited = true;
         command.showAfterSave = true;
         command.setMediaUri(mediaUri);
+        command.setMediaType(mediaType);
         saveData(command);
     }
 
@@ -444,14 +452,11 @@ public class NoteEditor {
         showAttachedImage();
     }
 
-    static boolean subjectHasAdditionalContent(String subject, String text) {
-        if (StringUtils.isEmpty(subject)) {
-            return false;
-        }
-        if (StringUtils.isEmpty(text)) {
-            return true;
-        }
-        return !text.startsWith(stripEllipsis(stripBeginning(subject)));
+    static boolean subjectHasAdditionalContent(Optional<String> name, Optional<String> content) {
+        if (!name.isPresent()) return false;
+        if (!content.isPresent()) return true;
+
+        return content.flatMap(c -> name.map(n -> !c.startsWith(stripEllipsis(stripBeginning(n))))).orElse(false);
     }
 
     /**

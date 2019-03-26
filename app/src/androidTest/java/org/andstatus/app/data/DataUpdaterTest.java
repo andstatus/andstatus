@@ -375,15 +375,14 @@ public class DataUpdaterTest {
                 System.currentTimeMillis(), DownloadStatus.SENDING);
         Note note = activity.getNote();
         note.setContentPosted("Unsent note with an attachment " + demoData.testRunUid);
-        note.attachments.add(Attachment.fromUri(demoData.localImageTestUri));
+        note.attachments.add(Attachment.fromUriAndMimeType(demoData.localImageTestUri, "image/*"));
         new DataUpdater(ma).onActivity(activity);
         assertNotEquals("Note added " + activity, 0, note.noteId);
         assertNotEquals("Activity added " + activity, 0, activity.getId());
         assertEquals("Status of unsent note", DownloadStatus.SENDING, DownloadStatus.load(
                 MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, note.noteId)));
 
-        DownloadData dd = DownloadData.getSingleAttachment(note.noteId
-        );
+        DownloadData dd = DownloadData.getSingleAttachment(note.noteId);
         assertEquals("Image URI stored", note.attachments.list.get(0).getUri(), dd.getUri());
         assertEquals("Local image immediately loaded " + dd, DownloadStatus.LOADED, dd.getStatus());
 

@@ -16,10 +16,11 @@
 
 package org.andstatus.app.util;
 
-import androidx.annotation.NonNull;
-
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+
+import androidx.annotation.NonNull;
 
 /** Adds convenience methods to {@link StringBuilder} */
 public class MyStringBuilder implements CharSequence {
@@ -39,6 +40,10 @@ public class MyStringBuilder implements CharSequence {
 
     public MyStringBuilder(StringBuilder builder) {
         this.builder = builder;
+    }
+
+    public static MyStringBuilder of(Optional<String> content) {
+        return content.map(MyStringBuilder::of).orElse(new MyStringBuilder());
     }
 
     @NonNull

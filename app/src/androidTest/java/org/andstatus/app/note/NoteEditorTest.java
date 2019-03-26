@@ -38,6 +38,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.TextMediaType;
@@ -212,9 +213,9 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         Instrumentation.ActivityMonitor activityMonitor = getInstrumentation()
                 .addMonitor(HelpActivity.class.getName(), null, false);
 
-        Intent intent = new Intent(getActivity(), HelpActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        getActivity().getApplicationContext().startActivity(intent);
+        Intent intent1 = new Intent(getActivity(), HelpActivity.class);
+        intent1.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        getActivity().getApplicationContext().startActivity(intent1);
 
         Activity selectorActivity = getInstrumentation()
                 .waitForMonitorWithTimeout(activityMonitor, 15000);
@@ -224,10 +225,10 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         selectorActivity.finish();
 
         MyLog.i(method, "Callback from a selector");
-        Intent data = new Intent();
-        data.setData(demoData.localImageTestUri2);
+        Intent intent2 = new Intent();
+        intent2.setDataAndType(demoData.localImageTestUri2, MyContentType.IMAGE.generalMimeType);
         getActivity().runOnUiThread(() -> {
-            getActivity().onActivityResult(ActivityRequestCode.ATTACH.id, Activity.RESULT_OK, data);
+            getActivity().onActivityResult(ActivityRequestCode.ATTACH.id, Activity.RESULT_OK, intent2);
         });
 
         final NoteEditor editor = getActivity().getNoteEditor();
