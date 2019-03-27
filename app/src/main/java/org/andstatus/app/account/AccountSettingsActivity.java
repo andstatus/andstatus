@@ -51,6 +51,7 @@ import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.MyOAuth2AccessTokenJsonExtractor;
+import org.andstatus.app.net.http.OAuthService;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
@@ -878,8 +879,6 @@ public class AccountSettingsActivity extends MyActivity {
 
         @Override
         protected TaskResult doInBackground2(Void... arg0) {
-            JSONObject jso = null;
-
             boolean succeeded = false;
             String connectionErrorMessage = "";
             try {
@@ -984,33 +983,39 @@ public class AccountSettingsActivity extends MyActivity {
             try {
                 MyAccount ma = state.getAccount();
                 MyLog.v(this, "Retrieving request token for " + ma);
-
-                String authUrl;
-                if (state.getAccount().getOAuthService().isOAuth2()) {
-                    final OAuth20Service service = state.getAccount().getOAuthService().getService(true);
-                    authUrl = service.getAuthorizationUrl();
+                OAuthService oAuthService = ma.getOAuthService();
+                if (oAuthService == null) {
+                    connectionErrorMessage = "No OAuth service for this account " + ma;
+                } else if ( !ma.areClientKeysPresent()) {
+                    connectionErrorMessage = "No Client keys for this account " + ma;
                 } else {
-                    OAuthConsumer consumer = state.getAccount().getOAuthService().getConsumer();
+                    String authUrl;
+                    if (oAuthService.isOAuth2()) {
+                        final OAuth20Service service = oAuthService.getService(true);
+                        authUrl = service.getAuthorizationUrl();
+                    } else {
+                        OAuthConsumer consumer = oAuthService.getConsumer();
 
-                    // This is really important. If you were able to register your
-                    // real callback Uri with Twitter, and not some fake Uri
-                    // like I registered when I wrote this example, you need to send
-                    // null as the callback Uri in this function call. Then
-                    // Twitter will correctly process your callback redirection
-                    authUrl = state.getAccount().getOAuthService().getProvider()
-                            .retrieveRequestToken(consumer, HttpConnection.CALLBACK_URI.toString());
-                    state.setRequestTokenWithSecret(consumer.getToken(), consumer.getTokenSecret());
+                        // This is really important. If you were able to register your
+                        // real callback Uri with Twitter, and not some fake Uri
+                        // like I registered when I wrote this example, you need to send
+                        // null as the callback Uri in this function call. Then
+                        // Twitter will correctly process your callback redirection
+                        authUrl = oAuthService.getProvider()
+                                .retrieveRequestToken(consumer, HttpConnection.CALLBACK_URI.toString());
+                        state.setRequestTokenWithSecret(consumer.getToken(), consumer.getTokenSecret());
+                    }
+
+                    // This is needed in order to complete the process after redirect
+                    // from the Browser to the same activity.
+                    state.actionCompleted = false;
+
+                    // Start Web view (looking just like Web Browser)
+                    Intent i = new Intent(AccountSettingsActivity.this, AccountSettingsWebActivity.class);
+                    i.putExtra(AccountSettingsWebActivity.EXTRA_URLTOOPEN, authUrl);
+                    AccountSettingsActivity.this.startActivity(i);
+                    resultStatus = ResultStatus.SUCCESS;
                 }
-
-                // This is needed in order to complete the process after redirect
-                // from the Browser to the same activity.
-                state.actionCompleted = false;
-
-                // Start Web view (looking just like Web Browser)
-                Intent i = new Intent(AccountSettingsActivity.this, AccountSettingsWebActivity.class);
-                i.putExtra(AccountSettingsWebActivity.EXTRA_URLTOOPEN, authUrl);
-                AccountSettingsActivity.this.startActivity(i);
-                resultStatus = ResultStatus.SUCCESS;
             } catch (OAuthMessageSignerException | OAuthNotAuthorizedException
                     | OAuthExpectationFailedException
                     | OAuthCommunicationException
@@ -1022,7 +1027,7 @@ public class AccountSettingsActivity extends MyActivity {
             if (resultStatus != ResultStatus.SUCCESS) {
                 stepErrorMessage = AccountSettingsActivity.this
                         .getString(R.string.acquiring_a_request_token_failed);
-                if (connectionErrorMessage != null && connectionErrorMessage.length() > 0) {
+                if (StringUtils.nonEmpty(connectionErrorMessage)) {
                     stepErrorMessage += ": " + connectionErrorMessage;
                 }
                 MyLog.d(TAG, stepErrorMessage);

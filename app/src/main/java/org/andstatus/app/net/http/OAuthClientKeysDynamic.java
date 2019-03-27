@@ -28,11 +28,11 @@ public class OAuthClientKeysDynamic implements OAuthClientKeysStrategy {
     private static String KEY_OAUTH_CLIENT_KEY = "oauth_client_key";
     private static String KEY_OAUTH_CLIENT_SECRET = "oauth_client_secret";
 
-    String keySuffix = ""; 
-    String keyConsumerKey = "";
-    String keyConsumerSecret = "";
-    String consumerKey = "";
-    String consumerSecret = "";
+    volatile String keySuffix = "";
+    volatile String keyConsumerKey = "";
+    volatile String keyConsumerSecret = "";
+    volatile String consumerKey = "";
+    volatile String consumerSecret = "";
 
     @Override
     public void initialize(HttpConnectionData connectionData) {
