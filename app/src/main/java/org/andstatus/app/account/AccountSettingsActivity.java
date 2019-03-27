@@ -74,7 +74,6 @@ import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.view.EnumSelector;
-import org.json.JSONObject;
 
 import java.util.List;
 import java.util.Optional;
@@ -401,8 +400,7 @@ public class AccountSettingsActivity extends MyActivity {
     private void showErrors() {
         showTextView(R.id.latest_error_label, R.string.latest_error_label, 
                 mLatestErrorMessage.length() > 0);
-        showTextView(R.id.latest_error, mLatestErrorMessage,
-                mLatestErrorMessage.length() > 0);
+        showTextView(R.id.latest_error, mLatestErrorMessage, mLatestErrorMessage.length() > 0);
     }
 
     private void showOrigin() {
@@ -437,10 +435,13 @@ public class AccountSettingsActivity extends MyActivity {
                     nameEditable.requestFocus();
                 }
             }
-            if (ma.getUsername().compareTo(nameEditable.getText().toString()) != 0) {
-                nameEditable.setText(ma.getActor().getUniqueNameInOrigin());
+            String uniqueNameInOrigin = StringUtils.nonEmptyNonTemp(ma.getUsername())
+                    ? ma.getActor().getUniqueNameInOrigin()
+                    : "";
+            if (uniqueNameInOrigin.compareTo(nameEditable.getText().toString()) != 0) {
+                nameEditable.setText(uniqueNameInOrigin);
             }
-            showTextView(R.id.uniqueName_readonly, ma.getActor().getUniqueNameInOrigin(), state.builder.isPersistent());
+            showTextView(R.id.uniqueName_readonly, uniqueNameInOrigin, state.builder.isPersistent());
         }
     }
 
@@ -907,7 +908,7 @@ public class AccountSettingsActivity extends MyActivity {
                 }
                 MyLog.d(TAG, stepErrorMessage);
             }
-            return new TaskResult(ResultStatus.SUCCESS, stepErrorMessage);
+            return new TaskResult(succeeded ? ResultStatus.SUCCESS : ResultStatus.NONE, stepErrorMessage);
         }
 
         // This is in the UI thread, so we can mess with the UI
@@ -975,8 +976,6 @@ public class AccountSettingsActivity extends MyActivity {
 
         @Override
         protected TaskResult doInBackground2(Void... arg0) {
-            JSONObject jso = null;
-
             ResultStatus resultStatus = ResultStatus.NONE;
             String stepErrorMessage = "";
             String connectionErrorMessage = "";
@@ -1102,9 +1101,9 @@ public class AccountSettingsActivity extends MyActivity {
                 MyLog.e(this, message);
             } else {
                 // We don't need to worry about any saved states: we can reconstruct the state
-
                 Uri uri = uris[0];
-                if (uri != null && HttpConnection.CALLBACK_URI.getHost().equals(uri.getHost())) {
+                if (uri != null && HttpConnection.CALLBACK_URI.getHost() != null &&
+                        HttpConnection.CALLBACK_URI.getHost().equals(uri.getHost())) {
 
                     state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER);
                     try {
