@@ -23,7 +23,6 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.actor.ActorListType;
 import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.actor.ActorsOfNoteListLoader;
-import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.AttachedImageFile;
@@ -40,7 +39,6 @@ import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.net.social.AActivity;
-import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Audience;
@@ -310,30 +308,26 @@ public class NoteEditorData implements IsEmpty {
                 ConversationMemberItem.EMPTY, MyContextHolder.get(), ma.getOrigin(), getInReplyToNoteId(), false);
         loader.load(progress -> {});
         addActorsBeforeText(loader.getList().stream()
-                .filter(o -> o.activityType == ActivityType.UPDATE)
-                .map(o -> o.author.getActorId()).collect(Collectors.toList()));
+                .filter(ConversationMemberItem::isActorAConversationParticipant)
+                .map(o -> o.author.getActor()).collect(Collectors.toList()));
     }
 
     private void addMentionedActorsBeforeText() {
         ActorsOfNoteListLoader loader = new ActorsOfNoteListLoader(myContext, ActorListType.ACTORS_OF_NOTE, ma.getOrigin(),
                 getInReplyToNoteId(), "").setMentionedOnly(true);
         loader.load(null);
-        List<Long> toMention = new ArrayList<>();
-        for(ActorViewItem item : loader.getList()) {
-            toMention.add(item.getActorId());
-        }
-        addActorsBeforeText(toMention);
+        addActorsBeforeText(loader.getList().stream().map(ActorViewItem::getActor).collect(Collectors.toList()));
     }
 
-    private void addActorsBeforeText(List<Long> toMention) {
-        toMention.add(0, MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, getInReplyToNoteId()));
+    private void addActorsBeforeText(List<Actor> toMention) {
+        toMention.add(0, Actor.load(myContext, MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, getInReplyToNoteId())));
         List<Long> mentioned = new ArrayList<>();
         mentioned.add(ma.getActorId());  // Don't mention an author of this note
         String mentions = "";
-        for(Long actorId : toMention) {
-            if (actorId != 0 && !mentioned.contains(actorId)) {
-                mentioned.add(actorId);
-                String name = MyQuery.actorIdToName(myContext, actorId, getActorInTimeline());
+        for(Actor actor : toMention) {
+            if (actor.actorId != 0 && !mentioned.contains(actor.actorId)) {
+                mentioned.add(actor.actorId);
+                String name = actor.getUniqueNameInOrigin();
                 if (!StringUtils.isEmpty(name)) {
                     String mentionText = "@" + name + " ";
                     if (StringUtils.isEmpty(getContent()) || !(getContent() + " ").contains(mentionText)) {
@@ -351,8 +345,8 @@ public class NoteEditorData implements IsEmpty {
         return activity.getNote().getInReplyTo().getNote().noteId;
     }
 
-    public NoteEditorData appendMentionedActorToText(long mentionedActorId) {
-        String name = MyQuery.actorIdToName(myContext, mentionedActorId, getActorInTimeline());
+    public NoteEditorData appendMentionedActorToText(Actor mentionedActor) {
+        String name = mentionedActor.getUniqueNameInOrigin();
         if (!StringUtils.isEmpty(name)) {
             String bodyText2 = "@" + name + " ";
             if (!StringUtils.isEmpty(getContent()) && !(getContent() + " ").contains(bodyText2)) {
@@ -361,10 +355,6 @@ public class NoteEditorData implements IsEmpty {
             setContent(bodyText2, TextMediaType.HTML);
         }
         return this;
-    }
-
-    private ActorInTimeline getActorInTimeline() {
-        return ma.getOrigin().isMentionAsWebFingerId() ? ActorInTimeline.WEBFINGER_ID : ActorInTimeline.USERNAME;
     }
 
     public NoteEditorData addToAudience(long actorId) {

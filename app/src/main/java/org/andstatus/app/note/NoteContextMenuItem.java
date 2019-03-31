@@ -179,9 +179,10 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     COPY_AUTHOR(true, true) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
-            final long authorId = MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, menu.getNoteId());
-            MyLog.v(this, () -> "noteId:" + menu.getNoteId() + " -> authorId:" + authorId);
-            return NoteEditorData.newEmpty(menu.getActingAccount()).appendMentionedActorToText(authorId);
+            final Actor author = Actor.load(menu.getMyContext(),
+                    MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, menu.getNoteId()));
+            MyLog.v(this, () -> "noteId:" + menu.getNoteId() + " -> author:" + author);
+            return NoteEditorData.newEmpty(menu.getActingAccount()).appendMentionedActorToText(author);
         }
 
         @Override

@@ -18,7 +18,6 @@ package org.andstatus.app.context;
 
 import android.app.Activity;
 import android.content.Intent;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.FirstActivity;
 import org.andstatus.app.HelpActivity;
@@ -34,6 +33,8 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
+
+import androidx.annotation.NonNull;
 
 /**
  * @author yvolk@yurivolkov.com

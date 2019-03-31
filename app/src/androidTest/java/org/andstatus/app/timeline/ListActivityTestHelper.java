@@ -18,8 +18,6 @@ package org.andstatus.app.timeline;
 
 import android.app.Activity;
 import android.app.Instrumentation.ActivityMonitor;
-import androidx.annotation.NonNull;
-import androidx.test.InstrumentationRegistry;
 import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -38,6 +36,9 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.view.SelectorDialog;
 
 import java.util.function.Predicate;
+
+import androidx.annotation.NonNull;
+import androidx.test.InstrumentationRegistry;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -258,6 +259,11 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
     }
 
     public long findListItemId(String description, Predicate<BaseNoteViewItem> predicate) {
+        return findListItem(description, predicate).getId();
+    }
+
+
+    public ViewItem findListItem(String description, Predicate<BaseNoteViewItem> predicate) {
         final String method = "findListItemId";
         for (int ind = 0; ind < getListAdapter().getCount(); ind++) {
             final ViewItem viewItem = (ViewItem) getListAdapter().getItem(ind);
@@ -265,12 +271,12 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
             if (!item.isEmpty()) {
                 if (predicate.test(item)) {
                     MyLog.v(this, method + ": found " + description + " : " + item);
-                    return viewItem.getId();
+                    return viewItem;
                 }
             }
         }
         fail(method + "didn't find " + description + " in " + getListAdapter());
-        return 0;
+        return EmptyViewItem.EMPTY;
     }
 
     @NonNull

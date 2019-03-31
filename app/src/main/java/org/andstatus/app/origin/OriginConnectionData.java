@@ -57,6 +57,11 @@ public class OriginConnectionData {
         return myAccount.getActor();
     }
 
+    @NonNull
+    public MyAccount getMyAccount() {
+        return myAccount;
+    }
+
     public AccountName getAccountName() {
         return myAccount.getOAccountName();
     }

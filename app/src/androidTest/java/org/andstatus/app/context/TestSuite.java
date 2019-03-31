@@ -189,8 +189,9 @@ public class TestSuite {
     }
     
     public static MyContextTestImpl getMyContextForTest() {
-        if (!(MyContextHolder.get() instanceof MyContextTestImpl)) {
-            fail("Wrong type of current context");
+        MyContext myContext = MyContextHolder.get();
+        if (!(myContext instanceof MyContextTestImpl)) {
+            fail("Wrong type of current context: " + (myContext == null ? "null" : myContext.getClass().getName()));
         }
         return (MyContextTestImpl) MyContextHolder.get();
     }

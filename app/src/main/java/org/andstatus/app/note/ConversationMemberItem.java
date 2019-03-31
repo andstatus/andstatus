@@ -72,6 +72,16 @@ public class ConversationMemberItem extends ConversationItem<ConversationMemberI
         return new ConversationMemberItem(myContext, cursor);
     }
 
+    public boolean isActorAConversationParticipant() {
+        switch (activityType) {
+            case CREATE:
+            case UPDATE:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();

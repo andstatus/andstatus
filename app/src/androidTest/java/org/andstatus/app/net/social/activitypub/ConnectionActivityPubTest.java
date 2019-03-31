@@ -17,6 +17,7 @@
 package org.andstatus.app.net.social.activitypub;
 
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.social.AActivity;
@@ -25,16 +26,22 @@ import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Attachment;
+import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.origin.OriginConnectionData;
+import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.CommandEnum;
+import org.andstatus.app.service.CommandExecutionContext;
+import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
@@ -47,6 +54,7 @@ import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class ConnectionActivityPubTest {
     private Connection connection;
@@ -224,7 +232,6 @@ public class ConnectionActivityPubTest {
         assertEquals("Favorited by me " + activity9, TriState.UNKNOWN, activity9.getNote().getFavoritedBy(activity9.accountActor));
     }
 
-
     @Test
     public void testGetFriends() throws IOException {
         httpConnection.addResponse(org.andstatus.app.tests.R.raw.activitypub_friends_pleroma);
@@ -235,6 +242,49 @@ public class ConnectionActivityPubTest {
                 "who " + actor.getUniqueNameWithOrigin() + " is following " + actors, 1, actors.size());
 
         assertEquals("https://pleroma.site/users/AndStatus", actors.get(0).oid);
+    }
+
+    @Test
+    public void testGetNoteWithAudience() throws IOException {
+        httpConnection.addResponse(org.andstatus.app.tests.R.raw.activitypub_with_audience_pleroma);
+        String noteOid = "https://pleroma.site/objects/032e7c06-48aa-4cc9-b84a-0a36a24a7779";
+        AActivity activity = connection.getNote(noteOid);
+        assertEquals("Creating " + activity, ActivityType.CREATE, activity.type);
+        assertEquals("Acting on a Note " + activity, AObjectType.NOTE, activity.getObjectType());
+        Note note = activity.getNote();
+        assertEquals("Note oid " + note, noteOid, note.oid);
+        Actor author = activity.getAuthor();
+        assertEquals("Author's oid " + activity, ACTOR_OID, author.oid);
+        assertEquals("Actor is author", author, activity.getActor());
+        assertThat("Note body " + note, note.getContent(),
+                containsString("Testing public reply to Conversation participants"));
+        assertEquals("Note updated at " + TestSuite.utcTime(note.getUpdatedDate()),
+                TestSuite.utcTime(2019, Calendar.MARCH, 31, 11, 39, 54).toString(),
+                TestSuite.utcTime(note.getUpdatedDate()).toString());
+
+        Audience audience = activity.audience();
+        assertEquals("Audience of " + activity, TriState.TRUE, audience.getPublic());
+        List<String> oids = Arrays.asList(
+            "https://pleroma.site/users/kaniini",
+            "https://pawoo.net/users/pawooAndStatusTester",
+            "https://pleroma.site/users/ActivityPubTester",
+            "https://pleroma.site/users/AndStatus/followers",
+            "https://www.w3.org/ns/activitystreams#Public");
+        oids.forEach(oid -> {
+            assertTrue("Audience should contain " + oid + "\n " + activity + "\n " + audience, audience.containsOid(oid));
+        });
+
+        CommandExecutionContext executionContext = new CommandExecutionContext(
+                CommandData.newTimelineCommand(CommandEnum.UPDATE_NOTE, connection.getData().getMyAccount(), TimelineType.SENT));
+        DataUpdater di = new DataUpdater(executionContext);
+        di.onActivity(activity);
+
+        Audience audienceStored = Audience.fromNoteId(connection.getData().getOrigin(), note.noteId);
+        oids.forEach(oid -> {
+            assertTrue("Audience should contain " + oid + "\n " + activity + "\n " + audienceStored, audienceStored.containsOid(oid));
+        });
+        assertTrue("Audience of " + activity + "\n " + audienceStored, audienceStored.hasNonPublic());
+
     }
 
 }

@@ -18,7 +18,6 @@ package org.andstatus.app.net.social;
 
 import android.content.ContentValues;
 import android.database.Cursor;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -38,6 +37,8 @@ import org.andstatus.app.util.TriState;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
+
+import androidx.annotation.NonNull;
 
 public class Audience implements IsEmpty {
     public final static Audience EMPTY = new Audience(Origin.EMPTY);
@@ -137,6 +138,10 @@ public class Audience implements IsEmpty {
 
     public boolean contains(long actorId) {
         return actors.stream().anyMatch(actor -> actor.actorId == actorId);
+    }
+
+    public boolean containsOid(String oid) {
+        return actors.stream().anyMatch(actor -> actor.oid.equals(oid));
     }
 
     /** @return true if data changed */

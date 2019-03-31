@@ -1,0 +1,43 @@
+{
+  "type": "Create",
+  "to": [
+    "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+  ],
+  "published": "2019-03-31T11:39:54.180485Z",
+  "object": {
+    "type": "Note",
+    "to": [
+      "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+    ],
+    "published": "2019-03-31T11:39:54.186125Z",
+    "name": "This is test",
+    "inReplyToStatusId": "9gP1LdSd5YdKJIqITI",
+    "inReplyToAtomUri": "https:\/\/pleroma.site\/objects\/460e9a09-354e-4a8b-8f25-dbd69e6d6fb5",
+    "inReplyTo": "https:\/\/pleroma.site\/objects\/460e9a09-354e-4a8b-8f25-dbd69e6d6fb5",
+    "id": "https:\/\/pleroma.site\/objects\/032e7c06-48aa-4cc9-b84a-0a36a24a7779",
+    "conversation": "https:\/\/pleroma.site\/contexts\/cebf1c4d-f7f2-46a5-8025-fd8bd9cde1ab",
+    "context_id": 30464285,
+    "context": "https:\/\/pleroma.site\/contexts\/cebf1c4d-f7f2-46a5-8025-fd8bd9cde1ab",
+    "content": "@kaniini@pleroma.site @pawooAndStatusTester@pawoo.net @ActivityPubTester@pleroma.site Testing public reply to Conversation participants",
+    "cc": [
+      "https:\/\/pleroma.site\/users\/kaniini",
+      "https:\/\/pawoo.net\/users\/pawooAndStatusTester",
+      "https:\/\/pleroma.site\/users\/ActivityPubTester",
+      "https:\/\/pleroma.site\/users\/AndStatus\/followers"
+    ],
+    "bto": [],
+    "bcc": [],
+    "attributedTo": "https:\/\/pleroma.site\/users\/AndStatus",
+    "actor": "https:\/\/pleroma.site\/users\/AndStatus"
+  },
+  "id": "https:\/\/pleroma.site\/activities\/2456dda3-957f-4a99-9c58-abca6e452dd6",
+  "context_id": 30464285,
+  "context": "https:\/\/pleroma.site\/contexts\/cebf1c4d-f7f2-46a5-8025-fd8bd9cde1ab",
+  "cc": [
+    "https:\/\/pleroma.site\/users\/kaniini",
+    "https:\/\/pawoo.net\/users\/pawooAndStatusTester",
+    "https:\/\/pleroma.site\/users\/ActivityPubTester",
+    "https:\/\/pleroma.site\/users\/AndStatus\/followers"
+  ],
+  "actor": "https:\/\/pleroma.site\/users\/AndStatus"
+}

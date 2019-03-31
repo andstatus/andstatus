@@ -176,39 +176,6 @@ public class ConnectionActivityPub extends Connection {
         return sender.send(ActivityType.CREATE);
     }
 
-    String oidToObjectType(String oid) {
-        String objectType = "";
-        if (oid.contains("/comment/")) {
-            objectType = "comment";
-        } else if (oid.contains("/users/")) {
-            objectType = "person";
-        } else if (oid.contains("/note/")) {
-            objectType = "note";
-        } else if (oid.contains("/notice/")) {
-            objectType = "note";
-        } else if (oid.contains("/person/")) {
-            objectType = "person";
-        } else if (oid.contains("/collection/") || oid.endsWith("/followers")) {
-            objectType = "collection";
-        } else if (oid.contains("/user/")) {
-            objectType = "person";
-        } else {
-            String pattern = "/api/";
-            int indStart = oid.indexOf(pattern);
-            if (indStart >= 0) {
-                int indEnd = oid.indexOf("/", indStart+pattern.length());
-                if (indEnd > indStart) {
-                    objectType = oid.substring(indStart+pattern.length(), indEnd);
-                }
-            }
-        }
-        if (StringUtils.isEmpty(objectType)) {
-            objectType = "unknown object type: " + oid;
-            MyLog.e(this, objectType);
-        }
-        return objectType;
-    }
-
     @Override
     public AActivity announce(String rebloggedNoteOid) throws ConnectionException {
         return actOnNote(ActivityType.ANNOUNCE, rebloggedNoteOid);
@@ -334,9 +301,7 @@ public class ConnectionActivityPub extends Connection {
         if (object.error.isPresent()) throw object.error.get();
 
         if (activity.getObjectType().equals(AObjectType.NOTE)) {
-            ObjectOrId.of(jsoActivity, "to")
-                .mapAll(this::actorFromJson, this::actorFromOid)
-                .forEach(o -> addRecipient(activity, o));
+            addRecipients(activity, jsoActivity);
             if(activity.getAuthor().isEmpty()) {
                 activity.setAuthor(activity.getActor());
             }
@@ -346,6 +311,15 @@ public class ConnectionActivityPub extends Connection {
 
     private Try<Actor> actorFromProperty(JSONObject parentObject, String propertyName) {
         return ObjectOrId.of(parentObject, propertyName).mapOne(this::actorFromJson, this::actorFromOid);
+    }
+
+    private void addRecipients(AActivity activity, JSONObject jso) {
+        ObjectOrId.of(jso, "to")
+                .mapAll(this::actorFromJson, this::actorFromOid)
+                .forEach(o -> addRecipient(activity, o));
+        ObjectOrId.of(jso, "cc")
+                .mapAll(this::actorFromJson, this::actorFromOid)
+                .forEach(o -> addRecipient(activity, o));
     }
 
     private void addRecipient(AActivity activity, Actor recipient) {
@@ -417,6 +391,8 @@ public class ConnectionActivityPub extends Connection {
             note.url = jso.optString("url");
             note.setConversationOid(StringUtils.optNotEmpty(jso.optString("conversation"))
                     .orElseGet(() -> jso.optString("context")));
+
+            addRecipients(activity, jso);
 
             ObjectOrId.of(jso, "attachment")
                 .mapAll(this::attachmentFromJson, Attachment::fromUri)

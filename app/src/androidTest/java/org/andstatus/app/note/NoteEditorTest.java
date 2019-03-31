@@ -44,6 +44,7 @@ import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
+import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.ListActivityTestHelper;
@@ -192,8 +193,10 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         final String method = "testAttachImage";
         MyLog.v(this, method + " started");
 
-        View editorView = getActivity().findViewById(R.id.note_editor);
         ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
+        helper.clickMenuItem(method + " hide editor", R.id.saveDraftButton);
+
+        View editorView = getActivity().findViewById(R.id.note_editor);
         helper.clickMenuItem(method + " clicker createNoteButton", R.id.createNoteButton);
         ActivityTestHelper.waitViewVisible(method + "; Editor appeared", editorView);
         assertTextCleared();
@@ -354,15 +357,21 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
     public void replying() throws InterruptedException {
         final String method = "replying";
         TestSuite.waitForListLoaded(getActivity(), 2);
+
+        ActivityTestHelper<TimelineActivity> aHelper = new ActivityTestHelper<>(getActivity());
+        aHelper.clickMenuItem(method + " hide editor", R.id.saveDraftButton);
+
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(),
                 ConversationActivity.class);
-        long listItemId = helper.findListItemId("Some others loaded note",
+        ActivityViewItem viewItem = (ActivityViewItem) helper.findListItem("Some others loaded note",
                 item -> item.author.getActorId() != data.getMyAccount().getActorId()
                         && item.noteStatus == DownloadStatus.LOADED);
+        long listItemId = viewItem.getId();
 
         long noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId);
         String logMsg = "itemId=" + listItemId + ", noteId=" + noteId + " text='"
                 + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId) + "'";
+        assertEquals(logMsg, viewItem.noteViewItem.getId(), noteId);
 
         boolean invoked = helper.invokeContextMenuAction4ListItemId(method, listItemId,
                 NoteContextMenuItem.REPLY, R.id.note_wrapper);
@@ -397,6 +406,8 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
 
         assertEquals("Wrong id of inReplyTo note of '" + content + "': " + logMsg, noteId,
                 MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, draftNoteId));
-    }
 
+        Audience audience = Audience.fromNoteId(data.getMyAccount().getOrigin(), draftNoteId);
+        assertTrue("Audience of a reply to " + viewItem + "\n " + audience, audience.contains(viewItem.noteViewItem.author.getActor()));
+    }
 }
