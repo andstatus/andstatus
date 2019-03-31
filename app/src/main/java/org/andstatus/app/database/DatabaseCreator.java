@@ -118,7 +118,7 @@ public class DatabaseCreator {
                 + ")";
         String[] values = {
                 Long.toString(ORIGIN_ID_TWITTER) +
-                ",   1,'Twitter',        'https://api.twitter.com',  1, 1, 0,  140, 23",
+                ",   1,'Twitter',        'https://api.twitter.com',  1, 1, 0,  280, 23",
                 " 2, 2,'Pump.io',        '',                         1, 1, 1,    0,  0",
   // turned off " 3, 3,'Quitter.se',     'https://quitter.se',       1, 1, 1,    0,  0",
                 " 4, 3,'LoadAverage',    'https://loadaverage.org',  1, 1, 1,    0,  0",
@@ -132,7 +132,8 @@ public class DatabaseCreator {
                 "13, 4,'mstdn.jp',       'https://mstdn.jp',         1, 1, 1,    0,  0",
                 "14, 4,'Pawoo',          'https://pawoo.net',        1, 1, 1,    0,  0",
                 "15, 4,'friends.nico',   'https://friends.nico',     1, 1, 1,    0,  0",
-                "16, 4,'Mastodon.xyz',   'https://mastodon.xyz',     1, 1, 1,    0,  0"
+                "16, 4,'Mastodon.xyz',   'https://mastodon.xyz',     1, 1, 1,    0,  0",
+                "17, 5,'ActivityPub',    '',                         1, 1, 1,    0,  0"
         };
         for (String value : values) {
             DbUtils.execSQL(db, sqlIns.replace("%s", value));
