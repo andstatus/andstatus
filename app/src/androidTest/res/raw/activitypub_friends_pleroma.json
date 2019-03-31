@@ -1,0 +1,19 @@
+{
+  "type": "OrderedCollection",
+  "totalItems": 1,
+  "id": "https:\/\/pleroma.site\/users\/ActivityPubTester\/following",
+  "first": {
+    "type": "OrderedCollectionPage",
+    "totalItems": 1,
+    "partOf": "https:\/\/pleroma.site\/users\/ActivityPubTester\/following",
+    "orderedItems": [
+      "https:\/\/pleroma.site\/users\/AndStatus"
+    ],
+    "next": "https:\/\/pleroma.site\/users\/ActivityPubTester\/following?page=2",
+    "id": "https:\/\/pleroma.site\/users\/ActivityPubTester\/following?page=1"
+  },
+  "@context": [
+    "https:\/\/www.w3.org\/ns\/activitystreams",
+    "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld"
+  ]
+}

@@ -223,4 +223,18 @@ public class ConnectionActivityPubTest {
         assertEquals("Should be Create " + activity9, ActivityType.CREATE, activity9.type);
         assertEquals("Favorited by me " + activity9, TriState.UNKNOWN, activity9.getNote().getFavoritedBy(activity9.accountActor));
     }
+
+
+    @Test
+    public void testGetFriends() throws IOException {
+        httpConnection.addResponse(org.andstatus.app.tests.R.raw.activitypub_friends_pleroma);
+        Actor actor = Actor.fromOid(connection.getData().getOrigin(), "https://pleroma.site/users/ActivityPubTester");
+        actor.endpoints.add(ActorEndpointType.API_FOLLOWING, "https://pleroma.site/users/ActivityPubTester/following");
+        List<Actor> actors = connection.getFriends(actor);
+        assertEquals("Number of actors, " +
+                "who " + actor.getUniqueNameWithOrigin() + " is following " + actors, 1, actors.size());
+
+        assertEquals("https://pleroma.site/users/AndStatus", actors.get(0).oid);
+    }
+
 }

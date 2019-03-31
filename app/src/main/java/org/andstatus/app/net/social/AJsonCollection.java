@@ -106,16 +106,29 @@ public class AJsonCollection implements IsEmpty {
         }
     }
 
-    public <T extends IsEmpty> List<T> mapItems(CheckedFunction<JSONObject, T> fromObject) {
+    public <T extends IsEmpty> List<T> mapAll(CheckedFunction<JSONObject, T> fromObject, CheckedFunction<String, T> fromId) {
+        if (isEmpty()) return Collections.emptyList();
+
+        List<T> list = new ArrayList<>();
+        list.addAll(items.mapAll(fromObject, fromId));
+        list.addAll(firstPage.mapAll(fromObject, fromId));
+        list.addAll(prevPage.mapAll(fromObject, fromId));
+        list.addAll(currentPage.mapAll(fromObject, fromId));
+        list.addAll(nextPage.mapAll(fromObject, fromId));
+        list.addAll(lastPage.mapAll(fromObject, fromId));
+        return list.stream().filter(IsEmpty::nonEmpty).collect(Collectors.toList());
+    }
+
+    public <T extends IsEmpty> List<T> mapObjects(CheckedFunction<JSONObject, T> fromObject) {
         if (isEmpty()) return Collections.emptyList();
 
         List<T> list = new ArrayList<>();
         list.addAll(items.mapObjects(fromObject));
-        list.addAll(firstPage.mapItems(fromObject));
-        list.addAll(prevPage.mapItems(fromObject));
-        list.addAll(currentPage.mapItems(fromObject));
-        list.addAll(nextPage.mapItems(fromObject));
-        list.addAll(lastPage.mapItems(fromObject));
+        list.addAll(firstPage.mapObjects(fromObject));
+        list.addAll(prevPage.mapObjects(fromObject));
+        list.addAll(currentPage.mapObjects(fromObject));
+        list.addAll(nextPage.mapObjects(fromObject));
+        list.addAll(lastPage.mapObjects(fromObject));
         return list.stream().filter(IsEmpty::nonEmpty).collect(Collectors.toList());
     }
 }

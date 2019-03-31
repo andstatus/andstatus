@@ -155,24 +155,10 @@ public class ConnectionActivityPub extends Connection {
 
     @NonNull
     private List<Actor> getActors(Actor actor, ApiRoutineEnum apiRoutine) throws ConnectionException {
-        int limit = 200;
         ConnectionAndUrl conu = ConnectionAndUrl.fromActor(this, apiRoutine, actor);
-        Uri.Builder builder = conu.uri.buildUpon();
-        builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
-        JSONArray jArr = conu.httpConnection.getRequestAsArray(builder.build());
-        List<Actor> actors = new ArrayList<>();
-        if (jArr != null) {
-            for (int index = 0; index < jArr.length(); index++) {
-                try {
-                    JSONObject jso = jArr.getJSONObject(index);
-                    Actor item = actorFromJson(jso);
-                    actors.add(item);
-                } catch (JSONException e) {
-                    throw ConnectionException.loggedJsonException(this, "Parsing list of actors", e, null);
-                }
-            }
-        }
-        MyLog.v(TAG, () -> apiRoutine + " '" + builder.build() + "' " + actors.size() + " actors");
+        JSONObject root = conu.httpConnection.getRequest(conu.uri);
+        List<Actor> actors = AJsonCollection.of(root).mapAll(this::actorFromJson, this::actorFromOid);
+        MyLog.v(TAG, () -> apiRoutine + " '" + conu.uri + "' " + actors.size() + " actors");
         return actors;
     }
 
@@ -254,14 +240,14 @@ public class ConnectionActivityPub extends Connection {
 //        } else if (oldestPosition.nonEmpty()) {
 //            builder.appendQueryParameter("max_id", oldestPosition.getPosition());
 //        }
-        builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
+//        builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
         return getActivities(apiRoutine, conu.withUri(builder.build()));
     }
 
     private List<AActivity> getActivities(ApiRoutineEnum apiRoutine, ConnectionAndUrl conu) throws ConnectionException {
         JSONObject root = conu.httpConnection.getRequest(conu.uri);
         List<AActivity> activities = AJsonCollection.of(root)
-                .mapItems(item -> activityFromJson(ObjectOrId.of(item)));
+                .mapObjects(item -> activityFromJson(ObjectOrId.of(item)));
         MyLog.d(TAG, "getTimeline " + apiRoutine + " '" + conu.uri + "' " + activities.size() + " activities");
         return activities;
     }
