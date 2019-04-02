@@ -17,10 +17,30 @@
 package org.andstatus.app.origin;
 
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.table.NoteTable;
+import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 class OriginActivityPub extends Origin {
 
     OriginActivityPub(MyContext myContext, OriginType originType) {
         super(myContext, originType);
+    }
+
+    @Override
+    public String getNotePermalink(long noteId) {
+        String noteUrl = MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId);
+        if (!StringUtils.isEmpty(noteUrl)) {
+            try {
+                return new URL(noteUrl).toExternalForm();
+            } catch (MalformedURLException e) {
+                MyLog.d(this, "Malformed URL from '" + noteUrl + "'", e);
+            }
+        }
+        return "";
     }
 }

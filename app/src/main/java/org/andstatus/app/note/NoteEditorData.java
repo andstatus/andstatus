@@ -388,8 +388,7 @@ public class NoteEditorData implements IsEmpty {
     }
 
     public boolean canChangeIsPublic() {
-        return activity.getNote().audience().hasNonPublic()
-                && ma.getOrigin().getOriginType().isPublicWithAudienceAllowed
+        return ma.getOrigin().getOriginType().isPublicChangeAllowed
                 && (getInReplyToNoteId() == 0 || ma.getOrigin().getOriginType().isPrivateNoteAllowsReply());
     }
 }

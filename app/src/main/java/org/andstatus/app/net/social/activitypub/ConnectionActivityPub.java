@@ -388,7 +388,6 @@ public class ConnectionActivityPub extends Connection {
             note.setName(jso.optString(NAME_PROPERTY));
             note.setContentPosted(jso.optString(CONTENT_PROPERTY));
 
-            note.url = jso.optString("url");
             note.setConversationOid(StringUtils.optNotEmpty(jso.optString("conversation"))
                     .orElseGet(() -> jso.optString("context")));
 

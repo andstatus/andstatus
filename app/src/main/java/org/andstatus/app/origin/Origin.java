@@ -189,7 +189,7 @@ public class Origin implements Comparable<Origin>, IsEmpty {
         return resId;
     }
 
-    public final String getNotePermalink(long noteId) {
+    public String getNotePermalink(long noteId) {
         String msgUrl = MyQuery.noteIdToStringColumnValue(NoteTable.URL, noteId);
         if (!StringUtils.isEmpty(msgUrl)) {
             try {
