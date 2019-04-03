@@ -175,9 +175,14 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
                 AvatarView avatarView = view.findViewById(R.id.actor_avatar_image);
                 item.actor.showAvatar(contextMenu.actor.getActivity(), avatarView);
             }
-            MyUrlSpan.showText(view, R.id.action_title, item.actor.getUniqueNameInOrigin() + " " +
-                    item.activityType.getActedTitle(contextMenu.actor.getActivity()) +
-                    (layoutType == LayoutType.ACTOR_ACTOR ? " " + item.getObjActorItem().getUniqueNameInOrigin() : ""),
+            MyUrlSpan.showText(view, R.id.action_title,
+                    (layoutType == LayoutType.ACTOR_ACTOR
+                            ? item.actor.getUniqueNameInOrigin()
+                            : item.actor.getName()) +
+                        " " + item.activityType.getActedTitle(contextMenu.actor.getActivity()) +
+                        (layoutType == LayoutType.ACTOR_ACTOR
+                            ? " " + item.getObjActorItem().getUniqueNameInOrigin()
+                            : ""),
                     false, false);
             MyUrlSpan.showText(view, R.id.action_details,
                     item.getDetails(contextMenu.actor.getActivity(), showReceivedTime), false, false);
