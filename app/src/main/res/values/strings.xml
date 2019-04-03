@@ -94,6 +94,7 @@
   <string name="created_label">Created</string>
   <string name="custom_locale_title">App language</string>
   <string name="set_as_default_timeline">Set as Default Timeline</string>
+  <string name="database_unavailable_description">We couldn\'t open local cache (database with notes and activities). Please try to reboot your device or reinstall AndStatus.</string>
   <string name="default_timeline_summary">Timeline that will be opened by a Launcher: \"%s\"</string>
   <string name="deleted">deleted</string>
   <string name="device_default">Device default</string>

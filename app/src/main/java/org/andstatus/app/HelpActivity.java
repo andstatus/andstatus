@@ -23,12 +23,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.viewpager.widget.PagerAdapter;
-import androidx.viewpager.widget.ViewPager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -54,6 +48,13 @@ import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.Permissions;
 import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.widget.WebViewFragment;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 import static org.andstatus.app.context.DemoData.demoData;
 
@@ -170,6 +171,10 @@ public class HelpActivity extends MyActivity implements ProgressLogger.ProgressC
                 case UPGRADING:
                     DialogFactory.showOkAlertDialog(HelpActivity.this, HelpActivity.this,
                             R.string.app_name, R.string.label_upgrading);
+                    break;
+                case DATABASE_UNAVAILABLE:
+                    DialogFactory.showOkAlertDialog(HelpActivity.this, HelpActivity.this,
+                            R.string.app_name, R.string.database_unavailable_description);
                     break;
                 default:
                     DialogFactory.showOkAlertDialog(HelpActivity.this, HelpActivity.this,
