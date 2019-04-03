@@ -184,8 +184,9 @@ class ActivitySender {
 
     private void setAudience(JSONObject activity, ActivityType activityType) throws JSONException {
         audience.getActors().forEach(actor -> addToAudience(activity, "to", actor));
-        if (audience.isEmpty() && StringUtils.isEmpty(inReplyToId)
-                && (activityType.equals(ActivityType.CREATE) || activityType.equals(ActivityType.UPDATE))) {
+        if (audience.isEmpty()) {
+            // "clients must be aware that the server will only forward new Activities
+            //   to addressees in the to, bto, cc, bcc, and audience fields"
             addToAudience(activity, "to", Actor.PUBLIC);
         }
     }

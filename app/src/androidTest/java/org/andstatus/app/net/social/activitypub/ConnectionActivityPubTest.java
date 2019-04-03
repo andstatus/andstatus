@@ -125,6 +125,8 @@ public class ConnectionActivityPubTest {
             assertEquals("Following", TriState.UNKNOWN, objActor.followedByMe);
             assertEquals("Url of objActor", "https://pleroma.site/users/AndStatus", objActor.getProfileUrl());
             assertEquals("WebFinger ID", "andstatus@pleroma.site", objActor.getWebFingerId());
+            assertEquals("Avatar", "https://pleroma.site/media/c5f60f06-6620-46b6-b676-f9f4571b518e/bfa1745b8c221225cc6551805d9eaa8bebe5f36fc1856b4924bcfda5d620334d.png",
+                    objActor.getAvatarUrl());
         }
     }
 
