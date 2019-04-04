@@ -95,13 +95,12 @@ public class AActivity extends AObject {
     @NonNull
     public static AActivity newPartialNote(@NonNull Actor accountActor, Actor actor, String noteOid,
                                            long updatedDate, DownloadStatus status) {
+        final Note note = Note.fromOriginAndOid(accountActor.origin, noteOid, status);
         AActivity activity = from(accountActor, ActivityType.UPDATE);
         activity.setActor(actor);
         activity.setTimelinePosition(
-                StringUtils.toTempOidIf(StringUtils.isEmptyOrTemp(noteOid),
-                    (StringUtils.isEmpty(noteOid) ? "" : activity.getActorPrefix()) +
-                            StringUtils.stripTempPrefix(noteOid)));
-        final Note note = Note.fromOriginAndOid(activity.accountActor.origin, noteOid, status);
+                StringUtils.toTempOidIf(StringUtils.isEmptyOrTemp(note.oid),
+                    activity.getActorPrefix() + StringUtils.stripTempPrefix(note.oid)));
         activity.setNote(note);
         note.setUpdatedDate(updatedDate);
         activity.setUpdatedDate(updatedDate);
@@ -219,8 +218,10 @@ public class AActivity extends AObject {
 
     @NonNull
     private String getActorPrefix() {
-        return StringUtils.nonEmpty(actor.oid) ? actor.oid + "-"
-                : (StringUtils.nonEmpty(accountActor.oid) ? accountActor.oid + "-"
+        return StringUtils.nonEmpty(actor.oid)
+                ? actor.oid + "-"
+                : (StringUtils.nonEmpty(accountActor.oid)
+                    ? accountActor.oid + "-"
                     : "");
     }
 

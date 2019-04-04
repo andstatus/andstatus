@@ -63,6 +63,7 @@ public enum ActorEndpointType {
             case ANNOUNCE:
             case DELETE_NOTE:
             case UPDATE_NOTE:
+            case UPDATE_NOTE_WITH_MEDIA:
             case ACTOR_TIMELINE:
                 return API_OUTBOX;
             case PUBLIC_TIMELINE:

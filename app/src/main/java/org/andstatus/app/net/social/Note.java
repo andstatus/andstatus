@@ -126,7 +126,7 @@ public class Note extends AObject {
     }
 
     private static String getTempOid() {
-        return StringUtils.toTempOid("msg:" + MyLog.uniqueCurrentTimeMS());
+        return StringUtils.toTempOid("note:" + MyLog.uniqueCurrentTimeMS());
     }
 
     private Note(Origin origin, String oid) {
