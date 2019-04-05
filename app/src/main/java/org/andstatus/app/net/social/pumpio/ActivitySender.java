@@ -203,7 +203,9 @@ class ActivitySender {
     }
 
     private void addToAudience(JSONObject activity, String recipientField, Actor actor) {
-        String recipientId = actor.equals(Actor.PUBLIC) ? ConnectionPumpio.PUBLIC_COLLECTION_ID : actor.oid;
+        String recipientId = actor.equals(Actor.PUBLIC)
+                ? ConnectionPumpio.PUBLIC_COLLECTION_ID
+                : actor.getBestUri();
         if (StringUtils.isEmpty(recipientId)) return;
         JSONObject recipient = new JSONObject();
         try {

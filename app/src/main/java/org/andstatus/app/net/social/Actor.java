@@ -30,6 +30,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.origin.OriginPumpio;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -506,6 +507,19 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
     static boolean isWebFingerIdValid(String webFingerId) {
         return StringUtils.nonEmpty(webFingerId) && Patterns.WEBFINGER_ID_REGEX_PATTERN.matcher(webFingerId).matches();
+    }
+
+    public String getBestUri() {
+        if (!StringUtils.isEmptyOrTemp(oid)) {
+            return oid;
+        }
+        if (isUsernameValid() && StringUtils.nonEmpty(getHost())) {
+            return OriginPumpio.ACCOUNT_PREFIX + getUsername() + "@" + getHost();
+        }
+        if (isWebFingerIdValid()) {
+            return OriginPumpio.ACCOUNT_PREFIX + getWebFingerId();
+        }
+        return "";
     }
 
     /** Lookup the application's id from other IDs */

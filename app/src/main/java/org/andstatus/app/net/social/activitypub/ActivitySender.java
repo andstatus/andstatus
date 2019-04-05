@@ -192,7 +192,9 @@ class ActivitySender {
     }
 
     private void addToAudience(JSONObject activity, String recipientField, Actor actor) {
-        String recipientId = actor.equals(Actor.PUBLIC) ? ConnectionActivityPub.PUBLIC_COLLECTION_ID : actor.oid;
+        String recipientId = actor.equals(Actor.PUBLIC)
+                ? ConnectionActivityPub.PUBLIC_COLLECTION_ID
+                : actor.getBestUri();
         if (StringUtils.isEmpty(recipientId)) return;
         try {
             JSONArray field = activity.has(recipientField) ? activity.getJSONArray(recipientField) : new JSONArray();
