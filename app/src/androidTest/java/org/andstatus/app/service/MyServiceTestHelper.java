@@ -13,7 +13,6 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
-import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -40,12 +39,10 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
             if (isSingleMockedInstance) {
                 httpConnectionMock = new HttpConnectionMock();
                 TestSuite.setHttpConnectionMockInstance(httpConnectionMock);
-            } else {
-                TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
+                MyContextHolder.get().setExpired(() -> this.getClass().getSimpleName() + " setUp");
             }
-            TestSuite.getMyContextForTest().setConnectionState(ConnectionState.WIFI);
-            MyContextHolder.get().setExpired(() -> this.getClass().getSimpleName() + " setUp");
             myContext = MyContextHolder.initialize(myContext.context(), this);
+
             if (!myContext.isReady()) {
                 final String msg = "Context is not ready after the initialization, repeating... " + myContext;
                 MyLog.w(this, msg);
@@ -56,9 +53,10 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
 
             MyServiceManager.setServiceUnavailable();
             MyServiceManager.stopService();
+            TestSuite.getMyContextForTest().setConnectionState(ConnectionState.WIFI);
 
             if (!isSingleMockedInstance) {
-                httpConnectionMock = ConnectionMock.getHttpMock(demoData.getMyAccount(accountName));
+                httpConnectionMock = ConnectionMock.newFor(accountName).getHttpMock();
             }
             connectionInstanceId = httpConnectionMock.getInstanceId();
 
@@ -187,7 +185,6 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
         if (serviceConnector != null) {
             serviceConnector.unregisterReceiver(myContext.context());
         }
-        TestSuite.setHttpConnectionMockClass(null);
         TestSuite.setHttpConnectionMockInstance(null);
         TestSuite.getMyContextForTest().setConnectionState(ConnectionState.UNKNOWN);
         if (myContext != null) {

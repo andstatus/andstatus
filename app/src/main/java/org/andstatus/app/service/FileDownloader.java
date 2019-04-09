@@ -32,7 +32,7 @@ import java.io.File;
 
 public abstract class FileDownloader {
     protected final DownloadData data;
-    public Connection connectionMock;
+    public volatile Connection connectionMock;
     private ConnectionRequired connectionRequired = ConnectionRequired.ANY;
 
     static FileDownloader newForDownloadData(DownloadData data) {

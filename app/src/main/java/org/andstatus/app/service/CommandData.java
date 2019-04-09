@@ -283,7 +283,7 @@ public class CommandData implements Comparable<CommandData> {
         if (mManuallyLaunched) {
             builder.withComma("manual");
         }
-        builder.withComma("account", myAccount.getAccountName(), () -> myAccount.nonEmpty());
+        builder.withComma("account", myAccount.getAccountName(), myAccount::nonEmpty);
         builder.withComma("username", username);
         if (StringUtils.nonEmpty(description) && !description.equals(username)) {
             builder.withSpaceQuoted(description);

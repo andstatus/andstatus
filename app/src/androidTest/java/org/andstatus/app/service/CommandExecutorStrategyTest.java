@@ -43,21 +43,18 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class CommandExecutorStrategyTest {
+    private ConnectionMock mock;
     private HttpConnectionMock httpConnectionMock;
     private MyAccount ma;
 
     @Before
     public void setUp() throws Exception {
-        TestSuite.initializeWithData(this);
+        TestSuite.initializeWithAccounts(this);
 
-        TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        // In order for the the mocked connection to have effect:
-        MyContextHolder.get().accounts().initialize();
-        MyContextHolder.get().timelines().initialize();
-        ma = MyContextHolder.get().accounts().getFirstSucceededForOrigin(
-                MyContextHolder.get().origins().fromName(demoData.gnusocialTestOriginName));
+        mock = ConnectionMock.newFor(demoData.gnusocialTestAccountName);
+        httpConnectionMock = mock.getHttpMock();
+        ma = mock.getData().getMyAccount();
         assertTrue(ma.toString(), ma.isValidAndSucceeded());
-        httpConnectionMock = ConnectionMock.getHttpMock(ma);
     }
 
     @Test
@@ -90,7 +87,7 @@ public class CommandExecutorStrategyTest {
     @Test
     public void testUpdateDestroyStatus() throws IOException {
         CommandData commandData = getCommandDataForUnsentNote("1");
-        httpConnectionMock.addResponse(org.andstatus.app.tests.R.raw.quitter_update_note_response);
+        mock.addResponse(org.andstatus.app.tests.R.raw.quitter_update_note_response);
         httpConnectionMock.setSameResponse(true);
         assertEquals(0, commandData.getResult().getExecutionCount());
         CommandExecutorStrategy.executeCommand(commandData, null);
@@ -174,9 +171,8 @@ public class CommandExecutorStrategyTest {
     }
     
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         TestSuite.setHttpConnectionMockInstance(null);
-        TestSuite.setHttpConnectionMockClass(null);
         MyContextHolder.get().accounts().initialize();
     }
 }

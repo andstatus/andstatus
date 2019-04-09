@@ -16,7 +16,6 @@
 
 package org.andstatus.app.net.social;
 
-import org.andstatus.app.account.AccountConnectionData;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -24,10 +23,9 @@ import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.net.http.HttpConnectionMock;
+import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
@@ -53,36 +51,28 @@ import static org.junit.Assert.assertTrue;
 
 public class ConnectionTwitterTest {
     private Connection connection;
-    private HttpConnectionMock httpConnection;
-    private AccountConnectionData connectionData;
+    private ConnectionMock mock;
 
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithAccounts(this);
 
-        TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        Origin origin = MyContextHolder.get().origins().fromName(demoData.twitterTestOriginName);
+        mock = ConnectionMock.newFor(demoData.twitterTestAccountName);
+        connection = mock.connection;
 
-        connectionData = AccountConnectionData.fromMyAccount(
-                demoData.getMyAccount(demoData.twitterTestAccountName), TriState.UNKNOWN);
-        connection = Connection.fromMyAccount(demoData.getMyAccount(demoData.twitterTestAccountName), TriState.UNKNOWN);
-        httpConnection = (HttpConnectionMock) connection.http;
-
-        httpConnection.data.originUrl = origin.getUrl();
-        httpConnection.data.oauthClientKeys = OAuthClientKeys.fromConnectionData(httpConnection.data);
-
-        if (!httpConnection.data.oauthClientKeys.areKeysPresent()) {
-            httpConnection.data.oauthClientKeys.setConsumerKeyAndSecret("keyForGetTimelineForTw", "thisIsASecret341232");
+        HttpConnectionData data = mock.getHttp().data;
+        data.oauthClientKeys = OAuthClientKeys.fromConnectionData(data);
+        if (!data.oauthClientKeys.areKeysPresent()) {
+            data.oauthClientKeys.setConsumerKeyAndSecret("keyForGetTimelineForTw", "thisIsASecret341232");
         }
-        TestSuite.setHttpConnectionMockClass(null);
     }
 
     @Test
     public void testGetTimeline() throws IOException {
-        httpConnection.addResponse(org.andstatus.app.tests.R.raw.twitter_home_timeline);
+        mock.addResponse(org.andstatus.app.tests.R.raw.twitter_home_timeline);
         
         List<AActivity> timeline = connection.getTimeline(ApiRoutineEnum.HOME_TIMELINE,
-                new TimelinePosition("380925803053449216") , TimelinePosition.EMPTY, 20, connectionData.getAccountActor());
+                new TimelinePosition("380925803053449216") , TimelinePosition.EMPTY, 20, connection.getData().getAccountActor());
         assertNotNull("timeline returned", timeline);
         int size = 4;
         assertEquals("Number of items in the Timeline", size, timeline.size());
@@ -93,7 +83,7 @@ public class ConnectionTwitterTest {
         assertEquals("Posting note", AObjectType.NOTE, activity.getObjectType());
         assertEquals("Timeline position", "381172771428257792", activity.getTimelinePosition().getPosition());
         assertEquals("Note Oid", "381172771428257792", activity.getNote().oid);
-        assertEquals("MyAccount", connectionData.getAccountActor(), activity.accountActor);
+        assertEquals("MyAccount", connection.getData().getAccountActor(), activity.accountActor);
         assertEquals("Favorited " + activity, TriState.TRUE, activity.getNote().getFavoritedBy(activity.accountActor));
         Actor author = activity.getAuthor();
         assertEquals("Oid", "221452291", author.oid);
@@ -156,14 +146,15 @@ public class ConnectionTwitterTest {
         assertNotEquals("Is a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);
         assertTrue("Is not a reply", note.getInReplyTo().isEmpty());
         assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
-        assertEquals("Author's oid is actor oid of this account", connectionData.getAccountActor().oid, activity.getAuthor().oid);
+        assertEquals("Author's oid is actor oid of this account",
+                connection.getData().getAccountActor().oid, activity.getAuthor().oid);
         startsWith = "And this is";
         assertEquals("Body of this note starts with", startsWith, note.getContent().substring(0, startsWith.length()));
     }
 
     @Test
     public void getNoteWithAttachment() throws IOException {
-        httpConnection.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_media);
+        mock.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_media);
 
         Note note = connection.getNote("503799441900314624").getNote();
         assertNotNull("note returned", note);
@@ -176,7 +167,7 @@ public class ConnectionTwitterTest {
 
     @Test
     public void getNoteWithEscapedHtmlTag() throws IOException {
-        httpConnection.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_escaped_html_tag);
+        mock.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_escaped_html_tag);
 
         String body = "Update: Streckensperrung zw. Berliner Tor &lt;&gt; Bergedorf. Ersatzverkehr mit Bussen und Taxis " +
                 "Störungsdauer bis ca. 10 Uhr. #hvv #sbahnhh";
@@ -187,7 +178,7 @@ public class ConnectionTwitterTest {
         assertEquals("Body of this note", ",update,streckensperrung,zw,berliner,tor,bergedorf,ersatzverkehr,mit,bussen," +
                 "und,taxis,störungsdauer,bis,ca,10,uhr,hvv,#hvv,sbahnhh,#sbahnhh,", note.getContentToSearch());
 
-        MyAccount ma = demoData.getMyAccount(connectionData.getAccountName().toString());
+        MyAccount ma = demoData.getMyAccount(connection.getData().getAccountName().toString());
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 CommandData.newAccountCommand(CommandEnum.GET_NOTE, ma));
         DataUpdater di = new DataUpdater(executionContext);
@@ -198,7 +189,7 @@ public class ConnectionTwitterTest {
 
     @Test
     public void getNoteWithEscapedChars() throws IOException {
-        httpConnection.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_escaped_chars);
+        mock.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_escaped_chars);
 
         String contentToSearch = ",testing,if,and,what,is,escaped,in,a,tweet," +
                 "1,less-than,sign,and,escaped,&lt," +
@@ -215,7 +206,7 @@ public class ConnectionTwitterTest {
                 twitterBodyToPost, note.getContentToPost());
         assertEquals("Content to Search of this note", contentToSearch, note.getContentToSearch());
 
-        MyAccount ma = demoData.getMyAccount(connectionData.getAccountName().toString());
+        MyAccount ma = demoData.getMyAccount(connection.getData().getAccountName().toString());
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 CommandData.newAccountCommand(CommandEnum.GET_NOTE, ma));
         DataUpdater di = new DataUpdater(executionContext);
@@ -226,7 +217,7 @@ public class ConnectionTwitterTest {
 
     @Test
     public void follow() throws IOException {
-        httpConnection.addResponse(org.andstatus.app.tests.R.raw.twitter_follow);
+        mock.addResponse(org.andstatus.app.tests.R.raw.twitter_follow);
 
         String actorOid = "96340134";
         AActivity activity = connection.follow(actorOid, true);
@@ -234,7 +225,7 @@ public class ConnectionTwitterTest {
         Actor friend = activity.getObjActor();
         assertEquals("Wrong username returned " + activity, "LPirro93", friend.getUsername());
 
-        MyAccount ma = demoData.getMyAccount(connectionData.getAccountName().toString());
+        MyAccount ma = demoData.getMyAccount(connection.getData().getAccountName().toString());
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 CommandData.actOnActorCommand(CommandEnum.FOLLOW, ma, 123, ""));
         DataUpdater di = new DataUpdater(executionContext);

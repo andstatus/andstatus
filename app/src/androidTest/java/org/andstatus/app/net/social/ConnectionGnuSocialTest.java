@@ -71,7 +71,7 @@ public class ConnectionGnuSocialTest {
 
     @Test
     public void testGetPublicTimeline() throws IOException {
-        mock.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.quitter_home);
+        mock.addResponse(org.andstatus.app.tests.R.raw.quitter_home);
 
         Actor accountActor = demoData.getAccountActorByOid(demoData.gnusocialTestAccountActorOid);
         List<AActivity> timeline = mock.connection.getTimeline(ApiRoutineEnum.PUBLIC_TIMELINE,
@@ -158,7 +158,7 @@ public class ConnectionGnuSocialTest {
 
     @Test
     public void testSearch() throws IOException {
-        mock.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.twitter_home_timeline);
+        mock.addResponse(org.andstatus.app.tests.R.raw.twitter_home_timeline);
         
         List<AActivity> timeline = mock.connection.searchNotes(new TimelinePosition(""), TimelinePosition.EMPTY, 20,
                 demoData.globalPublicNoteText);
@@ -169,7 +169,7 @@ public class ConnectionGnuSocialTest {
 
     @Test
     public void testPostWithMedia() throws IOException {
-        mock.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
+        mock.addResponse(org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
         AActivity activity = mock.connection.updateNote("", "Test post note with media", "",
                 Audience.EMPTY, "", demoData.localImageTestUri);
         assertEquals("Note returned",
@@ -184,7 +184,7 @@ public class ConnectionGnuSocialTest {
     private AActivity privateGetNoteWithAttachment(boolean uniqueUid) throws IOException {
         final String NOTE_OID = "2215662";
         // Originally downloaded from https://quitter.se/api/statuses/show.json?id=2215662
-        mock.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
+        mock.addResponse(org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
         AActivity activity = mock.connection.getNote(NOTE_OID);
         if (uniqueUid) {
             activity.setNote(activity.getNote().copy(activity.getNote().oid + "_" + demoData.testRunUid));
@@ -203,7 +203,7 @@ public class ConnectionGnuSocialTest {
     @Test
     public void testReblog() throws IOException {
         final String NOTE_OID = "10341561";
-        mock.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.loadaverage_repost_response);
+        mock.addResponse(org.andstatus.app.tests.R.raw.loadaverage_repost_response);
         AActivity activity = mock.connection.announce(NOTE_OID);
         assertEquals(ActivityType.ANNOUNCE, activity.type);
         Note note = activity.getNote();
@@ -254,7 +254,7 @@ public class ConnectionGnuSocialTest {
 
     @Test
     public void testFavoritingActivityInTimeline() throws IOException {
-        mock.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.loadaverage_favoriting_activity);
+        mock.addResponse(org.andstatus.app.tests.R.raw.loadaverage_favoriting_activity);
 
         Actor accountActor = demoData.getAccountActorByOid(demoData.gnusocialTestAccountActorOid);
         List<AActivity> timeline = mock.connection.getTimeline(ApiRoutineEnum.SEARCH_NOTES,
@@ -317,7 +317,7 @@ public class ConnectionGnuSocialTest {
     }
 
     private AActivity oneHtmlMentionsTest(String actorUsername, String noteOid, int responseResourceId, int numberOfMembers) throws IOException {
-        mock.getHttpMock().addResponse(responseResourceId);
+        mock.addResponse(responseResourceId);
         AActivity activity = mock.connection.getNote(noteOid);
 
         assertEquals("Received a note " + activity, AObjectType.NOTE, activity.getObjectType());

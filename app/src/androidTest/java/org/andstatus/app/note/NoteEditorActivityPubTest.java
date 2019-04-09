@@ -21,13 +21,14 @@ import android.view.View;
 
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.ConnectionMock;
@@ -53,21 +54,21 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class NoteEditorActivityPubTest extends TimelineActivityTest<ActivityViewItem> {
-    private ConnectionMock connection;
-    private HttpConnectionMock httpConnection;
+    private ConnectionMock mock;
 
     @Override
     protected Intent getActivityIntent() {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithAccounts(this);
 
-        connection = ConnectionMock.newFor(demoData.activityPubTestAccountName);
-        httpConnection = connection.getHttpMock();
+        mock = ConnectionMock.newFor(demoData.activityPubTestAccountName);
+        MyAccount ma = mock.getData().getMyAccount();
+        MyContextHolder.get().accounts().setCurrentAccount(ma);
+        assertTrue("isValidAndSucceeded " + ma, ma.isValidAndSucceeded());
 
         MyLog.i(this, "setUp ended");
-        return new Intent(Intent.ACTION_VIEW, Timeline.getTimeline(TimelineType.HOME,
-                connection.getData().getMyAccount().getActorId(),
-                Origin.EMPTY).getUri());
+        return new Intent(Intent.ACTION_VIEW,
+                Timeline.getTimeline(TimelineType.HOME, ma.getActorId(), Origin.EMPTY).getUri());
     }
 
     @Test
@@ -105,13 +106,13 @@ public class NoteEditorActivityPubTest extends TimelineActivityTest<ActivityView
         DownloadStatus status = DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId));
         assertThat(status, isIn(expected));
 
-        Audience audience = Audience.load(getActivity().getMyContext(), connection.getData().getOrigin(), noteId);
+        Audience audience = Audience.load(getActivity().getMyContext(), mock.getData().getOrigin(), noteId);
         assertTrue("Audience should contain " + actorUniqueName +  "\n " + audience,
                 audience.getActors().stream().anyMatch(a -> actorUniqueName.equals(a.getUniqueNameInOrigin())));
 
         Optional<HttpReadResult> result = Optional.empty();
         for (int attempt=0; attempt < 10; attempt++) {
-            result = httpConnection.getResults().stream()
+            result = mock.getHttpMock().getResults().stream()
                     .filter(r -> r.formParams.toString().contains(actorUniqueName))
                     .findFirst();
             if (result.isPresent()) break;

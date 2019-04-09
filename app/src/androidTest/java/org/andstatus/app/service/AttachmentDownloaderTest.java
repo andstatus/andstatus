@@ -42,32 +42,30 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class AttachmentDownloaderTest {
-    private MyAccount ma;
-    
+
     @Before
     public void setUp() throws Exception {
         MyLog.i(this, "setUp started");
-        TestSuite.initializeWithData(this);
-        ma = demoData.getGnuSocialAccount();
-        assertTrue(demoData.gnusocialTestAccountName + " exists", ma.isValid());
+        TestSuite.initializeWithAccounts(this);
     }
 
     @Test
     public void testImageAttachmentLoad() throws IOException {
+        MyAccount ma = demoData.getGnuSocialAccount();
+        ma.setConnection();
+        assertTrue(demoData.gnusocialTestAccountName + " exists", ma.isValid());
         String body = "A note with an image attachment";
         DemoNoteInserter inserter = new DemoNoteInserter(ma);
-        AActivity activity = inserter.buildActivity(inserter.buildActor(), "", body, null, null,
-                DownloadStatus.LOADED);
+        AActivity activity = inserter.buildActivity(inserter.buildActor(), "", body,
+                null, null, DownloadStatus.LOADED);
         activity.getNote().attachments.add(Attachment.fromUri(
                 "http://www.publicdomainpictures.net/pictures/60000/nahled/landscape-1376582205Yno.jpg"));
         inserter.onActivity(activity);
         
-        DownloadData dd = DownloadData.getSingleAttachment(activity.getNote().noteId
-        );
+        DownloadData dd = DownloadData.getSingleAttachment(activity.getNote().noteId);
         assertEquals("Image URI stored", activity.getNote().attachments.list.get(0).getUri(), dd.getUri());
         
         loadAndAssertStatusForRow(dd, DownloadStatus.ABSENT, true);
-
         loadAndAssertStatusForRow(dd, DownloadStatus.LOADED, false);
         
         testFileProvider(dd.getDownloadId());
@@ -87,18 +85,21 @@ public class AttachmentDownloaderTest {
 
     public static void loadAndAssertStatusForRow(DownloadData dataIn, DownloadStatus status, boolean mockNetworkError) {
         FileDownloader loader = FileDownloader.newForDownloadData(dataIn);
+        MyAccount ma = demoData.getGnuSocialAccount();
         if (mockNetworkError) {
-            loader.connectionMock = ConnectionMock.newFor(demoData.gnusocialTestAccountName)
+            loader.connectionMock = ConnectionMock.newFor(ma)
                     .withException(new ConnectionException("Mocked IO exception"))
                     .connection;
+        } else {
+            ma.setConnection();
         }
         CommandData commandData = CommandData.newActorCommand(CommandEnum.GET_AVATAR, 0, "someActor");
         loader.load(commandData);
 
         DownloadData data = DownloadData.fromId(dataIn.getDownloadId());
         if (DownloadStatus.LOADED.equals(status)) {
-            assertFalse("Loaded " + data.getUri() + "; " + data, commandData.getResult().hasError());
-            assertEquals("Loaded " + data.getUri(), status, loader.getStatus());
+            assertFalse("Has error " + data + "\n" + commandData, commandData.getResult().hasError());
+            assertEquals("Status " + data, status, loader.getStatus());
         } else {
             assertTrue("Error loading " + data.getUri(), commandData.getResult().hasError());
         }

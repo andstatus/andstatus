@@ -58,7 +58,7 @@ public class ConnectionMastodonTest {
 
     @Test
     public void testGetHomeTimeline() throws IOException {
-        mock.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.mastodon_home_timeline);
+        mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_home_timeline);
 
         List<AActivity> timeline = mock.connection.getTimeline(Connection.ApiRoutineEnum.HOME_TIMELINE,
                 new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountActor);
@@ -108,7 +108,7 @@ public class ConnectionMastodonTest {
 
     @Test
     public void testGetConversation() throws IOException {
-        mock.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.mastodon_get_conversation);
+        mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_get_conversation);
 
         List<AActivity> timeline = mock.connection.getConversation("5596683");
         assertNotNull("timeline returned", timeline);
@@ -117,7 +117,7 @@ public class ConnectionMastodonTest {
 
     @Test
     public void testGetNotifications() throws IOException {
-        mock.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.mastodon_notifications);
+        mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_notifications);
 
         List<AActivity> timeline = mock.connection.getTimeline(Connection.ApiRoutineEnum.NOTIFICATIONS_TIMELINE,
                 new TimelinePosition(""), TimelinePosition.EMPTY, 20, accountActor);
@@ -175,7 +175,7 @@ public class ConnectionMastodonTest {
 
     @Test
     public void testGetActor() throws IOException {
-        mock.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.mastodon_get_actor);
+        mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_get_actor);
 
         Actor actor = mock.connection.getActor(Actor.fromOid( accountActor.origin,"5962"));
         assertTrue(actor.toString(), actor.nonEmpty());
@@ -190,7 +190,7 @@ public class ConnectionMastodonTest {
 
     @Test
     public void mentionsInANote() throws IOException {
-        mock.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.mastodon_get_note);
+        mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_get_note);
 
         AActivity activity = mock.connection.getNote("101064848262880936");
         assertEquals("Is not UPDATE " + activity, ActivityType.UPDATE, activity.type);
@@ -220,7 +220,7 @@ public class ConnectionMastodonTest {
 
     @Test
     public void reblog() throws IOException {
-        mock.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.mastodon_get_reblog);
+        mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_get_reblog);
 
         AActivity activity = mock.connection.getNote("101100271392454703");
         assertEquals("Is not ANNOUNCE " + activity, ActivityType.ANNOUNCE, activity.type);
@@ -253,7 +253,7 @@ public class ConnectionMastodonTest {
 
     @Test
     public void tootWithVideoAttachment() throws IOException {
-        mock.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.mastodon_video);
+        mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_video);
 
         List<AActivity> timeline = mock.connection.getTimeline(Connection.ApiRoutineEnum.ACTOR_TIMELINE,
                 TimelinePosition.EMPTY, TimelinePosition.EMPTY, 20, Actor.fromOid(mock.getData().getOrigin(), "263975"));

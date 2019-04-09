@@ -395,8 +395,8 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             }
         }
 
-        public void onCredentialsVerified(@NonNull Actor actor, ConnectionException ce) throws ConnectionException {
-            boolean ok = ce == null && !actor.isEmpty() && StringUtils.nonEmpty(actor.oid)
+        public void onCredentialsVerified(@NonNull Actor actor, ConnectionException e) throws ConnectionException {
+            boolean ok = e == null && !actor.isEmpty() && StringUtils.nonEmpty(actor.oid)
                     && actor.isUsernameValid();
             boolean errorSettingUsername = !ok;
 
@@ -439,8 +439,8 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             }
             save();
 
-            if (ce != null) {
-                throw ce;
+            if (e != null) {
+                throw e;
             }
             if (credentialsOfOtherAccount) {
                 MyLog.e(TAG, myContext.context().getText(R.string.error_credentials_of_other_user) + ": " +

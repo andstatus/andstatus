@@ -23,7 +23,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.net.http.HttpConnectionMock;
+import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
@@ -44,7 +44,7 @@ import static org.junit.Assert.assertTrue;
 
 public class VerifyCredentialsTest {
     private Connection connection;
-    private HttpConnectionMock httpConnection;
+    private ConnectionMock mock;
 
     private String keyStored;
     private String secretStored;
@@ -53,32 +53,30 @@ public class VerifyCredentialsTest {
     public void setUp() throws Exception {
         TestSuite.initializeWithAccounts(this);
 
-        TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        connection = Connection.fromMyAccount(
-                demoData.getMyAccount(demoData.twitterTestAccountName), TriState.UNKNOWN);
-        httpConnection = (HttpConnectionMock) connection.http;
+        mock = ConnectionMock.newFor(demoData.twitterTestAccountName);
+        connection = mock.connection;
 
-        httpConnection.data.originUrl = UrlUtils.fromString("https://twitter.com");
-        httpConnection.data.oauthClientKeys = OAuthClientKeys.fromConnectionData(httpConnection.data);
-        keyStored = httpConnection.data.oauthClientKeys.getConsumerKey();
-        secretStored = httpConnection.data.oauthClientKeys.getConsumerSecret();
+        HttpConnectionData data = mock.getHttp().data;
+        data.originUrl = UrlUtils.fromString("https://twitter.com");
+        data.oauthClientKeys = OAuthClientKeys.fromConnectionData(data);
+        keyStored = data.oauthClientKeys.getConsumerKey();
+        secretStored = data.oauthClientKeys.getConsumerSecret();
 
-        if (!httpConnection.data.oauthClientKeys.areKeysPresent()) {
-            httpConnection.data.oauthClientKeys.setConsumerKeyAndSecret("keyForGetTimelineForTw", "thisIsASecret341232");
+        if (!data.oauthClientKeys.areKeysPresent()) {
+            data.oauthClientKeys.setConsumerKeyAndSecret("keyForGetTimelineForTw", "thisIsASecret341232");
         }
-        TestSuite.setHttpConnectionMockClass(null);
     }
 
     @After
     public void tearDown() {
         if (!StringUtils.isEmpty(keyStored)) {
-            httpConnection.data.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored);        
+            mock.getHttp().data.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored);
         }
     }
 
     @Test
     public void testVerifyCredentials() throws IOException {
-        httpConnection.addResponse(org.andstatus.app.tests.R.raw.verify_credentials_twitter);
+        mock.addResponse(org.andstatus.app.tests.R.raw.verify_credentials_twitter);
 
         Actor actor = connection.verifyCredentials(Optional.empty());
         assertEquals("Actor's oid is actorOid of this account", demoData.twitterTestAccountActorOid, actor.oid);

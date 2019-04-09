@@ -19,7 +19,6 @@ package org.andstatus.app.net.social.activitypub;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.MyContentType;
-import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.AObjectType;
 import org.andstatus.app.net.social.ActivityType;
@@ -28,6 +27,7 @@ import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.ConnectionMock;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.service.CommandData;
@@ -56,8 +56,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class ConnectionActivityPubTest {
-    private Connection connection;
-    private HttpConnectionMock httpConnection;
+    private ConnectionMock mock;
 
     String pawooActorOid = "https://pawoo.net/users/pawooAndStatusTester";
     String pawooNoteOid = "https://pawoo.net/users/pawooAndStatusTester/statuses/101727836012435643";
@@ -65,22 +64,17 @@ public class ConnectionActivityPubTest {
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithAccounts(this);
-
-        TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        connection = Connection.fromMyAccount(
-                demoData.getMyAccount(demoData.activityPubTestAccountName), TriState.UNKNOWN);
-        httpConnection = (HttpConnectionMock) connection.getHttp();
-        TestSuite.setHttpConnectionMockClass(null);
+        mock = ConnectionMock.newFor(demoData.activityPubTestAccountName);
     }
 
     @Test
     public void getTimeline() throws IOException {
         String sinceId = "";
-        httpConnection.addResponse(org.andstatus.app.tests.R.raw.activitypub_inbox_pleroma);
-        Actor actorForTimeline = Actor.fromOid(connection.getData().getOrigin(), ACTOR_OID)
+        mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_inbox_pleroma);
+        Actor actorForTimeline = Actor.fromOid(mock.getData().getOrigin(), ACTOR_OID)
                 .withUniqueNameInOrigin(UNIQUE_NAME_IN_ORIGIN);
         actorForTimeline.endpoints.add(ActorEndpointType.API_INBOX, "https://pleroma.site/users/AndStatus/inbox");
-        List<AActivity> timeline = connection.getTimeline(Connection.ApiRoutineEnum.HOME_TIMELINE,
+        List<AActivity> timeline = mock.connection.getTimeline(Connection.ApiRoutineEnum.HOME_TIMELINE,
                 new TimelinePosition(sinceId), TimelinePosition.EMPTY, 20, actorForTimeline);
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 5, timeline.size());
@@ -132,11 +126,11 @@ public class ConnectionActivityPubTest {
     public void getNotesByActor() throws IOException {
         String ACTOR_OID2 = "https://pleroma.site/users/kaniini";
         String sinceId = "";
-        httpConnection.addResponse(org.andstatus.app.tests.R.raw.activitypub_outbox_pleroma);
-        Actor actorForTimeline = Actor.fromOid(connection.getData().getOrigin(), ACTOR_OID2)
+        mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_outbox_pleroma);
+        Actor actorForTimeline = Actor.fromOid(mock.getData().getOrigin(), ACTOR_OID2)
                 .withUniqueNameInOrigin(UNIQUE_NAME_IN_ORIGIN);
         actorForTimeline.endpoints.add(ActorEndpointType.API_OUTBOX, ACTOR_OID2 + "/outbox");
-        List<AActivity> timeline = connection.getTimeline(Connection.ApiRoutineEnum.ACTOR_TIMELINE,
+        List<AActivity> timeline = mock.connection.getTimeline(Connection.ApiRoutineEnum.ACTOR_TIMELINE,
                 new TimelinePosition(sinceId), TimelinePosition.EMPTY, 20, actorForTimeline);
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 10, timeline.size());
@@ -154,8 +148,8 @@ public class ConnectionActivityPubTest {
 
     @Test
     public void noteFromPawooNet() throws IOException {
-        httpConnection.addResponse(org.andstatus.app.tests.R.raw.activitypub_note_from_pawoo_net_pleroma);
-        AActivity activity8 = connection.getNote(pawooNoteOid);
+        mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_note_from_pawoo_net_pleroma);
+        AActivity activity8 = mock.connection.getNote(pawooNoteOid);
         assertEquals("Updating " + activity8, ActivityType.UPDATE, activity8.type);
         assertEquals("Acting on a Note " + activity8, AObjectType.NOTE, activity8.getObjectType());
         Note note8 = activity8.getNote();
@@ -173,11 +167,11 @@ public class ConnectionActivityPubTest {
     @Test
     public void getTimeline2() throws IOException {
         String sinceId = "";
-        httpConnection.addResponse(org.andstatus.app.tests.R.raw.activitypub_inbox_pleroma_2);
-        Actor actorForTimeline = Actor.fromOid(connection.getData().getOrigin(), ACTOR_OID)
+        mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_inbox_pleroma_2);
+        Actor actorForTimeline = Actor.fromOid(mock.getData().getOrigin(), ACTOR_OID)
                 .withUniqueNameInOrigin(UNIQUE_NAME_IN_ORIGIN);
         actorForTimeline.endpoints.add(ActorEndpointType.API_INBOX, "https://pleroma.site/users/AndStatus/inbox");
-        List<AActivity> timeline = connection.getTimeline(Connection.ApiRoutineEnum.HOME_TIMELINE,
+        List<AActivity> timeline = mock.connection.getTimeline(Connection.ApiRoutineEnum.HOME_TIMELINE,
                 new TimelinePosition(sinceId), TimelinePosition.EMPTY, 20, actorForTimeline);
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 10, timeline.size());
@@ -234,10 +228,10 @@ public class ConnectionActivityPubTest {
 
     @Test
     public void testGetFriends() throws IOException {
-        httpConnection.addResponse(org.andstatus.app.tests.R.raw.activitypub_friends_pleroma);
-        Actor actor = Actor.fromOid(connection.getData().getOrigin(), "https://pleroma.site/users/ActivityPubTester");
+        mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_friends_pleroma);
+        Actor actor = Actor.fromOid(mock.getData().getOrigin(), "https://pleroma.site/users/ActivityPubTester");
         actor.endpoints.add(ActorEndpointType.API_FOLLOWING, "https://pleroma.site/users/ActivityPubTester/following");
-        List<Actor> actors = connection.getFriends(actor);
+        List<Actor> actors = mock.connection.getFriends(actor);
         assertEquals("Number of actors, " +
                 "who " + actor.getUniqueNameWithOrigin() + " is following " + actors, 1, actors.size());
 
@@ -246,9 +240,9 @@ public class ConnectionActivityPubTest {
 
     @Test
     public void testGetNoteWithAudience() throws IOException {
-        httpConnection.addResponse(org.andstatus.app.tests.R.raw.activitypub_with_audience_pleroma);
+        mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_with_audience_pleroma);
         String noteOid = "https://pleroma.site/objects/032e7c06-48aa-4cc9-b84a-0a36a24a7779";
-        AActivity activity = connection.getNote(noteOid);
+        AActivity activity = mock.connection.getNote(noteOid);
         assertEquals("Creating " + activity, ActivityType.CREATE, activity.type);
         assertEquals("Acting on a Note " + activity, AObjectType.NOTE, activity.getObjectType());
         Note note = activity.getNote();
@@ -275,11 +269,11 @@ public class ConnectionActivityPubTest {
         });
 
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                CommandData.newTimelineCommand(CommandEnum.UPDATE_NOTE, connection.getData().getMyAccount(), TimelineType.SENT));
+                CommandData.newTimelineCommand(CommandEnum.UPDATE_NOTE, mock.getData().getMyAccount(), TimelineType.SENT));
         DataUpdater di = new DataUpdater(executionContext);
         di.onActivity(activity);
 
-        Audience audienceStored = Audience.fromNoteId(connection.getData().getOrigin(), note.noteId);
+        Audience audienceStored = Audience.fromNoteId(mock.getData().getOrigin(), note.noteId);
         oids.forEach(oid -> {
             assertTrue("Audience should contain " + oid + "\n " + activity + "\n " + audienceStored, audienceStored.containsOid(oid));
         });

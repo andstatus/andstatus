@@ -22,10 +22,9 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
-import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.ConnectionMock;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
@@ -42,32 +41,24 @@ import static org.junit.Assert.assertTrue;
 public class VerifyCredentialsActivityPubTest {
     final static String ACTOR_OID = "https://pleroma.site/users/AndStatus";
     final static String UNIQUE_NAME_IN_ORIGIN = "AndStatus@pleroma.site";
-
-    private Connection connection;
-    private HttpConnectionMock httpConnection;
+    private ConnectionMock mock;
 
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithAccounts(this);
-
-        TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(
-                MyContextHolder.get(), UNIQUE_NAME_IN_ORIGIN +
-                        AccountName.ORIGIN_SEPARATOR + demoData.activityPubTestOriginName, TriState.UNKNOWN);
-
-        connection = Connection.fromMyAccount(builder.getAccount(), TriState.UNKNOWN);
-        httpConnection = (HttpConnectionMock) connection.getHttp();
-        TestSuite.setHttpConnectionMockClass(null);
+        mock = ConnectionMock.newFor(MyAccount.Builder.newOrExistingFromAccountName(
+                MyContextHolder.get(), UNIQUE_NAME_IN_ORIGIN + AccountName.ORIGIN_SEPARATOR +
+                        demoData.activityPubTestOriginName, TriState.UNKNOWN).getAccount());
     }
 
     @Test
     public void verifyCredentials() throws IOException {
-        httpConnection.addResponse(org.andstatus.app.tests.R.raw.activitypub_whoami_pleroma);
+        mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_whoami_pleroma);
 
-        Actor actor = connection.verifyCredentials(UriUtils.toDownloadableOptional(ACTOR_OID));
+        Actor actor = mock.connection.verifyCredentials(UriUtils.toDownloadableOptional(ACTOR_OID));
         assertEquals("Actor's oid is actorOid of this account", ACTOR_OID, actor.oid);
 
-        Origin origin = connection.getData().getOrigin();
+        Origin origin = mock.getData().getOrigin();
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(
                 MyContextHolder.get(), UNIQUE_NAME_IN_ORIGIN +
                         AccountName.ORIGIN_SEPARATOR + origin.getName(), TriState.TRUE);

@@ -24,7 +24,10 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionMock;
 
+import java.io.IOException;
+
 import androidx.annotation.NonNull;
+import androidx.annotation.RawRes;
 
 import static org.andstatus.app.context.DemoData.demoData;
 
@@ -32,10 +35,18 @@ public class ConnectionMock {
     public final Connection connection;
 
     public static ConnectionMock newFor(String accountName) {
+        return newFor(demoData.getMyAccount(accountName));
+    }
+
+    public static ConnectionMock newFor(MyAccount myAccount) {
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        ConnectionMock mock = new ConnectionMock(demoData.getMyAccount(accountName).setConnection());
+        ConnectionMock mock = new ConnectionMock(myAccount.setConnection());
         TestSuite.setHttpConnectionMockClass(null);
         return mock;
+    }
+
+    private ConnectionMock(Connection connection) {
+        this.connection = connection;
     }
 
     public ConnectionMock withException(ConnectionException e) {
@@ -43,31 +54,21 @@ public class ConnectionMock {
         return this;
     }
 
+    public void addResponse(@RawRes int responseResourceId) throws IOException {
+        getHttpMock().addResponse(responseResourceId);
+    }
+
     public AccountConnectionData getData() {
         return connection.getData();
     }
 
-    private ConnectionMock(Connection connection) {
-        this.connection = connection;
-    }
-
-    HttpConnection getHttp() {
+    public HttpConnection getHttp() {
         return connection.getHttp();
     }
 
     @NonNull
     public HttpConnectionMock getHttpMock() {
         return getHttpMock(getHttp());
-    }
-
-    @NonNull
-    public static HttpConnectionMock getHttpMock(@NonNull MyAccount ma) {
-        return getHttpMock(ma.getConnection());
-    }
-
-    @NonNull
-    public static HttpConnectionMock getHttpMock(@NonNull Connection connection) {
-        return getHttpMock(connection.getHttp());
     }
 
     @NonNull
