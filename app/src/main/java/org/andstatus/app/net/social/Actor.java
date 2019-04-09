@@ -103,7 +103,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     // In our system
     @NonNull
     public final Origin origin;
-    public long actorId = 0L;
+    public volatile long actorId = 0L;
     public AvatarFile avatarFile = AvatarFile.EMPTY;
 
     public User user = User.EMPTY;
@@ -530,7 +530,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (actorId == 0 && isWebFingerIdValid()) {
             actorId = MyQuery.webFingerIdToId(origin.getId(), webFingerId);
         }
-        if (actorId == 0 && !isWebFingerIdValid() && !StringUtils.isEmpty(username)) {
+        if (actorId == 0 && !isWebFingerIdValid() && StringUtils.nonEmpty(username)) {
             actorId = MyQuery.usernameToId(origin.getId(), username);
         }
         if (actorId == 0) {
@@ -542,7 +542,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public boolean hasAltTempOid() {
-        return !toTempOid().equals(toAltTempOid()) && !StringUtils.isEmpty(username);
+        return !toTempOid().equals(toAltTempOid()) && StringUtils.nonEmpty(username);
     }
 
     public boolean hasLatestNote() {
