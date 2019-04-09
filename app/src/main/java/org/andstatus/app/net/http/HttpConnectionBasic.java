@@ -38,8 +38,8 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
     protected String mPassword = "";
 
     @Override
-    public void setConnectionData(HttpConnectionData connectionData) {
-        super.setConnectionData(connectionData);
+    public void setHttpConnectionData(HttpConnectionData connectionData) {
+        super.setHttpConnectionData(connectionData);
         setPassword(connectionData.dataReader.getDataString(Connection.KEY_PASSWORD, ""));
     }  
 

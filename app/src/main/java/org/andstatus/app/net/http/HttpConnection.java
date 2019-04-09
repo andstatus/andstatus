@@ -48,7 +48,7 @@ public abstract class HttpConnection {
         // Do nothing in the default implementation
     }
     
-    public void setConnectionData(HttpConnectionData data) {
+    public void setHttpConnectionData(HttpConnectionData data) {
         this.data = data;
     }  
     

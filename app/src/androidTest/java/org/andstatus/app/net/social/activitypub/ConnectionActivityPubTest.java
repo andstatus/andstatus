@@ -30,7 +30,6 @@ import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
-import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
@@ -68,9 +67,8 @@ public class ConnectionActivityPubTest {
         TestSuite.initializeWithAccounts(this);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        OriginConnectionData connectionData = OriginConnectionData.fromMyAccount(
+        connection = Connection.fromMyAccount(
                 demoData.getMyAccount(demoData.activityPubTestAccountName), TriState.UNKNOWN);
-        connection = connectionData.newConnection();
         httpConnection = (HttpConnectionMock) connection.getHttp();
         TestSuite.setHttpConnectionMockClass(null);
     }

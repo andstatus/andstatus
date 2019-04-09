@@ -18,7 +18,7 @@ package org.andstatus.app.net.http;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.origin.OriginConnectionData;
+import org.andstatus.app.account.AccountConnectionData;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
@@ -38,7 +38,7 @@ public class OAuthClientKeysTest {
     @Test
     public void testKeysSave() {
         HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(
-                OriginConnectionData.fromMyAccount(MyContextHolder.get().accounts().getFirstSucceededForOrigin(
+                AccountConnectionData.fromMyAccount(MyContextHolder.get().accounts().getFirstSucceededForOrigin(
                         MyContextHolder.get().origins().firstOfType(OriginType.PUMPIO)), TriState.UNKNOWN)
         );
         final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());

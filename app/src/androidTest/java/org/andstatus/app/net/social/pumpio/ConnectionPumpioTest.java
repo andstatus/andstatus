@@ -31,11 +31,10 @@ import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
-import org.andstatus.app.net.social.ConnectionMockable;
+import org.andstatus.app.net.social.ConnectionMock;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
@@ -75,11 +74,9 @@ public class ConnectionPumpioTest {
         TestSuite.initializeWithAccounts(this);
         originUrl = UrlUtils.fromString("https://" + demoData.pumpioMainHost);
 
-        TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        OriginConnectionData connectionData = OriginConnectionData.fromMyAccount(
-                demoData.getMyAccount(demoData.conversationAccountName), TriState.UNKNOWN);
-        connection = (ConnectionPumpio) connectionData.newConnection();
-        httpConnection = ConnectionMockable.getHttpMock(connection);
+        ConnectionMock mock = ConnectionMock.newFor(demoData.conversationAccountName);
+        connection = (ConnectionPumpio) mock.connection;
+        httpConnection = mock.getHttpMock();
 
         httpConnection.data.originUrl = originUrl;
         httpConnection.data.oauthClientKeys = OAuthClientKeys.fromConnectionData(httpConnection.data);
@@ -89,7 +86,6 @@ public class ConnectionPumpioTest {
         if (!httpConnection.data.oauthClientKeys.areKeysPresent()) {
             httpConnection.data.oauthClientKeys.setConsumerKeyAndSecret("keyForThetestGetTimeline", "thisIsASecret02341");
         }
-        TestSuite.setHttpConnectionMockClass(null);
     }
     
     @After

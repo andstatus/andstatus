@@ -27,7 +27,7 @@ import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.Attachment;
-import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
+import org.andstatus.app.net.social.ConnectionMock;
 import org.andstatus.app.util.MyLog;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,14 +70,14 @@ public class LargeImageTest {
 
         CommandData commandData = CommandData.newActorCommand(CommandEnum.GET_AVATAR, 34234, "");
         AttachmentDownloader loader = new AttachmentDownloader(dd);
-        ConnectionTwitterGnuSocialMock connection = new ConnectionTwitterGnuSocialMock();
+        ConnectionMock connMock = ConnectionMock.newFor(demoData.gnusocialTestAccountName);
         InputStream inputStream = InstrumentationRegistry.getInstrumentation().getContext().getResources()
                 .openRawResource(org.andstatus.app.tests.R.raw.large_image);
-        connection.getHttpMock().setResponseFileStream(inputStream);
-        loader.connectionMock = connection;
+        connMock.getHttpMock().setResponseFileStream(inputStream);
+        loader.connectionMock = connMock.connection;
         loader.load(commandData);
         inputStream.close();
-        assertEquals("Requested", 1, connection.getHttpMock().getRequestsCounter());
+        assertEquals("Requested", 1, connMock.getHttpMock().getRequestsCounter());
 
         DownloadData data = DownloadData.fromId(dd.getDownloadId());
         assertFalse("Loaded " + data.getUri(), commandData.getResult().hasError());

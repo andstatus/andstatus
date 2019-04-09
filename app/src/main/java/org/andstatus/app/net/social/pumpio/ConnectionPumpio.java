@@ -18,6 +18,7 @@ package org.andstatus.app.net.social.pumpio;
 
 import android.net.Uri;
 
+import org.andstatus.app.account.AccountConnectionData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
@@ -31,7 +32,6 @@ import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
-import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.origin.OriginPumpio;
 import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
@@ -64,12 +64,12 @@ public class ConnectionPumpio extends Connection {
     public static final String FULL_IMAGE_OBJECT = "fullImage";
 
     @Override
-    public void enrichConnectionData(OriginConnectionData connectionData) {
-        super.enrichConnectionData(connectionData);
+    public Connection setAccountConnectionData(AccountConnectionData connectionData) {
         final String host = connectionData.getAccountActor().getHost();
         if (StringUtils.nonEmpty(host)) {
             connectionData.setOriginUrl(UrlUtils.buildUrl(host, connectionData.isSsl()));
         }
+        return super.setAccountConnectionData(connectionData);
     }
 
     @NonNull

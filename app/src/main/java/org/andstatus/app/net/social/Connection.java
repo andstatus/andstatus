@@ -18,17 +18,19 @@ package org.andstatus.app.net.social;
 
 import android.net.Uri;
 
+import org.andstatus.app.account.AccountConnectionData;
 import org.andstatus.app.account.AccountDataWriter;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.http.OAuthService;
 import org.andstatus.app.origin.OriginConfig;
-import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
@@ -139,7 +141,18 @@ public abstract class Connection {
     }
 
     protected HttpConnection http;
-    protected OriginConnectionData data;
+    protected AccountConnectionData data;
+
+    public static Connection fromMyAccount(@NonNull MyAccount myAccount, TriState isOAuth) {
+        AccountConnectionData connectionData = AccountConnectionData.fromMyAccount(myAccount, isOAuth);
+        try {
+            return myAccount.getOrigin().getOriginType().getConnectionClass().newInstance()
+                    .setAccountConnectionData(connectionData);
+        } catch (InstantiationException | IllegalAccessException e) {
+            MyLog.e("Failed to instantiate connection for " + myAccount, e);
+            return new ConnectionEmpty();
+        }
+    }
 
     protected Connection() {
     }
@@ -385,12 +398,6 @@ public abstract class Connection {
         return out;
     }
 
-    public final void setAccountData(OriginConnectionData connectionData) throws ConnectionException {
-        this.data = connectionData;
-        http = connectionData.newHttpConnection("");
-        http.setConnectionData(HttpConnectionData.fromConnectionData(connectionData));
-    }
-
     public void clearAuthInformation() {
         http.clearAuthInformation();
     }
@@ -418,8 +425,11 @@ public abstract class Connection {
         return http.data.areOAuthClientKeysPresent();
     }
 
-    public void enrichConnectionData(OriginConnectionData connectionData2) {
-        // Nothing to do
+    public Connection setAccountConnectionData(AccountConnectionData connectionData) {
+        data = connectionData;
+        http = connectionData.newHttpConnection();
+        http.setHttpConnectionData(HttpConnectionData.fromConnectionData(connectionData));
+        return this;
     }
 
     public final JSONObject postRequest(Uri apiUri, JSONObject formParams) throws ConnectionException {
@@ -537,7 +547,7 @@ public abstract class Connection {
         return http;
     }
 
-    public OriginConnectionData getData() {
+    public AccountConnectionData getData() {
         return data;
     }
 

@@ -14,42 +14,37 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.origin;
+package org.andstatus.app.account;
 
-import org.andstatus.app.account.AccountDataReader;
-import org.andstatus.app.account.AccountDataReaderEmpty;
-import org.andstatus.app.account.AccountName;
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
+import org.andstatus.app.net.http.HttpConnectionEmpty;
 import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.origin.Origin;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
 
 import java.net.URL;
 
 import androidx.annotation.NonNull;
 
-public class OriginConnectionData {
+public class AccountConnectionData {
     private boolean isOAuth;
     private URL originUrl;
 
     private final MyAccount myAccount;
-    private AccountDataReader dataReader;
-    
+
     private final Class<? extends org.andstatus.app.net.http.HttpConnection> httpConnectionClass;
 
-    public static OriginConnectionData fromMyAccount(MyAccount myAccount, TriState triStateOAuth) {
-        return new OriginConnectionData(myAccount, triStateOAuth);
+    public static AccountConnectionData fromMyAccount(MyAccount myAccount, TriState triStateOAuth) {
+        return new AccountConnectionData(myAccount, triStateOAuth);
     }
 
-    private OriginConnectionData(MyAccount myAccount, TriState triStateOAuth) {
+    private AccountConnectionData(MyAccount myAccount, TriState triStateOAuth) {
         this.myAccount = myAccount;
         originUrl = myAccount.getOrigin().getUrl();
         isOAuth = myAccount.getOrigin().getOriginType().fixIsOAuth(triStateOAuth);
         httpConnectionClass = myAccount.getOrigin().getOriginType().getHttpConnectionClass(isOAuth());
-        dataReader = new AccountDataReaderEmpty();
     }
 
     @NonNull
@@ -90,36 +85,17 @@ public class OriginConnectionData {
         this.originUrl = urlIn;
     }
 
-    @NonNull
-    public Connection newConnection() throws ConnectionException {
-        Connection connection;
-        try {
-            connection = myAccount.getOrigin().getOriginType().getConnectionClass().newInstance();
-            connection.enrichConnectionData(this);
-            connection.setAccountData(this);
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new ConnectionException(myAccount.getOrigin().toString(), e);
-        }
-        return connection;
-    }
-
     public AccountDataReader getDataReader() {
-        return dataReader;
+        return myAccount.accountData;
     }
 
-    public void setDataReader(AccountDataReader dataReader) {
-        this.dataReader = dataReader;
-    }
-
-    public HttpConnection newHttpConnection(String logMsg) throws ConnectionException {
+    public HttpConnection newHttpConnection() {
         HttpConnection http = MyContextHolder.get().getHttpConnectionMock();
-        if (http == null) {
-            try {
-                http = httpConnectionClass.newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
-                throw new ConnectionException(logMsg, e);
-            }
+        if (http != null) return http;
+        try {
+            return httpConnectionClass.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            return new HttpConnectionEmpty();
         }
-        return http;
     }
 }

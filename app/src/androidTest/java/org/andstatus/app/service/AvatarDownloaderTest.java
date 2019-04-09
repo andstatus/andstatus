@@ -33,7 +33,7 @@ import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
+import org.andstatus.app.net.social.ConnectionMock;
 import org.andstatus.app.util.MyLog;
 import org.junit.Before;
 import org.junit.Test;
@@ -188,7 +188,9 @@ public class AvatarDownloaderTest {
         final Actor actor = Actor.load(MyContextHolder.get(), ma.getActor().actorId);
         FileDownloader loader = new AvatarDownloader(actor);
         if (mockNetworkError) {
-            loader.connectionMock = new ConnectionTwitterGnuSocialMock(new ConnectionException("Mocked IO exception"));
+            loader.connectionMock = ConnectionMock.newFor(demoData.gnusocialTestAccountName)
+                    .withException(new ConnectionException("Mocked IO exception"))
+                    .connection;
         }
         CommandData commandData = CommandData.newActorCommand(CommandEnum.GET_AVATAR, actor.actorId,
                 actor.getUsername());

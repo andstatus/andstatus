@@ -26,7 +26,7 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.social.AActivity;
-import org.andstatus.app.net.social.ConnectionMockable;
+import org.andstatus.app.net.social.ConnectionMock;
 import org.andstatus.app.origin.DiscoveredOrigins;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -57,7 +57,7 @@ public class CommandExecutorStrategyTest {
         ma = MyContextHolder.get().accounts().getFirstSucceededForOrigin(
                 MyContextHolder.get().origins().fromName(demoData.gnusocialTestOriginName));
         assertTrue(ma.toString(), ma.isValidAndSucceeded());
-        httpConnectionMock = ConnectionMockable.getHttpMock(ma);
+        httpConnectionMock = ConnectionMock.getHttpMock(ma);
     }
 
     @Test

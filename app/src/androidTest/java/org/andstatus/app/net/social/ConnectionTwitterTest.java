@@ -16,6 +16,7 @@
 
 package org.andstatus.app.net.social;
 
+import org.andstatus.app.account.AccountConnectionData;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -27,7 +28,6 @@ import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
@@ -54,7 +54,7 @@ import static org.junit.Assert.assertTrue;
 public class ConnectionTwitterTest {
     private Connection connection;
     private HttpConnectionMock httpConnection;
-    private OriginConnectionData connectionData;
+    private AccountConnectionData connectionData;
 
     @Before
     public void setUp() throws Exception {
@@ -63,9 +63,9 @@ public class ConnectionTwitterTest {
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
         Origin origin = MyContextHolder.get().origins().fromName(demoData.twitterTestOriginName);
 
-        connectionData = OriginConnectionData.fromMyAccount(
+        connectionData = AccountConnectionData.fromMyAccount(
                 demoData.getMyAccount(demoData.twitterTestAccountName), TriState.UNKNOWN);
-        connection = connectionData.newConnection();
+        connection = Connection.fromMyAccount(demoData.getMyAccount(demoData.twitterTestAccountName), TriState.UNKNOWN);
         httpConnection = (HttpConnectionMock) connection.http;
 
         httpConnection.data.originUrl = origin.getUrl();

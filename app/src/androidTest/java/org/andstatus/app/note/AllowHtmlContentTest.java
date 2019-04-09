@@ -30,7 +30,7 @@ import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.AObjectType;
 import org.andstatus.app.net.social.ActivityType;
-import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
+import org.andstatus.app.net.social.ConnectionMock;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
@@ -126,10 +126,10 @@ public class AllowHtmlContentTest {
         assertEquals("is HTML content allowed in GnuSocial", isHtmlAllowed,
                 demoData.getGnuSocialOrigin().isHtmlContentAllowed());
 
-        ConnectionTwitterGnuSocialMock connection = new ConnectionTwitterGnuSocialMock();
+        ConnectionMock connection = ConnectionMock.newFor(demoData.gnusocialTestAccountName);
         connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.gnusocial_note_with_html);
         final String noteOid = "4453144";
-        AActivity activity = connection.getNote(noteOid);
+        AActivity activity = connection.connection.getNote(noteOid);
 
         assertEquals("Received a note " + activity, AObjectType.NOTE, activity.getObjectType());
         assertEquals("Should be UPDATE " + activity, ActivityType.UPDATE,  activity.type);

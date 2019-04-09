@@ -35,8 +35,8 @@ import oauth.signpost.exception.OAuthMessageSignerException;
 public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements HttpConnectionApacheSpecific {
 
     @Override
-    public void setConnectionData(HttpConnectionData connectionData) {
-        super.setConnectionData(connectionData);
+    public void setHttpConnectionData(HttpConnectionData connectionData) {
+        super.setHttpConnectionData(connectionData);
     }  
 
     @Override

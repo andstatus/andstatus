@@ -229,7 +229,7 @@ public class DataUpdater {
             }
 
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, () -> ((note.noteId ==0) ? "insertMsg" : "updateMsg " + note.noteId)
+                MyLog.v(this, () -> ((note.noteId ==0) ? "insertNote" : "updateNote " + note.noteId)
                         + ":" + note.getStatus()
                         + (isFirstTimeLoaded ? " new;" : "")
                         + (isDraftUpdated ? " draft updated;" : "")

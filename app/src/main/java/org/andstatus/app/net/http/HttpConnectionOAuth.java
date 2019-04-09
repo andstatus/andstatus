@@ -47,8 +47,8 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
     private String userSecret;
 
     @Override
-    public void setConnectionData(HttpConnectionData connectionData) {
-        super.setConnectionData(connectionData);
+    public void setHttpConnectionData(HttpConnectionData connectionData) {
+        super.setHttpConnectionData(connectionData);
         connectionData.oauthClientKeys = OAuthClientKeys.fromConnectionData(connectionData);
         // We look for saved user keys
         if (connectionData.dataReader.dataContains(userTokenKey()) && connectionData.dataReader.dataContains(userSecretKey())) {

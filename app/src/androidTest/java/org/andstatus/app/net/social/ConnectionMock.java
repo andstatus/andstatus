@@ -16,19 +16,47 @@
 
 package org.andstatus.app.net.social;
 
-import androidx.annotation.NonNull;
-
+import org.andstatus.app.account.AccountConnectionData;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionMock;
 
-public interface ConnectionMockable {
+import androidx.annotation.NonNull;
 
-    abstract HttpConnection getHttp();
+import static org.andstatus.app.context.DemoData.demoData;
+
+public class ConnectionMock {
+    public final Connection connection;
+
+    public static ConnectionMock newFor(String accountName) {
+        TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
+        ConnectionMock mock = new ConnectionMock(demoData.getMyAccount(accountName).setConnection());
+        TestSuite.setHttpConnectionMockClass(null);
+        return mock;
+    }
+
+    public ConnectionMock withException(ConnectionException e) {
+        getHttpMock().setException(e);
+        return this;
+    }
+
+    public AccountConnectionData getData() {
+        return connection.getData();
+    }
+
+    private ConnectionMock(Connection connection) {
+        this.connection = connection;
+    }
+
+    HttpConnection getHttp() {
+        return connection.getHttp();
+    }
 
     @NonNull
-    default HttpConnectionMock getHttpMock() {
+    public HttpConnectionMock getHttpMock() {
         return getHttpMock(getHttp());
     }
 

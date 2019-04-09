@@ -27,7 +27,6 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.junit.Before;
@@ -56,8 +55,7 @@ public class VerifyCredentialsActivityPubTest {
                 MyContextHolder.get(), UNIQUE_NAME_IN_ORIGIN +
                         AccountName.ORIGIN_SEPARATOR + demoData.activityPubTestOriginName, TriState.UNKNOWN);
 
-        OriginConnectionData connectionData = OriginConnectionData.fromMyAccount(builder.getAccount(), TriState.UNKNOWN);
-        connection = connectionData.newConnection();
+        connection = Connection.fromMyAccount(builder.getAccount(), TriState.UNKNOWN);
         httpConnection = (HttpConnectionMock) connection.getHttp();
         TestSuite.setHttpConnectionMockClass(null);
     }

@@ -7,7 +7,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.net.http.HttpConnectionMock;
-import org.andstatus.app.net.social.ConnectionMockable;
+import org.andstatus.app.net.social.ConnectionMock;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
@@ -58,7 +58,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
             MyServiceManager.stopService();
 
             if (!isSingleMockedInstance) {
-                httpConnectionMock = ConnectionMockable.getHttpMock(demoData.getMyAccount(accountName));
+                httpConnectionMock = ConnectionMock.getHttpMock(demoData.getMyAccount(accountName));
             }
             connectionInstanceId = httpConnectionMock.getInstanceId();
 

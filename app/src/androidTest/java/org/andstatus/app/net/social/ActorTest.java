@@ -130,4 +130,14 @@ public class ActorTest {
         assertEquals("Actors: " + actors, 1, actors.size());
         assertEquals("Actors: " + actors, "mcscx2@quitter.no", actors.get(0).getWebFingerId());
     }
+
+    @Test
+    public void extractActorsFromContentActivityPub() {
+        String actorUniqueName = "me" + demoData.testRunUid + "@mastodon.example.com";
+        final String content = "Sending note to the unknown yet Actor @" + actorUniqueName;
+        List<Actor> actors = demoData.getMyAccount(demoData.activityPubTestAccountName).getActor()
+                .extractActorsFromContent(content, Actor.EMPTY);
+        assertEquals("Actors: " + actors, 1, actors.size());
+        assertEquals("Actors: " + actors, actorUniqueName, actors.get(0).getUniqueNameInOrigin());
+    }
 }

@@ -26,7 +26,6 @@ import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -55,9 +54,8 @@ public class VerifyCredentialsTest {
         TestSuite.initializeWithAccounts(this);
 
         TestSuite.setHttpConnectionMockClass(HttpConnectionMock.class);
-        OriginConnectionData connectionData = OriginConnectionData.fromMyAccount(
+        connection = Connection.fromMyAccount(
                 demoData.getMyAccount(demoData.twitterTestAccountName), TriState.UNKNOWN);
-        connection = connectionData.newConnection();
         httpConnection = (HttpConnectionMock) connection.http;
 
         httpConnection.data.originUrl = UrlUtils.fromString("https://twitter.com");

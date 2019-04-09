@@ -28,7 +28,7 @@ import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.Attachment;
-import org.andstatus.app.net.social.ConnectionTwitterGnuSocialMock;
+import org.andstatus.app.net.social.ConnectionMock;
 import org.andstatus.app.util.MyLog;
 import org.junit.Before;
 import org.junit.Test;
@@ -88,7 +88,9 @@ public class AttachmentDownloaderTest {
     public static void loadAndAssertStatusForRow(DownloadData dataIn, DownloadStatus status, boolean mockNetworkError) {
         FileDownloader loader = FileDownloader.newForDownloadData(dataIn);
         if (mockNetworkError) {
-            loader.connectionMock = new ConnectionTwitterGnuSocialMock(new ConnectionException("Mocked IO exception"));
+            loader.connectionMock = ConnectionMock.newFor(demoData.gnusocialTestAccountName)
+                    .withException(new ConnectionException("Mocked IO exception"))
+                    .connection;
         }
         CommandData commandData = CommandData.newActorCommand(CommandEnum.GET_AVATAR, 0, "someActor");
         loader.load(commandData);

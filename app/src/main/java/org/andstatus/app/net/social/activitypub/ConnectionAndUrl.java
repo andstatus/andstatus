@@ -66,7 +66,7 @@ class ConnectionAndUrl {
             connectionData1.oauthClientKeys = null;
             connectionData1.originUrl = UrlUtils.buildUrl(host, connectionData1.isSsl());
             httpConnection = connection.getHttp().getNewInstance();
-            httpConnection.setConnectionData(connectionData1);
+            httpConnection.setHttpConnectionData(connectionData1);
         }
         if (!httpConnection.data.areOAuthClientKeysPresent()) {
             httpConnection.registerClient();

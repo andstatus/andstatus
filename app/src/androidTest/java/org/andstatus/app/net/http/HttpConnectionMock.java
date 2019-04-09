@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 import androidx.annotation.RawRes;
 
@@ -195,7 +196,13 @@ public class HttpConnectionMock extends HttpConnection {
     public int getRequestsCounter() {
         return results.size();
     }
-    
+
+    public List<JSONObject> getPostedObjects() {
+        return getResults().stream()
+                .map(r -> r.formParams.orElse(null))
+                .collect(Collectors.toList());
+    }
+
     public int getPostedCounter() {
         return getResults().stream().reduce(0,
                 (a, r) -> r.formParams.map(p -> a + 1).orElse(a),

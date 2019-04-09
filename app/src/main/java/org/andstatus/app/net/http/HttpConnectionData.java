@@ -19,7 +19,7 @@ package org.andstatus.app.net.http;
 import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.origin.OriginConnectionData;
+import org.andstatus.app.account.AccountConnectionData;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
 
@@ -38,7 +38,7 @@ public class HttpConnectionData {
         // Empty
     }
     
-    public static HttpConnectionData fromConnectionData(OriginConnectionData oConnectionData) {
+    public static HttpConnectionData fromConnectionData(AccountConnectionData oConnectionData) {
         HttpConnectionData data = new HttpConnectionData();
         data.accountName = oConnectionData.getAccountName();
         data.originUrl = oConnectionData.getOriginUrl();

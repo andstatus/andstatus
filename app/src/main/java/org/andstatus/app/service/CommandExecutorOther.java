@@ -394,7 +394,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         DemoData.crashTest(() -> note.getContent().startsWith("Crash me on sending 2015-04-10"));
 
         String content = note.getContentToPost();
-        Audience audience = Audience.fromNoteId(note.origin, noteId);
+        Audience audience = Audience.load(execContext.myContext, note.origin, noteId);
         Uri mediaUri = DownloadData.getSingleAttachment(noteId).mediaUriToBePosted();
         String msgLog = (StringUtils.nonEmpty(note.getName()) ? "name:'" + note.getName() + "'" : "")
                 + (StringUtils.nonEmpty(content) ? "content:'" + MyLog.trimmedString(content, 80) + "'" : "")

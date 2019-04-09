@@ -55,7 +55,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class ConnectionGnuSocialTest {
-    private ConnectionTwitterGnuSocialMock connection;
+    private ConnectionMock mock;
 
     public static AActivity getNoteWithAttachment(Context context) throws Exception {
         ConnectionGnuSocialTest test = new ConnectionGnuSocialTest();
@@ -66,15 +66,15 @@ public class ConnectionGnuSocialTest {
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithAccounts(this);
-        connection = new ConnectionTwitterGnuSocialMock();
+        mock = ConnectionMock.newFor(demoData.gnusocialTestAccountName);
     }
 
     @Test
     public void testGetPublicTimeline() throws IOException {
-        connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.quitter_home);
+        mock.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.quitter_home);
 
         Actor accountActor = demoData.getAccountActorByOid(demoData.gnusocialTestAccountActorOid);
-        List<AActivity> timeline = connection.getTimeline(ApiRoutineEnum.PUBLIC_TIMELINE,
+        List<AActivity> timeline = mock.connection.getTimeline(ApiRoutineEnum.PUBLIC_TIMELINE,
                 new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountActor);
         assertNotNull("timeline returned", timeline);
         int size = 3;
@@ -103,7 +103,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("Favorites count", 11, author.favoritesCount);
         assertEquals("Following (friends) count", 23, author.followingCount);
         assertEquals("Followers count", 21, author.followersCount);
-        assertEquals("Created at", connection.parseDate("Sun Feb 09 22:33:42 +0100 2014"), author.getCreatedDate());
+        assertEquals("Created at", mock.connection.parseDate("Sun Feb 09 22:33:42 +0100 2014"), author.getCreatedDate());
         assertEquals("Updated at", 0, author.getUpdatedDate());
 
         ind++;
@@ -152,15 +152,15 @@ public class ConnectionGnuSocialTest {
         assertEquals("Favorites count", 31, author.favoritesCount);
         assertEquals("Following (friends) count", 17, author.followingCount);
         assertEquals("Followers count", 31, author.followersCount);
-        assertEquals("Created at", connection.parseDate("Wed Aug 14 10:05:28 +0200 2013"), author.getCreatedDate());
+        assertEquals("Created at", mock.connection.parseDate("Wed Aug 14 10:05:28 +0200 2013"), author.getCreatedDate());
         assertEquals("Updated at", 0, author.getUpdatedDate());
     }
 
     @Test
     public void testSearch() throws IOException {
-        connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.twitter_home_timeline);
+        mock.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.twitter_home_timeline);
         
-        List<AActivity> timeline = connection.searchNotes(new TimelinePosition(""), TimelinePosition.EMPTY, 20,
+        List<AActivity> timeline = mock.connection.searchNotes(new TimelinePosition(""), TimelinePosition.EMPTY, 20,
                 demoData.globalPublicNoteText);
         assertNotNull("timeline returned", timeline);
         int size = 4;
@@ -169,8 +169,8 @@ public class ConnectionGnuSocialTest {
 
     @Test
     public void testPostWithMedia() throws IOException {
-        connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
-        AActivity activity = connection.updateNote("", "Test post note with media", "",
+        mock.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
+        AActivity activity = mock.connection.updateNote("", "Test post note with media", "",
                 Audience.EMPTY, "", demoData.localImageTestUri);
         assertEquals("Note returned",
                 privateGetNoteWithAttachment(false).getNote(), activity.getNote());
@@ -184,8 +184,8 @@ public class ConnectionGnuSocialTest {
     private AActivity privateGetNoteWithAttachment(boolean uniqueUid) throws IOException {
         final String NOTE_OID = "2215662";
         // Originally downloaded from https://quitter.se/api/statuses/show.json?id=2215662
-        connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
-        AActivity activity = connection.getNote(NOTE_OID);
+        mock.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
+        AActivity activity = mock.connection.getNote(NOTE_OID);
         if (uniqueUid) {
             activity.setNote(activity.getNote().copy(activity.getNote().oid + "_" + demoData.testRunUid));
         }
@@ -203,14 +203,14 @@ public class ConnectionGnuSocialTest {
     @Test
     public void testReblog() throws IOException {
         final String NOTE_OID = "10341561";
-        connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.loadaverage_repost_response);
-        AActivity activity = connection.announce(NOTE_OID);
+        mock.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.loadaverage_repost_response);
+        AActivity activity = mock.connection.announce(NOTE_OID);
         assertEquals(ActivityType.ANNOUNCE, activity.type);
         Note note = activity.getNote();
         assertEquals("Note oid" + note, NOTE_OID, note.oid);
         assertEquals("conversationOid", "9118253", note.conversationOid);
-        assertEquals(1, connection.getHttpMock().getRequestsCounter());
-        HttpReadResult result = connection.getHttpMock().getResults().get(0);
+        assertEquals(1, mock.getHttpMock().getRequestsCounter());
+        HttpReadResult result = mock.getHttpMock().getResults().get(0);
         assertTrue("URL doesn't contain note oid: " + result.getUrl(), result.getUrl().contains(NOTE_OID));
         assertEquals("Activity oid; " + activity, "10341833", activity.getTimelinePosition().getPosition());
         assertEquals("Actor; " + activity, "andstatus@loadaverage.org", activity.getActor().getWebFingerId());
@@ -254,10 +254,10 @@ public class ConnectionGnuSocialTest {
 
     @Test
     public void testFavoritingActivityInTimeline() throws IOException {
-        connection.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.loadaverage_favoriting_activity);
+        mock.getHttpMock().addResponse(org.andstatus.app.tests.R.raw.loadaverage_favoriting_activity);
 
         Actor accountActor = demoData.getAccountActorByOid(demoData.gnusocialTestAccountActorOid);
-        List<AActivity> timeline = connection.getTimeline(ApiRoutineEnum.SEARCH_NOTES,
+        List<AActivity> timeline = mock.connection.getTimeline(ApiRoutineEnum.SEARCH_NOTES,
                 new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountActor);
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 2, timeline.size());
@@ -317,8 +317,8 @@ public class ConnectionGnuSocialTest {
     }
 
     private AActivity oneHtmlMentionsTest(String actorUsername, String noteOid, int responseResourceId, int numberOfMembers) throws IOException {
-        connection.getHttpMock().addResponse(responseResourceId);
-        AActivity activity = connection.getNote(noteOid);
+        mock.getHttpMock().addResponse(responseResourceId);
+        AActivity activity = mock.connection.getNote(noteOid);
 
         assertEquals("Received a note " + activity, AObjectType.NOTE, activity.getObjectType());
         assertEquals("Should be UPDATE " + activity, ActivityType.UPDATE,  activity.type);

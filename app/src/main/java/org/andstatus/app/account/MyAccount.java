@@ -45,7 +45,6 @@ import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConfig;
-import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineSaver;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -117,11 +116,11 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     public static final String KEY_ORDER = "order";
 
     private final MyContext myContext;
-    private final AccountData accountData;
+    final AccountData accountData;
     private AccountName oAccountName;
     private Actor actor;
 
-    private Connection connection = null;
+    private volatile Connection connection = null;
     /** Was this account authenticated last time _current_ credentials were verified?
      *  CredentialsVerified.NEVER - after changes of "credentials": password/OAuth...
      */
@@ -199,7 +198,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
 
         static Builder fromMyAccount(MyContext myContext, MyAccount ma, String method, boolean isNew) {
             Builder builder = new Builder(myContext, ma);
-            builder.setConnection();
+            builder.myAccount.setConnection();
             builder.fixInconsistenciesWithChangedEnvironmentSilently();
             if (!isNew) {
                 builder.logLoadResult(method);
@@ -210,18 +209,6 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         private Builder(MyContext myContext, MyAccount myAccount) {
             this.myContext = myContext;
             this.myAccount = myAccount;
-        }
-
-        private void setConnection() {
-            OriginConnectionData connectionData = OriginConnectionData.fromMyAccount(myAccount,
-                    TriState.fromBoolean(myAccount.isOAuth));
-            connectionData.setDataReader(myAccount.accountData);
-            try {
-                myAccount.connection = connectionData.newConnection();
-            } catch (ConnectionException e) {
-                myAccount.connection = null;
-                MyLog.i(TAG, e);
-            }
         }
 
         private void fixInconsistenciesWithChangedEnvironmentSilently() {
@@ -443,7 +430,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
                     myAccount.oAccountName = AccountName.fromOriginAndUniqueName(
                             myAccount.oAccountName.getOrigin(), actor.getUniqueNameInOrigin());
                     myAccount.connection.save(myAccount.accountData);
-                    setConnection();
+                    myAccount.setConnection();
                     save();
                 }
             }
@@ -483,7 +470,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
 
         public void registerClient() throws ConnectionException {
             MyLog.v(TAG, () -> "Registering client application for " + myAccount.getUsername());
-            setConnection();
+            myAccount.setConnection();
             myAccount.connection.registerClientForAccount();
         }
 
@@ -613,6 +600,11 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         return bundle == null
                 ? EMPTY
                 : myContext.accounts().fromAccountName(bundle.getString(IntentExtra.ACCOUNT_NAME.key));
+    }
+
+    public Connection setConnection() {
+        connection = Connection.fromMyAccount(this, TriState.fromBoolean(isOAuth));
+        return connection;
     }
 
     @Override

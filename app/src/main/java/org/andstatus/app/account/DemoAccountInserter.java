@@ -29,7 +29,6 @@ import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -200,7 +199,7 @@ public class DemoAccountInserter {
 
     private void insertTestClientKeys(MyAccount myAccount) {
         HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(
-            OriginConnectionData.fromMyAccount(myAccount, TriState.UNKNOWN)
+            AccountConnectionData.fromMyAccount(myAccount, TriState.UNKNOWN)
         );
         if (!UrlUtils.hasHost(connectionData.originUrl)) {
             connectionData.originUrl = UrlUtils.fromString("https://" + myAccount.getActor().getHost());
