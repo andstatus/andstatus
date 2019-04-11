@@ -100,23 +100,23 @@ public final class DemoData {
 
     public final OriginType conversationOriginType = OriginType.PUMPIO;
     public final String conversationOriginName = pumpioOriginName;
-    private final String conversationAccountUsername = "testerofandstatus@" + pumpioMainHost;
-    public final String conversationAccountName = conversationAccountUsername + "/" + conversationOriginName;
-    public final String conversationAccountActorOid = OriginPumpio.ACCOUNT_PREFIX + conversationAccountUsername;
+    private final String conversationAccountUniqueName = "testerofandstatus@" + pumpioMainHost;
+    public final String conversationAccountName = conversationAccountUniqueName + "/" + conversationOriginName;
+    public final String conversationAccountActorOid = OriginPumpio.ACCOUNT_PREFIX + conversationAccountUniqueName;
     public final String conversationAccountAvatarUrl = "http://andstatus.org/images/andstatus-logo.png";
     public final String conversationEntryNoteOid = HTTP + pumpioMainHost
             + "/testerofandstatus/comment/thisisfakeuri" + testRunUid;
     public final String conversationEntryAuthorOid = "acct:first@pumpentry.example.com";
-    public final String conversationAuthorSecondUsername = "second@" + pumpioMainHost;
-    public final String conversationAuthorSecondActorOid = OriginPumpio.ACCOUNT_PREFIX + conversationAuthorSecondUsername;
-    public final String conversationAuthorThirdUsername = "third@pump3.example.com";
-    public final String conversationAuthorThirdActorOid = OriginPumpio.ACCOUNT_PREFIX + conversationAuthorThirdUsername;
+    public final String conversationAuthorSecondUniqueName = "second@" + pumpioMainHost;
+    public final String conversationAuthorSecondActorOid = OriginPumpio.ACCOUNT_PREFIX + conversationAuthorSecondUniqueName;
+    public final String conversationAuthorThirdUniqueName = "third@pump3.example.com";
+    public final String conversationAuthorThirdActorOid = OriginPumpio.ACCOUNT_PREFIX + conversationAuthorThirdUniqueName;
     public final String conversationMentionsNoteOid = HTTP + pumpioMainHost + "/second/comment/replywithmentions" + testRunUid;
     public final String conversationMentionOfAuthor3Oid = HTTP + pumpioMainHost + "/second/comment/mention3" + testRunUid;
     public final String htmlNoteOid = HTTP + pumpioMainHost + "/testerofandstatus/comment/htmlfakeuri" + testRunUid;
-    public final String conversationAccount2Username = "tester2ofandstatus@" + pumpioSecondHost;
-    public final String conversationAccount2Name = conversationAccount2Username + "/" + conversationOriginName;
-    public final String conversationAccount2ActorOid = OriginPumpio.ACCOUNT_PREFIX + conversationAccount2Username;
+    public final String conversationAccountSecondUniqueName = "tester2ofandstatus@" + pumpioSecondHost;
+    public final String conversationAccountSecondName = conversationAccountSecondUniqueName + "/" + conversationOriginName;
+    public final String conversationAccountSecondActorOid = OriginPumpio.ACCOUNT_PREFIX + conversationAccountSecondUniqueName;
 
     public final String plainTextNoteOid = "2167283" + testRunUid;
     public final String publicNoteText = "UniqueText" + testRunUid;

@@ -18,6 +18,7 @@ package org.andstatus.app.data;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
@@ -181,6 +182,7 @@ public class DemoNoteInserter {
             assertNotEquals( "Level " + level + ", Actor id not set for " + actor + " in " + activity, 0, actor.actorId);
             assertNotEquals( "Level " + level + ", User id not set for " + actor + " in " + activity, 0, actor.user.userId);
         }
+        checkStoredActor(actor);
 
         if (note.nonEmpty()) {
             assertNotEquals( "Note was not added at level " + level + " " + activity, 0, note.noteId);
@@ -209,6 +211,7 @@ public class DemoNoteInserter {
                 assertNotEquals( "Author id for " + author + " not set in note " + note + " in " + activity, 0,
                         MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, note.noteId));
             }
+            checkStoredActor(author);
         }
 
         switch (activity.type) {
@@ -243,12 +246,43 @@ public class DemoNoteInserter {
                 }
             }
         }
+        note.audience().getActors().forEach(DemoNoteInserter::checkStoredActor);
 
         if (activity.getObjActor().nonEmpty()) {
             assertNotEquals( "Actor was not added: " + activity.getObjActor(), 0, activity.getObjActor().actorId);
         }
         if (activity.getActivity().nonEmpty()) {
             checkActivityRecursively(activity.getActivity(), level + 1);
+        }
+    }
+
+    public static void checkStoredActor(Actor actor) {
+        if (actor.isEmpty()) return;
+
+        long id = actor.actorId;
+
+        if (StringUtils.nonEmpty(actor.oid)) {
+            assertEquals("oid " + actor, actor.oid,
+                    MyQuery.actorIdToStringColumnValue(ActorTable.ACTOR_OID, id));
+        }
+
+        if (!actor.getUsername().isEmpty()) {
+            assertEquals("Username " + actor, actor.getUsername(),
+                    MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, id));
+        }
+
+        String webFingerIdActual = MyQuery.actorIdToStringColumnValue(ActorTable.WEBFINGER_ID, id);
+        if (actor.getWebFingerId().isEmpty()) {
+            assertTrue("WebFingerID=" + webFingerIdActual + " for " + actor, StringUtils.isEmpty(webFingerIdActual)
+                    || Actor.isWebFingerIdValid(webFingerIdActual));
+        } else {
+            assertEquals("WebFingerID=" + webFingerIdActual + " for " + actor, actor.getWebFingerId(), webFingerIdActual);
+            assertTrue("Invalid WebFingerID " + actor, Actor.isWebFingerIdValid(webFingerIdActual));
+        }
+
+        if (StringUtils.nonEmpty(actor.getRealName())) {
+            assertEquals("Display name " + actor, actor.getRealName(),
+                    MyQuery.actorIdToStringColumnValue(ActorTable.REAL_NAME, id));
         }
     }
 

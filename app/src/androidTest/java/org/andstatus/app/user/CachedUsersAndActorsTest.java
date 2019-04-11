@@ -41,7 +41,7 @@ public class CachedUsersAndActorsTest {
         Origin origin = MyContextHolder.get().origins().fromName(demoData.conversationOriginName);
         assertEquals(demoData.conversationOriginName, origin.getName());
 
-        Actor actor = demoData.getMyAccount(demoData.conversationAccount2Name).getActor();
+        Actor actor = demoData.getMyAccount(demoData.conversationAccountSecondName).getActor();
         assertEquals(users.toString(), true, users.isMeOrMyFriend(actor));
         assertEquals(users.toString(), false, users.isMeOrMyFriend(Actor.EMPTY));
     }

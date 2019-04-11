@@ -476,8 +476,12 @@ public class DataUpdaterTest {
     @Test
     public void demoInsertGnuSocialActor() {
         MyAccount ma = demoData.getGnuSocialAccount();
-        Actor actor = new DemoNoteInserter(ma).buildActorFromOid("34807" + demoData.testRunUid);
-        updateActor(ma, actor);
+        Actor actor1 = new DemoNoteInserter(ma).buildActorFromOid("34807" + demoData.testRunUid);
+        updateActor(ma, actor1);
+
+        Actor actor2 = Actor.fromOid(ma.getOrigin(), "98023493" + demoData.testRunUid)
+                .setUsername("someuser" + demoData.testRunUid);
+        updateActor(ma, actor2);
     }
 
     @Test
@@ -492,18 +496,9 @@ public class DataUpdaterTest {
         Actor accountActor = ma.getActor();
         long id = di.onActivity(accountActor.update(actor)).getObjActor().actorId;
         assertTrue("Actor added", id != 0);
-        assertEquals("oid", actor.oid,
-                MyQuery.actorIdToStringColumnValue(ActorTable.ACTOR_OID, id));
-        final String tempOid = "andstatustemp:" + actor.oid;
-        assertEquals("Username", actor.getUsername().isEmpty()
-                        ? tempOid : actor.getUsername(),
-                MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, id));
-        assertEquals("WebFinger ID", actor.getWebFingerId().isEmpty()
-                        ? tempOid : actor.getWebFingerId(),
-                MyQuery.actorIdToStringColumnValue(ActorTable.WEBFINGER_ID, id));
-        assertEquals("Display name", actor.getRealName().isEmpty()
-                        ? tempOid : actor.getRealName(),
-                MyQuery.actorIdToStringColumnValue(ActorTable.REAL_NAME, id));
+
+        DemoNoteInserter.checkStoredActor(actor);
+
         assertEquals("Location", actor.location,
                 MyQuery.actorIdToStringColumnValue(ActorTable.LOCATION, id));
         assertEquals("profile image URL", actor.getAvatarUrl(),
@@ -555,7 +550,7 @@ public class DataUpdaterTest {
         addOneNote4testReplyInContent(ma, buddyName, "<a href=\"http://example.com/a\">@" +
                 buddyName + "</a>, this is an HTML <i>formatted</i> note", true);
 
-        String buddyName3 = demoData.conversationAuthorThirdUsername;
+        String buddyName3 = demoData.conversationAuthorThirdUniqueName;
         addOneNote4testReplyInContent(ma, buddyName3,
                 "@" + buddyName3 + " I know you are already in our cache", true);
 

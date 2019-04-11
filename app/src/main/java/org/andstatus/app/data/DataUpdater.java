@@ -362,11 +362,7 @@ public class DataUpdater {
                     username = StringUtils.toTempOid(actorOid);
                 }
                 values.put(ActorTable.USERNAME, username);
-                String webFingerId = actor.getWebFingerId();
-                if (SharedPreferencesUtil.isEmpty(webFingerId)) {
-                    webFingerId = username;
-                }
-                values.put(ActorTable.WEBFINGER_ID, webFingerId);
+                values.put(ActorTable.WEBFINGER_ID, actor.getWebFingerId());
                 String realName = actor.getRealName();
                 if (SharedPreferencesUtil.isEmpty(realName)) {
                     realName = username;

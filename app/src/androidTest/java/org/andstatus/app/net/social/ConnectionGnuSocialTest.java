@@ -19,7 +19,6 @@ package org.andstatus.app.net.social;
 import android.content.Context;
 import android.text.Spannable;
 
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DataUpdater;
@@ -330,9 +329,8 @@ public class ConnectionGnuSocialTest {
         activity.getNote().setUpdatedDate(MyLog.uniqueCurrentTimeMS());
         activity.setUpdatedNow(0);
 
-        MyAccount ma = demoData.getGnuSocialAccount();
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, 123));
+                CommandData.newItemCommand(CommandEnum.GET_NOTE, mock.getData().getMyAccount(), 123));
         DataUpdater di = new DataUpdater(executionContext);
         di.onActivity(activity);
 

@@ -505,7 +505,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return isWebFingerIdValid;
     }
 
-    static boolean isWebFingerIdValid(String webFingerId) {
+    public static boolean isWebFingerIdValid(String webFingerId) {
         return StringUtils.nonEmpty(webFingerId) && Patterns.WEBFINGER_ID_REGEX_PATTERN.matcher(webFingerId).matches();
     }
 
@@ -530,8 +530,25 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (actorId == 0 && isWebFingerIdValid()) {
             actorId = MyQuery.webFingerIdToId(origin.getId(), webFingerId);
         }
-        if (actorId == 0 && !isWebFingerIdValid() && StringUtils.nonEmpty(username)) {
-            actorId = MyQuery.usernameToId(origin.getId(), username);
+        if (actorId == 0 && StringUtils.nonEmpty(username)) {
+            long actorId2 = MyQuery.usernameToId(origin.getId(), username);
+            if (actorId2 != 0) {
+                boolean skip2 = false;
+                if (isWebFingerIdValid()) {
+                    String webFingerId2 = MyQuery.actorIdToWebfingerId(actorId2);
+                    if (isWebFingerIdValid(webFingerId2)) {
+                        skip2 = !webFingerId.equalsIgnoreCase(webFingerId2);
+                        if (!skip2) actorId = actorId2;
+                    }
+                }
+                if (actorId == 0 && !skip2 && isOidReal()) {
+                    String oid2 = MyQuery.idToOid(OidEnum.ACTOR_OID, actorId2, 0);
+                    if (UriUtils.isRealOid(oid2)) skip2 = !oid.equalsIgnoreCase(oid2);
+                }
+                if (actorId == 0 && !skip2) {
+                    actorId = actorId2;
+                }
+            }
         }
         if (actorId == 0) {
             actorId = MyQuery.oidToId(origin.myContext, OidEnum.ACTOR_OID, origin.getId(), toTempOid());

@@ -69,7 +69,7 @@ public class DemoAccountInserter {
                 demoData.gnusocialTestAccountAvatarUrl, OriginType.MASTODON);
         addAccount(demoData.conversationAccountActorOid, demoData.conversationAccountName,
                 demoData.conversationAccountAvatarUrl, demoData.conversationOriginType);
-        addAccount(demoData.conversationAccount2ActorOid, demoData.conversationAccount2Name,
+        addAccount(demoData.conversationAccountSecondActorOid, demoData.conversationAccountSecondName,
                 "", demoData.conversationOriginType);
         addAccount(demoData.activityPubTestAccountActorOid, demoData.activityPubTestAccountName,
                 "", OriginType.ACTIVITYPUB);

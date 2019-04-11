@@ -63,7 +63,7 @@ public class DemoConversationInserter {
 
         Actor author3 = buildActorFromOid(demoData.conversationAuthorThirdActorOid);
         author3.setRealName("John Smith");
-        author3.setUsername(demoData.conversationAuthorThirdUsername);
+        author3.withUniqueNameInOrigin(demoData.conversationAuthorThirdUniqueName);
         author3.setHomepage("http://johnsmith.com/welcome");
         author3.setCreatedDate(new GregorianCalendar(2011,5,12).getTimeInMillis());
         author3.setSummary("I am an ordinary guy, interested in computer science");
@@ -167,7 +167,7 @@ public class DemoConversationInserter {
         addActivity(myLikeOf9);
 
         // Note downloaded by another account
-        final MyAccount ma2 = demoData.getMyAccount(demoData.conversationAccount2Name);
+        final MyAccount ma2 = demoData.getMyAccount(demoData.conversationAccountSecondName);
         author3.followedByMe = TriState.TRUE;
         author3.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
         AActivity reply10 = buildActivity(ma2.getActor(), author3, "", "Reply 10 to Reply 8", reply8,
@@ -211,7 +211,7 @@ public class DemoConversationInserter {
         addActivity(followAuthor3);
         DemoNoteInserter.assertInteraction(followAuthor3, NotificationEventType.EMPTY, TriState.FALSE);
 
-        Actor notLoadedActor = Actor.fromOid(accountActor.origin, "acct:notloaded@someother.host"
+        Actor notLoadedActor = Actor.fromOid(accountActor.origin, "acct:notloaded@someother.host."
         + demoData.testOriginParentHost);
         AActivity notLoaded1 = AActivity.newPartialNote(accountActor, notLoadedActor, MyLog.uniqueDateTimeFormatted());
         AActivity reply15 = buildActivity(author4, "", "Reply 15 to not loaded 1", notLoaded1, null);
