@@ -29,15 +29,16 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="47.09" android:versionCode="282"
-             versionDate="2019-03-27"
-             versionTitle="Fixed a crash on Account creation failure">
+    <release android:versionName="47.11" android:versionCode="284"
+             versionDate="2019-04-11"
+             versionTitle="Fixed lost drafts and duplicated actors">
         <changes>
-            <change>The bug caused a crash instead of displaying an error message.</change>
+            <change>Fixed: Draft were lost in a case earlier draft of the same account already existed.</change>
+            <change>Fixed: Duplicated actors were created in case of incomplete info on them received (e.g. id and username only).</change>
         </changes>
     </release>
-    <release android:versionName="47.07" android:versionCode="280"
-             versionDate="2019-03-22"
+    <release android:versionName="47.09" android:versionCode="282"
+             versionDate="2019-03-27"
              versionTitle="Better mobile traffic protection">
         <changes>
             <change>Size of downloaded files/streams is controlled during download, and not after download completion,
