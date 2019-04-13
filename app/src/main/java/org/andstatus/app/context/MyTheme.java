@@ -19,7 +19,6 @@ package org.andstatus.app.context;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
-import androidx.annotation.NonNull;
 import android.util.TypedValue;
 import android.view.View;
 
@@ -28,6 +27,8 @@ import org.andstatus.app.R;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
+
+import androidx.annotation.NonNull;
 
 /**
  * Theme and style-relates utility class
@@ -61,10 +62,10 @@ public class MyTheme {
 
     @NonNull
     public static String getThemeName(Context context) {
-        if (MyActivity.class.isAssignableFrom(context.getClass()) && ((MyActivity) context).isFinishing()) {
+        if (context instanceof MyActivity && ((MyActivity) context).isFinishing()) {
             return "Theme.Transparent";
         }
-        return "Theme.AndStatus." + SharedPreferencesUtil.getString(MyPreferences.KEY_THEME_COLOR, "Light");
+        return "Theme.AndStatus." + SharedPreferencesUtil.getString(MyPreferences.KEY_THEME_COLOR, "DeviceDefault");
     }
 
     public static boolean isThemeLight() {

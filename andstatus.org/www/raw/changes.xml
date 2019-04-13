@@ -35,11 +35,16 @@
         <changes>
             <change>Backup feature enhancements simplify application's testing and troubleshooting. Now AndStatus allows
                 to backup current data, then do reinstalls and experiments with other versions and settings. And finally
-                restore everything as it was before the first backup, to the same or any other device.<br />
-                1. New option added to the <i>Storage</i> section: "Backup media files: attachments and avatars".
-                Now AndStatus can backup and restore them.<br/>
-                2. New option added to the <i>Troubleshooting</i> section: "Backup log files".
-                Now AndStatus can backup and restore them.</change>
+                restore everything to the same or any other device as it was before the first backup.
+                <ol>
+                    <li>New option added to the <i>Storage</i> section: "Backup media files: attachments and avatars".
+                        Now AndStatus can backup and restore them.</li>
+                    <li>New option added to the <i>Troubleshooting</i> section: "Backup log files".
+                        Now AndStatus can backup and restore them.</li>
+                </ol>
+                </change>
+            <change>Default color theme changed from "Light" to "Device Default".
+                Nowadays this theme is more popular.</change>
         </changes>
     </release>
     <release android:versionName="47.11" android:versionCode="284"
