@@ -162,6 +162,8 @@ public class SharedPreferencesUtil {
     }
 
     public static long copyAll(SharedPreferences from, SharedPreferences to) {
+        if (from == null || to == null) return 0;
+
         long entryCounter = 0;
         Editor editor = to.edit();
         for (Entry<String, ?> entry : from.getAll().entrySet()) {

@@ -4,6 +4,7 @@ import android.net.Uri;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.util.MyLog;
@@ -101,7 +102,7 @@ public class DataPrunerTest {
 
     @Test
     public void testPruneMedia() {
-        long dirSize1 = DownloadFile.getDirSize();
+        long dirSize1 = MyStorage.getMediaFilesSize();
         long newSizeOfAttachmentMb = 1;
         long newSizeOfAttachment = newSizeOfAttachmentMb * BYTES_IN_MB;
         long attachmentsStoredMin = DataPruner.ATTACHMENTS_TO_STORE_MIN + 2;
@@ -118,9 +119,9 @@ public class DataPrunerTest {
 
         DataPruner dp = new DataPruner(MyContextHolder.get(), MyContextHolder.get().getDatabase());
         long prunedCount1 = dp.pruneMedia();
-        long dirSize2 = DownloadFile.getDirSize();
+        long dirSize2 = MyStorage.getMediaFilesSize();
         long prunedCount2 = dp.pruneMedia();
-        long dirSize3 = DownloadFile.getDirSize();
+        long dirSize3 = MyStorage.getMediaFilesSize();
 
         SharedPreferencesUtil.removeKey(MyPreferences.KEY_MAXIMUM_SIZE_OF_ATTACHMENT_MB);
         SharedPreferencesUtil.removeKey(MyPreferences.KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB);

@@ -29,6 +29,19 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="47.12" android:versionCode="285"
+             versionDate="2019-04-13"
+             versionTitle="Backup feature is enhanced: Optionally backup and restore media files and logs">
+        <changes>
+            <change>Backup feature enhancements simplify application's testing and troubleshooting. Now AndStatus allows
+                to backup current data, then do reinstalls and experiments with other versions and settings. And finally
+                restore everything as it was before the first backup, to the same or any other device.<br />
+                1. New option added to the <i>Storage</i> section: "Backup media files: attachments and avatars".
+                Now AndStatus can backup and restore them.<br/>
+                2. New option added to the <i>Troubleshooting</i> section: "Backup log files".
+                Now AndStatus can backup and restore them.</change>
+        </changes>
+    </release>
     <release android:versionName="47.11" android:versionCode="284"
              versionDate="2019-04-11"
              versionTitle="Fixed lost drafts and duplicated actors">

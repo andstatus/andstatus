@@ -20,12 +20,12 @@ import android.content.ContentResolver;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.DownloadTable;
@@ -41,6 +41,8 @@ import java.io.File;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import androidx.annotation.NonNull;
 
 /**
  * Clean database from outdated information
@@ -149,6 +151,7 @@ public class DataPruner {
         if (mDeleted > 0) {
             pruneParentlessAttachments();
         }
+        deleteTempFiles();
         pruneMedia();
         pruneTimelines(Long.max(latestTimestamp, getLatestTimestamp(MAX_DAYS_UNUSED_TIMELINES_TO_KEEP)));
         pruneLogs(MAX_DAYS_LOGS_TO_KEEP);
@@ -163,8 +166,12 @@ public class DataPruner {
         return pruned;
     }
 
+    private void deleteTempFiles() {
+        MyStorage.getMediaFiles().filter(MyStorage::isTempFile).forEach(File::delete);
+    }
+
     long pruneMedia() {
-        long dirSize = DownloadFile.getDirSize();
+        long dirSize = MyStorage.getMediaFilesSize();
         long maxSize = MyPreferences.getMaximumSizeOfCachedMediaBytes();
         final long bytesToPrune = dirSize - maxSize;
         long bytesToPruneMin = ATTACHMENTS_TO_STORE_MIN * MyPreferences.getMaximumSizeOfAttachmentBytes();

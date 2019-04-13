@@ -17,7 +17,6 @@
 package org.andstatus.app.context;
 
 import android.os.Environment;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -25,12 +24,18 @@ import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.stream.Stream;
+
+import androidx.annotation.NonNull;
 
 /**
  * Utility class grouping references to Storage
  * @author yvolk@yurivolkov.com
  */
 public class MyStorage {
+    public static final String TEMP_FILENAME_PREFIX = "temp_";
+    public static final int FILE_CHUNK_SIZE = 250000;
     private static final String TAG = MyStorage.class.getSimpleName();
 
     /** Standard directory in which to place databases */
@@ -167,5 +172,27 @@ public class MyStorage {
      */
     public static boolean isDataAvailable() {
         return getDataFilesDir(null) != null;
+    }
+
+    public static boolean isTempFile(File file) {
+        return file.getName().startsWith(TEMP_FILENAME_PREFIX);
+    }
+
+    public static Stream<File> getMediaFiles() {
+        return Arrays.stream(getDataFilesDir(DIRECTORY_DOWNLOADS).listFiles()).filter(File::isFile);
+    }
+
+    public static File newTempFile(String filename) {
+        return newMediaFile(TEMP_FILENAME_PREFIX + filename);
+    }
+
+    public static File newMediaFile(String filename) {
+        File folder = getDataFilesDir(DIRECTORY_DOWNLOADS);
+        if (!folder.exists()) folder.mkdir();
+        return new File(folder, filename);
+    }
+
+    public static long getMediaFilesSize() {
+        return getMediaFiles().mapToLong(File::length).sum();
     }
 }

@@ -7,7 +7,6 @@ import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.content.Context;
-import android.content.pm.PackageManager.NameNotFoundException;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccounts;
@@ -51,7 +50,7 @@ public class MyBackupAgentTest {
     }
 
     @Test
-    public void testBackupRestore() throws IOException, JSONException, NameNotFoundException, InterruptedException {
+    public void testBackupRestore() throws IOException, JSONException {
         MyAccounts accountsBefore = MyAccounts.newEmpty(MyContextHolder.get());
         accountsBefore.initialize();
 
@@ -98,6 +97,7 @@ public class MyBackupAgentTest {
         backupManager.backup();
 
         assertEquals("Shared preferences backed up", 1, backupManager.getBackupAgent().getSharedPreferencesBackedUp());
+        assertEquals("Media files backed up", 1, backupManager.getBackupAgent().getDownloadFoldersBackedUp());
         assertEquals("Databases backed up", 1, backupManager.getBackupAgent().getDatabasesBackedUp());
         assertEquals("Accounts backed up", backupManager.getBackupAgent().getAccountsBackedUp(), MyContextHolder.get()
                 .accounts().size());
@@ -166,6 +166,7 @@ public class MyBackupAgentTest {
 
         backupManager.restore();
         assertEquals("Shared preferences restored", 1, backupManager.getBackupAgent().sharedPreferencesRestored);
+        assertEquals("Downloads restored", 1, backupManager.getBackupAgent().downloadFoldersRestored);
         assertEquals("Databases restored", 1, backupManager.getBackupAgent().databasesRestored);
     }
 

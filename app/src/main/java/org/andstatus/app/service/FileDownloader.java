@@ -19,6 +19,7 @@ package org.andstatus.app.service;
 import android.net.Uri;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadFile;
 import org.andstatus.app.data.DownloadStatus;
@@ -79,7 +80,7 @@ public abstract class FileDownloader {
 
     private void downloadFile() {
         final String method = "downloadFile";
-        DownloadFile fileTemp = new DownloadFile("temp_" + data.getFilenameNew());
+        DownloadFile fileTemp = new DownloadFile(MyStorage.TEMP_FILENAME_PREFIX + data.getFilenameNew());
         try {
             File file = fileTemp.getFile();
             MyAccount ma = findBestAccountForDownload();

@@ -19,6 +19,7 @@ package org.andstatus.app.backup;
 import android.app.backup.BackupDataInput;
 
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONObject;
@@ -31,7 +32,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class MyBackupDataInput {
-    final static int FILE_CHUNK_SIZE = 250000;
     private static final String ENTITY_HEADER_NOT_READ = "Entity header not read";
     private MyContext myContext;
     private BackupDataInput backupDataInput;
@@ -42,7 +42,7 @@ public class MyBackupDataInput {
     private boolean mHeaderReady = false;
     private int dataOffset = 0;
     private BackupHeader header = BackupHeader.getEmpty();
-    
+
     static class BackupHeader implements Comparable<BackupHeader> {
         String key;
         long ordinalNumber;
@@ -211,7 +211,7 @@ public class MyBackupDataInput {
 
     private int readEntityData2(byte[] data, int offset, int size) throws IOException {
         int bytesRead = 0;
-        if (size > FILE_CHUNK_SIZE) {
+        if (size > MyStorage.FILE_CHUNK_SIZE) {
             throw new FileNotFoundException("Size to read is too large: " + size);
         } else if (size < 1 || dataOffset >= header.dataSize) {
             // skip
@@ -252,6 +252,7 @@ public class MyBackupDataInput {
     void setMyContext(MyContext myContext) {
         this.myContext = myContext;
     }
+
     public MyContext getMyContext() {
         return myContext;
     }

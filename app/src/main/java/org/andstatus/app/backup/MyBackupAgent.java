@@ -22,6 +22,7 @@ import android.app.backup.BackupDataInput;
 import android.app.backup.BackupDataOutput;
 import android.content.Context;
 import android.os.ParcelFileDescriptor;
+import android.text.format.Formatter;
 
 import org.andstatus.app.FirstActivity;
 import org.andstatus.app.R;
@@ -38,6 +39,7 @@ import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.ZipUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -45,8 +47,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class MyBackupAgent extends BackupAgent {
-    public static final String DATABASE_KEY = "database";
     public static final String SHARED_PREFERENCES_KEY = "shared_preferences";
+    public static final String DOWNLOADS_KEY = "downloads";
+    public static final String DATABASE_KEY = "database";
 
     private Activity activity;
     private MyBackupDescriptor backupDescriptor = null;
@@ -59,6 +62,9 @@ public class MyBackupAgent extends BackupAgent {
     long databasesRestored = 0;
     private long sharedPreferencesBackedUp = 0;
     long sharedPreferencesRestored = 0;
+
+    private long downloadFoldersBackedUp = 0;
+    long downloadFoldersRestored = 0;
 
     void setActivity(Activity activity) {
         this.activity = activity;
@@ -141,25 +147,40 @@ public class MyBackupAgent extends BackupAgent {
         sharedPreferencesBackedUp = backupFile(data,
                 SHARED_PREFERENCES_KEY,
                 SharedPreferencesUtil.defaultSharedPreferencesPath(MyContextHolder.get().context()));
+        if (MyPreferences.isBackupDownloads()) {
+            downloadFoldersBackedUp = backupFolder(data, DOWNLOADS_KEY,
+                    MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS));
+        }
         databasesBackedUp = backupFile(data,
                 DATABASE_KEY + "_" + DatabaseHolder.DATABASE_NAME,
                 MyStorage.getDatabasePath(DatabaseHolder.DATABASE_NAME));
         accountsBackedUp = MyContextHolder.get().accounts().onBackup(data, backupDescriptor);
     }
-    
+
+    private long backupFolder(MyBackupDataOutput data, String key, File sourceFolder) {
+        return ZipUtils.zipFiles(sourceFolder, MyStorage.newTempFile(key + ".zip"))
+            .map( zipFile -> {
+                backupFile(data, key, zipFile);
+                zipFile.delete();
+                return 1; })
+            .onFailure(e ->
+                MyLog.w(this,"Failed to backup folder " + sourceFolder.getAbsolutePath() + ", " + e.getMessage()))
+            .getOrElse(0);
+    }
+
     private long backupFile(MyBackupDataOutput data, String key, File dataFile) throws IOException {
-        long backedUpCount = 0;
+        long backedUpFilesCount = 0;
         if (dataFile.exists()) {
             long fileLength = dataFile.length();
             if ( fileLength > Integer.MAX_VALUE) {
                 throw new FileNotFoundException("File '" 
-                        + dataFile.getName() + "' is too large for backup: " + fileLength + " bytes" );
+                        + dataFile.getName() + "' is too large for backup: " + formatBytes(fileLength));
             } 
             int bytesToWrite = (int) fileLength;
             data.writeEntityHeader(key, bytesToWrite, MyBackupDataOutput.getDataFileExtension(dataFile));
             int bytesWritten = 0;
             while (bytesWritten < bytesToWrite) {
-                byte[] bytes = FileUtils.getBytes(dataFile, bytesWritten, MyBackupDataInput.FILE_CHUNK_SIZE);
+                byte[] bytes = FileUtils.getBytes(dataFile, bytesWritten, MyStorage.FILE_CHUNK_SIZE);
                 if (bytes.length <= 0) {
                     break;
                 }
@@ -170,13 +191,17 @@ public class MyBackupAgent extends BackupAgent {
                 throw new FileNotFoundException("Couldn't backup "
                         + filePartiallyWritten(key, dataFile, bytesToWrite, bytesWritten));
             }
-            backedUpCount++;
+            backedUpFilesCount++;
             backupDescriptor.getLogger().logProgress(
                     "Backed up " + fileWritten(key, dataFile, bytesWritten));
         } else {
             MyLog.v(this, () -> "File doesn't exist key='" + key + "', path='" + dataFile.getAbsolutePath());
         }
-        return backedUpCount;
+        return backedUpFilesCount;
+    }
+
+    private String formatBytes(long fileLength) {
+        return Formatter.formatFileSize(getBaseContext(), fileLength);
     }
 
     private String fileWritten(String key, File dataFile, int bytesWritten) {
@@ -187,11 +212,11 @@ public class MyBackupAgent extends BackupAgent {
         if ( bytesWritten == bytesToWrite) {
             return "file:'" + dataFile.getName()
                     + "', key:'" + key + "', length:"
-                    + bytesWritten + " bytes";
+                    + formatBytes(bytesWritten);
         } else {
             return "file:'" + dataFile.getName()
                     + "', key:'" + key + "', wrote "
-                    + bytesWritten + " of " + bytesToWrite + " bytes";
+                    + formatBytes(bytesWritten) + " of " + formatBytes(bytesToWrite);
         }
     }
     
@@ -253,6 +278,9 @@ public class MyBackupAgent extends BackupAgent {
     
     private void doRestore(MyBackupDataInput data) throws IOException {
         restoreSharedPreferences(data);
+        if (optionalNextHeader(data, DOWNLOADS_KEY)) {
+            downloadFoldersRestored += restoreFolder(data, MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS));
+        }
         assertNextHeader(data, DATABASE_KEY + "_" + DatabaseHolder.DATABASE_NAME);
         databasesRestored += restoreFile(data, MyStorage.getDatabasePath(DatabaseHolder.DATABASE_NAME));
         MyContextHolder.release(() -> "doRestore");
@@ -277,8 +305,7 @@ public class MyBackupAgent extends BackupAgent {
         FirstActivity.setDefaultValues(activity == null ? this : activity);
         assertNextHeader(data, SHARED_PREFERENCES_KEY);
         final String filename = "preferences";
-        File tempFile = new File(SharedPreferencesUtil.prefsDirectory(MyContextHolder.get()
-                .context()), filename + ".xml");
+        File tempFile = MyStorage.newTempFile(filename + ".xml");
         sharedPreferencesRestored += restoreFile(data, tempFile);
         SharedPreferencesUtil.copyAll(SharedPreferencesUtil.getSharedPreferences(filename),
                 SharedPreferencesUtil.getDefaultSharedPreferences());
@@ -289,7 +316,7 @@ public class MyBackupAgent extends BackupAgent {
         MyContextHolder.release(() -> "restoreSharedPreferences");
         MyContextHolder.initialize(this, this);
     }
-    
+
     private void fixExternalStorage() {
         if (!MyStorage.isStorageExternal() ||
                 MyStorage.isWritableExternalStorageAvailable(null)) {
@@ -316,7 +343,15 @@ public class MyBackupAgent extends BackupAgent {
         }
         return false;
     }
-    
+
+    private long restoreFolder(MyBackupDataInput data, File targetFolder) throws IOException {
+        File tempFile = MyStorage.newTempFile(data.getKey() + ".zip");
+        restoreFile(data, tempFile);
+        ZipUtils.unzipFiles(tempFile, targetFolder);
+        tempFile.delete();
+        return 1;
+    }
+
     /** @return count of restores files */
     public long restoreFile(MyBackupDataInput data, File dataFile) throws IOException {
         if (dataFile.exists() && !dataFile.delete()) {
@@ -329,7 +364,7 @@ public class MyBackupAgent extends BackupAgent {
         int bytesWritten = 0;
         try (FileOutputStream output = new FileOutputStream(dataFile, false)) {
             while (bytesToWrite > bytesWritten) {
-                byte[] bytes = new byte[MyBackupDataInput.FILE_CHUNK_SIZE];
+                byte[] bytes = new byte[MyStorage.FILE_CHUNK_SIZE];
                 int bytesRead = data.readEntityData(bytes, 0, bytes.length);
                 if (bytesRead == 0) {
                     break;
@@ -361,5 +396,9 @@ public class MyBackupAgent extends BackupAgent {
 
     long getSharedPreferencesBackedUp() {
         return sharedPreferencesBackedUp;
+    }
+
+    public long getDownloadFoldersBackedUp() {
+        return downloadFoldersBackedUp;
     }
 }

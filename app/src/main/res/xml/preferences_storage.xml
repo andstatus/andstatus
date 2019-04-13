@@ -39,10 +39,12 @@
         android:singleLine="true"
         android:defaultValue="1000"
         android:title="@string/maximum_size_of_cached_media_mb" />
-	<Preference android:key="backup_restore"
-		android:persistent="false" />
 	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="enable_android_backup"
 		android:title="@string/title_preference_enable_android_backup"
 		android:summaryOff="@string/summary_preference_enable_android_backup_off"
 		android:summaryOn="@string/summary_preference_enable_android_backup_on" />
+	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="backup_downloads"
+		android:title="@string/backup_downloads" />
+	<Preference android:key="backup_restore"
+		android:persistent="false" />
 </PreferenceScreen>

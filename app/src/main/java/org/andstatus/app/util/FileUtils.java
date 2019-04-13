@@ -79,17 +79,18 @@ public class FileUtils {
     /** Reads the whole file */
     public static byte[] getBytes(File file) throws IOException {
         if (file != null) {
-            return getBytes(new FileInputStream(file));
+            try (InputStream is = new FileInputStream(file)) {
+                return getBytes(is);
+            }
         }
         return new byte[0];
     }
 
-    /** Read the stream into an array and close the stream **/
+    /** Read the stream into an array; the stream is not closed **/
     public static byte[] getBytes(InputStream is) throws IOException {
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
         if (is != null) {
             byte[] readBuffer = new byte[BUFFER_LENGTH];
-            try {
+            try (ByteArrayOutputStream bout = new ByteArrayOutputStream()) {
                 int read;
                 do {
                     read = is.read(readBuffer, 0, readBuffer.length);
@@ -99,8 +100,6 @@ public class FileUtils {
                     bout.write(readBuffer, 0, read);
                 } while(true);
                 return bout.toByteArray();
-            } finally {
-                DbUtils.closeSilently(is);
             }
         }
         return new byte[0];

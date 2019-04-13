@@ -104,6 +104,7 @@ public class MyPreferences {
     public static final String KEY_HISTORY_TIME = "history_time";
     public static final String KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB = "maximum_size_of_cached_media_mb";
     public static final String KEY_ENABLE_ANDROID_BACKUP = "enable_android_backup";
+    public static final String KEY_BACKUP_DOWNLOADS = "backup_downloads";
 
     // ----------------------------------------------------------
     // Information
@@ -275,6 +276,10 @@ public class MyPreferences {
     public static long getMaximumSizeOfCachedMediaBytes() {
         return Math.max(SharedPreferencesUtil.getLong(KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB, 1000), 1)
                 * BYTES_IN_MB;
+    }
+
+    public static boolean isBackupDownloads() {
+        return SharedPreferencesUtil.getBoolean(KEY_BACKUP_DOWNLOADS, false);
     }
 
     public static boolean isShowMyAccountWhichDownloadedActivity() {

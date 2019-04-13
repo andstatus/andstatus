@@ -57,6 +57,8 @@ import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
+import static org.andstatus.app.util.I18n.formatBytes;
+
 public class MySettingsFragment extends PreferenceFragmentCompat implements
         OnSharedPreferenceChangeListener {
     static final String FRAGMENT_TAG = "settings_fragment";
@@ -333,7 +335,8 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
         Preference preference = findPreference(MyPreferences.KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB);
         if (preference != null) {
             preference.setSummary(Formatter.formatShortFileSize(getActivity(),
-                    MyPreferences.getMaximumSizeOfCachedMediaBytes()));
+                    MyPreferences.getMaximumSizeOfCachedMediaBytes()) +
+                    " (" + getText(R.string.reltime_just_now) + ": " + formatBytes(MyStorage.getMediaFilesSize()) + ")");
         }
     }
 

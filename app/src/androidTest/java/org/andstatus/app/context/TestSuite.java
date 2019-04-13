@@ -124,6 +124,7 @@ public class TestSuite {
         MyLog.setMinLogLevel(logLevel);
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_DOWNLOAD_AND_DISPLAY_ATTACHED_IMAGES, true);
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_ATTACH_IMAGES_TO_MY_NOTES, true);
+        SharedPreferencesUtil.putBoolean(MyPreferences.KEY_BACKUP_DOWNLOADS, true);
         AsyncTaskLauncher.forget();
         ExceptionsCounter.forget();
         MyLog.forget();
