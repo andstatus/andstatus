@@ -16,8 +16,6 @@
 
 package org.andstatus.app.actor;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,6 +37,9 @@ import org.andstatus.app.util.MyUrlSpan;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable {
     private final Origin origin;
@@ -83,11 +84,16 @@ public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable 
             view = convertView;
         }
         final ActorViewItem item = getItem(position);
-        String username = item == null ? "???" : item.getUniqueNameInOrigin();
-        MyUrlSpan.showText(view, R.id.username, username, false, true);
-        MyUrlSpan.showText(view, R.id.description, item == null ? "" :
-                I18n.trimTextAt(item.actor.getSummary(), 80).toString(), false, false);
-        showAvatar(view, item);
+        if (item == null || item.actor.isEmpty()) {
+            MyUrlSpan.showText(view, R.id.username,
+                    myActivity.getText(R.string.nothing_in_the_loadable_list).toString(),false,true);
+        } else {
+            String username = item.getUniqueNameInOrigin();
+            MyUrlSpan.showText(view, R.id.username, username, false, true);
+            MyUrlSpan.showText(view, R.id.description,
+                    I18n.trimTextAt(item.actor.getSummary(), 80).toString(), false, false);
+            showAvatar(view, item);
+        }
         return view;
     }
 
@@ -162,11 +168,15 @@ public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable 
 
         @Override
         public CharSequence convertResultToString(Object resultValue) {
-            if (resultValue == null) {
-                return "(null)";
+            if (!(resultValue instanceof ActorViewItem)) {
+                return "";
             }
-            return origin.isMentionAsWebFingerId() ? ((ActorViewItem)resultValue).getUniqueNameInOrigin()
-                    : ((ActorViewItem)resultValue).actor.getUsername();
+            ActorViewItem item = (ActorViewItem) resultValue;
+            return item.getActor().isEmpty()
+                    ? ""
+                    : origin.isMentionAsWebFingerId()
+                        ? item.getUniqueNameInOrigin()
+                        : item.actor.getUsername();
         }
     }
 }

@@ -44,7 +44,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import androidx.test.espresso.action.TypeTextAction;
+import androidx.test.espresso.action.ReplaceTextAction;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
@@ -85,7 +85,8 @@ public class NoteEditorActivityPubTest extends TimelineActivityTest<ActivityView
 
         String actorUniqueName = "me" + demoData.testRunUid + "@mastodon.example.com";
         final String content = "Sending note to the unknown yet Actor @" + actorUniqueName;
-        onView(withId(R.id.noteBodyEditText)).perform(new TypeTextAction(content));
+        // TypeTextAction doesn't work here due to auto-correction
+        onView(withId(R.id.noteBodyEditText)).perform(new ReplaceTextAction(content));
         TestSuite.waitForIdleSync();
 
         ActivityTestHelper<TimelineActivity> helper2 = new ActivityTestHelper<>(getActivity());

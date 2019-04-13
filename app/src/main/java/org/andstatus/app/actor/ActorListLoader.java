@@ -3,7 +3,6 @@ package org.andstatus.app.actor;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
@@ -23,6 +22,8 @@ import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StopWatch;
 import org.andstatus.app.util.StringUtils;
+
+import androidx.annotation.NonNull;
 
 import static java.util.stream.Collectors.toList;
 
@@ -65,13 +66,9 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
             MyLog.d(this, "Loaded " + size() + " items, " + stopWatch.getTime() + "ms");
         }
         if (items.isEmpty()) {
-            addEmptyItem(myContext.context()
-                    .getText(R.string.nothing_in_the_loadable_list).toString());
+            items.add(ActorViewItem.newEmpty(myContext.context()
+                        .getText(R.string.nothing_in_the_loadable_list).toString()));
         }
-    }
-
-    protected void addEmptyItem(String description) {
-        items.add(ActorViewItem.newEmpty(description));
     }
 
     public Actor addActorIdToList(Origin origin, long actorId) {

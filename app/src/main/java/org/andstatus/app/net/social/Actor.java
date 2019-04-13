@@ -697,7 +697,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public Actor setSummary(String summary) {
-        if (!SharedPreferencesUtil.isEmpty(summary)) {
+        if (!isEmpty() && !SharedPreferencesUtil.isEmpty(summary)) {
             this.summary = summary;
         }
         return this;
