@@ -18,7 +18,6 @@ package org.andstatus.app.context;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import androidx.annotation.NonNull;
 import android.widget.Toast;
 
 import net.jcip.annotations.GuardedBy;
@@ -31,14 +30,14 @@ import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
+import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+
+import androidx.annotation.NonNull;
 
 public class StorageSwitch {
 
@@ -164,7 +163,8 @@ public class StorageSwitch {
                 result.success = moveDatabase(mUseExternalStorageNew, result.messageBuilder, DatabaseHolder.DATABASE_NAME);
                 if (result.success) {
                     result.moved = true;
-                    moveDownloads(mUseExternalStorageNew, result.messageBuilder);
+                    moveFolder(mUseExternalStorageNew, result.messageBuilder, MyStorage.DIRECTORY_DOWNLOADS);
+                    moveFolder(mUseExternalStorageNew, result.messageBuilder, MyStorage.DIRECTORY_LOGS);
                 }
             } finally {
                 if (result.success) {
@@ -218,7 +218,7 @@ public class StorageSwitch {
                     }
                     try {
                         MyContextHolder.release(() -> "moveDatabase");
-                        if (copyFile(dbFileOld, dbFileNew)) {
+                        if (FileUtils.copyFile(this, dbFileOld, dbFileNew)) {
                             copied = true;
                             succeeded = true;
                         }
@@ -258,45 +258,8 @@ public class StorageSwitch {
             return succeeded;
         }
 
-        /**
-         * Based on <a href="http://www.screaming-penguin.com/node/7749">Backing
-         * up your Android SQLite database to the SD card</a>
-         * 
-         * @param src
-         * @param dst
-         * @return true if success
-         * @throws IOException
-         */
-        boolean copyFile(File src, File dst) throws IOException {
-            long sizeIn = -1;
-            long sizeCopied = 0;
-            boolean ok = false;
-            if (src != null && src.exists()) {
-                sizeIn = src.length();
-                if (!dst.createNewFile()) {
-                    MyLog.e(this, "New file was not created: '" + dst.getCanonicalPath() + "'");
-                } else if (src.getCanonicalPath().compareTo(dst.getCanonicalPath()) == 0) {
-                    MyLog.d(this, "Cannot copy to itself: '" + src.getCanonicalPath() + "'");
-                } else {
-                    try (
-                            FileInputStream fileInputStream = new FileInputStream(src);
-                            java.nio.channels.FileChannel inChannel = fileInputStream.getChannel();
-                            FileOutputStream fileOutputStream = new FileOutputStream(dst);
-                            java.nio.channels.FileChannel outChannel = fileOutputStream.getChannel();
-                    ) {
-                        sizeCopied = inChannel.transferTo(0, inChannel.size(), outChannel);
-                        ok = (sizeIn == sizeCopied);
-                    }
-
-                }
-            }
-            MyLog.d(this, "Copied " + sizeCopied + " bytes of " + sizeIn);
-            return ok;
-        }
-
-
-        private void moveDownloads(boolean useExternalStorageNew, StringBuilder messageToAppend) {
-            String method = "moveDownloads";
+        private void moveFolder(boolean useExternalStorageNew, StringBuilder messageToAppend, String folderType) {
+            String method = "moveFolder " + folderType;
             boolean succeeded = false;
             boolean done = false;
             boolean didWeCopyAnything = false;
@@ -305,16 +268,16 @@ public class StorageSwitch {
             try {
 
                 if (!done) {
-                    dirOld = MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS);
-                    dirNew = MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS,
+                    dirOld = MyStorage.getDataFilesDir(folderType);
+                    dirNew = MyStorage.getDataFilesDir(folderType,
                             TriState.fromBoolean(useExternalStorageNew));
                     if (dirOld == null || !dirOld.exists()) {
-                        messageToAppend.append(" No old avatars. ");
+                        messageToAppend.append(" No old folder. ");
                         done = true;
                         succeeded = true;
                     }
                     if (dirNew == null) {
-                        messageToAppend.append(" No directory for new avatars?! ");
+                        messageToAppend.append(" No new folder?! ");
                         done = true;
                     }
                 }
@@ -329,7 +292,7 @@ public class StorageSwitch {
                             if (fileOld.isFile()) {
                                 filename = fileOld.getName();
                                 File fileNew = new File(dirNew, filename);
-                                if (copyFile(fileOld, fileNew)) {
+                                if (FileUtils.copyFile(this, fileOld, fileNew)) {
                                     didWeCopyAnything = true;
                                 }
                             }

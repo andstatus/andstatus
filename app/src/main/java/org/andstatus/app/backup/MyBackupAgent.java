@@ -309,10 +309,10 @@ public class MyBackupAgent extends BackupAgent {
 
     private void restoreSharedPreferences(MyBackupDataInput data) throws IOException {
         MyLog.i(this, "On restoring Shared preferences");
-        FirstActivity.setDefaultValues(activity == null ? this : activity);
+        FirstActivity.setDefaultValues(getContext());
         assertNextHeader(data, SHARED_PREFERENCES_KEY);
-        final String filename = "preferences";
-        File tempFile = MyStorage.newTempFile(filename + ".xml");
+        final String filename = MyStorage.TEMP_FILENAME_PREFIX + "preferences";
+        File tempFile = new File(SharedPreferencesUtil.prefsDirectory(getContext()), filename + ".xml");
         sharedPreferencesRestored += restoreFile(data, tempFile);
         SharedPreferencesUtil.copyAll(SharedPreferencesUtil.getSharedPreferences(filename),
                 SharedPreferencesUtil.getDefaultSharedPreferences());
@@ -322,6 +322,10 @@ public class MyBackupAgent extends BackupAgent {
         fixExternalStorage();
         MyContextHolder.release(() -> "restoreSharedPreferences");
         MyContextHolder.initialize(this, this);
+    }
+
+    private Context getContext() {
+        return activity == null ? this : activity;
     }
 
     private void fixExternalStorage() {

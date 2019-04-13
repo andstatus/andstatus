@@ -28,6 +28,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 /** Allowing to instantiate and to mock BackupDataOutput class */
 public class MyBackupDataOutput {
@@ -81,7 +82,7 @@ public class MyBackupDataOutput {
             jso.put(KEY_ORDINAL_NUMBER, headerOrdinalNumber);
             jso.put(KEY_DATA_SIZE, dataSize);
             jso.put(KEY_FILE_EXTENSION, fileExtension);
-            byte[] bytes = jso.toString(2).getBytes("UTF-8");
+            byte[] bytes = jso.toString(2).getBytes(StandardCharsets.UTF_8);
             appendBytesToFile(headerFile, bytes, bytes.length);
         } catch (JSONException e) {
             throw new IOException(e);

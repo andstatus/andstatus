@@ -35,7 +35,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.Date;
 
 public class MyBackupDescriptor {
     private static final Object TAG = MyBackupDescriptor.class;
@@ -52,11 +51,14 @@ public class MyBackupDescriptor {
     static final String KEY_CREATED_DATE = "created_date";
     static final String KEY_BACKUP_SCHEMA_VERSION = "backup_schema_version";
     static final String KEY_APPLICATION_VERSION_CODE = "app_version_code";
-    
+    static final String KEY_APPLICATION_VERSION_NAME = "app_version_name";
+
     private int backupSchemaVersion = BACKUP_SCHEMA_VERSION_UNKNOWN;
     private int applicationVersionCode = 0;
+    private String applicationVersionName = "";
 
     private long createdDate = 0;
+    private boolean saved = false;
     private FileDescriptor fileDescriptor = null;
 
     private long accountsCount = 0;
@@ -71,14 +73,20 @@ public class MyBackupDescriptor {
         return new MyBackupDescriptor(ProgressLogger.getEmpty());
     }
     
-    static MyBackupDescriptor fromOldParcelFileDescriptor(ParcelFileDescriptor parcelFileDescriptor, ProgressLogger progressLogger) {
+    static MyBackupDescriptor fromOldParcelFileDescriptor(ParcelFileDescriptor parcelFileDescriptor,
+                                                          ProgressLogger progressLogger) {
         MyBackupDescriptor myBackupDescriptor = new MyBackupDescriptor(progressLogger);
         if (parcelFileDescriptor != null) {
             myBackupDescriptor.fileDescriptor = parcelFileDescriptor.getFileDescriptor();
             JSONObject jso = FileDescriptorUtils.getJSONObject(parcelFileDescriptor.getFileDescriptor());
-            myBackupDescriptor.backupSchemaVersion = jso.optInt(KEY_BACKUP_SCHEMA_VERSION, myBackupDescriptor.backupSchemaVersion);
+            myBackupDescriptor.backupSchemaVersion = jso.optInt(KEY_BACKUP_SCHEMA_VERSION,
+                    myBackupDescriptor.backupSchemaVersion);
             myBackupDescriptor.createdDate = jso.optLong(KEY_CREATED_DATE, myBackupDescriptor.createdDate);
-            myBackupDescriptor.applicationVersionCode = jso.optInt(KEY_APPLICATION_VERSION_CODE, myBackupDescriptor.applicationVersionCode);
+            myBackupDescriptor.saved = myBackupDescriptor.createdDate != 0;
+            myBackupDescriptor.applicationVersionCode = jso.optInt(KEY_APPLICATION_VERSION_CODE,
+                    myBackupDescriptor.applicationVersionCode);
+            myBackupDescriptor.applicationVersionName = jso.optString(KEY_APPLICATION_VERSION_NAME,
+                    myBackupDescriptor.applicationVersionName);
             myBackupDescriptor.accountsCount = jso.optLong(KEY_ACCOUNTS_COUNT, myBackupDescriptor.accountsCount);
             if (myBackupDescriptor.backupSchemaVersion != BACKUP_SCHEMA_VERSION) {
                 try {
@@ -91,7 +99,8 @@ public class MyBackupDescriptor {
         return myBackupDescriptor;
     }
 
-    static MyBackupDescriptor fromEmptyParcelFileDescriptor(ParcelFileDescriptor parcelFileDescriptor, ProgressLogger progressLoggerIn) throws IOException {
+    static MyBackupDescriptor fromEmptyParcelFileDescriptor(ParcelFileDescriptor parcelFileDescriptor,
+                                                            ProgressLogger progressLoggerIn) throws IOException {
         MyBackupDescriptor myBackupDescriptor = new MyBackupDescriptor(progressLoggerIn);
         myBackupDescriptor.fileDescriptor = parcelFileDescriptor.getFileDescriptor();
         myBackupDescriptor.backupSchemaVersion = BACKUP_SCHEMA_VERSION;
@@ -104,6 +113,7 @@ public class MyBackupDescriptor {
             throw new IOException(e);
         }
         myBackupDescriptor.applicationVersionCode = pi.versionCode;
+        myBackupDescriptor.applicationVersionName = pi.versionName;
         return myBackupDescriptor;
     }
     
@@ -118,7 +128,11 @@ public class MyBackupDescriptor {
     int getApplicationVersionCode() {
         return applicationVersionCode;
     }
-    
+
+    public String getApplicationVersionName() {
+        return applicationVersionName;
+    }
+
     boolean isEmpty() {
         return fileDescriptor == null;
     }
@@ -127,24 +141,30 @@ public class MyBackupDescriptor {
         if (isEmpty()) {
             throw new FileNotFoundException("MyBackupDescriptor is empty");
         }
-        long createdDateNew = createdDate;
-        if (createdDateNew == 0) {
-            createdDateNew = System.currentTimeMillis();
-        }
-        JSONObject jso = new JSONObject();
         try {
-            jso.put(KEY_BACKUP_SCHEMA_VERSION, backupSchemaVersion);
-            jso.put(KEY_CREATED_DATE, createdDateNew);
-            jso.put(KEY_APPLICATION_VERSION_CODE, applicationVersionCode);
-            jso.put(KEY_ACCOUNTS_COUNT, accountsCount);
-            
-            writeStringToFileDescriptor(jso.toString(), fileDescriptor, true);
-            createdDate = createdDateNew;
+            if (createdDate == 0) createdDate = System.currentTimeMillis();
+            writeStringToFileDescriptor(toJson().toString(2), fileDescriptor, true);
+            saved = true;
         } catch (JSONException e) {
             throw new IOException(e);
         }
     }
-    
+
+    private JSONObject toJson() {
+        JSONObject jso = new JSONObject();
+        if (isEmpty()) return jso;
+        try {
+            jso.put(KEY_BACKUP_SCHEMA_VERSION, backupSchemaVersion);
+            jso.put(KEY_CREATED_DATE, createdDate);
+            jso.put(KEY_APPLICATION_VERSION_CODE, applicationVersionCode);
+            jso.put(KEY_APPLICATION_VERSION_NAME, applicationVersionName);
+            jso.put(KEY_ACCOUNTS_COUNT, accountsCount);
+        } catch (JSONException e) {
+            MyLog.w(this, "toJson", e);
+        }
+        return jso;
+    }
+
     private void writeStringToFileDescriptor(String string, FileDescriptor fd, boolean logged) throws IOException {
         final String method = "writeStringToFileDescriptor";
         try (FileOutputStream fileOutputStream = new FileOutputStream(fd);
@@ -159,16 +179,11 @@ public class MyBackupDescriptor {
     
     @Override
     public String toString() {
-        return "MyBackupDescriptor {backupSchemaVersion:" + backupSchemaVersion
-                + ", " + (createdDate == 0 ? "not created" : " created:" + (new Date(createdDate)).toString())
-                + (fileDescriptor == null ? ", fileDescriptor:null" : "")
-                + ", versionCode:" + applicationVersionCode
-                + ", accountsCount:" + accountsCount
-                + "}";
+        return "MyBackupDescriptor " + toJson().toString();
      }
 
     boolean saved() {
-        return createdDate != 0;
+        return saved;
     }
 
     public long getAccountsCount() {

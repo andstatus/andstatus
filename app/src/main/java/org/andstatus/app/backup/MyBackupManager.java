@@ -160,7 +160,8 @@ class MyBackupManager {
             newDescriptor = MyBackupDescriptor.fromOldParcelFileDescriptor(newState, progressLogger);
             if (newDescriptor.getBackupSchemaVersion() != MyBackupDescriptor.BACKUP_SCHEMA_VERSION) {
                 throw new FileNotFoundException("Unsupported backup schema version: " + newDescriptor.getBackupSchemaVersion()
-                        + "; created with app version code:" + newDescriptor.getApplicationVersionCode()
+                        + "; created with app version name:" + newDescriptor.getApplicationVersionName()
+                        + " and version code:" + newDescriptor.getApplicationVersionCode()
                         + "; data folder:'" + dataFolder.getAbsolutePath() + "'");
             }
         } finally {

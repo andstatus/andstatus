@@ -81,6 +81,7 @@ public class ZipUtils {
                         fos.write(bytes, 0, length);
                     }
                 }
+                file.setLastModified(zipEntry.getTime());
             }
         }
     }

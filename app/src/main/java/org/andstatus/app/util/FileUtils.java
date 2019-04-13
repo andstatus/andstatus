@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -180,4 +181,39 @@ public class FileUtils {
         return file.exists();
     }
 
+    /**
+     * Based on <a href="http://www.screaming-penguin.com/node/7749">Backing
+     * up your Android SQLite database to the SD card</a>
+     *
+     * @param src
+     * @param dst
+     * @return true if success
+     * @throws IOException
+     */
+    public static boolean copyFile(Object objTag, File src, File dst) throws IOException {
+        long sizeIn = -1;
+        long sizeCopied = 0;
+        boolean ok = false;
+        if (src != null && src.exists()) {
+            sizeIn = src.length();
+            if (!dst.createNewFile()) {
+                MyLog.e(objTag, "New file was not created: '" + dst.getCanonicalPath() + "'");
+            } else if (src.getCanonicalPath().compareTo(dst.getCanonicalPath()) == 0) {
+                MyLog.d(objTag, "Cannot copy to itself: '" + src.getCanonicalPath() + "'");
+            } else {
+                try (
+                        FileInputStream fileInputStream = new FileInputStream(src);
+                        java.nio.channels.FileChannel inChannel = fileInputStream.getChannel();
+                        FileOutputStream fileOutputStream = new FileOutputStream(dst);
+                        java.nio.channels.FileChannel outChannel = fileOutputStream.getChannel();
+                ) {
+                    sizeCopied = inChannel.transferTo(0, inChannel.size(), outChannel);
+                    ok = (sizeIn == sizeCopied);
+                }
+                dst.setLastModified(src.lastModified());
+            }
+        }
+        MyLog.d(objTag, "Copied " + sizeCopied + " bytes of " + sizeIn);
+        return ok;
+    }
 }
