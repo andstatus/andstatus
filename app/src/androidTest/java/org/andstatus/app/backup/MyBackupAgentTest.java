@@ -97,7 +97,7 @@ public class MyBackupAgentTest {
         backupManager.backup();
 
         assertEquals("Shared preferences backed up", 1, backupManager.getBackupAgent().getSharedPreferencesBackedUp());
-        assertEquals("Media files backed up", 1, backupManager.getBackupAgent().getDownloadFoldersBackedUp());
+        assertEquals("Media files and logs backed up", 2, backupManager.getBackupAgent().getFoldersBackedUp());
         assertEquals("Databases backed up", 1, backupManager.getBackupAgent().getDatabasesBackedUp());
         assertEquals("Accounts backed up", backupManager.getBackupAgent().getAccountsBackedUp(), MyContextHolder.get()
                 .accounts().size());
@@ -166,7 +166,7 @@ public class MyBackupAgentTest {
 
         backupManager.restore();
         assertEquals("Shared preferences restored", 1, backupManager.getBackupAgent().sharedPreferencesRestored);
-        assertEquals("Downloads restored", 1, backupManager.getBackupAgent().downloadFoldersRestored);
+        assertEquals("Downloads and logs restored", 2, backupManager.getBackupAgent().foldersRestored);
         assertEquals("Databases restored", 1, backupManager.getBackupAgent().databasesRestored);
     }
 

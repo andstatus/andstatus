@@ -438,17 +438,13 @@ public class MyLog {
     }
 
     public static File getFileInLogDir(String filename, boolean logged) {
-        File dir1 = getLogDir(logged);
+        File dir1 = MyStorage.getLogsDir(logged);
         if (dir1 == null || filename == null) { 
             return null; 
         }
         return new File(dir1, filename);
     }
 
-    public static File getLogDir(boolean logged) {
-        return MyStorage.getDataFilesDir("logs", TriState.UNKNOWN, logged);
-    }
-    
     public static String formatKeyValue(Object keyIn, Object valueIn) {
         String key = objToTruncatedTag(keyIn);
         if (keyIn == null) {

@@ -41,6 +41,7 @@ public class MyStorage {
     /** Standard directory in which to place databases */
     public static final String DIRECTORY_DATABASES = "databases";
     public static final String DIRECTORY_DOWNLOADS = "downloads";
+    public static final String DIRECTORY_LOGS = "logs";
 
     private MyStorage() {
         // Non instantiable
@@ -72,7 +73,7 @@ public class MyStorage {
      * @see <a href="http://developer.android.com/guide/topics/data/data-storage.html#filesExternal">filesExternal</a>
      */
     public static File getDataFilesDir(String type, @NonNull TriState useExternalStorage) {
-        return getDataFilesDir(type, useExternalStorage, true);
+        return getDataFilesDir(type, useExternalStorage, !DIRECTORY_LOGS.equals(type));
     }
 
     public static File getDataFilesDir(String type, @NonNull TriState useExternalStorage, boolean logged) {
@@ -194,5 +195,9 @@ public class MyStorage {
 
     public static long getMediaFilesSize() {
         return getMediaFiles().mapToLong(File::length).sum();
+    }
+
+    public static File getLogsDir(boolean logged) {
+        return getDataFilesDir(DIRECTORY_LOGS, TriState.UNKNOWN, logged);
     }
 }

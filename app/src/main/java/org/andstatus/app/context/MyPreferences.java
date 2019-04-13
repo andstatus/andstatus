@@ -119,6 +119,7 @@ public class MyPreferences {
     public static final String KEY_LOG_NETWORK_LEVEL_MESSAGES = "log_network_level_messages";
     public static final String KEY_LOG_EVERYTHING_TO_FILE = "log_everything_to_file";
     private static final String KEY_ENABLE_ACTIVITYPUB = "enable_activitypub";
+    public static final String KEY_BACKUP_LOG_FILES = "backup_log_files";
 
     // ----------------------------------------------------------
     // Non-UI persistent items ("preferences")
@@ -296,5 +297,9 @@ public class MyPreferences {
 
     public static boolean isActivityPubEnabled() {
         return SharedPreferencesUtil.getBoolean(KEY_ENABLE_ACTIVITYPUB, false);
+    }
+
+    public static boolean isBackupLogFiles() {
+        return SharedPreferencesUtil.getBoolean(KEY_BACKUP_LOG_FILES, false);
     }
 }

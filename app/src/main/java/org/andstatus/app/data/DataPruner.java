@@ -238,7 +238,7 @@ public class DataPruner {
         final String method = "pruneLogs";
         long latestTimestamp = getLatestTimestamp(maxDaysToKeep);
         long deletedCount = 0;
-        File dir = MyLog.getLogDir(true);
+        File dir = MyStorage.getLogsDir(true);
         if (dir == null) {
             return deletedCount;
         }

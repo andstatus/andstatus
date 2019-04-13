@@ -125,6 +125,7 @@ public class TestSuite {
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_DOWNLOAD_AND_DISPLAY_ATTACHED_IMAGES, true);
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_ATTACH_IMAGES_TO_MY_NOTES, true);
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_BACKUP_DOWNLOADS, true);
+        SharedPreferencesUtil.putBoolean(MyPreferences.KEY_BACKUP_LOG_FILES, true);
         AsyncTaskLauncher.forget();
         ExceptionsCounter.forget();
         MyLog.forget();

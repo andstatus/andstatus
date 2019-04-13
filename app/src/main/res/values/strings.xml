@@ -36,6 +36,7 @@
   <string name="authentication_successful">Authentication successful!</string>
   <string name="automatic">Auto</string>
   <string name="backup_downloads">Backup media files: attachments and avatars</string>
+  <string name="backup_log_files">Backup log files</string>
   <string name="background_color_preference_title">Background color for the Dark theme</string>
   <string name="button_add">Add</string>
   <string name="button_add_origin">Add new Social Network</string>

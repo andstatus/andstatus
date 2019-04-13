@@ -50,6 +50,7 @@ public class MyBackupAgent extends BackupAgent {
     public static final String SHARED_PREFERENCES_KEY = "shared_preferences";
     public static final String DOWNLOADS_KEY = "downloads";
     public static final String DATABASE_KEY = "database";
+    public static final String LOG_FILES_KEY = "logs";
 
     private Activity activity;
     private MyBackupDescriptor backupDescriptor = null;
@@ -63,8 +64,8 @@ public class MyBackupAgent extends BackupAgent {
     private long sharedPreferencesBackedUp = 0;
     long sharedPreferencesRestored = 0;
 
-    private long downloadFoldersBackedUp = 0;
-    long downloadFoldersRestored = 0;
+    private long foldersBackedUp = 0;
+    long foldersRestored = 0;
 
     void setActivity(Activity activity) {
         this.activity = activity;
@@ -148,12 +149,16 @@ public class MyBackupAgent extends BackupAgent {
                 SHARED_PREFERENCES_KEY,
                 SharedPreferencesUtil.defaultSharedPreferencesPath(MyContextHolder.get().context()));
         if (MyPreferences.isBackupDownloads()) {
-            downloadFoldersBackedUp = backupFolder(data, DOWNLOADS_KEY,
+            foldersBackedUp += backupFolder(data, DOWNLOADS_KEY,
                     MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS));
         }
         databasesBackedUp = backupFile(data,
                 DATABASE_KEY + "_" + DatabaseHolder.DATABASE_NAME,
                 MyStorage.getDatabasePath(DatabaseHolder.DATABASE_NAME));
+        if (MyPreferences.isBackupLogFiles()) {
+            foldersBackedUp += backupFolder(data, LOG_FILES_KEY,
+                    MyStorage.getDataFilesDir(MyStorage.DIRECTORY_LOGS));
+        }
         accountsBackedUp = MyContextHolder.get().accounts().onBackup(data, backupDescriptor);
     }
 
@@ -211,8 +216,7 @@ public class MyBackupAgent extends BackupAgent {
     private String filePartiallyWritten(String key, File dataFile, int bytesToWrite, int bytesWritten) {
         if ( bytesWritten == bytesToWrite) {
             return "file:'" + dataFile.getName()
-                    + "', key:'" + key + "', length:"
-                    + formatBytes(bytesWritten);
+                    + "', key:'" + key + "', size:" + formatBytes(bytesWritten);
         } else {
             return "file:'" + dataFile.getName()
                     + "', key:'" + key + "', wrote "
@@ -279,7 +283,7 @@ public class MyBackupAgent extends BackupAgent {
     private void doRestore(MyBackupDataInput data) throws IOException {
         restoreSharedPreferences(data);
         if (optionalNextHeader(data, DOWNLOADS_KEY)) {
-            downloadFoldersRestored += restoreFolder(data, MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS));
+            foldersRestored += restoreFolder(data, MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS));
         }
         assertNextHeader(data, DATABASE_KEY + "_" + DatabaseHolder.DATABASE_NAME);
         databasesRestored += restoreFile(data, MyStorage.getDatabasePath(DatabaseHolder.DATABASE_NAME));
@@ -288,6 +292,9 @@ public class MyBackupAgent extends BackupAgent {
         MyContextHolder.initialize(this, this);
         if (MyContextHolder.get().state() == MyContextState.UPGRADING && activity != null) {
             MyContextHolder.upgradeIfNeeded(activity);
+        }
+        if (optionalNextHeader(data, LOG_FILES_KEY)) {
+            foldersRestored += restoreFolder(data, MyStorage.getDataFilesDir(MyStorage.DIRECTORY_LOGS));
         }
         DataPruner.setDataPrunedNow();
 
@@ -398,7 +405,7 @@ public class MyBackupAgent extends BackupAgent {
         return sharedPreferencesBackedUp;
     }
 
-    public long getDownloadFoldersBackedUp() {
-        return downloadFoldersBackedUp;
+    public long getFoldersBackedUp() {
+        return foldersBackedUp;
     }
 }
