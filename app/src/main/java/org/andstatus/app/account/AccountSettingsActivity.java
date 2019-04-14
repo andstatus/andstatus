@@ -1178,7 +1178,7 @@ public class AccountSettingsActivity extends MyActivity {
                     updateScreen();
                 }
             }
-            MyLog.v(this, I18n.succeededText(result.isSuccess()));
+            MyLog.v(this, I18n.succeededText(result != null && result.isSuccess()));
         }
     }
 
