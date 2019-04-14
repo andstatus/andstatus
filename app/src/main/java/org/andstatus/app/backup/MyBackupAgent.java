@@ -234,11 +234,14 @@ public class MyBackupAgent extends BackupAgent {
             throws IOException {
         final String method = "onRestore";
         backupDescriptor = newDescriptor;
-        MyLog.i(this, method + " started" 
-                + (data != null && data.getDataFolder() != null ? ", folder='"
-                        + data.getDataFolder().getAbsolutePath() + "'" : "")
-                + ", " + (newDescriptor.saved() ? " newState:" + newDescriptor.toString() 
-                        : "no new state"));
+        MyLog.i(this, method + " started" +
+                ", from app version code '" + appVersionCode + "'" +
+                (data != null && data.getDataFolder() != null
+                    ? ", folder:'" + data.getDataFolder().getAbsolutePath() + "'"
+                    : "") +
+                ", " + (newDescriptor.saved()
+                    ? " newState:" + newDescriptor.toString()
+                    : "no new state"));
         boolean success = false;
         try {
             switch (backupDescriptor.getBackupSchemaVersion()) {

@@ -148,7 +148,7 @@ public class RestoreActivity extends MyActivity implements ProgressLogger.Progre
         TextView progressLog = (TextView) findViewById(R.id.progress_log);
         progressLog.setText("");
     }
-    
+
     private void addProgressMessage(CharSequence message) {
         progressCounter++;
         TextView progressLog = (TextView) findViewById(R.id.progress_log);
@@ -170,6 +170,6 @@ public class RestoreActivity extends MyActivity implements ProgressLogger.Progre
 
     @Override
     public void onProgressMessage(CharSequence message) {
-        addProgressMessage(message);
+        runOnUiThread( () -> addProgressMessage(message));
     }
 }

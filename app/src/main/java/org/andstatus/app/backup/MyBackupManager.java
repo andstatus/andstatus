@@ -21,7 +21,6 @@ import android.app.backup.BackupAgent;
 import android.content.Context;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
@@ -30,6 +29,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
+
+import androidx.annotation.NonNull;
 
 /**
  * Creates backups in the local file system:
@@ -159,10 +160,12 @@ class MyBackupManager {
         try {
             newDescriptor = MyBackupDescriptor.fromOldParcelFileDescriptor(newState, progressLogger);
             if (newDescriptor.getBackupSchemaVersion() != MyBackupDescriptor.BACKUP_SCHEMA_VERSION) {
-                throw new FileNotFoundException("Unsupported backup schema version: " + newDescriptor.getBackupSchemaVersion()
-                        + "; created with app version name:" + newDescriptor.getApplicationVersionName()
-                        + " and version code:" + newDescriptor.getApplicationVersionCode()
-                        + "; data folder:'" + dataFolder.getAbsolutePath() + "'");
+                throw new FileNotFoundException(
+                    "Unsupported backup schema version: " + newDescriptor.getBackupSchemaVersion() +
+                    "; created with " + newDescriptor.appVersionNameAndCode() +
+                    "\nData folder:'" + dataFolder.getAbsolutePath() + "'." +
+                    "\nPlease use older AndStatus version to restore this backup."
+                );
             }
         } finally {
             newState.close();
@@ -175,8 +178,8 @@ class MyBackupManager {
             throw new FileNotFoundException("Not enough keys in the backup: " + Arrays.toString(dataInput.listKeys().toArray()));
         }
         
-        progressLogger.logProgress("Starting restore from data folder:'" + dataFolder.getAbsolutePath() 
-                + "', created with app version code:" + newDescriptor.getApplicationVersionCode());
+        progressLogger.logProgress("Starting restoring from data folder:'" + dataFolder.getAbsolutePath()
+                + "', created with " + newDescriptor.appVersionNameAndCode());
         backupAgent = new MyBackupAgent();
         backupAgent.setContext(MyContextHolder.get().context());
         backupAgent.setActivity(activity);
