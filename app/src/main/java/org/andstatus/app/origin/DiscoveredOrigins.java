@@ -15,7 +15,7 @@ public class DiscoveredOrigins {
         // Empty
     }
     
-    public static void addAll(List<Origin> newOrigins) {
+    public static void replaceAll(List<Origin> newOrigins) {
         if (newOrigins.isEmpty()) {
             return;
         }
@@ -23,7 +23,7 @@ public class DiscoveredOrigins {
         OriginType type = newOrigins.get(0).getOriginType();
         for (Origin origin : mOrigins.values()) {
             if (origin.getOriginType() == type) {
-                mOrigins.remove(origin);
+                mOrigins.remove(origin.getName());
                 oldCount++;
             }
         }

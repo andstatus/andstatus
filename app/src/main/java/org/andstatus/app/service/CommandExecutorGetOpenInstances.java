@@ -63,7 +63,7 @@ public class CommandExecutorGetOpenInstances extends CommandExecutorStrategy {
                     MyLog.d(this, "Origin is not valid: " + origin.toString());
                 }
             }
-            DiscoveredOrigins.addAll(newOrigins);
+            DiscoveredOrigins.replaceAll(newOrigins);
         }
     }
 
