@@ -46,6 +46,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import io.vavr.control.Try;
+
 public class MyBackupAgent extends BackupAgent {
     public static final String SHARED_PREFERENCES_KEY = "shared_preferences";
     public static final String DOWNLOADS_KEY = "downloads";
@@ -361,9 +363,12 @@ public class MyBackupAgent extends BackupAgent {
     private long restoreFolder(MyBackupDataInput data, File targetFolder) throws IOException {
         File tempFile = MyStorage.newTempFile(data.getKey() + ".zip");
         restoreFile(data, tempFile);
-        ZipUtils.unzipFiles(tempFile, targetFolder);
+        Try<String> result = ZipUtils.unzipFiles(tempFile, targetFolder);
         tempFile.delete();
-        return 1;
+        return result
+                .onSuccess(s -> MyLog.i(MyBackupAgent.this, s))
+                .onFailure(e -> MyLog.e(MyBackupAgent.this, e.getMessage()))
+                .map(s -> 1L).getOrElse(0L);
     }
 
     /** @return count of restores files */

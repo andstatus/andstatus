@@ -25,7 +25,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -66,31 +68,41 @@ public class ZipUtils {
         }
     }
 
-    public static void unzipFiles(File zipped, File targetFolder) throws IOException {
+    public static Try<String> unzipFiles(File zipped, File targetFolder) {
         if (!targetFolder.exists() && !targetFolder.mkdir()) {
-            throw new IOException("Couldn't create folder: '" + targetFolder.getAbsolutePath() + "'");
+            return Try.failure(new IOException("Couldn't create folder: '" + targetFolder.getAbsolutePath() + "'"));
         }
-        try(ZipFile zipFile = new ZipFile(zipped)) {
-            Enumeration<?> enu = zipFile.entries();
-            while (enu.hasMoreElements()) {
-                ZipEntry zipEntry = (ZipEntry) enu.nextElement();
-                File file = new File(targetFolder, zipEntry.getName());
-                if (isFileInsideFolder(file, targetFolder)) {
-                    try (InputStream is = zipFile.getInputStream(zipEntry);
-                         FileOutputStream fos = new FileOutputStream(file)) {
-                        byte[] bytes = new byte[MyStorage.FILE_CHUNK_SIZE];
-                        int length;
-                        while ((length = is.read(bytes)) >= 0) {
-                            fos.write(bytes, 0, length);
+        List<String> unzipped = new ArrayList<>();
+        List<String> skipped = new ArrayList<>();
+        try {
+            try(ZipFile zipFile = new ZipFile(zipped)) {
+                Enumeration<?> enu = zipFile.entries();
+                while (enu.hasMoreElements()) {
+                    ZipEntry zipEntry = (ZipEntry) enu.nextElement();
+                    File file = new File(targetFolder, zipEntry.getName());
+                    if (isFileInsideFolder(file, targetFolder)) {
+                        try (InputStream is = zipFile.getInputStream(zipEntry);
+                             FileOutputStream fos = new FileOutputStream(file)) {
+                            byte[] bytes = new byte[MyStorage.FILE_CHUNK_SIZE];
+                            int length;
+                            while ((length = is.read(bytes)) >= 0) {
+                                fos.write(bytes, 0, length);
+                            }
                         }
+                        unzipped.add(file.getName());
+                        file.setLastModified(zipEntry.getTime());
+                    } else {
+                        skipped.add(file.getAbsolutePath());
+                        MyLog.i(ZipUtils.class,
+                                "ZipEntry skipped as file is outside target folder: " + file.getAbsolutePath());
                     }
-                    file.setLastModified(zipEntry.getTime());
-                } else {
-                    MyLog.i(ZipUtils.class,
-                            "ZipEntry skipped as file is outside target folder: " + file.getAbsolutePath());
                 }
             }
+        } catch (Exception e) {
+            return Try.failure(new Exception("Failed to unzip " + zipped.getName() + ", error message: " + e.getMessage()));
         }
+        return Try.success("Unzipped " + unzipped.size() + " files from " + zipped.getName() + " file: " + unzipped +
+                (skipped.isEmpty() ? "" : ", skipped " + skipped.size() + " files: " + skipped));
     }
 
     private static boolean isFileInsideFolder(File file, File folder) {
