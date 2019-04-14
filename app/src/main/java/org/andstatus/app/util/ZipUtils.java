@@ -16,6 +16,8 @@
 
 package org.andstatus.app.util;
 
+import android.os.Build;
+
 import org.andstatus.app.context.MyStorage;
 
 import java.io.File;
@@ -73,16 +75,35 @@ public class ZipUtils {
             while (enu.hasMoreElements()) {
                 ZipEntry zipEntry = (ZipEntry) enu.nextElement();
                 File file = new File(targetFolder, zipEntry.getName());
-                try (InputStream is = zipFile.getInputStream(zipEntry);
-                     FileOutputStream fos = new FileOutputStream(file)) {
-                    byte[] bytes = new byte[MyStorage.FILE_CHUNK_SIZE];
-                    int length;
-                    while ((length = is.read(bytes)) >= 0) {
-                        fos.write(bytes, 0, length);
+                if (isFileInsideFolder(file, targetFolder)) {
+                    try (InputStream is = zipFile.getInputStream(zipEntry);
+                         FileOutputStream fos = new FileOutputStream(file)) {
+                        byte[] bytes = new byte[MyStorage.FILE_CHUNK_SIZE];
+                        int length;
+                        while ((length = is.read(bytes)) >= 0) {
+                            fos.write(bytes, 0, length);
+                        }
                     }
+                    file.setLastModified(zipEntry.getTime());
+                } else {
+                    MyLog.i(ZipUtils.class,
+                            "ZipEntry skipped as file is outside target folder: " + file.getAbsolutePath());
                 }
-                file.setLastModified(zipEntry.getTime());
             }
         }
+    }
+
+    private static boolean isFileInsideFolder(File file, File folder) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return file.toPath().normalize().startsWith(folder.toPath());
+        } else {
+            try {
+                return file.getCanonicalPath().startsWith(folder.getCanonicalPath());
+            } catch (Exception e) {
+                MyLog.d(ZipUtils.class, "Failed to check path of the file: " + file.getAbsolutePath() +
+                        ". Error message:" + e.getMessage());
+            }
+        }
+        return false;
     }
 }
