@@ -32,7 +32,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 
 public class FileUtils {
-    private static final String TAG = FileUtils.class.getSimpleName();
+    public static final String ROOT_FOLDER = "/";
     private static final int BUFFER_LENGTH = 4 * 1024;
 
     private FileUtils() {
@@ -46,7 +46,7 @@ public class FileUtils {
             try {
                 jso = new JSONArray(fileString);
             } catch (JSONException e) {
-                MyLog.v(TAG, e);
+                MyLog.v(FileUtils.class, e);
                 jso = null;
             }
         }
@@ -63,7 +63,7 @@ public class FileUtils {
             try {
                 jso = new JSONObject(fileString);
             } catch (JSONException e) {
-                MyLog.v(TAG, e);
+                MyLog.v(FileUtils.class, e);
                 jso = null;
             }
         }
@@ -134,8 +134,8 @@ public class FileUtils {
         if (rootDirectory == null) {
             return;
         }
-        MyLog.i(TAG, "On delete all files inside '" + rootDirectory.getAbsolutePath() +"'");
-        MyLog.i(TAG, "Deleted files and dirs: " + deleteFilesRecursively(rootDirectory, 1));
+        MyLog.i(FileUtils.class, "On delete all files inside '" + rootDirectory.getAbsolutePath() +"'");
+        MyLog.i(FileUtils.class, "Deleted files and dirs: " + deleteFilesRecursively(rootDirectory, 1));
     }
 
     private static long deleteFilesRecursively(File rootDirectory, long level) {
@@ -144,7 +144,7 @@ public class FileUtils {
         }
         File[] files = rootDirectory.listFiles();
         if (files == null) {
-            MyLog.v(TAG, () -> "No files inside " + rootDirectory.getAbsolutePath());
+            MyLog.v(FileUtils.class, () -> "No files inside " + rootDirectory.getAbsolutePath());
             return 0;
         }
         long nDeleted = 0;
@@ -166,7 +166,7 @@ public class FileUtils {
         if (file.delete()) {
             nDeleted++;
         } else {
-            MyLog.w(TAG, "Couldn't delete " + file.getAbsolutePath());
+            MyLog.w(FileUtils.class, "Couldn't delete " + file.getAbsolutePath());
         }
         return nDeleted;
     }

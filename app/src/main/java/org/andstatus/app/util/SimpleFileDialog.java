@@ -28,19 +28,15 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Environment;
-import android.text.Editable;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,8 +49,6 @@ import java.util.List;
 public class SimpleFileDialog {
     private static final int DARK_GREY_COLOR = 0xFF444444;
 
-    private static final String ROOT_FOLDER = "/";
-    
     public enum TypeOfSelection {
         FILE_OPEN,
         FILE_SAVE,
@@ -160,7 +154,7 @@ public class SimpleFileDialog {
                 if (slashInd >= 0) {
                     mDir = mDir.substring(0, slashInd);
                     if (StringUtils.isEmpty(mDir)) {
-                        mDir = getRootFolder();
+                        mDir = FileUtils.ROOT_FOLDER;
                     }
                 }
             } else {
@@ -196,7 +190,7 @@ public class SimpleFileDialog {
         if (!isExistingDirectoryLogged(dir)) {
             dir = mSdCardDirectory;
             if (!isExistingDirectoryLogged(dir)) {
-                dir = ROOT_FOLDER;
+                dir = FileUtils.ROOT_FOLDER;
                 if (!isExistingDirectoryLogged(dir)) {
                     Log.i("chooseFile_or_Dir", "No existing directories found");
                     return "";
@@ -238,7 +232,7 @@ public class SimpleFileDialog {
 
             // if directory is not the base sd card directory add ".." for going
             // up one directory
-            if (!mDir.equals(mSdCardDirectory) && !ROOT_FOLDER.equals(mDir)) {
+            if (!mDir.equals(mSdCardDirectory) && !FileUtils.ROOT_FOLDER.equals(mDir)) {
                 dirs.add("..");
             }
 
@@ -323,44 +317,6 @@ public class SimpleFileDialog {
         titleLayout1.setOrientation(LinearLayout.VERTICAL);
         titleLayout1.addView(mTitleView1);
 
-        if (typeOfSelection == TypeOfSelection.FOLDER_CHOOSE || typeOfSelection == TypeOfSelection.FILE_SAVE) {
-            // Create New Folder Button
-            Button newDirButton = new Button(mContext);
-            newDirButton.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,
-                    LayoutParams.WRAP_CONTENT));
-            newDirButton.setText("New Folder");
-            newDirButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    final EditText input = new EditText(mContext);
-
-                    // Show new folder name input dialog
-                    new AlertDialog.Builder(mContext).
-                            setTitle("New Folder Name").
-                            setView(input)
-                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int whichButton) {
-                                    Editable newDir = input.getText();
-                                    String newDirName = newDir.toString();
-                                    // Create new directory
-                                    if (createSubDir(mDir + "/" + newDirName)) {
-                                        // Navigate into the new directory
-                                        mDir += "/" + newDirName;
-                                        updateDirectory();
-                                    } else {
-                                        Toast.makeText(mContext, "Failed to create '"
-                                                + newDirName + "' folder", Toast.LENGTH_SHORT)
-                                                .show();
-                                    }
-                                }
-                            }).setNegativeButton("Cancel", null).show();
-                }
-            }
-                    );
-            titleLayout1.addView(newDirButton);
-        }
-
         // Create View with folder path and entry text box //
         LinearLayout titleLayout = new LinearLayout(mContext);
         titleLayout.setOrientation(LinearLayout.VERTICAL);
@@ -418,7 +374,4 @@ public class SimpleFileDialog {
         };
     }
 
-    public static String getRootFolder() {
-        return ROOT_FOLDER;
-    }
 }

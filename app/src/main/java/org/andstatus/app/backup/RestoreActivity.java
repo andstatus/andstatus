@@ -25,6 +25,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
+import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.Permissions;
 import org.andstatus.app.util.SimpleFileDialog;
@@ -78,7 +79,7 @@ public class RestoreActivity extends MyActivity implements ProgressLogger.Progre
             folder = MyBackupManager.getDefaultBackupFolder(this);
         }
         if (!folder.exists() || !folder.isDirectory()) {
-            folder = new File(SimpleFileDialog.getRootFolder());
+            folder = new File(FileUtils.ROOT_FOLDER);
         }
         return folder;
     }

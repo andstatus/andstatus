@@ -35,6 +35,7 @@ public enum ActivityRequestCode {
     SELECT_OPEN_INSTANCE(9),
     SELECT_TIMELINE(10),
     SELECT_DISPLAYED_IN_SELECTOR(11),
+    SELECT_FOLDER(16),
     UNKNOWN(100);
 
     public final int id;

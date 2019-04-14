@@ -29,8 +29,8 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="47.12" android:versionCode="285"
-             versionDate="2019-04-13"
+    <release android:versionName="47.13" android:versionCode="286"
+             versionDate="2019-04-14"
              versionTitle="Backup feature is enhanced: Optionally backup and restore media files and logs">
         <changes>
             <change>Backup feature enhancements simplify application's testing and troubleshooting. Now AndStatus allows
