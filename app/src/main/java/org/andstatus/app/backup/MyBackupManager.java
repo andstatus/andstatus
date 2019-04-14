@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+/*
+ * Copyright (C) 2019 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ import androidx.annotation.NonNull;
  * @author yvolk (Yuri Volkov), http://yurivolkov.com
  */
 class MyBackupManager {
-    static final String DESCRIPTOR_FILE_NAME = "_descriptor.json";
+    private static final String DESCRIPTOR_FILE_NAME = "_descriptor.json";
     private File dataFolder = null;
     private MyBackupDescriptor newDescriptor = MyBackupDescriptor.getEmpty();    
 
@@ -101,7 +101,7 @@ class MyBackupManager {
         return dataFolderToDescriptorFile(dataFolder);
     }
 
-    public static boolean isBackupFolder(File dataFolder) {
+    static boolean isBackupFolder(File dataFolder) {
         if (dataFolder != null && dataFolder.exists() && dataFolder.isDirectory() ) {
             return dataFolderToDescriptorFile(dataFolder).exists();
         }
@@ -109,7 +109,7 @@ class MyBackupManager {
     }
 
     @NonNull
-    static File dataFolderToDescriptorFile(File dataFolder) {
+    private static File dataFolderToDescriptorFile(File dataFolder) {
         return new File(dataFolder, DESCRIPTOR_FILE_NAME);
     }
     
@@ -187,21 +187,19 @@ class MyBackupManager {
         progressLogger.logSuccess();
     }
 
-    MyBackupDescriptor getNewDescriptor() {
-        return newDescriptor;
-    }
-    
-    static String newBackupFilenamePrefix() {
-        return MyLog.currentDateTimeFormatted() + "-AndStatusBackup";
-    }
-
     @NonNull
-    static File getDefaultBackupDirectory(Context context) {
+    static File getDefaultBackupFolder(Context context) {
         File directory = Environment.getExternalStorageDirectory();
         if (!Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
             directory = context.getFilesDir();
         }
-        return new File(directory, "backups/AndStatus");
+        File folder = new File(directory, "backups/AndStatus");
+        if (!folder.exists()) {
+            if (!folder.mkdirs()) {
+                MyLog.i(context, "Couldn't create '" + folder.getAbsolutePath() + "'");
+            }
+        }
+        return folder;
     }
     
     MyBackupAgent getBackupAgent() {

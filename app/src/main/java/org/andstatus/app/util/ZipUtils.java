@@ -101,7 +101,8 @@ public class ZipUtils {
         } catch (Exception e) {
             return Try.failure(new Exception("Failed to unzip " + zipped.getName() + ", error message: " + e.getMessage()));
         }
-        return Try.success("Unzipped " + unzipped.size() + " files from " + zipped.getName() + " file: " + unzipped +
+        return Try.success("Unzipped " + unzipped.size() + " files from '" + zipped.getName() + "' file" +
+                " to '" + targetFolder.getName() + "' folder." +
                 (skipped.isEmpty() ? "" : ", skipped " + skipped.size() + " files: " + skipped));
     }
 

@@ -366,8 +366,8 @@ public class MyBackupAgent extends BackupAgent {
         Try<String> result = ZipUtils.unzipFiles(tempFile, targetFolder);
         tempFile.delete();
         return result
-                .onSuccess(s -> MyLog.i(MyBackupAgent.this, s))
-                .onFailure(e -> MyLog.e(MyBackupAgent.this, e.getMessage()))
+                .onSuccess(s -> backupDescriptor.getLogger().logProgress(s))
+                .onFailure(e -> backupDescriptor.getLogger().logProgress(e.getMessage()))
                 .map(s -> 1L).getOrElse(0L);
     }
 

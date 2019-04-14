@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2019 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.andstatus.app.backup;
 
 import android.os.Bundle;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.TextView;
 
 import org.andstatus.app.MyActivity;
@@ -32,8 +31,10 @@ import org.andstatus.app.util.SimpleFileDialog;
 
 import java.io.File;
 
-public class BackupActivity extends MyActivity {
-    File backupFolder = new File(SimpleFileDialog.getRootFolder());
+import androidx.annotation.NonNull;
+
+public class BackupActivity extends MyActivity implements ProgressLogger.ProgressCallback {
+    File backupFolder = null;
     BackupTask asyncTask = null;
     private int progressCounter = 0;
 
@@ -44,91 +45,90 @@ public class BackupActivity extends MyActivity {
 
         Permissions.checkPermissionAndRequestIt(this, Permissions.PermissionType.WRITE_EXTERNAL_STORAGE);
 
-        setBackupFolder(MyBackupManager.getDefaultBackupDirectory(this));
+        findViewById(R.id.button_backup).setOnClickListener(this::doBackup);
+        findViewById(R.id.backup_folder).setOnClickListener(this::selectBackupFolder);
+        findViewById(R.id.button_select_backup_folder).setOnClickListener(this::selectBackupFolder);
+        showBackupFolder();
+    }
 
-        findViewById(R.id.button_backup).setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (asyncTask == null || asyncTask.completedBackgroundWork()) {
-                    resetProgress();
-                    asyncTask = new BackupTask();
-                    new AsyncTaskLauncher<File>().execute(this, true, asyncTask, backupFolder);
-                }
-            }
-        });
+    private void doBackup(View v) {
+        if (asyncTask == null || asyncTask.completedBackgroundWork()) {
+            resetProgress();
+            asyncTask = new BackupTask(BackupActivity.this);
+            new AsyncTaskLauncher<File>().execute(this, true, asyncTask, getBackupFolder());
+        }
+    }
 
-        findViewById(R.id.button_change_folder).setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new SimpleFileDialog(BackupActivity.this,
-                        SimpleFileDialog.TypeOfSelection.FOLDER_CHOOSE,
-                        new SimpleFileDialog.SimpleFileDialogListener() {
-                            @Override
-                            public void onChosenDir(String chosenDir) {
-                                setBackupFolder(new File(chosenDir));
-                            }
-                        }).chooseFileOrDir(backupFolder.getAbsolutePath());
-            }
-        });
+    private void selectBackupFolder(View v) {
+        new SimpleFileDialog(BackupActivity.this,
+                    SimpleFileDialog.TypeOfSelection.FOLDER_CHOOSE,
+                    chosenFolder -> setBackupFolder(new File(chosenFolder)))
+                .chooseFileOrDir(getBackupFolder().getAbsolutePath());
+    }
+
+    @NonNull
+    private File getBackupFolder() {
+        File folder;
+        if (backupFolder != null && backupFolder.exists()) {
+            folder = backupFolder;
+        } else {
+            folder = MyBackupManager.getDefaultBackupFolder(this);
+        }
+        if (!folder.exists() || !folder.isDirectory()) {
+            folder = new File(SimpleFileDialog.getRootFolder());
+        }
+        return folder;
     }
 
     void setBackupFolder(File backupFolder) {
-        if (backupFolder.exists() ) {
+        if ( backupFolder == null ) {
+            MyLog.d(this, "No backup folder selected");
+            return;
+        } else if ( backupFolder.exists() ) {
             if (!backupFolder.isDirectory()) {
-                MyLog.i(this, "Is not a directory '" + backupFolder.getAbsolutePath() + "'");
+                MyLog.d(this, "Is not a folder '" + backupFolder.getAbsolutePath() + "'");
                 return;
             }
         } else {
-            if (!backupFolder.mkdirs()) {
-                MyLog.i(this, "Couldn't create '" + backupFolder.getAbsolutePath() + "'");
-                return;
-            }
+            MyLog.i(this, "The folder doesn't exist: '" + backupFolder.getAbsolutePath() + "'");
+            return;
         }
-        TextView view = (TextView) findViewById(R.id.backup_folder);
-        view.setText(backupFolder.getAbsolutePath());
         this.backupFolder = backupFolder;
+        showBackupFolder();
+        resetProgress();
     }
-    
-    private class BackupTask extends MyAsyncTask<File, CharSequence, Boolean> {
-        volatile Boolean success = false;
 
-        BackupTask() {
+    private void showBackupFolder() {
+        TextView view = findViewById(R.id.backup_folder);
+        if (view != null) {
+            view.setText(getBackupFolder().getAbsolutePath());
+        }
+    }
+
+    private static class BackupTask extends MyAsyncTask<File, CharSequence, Void> {
+        private final BackupActivity activity;
+
+        BackupTask(BackupActivity activity) {
             super(PoolEnum.LONG_UI);
+            this.activity = activity;
         }
 
         @Override
-        protected Boolean doInBackground2(File... params) {
-            MyBackupManager.backupInteractively(params[0], BackupActivity.this, new ProgressLogger.ProgressCallback() {
-                
-                @Override
-                public void onProgressMessage(CharSequence message) {
-                   publishProgress(message);
-                }
-                
-                @Override
-                public void onComplete(boolean successIn) {
-                    BackupTask.this.success = successIn;
-                }
-            }
-            );
-            return success;
-        }
-
-        @Override
-        protected void onProgressUpdate(CharSequence... values) {
-            addProgressMessage(values[0]);
+        protected Void doInBackground2(File... params) {
+            MyBackupManager.backupInteractively(params[0], activity, activity);
+            return null;
         }
     }
 
     private void resetProgress() {
         progressCounter = 0;
-        TextView progressLog = (TextView) findViewById(R.id.progress_log);
+        TextView progressLog = findViewById(R.id.progress_log);
         progressLog.setText("");
     }
-    
+
     private void addProgressMessage(CharSequence message) {
         progressCounter++;
-        TextView progressLog = (TextView) findViewById(R.id.progress_log);
+        TextView progressLog = findViewById(R.id.progress_log);
         String log = Integer.toString(progressCounter) + ". " + message + "\n" + progressLog.getText();
         progressLog.setText(log);
     }
@@ -143,5 +143,10 @@ public class BackupActivity extends MyActivity {
     protected void onPause() {
         super.onPause();
         MyContextHolder.get().setInForeground(false);
+    }
+
+    @Override
+    public void onProgressMessage(CharSequence message) {
+        runOnUiThread( () -> addProgressMessage(message));
     }
 }
