@@ -833,6 +833,12 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
                 return account;
             }
         }
+        // Try to find by a short Account name (Legacy...)
+        for (android.accounts.Account account : MyAccounts.getAccounts(MyContextHolder.get().context())) {
+            if (oAccountName.getShortName().equals(account.name)) {
+                return account;
+            }
+        }
         return null;
     }
 

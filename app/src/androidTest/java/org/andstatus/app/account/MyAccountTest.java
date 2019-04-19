@@ -67,19 +67,18 @@ public class MyAccountTest {
             assertEquals(logMsg, "", builder.getAccount().getUsername());
             assertEquals(logMsg, "", builder.getAccount().getWebFingerId());
         } else {
-            if (origin.shouldHaveUrl()) {
-                assertEquals(logMsg, uniqueNameInOrigin, builder.getAccount().getUsername());
+            assertNotEquals(logMsg, uniqueNameInOrigin, builder.getAccount().getUsername());
+            if (origin.getOriginType().uniqueNameHasHost()) {
+                int indexOfAt = uniqueNameInOrigin.lastIndexOf("@");
+                assertEquals(logMsg, uniqueNameInOrigin, builder.getAccount().getUsername() + "@" +
+                        uniqueNameInOrigin.substring(indexOfAt + 1));
+                assertEquals(logMsg, uniqueNameInOrigin.toLowerCase(), builder.getAccount().getActor().getWebFingerId());
+            } else {
                 assertEquals(logMsg, uniqueNameInOrigin.toLowerCase() + "@" +
                                 (originType == OriginType.TWITTER
                                         ? origin.getHost().replace("api.", "")
                                         : origin.getHost()),
                         builder.getAccount().getActor().getWebFingerId());
-            } else {
-                int indexOfAt = uniqueNameInOrigin.lastIndexOf("@");
-                assertNotEquals(logMsg, uniqueNameInOrigin, builder.getAccount().getUsername());
-                assertEquals(logMsg, uniqueNameInOrigin, builder.getAccount().getUsername() + "@" +
-                        uniqueNameInOrigin.substring(indexOfAt + 1));
-                assertEquals(logMsg, uniqueNameInOrigin.toLowerCase(), builder.getAccount().getActor().getWebFingerId());
             }
         }
     }

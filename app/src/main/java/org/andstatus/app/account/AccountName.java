@@ -19,6 +19,7 @@ package org.andstatus.app.account;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.StringUtils;
 
 import androidx.annotation.NonNull;
@@ -36,7 +37,7 @@ public class AccountName {
     /** The system in which the Account is defined, see {@link Origin} */
     public final Origin origin;
     /** The name is a username ("screen name") or username@originHost to be unique for the {@link Origin}
-     *  "@originHost" suffix is used, when the {@link Origin} doesn't have host {@link Origin#shouldHaveUrl()} */
+     *  "@originHost" suffix is used, when {@link OriginType#uniqueNameHasHost()} */
     private final String uniqueNameInOrigin;
     public final boolean isValid;
 
@@ -52,7 +53,10 @@ public class AccountName {
     }
 
     private static String fixUniqueNameInOrigin(String uniqueNameIn, Origin origin) {
-        String uniqueName = StringUtils.notNull(uniqueNameIn).trim();
+        String nonNullName = StringUtils.notNull(uniqueNameIn).trim();
+        String uniqueName = nonNullName + (origin.getOriginType().uniqueNameHasHost() && !nonNullName.contains("@")
+                    && origin.shouldHaveUrl()
+                ? "@" + origin.getHost() : "");
         if (Actor.uniqueNameInOriginToUsername(origin, uniqueName).isPresent()) {
             return uniqueName;
         } else {
@@ -116,6 +120,10 @@ public class AccountName {
         return uniqueNameInOrigin + ORIGIN_SEPARATOR + origin.getName();
     }
 
+    public String getShortName() {
+        return getUsername() + ORIGIN_SEPARATOR + origin.getName();
+    }
+
     @Override
     public String toString() {
         return (isValid ? "" : "(invalid " + usernameToString() + ")") + getName();
@@ -136,6 +144,10 @@ public class AccountName {
     
     public String getUniqueNameInOrigin() {
         return uniqueNameInOrigin;
+    }
+
+    public String getUsername() {
+        return Actor.uniqueNameInOriginToUsername(origin, getUniqueNameInOrigin()).orElse("");
     }
 
     String getOriginName() {

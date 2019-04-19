@@ -300,14 +300,14 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public String getUniqueNameInOrigin() {
-        if (StringUtils.nonEmptyNonTemp(username)) return username + getOptAtHost();
-        if (StringUtils.nonEmptyNonTemp(realName)) return realName + getOptAtHost();
+        if (StringUtils.nonEmptyNonTemp(username)) return username + getOptAtHostForUniqueName();
+        if (StringUtils.nonEmptyNonTemp(realName)) return realName + getOptAtHostForUniqueName();
         if (StringUtils.nonEmptyNonTemp(oid)) return oid;
-        return "id:" + actorId + getOptAtHost();
+        return "id:" + actorId + getOptAtHostForUniqueName();
     }
 
-    private String getOptAtHost() {
-        return origin.shouldHaveUrl() ? "" : "@" + getHost();
+    private String getOptAtHostForUniqueName() {
+        return origin.getOriginType().uniqueNameHasHost() ? "@" + getHost() : "";
     }
 
     public Actor withUniqueNameInOrigin(String uniqueNameInOrigin) {
@@ -341,7 +341,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
     public Optional<String> uniqueNameInOriginToWebFingerId(String uniqueNameInOrigin) {
         if (StringUtils.nonEmpty(uniqueNameInOrigin)) {
-            if (origin.shouldHaveUrl()) {
+            if (!origin.getOriginType().uniqueNameHasHost() && origin.shouldHaveUrl()) {
                 return Optional.of(uniqueNameInOrigin.toLowerCase() + "@" +
                         origin.fixUriForPermalink(UriUtils.fromUrl(origin.getUrl())).getHost());
             }

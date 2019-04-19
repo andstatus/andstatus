@@ -415,9 +415,9 @@ public class AccountSettingsActivity extends MyActivity {
 
     private void showUniqueNameInOrigin() {
         MyAccount ma = state.getAccount();
-        showTextView(R.id.uniqueName_label, ma.getOrigin().shouldHaveUrl()
-                ? R.string.title_preference_username
-                : R.string.username_at_your_server,
+        showTextView(R.id.uniqueName_label, ma.getOrigin().getOriginType().uniqueNameHasHost()
+                ? R.string.username_at_your_server
+                : R.string.title_preference_username,
                 state.builder.isPersistent() || ma.isUsernameNeededToStartAddingNewAccount());
         EditText nameEditable = (EditText) findFragmentViewById(R.id.uniqueName);
         if (nameEditable != null) {
@@ -426,9 +426,9 @@ public class AccountSettingsActivity extends MyActivity {
             } else {
                 nameEditable.setVisibility(View.VISIBLE);
                 nameEditable.setHint(
-                        String.format(getText(ma.getOrigin().shouldHaveUrl()
-                                        ? R.string.summary_preference_username
-                                        : R.string.summary_preference_username_webfinger_id).toString(),
+                        String.format(getText(ma.getOrigin().getOriginType().uniqueNameHasHost()
+                                        ? R.string.summary_preference_username_webfinger_id
+                                        : R.string.summary_preference_username).toString(),
                                 ma.getOrigin().getName(), ma.getOrigin().getOriginType().uniqueNameInOriginExamples));
                 nameEditable.addTextChangedListener(textWatcher);
                 if (nameEditable.getText().length() == 0) {

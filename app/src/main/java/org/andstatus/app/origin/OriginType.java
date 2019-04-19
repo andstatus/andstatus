@@ -157,6 +157,10 @@ public enum OriginType implements SelectableEnum {
     public final boolean hasNoteName;
     public final boolean isPublicChangeAllowed;
 
+    public boolean uniqueNameHasHost() {
+        return this != TWITTER;
+    }
+
     OriginType(long id, String title, ApiEnum api, NoteName noteName, PublicChangeAllowed publicChangeAllowed) {
         this.id = id;
         this.title = title;

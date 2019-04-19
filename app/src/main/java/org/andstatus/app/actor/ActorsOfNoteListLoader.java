@@ -16,7 +16,6 @@
 
 package org.andstatus.app.actor;
 
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyQuery;
@@ -25,6 +24,8 @@ import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.origin.Origin;
+
+import androidx.annotation.NonNull;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -50,12 +51,11 @@ public class ActorsOfNoteListLoader extends ActorListLoader {
         return this;
     }
 
+    @NonNull
     @Override
-    protected void loadInternal() {
+    protected String getSelection() {
         addFromNoteRow();
-        if (!mentionedOnly) {
-            super.loadInternal();
-        }
+        return super.getSelection();
     }
 
     private void addFromNoteRow() {
