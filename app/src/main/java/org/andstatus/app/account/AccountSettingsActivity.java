@@ -42,7 +42,6 @@ import org.andstatus.app.FirstActivity;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
-import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -306,7 +305,7 @@ public class AccountSettingsActivity extends MyActivity {
             // If we have changed the System, we should recreate the Account
             state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                     MyContextHolder.get(),
-                    AccountName.fromOriginAndUniqueName(origin, state.getAccount().getOAccountName().getUniqueNameInOrigin()).toString(),
+                    AccountName.fromOriginAndUniqueName(origin, state.getAccount().getOAccountName().getUniqueName()).toString(),
                     TriState.fromBoolean(state.getAccount().isOAuth()));
             updateScreen();
             goToAddAccount();
@@ -726,7 +725,7 @@ public class AccountSettingsActivity extends MyActivity {
             EditText uniqueNameEditable = (EditText) findFragmentViewById(R.id.uniqueName);
             if (uniqueNameEditable != null) {
                 String uniqueNameInOrigin = uniqueNameEditable.getText().toString();
-                if (uniqueNameInOrigin.compareTo(state.getAccount().getOAccountName().getUniqueNameInOrigin()) != 0) {
+                if (uniqueNameInOrigin.compareTo(state.getAccount().getOAccountName().getUniqueName()) != 0) {
                     boolean isOAuth = state.getAccount().isOAuth();
                     state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                             MyContextHolder.get(),

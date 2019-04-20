@@ -55,7 +55,7 @@ public class AccountSettingsFragment extends Fragment {
     private void onRemoveAccount() {
         StateOfAccountChangeProcess state = ((AccountSettingsActivity) getActivity()).getState();
         if (state.builder.isPersistent()) {
-            for (android.accounts.Account account : MyAccounts.getAccounts(getActivity())) {
+            for (android.accounts.Account account : AccountUtils.getCurrentAccounts(getActivity())) {
                 if (state.getAccount().getAccountName().equals(account.name)) {
                     MyLog.i(this, "Removing account: " + account.name);
                     android.accounts.AccountManager am = AccountManager.get(getActivity());

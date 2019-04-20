@@ -41,9 +41,11 @@ public class AuthenticatorService extends Service {
     public static final String ANDROID_ACCOUNT_TYPE = "org.andstatus.app";
     
     class Authenticator extends AbstractAccountAuthenticator {
+        private final Context context;
 
         public Authenticator(Context context) {
             super(context);
+            this.context = context;
         }
 
         /** 
@@ -105,8 +107,7 @@ public class AuthenticatorService extends Service {
         }
 
         @Override
-        public Bundle hasFeatures(AccountAuthenticatorResponse response, Account account,
-                String[] features) throws NetworkErrorException {
+        public Bundle hasFeatures(AccountAuthenticatorResponse response, Account account, String[] features) {
             return null;
         }
 
@@ -117,18 +118,17 @@ public class AuthenticatorService extends Service {
         }
 
         @Override
-        public Bundle getAccountRemovalAllowed(AccountAuthenticatorResponse response,
-                Account account) throws NetworkErrorException {
-            
-            MyAccount ma = MyContextHolder.getMyFutureContext(null).getBlocking()
-                    .accounts().fromAccountName(account.name);
+        public Bundle getAccountRemovalAllowed(AccountAuthenticatorResponse response, Account account) {
             boolean deleted = true;
-            if (ma.isValid()) {
-                MyContextHolder.get().timelines().onAccountDelete(ma);
-                deleted = MyContextHolder.get().accounts().delete(ma);
+            if (AccountUtils.isVersionCurrent(context, account)) {
+                MyAccount ma = MyContextHolder.getMyFutureContext(context).getBlocking()
+                        .accounts().fromAccountName(account.name);
+                if (ma.isValid()) {
+                    MyContextHolder.get().timelines().onAccountDelete(ma);
+                    deleted = MyContextHolder.get().accounts().delete(ma);
+                }
+                MyPreferences.onPreferencesChanged();
             }
-            MyPreferences.onPreferencesChanged();
-            
             final Bundle result = new Bundle();
             result.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, deleted);
             return result;

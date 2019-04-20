@@ -312,7 +312,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
     public Actor withUniqueNameInOrigin(String uniqueNameInOrigin) {
         uniqueNameInOriginToUsername(origin, uniqueNameInOrigin).ifPresent(this::setUsername);
-        uniqueNameInOriginToWebFingerId(uniqueNameInOrigin).ifPresent(this::setWebFingerId);
+        uniqueNameInOriginToWebFingerId(origin, uniqueNameInOrigin).ifPresent(this::setWebFingerId);
         return this;
     }
 
@@ -339,7 +339,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return Optional.empty();
     }
 
-    public Optional<String> uniqueNameInOriginToWebFingerId(String uniqueNameInOrigin) {
+    public static Optional<String> uniqueNameInOriginToWebFingerId(Origin origin, String uniqueNameInOrigin) {
         if (StringUtils.nonEmpty(uniqueNameInOrigin)) {
             if (!origin.getOriginType().uniqueNameHasHost() && origin.shouldHaveUrl()) {
                 return Optional.of(uniqueNameInOrigin.toLowerCase() + "@" +

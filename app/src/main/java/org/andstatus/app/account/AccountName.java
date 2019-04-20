@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2018 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2013-2019 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package org.andstatus.app.account;
 
+import android.content.Context;
+
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
@@ -31,14 +33,12 @@ import androidx.annotation.NonNull;
  * @author yvolk@yurivolkov.com
  */
 public class AccountName {
-
     public static final String ORIGIN_SEPARATOR = "/";
     
     /** The system in which the Account is defined, see {@link Origin} */
     public final Origin origin;
-    /** The name is a username ("screen name") or username@originHost to be unique for the {@link Origin}
-     *  "@originHost" suffix is used, when {@link OriginType#uniqueNameHasHost()} */
-    private final String uniqueNameInOrigin;
+    /** The name is a username@originHost to be unique for the {@link OriginType} */
+    private final String uniqueName;
     public final boolean isValid;
 
     private static String accountNameToOriginName(String accountName) {
@@ -52,7 +52,7 @@ public class AccountName {
         return fixOriginName(originName);
     }
 
-    private static String fixUniqueNameInOrigin(String uniqueNameIn, Origin origin) {
+    private static String fixUniqueName(String uniqueNameIn, Origin origin) {
         String nonNullName = StringUtils.notNull(uniqueNameIn).trim();
         String uniqueName = nonNullName + (origin.getOriginType().uniqueNameHasHost() && !nonNullName.contains("@")
                     && origin.shouldHaveUrl()
@@ -64,13 +64,13 @@ public class AccountName {
         }
     }
     
-    private static String accountNameToUniqueNameInOrigin(String accountName, Origin origin) {
+    private static String accountNameToUniqueName(String accountName, Origin origin) {
         String accountNameFixed = fixAccountName(accountName);
         int indSeparator = accountNameFixed.indexOf(ORIGIN_SEPARATOR);
         String usernameOut = indSeparator > 0
             ? accountNameFixed.substring(0, indSeparator)
             : "";
-        return fixUniqueNameInOrigin(usernameOut, origin);
+        return fixUniqueName(usernameOut, origin);
     }
 
     private static String fixAccountName(String accountNameIn) {
@@ -85,13 +85,12 @@ public class AccountName {
         return new AccountName("", Origin.EMPTY);
     }
 
-    static AccountName fromOriginNameAndUniqueUserName(MyContext myContext, String originName,
-                                                       String uniqueNameInOrigin) {
-        return fromOriginAndUniqueName(myContext.origins().fromName(fixOriginName(originName)), uniqueNameInOrigin);
+    static AccountName fromOriginNameAndUniqueUserName(MyContext myContext, String originName, String uniqueName) {
+        return fromOriginAndUniqueName(myContext.origins().fromName(fixOriginName(originName)), uniqueName);
     }
 
-    public static AccountName fromOriginAndUniqueName(@NonNull Origin origin, String uniqueNameInOrigin) {
-        return new AccountName(fixUniqueNameInOrigin(uniqueNameInOrigin, origin), origin);
+    public static AccountName fromOriginAndUniqueName(@NonNull Origin origin, String uniqueName) {
+        return new AccountName(fixUniqueName(uniqueName, origin), origin);
     }
 
     private static String fixOriginName(String originNameIn) {
@@ -105,23 +104,24 @@ public class AccountName {
     @NonNull
     public static AccountName fromAccountName(MyContext myContext, String accountNameString) {
         Origin origin = myContext.origins().fromName(accountNameToOriginName(accountNameString));
-        return new AccountName(accountNameToUniqueNameInOrigin(accountNameString, origin), origin);
+        return new AccountName(accountNameToUniqueName(accountNameString, origin), origin);
     }
     
-    private AccountName(String uniqueNameInOrigin, Origin origin) {
-        this.uniqueNameInOrigin = uniqueNameInOrigin;
+    private AccountName(String uniqueName, Origin origin) {
+        this.uniqueName = uniqueName;
         this.origin = origin;
         isValid = origin.isPersistent()
-                && Actor.uniqueNameInOriginToUsername(origin, uniqueNameInOrigin)
+                && Actor.uniqueNameInOriginToUsername(origin, uniqueName)
                     .map(origin::isUsernameValid).orElse(false);
     }
 
     public String getName() {
-        return uniqueNameInOrigin + ORIGIN_SEPARATOR + origin.getName();
+        return uniqueName + ORIGIN_SEPARATOR + origin.getOriginType().getTitle();
     }
 
+    // TODO: delete
     public String getShortName() {
-        return getUsername() + ORIGIN_SEPARATOR + origin.getName();
+        return getUsername() + ORIGIN_SEPARATOR + origin.getOriginType().getTitle();
     }
 
     @Override
@@ -131,7 +131,11 @@ public class AccountName {
 
     @NonNull
     private String usernameToString() {
-        return origin.isUsernameValid(uniqueNameInOrigin) ? "" : "username " + origin + " ";
+        return origin.isUsernameValid(uniqueName) ? "" : "username " + origin + " ";
+    }
+
+    public Context getContext() {
+        return origin.myContext.context();
     }
 
     public Origin getOrigin() {
@@ -142,12 +146,12 @@ public class AccountName {
         return isValid;
     }
     
-    public String getUniqueNameInOrigin() {
-        return uniqueNameInOrigin;
+    public String getUniqueName() {
+        return uniqueName;
     }
 
     public String getUsername() {
-        return Actor.uniqueNameInOriginToUsername(origin, getUniqueNameInOrigin()).orElse("");
+        return Actor.uniqueNameInOriginToUsername(origin, getUniqueName()).orElse("");
     }
 
     String getOriginName() {
@@ -155,26 +159,26 @@ public class AccountName {
     }
 
     public String getLogName() {
-        return getName().replace("@", "-").replace(ORIGIN_SEPARATOR, "-");
+        return getName().replace("@", "-")
+                .replace(ORIGIN_SEPARATOR, "-");
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof AccountName)) return false;
+        if (!(o instanceof AccountName)) return false;
 
         AccountName that = (AccountName) o;
 
         if (!origin.equals(that.origin)) return false;
-        return StringUtils.equalsNotEmpty(uniqueNameInOrigin, that.uniqueNameInOrigin);
-
+        return StringUtils.equalsNotEmpty(uniqueName, that.uniqueName);
     }
 
     @Override
     public int hashCode() {
         int result = origin.hashCode();
-        if (!StringUtils.isEmpty(uniqueNameInOrigin)) {
-            result = 31 * result + uniqueNameInOrigin.hashCode();
+        if (!StringUtils.isEmpty(uniqueName)) {
+            result = 31 * result + uniqueName.hashCode();
         }
         return result;
     }

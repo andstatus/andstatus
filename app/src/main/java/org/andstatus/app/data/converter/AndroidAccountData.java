@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.account;
+package org.andstatus.app.data.converter;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
 
+import org.andstatus.app.account.AccountDataReader;
+import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;

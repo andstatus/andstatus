@@ -20,40 +20,38 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.PeriodicSync;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
-import androidx.annotation.NonNull;
 
-import org.andstatus.app.account.MyAccount.Builder.SaveResult;
-import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MatchedUri;
+import org.andstatus.app.origin.Origin;
+import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.List;
+import androidx.annotation.NonNull;
+import io.vavr.control.Try;
+
+import static org.andstatus.app.account.AccountUtils.KEY_VERSION;
+import static org.andstatus.app.account.MyAccount.KEY_ACTOR_ID;
+import static org.andstatus.app.account.MyAccount.KEY_ACTOR_OID;
+import static org.andstatus.app.account.MyAccount.KEY_OAUTH;
+import static org.andstatus.app.account.MyAccount.KEY_ORDER;
+import static org.andstatus.app.account.MyAccount.KEY_UNIQUE_NAME;
+import static org.andstatus.app.account.MyAccount.KEY_USERNAME;
 
 public class AccountData implements Parcelable, AccountDataWriter {
     private static final String TAG = AccountData.class.getSimpleName();
+    public static final AccountData EMPTY = new AccountData(null, false);
 
-    /** The Key for the android.accounts.Account bundle */
-    public static final String KEY_ACCOUNT = "account";
-    
     private final JSONObject data;
     private boolean persistent = false;
-
-    boolean isPersistent() {
-        return persistent;
-    }
-
-    void setPersistent(boolean persistent) {
-        this.persistent = persistent;
-    }
 
     @NonNull
     public static AccountData fromAndroidAccount(Context context, Account androidAccount) {
@@ -61,7 +59,7 @@ public class AccountData implements Parcelable, AccountDataWriter {
             throw new IllegalArgumentException(TAG + " account is null");
         }
         android.accounts.AccountManager am = AccountManager.get(context);
-        AccountData accountData = fromJsonString(am.getUserData(androidAccount, KEY_ACCOUNT), true);
+        AccountData accountData = fromJsonString(am.getUserData(androidAccount, AccountUtils.KEY_ACCOUNT), true);
         accountData.setDataBoolean(MyAccount.KEY_IS_SYNCABLE,
                 ContentResolver.getIsSyncable(androidAccount, MatchedUri.AUTHORITY) != 0);
         accountData.setDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY,
@@ -69,25 +67,8 @@ public class AccountData implements Parcelable, AccountDataWriter {
         return accountData;
     }
 
-    private static long getSyncFrequencySeconds(Account account) {
-        long syncFrequencySeconds = 0;
-        List<PeriodicSync> syncs = ContentResolver.getPeriodicSyncs(account, MatchedUri.AUTHORITY);
-        if (!syncs.isEmpty()) {
-            syncFrequencySeconds = syncs.get(0).period;
-        }
-        return syncFrequencySeconds;
-    }
-    
     public static AccountData fromJsonString(String userData, boolean persistent) {
-        JSONObject jso = null;
-        try {
-            if (userData != null) {
-                jso = new JSONObject(userData);
-            }
-        } catch (JSONException e) {
-            MyLog.e(TAG, "fromJsonString", e);
-        }
-        return fromJson(jso, persistent);
+        return JsonUtils.toJsonObject(userData).map(jso -> fromJson(jso, persistent)).getOrElse(EMPTY);
     }
 
     public static AccountData fromJson(JSONObject jso, boolean persistent) {
@@ -102,49 +83,77 @@ public class AccountData implements Parcelable, AccountDataWriter {
             this.persistent = persistent; 
         }
     }
-    
-    /**
-     * @param result 
-     * @return true if Android account changed
-     */
-    void saveDataToAndroidAccount(MyContext myContext, Account androidAccount, SaveResult result) {
-        AccountData oldData = fromAndroidAccount(myContext.context(), androidAccount);
-        result.changed = !this.equals(oldData);
-        if (result.changed) {
 
-            long syncFrequencySeconds = getDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, 0);
-            if (syncFrequencySeconds <= 0) {
-                syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
-            }
-            setSyncFrequencySeconds(androidAccount, syncFrequencySeconds);
-
-            boolean isSyncable = getDataBoolean(MyAccount.KEY_IS_SYNCABLE, true);
-            if (isSyncable != (ContentResolver.getIsSyncable(androidAccount, MatchedUri.AUTHORITY) > 0)) {
-                ContentResolver.setIsSyncable(androidAccount, MatchedUri.AUTHORITY, isSyncable ? 1
-                        : 0);
-            }
-            boolean syncAutomatically = getDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY, true);
-            if (syncAutomatically != ContentResolver.getSyncAutomatically(androidAccount, MatchedUri.AUTHORITY)) {
-                // We need to preserve sync on/off during backup/restore.
-                // don't know about "network tickles"... See:
-                // http://stackoverflow.com/questions/5013254/what-is-a-network-tickle-and-how-to-i-go-about-sending-one
-                ContentResolver.setSyncAutomatically(androidAccount, MatchedUri.AUTHORITY, syncAutomatically);
-            }
-            android.accounts.AccountManager am = AccountManager.get(myContext.context());
-            am.setUserData(androidAccount, KEY_ACCOUNT, toJsonString());
-            result.savedToAccountManager = true;
+    AccountData updateFrom(MyAccount myAccount) {
+        setDataString(AccountUtils.KEY_ACCOUNT, myAccount.getAccountName());
+        setDataString(KEY_USERNAME, myAccount.getOAccountName().getUsername());
+        setDataString(KEY_UNIQUE_NAME, myAccount.getOAccountName().getUniqueName());
+        setDataString(KEY_ACTOR_OID, myAccount.getActor().oid);
+        setDataString(Origin.KEY_ORIGIN_NAME, myAccount.getOAccountName().getOriginName());
+        myAccount.getCredentialsVerified().put(this);
+        setDataBoolean(KEY_OAUTH, myAccount.isOAuth());
+        setDataLong(KEY_ACTOR_ID, myAccount.getActor().actorId);
+        if (myAccount.getConnection() != null) {
+            myAccount.getConnection().save(this);
         }
-        result.success = true;
+        setPersistent(true);
+        setDataBoolean(MyAccount.KEY_IS_SYNCABLE, myAccount.isSyncable);
+        setDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY, myAccount.isSyncedAutomatically());
+        setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, myAccount.getSyncFrequencySeconds());
+        // We don't create accounts of other versions
+        setDataInt(KEY_VERSION, AccountUtils.ACCOUNT_VERSION);
+        setDataInt(KEY_ORDER, myAccount.getOrder());
+        return this;
+    }
+
+    boolean isPersistent() {
+        return persistent;
+    }
+
+    void setPersistent(boolean persistent) {
+        this.persistent = persistent;
+    }
+
+    /** @return changed (and successfully saved) or not */
+    public Try<Boolean> saveIfChanged(Context context, Account androidAccount) {
+        AccountData oldData = fromAndroidAccount(context, androidAccount);
+        if (this.equals(oldData)) return Try.success(false);
+
+        long syncFrequencySeconds = getDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, 0);
+        if (syncFrequencySeconds <= 0) {
+            syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
+        }
+        AccountUtils.setSyncFrequencySeconds(androidAccount, syncFrequencySeconds);
+
+        boolean isSyncable = getDataBoolean(MyAccount.KEY_IS_SYNCABLE, true);
+        if (isSyncable != (ContentResolver.getIsSyncable(androidAccount, MatchedUri.AUTHORITY) > 0)) {
+            ContentResolver.setIsSyncable(androidAccount, MatchedUri.AUTHORITY, isSyncable ? 1 : 0);
+        }
+        boolean syncAutomatically = getDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY, true);
+        if (syncAutomatically != ContentResolver.getSyncAutomatically(androidAccount, MatchedUri.AUTHORITY)) {
+            // We need to preserve sync on/off during backup/restore.
+            // don't know about "network tickles"... See:
+            // http://stackoverflow.com/questions/5013254/what-is-a-network-tickle-and-how-to-i-go-about-sending-one
+            ContentResolver.setSyncAutomatically(androidAccount, MatchedUri.AUTHORITY, syncAutomatically);
+        }
+        android.accounts.AccountManager am = AccountManager.get(context);
+        am.setUserData(androidAccount, AccountUtils.KEY_ACCOUNT, toJsonString());
+        return Try.success(true);
+    }
+
+    public boolean isVersionCurrent() {
+        return AccountUtils.ACCOUNT_VERSION == getVersion();
+    }
+
+    public int getVersion() {
+        return getDataInt(KEY_VERSION, 0);
     }
 
     @Override
     public boolean equals(Object o) {
-        if (o == this) {
-            return true;
-        }
-        if (o == null || !(o instanceof AccountData)) {
-            return false;
-        }
+        if (o == this) return true;
+        if (!(o instanceof AccountData)) return false;
+
         final AccountData other = (AccountData)o;
         return isPersistent() == other.isPersistent() && toJsonString().equals(other.toJsonString());
     }
@@ -156,19 +165,6 @@ public class AccountData implements Parcelable, AccountDataWriter {
         return text.hashCode();
     }
 
-    static void setSyncFrequencySeconds(Account androidAccount, long syncFrequencySeconds) {
-        // See
-        // http://developer.android.com/reference/android/content/ContentResolver.html#addPeriodicSync(android.accounts.Account, java.lang.String, android.os.Bundle, long)
-        // and
-        // http://stackoverflow.com/questions/11090604/android-syncadapter-automatically-initialize-syncing
-        if (syncFrequencySeconds != getSyncFrequencySeconds(androidAccount)) {
-            ContentResolver.removePeriodicSync(androidAccount, MatchedUri.AUTHORITY, Bundle.EMPTY);
-            if (syncFrequencySeconds > 0) {
-                ContentResolver.addPeriodicSync(androidAccount, MatchedUri.AUTHORITY, Bundle.EMPTY, syncFrequencySeconds);
-            }
-        }
-    }
-    
     @Override
     public boolean dataContains(String key) {
         boolean contains = false;
@@ -267,12 +263,11 @@ public class AccountData implements Parcelable, AccountDataWriter {
         }
     }
 
-    public static final Creator<AccountData> CREATOR 
-    = new Creator<AccountData>() {
+    public static final Creator<AccountData> CREATOR = new Creator<AccountData>() {
 
         @Override
         public AccountData createFromParcel(Parcel source) {
-            return AccountData.fromBundle(source.readBundle());
+            return AccountData.fromBundle(MyContextHolder.get().context(), source.readBundle());
         }
 
         @Override
@@ -281,10 +276,10 @@ public class AccountData implements Parcelable, AccountDataWriter {
         }
     };
     
-    static AccountData fromBundle(Bundle bundle) {
+    static AccountData fromBundle(Context context, Bundle bundle) {
         String jsonString = "";
         if (bundle != null) {
-            jsonString = bundle.getString(KEY_ACCOUNT);
+            jsonString = bundle.getString(AccountUtils.KEY_ACCOUNT);
         }
         return fromJsonString(jsonString, false);
     }
@@ -297,6 +292,10 @@ public class AccountData implements Parcelable, AccountDataWriter {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(toJsonString());
+    }
+
+    public JSONObject toJSon() {
+        return data;
     }
 
     public String toJsonString() {

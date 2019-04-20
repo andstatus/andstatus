@@ -77,7 +77,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
 
     @Override
     public boolean getCredentialsPresent() {
-        return !StringUtils.isEmpty(data.getAccountName().getUniqueNameInOrigin())
+        return !StringUtils.isEmpty(data.getAccountName().getUniqueName())
                 && !StringUtils.isEmpty(mPassword);
     }
 

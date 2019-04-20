@@ -119,7 +119,7 @@ class StateOfAccountChangeProcess {
                     state.builder = MyAccount.Builder.fromMyAccount(
                             MyContextHolder.get(),
                             MyContextHolder.get()
-                            .accounts().getCurrentAccount(), "fromIntent", false);
+                            .accounts().getCurrentAccount(), "fromIntent");
                     break;
                 default:
                     state.accountShouldBeSelected = true;

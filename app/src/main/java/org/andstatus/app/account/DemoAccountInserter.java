@@ -18,7 +18,6 @@ package org.andstatus.app.account;
 
 import android.accounts.Account;
 
-import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyQuery;
@@ -88,7 +87,7 @@ public class DemoAccountInserter {
         long accountActorId_existing = MyQuery.oidToId(myContext, OidEnum.ACTOR_OID,
                 accountName.getOrigin().getId(), actorOid);
         Actor actor = Actor.fromOid(accountName.getOrigin(), actorOid);
-        actor.withUniqueNameInOrigin(accountName.getUniqueNameInOrigin());
+        actor.withUniqueNameInOrigin(accountName.getUniqueName());
         actor.setAvatarUrl(avatarUrl);
         if (!actor.isWebFingerIdValid() && UrlUtils.hostIsValid(actor.getHost())) {
             actor.setWebFingerId(actor.getUsername() + "@" + actor.getHost());
@@ -136,7 +135,7 @@ public class DemoAccountInserter {
     }
 
     private void assertAccountIsAddedToAccountManager(MyAccount maExpected) {
-        List<Account> aa = MyAccounts.getAccounts(myContext.context());
+        List<Account> aa = AccountUtils.getCurrentAccounts(myContext.context());
         MyAccount ma = null;
         for (android.accounts.Account account : aa) {
             ma = MyAccount.Builder.fromAndroidAccount(myContext, account).getAccount();

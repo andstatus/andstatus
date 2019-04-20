@@ -57,7 +57,7 @@ public enum OriginType implements SelectableEnum {
      * Since July 2013 the API is <a href="https://github.com/e14n/pump.io/blob/master/API.md">pump.io API</a>
      */
     PUMPIO(2, "Pump.io", ApiEnum.PUMPIO, NoteName.YES, PublicChangeAllowed.YES),
-    GNUSOCIAL(3, "GNU social", ApiEnum.GNUSOCIAL_TWITTER, NoteName.NO, PublicChangeAllowed.NO),
+    GNUSOCIAL(3, "GnuSocial", ApiEnum.GNUSOCIAL_TWITTER, NoteName.NO, PublicChangeAllowed.NO),
     /** <a href="https://github.com/Gargron/mastodon">Mastodon at GitHub</a> */
     MASTODON(4, "Mastodon", ApiEnum.MASTODON, NoteName.YES, PublicChangeAllowed.NO),
     ACTIVITYPUB(5, "ActivityPub", ApiEnum.ACTIVITYPUB, NoteName.YES, PublicChangeAllowed.YES) {
@@ -392,6 +392,15 @@ public enum OriginType implements SelectableEnum {
     public static OriginType fromCode(String code) {
         for(OriginType val : values()) {
             if (val.getCode().equalsIgnoreCase(code)) {
+                return val;
+            }
+        }
+        return UNKNOWN;
+    }
+
+    public static OriginType fromTitle(String title) {
+        for(OriginType val : values()) {
+            if (val.getTitle().equalsIgnoreCase(title)) {
                 return val;
             }
         }

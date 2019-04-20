@@ -20,8 +20,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import androidx.annotation.NonNull;
+import io.vavr.control.Try;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -96,4 +98,13 @@ public class JsonUtils {
         return jso;
     }
 
+    public static Try<JSONObject> toJsonObject(String jsonString) {
+        if (jsonString == null) return Try.failure(new NoSuchElementException());
+
+        try {
+            return Try.success(new JSONObject(jsonString));
+        } catch (Exception e) {
+            return Try.failure(new Exception("fromJsonString: " + jsonString, e));
+        }
+    }
 }

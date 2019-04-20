@@ -8,6 +8,7 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.content.Context;
 
+import org.andstatus.app.account.AccountUtils;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccounts;
 import org.andstatus.app.context.MyContextHolder;
@@ -138,7 +139,7 @@ public class MyBackupAgentTest {
 
     private void deleteAccounts() throws IOException {
         android.accounts.AccountManager am = AccountManager.get(MyContextHolder.get().context());
-        List<Account> aa = MyAccounts.getAccounts(MyContextHolder.get().context());
+        List<Account> aa = AccountUtils.getCurrentAccounts(MyContextHolder.get().context());
         for (android.accounts.Account androidAccount : aa) {
             String logMsg = "Removing old account: " + androidAccount.name;
             MyLog.i(this, logMsg);

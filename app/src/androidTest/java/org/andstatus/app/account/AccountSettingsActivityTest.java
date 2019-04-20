@@ -81,7 +81,7 @@ public class AccountSettingsActivityTest extends ActivityTest<AccountSettingsAct
     private void assertUniqueNameTextField(int viewId) {
         TextView uniqueNameText = (TextView) getActivity().findViewById(viewId);
         assertTrue(uniqueNameText != null);
-        assertEquals("Unique name of selected account " + ma, ma.getOAccountName().getUniqueNameInOrigin(), uniqueNameText.getText().toString());
+        assertEquals("Unique name of selected account " + ma, ma.getOAccountName().getUniqueName(), uniqueNameText.getText().toString());
     }
     
     private void openingOriginList() throws InterruptedException {

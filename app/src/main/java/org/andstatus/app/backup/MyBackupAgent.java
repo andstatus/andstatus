@@ -26,7 +26,6 @@ import android.text.format.Formatter;
 
 import org.andstatus.app.FirstActivity;
 import org.andstatus.app.R;
-import org.andstatus.app.account.MyAccounts;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.context.MyPreferences;
@@ -53,6 +52,7 @@ public class MyBackupAgent extends BackupAgent {
     public static final String DOWNLOADS_KEY = "downloads";
     public static final String DATABASE_KEY = "database";
     public static final String LOG_FILES_KEY = "logs";
+    public static final String KEY_ACCOUNT = "account";
 
     private Activity activity;
     private MyBackupDescriptor backupDescriptor = null;
@@ -304,7 +304,7 @@ public class MyBackupAgent extends BackupAgent {
         DataPruner.setDataPrunedNow();
 
         data.setMyContext(MyContextHolder.get());
-        assertNextHeader(data, MyAccounts.KEY_ACCOUNT);
+        assertNextHeader(data, KEY_ACCOUNT);
         accountsRestored += data.getMyContext().accounts().onRestore(data, backupDescriptor);
 
         MyContextHolder.release(() -> "doRestore");

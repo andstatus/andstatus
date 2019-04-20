@@ -19,6 +19,7 @@ package org.andstatus.app.context;
 import android.net.Uri;
 
 import org.andstatus.app.FirstActivity;
+import org.andstatus.app.account.CredentialsVerificationStatus;
 import org.andstatus.app.account.DemoAccountInserter;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.backup.ProgressLogger;
@@ -273,11 +274,11 @@ public final class DemoData {
     private void setSuccessfulAccountAsCurrent() {
         MyLog.i(TAG, "Persistent accounts: " + MyContextHolder.get().accounts().size());
         boolean found = (MyContextHolder.get().accounts().getCurrentAccount().getCredentialsVerified()
-                == MyAccount.CredentialsVerificationStatus.SUCCEEDED);
+                == CredentialsVerificationStatus.SUCCEEDED);
         if (!found) {
             for (MyAccount ma : MyContextHolder.get().accounts().get()) {
                 MyLog.i(TAG, ma.toString());
-                if (ma.getCredentialsVerified() == MyAccount.CredentialsVerificationStatus.SUCCEEDED) {
+                if (ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
                     found = true;
                     MyContextHolder.get().accounts().setCurrentAccount(ma);
                     break;
@@ -287,7 +288,7 @@ public final class DemoData {
         assertTrue("Found account, which is successfully verified", found);
         assertTrue("Current account is successfully verified",
                 MyContextHolder.get().accounts().getCurrentAccount().getCredentialsVerified()
-                == MyAccount.CredentialsVerificationStatus.SUCCEEDED);
+                == CredentialsVerificationStatus.SUCCEEDED);
     }
 
     public void checkDataPath() {

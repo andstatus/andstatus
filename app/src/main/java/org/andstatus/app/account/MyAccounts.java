@@ -1,12 +1,9 @@
 package org.andstatus.app.account;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.content.Context;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount.Builder;
-import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
+import org.andstatus.app.backup.MyBackupAgent;
 import org.andstatus.app.backup.MyBackupDataInput;
 import org.andstatus.app.backup.MyBackupDataOutput;
 import org.andstatus.app.backup.MyBackupDescriptor;
@@ -14,12 +11,12 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.SqlIds;
+import org.andstatus.app.data.converter.AccountConverter;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.Permissions;
 import org.andstatus.app.util.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,7 +24,7 @@ import org.json.JSONObject;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -37,8 +34,12 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import androidx.annotation.NonNull;
+import io.vavr.control.Try;
 
 import static java.util.stream.Collectors.toList;
 
@@ -70,7 +71,7 @@ public class MyAccounts implements IsEmpty {
     public MyAccounts initialize() {
         myAccounts.clear();
         recentAccounts.clear();
-        for (android.accounts.Account account : getAccounts(myContext.context())) {
+        for (android.accounts.Account account : AccountUtils.getCurrentAccounts(myContext.context())) {
             MyAccount ma = Builder.fromAndroidAccount(myContext, account).getAccount();
             if (ma.isValid()) {
                 myAccounts.add(ma);
@@ -113,15 +114,15 @@ public class MyAccounts implements IsEmpty {
                 .findFirst().orElse(MyAccount.EMPTY);
         if (toDelete.nonValid()) return false;
 
-        MyAccount.Builder.fromMyAccount(myContext, toDelete, "delete", false).deleteData();
+        MyAccount.Builder.fromMyAccount(myContext, toDelete, "delete").deleteData();
         myAccounts.remove(toDelete);
         MyPreferences.onPreferencesChanged();
         return true;
     }
 
     /**
-     * Find persistent MyAccount by accountName in local cache AND in Android
-     * AccountManager
+     * Find persistent MyAccount by accountName in local cache AND
+     * in Android AccountManager
      * 
      * @return Invalid account if was not found
      */
@@ -135,7 +136,7 @@ public class MyAccounts implements IsEmpty {
                 return persistentAccount;
             }
         }
-        for (android.accounts.Account androidAccount : getAccounts(myContext.context())) {
+        for (android.accounts.Account androidAccount : AccountUtils.getCurrentAccounts(myContext.context())) {
             if (accountName.toString().equals(androidAccount.name)) {
                 MyAccount myAccount = Builder.fromAndroidAccount(myContext, androidAccount).getAccount();
                 myAccounts.add(myAccount);
@@ -407,12 +408,9 @@ public class MyAccounts implements IsEmpty {
     public void onDefaultSyncFrequencyChanged() {
         long syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
         for (MyAccount ma : myAccounts) {
-            if (ma.getSyncFrequencySeconds() <= 0) {
-                Account account = ma.getExistingAndroidAccount();
-                if (account != null) {
-                    AccountData.setSyncFrequencySeconds(account, syncFrequencySeconds);
-                }
-            }
+            if (ma.getSyncFrequencySeconds() <= 0) AccountUtils.getExistingAndroidAccount(ma.getOAccountName()
+            ).onSuccess(account ->
+                        AccountUtils.setSyncFrequencySeconds(account, syncFrequencySeconds));
         }
     }
 
@@ -436,61 +434,63 @@ public class MyAccounts implements IsEmpty {
         return true;
     }
 
-    public static final String KEY_ACCOUNT = "account";
     public long onBackup(MyBackupDataOutput data, MyBackupDescriptor newDescriptor) throws IOException {
-        long backedUpCount = 0;
-        JSONArray jsa = new JSONArray();
         try {
-            for (MyAccount ma : myAccounts) {
-                jsa.put(ma.toJson());
-                backedUpCount++;
-            }
-            byte[] bytes = jsa.toString(2).getBytes("UTF-8");
-            data.writeEntityHeader(KEY_ACCOUNT, bytes.length, ".json");
+            JSONArray jsa = new JSONArray();
+            myAccounts.forEach(ma -> jsa.put(ma.toJson()));
+            byte[] bytes = jsa.toString(2).getBytes(StandardCharsets.UTF_8);
+            data.writeEntityHeader(MyBackupAgent.KEY_ACCOUNT, bytes.length, ".json");
             data.writeEntityData(bytes, bytes.length);
         } catch (JSONException e) {
             throw new IOException(e);
         }
-        newDescriptor.setAccountsCount(backedUpCount);
-        return backedUpCount;
+        newDescriptor.setAccountsCount(myAccounts.size());
+        return myAccounts.size();
     }
 
     /** Returns count of restores objects */
     public long onRestore(MyBackupDataInput data, MyBackupDescriptor newDescriptor) throws IOException {
-        long restoredCount = 0;
+        AtomicLong restoredCount = new AtomicLong();
         final String method = "onRestore";
         MyLog.i(this, method + "; started, " + I18n.formatBytes(data.getDataSize()));
         byte[] bytes = new byte[data.getDataSize()];
         int bytesRead = data.readEntityData(bytes, 0, bytes.length);
         try {
-            JSONArray jsa = new JSONArray(new String(bytes, 0, bytesRead, "UTF-8"));
+            JSONArray jsa = new JSONArray(new String(bytes, 0, bytesRead, StandardCharsets.UTF_8));
             for (int ind = 0; ind < jsa.length(); ind++) {
-                MyLog.v(this, method + "; restoring " + (ind+1) + " of " + jsa.length());
-                MyAccount.Builder builder = Builder.fromJson(data.getMyContext(), (JSONObject) jsa.get(ind));
-                CredentialsVerificationStatus verified = builder.getAccount().getCredentialsVerified(); 
-                if (verified != CredentialsVerificationStatus.SUCCEEDED) {
-                    newDescriptor.getLogger().logProgress("Account " + builder.getAccount().getAccountName() + " was not successfully verified");
-                    builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
-                }
-                if (builder.saveSilently().success) {
-                    MyLog.v(this, method + "; restored " + (ind+1) + ": " + builder.toString());
-                    restoredCount++;
+                int order = ind + 1;
+                MyLog.v(this, method + "; restoring " + order + " of " + jsa.length());
+                AccountConverter.convertJson(data.getMyContext(), (JSONObject) jsa.get(ind), false)
+                        .onSuccess(jso -> {
+                    AccountData accountData = AccountData.fromJson(jso, false);
+                    MyAccount.Builder builder = Builder.fromAccountData(data.getMyContext(), accountData, "fromJson");
+                    CredentialsVerificationStatus verified = builder.getAccount().getCredentialsVerified();
                     if (verified != CredentialsVerificationStatus.SUCCEEDED) {
-                        builder.setCredentialsVerificationStatus(verified);
-                        builder.saveSilently();
+                        newDescriptor.getLogger().logProgress("Account " + builder.getAccount().getAccountName() +
+                                " was not successfully verified");
+                        builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
                     }
-                } else {
-                    MyLog.e(this, method + "; failed to restore " + (ind+1) + ": " + builder.toString());
-                }
+                    builder.saveSilently().onSuccess( r -> {
+                        MyLog.v(this, method + "; restored " + order + ": " + builder.toString());
+                        restoredCount.incrementAndGet();
+                        if (verified != CredentialsVerificationStatus.SUCCEEDED) {
+                            builder.setCredentialsVerificationStatus(verified);
+                            builder.saveSilently();
+                        }
+                    }).onFailure( e -> {
+                        MyLog.e(this, method + "; failed to restore " + order + ": " + builder.toString());
+                    });
+                });
             }
-            if (restoredCount != newDescriptor.getAccountsCount()) {
-                throw new FileNotFoundException("Restored only " + restoredCount + " accounts of " + newDescriptor.getAccountsCount());
+            if (restoredCount.get() != newDescriptor.getAccountsCount()) {
+                throw new FileNotFoundException("Restored only " + restoredCount + " accounts of " +
+                        newDescriptor.getAccountsCount());
             }
             newDescriptor.getLogger().logProgress("Restored " + restoredCount + " accounts");
         } catch (JSONException e) {
             throw new IOException(method, e);
         }
-        return restoredCount;
+        return restoredCount.get();
     }
 
     @Override
@@ -522,7 +522,7 @@ public class MyAccounts implements IsEmpty {
             order++;
             if (myAccount.getOrder() != order) {
                 changed = true;
-                MyAccount.Builder builder = Builder.fromMyAccount(myContext, myAccount, "reorder", false);
+                MyAccount.Builder builder = Builder.fromMyAccount(myContext, myAccount, "reorder");
                 builder.setOrder(order);
                 builder.save();
             }
@@ -536,20 +536,11 @@ public class MyAccounts implements IsEmpty {
     public static SqlIds myAccountIds() {
         Context context = MyContextHolder.get().context();
         return SqlIds.fromIds(
-            getAccounts(context).stream()
+            AccountUtils.getCurrentAccounts(context).stream()
             .map(account -> AccountData.fromAndroidAccount(context, account).getDataLong(MyAccount.KEY_ACTOR_ID, 0))
             .filter(id -> id > 0)
             .collect(toList())
         );
-    }
-
-    @NonNull
-    public static List<Account> getAccounts(Context context) {
-        if (Permissions.checkPermission(context, Permissions.PermissionType.GET_ACCOUNTS) ) {
-            AccountManager am = AccountManager.get(context);
-            return Arrays.asList(am.getAccountsByType(AuthenticatorService.ANDROID_ACCOUNT_TYPE));
-        }
-        return Collections.emptyList();
     }
 
     void addIfAbsent(@NonNull MyAccount myAccount) {
