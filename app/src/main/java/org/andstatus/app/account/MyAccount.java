@@ -124,12 +124,12 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
                 : accountDataIn;
         oAccountName = accountDataIn == null
                 ? AccountName.fromAccountName(myContext, accountName)
-                : AccountName.fromOriginNameAndUniqueUserName(myContext,
+                : AccountName.fromOriginNameAndUniqueName(myContext,
                 accountDataIn.getDataString(Origin.KEY_ORIGIN_NAME, ""),
                 accountDataIn.getDataString(KEY_UNIQUE_NAME, ""));
         actor = Actor.load(myContext, accountData.getDataLong(KEY_ACTOR_ID, 0L), false, () ->
                 Actor.fromOid(oAccountName.getOrigin(), accountData.getDataString(KEY_ACTOR_OID, ""))
-                        .withUniqueNameInOrigin(oAccountName.getUniqueName())
+                        .withUniqueName(oAccountName.getUniqueName())
                         .lookupUser());
 
         deleted = accountData.getDataBoolean(KEY_DELETED, false);
@@ -646,10 +646,10 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             boolean errorSettingUsername = !ok;
 
             boolean credentialsOfOtherAccount = false;
-            // We are comparing actor names ignoring case, but we fix correct case
+            // We are comparing usernames ignoring case, but we fix correct case
             // as the Originating system tells us.
             if (ok && !StringUtils.isEmpty(myAccount.getUsername())
-                    && myAccount.oAccountName.getUniqueName().compareToIgnoreCase(actor.getUniqueNameInOrigin()) != 0) {
+                    && myAccount.oAccountName.username.compareToIgnoreCase(actor.getUsername()) != 0) {
                 // Credentials belong to other Account ??
                 ok = false;
                 credentialsOfOtherAccount = true;
@@ -673,7 +673,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
                     // We don't recreate MyAccount object for the new name
                     //   in order to preserve credentials.
                     myAccount.oAccountName = AccountName.fromOriginAndUniqueName(
-                            myAccount.oAccountName.getOrigin(), actor.getUniqueNameInOrigin());
+                            myAccount.oAccountName.getOrigin(), actor.getUniqueName());
                     myAccount.connection.save(myAccount.accountData);
                     myAccount.setConnection();
                     save();
@@ -690,12 +690,12 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             if (credentialsOfOtherAccount) {
                 MyLog.e(TAG, myContext.context().getText(R.string.error_credentials_of_other_user) + ": " +
                         actor.getUniqueNameWithOrigin() +
-                        " names: " + myAccount.oAccountName.getUniqueName() +
-                        " vs " + actor.getUniqueNameInOrigin());
+                        " account name: " + myAccount.oAccountName.getName() +
+                        " vs username: " + actor.getUsername());
                 throw new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_ACCOUNT, actor.getUniqueNameWithOrigin());
             }
             if (errorSettingUsername) {
-                String msg = myContext.context().getText(R.string.error_set_username) + " " + actor.getUniqueNameInOrigin();
+                String msg = myContext.context().getText(R.string.error_set_username) + " " + actor.getUsername();
                 MyLog.e(TAG, msg);
                 throw new ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg);
             }

@@ -182,9 +182,10 @@ public class ConnectionPumpioTest {
         Actor actor = activity.getActor();
         assertEquals("Sender's oid", "acct:jpope@io.jpope.org", actor.oid);
         assertEquals("Sender's username", "jpope", actor.getUsername());
-        assertEquals("Sender's unique name in Origin", "jpope@io.jpope.org", actor.getUniqueNameInOrigin());
+        assertEquals("Sender's unique name in Origin", "jpope@io.jpope.org", actor.getUniqueName());
         assertEquals("Sender's Display name", "jpope", actor.getRealName());
-        assertEquals("Sender's profile image URL", "https://io.jpope.org/uploads/jpope/2013/7/8/LPyLPw_thumb.png", actor.getAvatarUrl());
+        assertEquals("Sender's profile image URL", "https://io.jpope.org/uploads/jpope/2013/7/8/LPyLPw_thumb.png",
+                actor.getAvatarUrl());
         assertEquals("Sender's profile URL", "https://io.jpope.org/jpope", actor.getProfileUrl());
         assertEquals("Sender's Homepage", "https://io.jpope.org/jpope", actor.getHomepage());
         assertEquals("Sender's WebFinger ID", "jpope@io.jpope.org", actor.getWebFingerId());
@@ -256,7 +257,8 @@ public class ConnectionPumpioTest {
         note = activity.getNote();
         assertEquals(TriState.UNKNOWN, activity.isSubscribedByMe());
         assertTrue("Is a reply", note.getInReplyTo().nonEmpty());
-        assertEquals("Is not a reply to this actor " + activity, "jankusanagi@identi.ca", note.getInReplyTo().getAuthor().getUniqueNameInOrigin());
+        assertEquals("Is not a reply to this actor " + activity, "jankusanagi@identi.ca",
+                note.getInReplyTo().getAuthor().getUniqueName());
         assertEquals(TriState.UNKNOWN, note.getInReplyTo().isSubscribedByMe());
     }
 
@@ -277,7 +279,7 @@ public class ConnectionPumpioTest {
 
         assertEquals("Does the Pope shit in the woods?", actors.get(1).getSummary());
         assertEquals("gitorious", actors.get(2).getUsername());
-        assertEquals("gitorious@identi.ca", actors.get(2).getUniqueNameInOrigin());
+        assertEquals("gitorious@identi.ca", actors.get(2).getUniqueName());
         assertEquals("acct:ken@coding.example", actors.get(3).oid);
         assertEquals("Yuri Volkov", actors.get(4).getRealName());
     }

@@ -374,7 +374,7 @@ public class AccountSettingsActivity extends MyActivity {
         showTitle();
         showErrors();
         showOrigin();
-        showUniqueNameInOrigin();
+        showUniqueName();
         showPassword();
         showAccountState();
         showAddAccountButton();
@@ -412,7 +412,7 @@ public class AccountSettingsActivity extends MyActivity {
         }
     }
 
-    private void showUniqueNameInOrigin() {
+    private void showUniqueName() {
         MyAccount ma = state.getAccount();
         showTextView(R.id.uniqueName_label, ma.getOrigin().getOriginType().uniqueNameHasHost()
                 ? R.string.username_at_your_server
@@ -428,19 +428,19 @@ public class AccountSettingsActivity extends MyActivity {
                         String.format(getText(ma.getOrigin().getOriginType().uniqueNameHasHost()
                                         ? R.string.summary_preference_username_webfinger_id
                                         : R.string.summary_preference_username).toString(),
-                                ma.getOrigin().getName(), ma.getOrigin().getOriginType().uniqueNameInOriginExamples));
+                                ma.getOrigin().getName(), ma.getOrigin().getOriginType().uniqueNameExamples));
                 nameEditable.addTextChangedListener(textWatcher);
                 if (nameEditable.getText().length() == 0) {
                     nameEditable.requestFocus();
                 }
             }
-            String uniqueNameInOrigin = StringUtils.nonEmptyNonTemp(ma.getUsername())
-                    ? ma.getActor().getUniqueNameInOrigin()
+            String uniqueName = StringUtils.nonEmptyNonTemp(ma.getUsername())
+                    ? ma.getActor().getUniqueName()
                     : "";
-            if (uniqueNameInOrigin.compareTo(nameEditable.getText().toString()) != 0) {
-                nameEditable.setText(uniqueNameInOrigin);
+            if (uniqueName.compareTo(nameEditable.getText().toString()) != 0) {
+                nameEditable.setText(uniqueName);
             }
-            showTextView(R.id.uniqueName_readonly, uniqueNameInOrigin, state.builder.isPersistent());
+            showTextView(R.id.uniqueName_readonly, uniqueName, state.builder.isPersistent());
         }
     }
 
@@ -724,13 +724,13 @@ public class AccountSettingsActivity extends MyActivity {
         if (!state.builder.isPersistent()) {
             EditText uniqueNameEditable = (EditText) findFragmentViewById(R.id.uniqueName);
             if (uniqueNameEditable != null) {
-                String uniqueNameInOrigin = uniqueNameEditable.getText().toString();
-                if (uniqueNameInOrigin.compareTo(state.getAccount().getOAccountName().getUniqueName()) != 0) {
+                String uniqueName = uniqueNameEditable.getText().toString();
+                if (uniqueName.compareTo(state.getAccount().getOAccountName().getUniqueName()) != 0) {
                     boolean isOAuth = state.getAccount().isOAuth();
                     state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                             MyContextHolder.get(),
                             AccountName.fromOriginAndUniqueName(
-                                    state.getAccount().getOrigin(), uniqueNameInOrigin).toString(),
+                                    state.getAccount().getOrigin(), uniqueName).toString(),
                             TriState.fromBoolean(isOAuth));
                 }
             }

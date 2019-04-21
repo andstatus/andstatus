@@ -37,60 +37,30 @@ public class AccountName {
     
     /** The system in which the Account is defined, see {@link Origin} */
     public final Origin origin;
+    public final String username;
+    public final String host;
     /** The name is a username@originHost to be unique for the {@link OriginType} */
     private final String uniqueName;
+    private final String name;
     public final boolean isValid;
-
-    private static String accountNameToOriginName(String accountName) {
-        String accountNameFixed = AccountName.fixAccountName(accountName);
-        int indSeparator = accountNameFixed.lastIndexOf(ORIGIN_SEPARATOR);
-        String originName = "";
-        if (indSeparator >= 0 &&
-            indSeparator < accountNameFixed.length()-1) {
-                originName = accountNameFixed.substring(indSeparator + 1);
-        }
-        return fixOriginName(originName);
-    }
-
-    private static String fixUniqueName(String uniqueNameIn, Origin origin) {
-        String nonNullName = StringUtils.notNull(uniqueNameIn).trim();
-        String uniqueName = nonNullName + (origin.getOriginType().uniqueNameHasHost() && !nonNullName.contains("@")
-                    && origin.shouldHaveUrl()
-                ? "@" + origin.getHost() : "");
-        if (Actor.uniqueNameInOriginToUsername(origin, uniqueName).isPresent()) {
-            return uniqueName;
-        } else {
-            return "";
-        }
-    }
-    
-    private static String accountNameToUniqueName(String accountName, Origin origin) {
-        String accountNameFixed = fixAccountName(accountName);
-        int indSeparator = accountNameFixed.indexOf(ORIGIN_SEPARATOR);
-        String usernameOut = indSeparator > 0
-            ? accountNameFixed.substring(0, indSeparator)
-            : "";
-        return fixUniqueName(usernameOut, origin);
-    }
-
-    private static String fixAccountName(String accountNameIn) {
-        String accountName = "";
-        if (accountNameIn != null) {
-            accountName = accountNameIn.trim();
-        }
-        return accountName;
-    }
 
     protected static AccountName getEmpty() {
         return new AccountName("", Origin.EMPTY);
     }
 
-    static AccountName fromOriginNameAndUniqueUserName(MyContext myContext, String originName, String uniqueName) {
+    static AccountName fromOriginNameAndUniqueName(MyContext myContext, String originName, String uniqueName) {
         return fromOriginAndUniqueName(myContext.origins().fromName(fixOriginName(originName)), uniqueName);
     }
 
+    @NonNull
     public static AccountName fromOriginAndUniqueName(@NonNull Origin origin, String uniqueName) {
         return new AccountName(fixUniqueName(uniqueName, origin), origin);
+    }
+
+    @NonNull
+    public static AccountName fromAccountName(MyContext myContext, String accountNameString) {
+        Origin origin = accountNameToOrigin(myContext, accountNameString);
+        return new AccountName(accountNameToUniqueName(accountNameString, origin), origin);
     }
 
     private static String fixOriginName(String originNameIn) {
@@ -101,37 +71,75 @@ public class AccountName {
         return originName;
     }
 
-    @NonNull
-    public static AccountName fromAccountName(MyContext myContext, String accountNameString) {
-        Origin origin = myContext.origins().fromName(accountNameToOriginName(accountNameString));
-        return new AccountName(accountNameToUniqueName(accountNameString, origin), origin);
+    private static Origin accountNameToOrigin(MyContext myContext, String accountName) {
+        String accountNameFixed = fixAccountName(accountName);
+        String host = accountNameToHost(accountNameFixed);
+        int indSeparator = accountNameFixed.lastIndexOf(ORIGIN_SEPARATOR);
+        String originInAccountName = indSeparator >= 0 && indSeparator < accountNameFixed.length()-1
+                ? accountNameFixed.substring(indSeparator + 1).trim()
+                : "";
+
+        return myContext.origins().fromOriginInAccountNameAndHost(fixOriginName(originInAccountName), host);
     }
-    
+
+
+    public static String accountNameToHost(String accountName) {
+        String nameWithoutOrigin = accountNameWithoutOrigin(accountName);
+        int indAt = nameWithoutOrigin.indexOf("@");
+        return indAt >= 0
+                ? nameWithoutOrigin.substring(indAt + 1).trim()
+                : "";
+    }
+
+    private static String accountNameToUniqueName(String accountName, Origin origin) {
+        return fixUniqueName(accountNameWithoutOrigin(accountName), origin);
+    }
+
+    private static String accountNameWithoutOrigin(String accountName) {
+        String accountNameFixed = fixAccountName(accountName);
+        int indSeparator = accountNameFixed.indexOf(ORIGIN_SEPARATOR);
+        return indSeparator > 0
+                ? accountNameFixed.substring(0, indSeparator)
+                : accountNameFixed;
+    }
+
+    private static String fixUniqueName(String uniqueNameIn, Origin origin) {
+        String nonNullName = StringUtils.notNull(uniqueNameIn).trim();
+        String uniqueName = nonNullName +
+                (!nonNullName.contains("@") && origin.shouldHaveUrl() ? "@" + origin.getAccountNameHost() : "");
+        if (Actor.uniqueNameToUsername(origin, uniqueName).isPresent()) {
+            return uniqueName;
+        } else {
+            return "";
+        }
+    }
+
+    private static String fixAccountName(String accountNameIn) {
+        String accountName = "";
+        if (accountNameIn != null) {
+            accountName = accountNameIn.trim();
+        }
+        return accountName;
+    }
+
     private AccountName(String uniqueName, Origin origin) {
-        this.uniqueName = uniqueName;
         this.origin = origin;
-        isValid = origin.isPersistent()
-                && Actor.uniqueNameInOriginToUsername(origin, uniqueName)
-                    .map(origin::isUsernameValid).orElse(false);
+        username = Actor.uniqueNameToUsername(origin, uniqueName).orElse("");
+        host = accountNameToHost(uniqueName);
+        this.uniqueName = uniqueName;
+        String originInAccountName = origin.getOriginInAccountName(host);
+        name = uniqueName + ORIGIN_SEPARATOR + originInAccountName;
+        isValid = origin.isPersistent() && origin.isUsernameValid(username) && StringUtils.nonEmpty(originInAccountName);
     }
 
     public String getName() {
-        return uniqueName + ORIGIN_SEPARATOR + origin.getOriginType().getTitle();
-    }
-
-    // TODO: delete
-    public String getShortName() {
-        return getUsername() + ORIGIN_SEPARATOR + origin.getOriginType().getTitle();
-    }
-
-    @Override
-    public String toString() {
-        return (isValid ? "" : "(invalid " + usernameToString() + ")") + getName();
+        return name;
     }
 
     @NonNull
-    private String usernameToString() {
-        return origin.isUsernameValid(uniqueName) ? "" : "username " + origin + " ";
+    @Override
+    public String toString() {
+        return (isValid ? "" : "(invalid) ") + getName();
     }
 
     public Context getContext() {
@@ -148,10 +156,6 @@ public class AccountName {
     
     public String getUniqueName() {
         return uniqueName;
-    }
-
-    public String getUsername() {
-        return Actor.uniqueNameInOriginToUsername(origin, getUniqueName()).orElse("");
     }
 
     String getOriginName() {

@@ -290,9 +290,9 @@ public class SpanUtilTest {
         notAHashTag(regions2, message2, 4);
     }
 
-    private void addRecipient(MyAccount ma, Audience audience, String uniqueNameInOrigin, String actorOid) {
+    private void addRecipient(MyAccount ma, Audience audience, String uniqueName, String actorOid) {
         final Actor actor1 = Actor.fromOid(ma.getOrigin(), actorOid);
-        actor1.withUniqueNameInOrigin(uniqueNameInOrigin);
+        actor1.withUniqueName(uniqueName);
         audience.add(actor1);
     }
 

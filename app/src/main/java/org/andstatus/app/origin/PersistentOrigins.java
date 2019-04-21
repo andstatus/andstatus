@@ -31,9 +31,11 @@ import org.andstatus.app.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
 
@@ -101,6 +103,38 @@ public class PersistentOrigins {
             origin = Origin.EMPTY;
         }
         return origin;
+    }
+
+    public Origin fromOriginInAccountNameAndHost(String originInAccountName, String host) {
+        return allFromOriginInAccountNameAndHost(originInAccountName, host)
+            .stream().findAny().orElse(Origin.EMPTY);
+    }
+
+    public List<Origin> allFromOriginInAccountNameAndHost(String originInAccountName, String host) {
+        List<Origin> origins = fromOriginInAccountName(originInAccountName);
+        switch (origins.size()) {
+            case 0:
+            case 1:
+                return origins;
+            default:
+                return origins.stream()
+                    .filter(origin -> origin.getAccountNameHost().isEmpty() ||
+                                    origin.getAccountNameHost().equalsIgnoreCase(host))
+                    .collect(Collectors.toList());
+        }
+    }
+
+    public List<Origin> fromOriginInAccountName(String originInAccountName) {
+        return StringUtils.optNotEmpty(originInAccountName).map(name -> {
+            OriginType originType = OriginType.fromTitle(name);
+            if (originType == OriginType.UNKNOWN) {
+                return mOrigins.values().stream().filter(origin -> origin.getName().equalsIgnoreCase(name))
+                        .collect(Collectors.toList());
+            }
+            return mOrigins.values().stream().filter(origin -> origin.getOriginType() == originType)
+                    .collect(Collectors.toList());
+        })
+        .orElse(Collections.emptyList());
     }
 
     /**

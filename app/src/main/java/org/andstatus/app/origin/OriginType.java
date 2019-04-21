@@ -36,10 +36,12 @@ import org.andstatus.app.net.social.Patterns;
 import org.andstatus.app.net.social.activitypub.ConnectionActivityPub;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
 import org.andstatus.app.timeline.meta.TimelineType;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -98,7 +100,6 @@ public enum OriginType implements SelectableEnum {
 
     private static final String BASIC_PATH_DEFAULT = "api";
     private static final String OAUTH_PATH_DEFAULT = "oauth";
-    private static final String USERNAME_EXAMPLES_SIMPLE = "AndStatus user357 peter";
     public static final OriginType ORIGIN_TYPE_DEFAULT = TWITTER;
     public static final int TEXT_LIMIT_MAXIMUM = 5000;
 
@@ -125,7 +126,7 @@ public enum OriginType implements SelectableEnum {
      * This is only for no OAuth */
     protected boolean shouldSetNewUsernameManuallyNoOAuth = false;
     protected final Pattern usernameRegExPattern;
-    public final String uniqueNameInOriginExamples;
+    public final String uniqueNameExamples;
     /**
      * Length of the link after changing to the shortened link
      * 0 means that length doesn't change
@@ -178,7 +179,7 @@ public enum OriginType implements SelectableEnum {
                 // TODO: Read from Config
                 shortUrlLengthDefault = 23; 
                 usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
-                uniqueNameInOriginExamples = USERNAME_EXAMPLES_SIMPLE;
+                uniqueNameExamples = "AndStatus user357 peter";
                 textLimitDefault = 280;
                 urlDefault = UrlUtils.fromString("https://api.twitter.com");
                 basicPath = "1.1";
@@ -202,7 +203,7 @@ public enum OriginType implements SelectableEnum {
                 shouldSetNewUsernameManuallyIfOAuth = true;
                 shouldSetNewUsernameManuallyNoOAuth = false;
                 usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
-                uniqueNameInOriginExamples = "andstatus@identi.ca AndStatus@datamost.com test425@1realtime.net";
+                uniqueNameExamples = "andstatus@identi.ca AndStatus@datamost.com test425@1realtime.net";
                 // This is not a hard limit, just for convenience
                 textLimitDefault = TEXT_LIMIT_MAXIMUM;
                 basicPath = BASIC_PATH_DEFAULT;
@@ -229,7 +230,7 @@ public enum OriginType implements SelectableEnum {
                 shouldSetNewUsernameManuallyIfOAuth = true;
                 shouldSetNewUsernameManuallyNoOAuth = false;
                 usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
-                uniqueNameInOriginExamples = "AndStatus@pleroma.site kaniini@pleroma.site";
+                uniqueNameExamples = "AndStatus@pleroma.site kaniini@pleroma.site";
                 // This is not a hard limit, just for convenience
                 textLimitDefault = TEXT_LIMIT_MAXIMUM;
                 basicPath = BASIC_PATH_DEFAULT;
@@ -257,7 +258,7 @@ public enum OriginType implements SelectableEnum {
                 shouldSetNewUsernameManuallyIfOAuth = false;
                 shouldSetNewUsernameManuallyNoOAuth = true;
                 usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
-                uniqueNameInOriginExamples = USERNAME_EXAMPLES_SIMPLE;
+                uniqueNameExamples = "AndStatus@loadaverage.org somebody@gnusocial.no";
                 canChangeSsl = true;
                 basicPath = BASIC_PATH_DEFAULT;
                 oauthPath = BASIC_PATH_DEFAULT;
@@ -281,7 +282,7 @@ public enum OriginType implements SelectableEnum {
                 shouldSetNewUsernameManuallyIfOAuth = false;
                 shouldSetNewUsernameManuallyNoOAuth = true;
                 usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
-                uniqueNameInOriginExamples = USERNAME_EXAMPLES_SIMPLE;
+                uniqueNameExamples = "AndStatus@mastodon.social somebody@mstdn.io";
                 textLimitDefault = 500;
                 basicPath = BASIC_PATH_DEFAULT;
                 oauthPath = OAUTH_PATH_DEFAULT;
@@ -310,7 +311,7 @@ public enum OriginType implements SelectableEnum {
                 mAllowAttachmentForPrivateNote = false;
                 allowEditing = false;
                 isPrivateNoteAllowsReply = false;
-                uniqueNameInOriginExamples = USERNAME_EXAMPLES_SIMPLE;
+                uniqueNameExamples = "userName@hostName.org";
                 isSelectable = false;
 
                 textMediaTypePosted = TextMediaType.PLAIN;
@@ -398,13 +399,12 @@ public enum OriginType implements SelectableEnum {
         return UNKNOWN;
     }
 
-    public static OriginType fromTitle(String title) {
-        for(OriginType val : values()) {
-            if (val.getTitle().equalsIgnoreCase(title)) {
-                return val;
-            }
-        }
-        return UNKNOWN;
+    public static OriginType fromTitle(String titleIn) {
+        return StringUtils.optNotEmpty(titleIn)
+            .flatMap(title -> Arrays.stream(values())
+                    .filter(value -> value.getTitle().equalsIgnoreCase(title))
+                    .findAny())
+            .orElse(UNKNOWN);
     }
 
     public boolean isTimelineTypeSyncable(TimelineType timelineType) {

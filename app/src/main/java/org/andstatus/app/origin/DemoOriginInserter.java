@@ -21,21 +21,20 @@ public final class DemoOriginInserter {
     public void insert() {
         demoData.checkDataPath();
         createOneOrigin(OriginType.TWITTER, demoData.twitterTestOriginName,
-                demoData.getTestOriginHost(demoData.twitterTestOriginName),
+                demoData.twitterTestHost,
                 true, SslModeEnum.SECURE, false, true, true);
-        createOneOrigin(OriginType.PUMPIO,
-                demoData.pumpioOriginName,
-                demoData.getTestOriginHost(demoData.pumpioOriginName),
+        createOneOrigin(OriginType.PUMPIO, demoData.pumpioOriginName,
+                "",
                 true, SslModeEnum.SECURE, true, true, true);
         createOneOrigin(OriginType.GNUSOCIAL, demoData.gnusocialTestOriginName,
-                demoData.getTestOriginHost(demoData.gnusocialTestOriginName),
+                demoData.gnusocialTestHost,
                 true, SslModeEnum.SECURE, true, true, true);
-        String additionalOriginName = demoData.gnusocialTestOriginName + "ins";
+        String additionalOriginName = demoData.gnusocialTestOriginName + "Two";
         createOneOrigin(OriginType.GNUSOCIAL, additionalOriginName,
-                demoData.getTestOriginHost(additionalOriginName),
+                 "two." + demoData.gnusocialTestHost,
                 true, SslModeEnum.INSECURE, true, false, true);
         createOneOrigin(OriginType.MASTODON, demoData.mastodonTestOriginName,
-                demoData.getTestOriginHost(demoData.mastodonTestOriginName),
+                demoData.mastodonTestHost,
                 true, SslModeEnum.SECURE, true, true, true);
         createOneOrigin(OriginType.ACTIVITYPUB, demoData.activityPubTestOriginName,
                 "",

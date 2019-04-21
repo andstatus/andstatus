@@ -43,42 +43,36 @@ public class MyAccountTest {
 
     @Test
     public void testNewAccountCreation() {
-        createAccountOfOriginType("", OriginType.TWITTER);
-        createAccountOfOriginType("testUser1", OriginType.TWITTER);
-        createAccountOfOriginType("", OriginType.PUMPIO);
-        createAccountOfOriginType("test2User@somepipe.example.com", OriginType.PUMPIO);
-        createAccountOfOriginType("PeterPom", OriginType.GNUSOCIAL);
-        createAccountOfOriginType("", OriginType.ACTIVITYPUB);
-        createAccountOfOriginType("AndStatus@pleroma.site", OriginType.ACTIVITYPUB);
+        createAccountOfOriginType("", "", OriginType.TWITTER);
+        createAccountOfOriginType("testUser1", demoData.twitterTestHostWithoutApiDot, OriginType.TWITTER);
+        createAccountOfOriginType("", "", OriginType.PUMPIO);
+        createAccountOfOriginType("test2User", "somepipe.example.com", OriginType.PUMPIO);
+        createAccountOfOriginType("PeterPom", demoData.gnusocialTestHost, OriginType.GNUSOCIAL);
+        createAccountOfOriginType("", "", OriginType.ACTIVITYPUB);
+        createAccountOfOriginType("AndStatus", "pleroma.site", OriginType.ACTIVITYPUB);
     }
     
-    private void createAccountOfOriginType(String uniqueNameInOrigin, OriginType originType) {
+    private void createAccountOfOriginType(String username, String host, OriginType originType) {
+        String uniqueName = StringUtils.isEmpty(username) ? "" : username + "@" + host;
         MyContext myContext = MyContextHolder.get();
-        String logMsg = "Creating account '" + uniqueNameInOrigin + "' for '" + originType + "'";
+        String logMsg = "Creating account '" + uniqueName + "' for '" + originType + "'";
         MyLog.v(this, logMsg);
-        Origin origin = myContext.origins().firstOfType(originType);
+
+        Origin origin = myContext.origins().fromOriginInAccountNameAndHost(originType.getTitle(), host);
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(myContext,
-                uniqueNameInOrigin + AccountName.ORIGIN_SEPARATOR + origin.getName(), TriState.UNKNOWN);
+                uniqueName + AccountName.ORIGIN_SEPARATOR + origin.getName(), TriState.UNKNOWN);
         assertEquals(logMsg, origin, builder.getAccount().getOrigin());
-        assertEquals(logMsg, uniqueNameInOrigin + AccountName.ORIGIN_SEPARATOR + origin.getName(),
+        assertEquals(logMsg, uniqueName + AccountName.ORIGIN_SEPARATOR + origin.getOriginInAccountName(host),
                 builder.getAccount().getAccountName());
-        if (StringUtils.isEmpty(uniqueNameInOrigin)) {
+        if (StringUtils.isEmpty(uniqueName)) {
             assertEquals(logMsg, "", builder.getAccount().getUsername());
             assertEquals(logMsg, "", builder.getAccount().getWebFingerId());
         } else {
-            assertNotEquals(logMsg, uniqueNameInOrigin, builder.getAccount().getUsername());
-            if (origin.getOriginType().uniqueNameHasHost()) {
-                int indexOfAt = uniqueNameInOrigin.lastIndexOf("@");
-                assertEquals(logMsg, uniqueNameInOrigin, builder.getAccount().getUsername() + "@" +
-                        uniqueNameInOrigin.substring(indexOfAt + 1));
-                assertEquals(logMsg, uniqueNameInOrigin.toLowerCase(), builder.getAccount().getActor().getWebFingerId());
-            } else {
-                assertEquals(logMsg, uniqueNameInOrigin.toLowerCase() + "@" +
-                                (originType == OriginType.TWITTER
-                                        ? origin.getHost().replace("api.", "")
-                                        : origin.getHost()),
-                        builder.getAccount().getActor().getWebFingerId());
-            }
+            assertNotEquals(logMsg, uniqueName, builder.getAccount().getUsername());
+            int indexOfAt = uniqueName.lastIndexOf("@");
+            assertEquals(logMsg, uniqueName, builder.getAccount().getUsername() +
+                    "@" + uniqueName.substring(indexOfAt + 1));
+            assertEquals(logMsg, uniqueName.toLowerCase(), builder.getAccount().getActor().getWebFingerId());
         }
     }
 

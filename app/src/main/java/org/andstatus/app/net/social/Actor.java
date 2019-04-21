@@ -296,10 +296,10 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public String getUniqueNameWithOrigin() {
-        return getUniqueNameInOrigin() + AccountName.ORIGIN_SEPARATOR + origin.getName();
+        return getUniqueName() + AccountName.ORIGIN_SEPARATOR + origin.getName();
     }
 
-    public String getUniqueNameInOrigin() {
+    public String getUniqueName() {
         if (StringUtils.nonEmptyNonTemp(username)) return username + getOptAtHostForUniqueName();
         if (StringUtils.nonEmptyNonTemp(realName)) return realName + getOptAtHostForUniqueName();
         if (StringUtils.nonEmptyNonTemp(oid)) return oid;
@@ -310,54 +310,53 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return origin.getOriginType().uniqueNameHasHost() ? "@" + getHost() : "";
     }
 
-    public Actor withUniqueNameInOrigin(String uniqueNameInOrigin) {
-        uniqueNameInOriginToUsername(origin, uniqueNameInOrigin).ifPresent(this::setUsername);
-        uniqueNameInOriginToWebFingerId(origin, uniqueNameInOrigin).ifPresent(this::setWebFingerId);
+    public Actor withUniqueName(String uniqueName) {
+        uniqueNameToUsername(origin, uniqueName).ifPresent(this::setUsername);
+        uniqueNameToWebFingerId(origin, uniqueName).ifPresent(this::setWebFingerId);
         return this;
     }
 
-    public static Optional<String> uniqueNameInOriginToUsername(Origin origin, String uniqueNameInOrigin) {
-        if (StringUtils.nonEmpty(uniqueNameInOrigin)) {
-            if (uniqueNameInOrigin.contains("@")) {
-                final String nameBeforeTheLastAt = uniqueNameInOrigin.substring(0, uniqueNameInOrigin.lastIndexOf("@"));
-                if (isWebFingerIdValid(uniqueNameInOrigin)) {
+    public static Optional<String> uniqueNameToUsername(Origin origin, String uniqueName) {
+        if (StringUtils.nonEmpty(uniqueName)) {
+            if (uniqueName.contains("@")) {
+                final String nameBeforeTheLastAt = uniqueName.substring(0, uniqueName.lastIndexOf("@"));
+                if (isWebFingerIdValid(uniqueName)) {
                     if (origin.isUsernameValid(nameBeforeTheLastAt)) return Optional.of(nameBeforeTheLastAt);
                 } else {
                     int lastButOneIndex = nameBeforeTheLastAt.lastIndexOf("@");
                     if (lastButOneIndex > -1) {
                         // A case when a Username contains "@"
-                        String potentialWebFingerId = uniqueNameInOrigin.substring(lastButOneIndex+1);
+                        String potentialWebFingerId = uniqueName.substring(lastButOneIndex+1);
                         if (isWebFingerIdValid(potentialWebFingerId)) {
-                            final String nameBeforeLastButOneAt = uniqueNameInOrigin.substring(0, lastButOneIndex);
+                            final String nameBeforeLastButOneAt = uniqueName.substring(0, lastButOneIndex);
                             if (origin.isUsernameValid(nameBeforeLastButOneAt)) return Optional.of(nameBeforeLastButOneAt);
                         }
                     }
                 }
             }
-            if (origin.isUsernameValid(uniqueNameInOrigin)) return Optional.of(uniqueNameInOrigin);
+            if (origin.isUsernameValid(uniqueName)) return Optional.of(uniqueName);
         }
         return Optional.empty();
     }
 
-    public static Optional<String> uniqueNameInOriginToWebFingerId(Origin origin, String uniqueNameInOrigin) {
-        if (StringUtils.nonEmpty(uniqueNameInOrigin)) {
-            if (!origin.getOriginType().uniqueNameHasHost() && origin.shouldHaveUrl()) {
-                return Optional.of(uniqueNameInOrigin.toLowerCase() + "@" +
-                        origin.fixUriForPermalink(UriUtils.fromUrl(origin.getUrl())).getHost());
-            }
-            if (uniqueNameInOrigin.contains("@")) {
-                final String nameBeforeTheLastAt = uniqueNameInOrigin.substring(0, uniqueNameInOrigin.lastIndexOf("@"));
-                if (isWebFingerIdValid(uniqueNameInOrigin)) {
-                    return Optional.of(uniqueNameInOrigin.toLowerCase());
+    public static Optional<String> uniqueNameToWebFingerId(Origin origin, String uniqueName) {
+        if (StringUtils.nonEmpty(uniqueName)) {
+            if (uniqueName.contains("@")) {
+                final String nameBeforeTheLastAt = uniqueName.substring(0, uniqueName.lastIndexOf("@"));
+                if (isWebFingerIdValid(uniqueName)) {
+                    return Optional.of(uniqueName.toLowerCase());
                 } else {
                     int lastButOneIndex = nameBeforeTheLastAt.lastIndexOf("@");
                     if (lastButOneIndex > -1) {
-                        String potentialWebFingerId = uniqueNameInOrigin.substring(lastButOneIndex + 1);
+                        String potentialWebFingerId = uniqueName.substring(lastButOneIndex + 1);
                         if (isWebFingerIdValid(potentialWebFingerId)) {
                             return Optional.of(potentialWebFingerId.toLowerCase());
                         }
                     }
                 }
+            } else {
+                return Optional.of(uniqueName.toLowerCase() + "@" +
+                        origin.fixUriForPermalink(UriUtils.fromUrl(origin.getUrl())).getHost());
             }
         }
         return Optional.empty();
@@ -766,15 +765,11 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         }
     }
 
-    public String toActorTitle(boolean showWebFingerId) {
+    public String toActorTitle() {
         StringBuilder builder = new StringBuilder();
-        if (showWebFingerId && StringUtils.nonEmpty(getWebFingerId())) {
-            builder.append(getWebFingerId());
-        } else {
-            final String uniqueNameInOrigin = getUniqueNameInOrigin();
-            if (StringUtils.nonEmpty(uniqueNameInOrigin)) {
-                builder.append("@" + uniqueNameInOrigin);
-            }
+        final String uniqueName = getUniqueName();
+        if (StringUtils.nonEmpty(uniqueName)) {
+            builder.append("@" + uniqueName);
         }
         if (StringUtils.nonEmpty(getRealName())) {
             MyStringBuilder.appendWithSpace(builder, "(" + getRealName() + ")");

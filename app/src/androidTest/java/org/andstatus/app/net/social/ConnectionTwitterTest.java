@@ -79,7 +79,7 @@ public class ConnectionTwitterTest {
 
         int ind = 0;
         AActivity activity = timeline.get(ind);
-        String hostName = demoData.getTestOriginHost(demoData.twitterTestOriginName).replace("api.", "");
+        String hostName = demoData.twitterTestHostWithoutApiDot;
         assertEquals("Posting note", AObjectType.NOTE, activity.getObjectType());
         assertEquals("Timeline position", "381172771428257792", activity.getTimelinePosition().getPosition());
         assertEquals("Note Oid", "381172771428257792", activity.getNote().oid);

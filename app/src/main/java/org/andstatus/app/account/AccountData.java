@@ -86,7 +86,7 @@ public class AccountData implements Parcelable, AccountDataWriter {
 
     AccountData updateFrom(MyAccount myAccount) {
         setDataString(AccountUtils.KEY_ACCOUNT, myAccount.getAccountName());
-        setDataString(KEY_USERNAME, myAccount.getOAccountName().getUsername());
+        setDataString(KEY_USERNAME, myAccount.getOAccountName().username);
         setDataString(KEY_UNIQUE_NAME, myAccount.getOAccountName().getUniqueName());
         setDataString(KEY_ACTOR_OID, myAccount.getActor().oid);
         setDataString(Origin.KEY_ORIGIN_NAME, myAccount.getOAccountName().getOriginName());

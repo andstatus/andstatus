@@ -79,7 +79,7 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
                 .extractActorsFromContent(content, Actor.EMPTY);
         assertEquals(logMsg, 3, actors.size());
         assertEquals(logMsg, "unknownUser", actors.get(2).getUsername());
-        assertEquals(logMsg, "unknownUser@example.com", actors.get(2).getUniqueNameInOrigin());
+        assertEquals(logMsg, "unknownUser@example.com", actors.get(2).getUniqueName());
         assertEquals(logMsg, "unknownuser@example.com", actors.get(2).getWebFingerId());
 
         ActivityViewItem item = ActivityViewItem.EMPTY;

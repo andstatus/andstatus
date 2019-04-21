@@ -63,7 +63,7 @@ public class DemoConversationInserter {
 
         Actor author3 = buildActorFromOid(demoData.conversationAuthorThirdActorOid);
         author3.setRealName("John Smith");
-        author3.withUniqueNameInOrigin(demoData.conversationAuthorThirdUniqueName);
+        author3.withUniqueName(demoData.conversationAuthorThirdUniqueName);
         author3.setHomepage("http://johnsmith.com/welcome");
         author3.setCreatedDate(new GregorianCalendar(2011,5,12).getTimeInMillis());
         author3.setSummary("I am an ordinary guy, interested in computer science");

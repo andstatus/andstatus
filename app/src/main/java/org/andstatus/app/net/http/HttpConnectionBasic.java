@@ -106,7 +106,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
      */
     private String getCredentials() {
         return Base64.encodeToString(
-                (data.getAccountName().getUsername() + ":" + mPassword).
+                (data.getAccountName().username + ":" + mPassword).
                         getBytes(Charset.forName("UTF-8")),
                 Base64.NO_WRAP + Base64.NO_PADDING);
     }

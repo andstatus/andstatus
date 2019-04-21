@@ -45,7 +45,7 @@ public class TimelineSyncTrackerTest {
         MyAccount ma = demoData.getMyAccount(accountName);
         String message = timelineType.save() + " " + ma;
         assertTrue(ma.isValid());
-        assertEquals("Account was found", ma.getAccountName(), accountName);
+        assertEquals("Account was found", accountName, ma.getAccountName());
         Timeline timeline = findTimeline(myContext, timelineType, ma);
         if (timeline == Timeline.EMPTY) return;
 

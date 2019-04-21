@@ -327,7 +327,7 @@ public class NoteEditorData implements IsEmpty {
         for(Actor actor : toMention) {
             if (actor.actorId != 0 && !mentioned.contains(actor.actorId)) {
                 mentioned.add(actor.actorId);
-                String name = actor.getUniqueNameInOrigin();
+                String name = actor.getUniqueName();
                 if (!StringUtils.isEmpty(name)) {
                     String mentionText = "@" + name + " ";
                     if (StringUtils.isEmpty(getContent()) || !(getContent() + " ").contains(mentionText)) {
@@ -346,7 +346,7 @@ public class NoteEditorData implements IsEmpty {
     }
 
     public NoteEditorData appendMentionedActorToText(Actor mentionedActor) {
-        String name = mentionedActor.getUniqueNameInOrigin();
+        String name = mentionedActor.getUniqueName();
         if (!StringUtils.isEmpty(name)) {
             String bodyText2 = "@" + name + " ";
             if (!StringUtils.isEmpty(getContent()) && !(getContent() + " ").contains(bodyText2)) {

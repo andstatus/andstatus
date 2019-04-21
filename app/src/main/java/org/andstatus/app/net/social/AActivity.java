@@ -474,7 +474,7 @@ public class AActivity extends AObject {
         if (isNotified().isTrue) {
             MyLog.i("NewNotification",newNotificationEventType.name() +
                 " " + accountActor.origin.getName() +
-                " " + accountActor.getUniqueNameInOrigin() +
+                " " + accountActor.getUniqueName() +
                 " " + MyLog.formatDateTime(getUpdatedDate()) +
                 " " + actor.getTimelineUsername() + " " + type +
                 (getNote().nonEmpty()

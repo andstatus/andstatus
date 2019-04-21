@@ -25,6 +25,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnectionMock;
+import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ConnectionMock;
 import org.andstatus.app.origin.DiscoveredOrigins;
@@ -35,7 +36,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
@@ -51,9 +51,9 @@ public class CommandExecutorStrategyTest {
     public void setUp() throws Exception {
         TestSuite.initializeWithAccounts(this);
 
-        mock = ConnectionMock.newFor(demoData.gnusocialTestAccountName);
+        ma = MyContextHolder.get().accounts().getFirstSucceededForOrigin(demoData.getGnuSocialOrigin());
+        mock = ConnectionMock.newFor(ma);
         httpConnectionMock = mock.getHttpMock();
-        ma = mock.getData().getMyAccount();
         assertTrue(ma.toString(), ma.isValidAndSucceeded());
     }
 
@@ -70,18 +70,21 @@ public class CommandExecutorStrategyTest {
 
     @Test
     public void testSearch() {
-        CommandData commandData = CommandData.newSearch(SearchObjects.NOTES,
+        CommandData commandData1 = CommandData.newSearch(SearchObjects.NOTES,
                 MyContextHolder.get(), Origin.EMPTY, demoData.globalPublicNoteText);
-        CommandExecutorStrategy strategy = CommandExecutorStrategy.getStrategy(commandData, null);
+        CommandExecutorStrategy strategy = CommandExecutorStrategy.getStrategy(commandData1, null);
         assertEquals(CommandExecutorStrategy.class, strategy.getClass());
 
-        commandData = CommandData.newSearch(SearchObjects.NOTES,
+        CommandData commandData2 = CommandData.newSearch(SearchObjects.NOTES,
                 MyContextHolder.get(), ma.getOrigin(), demoData.globalPublicNoteText);
-        strategy = CommandExecutorStrategy.getStrategy(commandData, null);
+        strategy = CommandExecutorStrategy.getStrategy(commandData2, null);
         assertEquals(TimelineDownloaderOther.class, strategy.getClass());
         strategy.execute();
-        assertTrue("Requested '" + Arrays.toString(httpConnectionMock.getResults().toArray()) + "'",
-                httpConnectionMock.getResults().get(0).getUrl().contains(demoData.globalPublicNoteText) );
+        assertTrue("Requested " + commandData2 +
+                        ", results: '" + httpConnectionMock.getResults() + "'",
+                httpConnectionMock.getResults().stream()
+                        .map(HttpReadResult::getUrl)
+                        .anyMatch(url -> url.contains(demoData.globalPublicNoteText)));
     }
 
     @Test

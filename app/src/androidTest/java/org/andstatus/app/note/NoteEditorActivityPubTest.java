@@ -109,7 +109,7 @@ public class NoteEditorActivityPubTest extends TimelineActivityTest<ActivityView
 
         Audience audience = Audience.load(getActivity().getMyContext(), mock.getData().getOrigin(), noteId);
         assertTrue("Audience should contain " + actorUniqueName +  "\n " + audience,
-                audience.getActors().stream().anyMatch(a -> actorUniqueName.equals(a.getUniqueNameInOrigin())));
+                audience.getActors().stream().anyMatch(a -> actorUniqueName.equals(a.getUniqueName())));
 
         Optional<HttpReadResult> result = Optional.empty();
         for (int attempt=0; attempt < 10; attempt++) {

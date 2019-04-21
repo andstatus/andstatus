@@ -40,7 +40,9 @@ import org.andstatus.app.util.UrlUtils;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import io.vavr.control.Try;
 
+import static org.andstatus.app.account.AccountName.ORIGIN_SEPARATOR;
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -80,6 +82,7 @@ public class DemoAccountInserter {
         }
         demoData.checkDataPath();
         AccountName accountName = AccountName.fromAccountName(myContext, accountNameString);
+        assertEquals("Account name created " + accountName, accountNameString, accountName.getName());
         MyLog.v(this, "Adding account " + accountName);
         assertTrue("Name '" + accountNameString + "' is valid for " + originType, accountName.isValid);
         assertEquals("Origin for '" + accountNameString + "' account created",
@@ -87,7 +90,7 @@ public class DemoAccountInserter {
         long accountActorId_existing = MyQuery.oidToId(myContext, OidEnum.ACTOR_OID,
                 accountName.getOrigin().getId(), actorOid);
         Actor actor = Actor.fromOid(accountName.getOrigin(), actorOid);
-        actor.withUniqueNameInOrigin(accountName.getUniqueName());
+        actor.withUniqueName(accountName.getUniqueName());
         actor.setAvatarUrl(avatarUrl);
         if (!actor.isWebFingerIdValid() && UrlUtils.hostIsValid(actor.getHost())) {
             actor.setWebFingerId(actor.getUsername() + "@" + actor.getHost());
@@ -100,7 +103,7 @@ public class DemoAccountInserter {
                     "/users/" + actor.getUsername() + "/outbox");
         }
         actor.setCreatedDate(MyLog.uniqueCurrentTimeMS());
-        MyAccount ma = addAccountFromActor(actor);
+        MyAccount ma = addAccountFromActor(actor, accountName);
 
         long accountActorId = ma.getActorId();
         String msg = "AccountUserId for '" + accountNameString + ", (first: '" + firstAccountActorOid + "')";
@@ -147,19 +150,18 @@ public class DemoAccountInserter {
                 maExpected, ma);
     }
 
-    private MyAccount addAccountFromActor(@NonNull Actor actor) {
-        final String accountName = actor.getUniqueNameInOrigin() + AccountName.ORIGIN_SEPARATOR + actor.origin.getName();
-        MyAccount.Builder builder1 = MyAccount.Builder.newOrExistingFromAccountName(myContext, accountName, TriState.TRUE);
+    private MyAccount addAccountFromActor(@NonNull Actor actor, AccountName accountName) {
+        MyAccount.Builder builder1 = MyAccount.Builder.newOrExistingFromAccountName(myContext, accountName.getName(), TriState.TRUE);
         if (actor.origin.isOAuthDefault() || actor.origin.canChangeOAuth()) {
             insertTestClientKeys(builder1.getAccount());
         }
 
-        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(myContext, accountName, TriState.TRUE);
+        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(myContext, accountName.getName(), TriState.TRUE);
         if (builder.getAccount().isOAuth()) {
-            builder.setUserTokenWithSecret("sampleUserTokenFor" + actor.getUniqueNameInOrigin(),
-                    "sampleUserSecretFor" + actor.getUniqueNameInOrigin());
+            builder.setUserTokenWithSecret("sampleUserTokenFor" + actor.getUniqueName(),
+                    "sampleUserSecretFor" + actor.getUniqueName());
         } else {
-            builder.setPassword("samplePasswordFor" + actor.getUniqueNameInOrigin());
+            builder.setPassword("samplePasswordFor" + actor.getUniqueName());
         }
         assertTrue("Credentials of " + actor + " are present, account: " + builder.getAccount(),
                 builder.getAccount().getCredentialsPresent());
@@ -186,7 +188,16 @@ public class DemoAccountInserter {
         assertEquals("Actor in the database for id=" + actorId,
                 actor.oid,
                 MyQuery.idToOid(myContext.getDatabase(), OidEnum.ACTOR_OID, actorId, 0));
-        assertEquals("Account name", actor.getUniqueNameInOrigin() + "/" + actor.origin.getName(), ma.getAccountName());
+        assertEquals("Account name calculated",
+                (actor.origin.shouldHaveUrl()
+                        ? actor.getUsername() + "@" + actor.origin.getAccountNameHost()
+                        : actor.getUniqueName()) +
+                ORIGIN_SEPARATOR +
+                actor.origin.getOriginInAccountName(accountName.host), ma.getAccountName());
+        assertEquals("Account name provided", accountName.getName(), ma.getAccountName());
+        Try<Account> existingAndroidAccount = AccountUtils.getExistingAndroidAccount(accountName);
+        assertEquals("Android account name", accountName.getName(),
+                existingAndroidAccount.map(a -> a.name).getOrElse("(not found)"));
 
         assertEquals("User should be known as this actor " + actor, actor.getUniqueNameWithOrigin(), actor.user.getKnownAs());
         assertEquals("User is not mine " + actor, TriState.TRUE, actor.user.isMyUser());

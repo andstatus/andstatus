@@ -96,13 +96,7 @@ public class AccountUtils {
                 return Try.success(account);
             }
         }
-        // Try to find by a short Account name (Legacy...)
-        for (Account account : getCurrentAccounts(oAccountName.getContext())) {
-            if (oAccountName.getShortName().equals(account.name)) {
-                return Try.success(account);
-            }
-        }
-        return Try.failure(new NoSuchElementException());
+        return Try.failure(new NoSuchElementException(oAccountName.getName()));
     }
 
     private static long getSyncFrequencySeconds(Account account) {

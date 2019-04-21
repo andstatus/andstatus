@@ -41,7 +41,6 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
-import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
@@ -81,22 +80,30 @@ public final class DemoData {
     public final String pumpioTestAccountActorOid = OriginPumpio.ACCOUNT_PREFIX + pumpioTestAccountUniqueName;
 
     public final String gnusocialTestOriginName = "GNUsocialTest";
+    public final String gnusocialTestHost = "gnusocial." + testOriginParentHost;
     public final String gnusocialTestAccountUsername = t131tUsername;
-    public final String gnusocialTestAccountName = gnusocialTestAccountUsername + "/" + gnusocialTestOriginName;
+    public final String gnusocialTestAccountName = gnusocialTestAccountUsername + "@" + gnusocialTestHost +
+            "/" + OriginType.GNUSOCIAL.getTitle();
     public final String gnusocialTestAccountActorOid = "115391";
     public final String gnusocialTestAccountAvatarUrl = "https://findicons.com/files/icons/2036/farm/48/rabbit.png";
     public final String gnusocialTestAccount2Username = "gtester2";
-    public final String gnusocialTestAccount2Name = gnusocialTestAccount2Username + "/" + gnusocialTestOriginName;
+    public final String gnusocialTestAccount2Name = gnusocialTestAccount2Username  + "@" + gnusocialTestHost +
+            "/" + OriginType.GNUSOCIAL.getTitle();
     public final String gnusocialTestAccount2ActorOid = "8902454";
 
     public final String twitterTestOriginName = "TwitterTest";
+    public final String twitterTestHostWithoutApiDot = "twitter." + testOriginParentHost;
+    public final String twitterTestHost = "api." + twitterTestHostWithoutApiDot;
     public final String twitterTestAccountUsername = t131tUsername;
     public final String twitterTestAccountActorOid = "144771645";
-    public final String twitterTestAccountName = twitterTestAccountUsername + "/" + twitterTestOriginName;
+    public final String twitterTestAccountName = twitterTestAccountUsername + "@" + twitterTestHostWithoutApiDot +
+            "/" + OriginType.TWITTER.getTitle();
 
     public final String mastodonTestOriginName = "MastodonTest";
+    public final String mastodonTestHost = "mastodon." + testOriginParentHost;
     public final String mastodonTestAccountUsername = "t131t1";
-    public final String mastodonTestAccountName = mastodonTestAccountUsername + "/" + mastodonTestOriginName;
+    public final String mastodonTestAccountName = mastodonTestAccountUsername + "@" + mastodonTestHost +
+            "/" + OriginType.MASTODON.getTitle();
     public final String mastodonTestAccountActorOid = "37";
 
     public final OriginType conversationOriginType = OriginType.PUMPIO;
@@ -132,14 +139,6 @@ public final class DemoData {
 
     void createNewInstance() {
         demoData = new DemoData();
-    }
-
-    public String getTestOriginHost(String testOriginName) {
-        String host = testOriginName.toLowerCase(Locale.US) + "." + testOriginParentHost;
-        if (testOriginName.equalsIgnoreCase(twitterTestOriginName)) {
-            host = "api." + host;
-        }
-        return host;
     }
 
     public void add(final MyContext myContext, String dataPathIn) {

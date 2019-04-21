@@ -17,7 +17,6 @@
 package org.andstatus.app.origin;
 
 import android.net.Uri;
-import androidx.annotation.StringRes;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.ActorInTimeline;
@@ -27,7 +26,12 @@ import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
+
 class OriginTwitter extends Origin {
+
+    public static final String API_DOT = "api.";
 
     OriginTwitter(MyContext myContext, OriginType originType) {
         super(myContext, originType);
@@ -80,13 +84,20 @@ class OriginTwitter extends Origin {
         }
     }
 
+    @NonNull
+    @Override
+    public String getAccountNameHost() {
+        String host = super.getAccountNameHost();
+        return host.startsWith(API_DOT) ? host.substring(API_DOT.length()) : host ;
+    }
+
     @Override
     public Uri fixUriForPermalink(Uri uri1) {
         Uri uri2 = uri1;
         if( uri2 != null) {
             try {
-                if (uri2.getHost().startsWith("api.")) {
-                    uri2 = Uri.parse(uri1.toString().replace("//api.", "//"));
+                if (uri2.getHost().startsWith(API_DOT)) {
+                    uri2 = Uri.parse(uri1.toString().replace("//" + API_DOT, "//"));
                 }
             } catch (NullPointerException e) {
                 MyLog.d(this, "Malformed Uri from '" + uri2.toString() + "'", e);

@@ -21,12 +21,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.provider.BaseColumns;
-import androidx.annotation.NonNull;
-import androidx.annotation.StringRes;
 import android.text.SpannableString;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
 
+import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
@@ -44,7 +43,11 @@ import org.andstatus.app.util.UrlUtils;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.regex.Pattern;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
 
 /**
  * Social network (twitter.com, identi.ca, ... ) where notes are being
@@ -231,6 +234,26 @@ public class Origin implements Comparable<Origin>, IsEmpty {
         } else {
             return true;
         }
+    }
+
+    /** OriginName to be used in {@link AccountName#getName()} */
+    @NonNull
+    public String getOriginInAccountName(String host) {
+        List<Origin> origins = myContext.origins().allFromOriginInAccountNameAndHost(originType.getTitle(), host);
+        switch (origins.size()) {
+            case 0:
+                return "";
+            case 1:
+                return originType.getTitle();  // No ambiguity, so we can use OriginType here
+            default:
+                return getName();
+        }
+    }
+
+    /** Host to be used in {@link AccountName#getUniqueName()}  */
+    @NonNull
+    public String getAccountNameHost() {
+        return getHost();
     }
 
     @NonNull

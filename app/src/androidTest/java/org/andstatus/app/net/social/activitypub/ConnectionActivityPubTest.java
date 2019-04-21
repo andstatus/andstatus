@@ -72,7 +72,7 @@ public class ConnectionActivityPubTest {
         String sinceId = "";
         mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_inbox_pleroma);
         Actor actorForTimeline = Actor.fromOid(mock.getData().getOrigin(), ACTOR_OID)
-                .withUniqueNameInOrigin(UNIQUE_NAME_IN_ORIGIN);
+                .withUniqueName(UNIQUE_NAME_IN_ORIGIN);
         actorForTimeline.endpoints.add(ActorEndpointType.API_INBOX, "https://pleroma.site/users/AndStatus/inbox");
         List<AActivity> timeline = mock.connection.getTimeline(Connection.ApiRoutineEnum.HOME_TIMELINE,
                 new TimelinePosition(sinceId), TimelinePosition.EMPTY, 20, actorForTimeline);
@@ -83,7 +83,8 @@ public class ConnectionActivityPubTest {
         assertEquals("Creating a Note " + activity, AObjectType.NOTE, activity.getObjectType());
         Note note = activity.getNote();
         assertEquals("Note oid " + note, "https://pleroma.site/objects/34ab2ec5-4307-4e0b-94d6-a789d4da1240", note.oid);
-        assertEquals("Conversation oid " + note,"https://pleroma.site/contexts/c62ba280-2a11-473e-8bd1-9435e9dc83ae", note.conversationOid);
+        assertEquals("Conversation oid " + note,"https://pleroma.site/contexts/c62ba280-2a11-473e-8bd1-9435e9dc83ae",
+                note.conversationOid);
         assertEquals("Note name " + note, "", note.getName());
         assertThat("Note body " + note, note.getContent(), startsWith("We could successfully create an account"));
         assertEquals("Activity updated at " + TestSuite.utcTime(activity.getUpdatedDate()),
@@ -128,7 +129,7 @@ public class ConnectionActivityPubTest {
         String sinceId = "";
         mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_outbox_pleroma);
         Actor actorForTimeline = Actor.fromOid(mock.getData().getOrigin(), ACTOR_OID2)
-                .withUniqueNameInOrigin(UNIQUE_NAME_IN_ORIGIN);
+                .withUniqueName(UNIQUE_NAME_IN_ORIGIN);
         actorForTimeline.endpoints.add(ActorEndpointType.API_OUTBOX, ACTOR_OID2 + "/outbox");
         List<AActivity> timeline = mock.connection.getTimeline(Connection.ApiRoutineEnum.ACTOR_TIMELINE,
                 new TimelinePosition(sinceId), TimelinePosition.EMPTY, 20, actorForTimeline);
@@ -169,7 +170,7 @@ public class ConnectionActivityPubTest {
         String sinceId = "";
         mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_inbox_pleroma_2);
         Actor actorForTimeline = Actor.fromOid(mock.getData().getOrigin(), ACTOR_OID)
-                .withUniqueNameInOrigin(UNIQUE_NAME_IN_ORIGIN);
+                .withUniqueName(UNIQUE_NAME_IN_ORIGIN);
         actorForTimeline.endpoints.add(ActorEndpointType.API_INBOX, "https://pleroma.site/users/AndStatus/inbox");
         List<AActivity> timeline = mock.connection.getTimeline(Connection.ApiRoutineEnum.HOME_TIMELINE,
                 new TimelinePosition(sinceId), TimelinePosition.EMPTY, 20, actorForTimeline);

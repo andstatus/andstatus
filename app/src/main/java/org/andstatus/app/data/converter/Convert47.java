@@ -20,6 +20,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 
 import org.andstatus.app.account.AccountData;
+import org.andstatus.app.account.AccountName;
 import org.andstatus.app.account.AccountUtils;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
@@ -84,26 +85,28 @@ class Convert47 extends ConvertOneStep {
                     MyLog.v(TAG, method + "; " + accountData.toJsonString());
                     String accountName = jsonOut.optString(KEY_ACCOUNT_NAME);
 
-                    Try<Account> accountOut = AccountUtils.addEmptyAccount(am, accountName, jsonOut.optString(KEY_PASSWORD));
-
-                    return accountOut
-                    .flatMap(accountNew -> accountData.saveIfChanged(myContext.context(), accountNew))
-                    .onSuccess(changed -> {
-                        progressLogger.logProgress(stepTitle + ": Converted account " +
-                                accountIn.name + " to " + accountName);
-                        accountsConverted.incrementAndGet();
-                    })
-                    .onFailure(e -> {
-                        progressLogger.logProgress(stepTitle + ": Failed to convert account " +
-                                accountIn.name + ", deleting");
-                        accountsToRemove.add(accountIn);
-                    })
-                    .flatMap(b -> accountOut);
+                    return (accountName.equals(accountIn.name)
+                            ? Try.success(accountIn)
+                            : AccountUtils.addEmptyAccount(am, accountName, jsonOut.optString(KEY_PASSWORD)))
+                        .flatMap(accountOut ->
+                                accountData.saveIfChanged(myContext.context(), accountOut)
+                                .map(b -> accountOut));
                 })
                 .onSuccess(accountNew -> {
-                    if (!accountNew.name.equalsIgnoreCase(accountIn.name)) {
+                    accountsConverted.incrementAndGet();
+                    if (accountNew.name.equalsIgnoreCase(accountIn.name)) {
+                        progressLogger.logProgress(stepTitle + ": Converted account " +
+                                accountNew.name + " with the same name");
+                    } else {
+                        progressLogger.logProgress(stepTitle + ": Converted account " +
+                                accountIn.name + " to " + accountNew.name + ", deleting the old one");
                         accountsToRemove.add(accountIn);
                     }
+                })
+                .onFailure(e -> {
+                    progressLogger.logProgress(stepTitle + ": Failed to convert account " +
+                            accountIn.name + ", deleting");
+                    accountsToRemove.add(accountIn);
                 });
             } else {
                 MyLog.e(TAG, "Account " + accountIn.name +
@@ -131,14 +134,17 @@ class Convert47 extends ConvertOneStep {
         String oldName = jsonIn.optString(KEY_USERNAME).trim();
         String newUserName = oldName;
         String newUniqueName = "";
+        String host = "";
         if (oldName.contains("@")) {
+            host = AccountName.accountNameToHost(oldName);
             newUniqueName = oldName;
-            newUserName = Actor.uniqueNameInOriginToUsername(origin, oldName).orElse("");
+            newUserName = Actor.uniqueNameToUsername(origin, oldName).orElse("");
         } else {
-            newUniqueName = oldName + "@" + origin.getHost();
+            host = origin.getAccountNameHost();
+            newUniqueName = oldName + "@" + host;
             newUserName = oldName;
         }
-        String accountName = newUniqueName + "/" + origin.getOriginType().getTitle();
+        String accountName = newUniqueName + "/" + origin.getOriginInAccountName(host);
         JSONObject jso;
         try {
             jso = new JSONObject(jsonIn.toString());

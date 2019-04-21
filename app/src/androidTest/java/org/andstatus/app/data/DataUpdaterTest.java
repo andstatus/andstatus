@@ -540,7 +540,7 @@ public class DataUpdaterTest {
 
         String realBuddyOid = "acc:" + buddyName;
         Actor actor = Actor.fromOid(ma.getOrigin(), realBuddyOid);
-        actor.withUniqueNameInOrigin(buddyName);
+        actor.withUniqueName(buddyName);
         DataUpdater di = new DataUpdater(ma);
         long actorId2 = di.onActivity(ma.getActor().update(actor)).getObjActor().actorId;
         assertEquals(actorId1, actorId2);
@@ -554,7 +554,7 @@ public class DataUpdaterTest {
         addOneNote4testReplyInContent(ma, buddyName3,
                 "@" + buddyName3 + " I know you are already in our cache", true);
 
-        String buddyName4 = ma.getActor().getUniqueNameInOrigin();
+        String buddyName4 = ma.getActor().getUniqueName();
         addOneNote4testReplyInContent(ma, buddyName4,
                 "Reply to myaccount @" + buddyName4 + " should add me as a recipient", true);
         addOneNote4testReplyInContent(ma, buddyName3,
@@ -565,7 +565,7 @@ public class DataUpdaterTest {
 
         String actorUniqueName = "somebody" + demoData.testRunUid + "@somewhere.net";
         Actor actor = Actor.fromOid(ma.getActor().origin, OriginPumpio.ACCOUNT_PREFIX + actorUniqueName);
-        actor.withUniqueNameInOrigin(actorUniqueName);
+        actor.withUniqueName(actorUniqueName);
         actor.setProfileUrl("https://somewhere.net/" + actorUniqueName);
 
         AActivity activityIn = AActivity.newPartialNote(ma.getActor(), actor, String.valueOf(System.nanoTime()),
@@ -581,7 +581,7 @@ public class DataUpdaterTest {
         Actor buddy = Actor.EMPTY;
         for (Actor recipient : activity.audience().getActors()) {
             assertFalse("Audience member is empty: " + recipient + ",\n" + note, recipient.isEmpty());
-            if (recipient.getUniqueNameInOrigin().equals(buddyUniqueName)) {
+            if (recipient.getUniqueName().equals(buddyUniqueName)) {
                 buddy = recipient;
                 break;
             }

@@ -138,6 +138,6 @@ public class ActorTest {
         List<Actor> actors = demoData.getMyAccount(demoData.activityPubTestAccountName).getActor()
                 .extractActorsFromContent(content, Actor.EMPTY);
         assertEquals("Actors: " + actors, 1, actors.size());
-        assertEquals("Actors: " + actors, actorUniqueName, actors.get(0).getUniqueNameInOrigin());
+        assertEquals("Actors: " + actors, actorUniqueName, actors.get(0).getUniqueName());
     }
 }

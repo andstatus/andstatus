@@ -56,7 +56,7 @@ public class ActorContextMenu extends MyContextMenu {
         int order = 0;
         try {
             new ContextMenuHeader(getActivity(), menu)
-                    .setTitle(actor.toActorTitle(false))
+                    .setTitle(actor.toActorTitle())
                     .setSubtitle(getActingAccount().getAccountName());
             String shortName = actor.getUsername();
             if (actor.isIdentified()) {
@@ -115,7 +115,7 @@ public class ActorContextMenu extends MyContextMenu {
         if (ma.isValid()) {
             ActorContextMenuItem contextMenuItem = ActorContextMenuItem.fromId(item.getItemId());
             MyLog.v(this, () -> "onContextItemSelected: " + contextMenuItem + "; account="
-                    + ma.getAccountName() + "; actor=" + getViewItem().actor.getUniqueNameInOrigin());
+                    + ma.getAccountName() + "; actor=" + getViewItem().actor.getUniqueName());
             return contextMenuItem.execute(this, ma);
         } else {
             return false;

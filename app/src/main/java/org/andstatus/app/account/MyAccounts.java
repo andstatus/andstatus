@@ -132,7 +132,7 @@ public class MyAccounts implements IsEmpty {
         if (!accountName.isValid) return MyAccount.EMPTY;
 
         for (MyAccount persistentAccount : myAccounts) {
-            if (persistentAccount.getAccountName().equals(accountName.toString())) {
+            if (persistentAccount.getAccountName().equals(accountName.getName())) {
                 return persistentAccount;
             }
         }
