@@ -99,10 +99,7 @@ public class PersistentOrigins {
         if (!StringUtils.isEmpty(originName)) {
             origin = mOrigins.get(originName);
         }
-        if (origin == null) {
-            origin = Origin.EMPTY;
-        }
-        return origin;
+        return origin == null ? Origin.EMPTY : origin;
     }
 
     public Origin fromOriginInAccountNameAndHost(String originInAccountName, String host) {

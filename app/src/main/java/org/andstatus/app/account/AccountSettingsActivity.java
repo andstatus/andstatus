@@ -191,28 +191,28 @@ public class AccountSettingsActivity extends MyActivity {
         String message = "";
         if (state == null)  {
             state =  StateOfAccountChangeProcess.fromStoredState();
-            message += (state.restored ? "Old state restored; " : "No previous state; ");
+            message = (state.restored ? "Old state restored" : "No previous state");
         } else {
-            message += "State existed and " + (state.restored ? "was restored earlier; " : "was not restored earlier; ");
+            message = "State existed and " + (state.restored ? "was restored earlier" : "was not restored earlier");
         }
         StateOfAccountChangeProcess newState = StateOfAccountChangeProcess.fromIntent(intent);
         if (state.actionCompleted || newState.useThisState) {
-            message += "New state; ";
+            message += "; New state";
             state = newState;
             if (state.originShouldBeSelected) {
                 EnumSelector.newInstance(ActivityRequestCode.SELECT_ORIGIN_TYPE, OriginType.class).show(this);
             } else if (state.accountShouldBeSelected) {
                 AccountSelector.selectAccountOfOrigin(this, ActivityRequestCode.SELECT_ACCOUNT, 0);
-                message += "Select account; ";
+                message += "; Select account";
             }
-            message += "action=" + state.getAccountAction() + "; ";
+            message += "; action=" + state.getAccountAction();
 
             updateScreen();
         }
         if (state.authenticatorResponse != null) {
-            message += "authenticatorResponse; ";
+            message += "; authenticatorResponse";
         }
-        MyLog.v(this, "setState from " + calledFrom + "; " + message + "intent=" + intent.toUri(0));
+        MyLog.v(this, "setState from " + calledFrom + "; " + message + "; intent=" + intent.toUri(0));
     }
 
     @Override
@@ -301,15 +301,16 @@ public class AccountSettingsActivity extends MyActivity {
     }
 
     private void onOriginSelected(Origin origin) {
-        if (!state.getAccount().getOrigin().equals(origin)) {
-            // If we have changed the System, we should recreate the Account
-            state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                    MyContextHolder.get(),
-                    AccountName.fromOriginAndUniqueName(origin, state.getAccount().getOAccountName().getUniqueName()).toString(),
-                    TriState.fromBoolean(state.getAccount().isOAuth()));
-            updateScreen();
-            goToAddAccount();
-        }
+        if (state.getAccount().getOrigin().equals(origin)) return;
+
+        // If we have changed the System, we should recreate the Account
+        state.origin = origin; // This is needed for the case when MyAccount is invalid
+        state.builder = MyAccount.Builder.newOrExistingFromAccountName(
+            MyContextHolder.get(),
+            AccountName.fromOriginAndUniqueName(origin, state.getAccount().getOAccountName().getUniqueName()).getName(),
+            TriState.fromBoolean(state.getAccount().isOAuth()));
+        updateScreen();
+        goToAddAccount();
     }
 
     private void goToAddAccount() {
@@ -403,39 +404,38 @@ public class AccountSettingsActivity extends MyActivity {
     }
 
     private void showOrigin() {
-        MyAccount ma = state.getAccount();
         TextView view = (TextView) findFragmentViewById(R.id.origin_name);
         if (view != null) {
             view.setText(this.getText(R.string.title_preference_origin_system)
-                    .toString().replace("{0}", ma.getOrigin().getName())
-                    .replace("{1}", ma.getOrigin().getOriginType().getTitle()));
+                    .toString().replace("{0}", state.getOrigin().getName())
+                    .replace("{1}", state.getOrigin().getOriginType().getTitle()));
         }
     }
 
     private void showUniqueName() {
-        MyAccount ma = state.getAccount();
-        showTextView(R.id.uniqueName_label, ma.getOrigin().getOriginType().uniqueNameHasHost()
+        Origin origin = state.getOrigin();
+        showTextView(R.id.uniqueName_label, origin.getOriginType().uniqueNameHasHost()
                 ? R.string.username_at_your_server
                 : R.string.title_preference_username,
-                state.builder.isPersistent() || ma.isUsernameNeededToStartAddingNewAccount());
+                state.builder.isPersistent() || state.isUsernameNeededToStartAddingNewAccount());
         EditText nameEditable = (EditText) findFragmentViewById(R.id.uniqueName);
         if (nameEditable != null) {
-            if (state.builder.isPersistent() || !ma.isUsernameNeededToStartAddingNewAccount()) {
+            if (state.builder.isPersistent() || !state.isUsernameNeededToStartAddingNewAccount()) {
                 nameEditable.setVisibility(View.GONE);
             } else {
                 nameEditable.setVisibility(View.VISIBLE);
                 nameEditable.setHint(
-                        String.format(getText(ma.getOrigin().getOriginType().uniqueNameHasHost()
+                        String.format(getText(origin.getOriginType().uniqueNameHasHost()
                                         ? R.string.summary_preference_username_webfinger_id
                                         : R.string.summary_preference_username).toString(),
-                                ma.getOrigin().getName(), ma.getOrigin().getOriginType().uniqueNameExamples));
+                                origin.getName(), origin.getOriginType().uniqueNameExamples));
                 nameEditable.addTextChangedListener(textWatcher);
                 if (nameEditable.getText().length() == 0) {
                     nameEditable.requestFocus();
                 }
             }
-            String uniqueName = StringUtils.nonEmptyNonTemp(ma.getUsername())
-                    ? ma.getActor().getUniqueName()
+            String uniqueName = StringUtils.nonEmptyNonTemp(state.getAccount().getUsername())
+                    ? state.getAccount().getActor().getUniqueName()
                     : "";
             if (uniqueName.compareTo(nameEditable.getText().toString()) != 0) {
                 nameEditable.setText(uniqueName);
@@ -464,7 +464,7 @@ public class AccountSettingsActivity extends MyActivity {
     
     private void showPassword() {
         MyAccount ma = state.getAccount();
-        boolean isNeeded = ma.getConnection().isPasswordNeeded() && !ma.isValidAndSucceeded();
+        boolean isNeeded = ma.isValid() && ma.getConnection().isPasswordNeeded() && !ma.isValidAndSucceeded();
         StringBuilder labelBuilder = new StringBuilder();
         if (isNeeded) {
             labelBuilder.append(this.getText(R.string.summary_preference_password));
@@ -498,7 +498,7 @@ public class AccountSettingsActivity extends MyActivity {
                         summary = new StringBuilder(
                                 this.getText(R.string.summary_preference_verify_credentials_failed));
                     } else {
-                        if (ma.isOAuth()) {
+                        if (state.isOAuth()) {
                             summary = new StringBuilder(
                                     this.getText(R.string.summary_preference_add_account_oauth));
                         } else {
@@ -522,17 +522,16 @@ public class AccountSettingsActivity extends MyActivity {
                 clearError();
                 updateChangedFields();
                 updateScreen();
-                MyAccount ma = state.getAccount();
                 CharSequence error = "";
-                boolean addAccountEnabled = !ma.isUsernameNeededToStartAddingNewAccount()
-                        || ma.isUsernameValid();
+                boolean addAccountEnabled = !state.isUsernameNeededToStartAddingNewAccount() ||
+                        state.getAccount().isUsernameValid();
                 if (addAccountEnabled) {
-                    if (!ma.isOAuth() && !ma.getCredentialsPresent()) {
+                    if (!state.isOAuth() && !state.getAccount().getCredentialsPresent()) {
                         addAccountEnabled = false;
                         error = getText(R.string.title_preference_password);
                     }
                 } else {
-                    error = getText(ma.alternativeTermForResourceId(R.string.title_preference_username));
+                    error = getText(state.getOrigin().alternativeTermForResourceId(R.string.title_preference_username));
                 }
                 if (addAccountEnabled) {
                     verifyCredentials(true);
@@ -701,11 +700,11 @@ public class AccountSettingsActivity extends MyActivity {
             }
             if (ma.getCredentialsPresent()) {
                 // Credentials are present, so we may verify them
-                // This is needed even for OAuth - to know Twitter Username
+                // This is needed even for OAuth - to know Username
                 AsyncTaskLauncher.execute(this, true,
                         new VerifyCredentialsTask(ma.getActor().getEndpoint(ActorEndpointType.API_PROFILE)));
             } else {
-                if (ma.isOAuth() && reVerify) {
+                if (state.isOAuth() && reVerify) {
                     // Credentials are not present,
                     // so start asynchronous OAuth Authentication process 
                     if (!ma.areClientKeysPresent()) {
@@ -722,16 +721,14 @@ public class AccountSettingsActivity extends MyActivity {
 
     private void updateChangedFields() {
         if (!state.builder.isPersistent()) {
-            EditText uniqueNameEditable = (EditText) findFragmentViewById(R.id.uniqueName);
-            if (uniqueNameEditable != null) {
-                String uniqueName = uniqueNameEditable.getText().toString();
+            EditText nameEditable = (EditText) findFragmentViewById(R.id.uniqueName);
+            if (nameEditable != null) {
+                String uniqueName = nameEditable.getText().toString();
                 if (uniqueName.compareTo(state.getAccount().getOAccountName().getUniqueName()) != 0) {
-                    boolean isOAuth = state.getAccount().isOAuth();
                     state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                             MyContextHolder.get(),
-                            AccountName.fromOriginAndUniqueName(
-                                    state.getAccount().getOrigin(), uniqueName).toString(),
-                            TriState.fromBoolean(isOAuth));
+                            AccountName.fromOriginAndUniqueName(state.getOrigin(), uniqueName).getName(),
+                            TriState.fromBoolean(state.isOAuth()));
                 }
             }
         }
