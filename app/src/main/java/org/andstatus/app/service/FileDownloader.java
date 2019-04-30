@@ -25,6 +25,7 @@ import org.andstatus.app.data.DownloadFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.ConnectionLocal;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;

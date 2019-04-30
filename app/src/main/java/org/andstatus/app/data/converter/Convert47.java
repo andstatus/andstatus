@@ -81,7 +81,7 @@ class Convert47 extends ConvertOneStep {
 
                 jsonIn.flatMap(jso -> convertJson16(myContext, jso, true))
                 .flatMap(jsonOut -> {
-                    AccountData accountData = AccountData.fromJson(jsonOut, false);
+                    AccountData accountData = AccountData.fromJson(myContext, jsonOut, false);
                     MyLog.v(TAG, method + "; " + accountData.toJsonString());
                     String accountName = jsonOut.optString(KEY_ACCOUNT_NAME);
 
@@ -89,7 +89,7 @@ class Convert47 extends ConvertOneStep {
                             ? Try.success(accountIn)
                             : AccountUtils.addEmptyAccount(am, accountName, jsonOut.optString(KEY_PASSWORD)))
                         .flatMap(accountOut ->
-                                accountData.saveIfChanged(myContext.context(), accountOut)
+                                accountData.saveIfChanged(myContext, accountOut)
                                 .map(b -> accountOut));
                 })
                 .onSuccess(accountNew -> {
@@ -125,9 +125,6 @@ class Convert47 extends ConvertOneStep {
     static Try<JSONObject> convertJson16(MyContext myContext, JSONObject jsonIn, boolean isPersistent) {
         final int versionTo = 48;
         String originName = jsonIn.optString(Origin.KEY_ORIGIN_NAME);
-//        if (myContext.origins().collection().isEmpty()) {
-//            myContext.origins().initialize(myContext.getDatabase());
-//        }
         Origin origin = myContext.origins().fromName(originName);
         if (origin.isEmpty()) return Try.failure(new NoSuchElementException("Origin wan't found for " + jsonIn));
 

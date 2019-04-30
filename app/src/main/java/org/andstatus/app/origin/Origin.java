@@ -227,7 +227,11 @@ public class Origin implements Comparable<Origin>, IsEmpty {
     public Uri fixUriForPermalink(Uri uri1) {
         return uri1;
     }
-    
+
+    public boolean hasHost() {
+        return UrlUtils.hasHost(url);
+    }
+
     public boolean urlIsValid() {
         if (originType.originHasUrl) {
             return UrlUtils.hasHost(url);

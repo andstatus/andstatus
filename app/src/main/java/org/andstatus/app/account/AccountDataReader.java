@@ -22,7 +22,11 @@ package org.andstatus.app.account;
 public interface AccountDataReader {
 
     boolean dataContains(String key);
-    
+
+    default String getDataString(String key) {
+        return getDataString(key, "");
+    }
+
     /**
      * @param key Key Name
      * @param defValue Default value

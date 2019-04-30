@@ -16,7 +16,6 @@
 
 package org.andstatus.app.account;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionEmpty;
 import org.andstatus.app.net.social.Actor;
@@ -33,18 +32,24 @@ public class AccountConnectionData {
     private URL originUrl;
 
     private final MyAccount myAccount;
+    private final Origin origin;
 
     private final Class<? extends org.andstatus.app.net.http.HttpConnection> httpConnectionClass;
 
-    public static AccountConnectionData fromMyAccount(MyAccount myAccount, TriState triStateOAuth) {
-        return new AccountConnectionData(myAccount, triStateOAuth);
+    public static AccountConnectionData fromOrigin(Origin origin, TriState triStateOAuth) {
+        return new AccountConnectionData(MyAccount.EMPTY, origin, triStateOAuth);
     }
 
-    private AccountConnectionData(MyAccount myAccount, TriState triStateOAuth) {
+    public static AccountConnectionData fromMyAccount(MyAccount myAccount, TriState triStateOAuth) {
+        return new AccountConnectionData(myAccount, myAccount.getOrigin(), triStateOAuth);
+    }
+
+    private AccountConnectionData(MyAccount myAccount, Origin origin, TriState triStateOAuth) {
         this.myAccount = myAccount;
-        originUrl = myAccount.getOrigin().getUrl();
-        isOAuth = myAccount.getOrigin().getOriginType().fixIsOAuth(triStateOAuth);
-        httpConnectionClass = myAccount.getOrigin().getOriginType().getHttpConnectionClass(isOAuth());
+        this.origin = origin;
+        originUrl = origin.getUrl();
+        isOAuth = origin.getOriginType().fixIsOAuth(triStateOAuth);
+        httpConnectionClass = origin.getOriginType().getHttpConnectionClass(isOAuth());
     }
 
     @NonNull
@@ -62,15 +67,15 @@ public class AccountConnectionData {
     }
 
     public OriginType getOriginType() {
-        return myAccount.getOrigin().getOriginType();
+        return origin.getOriginType();
     }
 
     public Origin getOrigin() {
-        return myAccount.getOrigin();
+        return origin;
     }
 
     public boolean isSsl() {
-        return myAccount.getOrigin().isSsl();
+        return origin.isSsl();
     }
 
     public boolean isOAuth() {
@@ -90,12 +95,22 @@ public class AccountConnectionData {
     }
 
     public HttpConnection newHttpConnection() {
-        HttpConnection http = MyContextHolder.get().getHttpConnectionMock();
+        HttpConnection http = origin.myContext.getHttpConnectionMock();
         if (http != null) return http;
         try {
             return httpConnectionClass.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
-            return new HttpConnectionEmpty();
+            return HttpConnectionEmpty.EMPTY;
         }
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return myAccount.isEmpty()
+            ? (origin.hasHost()
+                ? origin.getHost()
+                : originUrl.toString())
+            : myAccount.getAccountName();
     }
 }

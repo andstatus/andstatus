@@ -35,9 +35,12 @@ public class MyAccountsTest {
     public void test() {
         MyAccounts accounts = MyContextHolder.get().accounts();
 
-        assertNotEquals(accounts.toString(), MyAccount.EMPTY, accounts.fromWebFingerId(demoData.pumpioTestAccountUniqueName.toLowerCase()));
-        assertNotEquals(accounts.toString(), MyAccount.EMPTY, accounts.fromWebFingerId(demoData.conversationAccountSecondUniqueName.toLowerCase()));
-        assertEquals(accounts.toString(), MyAccount.EMPTY, accounts.fromWebFingerId(demoData.conversationAuthorSecondUniqueName.toLowerCase()));
+        assertNotEquals(accounts.toString(), MyAccount.EMPTY,
+                accounts.fromWebFingerId(demoData.pumpioTestAccountUniqueName.toLowerCase()));
+        assertNotEquals(accounts.toString(), MyAccount.EMPTY,
+                accounts.fromWebFingerId(demoData.conversationAccountSecondUniqueName.toLowerCase()));
+        assertEquals(accounts.toString(), MyAccount.EMPTY,
+                accounts.fromWebFingerId(demoData.conversationAuthorSecondUniqueName.toLowerCase()));
     }
 
 }

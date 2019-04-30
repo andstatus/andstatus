@@ -27,7 +27,6 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
-import org.andstatus.app.util.TriState;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -52,14 +51,14 @@ class StateOfAccountChangeProcess {
     private static final String ACTION_SUCCEEDED_KEY = "action_succeeded";
     private static final String REQUEST_TOKEN_KEY = "request_token";
     private static final String REQUEST_SECRET_KEY = "request_secret";
-    private static final String ORIGIN_KEY = "origin";
 
     private String accountAction = Intent.ACTION_DEFAULT;
     boolean actionCompleted = true;
     boolean actionSucceeded = true;
     AccountAuthenticatorResponse authenticatorResponse = null;
-    Origin origin = Origin.EMPTY;
-    MyAccount.Builder builder = null;
+
+    // And this is what we constructed (maybe unsuccessfully)
+    final MyAccount.Builder builder;
 
     boolean useThisState = false;
     
@@ -75,25 +74,23 @@ class StateOfAccountChangeProcess {
     private String requestSecret = null;
     
     private StateOfAccountChangeProcess(Bundle bundle) {
-        if (bundle == null || !bundle.containsKey(ACTION_COMPLETED_KEY)) return;
-
-        setAccountAction(bundle.getString(ACCOUNT_ACTION_KEY));
-        actionCompleted = bundle.getBoolean(ACTION_COMPLETED_KEY, true);
-        actionSucceeded = bundle.getBoolean(ACTION_SUCCEEDED_KEY);
-        builder = bundle.getParcelable(ACCOUNT_KEY);
-        authenticatorResponse = bundle.getParcelable(ACCOUNT_AUTHENTICATOR_RESPONSE_KEY);
-        setRequestTokenWithSecret(bundle.getString(REQUEST_TOKEN_KEY), bundle.getString(REQUEST_SECRET_KEY));
-        origin = MyContextHolder.get().origins().fromName(bundle.getString(ORIGIN_KEY));
-        restored = true;
+        if (bundle != null && bundle.containsKey(ACTION_COMPLETED_KEY)) {
+            setAccountAction(bundle.getString(ACCOUNT_ACTION_KEY));
+            actionCompleted = bundle.getBoolean(ACTION_COMPLETED_KEY, true);
+            actionSucceeded = bundle.getBoolean(ACTION_SUCCEEDED_KEY);
+            builder = bundle.getParcelable(ACCOUNT_KEY);
+            authenticatorResponse = bundle.getParcelable(ACCOUNT_AUTHENTICATOR_RESPONSE_KEY);
+            setRequestTokenWithSecret(bundle.getString(REQUEST_TOKEN_KEY), bundle.getString(REQUEST_SECRET_KEY));
+            restored = true;
+        } else {
+            builder = MyAccount.Builder.fromMyAccount(MyAccount.EMPTY);
+        }
     }
 
     static StateOfAccountChangeProcess fromStoredState() {
         return new StateOfAccountChangeProcess(STORED_STATE.get());
     }
 
-    /**
-     * Don't restore previously stored state 
-     */
     static StateOfAccountChangeProcess fromIntent(Intent intent) {
         STORED_STATE.set(null);
         StateOfAccountChangeProcess state = fromStoredState();
@@ -112,24 +109,20 @@ class StateOfAccountChangeProcess {
             // Maybe we received MyAccount name as a parameter?!
             String accountName = extras.getString(IntentExtra.ACCOUNT_NAME.key);
             if (!StringUtils.isEmpty(accountName)) {
-                state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                        MyContextHolder.get(),
-                        accountName, 
-                        TriState.UNKNOWN);
+                state.builder.rebuildMyAccount(
+                        AccountName.fromAccountName(MyContextHolder.get(), accountName));
                 state.useThisState = state.builder.isPersistent();
             }
         }
 
-        if (state.builder == null && !state.getAccountAction().equals(Intent.ACTION_INSERT)) {
+        if (state.getAccount().isEmpty() && !state.getAccountAction().equals(Intent.ACTION_INSERT)) {
             switch (MyContextHolder.get().accounts().size()) {
                 case 0:
                     state.setAccountAction(Intent.ACTION_INSERT);
                     break;
                 case 1:
-                    state.builder = MyAccount.Builder.fromMyAccount(
-                            MyContextHolder.get(),
-                            MyContextHolder.get()
-                            .accounts().getCurrentAccount(), "fromIntent");
+                    state.builder.rebuildMyAccount(
+                            MyContextHolder.get().accounts().getCurrentAccount().getOAccountName());
                     break;
                 default:
                     state.accountShouldBeSelected = true;
@@ -137,20 +130,17 @@ class StateOfAccountChangeProcess {
             }
         }
         
-        if (state.builder == null) {
+        if (state.getAccount().isEmpty()) {
             if (state.getAccountAction().equals(Intent.ACTION_INSERT)) {
                 Origin origin = MyContextHolder
                         .get()
                         .origins()
                         .firstOfType(OriginType.UNKNOWN);
-                state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                        MyContextHolder.get(),
-                        AccountName.ORIGIN_SEPARATOR + origin.getName(), TriState.UNKNOWN);
+                state.builder.rebuildMyAccount(AccountName.fromOriginAndUniqueName(origin, ""));
                 state.originShouldBeSelected = true;
             } else {
-                state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                        MyContextHolder.get(),
-                        MyContextHolder.get().accounts().getCurrentAccount().getAccountName(), TriState.UNKNOWN);
+                state.builder.rebuildMyAccount(
+                        MyContextHolder.get().accounts().getCurrentAccount().getOAccountName());
             }
             if (!state.builder.isPersistent()) {
                 state.setAccountAction(Intent.ACTION_INSERT);
@@ -209,7 +199,6 @@ class StateOfAccountChangeProcess {
                 bundle.putParcelable(ACCOUNT_AUTHENTICATOR_RESPONSE_KEY, authenticatorResponse);
                 bundle.putString(REQUEST_TOKEN_KEY, requestToken);
                 bundle.putString(REQUEST_SECRET_KEY, requestSecret);
-                bundle.putString(ORIGIN_KEY, origin.getName());
                 return bundle;
             });
             MyLog.v(this, "State saved");
@@ -226,25 +215,12 @@ class StateOfAccountChangeProcess {
     }
 
     boolean isUsernameNeededToStartAddingNewAccount() {
-        return getAccount().isValid()
-                ? getAccount().isUsernameNeededToStartAddingNewAccount()
-                : origin.getOriginType().isUsernameNeededToStartAddingNewAccount(isOAuth());
+        return builder.getOrigin().getOriginType().isUsernameNeededToStartAddingNewAccount(builder.isOAuth());
     }
 
     MyAccount getAccount() {
-        return builder == null ? MyAccount.EMPTY : builder.getAccount();
+        return builder.getAccount();
     }
-
-    Origin getOrigin() {
-        return getAccount().getOrigin().nonEmpty() ? getAccount().getOrigin() : origin;
-    }
-
-    boolean isOAuth() {
-        return getAccount().isValid()
-                ? getAccount().isOAuth()
-                : origin.getOriginType().fixIsOAuth(TriState.UNKNOWN);
-    }
-
 
     void setAccountAction(String accountAction) {
         if (StringUtils.isEmpty(accountAction)) {
@@ -252,5 +228,5 @@ class StateOfAccountChangeProcess {
         } else {
             this.accountAction = accountAction;
         }
-    }    
+    }
 }

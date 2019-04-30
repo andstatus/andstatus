@@ -26,8 +26,10 @@ import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.http.OAuthService;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.service.ConnectionRequired;
+import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -59,7 +61,7 @@ import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
  * 
  * @author yvolk@yurivolkov.com
  */
-public abstract class Connection {
+public abstract class Connection implements IsEmpty {
     public static final String KEY_PASSWORD = "password";
 
     /**
@@ -144,13 +146,28 @@ public abstract class Connection {
     protected AccountConnectionData data;
 
     public static Connection fromMyAccount(@NonNull MyAccount myAccount, TriState isOAuth) {
+        if (!myAccount.getOrigin().isValid()) return ConnectionEmpty.EMPTY;
+
         AccountConnectionData connectionData = AccountConnectionData.fromMyAccount(myAccount, isOAuth);
         try {
             return myAccount.getOrigin().getOriginType().getConnectionClass().newInstance()
                     .setAccountConnectionData(connectionData);
         } catch (InstantiationException | IllegalAccessException e) {
             MyLog.e("Failed to instantiate connection for " + myAccount, e);
-            return new ConnectionEmpty();
+            return ConnectionEmpty.EMPTY;
+        }
+    }
+
+    public static Connection fromOrigin(@NonNull Origin origin, TriState isOAuth) {
+        if (!origin.isValid()) return ConnectionEmpty.EMPTY;
+
+        AccountConnectionData connectionData = AccountConnectionData.fromOrigin(origin, isOAuth);
+        try {
+            return origin.getOriginType().getConnectionClass().newInstance()
+                    .setAccountConnectionData(connectionData);
+        } catch (InstantiationException | IllegalAccessException e) {
+            MyLog.e("Failed to instantiate connection for " + origin, e);
+            return ConnectionEmpty.EMPTY;
         }
     }
 
@@ -557,4 +574,16 @@ public abstract class Connection {
         }
         return url;
     }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return data == null ? "(empty)" : data.toString();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return this == ConnectionEmpty.EMPTY || data == null || http == null;
+    }
+
 }

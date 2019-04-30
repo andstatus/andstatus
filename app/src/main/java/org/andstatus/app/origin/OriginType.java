@@ -76,6 +76,8 @@ public enum OriginType implements SelectableEnum {
     },
     UNKNOWN(0, "?", ApiEnum.UNKNOWN_API, NoteName.NO, PublicChangeAllowed.NO);
 
+    public static final String SIMPLE_USERNAME_EXAMPLES = "AndStatus user357 peter";
+
     private enum NoteName { YES, NO}
     private enum PublicChangeAllowed { YES, NO}
 
@@ -179,7 +181,7 @@ public enum OriginType implements SelectableEnum {
                 // TODO: Read from Config
                 shortUrlLengthDefault = 23; 
                 usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
-                uniqueNameExamples = "AndStatus user357 peter";
+                uniqueNameExamples = SIMPLE_USERNAME_EXAMPLES;
                 textLimitDefault = 280;
                 urlDefault = UrlUtils.fromString("https://api.twitter.com");
                 basicPath = "1.1";

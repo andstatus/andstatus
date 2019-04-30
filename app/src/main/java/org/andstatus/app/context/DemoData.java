@@ -146,7 +146,7 @@ public final class DemoData {
         dataPath = dataPathIn;
         MyLog.v(TAG, method + ": started");
         final MyAsyncTask<Void, Void, Void> asyncTask = addAsync(method, myContext, null);
-        long count = 100;
+        long count = 200;
         while (count > 0) {
             boolean completedWork = asyncTask.completedBackgroundWork();
             MyLog.v(method, (completedWork ? "Task completed " : "Waiting for task completion ") + count + " "

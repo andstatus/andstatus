@@ -2,7 +2,6 @@ package org.andstatus.app.note;
 
 import android.content.Intent;
 import android.provider.BaseColumns;
-import androidx.test.espresso.action.TypeTextAction;
 import android.view.View;
 
 import org.andstatus.app.ActivityTestHelper;
@@ -29,6 +28,8 @@ import org.junit.Test;
 
 import java.util.List;
 
+import androidx.test.espresso.action.TypeTextAction;
+
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static org.andstatus.app.context.DemoData.demoData;
@@ -40,7 +41,7 @@ public class UnsentNotesTest extends TimelineActivityTest<ActivityViewItem> {
 
     @Override
     protected Intent getActivityIntent() {
-        TestSuite.initializeWithData(this);
+        TestSuite.initializeWithAccounts(this);
 
         mService.setUp(null);
         MyAccount ma = demoData.getGnuSocialAccount();

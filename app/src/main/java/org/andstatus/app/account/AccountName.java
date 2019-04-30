@@ -48,10 +48,6 @@ public class AccountName {
         return new AccountName("", Origin.EMPTY);
     }
 
-    static AccountName fromOriginNameAndUniqueName(MyContext myContext, String originName, String uniqueName) {
-        return fromOriginAndUniqueName(myContext.origins().fromName(fixOriginName(originName)), uniqueName);
-    }
-
     @NonNull
     public static AccountName fromOriginAndUniqueName(@NonNull Origin origin, String uniqueName) {
         return new AccountName(fixUniqueName(uniqueName, origin), origin);
@@ -143,7 +139,11 @@ public class AccountName {
     }
 
     public Context getContext() {
-        return origin.myContext.context();
+        return myContext().context();
+    }
+
+    public MyContext myContext() {
+        return getOrigin().myContext;
     }
 
     public Origin getOrigin() {

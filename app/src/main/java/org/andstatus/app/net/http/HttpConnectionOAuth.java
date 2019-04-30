@@ -52,8 +52,8 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
         connectionData.oauthClientKeys = OAuthClientKeys.fromConnectionData(connectionData);
         // We look for saved user keys
         if (connectionData.dataReader.dataContains(userTokenKey()) && connectionData.dataReader.dataContains(userSecretKey())) {
-            userToken = connectionData.dataReader.getDataString(userTokenKey(), null);
-            userSecret = connectionData.dataReader.getDataString(userSecretKey(), null);
+            userToken = connectionData.dataReader.getDataString(userTokenKey());
+            userSecret = connectionData.dataReader.getDataString(userSecretKey());
             setUserTokenWithSecret(userToken, userSecret);
         }
     }  
@@ -61,8 +61,8 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
     @Override
     public boolean getCredentialsPresent() {
         boolean yes = data.oauthClientKeys.areKeysPresent()
-            && !StringUtils.isEmpty(userToken)
-            && !StringUtils.isEmpty(userSecret);
+            && StringUtils.nonEmpty(userToken)
+            && StringUtils.nonEmpty(userSecret);
         if (!yes && logMe) {
             MyLog.v(this, () -> "Credentials presence: clientKeys:" + data.oauthClientKeys.areKeysPresent()
                     + "; userKeys:" + !StringUtils.isEmpty(userToken) + "," + !StringUtils.isEmpty(userSecret));
@@ -111,7 +111,7 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
     }
 
     /**
-     * @param token null means to clear the old values
+     * @param token empty value means to clear the old values
      * @param secret
      */
     @Override
@@ -143,13 +143,13 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
     public boolean save(AccountDataWriter dw) {
         boolean changed = super.save(dw);
 
-        if ( !TextUtils.equals(userToken, dw.getDataString(userTokenKey(), null)) ||
-                !TextUtils.equals(userSecret, dw.getDataString(userSecretKey(), null)) 
+        if ( !TextUtils.equals(userToken, dw.getDataString(userTokenKey())) ||
+                !TextUtils.equals(userSecret, dw.getDataString(userSecretKey()))
                 ) {
             changed = true;
 
             if (StringUtils.isEmpty(userToken)) {
-                dw.setDataString(userTokenKey(), null);
+                dw.setDataString(userTokenKey(), "");
                 if (logMe) {
                     MyLog.d(TAG, "Clearing OAuth Token");
                 }
@@ -160,7 +160,7 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
                 }
             }
             if (StringUtils.isEmpty(userSecret)) {
-                dw.setDataString(userSecretKey(), null);
+                dw.setDataString(userSecretKey(), "");
                 if (logMe) {
                     MyLog.d(TAG, "Clearing OAuth Secret");
                 }
@@ -178,8 +178,8 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
     public boolean save(JSONObject jso) throws JSONException {
         boolean changed = super.save(jso);
 
-        if ( !TextUtils.equals(userToken, jso.optString(userTokenKey(), null)) ||
-                !TextUtils.equals(userSecret, jso.optString(userSecretKey(), null)) 
+        if ( !TextUtils.equals(userToken, jso.optString(userTokenKey())) ||
+                !TextUtils.equals(userSecret, jso.optString(userSecretKey()))
                 ) {
             changed = true;
 
@@ -211,6 +211,6 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
     
     @Override
     public void clearAuthInformation() {
-        setUserTokenWithSecret(null, null);
+        setUserTokenWithSecret("", "");
     }
 }

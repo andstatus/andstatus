@@ -19,11 +19,11 @@ package org.andstatus.app.account;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MatchedUri;
@@ -48,18 +48,20 @@ import static org.andstatus.app.account.MyAccount.KEY_USERNAME;
 
 public class AccountData implements Parcelable, AccountDataWriter {
     private static final String TAG = AccountData.class.getSimpleName();
-    public static final AccountData EMPTY = new AccountData(null, false);
+    public static final AccountData EMPTY = new AccountData(MyContext.EMPTY, null, false);
 
+    public final MyContext myContext;
     private final JSONObject data;
     private boolean persistent = false;
 
     @NonNull
-    public static AccountData fromAndroidAccount(Context context, Account androidAccount) {
+    public static AccountData fromAndroidAccount(MyContext myContext, Account androidAccount) {
         if (androidAccount == null) {
             throw new IllegalArgumentException(TAG + " account is null");
         }
-        android.accounts.AccountManager am = AccountManager.get(context);
-        AccountData accountData = fromJsonString(am.getUserData(androidAccount, AccountUtils.KEY_ACCOUNT), true);
+        android.accounts.AccountManager am = AccountManager.get(myContext.context());
+        AccountData accountData = fromJsonString(myContext,
+                am.getUserData(androidAccount, AccountUtils.KEY_ACCOUNT), true);
         accountData.setDataBoolean(MyAccount.KEY_IS_SYNCABLE,
                 ContentResolver.getIsSyncable(androidAccount, MatchedUri.AUTHORITY) != 0);
         accountData.setDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY,
@@ -67,15 +69,16 @@ public class AccountData implements Parcelable, AccountDataWriter {
         return accountData;
     }
 
-    public static AccountData fromJsonString(String userData, boolean persistent) {
-        return JsonUtils.toJsonObject(userData).map(jso -> fromJson(jso, persistent)).getOrElse(EMPTY);
+    public static AccountData fromJsonString(MyContext myContext, String userData, boolean persistent) {
+        return JsonUtils.toJsonObject(userData).map(jso -> fromJson(myContext, jso, persistent)).getOrElse(EMPTY);
     }
 
-    public static AccountData fromJson(JSONObject jso, boolean persistent) {
-        return new AccountData(jso, persistent);
+    public static AccountData fromJson(MyContext myContext, JSONObject jso, boolean persistent) {
+        return new AccountData(myContext, jso, persistent);
     }
     
-    private AccountData(JSONObject jso, boolean persistent) {
+    private AccountData(MyContext myContext, JSONObject jso, boolean persistent) {
+        this.myContext = myContext;
         if (jso == null) {
             data = new JSONObject();
         } else {
@@ -115,8 +118,8 @@ public class AccountData implements Parcelable, AccountDataWriter {
     }
 
     /** @return changed (and successfully saved) or not */
-    public Try<Boolean> saveIfChanged(Context context, Account androidAccount) {
-        AccountData oldData = fromAndroidAccount(context, androidAccount);
+    public Try<Boolean> saveIfChanged(MyContext myContext, Account androidAccount) {
+        AccountData oldData = fromAndroidAccount(myContext, androidAccount);
         if (this.equals(oldData)) return Try.success(false);
 
         long syncFrequencySeconds = getDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, 0);
@@ -136,7 +139,7 @@ public class AccountData implements Parcelable, AccountDataWriter {
             // http://stackoverflow.com/questions/5013254/what-is-a-network-tickle-and-how-to-i-go-about-sending-one
             ContentResolver.setSyncAutomatically(androidAccount, MatchedUri.AUTHORITY, syncAutomatically);
         }
-        android.accounts.AccountManager am = AccountManager.get(context);
+        android.accounts.AccountManager am = AccountManager.get(myContext.context());
         am.setUserData(androidAccount, AccountUtils.KEY_ACCOUNT, toJsonString());
         return Try.success(true);
     }
@@ -191,7 +194,7 @@ public class AccountData implements Parcelable, AccountDataWriter {
         }
         return value;
     }
-    
+
     @Override
     public String getDataString(String key, String defValue) {
         return data.optString(key, defValue);
@@ -267,7 +270,7 @@ public class AccountData implements Parcelable, AccountDataWriter {
 
         @Override
         public AccountData createFromParcel(Parcel source) {
-            return AccountData.fromBundle(MyContextHolder.get().context(), source.readBundle());
+            return AccountData.fromBundle(MyContextHolder.get(), source.readBundle());
         }
 
         @Override
@@ -276,12 +279,12 @@ public class AccountData implements Parcelable, AccountDataWriter {
         }
     };
     
-    static AccountData fromBundle(Context context, Bundle bundle) {
+    static AccountData fromBundle(MyContext myContext, Bundle bundle) {
         String jsonString = "";
         if (bundle != null) {
             jsonString = bundle.getString(AccountUtils.KEY_ACCOUNT);
         }
-        return fromJsonString(jsonString, false);
+        return fromJsonString(myContext, jsonString, false);
     }
     
     @Override

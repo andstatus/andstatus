@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2018 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2010-2019 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.andstatus.app.net.http.OAuthService;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
+import org.andstatus.app.net.social.ConnectionEmpty;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -67,7 +68,7 @@ import io.vavr.control.Try;
  */
 public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     private static final String TAG = MyAccount.class.getSimpleName();
-    public static final MyAccount EMPTY = Builder.getEmptyAccount(MyContext.EMPTY,"(empty)");
+    public static final MyAccount EMPTY = new MyAccount(null, AccountName.getEmpty());
 
     public static final String KEY_ACCOUNT_NAME = "account_name";
     /** Username for the account */
@@ -89,8 +90,8 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     public static final String KEY_IS_SYNCED_AUTOMATICALLY = "sync_automatically";
     public static final String KEY_ORDER = "order";
 
-    private final MyContext myContext;
     final AccountData accountData;
+    @NonNull
     private AccountName oAccountName;
     private Actor actor;
 
@@ -107,28 +108,20 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     private boolean deleted;
     private int order = 0;
 
-    public static MyAccount getEmpty(MyContext myContext, String accountName) {
-        return Builder.getEmptyAccount(myContext, accountName);
-    }
-
     public static MyAccount fromBundle(MyContext myContext, Bundle bundle) {
         return bundle == null
                 ? EMPTY
                 : myContext.accounts().fromAccountName(bundle.getString(IntentExtra.ACCOUNT_NAME.key));
     }
 
-    private MyAccount(MyContext myContext, AccountData accountDataIn, String accountName) {
-        this.myContext = myContext;
+    // TODO: Make AccountData contain AccountName
+    MyAccount(AccountData accountDataIn, AccountName oAccountName) {
         this.accountData = accountDataIn == null
-                ? AccountData.fromJson(null, false)
+                ? AccountData.fromJson(oAccountName.myContext(), null, false)
                 : accountDataIn;
-        oAccountName = accountDataIn == null
-                ? AccountName.fromAccountName(myContext, accountName)
-                : AccountName.fromOriginNameAndUniqueName(myContext,
-                accountDataIn.getDataString(Origin.KEY_ORIGIN_NAME, ""),
-                accountDataIn.getDataString(KEY_UNIQUE_NAME, ""));
-        actor = Actor.load(myContext, accountData.getDataLong(KEY_ACTOR_ID, 0L), false, () ->
-                Actor.fromOid(oAccountName.getOrigin(), accountData.getDataString(KEY_ACTOR_OID, ""))
+        this.oAccountName = oAccountName;
+        actor = Actor.load(oAccountName.myContext(), accountData.getDataLong(KEY_ACTOR_ID, 0L), false, () ->
+                Actor.fromOid(oAccountName.getOrigin(), accountData.getDataString(KEY_ACTOR_OID))
                         .withUniqueName(oAccountName.getUniqueName())
                         .lookupUser());
 
@@ -136,7 +129,9 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         syncFrequencySeconds = accountData.getDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, 0L);
         isSyncable = accountData.getDataBoolean(KEY_IS_SYNCABLE, true);
         isSyncedAutomatically = accountData.getDataBoolean(KEY_IS_SYNCED_AUTOMATICALLY, true);
-        setOAuth(TriState.UNKNOWN);
+        setOAuth(TriState.fromBoolean(accountData.getDataBoolean(KEY_OAUTH, getOrigin().isOAuthDefault())));
+        setConnection();
+        getConnection().setPassword(accountData.getDataString(Connection.KEY_PASSWORD));
         credentialsVerified = CredentialsVerificationStatus.load(accountData);
         order = accountData.getDataInt(KEY_ORDER, 1);
     }
@@ -146,7 +141,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     }
 
     public Actor getActor() {
-        return Actor.load(myContext, actor.actorId, false, () -> actor);
+        return Actor.load(oAccountName.myContext(), actor.actorId, false, () -> actor);
     }
 
     public String getWebFingerId() {
@@ -248,14 +243,13 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     }
 
     private void setOAuth(TriState isOAuthTriState) {
-        Origin origin = oAccountName.getOrigin();
         boolean isOAuthBoolean = true;
         if (isOAuthTriState == TriState.UNKNOWN) {
-            isOAuthBoolean = accountData.getDataBoolean(KEY_OAUTH, origin.isOAuthDefault());
+            isOAuthBoolean = accountData.getDataBoolean(KEY_OAUTH, getOrigin().isOAuthDefault());
         } else {
-            isOAuthBoolean = isOAuthTriState.toBoolean(origin.isOAuthDefault());
+            isOAuthBoolean = isOAuthTriState.toBoolean(getOrigin().isOAuthDefault());
         }
-        isOAuth = origin.getOriginType().fixIsOAuth(isOAuthBoolean);
+        isOAuth = getOrigin().getOriginType().fixIsOAuth(isOAuthBoolean);
     }
 
     public String getUsername() {
@@ -282,23 +276,23 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
      * @return The system in which the Account is defined, see {@link OriginTable}
      */
     public Origin getOrigin() {
-        return actor.origin;
+        return oAccountName.origin;
     }
 
     public long getOriginId() {
-        return actor.origin.getId();
+        return getOrigin().getId();
     }
 
     public Connection getConnection() {
-        return connection;
+        return connection == null ? ConnectionEmpty.EMPTY : connection;
     }
 
     public boolean areClientKeysPresent() {
-        return connection.areOAuthClientKeysPresent();
+        return getConnection().areOAuthClientKeysPresent();
     }
 
     public OAuthService getOAuthService() {
-        return connection.getOAuthService();
+        return getConnection().getOAuthService();
     }
 
     public int getOrder() {
@@ -306,11 +300,11 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     }
 
     public int charactersLeftForNote(String html) {
-        return oAccountName.getOrigin().charactersLeftForNote(html);
+        return getOrigin().charactersLeftForNote(html);
     }
 
     public int alternativeTermForResourceId(int resId) {
-        return oAccountName.getOrigin().alternativeTermForResourceId(resId);
+        return getOrigin().alternativeTermForResourceId(resId);
     }
 
     public boolean isOAuth() {
@@ -322,7 +316,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     }
 
     public boolean isUsernameNeededToStartAddingNewAccount() {
-        return oAccountName.getOrigin().getOriginType().isUsernameNeededToStartAddingNewAccount(isOAuth());
+        return getOrigin().getOriginType().isUsernameNeededToStartAddingNewAccount(isOAuth());
     }
 
     public boolean isUsernameValid() {
@@ -474,52 +468,47 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     public static final class Builder implements Parcelable {
         private static final String TAG = MyAccount.TAG + "." + Builder.class.getSimpleName();
 
-        public final MyContext myContext;
         private volatile MyAccount myAccount;
 
         /**
          * If MyAccount with this name didn't exist yet, new temporary MyAccount will be created.
          */
-        public static Builder newOrExistingFromAccountName(MyContext myContext, String accountName, TriState isOAuthTriState) {
-            MyAccount persistentAccount = myContext.accounts().fromAccountName(accountName);
-            if (persistentAccount.isValid()) {
-                return fromMyAccount(myContext, persistentAccount, "newOrExistingFromAccountName");
-            } else {
-                return newFromAccountName(myContext, accountName, isOAuthTriState);
-            }
+        public static Builder fromAccountName(AccountName accountName) {
+            return fromMyAccount(myAccountFromName(accountName));
         }
 
-        private static MyAccount getEmptyAccount(MyContext myContext, String accountName) {
-            return newFromAccountName(myContext, accountName, TriState.UNKNOWN).getAccount();
-        }
-
-        /** Creates new account, which is not Persistent yet */
-        private static Builder newFromAccountName(MyContext myContext, String accountName, TriState isOAuthTriState) {
-            MyAccount ma = new MyAccount(myContext, null, accountName);
-            ma.setOAuth(isOAuthTriState);
-            return new Builder(myContext, ma);
+        /**
+         * If MyAccount with this name didn't exist yet, new temporary MyAccount will be created.
+         */
+        private static MyAccount myAccountFromName(AccountName accountName) {
+            MyAccount persistentAccount = accountName.myContext().accounts().fromAccountName(accountName);
+            return persistentAccount.isValid()
+                    ? persistentAccount
+                    : new MyAccount(null, accountName);
         }
 
         /** Loads existing account from Persistence */
-        static Builder fromAndroidAccount(MyContext myContext, @NonNull android.accounts.Account account) {
-            return fromAccountData(myContext, AccountData.fromAndroidAccount(myContext.context(), account),
-                    "fromAndroidAccount");
+        static Builder loadFromAndroidAccount(MyContext myContext, @NonNull android.accounts.Account account) {
+            return loadFromAccountData(AccountData.fromAndroidAccount(myContext, account),"fromAndroidAccount");
         }
 
-        static Builder fromAccountData(MyContext myContext, AccountData accountData, String method) {
-            return fromMyAccount(myContext, new MyAccount(myContext, accountData, ""), method);
-        }
-
-        static Builder fromMyAccount(MyContext myContext, MyAccount ma, String method) {
-            Builder builder = new Builder(myContext, ma);
+        static Builder loadFromAccountData(@NonNull AccountData accountData, String method) {
+            Origin origin = accountData.myContext.origins().fromName(
+                    accountData.getDataString(Origin.KEY_ORIGIN_NAME));
+            AccountName accountName = AccountName.fromOriginAndUniqueName(origin,
+                    accountData.getDataString(KEY_UNIQUE_NAME));
+            MyAccount myAccount = new MyAccount(accountData, accountName);
+            Builder builder = fromMyAccount(myAccount);
             if (!MyContextHolder.isOnRestore()) builder.fixInconsistenciesWithChangedEnvironmentSilently();
             builder.logLoadResult(method);
             return builder;
         }
 
-        private Builder(MyContext myContext, MyAccount myAccount) {
-            myAccount.setConnection();
-            this.myContext = myContext;
+        static Builder fromMyAccount(MyAccount ma) {
+            return new Builder(ma);
+        }
+
+        private Builder(MyAccount myAccount) {
             this.myAccount = myAccount;
         }
 
@@ -548,6 +537,54 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             } else {
                 MyLog.i(TAG, method + " Failed to load: Invalid account; " + this);
             }
+        }
+
+
+        public void setOrigin(Origin origin) {
+            rebuildMyAccount(origin, getUniqueName());
+        }
+
+        public void setUniqueName(String uniqueName) {
+            rebuildMyAccount(getOrigin(), uniqueName);
+        }
+
+        public Builder setOAuth(boolean isOauthBoolean) {
+            TriState isOauth = isOauthBoolean == getOrigin().isOAuthDefault()
+                    ? TriState.UNKNOWN
+                    : TriState.fromBoolean(isOauthBoolean);
+            myAccount.setOAuth(isOauth);
+            return this;
+        }
+
+        void rebuildMyAccount() {
+            rebuildMyAccount(getOrigin(), getUniqueName());
+        }
+
+        private void rebuildMyAccount(Origin origin, String uniqueName) {
+            rebuildMyAccount(AccountName.fromOriginAndUniqueName(origin, uniqueName));
+        }
+
+        void rebuildMyAccount(AccountName accountName) {
+            MyAccount ma = getMyContext().accounts().fromAccountName(accountName.getName());
+            myAccount = ma.isValid()
+                    ? ma
+                    : new MyAccount(getAccount().accountData, accountName);
+        }
+
+        public Origin getOrigin() {
+            return myAccount.getOrigin();
+        }
+
+        public String getUniqueName() {
+            return getAccount().getOAccountName().getUniqueName();
+        }
+
+        public String getPassword() {
+            return getAccount().getPassword();
+        }
+
+        boolean isOAuth() {
+            return getAccount().isOAuth();
         }
 
         public MyAccount getAccount() {
@@ -589,7 +626,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         }
 
         void save() {
-            if (saveSilently().getOrElse(false) && myContext.isReady()) {
+            if (saveSilently().getOrElse(false) && getMyContext().isReady()) {
                 MyPreferences.onPreferencesChanged();
             }
         }
@@ -599,14 +636,14 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             if (myAccount.isValid()) {
                 return myAccount.getNewOrExistingAndroidAccount()
                         .onSuccess(account -> myAccount.accountData.updateFrom(myAccount))
-                        .flatMap(account -> myAccount.accountData.saveIfChanged(myContext.context(), account))
+                        .flatMap(account -> myAccount.accountData.saveIfChanged(getMyContext(), account))
                         .onFailure(e -> myAccount.accountData.setPersistent(false))
                         .onSuccess(result1 -> {
                             MyLog.v(this, () -> (result1 ? " Saved " : " Didn't change ") +
                                     this.toString());
-                            myContext.accounts().addIfAbsent(myAccount);
-                            if (myContext.isReady() && !myAccount.hasAnyTimelines(myContext)) {
-                                new TimelineSaver(myContext).setAddDefaults(true).setAccount(myAccount).executeNotOnUiThread();
+                            getMyContext().accounts().addIfAbsent(myAccount);
+                            if (getMyContext().isReady() && !myAccount.hasAnyTimelines(getMyContext())) {
+                                new TimelineSaver(getMyContext()).setAddDefaults(true).setAccount(myAccount).executeNotOnUiThread();
                             }
                         })
                         .onFailure(e -> MyLog.v(this, () -> "Failed to save" + this.toString() +
@@ -618,7 +655,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         }
 
         void getOriginConfig() throws ConnectionException {
-            OriginConfig config = myAccount.getConnection().getConfig();
+            OriginConfig config = getConnection().getConfig();
             if (config.nonEmpty()) {
                 Origin.Builder originBuilder = new Origin.Builder(myAccount.getOrigin());
                 originBuilder.save(config);
@@ -634,7 +671,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
          */
         void verifyCredentials(Optional<Uri> whoAmI) throws ConnectionException {
             try {
-                onCredentialsVerified(myAccount.getConnection().verifyCredentials(whoAmI), null);
+                onCredentialsVerified(getConnection().verifyCredentials(whoAmI), null);
             } catch (ConnectionException e) {
                 onCredentialsVerified(Actor.EMPTY, e);
             }
@@ -673,7 +710,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
                     // We don't recreate MyAccount object for the new name
                     //   in order to preserve credentials.
                     myAccount.oAccountName = AccountName.fromOriginAndUniqueName(
-                            myAccount.oAccountName.getOrigin(), actor.getUniqueName());
+                            myAccount.getOrigin(), actor.getUniqueName());
                     myAccount.connection.save(myAccount.accountData);
                     myAccount.setConnection();
                     save();
@@ -688,46 +725,46 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
                 throw e;
             }
             if (credentialsOfOtherAccount) {
-                MyLog.e(TAG, myContext.context().getText(R.string.error_credentials_of_other_user) + ": " +
+                MyLog.e(TAG, getMyContext().context().getText(R.string.error_credentials_of_other_user) + ": " +
                         actor.getUniqueNameWithOrigin() +
                         " account name: " + myAccount.oAccountName.getName() +
                         " vs username: " + actor.getUsername());
                 throw new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_ACCOUNT, actor.getUniqueNameWithOrigin());
             }
             if (errorSettingUsername) {
-                String msg = myContext.context().getText(R.string.error_set_username) + " " + actor.getUsername();
+                String msg = getMyContext().context().getText(R.string.error_set_username) + " " + actor.getUsername();
                 MyLog.e(TAG, msg);
                 throw new ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg);
             }
         }
 
         public void setUserTokenWithSecret(String token, String secret) {
-            myAccount.getConnection().setUserTokenWithSecret(token, secret);
+            getConnection().setUserTokenWithSecret(token, secret);
         }
 
         public void setCredentialsVerificationStatus(CredentialsVerificationStatus cv) {
             myAccount.credentialsVerified = cv;
-            if (cv != CredentialsVerificationStatus.SUCCEEDED
-                    && myAccount.connection != null) {
-                myAccount.connection.clearAuthInformation();
+            if (cv != CredentialsVerificationStatus.SUCCEEDED) {
+                getConnection().clearAuthInformation();
             }
         }
 
         public void registerClient() throws ConnectionException {
             MyLog.v(TAG, () -> "Registering client application for " + myAccount.getUsername());
             myAccount.setConnection();
-            myAccount.connection.registerClientForAccount();
+            getConnection().registerClientForAccount();
         }
 
-        /**
-         * Password was moved to the connection object because it is needed there
-         *
-         * @param password
-         */
+        Connection getConnection() {
+            return myAccount.getConnection().isEmpty()
+                ? Connection.fromOrigin(getOrigin(), TriState.fromBoolean(isOAuth()))
+                : myAccount.getConnection();
+        }
+
         public void setPassword(String password) {
-            if (password.compareTo(myAccount.getConnection().getPassword()) != 0) {
+            if (StringUtils.notEmpty(password, "").compareTo(getConnection().getPassword()) != 0) {
                 setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER);
-                myAccount.getConnection().setPassword(password);
+                getConnection().setPassword(password);
             }
         }
 
@@ -757,8 +794,8 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         public static final Creator<Builder> CREATOR = new Creator<Builder>() {
             @Override
             public Builder createFromParcel(Parcel source) {
-                return fromAccountData(MyContextHolder.get(), AccountData.fromBundle(MyContextHolder.get().context(),
-                        source.readBundle()), "createFromParcel");
+                return loadFromAccountData(
+                        AccountData.fromBundle(MyContextHolder.get(), source.readBundle()), "createFromParcel");
             }
 
             @Override
@@ -778,6 +815,11 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
 
         void setSyncFrequencySeconds(long syncFrequencySeconds) {
             myAccount.syncFrequencySeconds = syncFrequencySeconds;
+        }
+
+        public MyContext getMyContext() {
+            MyContext myContext = myAccount.oAccountName.myContext();
+            return myContext.isReady() ? myContext : MyContextHolder.get();
         }
     }
 }

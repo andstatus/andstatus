@@ -19,6 +19,7 @@ package org.andstatus.app.net.social;
 import android.net.Uri;
 
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.http.HttpConnectionEmpty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,11 @@ import java.util.Optional;
 import androidx.annotation.NonNull;
 
 public class ConnectionEmpty extends Connection {
+    public static final ConnectionEmpty EMPTY = new ConnectionEmpty();
+
+    ConnectionEmpty() {
+        http = HttpConnectionEmpty.EMPTY;
+    }
 
     @Override
     public RateLimitStatus rateLimitStatus() throws ConnectionException {

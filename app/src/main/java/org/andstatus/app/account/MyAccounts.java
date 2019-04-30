@@ -1,7 +1,5 @@
 package org.andstatus.app.account;
 
-import android.content.Context;
-
 import org.andstatus.app.account.MyAccount.Builder;
 import org.andstatus.app.backup.MyBackupAgent;
 import org.andstatus.app.backup.MyBackupDataInput;
@@ -39,7 +37,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import androidx.annotation.NonNull;
-import io.vavr.control.Try;
 
 import static java.util.stream.Collectors.toList;
 
@@ -72,7 +69,7 @@ public class MyAccounts implements IsEmpty {
         myAccounts.clear();
         recentAccounts.clear();
         for (android.accounts.Account account : AccountUtils.getCurrentAccounts(myContext.context())) {
-            MyAccount ma = Builder.fromAndroidAccount(myContext, account).getAccount();
+            MyAccount ma = Builder.loadFromAndroidAccount(myContext, account).getAccount();
             if (ma.isValid()) {
                 myAccounts.add(ma);
             } else {
@@ -110,12 +107,12 @@ public class MyAccounts implements IsEmpty {
      * @return Was the MyAccount (and Account) deleted?
      */
     public boolean delete(MyAccount ma) {
-        MyAccount toDelete = myAccounts.stream().filter(myAccount -> myAccount.equals(ma))
+        MyAccount myAccountToDelete = myAccounts.stream().filter(myAccount -> myAccount.equals(ma))
                 .findFirst().orElse(MyAccount.EMPTY);
-        if (toDelete.nonValid()) return false;
+        if (myAccountToDelete.nonValid()) return false;
 
-        MyAccount.Builder.fromMyAccount(myContext, toDelete, "delete").deleteData();
-        myAccounts.remove(toDelete);
+        MyAccount.Builder.fromMyAccount(myAccountToDelete).deleteData();
+        myAccounts.remove(myAccountToDelete);
         MyPreferences.onPreferencesChanged();
         return true;
     }
@@ -128,8 +125,18 @@ public class MyAccounts implements IsEmpty {
      */
     @NonNull
     public MyAccount fromAccountName(String accountNameString) {
-        AccountName accountName = AccountName.fromAccountName(myContext, accountNameString);
-        if (!accountName.isValid) return MyAccount.EMPTY;
+        return  fromAccountName(AccountName.fromAccountName(myContext, accountNameString));
+    }
+
+    /**
+     * Find persistent MyAccount by accountName in local cache AND
+     * in Android AccountManager
+     *
+     * @return Invalid account if was not found
+     */
+    @NonNull
+    public MyAccount fromAccountName(AccountName accountName) {
+        if (accountName == null || !accountName.isValid) return MyAccount.EMPTY;
 
         for (MyAccount persistentAccount : myAccounts) {
             if (persistentAccount.getAccountName().equals(accountName.getName())) {
@@ -138,7 +145,7 @@ public class MyAccounts implements IsEmpty {
         }
         for (android.accounts.Account androidAccount : AccountUtils.getCurrentAccounts(myContext.context())) {
             if (accountName.toString().equals(androidAccount.name)) {
-                MyAccount myAccount = Builder.fromAndroidAccount(myContext, androidAccount).getAccount();
+                MyAccount myAccount = Builder.loadFromAndroidAccount(myContext, androidAccount).getAccount();
                 myAccounts.add(myAccount);
                 MyPreferences.onPreferencesChanged();
                 return myAccount;
@@ -462,8 +469,8 @@ public class MyAccounts implements IsEmpty {
                 MyLog.v(this, method + "; restoring " + order + " of " + jsa.length());
                 AccountConverter.convertJson(data.getMyContext(), (JSONObject) jsa.get(ind), false)
                         .onSuccess(jso -> {
-                    AccountData accountData = AccountData.fromJson(jso, false);
-                    MyAccount.Builder builder = Builder.fromAccountData(data.getMyContext(), accountData, "fromJson");
+                    AccountData accountData = AccountData.fromJson(myContext, jso, false);
+                    MyAccount.Builder builder = Builder.loadFromAccountData(accountData, "fromJson");
                     CredentialsVerificationStatus verified = builder.getAccount().getCredentialsVerified();
                     if (verified != CredentialsVerificationStatus.SUCCEEDED) {
                         newDescriptor.getLogger().logProgress("Account " + builder.getAccount().getAccountName() +
@@ -522,7 +529,7 @@ public class MyAccounts implements IsEmpty {
             order++;
             if (myAccount.getOrder() != order) {
                 changed = true;
-                MyAccount.Builder builder = Builder.fromMyAccount(myContext, myAccount, "reorder");
+                MyAccount.Builder builder = Builder.fromMyAccount(myAccount);
                 builder.setOrder(order);
                 builder.save();
             }
@@ -534,10 +541,10 @@ public class MyAccounts implements IsEmpty {
 
     @NonNull
     public static SqlIds myAccountIds() {
-        Context context = MyContextHolder.get().context();
         return SqlIds.fromIds(
-            AccountUtils.getCurrentAccounts(context).stream()
-            .map(account -> AccountData.fromAndroidAccount(context, account).getDataLong(MyAccount.KEY_ACTOR_ID, 0))
+            AccountUtils.getCurrentAccounts(MyContextHolder.get().context()).stream()
+            .map(account -> AccountData.fromAndroidAccount(MyContextHolder.get(), account)
+                    .getDataLong(MyAccount.KEY_ACTOR_ID, 0))
             .filter(id -> id > 0)
             .collect(toList())
         );

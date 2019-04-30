@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.service;
+package org.andstatus.app.net.social;
 
 import android.net.Uri;
 
@@ -22,7 +22,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnectionUtils;
 import org.andstatus.app.net.http.HttpReadResult;
-import org.andstatus.app.net.social.ConnectionEmpty;
+import org.andstatus.app.service.ConnectionRequired;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -33,6 +33,7 @@ import java.io.InputStream;
  * Connection to local resources
  */
 public class ConnectionLocal extends ConnectionEmpty {
+
     @Override
     public void downloadFile(ConnectionRequired connectionRequired, Uri uri, File file) throws ConnectionException {
         try {

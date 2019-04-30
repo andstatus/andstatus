@@ -65,7 +65,7 @@ class Convert15 extends ConvertOneStep {
                 DatabaseConverterController.stillUpgrading();
                 AndroidAccountData androidAccountData = new AndroidAccountData(am, androidAccount);
                 int versionOldBefore16 = androidAccountData.getDataInt(KEY_VERSION, 0);
-                AccountData accountDataOld = AccountData.fromAndroidAccount(myContext.context(), androidAccount);
+                AccountData accountDataOld = AccountData.fromAndroidAccount(myContext, androidAccount);
                 int versionOld2 = accountDataOld.getDataInt(KEY_VERSION, 0);
                 if (versionOld2 == versionTo) {
                     MyLog.i(TAG, "Account " + androidAccount.name + " is already converted?!, skipping");
@@ -74,14 +74,14 @@ class Convert15 extends ConvertOneStep {
                     MyLog.v(TAG, "Upgrading account " + androidAccount.name);
                     am.setUserData(androidAccount, KEY_VERSION, null);
 
-                    AccountData accountData = AccountData.fromJson(null, false);
+                    AccountData accountData = AccountData.fromJson(myContext, null, false);
                     androidAccountData.moveStringKeyTo(KEY_USERNAME, accountData);
                     androidAccountData.moveStringKeyTo(Origin.KEY_ORIGIN_NAME, accountData);
                     androidAccountData.moveStringKeyTo(MyAccount.KEY_ACTOR_OID, accountData);
                     androidAccountData.moveLongKeyTo(MyAccount.KEY_ACTOR_ID, accountData);
 
                     Origin origin = myContext.origins().fromName(
-                            accountData.getDataString(Origin.KEY_ORIGIN_NAME, ""));
+                            accountData.getDataString(Origin.KEY_ORIGIN_NAME));
 
                     boolean isOauth = androidAccountData.getDataBoolean(MyAccount.KEY_OAUTH, origin.isOAuthDefault());
                     accountData.setDataBoolean(MyAccount.KEY_OAUTH, isOauth);
@@ -99,7 +99,7 @@ class Convert15 extends ConvertOneStep {
                     MyLog.v(TAG, method + "; " + accountData.toJsonString());
 
                     androidAccountData.moveLongKeyTo(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, accountData);
-                    accountData.saveIfChanged(myContext.context(), androidAccount).onFailure( e -> {
+                    accountData.saveIfChanged(myContext, androidAccount).onFailure( e -> {
                         MyLog.e(TAG, "Failed to convert account " + androidAccount.name + ", deleting");
                         accountsToRemove.add(androidAccount);
                     });

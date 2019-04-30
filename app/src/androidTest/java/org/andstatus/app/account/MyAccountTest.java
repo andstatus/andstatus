@@ -24,7 +24,6 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
-import org.andstatus.app.util.TriState;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -59,13 +58,13 @@ public class MyAccountTest {
         MyLog.v(this, logMsg);
 
         Origin origin = myContext.origins().fromOriginInAccountNameAndHost(originType.getTitle(), host);
-        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(myContext,
-                uniqueName + AccountName.ORIGIN_SEPARATOR + origin.getName(), TriState.UNKNOWN);
+        String accountNameString = uniqueName + AccountName.ORIGIN_SEPARATOR + origin.getOriginInAccountName(host);
+        AccountName accountName = AccountName.fromAccountName(myContext, accountNameString);
+        MyAccount.Builder builder = MyAccount.Builder.fromAccountName(accountName);
         assertEquals(logMsg, origin, builder.getAccount().getOrigin());
-        assertEquals(logMsg, uniqueName + AccountName.ORIGIN_SEPARATOR + origin.getOriginInAccountName(host),
-                builder.getAccount().getAccountName());
+        assertEquals(logMsg, accountNameString, builder.getAccount().getAccountName());
+        assertEquals(logMsg, username, builder.getAccount().getUsername());
         if (StringUtils.isEmpty(uniqueName)) {
-            assertEquals(logMsg, "", builder.getAccount().getUsername());
             assertEquals(logMsg, "", builder.getAccount().getWebFingerId());
         } else {
             assertNotEquals(logMsg, uniqueName, builder.getAccount().getUsername());
@@ -96,8 +95,7 @@ public class MyAccountTest {
         if (ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED ) {
             return;
         }
-        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(MyContextHolder.get(), accountName,
-                TriState.UNKNOWN);
+        MyAccount.Builder builder = MyAccount.Builder.fromAccountName(ma.getOAccountName());
         builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
         builder.saveSilently();
     }

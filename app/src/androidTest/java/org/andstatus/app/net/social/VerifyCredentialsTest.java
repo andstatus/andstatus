@@ -16,7 +16,6 @@
 
 package org.andstatus.app.net.social;
 
-import org.andstatus.app.account.AccountName;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -28,7 +27,6 @@ import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.StringUtils;
-import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
 import org.junit.After;
@@ -82,9 +80,7 @@ public class VerifyCredentialsTest {
         assertEquals("Actor's oid is actorOid of this account", demoData.twitterTestAccountActorOid, actor.oid);
 
         Origin origin = MyContextHolder.get().origins().firstOfType(OriginType.TWITTER);
-        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(
-                MyContextHolder.get(), demoData.twitterTestAccountName +
-                        AccountName.ORIGIN_SEPARATOR + origin.getName(), TriState.TRUE);
+        MyAccount.Builder builder = MyAccount.Builder.fromAccountName(mock.getData().getAccountName());
         builder.onCredentialsVerified(actor, null);
         assertTrue("Account is persistent", builder.isPersistent());
         long actorId = builder.getAccount().getActorId();

@@ -16,7 +16,14 @@
 
 package org.andstatus.app.net.http;
 
+import org.andstatus.app.net.social.ConnectionEmpty;
+
 public class HttpConnectionEmpty extends HttpConnection {
+    public static final HttpConnectionEmpty EMPTY = new HttpConnectionEmpty();
+
+    private HttpConnectionEmpty() {
+        // Empty
+    }
 
     @Override
     public void clearAuthInformation() {

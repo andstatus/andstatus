@@ -141,7 +141,7 @@ public class DemoAccountInserter {
         List<Account> aa = AccountUtils.getCurrentAccounts(myContext.context());
         MyAccount ma = null;
         for (android.accounts.Account account : aa) {
-            ma = MyAccount.Builder.fromAndroidAccount(myContext, account).getAccount();
+            ma = MyAccount.Builder.loadFromAndroidAccount(myContext, account).getAccount();
             if (maExpected.getAccountName().equals(ma.getAccountName())) {
                 break;
             }
@@ -151,12 +151,12 @@ public class DemoAccountInserter {
     }
 
     private MyAccount addAccountFromActor(@NonNull Actor actor, AccountName accountName) {
-        MyAccount.Builder builder1 = MyAccount.Builder.newOrExistingFromAccountName(myContext, accountName.getName(), TriState.TRUE);
+        MyAccount.Builder builder1 = MyAccount.Builder.fromAccountName(accountName).setOAuth(true);
         if (actor.origin.isOAuthDefault() || actor.origin.canChangeOAuth()) {
             insertTestClientKeys(builder1.getAccount());
         }
 
-        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(myContext, accountName.getName(), TriState.TRUE);
+        MyAccount.Builder builder = MyAccount.Builder.fromAccountName(accountName).setOAuth(true);
         if (builder.getAccount().isOAuth()) {
             builder.setUserTokenWithSecret("sampleUserTokenFor" + actor.getUniqueName(),
                     "sampleUserSecretFor" + actor.getUniqueName());

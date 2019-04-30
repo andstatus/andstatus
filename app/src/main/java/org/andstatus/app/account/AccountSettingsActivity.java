@@ -1,6 +1,6 @@
 /* 
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
- * Copyright (C) 2010 Brion N. Emde, "BLOA" example, http://github.com/brione/Brion-Learns-OAuth 
+ * Copyright (C) 2014-2019 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2010 Brion N. Emde, "BLOA" example, http://github.com/brione/Brion-Learns-OAuth
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.MyOAuth2AccessTokenJsonExtractor;
 import org.andstatus.app.net.http.OAuthService;
 import org.andstatus.app.net.social.ActorEndpointType;
+import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.origin.PersistentOriginList;
@@ -70,7 +71,6 @@ import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
-import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.view.EnumSelector;
 
@@ -235,8 +235,9 @@ public class AccountSettingsActivity extends MyActivity {
 
     private void onAccountSelected(int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
-            state.builder = MyAccount.Builder.newOrExistingFromAccountName(MyContextHolder.get(),
-                    data.getStringExtra(IntentExtra.ACCOUNT_NAME.key), TriState.UNKNOWN);
+            AccountName accountName = AccountName.fromAccountName(MyContextHolder.get(),
+                    data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
+            state.builder.rebuildMyAccount(accountName);
             if (!state.builder.isPersistent()) {
                 mFinishing = true;
             }
@@ -245,7 +246,7 @@ public class AccountSettingsActivity extends MyActivity {
         }
         if (!mFinishing) {
             MyLog.v(this, "Switching to the selected account");
-            state.builder.myContext.accounts().setCurrentAccount(state.builder.getAccount());
+            state.builder.getMyContext().accounts().setCurrentAccount(state.builder.getAccount());
             state.setAccountAction(Intent.ACTION_EDIT);
             updateScreen();
         } else {
@@ -259,7 +260,7 @@ public class AccountSettingsActivity extends MyActivity {
         if (resultCode == RESULT_OK) {
             originType = OriginType.fromCode(data.getStringExtra(IntentExtra.SELECTABLE_ENUM.key));
             if (originType.isSelectable()) {
-                List<Origin> origins = state.builder.myContext.origins().originsOfType(originType);
+                List<Origin> origins = state.builder.getMyContext().origins().originsOfType(originType);
                 switch(origins.size()) {
                     case 0:
                         originType = OriginType.UNKNOWN;
@@ -289,7 +290,7 @@ public class AccountSettingsActivity extends MyActivity {
     private void onOriginSelected(int resultCode, Intent data) {
         Origin origin = Origin.EMPTY;
         if (resultCode == RESULT_OK) {
-            origin = state.builder.myContext.origins()
+            origin = state.builder.getMyContext().origins()
                     .fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key));
             if (origin.isPersistent()) {
                 onOriginSelected(origin);
@@ -304,11 +305,7 @@ public class AccountSettingsActivity extends MyActivity {
         if (state.getAccount().getOrigin().equals(origin)) return;
 
         // If we have changed the System, we should recreate the Account
-        state.origin = origin; // This is needed for the case when MyAccount is invalid
-        state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-            MyContextHolder.get(),
-            AccountName.fromOriginAndUniqueName(origin, state.getAccount().getOAccountName().getUniqueName()).getName(),
-            TriState.fromBoolean(state.getAccount().isOAuth()));
+        state.builder.setOrigin(origin);
         updateScreen();
         goToAddAccount();
     }
@@ -407,16 +404,16 @@ public class AccountSettingsActivity extends MyActivity {
         TextView view = (TextView) findFragmentViewById(R.id.origin_name);
         if (view != null) {
             view.setText(this.getText(R.string.title_preference_origin_system)
-                    .toString().replace("{0}", state.getOrigin().getName())
-                    .replace("{1}", state.getOrigin().getOriginType().getTitle()));
+                    .toString().replace("{0}", state.builder.getOrigin().getName())
+                    .replace("{1}", state.builder.getOrigin().getOriginType().getTitle()));
         }
     }
 
     private void showUniqueName() {
-        Origin origin = state.getOrigin();
-        showTextView(R.id.uniqueName_label, origin.getOriginType().uniqueNameHasHost()
-                ? R.string.username_at_your_server
-                : R.string.title_preference_username,
+        Origin origin = state.builder.getOrigin();
+        showTextView(R.id.uniqueName_label, origin.hasHost()
+                ? R.string.title_preference_username
+                : R.string.username_at_your_server,
                 state.builder.isPersistent() || state.isUsernameNeededToStartAddingNewAccount());
         EditText nameEditable = (EditText) findFragmentViewById(R.id.uniqueName);
         if (nameEditable != null) {
@@ -424,11 +421,15 @@ public class AccountSettingsActivity extends MyActivity {
                 nameEditable.setVisibility(View.GONE);
             } else {
                 nameEditable.setVisibility(View.VISIBLE);
-                nameEditable.setHint(
-                        String.format(getText(origin.getOriginType().uniqueNameHasHost()
-                                        ? R.string.summary_preference_username_webfinger_id
-                                        : R.string.summary_preference_username).toString(),
-                                origin.getName(), origin.getOriginType().uniqueNameExamples));
+                nameEditable.setHint(String.format(
+                        getText(origin.hasHost()
+                            ? R.string.summary_preference_username
+                            : R.string.summary_preference_username_webfinger_id).toString(),
+                        origin.getName(),
+                        origin.hasHost()
+                            ? OriginType.SIMPLE_USERNAME_EXAMPLES
+                            : origin.getOriginType().uniqueNameExamples
+                ));
                 nameEditable.addTextChangedListener(textWatcher);
                 if (nameEditable.getText().length() == 0) {
                     nameEditable.requestFocus();
@@ -464,7 +465,7 @@ public class AccountSettingsActivity extends MyActivity {
     
     private void showPassword() {
         MyAccount ma = state.getAccount();
-        boolean isNeeded = ma.isValid() && ma.getConnection().isPasswordNeeded() && !ma.isValidAndSucceeded();
+        boolean isNeeded = state.builder.getConnection().isPasswordNeeded() && !ma.isValidAndSucceeded();
         StringBuilder labelBuilder = new StringBuilder();
         if (isNeeded) {
             labelBuilder.append(this.getText(R.string.summary_preference_password));
@@ -498,7 +499,7 @@ public class AccountSettingsActivity extends MyActivity {
                         summary = new StringBuilder(
                                 this.getText(R.string.summary_preference_verify_credentials_failed));
                     } else {
-                        if (state.isOAuth()) {
+                        if (state.builder.isOAuth()) {
                             summary = new StringBuilder(
                                     this.getText(R.string.summary_preference_add_account_oauth));
                         } else {
@@ -518,27 +519,29 @@ public class AccountSettingsActivity extends MyActivity {
     private void showAddAccountButton() {
         TextView textView = showTextView(R.id.add_account, null, !state.builder.isPersistent());
         if (textView != null && isVisibleView(R.id.add_account)) {
-            textView.setOnClickListener(v -> {
-                clearError();
-                updateChangedFields();
-                updateScreen();
-                CharSequence error = "";
-                boolean addAccountEnabled = !state.isUsernameNeededToStartAddingNewAccount() ||
-                        state.getAccount().isUsernameValid();
-                if (addAccountEnabled) {
-                    if (!state.isOAuth() && !state.getAccount().getCredentialsPresent()) {
-                        addAccountEnabled = false;
-                        error = getText(R.string.title_preference_password);
-                    }
-                } else {
-                    error = getText(state.getOrigin().alternativeTermForResourceId(R.string.title_preference_username));
-                }
-                if (addAccountEnabled) {
-                    verifyCredentials(true);
-                } else {
-                    appendError(getText(R.string.error_invalid_value) + ": " + error);
-                }
-            });
+            textView.setOnClickListener(this::onAddAccountClick);
+        }
+    }
+
+    void onAddAccountClick(View v) {
+        clearError();
+        updateChangedFields();
+        updateScreen();
+        CharSequence error = "";
+        boolean addAccountEnabled = !state.isUsernameNeededToStartAddingNewAccount() ||
+                state.getAccount().isUsernameValid();
+        if (addAccountEnabled) {
+            if (!state.builder.isOAuth() && StringUtils.isEmpty(state.builder.getPassword())) {
+                addAccountEnabled = false;
+                error = getText(R.string.title_preference_password);
+            }
+        } else {
+            error = getText(state.builder.getOrigin().alternativeTermForResourceId(R.string.title_preference_username));
+        }
+        if (addAccountEnabled) {
+            verifyCredentials(true);
+        } else {
+            appendError(getText(R.string.error_invalid_value) + ": " + error);
         }
     }
 
@@ -581,7 +584,7 @@ public class AccountSettingsActivity extends MyActivity {
     }
     
     private void showIsDefaultAccount() {
-        boolean isDefaultAccount = state.getAccount().equals(state.builder.myContext.accounts().getDefaultAccount());
+        boolean isDefaultAccount = state.getAccount().equals(state.builder.getMyContext().accounts().getDefaultAccount());
         View view= findFragmentViewById(R.id.is_default_account);
         if (view != null) {
             view.setVisibility(isDefaultAccount ? View.VISIBLE : View.GONE);
@@ -629,7 +632,7 @@ public class AccountSettingsActivity extends MyActivity {
     }
 
     private void showLastSyncSucceededDate() {
-        long lastSyncSucceededDate = state.getAccount().getLastSyncSucceededDate(state.builder.myContext);
+        long lastSyncSucceededDate = state.getAccount().getLastSyncSucceededDate(state.builder.getMyContext());
         MyUrlSpan.showText((TextView) findFragmentViewById(R.id.last_synced),
                 lastSyncSucceededDate == 0 ? getText(R.string.never).toString() :
                         RelativeTime.getDifference(this, lastSyncSucceededDate), TextMediaType.UNKNOWN, false, false);
@@ -704,7 +707,7 @@ public class AccountSettingsActivity extends MyActivity {
                 AsyncTaskLauncher.execute(this, true,
                         new VerifyCredentialsTask(ma.getActor().getEndpoint(ActorEndpointType.API_PROFILE)));
             } else {
-                if (state.isOAuth() && reVerify) {
+                if (state.builder.isOAuth() && reVerify) {
                     // Credentials are not present,
                     // so start asynchronous OAuth Authentication process 
                     if (!ma.areClientKeysPresent()) {
@@ -725,10 +728,7 @@ public class AccountSettingsActivity extends MyActivity {
             if (nameEditable != null) {
                 String uniqueName = nameEditable.getText().toString();
                 if (uniqueName.compareTo(state.getAccount().getOAccountName().getUniqueName()) != 0) {
-                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                            MyContextHolder.get(),
-                            AccountName.fromOriginAndUniqueName(state.getOrigin(), uniqueName).getName(),
-                            TriState.fromBoolean(state.isOAuth()));
+                    state.builder.setUniqueName(uniqueName);
                 }
             }
         }
@@ -886,9 +886,9 @@ public class AccountSettingsActivity extends MyActivity {
                 succeeded = state.getAccount().areClientKeysPresent();
 
                 if (succeeded) {
-                    state.builder.myContext.users().initialize();
-                    state.builder.myContext.accounts().initialize();
-                    state.builder.myContext.timelines().initialize();
+                    state.builder.getMyContext().users().initialize();
+                    state.builder.getMyContext().accounts().initialize();
+                    state.builder.getMyContext().timelines().initialize();
                 }
             } catch (ConnectionException e) {
                 connectionErrorMessage = e.getMessage();
@@ -913,9 +913,7 @@ public class AccountSettingsActivity extends MyActivity {
             DialogFactory.dismissSafely(dlg);
             if (result != null) {
                 if (result.isSuccess()) {
-                    String accountName = state.getAccount().getAccountName();
-                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                            MyContextHolder.get(), accountName, TriState.TRUE);
+                    state.builder.rebuildMyAccount();
                     updateScreen();
                     AsyncTaskLauncher.execute(this, true, new OAuthAcquireRequestTokenTask());
                     activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN;
@@ -976,13 +974,13 @@ public class AccountSettingsActivity extends MyActivity {
             String stepErrorMessage = "";
             String connectionErrorMessage = "";
             try {
-                MyAccount ma = state.getAccount();
-                MyLog.v(this, "Retrieving request token for " + ma);
-                OAuthService oAuthService = ma.getOAuthService();
+                Connection connection = state.builder.getConnection();
+                MyLog.v(this, "Retrieving request token for " + connection);
+                OAuthService oAuthService = connection.getOAuthService();
                 if (oAuthService == null) {
-                    connectionErrorMessage = "No OAuth service for this account " + ma;
-                } else if ( !ma.areClientKeysPresent()) {
-                    connectionErrorMessage = "No Client keys for this account " + ma;
+                    connectionErrorMessage = "No OAuth service for " + connection;
+                } else if ( !connection.areOAuthClientKeysPresent()) {
+                    connectionErrorMessage = "No Client keys for " + connection;
                 } else {
                     String authUrl;
                     if (oAuthService.isOAuth2()) {

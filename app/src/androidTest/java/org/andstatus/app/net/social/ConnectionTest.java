@@ -12,7 +12,7 @@ public class ConnectionTest {
 
     @Test
     public void testParseDate() {
-        Connection connection = new ConnectionEmpty();
+        Connection connection = ConnectionEmpty.EMPTY;
         
         String badStringDate = "Wrong Date Format";
         long unixDate = connection.parseDate(badStringDate);

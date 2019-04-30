@@ -26,7 +26,6 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.ConnectionMock;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,9 +45,9 @@ public class VerifyCredentialsActivityPubTest {
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithAccounts(this);
-        mock = ConnectionMock.newFor(MyAccount.Builder.newOrExistingFromAccountName(
-                MyContextHolder.get(), UNIQUE_NAME_IN_ORIGIN + AccountName.ORIGIN_SEPARATOR +
-                        demoData.activityPubTestOriginName, TriState.UNKNOWN).getAccount());
+        Origin origin = MyContextHolder.get().origins().fromName(demoData.activityPubTestOriginName);
+        AccountName accountName = AccountName.fromOriginAndUniqueName(origin, UNIQUE_NAME_IN_ORIGIN);
+        mock = ConnectionMock.newFor(MyAccount.Builder.fromAccountName(accountName).getAccount());
     }
 
     @Test
@@ -58,10 +57,7 @@ public class VerifyCredentialsActivityPubTest {
         Actor actor = mock.connection.verifyCredentials(UriUtils.toDownloadableOptional(ACTOR_OID));
         assertEquals("Actor's oid is actorOid of this account", ACTOR_OID, actor.oid);
 
-        Origin origin = mock.getData().getOrigin();
-        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(
-                MyContextHolder.get(), UNIQUE_NAME_IN_ORIGIN +
-                        AccountName.ORIGIN_SEPARATOR + origin.getName(), TriState.TRUE);
+        MyAccount.Builder builder = MyAccount.Builder.fromAccountName(mock.getData().getAccountName());
         builder.onCredentialsVerified(actor, null);
         assertTrue("Account is persistent", builder.isPersistent());
         long actorId = builder.getAccount().getActorId();

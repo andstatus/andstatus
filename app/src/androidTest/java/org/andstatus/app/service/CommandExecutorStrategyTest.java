@@ -135,7 +135,7 @@ public class CommandExecutorStrategyTest {
         httpConnectionMock.setException(null);
         commandData = CommandData.newItemCommand(
                 CommandEnum.DELETE_NOTE,
-                demoData.getGnuSocialAccount(),
+                mock.getData().getMyAccount(),
                 noteId);
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertFalse(commandData.toString(), commandData.getResult().hasError());
@@ -143,7 +143,7 @@ public class CommandExecutorStrategyTest {
         final long INEXISTENT_MSG_ID = -1;
         commandData = CommandData.newItemCommand(
                 CommandEnum.DELETE_NOTE,
-                demoData.getGnuSocialAccount(),
+                mock.getData().getMyAccount(),
                 INEXISTENT_MSG_ID);
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertFalse(commandData.toString(), commandData.getResult().hasError());
