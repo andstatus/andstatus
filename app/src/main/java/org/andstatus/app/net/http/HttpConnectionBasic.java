@@ -112,8 +112,8 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
     }
 
     @Override
-    public boolean save(AccountDataWriter dw) {
-        boolean changed = super.save(dw);
+    public boolean saveTo(AccountDataWriter dw) {
+        boolean changed = super.saveTo(dw);
 
         if (mPassword.compareTo(dw.getDataString(Connection.KEY_PASSWORD)) != 0) {
             dw.setDataString(Connection.KEY_PASSWORD, mPassword);
@@ -124,8 +124,8 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
     }
 
     @Override
-    public boolean save(JSONObject jso) throws JSONException {
-        boolean changed = super.save(jso);
+    public boolean saveTo(JSONObject jso) throws JSONException {
+        boolean changed = super.saveTo(jso);
 
         if (mPassword.compareTo(jso.optString(Connection.KEY_PASSWORD)) != 0) {
             jso.put(Connection.KEY_PASSWORD, mPassword);

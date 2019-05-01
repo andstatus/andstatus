@@ -136,12 +136,9 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
         return userSecret;
     }
 
-    /* (non-Javadoc)
-     * @see org.andstatus.app.net.Connection#save(android.content.SharedPreferences, android.content.SharedPreferences.Editor)
-     */
     @Override
-    public boolean save(AccountDataWriter dw) {
-        boolean changed = super.save(dw);
+    public boolean saveTo(AccountDataWriter dw) {
+        boolean changed = super.saveTo(dw);
 
         if ( !TextUtils.equals(userToken, dw.getDataString(userTokenKey())) ||
                 !TextUtils.equals(userSecret, dw.getDataString(userSecretKey()))
@@ -175,8 +172,8 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
     }
 
     @Override
-    public boolean save(JSONObject jso) throws JSONException {
-        boolean changed = super.save(jso);
+    public boolean saveTo(JSONObject jso) throws JSONException {
+        boolean changed = super.saveTo(jso);
 
         if ( !TextUtils.equals(userToken, jso.optString(userTokenKey())) ||
                 !TextUtils.equals(userSecret, jso.optString(userSecretKey()))

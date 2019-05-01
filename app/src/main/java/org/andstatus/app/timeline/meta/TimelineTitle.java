@@ -55,7 +55,7 @@ public class TimelineTitle {
                 calcTitle(myContext, timeline, accountToHide, namesAreHidden, destination),
                 calcSubtitle(myContext, timeline, accountToHide, namesAreHidden, destination),
                 timeline.getTimelineType().isForUser() && timeline.myAccountToSync.isValid()
-                        ? timeline.myAccountToSync.toAccountButtonText(myContext) : "",
+                        ? timeline.myAccountToSync.toAccountButtonText() : "",
                 timeline.getTimelineType().isAtOrigin() && timeline.getOrigin().isValid()
                         ? timeline.getOrigin().getName() : ""
         );
@@ -77,7 +77,7 @@ public class TimelineTitle {
                 title.withSpace(timeline.getTimelineType().title(myContext.context()));
             } else {
                 title.withSpace(
-                        timeline.getTimelineType().title(myContext.context(), getActorName(myContext, timeline)));
+                        timeline.getTimelineType().title(myContext.context(), getActorName(timeline)));
             }
         } else {
             title.withSpace(timeline.getTimelineType().title(myContext.context()));
@@ -101,7 +101,7 @@ public class TimelineTitle {
         MyStringBuilder title = new MyStringBuilder();
         if (showActor(timeline, accountToHide, namesAreHidden)) {
             if (isActorMayBeShownInSubtitle(timeline)) {
-                title.withSpace(getActorName(myContext, timeline));
+                title.withSpace(getActorName(timeline));
             }
         } else if (showOrigin(timeline, namesAreHidden)) {
             title.withSpace(timeline.getTimelineType().scope.timelinePreposition(myContext));
@@ -118,10 +118,10 @@ public class TimelineTitle {
         return title.toString();
     }
 
-    private static String getActorName(MyContext myContext, Timeline timeline) {
+    private static String getActorName(Timeline timeline) {
         return timeline.isSyncedByOtherUser()
                 ? timeline.actor.getTimelineUsername()
-                : timeline.myAccountToSync.toAccountButtonText(myContext);
+                : timeline.myAccountToSync.toAccountButtonText();
     }
 
     private static boolean showActor(Timeline timeline, MyAccount accountToHide, boolean namesAreHidden) {

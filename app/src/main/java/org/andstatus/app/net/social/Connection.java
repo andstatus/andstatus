@@ -247,15 +247,15 @@ public abstract class Connection implements IsEmpty {
      * Persist the connection data
      * @return true if something changed (so it needs to be rewritten to persistence...)
      */
-    public boolean save(AccountDataWriter dw) {
-        return http.save(dw);
+    public boolean saveTo(AccountDataWriter dw) {
+        return http.saveTo(dw);
     }
     
+    // TODO: Do we use these?
+    public boolean saveTo(JSONObject jso) throws JSONException {
+        return http.saveTo(jso);
+    }
 
-    public boolean save(JSONObject jso) throws JSONException {
-        return http.save(jso);
-    }
-    
     /**
      * Do we have enough credentials to verify them?
      * @return true == yes

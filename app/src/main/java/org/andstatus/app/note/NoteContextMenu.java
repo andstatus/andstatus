@@ -247,7 +247,7 @@ public class NoteContextMenu extends MyContextMenu {
                                 getActivity().getText(R.string.menu_item_act_as_user).toString(),
                                 getMyContext().accounts()
                                     .firstOtherSucceededForSameOrigin(noteForAnyAccount.origin, getActingAccount())
-                                    .getShortestUniqueAccountName(getMyContext())));
+                                    .getShortestUniqueAccountName()));
                         break;
                     default:
                         NoteContextMenuItem.ACT_AS.addTo(menu, order++, R.string.menu_item_act_as);

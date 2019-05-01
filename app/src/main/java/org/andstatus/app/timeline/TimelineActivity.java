@@ -590,7 +590,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         if (textView == null) {
             return;
         }
-        String accountButtonText = myContext.accounts().getCurrentAccount().toAccountButtonText(myContext);
+        String accountButtonText = myContext.accounts().getCurrentAccount().toAccountButtonText();
         textView.setText(accountButtonText);
     }
 

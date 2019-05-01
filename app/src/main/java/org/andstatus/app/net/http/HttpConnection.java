@@ -158,12 +158,12 @@ public abstract class HttpConnection {
      * Persist the connection data
      * @return true if something changed (so it needs to be rewritten to persistence...)
      */
-    public boolean save(AccountDataWriter dw) {
+    public boolean saveTo(AccountDataWriter dw) {
         return false;
     }
 
     /** @return true if changed */
-    public boolean save(JSONObject jso) throws JSONException {
+    public boolean saveTo(JSONObject jso) throws JSONException {
         return false;
     }
     

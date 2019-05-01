@@ -107,7 +107,7 @@ public class AccountData implements Parcelable, AccountDataWriter {
         setDataBoolean(KEY_OAUTH, myAccount.isOAuth());
         setDataLong(KEY_ACTOR_ID, myAccount.getActor().actorId);
         if (myAccount.getConnection() != null) {
-            myAccount.getConnection().save(this);
+            myAccount.getConnection().saveTo(this);
         }
         setPersistent(true);
         setDataBoolean(MyAccount.KEY_IS_SYNCABLE, myAccount.isSyncable);

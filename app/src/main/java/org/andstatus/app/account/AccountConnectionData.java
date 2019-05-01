@@ -91,7 +91,7 @@ public class AccountConnectionData {
     }
 
     public AccountDataReader getDataReader() {
-        return myAccount.accountData;
+        return myAccount.data;
     }
 
     public HttpConnection newHttpConnection() {

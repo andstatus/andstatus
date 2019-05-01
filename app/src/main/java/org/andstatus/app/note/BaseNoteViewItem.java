@@ -250,7 +250,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     private void setAccountDownloaded(MyStringBuilder noteDetails) {
         if (MyPreferences.isShowMyAccountWhichDownloadedActivity() && linkedMyAccount.isValid()) {
-            noteDetails.withSpace("a:" + linkedMyAccount.getShortestUniqueAccountName(myContext));
+            noteDetails.withSpace("a:" + linkedMyAccount.getShortestUniqueAccountName());
         }
     }
 

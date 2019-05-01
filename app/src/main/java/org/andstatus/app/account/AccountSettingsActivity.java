@@ -246,7 +246,7 @@ public class AccountSettingsActivity extends MyActivity {
         }
         if (!mFinishing) {
             MyLog.v(this, "Switching to the selected account");
-            state.builder.getMyContext().accounts().setCurrentAccount(state.builder.getAccount());
+            state.builder.myContext().accounts().setCurrentAccount(state.builder.getAccount());
             state.setAccountAction(Intent.ACTION_EDIT);
             updateScreen();
         } else {
@@ -260,7 +260,7 @@ public class AccountSettingsActivity extends MyActivity {
         if (resultCode == RESULT_OK) {
             originType = OriginType.fromCode(data.getStringExtra(IntentExtra.SELECTABLE_ENUM.key));
             if (originType.isSelectable()) {
-                List<Origin> origins = state.builder.getMyContext().origins().originsOfType(originType);
+                List<Origin> origins = state.builder.myContext().origins().originsOfType(originType);
                 switch(origins.size()) {
                     case 0:
                         originType = OriginType.UNKNOWN;
@@ -290,7 +290,7 @@ public class AccountSettingsActivity extends MyActivity {
     private void onOriginSelected(int resultCode, Intent data) {
         Origin origin = Origin.EMPTY;
         if (resultCode == RESULT_OK) {
-            origin = state.builder.getMyContext().origins()
+            origin = state.builder.myContext().origins()
                     .fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key));
             if (origin.isPersistent()) {
                 onOriginSelected(origin);
@@ -584,7 +584,7 @@ public class AccountSettingsActivity extends MyActivity {
     }
     
     private void showIsDefaultAccount() {
-        boolean isDefaultAccount = state.getAccount().equals(state.builder.getMyContext().accounts().getDefaultAccount());
+        boolean isDefaultAccount = state.getAccount().equals(state.builder.myContext().accounts().getDefaultAccount());
         View view= findFragmentViewById(R.id.is_default_account);
         if (view != null) {
             view.setVisibility(isDefaultAccount ? View.VISIBLE : View.GONE);
@@ -632,7 +632,7 @@ public class AccountSettingsActivity extends MyActivity {
     }
 
     private void showLastSyncSucceededDate() {
-        long lastSyncSucceededDate = state.getAccount().getLastSyncSucceededDate(state.builder.getMyContext());
+        long lastSyncSucceededDate = state.getAccount().getLastSyncSucceededDate();
         MyUrlSpan.showText((TextView) findFragmentViewById(R.id.last_synced),
                 lastSyncSucceededDate == 0 ? getText(R.string.never).toString() :
                         RelativeTime.getDifference(this, lastSyncSucceededDate), TextMediaType.UNKNOWN, false, false);
@@ -886,9 +886,9 @@ public class AccountSettingsActivity extends MyActivity {
                 succeeded = state.getAccount().areClientKeysPresent();
 
                 if (succeeded) {
-                    state.builder.getMyContext().users().initialize();
-                    state.builder.getMyContext().accounts().initialize();
-                    state.builder.getMyContext().timelines().initialize();
+                    state.builder.myContext().users().initialize();
+                    state.builder.myContext().accounts().initialize();
+                    state.builder.myContext().timelines().initialize();
                 }
             } catch (ConnectionException e) {
                 connectionErrorMessage = e.getMessage();

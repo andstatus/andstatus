@@ -70,7 +70,7 @@ public class ActorContextMenu extends MyContextMenu {
                                 getActivity().getText(R.string.followers_of).toString(), shortName));
 
                 if (getActingAccount().getActor().notSameUser(actor)) {
-                    if (getActingAccount().isFollowing(getMyContext(), actor)) {
+                    if (getActingAccount().isFollowing(actor)) {
                         ActorContextMenuItem.STOP_FOLLOWING.addTo(menu, menuGroup, order++,
                                 String.format(getActivity().getText(R.string.menu_item_stop_following_user).toString(), shortName));
                     } else {
@@ -93,7 +93,7 @@ public class ActorContextMenu extends MyContextMenu {
                                 getActivity().getText(R.string.menu_item_act_as_user).toString(),
                                 getMyContext().accounts()
                                     .firstOtherSucceededForSameUser(actor, getActingAccount())
-                                    .getShortestUniqueAccountName(getMyContext())));
+                                    .getShortestUniqueAccountName()));
                         break;
                     default:
                         ActorContextMenuItem.ACT_AS.addTo(menu, menuGroup, order++, R.string.menu_item_act_as);

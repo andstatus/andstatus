@@ -132,11 +132,11 @@ public class AccountToNote {
         favorited = actorToNote.favorited;
         reblogged = actorToNote.reblogged;
         isSubscribed = actorToNote.subscribed;
-        authorFollowed = myAccount.isFollowing(noteForAnyAccount.myContext, noteForAnyAccount.author);
+        authorFollowed = myAccount.isFollowing(noteForAnyAccount.author);
         isActor = noteForAnyAccount.actor.actorId == accountActorId;
         actorFollowed = !isActor && (noteForAnyAccount.actor.actorId == noteForAnyAccount.author.actorId
                 ? authorFollowed
-                : myAccount.isFollowing(noteForAnyAccount.myContext, noteForAnyAccount.actor));
+                : myAccount.isFollowing(noteForAnyAccount.actor));
     }
 
     @NonNull

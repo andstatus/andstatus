@@ -17,7 +17,6 @@
 package org.andstatus.app.actor;
 
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.origin.Origin;
 
@@ -53,6 +52,6 @@ public class FriendsAndFollowersListLoader extends ActorListLoader {
 
     @Override
     protected String getSubtitle() {
-        return ma.toAccountButtonText(MyContextHolder.get());
+        return ma.toAccountButtonText();
     }
 }
