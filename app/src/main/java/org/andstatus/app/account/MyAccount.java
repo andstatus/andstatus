@@ -91,7 +91,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     public static final String KEY_ORDER = "order";
 
     @NonNull
-    volatile AccountData data;
+    final AccountData data;
     private Actor actor;
 
     private volatile Connection connection = null;
@@ -697,12 +697,15 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
                 }
                 if (!isPersistent()) {
                     // Now we know the name (or proper case of the name) of this Account!
-                    // We don't recreate MyAccount object for the new name
-                    //   in order to preserve credentials.
-                    myAccount.connection.saveTo(myAccount.data);
-                    myAccount.data = myAccount.data.withAccountName(
-                            AccountName.fromOriginAndUniqueName(myAccount.getOrigin(), actor.getUniqueName()));
-                    myAccount.setConnection();
+                    boolean sameName = myAccount.data.accountName.getUniqueName().equals(actor.getUniqueName());
+                    if (!sameName) {
+                        MyLog.i(this, "name changed from " + myAccount.data.accountName.getUniqueName() +
+                                " to " + actor.getUniqueName());
+                        myAccount.data.updateFrom(myAccount);
+                        AccountData newData = myAccount.data.withAccountName(
+                                AccountName.fromOriginAndUniqueName(myAccount.getOrigin(), actor.getUniqueName()));
+                        myAccount = loadFromAccountData(newData, "onCredentialsVerified").myAccount;
+                    }
                     save();
                 }
             }
