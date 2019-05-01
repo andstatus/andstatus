@@ -29,6 +29,17 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="48.00" android:versionCode="287"
+             versionDate="2019-05-01"
+             versionTitle="Bugfixes and Accounts renamed">
+        <changes>
+            <change>AndStatus accounts renamed to "userName@hostName/networkTypeOrNetwokName" to allow Duplicated accounts
+                in different Social networks. This is another step in internal data unification based on #ActivityPub
+                model.
+            </change>
+            <change>Fix mentions in "Reply to..." actions</change>
+        </changes>
+    </release>
     <release android:versionName="47.13" android:versionCode="286"
              versionDate="2019-04-14"
              versionTitle="Backup feature is enhanced: Optionally backup and restore media files and logs">
