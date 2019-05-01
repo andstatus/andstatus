@@ -21,8 +21,6 @@ import android.util.Base64;
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.util.StringUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -117,18 +115,6 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
 
         if (mPassword.compareTo(dw.getDataString(Connection.KEY_PASSWORD)) != 0) {
             dw.setDataString(Connection.KEY_PASSWORD, mPassword);
-            changed = true;
-        }
-
-        return changed;
-    }
-
-    @Override
-    public boolean saveTo(JSONObject jso) throws JSONException {
-        boolean changed = super.saveTo(jso);
-
-        if (mPassword.compareTo(jso.optString(Connection.KEY_PASSWORD)) != 0) {
-            jso.put(Connection.KEY_PASSWORD, mPassword);
             changed = true;
         }
 

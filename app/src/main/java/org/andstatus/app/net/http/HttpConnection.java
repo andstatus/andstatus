@@ -26,7 +26,6 @@ import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -162,11 +161,6 @@ public abstract class HttpConnection {
         return false;
     }
 
-    /** @return true if changed */
-    public boolean saveTo(JSONObject jso) throws JSONException {
-        return false;
-    }
-    
     /**
      * Do we have enough credentials to verify them?
      * @return true == yes

@@ -26,8 +26,6 @@ import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.Map;
 
@@ -171,41 +169,6 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
         return changed;
     }
 
-    @Override
-    public boolean saveTo(JSONObject jso) throws JSONException {
-        boolean changed = super.saveTo(jso);
-
-        if ( !TextUtils.equals(userToken, jso.optString(userTokenKey())) ||
-                !TextUtils.equals(userSecret, jso.optString(userSecretKey()))
-                ) {
-            changed = true;
-
-            if (StringUtils.isEmpty(userToken)) {
-                jso.remove(userTokenKey());
-                if (logMe) {
-                    MyLog.d(TAG, "Clearing OAuth Token");
-                }
-            } else {
-                jso.put(userTokenKey(), userToken);
-                if (logMe) {
-                    MyLog.d(TAG, "Saving OAuth Token: " + userToken);
-                }
-            }
-            if (StringUtils.isEmpty(userSecret)) {
-                jso.remove(userSecretKey());
-                if (logMe) {
-                    MyLog.d(TAG, "Clearing OAuth Secret");
-                }
-            } else {
-                jso.put(userSecretKey(), userSecret);
-                if (logMe) {
-                    MyLog.d(TAG, "Saving OAuth Secret: " + userSecret);
-                }
-            }
-        }
-        return changed;
-    }
-    
     @Override
     public void clearAuthInformation() {
         setUserTokenWithSecret("", "");
