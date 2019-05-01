@@ -30,6 +30,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -74,7 +75,7 @@ class Convert15 extends ConvertOneStep {
                     MyLog.v(TAG, "Upgrading account " + androidAccount.name);
                     am.setUserData(androidAccount, KEY_VERSION, null);
 
-                    AccountData accountData = AccountData.fromJson(myContext, null, false);
+                    AccountData accountData = AccountData.fromJson(myContext, new JSONObject(), false);
                     androidAccountData.moveStringKeyTo(KEY_USERNAME, accountData);
                     androidAccountData.moveStringKeyTo(Origin.KEY_ORIGIN_NAME, accountData);
                     androidAccountData.moveStringKeyTo(MyAccount.KEY_ACTOR_OID, accountData);

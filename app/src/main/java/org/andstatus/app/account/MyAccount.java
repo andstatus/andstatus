@@ -68,7 +68,7 @@ import io.vavr.control.Try;
  */
 public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     private static final String TAG = MyAccount.class.getSimpleName();
-    public static final MyAccount EMPTY = new MyAccount(null, AccountName.getEmpty());
+    public static final MyAccount EMPTY = new MyAccount(AccountName.getEmpty());
 
     public static final String KEY_ACCOUNT_NAME = "account_name";
     /** Username for the account */
@@ -90,9 +90,8 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     public static final String KEY_IS_SYNCED_AUTOMATICALLY = "sync_automatically";
     public static final String KEY_ORDER = "order";
 
-    final AccountData accountData;
     @NonNull
-    private AccountName oAccountName;
+    AccountData accountData;
     private Actor actor;
 
     private volatile Connection connection = null;
@@ -114,17 +113,16 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
                 : myContext.accounts().fromAccountName(bundle.getString(IntentExtra.ACCOUNT_NAME.key));
     }
 
-    // TODO: Make AccountData contain AccountName
-    MyAccount(AccountData accountDataIn, AccountName oAccountName) {
-        this.accountData = accountDataIn == null
-                ? AccountData.fromJson(oAccountName.myContext(), null, false)
-                : accountDataIn;
-        this.oAccountName = oAccountName;
-        actor = Actor.load(oAccountName.myContext(), accountData.getDataLong(KEY_ACTOR_ID, 0L), false, () ->
-                Actor.fromOid(oAccountName.getOrigin(), accountData.getDataString(KEY_ACTOR_OID))
-                        .withUniqueName(oAccountName.getUniqueName())
-                        .lookupUser());
+    MyAccount(AccountName accountName) {
+        this(AccountData.fromAccountName(accountName));
+    }
 
+    MyAccount(@NonNull AccountData accountDataIn) {
+        this.accountData = accountDataIn;
+        actor = Actor.load(accountData.myContext(), accountData.getDataLong(KEY_ACTOR_ID, 0L), false,
+                () -> Actor.fromOid(accountData.accountName.getOrigin(), accountData.getDataString(KEY_ACTOR_OID))
+                        .withUniqueName(accountData.accountName.getUniqueName())
+                        .lookupUser());
         deleted = accountData.getDataBoolean(KEY_DELETED, false);
         syncFrequencySeconds = accountData.getDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, 0L);
         isSyncable = accountData.getDataBoolean(KEY_IS_SYNCABLE, true);
@@ -137,11 +135,11 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     }
 
     public AccountName getOAccountName() {
-        return oAccountName;
+        return accountData.accountName;
     }
 
     public Actor getActor() {
-        return Actor.load(oAccountName.myContext(), actor.actorId, false, () -> actor);
+        return Actor.load(accountData.myContext(), actor.actorId, false, () -> actor);
     }
 
     public String getWebFingerId() {
@@ -159,9 +157,9 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     }
 
     private Try<Account> getNewOrExistingAndroidAccount() {
-        return AccountUtils.getExistingAndroidAccount(oAccountName).recoverWith(Exception.class,
+        return AccountUtils.getExistingAndroidAccount(accountData.accountName).recoverWith(Exception.class,
                 notFound -> isValidAndSucceeded()
-                    ? AccountUtils.addEmptyAccount(oAccountName, getPassword())
+                    ? AccountUtils.addEmptyAccount(accountData.accountName, getPassword())
                     : Try.failure(notFound));
     }
 
@@ -238,7 +236,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         return !deleted
                 && actor.actorId != 0
                 && connection != null
-                && oAccountName.isValid
+                && accountData.accountName.isValid
                 && !StringUtils.isEmpty(actor.oid);
     }
 
@@ -261,7 +259,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
      * The name is permanent and cannot be changed. This is why it may be used as Id 
      */
     public String getAccountName() {
-        return oAccountName.getName();
+        return accountData.accountName.getName();
     }
 
     public long getActorId() {
@@ -276,7 +274,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
      * @return The system in which the Account is defined, see {@link OriginTable}
      */
     public Origin getOrigin() {
-        return oAccountName.origin;
+        return accountData.accountName.origin;
     }
 
     public long getOriginId() {
@@ -330,7 +328,8 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
 
     public void requestSync() {
         if (!isPersistent()) return;
-        AccountUtils.getExistingAndroidAccount(oAccountName).onSuccess(a -> ContentResolver.requestSync(a, MatchedUri.AUTHORITY, new Bundle()));
+        AccountUtils.getExistingAndroidAccount(accountData.accountName)
+                .onSuccess(a -> ContentResolver.requestSync(a, MatchedUri.AUTHORITY, new Bundle()));
     }
 
     public long getSyncFrequencySeconds() {
@@ -351,7 +350,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             return MyLog.formatKeyValue(TAG, "EMPTY");
         }
 
-        String members = (isValid() ? "" : "(invalid) ") + "accountName:" + oAccountName + ",";
+        String members = (isValid() ? "" : "(invalid) ") + "accountName:" + accountData.accountName + ",";
         try {
             if (actor != null && actor.nonEmpty()) {
                 members += actor + ",";
@@ -425,13 +424,13 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         if (!(o instanceof MyAccount)) return false;
 
         MyAccount myAccount = (MyAccount) o;
-        if (!oAccountName.equals(myAccount.oAccountName)) return false;
+        if (!accountData.accountName.equals(myAccount.accountData.accountName)) return false;
         return StringUtils.equalsNotEmpty(actor.oid, myAccount.actor.oid);
     }
 
     @Override
     public int hashCode() {
-        int result = oAccountName.hashCode();
+        int result = accountData.accountName.hashCode();
         if (!StringUtils.isEmpty(actor.oid)) {
             result = 31 * result + actor.oid.hashCode();
         }
@@ -484,7 +483,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             MyAccount persistentAccount = accountName.myContext().accounts().fromAccountName(accountName);
             return persistentAccount.isValid()
                     ? persistentAccount
-                    : new MyAccount(null, accountName);
+                    : new MyAccount(accountName);
         }
 
         /** Loads existing account from Persistence */
@@ -493,11 +492,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         }
 
         static Builder loadFromAccountData(@NonNull AccountData accountData, String method) {
-            Origin origin = accountData.myContext.origins().fromName(
-                    accountData.getDataString(Origin.KEY_ORIGIN_NAME));
-            AccountName accountName = AccountName.fromOriginAndUniqueName(origin,
-                    accountData.getDataString(KEY_UNIQUE_NAME));
-            MyAccount myAccount = new MyAccount(accountData, accountName);
+            MyAccount myAccount = new MyAccount(accountData);
             Builder builder = fromMyAccount(myAccount);
             if (!MyContextHolder.isOnRestore()) builder.fixInconsistenciesWithChangedEnvironmentSilently();
             builder.logLoadResult(method);
@@ -568,7 +563,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             MyAccount ma = getMyContext().accounts().fromAccountName(accountName.getName());
             myAccount = ma.isValid()
                     ? ma
-                    : new MyAccount(getAccount().accountData, accountName);
+                    : new MyAccount(getAccount().accountData.withAccountName(accountName));
         }
 
         public Origin getOrigin() {
@@ -686,7 +681,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             // We are comparing usernames ignoring case, but we fix correct case
             // as the Originating system tells us.
             if (ok && !StringUtils.isEmpty(myAccount.getUsername())
-                    && myAccount.oAccountName.username.compareToIgnoreCase(actor.getUsername()) != 0) {
+                    && myAccount.accountData.accountName.username.compareToIgnoreCase(actor.getUsername()) != 0) {
                 // Credentials belong to other Account ??
                 ok = false;
                 credentialsOfOtherAccount = true;
@@ -709,9 +704,9 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
                     // Now we know the name (or proper case of the name) of this Account!
                     // We don't recreate MyAccount object for the new name
                     //   in order to preserve credentials.
-                    myAccount.oAccountName = AccountName.fromOriginAndUniqueName(
-                            myAccount.getOrigin(), actor.getUniqueName());
                     myAccount.connection.save(myAccount.accountData);
+                    myAccount.accountData = myAccount.accountData.withAccountName(
+                            AccountName.fromOriginAndUniqueName(myAccount.getOrigin(), actor.getUniqueName()));
                     myAccount.setConnection();
                     save();
                 }
@@ -727,7 +722,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             if (credentialsOfOtherAccount) {
                 MyLog.e(TAG, getMyContext().context().getText(R.string.error_credentials_of_other_user) + ": " +
                         actor.getUniqueNameWithOrigin() +
-                        " account name: " + myAccount.oAccountName.getName() +
+                        " account name: " + myAccount.getAccountName() +
                         " vs username: " + actor.getUsername());
                 throw new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_ACCOUNT, actor.getUniqueNameWithOrigin());
             }
@@ -794,8 +789,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         public static final Creator<Builder> CREATOR = new Creator<Builder>() {
             @Override
             public Builder createFromParcel(Parcel source) {
-                return loadFromAccountData(
-                        AccountData.fromBundle(MyContextHolder.get(), source.readBundle()), "createFromParcel");
+                return loadFromAccountData(AccountData.CREATOR.createFromParcel(source), "createFromParcel");
             }
 
             @Override
@@ -818,8 +812,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         }
 
         public MyContext getMyContext() {
-            MyContext myContext = myAccount.oAccountName.myContext();
-            return myContext.isReady() ? myContext : MyContextHolder.get();
+            return myAccount.accountData.myContext();
         }
     }
 }

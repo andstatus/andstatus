@@ -48,9 +48,10 @@ import static org.andstatus.app.account.MyAccount.KEY_USERNAME;
 
 public class AccountData implements Parcelable, AccountDataWriter {
     private static final String TAG = AccountData.class.getSimpleName();
-    public static final AccountData EMPTY = new AccountData(MyContext.EMPTY, null, false);
+    public static final AccountData EMPTY = new AccountData(MyContext.EMPTY, new JSONObject(), false);
 
-    public final MyContext myContext;
+    private final MyContext myContext;
+    public final AccountName accountName;
     private final JSONObject data;
     private boolean persistent = false;
 
@@ -73,26 +74,35 @@ public class AccountData implements Parcelable, AccountDataWriter {
         return JsonUtils.toJsonObject(userData).map(jso -> fromJson(myContext, jso, persistent)).getOrElse(EMPTY);
     }
 
-    public static AccountData fromJson(MyContext myContext, JSONObject jso, boolean persistent) {
+    public static AccountData fromJson(MyContext myContext,@NonNull JSONObject jso, boolean persistent) {
         return new AccountData(myContext, jso, persistent);
     }
     
-    private AccountData(MyContext myContext, JSONObject jso, boolean persistent) {
+    private AccountData(MyContext myContext, @NonNull JSONObject jso, boolean persistent) {
         this.myContext = myContext;
-        if (jso == null) {
-            data = new JSONObject();
-        } else {
-            data = jso;
-            this.persistent = persistent; 
-        }
+        data = jso;
+        this.persistent = persistent;
+        Origin origin = myContext.origins().fromName(getDataString(Origin.KEY_ORIGIN_NAME));
+        accountName = AccountName.fromOriginAndUniqueName(origin, getDataString(KEY_UNIQUE_NAME));
+    }
+
+    public static AccountData fromAccountName(@NonNull AccountName accountName) {
+        return new AccountData(accountName, new JSONObject());
+    }
+
+    private AccountData(@NonNull AccountName accountName, JSONObject jso) {
+        this.myContext = accountName.myContext();
+        this.accountName = accountName;
+        data = jso;
+        updateFromAccountName();
+    }
+
+    public AccountData withAccountName(@NonNull AccountName accountName) {
+        return new AccountData(accountName, data);
     }
 
     AccountData updateFrom(MyAccount myAccount) {
-        setDataString(AccountUtils.KEY_ACCOUNT, myAccount.getAccountName());
-        setDataString(KEY_USERNAME, myAccount.getOAccountName().username);
-        setDataString(KEY_UNIQUE_NAME, myAccount.getOAccountName().getUniqueName());
         setDataString(KEY_ACTOR_OID, myAccount.getActor().oid);
-        setDataString(Origin.KEY_ORIGIN_NAME, myAccount.getOAccountName().getOriginName());
         myAccount.getCredentialsVerified().put(this);
         setDataBoolean(KEY_OAUTH, myAccount.isOAuth());
         setDataLong(KEY_ACTOR_ID, myAccount.getActor().actorId);
@@ -107,6 +117,17 @@ public class AccountData implements Parcelable, AccountDataWriter {
         setDataInt(KEY_VERSION, AccountUtils.ACCOUNT_VERSION);
         setDataInt(KEY_ORDER, myAccount.getOrder());
         return this;
+    }
+
+    private void updateFromAccountName() {
+        setDataString(AccountUtils.KEY_ACCOUNT, accountName.getName());
+        setDataString(KEY_USERNAME, accountName.username);
+        setDataString(KEY_UNIQUE_NAME, accountName.getUniqueName());
+        setDataString(Origin.KEY_ORIGIN_NAME, accountName.getOriginName());
+    }
+
+    public MyContext myContext() {
+        return myContext.isReady() ? myContext : MyContextHolder.get();
     }
 
     boolean isPersistent() {
