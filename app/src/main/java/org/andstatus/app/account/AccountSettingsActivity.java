@@ -134,7 +134,7 @@ public class AccountSettingsActivity extends MyActivity {
     private volatile ActivityOnFinish activityOnFinish = ActivityOnFinish.NONE;
     private volatile boolean initialSyncNeeded = false;
     
-    private StateOfAccountChangeProcess state = null;
+    private volatile StateOfAccountChangeProcess state = null;
 
     private StringBuilder mLatestErrorMessage = new StringBuilder();
     private boolean resumedOnce = false;
@@ -435,13 +435,15 @@ public class AccountSettingsActivity extends MyActivity {
                     nameEditable.requestFocus();
                 }
             }
-            String uniqueName = StringUtils.nonEmptyNonTemp(state.getAccount().getUsername())
-                    ? state.getAccount().getActor().getUniqueName()
+            String nameShown = StringUtils.nonEmptyNonTemp(state.getAccount().getUsername())
+                    ? (origin.hasHost()
+                        ? state.getAccount().getUsername()
+                        : state.getAccount().getActor().getUniqueName())
                     : "";
-            if (uniqueName.compareTo(nameEditable.getText().toString()) != 0) {
-                nameEditable.setText(uniqueName);
+            if (nameShown.compareTo(nameEditable.getText().toString()) != 0) {
+                nameEditable.setText(nameShown);
             }
-            showTextView(R.id.uniqueName_readonly, uniqueName, state.builder.isPersistent());
+            showTextView(R.id.uniqueName_readonly, nameShown, state.builder.isPersistent());
         }
     }
 

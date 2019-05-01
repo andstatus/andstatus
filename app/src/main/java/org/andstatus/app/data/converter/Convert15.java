@@ -100,7 +100,7 @@ class Convert15 extends ConvertOneStep {
                     MyLog.v(TAG, method + "; " + accountData.toJsonString());
 
                     androidAccountData.moveLongKeyTo(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, accountData);
-                    accountData.saveIfChanged(myContext, androidAccount).onFailure( e -> {
+                    accountData.saveIfChanged(androidAccount).onFailure(e -> {
                         MyLog.e(TAG, "Failed to convert account " + androidAccount.name + ", deleting");
                         accountsToRemove.add(androidAccount);
                     });

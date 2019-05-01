@@ -626,7 +626,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             if (myAccount.isValid()) {
                 return myAccount.getNewOrExistingAndroidAccount()
                         .onSuccess(account -> myAccount.data.updateFrom(myAccount))
-                        .flatMap(account -> myAccount.data.saveIfChanged(myContext(), account))
+                        .flatMap(account -> myAccount.data.saveIfChanged(account))
                         .onFailure(e -> myAccount.data.setPersistent(false))
                         .onSuccess(result1 -> {
                             MyLog.v(this, () -> (result1 ? " Saved " : " Didn't change ") +

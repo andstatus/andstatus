@@ -28,11 +28,12 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.util.IdentifiableInstance;
+import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import androidx.annotation.NonNull;
@@ -46,14 +47,15 @@ import static org.andstatus.app.account.MyAccount.KEY_ORDER;
 import static org.andstatus.app.account.MyAccount.KEY_UNIQUE_NAME;
 import static org.andstatus.app.account.MyAccount.KEY_USERNAME;
 
-public class AccountData implements Parcelable, AccountDataWriter {
+public class AccountData implements Parcelable, AccountDataWriter, IdentifiableInstance {
     private static final String TAG = AccountData.class.getSimpleName();
     public static final AccountData EMPTY = new AccountData(MyContext.EMPTY, new JSONObject(), false);
 
+    protected final long instanceId = InstanceId.next();
     private final MyContext myContext;
     public final AccountName accountName;
-    private final JSONObject data;
-    private boolean persistent = false;
+    private volatile JSONObject data;
+    private volatile boolean persistent = false;
 
     @NonNull
     public static AccountData fromAndroidAccount(MyContext myContext, Account androidAccount) {
@@ -61,16 +63,17 @@ public class AccountData implements Parcelable, AccountDataWriter {
             throw new IllegalArgumentException(TAG + " account is null");
         }
         android.accounts.AccountManager am = AccountManager.get(myContext.context());
-        AccountData accountData = fromJsonString(myContext,
-                am.getUserData(androidAccount, AccountUtils.KEY_ACCOUNT), true);
+        String jsonString = am.getUserData(androidAccount, AccountUtils.KEY_ACCOUNT);
+        AccountData accountData = fromJsonString(myContext, jsonString, true);
         accountData.setDataBoolean(MyAccount.KEY_IS_SYNCABLE,
                 ContentResolver.getIsSyncable(androidAccount, MatchedUri.AUTHORITY) != 0);
         accountData.setDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY,
                 ContentResolver.getSyncAutomatically(androidAccount, MatchedUri.AUTHORITY));
+        accountData.logMe("Loaded from account " + androidAccount.name);
         return accountData;
     }
 
-    public static AccountData fromJsonString(MyContext myContext, String userData, boolean persistent) {
+    private static AccountData fromJsonString(MyContext myContext, String userData, boolean persistent) {
         return JsonUtils.toJsonObject(userData).map(jso -> fromJson(myContext, jso, persistent)).getOrElse(EMPTY);
     }
 
@@ -84,6 +87,7 @@ public class AccountData implements Parcelable, AccountDataWriter {
         this.persistent = persistent;
         Origin origin = myContext.origins().fromName(getDataString(Origin.KEY_ORIGIN_NAME));
         accountName = AccountName.fromOriginAndUniqueName(origin, getDataString(KEY_UNIQUE_NAME));
+        logMe("new " + accountName.getName() + " from jso");
     }
 
     public static AccountData fromAccountName(@NonNull AccountName accountName) {
@@ -95,6 +99,7 @@ public class AccountData implements Parcelable, AccountDataWriter {
         this.accountName = accountName;
         data = jso;
         updateFromAccountName();
+        logMe("new from " + accountName.getName() + " and jso");
     }
 
     public AccountData withAccountName(@NonNull AccountName accountName) {
@@ -116,6 +121,7 @@ public class AccountData implements Parcelable, AccountDataWriter {
         // We don't create accounts of other versions
         setDataInt(KEY_VERSION, AccountUtils.ACCOUNT_VERSION);
         setDataInt(KEY_ORDER, myAccount.getOrder());
+        logMe("updated from " + myAccount);
         return this;
     }
 
@@ -139,7 +145,7 @@ public class AccountData implements Parcelable, AccountDataWriter {
     }
 
     /** @return changed (and successfully saved) or not */
-    public Try<Boolean> saveIfChanged(MyContext myContext, Account androidAccount) {
+    public Try<Boolean> saveIfChanged(Account androidAccount) {
         AccountData oldData = fromAndroidAccount(myContext, androidAccount);
         if (this.equals(oldData)) return Try.success(false);
 
@@ -161,7 +167,9 @@ public class AccountData implements Parcelable, AccountDataWriter {
             ContentResolver.setSyncAutomatically(androidAccount, MatchedUri.AUTHORITY, syncAutomatically);
         }
         android.accounts.AccountManager am = AccountManager.get(myContext.context());
-        am.setUserData(androidAccount, AccountUtils.KEY_ACCOUNT, toJsonString());
+        String jsonString = toJsonString();
+        logMe("Saving to " + androidAccount.name);
+        am.setUserData(androidAccount, AccountUtils.KEY_ACCOUNT, jsonString);
         return Try.success(true);
     }
 
@@ -276,14 +284,10 @@ public class AccountData implements Parcelable, AccountDataWriter {
 
     @Override
     public void setDataString(String key, String value) {
-        try {
-            if (StringUtils.isEmpty(value)) {
-                data.remove(key);
-            } else {
-                data.put(key, value);
-            }
-        } catch (Exception e) {
-            MyLog.v(this, e);
+        if (StringUtils.isEmpty(value)) {
+            data = JsonUtils.remove(data, key);
+        } else {
+            data = JsonUtils.put(data, key, value);
         }
     }
 
@@ -305,9 +309,14 @@ public class AccountData implements Parcelable, AccountDataWriter {
         if (bundle != null) {
             jsonString = bundle.getString(AccountUtils.KEY_ACCOUNT);
         }
-        return fromJsonString(myContext, jsonString, false);
+        return fromJsonString(myContext, jsonString, false).logMe("Loaded from bundle");
     }
-    
+
+    private AccountData logMe(String msg) {
+        MyLog.v(this, () -> msg + ":\n" + toJsonString());
+        return this;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -323,11 +332,11 @@ public class AccountData implements Parcelable, AccountDataWriter {
     }
 
     public String toJsonString() {
-        try {
-            return data.toString(2);
-        } catch (JSONException e) {
-            MyLog.e(this, e);
-            return "";
-        }
+        return JsonUtils.toString(data, 2);
+    }
+
+    @Override
+    public long getInstanceId() {
+        return instanceId;
     }
 }

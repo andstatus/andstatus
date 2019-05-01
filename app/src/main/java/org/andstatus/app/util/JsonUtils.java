@@ -67,7 +67,7 @@ public class JsonUtils {
         return jso;
     }
 
-    /** Creates new shallow copy without the keyToRemove */
+    /** Creates new shallow copy with new key */
     @NonNull
     public static JSONObject put(JSONObject jso, String key, Object value) {
         JSONObject out = shallowCopy(jso);
@@ -105,6 +105,15 @@ public class JsonUtils {
             return Try.success(new JSONObject(jsonString));
         } catch (Exception e) {
             return Try.failure(new Exception("fromJsonString: " + jsonString, e));
+        }
+    }
+
+    public static String toString(JSONObject data, int indentSpaces) {
+        try {
+            return data.toString(indentSpaces);
+        } catch (JSONException e) {
+            MyLog.e(JsonUtils.class, "Failed toString of " + data, e);
+            return "";
         }
     }
 }

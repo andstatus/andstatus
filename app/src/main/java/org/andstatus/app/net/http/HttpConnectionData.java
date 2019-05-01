@@ -16,10 +16,10 @@
 
 package org.andstatus.app.net.http;
 
+import org.andstatus.app.account.AccountConnectionData;
 import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.account.AccountConnectionData;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
 
@@ -27,20 +27,20 @@ import java.net.URL;
 import java.util.Optional;
 
 public class HttpConnectionData {
-    private AccountName accountName = null;
+    public static final HttpConnectionData EMPTY = new HttpConnectionData(AccountName.getEmpty());
+    private final AccountName accountName;
     public URL originUrl;
-    protected URL urlForUserToken;
-    protected AccountDataReader dataReader;
+    URL urlForUserToken;
+    AccountDataReader dataReader;
 
     public OAuthClientKeys oauthClientKeys;
 
-    private HttpConnectionData() {
-        // Empty
+    private HttpConnectionData(AccountName accountName) {
+        this.accountName = accountName;
     }
-    
+
     public static HttpConnectionData fromConnectionData(AccountConnectionData oConnectionData) {
-        HttpConnectionData data = new HttpConnectionData();
-        data.accountName = oConnectionData.getAccountName();
+        HttpConnectionData data = new HttpConnectionData(oConnectionData.getAccountName());
         data.originUrl = oConnectionData.getOriginUrl();
         data.urlForUserToken = oConnectionData.getOriginUrl();
         data.dataReader = oConnectionData.getDataReader();
@@ -48,8 +48,7 @@ public class HttpConnectionData {
     }
 
     public HttpConnectionData copy() {
-        HttpConnectionData data = new HttpConnectionData();
-        data.accountName = accountName;
+        HttpConnectionData data = new HttpConnectionData(accountName);
         data.originUrl = originUrl;
         data.urlForUserToken = urlForUserToken;
         data.dataReader = dataReader;

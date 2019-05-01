@@ -44,7 +44,7 @@ public class AccountName {
     private final String name;
     public final boolean isValid;
 
-    protected static AccountName getEmpty() {
+    public static AccountName getEmpty() {
         return new AccountName("", Origin.EMPTY);
     }
 

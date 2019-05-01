@@ -89,7 +89,7 @@ class Convert47 extends ConvertOneStep {
                             ? Try.success(accountIn)
                             : AccountUtils.addEmptyAccount(am, accountName, jsonOut.optString(KEY_PASSWORD)))
                         .flatMap(accountOut ->
-                                accountData.saveIfChanged(myContext, accountOut)
+                                accountData.saveIfChanged(accountOut)
                                 .map(b -> accountOut));
                 })
                 .onSuccess(accountNew -> {
