@@ -253,16 +253,12 @@ public class MyProvider extends ContentProvider {
     }
 
     public static void clearNotification(@NonNull MyContext myContext, @NonNull Timeline timeline) {
-        final List<Long> ids = NotificationEventType.idsOfShownOn(timeline.getTimelineType());
-        if (ids.size() > 0) {
-            update(myContext, ActivityTable.TABLE_NAME,
-                    ActivityTable.NEW_NOTIFICATION_EVENT + "=0",
-                    ActivityTable.NEW_NOTIFICATION_EVENT + SqlIds.fromIds(ids).getSql() +
-                            (timeline.actor.isEmpty()
-                                    ? ""
-                                    : " AND " + ActivityTable.NOTIFIED_ACTOR_ID + "=" + timeline.actor.actorId)
-            );
-        }
+        update(myContext, ActivityTable.TABLE_NAME,
+                ActivityTable.NEW_NOTIFICATION_EVENT + "=0",
+                (timeline.actor.isEmpty()
+                                ? ""
+                                : ActivityTable.NOTIFIED_ACTOR_ID + "=" + timeline.actor.actorId)
+        );
     }
 
     public static void setUnsentActivityNotification(@NonNull MyContext myContext, long activityId) {

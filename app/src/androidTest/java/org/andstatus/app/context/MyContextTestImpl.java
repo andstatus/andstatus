@@ -18,7 +18,6 @@ package org.andstatus.app.context;
 
 import android.content.ContentValues;
 import android.content.Context;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.net.http.HttpConnection;
@@ -32,6 +31,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
+
+import androidx.annotation.NonNull;
 
 /**
  * This is kind of mock of the concrete implementation 
@@ -135,8 +136,7 @@ public class MyContextTestImpl extends MyContextImpl {
 	@Override
 	public void clearNotifications(@NonNull Timeline timeline) {
 		super.clearNotifications(timeline);
-        NotificationEventType.validValues.stream().filter(event -> event.isShownOn(timeline.getTimelineType()))
-                .forEach(androidNotifications::remove);
+        NotificationEventType.validValues.forEach(androidNotifications::remove);
 	}
 
     @Override

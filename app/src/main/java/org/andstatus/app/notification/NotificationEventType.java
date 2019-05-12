@@ -16,33 +16,28 @@
 
 package org.andstatus.app.notification;
 
-import androidx.annotation.NonNull;
-
 import org.andstatus.app.R;
-import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
+import androidx.annotation.NonNull;
 
 /**
  * Types of events, about which a User may be notified and which are shown in the "Notifications" timeline
  */
 public enum NotificationEventType {
-    ANNOUNCE(1, "notifications_announce", singletonList(TimelineType.HOME), true, R.string.notification_events_announce),
-    FOLLOW(2, "notifications_follow", emptyList(), true, R.string.notification_events_follow),
-    LIKE(3, "notifications_like", emptyList(), true, R.string.notification_events_like),
-    MENTION(4, "notifications_mention", singletonList(TimelineType.HOME), true, R.string.notification_events_mention),
-    OUTBOX(5, "notifications_outbox", singletonList(TimelineType.OUTBOX), true, org.andstatus.app.R.string.notification_events_outbox),
-    PRIVATE(6, "notifications_private", singletonList(TimelineType.PRIVATE), true, R.string.notification_events_private),
-    SERVICE_RUNNING(8, "", emptyList(), true, R.string.syncing),
-    EMPTY(0, "", emptyList(), false, R.string.empty_in_parenthesis),
+    ANNOUNCE(1, "notifications_announce", true, R.string.notification_events_announce),
+    FOLLOW(2, "notifications_follow", true, R.string.notification_events_follow),
+    LIKE(3, "notifications_like", true, R.string.notification_events_like),
+    MENTION(4, "notifications_mention", true, R.string.notification_events_mention),
+    OUTBOX(5, "notifications_outbox", true, org.andstatus.app.R.string.notification_events_outbox),
+    PRIVATE(6, "notifications_private", true, R.string.notification_events_private),
+    SERVICE_RUNNING(8, "", true, R.string.syncing),
+    EMPTY(0, "", false, R.string.empty_in_parenthesis),
     ;
 
     public static final List<NotificationEventType> validValues = validValues();
@@ -50,39 +45,17 @@ public enum NotificationEventType {
     public final long id;
     public final String preferenceKey;
     final boolean defaultValue;
-    final List<TimelineType> visibleIn;
     public final int titleResId;
 
-    NotificationEventType(int id, String preferenceKey, List<TimelineType> visibleIn, boolean defaultValue, int titleResId) {
+    NotificationEventType(int id, String preferenceKey, boolean defaultValue, int titleResId) {
         this.id = id;
         this.preferenceKey = preferenceKey;
-        this.visibleIn = visibleIn;
         this.defaultValue = defaultValue;
         this.titleResId = titleResId;
     }
 
-    public boolean isShownOn(TimelineType timelineType) {
-        if (this == SERVICE_RUNNING) return false;
-        switch (timelineType) {
-            case EVERYTHING:
-            case NOTIFICATIONS:
-                return true;
-            case INTERACTIONS:
-                return this != OUTBOX;
-            case UNREAD_NOTIFICATIONS:
-                return true;
-            default:
-                return visibleIn.contains(timelineType);
-        }
-    }
-
     public int notificationId() {
         return (int) id;
-    }
-
-    public static List<Long> idsOfShownOn(TimelineType timelineType) {
-        return validValues().stream().filter(eventType -> eventType.isShownOn(timelineType))
-                .map(eventType -> eventType.id).collect(Collectors.toList());
     }
 
     public boolean isEnabled() {
