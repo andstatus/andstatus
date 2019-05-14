@@ -112,7 +112,7 @@ public class DataUpdater {
     }
 
     private void updateActivity(AActivity activity) {
-        if (!activity.isSubscribedByMe().equals(TriState.FALSE)
+        if (activity.isSubscribedByMe().notFalse
             && activity.getUpdatedDate() > 0
             && (activity.isMyActorOrAuthor(execContext.myContext)
                 || activity.getNote().audience().containsMe(execContext.myContext))) {

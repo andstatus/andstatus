@@ -61,5 +61,9 @@
             android:title="@string/notification_events_private"
             android:summary="@string/notification_events_private_summary"
             android:defaultValue="true" />
+        <org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_home"
+            android:title="@string/options_menu_home_timeline_cond"
+            android:summary="@string/options_menu_home_timeline"
+            android:defaultValue="true" />
 	</PreferenceCategory>
 </PreferenceScreen>

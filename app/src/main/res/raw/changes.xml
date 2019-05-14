@@ -29,6 +29,17 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="49.00" android:versionCode="288"
+             versionDate="2019-05-14"
+             versionTitle="Home notification">
+        <changes>
+            <change>Added "Home Timeline" notification type that allows to be notified on any note received via
+                the Home Timeline (Inbox). It's turned on by default.
+                Can be turned off in Settings -&gt; Notifications.
+                <a href="https://github.com/andstatus/andstatus/issues/508">#508</a>
+            </change>
+        </changes>
+    </release>
     <release android:versionName="48.00" android:versionCode="287"
              versionDate="2019-05-01"
              versionTitle="Bugfixes and Accounts renamed">

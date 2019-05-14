@@ -94,11 +94,9 @@ public class DemoConversationInserter {
                 selected, null);
         addPublicNote(reply2, TriState.FALSE);
         DemoNoteInserter.assertInteraction(reply2, NotificationEventType.PRIVATE, TriState.TRUE);
-        DemoNoteInserter.assertInteraction(selected, NotificationEventType.EMPTY, TriState.FALSE);
-        if (iteration == 1) {
-            assertEquals("Should be subscribed " + selected, TriState.TRUE,
-                    MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, selected.getId()));
-        }
+        assertEquals("Should be subscribed " + selected, TriState.TRUE,
+                MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, selected.getId()));
+        DemoNoteInserter.assertInteraction(selected, NotificationEventType.HOME, TriState.TRUE);
 
         AActivity reply3 = buildActivity(getAuthor1(), "Another note title",
                 "Reply 3 to selected by the same author", selected, null);

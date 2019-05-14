@@ -37,6 +37,7 @@ public enum NotificationEventType {
     OUTBOX(5, "notifications_outbox", true, org.andstatus.app.R.string.notification_events_outbox),
     PRIVATE(6, "notifications_private", true, R.string.notification_events_private),
     SERVICE_RUNNING(8, "", true, R.string.syncing),
+    HOME(9, "notifications_home", true, R.string.options_menu_home_timeline_cond),
     EMPTY(0, "", false, R.string.empty_in_parenthesis),
     ;
 

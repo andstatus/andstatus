@@ -499,6 +499,8 @@ public class AActivity extends AObject {
         } else if ((type == ActivityType.FOLLOW || type == ActivityType.UNDO_FOLLOW)
                 && myContext.users().isMe(getObjActor())) {
             return NotificationEventType.FOLLOW;
+        } else if (isSubscribedByMe().isTrue) {
+            return NotificationEventType.HOME;
         } else {
             return NotificationEventType.EMPTY;
         }
@@ -515,6 +517,7 @@ public class AActivity extends AObject {
             case FOLLOW:
                 return getObjActor();
             case PRIVATE:
+            case HOME:
                 return accountActor;
             default:
                 return Actor.EMPTY;
