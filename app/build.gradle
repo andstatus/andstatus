@@ -76,7 +76,7 @@ dependencies {
     implementation "com.google.android.material:material:$materialVersion"
     implementation "ch.acra:acra:$acraVersion" // https://github.com/ACRA/acra/wiki/AdvancedUsage
     implementation "cz.msebera.android:httpclient:$httpclientVersion" // https://github.com/smarek/httpclient-android
-    implementation "org.apache.httpcomponents:httpmime:${httpMimeVersion}"
+    implementation "org.apache.httpcomponents:httpmime:$httpMimeVersion"
     implementation "oauth.signpost:signpost-core:$signPostVersion"
     implementation "commons-codec:commons-codec:$commonsCodecVersion"
     implementation "org.apache.commons:commons-lang3:$commonsLangVersion"
