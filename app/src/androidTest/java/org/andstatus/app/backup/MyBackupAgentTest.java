@@ -29,6 +29,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -48,6 +49,15 @@ public class MyBackupAgentTest {
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
+        ensureOneFileExistsInDownloads();
+    }
+
+    private static void ensureOneFileExistsInDownloads() throws IOException {
+        File downloads = MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS);
+        if (Arrays.stream(downloads.listFiles()).noneMatch(File::isFile)) {
+            File dummyFile = new File(downloads, "dummy.txt");
+            dummyFile.createNewFile();
+        }
     }
 
     @Test
