@@ -67,7 +67,8 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             params.put("scopes", OAUTH_SCOPES);
             params.put("website", "http://andstatus.org");
 
-            JSONObject jso = postRequest(uri, params);
+            JSONObject jso = postRequest(uri, params).map(HttpReadResult::getJsonObject)
+                    .getOrElseThrow(ConnectionException::of);
             String consumerKey = jso.getString("client_id");
             String consumerSecret = jso.getString("client_secret");
             data.oauthClientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);

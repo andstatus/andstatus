@@ -20,6 +20,7 @@ import android.net.Uri;
 
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
+import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
@@ -131,8 +132,8 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         } catch (JSONException e) {
             MyLog.e(this, e);
         }
-        JSONObject jso = postRequest(ApiRoutineEnum.UPDATE_NOTE_WITH_MEDIA, formParams);
-        return activityFromJson(jso);
+        return postRequest(ApiRoutineEnum.UPDATE_NOTE_WITH_MEDIA, formParams).map(HttpReadResult::getJsonObject)
+            .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
     }
 
     @Override
@@ -143,8 +144,9 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         } catch (JSONException e) {
             MyLog.e(this, e);
         }
-        JSONObject jso = postRequest(ApiRoutineEnum.LIKE, out);
-        return activityFromJson(jso);
+        return postRequest(ApiRoutineEnum.LIKE, out)
+            .map(HttpReadResult::getJsonObject)
+            .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
     }
 
     @Override
@@ -155,8 +157,9 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         } catch (JSONException e) {
             MyLog.e(this, e);
         }
-        JSONObject jso = postRequest(ApiRoutineEnum.UNDO_LIKE, out);
-        return activityFromJson(jso);
+        return postRequest(ApiRoutineEnum.UNDO_LIKE, out)
+            .map(HttpReadResult::getJsonObject)
+            .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
     }
 
     @NonNull
@@ -230,11 +233,12 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         }
     }
 
-    List<Actor> getActors(String actorId, ApiRoutineEnum apiRoutine) throws ConnectionException {
+    @Override
+    List<Actor> getActors(Actor actor, ApiRoutineEnum apiRoutine) throws ConnectionException {
         Uri.Builder builder = getApiPath(apiRoutine).buildUpon();
         int limit = 200;
-        if (!StringUtils.isEmpty(actorId)) {
-            builder.appendQueryParameter("user_id", actorId);
+        if (!StringUtils.isEmpty(actor.oid)) {
+            builder.appendQueryParameter("user_id", actor.oid);
         }
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
         return jArrToActors(http.getRequestAsArray(builder.build()), apiRoutine, builder.build());

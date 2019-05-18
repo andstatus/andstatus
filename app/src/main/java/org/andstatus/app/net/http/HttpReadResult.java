@@ -184,7 +184,7 @@ public class HttpReadResult {
                 + (fileResult == null ? "" : "; saved to file");
     }
     
-    JSONObject getJsonObject() throws ConnectionException {
+    public JSONObject getJsonObject() throws ConnectionException {
         return innerGetJsonObject(strResponse);
     }
 
@@ -278,7 +278,7 @@ public class HttpReadResult {
         return exception;
     }
 
-    void parseAndThrow() throws ConnectionException {
+    HttpReadResult parseAndThrow() throws ConnectionException {
         if (exception instanceof ConnectionException) {
             throw (ConnectionException) exception;
         }
@@ -298,6 +298,7 @@ public class HttpReadResult {
                 throw ConnectionException.fromStatusCodeAndThrowable(statusCode, toString(), exception);
             }
         }
+        return this;
     }
 
     private boolean isStatusOk() {

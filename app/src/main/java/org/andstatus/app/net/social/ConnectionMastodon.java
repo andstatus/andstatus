@@ -21,6 +21,7 @@ import android.net.Uri;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
+import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
@@ -34,6 +35,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import androidx.annotation.NonNull;
 
@@ -268,24 +270,26 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Error updating note '" + mediaUri + "'", e, mediaObject);
         }
-        JSONObject jso = postRequest(ApiRoutineEnum.UPDATE_NOTE, formParams);
-        return activityFromJson(jso);
+        return postRequest(ApiRoutineEnum.UPDATE_NOTE, formParams).map(HttpReadResult::getJsonObject)
+                .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
     }
 
     private JSONObject uploadMedia(Uri mediaUri) throws ConnectionException {
-        JSONObject jso = null;
+        JSONObject formParams = new JSONObject();
         try {
-            JSONObject formParams = new JSONObject();
             formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "file");
             formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mediaUri.toString());
-            jso = postRequest(ApiRoutineEnum.UPDATE_NOTE_WITH_MEDIA, formParams);
-            if (jso != null && MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "uploaded '" + mediaUri.toString() + "' " + jso.toString(2));
-            }
+            return postRequest(ApiRoutineEnum.UPDATE_NOTE_WITH_MEDIA, formParams)
+                .map(HttpReadResult::getJsonObject)
+                .filter(Objects::nonNull)
+                .onSuccess(jso -> {
+                    if (MyLog.isVerboseEnabled()) {
+                        MyLog.v(this, "uploaded '" + mediaUri.toString() + "' " + jso.toString());
+                    }
+                }).getOrElseThrow(ConnectionException::of);
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, "Error uploading '" + mediaUri + "'", e, jso);
+            throw ConnectionException.loggedJsonException(this, "Error uploading '" + mediaUri + "'", e, formParams);
         }
-        return jso;
     }
 
     @Override
@@ -443,7 +447,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     @Override
     public AActivity follow(String actorOid, Boolean follow) throws ConnectionException {
         JSONObject relationship = postRequest(getApiPathWithActorId(follow ? ApiRoutineEnum.FOLLOW :
-                ApiRoutineEnum.UNDO_FOLLOW, actorOid), new JSONObject());
+                ApiRoutineEnum.UNDO_FOLLOW, actorOid), new JSONObject())
+            .map(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of);
         Actor friend = Actor.fromOid(data.getOrigin(), actorOid);
         if (relationship == null || relationship.isNull("following")) {
             return AActivity.EMPTY;
@@ -462,23 +467,18 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     @Override
     public boolean undoAnnounce(String noteOid) throws ConnectionException {
-        JSONObject jso = http.postRequest(getApiPathWithNoteId(ApiRoutineEnum.UNDO_ANNOUNCE, noteOid));
-        if (jso != null && MyLog.isVerboseEnabled()) {
-            try {
-                MyLog.v(this, "destroyReblog response: " + jso.toString(2));
-            } catch (JSONException e) {
-                MyLog.e(this, e);
-                jso = null;
-            }
-        }
-        return jso != null;
+        return http.postRequest(getApiPathWithNoteId(ApiRoutineEnum.UNDO_ANNOUNCE, noteOid))
+            .map(HttpReadResult::getJsonObject)
+            .filter(Objects::nonNull)
+            .onSuccess(jso -> MyLog.v(this, "destroyReblog response: " + jso.toString()))
+            .isSuccess();
     }
 
-    List<Actor> getActors(String actorId, ApiRoutineEnum apiRoutine) throws ConnectionException {
-        Uri.Builder builder = this.getApiPathWithActorId(apiRoutine, actorId).buildUpon();
+    @Override
+    List<Actor> getActors(Actor actor, ApiRoutineEnum apiRoutine) throws ConnectionException {
+        Uri.Builder builder = this.getApiPathWithActorId(apiRoutine, actor.oid).buildUpon();
         int limit = 400;
         builder.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
         return jArrToActors(http.getRequestAsArray(builder.build()), apiRoutine, builder.build());
     }
-
 }

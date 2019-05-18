@@ -20,6 +20,7 @@ import android.net.Uri;
 
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Optional;
 
 import androidx.annotation.NonNull;
+import io.vavr.control.Try;
 
 /**
  * Twitter API implementations
@@ -118,16 +120,14 @@ public abstract class ConnectionTwitterLike extends Connection {
 
     @Override
     public boolean deleteNote(String noteOid) throws ConnectionException {
-        JSONObject jso = http.postRequest(getApiPathWithNoteId(ApiRoutineEnum.DELETE_NOTE, noteOid));
-        if (jso != null && MyLog.isVerboseEnabled()) {
-            try {
-                MyLog.v(TAG, "deleteNote response: " + jso.toString(2));
-            } catch (JSONException e) {
-                MyLog.e(this, e);
-                return false;
+        return http.postRequest(getApiPathWithNoteId(ApiRoutineEnum.DELETE_NOTE, noteOid))
+        .map(HttpReadResult::getJsonObject)
+        .map(jso -> {
+            if (MyLog.isVerboseEnabled()) {
+                MyLog.v(TAG, "deleteNote response: " + jso.toString());
             }
-        }
-        return jso != null;
+            return true;
+        }).getOrElse(false);
     }
     
     /**
@@ -144,15 +144,15 @@ public abstract class ConnectionTwitterLike extends Connection {
         } catch (JSONException e) {
             MyLog.e(this, e);
         }
-        JSONObject jsoActor = postRequest(follow ? ApiRoutineEnum.FOLLOW : ApiRoutineEnum.UNDO_FOLLOW, out);
-        final Actor friend = actorFromJson(jsoActor);
-        return data.getAccountActor().act(
-                data.getAccountActor(),
-                follow
-                    ? ActivityType.FOLLOW
-                    : ActivityType.UNDO_FOLLOW,
-                friend);
-    } 
+        return postRequest(follow ? ApiRoutineEnum.FOLLOW : ApiRoutineEnum.UNDO_FOLLOW, out)
+            .map(HttpReadResult::getJsonObject)
+            .map(this::actorFromJson)
+            .map(friend -> data.getAccountActor().act(
+                        data.getAccountActor(),
+                        follow ? ActivityType.FOLLOW : ActivityType.UNDO_FOLLOW,
+                        friend)
+            ).getOrElseThrow(ConnectionException::of);
+    }
 
     /**
      * Returns an array of numeric IDs for every actor the specified actor is following.
@@ -524,8 +524,9 @@ public abstract class ConnectionTwitterLike extends Connection {
     
     @Override
     public AActivity announce(String rebloggedNoteOid) throws ConnectionException {
-        JSONObject jso = http.postRequest(getApiPathWithNoteId(ApiRoutineEnum.ANNOUNCE, rebloggedNoteOid));
-        return activityFromJson(jso);
+        return http.postRequest(getApiPathWithNoteId(ApiRoutineEnum.ANNOUNCE, rebloggedNoteOid))
+            .map(HttpReadResult::getJsonObject)
+            .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
     }
 
     /**
@@ -585,8 +586,9 @@ public abstract class ConnectionTwitterLike extends Connection {
         } catch (JSONException e) {
             MyLog.e(this, e);
         }
-        JSONObject jso = postRequest(ApiRoutineEnum.UPDATE_NOTE, formParams);
-        return activityFromJson(jso);
+        return postRequest(ApiRoutineEnum.UPDATE_NOTE, formParams)
+            .map(HttpReadResult::getJsonObject)
+            .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
     }
 
     private AActivity updatePrivateNote(String name, String content, String noteOid, String recipientOid, Uri mediaUri)
@@ -600,8 +602,9 @@ public abstract class ConnectionTwitterLike extends Connection {
         } catch (JSONException e) {
             MyLog.e(this, e);
         }
-        JSONObject jso = postRequest(ApiRoutineEnum.UPDATE_PRIVATE_NOTE, formParams);
-        return activityFromJson(jso);
+        return postRequest(ApiRoutineEnum.UPDATE_PRIVATE_NOTE, formParams)
+            .map(HttpReadResult::getJsonObject)
+            .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
     }
 
     /**
@@ -616,7 +619,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         return actorFromJson(actor);
     }
 
-    protected final JSONObject postRequest(ApiRoutineEnum apiRoutine, JSONObject formParams) throws ConnectionException {
+    protected final Try<HttpReadResult> postRequest(ApiRoutineEnum apiRoutine, JSONObject formParams) throws ConnectionException {
         return postRequest(getApiPath(apiRoutine), formParams);
     }
 
@@ -644,14 +647,15 @@ public abstract class ConnectionTwitterLike extends Connection {
 
     @Override
     public AActivity like(String noteOid) throws ConnectionException {
-        JSONObject jso = http.postRequest(getApiPathWithNoteId(ApiRoutineEnum.LIKE, noteOid));
-        return activityFromJson(jso);
+        return http.postRequest(getApiPathWithNoteId(ApiRoutineEnum.LIKE, noteOid))
+            .map(HttpReadResult::getJsonObject)
+            .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
     }
 
     @Override
     public AActivity undoLike(String noteOid) throws ConnectionException {
-        JSONObject jso = http.postRequest(getApiPathWithNoteId(ApiRoutineEnum.UNDO_LIKE, noteOid));
-        return activityFromJson(jso);
+        return http.postRequest(getApiPathWithNoteId(ApiRoutineEnum.UNDO_LIKE, noteOid))
+            .map(HttpReadResult::getJsonObject)
+            .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
     }
-
 }

@@ -25,6 +25,7 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionData;
+import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.http.OAuthService;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConfig;
@@ -51,6 +52,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 import androidx.annotation.NonNull;
+import io.vavr.control.Try;
 
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 
@@ -180,7 +182,7 @@ public abstract class Connection implements IsEmpty {
     @NonNull
     protected String getApiPathFromOrigin(ApiRoutineEnum routine) {
         return "";
-    };
+    }
 
     /**
      * Full path of the API. Logged
@@ -444,7 +446,7 @@ public abstract class Connection implements IsEmpty {
         return this;
     }
 
-    public final JSONObject postRequest(Uri apiUri, JSONObject formParams) throws ConnectionException {
+    public final Try<HttpReadResult> postRequest(Uri apiUri, JSONObject formParams) throws ConnectionException {
         return http.postRequest(apiUri, formParams);
     }
 

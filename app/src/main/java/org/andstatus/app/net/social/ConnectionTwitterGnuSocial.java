@@ -22,6 +22,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
+import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
@@ -136,8 +137,9 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
         } catch (JSONException e) {
             MyLog.e(this, e);
         }
-        JSONObject jso = postRequest(ApiRoutineEnum.UPDATE_NOTE, formParams);
-        return activityFromJson(jso);
+        return postRequest(ApiRoutineEnum.UPDATE_NOTE, formParams)
+            .map(HttpReadResult::getJsonObject)
+            .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
     }
     
     @Override
@@ -209,7 +211,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
         return createLikeActivity(activity);
     }
 
-    public static AActivity createLikeActivity(AActivity activityIn) {
+    static AActivity createLikeActivity(AActivity activityIn) {
         final Note noteIn = activityIn.getNote();
         Matcher matcher = GNU_SOCIAL_FAVORITED_SOMETHING_BY_PATTERN.matcher(noteIn.getContent());
         if (!matcher.matches()) {

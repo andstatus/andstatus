@@ -20,6 +20,7 @@ import android.net.Uri;
 
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
+import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
@@ -33,6 +34,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import androidx.annotation.NonNull;
+import io.vavr.control.Try;
 
 import static org.andstatus.app.net.social.activitypub.ConnectionActivityPub.CONTENT_PROPERTY;
 import static org.andstatus.app.net.social.activitypub.ConnectionActivityPub.FULL_IMAGE_OBJECT;
@@ -80,28 +82,31 @@ class ActivitySender {
     }
     
     AActivity send(ActivityType activityType) throws ConnectionException {
-        return connection.activityFromJson(sendInternal(activityType));
+        return sendInternal(activityType)
+            .map(HttpReadResult::getJsonObject)
+            .map(connection::activityFromJson).getOrElseThrow(ConnectionException::of);
     }
 
-    private JSONObject sendInternal(ActivityType activityTypeIn) throws ConnectionException {
+    private Try<HttpReadResult> sendInternal(ActivityType activityTypeIn) throws ConnectionException {
         ActivityType activityType = isExisting()
                 ? (activityTypeIn.equals(ActivityType.CREATE) ? ActivityType.UPDATE : activityTypeIn)
                 : ActivityType.CREATE;
         String msgLog = "Activity '" + activityType + "'" + (isExisting() ? " objectId:'" + objectId + "'" : "");
-        JSONObject activityResponse = null;
+        Try<HttpReadResult> activityResponse = null;
         JSONObject activity = null;
         try {
             activity = buildActivityToSend(activityType);
             ConnectionAndUrl conu = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPDATE_NOTE,
                     connection.getData().getAccountActor());
             activityResponse = connection.postRequest(conu.uri, activity);
-            if (activityResponse == null) {
-                throw ConnectionException.hardConnectionException(msgLog + " returned no data", null);
+            if (activityResponse.map(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of) == null) {
+                return Try.failure(ConnectionException.hardConnectionException(msgLog + " returned no data", null));
             }
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, msgLog + " " + activityResponse.toString(2));
-            }
-            if (contentNotPosted(activityType, activityResponse)) {
+            activityResponse.filter(r -> MyLog.isVerboseEnabled()).map(HttpReadResult::getJsonObject)
+                .map(jso -> msgLog + " " + jso.toString(2))
+                .onSuccess(message -> MyLog.v(this, message));
+            if (activityResponse.map(HttpReadResult::getJsonObject).map(jso -> contentNotPosted(activityType, jso))
+                    .getOrElse(true)) {
                 if (MyLog.isVerboseEnabled()) {
                     MyLog.v(this, msgLog + " Pump.io bug: content is not sent, " +
                             "when an image object is posted. Sending an update");
@@ -110,8 +115,7 @@ class ActivitySender {
                 activityResponse = connection.postRequest(conu.uri, activity);
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, msgLog, e,
-                    activityResponse == null ? activity : activityResponse);
+            throw ConnectionException.loggedJsonException(this, msgLog, e, activity);
         }
         return activityResponse;
     }
@@ -211,22 +215,23 @@ class ActivitySender {
      */
     @NonNull
     private JSONObject uploadMedia() throws ConnectionException {
-        JSONObject obj1 = null;
+        JSONObject formParams = new JSONObject();
         try {
-            JSONObject formParams = new JSONObject();
             formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mMediaUri.toString());
             ConnectionAndUrl conu = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPDATE_NOTE_WITH_MEDIA,
                     connection.getData().getAccountActor());
-            obj1 = connection.postRequest(conu.uri, formParams);
-            if (obj1 == null) {
-                throw new ConnectionException("Error uploading '" + mMediaUri.toString() + "': null response returned");
+            Try<HttpReadResult> result = connection.postRequest(conu.uri, formParams);
+            if (result.map(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of) == null) {
+                result = Try.failure(new ConnectionException(
+                        "Error uploading '" + mMediaUri + "': null response returned"));
             }
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "uploaded '" + mMediaUri.toString() + "' " + obj1.toString(2));
-            }
-            return obj1;
+            result.filter(r -> MyLog.isVerboseEnabled()).map(HttpReadResult::getJsonObject)
+                .map(jso -> jso.toString(2))
+                .onSuccess(message -> MyLog.v(this, "uploaded '" + mMediaUri + "' " + message));
+            return result.map(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of);
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, "Error uploading '" + mMediaUri.toString() + "'", e, obj1);
+            throw ConnectionException.loggedJsonException(this,
+                    "Error uploading '" + mMediaUri + "'", e, formParams);
         }
     }
 

@@ -87,6 +87,12 @@ public class ConnectionException extends IOException {
     private final boolean isHardError;
     private final URL host;
 
+    public static ConnectionException of(Throwable e) {
+        return e instanceof ConnectionException
+                ? (ConnectionException) e
+                : new ConnectionException("Unexpected exception", e);
+    }
+
     public static ConnectionException from(HttpReadResult result) {
         return new ConnectionException(result);
     }

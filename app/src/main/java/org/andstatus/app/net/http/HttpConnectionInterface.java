@@ -34,6 +34,8 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
+import io.vavr.control.Try;
+
 public interface HttpConnectionInterface {
     String USER_AGENT = "AndStatus";
     String KEY_MEDIA_PART_NAME = "media_part_name";
@@ -61,11 +63,11 @@ public interface HttpConnectionInterface {
         return true;
     }
 
-    default JSONObject postRequest(Uri uri) throws ConnectionException {
+    default Try<HttpReadResult> postRequest(Uri uri) throws ConnectionException {
         return postRequest(uri, new JSONObject());
     }
 
-    default JSONObject postRequest(Uri uri, JSONObject formParams) throws ConnectionException {
+    default Try<HttpReadResult> postRequest(Uri uri, JSONObject formParams) throws ConnectionException {
         /* See https://github.com/andstatus/andstatus/issues/249 */
         if (getData().getUseLegacyHttpProtocol() == TriState.UNKNOWN) {
             try {
@@ -80,8 +82,8 @@ public interface HttpConnectionInterface {
         return postRequestOneHttpProtocol(uri, formParams, getData().getUseLegacyHttpProtocol().toBoolean(true));
     }
 
-    default JSONObject postRequestOneHttpProtocol(Uri path, JSONObject formParams,
-                                                  boolean isLegacyHttpProtocol) throws ConnectionException {
+    default Try<HttpReadResult> postRequestOneHttpProtocol(Uri path, JSONObject formParams,
+                                                           boolean isLegacyHttpProtocol) throws ConnectionException {
         if (UriUtils.isEmpty(path)) {
             throw new IllegalArgumentException("URL is empty");
         }
@@ -91,8 +93,7 @@ public interface HttpConnectionInterface {
         );
         postRequest(result);
         MyLog.logNetworkLevelMessage("post_response", getData().getLogName(), result.strResponse);
-        result.parseAndThrow();
-        return result.getJsonObject();
+        return Try.success(result).map(HttpReadResult::parseAndThrow);
     }
     
     default void postRequest(HttpReadResult result) throws ConnectionException {
