@@ -92,7 +92,7 @@ public interface HttpConnectionInterface {
             MyLog.logNetworkLevelMessage("post_form", getData().getLogName(), params)
         );
         postRequest(result);
-        MyLog.logNetworkLevelMessage("post_response", getData().getLogName(), result.strResponse);
+        result.logResponse("post_response", getData().getLogName());
         return Try.success(result).map(HttpReadResult::parseAndThrow);
     }
     
@@ -115,7 +115,7 @@ public interface HttpConnectionInterface {
         HttpReadResult result = new HttpReadResult(uri, new JSONObject());
         result.authenticate = authenticated;
         getRequest(result);
-        MyLog.logNetworkLevelMessage("get_response", getData().getLogName(), result.strResponse);
+        result.logResponse("get_response", getData().getLogName());
         result.parseAndThrow();
         return result;
     }
@@ -210,11 +210,8 @@ public interface HttpConnectionInterface {
 
     default void logFollowingRedirects(HttpReadResult result) {
         if (MyLog.isVerboseEnabled()) {
-            MyStringBuilder builder = MyStringBuilder.of("Following redirect to '" + result.getUrl())
-                    .atNewLine("Headers:");
-            for (Map.Entry<String, List<String>> header: result.getHeaders().entrySet()) {
-                builder.atNewLine(header.getKey(), header.getValue().toString());
-            }
+            MyStringBuilder builder = MyStringBuilder.of("Following redirect to '" + result.getUrl());
+            result.appendHeaders(builder);
             MyLog.v(this, builder.toString());
         }
     }

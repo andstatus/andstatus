@@ -25,6 +25,8 @@ import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
+import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
@@ -180,6 +182,7 @@ public class HttpReadResult {
                 + (redirected ? "; redirected from:'" + uriInitial + "'" : "")
                 + formParams.map(params -> "; posted:'" + params + "'").orElse("")
                 + (StringUtils.isEmpty(strResponse) ? "" : "; response:'" + I18n.trimTextAt(strResponse, 40) + "'")
+                + location.map(str -> "; location:'" + str + "'").orElse("")
                 + (exception == null ? "" : "; \nexception: " + exception.toString())
                 + (fileResult == null ? "" : "; saved to file");
     }
@@ -316,5 +319,23 @@ public class HttpReadResult {
 
     Try<HttpReadResult> toFailure() {
         return Try.failure(ConnectionException.from(this));
+    }
+
+    public HttpReadResult logResponse(Object objTag, String namePrefix) {
+        if (SharedPreferencesUtil.getBoolean(MyPreferences.KEY_LOG_NETWORK_LEVEL_MESSAGES, false)) {
+            if ( strResponse != null) {
+                MyLog.logNetworkLevelMessage(objTag, namePrefix, strResponse);
+            }
+            MyLog.i(objTag, namePrefix + ": " + appendHeaders(MyStringBuilder.of("")).toString());
+        }
+        return this;
+    }
+
+    MyStringBuilder appendHeaders(MyStringBuilder builder) {
+        builder.atNewLine("Headers:");
+        for (Map.Entry<String, List<String>> header: getHeaders().entrySet()) {
+            builder.atNewLine(header.getKey(), header.getValue().toString());
+        }
+        return builder;
     }
 }
