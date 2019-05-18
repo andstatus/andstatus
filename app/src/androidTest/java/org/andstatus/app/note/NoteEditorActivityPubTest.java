@@ -50,7 +50,7 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.hamcrest.Matchers.isIn;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class NoteEditorActivityPubTest extends TimelineActivityTest<ActivityViewItem> {
