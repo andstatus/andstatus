@@ -95,7 +95,7 @@ public class HttpConnectionMock extends HttpConnection {
     }
 
     @Override
-    protected void postRequest(HttpReadResult result) throws ConnectionException {
+    public void postRequest(HttpReadResult result) throws ConnectionException {
         onRequest("postRequestWithObject", result);
         throwExceptionIfSet();
     }
@@ -116,12 +116,12 @@ public class HttpConnectionMock extends HttpConnection {
     }
 
     @Override
-    String getUserToken() {
+    public String getUserToken() {
         return userToken;
     }
 
     @Override
-    String getUserSecret() {
+    public String getUserSecret() {
         return userSecret;
     }
 
@@ -223,7 +223,7 @@ public class HttpConnectionMock extends HttpConnection {
     }
 
     @Override
-    protected void getRequest(HttpReadResult result) throws ConnectionException {
+    public void getRequest(HttpReadResult result) throws ConnectionException {
         getRequestInner("getRequest", result);
     }
 

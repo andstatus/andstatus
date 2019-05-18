@@ -50,17 +50,21 @@ class ConnectionAndUrl {
     static ConnectionAndUrl fromActor(ConnectionActivityPub connection, Connection.ApiRoutineEnum apiRoutine, Actor actor) throws ConnectionException {
         final Optional<Uri> endpoint = actor.getEndpoint(ActorEndpointType.from(apiRoutine));
         if (!endpoint.isPresent()) {
-            throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine + ": endpoint is empty for " + actor);
+            throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine +
+                    ": endpoint is empty for " + actor);
         }
         return new ConnectionAndUrl(endpoint.get(), getConnection(connection, apiRoutine, actor));
     }
 
-    private static HttpConnection getConnection(ConnectionActivityPub connection, Connection.ApiRoutineEnum apiRoutine, Actor actor) throws ConnectionException {
+    private static HttpConnection getConnection(ConnectionActivityPub connection, Connection.ApiRoutineEnum apiRoutine,
+                                                Actor actor) throws ConnectionException {
         HttpConnection httpConnection = connection.getHttp();
         String host = actor.getHost();
         if (StringUtils.isEmpty(host)) {
-            throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine + ": host is empty for " + actor);
-        } else if (connection.getHttp().data.originUrl == null || host.compareToIgnoreCase(connection.getHttp().data.originUrl.getHost()) != 0) {
+            throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine +
+                    ": host is empty for " + actor);
+        } else if (connection.getHttp().data.originUrl == null || host.compareToIgnoreCase(
+                connection.getHttp().data.originUrl.getHost()) != 0) {
             MyLog.v(connection, () -> "Requesting data from the host: " + host);
             HttpConnectionData connectionData1 = connection.getHttp().data.copy();
             connectionData1.oauthClientKeys = null;

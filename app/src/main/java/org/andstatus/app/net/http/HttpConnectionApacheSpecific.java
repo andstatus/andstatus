@@ -26,9 +26,8 @@ import cz.msebera.android.httpclient.client.methods.HttpPost;
  * Implementation, specific to Basic or OAuth 
  * @author yvolk@yurivolkov.com
  */
-public interface HttpConnectionApacheSpecific {
+public interface HttpConnectionApacheSpecific extends HttpConnectionInterface {
     void httpApachePostRequest(HttpPost httpPost, HttpReadResult result) throws ConnectionException;
     HttpResponse httpApacheGetResponse(HttpGet httpGet) throws IOException;
     void httpApacheSetAuthorization(HttpGet httpGet) throws IOException;
-    SslModeEnum getSslMode();
 }

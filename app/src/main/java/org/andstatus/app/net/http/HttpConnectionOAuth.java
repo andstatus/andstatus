@@ -125,12 +125,12 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
     }
 
     @Override
-    String getUserToken() {
+    public String getUserToken() {
         return userToken;
     }
 
     @Override
-    String getUserSecret() {
+    public String getUserSecret() {
         return userSecret;
     }
 

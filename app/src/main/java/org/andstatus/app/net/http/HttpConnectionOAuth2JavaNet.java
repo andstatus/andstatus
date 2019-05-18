@@ -32,7 +32,6 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -85,7 +84,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
     }
 
     @Override
-    protected void postRequest(HttpReadResult result) throws ConnectionException {
+    public void postRequest(HttpReadResult result) throws ConnectionException {
         if (data.areOAuthClientKeysPresent()) {
             postRequestOauth(result);
         } else {
@@ -124,7 +123,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             });
             signRequest(request, service, false);
             final Response response = service.execute(request);
-            result.setStatusCode(response.getCode());
+            setStatusCodeAndHeaders(result, response);
             HttpConnectionUtils.readStream(result, response.getStream());
             if (result.getStatusCode() != OK) {
                 throw result.getExceptionFromJsonErrorResponse();
@@ -138,7 +137,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
     }
 
     @Override
-    protected void getRequest(HttpReadResult result) throws ConnectionException {
+    public void getRequest(HttpReadResult result) throws ConnectionException {
         String method = "getRequest; ";
         StringBuilder logBuilder = new StringBuilder(method);
         try {
@@ -153,7 +152,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                     signRequest(request, service, redirected);
                 }
                 Response response = service.execute(request);
-                result.setStatusCode(response.getCode());
+                setStatusCodeAndHeaders(result, response);
                 switch(result.getStatusCode()) {
                     case OK:
                         HttpConnectionUtils.readStream(result, response.getStream());
@@ -161,26 +160,8 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                         break;
                     case MOVED:
                         redirected = true;
-                        final String location = response.getHeader("Location");
-                        stop = StringUtils.isEmpty(location);
-                        if (stop) {
-                            result.onNoLocationHeaderOnMoved();
-                        } else {
-                            result.setUrl(location.replace("%3F", "?"));
-                            String logMsg3 = (result.redirected ? "Following redirect to "
-                                    : "Not redirected to ") + "'" + result.getUrl() + "'";
-                            logBuilder.append(logMsg3 + "; ");
-                            if (MyLog.isVerboseEnabled()) {
-                                MyLog.v(this, method + logMsg3);
-
-                                StringBuilder message = new StringBuilder(method + "Headers: ");
-                                for (Map.Entry<String, String> entry : response.getHeaders().entrySet()) {
-                                    message.append(entry.getKey() +": " + entry.getValue() + ";\n");
-                                }
-                                MyLog.v(this, message.toString());
-                            }
-                            // TODO: ?! ...disconnect();
-                        }
+                        stop = onMoved(result);
+                        // TODO: ?! ...disconnect();
                         break;
                     default:
                         HttpConnectionUtils.readStream(result, response.getStream());
@@ -202,6 +183,11 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             Thread.currentThread().interrupt();
             throw new ConnectionException(logBuilder.toString(), e);
         }
+    }
+
+    private void setStatusCodeAndHeaders(HttpReadResult result, Response response) {
+        result.setStatusCode(response.getCode());
+        result.setHeaders(response.getHeaders().entrySet().stream(), Map.Entry::getKey, Map.Entry::getValue);
     }
 
     @Override

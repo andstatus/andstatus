@@ -18,11 +18,11 @@ package org.andstatus.app.net.http;
 
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
@@ -76,9 +76,6 @@ public class HttpConnectionApacheCommon {
     }
 
     protected void getRequest(HttpReadResult result) {
-        String method = "getRequest; ";
-        // See http://hc.apache.org/httpcomponents-client-ga/tutorial/html/fundamentals.html
-        HttpResponse httpResponse = null;
         try {
             boolean stop = false;
             do {
@@ -87,10 +84,9 @@ public class HttpConnectionApacheCommon {
                 if (result.authenticate) {
                     specific.httpApacheSetAuthorization(httpGet);
                 }
-                httpResponse = specific.httpApacheGetResponse(httpGet);
-                StatusLine statusLine = httpResponse.getStatusLine();
-                result.statusLine = statusLine.toString();
-                result.setStatusCode(statusLine.getStatusCode());
+                // See http://hc.apache.org/httpcomponents-client-ga/tutorial/html/fundamentals.html
+                HttpResponse httpResponse = specific.httpApacheGetResponse(httpGet);
+                setStatusCodeAndHeaders(result, httpResponse);
                 switch (result.getStatusCode()) {
                     case OK:
                     case UNKNOWN:
@@ -101,29 +97,10 @@ public class HttpConnectionApacheCommon {
                         stop = true;
                         break;
                     case MOVED:
-                        result.appendToLog( "statusLine:'" + statusLine + "'");
-                        result.redirected = true;
-                        final Header[] locations = httpResponse.getHeaders("Location");
-                        final String location = locations != null && locations.length > 0 ? locations[0].getValue() : "";
-                        stop = StringUtils.isEmpty(location);
-                        if (stop) {
-                            result.onNoLocationHeaderOnMoved();
-                        } else {
-                            result.setUrl(location.replace("%3F", "?"));
-                            String logMsg3 = "Following redirect to '" + result.getUrl() + "'";
-                            if (MyLog.isVerboseEnabled()) {
-                                MyLog.v(this, method + logMsg3);
-
-                                StringBuilder message = new StringBuilder(method + "Headers: ");
-                                for (Header header: httpResponse.getAllHeaders()) {
-                                    message.append(header.getName() +": " + header.getValue() + ";\n");
-                                }
-                                MyLog.v(this, message.toString());
-                            }
-                        }
+                        stop = specific.onMoved(result);
                         break;
                     default:
-                        result.appendToLog( "statusLine:'" + statusLine + "'");
+                        result.appendToLog( "statusLine:'" + result.statusLine + "'");
                         entity = httpResponse.getEntity();
                         if (entity != null) {
                             HttpConnectionUtils.readStream(result, entity.getContent());
@@ -140,11 +117,16 @@ public class HttpConnectionApacheCommon {
             } while (!stop);
         } catch (IOException | IllegalArgumentException e) {
             result.setException(e);
-        } finally {
-            DbUtils.closeSilently(httpResponse);
         }
     }
-    
+
+    static void setStatusCodeAndHeaders(HttpReadResult result, HttpResponse httpResponse) {
+        StatusLine statusLine = httpResponse.getStatusLine();
+        result.statusLine = statusLine.toString();
+        result.setStatusCode(statusLine.getStatusCode());
+        result.setHeaders(Arrays.stream(httpResponse.getAllHeaders()), Header::getName, Header::getValue);
+    }
+
     private HttpGet newHttpGet(String url) {
         HttpGet httpGet = new HttpGet(url);
         httpGet.setHeader("User-Agent", HttpConnection.USER_AGENT);

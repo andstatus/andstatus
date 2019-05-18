@@ -35,9 +35,18 @@ import org.json.JSONTokener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import androidx.annotation.NonNull;
 import io.vavr.control.Try;
 
 public class HttpReadResult {
@@ -46,6 +55,8 @@ public class HttpReadResult {
     final ConnectionRequired connectionRequired;
     private String urlString = "";
     private URL url;
+    private Map<String, List<String>> headers = Collections.emptyMap();
+    private Optional<String> location = Optional.empty();
     boolean authenticate = true;
     private boolean mIsLegacyHttpProtocol = false;
     final long maxSizeBytes;
@@ -78,7 +89,41 @@ public class HttpReadResult {
         maxSizeBytes = MyPreferences.getMaximumSizeOfAttachmentBytes();
     }
 
-    public final void setUrl(String urlIn) {
+    public Map<String, List<String>> getHeaders() {
+        return headers;
+    }
+
+    <T> HttpReadResult setHeaders(Stream<T> headers, Function<T, String> keyMapper, Function<T, String> valueMapper) {
+        return setHeaders(headers.collect(toHeaders(keyMapper, valueMapper)));
+    }
+
+    private HttpReadResult setHeaders(@NonNull Map<String, List<String>> headers) {
+        this.headers = headers;
+        this.location = Optional.ofNullable(this.headers.get("Location")).orElse(Collections.emptyList()).stream()
+                .filter(StringUtils::nonEmpty)
+                .findFirst()
+                .map(l -> l.replace("%3F", "?"));
+        return this;
+    }
+
+    private static <T> Collector<T, ?, Map<String, List<String>>> toHeaders(
+            Function<T, String> keyMapper,
+            Function<T, String> valueMapper) {
+        return Collectors.toMap(
+                keyMapper,
+                v -> Collections.singletonList(valueMapper.apply(v)),
+                (a, b) -> {
+                    List<String> out = new ArrayList<>(a);
+                    out.addAll(b);
+                    return out;
+                });
+    }
+
+    public Optional<String> getLocation() {
+        return location;
+    }
+
+    public final HttpReadResult setUrl(String urlIn) {
         if (!StringUtils.isEmpty(urlIn) && !urlString.contentEquals(urlIn)) {
             redirected = !StringUtils.isEmpty(urlString);
             urlString = urlIn;
@@ -89,6 +134,7 @@ public class HttpReadResult {
                 url = UrlUtils.MALFORMED;
             }
         }
+        return this;
     }
     
     void setStatusCode(int intStatusCodeIn) {
@@ -222,8 +268,10 @@ public class HttpReadResult {
         }
     }
 
-    public void setException(Exception e) {
-        exception = e;
+    public void setException(Throwable e) {
+        exception = e instanceof Exception
+            ? (Exception) e
+            : new ConnectionException("Unexpected exception", e);
     }
 
     public Exception getException() {
@@ -265,12 +313,7 @@ public class HttpReadResult {
         return this;
     }
 
-    void onNoLocationHeaderOnMoved() {
-        redirected = true;
-        setException(new IllegalArgumentException("No 'Location' header on MOVED response"));
-    }
-
-    public Try<HttpReadResult> toFailure() {
+    Try<HttpReadResult> toFailure() {
         return Try.failure(ConnectionException.from(this));
     }
 }

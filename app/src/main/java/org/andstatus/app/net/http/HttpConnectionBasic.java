@@ -27,7 +27,6 @@ import java.nio.charset.Charset;
 
 import cz.msebera.android.httpclient.HttpEntity;
 import cz.msebera.android.httpclient.HttpResponse;
-import cz.msebera.android.httpclient.StatusLine;
 import cz.msebera.android.httpclient.client.HttpClient;
 import cz.msebera.android.httpclient.client.methods.HttpGet;
 import cz.msebera.android.httpclient.client.methods.HttpPost;
@@ -42,7 +41,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
     }  
 
     @Override
-    protected void postRequest(HttpReadResult result) throws ConnectionException {
+    public void postRequest(HttpReadResult result) throws ConnectionException {
         new HttpConnectionApacheCommon(this, data).postRequest(result);
     }
 
@@ -55,9 +54,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
                 postMethod.addHeader("Authorization", "Basic " + getCredentials());
             }
             HttpResponse httpResponse = client.execute(postMethod);
-            StatusLine statusLine = httpResponse.getStatusLine();
-            result.statusLine = statusLine.toString();
-            result.setStatusCode(statusLine.getStatusCode());
+            HttpConnectionApacheCommon.setStatusCodeAndHeaders(result, httpResponse);
             HttpEntity httpEntity = httpResponse.getEntity();
             HttpConnectionUtils.readStream(result, httpEntity == null ? null : httpEntity.getContent());
         } catch (Exception e) {
@@ -129,7 +126,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
     }
 
     @Override
-    protected void getRequest(HttpReadResult result) throws ConnectionException {
+    public void getRequest(HttpReadResult result) throws ConnectionException {
         new HttpConnectionApacheCommon(this, data).getRequest(result);
     }
 }

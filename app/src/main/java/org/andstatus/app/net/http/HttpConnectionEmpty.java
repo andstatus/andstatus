@@ -20,27 +20,6 @@ public class HttpConnectionEmpty extends HttpConnection {
     public static final HttpConnectionEmpty EMPTY = new HttpConnectionEmpty();
 
     private HttpConnectionEmpty() {
-        data = HttpConnectionData.EMPTY;
+        setHttpConnectionData(HttpConnectionData.EMPTY);
     }
-
-    @Override
-    public void clearAuthInformation() {
-        // Empty
-    }
-
-    @Override
-    public boolean getCredentialsPresent() {
-        return false;
-    }
-
-    @Override
-    protected void getRequest(HttpReadResult result) throws ConnectionException {
-        // Empty
-    }
-
-    @Override
-    protected void postRequest(HttpReadResult result) throws ConnectionException {
-        // Empty
-    }
-
 }

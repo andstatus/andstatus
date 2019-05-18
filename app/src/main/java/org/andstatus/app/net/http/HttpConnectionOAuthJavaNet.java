@@ -26,7 +26,7 @@ import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -39,9 +39,7 @@ import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
@@ -125,7 +123,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
     }
     
     @Override
-    protected void postRequest(HttpReadResult result) throws ConnectionException {
+    public void postRequest(HttpReadResult result) throws ConnectionException {
         try {
             HttpURLConnection conn = (HttpURLConnection) result.getUrlObj().openConnection();
             conn.setDoOutput(true);
@@ -142,7 +140,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                     result.setException(e);
                 }
             });
-            result.setStatusCode(conn.getResponseCode());
+            setStatusCodeAndHeaders(result, conn);
             switch(result.getStatusCode()) {
                 case OK:
                     HttpConnectionUtils.readStream(result, conn.getInputStream());
@@ -197,7 +195,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
         return consumer;
     }
 
-    protected void getRequest(HttpReadResult result) throws ConnectionException {
+    public void getRequest(HttpReadResult result) throws ConnectionException {
         String method = "getRequest; ";
         StringBuilder logBuilder = new StringBuilder(method);
         try {
@@ -213,7 +211,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                     signConnection(conn, consumer, redirected);
                 }
                 conn.connect();
-                result.setStatusCode(conn.getResponseCode());
+                setStatusCodeAndHeaders(result, conn);
                 switch(result.getStatusCode()) {
                     case OK:
                         HttpConnectionUtils.readStream(result, conn.getInputStream());
@@ -221,27 +219,8 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                         break;
                     case MOVED:
                         redirected = true;
-                        final String location = conn.getHeaderField("Location");
-                        result.setUrl(location.replace("%3F", "?"));
-                        stop = StringUtils.isEmpty(location);
-                        if (stop) {
-                            result.onNoLocationHeaderOnMoved();
-                        } else {
-                            String logMsg3 = (result.redirected ? "Following redirect to "
-                                    : "Not redirected to ") + "'" + result.getUrl() + "'";
-                            logBuilder.append(logMsg3 + "; ");
-                            MyLog.v(this, () -> method + logMsg3);
-                            if (MyLog.isVerboseEnabled()) {
-                                StringBuilder message = new StringBuilder(method + "Headers: ");
-                                for (Entry<String, List<String>> entry : conn.getHeaderFields().entrySet()) {
-                                    for (String value : entry.getValue()) {
-                                        message.append(entry.getKey() +": " + value + ";\n");
-                                    }
-                                }
-                                MyLog.v(this, message::toString);
-                            }
-                            conn.disconnect();
-                        }
+                        stop = onMoved(result);
+                        conn.disconnect();
                         break;
                     default:
                         HttpConnectionUtils.readStream(result, conn.getErrorStream());
@@ -260,6 +239,15 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
         } catch(IOException e) {
             throw new ConnectionException(logBuilder.toString(), e);
         }
+    }
+
+    private void setStatusCodeAndHeaders(HttpReadResult result, HttpURLConnection conn) throws IOException {
+        result.setStatusCode(conn.getResponseCode());
+        result.setHeaders(
+                conn.getHeaderFields().entrySet().stream().flatMap(entry -> entry.getValue().stream()
+                        .map(value -> new ImmutablePair<>(entry.getKey(), value))),
+                Map.Entry::getKey,
+                Map.Entry::getValue);
     }
 
     protected void signConnection(HttpURLConnection conn, OAuthConsumer consumer, boolean redirected)
