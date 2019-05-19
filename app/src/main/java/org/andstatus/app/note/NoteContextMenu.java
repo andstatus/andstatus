@@ -225,7 +225,7 @@ public class NoteContextMenu extends MyContextMenu {
             }
 
             if (accountToNote.isAuthorSucceededMyAccount()) {
-                if (noteForAnyAccount.isLoaded()) {
+                if (noteForAnyAccount.isPresentAtServer()) {
                     if (!accountToNote.reblogged && getActingAccount().getConnection()
                             .hasApiEndpoint(Connection.ApiRoutineEnum.DELETE_NOTE)) {
                         NoteContextMenuItem.DELETE_NOTE.addTo(menu, order++,
@@ -254,7 +254,9 @@ public class NoteContextMenu extends MyContextMenu {
                         break;
                 }
             }
-            NoteContextMenuItem.GET_NOTE.addTo(menu, order, R.string.get_message);
+            if (noteForAnyAccount.isPresentAtServer()) {
+                NoteContextMenuItem.GET_NOTE.addTo(menu, order, R.string.get_message);
+            }
         } catch (Exception e) {
             MyLog.e(this, method, e);
         }

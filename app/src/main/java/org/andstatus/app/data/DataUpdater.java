@@ -155,29 +155,36 @@ public class DataUpdater {
                 note.noteId = MyQuery.oidToId(OidEnum.NOTE_OID, note.origin.getId(), note.oid);
             }
 
+            final long updatedDateStored;
+            final DownloadStatus statusStored;
+            if (note.noteId != 0) {
+                statusStored = DownloadStatus.load(
+                        MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, note.noteId));
+                updatedDateStored = MyQuery.noteIdToLongColumnValue(NoteTable.UPDATED_DATE, note.noteId);
+            } else {
+                updatedDateStored = 0;
+                statusStored = DownloadStatus.ABSENT;
+            }
+
             /*
              * Is the row first time retrieved from a Social Network?
              * Note can already exist in this these cases:
-             * 1. There was only "a stub" stored (without a sent date and a body)
-             * 2. Note was "unsent"
+             * 1. There was only "a stub" stored (without a sent date and content)
+             * 2. Note was "unsent" i.e. it had content, but didn't have oid
              */
-            boolean isFirstTimeLoaded1 = note.getStatus() == DownloadStatus.LOADED || note.noteId == 0;
-            boolean isDraftUpdated = !isFirstTimeLoaded1
-                    && (note.getStatus() == DownloadStatus.SENDING || note.getStatus() == DownloadStatus.DRAFT);
-
-            long updatedDateStored = 0;
-            if (note.noteId != 0) {
-                DownloadStatus statusStored = DownloadStatus.load(
-                        MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, note.noteId));
-                updatedDateStored = MyQuery.noteIdToLongColumnValue(NoteTable.UPDATED_DATE, note.noteId);
-                if (isFirstTimeLoaded1) {
-                    isFirstTimeLoaded1 = statusStored != DownloadStatus.LOADED;
-                }
+            final boolean isFirstTimeLoaded = (note.getStatus() == DownloadStatus.LOADED || note.noteId == 0) &&
+                    statusStored != DownloadStatus.LOADED;
+            boolean isFirstTimeSent = !isFirstTimeLoaded && note.noteId != 0 &&
+                    StringUtils.nonEmptyNonTemp(note.oid) &&
+                    statusStored.isUnsentDraft() &&
+                    StringUtils.isEmptyOrTemp(MyQuery.idToOid(OidEnum.NOTE_OID, note.noteId, 0));
+            if (note.getStatus() == DownloadStatus.UNKNOWN && isFirstTimeSent) {
+                note.setStatus(DownloadStatus.SENT);
             }
-            boolean isFirstTimeLoaded = isFirstTimeLoaded1;
+            boolean isDraftUpdated = !isFirstTimeLoaded && !isFirstTimeSent && note.getStatus().isUnsentDraft();
 
             boolean isNewerThanInDatabase = note.getUpdatedDate() > updatedDateStored;
-            if (!isFirstTimeLoaded && !isDraftUpdated && !isNewerThanInDatabase) {
+            if (!isFirstTimeLoaded && !isFirstTimeSent && !isDraftUpdated && !isNewerThanInDatabase) {
                 MyLog.v("Note", () -> "Skipped note as not younger " + note);
                 return;
             }
@@ -188,12 +195,16 @@ public class DataUpdater {
                 values.put(NoteTable.INS_DATE, MyLog.uniqueCurrentTimeMS());
             }
             values.put(NoteTable.NOTE_STATUS, note.getStatus().save());
-            values.put(NoteTable.UPDATED_DATE, note.getUpdatedDate());
+            if (isNewerThanInDatabase) {
+                values.put(NoteTable.UPDATED_DATE, note.getUpdatedDate());
+            }
 
             if (activity.getAuthor().actorId != 0) {
                 values.put(NoteTable.AUTHOR_ID, activity.getAuthor().actorId);
             }
-            values.put(NoteTable.NOTE_OID, note.oid);
+            if (nonEmptyOid(note.oid)) {
+                values.put(NoteTable.NOTE_OID, note.oid);
+            }
             values.put(NoteTable.ORIGIN_ID, note.origin.getId());
             if (nonEmptyOid(note.conversationOid)) {
                 values.put(NoteTable.CONVERSATION_OID, note.conversationOid);
@@ -224,7 +235,7 @@ public class DataUpdater {
             if (note.lookupConversationId() != 0) {
                 values.put(NoteTable.CONVERSATION_ID, note.getConversationId());
             }
-            if (shouldSaveAttachments(isFirstTimeLoaded, isDraftUpdated)) {
+            if (note.getStatus().mayUpdateContent() && shouldSaveAttachments(isFirstTimeLoaded, isDraftUpdated)) {
                 values.put(NoteTable.ATTACHMENTS_COUNT, note.attachments.size());
             }
 
@@ -233,6 +244,7 @@ public class DataUpdater {
                         + ":" + note.getStatus()
                         + (isFirstTimeLoaded ? " new;" : "")
                         + (isDraftUpdated ? " draft updated;" : "")
+                        + (isFirstTimeSent ? " just sent;" : "")
                         + (isNewerThanInDatabase ? " newer, updated at " + new Date(note.getUpdatedDate()) + ";"
                         : "") );
             }
@@ -256,18 +268,20 @@ public class DataUpdater {
                 execContext.getContext().getContentResolver().update(msgUri, values, null, null);
                 MyLog.v("Note", () -> "Updated " + note);
             }
-            note.audience().save(execContext.getMyContext(), note.origin, note.noteId, note.getPublic(), false);
+            if (note.getStatus().mayUpdateContent()) {
+                note.audience().save(execContext.getMyContext(), note.origin, note.noteId, note.getPublic(), false);
 
-            if (shouldSaveAttachments(isFirstTimeLoaded, isDraftUpdated)) {
-                note.attachments.save(execContext, note.noteId);
-            }
+                if (shouldSaveAttachments(isFirstTimeLoaded, isDraftUpdated)) {
+                    note.attachments.save(execContext, note.noteId);
+                }
 
-            if (keywordsFilter.matchedAny(note.getContentToSearch())) {
-                activity.setNotified(TriState.FALSE);
-            } else {
-                if (note.getStatus() == DownloadStatus.LOADED) {
-                    execContext.getResult().incrementDownloadedCount();
-                    execContext.getResult().incrementNewCount();
+                if (keywordsFilter.matchedAny(note.getContentToSearch())) {
+                    activity.setNotified(TriState.FALSE);
+                } else {
+                    if (note.getStatus() == DownloadStatus.LOADED) {
+                        execContext.getResult().incrementDownloadedCount();
+                        execContext.getResult().incrementNewCount();
+                    }
                 }
             }
         } catch (Exception e) {

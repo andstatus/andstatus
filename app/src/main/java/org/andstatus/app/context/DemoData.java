@@ -59,7 +59,7 @@ public final class DemoData {
     private static final String TAG_ASYNC = TAG + "Async";
     private static final String HTTP = "http://";
 
-    public final String testRunUid = String.valueOf(System.currentTimeMillis());
+    public final String testRunUid = MyLog.uniqueDateTimeFormatted();
     public final AtomicInteger conversationIterationCounter = new AtomicInteger(0);
 
     public final String t131tUsername = "t131t";

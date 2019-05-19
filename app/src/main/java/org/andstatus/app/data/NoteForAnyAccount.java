@@ -29,6 +29,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 import androidx.annotation.NonNull;
@@ -43,6 +44,7 @@ public class NoteForAnyAccount {
     @NonNull
     public final Origin origin;
     public final long noteId;
+    public String noteOid = "";
     public final DownloadStatus status;
     public final Actor author;
     public final Actor actor;
@@ -64,6 +66,7 @@ public class NoteForAnyAccount {
             String sql = "SELECT " + NoteTable.NOTE_STATUS + ", "
                     + NoteTable.CONTENT + ", "
                     + NoteTable.AUTHOR_ID + ","
+                    + NoteTable.NOTE_OID + ", "
                     + NoteTable.PUBLIC
                     + " FROM " + NoteTable.TABLE_NAME
                     + " WHERE " + NoteTable._ID + "=" + noteId;
@@ -72,6 +75,7 @@ public class NoteForAnyAccount {
                     statusLoc = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
                     content = DbUtils.getString(cursor, NoteTable.CONTENT);
                     authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID);
+                    noteOid = DbUtils.getString(cursor, NoteTable.NOTE_OID);
                     isPublicLoc = DbUtils.getTriState(cursor, NoteTable.PUBLIC);
                 }
             } catch (Exception e) {
@@ -99,5 +103,9 @@ public class NoteForAnyAccount {
 
     public String getBodyTrimmed() {
         return I18n.trimTextAt(MyHtml.htmlToCompactPlainText(content), 80).toString();
+    }
+
+    public boolean isPresentAtServer() {
+        return status.isPresentAtServer() || StringUtils.nonEmptyNonTemp(noteOid);
     }
 }

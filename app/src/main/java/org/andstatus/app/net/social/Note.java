@@ -173,7 +173,7 @@ public class Note extends AObject {
     public static boolean mayBeEdited(OriginType originType, DownloadStatus downloadStatus) {
         if (originType == null || downloadStatus == null) return false;
         return downloadStatus == DownloadStatus.DRAFT || downloadStatus.mayBeSent() ||
-                (downloadStatus == DownloadStatus.LOADED && originType.allowEditing());
+                (downloadStatus.isPresentAtServer() && originType.allowEditing());
     }
 
     private String evalContentToSearch() {

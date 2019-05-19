@@ -27,6 +27,7 @@ public enum DownloadStatus {
     HARD_ERROR(5, 0),
     ABSENT(6, 0),
     SENDING(7, R.string.download_status_unsent),
+    SENT(11, R.string.sent),
     DRAFT(8, R.string.download_status_draft),
     DELETED(9, 0),
     NEEDS_UPDATE(10, 0),
@@ -72,6 +73,37 @@ public enum DownloadStatus {
             case SENDING:
             case HARD_ERROR:
             case SOFT_ERROR:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public boolean isUnsentDraft() {
+        switch (this) {
+            case SENDING:
+            case DRAFT:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public boolean mayUpdateContent() {
+        switch (this) {
+            case SENDING:
+            case DRAFT:
+            case LOADED:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public boolean isPresentAtServer() {
+        switch (this) {
+            case SENT:
+            case LOADED:
                 return true;
             default:
                 return false;

@@ -655,4 +655,45 @@ public class DataUpdaterTest {
         note.via = "AndStatus";
         return activity1;
     }
+
+    @Test
+    public void sendingNoteActivityPub() {
+        MyAccount ma = demoData.getMyAccount(demoData.activityPubTestAccountName);
+        DataUpdater di = new DataUpdater(ma);
+        Actor accountActor = ma.getActor();
+        String content = "My note from ActivityPub " + demoData.testRunUid;
+
+        AActivity activity0 = AActivity.newPartialNote(accountActor, accountActor, "",
+                System.currentTimeMillis(), DownloadStatus.SENDING);
+        activity0.getNote().setContentPosted(content);
+
+        AActivity activity1 = di.onActivity(activity0);
+        Note note1 = activity1.getNote();
+        assertTrue("Note should be added " + activity1, note1.noteId != 0);
+        assertTrue("Activity should be added " + activity1, activity1.getId() != 0);
+        assertEquals("Note " + note1, DownloadStatus.SENDING, note1.getStatus());
+
+        // Response from a server
+        AActivity activity2 = AActivity.from(accountActor, ActivityType.CREATE);
+        activity2.setId(activity1.getId());
+        activity2.setTimelinePosition("https://" + demoData.activityPubMainHost + "/activities/" + MyLog.uniqueCurrentTimeMS());
+        activity2.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
+
+        // No content in the response, just oid of the note
+        Note note2 = Note.fromOriginAndOid(accountActor.origin,
+                "https://" + demoData.activityPubMainHost + "/objects/" + MyLog.uniqueCurrentTimeMS(),
+                DownloadStatus.UNKNOWN);
+        activity2.setNote(note2);
+
+        // This is what is done in org.andstatus.app.service.CommandExecutorOther.updateNote to link the notes
+        activity2.setId(activity1.getId());
+        activity2.getNote().noteId = note1.noteId;
+
+        AActivity activity3 = di.onActivity(activity2);
+        Note note3 = activity3.getNote();
+        assertEquals("The same note should be updated " + activity3, note1.noteId, note3.noteId);
+        assertEquals("Note oid " + activity3, note2.oid, MyQuery.idToOid(OidEnum.NOTE_OID, note3.noteId, 0));
+        assertTrue("Activity should be added " + activity3, activity3.getId() != 0);
+        assertEquals("Note " + note3, DownloadStatus.SENT, note3.getStatus());
+    }
 }
