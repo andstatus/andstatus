@@ -35,7 +35,9 @@ import org.andstatus.app.util.TriState;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.andstatus.app.data.ProjectionMap.NOTE_TABLE_ALIAS;
@@ -46,13 +48,7 @@ public class TimelineSql {
         // Empty
     }
 
-    /**
-     * @param uri the same as uri for
-     *            {@link MyProvider#query(Uri, String[], String, String[], String)}
-     * @param projection Projection
-     * @return String for {@link SQLiteQueryBuilder#setTables(String)}
-     */
-    static String tablesForTimeline(Uri uri, String[] projection) {
+    private static String tablesForTimeline(Uri uri, String[] projection, int subQueryIndex) {
         Timeline timeline = Timeline.fromParsedUri(MyContextHolder.get(), ParsedUri.fromUri(uri), "");
         Collection<String> columns = new java.util.HashSet<>(Arrays.asList(projection));
         SqlWhere actWhere = new SqlWhere().append(ActivityTable.UPDATED_DATE, ">0");
@@ -107,7 +103,11 @@ public class TimelineSql {
                 noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.NOTE_STATUS, "=" + DownloadStatus.SENDING.save());
                 break;
             case SENT:
-                actWhere.append(ActivityTable.ACTOR_ID, SqlIds.actorIdsOfTimelineActor(timeline));
+                if (subQueryIndex == 0) {
+                    actWhere.append(ActivityTable.ACTOR_ID, SqlIds.actorIdsOfTimelineActor(timeline));
+                } else {
+                    noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.AUTHOR_ID, SqlIds.actorIdsOfTimelineActor(timeline));
+                }
                 break;
             case UNREAD_NOTIFICATIONS:
                 actWhere.append(ActivityTable.NOTIFIED, "=" + TriState.TRUE.id)
@@ -160,6 +160,25 @@ public class TimelineSql {
                     + "=0";
         }
         return tables;
+    }
+
+    /**
+     * @param uri the same as uri for
+     *            {@link MyProvider#query(Uri, String[], String, String[], String)}
+     * @param projection Projection
+     * @return Strings for {@link SQLiteQueryBuilder#setTables(String)}, more than one for a union query
+     */
+    static List<String> tablesForTimeline(Uri uri, String[] projection) {
+        Timeline timeline = Timeline.fromParsedUri(MyContextHolder.get(), ParsedUri.fromUri(uri), "");
+        switch (timeline.getTimelineType()) {
+            case SENT:
+                return Arrays.asList(
+                        tablesForTimeline(uri, projection, 0),
+                        tablesForTimeline(uri, projection, 1)
+                );
+            default:
+                return Collections.singletonList(tablesForTimeline(uri, projection, 0));
+        }
     }
 
     public static Set<String> getConversationProjection() {

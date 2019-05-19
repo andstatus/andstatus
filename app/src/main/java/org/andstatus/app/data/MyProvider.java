@@ -42,8 +42,11 @@ import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import androidx.annotation.NonNull;
 
@@ -386,82 +389,92 @@ public class MyProvider extends ContentProvider {
      */
     @Override
     public Cursor query(@NonNull Uri uri, String[] projection, String selectionIn, String[] selectionArgsIn,
-            String sortOrder) {
+            String sortOrderIn) {
         final int PAGE_SIZE = 400;
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         boolean built = false;
-        String selection = selectionIn;
+        final List<String> tables;
+        final String where;
+        final String selection;
+        String[] selectionArgs = selectionArgsIn == null ? new String[]{} : selectionArgsIn;
+        String[] selectionArgs2 = new String[]{};
         String limit = null;
-        String[] selectionArgs = selectionArgsIn; 
         String sql = "";
 
         ParsedUri uriParser = ParsedUri.fromUri(uri);
         switch (uriParser.matched()) {
             case TIMELINE:
                 qb.setDistinct(true);
-                qb.setTables(TimelineSql.tablesForTimeline(uri, projection));
+                tables = TimelineSql.tablesForTimeline(uri, projection);
                 qb.setProjectionMap(ProjectionMap.TIMELINE);
+                selection = selectionIn;
+                where = "";
                 break;
 
             case TIMELINE_ITEM:
-                qb.setTables(TimelineSql.tablesForTimeline(uri, projection));
+                tables = TimelineSql.tablesForTimeline(uri, projection);
                 qb.setProjectionMap(ProjectionMap.TIMELINE);
-                qb.appendWhere(ProjectionMap.ACTIVITY_TABLE_ALIAS + "."
-                        + ActivityTable.NOTE_ID + "=" + uriParser.getNoteId());
+                selection = selectionIn;
+                where = ProjectionMap.ACTIVITY_TABLE_ALIAS + "."
+                        + ActivityTable.NOTE_ID + "=" + uriParser.getNoteId();
                 break;
 
             case TIMELINE_SEARCH:
-                qb.setTables(TimelineSql.tablesForTimeline(uri, projection));
+                tables = TimelineSql.tablesForTimeline(uri, projection);
                 qb.setProjectionMap(ProjectionMap.TIMELINE);
                 String rawQuery = uriParser.getSearchQuery();
                 if (StringUtils.nonEmpty(rawQuery)) {
-                    if (StringUtils.nonEmpty(selection)) {
-                        selection = " AND (" + selection + ")";
-                    } else {
-                        selection = "";
-                    }
                     KeywordsFilter searchQuery  = new KeywordsFilter(rawQuery);
-                    selection = "(" + searchQuery.getSqlSelection(NoteTable.CONTENT_TO_SEARCH) + ")" + selection;
+                    selection = "(" + searchQuery.getSqlSelection(NoteTable.CONTENT_TO_SEARCH) + ")" +
+                            (StringUtils.nonEmpty(selectionIn)
+                                ? " AND (" + selectionIn + ")"
+                                : "");
                     selectionArgs = searchQuery.prependSqlSelectionArgs(selectionArgs);
+                } else {
+                    selection = selectionIn;
                 }
+                where = "";
                 break;
 
             case ACTIVITY:
-                qb.setTables(ActivityTable.TABLE_NAME + " AS " + ProjectionMap.ACTIVITY_TABLE_ALIAS);
+                tables = Collections.singletonList(ActivityTable.TABLE_NAME + " AS " + ProjectionMap.ACTIVITY_TABLE_ALIAS);
                 qb.setProjectionMap(ProjectionMap.TIMELINE);
+                selection = selectionIn;
+                where = "";
                 break;
 
             case ACTOR:
             case ACTORLIST:
             case ACTORLIST_SEARCH:
-                qb.setTables(ActorSql.tables());
+                tables = Collections.singletonList(ActorSql.tables());
                 qb.setProjectionMap(ActorSql.fullProjectionMap);
                 rawQuery = uriParser.getSearchQuery();
                 if (StringUtils.nonEmpty(rawQuery)) {
-                    if (StringUtils.nonEmpty(selection)) {
-                        selection = " AND (" + selection + ")";
-                    } else {
-                        selection = "";
-                    }
-                    selection = "(" + ActorTable.WEBFINGER_ID + " LIKE ?" +
-                            " OR " + ActorTable.REAL_NAME + " LIKE ? )" + selection;
-
+                    selection = "(" + ActorTable.WEBFINGER_ID + " LIKE ? OR " + ActorTable.REAL_NAME + " LIKE ? )" +
+                        (StringUtils.nonEmpty(selectionIn)
+                            ? " AND (" + selectionIn + ")"
+                            : "");
                     selectionArgs = StringUtils.addBeforeArray(selectionArgs, "%" + rawQuery + "%");
                     selectionArgs = StringUtils.addBeforeArray(selectionArgs, "%" + rawQuery + "%");
+                } else {
+                    selection = selectionIn;
                 }
+                where = "";
                 limit =  String.valueOf(PAGE_SIZE);
                 break;
 
             case ACTORLIST_ITEM:
-                qb.setTables(ActorSql.tables());
+                tables = Collections.singletonList(ActorSql.tables());
                 qb.setProjectionMap(ActorSql.fullProjectionMap);
-                qb.appendWhere(BaseColumns._ID + "=" + uriParser.getActorId());
+                selection = selectionIn;
+                where = BaseColumns._ID + "=" + uriParser.getActorId();
                 break;
 
             case ACTOR_ITEM:
-                qb.setTables(ActorTable.TABLE_NAME);
+                tables = Collections.singletonList(ActorTable.TABLE_NAME);
                 qb.setProjectionMap(ActorSql.fullProjectionMap);
-                qb.appendWhere(BaseColumns._ID + "=" + uriParser.getActorId());
+                selection = selectionIn;
+                where = BaseColumns._ID + "=" + uriParser.getActorId();
                 break;
 
             default:
@@ -469,13 +482,13 @@ public class MyProvider extends ContentProvider {
         }
 
         // If no sort order is specified use the default
-        String orderBy;
-        if (StringUtils.isEmpty(sortOrder)) {
+        final String sortOrder;
+        if (StringUtils.isEmpty(sortOrderIn)) {
             switch (uriParser.matched()) {
                 case TIMELINE:
                 case TIMELINE_ITEM:
                 case TIMELINE_SEARCH:
-                    orderBy = ActivityTable.getTimelineSortOrder(uriParser.getTimelineType(), false);
+                    sortOrder = ActivityTable.getTimelineSortOrder(uriParser.getTimelineType(), false);
                     break;
 
                 case ACTOR:
@@ -483,14 +496,14 @@ public class MyProvider extends ContentProvider {
                 case ACTORLIST_ITEM:
                 case ACTORLIST_SEARCH:
                 case ACTOR_ITEM:
-                    orderBy = ActorTable.DEFAULT_SORT_ORDER;
+                    sortOrder = ActorTable.DEFAULT_SORT_ORDER;
                     break;
 
                 default:
                     throw new IllegalArgumentException(uriParser.toString());
             }
         } else {
-            orderBy = sortOrder;
+            sortOrder = sortOrderIn;
         }
 
         Cursor c = null;
@@ -499,12 +512,32 @@ public class MyProvider extends ContentProvider {
             SQLiteDatabase db = MyContextHolder.get().getDatabase();
             boolean logQuery = MyLog.isDebugEnabled();
             try {
+                if (StringUtils.nonEmpty(where)) {
+                    qb.appendWhere(where);
+                }
                 if (sql.length() == 0) {
-                    sql = qb.buildQuery(projection, selection, null, null, orderBy, limit);
+                    if (tables.size() == 1) {
+                        qb.setTables(tables.get(0));
+                        sql = qb.buildQuery(projection, selection, null, null, sortOrder, limit);
+                        selectionArgs2 = selectionArgs;
+                    } else {
+                        String[] subQueries = tables.stream().map(str -> {
+                            qb.setTables(str);
+                            return qb.buildQuery(projection, selection, null, null, null, null);
+                        }).collect(Collectors.toList()).toArray(new String[]{});
+                        for (int ind = 0; ind < subQueries.length; ind++) {
+                            // Concatenate two arrays
+                            selectionArgs2 = Stream.of(selectionArgs2, selectionArgs)
+                                    .flatMap(Stream::of)
+                                    .toArray(String[]::new);
+                        }
+                        qb.setDistinct(true);
+                        sql = qb.buildUnionQuery(subQueries, sortOrder, limit);
+                    }
                     built = true;
                 }
                 // Here we substitute ?-s in selection with values from selectionArgs
-                c = db.rawQuery(sql, selectionArgs);
+                c = db.rawQuery(sql, selectionArgs2);
                 if (c == null) {
                     MyLog.e(this, "Null cursor returned");
                     logQuery = true;
@@ -516,14 +549,14 @@ public class MyProvider extends ContentProvider {
 
             if (logQuery) {
                 String msg = "query, SQL=\"" + sql + "\"";
-                if (selectionArgs != null && selectionArgs.length > 0) {
-                    msg += "; selectionArgs=" + Arrays.toString(selectionArgs);
+                if (selectionArgs2.length > 0) {
+                    msg += "; selectionArgs=" + Arrays.toString(selectionArgs2);
                 }
                 MyLog.d(this, msg);
                 if (built && MyLog.isVerboseEnabled()) {
                     msg = "uri=" + uri + "; projection=" + Arrays.toString(projection)
-                    + "; selection=" + selection + "; sortOrder=" + sortOrder
-                    + "; qb.getTables=" + qb.getTables() + "; orderBy=" + orderBy;
+                    + "; selection=" + selection + "; sortOrder=" + sortOrderIn
+                    + "; qb.getTables=" + qb.getTables() + "; orderBy=" + sortOrder;
                     MyLog.v(this, msg);
                 }
             }
