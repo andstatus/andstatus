@@ -587,16 +587,16 @@ public class MyLog {
         return out;
     }
 
-    public static void logNetworkLevelMessage(Object objTag, String namePrefix, Object message) {
-        if (message != null && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_LOG_NETWORK_LEVEL_MESSAGES, false)) {
-            logJson(objTag, namePrefix, message, true);
+    public static void logNetworkLevelMessage(Object objTag, String namePrefix, Object jsonMessage, String textData) {
+        if (jsonMessage != null && MyPreferences.isLogNetworkLevelMessages()) {
+            String fileName = getSeparateLogFileName(namePrefix, objTag);
+            logJson(objTag, namePrefix, jsonMessage, fileName);
+            StringUtils.optNotEmpty(textData).map(txt -> writeStringToFile(txt, fileName + ".txt"));
         }
     }
    
-    public static void logJson(Object objTag, String namePrefix, Object jso, boolean toFile) {
-        if (jso == null) {
-            return;
-        }
+    public static void logJson(Object objTag, String namePrefix, @NonNull Object jso, String fileName) {
+        String logFileName = StringUtils.notEmpty(fileName, getSeparateLogFileName(namePrefix, objTag));
         try {
             boolean isEmpty = false;
             Object jso2 = jso;
@@ -618,26 +618,26 @@ public class MyLog {
             } else {
                 strJso = jso.toString();
             }
-            if (toFile && !isEmpty) {
-                writeStringToFile(strJso, uniqueDateTimeFormatted()  + "_" + namePrefix
-                        + "_" + objToTag(objTag) + "_log.json");
+            if (!isEmpty) {
+                writeStringToFile(strJso, logFileName + ".json");
             } else {
                 v(objTag, () -> namePrefix + "; jso: " + strJso);
             }
         } catch (JSONException ignored1) {
             ignored(objTag, ignored1);
             try {
-                if (toFile) {
-                    writeStringToFile(jso.toString(), uniqueDateTimeFormatted() + "_" + namePrefix 
-                            + "_" + objToTag(objTag) + "_invalid_log.json");
-                }
+                writeStringToFile(jso.toString(), logFileName + "_invalid.json");
                 v(objTag, () -> namePrefix + "; invalid obj: " + jso.toString());
             } catch (Exception ignored2) {
                 ignored(objTag, ignored2);
             }
         }
     }
-    
+
+    private static String getSeparateLogFileName(String namePrefix, Object objTag) {
+        return uniqueDateTimeFormatted() + "_" + namePrefix + "_" + objToTag(objTag);
+    }
+
     public static String uniqueDateTimeFormatted() {
         return formatDateTime(uniqueCurrentTimeMS());
     }

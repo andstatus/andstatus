@@ -45,7 +45,7 @@ public class HttpConnectionApacheCommon {
         this.data = data;
     }
 
-    protected void postRequest(HttpReadResult result) throws ConnectionException {
+    protected HttpReadResult postRequest(HttpReadResult result) {
         HttpPost httpPost = new HttpPost(result.getUrl());
         if (result.isLegacyHttpProtocol()) {
             httpPost.setProtocolVersion(HttpVersion.HTTP_1_0);
@@ -63,7 +63,7 @@ public class HttpConnectionApacheCommon {
                 MyLog.i(this, e);
             }
         });
-        specific.httpApachePostRequest(httpPost, result);
+        return specific.httpApachePostRequest(httpPost, result);
     }
 
     private void fillSinglePartPost(HttpPost httpPost, JSONObject formParams)

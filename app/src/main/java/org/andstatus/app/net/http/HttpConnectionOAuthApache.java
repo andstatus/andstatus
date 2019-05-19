@@ -61,12 +61,12 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
     }
     
     @Override
-    public void postRequest(HttpReadResult result) throws ConnectionException {
-        new HttpConnectionApacheCommon(this, data).postRequest(result);
+    public HttpReadResult postRequest(HttpReadResult result) {
+        return new HttpConnectionApacheCommon(this, data).postRequest(result);
     }
     
     @Override
-    public void httpApachePostRequest(HttpPost post, HttpReadResult result) throws ConnectionException {
+    public HttpReadResult httpApachePostRequest(HttpPost post, HttpReadResult result) {
         try {
             // TODO: Redo like for get request
             if (result.authenticate) {
@@ -79,6 +79,7 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
             // what was a real cause of it. So let's make code clearer.
             result.setException(e);
         }
+        return result;
     }
 
     @Override

@@ -85,15 +85,15 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
     }
 
     @Override
-    public void postRequest(HttpReadResult result) throws ConnectionException {
+    public HttpReadResult postRequest(HttpReadResult result) {
         if (data.areOAuthClientKeysPresent()) {
-            postRequestOauth(result);
+            return postRequestOauth(result);
         } else {
-            super.postRequest(result);
+            return super.postRequest(result);
         }
     }
 
-    private void postRequestOauth(HttpReadResult result) {
+    private HttpReadResult postRequestOauth(HttpReadResult result) {
         try {
             OAuth20Service service = getService(false);
             final OAuthRequest request = new OAuthRequest(Verb.POST, result.getUrlObj().toString());
@@ -135,6 +135,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             Thread.currentThread().interrupt();
             result.setException(e);
         }
+        return result;
     }
 
     @Override

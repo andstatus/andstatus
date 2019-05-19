@@ -123,7 +123,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
     }
     
     @Override
-    public void postRequest(HttpReadResult result) throws ConnectionException {
+    public HttpReadResult postRequest(HttpReadResult result) {
         try {
             HttpURLConnection conn = (HttpURLConnection) result.getUrlObj().openConnection();
             conn.setDoOutput(true);
@@ -152,6 +152,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
         } catch (IOException e) {
             result.setException(e);
         }
+        return result;
     }
 
     /** This method is not legacy HTTP */

@@ -302,4 +302,8 @@ public class MyPreferences {
     public static boolean isBackupLogFiles() {
         return SharedPreferencesUtil.getBoolean(KEY_BACKUP_LOG_FILES, false);
     }
+
+    public static boolean isLogNetworkLevelMessages() {
+        return SharedPreferencesUtil.getBoolean(KEY_LOG_NETWORK_LEVEL_MESSAGES, false);
+    }
 }

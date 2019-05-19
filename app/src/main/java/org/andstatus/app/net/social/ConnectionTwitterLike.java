@@ -619,8 +619,8 @@ public abstract class ConnectionTwitterLike extends Connection {
         return actorFromJson(actor);
     }
 
-    protected final Try<HttpReadResult> postRequest(ApiRoutineEnum apiRoutine, JSONObject formParams) throws ConnectionException {
-        return postRequest(getApiPath(apiRoutine), formParams);
+    protected final Try<HttpReadResult> postRequest(ApiRoutineEnum apiRoutine, JSONObject formParams) {
+        return tryApiPath(apiRoutine).flatMap(uri -> postRequest(uri, formParams));
     }
 
     Uri getApiPathWithNoteId(ApiRoutineEnum routineEnum, String noteId) throws ConnectionException {

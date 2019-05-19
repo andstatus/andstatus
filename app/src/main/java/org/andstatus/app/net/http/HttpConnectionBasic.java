@@ -41,12 +41,12 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
     }  
 
     @Override
-    public void postRequest(HttpReadResult result) throws ConnectionException {
-        new HttpConnectionApacheCommon(this, data).postRequest(result);
+    public HttpReadResult postRequest(HttpReadResult result) {
+        return new HttpConnectionApacheCommon(this, data).postRequest(result);
     }
 
     @Override
-    public void httpApachePostRequest(HttpPost postMethod, HttpReadResult result) throws ConnectionException {
+    public HttpReadResult httpApachePostRequest(HttpPost postMethod, HttpReadResult result) {
         try {
             HttpClient client = ApacheHttpClientUtils.getHttpClient(data.getSslMode());
             postMethod.setHeader("User-Agent", HttpConnection.USER_AGENT);
@@ -62,6 +62,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
         } finally {
             postMethod.abort();
         }
+        return result;
     }
 
     @Override

@@ -43,7 +43,7 @@ public class MyOAuth2AccessTokenJsonExtractor extends OAuth2AccessTokenJsonExtra
     @Override
     public OAuth2AccessToken extract(Response response) throws IOException {
         final String body = response.getBody();
-        MyLog.logNetworkLevelMessage("oauthAccessToken_response", data.getLogName(), body);
+        MyLog.logNetworkLevelMessage("oauthAccessToken_response", data.getLogName(), body, "");
         return super.extract(response);
     }
 

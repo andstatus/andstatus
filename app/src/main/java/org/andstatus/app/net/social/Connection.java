@@ -34,6 +34,7 @@ import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.TryUtils;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
@@ -188,15 +189,21 @@ public abstract class Connection implements IsEmpty {
      * Full path of the API. Logged
      * @return URL or throws a ConnectionException in case the API routine is not supported
      */
+    @Deprecated
     @NonNull
     public final Uri getApiPath(ApiRoutineEnum routine) throws ConnectionException {
-        Optional<Uri> uri = getApiUri(routine);
-        if (uri.isPresent()) {
-            MyLog.v(this.getClass().getSimpleName(), () -> "API '" + routine + "' URI=" + uri);
-            return uri.get();
-        }
-        throw new ConnectionException(StatusCode.UNSUPPORTED_API, this.getClass().getSimpleName() + ": " +
-                ("The API is not supported: '" + routine + "'"));
+        return tryApiPath(routine).getOrElseThrow(ConnectionException::of);
+    }
+
+    /**
+     * Full path of the API. Logged
+     */
+    @NonNull
+    public final Try<Uri> tryApiPath(ApiRoutineEnum routine) {
+        return TryUtils.fromOptional(getApiUri(routine), () ->
+                new ConnectionException(StatusCode.UNSUPPORTED_API, this.getClass().getSimpleName() +
+                    ": " + ("The API is not supported: '" + routine + "'")))
+            .onSuccess(uri -> MyLog.v(this.getClass().getSimpleName(), () -> "API '" + routine + "' URI=" + uri));
     }
 
     /**
@@ -446,7 +453,7 @@ public abstract class Connection implements IsEmpty {
         return this;
     }
 
-    public final Try<HttpReadResult> postRequest(Uri apiUri, JSONObject formParams) throws ConnectionException {
+    public final Try<HttpReadResult> postRequest(Uri apiUri, JSONObject formParams) {
         return http.postRequest(apiUri, formParams);
     }
 

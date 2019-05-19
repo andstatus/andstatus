@@ -19,7 +19,6 @@ package org.andstatus.app.net.http;
 import android.net.Uri;
 
 import org.andstatus.app.account.AccountDataWriter;
-import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
@@ -31,8 +30,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.util.List;
-import java.util.Map;
 
 import io.vavr.control.Try;
 
@@ -63,41 +60,34 @@ public interface HttpConnectionInterface {
         return true;
     }
 
-    default Try<HttpReadResult> postRequest(Uri uri) throws ConnectionException {
+    default Try<HttpReadResult> postRequest(Uri uri) {
         return postRequest(uri, new JSONObject());
     }
 
-    default Try<HttpReadResult> postRequest(Uri uri, JSONObject formParams) throws ConnectionException {
+    default Try<HttpReadResult> postRequest(Uri uri, JSONObject formParams) {
         /* See https://github.com/andstatus/andstatus/issues/249 */
-        if (getData().getUseLegacyHttpProtocol() == TriState.UNKNOWN) {
-            try {
-                return postRequestOneHttpProtocol(uri, formParams, false);
-            } catch (ConnectionException e) {
-                if (e.getStatusCode() != StatusCode.LENGTH_REQUIRED) {
-                    throw e;
-                }
-                MyLog.v(this, "Automatic fallback to legacy HTTP", e);
-            }
-        }
-        return postRequestOneHttpProtocol(uri, formParams, getData().getUseLegacyHttpProtocol().toBoolean(true));
+        return (getData().getUseLegacyHttpProtocol() == TriState.UNKNOWN)
+        ? postRequestOneProtocol(uri, formParams, false)
+            .orElse(() -> postRequestOneProtocol(uri, formParams, true))
+        : postRequestOneProtocol(uri, formParams, getData().getUseLegacyHttpProtocol().toBoolean(true));
     }
 
-    default Try<HttpReadResult> postRequestOneHttpProtocol(Uri path, JSONObject formParams,
-                                                           boolean isLegacyHttpProtocol) throws ConnectionException {
+    default Try<HttpReadResult> postRequestOneProtocol(Uri path, JSONObject formParams, boolean isLegacyHttpProtocol) {
         if (UriUtils.isEmpty(path)) {
-            throw new IllegalArgumentException("URL is empty");
+            return Try.failure(new IllegalArgumentException("URL is empty"));
         }
         HttpReadResult result = new HttpReadResult(path, formParams).setLegacyHttpProtocol(isLegacyHttpProtocol);
         result.formParams.ifPresent(params ->
-            MyLog.logNetworkLevelMessage("post_form", getData().getLogName(), params)
+            MyLog.logNetworkLevelMessage("post", getData().getLogName(), params, "")
         );
-        postRequest(result);
-        result.logResponse("post_response", getData().getLogName());
-        return Try.success(result).map(HttpReadResult::parseAndThrow);
+        return Try.success(result)
+                .map(this::postRequest)
+                .map(r -> r.logResponse(getData().getLogName()))
+                .map(HttpReadResult::parseAndThrow);
     }
     
-    default void postRequest(HttpReadResult result) throws ConnectionException {
-        // Empty
+    default HttpReadResult postRequest(HttpReadResult result) {
+        return result;
     }
 
     default JSONObject getRequest(Uri uri) throws ConnectionException {
@@ -115,7 +105,7 @@ public interface HttpConnectionInterface {
         HttpReadResult result = new HttpReadResult(uri, new JSONObject());
         result.authenticate = authenticated;
         getRequest(result);
-        result.logResponse("get_response", getData().getLogName());
+        result.logResponse(getData().getLogName());
         result.parseAndThrow();
         return result;
     }

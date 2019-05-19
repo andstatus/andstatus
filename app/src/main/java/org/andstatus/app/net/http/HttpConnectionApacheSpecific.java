@@ -27,7 +27,7 @@ import cz.msebera.android.httpclient.client.methods.HttpPost;
  * @author yvolk@yurivolkov.com
  */
 public interface HttpConnectionApacheSpecific extends HttpConnectionInterface {
-    void httpApachePostRequest(HttpPost httpPost, HttpReadResult result) throws ConnectionException;
+    HttpReadResult httpApachePostRequest(HttpPost httpPost, HttpReadResult result);
     HttpResponse httpApacheGetResponse(HttpGet httpGet) throws IOException;
     void httpApacheSetAuthorization(HttpGet httpGet) throws IOException;
 }

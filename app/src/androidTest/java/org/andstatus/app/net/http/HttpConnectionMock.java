@@ -51,7 +51,7 @@ public class HttpConnectionMock extends HttpConnection {
     private volatile String userSecret = "secret";
     
     private volatile long networkDelayMs = 1000;
-    protected final long mInstanceId = InstanceId.next();
+    private final long mInstanceId = InstanceId.next();
 
     public HttpConnectionMock() {
         MyLog.v(this, "Created, instanceId:" + mInstanceId);
@@ -95,17 +95,17 @@ public class HttpConnectionMock extends HttpConnection {
     }
 
     @Override
-    public void postRequest(HttpReadResult result) throws ConnectionException {
+    public HttpReadResult postRequest(HttpReadResult result) {
         onRequest("postRequestWithObject", result);
-        throwExceptionIfSet();
+        setExceptions(result);
+        return result;
     }
 
-    private void throwExceptionIfSet() throws ConnectionException {
+    private void setExceptions(HttpReadResult result) {
         if (runtimeException != null) {
-            throw  runtimeException;
-        }
-        if (exception != null) {
-            throw exception;
+            throw runtimeException;
+        } else if (exception != null) {
+            result.setException(exception);
         }
     }
 
@@ -149,7 +149,8 @@ public class HttpConnectionMock extends HttpConnection {
 
     private void getRequestInner(String method, HttpReadResult result) throws ConnectionException {
         onRequest(method, result);
-        throwExceptionIfSet();
+        setExceptions(result);
+        result.parseAndThrow();
     }
 
     @Override

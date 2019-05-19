@@ -117,12 +117,13 @@ public class ConnectionException extends IOException {
             boolean isHard) {
         MyLog.d(objTag, detailMessage + (e != null ? ": " + e.getMessage() : ""));
         if (jso != null) {
+            String fileName = MyLog.uniqueDateTimeFormatted();
             if (e != null) {
                 String stackTrace = MyLog.getStackTrace(e);
-                MyLog.writeStringToFile(stackTrace, MyLog.uniqueDateTimeFormatted() + "_JsonException_stacktrace_log.txt");
+                MyLog.writeStringToFile(stackTrace, fileName + "_JsonException.txt");
                 MyLog.v(objTag, () -> "stack trace: " + stackTrace);
             }
-            MyLog.logJson(objTag, "json_exception", jso, true);
+            MyLog.logJson(objTag, "json_exception", jso, fileName);
         }
         return new ConnectionException(StatusCode.OK, MyLog.objToTag(objTag) + ": " + detailMessage, e, null, isHard);
     }

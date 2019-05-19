@@ -26,7 +26,6 @@ import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
@@ -74,7 +73,7 @@ public class HttpReadResult {
 
     boolean redirected = false;
 
-    public HttpReadResult(Uri uriIn, JSONObject formParams) throws ConnectionException {
+    public HttpReadResult(Uri uriIn, JSONObject formParams) {
         this (MyContextHolder.get(), ConnectionRequired.ANY, uriIn, null, formParams);
     }
 
@@ -321,12 +320,11 @@ public class HttpReadResult {
         return Try.failure(ConnectionException.from(this));
     }
 
-    public HttpReadResult logResponse(Object objTag, String namePrefix) {
-        if (SharedPreferencesUtil.getBoolean(MyPreferences.KEY_LOG_NETWORK_LEVEL_MESSAGES, false)) {
-            if ( strResponse != null) {
-                MyLog.logNetworkLevelMessage(objTag, namePrefix, strResponse);
-            }
-            MyLog.i(objTag, namePrefix + ": " + appendHeaders(MyStringBuilder.of("")).toString());
+    HttpReadResult logResponse(String namePrefix) {
+        Object objTag = "response";
+        if (strResponse != null && MyPreferences.isLogNetworkLevelMessages()) {
+            MyLog.logNetworkLevelMessage(objTag, namePrefix, strResponse,
+                    appendHeaders(MyStringBuilder.of("")).toString());
         }
         return this;
     }
