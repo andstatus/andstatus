@@ -140,4 +140,19 @@ public class ActorTest {
         assertEquals("Actors: " + actors, 1, actors.size());
         assertEquals("Actors: " + actors, actorUniqueName, actors.get(0).getUniqueName());
     }
+
+    @Test
+    public void extractActorsByUsername() {
+        extractOneUsername("peter");
+        extractOneUsername("AndStatus");
+        extractOneUsername("Jet");
+    }
+
+    public void extractOneUsername(String username) {
+        final String content = "Sending note to the unknown yet Actor @" + username + " from the Fediverse";
+        List<Actor> actors = demoData.getMyAccount(demoData.activityPubTestAccountName).getActor()
+                .extractActorsFromContent(content, Actor.EMPTY);
+        assertEquals("Actors from '" + content + "': \n" + actors, 1, actors.size());
+        assertEquals("Actors from '" + content + "': \n" + actors, username, actors.get(0).getUsername());
+    }
 }
