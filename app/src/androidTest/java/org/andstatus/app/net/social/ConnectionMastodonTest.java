@@ -198,8 +198,8 @@ public class ConnectionMastodonTest {
 
         Actor actor = activity.getActor();
         assertEquals("Actor's Oid", "32", actor.oid);
-        assertEquals("Username", "pettter", actor.getUsername());
-        assertEquals("WebfingerId", "pettter@social.umeahackerspace.se", actor.getWebFingerId());
+        assertEquals("Username", "somePettter", actor.getUsername());
+        assertEquals("WebfingerId", "somepettter@social.umeahackerspace.se", actor.getWebFingerId());
 
         Note note = activity.getNote();
         assertThat(note.getContent(), containsString("CW should properly"));
@@ -212,10 +212,18 @@ public class ConnectionMastodonTest {
         DataUpdater di = new DataUpdater(executionContext);
         di.onActivity(activity);
 
-        assertTrue("andstatus should be mentioned: " + activity,
-            note.audience().getActors().stream().anyMatch(actor1 -> actor1.getUsername().toLowerCase()
-                    .equals("andstatus")));
+        assertOneRecipient(activity, "AndStatus", "https://mastodon.example.com/@AndStatus",
+                "andstatus@" + accountActor.origin.getHost());
+        assertOneRecipient(activity, "qwertystop", "https://wandering.shop/@qwertystop",
+                "qwertystop@wandering.shop");
+    }
 
+    private void assertOneRecipient(AActivity activity, String username, String profileUrl, String webFingerId) {
+        Actor actor = activity.getNote().audience().getActors().stream().filter(a -> a.getUsername()
+                .equals(username)).findAny().orElse(Actor.EMPTY);
+        assertTrue(username + " should be mentioned: " + activity, actor.nonEmpty());
+        assertEquals("Mentioned user: " + activity, profileUrl, actor.getProfileUrl());
+        assertEquals("Mentioned user: " + activity, webFingerId, actor.getWebFingerId());
     }
 
     @Test

@@ -119,6 +119,8 @@ public class Audience implements IsEmpty {
     }
 
     public void add(@NonNull Actor actor) {
+        if (actor.isEmpty()) return;
+
         if (actor.isPublic()) {
             isPublic = TriState.TRUE;
         }

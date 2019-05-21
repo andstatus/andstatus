@@ -25,6 +25,7 @@ import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
+import org.andstatus.app.util.ObjectOrId;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -361,6 +362,10 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 JSONObject recipient = jso.getJSONObject("recipient");
                 note.audience().add(actorFromJson(recipient));
             }
+            ObjectOrId.of(jso, "mentions")
+                    .mapAll(this::actorFromJson, oid1 -> Actor.EMPTY)
+                    .forEach(o -> note.audience().add(o));
+
             if (!jso.isNull("application")) {
                 JSONObject application = jso.getJSONObject("application");
                 note.via = application.optString("name");
