@@ -45,7 +45,8 @@ class ManageTimelinesViewItemComparator implements Comparator<ManageTimelinesVie
                     break;
                 }
             case R.id.title:
-                result = compareAny(lhs.timelineTitle.title, rhs.timelineTitle.title);
+                result = compareAny(lhs.timelineTitle.toString().toLowerCase(),
+                        rhs.timelineTitle.toString().toLowerCase());
                 if (result != 0) {
                     break;
                 }
