@@ -94,8 +94,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.drawerlayout.widget.DrawerLayout;
 
-import static org.andstatus.app.timeline.meta.TimelineTitle.Destination.DEFAULT;
-import static org.andstatus.app.timeline.meta.TimelineTitle.Destination.TIMELINE_ACTIVITY;
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 
@@ -582,7 +580,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     private String timelineTypeButtonText() {
         return TimelineTitle.from(myContext, getParamsLoaded().getTimeline(),
-                myContext.accounts().getCurrentAccount(), true, DEFAULT).title;
+                MyAccount.EMPTY, false, TimelineTitle.Destination.DEFAULT).toString();
     }
 
     private void updateAccountButtonText(View drawerView) {
@@ -709,7 +707,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     @Override
     protected void updateTitle(String additionalTitleText) {
         TimelineTitle.from(myContext, getParamsLoaded().getTimeline(), MyAccount.EMPTY,true,
-                TIMELINE_ACTIVITY).updateActivityTitle(this, additionalTitleText);
+                TimelineTitle.Destination.TIMELINE_ACTIVITY).updateActivityTitle(this, additionalTitleText);
     }
 
     NoteContextMenu getContextMenu() {
