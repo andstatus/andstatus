@@ -221,7 +221,8 @@ public abstract class Connection implements IsEmpty {
         }
         Optional<Uri> fromActor = data.getAccountActor().getEndpoint(ActorEndpointType.from(routine));
         return fromActor.isPresent() ? fromActor
-                : UrlUtils.pathToUrl(data.getOriginUrl(), getApiPathFromOrigin(routine))
+                : Optional.of(getApiPathFromOrigin(routine)).filter(StringUtils::nonEmpty)
+                    .flatMap(path -> UrlUtils.pathToUrl(data.getOriginUrl(), path))
                     .map(URL::toExternalForm)
                     .flatMap(UriUtils::toDownloadableOptional);
     }
