@@ -315,8 +315,8 @@ public class DataUpdater {
 
         Actor objActor = activity.getObjActor();
         final String method = "updateObjActor";
-        if (objActor.isEmpty()) {
-            MyLog.v(this, () -> method + "; objActor is empty");
+        if (objActor.dontStore()) {
+            MyLog.v(this, () -> method + "; don't store: " + objActor.getUniqueName());
             return;
         }
         MyAccount me = execContext.getMyContext().accounts().fromActorOfSameOrigin(activity.accountActor);

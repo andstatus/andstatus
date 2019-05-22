@@ -257,7 +257,7 @@ public class DemoNoteInserter {
     }
 
     public static void checkStoredActor(Actor actor) {
-        if (actor.isEmpty()) return;
+        if (actor.dontStore()) return;
 
         long id = actor.actorId;
 

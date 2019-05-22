@@ -229,8 +229,14 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
     @Override
     public boolean isEmpty() {
-        return this == EMPTY || !origin.isValid() ||
+        if (this == EMPTY) return true;
+        if (this == PUBLIC) return false;
+        return !origin.isValid() ||
                 (actorId == 0 && UriUtils.nonRealOid(oid) && StringUtils.isEmpty(webFingerId) && !isUsernameValid());
+    }
+
+    public boolean dontStore() {
+        return isEmpty() || this == PUBLIC;
     }
 
     public boolean isPartiallyDefined() {
