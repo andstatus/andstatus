@@ -253,14 +253,31 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
         if (other == null || other == EMPTY ||
                 (!isPartiallyDefined() && other.isPartiallyDefined())) return true;
+        if (this == EMPTY || (isPartiallyDefined() && !other.isPartiallyDefined())) return false;
 
-        if (getUpdatedDate() != other.getUpdatedDate()) {
+        if (isPartiallyDefined()) {
+            if (isOidReal() && !other.isOidReal()) return true;
+            if (!isOidReal() && other.isOidReal()) return false;
+
+            if (isUsernameValid() && !other.isUsernameValid()) return true;
+            if (!isUsernameValid() && other.isUsernameValid()) return false;
+
+            if (isWebFingerIdValid() && !other.isWebFingerIdValid()) return true;
+            if (!isWebFingerIdValid() && other.isWebFingerIdValid()) return false;
+
+            if (UriUtils.nonEmpty(profileUri) && UriUtils.isEmpty(other.profileUri)) return true;
+            if (UriUtils.isEmpty(profileUri) && UriUtils.nonEmpty(other.profileUri)) return false;
+
             return getUpdatedDate() > other.getUpdatedDate();
+        } else {
+            if (getUpdatedDate() != other.getUpdatedDate()) {
+                return getUpdatedDate() > other.getUpdatedDate();
+            }
+            if (avatarFile.downloadedDate != other.avatarFile.downloadedDate) {
+                return avatarFile.downloadedDate > other.avatarFile.downloadedDate;
+            }
+            return notesCount > other.notesCount;
         }
-        if (avatarFile.downloadedDate != other.avatarFile.downloadedDate) {
-            return avatarFile.downloadedDate > other.avatarFile.downloadedDate;
-        }
-        return notesCount > other.notesCount;
     }
 
     public boolean isIdentified() {
@@ -392,35 +409,24 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Actor that = (Actor) o;
-        if (!origin.equals(that.origin)) return false;
-        if (actorId != 0 || that.actorId != 0) {
-            return actorId == that.actorId;
-        }
-        if (UriUtils.isRealOid(oid) || UriUtils.isRealOid(that.oid)) {
-            return oid.equals(that.oid);
-        }
-        if (!StringUtils.isEmpty(getWebFingerId()) || !StringUtils.isEmpty(that.getWebFingerId())) {
-            return getWebFingerId().equals(that.getWebFingerId());
-        }
-        return getUsername().equals(that.getUsername());
+        if (!(o instanceof Actor)) return false;
+        return isSame((Actor) o, true);
     }
 
     @Override
     public int hashCode() {
-        int result = origin.hashCode ();
+        int result = origin.hashCode();
         if (actorId != 0) {
             return 31 * result + Long.hashCode(actorId);
         }
         if (UriUtils.isRealOid(oid)) {
             return 31 * result + oid.hashCode();
-        }
-        if (!StringUtils.isEmpty(getWebFingerId())) {
+        } else if (isWebFingerIdValid) {
             return 31 * result + getWebFingerId().hashCode();
+        } else if (isUsernameValid()) {
+            result = 31 * result + getUsername().hashCode();
         }
-        return 31 * result + getUsername().hashCode();
+        return result;
     }
 
     /** Doesn't take origin into account */
@@ -441,7 +447,10 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         } else if (sameOriginOnly) {
             return false;
         }
-        return isWebFingerIdValid && other.isWebFingerIdValid && webFingerId.equals(other.webFingerId);
+        if (isWebFingerIdValid()) {
+            if (webFingerId.equals(other.webFingerId)) return true;
+        }
+        return isUsernameValid() && other.isUsernameValid() && username.equals(other.username);
     }
 
     public boolean notSameUser(@NonNull Actor other) {

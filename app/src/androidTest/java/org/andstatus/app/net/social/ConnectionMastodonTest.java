@@ -27,6 +27,7 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.timeline.meta.TimelineType;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.junit.Before;
@@ -190,8 +191,15 @@ public class ConnectionMastodonTest {
 
     @Test
     public void mentionsInANote() throws IOException {
-        mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_get_note);
+        mentionsInANoteOneLoad(1);
+        mentionsInANoteOneLoad(2);
+        mentionsInANoteOneLoad(3);
+    }
 
+    public void mentionsInANoteOneLoad(int iteration) throws IOException {
+        MyLog.i("mentionsInANote" + iteration, "started");
+
+        mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_get_note);
         AActivity activity = mock.connection.getNote("101064848262880936");
         assertEquals("Is not UPDATE " + activity, ActivityType.UPDATE, activity.type);
         assertEquals("Is not a note", AObjectType.NOTE, activity.getObjectType());
@@ -219,11 +227,13 @@ public class ConnectionMastodonTest {
     }
 
     private void assertOneRecipient(AActivity activity, String username, String profileUrl, String webFingerId) {
-        Actor actor = activity.getNote().audience().getActors().stream().filter(a -> a.getUsername()
-                .equals(username)).findAny().orElse(Actor.EMPTY);
+        Audience audience = activity.getNote().audience();
+        Actor actor = audience.getActors().stream().filter(a ->
+                a.getUsername().equals(username)).findAny().orElse(Actor.EMPTY);
         assertTrue(username + " should be mentioned: " + activity, actor.nonEmpty());
         assertEquals("Mentioned user: " + activity, profileUrl, actor.getProfileUrl());
         assertEquals("Mentioned user: " + activity, webFingerId, actor.getWebFingerId());
+        assertEquals("Audience size: " + activity, 2, audience.getActors().size());
     }
 
     @Test

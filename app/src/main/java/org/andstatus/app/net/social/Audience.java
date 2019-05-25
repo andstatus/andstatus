@@ -35,8 +35,10 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
 
@@ -68,7 +70,7 @@ public class Audience implements IsEmpty {
         final Function<Cursor, Actor> function = cursor -> Actor.fromTwoIds(origin,
                 DbUtils.getLong(cursor, AudienceTable.ACTOR_ID),
                 DbUtils.getString(cursor, ActorTable.ACTOR_OID));
-        MyQuery.get(MyContextHolder.get(), sql, function).forEach(audience::add);
+        audience.actors.addAll(MyQuery.get(MyContextHolder.get(), sql, function));
         audience.setPublic(isPublic);
         return audience;
     }
@@ -82,7 +84,7 @@ public class Audience implements IsEmpty {
                 + ActorTable.TABLE_NAME + "." + ActorTable._ID
                 + " AND " + AudienceTable.NOTE_ID + "=" + noteId;
         final Function<Cursor, Actor> function = cursor -> Actor.fromCursor(myContext, cursor);
-        MyQuery.get(myContext, sql, function).forEach(audience::add);
+        audience.actors.addAll(MyQuery.get(myContext, sql, function));
         audience.setPublic(MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId));
         return audience;
     }
@@ -110,7 +112,8 @@ public class Audience implements IsEmpty {
 
     public Audience copy() {
         Audience audience = new Audience(origin);
-        actors.forEach(audience::add);
+        audience.actors.addAll(actors);
+        audience.setPublic(getPublic());
         return audience;
     }
 
@@ -124,10 +127,18 @@ public class Audience implements IsEmpty {
         if (actor.isPublic()) {
             isPublic = TriState.TRUE;
         }
-        if (!actor.isPartiallyDefined()) {
-            actors.remove(actor);
+        if (!actors.contains(actor)) {
+            actors.add(actor);
+            return;
         }
-        actors.add(actor);
+
+        List<Actor> same = actors.stream().filter(actor::isSame).collect(Collectors.toList());
+        Actor toStore =  actor;
+        for (Actor other: same) {
+            if (other.isBetterToCacheThan(actor)) toStore = other;
+            actors.remove(other);
+        }
+        actors.add(toStore);
     }
 
     public boolean containsMe(MyContext myContext) {
