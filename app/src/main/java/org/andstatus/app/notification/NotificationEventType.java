@@ -89,6 +89,18 @@ public enum NotificationEventType {
         return Collections.unmodifiableList(validValues);
     }
 
+    public boolean isInteracted() {
+        switch(this) {
+            case ANNOUNCE:
+            case FOLLOW:
+            case LIKE:
+            case MENTION:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     public boolean isEmpty() {
         return this == EMPTY;
     }

@@ -465,7 +465,7 @@ public class AActivity extends AObject {
 
     private void calculateInteraction(MyContext myContext) {
         newNotificationEventType = calculateNotificationEventType(myContext);
-        interacted = TriState.fromBoolean(newNotificationEventType != NotificationEventType.EMPTY);
+        interacted = TriState.fromBoolean(newNotificationEventType.isInteracted());
         interactionEventType = newNotificationEventType;
         notifiedActor = calculateNotifiedActor(myContext, newNotificationEventType);
         if (isNotified().toBoolean(true)) {
