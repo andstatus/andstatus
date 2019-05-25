@@ -310,7 +310,8 @@ public class DemoNoteInserter {
                         MyQuery.activityIdToLongColumnValue(ActivityTable.INTERACTION_EVENT, activity.getId())));
 
         assertEquals("Interacted TriState\n" + activity + "\n",
-                TriState.fromBoolean(eventType != NotificationEventType.EMPTY),
+                TriState.fromBoolean(eventType != NotificationEventType.EMPTY &&
+                        eventType != NotificationEventType.HOME),
                 MyQuery.activityIdToTriState(ActivityTable.INTERACTED, activity.getId()));
 
         final long notifiedActorId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTIFIED_ACTOR_ID, activity.getId());

@@ -95,6 +95,7 @@ public enum NotificationEventType {
             case FOLLOW:
             case LIKE:
             case MENTION:
+            case PRIVATE:
                 return true;
             default:
                 return false;

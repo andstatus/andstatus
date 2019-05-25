@@ -30,7 +30,7 @@
         </subtitle>
     </header>
     <release android:versionName="49.00" android:versionCode="288"
-             versionDate="2019-05-14"
+             versionDate="2019-05-25"
              versionTitle="Home notification">
         <changes>
             <change>Added "Home Timeline" notification type that allows to be notified on any note received via
@@ -38,6 +38,10 @@
                 Can be turned off in Settings -&gt; Notifications.
                 <a href="https://github.com/andstatus/andstatus/issues/508">#508</a>
             </change>
+            <change>Improved identification of the same Actors (users) in posts that cross instances
+                and types of Social networks (ActivityPub / Mastodon / GNU Social).</change>
+            <change>Fixed posting via ActivityPub Client to Server protocol.
+                <a href="https://github.com/andstatus/andstatus/issues/499">#499</a></change>
         </changes>
     </release>
     <release android:versionName="48.00" android:versionCode="287"
