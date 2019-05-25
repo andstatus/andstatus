@@ -92,14 +92,14 @@ public class DemoAccountInserter {
         Actor actor = Actor.fromOid(accountName.getOrigin(), actorOid);
         actor.withUniqueName(accountName.getUniqueName());
         actor.setAvatarUrl(avatarUrl);
-        if (!actor.isWebFingerIdValid() && UrlUtils.hostIsValid(actor.getHost())) {
-            actor.setWebFingerId(actor.getUsername() + "@" + actor.getHost());
+        if (!actor.isWebFingerIdValid() && UrlUtils.hostIsValid(actor.getIdHost())) {
+            actor.setWebFingerId(actor.getUsername() + "@" + actor.getIdHost());
         }
         assertTrue("No WebfingerId " + actor, actor.isWebFingerIdValid());
         if (actor.origin.getOriginType() == OriginType.ACTIVITYPUB) {
-            actor.endpoints.add(ActorEndpointType.API_INBOX, "https://" + actor.getHost() +
+            actor.endpoints.add(ActorEndpointType.API_INBOX, "https://" + actor.getConnectionHost() +
                     "/users/" + actor.getUsername() + "/inbox");
-            actor.endpoints.add(ActorEndpointType.API_OUTBOX, "https://" + actor.getHost() +
+            actor.endpoints.add(ActorEndpointType.API_OUTBOX, "https://" + actor.getConnectionHost() +
                     "/users/" + actor.getUsername() + "/outbox");
         }
         actor.setCreatedDate(MyLog.uniqueCurrentTimeMS());
@@ -212,7 +212,7 @@ public class DemoAccountInserter {
             AccountConnectionData.fromMyAccount(myAccount, TriState.UNKNOWN)
         );
         if (!UrlUtils.hasHost(connectionData.originUrl)) {
-            connectionData.originUrl = UrlUtils.fromString("https://" + myAccount.getActor().getHost());
+            connectionData.originUrl = UrlUtils.fromString("https://" + myAccount.getActor().getConnectionHost());
         }
         OAuthClientKeys keys1 = OAuthClientKeys.fromConnectionData(connectionData);
         if (!keys1.areKeysPresent()) {

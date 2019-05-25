@@ -30,6 +30,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.timeline.TimelineActivityTest;
@@ -65,6 +66,7 @@ public class NoteEditorTwitterTest extends TimelineActivityTest<ActivityViewItem
 
         final MyAccount ma = demoData.getMyAccount(demoData.twitterTestAccountName);
         assertTrue(ma.isValid());
+        assertEquals("Account should be in Twitter: " + ma, OriginType.TWITTER, ma.getOrigin().getOriginType());
         MyContextHolder.get().accounts().setCurrentAccount(ma);
 
         data = getStaticData(ma);

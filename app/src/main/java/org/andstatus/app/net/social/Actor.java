@@ -49,8 +49,6 @@ import org.andstatus.app.util.UrlUtils;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -85,7 +83,8 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     private String homepage = "";
     private Uri avatarUri = Uri.EMPTY;
     public final ActorEndpoints endpoints;
-    private final LazyVal<String> host = LazyVal.of(this::evalGetHost);
+    private final LazyVal<String> connectionHost = LazyVal.of(this::evalConnectionHost);
+    private final LazyVal<String> idHost = LazyVal.of(this::evalIdHost);
 
     public long notesCount = 0;
     public long favoritesCount = 0;
@@ -289,7 +288,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public boolean canGetActor() {
-        return (isOidReal() || isUsernameValid()) && StringUtils.nonEmpty(getHost());
+        return (isOidReal() || isUsernameValid()) && StringUtils.nonEmpty(getConnectionHost());
     }
 
     @Override
@@ -330,7 +329,9 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     private String getOptAtHostForUniqueName() {
-        return origin.getOriginType().uniqueNameHasHost() ? "@" + getHost() : "";
+        return origin.getOriginType().uniqueNameHasHost()
+                ? (StringUtils.isEmpty(getIdHost()) ? "" : "@" + getIdHost())
+                : "";
     }
 
     public Actor withUniqueName(String uniqueName) {
@@ -449,8 +450,9 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         }
         if (isWebFingerIdValid()) {
             if (webFingerId.equals(other.webFingerId)) return true;
+            if (other.isWebFingerIdValid) return false;
         }
-        return isUsernameValid() && other.isUsernameValid() && username.equals(other.username);
+        return isUsernameValid() && other.isUsernameValid() && username.equalsIgnoreCase(other.username);
     }
 
     public boolean notSameUser(@NonNull Actor other) {
@@ -468,7 +470,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     public Actor build() {
         if (this == EMPTY) return this;
 
-        host.reset();
+        connectionHost.reset();
         if (StringUtils.isEmpty(username) || isWebFingerIdValid) return this;
 
         if (username.contains("@")) {
@@ -479,8 +481,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
             } else {
                 setWebFingerId(username + "@" + profileUri.getHost());
             }
-        } else if (origin.shouldHaveUrl()) {
-            setWebFingerId(username + "@" + origin.fixUriForPermalink(UriUtils.fromUrl(origin.getUrl())).getHost());
+            // Don't infer "id host" from the Origin's host
         }
         return this;
     }
@@ -527,8 +528,8 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (!StringUtils.isEmptyOrTemp(oid)) {
             return oid;
         }
-        if (isUsernameValid() && StringUtils.nonEmpty(getHost())) {
-            return OriginPumpio.ACCOUNT_PREFIX + getUsername() + "@" + getHost();
+        if (isUsernameValid() && StringUtils.nonEmpty(getIdHost())) {
+            return OriginPumpio.ACCOUNT_PREFIX + getUsername() + "@" + getIdHost();
         }
         if (isWebFingerIdValid()) {
             return OriginPumpio.ACCOUNT_PREFIX + getWebFingerId();
@@ -667,44 +668,55 @@ public class Actor implements Comparable<Actor>, IsEmpty {
             } else if (validUsername.equalsIgnoreCase(getUsername())) {
                 actor = this;
             } else {
-                // Try 1. a host of the Author (this Actor), 2. A host of Replied to Actor, 3. A host of this Social network
-                for (String host : new HashSet<>(Arrays.asList(getHost(), inReplyToActor.getHost(),
-                        origin.getHost()))) {
-                    if (UrlUtils.hostIsValid(host)) {
-                        final String possibleWebFingerId = validUsername + "@" + host;
-                        actor.actorId = MyQuery.webFingerIdToId(origin.getId(), possibleWebFingerId);
-                        if (actor.actorId != 0) {
-                            actor.setWebFingerId(possibleWebFingerId);
-                            break;
-                        }
-                    }
-                }
+                // Don't infer "id host", if it wasn't explicitly provided
                 actor.setUsername(validUsername);
             }
         }
         actor.build();
-        actor.lookupActorId();
-        if (!actors.contains(actor)) {
-            actors.add(actor);
-        }
+        actors.add(actor);
     }
 
-    public String getHost() {
-        return host.get();
+    public String getConnectionHost() {
+        return connectionHost.get();
     }
 
-    private String evalGetHost() {
-        if (isWebFingerIdValid) {
-            int pos = getWebFingerId().indexOf('@');
-            if (pos >= 0) {
-                return getWebFingerId().substring(pos + 1);
-            }
-        }
+    private String evalConnectionHost() {
         if (origin.shouldHaveUrl()) {
             return origin.getHost();
         }
-        return UrlUtils.getHost(oid).orElse(StringUtils.nonEmpty(profileUri.getHost()) ? profileUri.getHost() : "");
+        if (StringUtils.nonEmpty(profileUri.getHost())) {
+            return profileUri.getHost();
+        }
+        return UrlUtils.getHost(oid).orElseGet(() -> {
+            if (isWebFingerIdValid) {
+                int pos = getWebFingerId().indexOf('@');
+                if (pos >= 0) {
+                    return getWebFingerId().substring(pos + 1);
+                }
+            }
+            return "";
+        });
     }
+
+    public String getIdHost() {
+        return idHost.get();
+    }
+
+    private String evalIdHost() {
+        return UrlUtils.getHost(oid).orElseGet(() -> {
+            if (isWebFingerIdValid) {
+                int pos = getWebFingerId().indexOf('@');
+                if (pos >= 0) {
+                    return getWebFingerId().substring(pos + 1);
+                }
+            }
+            if (StringUtils.nonEmpty(profileUri.getHost())) {
+                return profileUri.getHost();
+            }
+            return "";
+        });
+    }
+
 
     public String getSummary() {
         return summary;

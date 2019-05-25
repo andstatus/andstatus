@@ -119,6 +119,7 @@ public class Audience implements IsEmpty {
 
     public void extractActorsFromContent(@NonNull String content, @NonNull Actor author, @NonNull Actor inReplyToActor) {
         author.extractActorsFromContent(content, inReplyToActor).forEach(this::add);
+        actors.forEach(Actor::lookupActorId);
     }
 
     public void add(@NonNull Actor actor) {
@@ -127,11 +128,6 @@ public class Audience implements IsEmpty {
         if (actor.isPublic()) {
             isPublic = TriState.TRUE;
         }
-        if (!actors.contains(actor)) {
-            actors.add(actor);
-            return;
-        }
-
         List<Actor> same = actors.stream().filter(actor::isSame).collect(Collectors.toList());
         Actor toStore =  actor;
         for (Actor other: same) {

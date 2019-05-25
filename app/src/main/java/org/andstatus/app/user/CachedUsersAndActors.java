@@ -168,10 +168,10 @@ public class CachedUsersAndActors {
     /** Tries to find this actor in the home origin (the same host...).
      * Returns the same Actor, if not found */
     public Actor toHomeOrigin(Actor actor) {
-        return actor.origin.getHost().equals(actor.getHost())
+        return actor.origin.getHost().equals(actor.getConnectionHost())
                 ? actor
                 : actor.user.actorIds.stream().map(id -> actors.getOrDefault(id, Actor.EMPTY))
-                    .filter(a -> a != Actor.EMPTY && a.origin.getHost().equals(actor.getHost()))
+                    .filter(a -> a != Actor.EMPTY && a.origin.getHost().equals(actor.getConnectionHost()))
                     .findAny().orElse(actor);
     }
 

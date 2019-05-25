@@ -63,7 +63,7 @@ public class ConnectionActivityPub extends Connection {
 
     @Override
     public Connection setAccountConnectionData(AccountConnectionData connectionData) {
-        final String host = connectionData.getAccountActor().getHost();
+        final String host = connectionData.getAccountActor().getConnectionHost();
         if (StringUtils.nonEmpty(host)) {
             connectionData.setOriginUrl(UrlUtils.buildUrl(host, connectionData.isSsl()));
         }

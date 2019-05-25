@@ -44,7 +44,7 @@ class ConnectionAndUrl {
         }
         Uri uri = UriUtils.map(connection.getApiPath(apiRoutine), s -> s.replace("%username%", username));
         HttpConnection httpConnection = connection.getHttp();
-        String host = actor.getHost();
+        String host = actor.getConnectionHost();
         if (StringUtils.isEmpty(host)) {
             throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine +
                     ": host is empty for " + actor);

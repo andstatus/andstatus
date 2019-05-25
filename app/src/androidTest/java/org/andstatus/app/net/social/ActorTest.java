@@ -48,11 +48,11 @@ public class ActorTest {
                 + " And let me mention: @" + shortUsername3;
         List<Actor> actors = Actor.newUnknown(origin).extractActorsFromContent(body, Actor.EMPTY);
         String msgLog = body + " ->\n" + actors;
-        assertEquals(msgLog, 4, actors.size());
+        assertEquals(msgLog, 5, actors.size());
         assertEquals(msgLog, demoData.gnusocialTestAccountUsername, actors.get(0).getUsername());
         assertEquals(msgLog, demoData.gnusocialTestAccount2Username, actors.get(1).getUsername());
         assertEquals(msgLog, anotherUser2.toLowerCase(), actors.get(2).getWebFingerId());
-        assertEquals(msgLog, shortUsername3, actors.get(3).getUsername());
+        assertEquals(msgLog, shortUsername3, actors.get(4).getUsername());
     }
 
     @Test
@@ -73,7 +73,7 @@ public class ActorTest {
         Actor actor0 = actors.get(0);
         assertEquals(msgLog, USERNAME1, actor0.getUsername());
         assertFalse(msgLog, actor0.isOidReal());
-        assertTrue(msgLog +
+        assertFalse(msgLog +
                 "\nusername:" + actor0.getUsername() +
                 "\ntempOid: " + actor0.toTempOid() +
                 "\naltOid:  " + actor0.toAltTempOid(), actor0.hasAltTempOid());

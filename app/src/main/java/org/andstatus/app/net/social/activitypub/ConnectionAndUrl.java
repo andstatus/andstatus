@@ -59,7 +59,7 @@ class ConnectionAndUrl {
     private static HttpConnection getConnection(ConnectionActivityPub connection, Connection.ApiRoutineEnum apiRoutine,
                                                 Actor actor) throws ConnectionException {
         HttpConnection httpConnection = connection.getHttp();
-        String host = actor.getHost();
+        String host = actor.getConnectionHost();
         if (StringUtils.isEmpty(host)) {
             throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine +
                     ": host is empty for " + actor);
