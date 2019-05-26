@@ -83,9 +83,11 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     String noteSource = "";
 
     private String nameString = "";
-    private Spannable name = SpannableString.valueOf("");
+    private Spannable name = SpanUtil.EMPTY;
+    private String summaryString = "";
+    private Spannable summary = SpanUtil.EMPTY;
     private String contentString = "";
-    private Spannable content = SpannableString.valueOf("");
+    private Spannable content = SpanUtil.EMPTY;
     String contentToSearch = "";
 
     boolean favorited = false;
@@ -273,6 +275,15 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         return name;
     }
 
+    public BaseNoteViewItem setSummary(String summary) {
+        this.summaryString = summary;
+        return this;
+    }
+
+    public Spannable getSummary() {
+        return summary;
+    }
+
     public BaseNoteViewItem setContent(String content) {
         contentString = content;
         return this;
@@ -337,6 +348,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         audience = audienceNew;
         audienceToShow = audienceToShowNew;
         name = SpanUtil.textToSpannable(nameString, TextMediaType.PLAIN, audience);
+        summary = SpanUtil.textToSpannable(summaryString, TextMediaType.PLAIN, audience);
         content = SpanUtil.textToSpannable(contentString, TextMediaType.HTML, audience);
     }
 }

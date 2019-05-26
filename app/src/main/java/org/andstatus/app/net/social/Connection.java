@@ -341,11 +341,7 @@ public abstract class Connection implements IsEmpty {
      * Update Actor's status by posting to the Server's API
      * Updates the authenticating actor's status, also known as tweeting/blogging.
      *
-     *
-     * @param name Name (Title) of the Note
-     * @param content      Text of the note
-     * @param noteOid      id is not empty, if we are updating existing "status"
-     * @param audience
+     * @param note
      * @param inReplyToOid   The ID of an existing Note that the update is in reply to.
      * @param mediaUri
      *
@@ -353,8 +349,7 @@ public abstract class Connection implements IsEmpty {
      *      href="https://dev.twitter.com/docs/api/1/post/statuses/update">Twitter
      *      POST statuses/update</a>
      */
-    public abstract AActivity updateNote(String name, String content, String noteOid, Audience audience,
-                                         String inReplyToOid, Uri mediaUri) throws ConnectionException;
+    public abstract AActivity updateNote(Note note, String inReplyToOid, Uri mediaUri) throws ConnectionException;
 
     /**
      * Post Reblog ("retweet")

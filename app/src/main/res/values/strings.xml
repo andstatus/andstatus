@@ -406,6 +406,7 @@ you will not see activity 201 and older ones in a Timeline</string>
     GNU social, Mastodon, Twitter and Pump.io</string>
   <string name="status_destroyed">The note has been removed.</string>
   <string name="subtitle">Subtitle</string>
+  <string name="summaryCw">Summary / Content Warning</string>
   <string name="summary_preference_accounts_absent">No AndStatus accounts yet</string>
   <string name="summary_preference_accounts_present">Number of AndStatus Accounts</string>
   <string name="summary_preference_add_account_oauth">Tap the button below to open a site of the Social network in a browser.</string>

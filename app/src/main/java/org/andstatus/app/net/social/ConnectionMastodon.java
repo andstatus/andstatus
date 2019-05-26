@@ -42,7 +42,7 @@ import androidx.annotation.NonNull;
 
 public class ConnectionMastodon extends ConnectionTwitterLike {
     private static final String ATTACHMENTS_FIELD_NAME = "media_attachments";
-    private static final String NAME_PROPERTY = "spoiler_text";
+    private static final String SUMMARY_PROPERTY = "spoiler_text";
     private static final String CONTENT_PROPERTY_UPDATE = "status";
     private static final String CONTENT_PROPERTY = "content";
 
@@ -252,13 +252,12 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
 
     @Override
-    protected AActivity updateNote2(String name, String content, String noteOid, Audience audience, String inReplyToOid,
-                                Uri mediaUri) throws ConnectionException {
+    protected AActivity updateNote2(Note note, String inReplyToOid, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         JSONObject mediaObject = null;
         try {
-            formParams.put(NAME_PROPERTY, name);
-            formParams.put(CONTENT_PROPERTY_UPDATE, content);
+            formParams.put(SUMMARY_PROPERTY, note.getSummary());
+            formParams.put(CONTENT_PROPERTY_UPDATE, note.getContentToPost());
             if ( !StringUtils.isEmpty(inReplyToOid)) {
                 formParams.put("in_reply_to_id", inReplyToOid);
             }
@@ -355,7 +354,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             }
 
             Note note =  activity.getNote();
-            note.setName(jso.optString(NAME_PROPERTY));
+            note.setSummary(jso.optString(SUMMARY_PROPERTY));
             note.setContentPosted(jso.optString(CONTENT_PROPERTY));
             note.url = jso.optString("url");
             if (jso.has("recipient")) {

@@ -25,6 +25,7 @@ import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
+import org.andstatus.app.net.social.Note;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
@@ -49,6 +50,7 @@ class ActivitySender {
     final Audience audience;
     String inReplyToId = "";
     String name = "";
+    String summary = "";
     String content = "";
     Uri mMediaUri = null;
 
@@ -61,12 +63,12 @@ class ActivitySender {
     static ActivitySender fromId(ConnectionPumpio connection, String objectId) {
         return new ActivitySender(connection, objectId, Audience.EMPTY);
     }
-    
-    static ActivitySender fromContent(ConnectionPumpio connection, String objectId, Audience audience, String name,
-                                      String content) {
-        ActivitySender sender = new ActivitySender(connection, objectId, audience);
-        sender.name = name;
-        sender.content = content;
+
+    static ActivitySender fromContent(ConnectionPumpio connection, Note note) {
+        ActivitySender sender = new ActivitySender(connection, note.oid, note.audience());
+        sender.name = note.getName();
+        sender.summary = note.getSummary();
+        sender.content = note.getContentToPost();
         return sender;
     }
 

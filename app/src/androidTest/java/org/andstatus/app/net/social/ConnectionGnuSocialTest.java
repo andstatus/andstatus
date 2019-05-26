@@ -19,7 +19,6 @@ package org.andstatus.app.net.social;
 import android.content.Context;
 import android.text.Spannable;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadStatus;
@@ -169,8 +168,9 @@ public class ConnectionGnuSocialTest {
     @Test
     public void testPostWithMedia() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
-        AActivity activity = mock.connection.updateNote("", "Test post note with media", "",
-                Audience.EMPTY, "", demoData.localImageTestUri);
+        Note note = Note.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
+                .setContentPosted("Test post note with media");
+        AActivity activity = mock.connection.updateNote(note, "", demoData.localImageTestUri);
         assertEquals("Note returned",
                 privateGetNoteWithAttachment(false).getNote(), activity.getNote());
     }
@@ -335,7 +335,7 @@ public class ConnectionGnuSocialTest {
         di.onActivity(activity);
 
         assertAudience(activity, activity.audience(), numberOfMembers);
-        Audience storedAudience = Audience.load(MyContextHolder.get(), activity.getNote().origin, activity.getNote().noteId);
+        Audience storedAudience = Audience.load(activity.getNote().origin, activity.getNote().noteId);
         assertAudience(activity, storedAudience, numberOfMembers);
         return activity;
     }

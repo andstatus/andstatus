@@ -107,7 +107,7 @@ public class NoteEditorActivityPubTest extends TimelineActivityTest<ActivityView
         DownloadStatus status = DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId));
         assertThat(status, isIn(expected));
 
-        Audience audience = Audience.load(getActivity().getMyContext(), mock.getData().getOrigin(), noteId);
+        Audience audience = Audience.load(mock.getData().getOrigin(), noteId);
         assertTrue("Audience should contain " + actorUniqueName +  "\n " + audience,
                 audience.getActors().stream().anyMatch(a -> actorUniqueName.equals(a.getUniqueName())));
 

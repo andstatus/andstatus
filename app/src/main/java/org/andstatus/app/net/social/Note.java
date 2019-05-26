@@ -58,6 +58,7 @@ public class Note extends AObject {
     private long updatedDate = 0;
     private Audience audience;
     private String name = "";
+    private String summary = "";
     private String content = "";
     private final LazyVal<String> contentToSearch = LazyVal.of(this::evalContentToSearch);
 
@@ -103,6 +104,7 @@ public class Note extends AObject {
                 + ", " + NoteTable.NOTE_OID
                 + ", " + NoteTable.ORIGIN_ID
                 + ", " + NoteTable.NAME
+                + ", " + NoteTable.SUMMARY
                 + ", " + NoteTable.NOTE_STATUS
                 + " FROM " + NoteTable.TABLE_NAME;
         return sql + (id == 0 ? "" : " WHERE " + NoteTable._ID + "=" + id);
@@ -115,6 +117,7 @@ public class Note extends AObject {
                 DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS)));
         note.noteId = DbUtils.getLong(cursor, NoteTable._ID);
         note.setName(DbUtils.getString(cursor, NoteTable.NAME));
+        note.setSummary(DbUtils.getString(cursor, NoteTable.SUMMARY));
         note.setContentStored(DbUtils.getString(cursor, NoteTable.CONTENT));
         return note;
     }
@@ -122,7 +125,12 @@ public class Note extends AObject {
     @NonNull
     public static Note loadContentById(MyContext myContext, long noteId) {
         return MyQuery.get(myContext, getSqlToLoadContent(noteId), cursor -> Note.contentFromCursor(myContext, cursor))
-                .stream().findAny().orElse(Note.EMPTY);
+                .stream().findAny().map(Note::loadAudience).orElse(Note.EMPTY);
+    }
+
+    private Note loadAudience() {
+        audience = Audience.load(origin, noteId);
+        return this;
     }
 
     private static String getTempOid() {
@@ -154,6 +162,10 @@ public class Note extends AObject {
         return name;
     }
 
+    public String getSummary() {
+        return summary;
+    }
+
     public String getContent() {
         return content;
     }
@@ -177,11 +189,20 @@ public class Note extends AObject {
     }
 
     private String evalContentToSearch() {
-        return MyHtml.getContentToSearch(StringUtils.nonEmpty(name) ? name + " " + content : content);
+        return MyHtml.getContentToSearch(
+                (StringUtils.nonEmpty(name) ? name + " " : "") +
+                        (StringUtils.nonEmpty(summary) ? summary + " " : "") +
+                        content);
     }
 
-    public void setName(String name) {
+    public Note setName(String name) {
         this.name = MyHtml.htmlToCompactPlainText(name);
+        contentToSearch.reset();
+        return this;
+    }
+
+    public void setSummary(String summary) {
+        this.summary = MyHtml.htmlToCompactPlainText(summary);
         contentToSearch.reset();
     }
 
@@ -190,8 +211,9 @@ public class Note extends AObject {
         contentToSearch.reset();
     }
 
-    public void setContentPosted(String content) {
+    public Note setContentPosted(String content) {
         setContent(content, origin.getOriginType().textMediaTypePosted);
+        return this;
     }
 
     public void setContent(String content, TextMediaType mediaType) {
@@ -247,7 +269,8 @@ public class Note extends AObject {
     }
 
     public boolean hasSomeContent() {
-        return !StringUtils.isEmpty(name) || !StringUtils.isEmpty(content) || !attachments.isEmpty();
+        return StringUtils.nonEmpty(name) || StringUtils.nonEmpty(summary) || StringUtils.nonEmpty(content) ||
+                attachments.nonEmpty();
     }
 
     @Override
@@ -274,16 +297,17 @@ public class Note extends AObject {
         }
         MyStringBuilder builder = new MyStringBuilder();
         builder.withComma("","empty", this::isEmpty);
-        builder.withComma("id", noteId, () -> noteId != 0);
+        builder.withCommaNonEmpty("id", noteId);
         builder.withComma("conversation_id", conversationId, () -> conversationId != noteId);
         builder.withComma("status", status);
-        builder.withComma("name", name, () -> StringUtils.nonEmpty(name));
-        builder.withComma("content", content, () -> StringUtils.nonEmpty(content));
+        builder.withCommaNonEmpty("name", name);
+        builder.withCommaNonEmpty("summary", summary);
+        builder.withCommaNonEmpty("content", content);
         builder.withComma("", getPublic() == TriState.TRUE ? "public" : "nonpublic", () -> getPublic().known);
         builder.withComma("oid", oid, () -> isRealOid(oid));
         builder.withComma("conversation_oid",conversationOid, () -> isRealOid(conversationOid));
-        builder.withComma("url", url, () -> StringUtils.nonEmpty(url));
-        builder.withComma("via", via, () -> StringUtils.nonEmpty(via));
+        builder.withCommaNonEmpty("url", url);
+        builder.withCommaNonEmpty("via", via);
         builder.withComma("updated", MyLog.debugFormatOfDate(updatedDate));
         builder.withComma("origin", origin.getName());
         if(audience.nonEmpty()) {
@@ -353,6 +377,7 @@ public class Note extends AObject {
         noteId = note.noteId;
         updatedDate = note.updatedDate;
         name = note.name;
+        summary = note.summary;
         setContentStored(note.content);
         inReplyTo = note.inReplyTo;
         replies = note.replies;

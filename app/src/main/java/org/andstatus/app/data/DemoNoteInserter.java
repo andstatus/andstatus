@@ -196,13 +196,19 @@ public class DemoNoteInserter {
                 assertEquals("Note permalink has the same host as origin, " + note.toString(),
                         origin.getUrl().getHost(), urlPermalink.getHost());
             }
-            if (!StringUtils.isEmpty(note.getName())) {
-                assertEquals("Note name " + activity, note.getName(), MyQuery.noteIdToStringColumnValue(NoteTable.NAME, note.noteId));
+            if (StringUtils.nonEmpty(note.getName())) {
+                assertEquals("Note name " + activity, note.getName(),
+                        MyQuery.noteIdToStringColumnValue(NoteTable.NAME, note.noteId));
             }
-            if (!StringUtils.isEmpty(note.getContent())) {
-                assertEquals("Note content " + activity, note.getContent(), MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, note.noteId));
+            if (StringUtils.nonEmpty(note.getSummary())) {
+                assertEquals("Note summary " + activity, note.getSummary(),
+                        MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, note.noteId));
             }
-            if (!StringUtils.isEmpty(note.url)) {
+            if (StringUtils.nonEmpty(note.getContent())) {
+                assertEquals("Note content " + activity, note.getContent(),
+                        MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, note.noteId));
+            }
+            if (StringUtils.nonEmpty(note.url)) {
                 assertEquals("Note permalink", note.url, origin.getNotePermalink(note.noteId));
             }
 

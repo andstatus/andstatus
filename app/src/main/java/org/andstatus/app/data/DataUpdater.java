@@ -211,6 +211,7 @@ public class DataUpdater {
             }
             if (note.hasSomeContent()) {
                 values.put(NoteTable.NAME, note.getName());
+                values.put(NoteTable.SUMMARY, note.getSummary());
                 values.put(NoteTable.CONTENT, note.getContent());
                 values.put(NoteTable.CONTENT_TO_SEARCH, note.getContentToSearch());
             }

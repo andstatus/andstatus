@@ -112,8 +112,9 @@ public class NoteEditorData implements IsEmpty {
         long noteId = activity.getNote().noteId;
         Note note = activity.getNote();
         note.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId));
+        note.setSummary(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, noteId));
         note.setContentStored(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId));
-        note.setAudience(Audience.load(myContext, activity.accountActor.origin, noteId));
+        note.setAudience(Audience.load(activity.accountActor.origin, noteId));
 
         long inReplyToNoteId = inReplyToNoteIdIn == 0
                 ? MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, noteId)
@@ -129,6 +130,7 @@ public class NoteEditorData implements IsEmpty {
             final Note inReplyToNote = inReplyTo.getNote();
             inReplyToNote.noteId = inReplyToNoteId;
             inReplyToNote.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, inReplyToNoteId));
+            inReplyToNote.setSummary(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, inReplyToNoteId));
             inReplyToNote.setContentStored(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, inReplyToNoteId));
             note.setInReplyTo(inReplyTo);
         }
@@ -194,6 +196,7 @@ public class NoteEditorData implements IsEmpty {
         ContentValues values = new ContentValues();
         values.put(ActorTable.WEBFINGER_ID, activity.getActor().getWebFingerId());
         values.put(NoteTable.NAME, activity.getNote().getName());
+        values.put(NoteTable.SUMMARY, activity.getNote().getSummary());
         values.put(NoteTable.CONTENT, activity.getNote().getContent());
         if(attachment.nonEmpty()) {
             values.put(DownloadType.ATTACHMENT.name(), attachment.getUri().toString());
@@ -202,9 +205,11 @@ public class NoteEditorData implements IsEmpty {
             values.put("Reply", "all");
         }
         if(activity.getNote().getInReplyTo().nonEmpty()) {
-            values.put("InReplyTo", activity.getNote().getInReplyTo().getNote().getName()
-                    + COMMA
-                    + activity.getNote().getInReplyTo().getNote().getContent());
+            String name = activity.getNote().getInReplyTo().getNote().getName();
+            String summary = activity.getNote().getInReplyTo().getNote().getSummary();
+            values.put("InReplyTo", (StringUtils.nonEmpty(name) ? name + COMMA : "") +
+                    (StringUtils.nonEmpty(summary) ? summary + COMMA : "") +
+                    activity.getNote().getInReplyTo().getNote().getContent());
         }
         values.put("audience", activity.getNote().audience().getUsernames());
         values.put("ma", ma.getAccountName());
@@ -384,6 +389,11 @@ public class NoteEditorData implements IsEmpty {
 
     public NoteEditorData setName(String name) {
         activity.getNote().setName(name);
+        return this;
+    }
+
+    public NoteEditorData setSummary(String summary) {
+        activity.getNote().setSummary(summary);
         return this;
     }
 

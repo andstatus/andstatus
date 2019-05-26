@@ -28,7 +28,6 @@ import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Attachment;
-import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
@@ -219,9 +218,8 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public AActivity updateNote(String name, String content, String noteOid, Audience audience, String inReplyToOid,
-                                Uri mediaUri) throws ConnectionException {
-        ActivitySender sender = ActivitySender.fromContent(this, noteOid, audience, name, content);
+    public AActivity updateNote(Note note, String inReplyToOid, Uri mediaUri) throws ConnectionException {
+        ActivitySender sender = ActivitySender.fromContent(this, note);
         sender.setInReplyTo(inReplyToOid);
         sender.setMediaUri(mediaUri);
         return sender.send(PActivityType.POST);

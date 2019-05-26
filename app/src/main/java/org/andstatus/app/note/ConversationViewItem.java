@@ -51,6 +51,7 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
     private ConversationViewItem(MyContext myContext, Cursor cursor) {
         super(myContext, cursor);
         setName(DbUtils.getString(cursor, NoteTable.NAME));
+        setSummary(DbUtils.getString(cursor, NoteTable.SUMMARY));
         setContent(DbUtils.getString(cursor, NoteTable.CONTENT));
         audience = Audience.fromNoteId(getOrigin(), getNoteId());
         noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));

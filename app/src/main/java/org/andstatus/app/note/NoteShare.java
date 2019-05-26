@@ -70,10 +70,18 @@ public class NoteShare {
 
     Intent intentToViewAndShare(boolean share) {
         String noteName = MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId);
+        String noteSummary = MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, noteId);
         String noteContent = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
-        StringBuilder subject = new StringBuilder(
-                MyContextHolder.get().context().getText(origin.alternativeTermForResourceId(R.string.message)));
-        subject.append(" - " + (StringUtils.nonEmpty(noteName) ? noteName : MyHtml.htmlToCompactPlainText(noteContent)));
+
+        CharSequence subjectString = noteName;
+        if (StringUtils.nonEmpty(noteSummary)) {
+            subjectString = subjectString + (StringUtils.nonEmpty(subjectString) ? ". " : "") + noteSummary;
+        }
+        if (StringUtils.isEmpty(subjectString)) {
+            subjectString = I18n.trimTextAt(MyHtml.htmlToCompactPlainText(noteContent), 80);
+        }
+        subjectString = MyContextHolder.get().context().getText(origin.alternativeTermForResourceId(R.string.message))
+            + " - " + subjectString;
 
         Intent intent = new Intent(share ? android.content.Intent.ACTION_SEND : Intent.ACTION_VIEW);
         DownloadData downloadData = downloads.getFirstToShare();
@@ -89,7 +97,7 @@ public class NoteShare {
             intent.putExtra(Intent.EXTRA_STREAM, mediaFileUri);
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
-        intent.putExtra(Intent.EXTRA_SUBJECT, I18n.trimTextAt(subject.toString(), 80));
+        intent.putExtra(Intent.EXTRA_SUBJECT, subjectString);
         intent.putExtra(Intent.EXTRA_TEXT, buildBody(origin, MyHtml.htmlToPlainText(noteContent), false));
         intent.putExtra(Intent.EXTRA_HTML_TEXT, buildBody(origin, noteContent, true));
         return intent;

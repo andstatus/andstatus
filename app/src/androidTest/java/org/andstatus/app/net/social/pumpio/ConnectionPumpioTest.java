@@ -19,6 +19,7 @@ package org.andstatus.app.net.social.pumpio;
 import android.net.Uri;
 
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnectionData;
@@ -29,7 +30,6 @@ import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Attachment;
-import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.ConnectionMock;
 import org.andstatus.app.net.social.Note;
@@ -289,7 +289,9 @@ public class ConnectionPumpioTest {
         String name = "To Peter";
         String content = "@peter Do you think it's true?";
         String inReplyToId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
-        connection.updateNote(name, content, "", Audience.EMPTY, inReplyToId, null);
+        Note note = Note.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
+                .setName(name).setContentPosted(content);
+        connection.updateNote(note, inReplyToId, null);
         JSONObject activity = mock.getHttpMock().getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         JSONObject obj = activity.getJSONObject("object");
@@ -301,15 +303,16 @@ public class ConnectionPumpioTest {
         JSONObject inReplyToObject = obj.getJSONObject("inReplyTo");
         assertEquals("Id of the in reply to object", inReplyToId, inReplyToObject.getString("id"));
 
-        name = "";
-        content = "Testing the application...";
-        inReplyToId = "";
-        connection.updateNote(name, content, "", Audience.EMPTY, inReplyToId, null);
+        String name2 = "";
+        String content2 = "Testing the application...";
+        Note note2 = Note.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
+                .setName(name2).setContentPosted(content2);
+        connection.updateNote(note2, "", null);
         activity = mock.getHttpMock().getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         obj = activity.getJSONObject("object");
-        assertEquals("Note name", name, MyHtml.htmlToPlainText(obj.optString("displayName")));
-        assertEquals("Note content", content, MyHtml.htmlToPlainText(obj.getString("content")));
+        assertEquals("Note name", name2, MyHtml.htmlToPlainText(obj.optString("displayName")));
+        assertEquals("Note content", content2, MyHtml.htmlToPlainText(obj.getString("content")));
         assertEquals("Note without reply is a note", PObjectType.NOTE.id(), obj.getString("objectType"));
 
         JSONArray recipients = activity.optJSONArray("to");
@@ -368,9 +371,10 @@ public class ConnectionPumpioTest {
     public void testPostWithImage() throws IOException {
         // TODO: There should be 3 responses, just like for Video
         mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
-        
-        AActivity activity = connection.updateNote("", "Test post note with media", "",
-                Audience.EMPTY, "", demoData.localImageTestUri);
+
+        Note note = Note.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
+                .setContentPosted("Test post note with media");
+        AActivity activity = connection.updateNote(note, "", demoData.localImageTestUri);
     }
 
     @Test
@@ -382,14 +386,16 @@ public class ConnectionPumpioTest {
         String name = "Note - Testing Video attachments in #AndStatus";
         String content = "<p dir=\"ltr\">Video attachment is here</p>";
 
-        AActivity activity = connection.updateNote(name, content, "",
-                Audience.EMPTY, "", demoData.localVideoTestUri);
+        Note note = Note.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
+                .setName(name).setContentPosted(content);
+
+        AActivity activity = connection.updateNote(note, "", demoData.localVideoTestUri);
         assertEquals("Responses counter " + mock.getHttpMock(), 3, mock.getHttpMock().responsesCounter);
-        Note note = activity.getNote();
-        assertEquals("Note name " + activity, name, note.getName());
-        assertEquals("Note content " + activity, content, note.getContent());
-        assertEquals("Should have an attachment " + activity, false, note.attachments.isEmpty());
-        Attachment attachment = note.attachments.list.get(0);
+        Note note2 = activity.getNote();
+        assertEquals("Note name " + activity, name, note2.getName());
+        assertEquals("Note content " + activity, content, note2.getContent());
+        assertEquals("Should have an attachment " + activity, false, note2.attachments.isEmpty());
+        Attachment attachment = note2.attachments.list.get(0);
         assertEquals("Video attachment " + activity, MyContentType.VIDEO, attachment.contentType);
         assertEquals("Video content type " + activity, "video/mp4", attachment.mimeType);
         assertEquals("Video uri " + activity,

@@ -59,6 +59,7 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
         setLinkedAccount(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID));
 
         setName(DbUtils.getString(cursor, NoteTable.NAME));
+        setSummary(DbUtils.getString(cursor, NoteTable.SUMMARY));
         setContent(DbUtils.getString(cursor, NoteTable.CONTENT));
         contentToSearch = DbUtils.getString(cursor, NoteTable.CONTENT_TO_SEARCH);
         inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);

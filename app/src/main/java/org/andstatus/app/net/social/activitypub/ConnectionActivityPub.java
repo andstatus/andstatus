@@ -28,7 +28,6 @@ import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Attachment;
-import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
@@ -56,6 +55,7 @@ public class ConnectionActivityPub extends Connection {
     static final String PUBLIC_COLLECTION_ID = "https://www.w3.org/ns/activitystreams#Public";
     static final String APPLICATION_ID = "http://andstatus.org/andstatus";
     static final String NAME_PROPERTY = "name";
+    static final String SUMMARY_PROPERTY = "summary";
     static final String CONTENT_PROPERTY = "content";
     static final String VIDEO_OBJECT = "stream";
     static final String IMAGE_OBJECT = "image";
@@ -168,9 +168,8 @@ public class ConnectionActivityPub extends Connection {
     }
 
     @Override
-    public AActivity updateNote(String name, String content, String noteOid, Audience audience, String inReplyToOid,
-                                Uri mediaUri) throws ConnectionException {
-        ActivitySender sender = ActivitySender.fromContent(this, noteOid, audience, name, content);
+    public AActivity updateNote(Note note, String inReplyToOid, Uri mediaUri) throws ConnectionException {
+        ActivitySender sender = ActivitySender.fromContent(this, note);
         sender.setInReplyTo(inReplyToOid);
         sender.setMediaUri(mediaUri);
         return sender.send(ActivityType.CREATE);
@@ -386,6 +385,7 @@ public class ConnectionActivityPub extends Connection {
 
             Note note =  activity.getNote();
             note.setName(jso.optString(NAME_PROPERTY));
+            note.setSummary(jso.optString(SUMMARY_PROPERTY));
             note.setContentPosted(jso.optString(CONTENT_PROPERTY));
 
             note.setConversationOid(StringUtils.optNotEmpty(jso.optString("conversation"))

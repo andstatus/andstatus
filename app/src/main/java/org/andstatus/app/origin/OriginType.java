@@ -51,18 +51,18 @@ public enum OriginType implements SelectableEnum {
      * Origin type for Twitter system 
      * <a href="https://dev.twitter.com/docs">Twitter Developers' documentation</a>
      */
-    TWITTER(1, "Twitter", ApiEnum.TWITTER1P1, NoteName.NO, PublicChangeAllowed.NO),
+    TWITTER(1, "Twitter", ApiEnum.TWITTER1P1, NoteName.NO, NoteSummary.NO, PublicChangeAllowed.NO),
     /**
      * Origin type for the pump.io system 
      * Till July of 2013 (and v.1.16 of AndStatus) the API was: 
      * <a href="http://status.net/wiki/Twitter-compatible_API">Twitter-compatible identi.ca API</a>
      * Since July 2013 the API is <a href="https://github.com/e14n/pump.io/blob/master/API.md">pump.io API</a>
      */
-    PUMPIO(2, "Pump.io", ApiEnum.PUMPIO, NoteName.YES, PublicChangeAllowed.YES),
-    GNUSOCIAL(3, "GnuSocial", ApiEnum.GNUSOCIAL_TWITTER, NoteName.NO, PublicChangeAllowed.NO),
+    PUMPIO(2, "Pump.io", ApiEnum.PUMPIO, NoteName.YES, NoteSummary.NO, PublicChangeAllowed.YES),
+    GNUSOCIAL(3, "GnuSocial", ApiEnum.GNUSOCIAL_TWITTER, NoteName.NO, NoteSummary.NO, PublicChangeAllowed.NO),
     /** <a href="https://github.com/Gargron/mastodon">Mastodon at GitHub</a> */
-    MASTODON(4, "Mastodon", ApiEnum.MASTODON, NoteName.YES, PublicChangeAllowed.NO),
-    ACTIVITYPUB(5, "ActivityPub", ApiEnum.ACTIVITYPUB, NoteName.YES, PublicChangeAllowed.YES) {
+    MASTODON(4, "Mastodon", ApiEnum.MASTODON, NoteName.NO, NoteSummary.YES, PublicChangeAllowed.NO),
+    ACTIVITYPUB(5, "ActivityPub", ApiEnum.ACTIVITYPUB, NoteName.YES, NoteSummary.YES, PublicChangeAllowed.YES) {
 
         @Override
         public boolean isSelectable() {
@@ -74,11 +74,12 @@ public enum OriginType implements SelectableEnum {
             return Optional.of("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"");
         }
     },
-    UNKNOWN(0, "?", ApiEnum.UNKNOWN_API, NoteName.NO, PublicChangeAllowed.NO);
+    UNKNOWN(0, "?", ApiEnum.UNKNOWN_API, NoteName.NO, NoteSummary.NO, PublicChangeAllowed.NO);
 
     public static final String SIMPLE_USERNAME_EXAMPLES = "AndStatus user357 peter";
 
     private enum NoteName { YES, NO}
+    private enum NoteSummary { YES, NO}
     private enum PublicChangeAllowed { YES, NO}
 
     /**
@@ -158,16 +159,18 @@ public enum OriginType implements SelectableEnum {
     private final boolean isPrivateNoteAllowsReply;
     private final boolean isSelectable;
     public final boolean hasNoteName;
+    public final boolean hasNoteSummary;
     public final boolean isPublicChangeAllowed;
 
     public boolean uniqueNameHasHost() {
         return this != TWITTER;
     }
 
-    OriginType(long id, String title, ApiEnum api, NoteName noteName, PublicChangeAllowed publicChangeAllowed) {
+    OriginType(long id, String title, ApiEnum api, NoteName noteName, NoteSummary noteSummary, PublicChangeAllowed publicChangeAllowed) {
         this.id = id;
         this.title = title;
         hasNoteName = noteName == NoteName.YES;
+        hasNoteSummary = noteSummary == NoteSummary.YES;
         isPublicChangeAllowed = publicChangeAllowed == PublicChangeAllowed.YES;
 
         switch (api) {

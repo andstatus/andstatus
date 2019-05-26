@@ -47,6 +47,24 @@ public class MyStringBuilder implements CharSequence {
     }
 
     @NonNull
+    public <T> MyStringBuilder withCommaNonEmpty(CharSequence label, T obj) {
+        return withComma(label, obj, MyStringBuilder::nonEmptyObj);
+    }
+
+    @NonNull
+    public static <T> boolean nonEmptyObj(T obj) {
+        return !isEmptyObj(obj);
+    }
+
+    @NonNull
+    public static <T> boolean isEmptyObj(T obj) {
+        if (obj instanceof IsEmpty) return ((IsEmpty) obj).isEmpty();
+        if (obj instanceof Number) return ((Number) obj).longValue() == 0;
+        if (obj instanceof String) return StringUtils.isEmpty((String) obj);
+        return obj == null;
+    }
+
+    @NonNull
     public <T> MyStringBuilder withComma(CharSequence label, T obj, Predicate<T> predicate) {
         return obj == null || !predicate.test(obj)
                 ? this

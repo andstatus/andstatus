@@ -66,6 +66,10 @@ public final class NoteTable implements BaseColumns {
     public static final String URL = "url";
     /** A simple, human-readable, plain-text name for the Note */
     public static final String NAME = "note_name";
+    /** A natural language summarization of the object.
+     * Used as a Content Warning (CW) if {@link #SENSITIVE} flag is set.
+     */
+    public static final String SUMMARY = "summary";
     /** Content of the note */
     public static final String CONTENT = "content";
     /** Name and Content text, prepared for easy searching in a database */
@@ -91,6 +95,10 @@ public final class NoteTable implements BaseColumns {
     /** {@link TriState} true - The Note is definitely public (e.g. it has Public group as one of its audience members)
      * false - it is definitely private */
     public static final String PUBLIC = "public";
+    /** Indicates that some users may wish to apply discretion about viewing its content, whether due to nudity,
+     * violence, or any other likely aspects that viewers may be sensitive to.
+     * See <a href="https://www.w3.org/wiki/Activity_Streams_extensions#as:sensitive_property">Activity Streams extensions</a> */
+    public static final String SENSITIVE = "sensitive";
     /** Some of my accounts favorited this note */
     public static final String FAVORITED = "favorited";
     /** The Note is reblogged by some of my actors
@@ -127,6 +135,7 @@ public final class NoteTable implements BaseColumns {
                 + CONVERSATION_OID + " TEXT,"
                 + URL + " TEXT,"
                 + NAME + " TEXT,"
+                + SUMMARY + " TEXT,"
                 + CONTENT + " TEXT,"
                 + CONTENT_TO_SEARCH + " TEXT,"
                 + VIA + " TEXT,"
@@ -134,6 +143,7 @@ public final class NoteTable implements BaseColumns {
                 + IN_REPLY_TO_NOTE_ID + " INTEGER,"
                 + IN_REPLY_TO_ACTOR_ID + " INTEGER,"
                 + PUBLIC + " INTEGER NOT NULL DEFAULT 0,"
+                + SENSITIVE + " INTEGER NOT NULL DEFAULT 0,"
                 + FAVORITED + " INTEGER NOT NULL DEFAULT 0,"
                 + REBLOGGED + " INTEGER NOT NULL DEFAULT 0,"
                 + FAVORITE_COUNT + " INTEGER NOT NULL DEFAULT 0,"

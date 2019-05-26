@@ -110,12 +110,11 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     }
 
     @Override
-    protected AActivity updateNote2(String name, String content, String noteOid, Audience audience, String inReplyToOid,
-                                Uri mediaUri) throws ConnectionException {
+    protected AActivity updateNote2(Note note, String inReplyToOid, Uri mediaUri) throws ConnectionException {
         if (UriUtils.isEmpty(mediaUri)) {
-            return super.updateNote2(name, content, noteOid, audience, inReplyToOid, mediaUri);
+            return super.updateNote2(note, inReplyToOid, mediaUri);
         }
-        return updateWithMedia(content, inReplyToOid, mediaUri);
+        return updateWithMedia(note.getContentToPost(), inReplyToOid, mediaUri);
     }
 
     private AActivity updateWithMedia(String note, String inReplyToId, Uri mediaUri) throws ConnectionException {

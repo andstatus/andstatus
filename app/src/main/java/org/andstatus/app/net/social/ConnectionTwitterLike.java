@@ -569,19 +569,17 @@ public abstract class ConnectionTwitterLike extends Connection {
     }
     
     @Override
-    public AActivity updateNote(String name, String content, String noteOid, Audience audience, String inReplyToOid,
-                                Uri mediaUri) throws ConnectionException {
-        if (StringUtils.isEmpty(inReplyToOid) && audience.hasNonPublic() && audience.getPublic().isFalse) {
-            return updatePrivateNote(name, content, noteOid, audience.getFirstNonPublic().oid, mediaUri);
+    public AActivity updateNote(Note note, String inReplyToOid, Uri mediaUri) throws ConnectionException {
+        if (StringUtils.isEmpty(inReplyToOid) && note.audience().hasNonPublic() && note.audience().getPublic().isFalse) {
+            return updatePrivateNote(note, note.audience().getFirstNonPublic().oid, mediaUri);
         }
-        return  updateNote2(name, content, noteOid, audience, inReplyToOid, mediaUri);
+        return updateNote2(note, inReplyToOid, mediaUri);
     }
 
-    protected AActivity updateNote2(String name, String content, String noteOid, Audience audience, String inReplyToOid,
-                                Uri mediaUri) throws ConnectionException {
+    protected AActivity updateNote2(Note note, String inReplyToOid, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
-            if (StringUtils.nonEmpty(content)) formParams.put("status", content);
+            if (StringUtils.nonEmpty(note.getContentToPost())) formParams.put("status", note.getContentToPost());
             if (StringUtils.nonEmpty(inReplyToOid)) formParams.put("in_reply_to_status_id", inReplyToOid);
         } catch (JSONException e) {
             MyLog.e(this, e);
@@ -591,11 +589,11 @@ public abstract class ConnectionTwitterLike extends Connection {
             .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
     }
 
-    private AActivity updatePrivateNote(String name, String content, String noteOid, String recipientOid, Uri mediaUri)
+    private AActivity updatePrivateNote(Note note, String recipientOid, Uri mediaUri)
             throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
-            formParams.put("text", content);
+            formParams.put("text", note.getContentToPost());
             if ( !StringUtils.isEmpty(recipientOid)) {
                 formParams.put("user_id", recipientOid);
             }

@@ -68,6 +68,7 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
         showRebloggers(view, item);
         MyUrlSpan.showText(view, R.id.note_author, item.author.getName(), false, false);
         showNoteName(view, item);
+        showNoteSummary(view, item);
         showNoteContent(view, item);
         MyUrlSpan.showText(view, R.id.note_details, item.getDetails(contextMenu.getActivity(), showReceivedTime)
                 .toString(), false, false);
@@ -128,6 +129,10 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
 
     protected void showNoteName(View view, T item) {
         MyUrlSpan.showSpannable(view.findViewById(R.id.note_name), item.getName(), false);
+    }
+
+    protected void showNoteSummary(View view, T item) {
+        MyUrlSpan.showSpannable(view.findViewById(R.id.note_summary), item.getSummary(), false);
     }
 
     protected void showNoteContent(View view, T item) {

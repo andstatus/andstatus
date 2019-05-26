@@ -89,7 +89,8 @@ public class ConnectionMastodonTest {
 
         assertEquals("Note Oid " + activity, "22", note.oid);
         assertEquals("Note url" + activity, "https://neumastodon.com/@t131t1/22", note.url);
-        assertEquals("Name", "This is a test spoiler", note.getName());
+        assertEquals("Name", "", note.getName());
+        assertEquals("Summary", "This is a test spoiler", note.getSummary());
         assertEquals("Body", "<p>I&apos;m figuring out how to work with Mastodon</p>", note.getContent());
         assertEquals("Note application", "Web", note.via);
 

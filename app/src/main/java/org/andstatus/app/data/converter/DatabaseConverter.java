@@ -71,8 +71,7 @@ class DatabaseConverter {
             oneStep = null;
             try {
                 int prevVersion = currentVersion;
-                Class clazz = Class.forName(this.getClass().getPackage().getName()
-                        + ".Convert" + Integer.toString(currentVersion));
+                Class clazz = Class.forName(this.getClass().getPackage().getName() + ".Convert" + currentVersion);
                 oneStep = (ConvertOneStep) clazz.newInstance();
                 currentVersion = oneStep.execute(db, currentVersion, progressLogger);
                 if (currentVersion == prevVersion) {

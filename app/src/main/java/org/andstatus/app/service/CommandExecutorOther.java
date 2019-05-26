@@ -33,7 +33,6 @@ import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.RateLimitStatus;
 import org.andstatus.app.support.java.util.function.SupplierWithException;
@@ -394,9 +393,9 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         DemoData.crashTest(() -> note.getContent().startsWith("Crash me on sending 2015-04-10"));
 
         String content = note.getContentToPost();
-        Audience audience = Audience.load(execContext.myContext, note.origin, noteId);
         Uri mediaUri = DownloadData.getSingleAttachment(noteId).mediaUriToBePosted();
-        String msgLog = (StringUtils.nonEmpty(note.getName()) ? "name:'" + note.getName() + "'" : "")
+        String msgLog = (StringUtils.nonEmpty(note.getName()) ? "name:'" + note.getName() + "'; " : "")
+                + (StringUtils.nonEmpty(note.getSummary()) ? "summary:'" + note.getSummary() + "'; " : "")
                 + (StringUtils.nonEmpty(content) ? "content:'" + MyLog.trimmedString(content, 80) + "'" : "")
                 + (mediaUri.equals(Uri.EMPTY) ? "" : "; mediaUri:'" + mediaUri + "'");
 
@@ -410,7 +409,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             }
             long inReplyToNoteId = MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, noteId);
             String inReplyToNoteOid = getNoteOid(method, inReplyToNoteId, false);
-            activity = getConnection().updateNote(note.getName(), content, note.oid, audience, inReplyToNoteOid, mediaUri);
+            activity = getConnection().updateNote(note, inReplyToNoteOid, mediaUri);
             logIfEmptyNote(method, noteId, activity.getNote());
         } catch (ConnectionException e) {
             logConnectionException(e, method + "; " + msgLog);

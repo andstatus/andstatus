@@ -26,6 +26,7 @@ import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
+import org.andstatus.app.net.social.Note;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
@@ -39,6 +40,7 @@ import io.vavr.control.Try;
 import static org.andstatus.app.net.social.activitypub.ConnectionActivityPub.CONTENT_PROPERTY;
 import static org.andstatus.app.net.social.activitypub.ConnectionActivityPub.FULL_IMAGE_OBJECT;
 import static org.andstatus.app.net.social.activitypub.ConnectionActivityPub.NAME_PROPERTY;
+import static org.andstatus.app.net.social.activitypub.ConnectionActivityPub.SUMMARY_PROPERTY;
 
 /**
  * ActivityPub specific
@@ -50,6 +52,7 @@ class ActivitySender {
     final Audience audience;
     String inReplyToId = "";
     String name = "";
+    String summary = "";
     String content = "";
     Uri mMediaUri = null;
 
@@ -63,11 +66,11 @@ class ActivitySender {
         return new ActivitySender(connection, objectId, Audience.EMPTY);
     }
     
-    static ActivitySender fromContent(ConnectionActivityPub connection, String objectId, Audience audience, String name,
-                                      String content) {
-        ActivitySender sender = new ActivitySender(connection, objectId, audience);
-        sender.name = name;
-        sender.content = content;
+    static ActivitySender fromContent(ConnectionActivityPub connection, Note note) {
+        ActivitySender sender = new ActivitySender(connection, note.oid, note.audience());
+        sender.name = note.getName();
+        sender.summary = note.getSummary();
+        sender.content = note.getContentToPost();
         return sender;
     }
 
@@ -158,6 +161,9 @@ class ActivitySender {
         if (StringUtils.nonEmpty(name)) {
             obj.put(NAME_PROPERTY, name);
         }
+        if (StringUtils.nonEmpty(summary)) {
+            obj.put(SUMMARY_PROPERTY, summary);
+        }
         if (StringUtils.nonEmpty(content)) {
             obj.put(CONTENT_PROPERTY, content);
         }
@@ -170,9 +176,11 @@ class ActivitySender {
 
     private boolean contentNotPosted(ActivityType activityType, JSONObject jsActivity) {
         JSONObject objPosted = jsActivity.optJSONObject("object");
-        return ActivityType.CREATE.equals(activityType) && objPosted != null
-                && (StringUtils.nonEmpty(content) && StringUtils.isEmpty(objPosted.optString(CONTENT_PROPERTY))
-                    || StringUtils.nonEmpty(name) && StringUtils.isEmpty(objPosted.optString(NAME_PROPERTY)));
+        return ActivityType.CREATE.equals(activityType) && objPosted != null &&
+            (StringUtils.nonEmpty(content) && StringUtils.isEmpty(objPosted.optString(CONTENT_PROPERTY))
+                || StringUtils.nonEmpty(name) && StringUtils.isEmpty(objPosted.optString(NAME_PROPERTY))
+                || StringUtils.nonEmpty(summary) && StringUtils.isEmpty(objPosted.optString(SUMMARY_PROPERTY))
+            );
     }
 
     private JSONObject newActivityOfThisAccount(ActivityType activityType) throws JSONException, ConnectionException {

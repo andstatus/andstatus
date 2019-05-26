@@ -16,12 +16,13 @@
 
 package org.andstatus.app.net.social;
 
-import androidx.annotation.NonNull;
 import android.text.Spannable;
+import android.text.SpannableString;
 
 import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyUrlSpan;
+import org.andstatus.app.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,11 +32,14 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import androidx.annotation.NonNull;
+
 import static java.lang.Character.isLetterOrDigit;
 
 public class SpanUtil {
     private static final int MIN_SPAN_LENGTH = 3;
     private static final int MIN_HASHTAG_LENGTH = 2;
+    public static final SpannableString EMPTY = SpannableString.valueOf("");
 
     private SpanUtil() { /* Empty */ }
 
@@ -112,9 +116,11 @@ public class SpanUtil {
     }
 
     public static Spannable textToSpannable(String text, TextMediaType mediaType, Audience audience) {
-        return spansModifier(audience).apply(MyUrlSpan.toSpannable(
-                mediaType == TextMediaType.PLAIN ? text : MyHtml.prepareForView(text),
-                mediaType, true));
+        return StringUtils.isEmpty(text)
+                ? EMPTY
+                : spansModifier(audience).apply(MyUrlSpan.toSpannable(
+                    mediaType == TextMediaType.PLAIN ? text : MyHtml.prepareForView(text),
+                    mediaType, true));
     }
 
     public static Function<Spannable, Spannable> spansModifier(Audience audience) {

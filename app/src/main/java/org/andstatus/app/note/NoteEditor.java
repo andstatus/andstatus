@@ -430,6 +430,8 @@ public class NoteEditor {
         MyCheckBox.set(getActivity(), R.id.is_public, editorData.getPublic().isTrue, true);
         MyUrlSpan.showText(editorView, R.id.note_name_edit, editorData.activity.getNote().getName(), false,
                 editorData.ma.getOrigin().getOriginType().hasNoteName);
+        MyUrlSpan.showText(editorView, R.id.summary_edit, editorData.activity.getNote().getSummary(), false,
+                editorData.ma.getOrigin().getOriginType().hasNoteSummary);
         String body = MyHtml.fromContentStored(editorData.getContent(), editorContentMediaType);
         if (!body.equals(bodyView.getText().toString().trim())) {
             if (!StringUtils.isEmpty(body)) {
@@ -570,6 +572,7 @@ public class NoteEditor {
 
     private void updateDataFromScreen() {
         editorData.setName(MyUrlSpan.getText(editorView, R.id.note_name_edit));
+        editorData.setSummary(MyUrlSpan.getText(editorView, R.id.summary_edit));
         editorData.setContent(bodyView.getText().toString(), editorContentMediaType);
         editorData.setPublic(MyCheckBox.isChecked(getActivity(), R.id.is_public, false));
     }
