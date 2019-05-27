@@ -113,6 +113,7 @@ public class NoteEditorData implements IsEmpty {
         Note note = activity.getNote();
         note.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId));
         note.setSummary(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, noteId));
+        note.setSensitive(MyQuery.noteIdToLongColumnValue(NoteTable.SENSITIVE, noteId) == 1);
         note.setContentStored(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId));
         note.setAudience(Audience.load(activity.accountActor.origin, noteId));
 
@@ -131,6 +132,7 @@ public class NoteEditorData implements IsEmpty {
             inReplyToNote.noteId = inReplyToNoteId;
             inReplyToNote.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, inReplyToNoteId));
             inReplyToNote.setSummary(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, inReplyToNoteId));
+            inReplyToNote.setSensitive(MyQuery.noteIdToLongColumnValue(NoteTable.SENSITIVE, inReplyToNoteId) == 1);
             inReplyToNote.setContentStored(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, inReplyToNoteId));
             note.setInReplyTo(inReplyTo);
         }
@@ -197,6 +199,7 @@ public class NoteEditorData implements IsEmpty {
         values.put(ActorTable.WEBFINGER_ID, activity.getActor().getWebFingerId());
         values.put(NoteTable.NAME, activity.getNote().getName());
         values.put(NoteTable.SUMMARY, activity.getNote().getSummary());
+        values.put(NoteTable.SENSITIVE, activity.getNote().isSensitive());
         values.put(NoteTable.CONTENT, activity.getNote().getContent());
         if(attachment.nonEmpty()) {
             values.put(DownloadType.ATTACHMENT.name(), attachment.getUri().toString());
@@ -400,5 +403,20 @@ public class NoteEditorData implements IsEmpty {
     public boolean canChangeIsPublic() {
         return ma.getOrigin().getOriginType().isPublicChangeAllowed
                 && (getInReplyToNoteId() == 0 || ma.getOrigin().getOriginType().isPrivateNoteAllowsReply());
+    }
+
+    public boolean getSensitive() {
+        return activity.getNote().isSensitive();
+    }
+
+    public NoteEditorData setSensitive(boolean isSensitive) {
+        if (canChangeIsSensitive()) {
+            this.activity.getNote().setSensitive(isSensitive);
+        }
+        return this;
+    }
+
+    public boolean canChangeIsSensitive() {
+        return ma.getOrigin().getOriginType().isSensitiveChangeAllowed;
     }
 }

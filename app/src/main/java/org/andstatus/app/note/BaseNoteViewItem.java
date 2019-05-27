@@ -19,7 +19,6 @@ package org.andstatus.app.note;
 import android.content.Context;
 import android.database.Cursor;
 import android.text.Spannable;
-import android.text.SpannableString;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
@@ -74,6 +73,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     protected ActorViewItem author = ActorViewItem.EMPTY;
 
     TriState isPublic = TriState.UNKNOWN;
+    boolean isSensitive = false;
     Audience audience = Audience.EMPTY;
     private List<ActorViewItem> audienceToShow = Collections.emptyList();
 
@@ -108,6 +108,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         activityId = DbUtils.getLong(cursor, ActivityTable.ACTIVITY_ID);
         setNoteId(DbUtils.getLong(cursor, ActivityTable.NOTE_ID));
         setOrigin(myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)));
+        isSensitive = DbUtils.getBoolean(cursor, NoteTable.SENSITIVE);
         this.myContext = myContext;
 
         if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
@@ -282,6 +283,10 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     public Spannable getSummary() {
         return summary;
+    }
+
+    public boolean isSensitive() {
+        return isSensitive;
     }
 
     public BaseNoteViewItem setContent(String content) {

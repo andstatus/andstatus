@@ -17,6 +17,7 @@
 package org.andstatus.app.note;
 
 import android.net.Uri;
+import android.text.SpannableString;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +29,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.graphics.IdentifiableImageView;
+import org.andstatus.app.net.social.SpanUtil;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.TimelineData;
 import org.andstatus.app.util.MyStringBuilder;
@@ -128,7 +130,8 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
     }
 
     protected void showNoteName(View view, T item) {
-        MyUrlSpan.showSpannable(view.findViewById(R.id.note_name), item.getName(), false);
+        MyUrlSpan.showSpannable(view.findViewById(R.id.note_name),
+            item.isSensitive() && !MyPreferences.isShowSensitiveContent() ? SpanUtil.EMPTY : item.getName(), false);
     }
 
     protected void showNoteSummary(View view, T item) {
@@ -136,7 +139,11 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
     }
 
     protected void showNoteContent(View view, T item) {
-        MyUrlSpan.showSpannable(view.findViewById(R.id.note_body), item.getContent(), false);
+        MyUrlSpan.showSpannable(view.findViewById(R.id.note_body),
+            item.isSensitive() && !MyPreferences.isShowSensitiveContent()
+                    ? SpannableString.valueOf("(" + myContext.context().getText(R.string.sensitive) + ")")
+                    : item.getContent(),
+                false);
     }
 
     protected void showAvatar(View view, T item) {
@@ -148,7 +155,8 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
         if (parent == null) return;
 
         final AttachedImageFile attachedImageFile = item.getAttachedImageFile();
-        final boolean imageMayBeShown = attachedImageFile.imageMayBeShown();
+        final boolean imageMayBeShown = (!item.isSensitive() || MyPreferences.isShowSensitiveContent()) &&
+                attachedImageFile.imageMayBeShown();
         final boolean showWrapper = contextMenu.getActivity().isMyResumed() &&
                 (imageMayBeShown || attachedImageFile.uri != Uri.EMPTY) ;
         parent.setVisibility(showWrapper ? View.VISIBLE : View.GONE);

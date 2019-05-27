@@ -303,6 +303,12 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         updateList(TriState.fromBoolean(((CheckBox) view).isChecked()), 0);
     }
 
+    public void onShowSensitiveContentToggleClick(View view) {
+        closeDrawer();
+        MyPreferences.setShowSensitiveContent(((CheckBox) view).isChecked());
+        updateList(TriState.UNKNOWN, 0);
+    }
+
     public void onTimelineTypeButtonClick(View item) {
         TimelineSelector.selectTimeline(this, ActivityRequestCode.SELECT_TIMELINE,
                 getParamsNew().getTimeline(), myContext.accounts().getCurrentAccount());
@@ -671,6 +677,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 MyPreferences.getMaxDistanceBetweenDuplicates() > 0);
         MyCheckBox.setEnabled(this, R.id.collapseDuplicatesToggle,
                 getListData().isCollapseDuplicates());
+        MyCheckBox.setEnabled(this, R.id.showSensitiveContentToggle, MyPreferences.isShowSensitiveContent());
         showSyncListButtons();
         showActorProfile();
     }

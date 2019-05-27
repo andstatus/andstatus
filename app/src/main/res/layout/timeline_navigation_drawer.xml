@@ -124,4 +124,16 @@
         android:text="@string/collapse_duplicates"
         android:checked="true"/>
 
+    <View style="@style/Divider"/>
+
+    <CheckBox
+        android:id="@+id/showSensitiveContentToggle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="?android:attr/listPreferredItemHeightSmall"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:onClick="onShowSensitiveContentToggleClick"
+        android:text="@string/show_sensitive_content"
+        android:checked="false"/>
+
 </LinearLayout>

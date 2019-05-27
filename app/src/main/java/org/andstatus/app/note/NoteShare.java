@@ -71,6 +71,7 @@ public class NoteShare {
     Intent intentToViewAndShare(boolean share) {
         String noteName = MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId);
         String noteSummary = MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, noteId);
+        boolean isSensitive = MyQuery.noteIdToLongColumnValue(NoteTable.SENSITIVE, noteId) == 1;
         String noteContent = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
 
         CharSequence subjectString = noteName;
@@ -80,8 +81,9 @@ public class NoteShare {
         if (StringUtils.isEmpty(subjectString)) {
             subjectString = I18n.trimTextAt(MyHtml.htmlToCompactPlainText(noteContent), 80);
         }
-        subjectString = MyContextHolder.get().context().getText(origin.alternativeTermForResourceId(R.string.message))
-            + " - " + subjectString;
+        subjectString = (isSensitive ? "(" + MyContextHolder.get().context().getText(R.string.sensitive) + ")" : "") +
+                MyContextHolder.get().context().getText(origin.alternativeTermForResourceId(R.string.message)) +
+                " - " + subjectString;
 
         Intent intent = new Intent(share ? android.content.Intent.ACTION_SEND : Intent.ACTION_VIEW);
         DownloadData downloadData = downloads.getFirstToShare();

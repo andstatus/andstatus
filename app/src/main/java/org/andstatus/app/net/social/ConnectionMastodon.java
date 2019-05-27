@@ -42,6 +42,7 @@ import androidx.annotation.NonNull;
 
 public class ConnectionMastodon extends ConnectionTwitterLike {
     private static final String ATTACHMENTS_FIELD_NAME = "media_attachments";
+    private static final String SENSITIVE_PROPERTY = "sensitive";
     private static final String SUMMARY_PROPERTY = "spoiler_text";
     private static final String CONTENT_PROPERTY_UPDATE = "status";
     private static final String CONTENT_PROPERTY = "content";
@@ -253,24 +254,27 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     @Override
     protected AActivity updateNote2(Note note, String inReplyToOid, Uri mediaUri) throws ConnectionException {
-        JSONObject formParams = new JSONObject();
+        JSONObject obj = new JSONObject();
         JSONObject mediaObject = null;
         try {
-            formParams.put(SUMMARY_PROPERTY, note.getSummary());
-            formParams.put(CONTENT_PROPERTY_UPDATE, note.getContentToPost());
+            obj.put(SUMMARY_PROPERTY, note.getSummary());
+            if (note.isSensitive()) {
+                obj.put(SENSITIVE_PROPERTY, note.isSensitive());
+            }
+            obj.put(CONTENT_PROPERTY_UPDATE, note.getContentToPost());
             if ( !StringUtils.isEmpty(inReplyToOid)) {
-                formParams.put("in_reply_to_id", inReplyToOid);
+                obj.put("in_reply_to_id", inReplyToOid);
             }
             if (!UriUtils.isEmpty(mediaUri)) {
                 mediaObject = uploadMedia(mediaUri);
                 if (mediaObject != null && mediaObject.has("id")) {
-                    formParams.put("media_ids[]", mediaObject.get("id"));
+                    obj.put("media_ids[]", mediaObject.get("id"));
                 }
             }
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Error updating note '" + mediaUri + "'", e, mediaObject);
         }
-        return postRequest(ApiRoutineEnum.UPDATE_NOTE, formParams).map(HttpReadResult::getJsonObject)
+        return postRequest(ApiRoutineEnum.UPDATE_NOTE, obj).map(HttpReadResult::getJsonObject)
                 .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
     }
 
@@ -355,6 +359,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
             Note note =  activity.getNote();
             note.setSummary(jso.optString(SUMMARY_PROPERTY));
+            note.setSensitive(jso.optBoolean(SENSITIVE_PROPERTY));
             note.setContentPosted(jso.optString(CONTENT_PROPERTY));
             note.url = jso.optString("url");
             if (jso.has("recipient")) {

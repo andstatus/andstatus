@@ -18,12 +18,11 @@ package org.andstatus.app.note;
 
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
@@ -42,6 +41,9 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyStringBuilder;
+
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 /**
  * One selected note and, optionally, the whole conversation
@@ -70,6 +72,7 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
 
         showThreadsOfConversation = MyPreferences.isShowThreadsOfConversation();
         oldNotesFirstInConversation = MyPreferences.areOldNotesFirstInConversation();
+        MyCheckBox.setEnabled(this, R.id.showSensitiveContentToggle, MyPreferences.isShowSensitiveContent());
 
         initializeDrawer();
     }
@@ -170,6 +173,12 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
         closeDrawer();
         oldNotesFirstInConversation = isChecked;
         MyPreferences.setOldNotesFirstInConversation(isChecked);
+        updateList(LoadableListPosition.EMPTY);
+    }
+
+    public void onShowSensitiveContentToggleClick(View view) {
+        closeDrawer();
+        MyPreferences.setShowSensitiveContent(((CheckBox) view).isChecked());
         updateList(LoadableListPosition.EMPTY);
     }
 

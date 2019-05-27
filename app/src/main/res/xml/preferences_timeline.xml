@@ -40,6 +40,9 @@
         android:title="@string/title_preference_show_avatars"
         android:summaryOff="@string/summary_preference_show_avatars_off"
         android:summaryOn="@string/summary_preference_show_avatars_on" />
+    <org.andstatus.app.context.MultilineCheckBoxPreference android:key="show_sensitive"
+        android:defaultValue="false"
+        android:title="@string/show_sensitive_content" />
     <org.andstatus.app.context.MultilineCheckBoxPreference android:key="show_origin"
         android:defaultValue="true"
         android:title="@string/title_preference_show_origin" />

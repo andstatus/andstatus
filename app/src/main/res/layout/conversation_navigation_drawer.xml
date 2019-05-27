@@ -24,4 +24,16 @@ android:orientation="vertical">
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/title_preference_old_messages_first_in_conversation"/>
 
+    <View style="@style/Divider"/>
+
+    <CheckBox
+        android:id="@+id/showSensitiveContentToggle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="?android:attr/listPreferredItemHeightSmall"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:onClick="onShowSensitiveContentToggleClick"
+        android:text="@string/show_sensitive_content"
+        android:checked="false"/>
+
 </LinearLayout>

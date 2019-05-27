@@ -59,6 +59,7 @@ public class Note extends AObject {
     private Audience audience;
     private String name = "";
     private String summary = "";
+    private boolean isSensitive = false;
     private String content = "";
     private final LazyVal<String> contentToSearch = LazyVal.of(this::evalContentToSearch);
 
@@ -105,6 +106,7 @@ public class Note extends AObject {
                 + ", " + NoteTable.ORIGIN_ID
                 + ", " + NoteTable.NAME
                 + ", " + NoteTable.SUMMARY
+                + ", " + NoteTable.SENSITIVE
                 + ", " + NoteTable.NOTE_STATUS
                 + " FROM " + NoteTable.TABLE_NAME;
         return sql + (id == 0 ? "" : " WHERE " + NoteTable._ID + "=" + id);
@@ -118,6 +120,7 @@ public class Note extends AObject {
         note.noteId = DbUtils.getLong(cursor, NoteTable._ID);
         note.setName(DbUtils.getString(cursor, NoteTable.NAME));
         note.setSummary(DbUtils.getString(cursor, NoteTable.SUMMARY));
+        note.setSensitive(DbUtils.getBoolean(cursor, NoteTable.SENSITIVE));
         note.setContentStored(DbUtils.getString(cursor, NoteTable.CONTENT));
         return note;
     }
@@ -342,6 +345,15 @@ public class Note extends AObject {
 
     public Note setPublic(TriState isPublic) {
         audience().setPublic(isPublic);
+        return this;
+    }
+
+    public boolean isSensitive() {
+        return isSensitive;
+    }
+
+    public Note setSensitive(boolean sensitive) {
+        isSensitive = sensitive;
         return this;
     }
 

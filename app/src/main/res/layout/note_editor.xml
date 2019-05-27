@@ -137,18 +137,27 @@
                     android:layout_height="wrap_content"
                     android:text="@string/timeline_title_public"
                     android:visibility="gone"
+                    android:layout_marginEnd="10dp"
                     tools:visibility="visible"/>
 
-                <TextView
-                    android:id="@+id/noteEditDetails"
-                    style="@style/messageDetailsAppearance"
+                <CheckBox
+                    android:id="@+id/is_sensitive"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingBottom="10dp"
-                    android:paddingLeft="5dip"
-                    android:paddingRight="5dip"
-                    tools:text="one hour ago in reply to somebody@somewhere.net (with media 1920x1080 1323kb)"/>
+                    android:text="@string/sensitive"
+                    android:visibility="gone"
+                    tools:visibility="visible"/>
+
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/noteEditDetails"
+                style="@style/messageDetailsAppearance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dip"
+                android:layout_marginEnd="5dip"
+                tools:text="one hour ago in reply to somebody@somewhere.net (with media 1920x1080 1323kb)"/>
 
             <TextView
                 android:id="@+id/inReplyToBody"

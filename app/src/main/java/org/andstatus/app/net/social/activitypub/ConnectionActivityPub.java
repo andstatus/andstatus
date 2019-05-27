@@ -56,6 +56,7 @@ public class ConnectionActivityPub extends Connection {
     static final String APPLICATION_ID = "http://andstatus.org/andstatus";
     static final String NAME_PROPERTY = "name";
     static final String SUMMARY_PROPERTY = "summary";
+    static final String SENSITIVE_PROPERTY = "sensitive";
     static final String CONTENT_PROPERTY = "content";
     static final String VIDEO_OBJECT = "stream";
     static final String IMAGE_OBJECT = "image";
