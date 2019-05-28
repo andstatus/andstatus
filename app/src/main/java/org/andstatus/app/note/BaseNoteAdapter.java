@@ -155,9 +155,9 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
         if (parent == null) return;
 
         final AttachedImageFile attachedImageFile = item.getAttachedImageFile();
-        final boolean imageMayBeShown = (!item.isSensitive() || MyPreferences.isShowSensitiveContent()) &&
-                attachedImageFile.imageMayBeShown();
+        final boolean imageMayBeShown = attachedImageFile.imageMayBeShown();
         final boolean showWrapper = contextMenu.getActivity().isMyResumed() &&
+                (!item.isSensitive() || MyPreferences.isShowSensitiveContent()) &&
                 (imageMayBeShown || attachedImageFile.uri != Uri.EMPTY) ;
         parent.setVisibility(showWrapper ? View.VISIBLE : View.GONE);
         if (!showWrapper) return;

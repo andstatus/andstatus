@@ -576,17 +576,15 @@ public abstract class ConnectionTwitterLike extends Connection {
         return updateNote2(note, inReplyToOid, mediaUri);
     }
 
-    protected AActivity updateNote2(Note note, String inReplyToOid, Uri mediaUri) throws ConnectionException {
-        JSONObject formParams = new JSONObject();
-        try {
-            if (StringUtils.nonEmpty(note.getContentToPost())) formParams.put("status", note.getContentToPost());
-            if (StringUtils.nonEmpty(inReplyToOid)) formParams.put("in_reply_to_status_id", inReplyToOid);
-        } catch (JSONException e) {
-            MyLog.e(this, e);
+    abstract AActivity updateNote2(Note note, String inReplyToOid, Uri mediaUri) throws ConnectionException;
+
+    void updateNoteSetFields(Note note, String inReplyToOid, JSONObject formParams) throws JSONException {
+        if (StringUtils.nonEmpty(note.getContentToPost())) {
+            formParams.put("status", note.getContentToPost());
         }
-        return postRequest(ApiRoutineEnum.UPDATE_NOTE, formParams)
-            .map(HttpReadResult::getJsonObject)
-            .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
+        if (StringUtils.nonEmpty(inReplyToOid)) {
+            formParams.put("in_reply_to_status_id", inReplyToOid);
+        }
     }
 
     private AActivity updatePrivateNote(Note note, String recipientOid, Uri mediaUri)

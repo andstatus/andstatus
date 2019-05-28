@@ -37,6 +37,8 @@ import androidx.annotation.NonNull;
  * https://dev.twitter.com/rest/public
  */
 public class ConnectionTheTwitter extends ConnectionTwitterLike {
+    private static final String ATTACHMENTS_FIELD_NAME = "media";
+    private static final String SENSITIVE_PROPERTY = "possibly_sensitive";
 
     @NonNull
     @Override
@@ -111,28 +113,25 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
 
     @Override
     protected AActivity updateNote2(Note note, String inReplyToOid, Uri mediaUri) throws ConnectionException {
-        if (UriUtils.isEmpty(mediaUri)) {
-            return super.updateNote2(note, inReplyToOid, mediaUri);
-        }
-        return updateWithMedia(note.getContentToPost(), inReplyToOid, mediaUri);
-    }
-
-    private AActivity updateWithMedia(String note, String inReplyToId, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
-            formParams.put("status", note);
-            if (!StringUtils.isEmpty(inReplyToId)) {
-                formParams.put("in_reply_to_status_id", inReplyToId);
+            super.updateNoteSetFields(note, inReplyToOid, formParams);
+            if (note.isSensitive()) {
+                formParams.put(SENSITIVE_PROPERTY, note.isSensitive());
             }
-            if (!UriUtils.isEmpty(mediaUri)) {
+            if (UriUtils.nonEmpty(mediaUri)) {
                 formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "media[]");
                 formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mediaUri.toString());
             }
         } catch (JSONException e) {
-            MyLog.e(this, e);
+            throw ConnectionException.hardConnectionException("Exception while preparing post params " + note, e);
         }
-        return postRequest(ApiRoutineEnum.UPDATE_NOTE_WITH_MEDIA, formParams).map(HttpReadResult::getJsonObject)
-            .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
+        return postRequest(UriUtils.isEmpty(mediaUri)
+                        ? ApiRoutineEnum.UPDATE_NOTE
+                        : ApiRoutineEnum.UPDATE_NOTE_WITH_MEDIA,
+                    formParams)
+                .map(HttpReadResult::getJsonObject)
+                .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
     }
 
     @Override
@@ -189,7 +188,6 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         return jArrToActors(http.getRequestAsArray(builder.build()), apiRoutine, builder.build());
     }
 
-    private static final String ATTACHMENTS_FIELD_NAME = "media";
     @Override
     @NonNull
     AActivity activityFromJson2(JSONObject jso) throws ConnectionException {
@@ -198,6 +196,8 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         }
         final String method = "activityFromJson2";
         AActivity activity = super.activityFromJson2(jso);
+        Note note =  activity.getNote();
+        note.setSensitive(jso.optBoolean(SENSITIVE_PROPERTY));
         // See https://dev.twitter.com/docs/entities
         JSONObject entities = jso.optJSONObject("entities");
         if (entities != null && entities.has(ATTACHMENTS_FIELD_NAME)) {
