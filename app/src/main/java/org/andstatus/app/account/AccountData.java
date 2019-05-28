@@ -39,14 +39,6 @@ import org.json.JSONObject;
 import androidx.annotation.NonNull;
 import io.vavr.control.Try;
 
-import static org.andstatus.app.account.AccountUtils.KEY_VERSION;
-import static org.andstatus.app.account.MyAccount.KEY_ACTOR_ID;
-import static org.andstatus.app.account.MyAccount.KEY_ACTOR_OID;
-import static org.andstatus.app.account.MyAccount.KEY_OAUTH;
-import static org.andstatus.app.account.MyAccount.KEY_ORDER;
-import static org.andstatus.app.account.MyAccount.KEY_UNIQUE_NAME;
-import static org.andstatus.app.account.MyAccount.KEY_USERNAME;
-
 public class AccountData implements Parcelable, AccountDataWriter, IdentifiableInstance {
     private static final String TAG = AccountData.class.getSimpleName();
     public static final AccountData EMPTY = new AccountData(MyContext.EMPTY, new JSONObject(), false);
@@ -86,7 +78,7 @@ public class AccountData implements Parcelable, AccountDataWriter, IdentifiableI
         data = jso;
         this.persistent = persistent;
         Origin origin = myContext.origins().fromName(getDataString(Origin.KEY_ORIGIN_NAME));
-        accountName = AccountName.fromOriginAndUniqueName(origin, getDataString(KEY_UNIQUE_NAME));
+        accountName = AccountName.fromOriginAndUniqueName(origin, getDataString(MyAccount.KEY_UNIQUE_NAME));
         logMe("new " + accountName.getName() + " from jso");
     }
 
@@ -107,10 +99,10 @@ public class AccountData implements Parcelable, AccountDataWriter, IdentifiableI
     }
 
     AccountData updateFrom(MyAccount myAccount) {
-        setDataString(KEY_ACTOR_OID, myAccount.getActor().oid);
+        setDataString(MyAccount.KEY_ACTOR_OID, myAccount.getActor().oid);
         myAccount.getCredentialsVerified().put(this);
-        setDataBoolean(KEY_OAUTH, myAccount.isOAuth());
-        setDataLong(KEY_ACTOR_ID, myAccount.getActor().actorId);
+        setDataBoolean(MyAccount.KEY_OAUTH, myAccount.isOAuth());
+        setDataLong(MyAccount.KEY_ACTOR_ID, myAccount.getActor().actorId);
         if (myAccount.getConnection() != null) {
             myAccount.getConnection().saveTo(this);
         }
@@ -119,21 +111,21 @@ public class AccountData implements Parcelable, AccountDataWriter, IdentifiableI
         setDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY, myAccount.isSyncedAutomatically());
         setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, myAccount.getSyncFrequencySeconds());
         // We don't create accounts of other versions
-        setDataInt(KEY_VERSION, AccountUtils.ACCOUNT_VERSION);
-        setDataInt(KEY_ORDER, myAccount.getOrder());
+        setDataInt(AccountUtils.KEY_VERSION, AccountUtils.ACCOUNT_VERSION);
+        setDataInt(MyAccount.KEY_ORDER, myAccount.getOrder());
         logMe("updated from " + myAccount);
         return this;
     }
 
     private void updateFromAccountName() {
         setDataString(AccountUtils.KEY_ACCOUNT, accountName.getName());
-        setDataString(KEY_USERNAME, accountName.username);
-        setDataString(KEY_UNIQUE_NAME, accountName.getUniqueName());
+        setDataString(MyAccount.KEY_USERNAME, accountName.username);
+        setDataString(MyAccount.KEY_UNIQUE_NAME, accountName.getUniqueName());
         setDataString(Origin.KEY_ORIGIN_NAME, accountName.getOriginName());
     }
 
     public MyContext myContext() {
-        return myContext.isReady() ? myContext : MyContextHolder.get();
+        return myContext;
     }
 
     boolean isPersistent() {
@@ -178,7 +170,7 @@ public class AccountData implements Parcelable, AccountDataWriter, IdentifiableI
     }
 
     public int getVersion() {
-        return getDataInt(KEY_VERSION, 0);
+        return getDataInt(AccountUtils.KEY_VERSION, 0);
     }
 
     @Override
