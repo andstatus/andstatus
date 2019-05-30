@@ -55,6 +55,7 @@ import static org.andstatus.app.service.CommandEnum.DELETE_COMMAND;
 public class MyService extends Service {
     private volatile MyContext myContext = MyContext.EMPTY;
     private final Object serviceStateLock = new Object();
+    private volatile long startedForegrounLastTime = 0;
     /** We are going to finish this service. But may rethink...  */
     @GuardedBy("serviceStateLock")
     private boolean mIsStopping = false;
@@ -127,7 +128,11 @@ public class MyService extends Service {
 
     /** See https://stackoverflow.com/questions/44425584/context-startforegroundservice-did-not-then-call-service-startforeground */
     private void startForeground() {
-        final NotificationData data = new NotificationData(SERVICE_RUNNING, Actor.EMPTY, System.currentTimeMillis());
+        long currentTimeMillis = System.currentTimeMillis();
+        if (Math.abs(currentTimeMillis - startedForegrounLastTime) < 1000) return;
+
+        startedForegrounLastTime = currentTimeMillis;
+        final NotificationData data = new NotificationData(SERVICE_RUNNING, Actor.EMPTY, currentTimeMillis);
         getMyContext().getNotifier().createNotificationChannel(data);
         startForeground(SERVICE_RUNNING.notificationId(), getMyContext().getNotifier().getAndroidNotification(data));
     }
@@ -418,6 +423,8 @@ public class MyService extends Service {
      * Persist everything that we'll need on next Service creation and free resources
      */
     private void stopDelayed(boolean forceNow) {
+        startedForegrounLastTime = 0;
+
         if (!setIsStopping(true, forceNow) && !forceNow) {
             return;
         }

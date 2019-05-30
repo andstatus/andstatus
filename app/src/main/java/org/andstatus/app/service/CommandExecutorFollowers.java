@@ -146,7 +146,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                             + " and " + Connection.ApiRoutineEnum.GET_FRIENDS_IDS);
         }
 
-        Set<Long> actorIdsOld = MyQuery.getFriendsIds(getActor().actorId);
+        Set<Long> actorIdsOld = MyQuery.getFriendsIds(execContext.myContext, getActor().actorId);
         execContext.getResult().incrementDownloadedCount();
         broadcastProgress(execContext.getContext().getText(R.string.friends).toString()
                 + ": " + actorIdsOld.size() + " -> " + actorsNew.size(), false);

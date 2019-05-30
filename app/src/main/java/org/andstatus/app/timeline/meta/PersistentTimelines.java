@@ -16,8 +16,6 @@
 
 package org.andstatus.app.timeline.meta;
 
-import androidx.annotation.NonNull;
-
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MyQuery;
@@ -34,6 +32,8 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
+
+import androidx.annotation.NonNull;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -115,7 +115,7 @@ public class PersistentTimelines {
                         long actorId, @NonNull Origin origin, String searchQuery) {
         if (timelineType == TimelineType.UNKNOWN) return Timeline.EMPTY;
 
-        Timeline newTimeline = new Timeline(myContext, id, timelineType, actorId, origin, searchQuery);
+        Timeline newTimeline = new Timeline(myContext, id, timelineType, actorId, origin, searchQuery, 0);
         return stream().filter(timeline -> newTimeline.getId() == 0
                 ? newTimeline.duplicates(timeline)
                 : timeline.getId() == newTimeline.getId())
@@ -209,7 +209,7 @@ public class PersistentTimelines {
 
     public void resetDefaultSelectorOrder() {
         for (Timeline timeline : values()) {
-            timeline.setDefaultSelectorOrder();
+            timeline.setSelectorOrder(timeline.getDefaultSelectorOrder());
         }
     }
 }

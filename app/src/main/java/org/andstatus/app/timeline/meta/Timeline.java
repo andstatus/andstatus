@@ -167,13 +167,13 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
                 TimelineType.load(DbUtils.getString(cursor, TimelineTable.TIMELINE_TYPE)),
                 DbUtils.getLong(cursor, TimelineTable.ACTOR_ID),
                 myContext.origins().fromId(DbUtils.getLong(cursor, TimelineTable.ORIGIN_ID)),
-                DbUtils.getString(cursor, TimelineTable.SEARCH_QUERY));
+                DbUtils.getString(cursor, TimelineTable.SEARCH_QUERY),
+                DbUtils.getLong(cursor, TimelineTable.SELECTOR_ORDER));
 
         timeline.changed = false;
         timeline.actorInTimeline = DbUtils.getString(cursor, TimelineTable.ACTOR_IN_TIMELINE);
         timeline.setSyncedAutomatically(DbUtils.getBoolean(cursor, TimelineTable.IS_SYNCED_AUTOMATICALLY));
         timeline.isDisplayedInSelector = DisplayedInSelector.load(DbUtils.getString(cursor, TimelineTable.DISPLAYED_IN_SELECTOR));
-        timeline.selectorOrder = DbUtils.getLong(cursor, TimelineTable.SELECTOR_ORDER);
 
         timeline.syncSucceededDate = DbUtils.getLong(cursor, TimelineTable.SYNC_SUCCEEDED_DATE);
         timeline.syncFailedDate = DbUtils.getLong(cursor, TimelineTable.SYNC_FAILED_DATE);
@@ -254,25 +254,25 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     }
 
     Timeline(MyContext myContext, long id, @NonNull TimelineType timelineType,
-             long actorId, @NonNull Origin origin, String searchQuery) {
+             long actorId, @NonNull Origin origin, String searchQuery, long selectorOrder) {
         Objects.requireNonNull(timelineType);
         Objects.requireNonNull(origin);
         this.id = id;
         this.actor = fixedActor(myContext, timelineType, actorId);
         this.origin = fixedOrigin(timelineType, origin);
         this.myAccountToSync = calcAccountToSync(myContext, timelineType, this.origin, actor);
-        this.searchQuery = StringUtils.isEmpty(searchQuery) ? "" : searchQuery.trim();
+        this.searchQuery = StringUtils.optNotEmpty(searchQuery).orElse("");
         this.isCombined = calcIsCombined(timelineType, this.origin);
         this.timelineType = fixedTimelineType(timelineType);
         this.isSyncable = calcIsSyncable(myAccountToSync);
         this.isSyncableAutomatically = this.isSyncable && myAccountToSync.isSyncedAutomatically();
         this.isSyncableForAccounts = calcIsSyncableForAccounts(myContext);
         this.isSyncableForOrigins = calcIsSyncableForOrigins(myContext);
-        this.setDefaultSelectorOrder();
+        this.selectorOrder = selectorOrder;
     }
 
-    protected void setDefaultSelectorOrder() {
-        setSelectorOrder((timelineType.ordinal() + 1L) * 2 + (isCombined ? 1 : 0));
+    protected long getDefaultSelectorOrder() {
+        return (timelineType.ordinal() + 1L) * 2 + (isCombined ? 1 : 0);
     }
 
     private boolean calcIsSyncable(MyAccount myAccountToSync) {
@@ -474,6 +474,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     @NonNull
     public Timeline save(MyContext myContext) {
         if (MyAsyncTask.isUiThread()) return this;
+
         if (needToLoadActorInTimeline()) {
             setChanged();
         }
@@ -489,6 +490,9 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
                     setDisplayedInSelector(DisplayedInSelector.IN_CONTEXT);
                     setSyncedAutomatically(getTimelineType().isSyncedAutomaticallyByDefault());
                 }
+            }
+            if (selectorOrder == 0) {
+                this.selectorOrder = getDefaultSelectorOrder();
             }
             saveInternal(myContext);
             if (isNew && id != 0) {
@@ -645,7 +649,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         if (id > 0 && id < that.id) return false;
         if (timelineType != that.timelineType) return false;
         if (!origin.equals(that.origin)) return false;
-        if (!actor.equals(that.actor)) return false;
+        if (!actor.isSame(that.actor)) return false;
         return StringUtils.equalsNotEmpty(searchQuery, that.searchQuery);
     }
 

@@ -21,8 +21,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDoneException;
 import android.database.sqlite.SQLiteStatement;
 import android.provider.BaseColumns;
-import androidx.annotation.NonNull;
-import androidx.core.util.Pair;
 
 import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.context.MyContext;
@@ -47,6 +45,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
+
+import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
 
 public class MyQuery {
     private static final String TAG = MyQuery.class.getSimpleName();
@@ -116,7 +118,7 @@ public class MyQuery {
         String msgLog = StringUtils.notNull(msgLogIn);
         SQLiteDatabase db = databaseIn == null ? MyContextHolder.get().getDatabase() : databaseIn;
         if (db == null) {
-            MyLog.v(TAG, () -> msgLog + "; database is null");
+            logDatabaseIsNull(() -> msgLog);
             return 0;
         }
         if (StringUtils.isEmpty(sql)) {
@@ -179,7 +181,7 @@ public class MyQuery {
     public static String idToOid(OidEnum oe, long entityId, long rebloggerActorId) {
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
-            MyLog.v(TAG, () -> "idToOid: database is null, oe=" + oe + " id=" + entityId);
+            logDatabaseIsNull(() -> "idToOid: database is null, oe=" + oe + " id=" + entityId);
             return "";
         } else {
             return idToOid(db, oe, entityId, rebloggerActorId);
@@ -404,7 +406,7 @@ public class MyQuery {
                 }
                 SQLiteDatabase db = MyContextHolder.get().getDatabase();
                 if (db == null) {
-                    MyLog.v(TAG, () -> method + "; Database is null");
+                    logDatabaseIsNull(() -> method);
                     return "";
                 }
                 prog = db.compileStatement(sql);
@@ -423,6 +425,12 @@ public class MyQuery {
             }
         }
         return username;
+    }
+
+    private static void logDatabaseIsNull(Supplier<String> message) {
+        if (!MyLog.isVerboseEnabled()) return;
+
+        MyLog.v(TAG, "Database is null. " + message.get() + "\n" + MyLog.getStackTrace(new Exception()));
     }
 
     @NonNull
@@ -510,7 +518,7 @@ public class MyQuery {
         String method = "cond2str";
         SQLiteDatabase db = dbIn == null ? MyContextHolder.get().getDatabase() : dbIn;
         if (db == null) {
-            MyLog.v(TAG, () -> method + "; Database is null");
+            logDatabaseIsNull(() -> method);
             return "";
         }
         String sql = "SELECT " + columnName + " FROM " + tableName + " WHERE " + condition;
@@ -649,7 +657,7 @@ public class MyQuery {
         final String method = "actor" + columnName + "ToId";
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
-            MyLog.v(TAG, () -> method + "; Database is null");
+            logDatabaseIsNull(() -> method);
             return 0;
         }
         long id = 0;
@@ -688,13 +696,13 @@ public class MyQuery {
     }
 
     @NonNull
-    public static Set<Long> getFriendsIds(long actorId) {
+    public static Set<Long> getFriendsIds(MyContext myContext, long actorId) {
         String where = FriendshipTable.ACTOR_ID + "=" + actorId
                 + " AND " + FriendshipTable.FOLLOWED + "=1";
         String sql = "SELECT " + FriendshipTable.FRIEND_ID
                 + " FROM " + FriendshipTable.TABLE_NAME
                 + " WHERE " + where;
-        return getLongs(sql);
+        return getLongs(myContext, sql);
     }
 
     public static long getCountOfActivities(@NonNull String condition) {
@@ -743,7 +751,7 @@ public class MyQuery {
                                  @NonNull Function<U, Function<Cursor, U>> f) {
         final String method = "foldLeft";
         if (database == null) {
-            MyLog.v(TAG, () -> method + "; Database is null");
+            logDatabaseIsNull(() -> method);
             return identity;
         }
         if (MyAsyncTask.isUiThread()) {

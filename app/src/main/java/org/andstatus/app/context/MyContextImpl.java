@@ -114,7 +114,14 @@ public class MyContextImpl implements MyContext {
         return new MyContextImpl(this, context(), initializer).initialize(initializer);
     }
 
-    MyContextImpl initialize(Object initializer) {
+    MyContext initialize(Object initializer) {
+        MyLog.v(this, () -> "Starting initialization by " + initializedBy);
+        MyContext myContext = initializeInternal(initializer);
+        MyLog.v(this, () -> "Initialized " + state + " by " + initializedBy);
+        return myContext;
+    }
+
+    private MyContextImpl initializeInternal(Object initializer) {
         final String method = "initialize";
         if ( context == null) return this;
 
@@ -122,7 +129,6 @@ public class MyContextImpl implements MyContext {
             state = MyContextState.NO_PERMISSIONS;
             return this;
         }
-        MyLog.v(this, () -> "Starting initialization of " + instanceId + " by " + initializedBy);
 
         boolean createApplicationData = MyStorage.isApplicationDataCreated().untrue;
         if (createApplicationData) {

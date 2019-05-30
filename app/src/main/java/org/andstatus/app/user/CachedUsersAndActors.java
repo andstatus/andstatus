@@ -1,7 +1,6 @@
 package org.andstatus.app.user;
 
 import android.database.Cursor;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.ActorSql;
@@ -24,6 +23,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import androidx.annotation.NonNull;
 
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 
@@ -111,7 +112,7 @@ public class CachedUsersAndActors {
         friendsOfMyActors.entrySet().stream().filter( entry -> entry.getValue().contains(actor.actorId))
                 .forEach(entry ->
                         friendsOfMyActors.compute(entry.getKey(), CollectionsUtil.removeValue(actor.actorId)));
-        MyQuery.getFriendsIds(actor.actorId)
+        MyQuery.getFriendsIds(myContext, actor.actorId)
                 .forEach(friendId -> friendsOfMyActors.compute(friendId, CollectionsUtil.addValue(actor.actorId))
         );
     }

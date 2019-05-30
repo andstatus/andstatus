@@ -23,6 +23,7 @@ import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -80,6 +81,8 @@ public class DownloadData implements IsEmpty {
     }
 
     public static List<DownloadData> fromNoteId(MyContext myContext, long noteId) {
+        if (myContext.isEmptyOrExpired() || noteId == 0) return Collections.emptyList();
+
         String sql = "SELECT *"
                 + " FROM " + DownloadTable.TABLE_NAME
                 + " WHERE " + DownloadTable.NOTE_ID + "=" + noteId

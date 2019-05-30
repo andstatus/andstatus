@@ -76,6 +76,9 @@ public interface MyContext extends IdentifiableInstance {
     default boolean isEmpty() {
         return context() == null;
     }
+    default boolean isEmptyOrExpired() {
+        return isEmpty() || isExpired();
+    }
     default boolean isConfigChanged() {
         return initialized() && preferencesChangeTime() != MyPreferences.getPreferencesChangeTime();
     }
