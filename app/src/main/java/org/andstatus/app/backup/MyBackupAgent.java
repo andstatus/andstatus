@@ -47,6 +47,8 @@ import java.io.IOException;
 
 import io.vavr.control.Try;
 
+import static org.andstatus.app.util.FileUtils.newFileOutputStreamWithRetry;
+
 public class MyBackupAgent extends BackupAgent {
     public static final String SHARED_PREFERENCES_KEY = "shared_preferences";
     public static final String DOWNLOADS_KEY = "downloads";
@@ -381,7 +383,7 @@ public class MyBackupAgent extends BackupAgent {
         MyLog.i(this, method + " started, " + fileWritten(data.getKey(), dataFile, data.getDataSize()));
         int bytesToWrite = data.getDataSize();
         int bytesWritten = 0;
-        try (FileOutputStream output = new FileOutputStream(dataFile, false)) {
+        try (FileOutputStream output = newFileOutputStreamWithRetry(dataFile)) {
             while (bytesToWrite > bytesWritten) {
                 byte[] bytes = new byte[MyStorage.FILE_CHUNK_SIZE];
                 int bytesRead = data.readEntityData(bytes, 0, bytes.length);

@@ -16,6 +16,8 @@
 
 package org.andstatus.app.util;
 
+import android.os.Build;
+
 import org.andstatus.app.data.DbUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -204,7 +206,7 @@ public class FileUtils {
                 try (
                         FileInputStream fileInputStream = new FileInputStream(src);
                         java.nio.channels.FileChannel inChannel = fileInputStream.getChannel();
-                        FileOutputStream fileOutputStream = new FileOutputStream(dst);
+                        FileOutputStream fileOutputStream = newFileOutputStreamWithRetry(dst);
                         java.nio.channels.FileChannel outChannel = fileOutputStream.getChannel();
                 ) {
                     sizeCopied = inChannel.transferTo(0, inChannel.size(), outChannel);
@@ -215,5 +217,34 @@ public class FileUtils {
         }
         MyLog.d(objTag, "Copied " + sizeCopied + " bytes of " + sizeIn);
         return ok;
+    }
+
+    public static FileOutputStream newFileOutputStreamWithRetry(File file) throws FileNotFoundException {
+        return newFileOutputStreamWithRetry(file, false);
+    }
+
+    public static FileOutputStream newFileOutputStreamWithRetry(File file, boolean append) throws FileNotFoundException {
+        try {
+            return new FileOutputStream(file, append);
+        } catch (FileNotFoundException e) {
+            MyLog.i(FileUtils.class, "Retrying to create FileOutputStream for " +
+                    file.getAbsolutePath() + " : " + e.getMessage());
+            DbUtils.waitMs(FileUtils.class, 100);
+            return new FileOutputStream(file, append);
+        }
+    }
+
+    public static boolean isFileInsideFolder(File file, File folder) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return file.toPath().normalize().startsWith(folder.toPath());
+        } else {
+            try {
+                return file.getCanonicalPath().startsWith(folder.getCanonicalPath());
+            } catch (Exception e) {
+                MyLog.d(FileUtils.class, "Failed to check path of the file: " + file.getAbsolutePath() +
+                        ". Error message:" + e.getMessage());
+            }
+        }
+        return false;
     }
 }

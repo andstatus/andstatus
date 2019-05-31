@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
+import static org.andstatus.app.util.FileUtils.newFileOutputStreamWithRetry;
+
 /** Allowing to instantiate and to mock BackupDataOutput class */
 public class MyBackupDataOutput {
     static final String HEADER_FILE_SUFFIX = "_header.json";
@@ -137,7 +139,7 @@ public class MyBackupDataOutput {
 
     private void appendBytesToFile(File file, byte[] data, int size) throws IOException {
         MyLog.v(this, "Appending data to file='" + file.getName() + "', size=" + size);
-        try (FileOutputStream fileOutputStream = new FileOutputStream(file, true);
+        try (FileOutputStream fileOutputStream = newFileOutputStreamWithRetry(file, true);
             OutputStream out = new BufferedOutputStream(fileOutputStream)) {
             out.write(data, 0, size);
         }

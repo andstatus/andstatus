@@ -37,6 +37,8 @@ import java.util.Map;
 
 import io.vavr.control.Try;
 
+import static org.andstatus.app.util.FileUtils.newFileOutputStreamWithRetry;
+
 public class HttpConnectionUtils {
     private static final String UTF_8 = "UTF-8";
     private static final int BUFFER_LENGTH = 20000;
@@ -92,7 +94,7 @@ public class HttpConnectionUtils {
         byte[] buffer = new byte[BUFFER_LENGTH];
         ReadChecker checker = new ReadChecker(resultIn);
         int count;
-        try (FileOutputStream fileOutputStream = new FileOutputStream(resultIn.fileResult);
+        try (FileOutputStream fileOutputStream = newFileOutputStreamWithRetry(resultIn.fileResult);
              OutputStream out = new BufferedOutputStream(fileOutputStream)) {
             while ((count = in.read(buffer)) != -1) {
                 if (checker.isFailed(count)) return resultIn.toFailure();

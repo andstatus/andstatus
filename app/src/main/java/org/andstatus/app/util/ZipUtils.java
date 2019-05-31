@@ -16,8 +16,6 @@
 
 package org.andstatus.app.util;
 
-import android.os.Build;
-
 import org.andstatus.app.context.MyStorage;
 
 import java.io.File;
@@ -40,8 +38,8 @@ public class ZipUtils {
 
 
     public static Try<File> zipFiles(File sourceFolder, File zipped) {
-        try (FileOutputStream fos = new FileOutputStream(zipped);
-            ZipOutputStream zos = new ZipOutputStream(fos)) {
+        try (FileOutputStream fos = FileUtils.newFileOutputStreamWithRetry(zipped);
+             ZipOutputStream zos = new ZipOutputStream(fos)) {
             for (File file : sourceFolder.listFiles()) {
                 if (!file.isDirectory() && !MyStorage.isTempFile(file)) addToZip(file, zos);
             }
@@ -80,9 +78,9 @@ public class ZipUtils {
                 while (enu.hasMoreElements()) {
                     ZipEntry zipEntry = (ZipEntry) enu.nextElement();
                     File file = new File(targetFolder, zipEntry.getName());
-                    if (isFileInsideFolder(file, targetFolder)) {
+                    if (FileUtils.isFileInsideFolder(file, targetFolder)) {
                         try (InputStream is = zipFile.getInputStream(zipEntry);
-                             FileOutputStream fos = new FileOutputStream(file)) {
+                             FileOutputStream fos = FileUtils.newFileOutputStreamWithRetry(file)) {
                             byte[] bytes = new byte[MyStorage.FILE_CHUNK_SIZE];
                             int length;
                             while ((length = is.read(bytes)) >= 0) {
@@ -106,17 +104,4 @@ public class ZipUtils {
                 (skipped.isEmpty() ? "" : ", skipped " + skipped.size() + " files: " + skipped));
     }
 
-    private static boolean isFileInsideFolder(File file, File folder) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            return file.toPath().normalize().startsWith(folder.toPath());
-        } else {
-            try {
-                return file.getCanonicalPath().startsWith(folder.getCanonicalPath());
-            } catch (Exception e) {
-                MyLog.d(ZipUtils.class, "Failed to check path of the file: " + file.getAbsolutePath() +
-                        ". Error message:" + e.getMessage());
-            }
-        }
-        return false;
-    }
 }
