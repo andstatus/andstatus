@@ -58,7 +58,9 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     REPLY(true, false) {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
-            return NoteEditorData.newReplyTo(menu.getNoteId(), menu.getActingAccount()).addMentionsToText();
+            return NoteEditorData.newReplyTo(menu.getNoteId(), menu.getActingAccount())
+                    .addMentionsToText()
+                    .copySensitiveProperty();
         }
 
         @Override

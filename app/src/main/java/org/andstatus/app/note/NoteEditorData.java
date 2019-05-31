@@ -419,4 +419,13 @@ public class NoteEditorData implements IsEmpty {
     public boolean canChangeIsSensitive() {
         return ma.getOrigin().getOriginType().isSensitiveChangeAllowed;
     }
+
+    NoteEditorData copySensitiveProperty() {
+        if (MyQuery.noteIdToLongColumnValue(NoteTable.SENSITIVE, getInReplyToNoteId()) != 1) return this;
+
+        activity.getNote().setSensitive(true);
+        StringUtils.optNotEmpty(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, getInReplyToNoteId()))
+                .map(this::setSummary);
+        return this;
+    }
 }
