@@ -16,39 +16,11 @@
 
 package org.andstatus.app.data.converter;
 
-import android.database.Cursor;
-
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.util.StringUtils;
-
-import java.util.Optional;
-
-import androidx.annotation.NonNull;
 
 class Convert48 extends ConvertOneStep {
     Convert48() {
         versionTo = 50;
-    }
-
-    private static class Data {
-        final long id;
-        @NonNull
-        final String username;
-
-        static Optional<Data> fromCursor(Cursor cursor) {
-            final String username = DbUtils.getString(cursor, "username");
-            int index = StringUtils.isEmpty(username)
-                    ? -1
-                    : username.indexOf("@");
-            return  (index > 0)
-                    ? Optional.of(new Data(DbUtils.getLong(cursor, "_id"), username.substring(0, index)))
-                    : Optional.empty();
-        }
-
-        private Data(long id, @NonNull String username) {
-            this.id = id;
-            this.username = username;
-        }
     }
 
     @Override
@@ -62,7 +34,7 @@ class Convert48 extends ConvertOneStep {
         sql = "UPDATE note SET summary=note_name WHERE origin_id IN" +
                 " (SELECT _id FROM origin WHERE origin_type_id=4)";  // Mastodon
         DbUtils.execSQL(db, sql);
-        sql = "UPDATE note SET note_name=NULL, sensitive=1" +
+        sql = "UPDATE note SET note_name=NULL" +
                 " WHERE (length(note_name) > 0) AND" +
                 " origin_id IN (SELECT _id FROM origin WHERE origin_type_id=4)";  // Mastodon
         DbUtils.execSQL(db, sql);
