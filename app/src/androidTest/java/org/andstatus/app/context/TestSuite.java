@@ -41,7 +41,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-import androidx.test.InstrumentationRegistry;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
@@ -244,7 +244,7 @@ public class TestSuite {
         for (int ind=0; ind<40; ind++) {
             DbUtils.waitMs(method, 2000);
             InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-            int itemsCountNew = ListView.class.isInstance(list)
+            int itemsCountNew = list instanceof ListView
                     ? ((ListView) list).getCount()
                     : list.getChildCount();
             MyLog.v(TAG, "waitForListLoaded; countNew=" + itemsCountNew + ", prev=" + itemsCount + ", min=" + minCount);

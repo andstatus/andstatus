@@ -38,13 +38,13 @@ buildscript {
         commonsLangVersion = '3.9'      // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
         espressoCoreVersion = '3.1.1'
         httpMimeVersion = '4.5.8'
-        httpclientVersion = '4.5.3'     // https://github.com/smarek/httpclient-android
+        httpclientVersion = '4.5.8'     // https://github.com/smarek/httpclient-android
         jcipAnnotationsVersion = '1.0-1'  // http://stephenc.github.io/jcip-annotations/dependency-info.html
         junitVersion = '4.13-beta-3'
         materialVersion = '1.0.0'         // https://mvnrepository.com/artifact/com.google.android.material/material
         preferenceVersion = '1.0.0'
         recyclerViewVersion = '1.0.0'
-        scribejavaCoreVersion = '6.5.1'   // https://github.com/scribejava/scribejava
+        scribejavaCoreVersion = '6.6.2'   // https://github.com/scribejava/scribejava
         signPostVersion = '1.2.1.2'       // https://mvnrepository.com/artifact/oauth.signpost/signpost-core
         testRulesVersion = '1.1.1'
         testRunnerVersion = '1.1.1'

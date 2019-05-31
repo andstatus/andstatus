@@ -30,7 +30,7 @@ import org.andstatus.app.util.MyLog;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import androidx.test.InstrumentationRegistry;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

@@ -18,7 +18,7 @@ package org.andstatus.app;
 
 import android.app.Activity;
 import android.content.Intent;
-import androidx.test.InstrumentationRegistry;
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.viewpager.widget.ViewPager;
 
 import org.andstatus.app.context.ActivityTest;

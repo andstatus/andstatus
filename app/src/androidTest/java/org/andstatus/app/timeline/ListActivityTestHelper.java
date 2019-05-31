@@ -38,7 +38,7 @@ import org.andstatus.app.view.SelectorDialog;
 import java.util.function.Predicate;
 
 import androidx.annotation.NonNull;
-import androidx.test.InstrumentationRegistry;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
