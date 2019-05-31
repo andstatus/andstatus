@@ -115,7 +115,7 @@ public class DownloadData implements IsEmpty {
         String sql = "SELECT * FROM " + DownloadTable.TABLE_NAME + getWhere().getWhere();
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
-            MyLog.v(this, "Database is null");
+            MyLog.databaseIsNull(() -> this);
             softError = true;
             return;
         }
@@ -410,7 +410,7 @@ public class DownloadData implements IsEmpty {
         boolean done = false;
         for (int pass=0; pass<3; pass++) {
             if (db == null) {
-                MyLog.v(TAG, "Database is null");
+                MyLog.databaseIsNull(() -> TAG);
                 return;
             }
             try (Cursor cursor = db.rawQuery(sql, null)) {

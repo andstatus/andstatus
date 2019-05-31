@@ -40,10 +40,13 @@ import org.junit.Test;
 
 import java.util.List;
 
+import io.vavr.control.Try;
+
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
@@ -82,6 +85,30 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         assertEquals(logMsg, "unknownUser@example.com", actors.get(2).getUniqueName());
         assertEquals(logMsg, "unknownuser@example.com", actors.get(2).getWebFingerId());
 
+        ActorList actorList = Try.of(() -> tryToOpenActorList(method, helper, logMsg))
+                .recover(AssertionError.class, e -> tryToOpenActorList(method, helper, logMsg))
+                .getOrElseThrow(AssertionError::new);
+
+        List<ActorViewItem> listItems = actorList.getListLoader().getList();
+
+        assertEquals(listItems.toString(), 5, listItems.size());
+
+        Actor actorE = MyContextHolder.get().users().actors.values().stream()
+                .filter(actor -> actor.oid.equals(demoData.conversationAuthorThirdActorOid))
+                .findAny().orElse(Actor.EMPTY);
+        assertTrue("Found " + demoData.conversationAuthorThirdActorOid
+                + " cached " + MyContextHolder.get().users().actors, actorE.nonEmpty());
+        Actor actorA = getByActorOid(listItems, demoData.conversationAuthorThirdActorOid);
+        assertNotNull("Found " + demoData.conversationAuthorThirdActorOid + ", " + logMsg, actorA);
+        compareAttributes(actorE, actorA, false);
+
+        ListActivityTestHelper<ActorList> actorListHelper = new ListActivityTestHelper<>(actorList);
+        actorListHelper.clickListAtPosition(method, actorListHelper.getPositionOfListItemId(listItems.get(
+                listItems.size() > 2 ? 2 : 0).getActorId()));
+        DbUtils.waitMs(method, 500);
+    }
+
+    private ActorList tryToOpenActorList(String method, ListActivityTestHelper<TimelineActivity> helper, String logMsg) throws InterruptedException {
         ActivityViewItem item = ActivityViewItem.EMPTY;
         TimelineData<ActivityViewItem> timelineData = getActivity().getListData();
         for (int position=0; position < timelineData.size(); position++) {
@@ -99,24 +126,7 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
 
         ActorList actorList = (ActorList) helper.waitForNextActivity(method, 25000);
         TestSuite.waitForListLoaded(actorList, 1);
-
-        List<ActorViewItem> listItems = actorList.getListLoader().getList();
-
-        assertEquals(listItems.toString(), 5, listItems.size());
-
-        Actor actorE = MyContextHolder.get().users().actors.values().stream()
-                .filter(actor -> actor.oid.equals(demoData.conversationAuthorThirdActorOid))
-                .findAny().orElse(Actor.EMPTY);
-        assertTrue("Found " + demoData.conversationAuthorThirdActorOid
-                + " cached " + MyContextHolder.get().users().actors, actorE.nonEmpty());
-        Actor actorA = getByActorOid(listItems, demoData.conversationAuthorThirdActorOid);
-        assertTrue("Found " + demoData.conversationAuthorThirdActorOid + ", " + logMsg, actorA != null);
-        compareAttributes(actorE, actorA, false);
-
-        ListActivityTestHelper<ActorList> actorListHelper = new ListActivityTestHelper<>(actorList);
-        actorListHelper.clickListAtPosition(method, actorListHelper.getPositionOfListItemId(listItems.get(
-                listItems.size() > 2 ? 2 : 0).getActorId()));
-        DbUtils.waitMs(method, 500);
+        return actorList;
     }
 
     private void compareAttributes(Actor expected, Actor actual, boolean forActorList) {

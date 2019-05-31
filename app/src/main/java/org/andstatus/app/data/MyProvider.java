@@ -88,7 +88,7 @@ public class MyProvider extends ContentProvider {
     public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
-            MyLog.v(this, "delete; Database is null");
+            MyLog.databaseIsNull(() -> "Delete " + this);
             return 0;
         }
         int count;
@@ -194,7 +194,7 @@ public class MyProvider extends ContentProvider {
         final String method = "delete";
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
-            MyLog.v(MyProvider.TAG, () -> method + "; Database is null");
+            MyLog.databaseIsNull(() -> method);
             return;
         }
         try {
@@ -207,7 +207,7 @@ public class MyProvider extends ContentProvider {
     public static long deleteActivity(MyContext myContext, long activityId, long noteId, boolean inTransaction) {
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
-            MyLog.v(MyProvider.TAG, "deleteActivity; Database is null");
+            MyLog.databaseIsNull(() -> "deleteActivity");
             return 0;
         }
         long originId = MyQuery.activityIdToLongColumnValue(ActivityTable.ORIGIN_ID, activityId);
@@ -276,7 +276,7 @@ public class MyProvider extends ContentProvider {
         final String method = "update";
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
-            MyLog.v(MyProvider.TAG, method + "; Database is null");
+            MyLog.databaseIsNull(() -> method);
             return;
         }
         String sql = "UPDATE " + tableName + " SET " + set + (StringUtils.isEmpty(where) ? "" : " WHERE " + where);
@@ -315,7 +315,7 @@ public class MyProvider extends ContentProvider {
         try {
             SQLiteDatabase db = MyContextHolder.get().getDatabase();
             if (db == null) {
-                MyLog.v(this, "insert; Database is null");
+                MyLog.databaseIsNull(() -> "insert");
                 return null;
             }
 
@@ -575,7 +575,7 @@ public class MyProvider extends ContentProvider {
     public int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {
-            MyLog.v(this, "update; Database is null");
+            MyLog.databaseIsNull(() -> "update");
             return 0;
         }
         int count = 0;

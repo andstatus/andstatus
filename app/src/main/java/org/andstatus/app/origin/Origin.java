@@ -333,7 +333,7 @@ public class Origin implements Comparable<Origin>, IsEmpty {
         Cursor cursor = null;
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
-            MyLog.v(this, "hasChildren; Database is null");
+            MyLog.databaseIsNull(() -> "Origin hasChildren");
             return false;
         }
         try {
@@ -633,7 +633,7 @@ public class Origin implements Comparable<Origin>, IsEmpty {
             if (!origin.hasChildren()) {
                 SQLiteDatabase db = getMyContext().getDatabase();
                 if (db == null) {
-                    MyLog.v(this, "delete; Database is null");
+                    MyLog.databaseIsNull(() -> "delete");
                     return false;
                 }
                 try {

@@ -56,7 +56,7 @@ public final class DbUtils {
         long rowId = -1;
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
-            MyLog.v(TAG, () -> method + "; Database is null");
+            MyLog.databaseIsNull(() -> method);
             return 0;
         }
         for (int pass = 0; pass < nRetries; pass++) {
@@ -89,7 +89,7 @@ public final class DbUtils {
         int rowsUpdated = 0;
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
-            MyLog.v(TAG, () -> method + "; Database is null");
+            MyLog.databaseIsNull(() -> method);
             return 0;
         }
         for (int pass=0; pass<nRetries; pass++) {

@@ -22,8 +22,6 @@ import android.util.Log;
 
 import net.jcip.annotations.GuardedBy;
 
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.data.DbUtils;
@@ -48,6 +46,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
 import androidx.annotation.NonNull;
+import io.vavr.control.Try;
 
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
@@ -90,8 +89,6 @@ public class MyLog {
     public static final int INFO = Log.INFO;
     private static final int IGNORED = VERBOSE - 1;
 
-    private static Object lock = new Object();
-    @GuardedBy("lock")
     private static volatile boolean initialized = false;
     
     /** 
@@ -337,48 +334,28 @@ public class MyLog {
         if (initialized) {
             return;
         }
-        synchronized (lock) {
-            if (initialized) {
-                return;
-            }
-            MyContext myContext = MyContextHolder.get();
-            if (!myContext.initialized()) {
-                return;
-            }
-            // The class was not initialized yet.
-            String val = "(not set)";
-            try {
-                SharedPreferences sp = SharedPreferencesUtil.getDefaultSharedPreferences();
-                if (sp != null) {
-                    val = getMinLogLevel(sp);
-                    setLogToFile(MyPreferences.isLogEverythingToFile());
-                    initialized = true;
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "Error in isLoggable", e);
-            }
-            if (Log.INFO >= minLogLevel) {
-                Log.i(TAG, MyPreferences.KEY_MIN_LOG_LEVEL + "='" + val +"'");
-            }
+        getMinLogLevel().onSuccess(i -> {
+            minLogLevel = i;
+            setLogToFile(MyPreferences.isLogEverythingToFile());
+            initialized = true;
+        });
+        if (initialized && Log.INFO >= minLogLevel) {
+            Log.i(TAG, MyPreferences.KEY_MIN_LOG_LEVEL + "='" + minLogLevel +"'");
         }
     }
 
-    private static String getMinLogLevel(SharedPreferences sp) {
-        String val;
-        try {
-            /**
-             * Due to the Android bug
-             * ListPreference operate with String values only...
-             * See http://code.google.com/p/android/issues/detail?id=2096
-             */
-            val = sp.getString(MyPreferences.KEY_MIN_LOG_LEVEL, String.valueOf(Log.ASSERT));  
-            minLogLevel = Integer.parseInt(val);  
-        } catch (java.lang.ClassCastException e) {
-            minLogLevel = sp.getInt(MyPreferences.KEY_MIN_LOG_LEVEL,Log.ASSERT);
-            val = Integer.toString(minLogLevel);
-            Log.e(TAG, MyPreferences.KEY_MIN_LOG_LEVEL + "='" + val +"'", e);
+    public static Try<Integer> getMinLogLevel() {
+        if (initialized) {
+            return Try.success(minLogLevel);
         }
-        return val;
+        SharedPreferences sp = SharedPreferencesUtil.getDefaultSharedPreferences();
+        if (sp == null) return Try.failure(new Exception("SharedPreferences are null"));
+
+        final int defaultLevel = Log.INFO;
+        return Try.of(() -> sp.getString(MyPreferences.KEY_MIN_LOG_LEVEL, String.valueOf(defaultLevel)))
+                .map(Integer::parseInt)
+                .recover(Exception.class, e -> sp.getInt(MyPreferences.KEY_MIN_LOG_LEVEL, defaultLevel))
+                .recover(Exception.class, e -> defaultLevel);
     }
 
     public static void setMinLogLevel(int minLogLevel) {
@@ -680,5 +657,11 @@ public class MyLog {
                 : date == SOME_TIME_AGO
                     ? "SOME_TIME_AGO"
                     : formatDateTime(date);
+    }
+
+    public static void databaseIsNull(Supplier<Object> message) {
+        if (!isVerboseEnabled()) return;
+
+        v(TAG, "Database is null. " + message.get() + "\n" + getStackTrace(new Exception()));
     }
 }

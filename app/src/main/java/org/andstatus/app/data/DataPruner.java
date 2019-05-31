@@ -64,7 +64,7 @@ public class DataPruner {
     public static void prune(@NonNull MyContext myContext) {
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
-            MyLog.d(DataPruner.class, "Database is null");
+            MyLog.databaseIsNull(() -> DataPruner.class);
         } else {
             new DataPruner(myContext, db).prune();
         }

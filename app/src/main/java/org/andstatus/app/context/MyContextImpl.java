@@ -160,7 +160,9 @@ public class MyContextImpl implements MyContext {
             default:
                 break;
         }
-        notifier.initialize();
+        if (state == MyContextState.READY) {
+            notifier.initialize();
+        }
         return this;
     }
 

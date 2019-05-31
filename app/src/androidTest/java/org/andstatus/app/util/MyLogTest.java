@@ -16,13 +16,16 @@
 
 package org.andstatus.app.util;
 
-import android.text.TextUtils;
+import android.util.Log;
 
 import org.andstatus.app.context.TestSuite;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+
+import androidx.annotation.NonNull;
+import io.vavr.control.Try;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -86,5 +89,42 @@ public class MyLogTest {
             assertFalse(string1, string1.equals(string2));
         }
         MyLog.v("testUniqueDateTimeFormatted", string1 + " " + string2);
+    }
+
+    private static volatile String lazyTest = "";
+    private static class LazyClass {
+        @NonNull
+        @Override
+        public String toString() {
+            lazyTest = this.getClass().getSimpleName();
+            return "from" + this.getClass().getSimpleName();
+        }
+    }
+
+
+    @Test
+    public void testLazyLogging() {
+        Try<Integer> level1 = MyLog.getMinLogLevel();
+        try {
+            MyLog.setMinLogLevel(Log.DEBUG);
+            String unchanged = "unchanged";
+            lazyTest = unchanged;
+            MyLog.v(this, () -> lazyTest = "modified");
+            assertEquals(unchanged, lazyTest);
+
+            LazyClass lazyObject = new LazyClass();
+            MyLog.v(this, () -> "LazyObject: " + lazyObject);
+            assertEquals(unchanged, lazyTest);
+
+            MyLog.setMinLogLevel(Log.VERBOSE);
+            String modified = "modified";
+            MyLog.v(this, () ->  lazyTest = "modified");
+            assertEquals(modified, lazyTest);
+
+            MyLog.v(this, () -> "LazyObject: " + lazyObject);
+            assertEquals(LazyClass.class.getSimpleName(), lazyTest);
+        } finally {
+            level1.onSuccess(MyLog::setMinLogLevel);
+        }
     }
 }

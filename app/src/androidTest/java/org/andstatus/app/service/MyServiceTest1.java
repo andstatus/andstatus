@@ -51,7 +51,6 @@ public class MyServiceTest1 extends MyServiceTest {
         myContext.timelines().filter(false, TriState.FALSE,
                 TimelineType.UNKNOWN, Actor.EMPTY, Origin.EMPTY)
                 .filter(Timeline::isSyncedAutomatically)
-                .filter(Timeline::isTimeToAutoSync)
                 .forEach(timeline -> timeline.onSyncEnded(myContext, new CommandResult()));
         SyncResult syncResult = new SyncResult();
         MyServiceCommandsRunner runner = new MyServiceCommandsRunner(myContext);

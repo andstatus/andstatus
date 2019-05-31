@@ -144,7 +144,7 @@ public final class ActorActivity {
 
             SQLiteDatabase db = MyContextHolder.get().getDatabase();
             if (db == null) {
-                MyLog.v(this, "Database is null");
+                MyLog.databaseIsNull(() -> "Save " + this);
                 return false;
             }
             db.execSQL(sql);
