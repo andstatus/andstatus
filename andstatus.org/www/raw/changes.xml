@@ -29,6 +29,18 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="50.00" android:versionCode="289"
+             versionDate="2019-06-01"
+             versionTitle="Sensitive flag and CW/Summary for a Toot/Note">
+        <changes>
+            <change>Added "summary" (Content warning) Note property and "Sensitive" flag (checkbox in the Editor).
+                If the Note (Toot) is Sensitive, starting a Reply to that toot the app makes the Reply Sensitive also,
+                and copies Summary (CW) from the parent toot also.<br />
+                Sensitive content may be made visible or invisible in the Navigation drawer (or in Settings -&gt; Timeline).
+                <a href="https://github.com/andstatus/andstatus/issues/507">#507</a>
+            </change>
+        </changes>
+    </release>
     <release android:versionName="49.00" android:versionCode="288"
              versionDate="2019-05-25"
              versionTitle="Home notification">
