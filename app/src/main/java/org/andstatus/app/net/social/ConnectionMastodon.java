@@ -263,9 +263,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         JSONObject mediaObject = null;
         try {
             obj.put(SUMMARY_PROPERTY, note.getSummary());
-            if (note.isSensitive()) {
-                obj.put(SENSITIVE_PROPERTY, note.isSensitive());
-            }
+            obj.put(SENSITIVE_PROPERTY, note.isSensitive());
             obj.put(CONTENT_PROPERTY_UPDATE, note.getContentToPost());
             if ( !StringUtils.isEmpty(inReplyToOid)) {
                 obj.put("in_reply_to_id", inReplyToOid);
