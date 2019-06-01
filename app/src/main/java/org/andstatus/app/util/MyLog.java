@@ -37,6 +37,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -400,7 +401,7 @@ public class MyLog {
         Writer out = null;
         try {
             fileOutputStream = new FileOutputStream(file.getAbsolutePath(), append);
-            out = new BufferedWriter(new OutputStreamWriter(fileOutputStream, "UTF-8"));
+            out = new BufferedWriter(new OutputStreamWriter(fileOutputStream, StandardCharsets.UTF_8));
             out.write(string);
             ok = true;
         } catch (Exception e) {

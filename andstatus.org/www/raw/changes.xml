@@ -39,6 +39,8 @@
                 Sensitive content may be made visible or invisible in the Navigation drawer (or in Settings -&gt; Timeline).
                 <a href="https://github.com/andstatus/andstatus/issues/507">#507</a>
             </change>
+            <change>More Mastodon attachments are shown now ("remote" media files are shown in a case the type of
+                the local ones is "unknown") </change>
         </changes>
     </release>
     <release android:versionName="49.00" android:versionCode="288"

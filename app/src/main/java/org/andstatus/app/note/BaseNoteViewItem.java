@@ -221,6 +221,9 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     public MyStringBuilder getDetails(Context context, boolean showReceivedTime) {
         MyStringBuilder builder = getMyStringBuilderWithTime(context, showReceivedTime);
+        if (isSensitive() && MyPreferences.isShowSensitiveContent()) {
+            builder.prependWithSeparator(myContext.context().getText(R.string.sensitive), " ");
+        }
         setInReplyTo(context, builder);
         setAudience(context, builder);
         setNoteSource(context, builder);

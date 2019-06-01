@@ -35,11 +35,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 import androidx.annotation.NonNull;
+import io.vavr.control.CheckedFunction;
 
+/**
+ * See <a href="https://github.com/tootsuite/documentation/blob/master/Using-the-API/API.md">API</a>
+ */
 public class ConnectionMastodon extends ConnectionTwitterLike {
     private static final String ATTACHMENTS_FIELD_NAME = "media_attachments";
     private static final String SENSITIVE_PROPERTY = "sensitive";
@@ -399,32 +404,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                     note.setInReplyTo(inReplyTo);
                 }
             }
-
-            if (!jso.isNull(ATTACHMENTS_FIELD_NAME)) {
-                try {
-                    JSONArray jArr = jso.getJSONArray(ATTACHMENTS_FIELD_NAME);
-                    for (int ind = 0; ind < jArr.length(); ind++) {
-                        JSONObject jsoAttachment = (JSONObject) jArr.get(ind);
-                        Uri uri = UriUtils.fromJson(jsoAttachment, "url");
-                        Attachment attachment = Attachment.fromUriAndMimeType(uri, jsoAttachment.optString("type"));
-                        if (attachment.isValid()) {
-                            note.attachments.add(attachment);
-                            Attachment preview =
-                                    Attachment.fromUriAndMimeType(
-                                            UriUtils.fromJson(jsoAttachment,"preview_url"),
-                                            MyContentType.IMAGE.generalMimeType)
-                                    .setPreviewOf(attachment);
-                            if (preview.isValid()) {
-                                note.attachments.add(preview);
-                            }
-                        } else {
-                            MyLog.d(this, method + "; invalid attachment #" + ind + "; " + jArr.toString());
-                        }
-                    }
-                } catch (JSONException e) {
-                    MyLog.d(this, method, e);
-                }
-            }
+            ObjectOrId.of(jso, ATTACHMENTS_FIELD_NAME).mapObjects(jsonToAttachments(method))
+                    .forEach(attachments -> attachments.forEach(note.attachments::add));
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Parsing note", e, jso);
         } catch (Exception e) {
@@ -432,6 +413,37 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             return AActivity.EMPTY;
         }
         return activity;
+    }
+
+    private CheckedFunction<JSONObject, List<Attachment>> jsonToAttachments(String method) {
+        return jsoAttachment -> {
+            String type = StringUtils.notEmpty(jsoAttachment.optString("type"), "unknown");
+            if ("unknown".equals(type)) {
+                // When the type is "unknown", it is likely only remote_url is available and local url is missing
+                Uri remoteUri = UriUtils.fromJson(jsoAttachment, "remote_url");
+                Attachment attachment = Attachment.fromUri(remoteUri);
+                if (attachment.isValid()) {
+                    return Collections.singletonList(attachment);
+                }
+                type = "";
+            }
+
+            List<Attachment> attachments = new ArrayList<>();
+            Uri uri = UriUtils.fromJson(jsoAttachment, "url");
+            Attachment attachment = Attachment.fromUriAndMimeType(uri, type);
+            if (attachment.isValid()) {
+                attachments.add(attachment);
+                Attachment preview =
+                        Attachment.fromUriAndMimeType(
+                                UriUtils.fromJson(jsoAttachment,"preview_url"),
+                                MyContentType.IMAGE.generalMimeType)
+                                .setPreviewOf(attachment);
+                attachments.add(preview);
+            } else {
+                MyLog.d(this, method + "; invalid attachment " + jsoAttachment);
+            }
+            return attachments;
+        };
     }
 
     @Override
