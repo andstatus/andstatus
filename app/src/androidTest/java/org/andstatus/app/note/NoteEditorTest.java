@@ -342,14 +342,28 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         ActivityTestHelper.waitViewVisible(method + " " + logMsg, editorView);
 
         assertEquals("Loaded note should be in DRAFT state on Edit start: " + logMsg, DownloadStatus.DRAFT,
-                DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)));
+                getDownloadStatus(noteId));
 
         ActivityTestHelper<TimelineActivity> helper2 = new ActivityTestHelper<>(getActivity());
         helper2.clickMenuItem(method + " clicker Discard " + logMsg, R.id.discardButton);
         ActivityTestHelper.waitViewInvisible(method + " " + logMsg, editorView);
 
         assertEquals("Loaded note should be unchanged after Discard: " + logMsg, DownloadStatus.LOADED,
-                DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)));
+                waitForDownloadStatus(noteId, DownloadStatus.LOADED));
+    }
+
+    private DownloadStatus waitForDownloadStatus(long noteId, DownloadStatus expected) {
+        DownloadStatus downloadStatus = DownloadStatus.UNKNOWN;
+        for (int i = 0; i < 30; i++) {
+            downloadStatus = getDownloadStatus(noteId);
+            if (downloadStatus == expected) return downloadStatus;
+            DbUtils.waitMs(this, 100);
+        }
+        return downloadStatus;
+    }
+
+    private DownloadStatus getDownloadStatus(long noteId) {
+        return DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId));
     }
 
     @Test
@@ -401,7 +415,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         assertTrue("Reply '" + content + "' was not saved: " + logMsg, draftNoteId != 0);
 
         assertEquals("Saved note should be in DRAFT state: " + logMsg, DownloadStatus.DRAFT,
-                DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, draftNoteId)));
+                getDownloadStatus(draftNoteId));
 
         assertEquals("Wrong id of inReplyTo note of '" + content + "': " + logMsg, noteId,
                 MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, draftNoteId));
