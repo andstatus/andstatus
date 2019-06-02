@@ -35,7 +35,6 @@ import org.andstatus.app.net.social.ConnectionMock;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.timeline.TimelineActivityTest;
-import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.junit.Test;
@@ -49,8 +48,8 @@ import androidx.test.espresso.action.ReplaceTextAction;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static org.andstatus.app.context.DemoData.demoData;
-import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.isIn;
 import static org.junit.Assert.assertTrue;
 
 public class NoteEditorActivityPubTest extends TimelineActivityTest<ActivityViewItem> {
@@ -68,7 +67,7 @@ public class NoteEditorActivityPubTest extends TimelineActivityTest<ActivityView
 
         MyLog.i(this, "setUp ended");
         return new Intent(Intent.ACTION_VIEW,
-                Timeline.getTimeline(TimelineType.HOME, ma.getActorId(), Origin.EMPTY).getUri());
+                MyContextHolder.get().timelines().get(TimelineType.HOME, ma.getActorId(), Origin.EMPTY).getUri());
     }
 
     @Test

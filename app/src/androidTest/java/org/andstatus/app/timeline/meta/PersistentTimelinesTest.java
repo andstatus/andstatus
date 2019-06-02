@@ -202,10 +202,10 @@ public class PersistentTimelinesTest {
     public void testUserTimelines() throws Exception {
         final MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(ma.isValid());
-        MyContextHolder.get().accounts().setCurrentAccount(ma);
+        myContext.accounts().setCurrentAccount(ma);
         long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOriginId(), demoData.conversationAuthorSecondActorOid);
 
-        final Timeline timeline = Timeline.getTimeline(TimelineType.SENT, actorId, ma.getOrigin());
+        final Timeline timeline = myContext.timelines().get(TimelineType.SENT, actorId, ma.getOrigin());
         assertEquals("Should not be combined: " + timeline, false, timeline.isCombined());
 
         Collection<Timeline> timelines = myContext.timelines().stream()

@@ -17,7 +17,6 @@
 package org.andstatus.app.timeline;
 
 import android.content.Intent;
-import androidx.test.espresso.action.TypeTextAction;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -33,11 +32,12 @@ import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.note.BaseNoteViewItem;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 import org.junit.Test;
+
+import androidx.test.espresso.action.TypeTextAction;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.pressImeActionButton;
@@ -65,7 +65,7 @@ public class PublicTimelineActivityTest extends TimelineActivityTest<ActivityVie
         assertTrue(origin.toString(), origin.isValid());
         MyLog.i(this, "setUp ended");
 
-        return new Intent(Intent.ACTION_VIEW, Timeline.getTimeline(TimelineType.PUBLIC, 0, origin).getUri());
+        return new Intent(Intent.ACTION_VIEW, MyContextHolder.get().timelines().get(TimelineType.PUBLIC, 0, origin).getUri());
     }
 
     @Test

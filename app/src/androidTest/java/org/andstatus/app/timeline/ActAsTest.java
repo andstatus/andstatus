@@ -56,7 +56,7 @@ public class ActAsTest extends TimelineActivityTest<ActivityViewItem> {
         MyContextHolder.get().accounts().setCurrentAccount(ma);
 
         MyLog.i(this, "setUp ended");
-        final Timeline timeline = Timeline.getTimeline(TimelineType.EVERYTHING, 0, ma.getOrigin());
+        final Timeline timeline = MyContextHolder.get().timelines().get(TimelineType.EVERYTHING, 0, ma.getOrigin());
         timeline.forgetPositionsAndDates();
         return new Intent(Intent.ACTION_VIEW, timeline.getUri());
     }

@@ -18,7 +18,6 @@ package org.andstatus.app.note;
 
 import android.database.Cursor;
 import android.net.Uri;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MyQuery;
@@ -28,9 +27,10 @@ import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.TriState;
+
+import androidx.annotation.NonNull;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -47,7 +47,7 @@ public class PrivateNotesConversationLoader<T extends ConversationItem<T>> exten
         Audience audience = Audience.fromNoteId(ma.getOrigin(), nonLoaded.getNoteId());
         String selection = getSelectionForActorAndAudience("=" + Long.toString(actorId),
                 SqlIds.actorIdsOf(audience.getActors()).getSql());
-        Uri uri = Timeline.getTimeline(TimelineType.EVERYTHING, 0, ma.getOrigin()).getUri();
+        Uri uri = myContext.timelines().get(TimelineType.EVERYTHING, 0, ma.getOrigin()).getUri();
         try (Cursor cursor = myContext.context().getContentResolver()
                 .query(uri, nonLoaded.getProjection().toArray(new String[]{}), selection, null, null)) {
             while (cursor != null && cursor.moveToNext()) {

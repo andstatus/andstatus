@@ -19,10 +19,10 @@ package org.andstatus.app.timeline;
 import android.content.Intent;
 
 import org.andstatus.app.activity.ActivityViewItem;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.junit.Test;
@@ -38,7 +38,7 @@ public class TimelinePositionTest extends TimelineActivityTest<ActivityViewItem>
         TestSuite.initializeWithData(this);
         MyLog.i(this, "setUp ended");
         return new Intent(Intent.ACTION_VIEW,
-                Timeline.getTimeline(TimelineType.HOME, 0, Origin.EMPTY).getUri());
+                MyContextHolder.get().timelines().get(TimelineType.HOME, 0, Origin.EMPTY).getUri());
     }
 
     @Test

@@ -21,10 +21,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
-import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyUrlSpan;
 
@@ -35,7 +33,7 @@ class QueueViewerAdapter extends BaseTimelineAdapter<QueueData> {
 
     QueueViewerAdapter(QueueViewer container, List<QueueData> items) {
         super(container.getMyContext(),
-                Timeline.getTimeline(TimelineType.COMMANDS_QUEUE, 0, Origin.EMPTY),
+                container.getMyContext().timelines().get(TimelineType.COMMANDS_QUEUE, 0, Origin.EMPTY),
                 items);
         this.container = container;
     }
@@ -48,7 +46,7 @@ class QueueViewerAdapter extends BaseTimelineAdapter<QueueData> {
         setPosition(view, position);
         QueueData item = getItem(position);
         MyUrlSpan.showText(view, R.id.queue_type, item.queueType.getAcronym(), false, false);
-        MyUrlSpan.showText(view, R.id.command_summary, item.commandData.toCommandSummary(MyContextHolder.get())
+        MyUrlSpan.showText(view, R.id.command_summary, item.commandData.toCommandSummary(myContext)
                 + "\t "
                 + item.commandData.createdDateWithLabel(myContext.context()), false, false);
         MyUrlSpan.showText(view, R.id.result_summary, item.commandData.getResult().toSummary(), false, false);

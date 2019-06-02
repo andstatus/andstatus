@@ -162,7 +162,7 @@ public class ManageTimelines extends LoadableListActivity {
     protected BaseTimelineAdapter newListAdapter() {
 
         return new BaseTimelineAdapter<ManageTimelinesViewItem>(myContext,
-                Timeline.getTimeline(TimelineType.MANAGE_TIMELINES, 0, Origin.EMPTY),
+                myContext.timelines().get(TimelineType.MANAGE_TIMELINES, 0, Origin.EMPTY),
                 getLoaded().getList()) {
             Timeline defaultTimeline = myContext.timelines().getDefault();
 

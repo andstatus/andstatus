@@ -47,7 +47,7 @@ public class ActorTimelineTest extends TimelineActivityTest<ActivityViewItem> {
         long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOriginId(), demoData.conversationAuthorSecondActorOid);
 
         MyLog.i(this, "setUp ended");
-        final Timeline timeline = Timeline.getTimeline(TimelineType.SENT, actorId, ma.getOrigin());
+        final Timeline timeline = MyContextHolder.get().timelines().get(TimelineType.SENT, actorId, ma.getOrigin());
         timeline.forgetPositionsAndDates();
         return new Intent(Intent.ACTION_VIEW, timeline.getUri());
     }

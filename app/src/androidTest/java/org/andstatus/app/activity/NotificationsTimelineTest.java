@@ -22,7 +22,6 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.timeline.TimelineActivityTest;
-import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.junit.Test;
@@ -43,7 +42,7 @@ public class NotificationsTimelineTest extends TimelineActivityTest<ActivityView
 
         MyLog.i(this, "setUp ended");
         return new Intent(Intent.ACTION_VIEW,
-                Timeline.getTimeline(TimelineType.NOTIFICATIONS, ma.getActorId(), ma.getOrigin()).getUri());
+                MyContextHolder.get().timelines().get(TimelineType.NOTIFICATIONS, ma.getActorId(), ma.getOrigin()).getUri());
     }
 
     @Test

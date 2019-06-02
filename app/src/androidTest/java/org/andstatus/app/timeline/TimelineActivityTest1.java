@@ -18,7 +18,6 @@ package org.andstatus.app.timeline;
 
 import android.app.Activity;
 import android.content.Intent;
-import androidx.annotation.NonNull;
 import android.widget.CheckBox;
 import android.widget.ListView;
 
@@ -44,13 +43,14 @@ import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceEventsBroadcaster;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
-import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.view.SelectorDialog;
 import org.junit.Test;
 
 import java.util.Set;
+
+import androidx.annotation.NonNull;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
@@ -74,7 +74,8 @@ public class TimelineActivityTest1 extends TimelineActivityTest<ActivityViewItem
         MyContextHolder.get().accounts().setCurrentAccount(ma);
 
         MyLog.i(this, "setUp ended");
-        return new Intent(Intent.ACTION_VIEW, Timeline.getTimeline(TimelineType.HOME, ma.getActorId(), Origin.EMPTY).getUri());
+        return new Intent(Intent.ACTION_VIEW, MyContextHolder.get().timelines()
+                .get(TimelineType.HOME, ma.getActorId(), Origin.EMPTY).getUri());
     }
 
     @Test

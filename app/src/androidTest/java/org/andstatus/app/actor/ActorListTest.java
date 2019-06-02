@@ -60,7 +60,7 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         noteId = MyQuery.oidToId(OidEnum.NOTE_OID, demoData.getPumpioConversationOrigin().getId(),
                 demoData.conversationMentionsNoteOid);
 
-        final Timeline timeline = Timeline.getTimeline(TimelineType.EVERYTHING, 0, Origin.EMPTY);
+        final Timeline timeline = MyContextHolder.get().timelines().get(TimelineType.EVERYTHING, 0, Origin.EMPTY);
         long updatedDate = MyQuery.noteIdToLongColumnValue(NoteTable.UPDATED_DATE, noteId);
         timeline.setVisibleItemId(noteId);
         timeline.setVisibleOldestDate(updatedDate);

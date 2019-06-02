@@ -26,7 +26,6 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.actor.ActorListType;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.ContentValuesUtils;
 import org.andstatus.app.data.DbUtils;
@@ -156,10 +155,6 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
 
     private volatile boolean changed = true;
     private volatile long lastChangedDate = 0;
-
-    public static Timeline getTimeline(@NonNull TimelineType timelineType, long actorId, @NonNull Origin origin) {
-        return MyContextHolder.get().timelines().get(timelineType, actorId, origin, "");
-    }
 
     public static Timeline fromCursor(MyContext myContext, Cursor cursor) {
         Timeline timeline = new Timeline(

@@ -43,7 +43,6 @@ import org.andstatus.app.service.AttachmentDownloaderTest;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
-import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
@@ -131,7 +130,7 @@ public class DataUpdaterTest {
         assertEquals("Latest activity of " + somebody, activity.getId(),
                 MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, somebody.actorId));
 
-        Uri contentUri = Timeline.getTimeline(TimelineType.FRIENDS, ma.getActorId(), Origin.EMPTY).getUri();
+        Uri contentUri = MyContextHolder.get().timelines().get(TimelineType.FRIENDS, ma.getActorId(), Origin.EMPTY).getUri();
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = ActivityTable.getTimelineSortOrder(TimelineType.FRIENDS, false);
         sa.addSelection(ActivityTable.ACTOR_ID + "=?", Long.toString(somebody.actorId));
@@ -245,7 +244,7 @@ public class DataUpdaterTest {
                 MyQuery.noteIdToTriState(NoteTable.REBLOGGED, noteId));
 
         // TODO: Below is actually a timeline query test, so maybe expand / move...
-        Uri contentUri = Timeline.getTimeline(TimelineType.EVERYTHING, 0, ma.getOrigin()).getUri();
+        Uri contentUri = MyContextHolder.get().timelines().get(TimelineType.EVERYTHING, 0, ma.getOrigin()).getUri();
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = ActivityTable.getTimelineSortOrder(TimelineType.EVERYTHING, false);
         sa.addSelection(NoteTable.NOTE_ID + " = ?", Long.toString(noteId));

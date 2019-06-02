@@ -44,7 +44,6 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.LoadableListViewParameters;
-import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
@@ -284,7 +283,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
             Uri uri = MatchedUri.getTimelineItemUri(
-                    Timeline.getTimeline(TimelineType.EVERYTHING, 0, menu.getOrigin()),
+                    menu.getMyContext().timelines().get(TimelineType.EVERYTHING, 0, menu.getOrigin()),
                     menu.getNoteId());
             String action = menu.getActivity().getIntent().getAction();
             if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {

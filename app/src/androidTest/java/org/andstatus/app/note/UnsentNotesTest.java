@@ -20,7 +20,6 @@ import org.andstatus.app.service.MyServiceTestHelper;
 import org.andstatus.app.timeline.ListActivityTestHelper;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.timeline.TimelineActivityTest;
-import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.junit.After;
@@ -49,7 +48,7 @@ public class UnsentNotesTest extends TimelineActivityTest<ActivityViewItem> {
         MyContextHolder.get().accounts().setCurrentAccount(ma);
 
         return new Intent(Intent.ACTION_VIEW,
-                Timeline.getTimeline(TimelineType.EVERYTHING, 0, ma.getOrigin()).getUri());
+                MyContextHolder.get().timelines().get(TimelineType.EVERYTHING, 0, ma.getOrigin()).getUri());
     }
 
     @After

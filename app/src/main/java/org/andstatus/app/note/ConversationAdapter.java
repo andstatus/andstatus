@@ -31,7 +31,6 @@ import org.andstatus.app.timeline.TimelineData;
 import org.andstatus.app.timeline.TimelinePage;
 import org.andstatus.app.timeline.TimelineParameters;
 import org.andstatus.app.timeline.WhichPage;
-import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.ViewUtils;
 
@@ -49,14 +48,15 @@ public class ConversationAdapter extends BaseNoteAdapter<ConversationViewItem> {
                         boolean showThreads,
                         boolean oldNotesFirst) {
         super(contextMenu,
-                new TimelineData<>(
-                        null,
-                        new TimelinePage<>(
-                                new TimelineParameters(contextMenu.getMyContext(),
-                                        Timeline.getTimeline(TimelineType.CONVERSATION, 0, origin), WhichPage.EMPTY),
-                                oMsgs
-                        )
+            new TimelineData<>(
+                null,
+                new TimelinePage<>(
+                    new TimelineParameters(contextMenu.getMyContext(),
+                        contextMenu.getActivity().getMyContext().timelines()
+                            .get(TimelineType.CONVERSATION, 0, origin), WhichPage.EMPTY),
+                    oMsgs
                 )
+            )
         );
         this.context = this.contextMenu.getActivity();
         this.selectedNoteId = selectedNoteId;

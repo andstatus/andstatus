@@ -116,7 +116,7 @@ public class CommandData implements Comparable<CommandData> {
     @NonNull
     public static CommandData newActorCommand(CommandEnum command, long actorId, String username) {
         CommandData commandData = newTimelineCommand(command,
-                Timeline.getTimeline(TimelineType.SENT, actorId, Origin.EMPTY));
+                MyContextHolder.get().timelines().get(TimelineType.SENT, actorId, Origin.EMPTY));
         commandData.setUsername(username);
         commandData.description = commandData.getUsername();
         return commandData;
@@ -138,7 +138,7 @@ public class CommandData implements Comparable<CommandData> {
         CommandData commandData = actorId == 0
                 ? newAccountCommand(command, myAccount)
                 : new CommandData(0, command, myAccount,
-                    Timeline.getTimeline(TimelineType.SENT, actorId, Origin.EMPTY), 0);
+                MyContextHolder.get().timelines().get(TimelineType.SENT, actorId, Origin.EMPTY), 0);
         commandData.setUsername(username);
         commandData.description = commandData.getUsername();
         return commandData;
@@ -151,12 +151,13 @@ public class CommandData implements Comparable<CommandData> {
     public static CommandData newOriginCommand(CommandEnum command, @NonNull Origin origin) {
         return newTimelineCommand(command, origin.isEmpty()
                 ? Timeline.EMPTY
-                : Timeline.getTimeline(TimelineType.EVERYTHING, 0, origin));
+                : MyContextHolder.get().timelines().get(TimelineType.EVERYTHING, 0, origin));
     }
 
     public static CommandData newTimelineCommand(CommandEnum command, @NonNull MyAccount myAccount,
                                                  TimelineType timelineType) {
-        return newTimelineCommand(command, Timeline.getTimeline(timelineType, myAccount.getActorId(), Origin.EMPTY));
+        return newTimelineCommand(command, MyContextHolder.get().timelines()
+                .get(timelineType, myAccount.getActorId(), Origin.EMPTY));
     }
 
     public static CommandData newTimelineCommand(CommandEnum command, Timeline timeline) {

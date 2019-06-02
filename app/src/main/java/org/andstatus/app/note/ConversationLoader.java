@@ -36,7 +36,6 @@ import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.timeline.LoadableListActivity.ProgressPublisher;
-import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
@@ -173,7 +172,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
             return cachedItem;
         }
         Uri uri = MatchedUri.getTimelineItemUri(
-                Timeline.getTimeline(TimelineType.EVERYTHING, 0, ma.getOrigin()), item.getNoteId());
+                myContext.timelines().get(TimelineType.EVERYTHING, 0, ma.getOrigin()), item.getNoteId());
         try (Cursor cursor = myContext.context().getContentResolver()
                 .query(uri, item.getProjection().toArray(new String[]{}), null, null, null)) {
             if (cursor != null && cursor.moveToFirst()) {
