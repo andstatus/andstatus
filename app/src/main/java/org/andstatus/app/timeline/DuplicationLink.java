@@ -20,4 +20,8 @@ public enum DuplicationLink {
     DUPLICATES,
     IS_DUPLICATED,
     NONE;
+
+    boolean exists() {
+        return this != NONE;
+    }
 }

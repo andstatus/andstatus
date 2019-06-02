@@ -267,9 +267,9 @@ public class NoteContextMenu extends MyContextMenu {
         if (mViewItem.isEmpty()) {
             return NoteViewItem.EMPTY;
         }
-        if (BaseNoteViewItem.class.isAssignableFrom(mViewItem.getClass())) {
+        if (mViewItem instanceof BaseNoteViewItem) {
             return (BaseNoteViewItem) mViewItem;
-        } else if (ActivityViewItem.class.isAssignableFrom(mViewItem.getClass())){
+        } else if (mViewItem instanceof ActivityViewItem){
             return ((ActivityViewItem) mViewItem).noteViewItem;
         }
         return NoteViewItem.EMPTY;

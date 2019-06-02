@@ -16,13 +16,20 @@
 
 package org.andstatus.app.timeline;
 
-import androidx.annotation.NonNull;
-
+import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.actor.ActorViewItem;
+import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.note.BaseNoteViewItem;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TryUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
+
+import androidx.annotation.NonNull;
+import io.vavr.control.Try;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -32,26 +39,31 @@ public class TimelineData<T extends ViewItem<T>> {
     protected final List<TimelinePage<T>> pages; // Contains at least one Page
     final long updatedAt = MyLog.uniqueCurrentTimeMS();
     public final TimelineParameters params;
-    public final ActorViewItem actorViewItem;
+    public volatile ActorViewItem actorViewItem;
     final boolean isSameTimeline;
     private final DuplicatesCollapser<T> duplicatesCollapser;
 
     public TimelineData(TimelineData<T> oldData, @NonNull TimelinePage<T> thisPage) {
         this.params = thisPage.params;
         isSameTimeline = oldData != null && params.getContentUri().equals(oldData.params.getContentUri());
-        actorViewItem = thisPage.actorViewItem;
         this.pages = isSameTimeline ? new ArrayList<>(oldData.pages) : new ArrayList<>();
         final DuplicatesCollapser<T> oldCollapser = isSameTimeline ? oldData.duplicatesCollapser : null;
         duplicatesCollapser = new DuplicatesCollapser<>(this, oldCollapser);
         boolean collapsed = isCollapseDuplicates();
         if (!duplicatesCollapser.individualCollapsedStateIds.isEmpty()) {
-            duplicatesCollapser.collapseDuplicates(false, 0);
+            duplicatesCollapser.collapseDuplicates(LoadableListViewParameters.collapseDuplicates(false));
         }
         addThisPage(thisPage);
         if (collapsed) {
-            duplicatesCollapser.collapseDuplicates(true, 0);
+            duplicatesCollapser.collapseDuplicates(LoadableListViewParameters.collapseDuplicates(true));
         }
         dropExcessivePage(thisPage);
+
+        actorViewItem = thisPage.actorViewItem;
+        if (getPreferredOrigin().nonEmpty() && !getPreferredOrigin().equals(actorViewItem.getActor().origin)) {
+            setActorViewItem(getPreferredOrigin());
+        }
+
         if (oldCollapser != null && collapsed == oldCollapser.collapseDuplicates
                 && !oldCollapser.individualCollapsedStateIds.isEmpty()) {
             duplicatesCollapser.restoreCollapsedStates(oldCollapser);
@@ -231,7 +243,49 @@ public class TimelineData<T extends ViewItem<T>> {
     /**
      * For all or for only one item
      */
-    public void collapseDuplicates(boolean collapse, long itemId) {
-        duplicatesCollapser.collapseDuplicates(collapse, itemId);
+    public void updateView(LoadableListViewParameters viewParameters) {
+        if (viewParameters.preferredOrigin.isPresent()) {
+            setActorViewItem(viewParameters.preferredOrigin.get());
+        }
+        duplicatesCollapser.collapseDuplicates(viewParameters);
+    }
+
+    private void setActorViewItem(Origin preferredOrigin) {
+        if (params.timeline.hasActorProfile()) {
+            findActorViewItem(params.timeline.actor, preferredOrigin).onSuccess(a -> actorViewItem = a);
+        }
+    }
+
+    @NonNull
+    public Try<ActorViewItem> findActorViewItem(Actor actor, Origin preferredOrigin) {
+        for (TimelinePage<T> page : pages) {
+            for (T item : page.items) {
+                Try<ActorViewItem> found = findInOneItem(item, actor, preferredOrigin);
+                if (found.isSuccess()) return found;
+            }
+        }
+        return TryUtils.notFound();
+    }
+
+    private Try<ActorViewItem> findInOneItem(T item, Actor actor, Origin preferredOrigin) {
+        if (item instanceof BaseNoteViewItem) {
+            return filterSameActorAtOtigin(((BaseNoteViewItem) item).getAuthor(), actor, preferredOrigin);
+        } else if (item instanceof ActivityViewItem) {
+            return filterSameActorAtOtigin(((ActivityViewItem) item).getObjActorItem(), actor, preferredOrigin)
+                    .recoverWith(NoSuchElementException.class, e -> filterSameActorAtOtigin(
+                            ((ActivityViewItem) item).noteViewItem.getAuthor(), actor, preferredOrigin));
+        }
+        return TryUtils.notFound();
+    }
+
+    private Try<ActorViewItem> filterSameActorAtOtigin(ActorViewItem actorViewItem, Actor otherActor, Origin origin) {
+        Actor actor = actorViewItem.getActor();
+        return actor.origin.equals(origin) && actor.isSame(otherActor)
+                ? Try.success(actorViewItem)
+                : TryUtils.notFound();
+    }
+
+    public Origin getPreferredOrigin() {
+        return duplicatesCollapser.preferredOrigin;
     }
 }

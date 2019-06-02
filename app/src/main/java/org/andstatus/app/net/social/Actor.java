@@ -41,6 +41,7 @@ import org.andstatus.app.util.LazyVal;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
+import org.andstatus.app.util.NullUtil;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
@@ -591,6 +592,16 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
     public static String toTempOid(String webFingerId, String validUserName) {
         return StringUtils.toTempOid(isWebFingerIdValid(webFingerId) ? webFingerId : validUserName);
+    }
+
+    /** Tries to find this actor in the home origin (the same host...).
+     * Returns the same Actor, if not found */
+    public Actor toHomeOrigin() {
+        return origin.getHost().equals(getConnectionHost())
+            ? this
+            : user.actorIds.stream().map(id -> NullUtil.getOrDefault(origin.myContext.users().actors, id, Actor.EMPTY))
+                .filter(a -> a.nonEmpty() && a.origin.getHost().equals(getConnectionHost()))
+                .findAny().orElse(this);
     }
 
     public List<Actor> extractActorsFromContent(String text, Actor inReplyToActorIn) {

@@ -19,7 +19,6 @@ package org.andstatus.app.timeline;
 import android.net.Uri;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.MenuItem;
@@ -53,6 +52,8 @@ import org.andstatus.app.widget.MySearchView;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+
+import androidx.annotation.NonNull;
 
 /**
  * List, loaded asynchronously. Updated by MyService
@@ -306,14 +307,14 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
     }
 
     public void updateList(LoadableListPosition pos) {
-        updateList(pos, TriState.UNKNOWN, 0, true);
+        updateList(pos, LoadableListViewParameters.EMPTY, true);
     }
 
-    public void updateList(TriState collapseDuplicates, long collapsedItemId) {
-        updateList(getCurrentListPosition(), collapseDuplicates, collapsedItemId, false);
+    public void updateList(LoadableListViewParameters viewParameters) {
+        updateList(getCurrentListPosition(), viewParameters, false);
     }
 
-    private void updateList(LoadableListPosition pos, TriState collapseDuplicates, long collapsedItemId, boolean newAdapter) {
+    private void updateList(LoadableListPosition pos, LoadableListViewParameters viewParameters, boolean newAdapter) {
         final String method = "updateList";
         ListView list = getListView();
         if (list == null) return;
@@ -323,8 +324,8 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
                 : "notifying change"));
 
         final BaseTimelineAdapter<T> adapter = newAdapter ? newListAdapter() : getListAdapter();
-        if (collapseDuplicates.known) {
-            adapter.getListData().collapseDuplicates(collapseDuplicates.toBoolean(true), collapsedItemId);
+        if (viewParameters.isViewChanging()) {
+            adapter.getListData().updateView(viewParameters);
         }
         if (newAdapter) {
             setListAdapter(adapter);
@@ -332,6 +333,13 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
             adapter.notifyDataSetChanged();
         }
         adapter.setPositionRestored(LoadableListPosition.restore(list, adapter, pos));
+        if (viewParameters.isViewChanging()) {
+            updateScreen();
+        }
+    }
+
+    public void updateScreen() {
+        // Empty
     }
 
     protected abstract BaseTimelineAdapter<T> newListAdapter();

@@ -120,10 +120,10 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
 
     @NonNull
     @Override
-    public DuplicationLink duplicates(Timeline timeline, @NonNull ActivityViewItem other) {
+    public DuplicationLink duplicates(Timeline timeline, Origin preferredOrigin, @NonNull ActivityViewItem other) {
         if (isEmpty() || other.isEmpty()) return DuplicationLink.NONE;
 
-        DuplicationLink link = duplicatesByChildren(timeline, other);
+        DuplicationLink link = duplicatesByChildren(timeline, preferredOrigin, other);
         if (link == DuplicationLink.NONE) return link;
 
         if (activityType != other.activityType && other.activityType == ActivityType.UPDATE) {
@@ -137,13 +137,13 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
     }
 
     @NonNull
-    protected DuplicationLink duplicatesByChildren(Timeline timeline, @NonNull ActivityViewItem other) {
+    protected DuplicationLink duplicatesByChildren(Timeline timeline, Origin preferredOrigin, @NonNull ActivityViewItem other) {
         if (noteId !=0) {
-            return noteViewItem.duplicates(timeline, other.noteViewItem);
+            return noteViewItem.duplicates(timeline, preferredOrigin, other.noteViewItem);
         } else if (objActorId != 0) {
-            return objActorItem.duplicates(timeline, other.objActorItem);
+            return objActorItem.duplicates(timeline, preferredOrigin, other.objActorItem);
         }
-        return super.duplicates(timeline, other);
+        return super.duplicates(timeline, preferredOrigin, other);
     }
 
     protected String getDetails(Context context, boolean showReceivedTime) {

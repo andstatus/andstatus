@@ -62,6 +62,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     public static final Timeline EMPTY = new Timeline();
     private static final long MIN_RETRY_PERIOD_MS = TimeUnit.SECONDS.toMillis(30);
     public static final String TIMELINE_CLICK_HOST = "timeline.app.andstatus.org";
+    public final MyContext myContext;
     private volatile long id;
 
     private final TimelineType timelineType;
@@ -241,8 +242,9 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     }
 
     private Timeline() {
+        myContext = MyContext.EMPTY;
         timelineType = TimelineType.UNKNOWN;
-        this.myAccountToSync = MyAccount.EMPTY;
+        myAccountToSync = MyAccount.EMPTY;
         actor = Actor.EMPTY;
         origin = Origin.EMPTY;
         searchQuery = "";
@@ -257,6 +259,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
              long actorId, @NonNull Origin origin, String searchQuery, long selectorOrder) {
         Objects.requireNonNull(timelineType);
         Objects.requireNonNull(origin);
+        this.myContext = myContext;
         this.id = id;
         this.actor = fixedActor(myContext, timelineType, actorId);
         this.origin = fixedOrigin(timelineType, origin);
@@ -441,8 +444,8 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         return origin.nonEmpty()
                 ? origin
                 : actor.nonEmpty()
-                    ? actor.origin
-                    : MyContextHolder.get().accounts().getCurrentAccount().getOrigin();
+                    ? actor.toHomeOrigin().origin
+                    : myContext.accounts().getCurrentAccount().getOrigin();
     }
 
     public boolean checkBoxDisplayedInSelector() {
@@ -1062,7 +1065,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         return actor.actorId == 0 || actor.actorId == getActorId();
     }
 
-    public boolean withActorProfile() {
+    public boolean hasActorProfile() {
         return !isCombined && actor.nonEmpty() && timelineType.hasActorProfile();
     }
 

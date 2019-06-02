@@ -127,7 +127,7 @@ public class ActorContextMenu extends MyContextMenu {
         if (mViewItem.isEmpty()) {
             return ActorViewItem.EMPTY;
         }
-        if (ActivityViewItem.class.isAssignableFrom(mViewItem.getClass())) {
+        if (mViewItem instanceof ActivityViewItem) {
             return getViewItem(((ActivityViewItem) mViewItem));
         }
         return (ActorViewItem) mViewItem;

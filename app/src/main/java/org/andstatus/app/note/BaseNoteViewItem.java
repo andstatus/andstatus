@@ -137,6 +137,10 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         this.noteId = noteId;
     }
 
+    public ActorViewItem getAuthor() {
+        return author;
+    }
+
     public Origin getOrigin() {
         return origin;
     }
@@ -162,24 +166,24 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     @Override
     @NonNull
-    public DuplicationLink duplicates(Timeline timeline, @NonNull T other) {
+    public DuplicationLink duplicates(Timeline timeline, Origin preferredOrigin, @NonNull T other) {
         if (isEmpty() || other.isEmpty()) return DuplicationLink.NONE;
         return (getNoteId() == other.getNoteId())
-                ? duplicatesByFavoritedAndReblogged(timeline, other)
-                : duplicatesByOther(timeline, other);
+                ? duplicatesByFavoritedAndReblogged(preferredOrigin, other)
+                : duplicatesByOther(preferredOrigin, other);
     }
 
     @NonNull
-    private DuplicationLink duplicatesByFavoritedAndReblogged(Timeline timeline, @NonNull T other) {
+    private DuplicationLink duplicatesByFavoritedAndReblogged(Origin preferredOrigin, @NonNull T other) {
         if (favorited != other.favorited) {
             return favorited ? IS_DUPLICATED : DUPLICATES;
         } else if (reblogged != other.reblogged) {
             return reblogged ? IS_DUPLICATED : DUPLICATES;
         }
-        if (timeline.preferredOrigin().nonEmpty()
+        if (preferredOrigin.nonEmpty()
                 && !author.getActor().origin.equals(other.author.getActor().origin)) {
-            if (timeline.preferredOrigin().equals(author.getActor().origin)) return IS_DUPLICATED;
-            if (timeline.preferredOrigin().equals(other.author.getActor().origin)) return DUPLICATES;
+            if (preferredOrigin.equals(author.getActor().origin)) return IS_DUPLICATED;
+            if (preferredOrigin.equals(other.author.getActor().origin)) return DUPLICATES;
         }
         if (!getLinkedMyAccount().equals(other.getLinkedMyAccount())) {
             return getLinkedMyAccount().compareTo(other.getLinkedMyAccount()) <= 0
@@ -189,7 +193,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     }
 
     @NonNull
-    private DuplicationLink duplicatesByOther(Timeline timeline, @NonNull T other) {
+    private DuplicationLink duplicatesByOther(Origin preferredOrigin, @NonNull T other) {
         if (updatedDate > SOME_TIME_AGO && other.updatedDate > SOME_TIME_AGO
               &&  (Math.abs(updatedDate - other.updatedDate) >= TimeUnit.HOURS.toMillis(24))
                 || isTooShortToCompare()
@@ -197,7 +201,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
                 ) return DuplicationLink.NONE;
         if (contentToSearch.equals(other.contentToSearch)) {
             if (updatedDate == other.updatedDate) {
-                return duplicatesByFavoritedAndReblogged(timeline, other);
+                return duplicatesByFavoritedAndReblogged(preferredOrigin, other);
             } else if (updatedDate < other.updatedDate) {
                 return IS_DUPLICATED;
             } else {

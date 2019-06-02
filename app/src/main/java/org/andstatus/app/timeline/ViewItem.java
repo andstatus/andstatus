@@ -18,11 +18,11 @@ package org.andstatus.app.timeline;
 
 import android.content.Context;
 import android.database.Cursor;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.R;
 import org.andstatus.app.actor.ActorListLoader;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.IsEmpty;
@@ -32,6 +32,8 @@ import org.andstatus.app.util.RelativeTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import androidx.annotation.NonNull;
 
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 
@@ -66,7 +68,7 @@ public class ViewItem<T extends ViewItem<T>> implements IsEmpty {
     }
 
     @NonNull
-    public DuplicationLink duplicates(Timeline timeline, @NonNull T other) {
+    public DuplicationLink duplicates(Timeline timeline, Origin preferredOrigin, @NonNull T other) {
         return DuplicationLink.NONE;
     }
 

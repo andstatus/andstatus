@@ -17,6 +17,7 @@
 package org.andstatus.app.note;
 
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.DuplicationLink;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyHtml;
@@ -99,6 +100,6 @@ public class NoteViewItemTest {
     }
 
     private void assertDuplicates(NoteViewItem item1, DuplicationLink duplicates, NoteViewItem item2) {
-        assertEquals(item1.toString() + " vs " + item2, duplicates, item1.duplicates(Timeline.EMPTY, item2));
+        assertEquals(item1.toString() + " vs " + item2, duplicates, item1.duplicates(Timeline.EMPTY, Origin.EMPTY, item2));
     }
 }

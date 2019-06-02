@@ -31,6 +31,7 @@ import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyStringBuilder;
+import org.andstatus.app.util.NullUtil;
 import org.andstatus.app.util.StringUtils;
 
 import java.util.Collections;
@@ -164,13 +165,13 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
 
     @NonNull
     @Override
-    public DuplicationLink duplicates(Timeline timeline, @NonNull ActorViewItem other) {
+    public DuplicationLink duplicates(Timeline timeline, Origin preferredOrigin, @NonNull ActorViewItem other) {
         if (isEmpty() || other.isEmpty()) return DuplicationLink.NONE;
-        if (timeline.preferredOrigin().nonEmpty() && !actor.origin.equals(other.actor.origin)) {
-            if (timeline.preferredOrigin().equals(actor.origin)) return IS_DUPLICATED;
-            if (timeline.preferredOrigin().equals(other.actor.origin)) return DUPLICATES;
+        if (preferredOrigin.nonEmpty() && !actor.origin.equals(other.actor.origin)) {
+            if (preferredOrigin.equals(actor.origin)) return IS_DUPLICATED;
+            if (preferredOrigin.equals(other.actor.origin)) return DUPLICATES;
         }
-        return super.duplicates(timeline, other);
+        return super.duplicates(timeline, preferredOrigin, other);
     }
 
     public void hideTheFollower(Actor actor) {
@@ -178,9 +179,9 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
     }
 
     public Stream<Actor> getMyActorsFollowingTheActor(MyContext myContext) {
-        return myContext.users().friendsOfMyActors.getOrDefault(actor.actorId, Collections.emptySet()).stream()
+        return NullUtil.getOrDefault(myContext.users().friendsOfMyActors, actor.actorId, Collections.emptySet()).stream()
                 .filter(id -> id != myFollowingActorToHide.actorId)
-                .map(id -> myContext.users().actors.getOrDefault(id, Actor.EMPTY))
+                .map(id -> NullUtil.getOrDefault(myContext.users().actors, id, Actor.EMPTY))
                 .filter(Actor::nonEmpty);
     }
 

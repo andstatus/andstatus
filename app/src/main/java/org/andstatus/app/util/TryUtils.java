@@ -41,4 +41,8 @@ public class TryUtils {
     public static <T> Try<T> fromOptional(Optional<T> optional, Supplier<Throwable> ifEmpty) {
         return optional.map(Try::success).orElseGet(() -> Try.failure(ifEmpty.get()));
     }
+
+    public static <T> Try<T> notFound() {
+        return Try.failure(new NoSuchElementException());
+    }
 }

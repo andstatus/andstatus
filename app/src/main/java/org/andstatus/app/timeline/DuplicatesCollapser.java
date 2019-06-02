@@ -16,9 +16,10 @@
 
 package org.andstatus.app.timeline;
 
-import androidx.annotation.NonNull;
-
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.origin.Origin;
+import org.andstatus.app.timeline.meta.Timeline;
+import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,6 +31,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import androidx.annotation.NonNull;
+
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -39,9 +42,10 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
     private int maxDistanceBetweenDuplicates = MyPreferences.getMaxDistanceBetweenDuplicates();
 
     // Parameters, which may be changed during presentation of the timeline
-    volatile boolean collapseDuplicates = false;
-    final Set<Long> individualCollapsedStateIds = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
+    volatile boolean collapseDuplicates;
+    final Set<Long> individualCollapsedStateIds = Collections.newSetFromMap(new ConcurrentHashMap<>());
     final TimelineData<T> data;
+    volatile Origin preferredOrigin;
 
     private static class GroupToCollapse<T extends ViewItem<T>> {
         @NonNull
@@ -73,18 +77,22 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
     public DuplicatesCollapser(TimelineData<T> data, DuplicatesCollapser<T> oldDuplicatesCollapser) {
         this.data = data;
         if (oldDuplicatesCollapser == null) {
-            switch (data.params.timeline.getTimelineType()) {
+            Timeline timeline = data.params.timeline;
+            switch (timeline.getTimelineType()) {
                 case UNKNOWN:
                 case UNREAD_NOTIFICATIONS:
                     collapseDuplicates = false;
+                    preferredOrigin = Origin.EMPTY;
                     break;
                 default:
                     collapseDuplicates = MyPreferences.isCollapseDuplicates();
+                    preferredOrigin = timeline.preferredOrigin();
                     break;
             }
         } else {
             collapseDuplicates = oldDuplicatesCollapser.collapseDuplicates;
             individualCollapsedStateIds.addAll(oldDuplicatesCollapser.individualCollapsedStateIds);
+            preferredOrigin = oldDuplicatesCollapser.preferredOrigin;
         }
     }
 
@@ -96,7 +104,7 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
         if (maxDistanceBetweenDuplicates < 1) return false;
         T item = data.getItem(position);
         for (int i = Math.max(position - maxDistanceBetweenDuplicates, 0); i <= position + maxDistanceBetweenDuplicates; i++) {
-            if (i != position && item.duplicates(data.params.timeline, data.getItem(i)) != DuplicationLink.NONE) return true;
+            if (i != position && item.duplicates(data.params.timeline, preferredOrigin, data.getItem(i)).exists()) return true;
         }
         return false;
     }
@@ -110,16 +118,40 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
     }
 
     public void restoreCollapsedStates(@NonNull DuplicatesCollapser<T> oldCollapser) {
-        oldCollapser.individualCollapsedStateIds.forEach(id -> collapseDuplicates(!collapseDuplicates, id));
+        oldCollapser.individualCollapsedStateIds.forEach(id -> collapseDuplicates(
+                new LoadableListViewParameters(TriState.fromBoolean(!collapseDuplicates), id, Optional.of(preferredOrigin))));
     }
 
     /** For all or for only one item */
-    public void collapseDuplicates(boolean collapse, long itemId) {
-        if (itemId == 0 && this.collapseDuplicates != collapse) {
-            this.collapseDuplicates = collapse;
+    public void collapseDuplicates(LoadableListViewParameters viewParameters) {
+        if (viewParameters.collapsedItemId == 0 && viewParameters.collapseDuplicates.known &&
+                this.collapseDuplicates != viewParameters.collapseDuplicates.toBoolean(false)) {
+            this.collapseDuplicates = viewParameters.collapseDuplicates.toBoolean(false);
             individualCollapsedStateIds.clear();
         }
-        if (collapse) collapseDuplicates(itemId); else showDuplicates(itemId);
+        viewParameters.preferredOrigin.ifPresent(o -> {
+            this.preferredOrigin = o;
+        });
+
+        switch (viewParameters.collapseDuplicates) {
+            case TRUE:
+                collapseDuplicates(viewParameters.collapsedItemId);
+                break;
+            case FALSE:
+                showDuplicates(viewParameters.collapsedItemId);
+                break;
+            default:
+                viewParameters.preferredOrigin.ifPresent(o -> {
+                    if (collapseDuplicates) {
+                        showDuplicates(0);
+                        collapseDuplicates(0);
+                    } else {
+                        collapseDuplicates(0);
+                        showDuplicates(0);
+                    }
+                });
+                break;
+        }
     }
 
     private void collapseDuplicates(long itemId) {
@@ -138,7 +170,7 @@ public class DuplicatesCollapser<T extends ViewItem<T>> {
                 ItemWithPage<T> itemPair = new ItemWithPage<>(page, item);
                 boolean found = false;
                 for (GroupToCollapse<T> group : groups) {
-                    switch (item.duplicates(data.params.timeline, group.parent.item)) {
+                    switch (item.duplicates(data.params.timeline, preferredOrigin, group.parent.item)) {
                         case DUPLICATES:
                             found = true;
                             group.children.add(itemPair);

@@ -43,13 +43,13 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.timeline.LoadableListViewParameters;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
-import org.andstatus.app.util.TriState;
 import org.andstatus.app.view.MyContextMenu;
 
 import androidx.annotation.NonNull;
@@ -315,13 +315,15 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     SHOW_DUPLICATES(false, true) {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            menu.getActivity().updateList(TriState.FALSE, menu.getViewItem().getTopmostId());
+            menu.getActivity().updateList(LoadableListViewParameters.collapseOneDuplicate(
+                    false, menu.getViewItem().getTopmostId()));
         }
     },
     COLLAPSE_DUPLICATES(false, true) {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            menu.getActivity().updateList(TriState.TRUE, menu.getViewItem().getTopmostId());
+            menu.getActivity().updateList(LoadableListViewParameters.collapseOneDuplicate(
+                    true, menu.getViewItem().getTopmostId()));
         }
     },
     GET_NOTE(true, false) {

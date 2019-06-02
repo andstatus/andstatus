@@ -121,7 +121,7 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
     }
 
     private List<T> loadActors(List<T> items) {
-        if (items.isEmpty() && !params.timeline.withActorProfile()) return items;
+        if (items.isEmpty() && !params.timeline.hasActorProfile()) return items;
         ActorListLoader loader = new ActorListLoader(params.getMyContext(), ActorListType.ACTORS_AT_ORIGIN,
                 getParams().getTimeline().getOrigin(), 0, "");
         items.forEach(item -> item.addActorsToLoad(loader));

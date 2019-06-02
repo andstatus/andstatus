@@ -18,6 +18,7 @@ package org.andstatus.app.activity;
 
 import androidx.annotation.NonNull;
 
+import org.andstatus.app.timeline.LoadableListViewParameters;
 import org.andstatus.app.timeline.TimelineData;
 import org.andstatus.app.timeline.TimelinePage;
 import org.andstatus.app.timeline.ViewItem;
@@ -78,7 +79,7 @@ abstract class TimelineDataWrapper<T extends ViewItem<T>> extends TimelineData<T
     }
 
     @Override
-    public void collapseDuplicates(boolean collapse, long itemId) {
+    public void updateView(LoadableListViewParameters viewParameters) {
         // Empty
     }
 }

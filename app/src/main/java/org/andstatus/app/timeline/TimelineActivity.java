@@ -248,9 +248,15 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         if (timeline.nonEmpty()) {
             contextMenu.note.loadState(savedInstanceState);
         }
-        getListData().collapseDuplicates(savedInstanceState.getBoolean(
-                IntentExtra.COLLAPSE_DUPLICATES.key, MyPreferences.isCollapseDuplicates()), 0);
-        actorProfileViewer.ensureView(getParamsNew().getTimeline().withActorProfile());
+        LoadableListViewParameters viewParameters = new LoadableListViewParameters(
+                TriState.fromBoolean(savedInstanceState.getBoolean(
+                    IntentExtra.COLLAPSE_DUPLICATES.key, MyPreferences.isCollapseDuplicates())),
+                0,
+                Optional.of(myContext.origins().fromId(savedInstanceState.getLong(
+                        IntentExtra.ORIGIN_ID.key)))
+        );
+        getListData().updateView(viewParameters);
+        actorProfileViewer.ensureView(getParamsNew().getTimeline().hasActorProfile());
         MyLog.v(this, () -> "restoreActivityState; " + getParamsNew());
     }
 
@@ -300,13 +306,13 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     public void onCollapseDuplicatesToggleClick(View view) {
         closeDrawer();
-        updateList(TriState.fromBoolean(((CheckBox) view).isChecked()), 0);
+        updateList(LoadableListViewParameters.collapseDuplicates(((CheckBox) view).isChecked()));
     }
 
     public void onShowSensitiveContentToggleClick(View view) {
         closeDrawer();
         MyPreferences.setShowSensitiveContent(((CheckBox) view).isChecked());
-        updateList(TriState.UNKNOWN, 0);
+        updateList(LoadableListViewParameters.EMPTY);
     }
 
     public void onTimelineTypeButtonClick(View item) {
@@ -653,7 +659,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 timeline.isEmpty() ? myContext.timelines().getDefault() : timeline,
                 whichPage));
 
-        actorProfileViewer.ensureView(getParamsNew().getTimeline().withActorProfile());
+        actorProfileViewer.ensureView(getParamsNew().getTimeline().hasActorProfile());
 
         if (Intent.ACTION_SEND.equals(intentNew.getAction())) {
             sharedNote = SharedNote.fromIntent(intentNew);
@@ -664,7 +670,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         }
     }
 
-    private void updateScreen() {
+    @Override
+    public void updateScreen() {
         MyServiceManager.setServiceAvailable();
         invalidateOptionsMenu();
         getNoteEditor().updateScreen();
@@ -955,7 +962,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     private void showActorProfile() {
-        if (getParamsLoaded().timeline.withActorProfile()) {
+        if (getParamsLoaded().timeline.hasActorProfile()) {
             actorProfileViewer.populateView();
         }
     }
@@ -996,8 +1003,10 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         getParamsNew().saveState(outState);
-        outState.putBoolean(IntentExtra.COLLAPSE_DUPLICATES.key,
-                getListData().isCollapseDuplicates());
+        outState.putBoolean(IntentExtra.COLLAPSE_DUPLICATES.key, getListData().isCollapseDuplicates());
+        if (getListData().getPreferredOrigin().nonEmpty()) {
+            outState.putLong(IntentExtra.ORIGIN_ID.key, getListData().getPreferredOrigin().getId());
+        }
         contextMenu.saveState(outState);
     }
 
@@ -1061,12 +1070,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     private void onOriginSelected(Intent data) {
         Origin origin = myContext.origins().fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key));
-        if (origin.isValid() && getParamsLoaded().getTimeline().withActorProfile()) {
-            Timeline timeline = getMyContext().timelines()
-                    .forUser(getParamsLoaded().timeline.getTimelineType(),
-                            myContext.users().toOrigin(getParamsLoaded().timeline.actor, origin));
-            finish();
-            switchView(timeline);
+        if (origin.isValid() && getParamsLoaded().getTimeline().hasActorProfile()) {
+            updateList(LoadableListViewParameters.fromOrigin(origin));
         }
     }
 
