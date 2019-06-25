@@ -260,7 +260,7 @@ public class AccountSettingsActivity extends MyActivity {
         if (resultCode == RESULT_OK) {
             originType = OriginType.fromCode(data.getStringExtra(IntentExtra.SELECTABLE_ENUM.key));
             if (originType.isSelectable()) {
-                List<Origin> origins = state.builder.myContext().origins().originsOfType(originType);
+                List<Origin> origins = MyContextHolder.get().origins().originsOfType(originType);
                 switch(origins.size()) {
                     case 0:
                         originType = OriginType.UNKNOWN;
@@ -290,8 +290,7 @@ public class AccountSettingsActivity extends MyActivity {
     private void onOriginSelected(int resultCode, Intent data) {
         Origin origin = Origin.EMPTY;
         if (resultCode == RESULT_OK) {
-            origin = state.builder.myContext().origins()
-                    .fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key));
+            origin = MyContextHolder.get().origins().fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key));
             if (origin.isPersistent()) {
                 onOriginSelected(origin);
             }

@@ -555,7 +555,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         }
 
         void rebuildMyAccount(AccountName accountName) {
-            MyAccount ma = myContext().accounts().fromAccountName(accountName.getName());
+            MyAccount ma = accountName.myContext().accounts().fromAccountName(accountName.getName());
             myAccount = ma.isValid()
                     ? ma
                     : new MyAccount(getAccount().data.withAccountName(accountName));

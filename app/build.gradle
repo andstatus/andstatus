@@ -6,8 +6,8 @@ android {
     buildToolsVersion rootProject.buildToolsVersion
 
     defaultConfig {
-        versionCode 290
-        versionName "50.01"
+        versionCode 291
+        versionName "50.02"
 
         applicationId "org.andstatus.app"
         minSdkVersion rootProject.minSdkVersion
