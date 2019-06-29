@@ -263,7 +263,7 @@ public class NoteEditor {
         if (item != null) {
             item.setOnMenuItemClickListener(item1 -> {
                 discardAndHide();
-                return false;
+                return true;
             });
         }
     }

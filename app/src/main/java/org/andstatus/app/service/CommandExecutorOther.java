@@ -318,7 +318,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             }
         }
         if (ok && noteId != 0) {
-            MyProvider.deleteNote(execContext.getContext(), noteId);
+            MyProvider.deleteNoteAndItsActivities(execContext.getMyContext(), noteId);
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
     }

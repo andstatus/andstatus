@@ -266,9 +266,9 @@ public class Note extends AObject {
 
     public boolean isEmpty() {
         return !origin.isValid()
-                || (nonRealOid(oid) &&
-                        ((status != DownloadStatus.SENDING && status != DownloadStatus.DRAFT) || !hasSomeContent())
-                   );
+                || (nonRealOid(oid) && status != DownloadStatus.DELETED && (
+                        (status != DownloadStatus.SENDING && status != DownloadStatus.DRAFT) || !hasSomeContent()
+                    ));
     }
 
     public boolean hasSomeContent() {

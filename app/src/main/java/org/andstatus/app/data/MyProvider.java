@@ -18,7 +18,6 @@ package org.andstatus.app.data;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
@@ -113,17 +112,9 @@ public class MyProvider extends ContentProvider {
     }
 
     /** @return Number of deleted activities of this note */
-    public static int deleteNote(Context context, long noteId) {
+    public static int deleteNoteAndItsActivities(MyContext context, long noteId) {
         if (context == null || noteId == 0) return 0;
-        try {
-            return context.getContentResolver().delete(MatchedUri.ACTIVITY_CONTENT_URI,
-                    ActivityTable.TABLE_NAME + "." + ActivityTable.NOTE_ID + "=" + noteId,
-                    new String[]{});
-
-        } catch (Exception e) {
-            MyLog.e(TAG, "Error destroying note locally", e);
-        }
-        return 0;
+        return deleteActivities(context.getDatabase(), ActivityTable.NOTE_ID + "=" + noteId, null, true);
     }
 
     private static int deleteActivities(SQLiteDatabase db, String selection, String[] selectionArgs, boolean inTransaction) {

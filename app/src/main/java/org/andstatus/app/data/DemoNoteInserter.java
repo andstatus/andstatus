@@ -295,7 +295,7 @@ public class DemoNoteInserter {
     static void deleteOldNote(@NonNull Origin origin, String noteOid) {
         long noteIdOld = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), noteOid);
         if (noteIdOld != 0) {
-            int deleted = MyProvider.deleteNote(origin.myContext.context(), noteIdOld);
+            int deleted = MyProvider.deleteNoteAndItsActivities(origin.myContext, noteIdOld);
             assertTrue( "Activities of Old note id=" + noteIdOld + " deleted: " + deleted, deleted > 0);
         }
     }
